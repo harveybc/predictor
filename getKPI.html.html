@@ -1,0 +1,460 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <div>
+<font face="Courier New" size="2">
+<font color = "#FF0080"><b>Reate</b></font>&nbsp;<font color = "blue">PROCEDURE</font>&nbsp;<font color = "#8000FF">sp_aiswebhmi_get_kpi</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">varchar</font><font color = "maroon">(</font><font color = "black">100</font><font color = "maroon">)</font><font color = "maroon">)</font>&nbsp;<font color = "blue">AS</font>
+<br/><font color = "green"><i>/****************************************************************************
+
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;FUNCTION:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sp_AISWebHMI_Get_KPI
+
+<br/>
+
+<br/>&nbsp;&nbsp;&nbsp;PURPOSE:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ermittelt&nbsp;die&nbsp;Online-Werte&nbsp;der&nbsp;Kennzahlen-Objekte,&nbsp;
+
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;um&nbsp;diese&nbsp;dem&nbsp;Web-HMI&nbsp;zur&nbsp;Verfügung&nbsp;zu&nbsp;stellen
+
+<br/>
+
+<br/>&nbsp;&nbsp;&nbsp;COMMENTS:&nbsp;&nbsp;&nbsp;
+
+<br/>&nbsp;&nbsp;&nbsp;
+
+<br/>&nbsp;&nbsp;&nbsp;CHANGES:
+
+<br/>
+
+<br/>&nbsp;&nbsp;27.03.09&nbsp;&nbsp;ChD&nbsp;&nbsp;7.12.9&nbsp;&nbsp;Ergebnisse&nbsp;fuer&nbsp;WebHMI&nbsp;zurechtgedreht,&nbsp;weil&nbsp;
+
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;am&nbsp;WebHMI&nbsp;nichts&nbsp;mehr&nbsp;gemacht&nbsp;werden&nbsp;soll
+
+<br/>&nbsp;&nbsp;24.03.09&nbsp;&nbsp;ChD&nbsp;&nbsp;7.12.8&nbsp;&nbsp;Ergebnisse&nbsp;fuer&nbsp;WebHMI&nbsp;zurechtgedreht,&nbsp;weil&nbsp;
+
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;am&nbsp;WebHMI&nbsp;nichts&nbsp;mehr&nbsp;gemacht&nbsp;werden&nbsp;soll
+
+<br/>&nbsp;&nbsp;19.03.09&nbsp;&nbsp;ChD&nbsp;&nbsp;7.12.7&nbsp;&nbsp;am&nbsp;Ende&nbsp;werden&nbsp;keine&nbsp;NULL-Werte&nbsp;zurueckgeliefert
+
+<br/>&nbsp;&nbsp;13.03.09&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ChD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.12.6&nbsp;&nbsp;&nbsp;&nbsp;via&nbsp;ReDiS&nbsp;in&nbsp;Yumbo&nbsp;angepasst
+
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Servername&nbsp;und&nbsp;zwei&nbsp;Konvertierungen
+
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;der&nbsp;Wirkungsgrade&nbsp;auf&nbsp;real&nbsp;statt&nbsp;int&nbsp;
+
+<br/>&nbsp;&nbsp;18.12.08&nbsp;&nbsp;ChD&nbsp;&nbsp;7.12.1
+
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Auslesen&nbsp;der&nbsp;Online-Objekt-Werte&nbsp;eingebaut
+
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(je&nbsp;nach&nbsp;Datenpunkt&nbsp;aus&nbsp;Objekt&nbsp;oder&nbsp;SQL-Tabellen)
+
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Optimierung&nbsp;der&nbsp;Code-Lesbarkeit
+
+<br/>
+
+<br/>&nbsp;&nbsp;&nbsp;__.__.__&nbsp;&nbsp;DT&nbsp;&nbsp;&nbsp;erstellt&nbsp;mit&nbsp;konstanten&nbsp;Dummy-Werten
+
+<br/>
+
+<br/>
+
+<br/>****************************************************************************/</i></font>
+<br/><font color = "blue">BEGIN</font>
+<br/>
+<br/><font color = "blue">DECLARE</font>&nbsp;<font color = "#8000FF">@szServerName</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">255</font><font color = "maroon">)</font>
+<br/><font color = "blue">DECLARE</font>&nbsp;<font color = "#8000FF">@Eff_Batch</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>REAL</i></font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Eff_Shift</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>REAL</i></font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Count_Fill_Batch</font>&nbsp;&nbsp;<font color = "black"><i>INT</i></font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Count_Pall_Batch</font>&nbsp;&nbsp;<font color = "black"><i>INT</i></font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Count_Fill_Shift</font>&nbsp;&nbsp;<font color = "black"><i>INT</i></font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Count_Pall_Shift</font>&nbsp;&nbsp;<font color = "black"><i>INT</i></font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Batch_Perc</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>REAL</i></font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_1_Batch_No</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_1_Batch_Desc</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_1_Art_No</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_1_Art_Desc</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_2_Batch_No</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_2_Batch_Desc</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_2_Art_No</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_2_Art_Desc</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_3_Batch_No</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_3_Batch_Desc</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_3_Art_No</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_3_Art_Desc</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_4_Batch_No</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_4_Batch_Desc</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_4_Art_No</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_4_Art_Desc</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_5_Batch_No</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_5_Batch_Desc</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_5_Art_No</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_5_Art_Desc</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_6_Batch_No</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_6_Batch_Desc</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_6_Art_No</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">16</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_6_Art_Desc</font>&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">32</font><font color = "maroon">)</font>
+<br/><font color = "blue">DECLARE</font>&nbsp;<font color = "#8000FF">@Eff_Batch_Object</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Eff_Shift_Object</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Count_Fill_Batch_Object</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Count_Pall_Batch_Object</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Count_Fill_Shift_Object</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Count_Pall_Shift_Object</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Batch_Perc_Object</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_1_Batch_No_Object</font>&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_2_Batch_No_Object</font>&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_3_Batch_No_Object</font>&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_4_Batch_No_Object</font>&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_5_Batch_No_Object</font>&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "#8000FF">@Area_6_Batch_No_Object</font>&nbsp;&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">64</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "green"><i>&#45;&#45;&nbsp;in&nbsp;diesem&nbsp;Bereich&nbsp;muss&nbsp;projektspezifisch&nbsp;angepasst&nbsp;werden</i></font>
+<br/><font color = "green"><i>&#45;&#45;&nbsp;nicht&nbsp;vorhandene&nbsp;Objekte&nbsp;-&nbsp;z.&nbsp;B.&nbsp;fuer&nbsp;Chargengebiet&nbsp;6&nbsp;-&nbsp;bekommen&nbsp;den&nbsp;Wert&nbsp;''</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@szServerName</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "red">'AIS-YUMBO2-SV'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;der&nbsp;Name&nbsp;des&nbsp;Servers,&nbsp;auf&nbsp;dem&nbsp;die&nbsp;Plant-iT-Services&nbsp;laufen</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_1_Batch_No_Object</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_BAJ_BNR'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;das&nbsp;Objekt,&nbsp;in&nbsp;dem&nbsp;die&nbsp;Chargennummer&nbsp;des&nbsp;Gebietes&nbsp;1&nbsp;steht</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_2_Batch_No_Object</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_BAM_BNR'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;das&nbsp;Objekt,&nbsp;in&nbsp;dem&nbsp;die&nbsp;Chargennummer&nbsp;des&nbsp;Gebietes&nbsp;2&nbsp;steht</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_3_Batch_No_Object</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_BAQ_BNR'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;das&nbsp;Objekt,&nbsp;in&nbsp;dem&nbsp;die&nbsp;Chargennummer&nbsp;des&nbsp;Gebietes&nbsp;3&nbsp;steht</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_4_Batch_No_Object</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_BAU_BNR'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;das&nbsp;Objekt,&nbsp;in&nbsp;dem&nbsp;die&nbsp;Chargennummer&nbsp;des&nbsp;Gebietes&nbsp;4&nbsp;steht</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_5_Batch_No_Object</font>&nbsp;<font color = "silver">=</font><font color = "red">''</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;das&nbsp;Objekt,&nbsp;in&nbsp;dem&nbsp;die&nbsp;Chargennummer&nbsp;des&nbsp;Gebietes&nbsp;5&nbsp;steht</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_6_Batch_No_Object</font>&nbsp;<font color = "silver">=</font><font color = "red">''</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;das&nbsp;Objekt,&nbsp;in&nbsp;dem&nbsp;die&nbsp;Chargennummer&nbsp;des&nbsp;Gebietes&nbsp;6&nbsp;steht</i></font>
+<br/><font color = "green"><i>&#45;&#45;&nbsp;bei&nbsp;den&nbsp;folgenden&nbsp;Werte&nbsp;gibt's&nbsp;Unterschiede&nbsp;nur&nbsp;bei&nbsp;WS2005/OMAC</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Eff_Batch_Object</font>&nbsp;<font color = "silver">=</font><font color = "#8000FF">@szLineID</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_BAM_LOP_OMAC.'</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "#8000FF">@szLineID</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_BAM_LOP_OMAC'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;der&nbsp;Name&nbsp;des&nbsp;Objektes,&nbsp;in&nbsp;dem&nbsp;der&nbsp;Chargenwirkungsgrad&nbsp;steht</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Eff_Shift_Object</font>&nbsp;<font color = "silver">=</font><font color = "#8000FF">@szLineID</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_SAM_LOP_OMAC.'</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "#8000FF">@szLineID</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_SAM_LOP_OMAC'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;der&nbsp;Name&nbsp;des&nbsp;Objektes,&nbsp;in&nbsp;dem&nbsp;der&nbsp;Schichtwirkungsgrad&nbsp;steht</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Count_Fill_Batch_Object</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_LNE_BCR.'</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "#8000FF">@szLineID</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_LNE_BCR.Brand.Brand'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;der&nbsp;Name&nbsp;des&nbsp;Objektes,&nbsp;in&nbsp;dem&nbsp;der&nbsp;Gut-Behälter-Zähler&nbsp;für&nbsp;Charge&nbsp;steht</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Count_Pall_Batch_Object</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_LNE_PCR.'</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "#8000FF">@szLineID</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_LNE_PCR.Brand.Brand'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;der&nbsp;Name&nbsp;des&nbsp;Objektes,&nbsp;in&nbsp;dem&nbsp;der&nbsp;Gut-Paletten-Zähler&nbsp;für&nbsp;Charge&nbsp;steht</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Count_Fill_Shift_Object</font>&nbsp;<font color = "silver">=</font><font color = "#8000FF">@szLineID</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_LNE_BCR.'</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "#8000FF">@szLineID</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_LNE_BCR.Shift.Shift'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;der&nbsp;Name&nbsp;des&nbsp;Objektes,&nbsp;in&nbsp;dem&nbsp;der&nbsp;Gut-Behälter-Zähler&nbsp;für&nbsp;Schicht&nbsp;steht</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Count_Pall_Shift_Object</font>&nbsp;<font color = "silver">=</font><font color = "#8000FF">@szLineID</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_LNE_PCR.'</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "#8000FF">@szLineID</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_LNE_PCR.Shift.Shift'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;der&nbsp;Name&nbsp;des&nbsp;Objektes,&nbsp;in&nbsp;dem&nbsp;der&nbsp;Gut-Paletten-Zähler&nbsp;für&nbsp;Schicht&nbsp;steht</i></font>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Batch_Perc_Object</font>&nbsp;<font color = "silver">=</font><font color = "#8000FF">@szLineID</font>&nbsp;<font color = "silver">+</font>&nbsp;<font color = "red">'_LNE_PERC'</font>&nbsp;<font color = "green"><i>&#45;&#45;&nbsp;Objekt,&nbsp;in&nbsp;dem&nbsp;der&nbsp;prozentuale&nbsp;Anteil&nbsp;der&nbsp;fertigen&nbsp;von&nbsp;den&nbsp;geplanten&nbsp;Behältern&nbsp;steht</i></font>
+<br/>
+<br/><font color = "green"><i>&#45;&#45;&nbsp;Ende&nbsp;des&nbsp;Anpassungs-Bereiches</i></font>
+<br/><font color = "blue">DECLARE</font>&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "black"><i>VARCHAR</i></font><font color = "maroon">(</font><font color = "black">255</font><font color = "maroon">)</font>
+<br/><font color = "blue">DECLARE</font>&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "black"><i>INT</i></font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Eff_Batch_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Eff_Batch</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>REAL</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Eff_Shift_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Eff_Shift</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>REAL</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Count_Fill_Batch_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Count_Fill_Batch</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>INT</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Count_Pall_Batch_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Count_Pall_Batch</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>INT</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Count_Fill_Shift_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Count_Fill_Shift</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>INT</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Count_Pall_Shift_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Count_Pall_Shift</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>INT</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Area_1_Batch_No_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_1_Batch_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>INT</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Area_2_Batch_No_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_2_Batch_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>INT</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Area_3_Batch_No_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_3_Batch_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>INT</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Area_4_Batch_No_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_4_Batch_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>INT</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Area_5_Batch_No_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_5_Batch_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>INT</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Area_6_Batch_No_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Area_6_Batch_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>INT</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">EXECUTE</font>&nbsp;<font color = "maroon">master</font><font color = "silver">.</font><font color = "silver">.</font><font color = "#FF0080"><b>Xp_datax_getvalue</b></font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@szServerName</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@Batch_Perc_Object</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@sValue</font>&nbsp;<font color = "maroon">output</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;<font color = "#8000FF">@nTimestamp</font>&nbsp;<font color = "maroon">output</font>
+<br/>
+<br/><font color = "blue">SET</font>&nbsp;<font color = "#8000FF">@Batch_Perc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "fuchsia"><i>CONVERT</i></font>&nbsp;<font color = "maroon">(</font><font color = "black"><i>REAL</i></font><font color = "silver">,</font>&nbsp;<font color = "#8000FF">@sValue</font><font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_1_Batch_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">szchargedescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_1_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_2_Batch_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">szchargedescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_2_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_3_Batch_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">szchargedescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_3_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_4_Batch_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">szchargedescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_4_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_5_Batch_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">szchargedescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_5_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_6_Batch_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">szchargedescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_6_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_1_Art_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticledescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_1_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_1_Art_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticlenumber</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_1_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_2_Art_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticledescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_2_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_2_Art_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticlenumber</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_2_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_3_Art_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticledescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_3_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_3_Art_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticlenumber</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_3_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_4_Art_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticledescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_4_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_4_Art_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticlenumber</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_4_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_5_Art_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticledescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_5_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_5_Art_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticlenumber</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_5_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_6_Art_Desc</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticledescription</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_6_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/>
+<br/><font color = "blue">SELECT</font>&nbsp;<font color = "#8000FF">@Area_6_Art_No</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">szarticlenumber</font>
+<br/><font color = "blue">FROM</font>&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisplannedcharges</font>&nbsp;<font color = "maroon">c</font><font color = "silver">,</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "maroon">tblaisfillarticle</font>&nbsp;<font color = "maroon">a</font>
+<br/><font color = "blue">WHERE</font>&nbsp;&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">bisvalid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "black">1</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">szlineid</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@szLineID</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nfillarticlelink</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "maroon">a</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "maroon">)</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color = "blue">AND</font>&nbsp;<font color = "maroon">(</font>&nbsp;<font color = "maroon">c</font><font color = "silver">.</font><font color = "maroon">nkey</font>&nbsp;<font color = "silver">=</font>&nbsp;<font color = "#8000FF">@Area_6_Batch_No</font>&nbsp;<font color = "maroon">)</font>
+<br/><font color = "green"><i>/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<br/>SET&nbsp;@Eff_Batch&nbsp;=&nbsp;96
+
+<br/>SET&nbsp;@Eff_Shift&nbsp;=&nbsp;92
+
+<br/>SET&nbsp;@Count_Fill_Batch&nbsp;=&nbsp;345678
+
+<br/>SET&nbsp;@Count_Pall_Batch&nbsp;=&nbsp;19768
+
+<br/>SET&nbsp;@Count_Fill_Shift&nbsp;=&nbsp;633472
+
+<br/>SET&nbsp;@Count_Pall_Shift&nbsp;=&nbsp;32768
+
+<br/>SET&nbsp;@Batch_Perc&nbsp;=&nbsp;89
+
+<br/>SET&nbsp;@Area_1_Batch_No&nbsp;=&nbsp;'36'
+
+<br/>SET&nbsp;@Area_1_Batch_Desc&nbsp;=&nbsp;'BatchDesc1'
+
+<br/>SET&nbsp;@Area_1_Art_No&nbsp;=&nbsp;'123'
+
+<br/>SET&nbsp;@Area_1_Art_Desc&nbsp;=&nbsp;'ArtDesc1'
+
+<br/>SET&nbsp;@Area_2_Batch_No&nbsp;=&nbsp;'36'
+
+<br/>SET&nbsp;@Area_2_Batch_Desc&nbsp;=&nbsp;'BatchDesc2'
+
+<br/>SET&nbsp;@Area_2_Art_No&nbsp;=&nbsp;'123'
+
+<br/>SET&nbsp;@Area_2_Art_Desc&nbsp;=&nbsp;'ArtDesc2'
+
+<br/>SET&nbsp;@Area_3_Batch_No&nbsp;=&nbsp;'37'
+
+<br/>SET&nbsp;@Area_3_Batch_Desc&nbsp;=&nbsp;'BatchDesc3'
+
+<br/>SET&nbsp;@Area_3_Art_No&nbsp;=&nbsp;'124'
+
+<br/>SET&nbsp;@Area_3_Art_Desc&nbsp;=&nbsp;'ArtDesc3'
+
+<br/>SET&nbsp;@Area_4_Batch_No&nbsp;=&nbsp;'37'
+
+<br/>SET&nbsp;@Area_4_Batch_Desc&nbsp;=&nbsp;'BatchDesc4'
+
+<br/>SET&nbsp;@Area_4_Art_No&nbsp;=&nbsp;'124'
+
+<br/>SET&nbsp;@Area_4_Art_Desc&nbsp;=&nbsp;'ArtDesc4'
+
+<br/>SET&nbsp;@Area_5_Batch_No&nbsp;=&nbsp;'38'
+
+<br/>SET&nbsp;@Area_5_Batch_Desc&nbsp;=&nbsp;'BatchDesc5'
+
+<br/>SET&nbsp;@Area_5_Art_No&nbsp;=&nbsp;'125'
+
+<br/>SET&nbsp;@Area_5_Art_Desc&nbsp;=&nbsp;'ArtDesc5'
+
+<br/>SET&nbsp;@Area_6_Batch_No&nbsp;=&nbsp;'39'
+
+<br/>SET&nbsp;@Area_6_Batch_Desc&nbsp;=&nbsp;'BatchDesc6'
+
+<br/>SET&nbsp;@Area_6_Art_No&nbsp;=&nbsp;'126'
+
+<br/>SET&nbsp;@Area_6_Art_Desc&nbsp;=&nbsp;'ArtDesc6'
+
+<br/>*/</i></font>
+<br/>
+</font>
+        </div>
+    </body>
+</html>
