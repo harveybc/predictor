@@ -1,0 +1,72 @@
+<?php
+$this->breadcrumbs = array(
+    'Informes de Tableros Eléctricos' => array('index'),
+    $model->id,
+);
+
+// busca el modelo del equipo en Tableros
+$modelTMP = Tableros::model()->findByAttributes(array('TAG' => $model->TAG));
+
+$this->menu = array(
+    array('label' => 'Lista de Informes', 'url' => array('index')),
+    array('label' => 'Nuevo Informe', 'url' => array('/termotablero/create?id=' . $model->TAG)),
+    array('label' => 'Actualizar Informe', 'url' => array('update', 'id' => $model->id)),
+    array('label' => 'Borrar Informe', 'url' => '#', 'linkOptions' => array('submit' => array('delete', 'id' => $model->id), 'confirm' => 'Está seguro de borrar esto?')),
+    array('label' => 'Gestionar Informes', 'url' => array('/termotablero/admin?id=' . $modelTMP->id)),
+);
+?>
+
+<?php
+$nombre = "";
+$modelTMP = $model;
+if (isset($modelTMP->TAG))
+    $nombre = $modelTMP->TAG;
+if (isset($modelTMP->Fecha))
+    $nombre = $nombre . ' (' . $modelTMP->Fecha . ')';
+?>
+<h1 style="font-size:18px;color:#961C1F">Vista de informe de termografia de:<br/><br/><?php echo $nombre; ?></h1>
+
+<?php
+$modelT = Tableros::model()->findByAttributes(array('TAG' => $model->TAG));
+$modelM = Tableros::model()->findByAttributes(array('TAG' => $model->TAG));
+?>
+
+<?php
+$this->widget('zii.widgets.CDetailView', array(
+    'data' => $model,
+    'cssFile' => '/themes/detailview/styles.css',
+    'attributes' => array(
+        //'id',
+        //'Fecha',
+        
+        array(// related city displayed as a link
+            'label' => 'Tablero',
+            'type' => 'raw',
+            'value' => ((isset($model->TAG)) ? $model->TAG : "") . " - " . ((isset($modelT->Tablero)) ? $modelT->Tablero : ""),
+        ),
+        array(// related city displayed as a link
+            'label' => 'Proceso',
+            'type' => 'raw',
+            'value' => (isset($modelM->Area)) ? $modelM->Area : "",
+        ),
+        array(// related city displayed as a link
+            'label' => 'Area',
+            'type' => 'raw',
+            'value' => (isset($modelM->Proceso)) ? $modelM->Proceso : "",
+        ),
+        'OT',
+        'Criterio',
+        'Tamano',
+        'Analista',
+        //'Path',
+        array(// related city displayed as a link
+            'label' => 'Path',
+            'type' => 'raw',
+            'value' => (isset($model->Path)) ? '<a href="/index.php/reportes/passthru?path='.urlencode($data->Path).'">'.$model->Path.'<a>': "",
+        ),
+
+    ),
+));
+?>
+
+

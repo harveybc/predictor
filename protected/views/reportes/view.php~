@@ -1,0 +1,64 @@
+<?php
+$this->breadcrumbs=array(
+	'Reportes'=>array('index'),
+	$model->id,
+);
+// busca el modelo del equipo en estructura
+$modelTMP=Estructura::model()->findByAttributes(array('Equipo'=>$model->Equipo));
+
+$this->menu=array(
+	array('label'=>'Lista de Reportes', 'url'=>array('index')),
+	array('label'=>'Nuevo Reporte', 'url'=>array('/reportes/create?id=' . $model->Equipo)),
+	array('label'=>'Actualizar Reporte', 'url'=>array('update', 'id'=>$model->id)),
+	array('label'=>'Borrar Reporte', 'url'=>'#', 'linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Está seguro de borrar esto?')),
+	array('label'=>'Gestionar Reportes', 'url'=>array('/reportes/admin?id='.$modelTMP->id)),
+);
+?>
+
+<?php
+$nombre="";
+$modelTMP=$model;
+if (isset($modelTMP->Equipo))
+        $nombre=$modelTMP->Equipo;
+if (isset($modelTMP->Fecha))
+        $nombre=$nombre.' ('.$modelTMP->Fecha.')';
+
+
+
+?>
+
+<h1 style="font-size:18px;color:#961C1F">Vista de reporte de fuga de gases (Ultrasonido):<br/><br/><?php echo $nombre; ?></h1>
+
+<?php $this->widget('zii.widgets.CDetailView', array(
+	'data'=>$model,
+        'cssFile'=>'/themes/detailview/styles.css',
+	'attributes'=>array(
+            //   	'id',
+		
+		 'Equipo',
+                 'Area',
+		'Proceso',
+		'OT',
+		'Analista',
+		//'Fecha',
+                'COSTO',
+		'Gas',
+		'Presion',
+		'Decibeles',
+              //  'Reporte',
+		'Descripcion',
+	//	'ZI',
+             array(
+            'label'=>'ZI',
+            'value'=> number_format($model->ZI),
+            'type'=>'text',),
+               
+		'Tamano',
+		'CFM',
+		'Corregido',
+                'Path',
+	),
+)); 
+
+ echo '<img src="/index.php/reportes/passthru?path='.urlencode($model->Path).'" style="width:100%;border-width:1px;" />';
+?>
