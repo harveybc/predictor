@@ -1,0 +1,7 @@
+action: default, msg: getenv
+cwd: C:\Users\harve\Dropbox\feature-eng\.tox
+cmd: 'c:\users\harve\miniconda3\envs\singularity\python.exe' -m virtualenv --system-site-packages --no-download --python 'c:\users\harve\miniconda3\envs\singularity\python.exe' default
+created virtual environment CPython3.7.6.final.0-64 in 9130ms
+  creator CPython3Windows(dest=C:\Users\harve\Dropbox\feature-eng\.tox\default, clear=False, global=True)
+  seeder FromAppData(download=False, pip=latest, setuptools=latest, wheel=latest, via=copy, app_data_dir=C:\Users\harve\AppData\Local\Temp\tmpj0vil2gu\seed-app-data\v1)
+  activators BashActivator,BatchActivator,FishActivator,PowerShellActivator,PythonActivator,XonshActivator
