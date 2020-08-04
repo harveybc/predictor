@@ -1,43 +1,28 @@
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
+# byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
 
-# Folder config file
-Desktop.ini
+# tests and coverage
+*.pytest_cache
+.coverage
 
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
+# database & logs
+*.db
+*.sqlite3
+*.log
 
-# Windows Installer files
-*.cab
-*.msi
-*.msm
-*.msp
+# venv
+env
+venv
 
-# =========================
-# Operating System Files
-# =========================
-
-# OSX
-# =========================
-
+# other
 .DS_Store
-.AppleDouble
-.LSOverride
 
-# Icon must end with two \r
-Icon
+# sphinx docs 
+_build
+_static
+_templates
 
-# Thumbnails
-._*
-
-# Files that might appear on external disk
-.Spotlight-V100
-.Trashes
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
+# javascript
+package-lock.json
+.vscode/symbols.json
