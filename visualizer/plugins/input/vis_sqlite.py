@@ -7,7 +7,7 @@ from visualizer.plugin_base import PluginBase
 from numpy import genfromtxt
 from sys import exit
 from flask import current_app
-from visualizer.visualizer.db import get_db
+from visualizer.db import get_db
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
