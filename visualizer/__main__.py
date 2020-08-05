@@ -1,5 +1,5 @@
 import sys
-import visualizer.visualizer as fe
+import visualizer as fe
 
 def main(args=None):
     """The main routine."""

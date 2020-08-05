@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 
-from visualizer.visualizer import create_app
+from visualizer import create_app
 from visualizer.db import get_db
 from visualizer.db import init_db
 

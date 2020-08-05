@@ -2,7 +2,7 @@ import os
 import json
 from flask import Flask
 from flask import Blueprint
-from visualizer.visualizer import FeatureExtractor
+from visualizer import FeatureExtractor
 
 def read_plugin_config(vis_config_file=None):
     """ Read the pulgin configuration JSON file from a path, if its None, uses a default configuration """
@@ -56,12 +56,12 @@ def create_app(test_config=None):
     db.init_app(app)
 
     # apply the blueprints to the app
-    from visualizer.visualizer import auth, visualizer
+    from visualizer import auth, visualizer
     
     # get the output plugin template folder
     plugin_folder = fe.ep_output.template_path(p_config)
     # construct the blueprint 
-    vis_bp = visualizer.visualizer_blueprint(plugin_folder)
+    vis_bp = visualizer_blueprint(plugin_folder)
     
     # register the blueprints
     app.register_blueprint(auth.bp)

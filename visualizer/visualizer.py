@@ -7,7 +7,7 @@ import logging
 import numpy as np
 import csv
 import pkg_resources
-from visualizer.visualizer_base import FeatureExtractorBase
+from visualizer_base import FeatureExtractorBase
 
 # from visualizer import __version__
 
