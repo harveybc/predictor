@@ -2,10 +2,10 @@
 
 Uses a Web UI to visualize plots and statistics with the data generated during feaure-extractor training or evaluation.
 
-[![Build Status](https://travis-ci.org/harveybc/feature_extractor.svg?branch=master)](https://travis-ci.org/harveybc/feature_extractor)
-[![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://harveybc-feature_extractor.readthedocs.io/en/latest/)
-[![BCH compliance](https://bettercodehub.com/edge/badge/harveybc/feature_extractor?branch=master)](https://bettercodehub.com/)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/harveybc/feature_extractor/blob/master/LICENSE)
+[![Build Status](https://travis-ci.org/harveybc/visualizer.svg?branch=master)](https://travis-ci.org/harveybc/visualizer)
+[![Documentation Status](https://readthedocs.org/projects/docs/badge/?version=latest)](https://harveybc-visualizer.readthedocs.io/en/latest/)
+[![BCH compliance](https://bettercodehub.com/edge/badge/harveybc/visualizer?branch=master)](https://bettercodehub.com/)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/harveybc/visualizer/blob/master/LICENSE)
 
 ## Description
 
@@ -17,7 +17,7 @@ The visualizer uses a JSON configuration file for setting the Web service parame
 
 ## Installation
 
-The component is pre-installed with the feature_extractor package, the instructions are described in the [feature_extractor README](../master/README.md).
+The component is pre-installed with the visualizer package, the instructions are described in the [visualizer README](../master/README.md).
 
 ### Command-Line Execution
 
@@ -25,13 +25,13 @@ Environment variables must be set:
 
 * For Linux and Mac:
 
-> export FLASK_APP=feature_extractor/visualizer
+> export FLASK_APP=visualizer/visualizer
 
 > export FLASK_ENV=development
 
 * For Windows:
 
-> set FLASK_APP=feature_extractor\\visualizer
+> set FLASK_APP=visualizer\\visualizer
 
 > set FLASK_ENV=development
 
@@ -59,7 +59,7 @@ The default port can be modified by setting the FLASK_RUN_PORT environment varia
 
 ### Configuration File
 
-The visualizer uses a configuration file located in the feature_extractor/visualizer directory that sets the Web service parameters and the configuration of the input and output plugins.
+The visualizer uses a configuration file located in the visualizer/visualizer directory that sets the Web service parameters and the configuration of the input and output plugins.
 
 The following is the default JSON configuration file:
 

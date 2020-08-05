@@ -3,9 +3,9 @@ import tempfile
 
 import pytest
 
-from feature_extractor.visualizer import create_app
-from feature_extractor.visualizer.db import get_db
-from feature_extractor.visualizer.db import init_db
+from visualizer.visualizer import create_app
+from visualizer.visualizer.db import get_db
+from visualizer.visualizer.db import init_db
 
 # read in SQL for populating test data
 with open(os.path.join(os.path.dirname(__file__), "data/visualizer_test_data.sql"), "rb") as f:

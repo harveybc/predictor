@@ -5,7 +5,7 @@ import csv
 import sys
 import os
 from filecmp import cmp
-from feature_extractor.feature_extractor import FeatureExtractor
+from visualizer.visualizer import FeatureExtractor
 import matplotlib.pyplot as plt
 import requests
 
