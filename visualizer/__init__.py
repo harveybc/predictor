@@ -51,7 +51,7 @@ def create_app(test_config=None):
     #    return "Hello, World!"
 
     # register the database commands
-    from visualizer.visualizer import db
+    from visualizer import db
 
     db.init_app(app)
 
