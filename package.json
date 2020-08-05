@@ -1,17 +1,17 @@
 {
-  "name": "flask-dashboard-adminlte",
-  "mastertemplate": "boilerplate-code-flask-dashboard",
+  "name": "visualizer",
+  "mastertemplate": "visualizer",
   "version": "1.0.1",
-  "description": "Template project - Flask Boilerplate Code",
+  "description": "Feature Extractor - Visualization Component",
   "repository": {
       "type": "git",
-      "url": "https://github.com/app-generator/flask-dashboard-adminlte"
+      "url": "https://github.com/harveybc/visualizer"
   },
   "bugs": {
-      "url": "https://github.com/app-generator/flask-dashboard-adminlte/issues",
-      "email": "support@appseed.us"
+      "url": "https://github.com/harveybc/visualizer",
+      "email": "harveybc@ingeni-us.com"
   },
-  "author": "AppSeed App Generator <support@appseed.us> (https://appseed.us)",
+  "author": "Harvey Bastidas <harveybc@ingeni-us.com> (http://ingeni-us.com)",
   "engines": {
       "node": ">=10.0.0"
   },
