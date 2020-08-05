@@ -57,7 +57,7 @@ def create_app(test_config=None):
 
     # apply the blueprints to the app
     from visualizer import auth
-    import visualizer.routes 
+    import routes 
 
     
     # get the output plugin template folder
