@@ -1,6 +1,6 @@
 import pytest
 
-from visualizer.visualizer.db import get_db
+from visualizer.db import get_db
 
 
 def test_index(client, auth):
