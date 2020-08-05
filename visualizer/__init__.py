@@ -4,7 +4,7 @@ from flask import Flask
 from flask import Blueprint
 from visualizer.visualizer import FeatureExtractor
 from visualizer import auth
-from visualizer.routes import visualizer_blueprint 
+from visualizer.visualizer_blueprint import visualizer_blueprint 
 
 def read_plugin_config(vis_config_file=None):
     """ Read the pulgin configuration JSON file from a path, if its None, uses a default configuration """
