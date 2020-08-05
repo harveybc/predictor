@@ -36,7 +36,7 @@ The heuristic_ts core can be executed by loading the plugin from a class method 
 The following example show how to configure and execute the core plugin.
 
 ```python
-from visualizer.visualizer import FeatureExtractor
+from visualizer import FeatureExtractor
 # configure parameters (same variable names as command-line parameters)
 class Conf:
     def __init__(self):

@@ -5,7 +5,7 @@ import csv
 import sys
 import os 
 from filecmp import cmp
-from visualizer.visualizer import FeatureExtractor
+from visualizer import FeatureExtractor
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"

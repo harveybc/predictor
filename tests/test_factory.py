@@ -1,4 +1,4 @@
-from visualizer.visualizer import create_app
+from visualizer import create_app
 
 
 def test_config():
