@@ -2,7 +2,7 @@ import os
 import json
 from flask import Flask
 from flask import Blueprint
-from visualizer import FeatureExtractor
+from visualizer.visualizer import FeatureExtractor
 
 def read_plugin_config(vis_config_file=None):
     """ Read the pulgin configuration JSON file from a path, if its None, uses a default configuration """
