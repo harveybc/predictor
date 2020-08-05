@@ -56,7 +56,9 @@ def create_app(test_config=None):
     db.init_app(app)
 
     # apply the blueprints to the app
-    from visualizer import auth, visualizer
+    from visualizer import auth
+    from visualizer import routes
+    
     
     # get the output plugin template folder
     plugin_folder = fe.ep_output.template_path(p_config)
