@@ -34,7 +34,7 @@ def login():
         password = request.form['password']
 
         # Locate user
-        user = User.query.filter_by(username=str.encode(username).first())
+        user = User.query.filter_by(username=str.encode(username)).first()
         
         # Check the password
         if user and verify_pass( password, user.password):
