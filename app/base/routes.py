@@ -33,8 +33,13 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
+        if username is not None:
+            if isinstance(username, str):
+                username = bytes(username, 'utf8')
+            else:
+                username = bytes(username)
         # Locate user
-        user = User.query.filter_by(username=str.encode(username)).first()
+        user = User.query.filter_by(username=username).first()
         
         # Check the password
         if user and verify_pass( password, user.password):
