@@ -38,6 +38,11 @@ def login():
                 username = bytes(username, 'utf8')
             else:
                 username = bytes(username)
+        if password is not None:
+            if isinstance(password, str):
+                password = bytes(password, 'utf8')
+            else:
+                password = bytes(password)
         # Locate user
         user = User.query.filter_by(username=username).first()
         
