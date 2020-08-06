@@ -18,7 +18,7 @@ def read_plugin_config(vis_config_file=None):
 	
 def create_app(test_config=None):
     """Create and configure an instance of the Flask application."""
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__, instance_relative_config=True, static_folder='base/static')
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     # read plugin configuration JSON file
     p_config = read_plugin_config()
@@ -63,7 +63,9 @@ def create_app(test_config=None):
     vis_bp = visualizer_blueprint(plugin_folder)
     # register the blueprints
     app.register_blueprint(auth.bp)
+    app.register_blueprint(auth.bp)
     app.register_blueprint(vis_bp) 
+
     # add the / route pointing to the index endpoint
     app.add_url_rule("/", endpoint="index")
 
