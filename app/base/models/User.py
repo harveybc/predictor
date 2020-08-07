@@ -1,5 +1,5 @@
-# -*- encoding: utf-8 -*-
-m flask_login import UserMixin
+
+from flask_login import UserMixin
 from sqlalchemy import Binary, Column, Integer, String
 
 from app import db, login_manager
