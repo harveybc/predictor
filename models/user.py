@@ -13,7 +13,7 @@ login_manager = LoginManager()
 
 class User(db.Model, UserMixin):
 
-    __tablename__ = 'User'
+    __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
