@@ -8,7 +8,7 @@ from flask_login import LoginManager
 
 from app.base.util import hash_pass
 
-from app import db, login_manager
+from app.app import db, login_manager
 #db = SQLAlchemy()
 #login_manager = LoginManager()
 

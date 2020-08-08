@@ -7,7 +7,7 @@ from sys import exit
 from decouple import config
 
 from config import config_dict
-from app import create_app, db
+from app.app import create_app, db
 
 # WARNING: Don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True)
