@@ -2,9 +2,14 @@
 from flask_login import UserMixin
 from sqlalchemy import Binary, Column, Integer, String
 
-from app import db, login_manager
+#from app import db, login_manager
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 
 from app.base.util import hash_pass
+
+db = SQLAlchemy()
+login_manager = LoginManager()
 
 class User(db.Model, UserMixin):
 
