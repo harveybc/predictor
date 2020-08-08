@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from importlib import import_module
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path
-from models.user import User 
+
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -24,8 +24,9 @@ def register_blueprints(app):
 # If it is the first time the app is run, create the database and perform data seeding
 def configure_database(app):
 
-    @app.before_first_request
+    #@app.before_first_request
     def initialize_database():
+        from models.user import User 
         db.create_all()
         user_seed(app, db)
 

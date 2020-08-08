@@ -8,8 +8,9 @@ from flask_login import LoginManager
 
 from app.base.util import hash_pass
 
-db = SQLAlchemy()
-login_manager = LoginManager()
+from app import db, login_manager
+#db = SQLAlchemy()
+#login_manager = LoginManager()
 
 class User(db.Model, UserMixin):
 
