@@ -26,7 +26,7 @@ def configure_database(app):
     @app.before_first_request
     def initialize_database():
         db.create_all()
-        user_seed()
+        user_seed(app, db)
 
     @app.teardown_request
     def shutdown_session(exception=None):
