@@ -9,7 +9,7 @@ from flask_login import (
     logout_user
 )
 
-from app import db, login_manager
+from app.app import db, login_manager
 from app.base import blueprint
 from app.base.forms import LoginForm, CreateAccountForm
 from models.user import User
