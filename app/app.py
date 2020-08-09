@@ -24,10 +24,10 @@ def configure_database(app):
 
     #@app.before_first_request
     def initialize_database():
-        from models.user import User 
+        #from models.user import User 
         db.create_all()
-        from models.user_seed import user_seed
-        user_seed(app, db)
+        #from models.user_seed import user_seed
+        #user_seed(app, db)
 
     @app.teardown_request
     def shutdown_session(exception=None):
