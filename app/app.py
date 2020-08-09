@@ -24,8 +24,10 @@ def configure_database(app):
 
     #@app.before_first_request
     def initialize_database():
+    	print("Creating database")
         from models.user import User 
         db.create_all()
+        print("Seeding database")
         from models.user_seed import user_seed
         user_seed(app, db)
 
