@@ -1,13 +1,11 @@
 # -*- encoding: utf-8 -*-
 
-from models.user_seed import user_seed
 from flask import Flask, url_for
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from importlib import import_module
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path
-
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -28,6 +26,7 @@ def configure_database(app):
     def initialize_database():
         from models.user import User 
         db.create_all()
+        from models.user_seed import user_seed
         user_seed(app, db)
 
     @app.teardown_request
