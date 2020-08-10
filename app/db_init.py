@@ -2,7 +2,6 @@ import click
 from app.app import create_app, db
 
 
-
 # Create an app context for the database connection.
 app = create_app()
 db.app = app
@@ -39,8 +38,14 @@ def init(safety_check):
         else:
             raise SystemExit()
     if begin_reset:
+        print("Dropping database")
         db.drop_all()
+        print("Creating database")
+        from models.user import User
         db.create_all()
+        print("Seeding database")
+        from models.user_seed import user_seed
+        user_seed(app, db)
         click.echo("All tables dropped and recreated")
 
 
