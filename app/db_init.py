@@ -2,10 +2,11 @@ from flask import Blueprint
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import click
-from app.app import app, db
+from app.app import  create_db
 
-#app = Flask(__name__)
+app = Flask(__name__)
 #db = SQLAlchemy()
+create_db(app)
 
 bp_init_db = Blueprint('init_db', __name__)
 

@@ -36,6 +36,11 @@ def configure_database(app):
     def shutdown_session(exception=None):
         db.session.remove()
     
+def create_db(app):
+    db = SQLAlchemy()
+    db.init_app(app)
+    return db
+
 
 def create_app(config):
     app = Flask(__name__, static_folder='base/static')
