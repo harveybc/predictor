@@ -10,7 +10,7 @@ bp_init_db = Blueprint('init_db', __name__)
 
 @bp_init_db.cli.command('init_db')
 @click.option(
-    "--safety_check/--no-safety_check",
+    "--safety/--no-safety",
     default=True,
     help="Confirm DB_URI before reset?",
 )
@@ -18,12 +18,12 @@ def init_db():
     """
     Initialize the database.
 
-    :param safety_check: confirmation of DB_URI to prevent screw up in prod
-    :type safety_check: bool default True
+    :param safety: confirmation of DB_URI to prevent screw up in prod
+    :type safety: bool default True
     :return: None
     """
     begin_reset = False
-    if not safety_check:
+    if not safety:
         begin_reset = True
     else:
         response = input("Warning: It will delete any existing data in the db. Do you wish to continue? [Y/N]")
