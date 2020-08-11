@@ -3,17 +3,21 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import click
 from app.app import  create_db
-from config import Config
+from   decouple import config
 
 app = Flask(__name__)
 #db = SQLAlchemy()
 create_db(app)
 
 bp_init_db = Blueprint('init_db', __name__)
-# TODO: make DEBUG/PRODUCTION MODE  parametrizable
-#app_config = config_dict['Debug']
-conf = Config()
-#app.config.from_object(app_config)
+basedir    = os.path.abspath(os.path.dirname(__file__))
+
+# Set up the App SECRET_KEY
+SECRET_KEY = config('SECRET_KEY', default='S#perS3crEt_007')
+
+# This will create a file in <app> FOLDER
+SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 @bp_init_db.cli.command('init_db')
 def init_db():
