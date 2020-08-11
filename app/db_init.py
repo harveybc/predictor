@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 import click
 from app.app import  create_db
 from   decouple import config
+import os
 
 app = Flask(__name__)
 #db = SQLAlchemy()
