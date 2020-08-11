@@ -9,7 +9,7 @@ db = SQLAlchemy()
 bp_init_db = Blueprint('init_db', __name__)
 
 @bp_init_db.cli.command('init_db')
-#@click.argument('name')
+@click.argument('safety_check')
 def init_db():
     """
     Initialize the database.
