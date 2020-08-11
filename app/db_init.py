@@ -12,7 +12,7 @@ create_db(app)
 bp_init_db = Blueprint('init_db', __name__)
 # TODO: make DEBUG/PRODUCTION MODE  parametrizable
 app_config = config_dict['Debug']
-app.config.from_object(config)
+app.config.from_object(app_config)
 
 @bp_init_db.cli.command('init_db')
 def init_db():
