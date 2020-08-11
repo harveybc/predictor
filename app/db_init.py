@@ -1,4 +1,10 @@
 from flask import Blueprint
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+
+
+app = Flask(__name__)
+db = SQLAlchemy()
 
 bp_init_db = Blueprint('init_db', __name__)
 
@@ -33,7 +39,8 @@ def init_db():
         click.echo("All tables dropped and recreated")
 
 
-
+# you MUST register the blueprint
+app.register_blueprint(bp_init_db)
 
 
     
