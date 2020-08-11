@@ -14,6 +14,7 @@ bp_init_db = Blueprint('init_db', __name__)
 app_config = config_dict['Debug']
 #conf = Config()
 app.config.from_object(app_config)
+print ("app.config = ",app_config)
 
 @bp_init_db.cli.command('init_db')
 def init_db():
