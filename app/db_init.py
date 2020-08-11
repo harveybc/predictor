@@ -6,15 +6,17 @@ from app.app import  create_db
 from config import config_dict
 
 app = Flask(__name__)
-#db = SQLAlchemy()
-create_db(app)
 
 bp_init_db = Blueprint('init_db', __name__)
 # TODO: make DEBUG/PRODUCTION MODE  parametrizable
 app_config = config_dict['Debug']
 #conf = Config()
 app.config.from_object(app_config)
-print ("app.config = ",app_config)
+#print ("app.config = ",app_config)
+#db = SQLAlchemy()
+
+db = create_db(app)
+
 
 @bp_init_db.cli.command('init_db')
 def init_db():
@@ -45,6 +47,7 @@ def init_db():
 
 # you MUST register the blueprint
 app.register_blueprint(bp_init_db)
+
 
 
     
