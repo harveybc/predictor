@@ -18,7 +18,7 @@ app.config.from_object(app_config)
 db = create_db(app)
 
 
-@bp_init_db.cli.command('init_db')
+@bp_init_db.cli.command('init')
 def init_db():
     """
     Initialize the database.
