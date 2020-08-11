@@ -3,12 +3,16 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import click
 from app.app import  create_db
+from config import config_dict
+
 
 app = Flask(__name__)
 #db = SQLAlchemy()
 create_db(app)
 
 bp_init_db = Blueprint('init_db', __name__)
+app_config = config_dict[get_config_mode.capitalize()]
+app.config.from_object(config)
 
 @bp_init_db.cli.command('init_db')
 def init_db():
