@@ -34,10 +34,10 @@ def init():
     else:
         raise SystemExit()
     if begin_reset:
+        from models.user import User
         print("Dropping database")
         db.drop_all()
         print("Creating database")
-        from models.user import User
         db.create_all()
         print("Seeding database")
         from models.user_seed import user_seed
