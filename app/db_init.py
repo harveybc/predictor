@@ -1,24 +1,10 @@
-import click
-from app.app import create_app, db
+from flask import Blueprint
 
+bp = Blueprint('init_db', __name__)
 
-# Create an app context for the database connection.
-app = create_app()
-db.app = app
-
-
-@click.group()
-def cli():
-    """Run db related tasks."""
-    pass
-
-
-@click.option(
-    "--safety-check/--no-safety-check",
-    default=True,
-    help="Confirm DB_URI before reset?",
-)
-def init(safety_check):
+@bp.cli.command('init_db')
+#@click.argument('name')
+def init_db():
     """
     Initialize the database.
 
@@ -49,4 +35,7 @@ def init(safety_check):
         click.echo("All tables dropped and recreated")
 
 
-cli.add_command(init)
+
+app.register_blueprint(bp)
+def init(safety_check):
+    
