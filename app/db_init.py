@@ -10,7 +10,7 @@ bp_init_db = Blueprint('init_db', __name__)
 
 @bp_init_db.cli.command('init_db')
 @click.option(
-    "--safety-check/--no-safety-check",
+    "--safety_check/--no-safety_check",
     default=True,
     help="Confirm DB_URI before reset?",
 )
