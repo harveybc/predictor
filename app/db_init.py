@@ -7,7 +7,7 @@ from config import config_dict
 
 app = Flask(__name__)
 
-bp_init_db = Blueprint('init', __name__)
+bp_init_db = Blueprint('db_init', __name__)
 # TODO: make DEBUG/PRODUCTION MODE  parametrizable
 app_config = config_dict['Debug']
 #conf = Config()
