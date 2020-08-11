@@ -18,8 +18,7 @@ def register_blueprints(app):
     for module_name in ('base', 'home'):
         module = import_module('app.{}.routes'.format(module_name))
         app.register_blueprint(module.blueprint)
-        from app.app import bp_init_db
-        app.register_blueprint(bp_init_db)
+        
 
 # If it is the first time the app is run, create the database and perform data seeding
 def configure_database(app):
