@@ -1,7 +1,7 @@
 from flask import Blueprint
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-import click
+
 
 app = Flask(__name__)
 db = SQLAlchemy()
@@ -9,11 +9,7 @@ db = SQLAlchemy()
 bp_init_db = Blueprint('init_db', __name__)
 
 @bp_init_db.cli.command('init_db')
-@click.option(
-    "--safety_check/--no-safety_check",
-    default=True,
-    help="Confirm DB_URI before reset?",
-)
+@click.argument('safety_check',   default=True, help="Confirm DB_URI before reset?")
 def init_db():
     """
     Initialize the database.
