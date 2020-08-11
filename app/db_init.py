@@ -14,11 +14,11 @@ bp_init_db = Blueprint('init_db', __name__)
 basedir    = os.path.abspath(os.path.dirname(__file__))
 
 # Set up the App SECRET_KEY
-SECRET_KEY = config('SECRET_KEY', default='S#perS3crEt_007')
+os.environ["SECRET_KEY"] = config('SECRET_KEY', default='S#perS3crEt_007')
 
 # This will create a file in <app> FOLDER
-SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
-SQLALCHEMY_TRACK_MODIFICATIONS = False
+os.environ["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
+os.environ["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 @bp_init_db.cli.command('init_db')
 def init_db():
