@@ -1,8 +1,8 @@
 from flask import Blueprint
 
-bp = Blueprint('init_db', __name__)
+bp_init_db = Blueprint('init_db', __name__)
 
-@bp.cli.command('init_db')
+@bp_init_db.cli.command('init_db')
 #@click.argument('name')
 def init_db():
     """
@@ -16,9 +16,7 @@ def init_db():
     if not safety_check:
         begin_reset = True
     else:
-        click.echo("Current DB URI:")
-        click.echo(app.config["CONFIG_VAR_FOR_DB_URI"])
-        response = input("Do you wish to continue? [Y/N]")
+        response = input("Warning: It will delete any existing data in the db. Do you wish to continue? [Y/N]")
         if response.upper() == "Y":
             begin_reset = True
         else:
@@ -36,6 +34,6 @@ def init_db():
 
 
 
-app.register_blueprint(bp)
-def init(safety_check):
+
+
     
