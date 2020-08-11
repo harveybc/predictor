@@ -18,18 +18,20 @@ def register_blueprints(app):
     for module_name in ('base', 'home'):
         module = import_module('app.{}.routes'.format(module_name))
         app.register_blueprint(module.blueprint)
+        from app.app import bp_init_db
+        app.register_blueprint(bp_init_db)
 
 # If it is the first time the app is run, create the database and perform data seeding
 def configure_database(app):
     print("Configuring database")
-    #@app.before_first_request
-    def initialize_database():
-        print("Creating database")
-        from models.user import User
-        db.create_all()
-        print("Seeding database")
-        from models.user_seed import user_seed
-        user_seed(app, db)
+#    #@app.before_first_request
+#    def initialize_database():
+#        print("Creating database")
+#        from models.user import User
+#        db.create_all()
+#        print("Seeding database")
+#        from models.user_seed import user_seed
+#        user_seed(app, db)
 
     @app.teardown_request
     def shutdown_session(exception=None):
