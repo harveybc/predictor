@@ -7,7 +7,7 @@ from config import config_dict
 
 app = Flask(__name__)
 
-bp_init_db = Blueprint('init_db', __name__)
+bp_init_db = Blueprint('init', __name__)
 # TODO: make DEBUG/PRODUCTION MODE  parametrizable
 app_config = config_dict['Debug']
 #conf = Config()
@@ -19,7 +19,7 @@ db = create_db(app)
 
 
 @bp_init_db.cli.command('init')
-def init_db():
+def init():
     """
     Initialize the database.
 
