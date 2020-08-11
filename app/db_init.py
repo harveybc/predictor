@@ -4,17 +4,14 @@ from flask_sqlalchemy import SQLAlchemy
 import click
 from app.app import  create_db
 from config import config_dict
-from decouple import config
-
-DEBUG = config('DEBUG', default=True)
 
 app = Flask(__name__)
 #db = SQLAlchemy()
 create_db(app)
 
 bp_init_db = Blueprint('init_db', __name__)
-get_config_mode = 'Debug' if DEBUG else 'Production'
-app_config = config_dict[get_config_mode.capitalize()]
+# TODO: make DEBUG/PRODUCTION MODE  parametrizable
+app_config = config_dict['DEBUG']
 app.config.from_object(config)
 
 @bp_init_db.cli.command('init_db')
