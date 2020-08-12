@@ -1,7 +1,7 @@
  
     
 from flask_login import UserMixin
-from sqlalchemy import Binary, Column, Integer, Float, String, Datetime, ForeignKey
+from sqlalchemy import Binary, Column, Integer, Float, String, DateTime, ForeignKey
 
 #from app import db, login_manager
 from flask_sqlalchemy import SQLAlchemy
