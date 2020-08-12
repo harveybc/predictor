@@ -1,7 +1,7 @@
  
     
 from flask_login import UserMixin
-from sqlalchemy import Binary, Column, Integer, String, ForeignKey
+from sqlalchemy import Binary, Column, Integer, String, Datetime, ForeignKey
 
 #from app import db, login_manager
 from flask_sqlalchemy import SQLAlchemy
@@ -24,6 +24,7 @@ class Process(db.Model):
     model_link = Column(String)
     training_data_link=Column(String)
     validation_data_link=Column(String)
+    created=Column(DateTime, default=datetime.datetime.utcnow)
     user_id=Column(Integer, ForeignKey('user.id'))
     
     def __init__(self, **kwargs):
