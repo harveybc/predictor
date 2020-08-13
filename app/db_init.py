@@ -57,7 +57,7 @@ def init():
         seed(app, db)
         
         click.echo("All tables dropped and recreated. ")
-        click.echo("If you want training and validation test data seeding, please execute the scripts/test_data_seed.bat from the visualizer's root directory. ")
+        click.echo("If you want training and validation test data seeding, please execute the scripts/test_data_seed.bat or scripts/test_data_seed.sh from the visualizer's root directory. ")
 
 
 # you MUST register the blueprint
