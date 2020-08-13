@@ -1,7 +1,5 @@
 # -*- encoding: utf-8 -*-
-"""
-Copyright (c) 2019 - present AppSeed.us
-"""
+
 
 from flask import jsonify, render_template, redirect, request, url_for
 from flask_login import (
@@ -11,10 +9,10 @@ from flask_login import (
     logout_user
 )
 
-from app import db, login_manager
+from app.app import db, login_manager
 from app.base import blueprint
 from app.base.forms import LoginForm, CreateAccountForm
-from app.base.models import User
+from models.user import User
 
 from app.base.util import verify_pass
 
