@@ -1,12 +1,12 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-source = feature_extractor
+source = visualizer
 # omit = bad_file.py
 
 [paths]
 source =
-    feature_extractor/
+    visualizer/
     */site-packages/
 
 [report]
