@@ -1,4 +1,4 @@
 echo "This Script is made to be executed from the visualizer's root directory."
 echo "Also requires that the database is already created with the migrate.bat script."
 echo "Warning: It will add test data to the training_progress, validation_plots and validation stats tables."
-type tests/data/data.sql | sqlite3 db.sqlite3
+sqlite3 db.sqlite3 ". read tests/data/data.sql"
