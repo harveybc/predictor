@@ -45,8 +45,10 @@ def init():
         print("Creating database")
         db.create_all()
         print("Seeding database")
-        from models.user_seed import user_seed
-        user_seed(app, db)
+        import models.seeds as seeds
+        seeds.user.seed(app, db)
+        seeds.process.seed(app, db)
+        
         click.echo("All tables dropped and recreated")
 
 
