@@ -44,12 +44,20 @@ def init():
         db.drop_all()
         print("Creating database")
         db.create_all()
-        print("Seeding database")
-        import models.seeds as seeds
-        seeds.user.seed(app, db)
-        seeds.process.seed(app, db)
+        print("Seeding database...")
+        from models.seeds.user import seed
+        seed(app, db)
+        print("    Default user test:pass created. Delete the test user at will.")
+        print("    Warning: Do not forget to delete the test user after creating a new user.")
         
-        click.echo("All tables dropped and recreated")
+        
+        from models.seeds.process import seed
+        print("    Two default processes named process0 and process1 were created. Delete them discretionally.")
+        
+        seed(app, db)
+        
+        click.echo("All tables dropped and recreated. ")
+        click.echo("If you want training and validation test data seeding, please execute the scripts/test_data_seed.bat from the visualizer's root directory. ")
 
 
 # you MUST register the blueprint
