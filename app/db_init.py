@@ -47,18 +47,17 @@ def init():
         print("Seeding database...")
         from models.seeds.user import seed
         seed(app, db)
-        print("    Default user test:pass created. Delete the test user at will.")
+        print("    Info:    Default user test:pass created. Delete the test user at will.")
         print("    Warning: Do not forget to delete the test user after creating a new user.")
         
         
         from models.seeds.process import seed
-        print("    Two default processes named process0 and process1 were created. Delete them discretionally.")
+        print("    Info:    Two default processes named process0 and process1 were created. Delete them discretionally.")
         
         seed(app, db)
         
-        click.echo("All tables dropped and recreated. ")
-        click.echo("If you want training and validation test data seeding, please execute the scripts\\test_data_seed.bat or scripts/test_data_seed.sh from the visualizer's root directory. ")
-
+        click.echo("Note: If you want training and validation test data seeding, please execute the scripts\\test_data_seed.bat or scripts/test_data_seed.sh from the visualizer's root directory. ")
+        click.echo("Migration Done. ")
 
 # you MUST register the blueprint
 app.register_blueprint(bp_init_db)
