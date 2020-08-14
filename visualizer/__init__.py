@@ -63,7 +63,6 @@ def create_app(test_config=None):
     vis_bp = visualizer_blueprint(plugin_folder)
     # register the blueprints
     app.register_blueprint(auth.bp)
-    app.register_blueprint(auth.bp)
     app.register_blueprint(vis_bp) 
 
     # add the / route pointing to the index endpoint
