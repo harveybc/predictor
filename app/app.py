@@ -72,6 +72,8 @@ def create_app(config):
     plugin_folder = fe.ep_output.template_path(p_config)
     # construct the blueprint with configurable plugin_folder
     vis_bp = visualizer_blueprint(plugin_folder)
+    app.register_blueprint(vis_bp)
+
     # register the blueprints
     register_blueprints(app)
     configure_database(app)
