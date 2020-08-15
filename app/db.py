@@ -13,6 +13,7 @@ def get_db():
     again.
     """
     if "db" not in g:
+        basedir = os.path.dirname()
         g.db = sqlite3.connect(
             os.path.join(basedir, 'db.sqlite3'), detect_types=sqlite3.PARSE_DECLTYPES
         )
