@@ -11,7 +11,7 @@ from flask import request
 from flask import url_for
 from werkzeug.exceptions import abort
 
-from visualizer.auth import login_required
+from flask_login import login_required
 from visualizer.db import get_db
 from flask import current_app
 
