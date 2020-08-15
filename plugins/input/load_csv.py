@@ -3,7 +3,7 @@
 This File contains the LoadCSV class plugin. 
 """
 
-from visualizer.plugin_base import PluginBase
+from app.plugin_base import PluginBase
 from numpy import genfromtxt
 from sys import exit
 
