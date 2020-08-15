@@ -3,7 +3,7 @@
 This File contains the StoreCSV class plugin. 
 """
 
-from visualizer.plugin_base import PluginBase
+from app.plugin_base import PluginBase
 from numpy import savetxt
 from sys import exit
 
