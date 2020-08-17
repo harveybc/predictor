@@ -16,9 +16,9 @@ from models.user import User
 
 from app.base.util import verify_pass
 
-@blueprint.route('/')
-def route_default():
-    return redirect(url_for('base_blueprint.login'))
+#@blueprint.route('/')
+#def route_default():
+#    return redirect(url_for('base_blueprint.login'))
 
 ## Login & Registration
 
@@ -46,6 +46,7 @@ def login():
     if not current_user.is_authenticated:
         return render_template( 'accounts/login.html',
                                 form=login_form)
+    #return redirect(url_for('visualizer.index'))
     return redirect(url_for('home_blueprint.index'))
 
 @blueprint.route('/register', methods=['GET', 'POST'])
