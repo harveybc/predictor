@@ -1,0 +1,546 @@
+{% extends "plugin_templates/dashboard/layouts/base.html" %}
+
+{% block title %} Dashboard {% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Tempusdominus Bootstrap 4 -->
+  <link rel="stylesheet" href="/static/assets/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+  <!-- iCheck -->
+  <link rel="stylesheet" href="/static/assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- JQVMap -->
+  <link rel="stylesheet" href="/static/assets/plugins/jqvmap/jqvmap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+  <!-- overlayScrollbars -->
+  <link rel="stylesheet" href="/static/assets/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+  <!-- Daterange picker -->
+  <link rel="stylesheet" href="/static/assets/plugins/daterangepicker/daterangepicker.css">
+  <!-- summernote -->
+  <link rel="stylesheet" href="/static/assets/plugins/summernote/summernote-bs4.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+  
+  <div class="content-wrapper">
+
+    <b>
+        Input Plugin</b>:{{ p_config['input_plugin'] }}, <b>Output Plugin</b>:{{ p_config['output_plugin'] }}
+
+ 
+
+   {% for pc in p_config['output_plugin_config']['dashboard']  %}
+     <article class="post">
+       <header>
+         <div>
+           <h1>{{ pc['title'] }}</h1>
+           <div class="about">{{ pc['table_name'] }} }}</div>
+         </div>
+       </header>
+       <p class="body">{{ pc['fields'] }}</p>
+       {% if g.user %}
+       <a class="action" href="{{ url_for('visualizer.create') }}">New</a>
+     {% endif %}
+     </article>
+     {% if not loop.last %}
+       <hr> 
+     {% endif %}
+   {% endfor %}
+
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+<!-- TODO -->            <h1 class="m-0 text-dark">Dashboard</h1>
+          </div><!-- /.col -->
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+<!-- TODO -->              <li class="breadcrumb-item active">Dashboard</li>
+            </ol>
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+          <div class="col-lg-3 col-6">
+            <!-- small box -->
+            <div class="small-box bg-info">
+              <div class="inner">
+<!-- TODO -->                <h3>P0: 0.0001</h3>
+
+<!-- TODO -->                <p>Best Training MSE</p>
+              </div>
+              <div class="icon">
+                <i class="ion ion-bag"></i>
+              </div>
+              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+          <!-- ./col -->
+          <div class="col-lg-3 col-6">
+            <!-- small box -->
+            <div class="small-box bg-success">
+              <div class="inner">
+<!-- TODO -->                <h3>P1: 0.001</h3>
+
+<!-- TODO -->                <p>Best Validation MSE</p>
+              </div>
+              <div class="icon">
+                <i class="ion ion-stats-bars"></i>
+              </div>
+<!-- TODO -->              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+          <!-- ./col -->
+          <div class="col-lg-3 col-6">
+            <!-- small box -->
+            <div class="small-box bg-warning">
+              <div class="inner">
+<!-- TODO -->                <h3>3</h3>
+
+<!-- TODO -->                <p>Number of Users</p>
+              </div>
+              <div class="icon">
+                <i class="ion ion-person-add"></i>
+              </div>
+<!-- TODO -->              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+          <!-- ./col -->
+          <div class="col-lg-3 col-6">
+            <!-- small box -->
+            <div class="small-box bg-danger">
+              <div class="inner">
+<!-- TODO -->                <h3>2</h3>
+
+<!-- TODO -->                <p>Number of Processes</p>
+              </div>
+              <div class="icon">
+                <i class="ion ion-pie-graph"></i>
+              </div>
+<!-- TODO -->              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+          <!-- ./col -->
+        </div>
+        <!-- /.row -->
+        <div class="row">
+            <div class="col-12">
+              <!-- interactive chart -->
+              <div class="card card-primary card-outline">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i class="far fa-chart-bar"></i>
+<!-- TODO -->                    Online Training MSE (Process:0)
+                  </h3>
+    
+                  <div class="card-tools">
+                    Real time
+                    <div class="btn-group" id="realtime" data-toggle="btn-toggle">
+                      <button type="button" class="btn btn-default btn-sm active" data-toggle="on">On</button>
+                      <button type="button" class="btn btn-default btn-sm" data-toggle="off">Off</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body">
+<!-- TODO -->                  <div id="interactive" style="height: 300px;"></div>
+                </div>
+                <!-- /.card-body-->
+              </div>
+              <!-- /.card -->
+    
+            </div>
+            <!-- /.col -->
+          </div>
+          <!-- /.row -->
+        <!-- Main row -->
+        <div class="row">
+          <!-- Left col -->
+          <section class="col-lg-7 connectedSortable">
+                 <!-- Line chart -->
+              <div class="card card-primary card-outline">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i class="far fa-chart-bar"></i>
+<!-- TODO -->                    Validation MSE (Process:1)
+                  </h3>
+    
+                  <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                      <i class="fas fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-tool" data-card-widget="remove">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body">
+<!-- TODO -->                  <div id="line-chart" style="height: 300px;"></div>
+                </div>
+                <!-- /.card-body-->
+              </div>
+              <!-- /.card -->
+          </section>
+          <!-- /.Left col -->
+          <!-- right col (We are only adding the ID to make the widgets sortable)-->
+          <section class="col-lg-5 connectedSortable">
+
+
+            <!-- TABLE: LATEST ORDERS -->
+            <div class="card">
+                <div class="card-header border-transparent">
+<!-- TODO -->                  <h3 class="card-title">List of Processes</h3>
+  
+                  <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                      <i class="fas fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-tool" data-card-widget="remove">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body p-0">
+                  <div class="table-responsive">
+                    <table class="table m-0">
+                      <thead>
+                      <tr>
+<!-- TODO -->                        <th>Process ID</th>
+<!-- TODO -->                        <th>MSE</th>
+<!-- TODO -->                        <th>Status</th>
+<!-- TODO -->                        <th>Last Update</th>
+                        
+                      </tr>
+                      </thead>
+                      <tbody>
+<!-- TODO RECURRENT-->                      <tr>
+                        <td><a href="pages/examples/invoice.html">OR9842</a></td>
+                        <td>Call of Duty IV</td>
+                        <td><span class="badge badge-success">Shipped</span></td>
+                        <td>
+                          <div class="sparkbar" data-color="#00a65a" data-height="20">90,80,90,-70,61,-83,63</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><a href="pages/examples/invoice.html">OR1848</a></td>
+                        <td>Samsung Smart TV</td>
+                        <td><span class="badge badge-warning">Pending</span></td>
+                        <td>
+                          <div class="sparkbar" data-color="#f39c12" data-height="20">90,80,-90,70,61,-83,68</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><a href="pages/examples/invoice.html">OR7429</a></td>
+                        <td>iPhone 6 Plus</td>
+                        <td><span class="badge badge-danger">Delivered</span></td>
+                        <td>
+                          <div class="sparkbar" data-color="#f56954" data-height="20">90,-80,90,70,-61,83,63</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><a href="pages/examples/invoice.html">OR7429</a></td>
+                        <td>Samsung Smart TV</td>
+                        <td><span class="badge badge-info">Processing</span></td>
+                        <td>
+                          <div class="sparkbar" data-color="#00c0ef" data-height="20">90,80,-90,70,-61,83,63</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><a href="pages/examples/invoice.html">OR1848</a></td>
+                        <td>Samsung Smart TV</td>
+                        <td><span class="badge badge-warning">Pending</span></td>
+                        <td>
+                          <div class="sparkbar" data-color="#f39c12" data-height="20">90,80,-90,70,61,-83,68</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><a href="pages/examples/invoice.html">OR7429</a></td>
+                        <td>iPhone 6 Plus</td>
+                        <td><span class="badge badge-danger">Delivered</span></td>
+                        <td>
+                          <div class="sparkbar" data-color="#f56954" data-height="20">90,-80,90,70,-61,83,63</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><a href="pages/examples/invoice.html">OR9842</a></td>
+                        <td>Call of Duty IV</td>
+                        <td><span class="badge badge-success">Shipped</span></td>
+                        <td>
+                          <div class="sparkbar" data-color="#00a65a" data-height="20">90,80,90,-70,61,-83,63</div>
+                        </td>
+                      </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <!-- /.table-responsive -->
+                </div>
+                <!-- /.card-body -->
+                <div class="card-footer clearfix">
+                  <a href="javascript:void(0)" class="btn btn-sm btn-info float-left">Create New Process</a>
+                  <a href="javascript:void(0)" class="btn btn-sm btn-secondary float-right">View All Processes</a>
+                </div>
+                <!-- /.card-footer -->
+              </div>
+              <!-- /.card -->
+          </section>
+          <!-- right col -->
+        </div>
+        <!-- /.row (main row) -->
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+  <!-- jQuery -->
+  <script src="/static/assets/plugins/jquery/jquery.min.js"></script>
+  <!-- jQuery UI 1.11.4 -->
+  <script src="/static/assets/plugins/jquery-ui/jquery-ui.min.js"></script>
+  <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+  <script>
+    $.widget.bridge('uibutton', $.ui.button)
+  </script>
+  <!-- Bootstrap 4 -->
+  <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- ChartJS -->
+  <script src="/static/assets/plugins/chart.js/Chart.min.js"></script>
+  <!-- Sparkline -->
+  <script src="/static/assets/plugins/sparklines/sparkline.js"></script>
+  <!-- JQVMap -->
+  <script src="/static/assets/plugins/jqvmap/jquery.vmap.min.js"></script>
+  <script src="/static/assets/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
+  <!-- jQuery Knob Chart -->
+  <script src="/static/assets/plugins/jquery-knob/jquery.knob.min.js"></script>
+  <!-- daterangepicker -->
+  <script src="/static/assets/plugins/moment/moment.min.js"></script>
+  <script src="/static/assets/plugins/daterangepicker/daterangepicker.js"></script>
+  <!-- Tempusdominus Bootstrap 4 -->
+  <script src="/static/assets/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+  <!-- Summernote -->
+  <script src="/static/assets/plugins/summernote/summernote-bs4.min.js"></script>
+  <!-- overlayScrollbars -->
+  <script src="/static/assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/static/assets/js/adminlte.js"></script>
+  <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+  <script src="/static/assets/js/pages/dashboard.js"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="/static/assets/js/demo.js"></script>
+  <!-- FLOT CHARTS -->
+  <script src="/static/assets/plugins/flot/jquery.flot.js"></script>
+  <!-- FLOT RESIZE PLUGIN - allows the chart to redraw when the window is resized -->
+  <script src="/static/assets/plugins/flot-old/jquery.flot.resize.min.js"></script>
+  <script>
+    $(function () {
+      /*
+      * Flot Interactive Chart
+      * -----------------------
+      */
+      // We use an inline data source in the example, usually data would
+      // be fetched from a server
+      var data        = [],
+          totalPoints = 100
+
+      function getRandomData() {
+
+        if (data.length > 0) {
+          data = data.slice(1)
+        }
+
+        // Do a random walk
+        while (data.length < totalPoints) {
+
+          var prev = data.length > 0 ? data[data.length - 1] : 50,
+              y    = prev + Math.random() * 10 - 5
+
+          if (y < 0) {
+            y = 0
+          } else if (y > 100) {
+            y = 100
+          }
+
+          data.push(y)
+        }
+
+        // Zip the generated y values with the x values
+        var res = []
+        for (var i = 0; i < data.length; ++i) {
+          res.push([i, data[i]])
+        }
+
+        return res
+      }
+
+      var interactive_plot = $.plot('#interactive', [
+          {
+            data: getRandomData(),
+          }
+        ],
+        {
+          grid: {
+            borderColor: '#f3f3f3',
+            borderWidth: 1,
+            tickColor: '#f3f3f3'
+          },
+          series: {
+            color: '#3c8dbc',
+            lines: {
+              lineWidth: 2,
+              show: true,
+              fill: true,
+            },
+          },
+          yaxis: {
+            min: 0,
+            max: 100,
+            show: true
+          },
+          xaxis: {
+            show: true
+          }
+        }
+      )
+
+      var updateInterval = 500 //Fetch data ever x milliseconds
+      var realtime       = 'on' //If == to on then fetch data every x seconds. else stop fetching
+      function update() {
+
+        interactive_plot.setData([getRandomData()])
+
+        // Since the axes don't change, we don't need to call plot.setupGrid()
+        interactive_plot.draw()
+        if (realtime === 'on') {
+          setTimeout(update, updateInterval)
+        }
+      }
+
+      //INITIALIZE REALTIME DATA FETCHING
+      if (realtime === 'on') {
+        update()
+      }
+      //REALTIME TOGGLE
+      $('#realtime .btn').click(function () {
+        if ($(this).data('toggle') === 'on') {
+          realtime = 'on'
+        }
+        else {
+          realtime = 'off'
+        }
+        update()
+      })
+      /*
+      * END INTERACTIVE CHART
+      */
+      
+      /*
+      * LINE CHART
+      * ----------
+      */
+      //LINE randomly generated data
+
+      var sin = [],
+          cos = []
+      for (var i = 0; i < 14; i += 0.5) {
+        sin.push([i, Math.sin(i)])
+        cos.push([i, Math.cos(i)])
+      }
+      var line_data1 = {
+        data : sin,
+        color: '#3c8dbc'
+      }
+      var line_data2 = {
+        data : cos,
+        color: '#00c0ef'
+      }
+      $.plot('#line-chart', [line_data1, line_data2], {
+        grid  : {
+          hoverable  : true,
+          borderColor: '#f3f3f3',
+          borderWidth: 1,
+          tickColor  : '#f3f3f3'
+        },
+        series: {
+          shadowSize: 0,
+          lines     : {
+            show: true
+          },
+          points    : {
+            show: true
+          }
+        },
+        lines : {
+          fill : false,
+          color: ['#3c8dbc', '#f56954']
+        },
+        yaxis : {
+          show: true
+        },
+        xaxis : {
+          show: true
+        }
+      })
+      //Initialize tooltip on hover
+      $('<div class="tooltip-inner" id="line-chart-tooltip"></div>').css({
+        position: 'absolute',
+        display : 'none',
+        opacity : 0.8
+      }).appendTo('body')
+      $('#line-chart').bind('plothover', function (event, pos, item) {
+
+        if (item) {
+          var x = item.datapoint[0].toFixed(2),
+              y = item.datapoint[1].toFixed(2)
+
+          $('#line-chart-tooltip').html(item.series.label + ' of ' + x + ' = ' + y)
+            .css({
+              top : item.pageY + 5,
+              left: item.pageX + 5
+            })
+            .fadeIn(200)
+        } else {
+          $('#line-chart-tooltip').hide()
+        }
+
+      })
+      /* END LINE CHART */
+
+    })
+    /*
+    * Custom Label formatter
+    * ----------------------
+    */
+    function labelFormatter(label, series) {
+      return '<div style="font-size:13px; text-align:center; padding:2px; color: #fff; font-weight: 600;">'
+        + label
+        + '<br>'
+        + Math.round(series.percent) + '%</div>'
+    }
+    </script>
+
+{% endblock javascripts %}
+

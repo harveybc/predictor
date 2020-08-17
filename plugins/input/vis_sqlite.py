@@ -3,11 +3,11 @@
 This File contains the LoadCSV class plugin. 
 """
 
-from visualizer.plugin_base import PluginBase
+from app.plugin_base import PluginBase
 from numpy import genfromtxt
 from sys import exit
 from flask import current_app
-from visualizer.db import get_db
+from app.db import get_db
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
@@ -44,7 +44,7 @@ class VisSqlite(PluginBase):
                 "SELECT " + fields +
                 " FROM " + table['table_name'] +
                 " t JOIN process p ON t.process_id = " + str(process_id) +
-                " ORDER BY created DESC"
+                " ORDER BY t.created DESC"
             ).fetchall()
             self.input_ds.append(query)
         return self.input_ds
