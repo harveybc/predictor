@@ -34,7 +34,7 @@
             {
                 "title": "Dashboard",
                 "box_0_title": "Best Training MSE",
-                "box_1_title": "Best VAlidation MSE",
+                "box_1_title": "Best Validation MSE",
                 "box_2_title": "Number of Users",
                 "box_3_title": "Number of Processes",
                 "rt_plot": {
