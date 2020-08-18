@@ -35,35 +35,14 @@
   
   <div class="content-wrapper">
 
-    <b>
-        Input Plugin</b>:{{ p_config['input_plugin'] }}, <b>Output Plugin</b>:{{ p_config['output_plugin'] }}
-
- 
-
-   {% for pc in p_config['output_plugin_config']['dashboard']  %}
-     <article class="post">
-       <header>
-         <div>
-           <h1>{{ pc['title'] }}</h1>
-           <div class="about">{{ pc['table_name'] }} }}</div>
-         </div>
-       </header>
-       <p class="body">{{ pc['fields'] }}</p>
-       {% if g.user %}
-       <a class="action" href="{{ url_for('visualizer.create') }}">New</a>
-     {% endif %}
-     </article>
-     {% if not loop.last %}
-       <hr> 
-     {% endif %}
-   {% endfor %}
+    <b>Input Plugin</b>:{{ p_config['input_plugin'] }}, <b>Output Plugin</b>:{{ p_config['output_plugin'] }}
 
     <!-- Content Header (Page header) -->
     <div class="content-header">
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-<!-- TODO -->            <h1 class="m-0 text-dark">Dashboard</h1>
+<!-- TODO -->            <h1 class="m-0 text-dark">{{ p_config['output_plugin_config']['dashboard']['title'] }}</h1>
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
