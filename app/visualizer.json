@@ -46,6 +46,7 @@
                     "height": "300px"
                 },
                 "process_list":{
+                    "title": "List of Processes",
                     "col_0_title": "Process ID",
                     "col_1_title": "MSE",
                     "col_2_title": "Status",

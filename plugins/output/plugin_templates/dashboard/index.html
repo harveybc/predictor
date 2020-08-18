@@ -74,7 +74,7 @@
               <div class="inner">
 <!-- TODO -->                <h3>P1: 0.001</h3>
 
-<!-- TODO -->                <p>{{ p_config['output_plugin_config']['dashboard']['box_1_title'] }}</p>
+                <p>{{ p_config['output_plugin_config']['dashboard']['box_1_title'] }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-stats-bars"></i>
@@ -89,7 +89,7 @@
               <div class="inner">
 <!-- TODO -->                <h3>3</h3>
 
-<!-- TODO -->                <p>Number of Users</p>
+                <p>{{ p_config['output_plugin_config']['dashboard']['box_2_title'] }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-person-add"></i>
@@ -104,7 +104,7 @@
               <div class="inner">
 <!-- TODO -->                <h3>2</h3>
 
-<!-- TODO -->                <p>Number of Processes</p>
+                <p>{{ p_config['output_plugin_config']['dashboard']['box_3_title'] }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-pie-graph"></i>
@@ -122,7 +122,7 @@
                 <div class="card-header">
                   <h3 class="card-title">
                     <i class="far fa-chart-bar"></i>
-<!-- TODO -->                    Online Training MSE (Process:0)
+                    {{ p_config['output_plugin_config']['dashboard']['rt_plot']['title'] }} (Process:0)
                   </h3>
     
                   <div class="card-tools">
@@ -134,7 +134,7 @@
                   </div>
                 </div>
                 <div class="card-body">
-<!-- TODO -->                  <div id="interactive" style="height: 300px;"></div>
+                  <div id="interactive" style="height: {{ p_config['output_plugin_config']['dashboard']['rt_plot']['height'] }};"></div>
                 </div>
                 <!-- /.card-body-->
               </div>
@@ -153,7 +153,7 @@
                 <div class="card-header">
                   <h3 class="card-title">
                     <i class="far fa-chart-bar"></i>
-<!-- TODO -->                    Validation MSE (Process:1)
+                    {{ p_config['output_plugin_config']['dashboard']['val_plot']['title'] }} (Process:1)
                   </h3>
     
                   <div class="card-tools">
@@ -166,7 +166,7 @@
                   </div>
                 </div>
                 <div class="card-body">
-<!-- TODO -->                  <div id="line-chart" style="height: 300px;"></div>
+                  <div id="line-chart" style="height: {{ p_config['output_plugin_config']['dashboard']['val_plot']['height'] }};"></div>
                 </div>
                 <!-- /.card-body-->
               </div>
@@ -180,7 +180,7 @@
             <!-- TABLE: LATEST ORDERS -->
             <div class="card">
                 <div class="card-header border-transparent">
-<!-- TODO -->                  <h3 class="card-title">List of Processes</h3>
+                  <h3 class="card-title">{{ p_config['output_plugin_config']['dashboard']['process_list']['title'] }}</h3>
   
                   <div class="card-tools">
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -197,11 +197,10 @@
                     <table class="table m-0">
                       <thead>
                       <tr>
-<!-- TODO -->                        <th>Process ID</th>
-<!-- TODO -->                        <th>MSE</th>
-<!-- TODO -->                        <th>Status</th>
-<!-- TODO -->                        <th>Last Update</th>
-                        
+                        <th>{{ p_config['output_plugin_config']['dashboard']['process_list']['col_0_title'] }}</th>
+                        <th>{{ p_config['output_plugin_config']['dashboard']['process_list']['col_1_title'] }}</th>
+                        <th>{{ p_config['output_plugin_config']['dashboard']['process_list']['col_2_title'] }}</th>
+                        <th>{{ p_config['output_plugin_config']['dashboard']['process_list']['col_3_title'] }}</th>
                       </tr>
                       </thead>
                       <tbody>
