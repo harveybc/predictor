@@ -31,7 +31,7 @@
 
 {% endblock stylesheets %}
 
-  
+{% block contents %}  
   <div class="content-wrapper">
 
     <!-- Main content -->
@@ -270,7 +270,7 @@
 
   </div>
   <b>Input Plugin</b>:{{ p_config['input_plugin'] }}, <b>Output Plugin</b>:{{ p_config['output_plugin'] }}
-
+  {% endblock contents %}
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
