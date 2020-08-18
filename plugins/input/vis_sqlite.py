@@ -49,3 +49,16 @@ class VisSqlite(PluginBase):
             self.input_ds.append(query)
         return self.input_ds
         
+    def get_max(self, p_config, user_id, table, field ):
+        """load the data for the mse plot for the last training process, also the last validation plot and a list of validation stats."""
+        db = get_db()
+        self.input_ds = []
+        result = db.execute(
+            "SELECT " + fields +
+            " FROM " + table['table_name'] +
+            " t JOIN process p ON t.process_id = " + str(process_id) +
+            " ORDER BY t.created DESC"
+        ).fetchall()
+        
+        return result
+        
