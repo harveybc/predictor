@@ -33,9 +33,25 @@
         "dashboard": 
             {
                 "title": "Dashboard",
-                "fields": [
-                    "mse"
-                ]
+                "box_0_title": "Best Training MSE",
+                "box_1_title": "Best VAlidation MSE",
+                "box_2_title": "Number of Users",
+                "box_3_title": "Number of Processes",
+                "rt_plot": {
+                    "title": "Online Training MSE",
+                    "height": "300px"
+                },
+                "val_plot": {
+                    "title": "Validation MSE",
+                    "height": "300px"
+                },
+                "process_list":{
+                    "col_0_title": "Process ID",
+                    "col_1_title": "MSE",
+                    "col_2_title": "Status",
+                    "col_3_title": "Last Update"
+
+                }
             },
         "views": [
             {
