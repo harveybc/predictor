@@ -35,8 +35,6 @@
   
   <div class="content-wrapper">
 
-    <b>Input Plugin</b>:{{ p_config['input_plugin'] }}, <b>Output Plugin</b>:{{ p_config['output_plugin'] }}
-
     <!-- Content Header (Page header) -->
     <div class="content-header">
       <div class="container-fluid">
@@ -47,7 +45,6 @@
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
               <li class="breadcrumb-item"><a href="#">Home</a></li>
-<!-- TODO -->              <li class="breadcrumb-item active">Dashboard</li>
             </ol>
           </div><!-- /.col -->
         </div><!-- /.row -->
@@ -290,7 +287,7 @@
     <!-- /.content -->
 
   </div>
-
+  <b>Input Plugin</b>:{{ p_config['input_plugin'] }}, <b>Output Plugin</b>:{{ p_config['output_plugin'] }}
 {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
