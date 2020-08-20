@@ -50,7 +50,7 @@ class VisSqlite(PluginBase):
         return self.input_ds
         
     def get_max(self, p_config, user_id, table, field ):
-        """load the data for the mse plot for the last training process, also the last validation plot and a list of validation stats."""
+        """Load the maximum of the selected field belonging to the user_id."""
         db = get_db()
         self.input_ds = []
         result = db.execute(
