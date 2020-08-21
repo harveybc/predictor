@@ -49,17 +49,25 @@ class VisSqlite(PluginBase):
             self.input_ds.append(query)
         return self.input_ds
         
-    def get_max(self, user_id, table, field ):
+    def get_user_id(self, username):
+        """Search for the user_d, having the username """
+        db = get_db()
+        result = db.execute(
+            "SELECT id FROM user WHERE username="+username
+        ).fetchall()        
+        return result[0]
+
+
+    def get_max(self, username, table, field ):
         """Load the maximum of the selected field belonging to the user_id."""
         db = get_db()
-        self.input_ds = []
+        user_id = self.get_user_id(username)
         result = db.execute(
             "SELECT t." + field + 
             " FROM " + table + " t, process p, user u"
             " WHERE t.process_id = p.id" +
             " AND p.user_id = "+ str(user_id) + 
             " ORDER BY t.field DESC LIMIT 1"
-        ).fetchall()
-        
+        ).fetchall()        
         return result
         
