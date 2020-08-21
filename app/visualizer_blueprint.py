@@ -12,6 +12,7 @@ from flask import url_for
 from werkzeug.exceptions import abort
 
 from flask_login import login_required
+from flask_login import current_user
 from app.db import get_db
 from flask import current_app
 
@@ -26,8 +27,13 @@ def visualizer_blueprint(plugin_folder):
     def index():
         # read the data to be visualized using the using the Feature extractor instance, preinitialized in __init__.py with input and output plugins entry points.
         # TODO: replace 0 in vis_data by process_id, obtained as the first process_id belonging to the current user.    
-        vis_data = current_app.config['FE'].ep_input.load_data(current_app.config['P_CONFIG'], 0)
-        return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], vis_data =  vis_data)
+        # vis_data = current_app.config['FE'].ep_input.load_data(current_app.config['P_CONFIG'], 0)
+        box= []
+        print("user_id = ", current_user)
+        box.append(
+            current_app.config['FE'].ep_input.get_max(current_user, "training_progress", "mse")
+        )
+        return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box)
 
 
     def get_post(id, check_author=True):
