@@ -49,7 +49,7 @@ class VisSqlite(PluginBase):
             self.input_ds.append(query)
         return self.input_ds
         
-    def get_max(self, p_config, user_id, table, field ):
+    def get_max(self, user_id, table, field ):
         """Load the maximum of the selected field belonging to the user_id."""
         db = get_db()
         self.input_ds = []
