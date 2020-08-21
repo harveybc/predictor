@@ -58,10 +58,10 @@ class VisSqlite(PluginBase):
         return result[0]
 
 
-    def get_max(self, username, table, field ):
+    def get_max(self, user_id, table, field ):
         """Load the maximum of the selected field belonging to the user_id."""
         db = get_db()
-        user_id = self.get_user_id(username)
+        #user_id = self.get_user_id(username)
         result = db.execute(
             "SELECT t." + field + 
             " FROM " + table + " t, process p, user u"

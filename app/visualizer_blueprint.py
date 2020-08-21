@@ -29,7 +29,7 @@ def visualizer_blueprint(plugin_folder):
         # TODO: replace 0 in vis_data by process_id, obtained as the first process_id belonging to the current user.    
         # vis_data = current_app.config['FE'].ep_input.load_data(current_app.config['P_CONFIG'], 0)
         box= []
-        print("user_id = ", current_user)
+        print("user_id = ", current_user.id)
         box.append(
             current_app.config['FE'].ep_input.get_max(current_user, "training_progress", "mse")
         )
