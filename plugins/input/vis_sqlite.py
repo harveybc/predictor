@@ -66,8 +66,8 @@ class VisSqlite(PluginBase):
             "SELECT t." + field + 
             " FROM " + table + " t, process p, user u"
             " WHERE t.process_id = p.id" +
-            " AND p.user_id = "+ str(user_id) + 
-            " ORDER BY t.field DESC LIMIT 1"
+            " AND p.user_id = " + str(user_id) + 
+            " ORDER BY t." + field + " DESC LIMIT 1"
         ).fetchall()        
         return result
         
