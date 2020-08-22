@@ -33,6 +33,7 @@ def visualizer_blueprint(plugin_folder):
         box.append(
             current_app.config['FE'].ep_input.get_max(current_user.id, "training_progress", "mse")
         )
+        print("box=", box)
         return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box)
 
 
