@@ -74,6 +74,6 @@ class VisSqlite(PluginBase):
             " AND p.user_id = " + str(user_id) + 
             " ORDER BY t." + field + " DESC LIMIT 1"
         ).fetchone()
-        result = self.row2dict(row)        
+        result = dict(row)        
         return result
         
