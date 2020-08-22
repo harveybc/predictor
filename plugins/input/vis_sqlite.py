@@ -57,7 +57,7 @@ class VisSqlite(PluginBase):
         ).fetchall()        
         return result[0]
 
-    def row2dict(row):
+    def row2dict(self,row):
         d = {}
         for column in row.__table__.columns:
             d[column.name] = str(getattr(row, column.name))
@@ -74,6 +74,6 @@ class VisSqlite(PluginBase):
             " AND p.user_id = " + str(user_id) + 
             " ORDER BY t." + field + " DESC LIMIT 1"
         ).fetchone()
-        result = row2dict(row)        
+        result = self.row2dict(row)        
         return result
         
