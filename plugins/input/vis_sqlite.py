@@ -57,17 +57,23 @@ class VisSqlite(PluginBase):
         ).fetchall()        
         return result[0]
 
+    def row2dict(row):
+        d = {}
+        for column in row.__table__.columns:
+            d[column.name] = str(getattr(row, column.name))
+        return d
 
     def get_max(self, user_id, table, field ):
         """Load the maximum of the selected field belonging to the user_id."""
         db = get_db()
         #user_id = self.get_user_id(username)
-        result = db.execute(
+        row = db.execute(
             "SELECT t." + field + 
             " FROM " + table + " t, process p, user u"
             " WHERE t.process_id = p.id" +
             " AND p.user_id = " + str(user_id) + 
             " ORDER BY t." + field + " DESC LIMIT 1"
-        ).fetchone()        
+        ).fetchone()
+        result = row2dict(row)        
         return result
         
