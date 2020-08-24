@@ -76,4 +76,14 @@ class VisSqlite(PluginBase):
         ).fetchone()
         result = dict(row)        
         return result
+
+    def get_count(self, table):
+        """Load the maximum of the selected field belonging to the user_id."""
+        db = get_db()
+        #user_id = self.get_user_id(username)
+        row = db.execute(
+            "SELECT COUNT(id) FROM " + table
+        ).fetchone()
+        result = dict(row)        
+        return result
         
