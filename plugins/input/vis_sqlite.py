@@ -68,7 +68,7 @@ class VisSqlite(PluginBase):
         db = get_db()
         #user_id = self.get_user_id(username)
         row = db.execute(
-            "SELECT t." + field + 
+            "SELECT t." + field + ", p.id"
             " FROM " + table + " t, process p, user u"
             " WHERE t.process_id = p.id" +
             " AND p.user_id = " + str(user_id) + 
