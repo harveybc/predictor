@@ -441,20 +441,20 @@
       //LINE randomly generated data
 
 
-/*
+
       var sin = [],
           cos = []
       for (var i = 0; i < 14; i += 0.5) {
         sin.push([i, Math.sin(i)])
         cos.push([i, Math.cos(i)])
       }
-*/
+
       var line_data1 = {
-        data : {{ validation_plot['original']|tojson }},
+        data : sin,//{{ validation_plot['original']|tojson }},
         color: '#3c8dbc'
       }
       var line_data2 = {
-        data : {{ validation_plot['predicted']|tojson }},
+        data : cos,//{{ validation_plot['predicted']|tojson }},
         color: '#00c0ef'
       }
       $.plot('#line-chart', [line_data1, line_data2], {
