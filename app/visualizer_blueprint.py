@@ -35,11 +35,11 @@ def visualizer_blueprint(plugin_folder):
         box.append(current_app.config['FE'].ep_input.get_count("user"))
         box.append(current_app.config['FE'].ep_input.get_count("process"))
         #TODO: Usar campo y tabla configurable desde JSON para graficar
+        val_plot = current_app.config['FE'].ep_input.validation_plot("validation_plots", "original","predicted", box[0]['id'] )
         tr_data = current_app.config['FE'].ep_input.training_data("trainingprogress", "mse")
         
-        val_data = current_app.config['FE'].ep_input.validation_plot("validation_stats", "mse")
         # "box=", box[0]) 
-        return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box, val_data = val_data)
+        return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box, val_plot = val_plot)
 
 
     def get_post(id, check_author=True):
