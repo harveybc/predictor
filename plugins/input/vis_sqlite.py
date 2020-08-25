@@ -97,8 +97,8 @@ class VisSqlite(PluginBase):
             " FROM " + table + 
             " WHERE process_id = " + str(process_id)
         ).fetchall()
-        result = dict(rows)  
+        #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))      
-        #result = [r for r, in rows]
+        result = [r for r, in rows]
         return result
         
