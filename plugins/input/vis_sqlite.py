@@ -58,13 +58,14 @@ class VisSqlite(PluginBase):
         return result[0]
 
     def row2dict(self,row):
+        """ Convert a sql query result into a dict object """
         d = {}
         for column in row.__table__.columns:
             d[column.name] = str(getattr(row, column.name))
         return d
 
     def get_max(self, user_id, table, field ):
-        """Load the maximum of the selected field belonging to the user_id."""
+        """Returns the maximum of the selected field belonging to the user_id from the specified table."""
         db = get_db()
         #user_id = self.get_user_id(username)
         row = db.execute(
@@ -78,11 +79,23 @@ class VisSqlite(PluginBase):
         return result
 
     def get_count(self, table):
-        """Load the maximum of the selected field belonging to the user_id."""
+        """Returns the count of rows in the specified table. """
         db = get_db()
         #user_id = self.get_user_id(username)
         row = db.execute(
             "SELECT COUNT(id) FROM " + table
+        ).fetchone()
+        result = dict(row)        
+        return result
+
+    def validation_plot(self, table, original_field, predicted_field, process_id):
+        """Returns the data to be plotted in a validation plot with existing predicted and original data. """
+        db = get_db()
+        #user_id = self.get_user_id(username)
+        row = db.execute(
+            "SELECT " + original_field + ", " + predicted_field +
+            " FROM " + table + 
+            " WHERE process_id = " + process_id 
         ).fetchone()
         result = dict(row)        
         return result
