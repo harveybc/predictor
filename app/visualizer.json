@@ -43,7 +43,9 @@
                 },
                 "val_plot": {
                     "title": "Validation MSE",
-                    "height": "300px"
+                    "height": "300px",
+                    "max_points": "500",
+                    "use_latest": true
                 },
                 "process_list":{
                     "title": "List of Processes",
