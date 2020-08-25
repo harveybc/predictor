@@ -441,20 +441,20 @@
       //LINE randomly generated data
 
 
-
+/*
       var sin = [],
           cos = []
       for (var i = 0; i < 14; i += 0.5) {
         sin.push([i, Math.sin(i)])
         cos.push([i, Math.cos(i)])
       }
-
+*/
       var line_data1 = {
-        data : sin,//{{ validation_plot['original'] }},
+        data : {{ v_original }},
         color: '#3c8dbc'
       }
       var line_data2 = {
-        data : cos,//{{ validation_plot['predicted'] }},
+        data : {{ v_predicted }},
         color: '#00c0ef'
       }
       $.plot('#line-chart', [line_data1, line_data2], {
