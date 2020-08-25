@@ -451,12 +451,21 @@
         cos.push([i, Math.cos(i)])
       }
 */
+      var   v_original = {{ v_original|tojson }},
+            v_predicted = {{ v_predicted|tojson }}
+
+      var original = [],
+          predicted = []
+      for (var i = 0; i < v_original.length; i++) {
+        original.push([i, v_original[i]])
+        original.push([i, v_predicted[i]])
+      }
       var line_data1 = {
-        data : {{ v_original|tojson }},
+        data : original,
         color: '#3c8dbc'
       }
       var line_data2 = {
-        data : {{ v_predicted|tojson }},
+        data : predicted,
         color: '#00c0ef'
       }
       $.plot('#line-chart', [line_data1, line_data2], {
