@@ -84,11 +84,11 @@ class VisSqlite(PluginBase):
         #user_id = self.get_user_id(username)
         row = db.execute(
             "SELECT COUNT(id) FROM " + table
-        ).fetchone()
+        ).fetchone() 
         result = dict(row)        
         return result
 
-    def validation_plot(self, table, original_field, predicted_field, process_id):
+    def get_column(self, table, original_field, predicted_field, process_id):
         """Returns the data to be plotted in a validation plot with existing predicted and original data. """
         db = get_db()
         #user_id = self.get_user_id(username)
