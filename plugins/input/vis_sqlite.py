@@ -92,11 +92,13 @@ class VisSqlite(PluginBase):
         """Returns the data to be plotted in a validation plot with existing predicted and original data. """
         db = get_db()
         #user_id = self.get_user_id(username)
-        row = db.execute(
+        rows = db.execute(
             "SELECT " + original_field + ", " + predicted_field +
             " FROM " + table + 
             " WHERE process_id = " + str(process_id)
         ).fetchall()
-        result = dict(row)        
+        # result = dict(row)  
+        #row = dict(zip(row.keys(), row))      
+        result = [r for r, in rows]
         return result
         
