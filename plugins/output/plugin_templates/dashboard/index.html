@@ -456,18 +456,43 @@
 
       var original = [],
           predicted = []
-      for (var i = 0; i < v_original.length; i++) {
+
+      var max_points = {{ p_config['output_plugin_config']['dashboard']['val_plot']['max_points'] }}
+      var use_latest = {{ p_config['output_plugin_config']['dashboard']['val_plot']['use_latest'] }}
+
+      // setup the first and the last index of the arrays to be plotted
+      var  first=0, last=max_points
+      if (last>(v_original.length)) {
+          last=v_original.length
+      }
+
+      // TODO: Posible error por mal cálculo del first
+      if (use_latest){
+        last = v_original.length
+        first = last - max_points
+        if (first<0) {
+            first=0
+        }
+      }
+
+
+
+      // prepare plotted arrays    
+      for (var i = first; i < last; i++) {
         original.push([i, v_original[i]])
         original.push([i, v_predicted[i]])
       }
+
       var line_data1 = {
         data : original,
         color: '#3c8dbc'
       }
+
       var line_data2 = {
         data : predicted,
         color: '#00c0ef'
       }
+
       $.plot('#line-chart', [line_data1, line_data2], {
         grid  : {
           hoverable  : true,
