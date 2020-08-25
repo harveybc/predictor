@@ -96,7 +96,7 @@ class VisSqlite(PluginBase):
             "SELECT " + original_field + ", " + predicted_field +
             " FROM " + table + 
             " WHERE process_id = " + str(process_id)
-        ).fetchone()
+        ).fetchall()
         result = dict(row)        
         return result
         
