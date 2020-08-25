@@ -450,11 +450,11 @@
       }
 
       var line_data1 = {
-        data : sin,//{{ validation_plot['original']|tojson }},
+        data : sin,//{{ validation_plot['original'] }},
         color: '#3c8dbc'
       }
       var line_data2 = {
-        data : cos,//{{ validation_plot['predicted']|tojson }},
+        data : cos,//{{ validation_plot['predicted'] }},
         color: '#00c0ef'
       }
       $.plot('#line-chart', [line_data1, line_data2], {
