@@ -88,17 +88,17 @@ class VisSqlite(PluginBase):
         result = dict(row)        
         return result
 
-    def get_column(self, table, original_field, predicted_field, process_id):
-        """Returns the data to be plotted in a validation plot with existing predicted and original data. """
+    def get_column_by_pid(self, table, column, process_id):
+        """Returns a column from a table filtered by process_id column. """
         db = get_db()
         #user_id = self.get_user_id(username)
         rows = db.execute(
-            "SELECT " + original_field + ", " + predicted_field +
+            "SELECT " + column +
             " FROM " + table + 
             " WHERE process_id = " + str(process_id)
         ).fetchall()
-        # result = dict(row)  
-        #row = dict(zip(row.keys(), row))      
-        result = [r for r, in rows]
+        result = dict(rows)  
+        #rows = dict(zip(rows.keys(), rows))      
+        #result = [r for r, in rows]
         return result
         
