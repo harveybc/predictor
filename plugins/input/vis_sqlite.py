@@ -95,7 +95,7 @@ class VisSqlite(PluginBase):
         row = db.execute(
             "SELECT " + original_field + ", " + predicted_field +
             " FROM " + table + 
-            " WHERE process_id = " + process_id 
+            " WHERE process_id = " + str(process_id)
         ).fetchone()
         result = dict(row)        
         return result
