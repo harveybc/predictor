@@ -452,11 +452,11 @@
       }
 */
       var line_data1 = {
-        data : {{ v_original|to_json }},
+        data : {{ v_original|tojson }},
         color: '#3c8dbc'
       }
       var line_data2 = {
-        data : {{ v_predicted|to_json }},
+        data : {{ v_predicted|tojson }},
         color: '#00c0ef'
       }
       $.plot('#line-chart', [line_data1, line_data2], {
