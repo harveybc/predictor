@@ -101,4 +101,18 @@ class VisSqlite(PluginBase):
         #rows = dict(zip(rows.keys(), rows))      
         result = [r for r, in rows]
         return result
+# TODO: COMPLETAR 
+    def processes_by_uid(self, table, user_id):
+        """Returns a column from a table filtered by process_id column. """
+        db = get_db()
+        #user_id = self.get_user_id(username)
+        rows = db.execute(
+            "SELECT p.id, tp.mse, vp.mse, tp.created, vs.created, " 
+            " FROM process p, training_progress tp, validation_stats vs"  
+            " WHERE id = " + str(process_id)
+        ).fetchall()
+        #result = dict(rows)  
+        #rows = dict(zip(rows.keys(), rows))      
+        result = [r for r, in rows]
+        return result
         
