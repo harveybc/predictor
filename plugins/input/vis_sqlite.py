@@ -115,7 +115,7 @@ class VisSqlite(PluginBase):
             " GROUP BY tp.process_id"
 
         ).fetchall()
-        result['rows'] = (r.__dict__ for r, in rows]
+        result['rows'] = [r.__dict__ for r, in rows]
 
         #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))      
