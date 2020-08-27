@@ -37,6 +37,7 @@ def visualizer_blueprint(plugin_folder):
         #TODO: Usar campo y tabla configurable desde JSON para graficar
         v_original = current_app.config['FE'].ep_input.get_column_by_pid("validation_plots", "original", box[0]['id'] )
         v_predicted = current_app.config['FE'].ep_input.get_column_by_pid("validation_plots", "predicted", box[0]['id'] )
+        processes = current_app.config['FE'].ep_input.processes_by_uid(current_user.id)
         #tr_data = current_app.config['FE'].ep_input.training_data("trainingprogress", "mse")
         
         # "box=", box[0]) 
