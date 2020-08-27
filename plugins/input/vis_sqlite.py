@@ -106,6 +106,8 @@ class VisSqlite(PluginBase):
         """Returns a column from a table filtered by user_id column. """
         db = get_db()
         #user_id = self.get_user_id(username)
+
+        #TODO: CAMBIAR POR: BUSCAR POR SEPARADO LOS MSE PARA CADA ID DE PROCESS QUE PRETENEZCA A USER_ID
         rows = db.execute(
             "SELECT p.id, MAX(tp.mse), MAX(vs.mse), tp.created, vs.created " +
             " FROM process p, training_progress tp, validation_stats vs"  +
