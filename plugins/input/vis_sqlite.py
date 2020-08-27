@@ -112,10 +112,10 @@ class VisSqlite(PluginBase):
             " WHERE p.user_id = " + str(user_id) +
             " AND tp.process_id = p.id" +
             " AND vs.process_id = p.id" +
-            " GROUP BY tp.mse"
+            " GROUP BY tp.process_id"
 
         ).fetchall()
-        result['rows'] = [dict(r) for r, in rows]
+        result['rows'] = (r.__dict__ for r, in rows]
 
         #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))      
