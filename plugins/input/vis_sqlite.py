@@ -101,6 +101,7 @@ class VisSqlite(PluginBase):
         #rows = dict(zip(rows.keys(), rows))      
         result = [r for r, in rows]
         return result 
+
 # TODO: COMPLETAR 
     def processes_by_uid(self, user_id):
         """Returns a column from a table filtered by user_id column. """
@@ -108,15 +109,13 @@ class VisSqlite(PluginBase):
         #user_id = self.get_user_id(username)
 
         #TODO: CAMBIAR POR: BUSCAR POR SEPARADO LOS MSE PARA CADA ID DE PROCESS QUE PRETENEZCA A USER_ID
-        rows = db.execute(
-            "SELECT p.id, MAX(tp.mse), MAX(vs.mse), tp.created, vs.created " +
-            " FROM process p, training_progress tp, validation_stats vs"  +
-            " WHERE p.user_id = " + str(user_id) +
-            " AND tp.process_id = p.id" +
-            " AND vs.process_id = p.id" +
-            " GROUP BY tp.process_id"
+        p = db.execute(
+            "SELECT p.id" +
+            " FROM process p"  +
+            " WHERE p.user_id = " + str(user_id)
 
         ).fetchall()
+        #  TODO: para cada p, busca los últimos mse y fecha
         result=[]
         result['rows'] = [(pid,tmse,vmse,created,vcreated) for (pid,tmse,vmse,created,vcreated) in rows]
 
