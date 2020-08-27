@@ -107,7 +107,7 @@ class VisSqlite(PluginBase):
         db = get_db()
         #user_id = self.get_user_id(username)
         rows = db.execute(
-            "SELECT p.id, MAX(tp.mse), MAX(vp.mse), tp.created, vs.created, " +
+            "SELECT p.id, MAX(tp.mse), MAX(vp.mse), tp.created, vs.created " +
             " FROM process p, training_progress tp, validation_stats vs"  +
             " WHERE p.user_id = " + str(user_id) +
             " AND tp.process_id = p.id" +
