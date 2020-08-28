@@ -113,12 +113,10 @@ class VisSqlite(PluginBase):
             "SELECT p.id" +
             " FROM process p"  +
             " WHERE p.user_id = " + str(user_id)
-
         ).fetchall()
         #  TODO: para cada p, busca los últimos mse y fecha
-        result=[]
-        result['rows'] = [(pid,tmse,vmse,created,vcreated) for (pid,tmse,vmse,created,vcreated) in rows]
-
+        res = [r for r, in rows]
+        for r in res:
         #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))      
         
