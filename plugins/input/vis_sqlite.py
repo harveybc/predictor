@@ -109,16 +109,20 @@ class VisSqlite(PluginBase):
         #user_id = self.get_user_id(username)
 
         #TODO: CAMBIAR POR: BUSCAR POR SEPARADO LOS MSE PARA CADA ID DE PROCESS QUE PRETENEZCA A USER_ID
-        p = db.execute(
+        res = db.execute(
             "SELECT p.id" +
             " FROM process p"  +
             " WHERE p.user_id = " + str(user_id)
         ).fetchall()
         #  TODO: para cada p, busca los últimos mse y fecha
-        res = [r for r, in rows]
-        for r in res:
+        pids = [r for r, in res]
+        for pid in pids:
         #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))      
-        
-        return result
+            res = db.execute(
+                "SELECT t.mse" +
+                " FROM training_progress t"  +
+                " WHERE p.process_id = " + str(pid)
+            ).fetchall()
+        return pids
         
