@@ -122,15 +122,15 @@ class VisSqlite(PluginBase):
         #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))      
             t_mse.append(db.execute(
-                "SELECT *" +
+                "SELECT MAX(mse), *" +
                 " FROM training_progress t"  +
                 " WHERE t.process_id = " + str(pid)
             ).fetchall())
             v_mse.append(db.execute(
-                "SELECT *" +
+                "SELECT MAX(mse), *" +
                 " FROM validation_stats v"  +
                 " WHERE v.process_id = " + str(pid)
             ).fetchall())
-             
-        return pids
+            
+        return pids, t_mse, v_mse
         
