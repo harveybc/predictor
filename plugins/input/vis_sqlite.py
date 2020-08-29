@@ -119,10 +119,16 @@ class VisSqlite(PluginBase):
         for pid in pids:
         #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))      
-            res = db.execute(
-                "SELECT t.mse" +
+            t_mse = db.execute(
+                "SELECT *" +
                 " FROM training_progress t"  +
                 " WHERE t.process_id = " + str(pid)
-            ).fetchall() 
+            ).fetchall()
+            v_mse = db.execute(
+                "SELECT *" +
+                " FROM validation_stats v"  +
+                " WHERE v.process_id = " + str(pid)
+            ).fetchall()
+             
         return pids
         
