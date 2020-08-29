@@ -123,6 +123,6 @@ class VisSqlite(PluginBase):
                 "SELECT t.mse" +
                 " FROM training_progress t"  +
                 " WHERE p.process_id = " + str(pid)
-            ).fetchall()
+            ).fetchall() 
         return pids
         
