@@ -116,19 +116,21 @@ class VisSqlite(PluginBase):
         ).fetchall()
         #  TODO: para cada p, busca los últimos mse y fecha
         pids = [r for r, in res]
+        t_mse = []
+        v_mse = []
         for pid in pids:
         #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))      
-            t_mse = db.execute(
+            t_mse.append(db.execute(
                 "SELECT *" +
                 " FROM training_progress t"  +
                 " WHERE t.process_id = " + str(pid)
-            ).fetchall()
-            v_mse = db.execute(
+            ).fetchall())
+            v_mse.append(db.execute(
                 "SELECT *" +
                 " FROM validation_stats v"  +
                 " WHERE v.process_id = " + str(pid)
-            ).fetchall()
+            ).fetchall())
              
         return pids
         
