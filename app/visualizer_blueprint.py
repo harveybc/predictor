@@ -41,7 +41,7 @@ def visualizer_blueprint(plugin_folder):
         #tr_data = current_app.config['FE'].ep_input.training_data("trainingprogress", "mse")
         
         # "box=", box[0]) 
-        return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box, v_original = v_original, v_predicted = v_predicted)
+        return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box, v_original = v_original, v_predicted = v_predicted, p=p, t=t, v=v)
 
 
     def get_post(id, check_author=True):
