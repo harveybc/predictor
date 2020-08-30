@@ -39,10 +39,12 @@ def visualizer_blueprint(plugin_folder):
         v_predicted = current_app.config['FE'].ep_input.get_column_by_pid("validation_plots", "predicted", box[0]['id'] )
         p,t,v = current_app.config['FE'].ep_input.processes_by_uid(current_user.id)
         #tr_data = current_app.config['FE'].ep_input.training_data("trainingprogress", "mse")
-        
+        status = "Validation"
+        if not v: 
+            v = t
+            status = "Training"
         # "box=", box[0]) 
-        return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box, v_original = v_original, v_predicted = v_predicted, p=p, t=t, v=v)
-
+        return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box, v_original = v_original, v_predicted = v_predicted, p=p, v=v, status=status)
 
     def get_post(id, check_author=True):
         """Get a post and its author by id.
