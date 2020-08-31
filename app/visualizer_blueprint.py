@@ -39,6 +39,7 @@ def visualizer_blueprint(plugin_folder):
         v_predicted = current_app.config['FE'].ep_input.get_column_by_pid("validation_plots", "predicted", box[0]['id'] )
         p,t,v = current_app.config['FE'].ep_input.processes_by_uid(current_user.id)
         #tr_data = current_app.config['FE'].ep_input.training_data("trainingprogress", "mse")
+        status = []
         for i in range(0,len(v)):
             if not v[i]: 
                 v[i] = t[i]
