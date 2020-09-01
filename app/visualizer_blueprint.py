@@ -40,7 +40,7 @@ def visualizer_blueprint(plugin_folder):
         p,t,v = current_app.config['FE'].ep_input.processes_by_uid(current_user.id)
         #tr_data = current_app.config['FE'].ep_input.training_data("trainingprogress", "mse")
         status = []
-        for i in range(0,len(v)):
+        for i in range(0,len(p)):
             if not v[i]: 
                 v[i] = t[i]
                 status.append("Training")
