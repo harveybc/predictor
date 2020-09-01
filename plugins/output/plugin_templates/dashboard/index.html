@@ -207,10 +207,10 @@
                         {% for process in p %}
 <!-- TODO RECURRENT-->                      <tr>
                         <td><a href="pages/examples/invoice.html">{{ process }}</a></td>
-                        <td>{{ v[process]['MAX(mse)'] }}</td>
+                        <td>{# v[process]['MAX(mse)'] #}</td>
                         <td><span class="badge badge-success">{{ status[process] }}</span></td>
                         <td>
-                          <div class="sparkbar" data-color="#00a65a" data-height="20">{{ v[process]['created'] }}</div>
+                          <div class="sparkbar" data-color="#00a65a" data-height="20">{# v[process]['created'] #}</div>
                         </td>
                       </tr>
                       
