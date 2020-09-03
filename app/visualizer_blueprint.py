@@ -43,6 +43,7 @@ def visualizer_blueprint(plugin_folder):
         for i in range(0,len(p)):
             if not v[i] and not t[i]:
                 status.append("Not Started")
+                v[i]['MAX(mse)'] = 0.0
             elif not v[i]: 
                 v[i] = t[i]
                 status.append("Training")
