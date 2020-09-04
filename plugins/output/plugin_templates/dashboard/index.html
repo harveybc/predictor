@@ -206,7 +206,7 @@
                       <tbody>
                         {% set count = 0 %}
                         {% for process in p %}
-<!-- TODO RECURRENT-->        {% set count = count + 1 %}              <tr>
+<!-- TODO RECURRENT--><tr>
                         <td><a href="pages/examples/invoice.html">{{ process }}</a></td>
                         <td>{{ v[count]['mse'] }}</td>
                         <td><span class="badge badge-success">{{ status[count] }}</span></td>
@@ -214,7 +214,7 @@
                           <div class="sparkbar" data-color="#00a65a" data-height="20">{{  v[count]['created'] }}</div>
                         </td>
                       </tr>
-                      
+                      {% set count = count + 1 %} 
                         {% endfor %}
                       </tbody>
                     </table>
