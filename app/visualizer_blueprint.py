@@ -41,10 +41,10 @@ def visualizer_blueprint(plugin_folder):
         #tr_data = current_app.config['FE'].ep_input.training_data("trainingprogress", "mse")
         status = []
         for i in range(0,len(p)):
-            if not v[i] and not t[i]:
+            if (v[i] is None) and (t[i] is None):
                 status.append("Not Started")
                 v[i]['MAX(mse)'] = 0.0
-            elif not v[i]: 
+            elif v[i] is None: 
                 v[i] = t[i]
                 status.append("Training")
             else:
