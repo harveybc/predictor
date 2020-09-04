@@ -124,26 +124,26 @@ class VisSqlite(PluginBase):
 
             print("pid = ", pid) 
            
-            res1 = dict(db.execute(
+            res_t = dict(db.execute(
                 "SELECT MAX(mse), *" +
                 " FROM training_progress t"  +
                 " WHERE t.process_id = " + str(pid) +
                 " ORDER BY t.mse DESC LIMIT 1"
             ).fetchone())
-            t_mse.append(res1)
+            t_mse.append(res_t)
 
-            print("res1 = ", res1)
+            print("res_t = ", res_t)
 
 
-            res2 = dict(db.execute(
+            res_v = dict(db.execute(
                 "SELECT MAX(mse), *" +
                 " FROM validation_stats v"  +
                 " WHERE v.process_id = " + str(pid) +
                 " ORDER BY v.mse DESC LIMIT 1"
             ).fetchone())
-            v_mse.append(res2)
+            v_mse.append(res_v)
 
-            print("res2 = ", res1)
+            print("res_v = ", res_v)
 
             
         return pids, t_mse, v_mse
