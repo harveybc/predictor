@@ -65,6 +65,9 @@ $(function () {
     RU: 3000 // Russia
   }
   // World map by jvectormap
+   
+  /*
+  
   $('#world-map').vectorMap({
     map: 'usa_en',
     backgroundColor: 'transparent',
@@ -91,6 +94,8 @@ $(function () {
     }
   })
 
+
+
   // Sparkline charts
   var sparkline1 = new Sparkline($('#sparkline-1')[0], { width: 80, height: 50, lineColor: '#92c1dc', endColor: '#ebf4f9' })
   var sparkline2 = new Sparkline($('#sparkline-2')[0], { width: 80, height: 50, lineColor: '#92c1dc', endColor: '#ebf4f9' })
@@ -110,8 +115,9 @@ $(function () {
   $('#chat-box').overlayScrollbars({
     height: '250px'
   })
-
+*/
   /* Chart.js Charts */
+/*
   // Sales chart
   var salesChartCanvas = document.getElementById('revenue-chart-canvas').getContext('2d')
   // $('#revenue-chart').get(0).getContext('2d');
@@ -264,4 +270,5 @@ $(function () {
     data: salesGraphChartData,
     options: salesGraphChartOptions
   })
+  */
 })

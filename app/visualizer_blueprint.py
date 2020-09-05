@@ -12,6 +12,7 @@ from flask import url_for
 from werkzeug.exceptions import abort
 
 from flask_login import login_required
+from flask_login import current_user
 from app.db import get_db
 from flask import current_app
 
@@ -26,9 +27,30 @@ def visualizer_blueprint(plugin_folder):
     def index():
         # read the data to be visualized using the using the Feature extractor instance, preinitialized in __init__.py with input and output plugins entry points.
         # TODO: replace 0 in vis_data by process_id, obtained as the first process_id belonging to the current user.    
-        vis_data = current_app.config['FE'].ep_input.load_data(current_app.config['P_CONFIG'], 0)
-        return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], vis_data =  vis_data)
-
+        # vis_data = current_app.config['FE'].ep_input.load_data(current_app.config['P_CONFIG'], 0)
+        box= []
+        print("user_id = ", current_user.id)
+        box.append(current_app.config['FE'].ep_input.get_max(current_user.id, "training_progress", "mse"))
+        box.append(current_app.config['FE'].ep_input.get_max(current_user.id, "validation_stats", "mse"))
+        box.append(current_app.config['FE'].ep_input.get_count("user"))
+        box.append(current_app.config['FE'].ep_input.get_count("process"))
+        #TODO: Usar campo y tabla configurable desde JSON para graficar
+        v_original = current_app.config['FE'].ep_input.get_column_by_pid("validation_plots", "original", box[0]['id'] )
+        v_predicted = current_app.config['FE'].ep_input.get_column_by_pid("validation_plots", "predicted", box[0]['id'] )
+        p,t,v = current_app.config['FE'].ep_input.processes_by_uid(current_user.id)
+        #tr_data = current_app.config['FE'].ep_input.training_data("trainingprogress", "mse")
+        status = []
+        for i in range(0,len(p)):
+            if (v[i]['mse'] is None) and (t[i]['mse'] is None):
+                status.append("Not Started")
+                v[i]['MAX(mse)'] = 0.0
+            elif v[i]['mse'] is None: 
+                v[i] = t[i]
+                status.append("Training")
+            else:
+                status.append("Validation")
+        # "box=", box[0]) 
+        return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box, v_original = v_original, v_predicted = v_predicted, p=p, v=v, status=status)
 
     def get_post(id, check_author=True):
         """Get a post and its author by id.

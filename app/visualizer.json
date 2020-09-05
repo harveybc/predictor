@@ -30,26 +30,32 @@
     },
     "output_plugin": "vis_output_html",
     "output_plugin_config": {
-        "dashboard": [
+        "dashboard": 
             {
-                "table_name": "training_progress",
-                "online": true,
-                "delay": 3,
-                "points": 800,
-                "title": "Progress of Last Training Process",
-                "fields": [
-                    "mse"
-                ]
+                "title": "Dashboard",
+                "box_0_title": "Best Training MSE",
+                "box_1_title": "Best Validation MSE",
+                "box_2_title": "Number of Users",
+                "box_3_title": "Number of Processes",
+                "rt_plot": {
+                    "title": "Online Training MSE",
+                    "height": "300px"
+                },
+                "val_plot": {
+                    "title": "Validation MSE",
+                    "height": "300px",
+                    "max_points": "500",
+                    "use_latest": true
+                },
+                "process_list":{
+                    "title": "List of Processes",
+                    "col_0_title": "Process ID",
+                    "col_1_title": "MSE",
+                    "col_2_title": "Status",
+                    "col_3_title": "Last Update"
+
+                }
             },
-            {
-                "table_name": "validation_plots",
-                "title": "Validation Data Plot"
-            },
-            {
-                "table_name": "validation_stats",
-                "title": "List of Feature Extractor Stats on Validation Data"
-            }
-        ],
         "views": [
             {
                 "table_name": "training_progress",
