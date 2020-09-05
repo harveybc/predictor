@@ -51,8 +51,8 @@ def visualizer_blueprint(plugin_folder):
             if v[i]['mse'] == None and t[i]['mse'] == None:
                 status.append("Not Started")
                 v[i]['MAX(mse)'] = 0.0
-            if v[i]['mse'] != None:
-                status.append("Validation")
+            #if v[i]['mse'] != None:
+            #    status.append("Validation")
         # "box=", box[0]) 
         return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box, v_original = v_original, v_predicted = v_predicted, p=p, v=v, status=status)
 
