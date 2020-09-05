@@ -31,50 +31,22 @@
 
 {% endblock stylesheets %}
 
-{% block content %}
-  
+{% block content %} 
+
   <div class="content-wrapper">
-
-    <b>
-        Input Plugin</b>:{{ p_config['input_plugin'] }}, <b>Output Plugin</b>:{{ p_config['output_plugin'] }}
-
- 
-
-   {% for pc in p_config['output_plugin_config']['dashboard']  %}
-     <article class="post">
-       <header>
-         <div>
-           <h1>{{ pc['title'] }}</h1>
-           <div class="about">{{ pc['table_name'] }} }}</div>
-         </div>
-       </header>
-       <p class="body">{{ pc['fields'] }}</p>
-       {% if g.user %}
-       <a class="action" href="{{ url_for('visualizer.create') }}">New</a>
-     {% endif %}
-     </article>
-     {% if not loop.last %}
-       <hr> 
-     {% endif %}
-   {% endfor %}
 
     <!-- Content Header (Page header) -->
     <div class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-<!-- TODO -->            <h1 class="m-0 text-dark">Dashboard</h1>
-          </div><!-- /.col -->
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-<!-- TODO -->              <li class="breadcrumb-item active">Dashboard</li>
-            </ol>
-          </div><!-- /.col -->
-        </div><!-- /.row -->
-      </div><!-- /.container-fluid -->
-    </div>
-    <!-- /.content-header -->
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0 text-dark">{{ p_config['output_plugin_config']['dashboard']['title'] }}</h1>
+            </div><!-- /.col -->
+            
+          </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content-header -->
 
     <!-- Main content -->
     <section class="content">
@@ -85,14 +57,14 @@
             <!-- small box -->
             <div class="small-box bg-info">
               <div class="inner">
-<!-- TODO -->                <h3>P0: 0.0001</h3>
-
-<!-- TODO -->                <p>Best Training MSE</p>
+                <!-- box[0] data -->  
+                <h3>P{{ box[0]['id'] }}: {{ box[0]['mse'] }}</h3>
+                <p>{{ p_config['output_plugin_config']['dashboard']['box_0_title'] }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-bag"></i>
               </div>
-              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+<!-- TODO -->              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
           <!-- ./col -->
@@ -100,9 +72,9 @@
             <!-- small box -->
             <div class="small-box bg-success">
               <div class="inner">
-<!-- TODO -->                <h3>P1: 0.001</h3>
-
-<!-- TODO -->                <p>Best Validation MSE</p>
+                <!-- box[1] data -->  
+                <h3>P{{ box[1]['id'] }}: {{ box[1]['mse'] }}</h3>
+                <p>{{ p_config['output_plugin_config']['dashboard']['box_1_title'] }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-stats-bars"></i>
@@ -115,9 +87,9 @@
             <!-- small box -->
             <div class="small-box bg-warning">
               <div class="inner">
-<!-- TODO -->                <h3>3</h3>
-
-<!-- TODO -->                <p>Number of Users</p>
+                <!-- box[2] data -->
+                <h3>{{ box[2]['COUNT(id)'] }}</h3>
+                <p>{{ p_config['output_plugin_config']['dashboard']['box_2_title'] }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-person-add"></i>
@@ -130,9 +102,9 @@
             <!-- small box -->
             <div class="small-box bg-danger">
               <div class="inner">
-<!-- TODO -->                <h3>2</h3>
-
-<!-- TODO -->                <p>Number of Processes</p>
+                <!-- box[3] data -->  
+                <h3>{{ box[3]['COUNT(id)'] }}</h3>
+                <p>{{ p_config['output_plugin_config']['dashboard']['box_3_title'] }}</p>
               </div>
               <div class="icon">
                 <i class="ion ion-pie-graph"></i>
@@ -150,7 +122,7 @@
                 <div class="card-header">
                   <h3 class="card-title">
                     <i class="far fa-chart-bar"></i>
-<!-- TODO -->                    Online Training MSE (Process:0)
+                    {{ p_config['output_plugin_config']['dashboard']['rt_plot']['title'] }} (Process:0)
                   </h3>
     
                   <div class="card-tools">
@@ -162,7 +134,7 @@
                   </div>
                 </div>
                 <div class="card-body">
-<!-- TODO -->                  <div id="interactive" style="height: 300px;"></div>
+                  <div id="interactive" style="height: {{ p_config['output_plugin_config']['dashboard']['rt_plot']['height'] }};"></div>
                 </div>
                 <!-- /.card-body-->
               </div>
@@ -181,7 +153,7 @@
                 <div class="card-header">
                   <h3 class="card-title">
                     <i class="far fa-chart-bar"></i>
-<!-- TODO -->                    Validation MSE (Process:1)
+                    {{ p_config['output_plugin_config']['dashboard']['val_plot']['title'] }} (Process:1)
                   </h3>
     
                   <div class="card-tools">
@@ -194,7 +166,7 @@
                   </div>
                 </div>
                 <div class="card-body">
-<!-- TODO -->                  <div id="line-chart" style="height: 300px;"></div>
+                  <div id="line-chart" style="height: {{ p_config['output_plugin_config']['dashboard']['val_plot']['height'] }};"></div>
                 </div>
                 <!-- /.card-body-->
               </div>
@@ -207,8 +179,8 @@
 
             <!-- TABLE: LATEST ORDERS -->
             <div class="card">
-                <div class="card-header border-transparent">
-<!-- TODO -->                  <h3 class="card-title">List of Processes</h3>
+                <div class="card-header">
+                  <h3 class="card-title">{{ p_config['output_plugin_config']['dashboard']['process_list']['title'] }}</h3>
   
                   <div class="card-tools">
                     <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -223,72 +195,27 @@
                 <div class="card-body p-0">
                   <div class="table-responsive">
                     <table class="table m-0">
-                      <thead>
+                      <thea d>
                       <tr>
-<!-- TODO -->                        <th>Process ID</th>
-<!-- TODO -->                        <th>MSE</th>
-<!-- TODO -->                        <th>Status</th>
-<!-- TODO -->                        <th>Last Update</th>
-                        
+                        <th>{{ p_config['output_plugin_config']['dashboard']['process_list']['col_0_title'] }}</th>
+                        <th>{{ p_config['output_plugin_config']['dashboard']['process_list']['col_1_title'] }}</th>
+                        <th>{{ p_config['output_plugin_config']['dashboard']['process_list']['col_2_title'] }}</th>
+                        <th>{{ p_config['output_plugin_config']['dashboard']['process_list']['col_3_title'] }}</th>
                       </tr>
                       </thead>
                       <tbody>
-<!-- TODO RECURRENT-->                      <tr>
-                        <td><a href="pages/examples/invoice.html">OR9842</a></td>
-                        <td>Call of Duty IV</td>
-                        <td><span class="badge badge-success">Shipped</span></td>
+                        {% set count = 0 %}
+                        {% for process in p %}
+<!-- TODO RECURRENT--><tr>
+                        <td><a href="pages/examples/invoice.html">{{ process }}</a></td>
+                        <td>{{ v[count]['mse'] }}</td>
+                        <td><span class="badge badge-success">{{ status[count] }}</span></td>
                         <td>
-                          <div class="sparkbar" data-color="#00a65a" data-height="20">90,80,90,-70,61,-83,63</div>
+                          <div class="sparkbar" data-color="#00a65a" data-height="20">{{  v[count]['created'] }}</div>
                         </td>
                       </tr>
-                      <tr>
-                        <td><a href="pages/examples/invoice.html">OR1848</a></td>
-                        <td>Samsung Smart TV</td>
-                        <td><span class="badge badge-warning">Pending</span></td>
-                        <td>
-                          <div class="sparkbar" data-color="#f39c12" data-height="20">90,80,-90,70,61,-83,68</div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td><a href="pages/examples/invoice.html">OR7429</a></td>
-                        <td>iPhone 6 Plus</td>
-                        <td><span class="badge badge-danger">Delivered</span></td>
-                        <td>
-                          <div class="sparkbar" data-color="#f56954" data-height="20">90,-80,90,70,-61,83,63</div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td><a href="pages/examples/invoice.html">OR7429</a></td>
-                        <td>Samsung Smart TV</td>
-                        <td><span class="badge badge-info">Processing</span></td>
-                        <td>
-                          <div class="sparkbar" data-color="#00c0ef" data-height="20">90,80,-90,70,-61,83,63</div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td><a href="pages/examples/invoice.html">OR1848</a></td>
-                        <td>Samsung Smart TV</td>
-                        <td><span class="badge badge-warning">Pending</span></td>
-                        <td>
-                          <div class="sparkbar" data-color="#f39c12" data-height="20">90,80,-90,70,61,-83,68</div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td><a href="pages/examples/invoice.html">OR7429</a></td>
-                        <td>iPhone 6 Plus</td>
-                        <td><span class="badge badge-danger">Delivered</span></td>
-                        <td>
-                          <div class="sparkbar" data-color="#f56954" data-height="20">90,-80,90,70,-61,83,63</div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td><a href="pages/examples/invoice.html">OR9842</a></td>
-                        <td>Call of Duty IV</td>
-                        <td><span class="badge badge-success">Shipped</span></td>
-                        <td>
-                          <div class="sparkbar" data-color="#00a65a" data-height="20">90,80,90,-70,61,-83,63</div>
-                        </td>
-                      </tr>
+                      {% set count = count + 1 %} 
+                        {% endfor %}
                       </tbody>
                     </table>
                   </div>
@@ -302,17 +229,20 @@
                 <!-- /.card-footer -->
               </div>
               <!-- /.card -->
+
           </section>
           <!-- right col -->
         </div>
         <!-- /.row (main row) -->
+        <b>Input Plugin</b>:{{ p_config['input_plugin'] }}, <b>Output Plugin</b>:{{ p_config['output_plugin'] }}
+  
       </div><!-- /.container-fluid -->
+ 
     </section>
     <!-- /.content -->
 
   </div>
-
-{% endblock content %}
+  {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
@@ -331,9 +261,10 @@
   <script src="/static/assets/plugins/chart.js/Chart.min.js"></script>
   <!-- Sparkline -->
   <script src="/static/assets/plugins/sparklines/sparkline.js"></script>
-  <!-- JQVMap -->
+  <!-- 
   <script src="/static/assets/plugins/jqvmap/jquery.vmap.min.js"></script>
   <script src="/static/assets/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
+  JQVMap -->
   <!-- jQuery Knob Chart -->
   <script src="/static/assets/plugins/jquery-knob/jquery.knob.min.js"></script>
   <!-- daterangepicker -->
@@ -463,20 +394,57 @@
       */
       //LINE randomly generated data
 
+
+/*
       var sin = [],
           cos = []
       for (var i = 0; i < 14; i += 0.5) {
         sin.push([i, Math.sin(i)])
         cos.push([i, Math.cos(i)])
       }
+*/
+      var   v_original = {{ v_original|tojson }},
+            v_predicted = {{ v_predicted|tojson }}
+
+      var original = [],
+          predicted = []
+
+      var max_points = {{ p_config['output_plugin_config']['dashboard']['val_plot']['max_points'] }}
+      var use_latest = true
+
+      // setup the first and the last index of the arrays to be plotted
+      var  first=0, last=max_points
+      if (last>(v_original.length)) {
+          last=v_original.length
+      }
+
+      // TODO: Posible error por mal cálculo del first
+      if (use_latest){
+        last = v_original.length
+        first = last - max_points
+        if (first<0) {
+            first=0
+        }
+      }
+
+
+
+      // prepare plotted arrays    
+      for (var i = first; i < last; i++) {
+        original.push([i, v_original[i]])
+        original.push([i, v_predicted[i]])
+      }
+
       var line_data1 = {
-        data : sin,
+        data : original,
         color: '#3c8dbc'
       }
+
       var line_data2 = {
-        data : cos,
+        data : predicted,
         color: '#00c0ef'
       }
+
       $.plot('#line-chart', [line_data1, line_data2], {
         grid  : {
           hoverable  : true,

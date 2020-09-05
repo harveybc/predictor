@@ -49,3 +49,102 @@ class VisSqlite(PluginBase):
             self.input_ds.append(query)
         return self.input_ds
         
+    def get_user_id(self, username):
+        """Search for the user_d, having the username """
+        db = get_db()
+        result = db.execute(
+            "SELECT id FROM user WHERE username="+username
+        ).fetchall()        
+        return result[0]
+
+    def row2dict(self,row):
+        """ Convert a sql query result into a dict object """
+        d = {}
+        for column in row.__table__.columns:
+            d[column.name] = str(getattr(row, column.name))
+        return d
+
+    def get_max(self, user_id, table, field ):
+        """Returns the maximum of the selected field belonging to the user_id from the specified table."""
+        db = get_db()
+        #user_id = self.get_user_id(username)
+        row = db.execute(
+            "SELECT t." + field + ", p.id"
+            " FROM " + table + " t, process p, user u"
+            " WHERE t.process_id = p.id" +
+            " AND p.user_id = " + str(user_id) + 
+            " ORDER BY t." + field + " DESC LIMIT 1"
+        ).fetchone()
+        result = dict(row)        
+        return result
+
+    def get_count(self, table):
+        """Returns the count of rows in the specified table. """
+        db = get_db()
+        #user_id = self.get_user_id(username)
+        row = db.execute(
+            "SELECT COUNT(id) FROM " + table
+        ).fetchone() 
+        result = dict(row)        
+        return result
+
+    def get_column_by_pid(self, table, column, process_id):
+        """Returns a column from a table filtered by process_id column. """
+        db = get_db()
+        #user_id = self.get_user_id(username)
+        rows = db.execute(
+            "SELECT " + column +
+            " FROM " + table + 
+            " WHERE process_id = " + str(process_id)
+        ).fetchall()
+        #result = dict(rows)  
+        #rows = dict(zip(rows.keys(), rows))      
+        result = [r for r, in rows]
+        return result 
+
+# TODO: COMPLETAR 
+    def processes_by_uid(self, user_id):
+        """Returns a column from a table filtered by user_id column. """
+        db = get_db()
+        #user_id = self.get_user_id(username)
+
+        #TODO: CAMBIAR POR: BUSCAR POR SEPARADO LOS MSE PARA CADA ID DE PROCESS QUE PRETENEZCA A USER_ID
+        res = db.execute(
+            "SELECT p.id" +
+            " FROM process p"  +
+            " WHERE p.user_id = " + str(user_id)
+        ).fetchall()
+        #  TODO: para cada p, busca los últimos mse y fecha
+        pids = [r for r, in res]
+        t_mse = []
+        v_mse = []
+        for pid in pids:
+        #result = dict(rows)  
+        #rows = dict(zip(rows.keys(), rows))   
+
+            print("pid = ", pid) 
+           
+            res_t = dict(db.execute(
+                "SELECT MAX(mse), *" +
+                " FROM training_progress t"  +
+                " WHERE t.process_id = " + str(pid) +
+                " ORDER BY t.mse DESC LIMIT 1"
+            ).fetchone())
+            t_mse.append(res_t)
+
+            print("res_t = ", res_t)
+
+
+            res_v = dict(db.execute(
+                "SELECT MAX(mse), *" +
+                " FROM validation_stats v"  +
+                " WHERE v.process_id = " + str(pid) +
+                " ORDER BY v.mse DESC LIMIT 1"
+            ).fetchone())
+            v_mse.append(res_v)
+
+            print("res_v = ", res_v)
+
+            
+        return pids, t_mse, v_mse
+        
