@@ -43,7 +43,8 @@ def visualizer_blueprint(plugin_folder):
         for i in range(0,len(p)):
 
             print ("v[i]['mse'] = ", v[i]['mse'])
-            if (v[i]['mse'] is None) and (t[i]['mse'] is None):
+            print ("t[i]['mse'] = ", t[i]['mse'])
+            if v[i]['mse'] is None and t[i]['mse'] is None:
                 status.append("Not Started")
                 v[i]['MAX(mse)'] = 0.0
             elif v[i]['mse'] is None: 
