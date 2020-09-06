@@ -212,17 +212,15 @@
 <!-- TODO RECURRENT--><tr>
                         <td><a href="pages/examples/invoice.html">{{ process }}c{{ loop.index }}</a></td>
                         <td>{{ v[loop.index-1]['mse'] }}</td>
-                        <td><span class=
+                        <td>
                             {% if status[loop.index-1]=="Not Started" %}
-                                "badge badge-success"
+                            <span class="badge badge-danger">{{ status[loop.index-1] }}</span>
                             {% if status[loop.index-1]=="Training" %}
-                                "badge badge-success"
+                            <span class="badge badge-warning">{{ status[loop.index-1] }}</span>
                             {% if status[loop.index-1]=="Validation" %}
-                                "badge badge-success"
+                            <span class="badge badge-success">{{ status[loop.index-1] }}</span>
                             {% endif %}
-                            
-                            
-                            >{{ status[loop.index-1] }}</span></td>
+                            {{ status[loop.index-1] }}</span></td>
                         <td>
                           <div class="sparkbar" data-color="#00a65a" data-height="20">{{  v[loop.index-1]['created'] }}</div>
                         </td>
