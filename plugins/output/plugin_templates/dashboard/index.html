@@ -204,17 +204,23 @@
                       </tr>
                       </thead>
                       <tbody>
-                        {% set count = 0 %}
                         {% for process in p %}
 <!-- TODO RECURRENT--><tr>
                         <td><a href="pages/examples/invoice.html">{{ process }}</a></td>
-                        <td>{{ v[count]['mse'] }}</td>
-                        <td><span class="badge badge-success">{{ status[count] }}</span></td>
+                        <td>{{ v[loop.index-1]['mse'] }}</td>
                         <td>
-                          <div class="sparkbar" data-color="#00a65a" data-height="20">{{  v[count]['created'] }}</div>
+                            {% if status[loop.index-1]=="Not Started" %}
+                            <span class="badge badge-danger">{{ status[loop.index-1] }}</span>
+                            {% elif status[loop.index-1]=="Training" %}
+                            <span class="badge badge-warning">{{ status[loop.index-1] }}</span>
+                            {% elif status[loop.index-1]=="Validation" %}
+                            <span class="badge badge-success">{{ status[loop.index-1] }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                          <div class="sparkbar" data-color="#00a65a" data-height="20">{{  v[loop.index-1]['created'] }}</div>
                         </td>
                       </tr>
-                      {% set count = count + 1 %} 
                         {% endfor %}
                       </tbody>
                     </table>
