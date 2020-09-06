@@ -215,9 +215,9 @@
                         <td>
                             {% if status[loop.index-1]=="Not Started" %}
                             <span class="badge badge-danger">{{ status[loop.index-1] }}</span>
-                            {% if status[loop.index-1]=="Training" %}
+                            {% elif status[loop.index-1]=="Training" %}
                             <span class="badge badge-warning">{{ status[loop.index-1] }}</span>
-                            {% if status[loop.index-1]=="Validation" %}
+                            {% elif status[loop.index-1]=="Validation" %}
                             <span class="badge badge-success">{{ status[loop.index-1] }}</span>
                             {% endif %}
                             {{ status[loop.index-1] }}</span></td>
