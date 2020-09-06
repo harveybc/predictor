@@ -211,10 +211,10 @@
                         {% for process in p %}
 <!-- TODO RECURRENT--><tr>
                         <td><a href="pages/examples/invoice.html">{{ process }}c{{ loop.index }}</a></td>
-                        <td>{{ v[loop.index]['mse'] }}</td>
+                        <td>{{ v[loop.index-1]['mse'] }}</td>
                         <td><span class="badge badge-success">{{ status[loop.index] }}</span></td>
                         <td>
-                          <div class="sparkbar" data-color="#00a65a" data-height="20">{{  v[loop.index]['created'] }}</div>
+                          <div class="sparkbar" data-color="#00a65a" data-height="20">{{  v[loop.index-1]['created'] }}</div>
                         </td>
                       </tr>
                         {% endfor %}
