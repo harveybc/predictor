@@ -49,7 +49,7 @@
                 },
                 "process_list":{
                     "title": "List of Processes",
-                    "col_0_title": "Process ID",
+                    "col_0_title": "ID",
                     "col_1_title": "MSE",
                     "col_2_title": "Status",
                     "col_3_title": "Last Update"
