@@ -211,7 +211,7 @@
                         {% set count = 0 %}
                         {% for process in p %}
 <!-- TODO RECURRENT--><tr>
-                        <td><a href="pages/examples/invoice.html">{{ process }}</a></td>
+                        <td><a href="pages/examples/invoice.html">{{ process }}c{{ count }}</a></td>
                         <td>{{ v[count]['mse'] }}</td>
                         <td><span class="badge badge-success">{{ status[count] }}</span></td>
                         <td>
