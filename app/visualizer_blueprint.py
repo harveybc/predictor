@@ -44,15 +44,16 @@ def visualizer_blueprint(plugin_folder):
 
             print ("v[i]['mse'] = ", v[i]['mse'])
             print ("t[i]['mse'] = ", t[i]['mse'])
-           
-            if v[i]['mse'] == None and t[i]['mse'] != None: 
-                v[i] = t[i]
-                status.append("Training")
             if v[i]['mse'] == None and t[i]['mse'] == None:
                 status.append("Not Started")
                 v[i]['MAX(mse)'] = 0.0
             if v[i]['mse'] != None and t[i]['mse'] != None:
-                status.append("Validation")
+                status.append("Validation")           
+            if v[i]['mse'] == None and t[i]['mse'] != None: 
+                v[i] = t[i]
+                status.append("Training")
+            
+
         # "box=", box[0]) 
         return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box, v_original = v_original, v_predicted = v_predicted, p=p, v=v, status=status)
 
