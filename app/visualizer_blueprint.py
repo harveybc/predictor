@@ -47,9 +47,9 @@ def visualizer_blueprint(plugin_folder):
             if v[i]['mse'] == None and t[i]['mse'] == None:
                 status.append("Not Started")
                 v[i]['MAX(mse)'] = 0.0
-            if v[i]['mse'] != None and t[i]['mse'] != None:
+            elif v[i]['mse'] != None and t[i]['mse'] != None:
                 status.append("Validation")           
-            if v[i]['mse'] == None and t[i]['mse'] != None: 
+            elif v[i]['mse'] == None and t[i]['mse'] != None: 
                 v[i] = t[i]
                 status.append("Training")
             
