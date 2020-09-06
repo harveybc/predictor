@@ -52,6 +52,7 @@ def visualizer_blueprint(plugin_folder):
             elif v[i]['mse'] == None and t[i]['mse'] != None: 
                 v[i] = t[i]
                 status.append("Training")
+            print("status[",i,"] = ", status[i])
             
 
         # "box=", box[0]) 
