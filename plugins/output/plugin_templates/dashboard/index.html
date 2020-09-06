@@ -210,7 +210,7 @@
                       <tbody>
                         {% for process in p %}
 <!-- TODO RECURRENT--><tr>
-                        <td><a href="pages/examples/invoice.html">{{ process }}c{{ loop.index }}</a></td>
+                        <td><a href="pages/examples/invoice.html">{{ process }}</a></td>
                         <td>{{ v[loop.index-1]['mse'] }}</td>
                         <td>
                             {% if status[loop.index-1]=="Not Started" %}
