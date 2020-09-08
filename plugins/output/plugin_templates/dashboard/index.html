@@ -320,9 +320,11 @@
                     xy_points = getPoints(this.responseText);
                 }
             };
+            //#todo: buscar implem. de /parameters en syn
             xmlhttp.open("GET", "/parameters?username={{username}}&pass_hash={{pass_hash}}", true);
             xmlhttp.send();
             return xy_points;
+            
         }
         // when page finishes loading, sets the values to the ones from data
         $(document).ready(function () {
