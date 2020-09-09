@@ -10,11 +10,11 @@ from flask import render_template
 from flask import request
 from flask import url_for
 from werkzeug.exceptions import abort
-
 from flask_login import login_required
 from flask_login import current_user
 from app.db import get_db
 from flask import current_app
+from flask import jsonify
 
 
 def visualizer_blueprint(plugin_folder):
@@ -41,7 +41,6 @@ def visualizer_blueprint(plugin_folder):
         #tr_data = current_app.config['FE'].ep_input.training_data("trainingprogress", "mse")
         status = []
         for i in range(0,len(p)):
-
             print ("v[i]['mse'] = ", v[i]['mse'])
             print ("t[i]['mse'] = ", t[i]['mse'])
             if v[i]['mse'] == None and t[i]['mse'] == None:
@@ -53,10 +52,18 @@ def visualizer_blueprint(plugin_folder):
                 v[i] = t[i]
                 status.append("Training")
             print("status[",i,"] = ", status[i])
-            
-
-        # "box=", box[0]) 
         return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box, v_original = v_original, v_predicted = v_predicted, p=p, v=v, status=status)
+
+    @bp.route("/<int:pid>/trainingpoints")
+    def get_points(pid):
+        """Get the points to plot from the training_progress table and return them as JSON."""
+        xy_points = get_xy_training(pid)
+        return jsonify(xy_points)
+
+    def get_xy_training(pid):
+        """ Returns the points to plot from the training_progress table. """
+        results = current_app.config['FE'].ep_input.get_column_by_pid("training_progress", "mse", pid )
+        return results
 
     def get_post(id, check_author=True):
         """Get a post and its author by id.
@@ -83,9 +90,7 @@ def visualizer_blueprint(plugin_folder):
         # verify if the query returned no results
         if results is None:
             abort(404, "Post id {id} doesn't exist.")
-            
         return results
-
 
     @bp.route("/create", methods=("GET", "POST"))
     @login_required
@@ -95,10 +100,8 @@ def visualizer_blueprint(plugin_folder):
             title = request.form["title"]
             body = request.form["body"]
             error = None
-
             if not title:
                 error = "Title is required."
-
             if error is not None:
                 flash(error)
             else:
@@ -109,24 +112,19 @@ def visualizer_blueprint(plugin_folder):
                 )
                 db.commit()
                 return redirect(url_for("visualizer.index"))
-
         return render_template("visualizer/create.html")
-
 
     @bp.route("/<int:id>/update", methods=("GET", "POST"))
     @login_required
     def update(id):
         """Update a post if the current user is the author."""
         post = get_post(id)
-
         if request.method == "POST":
             title = request.form["title"]
             body = request.form["body"]
             error = None
-
             if not title:
                 error = "Title is required."
-
             if error is not None:
                 flash(error)
             else:
@@ -136,9 +134,7 @@ def visualizer_blueprint(plugin_folder):
                 )
                 db.commit()
                 return redirect(url_for("visualizer.index"))
-
         return render_template("visualizer/update.html", post=post)
-
 
     @bp.route("/<int:id>/delete", methods=("POST",))
     @login_required
@@ -152,6 +148,5 @@ def visualizer_blueprint(plugin_folder):
         db = get_db()
         db.execute("DELETE FROM post WHERE id = ?", (id,))
         db.commit()
-        return redirect(url_for("visualizer.index"))
-    
+        return redirect(url_for("visualizer.index"))    
     return bp
