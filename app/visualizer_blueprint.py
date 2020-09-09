@@ -60,7 +60,7 @@ def visualizer_blueprint(plugin_folder):
         xy_points = get_xy_training(pid)
         return jsonify(xy_points)
 
-    def get_xy_training(pid)
+    def get_xy_training(pid):
         """ Returns the points to plot from the training_progress table. """
         results = current_app.config['FE'].ep_input.get_column_by_pid("training_progress", "mse", pid )
         return results
