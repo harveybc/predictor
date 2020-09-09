@@ -295,7 +295,7 @@
   <script>
 
 // Gets data from controller
-        var data = {{data| dump | safe}};
+        //var data = {{data| dump | safe}};
         /* get the x,y data for plotting from a result of a request as JSON from a text resposne*/
         var last_response;
         var xy_points = [];
@@ -321,7 +321,7 @@
                 }
             };
             //#todo: buscar implem. de /parameters en syn
-            xmlhttp.open("GET", "/parameters?username={{username}}&pass_hash={{pass_hash}}", true);
+            xmlhttp.open("GET", "//<int:{{ box[0]['id'] }}>/trainingpoints", true);
             xmlhttp.send();
             return xy_points;
             
@@ -330,6 +330,8 @@
         $(document).ready(function () {
             // Calls getPerformanceData to get a JSON from singularity
             xy_points=getPerformanceData();
+            /*
+
             // Shows Help When button clicked
             $('#btn-trig').click(function () {
                 $('#helpModal').modal('show');
@@ -370,6 +372,7 @@
 
         });
         
+        */
         
  $(function () {
             /*
@@ -490,8 +493,6 @@
             first=0
         }
       }
-
-
 
       // prepare plotted arrays    
       for (var i = first; i < last; i++) {
