@@ -54,7 +54,7 @@ def visualizer_blueprint(plugin_folder):
             print("status[",i,"] = ", status[i])
         return render_template("/plugin_templates/dashboard/index.html", p_config = current_app.config['P_CONFIG'], box = box, v_original = v_original, v_predicted = v_predicted, p=p, v=v, status=status)
 
-    @bp.route("/<int:pid>/trainingpoints", methods=("GET"))
+    @bp.route("/<int:pid>/trainingpoints")
     def get_points(pid):
         """Get the points to plot from the training_progress table and return them as JSON."""
         xy_points = get_xy_training(pid)
