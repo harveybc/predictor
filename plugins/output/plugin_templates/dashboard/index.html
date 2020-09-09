@@ -302,6 +302,7 @@
         function getPoints(res_text){   
             // JSON parse res_text as last response 
             last_response = JSON.parse(res_text);
+            console.log("res_text = "+ res_text);
             var str = JSON.stringify(last_response, 2); // spacing level = 2
             // Zip the generated y values with the x values
             xy_points = [];
