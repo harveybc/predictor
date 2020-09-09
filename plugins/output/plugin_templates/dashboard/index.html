@@ -321,7 +321,7 @@
                 }
             };
             //#todo: buscar implem. de /parameters en syn
-            xmlhttp.open("GET", "//<int:{{ box[0]['id'] }}>/trainingpoints", true);
+            xmlhttp.open("GET", "/{{ box[0]['id'] }}/trainingpoints", true);
             xmlhttp.send();
             return xy_points;
             
