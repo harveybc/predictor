@@ -2,7 +2,7 @@
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="/" class="brand-link">
-      <img src="/static/assets/img/VisualizerLogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+      <img src="/static/assets/img/VisualizerLogo.png" alt="Visualizer Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
       <span class="brand-text font-weight-light">Visualizer</span>
     </a>
 
@@ -13,24 +13,14 @@
         <div class="image">
           <img src="/static/assets/img/debianlogo.png" class="img-circle elevation-2" alt="User Image">
         </div>
-        <div class="info">
+        <div class="info"> 
           <a href="{{ url_for('base_blueprint.logout') }}" class="d-block">
             {{ current_user.username }} - Logout
           </a>
         </div>
       </div>
 
-      <!-- SidebarSearch Form -->
-      <div class="form-inline">
-        <div class="input-group" data-widget="sidebar-search">
-          <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
-          <div class="input-group-append">
-            <button class="btn btn-sidebar">
-              <i class="fas fa-search fa-fw"></i>
-            </button>
-          </div>
-        </div>
-      </div>
+
 
       <!-- Sidebar Menu -->
       <nav class="mt-2">
