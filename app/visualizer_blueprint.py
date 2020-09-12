@@ -65,6 +65,21 @@ def visualizer_blueprint(plugin_folder):
         results = current_app.config['FE'].ep_input.get_column_by_pid("training_progress", "mse", pid )
         return results
 
+    @bp.route("/users")
+    @login_required
+    def users_index():
+        """Show the users index."""
+        return render_template("/plugin_templates/users.html")
+
+    @bp.route("/user/<int:uid>")
+    @login_required
+    def users_index(uid):
+        """Show the users index."""
+        return render_template("/plugin_templates/user.html", uid = uid)
+
+
+
+
     def get_post(id, check_author=True):
         """Get a post and its author by id.
 
@@ -92,27 +107,6 @@ def visualizer_blueprint(plugin_folder):
             abort(404, "Post id {id} doesn't exist.")
         return results
 
-    @bp.route("/create", methods=("GET", "POST"))
-    @login_required
-    def create():
-        """Create a new post for the current user."""
-        if request.method == "POST":
-            title = request.form["title"]
-            body = request.form["body"]
-            error = None
-            if not title:
-                error = "Title is required."
-            if error is not None:
-                flash(error)
-            else:
-                db = get_db()
-                db.execute(
-                    "INSERT INTO post (title, body, author_id) VALUES (?, ?, ?)",
-                    (title, body, g.user["id"]),
-                )
-                db.commit()
-                return redirect(url_for("visualizer.index"))
-        return render_template("visualizer/create.html")
 
     @bp.route("/<int:id>/update", methods=("GET", "POST"))
     @login_required
