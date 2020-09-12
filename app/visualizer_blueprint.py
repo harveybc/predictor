@@ -73,7 +73,7 @@ def visualizer_blueprint(plugin_folder):
 
     @bp.route("/user/<int:uid>")
     @login_required
-    def users_index(uid):
+    def user_detail(uid):
         """Show the users index."""
         return render_template("/plugin_templates/user.html", uid = uid)
 
