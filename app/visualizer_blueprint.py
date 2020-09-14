@@ -69,7 +69,8 @@ def visualizer_blueprint(plugin_folder):
     @login_required
     def users_index():
         """Show the users index."""
-        return render_template("/plugin_templates/users.html")
+        user_list = current_app.config['FE'].ep_input.get_users()
+        return render_template("/plugin_templates/users.html", user_list = user_list)
 
     @bp.route("/user/<int:uid>")
     @login_required
