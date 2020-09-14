@@ -113,7 +113,7 @@ class VisSqlite(PluginBase):
         ).fetchall()
         #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))      
-        result = [dict(r) for r, in rows]
+        result = [r for r in rows]
         return result 
 
     def get_users(self):
