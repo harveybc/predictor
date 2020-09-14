@@ -102,6 +102,27 @@ class VisSqlite(PluginBase):
         result = [r for r, in rows]
         return result 
 
+    def get_columns(self, columns, table, condition):
+        """Returns a column from a table filtered by process_id column. """
+        db = get_db()
+        #user_id = self.get_user_id(username)
+        rows = db.execute(
+            "SELECT " + columns +
+            " FROM " + table + 
+            " WHERE " + condition
+        ).fetchall()
+        #result = dict(rows)  
+        #rows = dict(zip(rows.keys(), rows))      
+        result = [dict(r) for r, in rows]
+        return result 
+
+    def get_users(self):
+        """ Returns a list of uid, usernames and emails from users """
+        result = self.get_columns("id,username,email", "user", "1=1")
+        return result
+
+
+
 # TODO: COMPLETAR 
     def processes_by_uid(self, user_id):
         """Returns a column from a table filtered by user_id column. """
