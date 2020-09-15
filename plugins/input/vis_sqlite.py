@@ -8,7 +8,6 @@ from numpy import genfromtxt
 from sys import exit
 from flask import current_app
 from app.db import get_db
-from sqliteJson.sqliteJson import json_serializer
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
@@ -22,6 +21,22 @@ class VisSqlite(PluginBase):
         super().__init__(conf)
         # Insert your plugin initialization code here.
         pass
+    
+    
+    def to_json(self,c):
+        try :
+            columns = []
+            result = []
+            for column in c.description:
+                columns.append(column[0])
+            for row in c.fetchall():
+                temp_row = dict()
+                for key, value in zip(columns, row):
+                    temp_row[key] = value
+                    result.append(temp_row)
+            return result
+        except:
+            raise Exception('Invalid cursor provided')
 
     def parse_cmd(self, parser):
         """ Adds command-line arguments to be parsed, overrides base class """
@@ -116,7 +131,7 @@ class VisSqlite(PluginBase):
         #rows = dict(zip(rows.keys(), rows))     
         #  En nombre de la familia bastidas caicedo les agradezco su compañia en esta hermosa novena.  
         #result = [r for r in rows]
-        result = json_serializer(rows)
+        result = self.to_json(rows)
         return result 
 
     def get_users(self):
