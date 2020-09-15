@@ -112,7 +112,8 @@ class VisSqlite(PluginBase):
             " WHERE " + condition
         ).fetchall()
         #result = dict(rows)  
-        #rows = dict(zip(rows.keys(), rows))      
+        #rows = dict(zip(rows.keys(), rows))     
+        #  En nombre de la familia bastidas caicedo les agradezco su compañia en esta hermosa novena.  
         result = [r for r in rows]
         return result 
 
