@@ -119,7 +119,10 @@ class VisSqlite(PluginBase):
 
     def get_users(self):
         """ Returns a list of uid, usernames and emails from users """
-        result = self.get_columns("id,username,email", "user", "1=1")
+        res = self.get_columns("id,username,email", "user", "1=1")
+        result = []
+        for r in res:
+            result.append(dict(res))        
         return result
 
 
