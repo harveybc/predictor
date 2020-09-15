@@ -8,7 +8,7 @@ from numpy import genfromtxt
 from sys import exit
 from flask import current_app
 from app.db import get_db
-from sqliteJson import json_serializer
+from sqliteJson.sqliteJson import json_serializer
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
