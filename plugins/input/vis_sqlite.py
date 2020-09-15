@@ -8,6 +8,7 @@ from numpy import genfromtxt
 from sys import exit
 from flask import current_app
 from app.db import get_db
+from sqliteJson import json_serializer
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
@@ -110,20 +111,18 @@ class VisSqlite(PluginBase):
             "SELECT " + columns +
             " FROM " + table + 
             " WHERE " + condition
-        ).fetchall()
+        )
         #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))     
         #  En nombre de la familia bastidas caicedo les agradezco su compañia en esta hermosa novena.  
-        result = [r for r in rows]
+        #result = [r for r in rows]
+        result = json_serializer(rows)
         return result 
 
     def get_users(self):
         """ Returns a list of uid, usernames and emails from users """
         res = self.get_columns("id,username,email", "user", "1=1")
-        result = []
-        for r in res:
-            result.append(dict(res))        
-        return result
+        return res
 
 
 
