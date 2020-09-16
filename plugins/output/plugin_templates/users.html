@@ -82,7 +82,7 @@
           sorting: true,
           paging: true,
 
-          data: {{ user_list }},
+          data: {{ user_list|tojson }},
 
           fields: [
               { name: "id", type: "number", width: 50 },
