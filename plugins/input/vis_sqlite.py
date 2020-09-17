@@ -141,7 +141,7 @@ class VisSqlite(PluginBase):
         return res
 
     def get_user_by_username(self, username):
-        res = self.get_columns("id,username,email", "user", "username=" + username)
+        res = self.get_columns("id,username,email", "user", "username='" + username + "'")
         return res
 
 # TODO: COMPLETAR 
