@@ -75,8 +75,9 @@ def visualizer_blueprint(plugin_folder):
     @bp.route("/user/<username>")
     @login_required
     def user_detail(username):
-        """Show the user detail view."""
-        return render_template("/plugin_templates/user.html", username = username)
+        """Show the user detail view, if it is the current user, shows a change password button."""
+        user_list = current_app.config['FE'].ep_input.get_user_by_username(username)
+        return render_template("/plugin_templates/user.html", user_list =  user_list, username = username)
 
 
 
