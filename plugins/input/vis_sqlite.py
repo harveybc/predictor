@@ -21,6 +21,23 @@ class VisSqlite(PluginBase):
         super().__init__(conf)
         # Insert your plugin initialization code here.
         pass
+    
+    
+    def to_json(self,c):
+        """ Transform the result of an sql execute() into a array of dicts. """
+        try :
+            columns = []
+            result = []
+            for column in c.description:
+                columns.append(column[0])
+            for row in c.fetchall():
+                temp_row = dict()
+                for key, value in zip(columns, row):
+                    temp_row[key] = value
+                    result.append(temp_row)
+            return result
+        except:
+            raise Exception('Invalid cursor provided')
 
     def parse_cmd(self, parser):
         """ Adds command-line arguments to be parsed, overrides base class """
@@ -101,6 +118,31 @@ class VisSqlite(PluginBase):
         #rows = dict(zip(rows.keys(), rows))      
         result = [r for r, in rows]
         return result 
+
+    def get_columns(self, columns, table, condition):
+        """Returns a column from a table filtered by process_id column. """
+        db = get_db()
+        #user_id = self.get_user_id(username)
+        rows = db.execute(
+            "SELECT " + columns +
+            " FROM " + table + 
+            " WHERE " + condition
+        )
+        #result = dict(rows)  
+        #rows = dict(zip(rows.keys(), rows))     
+        #  En nombre de la familia bastidas caicedo les agradezco su compañia en esta hermosa novena.  
+        #result = [r for r in rows]
+        result = self.to_json(rows)
+        return result 
+
+    def get_users(self):
+        """ Returns a list of uid, usernames and emails from users """
+        res = self.get_columns("id,username,email", "user", "1=1")
+        return res
+
+    def get_user_by_username(self, username):
+        res = self.get_columns("id,username,email", "user", "username='" + username + "'")
+        return res
 
 # TODO: COMPLETAR 
     def processes_by_uid(self, user_id):

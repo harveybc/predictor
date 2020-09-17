@@ -6,7 +6,7 @@
   <link rel="icon" href="/static/assets/favicon.ico" type="image/x-icon">
 
   <title>
-    Flask AdminLTE - {% block title %}{% endblock %} | AppSeed
+    Visualizer - {% block title %}{% endblock %} | harveybc
   </title> 
 
   {% block stylesheets %}{% endblock stylesheets %}
@@ -15,13 +15,13 @@
 <body class="hold-transition {% block body_class %}{% endblock body_class %}">
 <div class="wrapper">
 
-    {% include 'plugin_templates/dashboard/includes/navigation.html' %}
+    {% include 'plugin_templates/includes/navigation.html' %}
 
-    {% include 'plugin_templates/dashboard/includes/sidebar.html' %}
+    {% include 'plugin_templates/includes/sidebar.html' %}
 
     {% block content %}{% endblock content %}
 
-    {% include 'plugin_templates/dashboard/includes/footer.html' %}
+    {% include 'plugin_templates/includes/footer.html' %}
 
     <!-- Control Sidebar -->
     <aside class="control-sidebar control-sidebar-dark">
