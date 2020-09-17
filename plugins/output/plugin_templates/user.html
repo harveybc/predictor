@@ -51,6 +51,9 @@
         <!-- /.card-body -->
       </div>
       <!-- /.card -->
+      {%if current_user.username == username  %}
+        <a href="/user/reset_pass">Change Password</a>
+      {% endif %}
     </section>
     <!-- /.content -->
   </div>
