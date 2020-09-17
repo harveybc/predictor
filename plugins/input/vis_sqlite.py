@@ -24,6 +24,7 @@ class VisSqlite(PluginBase):
     
     
     def to_json(self,c):
+        """ Transform the result of an sql execute() into a array of dicts. """
         try :
             columns = []
             result = []
@@ -139,7 +140,9 @@ class VisSqlite(PluginBase):
         res = self.get_columns("id,username,email", "user", "1=1")
         return res
 
-
+    def get_user_by_username(self, username):
+        res = self.get_columns("id,username,email", "user", "username=" + username)
+        return res
 
 # TODO: COMPLETAR 
     def processes_by_uid(self, user_id):
