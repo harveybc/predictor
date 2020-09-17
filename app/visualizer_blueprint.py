@@ -72,11 +72,11 @@ def visualizer_blueprint(plugin_folder):
         user_list = current_app.config['FE'].ep_input.get_users()
         return render_template("/plugin_templates/users.html", user_list = user_list)
 
-    @bp.route("/user/<int:uid>")
+    @bp.route("/user/<username>")
     @login_required
-    def user_detail(uid):
-        """Show the users index."""
-        return render_template("/plugin_templates/user.html", uid = uid)
+    def user_detail(username):
+        """Show the user detail view."""
+        return render_template("/plugin_templates/user.html", username = username)
 
 
 
