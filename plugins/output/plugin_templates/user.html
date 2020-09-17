@@ -85,9 +85,7 @@
 
           fields: [
               { name: "id", type: "number", width: 50 },
-              { name: "username", itemTemplate: function(value) {
-                            return $("<a>").attr("href", "/user/" + value).text(value);
-                        } , width: 200, filtering: true, width: 200 },
+              { name: "username", type: "text", width: 200 },
               { name: "email", type: "text", width: 200 }
           ]
       });
