@@ -146,11 +146,11 @@ class VisSqlite(PluginBase):
 
     def get_processes(self, uid):
         """ Returns a list of  pid, """
-        res = self.get_columns("id,name,description,created", "process", "user_id=" + uid)
+        res = self.get_columns("id,name,description,created", "process", "user_id=" + str(uid))
         return res
 
     def get_process_by_pid(self, pid):
-        res = self.get_columns("id,name,description,model_link,training_data_link,validation_data_link,created", "process", "id=" + pid )
+        res = self.get_columns("id,name,description,model_link,training_data_link,validation_data_link,created", "process", "id=" + str(pid) )
         return res
 
 
