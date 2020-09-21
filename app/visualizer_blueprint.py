@@ -84,7 +84,7 @@ def visualizer_blueprint(plugin_folder):
     @login_required
     def process_index():
         """Show the processes index."""
-        process_list = current_app.config['FE'].ep_input.get_processes()
+        process_list = current_app.config['FE'].ep_input.get_processes(current_user.id)
         return render_template("/plugin_templates/process/index.html", process_list = process_list)
 
     @bp.route("/process/<pid>")
