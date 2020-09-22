@@ -1,6 +1,6 @@
 {% extends "plugin_templates/layouts/base.html" %}
 
-{% block title %} Tables JSGrid {% endblock %} 
+{% block title %} Processes {% endblock %} 
 
 <!-- Element injected in the BODY element -->
 {% block body_class %} {% endblock body_class %} 
@@ -43,6 +43,7 @@
 
     <!-- Main content -->
     <section class="content">
+    {{ process_list }}
       <div class="card">
         <!-- /.card-header -->
         <div class="card-body">
