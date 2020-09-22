@@ -34,7 +34,7 @@
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
               <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Users</li>
+              <li class="breadcrumb-item active">Processes</li>
             </ol>
           </div>
         </div>
@@ -81,14 +81,15 @@
           sorting: true,
           paging: true,
 
-          data: {{ user_list|tojson }},
+          data: {{ process_list|tojson }},
 
           fields: [
               { name: "id", type: "number", width: 50 },
-              { name: "username", itemTemplate: function(value) {
+              { name: "name", itemTemplate: function(value) {
                             return $("<a>").attr("href", "/user/" + value).text(value);
                         } , width: 200, filtering: true, width: 200 },
-              { name: "email", type: "text", width: 200 }
+              { name: "description", type: "text", width: 200 },
+              { name: "created", type: "text", width: 200 },
           ]
       });
     });
