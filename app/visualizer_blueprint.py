@@ -92,7 +92,7 @@ def visualizer_blueprint(plugin_folder):
     def process_detail(pid):
         """Show the process detail view, if it is the current user, shows a change password button."""
         process_list = current_app.config['FE'].ep_input.get_process_by_pid(pid)
-        return render_template("/plugin_templates/process/detail.html", process_list =  process_list, pid = pid)
+        return render_template("/plugin_templates/process/detail.html", process_list = process_list, pid = pid)
 
 
 
