@@ -147,6 +147,7 @@ class VisSqlite(PluginBase):
     def get_processes(self, uid):
         """ Returns a list of  pid, """
         res = self.get_columns("id,name,description,created", "process", "user_id=" + str(uid))
+        print("get_processes.res = ", res)
         return res
 
     def get_process_by_pid(self, pid):
@@ -170,6 +171,8 @@ class VisSqlite(PluginBase):
         pids = [r for r, in res]
         t_mse = []
         v_mse = []
+        print("pids = ", pids) 
+        
         for pid in pids:
         #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))   
