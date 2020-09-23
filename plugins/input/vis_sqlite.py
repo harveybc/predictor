@@ -25,6 +25,7 @@ class VisSqlite(PluginBase):
     
     def to_json(self,c):
         """ Transform the result of an sql execute() into a array of dicts. """
+        print ("to_json.c=", c)
         try :
             columns = []
             result = []
@@ -35,6 +36,7 @@ class VisSqlite(PluginBase):
                 for key, value in zip(columns, row):
                     temp_row[key] = value
                     result.append(temp_row)
+            print ("to_json.result=", result)
             return result
         except:
             raise Exception('Invalid cursor provided')
