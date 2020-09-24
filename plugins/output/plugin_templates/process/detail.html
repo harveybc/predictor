@@ -51,7 +51,7 @@
         <!-- /.card-body -->
       </div>
       <!-- /.card -->
-      {%if current_user.username == username  %}
+      {%if current_user.id == process_list[0]['user_id']  %}
         <a href="/process/edit/{{ process_list[0]['id'] }}"  class="btn btn-block btn-success" >Edit</a>
         <a href="/process/delete/{{ process_list[0]['id'] }}"  class="btn btn-block btn-success" >Delete</a>
       {% endif %}
