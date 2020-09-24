@@ -27,7 +27,7 @@ class VisSqlite(PluginBase):
         """ Transform the result of an sql execute() into a array of dicts. """
         r = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in cur.fetchall()]
         cur.connection.close()
-        return json.dumps((r[0] if r else None) if one else r)
+        return (r[0] if r else None) if one else r
         
 
     def parse_cmd(self, parser):
