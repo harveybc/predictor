@@ -1,6 +1,6 @@
 {% extends "plugin_templates/layouts/base.html" %}
 
-{% block title %} Tables JSGrid {% endblock %} 
+{% block title %} Processes {% endblock %} 
 
 <!-- Element injected in the BODY element -->
 {% block body_class %} {% endblock body_class %} 
@@ -29,12 +29,12 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>User Details</h1>
+            <h1>Users</h1>
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
               <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">User Details</li>
+              <li class="breadcrumb-item active">Processes</li>
             </ol>
           </div>
         </div>
@@ -51,9 +51,6 @@
         <!-- /.card-body -->
       </div>
       <!-- /.card -->
-      {%if current_user.username == username  %}
-        <a href="/user/reset_pass">Change Password</a>
-      {% endif %}
     </section>
     <!-- /.content -->
   </div>
@@ -78,18 +75,21 @@
   <script>
     $(function () {
       $("#jsGrid1").jsGrid({
-          height: "100%",
           width: "100%",
 
           sorting: true,
           paging: true,
 
-          data: {{ user_list|tojson }},
+          data: {{ process_list|tojson }},
 
           fields: [
-              { name: "id", type: "number", width: 50 },
-              { name: "username", type: "text", width: 200 },
-              { name: "email", type: "text", width: 200 }
+              { name: "id", itemTemplate: function(value) {
+                            return $("<a>").attr("href", "/process/" + value).text(value);
+                        } , width: 200, filtering: true, width: 50 },
+              { name: "name", type: "text", width: 200 },
+
+              { name: "description", type: "text", width: 200 },
+              { name: "created", type: "text", width: 200 }
           ]
       });
     });

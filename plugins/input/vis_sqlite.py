@@ -8,6 +8,7 @@ from numpy import genfromtxt
 from sys import exit
 from flask import current_app
 from app.db import get_db
+import json
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
@@ -22,22 +23,12 @@ class VisSqlite(PluginBase):
         # Insert your plugin initialization code here.
         pass
     
-    
-    def to_json(self,c):
+    def to_json(self,cur, one=False):
         """ Transform the result of an sql execute() into a array of dicts. """
-        try :
-            columns = []
-            result = []
-            for column in c.description:
-                columns.append(column[0])
-            for row in c.fetchall():
-                temp_row = dict()
-                for key, value in zip(columns, row):
-                    temp_row[key] = value
-                    result.append(temp_row)
-            return result
-        except:
-            raise Exception('Invalid cursor provided')
+        r = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in cur.fetchall()]
+        cur.connection.close()
+        return (r[0] if r else None) if one else r
+        
 
     def parse_cmd(self, parser):
         """ Adds command-line arguments to be parsed, overrides base class """
@@ -144,6 +135,18 @@ class VisSqlite(PluginBase):
         res = self.get_columns("id,username,email", "user", "username='" + username + "'")
         return res
 
+    def get_processes(self, uid):
+        """ Returns a list of  pid, """
+        #res = self.get_columns("id,name,description,created", "process", "user_id=" + str(uid))
+        res = self.get_columns("id,name,description,created,user_id", "process", "user_id=" + str(uid))
+        print("get_processes.res = ", res)
+        return res
+
+    def get_process_by_pid(self, pid):
+        res = self.get_columns("id,name,description,model_link,training_data_link,validation_data_link,created,user_id", "process", "id=" + str(pid) )
+        return res
+
+
 # TODO: COMPLETAR 
     def processes_by_uid(self, user_id):
         """Returns a column from a table filtered by user_id column. """
@@ -160,6 +163,8 @@ class VisSqlite(PluginBase):
         pids = [r for r, in res]
         t_mse = []
         v_mse = []
+        print("pids = ", pids) 
+        
         for pid in pids:
         #result = dict(rows)  
         #rows = dict(zip(rows.keys(), rows))   
