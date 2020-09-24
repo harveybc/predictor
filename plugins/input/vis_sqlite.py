@@ -42,7 +42,7 @@ class VisSqlite(PluginBase):
         except:
             raise Exception('Invalid cursor provided')
     
-    def to_json(self,cur):
+    def to_json(self,cur, one=False):
         """ Transform the result of an sql execute() into a array of dicts. """
         r = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in cur.fetchall()]
         cur.connection.close()
