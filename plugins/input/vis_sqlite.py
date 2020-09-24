@@ -23,31 +23,12 @@ class VisSqlite(PluginBase):
         # Insert your plugin initialization code here.
         pass
     
-    
-    def to_json_ant(self,c):
-        """ Transform the result of an sql execute() into a array of dicts. """
-        print ("to_json.c=", c)
-        try :
-            columns = []
-            result = []
-            for column in c.description:
-                columns.append(column[0])
-            for row in c.fetchall():
-                temp_row = dict()
-                for key, value in zip(columns, row):
-                    temp_row[key] = value
-                    result.append(temp_row)
-            print ("to_json.result=", result)
-            return result
-        except:
-            raise Exception('Invalid cursor provided')
-    
     def to_json(self,cur, one=False):
         """ Transform the result of an sql execute() into a array of dicts. """
         r = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in cur.fetchall()]
         cur.connection.close()
-        json_res = json.dumps((r[0] if r else None) if one else r)
-        return json.dumps(json_res)
+        return json.dumps((r[0] if r else None) if one else r)
+        
 
     def parse_cmd(self, parser):
         """ Adds command-line arguments to be parsed, overrides base class """
