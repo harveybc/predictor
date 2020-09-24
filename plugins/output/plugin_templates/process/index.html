@@ -82,7 +82,7 @@
           sorting: true,
           paging: true,
 
-          data: {{ process_list }},
+          data: {{ process_list|tojson }},
 
           fields: [
               { name: "id", itemTemplate: function(value) {
