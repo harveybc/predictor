@@ -54,10 +54,10 @@
       current_user.id={{current_user.id}}
       process_list[0]['user_id'] = {{process_list[0]['user_id']}}
       {%if current_user.id == process_list[0]['user_id']  %}
-        <div class="card" style="width:45%;">
+        <div class="card" style="width:45%;display:inline;">
         <a href="/process/edit/{{ process_list[0]['id'] }}"  class="btn btn-block btn-success" >Edit</a>
         </div>
-        <div class="card"  style="width:45%;">
+        <div class="card"  style="width:45%;display:inline;">
             <a href="/process/delete/{{ process_list[0]['id'] }}"  class="btn btn-block btn-danger" >Delete</a>
         </div>
       {% endif %}
