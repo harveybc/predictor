@@ -67,17 +67,32 @@ def visualizer_blueprint(plugin_folder):
 
     @bp.route("/users")
     @login_required
-    def users_index():
+    def user_index():
         """Show the users index."""
         user_list = current_app.config['FE'].ep_input.get_users()
-        return render_template("/plugin_templates/users.html", user_list = user_list)
+        return render_template("/plugin_templates/user/index.html", user_list = user_list)
 
     @bp.route("/user/<username>")
     @login_required
     def user_detail(username):
         """Show the user detail view, if it is the current user, shows a change password button."""
         user_list = current_app.config['FE'].ep_input.get_user_by_username(username)
-        return render_template("/plugin_templates/user.html", user_list =  user_list, username = username)
+        return render_template("/plugin_templates/user/detail.html", user_list =  user_list, username = username)
+
+
+    @bp.route("/processes")
+    @login_required
+    def process_index():
+        """Show the processes index."""
+        process_list = current_app.config['FE'].ep_input.get_processes(current_user.id)
+        return render_template("/plugin_templates/process/index.html", process_list = process_list)
+
+    @bp.route("/process/<pid>")
+    @login_required
+    def process_detail(pid):
+        """Show the process detail view, if it is the current user, shows a change password button."""
+        process_list = current_app.config['FE'].ep_input.get_process_by_pid(pid)
+        return render_template("/plugin_templates/process/detail.html", process_list = process_list, pid = pid)
 
 
 
