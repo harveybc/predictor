@@ -143,7 +143,7 @@ class VisSqlite(PluginBase):
         return res
 
     def get_process_by_pid(self, pid):
-        res = self.get_columns("id,name,description,model_link,training_data_link,validation_data_link,created", "process", "id=" + str(pid) )
+        res = self.get_columns("id,name,description,model_link,training_data_link,validation_data_link,created,user_id", "process", "id=" + str(pid) )
         return res
 
 
