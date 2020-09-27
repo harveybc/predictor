@@ -1,6 +1,6 @@
 
 from flask_login import UserMixin
-from sqlalchemy import Binary, Column, Integer, String
+from sqlalchemy import Binary, Column, Integer, String,
 
 #from app import db, login_manager
 from flask_sqlalchemy import SQLAlchemy
@@ -20,6 +20,7 @@ class User(db.Model, UserMixin):
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
     email = Column(String, unique=True)
+    admin = Column(Boolean)
     password = Column(Binary)
 
     def __init__(self, **kwargs):
