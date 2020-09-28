@@ -29,12 +29,12 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Users</h1>
+            <h1>User Details</h1>
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
               <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Users</li>
+              <li class="breadcrumb-item active">User Details</li>
             </ol>
           </div>
         </div>
@@ -43,11 +43,6 @@
 
     <!-- Main content -->
     <section class="content">
-      {%if current_user.admin %}
-        <div class="card" style="width:48%;display:inline-block;">
-        <a href="/user/create"  class="btn btn-block btn-success" >Create</a>
-        </div>
-      {% endif %}
       <div class="card">
         <!-- /.card-header -->
         <div class="card-body">
@@ -56,6 +51,9 @@
         <!-- /.card-body -->
       </div>
       <!-- /.card -->
+      {%if current_user.username == username  %}
+        <a href="/user/reset_pass">Change Password</a>
+      {% endif %}
     </section>
     <!-- /.content -->
   </div>
@@ -90,9 +88,7 @@
 
           fields: [
               { name: "id", type: "number", width: 50 },
-              { name: "username", itemTemplate: function(value) {
-                            return $("<a>").attr("href", "/user/" + value).text(value);
-                        } , width: 200, filtering: true, width: 200 },
+              { name: "username", type: "text", width: 200 },
               { name: "email", type: "text", width: 200 }
           ]
       });
