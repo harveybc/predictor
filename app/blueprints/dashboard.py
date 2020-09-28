@@ -65,19 +65,7 @@ def dashboard_bp(plugin_folder):
         results = current_app.config['FE'].ep_input.get_column_by_pid("training_progress", "mse", pid )
         return results
 
-    @bp.route("/users")
-    @login_required
-    def user_index():
-        """Show the users index."""
-        user_list = current_app.config['FE'].ep_input.get_users()
-        return render_template("/plugin_templates/user/index.html", user_list = user_list)
-
-    @bp.route("/user/<username>")
-    @login_required
-    def user_detail(username):
-        """Show the user detail view, if it is the current user, shows a change password button."""
-        user_list = current_app.config['FE'].ep_input.get_user_by_username(username)
-        return render_template("/plugin_templates/user/detail.html", user_list =  user_list, username = username)
+    
 
 
     @bp.route("/processes")
