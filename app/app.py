@@ -8,7 +8,6 @@ from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path
 from app.visualizer import FeatureExtractor
 from app.blueprints.dashboard import dashboard_bp
-from app.
 import json
 
 db = SQLAlchemy()
