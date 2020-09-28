@@ -7,7 +7,7 @@ from importlib import import_module
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path
 from app.visualizer import FeatureExtractor
-from app.blueprints import visualizer_blueprint, user_blueprint, process_blueprint, val_plots_blueprint, tr_stats_blueprint, val_stats_blueprint 
+from app.blueprints.dashboard import dashboard_bp
 from app.
 import json
 
@@ -72,11 +72,11 @@ def create_app(config):
     # get the output plugin template folder
     plugin_folder = fe.ep_output.template_path(p_config)
     # construct the blueprint with configurable plugin_folder for the dashboard views
-    tmp = visualizer_blueprint(plugin_folder)
+    tmp = dashboard_bp(plugin_folder)
     app.register_blueprint(tmp)
     # construct the blueprint for the users views
-    tmp = visualizer_blueprint(plugin_folder)
-    app.register_blueprint(tmp)
+    #tmp = visualizer_blueprint(plugin_folder)
+    #app.register_blueprint(tmp)
 
 
     # register the blueprints
