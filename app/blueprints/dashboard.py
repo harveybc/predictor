@@ -17,10 +17,10 @@ from flask import current_app
 from flask import jsonify
 
 
-def dashboard(plugin_folder):
+def dashboard_bp(plugin_folder):
 
     # construct the visualizer blueprint using the plugin folder as template folder
-    bp = Blueprint("visualizer", __name__,  template_folder=plugin_folder)
+    bp = Blueprint("dashboard_bp", __name__,  template_folder=plugin_folder)
     
     @bp.route("/")
     @login_required
