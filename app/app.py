@@ -7,7 +7,8 @@ from importlib import import_module
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path
 from app.visualizer import FeatureExtractor
-from app.visualizer_blueprint import visualizer_blueprint, user_blueprint, process_blueprint, val_plots_blueprint, tr_stats_blueprint, val_stats_blueprint 
+from app.blueprints import visualizer_blueprint, user_blueprint, process_blueprint, val_plots_blueprint, tr_stats_blueprint, val_stats_blueprint 
+from app.
 import json
 
 db = SQLAlchemy()
