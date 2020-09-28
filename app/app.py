@@ -8,6 +8,7 @@ from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path
 from app.visualizer import FeatureExtractor
 from app.blueprints.dashboard import dashboard_bp
+from app.blueprints.user import user_bp
 import json
 
 db = SQLAlchemy()
@@ -74,8 +75,8 @@ def create_app(config):
     tmp = dashboard_bp(plugin_folder)
     app.register_blueprint(tmp)
     # construct the blueprint for the users views
-    #tmp = visualizer_blueprint(plugin_folder)
-    #app.register_blueprint(tmp)
+    tmp = user_bp(plugin_folder)
+    app.register_blueprint(tmp)
 
 
     # register the blueprints
