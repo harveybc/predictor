@@ -34,7 +34,7 @@ def user_bp(plugin_folder):
     def user_index():
         """Show the users index."""
         user_list = current_app.config['FE'].ep_input.get_users()
-        return render_template("/plugin_templates/user/index.html", user_list = user_list)
+        return render_template("/plugin_templates/user/create.html")
 
     @bp.route("/user/<username>")
     @login_required
@@ -43,7 +43,7 @@ def user_bp(plugin_folder):
         user_list = current_app.config['FE'].ep_input.get_user_by_username(username)
         return render_template("/plugin_templates/user/detail.html", user_list =  user_list, username = username)
 
-    @bp.route("/<int:id>/update", methods=("GET", "POST"))
+    @bp.route("/user/<int:id>/update", methods=("GET", "POST"))
     @login_required
     def update(id):
         """Update a post if the current user is the author."""
@@ -65,7 +65,7 @@ def user_bp(plugin_folder):
                 return redirect(url_for("visualizer.index"))
         return render_template("visualizer/update.html", post=post)
 
-    @bp.route("/<int:id>/delete", methods=("POST",))
+    @bp.route("/user/<int:id>/delete", methods=("POST",))
     @login_required
     def delete(id):
         """Delete a post.
