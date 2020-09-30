@@ -31,7 +31,7 @@ def user_bp(plugin_folder):
 
     @bp.route("/user/create")
     @login_required
-    def user_index():
+    def user_create():
         """Show the users index."""
         user_list = current_app.config['FE'].ep_input.get_users()
         return render_template("/plugin_templates/user/create.html")
