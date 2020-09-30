@@ -112,3 +112,4 @@ def dashboard_bp(plugin_folder):
             abort(404, "Post id {id} doesn't exist.")
         return results
 
+    return bp
