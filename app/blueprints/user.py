@@ -22,7 +22,7 @@ def user_bp(plugin_folder):
     # construct the visualizer blueprint using the plugin folder as template folder
     bp = Blueprint("user_bp", __name__,  template_folder=plugin_folder)
 
-    @bp.route("/user")
+    @bp.route("/users")
     @login_required
     def user_index():
         """Show the users index."""
