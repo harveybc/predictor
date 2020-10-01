@@ -16,7 +16,6 @@ from app.db import get_db
 from flask import current_app
 from flask import jsonify
 
-
 def user_bp(plugin_folder):
 
     # construct the visualizer blueprint using the plugin folder as template folder
