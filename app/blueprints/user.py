@@ -29,13 +29,13 @@ def user_bp(plugin_folder):
         user_list = current_app.config['FE'].ep_input.get_users()
         return render_template("/plugin_templates/user/index.html", user_list = user_list)
 
-    @bp.route("/user/create", methods=("GET"))
+    @bp.route("/user/create", methods=["GET"])
     @login_required
     def user_create_view():
         """Show the users index."""
         return render_template("/plugin_templates/user/create.html")
     
-    @bp.route("/user/create", methods=("POST"))
+    @bp.route("/user/create", methods=["POST"])
     @login_required
     def user_create():
         """Show the users index."""
