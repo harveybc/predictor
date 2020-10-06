@@ -24,5 +24,5 @@ class VisSqlite(PluginBase):
         pass
 
         #Imported methods
-        import _dashboard 
+        import ._dashboard 
 
