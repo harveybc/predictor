@@ -15,6 +15,7 @@ from flask_login import current_user
 from app.db import get_db
 from flask import current_app
 from flask import jsonify
+from flask import request
 
 def user_bp(plugin_folder):
 
@@ -28,10 +29,17 @@ def user_bp(plugin_folder):
         user_list = current_app.config['FE'].ep_input.get_users()
         return render_template("/plugin_templates/user/index.html", user_list = user_list)
 
-    @bp.route("/user/create")
+    @bp.route("/user/create", methods=("GET"))
+    @login_required
+    def user_create_view():
+        """Show the users index."""
+        return render_template("/plugin_templates/user/create.html")
+    
+    @bp.route("/user/create", methods=("POST"))
     @login_required
     def user_create():
         """Show the users index."""
+        result = current_app.config['FE'].ep_input.user_create(request.form)
         return render_template("/plugin_templates/user/create.html")
 
     @bp.route("/user/<username>")
