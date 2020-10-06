@@ -22,8 +22,14 @@ class VisSqlite(PluginBase):
         super().__init__(conf)
         # Insert your plugin initialization code here.
         pass
-
-        #Imported methods
-        from ._dashboard import *
         
+    def to_json(self,cur, one=False):
+        """ Transform the result of an sql execute() into a array of dicts. """
+        r = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in cur.fetchall()]
+        cur.connection.close()
+        return (r[0] if r else None) if one else r
+    
+    #Imported methods
+    from ._dashboard import load_data, get_user_id, get_max, get_count, get_column_by_pid, get_columns, get_users, get_user_by_username, get_processes, get_process_by_pid, processes_by_uid
+
 

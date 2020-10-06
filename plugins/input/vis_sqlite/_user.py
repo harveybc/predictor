@@ -15,7 +15,6 @@ __copyright__ = "Harvey Bastidas"
 __license__ = "mit"
 
 """ functions for the dashboard view """
-    
 
 def parse_cmd(self, parser):
     """ Adds command-line arguments to be parsed, overrides base class """
