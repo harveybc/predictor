@@ -31,5 +31,5 @@ class VisSqlite(PluginBase):
     
     #Imported methods
     from ._dashboard import load_data, get_user_id, get_max, get_count, get_column_by_pid, get_columns, get_users, get_user_by_username, get_processes, get_process_by_pid, processes_by_uid
-
+    from ._user import user_create
 
