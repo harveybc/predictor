@@ -21,7 +21,7 @@ def parse_cmd(self, parser):
     parser.add_argument("--input_file", help="Input dataset file to load including path.", required=True)
     return parser
 
-def load_data(self, p_config, process_id):
+def user_create(self, request_form):
     """load the data for the mse plot for the last training process, also the last validation plot and a list of validation stats."""
     p_config = current_app.config['P_CONFIG']
     db = get_db()
