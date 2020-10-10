@@ -1,27 +1,28 @@
+""" Map this model's fields and relationships """
 
 from flask_login import UserMixin
 from sqlalchemy import Binary, Column, Integer, String, Boolean
-
-#from app import db, login_manager
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-
 from app.base.util import hash_pass
-
 from app.db_init import db
 from app.app import login_manager
-#db = SQLAlchemy()
-#login_manager = LoginManager()
+from sqlalchemy.orm import relationship
 
 class User(db.Model, UserMixin):
-
+    """ Map the user table columns and bidirectional one-to many relationship with process """
     __tablename__ = 'user'
-
+    
+    # columns
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
     email = Column(String, unique=True)
     admin = Column(Boolean)
     password = Column(Binary)
+
+    # realationships
+    processes = relationship("Process", back_populates='user')
+
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
