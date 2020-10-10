@@ -3,12 +3,13 @@
 This File contains the LoadCSV class plugin. 
 """
 
-from app.plugin_base import PluginBase
-from numpy import genfromtxt
 from sys import exit
 from flask import current_app
 from app.db import get_db
-import json
+from sqlalchemy.orm import sessionmaker
+
+Session = sessionmaker(bind=engine)
+session = Session()
 
 __author__ = "Harvey Bastidas"
 __copyright__ = "Harvey Bastidas"
@@ -22,7 +23,7 @@ def parse_cmd(self, parser):
     return parser
 
 def user_create(self, request_form):
-    """load the data for the mse plot for the last training process, also the last validation plot and a list of validation stats."""
+    """create a new user with the request_form data from a POST request."""
     p_config = current_app.config['P_CONFIG']
     db = get_db()
     self.input_ds = []
