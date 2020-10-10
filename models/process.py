@@ -1,25 +1,20 @@
- 
+ """ Map this model's fields and relationships """
     
 from flask_login import UserMixin
 from sqlalchemy import Binary, Column, Integer, String, DateTime, ForeignKey
-
-#from app import db, login_manager
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-
 from app.base.util import hash_pass
-
 from app.db_init import db
 from app.app import login_manager
 import datetime
-
-#db = SQLAlchemy()
-#login_manager = LoginManager()
+from sqlalchemy.orm import relationship
 
 class Process(db.Model):
-
+    """ Map the process table columns and bidirectional one-to-many relationship with user """
     __tablename__ = 'process'
-    
+
+    # columns
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     description = Column(String)
@@ -28,7 +23,11 @@ class Process(db.Model):
     validation_data_link=Column(String)
     created=Column(DateTime, default=datetime.datetime.utcnow)
     user_id=Column(Integer, ForeignKey('user.id'))
-    
+
+    # relationships
+    user = relationship("User", back_populates='processes')
+
+
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
             # depending on whether value is an iterable or not, we must

@@ -7,7 +7,8 @@ from importlib import import_module
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path
 from app.visualizer import FeatureExtractor
-from app.visualizer_blueprint import visualizer_blueprint 
+from app.blueprints.dashboard import dashboard_bp
+from app.blueprints.user import user_bp
 import json
 
 db = SQLAlchemy()
@@ -70,9 +71,13 @@ def create_app(config):
     register_extensions(app)
     # get the output plugin template folder
     plugin_folder = fe.ep_output.template_path(p_config)
-    # construct the blueprint with configurable plugin_folder
-    vis_bp = visualizer_blueprint(plugin_folder)
-    app.register_blueprint(vis_bp)
+    # construct the blueprint with configurable plugin_folder for the dashboard views
+    tmp = dashboard_bp(plugin_folder)
+    app.register_blueprint(tmp)
+    # construct the blueprint for the users views
+    tmp = user_bp(plugin_folder)
+    app.register_blueprint(tmp)
+
 
     # register the blueprints
     register_blueprints(app)

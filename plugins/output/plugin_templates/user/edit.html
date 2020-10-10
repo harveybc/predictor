@@ -29,12 +29,12 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Process Details</h1>
+            <h1>User Details</h1>
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
               <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Process Details</li>
+              <li class="breadcrumb-item active">User Details</li>
             </ol>
           </div>
         </div>
@@ -51,15 +51,9 @@
         <!-- /.card-body -->
       </div>
       <!-- /.card -->
-      {%if (current_user.id == process_list[0]['user_id']) or (current_user.admin) %}
-        <div class="card" style="width:48%;display:inline-block;">
-        <a href="/process/edit/{{ process_list[0]['id'] }}"  class="btn btn-block btn-success" >Edit</a>
-        </div>
-        <div class="card"  style="width:48%;display:inline-block;">
-            <a href="/process/delete/{{ process_list[0]['id'] }}"  class="btn btn-block btn-danger" >Delete</a>
-        </div>
+      {%if current_user.username == username  %}
+        <a href="/user/reset_pass">Change Password</a>
       {% endif %}
-
     </section>
     <!-- /.content -->
   </div>
@@ -90,12 +84,12 @@
           sorting: true,
           paging: true,
 
-          data: {{ process_list|tojson }},
-// TODO: ADICIONAR CAMPOS
+          data: {{ user_list|tojson }},
+
           fields: [
               { name: "id", type: "number", width: 50 },
-              { name: "name", type: "text", width: 200 },
-              { name: "description", type: "text", width: 200 }
+              { name: "username", type: "text", width: 200 },
+              { name: "email", type: "text", width: 200 }
           ]
       });
     });
