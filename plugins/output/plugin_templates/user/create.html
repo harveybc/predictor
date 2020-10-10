@@ -27,17 +27,52 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1>Process Details</h1>
+        <!-- SELECT2 EXAMPLE -->
+        <div class="card card-default">
+          <div class="card-header">
+            <h3 class="card-title">New User</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-tool" data-card-widget="remove">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
           </div>
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Process Details</li>
-            </ol>
+          <!-- /.card-header -->
+          <div class="card-body">
+            <form role="form" action="/user/create" method="post">
+                <div class="card-body">
+                  <div class="form-group">
+                    <label for="userUsername">Username</label>
+                    <input type="text" class="form-control" id="userUsername" placeholder="Enter username">
+                  </div>
+                  <div class="form-group">
+                    <label for="userEmail">Email address</label>
+                    <input type="email" class="form-control" id="userEmail" placeholder="Enter email">
+                  </div>
+                  <div class="form-group">
+                    <label for="userPassword">Password</label>
+                    <input type="password" class="form-control" id="userPassword" placeholder="Password">
+                  </div>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="userAdmin">
+                    TODO: read-only for admins
+                    <label class="form-check-label" for="userAdmin">Administrator</label>
+                  </div>
+                </div>
+                <!-- /.card-body -->
+
+                <div class="card-footer">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+              </form>
           </div>
+          <!-- /.card-body -->
         </div>
+        <!-- /.card -->
+
       </div><!-- /.container-fluid -->
     </section>
 
@@ -51,15 +86,9 @@
         <!-- /.card-body -->
       </div>
       <!-- /.card -->
-      {%if (current_user.id == process_list[0]['user_id']) or (current_user.admin) %}
-        <div class="card" style="width:48%;display:inline-block;">
-        <a href="/process/edit/{{ process_list[0]['id'] }}"  class="btn btn-block btn-success" >Edit</a>
-        </div>
-        <div class="card"  style="width:48%;display:inline-block;">
-            <a href="/process/delete/{{ process_list[0]['id'] }}"  class="btn btn-block btn-danger" >Delete</a>
-        </div>
+      {%if current_user.username == username  %}
+        <a href="/user/reset_pass">Change Password</a>
       {% endif %}
-
     </section>
     <!-- /.content -->
   </div>
@@ -80,25 +109,5 @@
   <script src="/static/assets/js/adminlte.min.js"></script>
   <!-- AdminLTE for demo purposes -->
   <script src="/static/assets/js/demo.js"></script>
-  <!-- page script -->
-  <script>
-    $(function () {
-      $("#jsGrid1").jsGrid({
-          //height: "100%",
-          width: "100%",
-
-          sorting: true,
-          paging: true,
-
-          data: {{ process_list|tojson }},
-// TODO: ADICIONAR CAMPOS
-          fields: [
-              { name: "id", type: "number", width: 50 },
-              { name: "name", type: "text", width: 200 },
-              { name: "description", type: "text", width: 200 }
-          ]
-      });
-    });
-  </script>
 
 {% endblock javascripts %}
