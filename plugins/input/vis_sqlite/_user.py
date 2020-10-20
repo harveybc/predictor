@@ -8,7 +8,7 @@ from flask import current_app
 from app.db import get_db
 from sqlalchemy.orm import sessionmaker
 
-Session = sessionmaker(bind=engine)
+Session = sessionmaker()
 session = Session()
 
 __author__ = "Harvey Bastidas"
