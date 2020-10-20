@@ -1,4 +1,4 @@
- """ Map this model's fields and relationships """
+""" Map this model's fields and relationships """
     
 from flask_login import UserMixin
 from sqlalchemy import Binary, Column, Integer, String, DateTime, ForeignKey
