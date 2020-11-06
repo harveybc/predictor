@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 db = get_db()
 #engine = create_engine('sqlite:////tmp/test.db')
-engine = db.get_db()
+engine = db.engine
 Session = sessionmaker(bind=engine)
 session = Session()
 
