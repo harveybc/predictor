@@ -18,7 +18,7 @@ def get_db():
             os.path.join(basedir, 'db.sqlite3'), detect_types=sqlite3.PARSE_DECLTYPES
         )
         g.db.row_factory = sqlite3.Row
-
+        print("Warning: db is not in g, using db.sqlite3 as database")
     return g.db
 
 

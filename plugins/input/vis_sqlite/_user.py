@@ -8,6 +8,9 @@ from flask import current_app
 from app.db import get_db
 from sqlalchemy.orm import sessionmaker
 
+db = get_db()
+#engine = create_engine('sqlite:////tmp/test.db')
+engine = db.get_db()
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -46,7 +49,7 @@ def user_create(self, request_form):
     
 def get_user_id(self, username):
     """Search for the user_d, having the username """
-    db = get_db()
+
     result = db.execute(
         "SELECT id FROM user WHERE username="+username
     ).fetchall()        
