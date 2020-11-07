@@ -7,9 +7,8 @@ from sys import exit
 from flask import current_app
 from app.db import get_db
 from sqlalchemy.orm import sessionmaker
-
-with current_app.app_context():
-    db = get_db()
+from app import db
+#    db = get_db()
 #engine = create_engine('sqlite:////tmp/test.db')
 engine = db.engine
 Session = sessionmaker(bind=engine)
