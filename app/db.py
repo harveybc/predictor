@@ -12,7 +12,7 @@ def get_db():
     is unique for each request and will be reused if this is called
     again.
     """
-    with current_app.app_context():
+    with app.app_context():
         if "db" not in current_app.g:
             basedir = os.path.dirname("setup.py")
             g.db = sqlite3.connect(
