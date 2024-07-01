@@ -52,7 +52,7 @@ class Plugin:
 
         # Model
         model_input = Input(shape=(input_shape,), name="model_input")
-        print(f"ANN input_shape: {layers}")
+        print(f"ANN input_shape: {input_shape}")
 
         x = model_input
         for size in layers[:-1]:
