@@ -12,30 +12,23 @@ def process_data(config):
     print(f"Data loaded with shape: {data.shape}")
 
     input_timeseries = config['input_timeseries']
-    target_column = config['target_column']
-
     if isinstance(input_timeseries, str):
         print(f"Loading input timeseries from CSV file: {input_timeseries}")
-        input_data = load_csv(input_timeseries, headers=config['headers'])
-        print(f"Input timeseries loaded with shape: {input_data.shape}")
-    elif isinstance(input_timeseries, int):
-        input_data = data.iloc[:, input_timeseries]
-        print(f"Using input timeseries at column index: {input_timeseries}")
-    elif target_column is not None:
-        input_data = data.iloc[:, target_column]
-        print(f"Using target column at index: {target_column}")
+        timeseries_data = load_csv(input_timeseries, headers=config['headers'])
+        print(f"Input timeseries loaded with shape: {timeseries_data.shape}")
     else:
-        raise ValueError("Either input_timeseries or target_column must be specified in the configuration.")
+        raise ValueError("Input timeseries must be specified as a CSV file path in the configuration.")
 
-    # Ensure input data is numeric
-    input_data = input_data.apply(pd.to_numeric, errors='coerce').fillna(0)
-    return input_data
+    # Ensure data is numeric
+    data = data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    timeseries_data = timeseries_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    return data, timeseries_data
 
 def run_prediction_pipeline(config, plugin):
     start_time = time.time()
     
     print("Running process_data...")
-    input_data = process_data(config)
+    input_data, timeseries_data = process_data(config)
     print("Processed data received.")
     
     time_horizon = config['time_horizon']
@@ -45,7 +38,7 @@ def run_prediction_pipeline(config, plugin):
 
     # Prepare data for training
     x_train = input_data[:-time_horizon].to_numpy()
-    y_train = input_data[time_horizon:].to_numpy()
+    y_train = timeseries_data[time_horizon:].to_numpy().flatten()
 
     # Ensure x_train is a 2D array
     if x_train.ndim == 1:
@@ -101,10 +94,10 @@ def load_and_evaluate_model(config, plugin):
     plugin.load(config['load_model'])
 
     # Load the input data
-    input_data = process_data(config)
+    input_data, _ = process_data(config)
 
     # Predict using the loaded model
-    predictions = plugin.predict(input_data)
+    predictions = plugin.predict(input_data.to_numpy())
 
     # Save the predictions to CSV
     evaluate_filename = config['evaluate_file']
