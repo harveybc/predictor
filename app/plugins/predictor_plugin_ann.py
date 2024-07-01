@@ -81,11 +81,11 @@ class Plugin:
         return predictions
 
     def calculate_mse(self, y_true, y_pred):
-        mse = np.mean(np.square(y_true - y_pred))
+        mse = np.mean(np.square(np.array(y_true) - np.array(y_pred)))
         return mse
 
     def calculate_mae(self, y_true, y_pred):
-        mae = np.mean(np.abs(y_true - y_pred))
+        mae = np.mean(np.abs(np.array(y_true) - np.array(y_pred)))
         return mae
 
     def save(self, file_path):
