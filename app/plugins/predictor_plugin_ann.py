@@ -52,6 +52,8 @@ class Plugin:
 
         # Model
         model_input = Input(shape=(input_shape,), name="model_input")
+        print(f"ANN input_shape: {layers}")
+
         x = model_input
         for size in layers[:-1]:
             x = Dense(size, activation='relu')(x)
