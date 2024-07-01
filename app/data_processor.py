@@ -27,6 +27,8 @@ def process_data(config):
     else:
         raise ValueError("Either input_timeseries or target_column must be specified in the configuration.")
 
+    # Ensure input data is numeric
+    input_data = input_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     return input_data
 
 def run_prediction_pipeline(config, plugin):
@@ -42,8 +44,8 @@ def run_prediction_pipeline(config, plugin):
     threshold_error = config['threshold_error']
 
     # Prepare data for training
-    x_train = input_data[:-time_horizon]
-    y_train = input_data[time_horizon:]
+    x_train = input_data[:-time_horizon].to_numpy()
+    y_train = input_data[time_horizon:].to_numpy()
 
     # Ensure x_train is a 2D array
     if x_train.ndim == 1:
