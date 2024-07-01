@@ -45,8 +45,12 @@ def run_prediction_pipeline(config, plugin):
     x_train = input_data[:-time_horizon]
     y_train = input_data[time_horizon:]
 
+    # Ensure x_train is a 2D array
+    if x_train.ndim == 1:
+        x_train = x_train.reshape(-1, 1)
+    
     # Train the model
-    plugin.build_model(input_shape=(x_train.shape[1],))
+    plugin.build_model(input_shape=x_train.shape[1])
     plugin.train(x_train, y_train, epochs=epochs, batch_size=batch_size, threshold_error=threshold_error)
 
     # Save the trained model
