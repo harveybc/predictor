@@ -16,11 +16,6 @@ def load_plugin(plugin_group, plugin_name):
         print(f"Failed to load plugin {plugin_name} from group {plugin_group}, Error: {e}")
         raise
 
-def load_encoder_decoder_plugins(encoder_name, decoder_name):
-    encoder_plugin, encoder_params = load_plugin('feature_extractor.encoders', encoder_name)
-    decoder_plugin, decoder_params = load_plugin('feature_extractor.decoders', decoder_name)
-    return encoder_plugin, encoder_params, decoder_plugin, decoder_params
-
 def get_plugin_params(plugin_group, plugin_name):
     print(f"Getting plugin parameters for: {plugin_name} from group: {plugin_group}")
     try:

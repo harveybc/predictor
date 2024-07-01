@@ -1,0 +1,82 @@
+import numpy as np
+from keras.models import Model, load_model, save_model
+from keras.layers import Dense, Input
+from keras.optimizers import Adam
+
+class Plugin:
+    """
+    A predictor plugin using a simple neural network based on Keras, with dynamically configurable size.
+    """
+
+    plugin_params = {
+        'epochs': 10,
+        'batch_size': 256
+    }
+
+    plugin_debug_vars = ['epochs', 'batch_size', 'input_dim']
+
+    def __init__(self):
+        self.params = self.plugin_params.copy()
+        self.model = None
+
+    def set_params(self, **kwargs):
+        for key, value in kwargs.items():
+            self.params[key] = value
+
+    def get_debug_info(self):
+        return {var: self.params[var] for var in self.plugin_debug_vars}
+
+    def add_debug_info(self, debug_info):
+        plugin_debug_info = self.get_debug_info()
+        debug_info.update(plugin_debug_info)
+
+    def build_model(self, input_shape):
+        self.params['input_dim'] = input_shape
+
+        # Model
+        model_input = Input(shape=(input_shape,), name="model_input")
+        hidden_layer = Dense(64, activation='relu', name="hidden_layer")(model_input)
+        model_output = Dense(1, activation='linear', name="model_output")(hidden_layer)
+        self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
+        self.model.compile(optimizer=Adam(), loss='mean_squared_error')
+
+        # Debugging messages to trace the model configuration
+        print("Predictor Model Summary:")
+        self.model.summary()
+
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error):
+        print(f"Training predictor model with data shape: {x_train.shape}")
+        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
+        print("Training completed.")
+        mse = history.history['loss'][-1]
+        if mse > threshold_error:
+            print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
+
+    def predict(self, data):
+        print(f"Predicting data with shape: {data.shape}")
+        predictions = self.model.predict(data)
+        print(f"Predicted data shape: {predictions.shape}")
+        return predictions
+
+    def calculate_mse(self, y_true, y_pred):
+        mse = np.mean(np.square(y_true - y_pred))
+        return mse
+
+    def calculate_mae(self, y_true, y_pred):
+        mae = np.mean(np.abs(y_true - y_pred))
+        return mae
+
+    def save(self, file_path):
+        save_model(self.model, file_path)
+        print(f"Predictor model saved to {file_path}")
+
+    def load(self, file_path):
+        self.model = load_model(file_path)
+        print(f"Predictor model loaded from {file_path}")
+
+# Debugging usage example
+if __name__ == "__main__":
+    plugin = Plugin()
+    plugin.build_model(input_shape=128)
+    debug_info = plugin.get_debug_info()
+    print(f"Debug Info: {debug_info}")
