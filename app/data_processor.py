@@ -40,6 +40,9 @@ def run_prediction_pipeline(config, plugin):
     x_train = input_data[:-time_horizon].to_numpy()
     y_train = timeseries_data[time_horizon:].to_numpy().flatten()
 
+    # Adjust the length of y_train to match x_train
+    y_train = y_train[:len(x_train)]
+
     # Ensure x_train is a 2D array
     if x_train.ndim == 1:
         x_train = x_train.reshape(-1, 1)
