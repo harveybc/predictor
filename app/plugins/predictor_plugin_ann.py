@@ -10,10 +10,13 @@ class Plugin:
 
     plugin_params = {
         'epochs': 10,
-        'batch_size': 256
+        'batch_size': 256,
+        'intermediate_layers': 1,
+        'initial_layer_size': 64,
+        'layer_size_divisor': 2
     }
 
-    plugin_debug_vars = ['epochs', 'batch_size', 'input_dim']
+    plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
 
     def __init__(self):
         self.params = self.plugin_params.copy()
@@ -33,10 +36,27 @@ class Plugin:
     def build_model(self, input_shape):
         self.params['input_dim'] = input_shape
 
+        # Layer configuration
+        layers = []
+        current_size = self.params['initial_layer_size']
+        layer_size_divisor = self.params['layer_size_divisor']
+        int_layers = 0
+        while int_layers < self.params['intermediate_layers']:
+            layers.append(current_size)
+            current_size = max(current_size // layer_size_divisor, 1)
+            int_layers += 1
+        layers.append(1)  # Output layer size
+
+        # Debugging message
+        print(f"ANN Layer sizes: {layers}")
+
         # Model
         model_input = Input(shape=(input_shape,), name="model_input")
-        hidden_layer = Dense(64, activation='relu', name="hidden_layer")(model_input)
-        model_output = Dense(1, activation='linear', name="model_output")(hidden_layer)
+        x = model_input
+        for size in layers[:-1]:
+            x = Dense(size, activation='relu')(x)
+        model_output = Dense(layers[-1], activation='linear', name="model_output")(x)
+        
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
 
