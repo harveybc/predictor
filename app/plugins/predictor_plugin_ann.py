@@ -81,11 +81,15 @@ class Plugin:
         return predictions
 
     def calculate_mse(self, y_true, y_pred):
-        mse = np.mean(np.square(np.array(y_true) - np.array(y_pred)))
+        print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
+        mse = np.mean((y_true - y_pred) ** 2)
+        print(f"Calculated MSE: {mse}")
         return mse
 
     def calculate_mae(self, y_true, y_pred):
-        mae = np.mean(np.abs(np.array(y_true) - np.array(y_pred)))
+        print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
+        mae = np.mean(np.abs(y_true - y_pred))
+        print(f"Calculated MAE: {mae}")
         return mae
 
     def save(self, file_path):
