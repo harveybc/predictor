@@ -32,7 +32,7 @@ def main():
 
     plugin_name = cli_args['plugin']
     print(f"Loading plugin: {plugin_name}")
-    plugin_class, _ = load_plugin('feature_extractor.plugins', plugin_name)
+    plugin_class, _ = load_plugin('predictor.plugins', plugin_name)
     plugin = plugin_class()
 
     print("Merging configuration with CLI arguments and unknown args...")
