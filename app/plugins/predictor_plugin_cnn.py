@@ -35,7 +35,7 @@ class Plugin:
 
     def build_model(self, input_shape):
         self.params['input_shape'] = input_shape
-
+        print(f"CNN input_shape: {input_shape}")
         layers = []
         current_size = self.params['initial_layer_size']
         layer_size_divisor = self.params['layer_size_divisor']
