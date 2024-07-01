@@ -79,18 +79,21 @@ class Plugin:
         predictions = self.model.predict(data)
         print(f"Predicted data shape: {predictions.shape}")
         return predictions
+def calculate_mse(self, y_true, y_pred):
+    print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
+    abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
+    squared_abs_difference = abs_difference ** 2
+    mse = np.mean(squared_abs_difference)
+    print(f"Calculated MSE: {mse}")
+    return mse
 
-    def calculate_mse(self, y_true, y_pred):
-        print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        mse = np.mean((y_true - y_pred) ** 2)
-        print(f"Calculated MSE: {mse}")
-        return mse
+def calculate_mae(self, y_true, y_pred):
+    print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
+    abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
+    mae = np.mean(abs_difference)
+    print(f"Calculated MAE: {mae}")
+    return mae
 
-    def calculate_mae(self, y_true, y_pred):
-        print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        mae = np.mean(np.abs(y_true - y_pred))
-        print(f"Calculated MAE: {mae}")
-        return mae
 
     def save(self, file_path):
         save_model(self.model, file_path)
