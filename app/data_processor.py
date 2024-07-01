@@ -69,9 +69,10 @@ def run_prediction_pipeline(config, plugin):
     print(f"Mean Squared Error: {mse}")
     print(f"Mean Absolute Error: {mae}")
 
-    # Save predictions to CSV
+    # Convert predictions to a DataFrame and save to CSV
+    predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
     output_filename = config['output_file']
-    write_csv(output_filename, predictions, include_date=config['force_date'], headers=config['headers'])
+    write_csv(output_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
     print(f"Output written to {output_filename}")
 
     # Save final configuration and debug information
@@ -107,5 +108,6 @@ def load_and_evaluate_model(config, plugin):
 
     # Save the predictions to CSV
     evaluate_filename = config['evaluate_file']
-    np.savetxt(evaluate_filename, predictions, delimiter=",")
+    predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
+    write_csv(evaluate_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
     print(f"Predicted data saved to {evaluate_filename}")
