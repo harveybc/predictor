@@ -1,15 +1,15 @@
 # config.py
 
 DEFAULT_VALUES = {
-    'input_file': './csv_input.csv',
-    'input_timeseries': None,
+    'input_file': './tests/data/encoder_eval.csv',
+    'input_timeseries': './tests/data/csv_sel_unb_norm_512.csv',
     'target_column': None,
     'output_file': './csv_output.csv',
     'save_model': './predictor_model.h5',
     'load_model': None,
     'evaluate_file': './model_eval.csv',
-    'plugin': 'default',
-    'time_horizon': 10,  # Assuming a default value of 10 ticks ahead
+    'plugin': 'ann',
+    'time_horizon': 10,  # Set an appropriate default value
     'threshold_error': 0.003,
     'remote_log': None,
     'remote_load_config': None,
@@ -21,5 +21,5 @@ DEFAULT_VALUES = {
     'save_log': './debug_out.json',
     'quiet_mode': False,
     'force_date': False,
-    'headers': False,
+    'headers': True,
 }
