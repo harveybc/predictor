@@ -1,30 +1,25 @@
+# config.py
+
 DEFAULT_VALUES = {
     'input_file': './csv_input.csv',
+    'input_timeseries': None,
+    'target_column': None,
     'output_file': './csv_output.csv',
-    'save_encoder': './encoder_model.h5',
-    'save_decoder': './decoder_model.h5',
-    'load_encoder': None,
-    'load_decoder': None,
-    'evaluate_encoder': './encoder_eval.csv',
-    'evaluate_decoder': './decoder_eval.csv',
-    'encoder_plugin': 'default',
-    'decoder_plugin': 'default',
-    'window_size': 128,
+    'save_model': './predictor_model.h5',
+    'load_model': None,
+    'evaluate_file': './model_eval.csv',
+    'plugin': 'default',
+    'time_horizon': 10,  # Assuming a default value of 10 ticks ahead
     'threshold_error': 0.003,
-    'initial_size': 8,
-    'step_size': 4,
-    'save_log': './debug_out.json',
     'remote_log': None,
     'remote_load_config': None,
     'remote_save_config': None,
     'username': None,
-    'password': None, 
+    'password': None,
     'load_config': None,
     'save_config': './config_out.json',
+    'save_log': './debug_out.json',
     'quiet_mode': False,
     'force_date': False,
-    'incremental_search': True,
     'headers': False,
-    'epochs': 5,  # Add epochs here
-    'batch_size': 256  # Add batch_size here
 }
