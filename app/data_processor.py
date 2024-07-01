@@ -14,7 +14,11 @@ def process_data(config):
     input_timeseries = config['input_timeseries']
     target_column = config['target_column']
 
-    if input_timeseries is not None:
+    if isinstance(input_timeseries, str):
+        print(f"Loading input timeseries from CSV file: {input_timeseries}")
+        input_data = load_csv(input_timeseries, headers=config['headers'])
+        print(f"Input timeseries loaded with shape: {input_data.shape}")
+    elif isinstance(input_timeseries, int):
         input_data = data.iloc[:, input_timeseries]
         print(f"Using input timeseries at column index: {input_timeseries}")
     elif target_column is not None:
