@@ -99,6 +99,6 @@ class Plugin:
 # Debugging usage example
 if __name__ == "__main__":
     plugin = Plugin()
-    plugin.build_model(input_shape=128)
+    plugin.build_model(input_shape=8)  # Adjusted to 8 as per your data
     debug_info = plugin.get_debug_info()
     print(f"Debug Info: {debug_info}")
