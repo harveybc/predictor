@@ -75,6 +75,7 @@ class Plugin:
         out1 = Add()([x, attn_output])
         out1 = LayerNormalization(epsilon=1e-6)(out1)
 
+        # Use the same size for the feed-forward network as for the attention mechanism
         ffn_output = Dense(size, activation='relu')(out1)
         ffn_output = Dropout(dropout_rate)(ffn_output)
         out2 = Add()([out1, ffn_output])
