@@ -94,6 +94,7 @@ class Plugin:
 
         return LayerNormalization(epsilon=1e-6)(out2)
 
+
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
         print(f"Training predictor model with data shape: {x_train.shape}")
         history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
