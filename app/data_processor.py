@@ -37,7 +37,7 @@ def run_prediction_pipeline(config, plugin):
     start_time = time.time()
     
     print("Running process_data...")
-    data, input_timeseries_data = process_data(config)
+    input_data = process_data(config)
     print("Processed data received.")
     
     time_horizon = config['time_horizon']
@@ -46,16 +46,15 @@ def run_prediction_pipeline(config, plugin):
     threshold_error = config['threshold_error']
 
     # Prepare data for training
-    x_train = data[:-time_horizon].to_numpy()
-    y_train = input_timeseries_data[time_horizon:].to_numpy()
+    x_train = input_data[:-time_horizon].to_numpy()
+    y_train = input_data[time_horizon:].to_numpy()
 
     # Ensure x_train is a 2D array
     if x_train.ndim == 1:
         x_train = x_train.reshape(-1, 1)
     
-    # Ensure y_train is a 1D array
-    if y_train.ndim > 1:
-        y_train = y_train.flatten()
+    # Ensure y_train matches the first dimension of x_train
+    y_train = y_train[:len(x_train)]
 
     # Train the model
     plugin.build_model(input_shape=x_train.shape[1])
@@ -101,7 +100,6 @@ def run_prediction_pipeline(config, plugin):
         print(f"Debug info saved to {config['remote_log']}.")
 
     print(f"Execution time: {execution_time} seconds")
-
 
 def load_and_evaluate_model(config, plugin):
     # Load the model
