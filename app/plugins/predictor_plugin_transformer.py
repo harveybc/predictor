@@ -62,9 +62,15 @@ class Plugin:
             x = self.transformer_encoder(x, size, self.params['num_heads'], self.params['dropout_rate'])
 
         # Final layer
-        print(f"Adding final Dense layer with size {layers[-1]}")
-        x = Dense(layers[-1], activation='linear', name="model_output")(x)
+        final_size = layers[-2]  # The last intermediate layer size
+        print(f"Adding final Dense layer with size {final_size} before output layer")
+        x = Dense(final_size, activation='linear')(x)
         print(f"Shape after final Dense layer: {x.shape}")
+
+        # Output layer
+        print(f"Adding output Dense layer with size {layers[-1]}")
+        x = Dense(layers[-1], activation='linear', name="model_output")(x)
+        print(f"Shape after output Dense layer: {x.shape}")
 
         self.model = Model(inputs=model_input, outputs=x, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
@@ -125,8 +131,8 @@ class Plugin:
 
     def calculate_mse(self, y_true, y_pred):
         print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        # Ensure y_pred is reshaped to match y_true
-        y_pred = y_pred.reshape(y_true.shape)
+        y_pred = y_pred.flatten()  # Ensure y_pred is a 1D array
+        y_true = y_true.flatten()  # Ensure y_true is a 1D array
         abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
         squared_abs_difference = abs_difference ** 2
         mse = np.mean(squared_abs_difference)
@@ -135,8 +141,8 @@ class Plugin:
 
     def calculate_mae(self, y_true, y_pred):
         print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        # Ensure y_pred is reshaped to match y_true
-        y_pred = y_pred.reshape(y_true.shape)
+        y_pred = y_pred.flatten()  # Ensure y_pred is a 1D array
+        y_true = y_true.flatten()  # Ensure y_true is a 1D array
         abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
         mae = np.mean(abs_difference)
         print(f"Calculated MAE: {mae}")
