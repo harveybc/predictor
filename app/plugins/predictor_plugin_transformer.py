@@ -38,34 +38,24 @@ class Plugin:
     def build_model(self, input_shape):
         self.params['input_dim'] = input_shape
 
-        # Layer configuration
         layers = []
         current_size = self.params['initial_layer_size']
         layer_size_divisor = self.params['layer_size_divisor']
-        int_layers = 0
-        while int_layers < self.params['intermediate_layers']:
+        for _ in range(self.params['intermediate_layers']):
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
-            int_layers += 1
-        layers.append(1)  # Output layer size
+        layers.append(1)
 
-        # Debugging message
-        print(f"Transformer Layer sizes: {layers}")
-
-        # Model
         model_input = Input(shape=(input_shape, 1), name="model_input")
-        print(f"Transformer input_shape: {input_shape}")
 
         x = model_input
         for size in layers[:-1]:
             x = self.transformer_encoder(x, size, self.params['num_heads'], self.params['dropout_rate'])
-        x = Flatten()(x)  # Flatten before the final dense layer
         x = Dense(layers[-1], activation='linear', name="model_output")(x)
 
         self.model = Model(inputs=model_input, outputs=x, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
 
-        # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
         self.model.summary()
 
@@ -75,7 +65,6 @@ class Plugin:
         out1 = Add()([x, attn_output])
         out1 = LayerNormalization(epsilon=1e-6)(out1)
 
-        # Use the same size for the feed-forward network as for the attention mechanism
         ffn_output = Dense(size, activation='relu')(out1)
         ffn_output = Dropout(dropout_rate)(ffn_output)
         out2 = Add()([out1, ffn_output])
