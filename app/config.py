@@ -9,7 +9,7 @@ DEFAULT_VALUES = {
     'load_model': None,
     'evaluate_file': './model_eval.csv',
     'plugin': 'ann',
-    'time_horizon': 10,  # Set an appropriate default value
+    'time_horizon': 12,  # Set an appropriate default value
     'threshold_error': 0.003,
     'remote_log': None,
     'remote_load_config': None,
