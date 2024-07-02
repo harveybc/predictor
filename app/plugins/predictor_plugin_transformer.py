@@ -71,7 +71,6 @@ class Plugin:
         self.model.summary()
 
 
-
     def transformer_encoder(self, x, size, num_heads, dropout_rate):
         # MultiHeadAttention layer
         print(f"Adding MultiHeadAttention with size {size} and num_heads {num_heads}")
@@ -89,7 +88,7 @@ class Plugin:
 
         # Feed-forward network
         print(f"Adding feed-forward network with size {size}")
-        ffn_output = Dense(size, activation='relu')(out1)
+        ffn_output = Dense(size, activation='relu')(out1)  # Ensure the Dense layer has the same size as MultiHeadAttention
         print(f"Shape after Dense (feed-forward network): {ffn_output.shape}")
         
         ffn_output = Dropout(dropout_rate)(ffn_output)
@@ -102,7 +101,6 @@ class Plugin:
         print(f"Shape after LayerNormalization (feed-forward network): {out2.shape}")
 
         return out2
-
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
