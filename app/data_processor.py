@@ -77,6 +77,9 @@ def run_prediction_pipeline(config, plugin):
         # Predict using the trained model
         predictions = plugin.predict(x_train)
 
+        # Reshape predictions to match y_train shape
+        predictions = predictions.reshape(y_train.shape)
+
         # Evaluate the model
         mse = plugin.calculate_mse(y_train, predictions)
         mae = plugin.calculate_mae(y_train, predictions)
@@ -112,7 +115,6 @@ def run_prediction_pipeline(config, plugin):
     else:
         print(f"Invalid data type returned: {type(input_data)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
-
 
 def load_and_evaluate_model(config, plugin):
     # Load the model

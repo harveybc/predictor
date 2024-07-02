@@ -125,7 +125,8 @@ class Plugin:
 
     def calculate_mse(self, y_true, y_pred):
         print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        y_pred = y_pred.flatten()  # Ensure y_pred is a 1D array
+        # Ensure y_pred is reshaped to match y_true
+        y_pred = y_pred.reshape(y_true.shape)
         abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
         squared_abs_difference = abs_difference ** 2
         mse = np.mean(squared_abs_difference)
@@ -134,7 +135,8 @@ class Plugin:
 
     def calculate_mae(self, y_true, y_pred):
         print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        y_pred = y_pred.flatten()  # Ensure y_pred is a 1D array
+        # Ensure y_pred is reshaped to match y_true
+        y_pred = y_pred.reshape(y_true.shape)
         abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
         mae = np.mean(abs_difference)
         print(f"Calculated MAE: {mae}")
