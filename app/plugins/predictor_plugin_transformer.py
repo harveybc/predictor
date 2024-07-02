@@ -49,7 +49,6 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
-        layers.append(1)  # Output layer size
 
         # Debugging message
         print(f"Transformer Layer sizes: {layers}")
@@ -58,30 +57,46 @@ class Plugin:
         inputs = Input(shape=(input_shape, 1), name="model_input")
         x = inputs
 
-        for size in layers[:-1]:
-            ff_dim = size // self.params['ff_dim_divisor']
-            if size < 64:
-                num_heads = 2
-            elif 64 <= size < 128:
-                num_heads = 4
-            else:
-                num_heads = 8
+        for size in layers:
+            if size > 1:  # Apply MultiHeadAttention only if size > 1
+                ff_dim = size // self.params['ff_dim_divisor']
+                if size < 64:
+                    num_heads = 2
+                elif 64 <= size < 128:
+                    num_heads = 4
+                else:
+                    num_heads = 8
 
-            dropout_rate = self.params['dropout_rate']
+                dropout_rate = self.params['dropout_rate']
 
-            x = MultiHeadAttention(head_num=num_heads)(x)
-            x = LayerNormalization(epsilon=1e-6)(x)
-            x = Dropout(dropout_rate)(x)
+                print(f"Adding MultiHeadAttention with size {size} and num_heads {num_heads}")
+                x = MultiHeadAttention(head_num=num_heads)(x)
+                print(f"Shape after MultiHeadAttention: {x.shape}")
+                x = LayerNormalization(epsilon=1e-6)(x)
+                print(f"Shape after LayerNormalization (MultiHeadAttention): {x.shape}")
+                x = Dropout(dropout_rate)(x)
+                print(f"Shape after Dropout (MultiHeadAttention): {x.shape}")
 
-            ffn_output = Dense(ff_dim, activation='relu')(x)
-            ffn_output = Dense(size)(ffn_output)
-            ffn_output = Dropout(dropout_rate)(ffn_output)
-            x = Add()([x, ffn_output])
-            x = LayerNormalization(epsilon=1e-6)(x)
+                ffn_output = Dense(ff_dim, activation='relu')(x)
+                print(f"Shape after Dense (feed-forward network): {ffn_output.shape}")
+                ffn_output = Dense(size)(ffn_output)
+                print(f"Shape after Dense (matching dimensions for residual connection): {ffn_output.shape}")
+                ffn_output = Dropout(dropout_rate)(ffn_output)
+                print(f"Shape after Dropout (feed-forward network): {ffn_output.shape}")
+                x = Add()([x, ffn_output])
+                print(f"Shape after Add (residual connection - feed-forward network): {x.shape}")
+                x = LayerNormalization(epsilon=1e-6)(x)
+                print(f"Shape after LayerNormalization (feed-forward network): {x.shape}")
 
         x = GlobalAveragePooling1D()(x)
+        print(f"Shape after GlobalAveragePooling1D: {x.shape}")
         x = Flatten()(x)
-        model_output = Dense(layers[-1], activation='tanh', name="model_output")(x)
+        print(f"Shape after Flatten: {x.shape}")
+
+        # Final output layer
+        print(f"Adding final Dense layer with size 1")
+        model_output = Dense(1, activation='tanh', name="model_output")(x)
+        print(f"Shape after final Dense layer: {model_output.shape}")
 
         self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
