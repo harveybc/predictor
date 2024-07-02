@@ -12,109 +12,99 @@ def process_data(config):
     print(f"Data loaded with shape: {data.shape}")
 
     input_timeseries = config['input_timeseries']
-    target_column = config['target_column']
+    time_horizon = config['time_horizon']
 
     if isinstance(input_timeseries, str):
         print(f"Loading input timeseries from CSV file: {input_timeseries}")
-        input_data = load_csv(input_timeseries, headers=config['headers'])
-        print(f"Input timeseries loaded with shape: {input_data.shape}")
-    elif isinstance(input_timeseries, int):
-        input_data = data.iloc[:, input_timeseries]
-        print(f"Using input timeseries at column index: {input_timeseries}")
-    elif target_column is not None:
-        input_data = data.iloc[:, target_column]
-        print(f"Using target column at index: {target_column}")
+        timeseries_data = load_csv(input_timeseries, headers=config['headers'])
+        print(f"Input timeseries loaded with shape: {timeseries_data.shape}")
     else:
-        raise ValueError("Either input_timeseries or target_column must be specified in the configuration.")
+        raise ValueError("input_timeseries must be specified in the configuration as a CSV file path.")
 
-    # Ensure input data is numeric
-    input_data = input_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    # Ensure data is numeric
+    data = data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    timeseries_data = timeseries_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+
+    # Create x_train from input_file
+    x_train = data[:-time_horizon].to_numpy()
+
+    # Create y_train by shifting input_timeseries by time_horizon ticks
+    y_train = timeseries_data[time_horizon:].to_numpy()
+
+    # Ensure x_train is a 2D array
+    if x_train.ndim == 1:
+        x_train = x_train.reshape(-1, 1)
     
-    # Add debug message to confirm type
-    print(f"Returning data of type: {type(input_data)}")
+    # Ensure y_train matches the first dimension of x_train
+    y_train = y_train[:len(x_train)]
+
+    # Add debug message to confirm types and shapes
+    print(f"Returning x_train of type: {type(x_train)} and shape: {x_train.shape}")
+    print(f"Returning y_train of type: {type(y_train)} and shape: {y_train.shape}")
     
-    return input_data
+    return x_train, y_train
+
 
 
 def run_prediction_pipeline(config, plugin):
     start_time = time.time()
     
     print("Running process_data...")
-    input_data = process_data(config)
-    print(f"Processed data received of type: {type(input_data)} and shape: {input_data.shape}")
+    x_train, y_train = process_data(config)
+    print(f"Processed data received: x_train shape: {x_train.shape}, y_train shape: {y_train.shape}")
     
-    time_horizon = config['time_horizon']
     batch_size = config['batch_size']
     epochs = config['epochs']
     threshold_error = config['threshold_error']
 
-    # Ensure input_data is a DataFrame or Series
-    if isinstance(input_data, (pd.DataFrame, pd.Series)):
-        # Prepare data for training
-        x_train = input_data[:-time_horizon].to_numpy()
-        y_train = input_data[time_horizon:].to_numpy()
+    # Train the model
+    plugin.build_model(input_shape=x_train.shape[1])
+    plugin.train(x_train, y_train, epochs=epochs, batch_size=batch_size, threshold_error=threshold_error)
 
-        # Ensure x_train is a 2D array
-        if x_train.ndim == 1:
-            x_train = x_train.reshape(-1, 1)
-        
-        # Ensure y_train matches the first dimension of x_train
-        y_train = y_train[:len(x_train)]
+    # Save the trained model
+    if config['save_model']:
+        plugin.save(config['save_model'])
+        print(f"Model saved to {config['save_model']}")
 
-        # Debug messages for shapes
-        print(f"x_train shape: {x_train.shape}")
-        print(f"y_train shape: {y_train.shape}")
+    # Predict using the trained model
+    predictions = plugin.predict(x_train)
 
-        # Train the model
-        plugin.build_model(input_shape=x_train.shape[1])
-        plugin.train(x_train, y_train, epochs=epochs, batch_size=batch_size, threshold_error=threshold_error)
+    # Reshape predictions to match y_train shape
+    predictions = predictions.reshape(y_train.shape)
 
-        # Save the trained model
-        if config['save_model']:
-            plugin.save(config['save_model'])
-            print(f"Model saved to {config['save_model']}")
+    # Evaluate the model
+    mse = plugin.calculate_mse(y_train, predictions)
+    mae = plugin.calculate_mae(y_train, predictions)
+    print(f"Mean Squared Error: {mse}")
+    print(f"Mean Absolute Error: {mae}")
 
-        # Predict using the trained model
-        predictions = plugin.predict(x_train)
+    # Convert predictions to a DataFrame and save to CSV
+    predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
+    output_filename = config['output_file']
+    write_csv(output_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
+    print(f"Output written to {output_filename}")
 
-        # Reshape predictions to match y_train shape
-        predictions = predictions.reshape(y_train.shape)
+    # Save final configuration and debug information
+    end_time = time.time()
+    execution_time = end_time - start_time
+    debug_info = {
+        'execution_time': execution_time,
+        'mse': mse,
+        'mae': mae
+    }
 
-        # Evaluate the model
-        mse = plugin.calculate_mse(y_train, predictions)
-        mae = plugin.calculate_mae(y_train, predictions)
-        print(f"Mean Squared Error: {mse}")
-        print(f"Mean Absolute Error: {mae}")
+    # Save debug info
+    if config.get('save_log'):
+        save_debug_info(debug_info, config['save_log'])
+        print(f"Debug info saved to {config['save_log']}.")
 
-        # Convert predictions to a DataFrame and save to CSV
-        predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
-        output_filename = config['output_file']
-        write_csv(output_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
-        print(f"Output written to {output_filename}")
+    # Remote log debug info and config
+    if config.get('remote_log'):
+        remote_log(config, debug_info, config['remote_log'], config['username'], config['password'])
+        print(f"Debug info saved to {config['remote_log']}.")
 
-        # Save final configuration and debug information
-        end_time = time.time()
-        execution_time = end_time - start_time
-        debug_info = {
-            'execution_time': execution_time,
-            'mse': mse,
-            'mae': mae
-        }
+    print(f"Execution time: {execution_time} seconds")
 
-        # Save debug info
-        if config.get('save_log'):
-            save_debug_info(debug_info, config['save_log'])
-            print(f"Debug info saved to {config['save_log']}.")
-
-        # Remote log debug info and config
-        if config.get('remote_log'):
-            remote_log(config, debug_info, config['remote_log'], config['username'], config['password'])
-            print(f"Debug info saved to {config['remote_log']}.")
-
-        print(f"Execution time: {execution_time} seconds")
-    else:
-        print(f"Invalid data type returned: {type(input_data)}")
-        raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
 
 def load_and_evaluate_model(config, plugin):
     # Load the model
