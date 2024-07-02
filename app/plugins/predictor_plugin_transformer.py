@@ -71,8 +71,9 @@ class Plugin:
         self.model.summary()
 
 
+
     def transformer_encoder(self, x, size, num_heads, dropout_rate):
-    # MultiHeadAttention layer
+        # MultiHeadAttention layer
         print(f"Adding MultiHeadAttention with size {size} and num_heads {num_heads}")
         attn_output = MultiHeadAttention(num_heads=num_heads, key_dim=size)(x, x)
         print(f"Shape after MultiHeadAttention: {attn_output.shape}")
@@ -101,6 +102,7 @@ class Plugin:
         print(f"Shape after LayerNormalization (feed-forward network): {out2.shape}")
 
         return out2
+
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
