@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Dense, Input, MultiHeadAttention, LayerNormalization, Dropout, Add
+from keras.layers import Dense, Input, MultiHeadAttention, LayerNormalization, Dropout, Add, Flatten
 from keras.optimizers import Adam
 
 class Plugin:
@@ -59,6 +59,7 @@ class Plugin:
         x = model_input
         for size in layers[:-1]:
             x = self.transformer_encoder(x, size, self.params['num_heads'], self.params['dropout_rate'])
+        x = Flatten()(x)  # Flatten before the final dense layer
         x = Dense(layers[-1], activation='linear', name="model_output")(x)
 
         self.model = Model(inputs=model_input, outputs=x, name="predictor_model")
@@ -90,13 +91,13 @@ class Plugin:
     def predict(self, data):
         print(f"Predicting data with shape: {data.shape}")
         predictions = self.model.predict(data)
+        predictions = predictions.flatten()  # Flatten the predictions for error calculation
         print(f"Predicted data shape: {predictions.shape}")
         return predictions
 
     def calculate_mse(self, y_true, y_pred):
         print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        y_pred = y_pred.flatten()  # Ensure y_pred is a 1D array
-        abs_difference = np.abs(np.array(y_true) - np.array(y_pred[:len(y_true)]))
+        abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
         squared_abs_difference = abs_difference ** 2
         mse = np.mean(squared_abs_difference)
         print(f"Calculated MSE: {mse}")
@@ -104,8 +105,7 @@ class Plugin:
 
     def calculate_mae(self, y_true, y_pred):
         print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        y_pred = y_pred.flatten()  # Ensure y_pred is a 1D array
-        abs_difference = np.abs(np.array(y_true) - np.array(y_pred[:len(y_true)]))
+        abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
         mae = np.mean(abs_difference)
         print(f"Calculated MAE: {mae}")
         return mae
