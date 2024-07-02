@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Dense, Input, MultiHeadAttention, LayerNormalization, Dropout, Add, Flatten
+from keras.layers import Dense, Input, MultiHeadAttention, LayerNormalization, Dropout, Add
 from keras.optimizers import Adam
 
 class Plugin:
@@ -57,11 +57,9 @@ class Plugin:
         print(f"Transformer input_shape: {input_shape}")
 
         x = model_input
-        for idx, size in enumerate(layers[:-1]):
-            print(f"Adding transformer encoder block {idx+1} with size {size}")
+        for size in layers[:-1]:
             x = self.transformer_encoder(x, size, self.params['num_heads'], self.params['dropout_rate'])
         x = Dense(layers[-1], activation='linear', name="model_output")(x)
-        print(f"Shape after final Dense layer: {x.shape}")
 
         self.model = Model(inputs=model_input, outputs=x, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
@@ -70,38 +68,31 @@ class Plugin:
         print("Predictor Model Summary:")
         self.model.summary()
 
-
     def transformer_encoder(self, x, size, num_heads, dropout_rate):
-        # MultiHeadAttention layer
         print(f"Adding MultiHeadAttention with size {size} and num_heads {num_heads}")
         attn_output = MultiHeadAttention(num_heads=num_heads, key_dim=size)(x, x)
         print(f"Shape after MultiHeadAttention: {attn_output.shape}")
-        
+
         attn_output = Dropout(dropout_rate)(attn_output)
         print(f"Shape after Dropout (MultiHeadAttention): {attn_output.shape}")
-        
+
         out1 = Add()([x, attn_output])
         print(f"Shape after Add (residual connection - MultiHeadAttention): {out1.shape}")
-        
+
         out1 = LayerNormalization(epsilon=1e-6)(out1)
         print(f"Shape after LayerNormalization (MultiHeadAttention): {out1.shape}")
 
-        # Feed-forward network
         print(f"Adding feed-forward network with size {size}")
-        ffn_output = Dense(size, activation='relu')(out1)  # Ensure the Dense layer has the same size as MultiHeadAttention
+        ffn_output = Dense(size, activation='relu')(out1)
         print(f"Shape after Dense (feed-forward network): {ffn_output.shape}")
-        
+
         ffn_output = Dropout(dropout_rate)(ffn_output)
         print(f"Shape after Dropout (feed-forward network): {ffn_output.shape}")
-        
+
         out2 = Add()([out1, ffn_output])
         print(f"Shape after Add (residual connection - feed-forward network): {out2.shape}")
-        
-        out2 = LayerNormalization(epsilon=1e-6)(out2)
-        print(f"Shape after LayerNormalization (feed-forward network): {out2.shape}")
 
-        return out2
-
+        return LayerNormalization(epsilon=1e-6)(out2)
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
         print(f"Training predictor model with data shape: {x_train.shape}")
@@ -133,6 +124,7 @@ class Plugin:
         mae = np.mean(abs_difference)
         print(f"Calculated MAE: {mae}")
         return mae
+
 
     def save(self, file_path):
         save_model(self.model, file_path)
