@@ -76,7 +76,7 @@ class Plugin:
 
     def transformer_encoder(self, x, size, num_heads, dropout_rate):
         print(f"Adding MultiHeadAttention with size {size} and num_heads {num_heads}")
-        attn_output = MultiHeadAttention(num_heads=num_heads, key_dim=size)(x, x)
+        attn_output = MultiHeadAttention(num_heads=num_heads, key_dim=x.shape[-1])(x, x)
         print(f"Shape after MultiHeadAttention: {attn_output.shape}")
 
         attn_output = Dropout(dropout_rate)(attn_output)
@@ -95,6 +95,10 @@ class Plugin:
         ffn_output = Dropout(dropout_rate)(ffn_output)
         print(f"Shape after Dropout (feed-forward network): {ffn_output.shape}")
 
+        # Adding Dense layer to match the dimensions before residual connection
+        ffn_output = Dense(out1.shape[-1])(ffn_output)
+        print(f"Shape after Dense (matching dimensions for residual connection): {ffn_output.shape}")
+
         out2 = Add()([out1, ffn_output])
         print(f"Shape after Add (residual connection - feed-forward network): {out2.shape}")
 
@@ -102,6 +106,7 @@ class Plugin:
         print(f"Shape after LayerNormalization (feed-forward network): {out2.shape}")
 
         return out2
+
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
