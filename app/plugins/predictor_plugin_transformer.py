@@ -38,35 +38,50 @@ class Plugin:
     def build_model(self, input_shape):
         self.params['input_dim'] = input_shape
 
+        # Layer configuration
         layers = []
         current_size = self.params['initial_layer_size']
         layer_size_divisor = self.params['layer_size_divisor']
         for _ in range(self.params['intermediate_layers']):
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
-        layers.append(1)
+        layers.append(1)  # Output layer size
 
+        # Debugging message
+        print(f"Transformer Layer sizes: {layers}")
+
+        # Model
         model_input = Input(shape=(input_shape, 1), name="model_input")
+        print(f"Transformer input_shape: {input_shape}")
 
         x = model_input
-        for size in layers[:-1]:
+        for i, size in enumerate(layers[:-1]):
+            print(f"Adding transformer encoder block {i+1} with size {size}")
             x = self.transformer_encoder(x, size, self.params['num_heads'], self.params['dropout_rate'])
+        print("Flattening the output of the last transformer block")
+        x = Flatten()(x)
+        print(f"Adding final dense layer with size {layers[-1]}")
         x = Dense(layers[-1], activation='linear', name="model_output")(x)
 
         self.model = Model(inputs=model_input, outputs=x, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
 
+        # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
         self.model.summary()
 
     def transformer_encoder(self, x, size, num_heads, dropout_rate):
+        print(f"Adding MultiHeadAttention with size {size} and num_heads {num_heads}")
         attn_output = MultiHeadAttention(num_heads=num_heads, key_dim=size)(x, x)
         attn_output = Dropout(dropout_rate)(attn_output)
+        print(f"Adding residual connection and LayerNormalization after MultiHeadAttention")
         out1 = Add()([x, attn_output])
         out1 = LayerNormalization(epsilon=1e-6)(out1)
 
+        print(f"Adding feed-forward network with size {size}")
         ffn_output = Dense(size, activation='relu')(out1)
         ffn_output = Dropout(dropout_rate)(ffn_output)
+        print(f"Adding residual connection and LayerNormalization after feed-forward network")
         out2 = Add()([out1, ffn_output])
         return LayerNormalization(epsilon=1e-6)(out2)
 
@@ -81,12 +96,12 @@ class Plugin:
     def predict(self, data):
         print(f"Predicting data with shape: {data.shape}")
         predictions = self.model.predict(data)
-        predictions = predictions.flatten()  # Flatten the predictions for error calculation
         print(f"Predicted data shape: {predictions.shape}")
         return predictions
 
     def calculate_mse(self, y_true, y_pred):
         print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
+        y_pred = y_pred.flatten()[:len(y_true)]  # Ensure y_pred is a 1D array and matches y_true length
         abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
         squared_abs_difference = abs_difference ** 2
         mse = np.mean(squared_abs_difference)
@@ -95,6 +110,7 @@ class Plugin:
 
     def calculate_mae(self, y_true, y_pred):
         print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
+        y_pred = y_pred.flatten()[:len(y_true)]  # Ensure y_pred is a 1D array and matches y_true length
         abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
         mae = np.mean(abs_difference)
         print(f"Calculated MAE: {mae}")
