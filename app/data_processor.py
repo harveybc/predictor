@@ -16,21 +16,24 @@ def process_data(config):
 
     if isinstance(input_timeseries, str):
         print(f"Loading input timeseries from CSV file: {input_timeseries}")
-        input_timeseries_data = load_csv(input_timeseries, headers=config['headers'])
-        print(f"Input timeseries loaded with shape: {input_timeseries_data.shape}")
+        input_data = load_csv(input_timeseries, headers=config['headers'])
+        print(f"Input timeseries loaded with shape: {input_data.shape}")
     elif isinstance(input_timeseries, int):
-        input_timeseries_data = data.iloc[:, input_timeseries]
+        input_data = data.iloc[:, input_timeseries]
         print(f"Using input timeseries at column index: {input_timeseries}")
     elif target_column is not None:
-        input_timeseries_data = data.iloc[:, target_column]
+        input_data = data.iloc[:, target_column]
         print(f"Using target column at index: {target_column}")
     else:
         raise ValueError("Either input_timeseries or target_column must be specified in the configuration.")
 
     # Ensure input data is numeric
-    input_timeseries_data = input_timeseries_data.apply(pd.to_numeric, errors='coerce').fillna(0)
-    data = data.apply(pd.to_numeric, errors='coerce').fillna(0)
-    return data, input_timeseries_data
+    input_data = input_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    
+    # Add debug message to confirm type
+    print(f"Returning data of type: {type(input_data)}")
+    
+    return input_data
 
 
 def run_prediction_pipeline(config, plugin):
@@ -38,7 +41,7 @@ def run_prediction_pipeline(config, plugin):
     
     print("Running process_data...")
     input_data = process_data(config)
-    print("Processed data received.")
+    print(f"Processed data received of type: {type(input_data)} and shape: {input_data.shape}")
     
     time_horizon = config['time_horizon']
     batch_size = config['batch_size']
@@ -46,7 +49,7 @@ def run_prediction_pipeline(config, plugin):
     threshold_error = config['threshold_error']
 
     # Ensure input_data is a DataFrame or Series
-    if isinstance(input_data, pd.DataFrame) or isinstance(input_data, pd.Series):
+    if isinstance(input_data, (pd.DataFrame, pd.Series)):
         # Prepare data for training
         x_train = input_data[:-time_horizon].to_numpy()
         y_train = input_data[time_horizon:].to_numpy()
@@ -57,6 +60,10 @@ def run_prediction_pipeline(config, plugin):
         
         # Ensure y_train matches the first dimension of x_train
         y_train = y_train[:len(x_train)]
+
+        # Debug messages for shapes
+        print(f"x_train shape: {x_train.shape}")
+        print(f"y_train shape: {y_train.shape}")
 
         # Train the model
         plugin.build_model(input_shape=x_train.shape[1])
@@ -103,6 +110,7 @@ def run_prediction_pipeline(config, plugin):
 
         print(f"Execution time: {execution_time} seconds")
     else:
+        print(f"Invalid data type returned: {type(input_data)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
 
 
