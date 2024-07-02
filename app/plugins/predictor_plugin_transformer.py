@@ -57,9 +57,14 @@ class Plugin:
         print(f"Transformer input_shape: {input_shape}")
 
         x = model_input
-        for size in layers[:-1]:
+        for i, size in enumerate(layers[:-1]):
+            print(f"Adding transformer encoder block {i + 1} with size {size}")
             x = self.transformer_encoder(x, size, self.params['num_heads'], self.params['dropout_rate'])
+
+        # Final layer
+        print(f"Adding final Dense layer with size {layers[-1]}")
         x = Dense(layers[-1], activation='linear', name="model_output")(x)
+        print(f"Shape after final Dense layer: {x.shape}")
 
         self.model = Model(inputs=model_input, outputs=x, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
@@ -67,6 +72,7 @@ class Plugin:
         # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
         self.model.summary()
+
 
     def transformer_encoder(self, x, size, num_heads, dropout_rate):
         print(f"Adding MultiHeadAttention with size {size} and num_heads {num_heads}")
@@ -92,7 +98,10 @@ class Plugin:
         out2 = Add()([out1, ffn_output])
         print(f"Shape after Add (residual connection - feed-forward network): {out2.shape}")
 
-        return LayerNormalization(epsilon=1e-6)(out2)
+        out2 = LayerNormalization(epsilon=1e-6)(out2)
+        print(f"Shape after LayerNormalization (feed-forward network): {out2.shape}")
+
+        return out2
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
