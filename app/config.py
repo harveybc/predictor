@@ -5,7 +5,7 @@ DEFAULT_VALUES = {
     'input_timeseries': './tests/data/csv_sel_unb_norm_512.csv',
     'target_column': None,
     'output_file': './csv_output.csv',
-    'save_model': './predictor_model.h5',
+    'save_model': './predictor_model.keras',
     'load_model': None,
     'evaluate_file': './model_eval.csv',
     'plugin': 'ann',
