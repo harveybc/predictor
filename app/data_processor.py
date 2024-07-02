@@ -28,7 +28,7 @@ def run_prediction_pipeline(config, plugin):
     start_time = time.time()
     
     print("Running process_data...")
-    input_data, timeseries_data = process_data(config)
+    input_data = process_data(config)
     print("Processed data received.")
     
     time_horizon = config['time_horizon']
@@ -38,10 +38,10 @@ def run_prediction_pipeline(config, plugin):
 
     # Prepare data for training
     x_train = input_data[:-time_horizon].to_numpy()
-    y_train = timeseries_data[time_horizon:].to_numpy().flatten()
 
-    # Adjust the length of y_train to match x_train
-    y_train = y_train[:len(x_train)]
+    # Load the input_timeseries data for y_train
+    input_timeseries_data = load_csv(config['input_timeseries'], headers=config['headers'])
+    y_train = input_timeseries_data[time_horizon:].to_numpy().flatten()
 
     # Ensure x_train is a 2D array
     if x_train.ndim == 1:
