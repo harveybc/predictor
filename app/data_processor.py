@@ -45,61 +45,66 @@ def run_prediction_pipeline(config, plugin):
     epochs = config['epochs']
     threshold_error = config['threshold_error']
 
-    # Prepare data for training
-    x_train = input_data[:-time_horizon].to_numpy()
-    y_train = input_data[time_horizon:].to_numpy()
+    # Ensure input_data is a DataFrame or Series
+    if isinstance(input_data, pd.DataFrame) or isinstance(input_data, pd.Series):
+        # Prepare data for training
+        x_train = input_data[:-time_horizon].to_numpy()
+        y_train = input_data[time_horizon:].to_numpy()
 
-    # Ensure x_train is a 2D array
-    if x_train.ndim == 1:
-        x_train = x_train.reshape(-1, 1)
-    
-    # Ensure y_train matches the first dimension of x_train
-    y_train = y_train[:len(x_train)]
+        # Ensure x_train is a 2D array
+        if x_train.ndim == 1:
+            x_train = x_train.reshape(-1, 1)
+        
+        # Ensure y_train matches the first dimension of x_train
+        y_train = y_train[:len(x_train)]
 
-    # Train the model
-    plugin.build_model(input_shape=x_train.shape[1])
-    plugin.train(x_train, y_train, epochs=epochs, batch_size=batch_size, threshold_error=threshold_error)
+        # Train the model
+        plugin.build_model(input_shape=x_train.shape[1])
+        plugin.train(x_train, y_train, epochs=epochs, batch_size=batch_size, threshold_error=threshold_error)
 
-    # Save the trained model
-    if config['save_model']:
-        plugin.save(config['save_model'])
-        print(f"Model saved to {config['save_model']}")
+        # Save the trained model
+        if config['save_model']:
+            plugin.save(config['save_model'])
+            print(f"Model saved to {config['save_model']}")
 
-    # Predict using the trained model
-    predictions = plugin.predict(x_train)
+        # Predict using the trained model
+        predictions = plugin.predict(x_train)
 
-    # Evaluate the model
-    mse = plugin.calculate_mse(y_train, predictions)
-    mae = plugin.calculate_mae(y_train, predictions)
-    print(f"Mean Squared Error: {mse}")
-    print(f"Mean Absolute Error: {mae}")
+        # Evaluate the model
+        mse = plugin.calculate_mse(y_train, predictions)
+        mae = plugin.calculate_mae(y_train, predictions)
+        print(f"Mean Squared Error: {mse}")
+        print(f"Mean Absolute Error: {mae}")
 
-    # Convert predictions to a DataFrame and save to CSV
-    predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
-    output_filename = config['output_file']
-    write_csv(output_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
-    print(f"Output written to {output_filename}")
+        # Convert predictions to a DataFrame and save to CSV
+        predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
+        output_filename = config['output_file']
+        write_csv(output_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
+        print(f"Output written to {output_filename}")
 
-    # Save final configuration and debug information
-    end_time = time.time()
-    execution_time = end_time - start_time
-    debug_info = {
-        'execution_time': execution_time,
-        'mse': mse,
-        'mae': mae
-    }
+        # Save final configuration and debug information
+        end_time = time.time()
+        execution_time = end_time - start_time
+        debug_info = {
+            'execution_time': execution_time,
+            'mse': mse,
+            'mae': mae
+        }
 
-    # Save debug info
-    if config.get('save_log'):
-        save_debug_info(debug_info, config['save_log'])
-        print(f"Debug info saved to {config['save_log']}.")
+        # Save debug info
+        if config.get('save_log'):
+            save_debug_info(debug_info, config['save_log'])
+            print(f"Debug info saved to {config['save_log']}.")
 
-    # Remote log debug info and config
-    if config.get('remote_log'):
-        remote_log(config, debug_info, config['remote_log'], config['username'], config['password'])
-        print(f"Debug info saved to {config['remote_log']}.")
+        # Remote log debug info and config
+        if config.get('remote_log'):
+            remote_log(config, debug_info, config['remote_log'], config['username'], config['password'])
+            print(f"Debug info saved to {config['remote_log']}.")
 
-    print(f"Execution time: {execution_time} seconds")
+        print(f"Execution time: {execution_time} seconds")
+    else:
+        raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
+
 
 def load_and_evaluate_model(config, plugin):
     # Load the model
