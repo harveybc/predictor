@@ -138,7 +138,6 @@ class Plugin:
         print(f"Calculated MAE: {mae}")
         return mae
 
-
     def save(self, file_path):
         save_model(self.model, file_path)
         print(f"Predictor model saved to {file_path}")
