@@ -1,12 +1,12 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Input, Dense, Flatten, GlobalAveragePooling1D, LayerNormalization, Dropout, Add, Activation
+from keras.layers import Input, Dense, Dropout, Add, LayerNormalization, GlobalAveragePooling1D, Flatten
 from keras.optimizers import Adam
 from keras_multi_head import MultiHeadAttention
 
 class Plugin:
     """
-    A predictor plugin using a Transformer network based on Keras, with dynamically configurable size.
+    A predictor plugin using a simple Transformer network based on Keras, with dynamically configurable size.
     """
 
     plugin_params = {
@@ -15,11 +15,11 @@ class Plugin:
         'intermediate_layers': 1,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'ff_dim_divisor': 2,
+        'num_heads': 2,
         'dropout_rate': 0.1
     }
 
-    plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers', 'initial_layer_size']
+    plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size', 'num_heads', 'dropout_rate']
 
     def __init__(self):
         self.params = self.plugin_params.copy()
@@ -37,8 +37,7 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape):
-        self.params['input_shape'] = input_shape
-        print(f"Transformer input_shape: {input_shape}")
+        self.params['input_dim'] = input_shape
 
         # Layer configuration
         layers = []
@@ -49,61 +48,64 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
+        layers.append(1)  # Output layer size
 
         # Debugging message
         print(f"Transformer Layer sizes: {layers}")
 
         # Model
         inputs = Input(shape=(input_shape, 1), name="model_input")
+        print(f"Transformer input_shape: {input_shape}")
+
         x = inputs
+        for i, size in enumerate(layers[:-1]):
+            print(f"Adding MultiHeadAttention with size {size} and num_heads {self.params['num_heads']}")
+            x = self.multi_head_attention_block(x, size, self.params['num_heads'], self.params['dropout_rate'])
+            print(f"Shape after MultiHeadAttention block {i + 1}: {x.shape}")
 
-        for size in layers:
-            if size > 1:  # Apply MultiHeadAttention only if size > 1
-                ff_dim = size // self.params['ff_dim_divisor']
-                if size < 64:
-                    num_heads = 2
-                elif 64 <= size < 128:
-                    num_heads = 4
-                else:
-                    num_heads = 8
+        # Final layer
+        print(f"Adding final Dense layer with size {layers[-1]}")
+        x = Dense(layers[-1], activation='linear', name="model_output")(x)
+        print(f"Shape after final Dense layer: {x.shape}")
 
-                dropout_rate = self.params['dropout_rate']
-
-                print(f"Adding MultiHeadAttention with size {size} and num_heads {num_heads}")
-                x = MultiHeadAttention(head_num=num_heads)(x)
-                print(f"Shape after MultiHeadAttention: {x.shape}")
-                x = LayerNormalization(epsilon=1e-6)(x)
-                print(f"Shape after LayerNormalization (MultiHeadAttention): {x.shape}")
-                x = Dropout(dropout_rate)(x)
-                print(f"Shape after Dropout (MultiHeadAttention): {x.shape}")
-
-                ffn_output = Dense(ff_dim, activation='relu')(x)
-                print(f"Shape after Dense (feed-forward network): {ffn_output.shape}")
-                ffn_output = Dense(size)(ffn_output)
-                print(f"Shape after Dense (matching dimensions for residual connection): {ffn_output.shape}")
-                ffn_output = Dropout(dropout_rate)(ffn_output)
-                print(f"Shape after Dropout (feed-forward network): {ffn_output.shape}")
-                x = Add()([x, ffn_output])
-                print(f"Shape after Add (residual connection - feed-forward network): {x.shape}")
-                x = LayerNormalization(epsilon=1e-6)(x)
-                print(f"Shape after LayerNormalization (feed-forward network): {x.shape}")
-
-        x = GlobalAveragePooling1D()(x)
-        print(f"Shape after GlobalAveragePooling1D: {x.shape}")
-        x = Flatten()(x)
-        print(f"Shape after Flatten: {x.shape}")
-
-        # Final output layer
-        print(f"Adding final Dense layer with size 1")
-        model_output = Dense(1, activation='tanh', name="model_output")(x)
-        print(f"Shape after final Dense layer: {model_output.shape}")
-
-        self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
+        self.model = Model(inputs=inputs, outputs=x, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
 
         # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
         self.model.summary()
+
+    def multi_head_attention_block(self, x, size, num_heads, dropout_rate):
+        print(f"Adding MultiHeadAttention with size {size} and num_heads {num_heads}")
+        attn_output = MultiHeadAttention(head_num=num_heads)(x)
+        print(f"Shape after MultiHeadAttention: {attn_output.shape}")
+
+        attn_output = Dropout(dropout_rate)(attn_output)
+        print(f"Shape after Dropout (MultiHeadAttention): {attn_output.shape}")
+
+        out1 = Add()([x, attn_output])
+        print(f"Shape after Add (residual connection - MultiHeadAttention): {out1.shape}")
+
+        out1 = LayerNormalization(epsilon=1e-6)(out1)
+        print(f"Shape after LayerNormalization (MultiHeadAttention): {out1.shape}")
+
+        print(f"Adding feed-forward network with size {size}")
+        ffn_output = Dense(size, activation='relu')(out1)
+        print(f"Shape after Dense (feed-forward network): {ffn_output.shape}")
+
+        ffn_output = Dropout(dropout_rate)(ffn_output)
+        print(f"Shape after Dropout (feed-forward network): {ffn_output.shape}")
+
+        ffn_output = Dense(size)(ffn_output)
+        print(f"Shape after Dense (matching dimensions for residual connection): {ffn_output.shape}")
+
+        out2 = Add()([out1, ffn_output])
+        print(f"Shape after Add (residual connection - feed-forward network): {out2.shape}")
+
+        out2 = LayerNormalization(epsilon=1e-6)(out2)
+        print(f"Shape after LayerNormalization (feed-forward network): {out2.shape}")
+
+        return out2
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
         # Ensure x_train is 3D
