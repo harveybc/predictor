@@ -56,7 +56,8 @@ class Plugin:
 
         x = model_input
         for size in layers[:-1]:
-            x = LSTM(size, activation='relu', return_sequences=True)(x)
+            if size > 1:
+                x = LSTM(size, activation='relu', return_sequences=True)(x)
         x = LSTM(layers[-2], activation='relu')(x)
         model_output = Dense(layers[-1], activation='linear', name="model_output")(x)
         

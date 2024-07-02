@@ -56,7 +56,8 @@ class Plugin:
 
         x = model_input
         for size in layers[:-1]:
-            x = Dense(size, activation='relu')(x)
+            if size > 1:
+                x = Dense(size, activation='relu')(x)
         model_output = Dense(layers[-1], activation='linear', name="model_output")(x)
         
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
