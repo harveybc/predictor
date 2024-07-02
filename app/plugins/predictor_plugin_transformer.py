@@ -12,14 +12,14 @@ class Plugin:
     plugin_params = {
         'epochs': 10,
         'batch_size': 256,
-        'intermediate_layers': 1,
+        'intermediate_layers': 3,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
         'num_heads': 2,
         'dropout_rate': 0.1
     }
 
-    plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size', 'num_heads', 'dropout_rate']
+    plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers']
 
     def __init__(self):
         self.params = self.plugin_params.copy()
@@ -37,9 +37,8 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape):
-        self.params['input_dim'] = input_shape
+        self.params['input_shape'] = input_shape
 
-        # Layer configuration
         layers = []
         current_size = self.params['initial_layer_size']
         layer_size_divisor = self.params['layer_size_divisor']
@@ -50,20 +49,19 @@ class Plugin:
             int_layers += 1
         layers.append(1)  # Output layer size
 
-        # Debugging message
         print(f"Transformer Layer sizes: {layers}")
 
-        # Model
         inputs = Input(shape=(input_shape, 1), name="model_input")
+        x = inputs
         print(f"Transformer input_shape: {input_shape}")
 
-        x = inputs
-        for i, size in enumerate(layers[:-1]):
-            print(f"Adding MultiHeadAttention with size {size} and num_heads {self.params['num_heads']}")
+        for size in layers[:-1]:
+            print(f"ADDING DENSE LAYER BEFORE MULTIHEADATTENTION: Current size: {size}")
+            x = Dense(size)(x)
+            print(f"Shape after Dense layer: {x.shape}")
+            print(f"ADDING MULTIHEADATTENTION: Current size: {size}")
             x = self.multi_head_attention_block(x, size, self.params['num_heads'], self.params['dropout_rate'])
-            print(f"Shape after MultiHeadAttention block {i + 1}: {x.shape}")
 
-        # Final layer
         print(f"Adding final Dense layer with size {layers[-1]}")
         x = Dense(layers[-1], activation='linear', name="model_output")(x)
         print(f"Shape after final Dense layer: {x.shape}")
@@ -71,44 +69,41 @@ class Plugin:
         self.model = Model(inputs=inputs, outputs=x, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
 
-        # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
         self.model.summary()
 
     def multi_head_attention_block(self, x, size, num_heads, dropout_rate):
-        print(f"Adding MultiHeadAttention with size {size} and num_heads {num_heads}")
+        print(f"BEFORE MULTIHEADATTENTION: x shape: {x.shape}, size: {size}, num_heads: {num_heads}")
         attn_output = MultiHeadAttention(head_num=num_heads)(x)
-        print(f"Shape after MultiHeadAttention: {attn_output.shape}")
+        print(f"AFTER MULTIHEADATTENTION: attn_output shape: {attn_output.shape}")
 
         attn_output = Dropout(dropout_rate)(attn_output)
-        print(f"Shape after Dropout (MultiHeadAttention): {attn_output.shape}")
+        print(f"AFTER DROPOUT: attn_output shape: {attn_output.shape}")
 
         out1 = Add()([x, attn_output])
-        print(f"Shape after Add (residual connection - MultiHeadAttention): {out1.shape}")
+        print(f"AFTER ADD: out1 shape: {out1.shape}")
 
         out1 = LayerNormalization(epsilon=1e-6)(out1)
-        print(f"Shape after LayerNormalization (MultiHeadAttention): {out1.shape}")
+        print(f"AFTER LAYERNORMALIZATION: out1 shape: {out1.shape}")
 
-        print(f"Adding feed-forward network with size {size}")
         ffn_output = Dense(size, activation='relu')(out1)
-        print(f"Shape after Dense (feed-forward network): {ffn_output.shape}")
+        print(f"AFTER FIRST DENSE: ffn_output shape: {ffn_output.shape}")
 
         ffn_output = Dropout(dropout_rate)(ffn_output)
-        print(f"Shape after Dropout (feed-forward network): {ffn_output.shape}")
+        print(f"AFTER SECOND DROPOUT: ffn_output shape: {ffn_output.shape}")
 
-        ffn_output = Dense(size)(ffn_output)
-        print(f"Shape after Dense (matching dimensions for residual connection): {ffn_output.shape}")
+        ffn_output = Dense(out1.shape[-1])(ffn_output)
+        print(f"AFTER SECOND DENSE: ffn_output shape: {ffn_output.shape}")
 
         out2 = Add()([out1, ffn_output])
-        print(f"Shape after Add (residual connection - feed-forward network): {out2.shape}")
+        print(f"AFTER SECOND ADD: out2 shape: {out2.shape}")
 
         out2 = LayerNormalization(epsilon=1e-6)(out2)
-        print(f"Shape after LayerNormalization (feed-forward network): {out2.shape}")
+        print(f"AFTER SECOND LAYERNORMALIZATION: out2 shape: {out2.shape}")
 
         return out2
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
-        # Ensure x_train is 3D
         if x_train.ndim == 2:
             x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
         print(f"Training predictor model with data shape: {x_train.shape}")
@@ -119,7 +114,6 @@ class Plugin:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
 
     def predict(self, data):
-        # Ensure data is 3D
         if data.ndim == 2:
             data = data.reshape(data.shape[0], data.shape[1], 1)
         print(f"Predicting data with shape: {data.shape}")
@@ -129,7 +123,7 @@ class Plugin:
 
     def calculate_mse(self, y_true, y_pred):
         print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        y_pred = y_pred.flatten()  # Ensure y_pred is a 1D array
+        y_pred = y_pred.flatten()
         abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
         squared_abs_difference = abs_difference ** 2
         mse = np.mean(squared_abs_difference)
@@ -138,7 +132,7 @@ class Plugin:
 
     def calculate_mae(self, y_true, y_pred):
         print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        y_pred = y_pred.flatten()  # Ensure y_pred is a 1D array
+        y_pred = y_pred.flatten()
         abs_difference = np.abs(np.array(y_true) - np.array(y_pred))
         mae = np.mean(abs_difference)
         print(f"Calculated MAE: {mae}")
@@ -152,7 +146,6 @@ class Plugin:
         self.model = load_model(file_path)
         print(f"Predictor model loaded from {file_path}")
 
-# Debugging usage example
 if __name__ == "__main__":
     plugin = Plugin()
     plugin.build_model(input_shape=8)
