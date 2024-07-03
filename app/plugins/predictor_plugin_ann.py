@@ -163,15 +163,13 @@ class Plugin:
 
         return mae
 
+    def save(self, file_path):
+        save_model(self.model, file_path)
+        print(f"Predictor model saved to {file_path}")
 
-
-        def save(self, file_path):
-            save_model(self.model, file_path)
-            print(f"Predictor model saved to {file_path}")
-
-        def load(self, file_path):
-            self.model = load_model(file_path)
-            print(f"Predictor model loaded from {file_path}")
+    def load(self, file_path):
+        self.model = load_model(file_path)
+        print(f"Predictor model loaded from {file_path}")
 
 # Debugging usage example
 if __name__ == "__main__":
