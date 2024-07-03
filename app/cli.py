@@ -3,9 +3,9 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Predictor: A tool for timeseries prediction with plugin support.")
     parser.add_argument('x_train_file', type=str, help='Path to the input CSV file that is used for training the model (x_train).')
-    parser.add_argument('-ytf', '--y_train_file', type=int, help='Path to the input CSV file that is used for training the model (y_train), IMPORTANT: it is not shifted, must coincide 1 to 1|with the training data.')
+    parser.add_argument('-ytf', '--y_train_file', type=str, help='Path to the input CSV file that is used for training the model (y_train), IMPORTANT: it is not shifted, must coincide 1 to 1|with the training data.')
     parser.add_argument('-xvf', '--x_validation_file', type=str, help='Path to the input CSV file that is used for training the model (x_train).')
-    parser.add_argument('-yvf', '--y_validation_file', type=int, help='Path to the input CSV file that is used for training the model (y_train), IMPORTANT: it is not shifted, must coincide 1 to 1|with the training data.')
+    parser.add_argument('-yvf', '--y_validation_file', type=str, help='Path to the input CSV file that is used for training the model (y_train), IMPORTANT: it is not shifted, must coincide 1 to 1|with the training data.')
     parser.add_argument('-tc', '--target_column', type=int, help='If used, assumes no input_timeseries is used but the input_timeseries is a target column in the intput CSV file, in all cases, each row in the inpit_csv must correspond with the exact tick time of the timeseries.')
     parser.add_argument('-of', '--output_file', type=str, help='Path to the output CSV file.')
     parser.add_argument('-sm', '--save_model', type=str, help='Filename to save the trained predictor model.')
