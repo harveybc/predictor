@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 import time
+import json
 from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
 
@@ -97,9 +98,9 @@ def run_prediction_pipeline(config, plugin):
         end_time = time.time()
         execution_time = end_time - start_time
         debug_info = {
-            'execution_time': execution_time,
-            'mse': mse,
-            'mae': mae
+            'execution_time': float(execution_time),
+            'mse': float(mse),
+            'mae': float(mae)
         }
 
         # Save debug info
