@@ -7,58 +7,58 @@ from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
 
 def process_data(config):
-    print(f"Loading data from CSV file: {config['input_file']}")
-    data = load_csv(config['input_file'], headers=config['headers'])
+    print(f"Loading data from CSV file: {config['x_train_file']}")
+    data = load_csv(config['x_train_file'], headers=config['headers'])
     print(f"Data loaded with shape: {data.shape}")
 
-    input_timeseries = config['input_timeseries']
+    y_train_file = config['y_train_file']
     target_column = config['target_column']
 
-    if isinstance(input_timeseries, str):
-        print(f"Loading input timeseries from CSV file: {input_timeseries}")
-        input_data = load_csv(input_timeseries, headers=config['headers'])
-        print(f"Input timeseries loaded with shape: {input_data.shape}")
-    elif isinstance(input_timeseries, int):
-        input_data = data.iloc[:, input_timeseries]
-        print(f"Using input timeseries at column index: {input_timeseries}")
+    if isinstance(y_train_file, str):
+        print(f"Loading y_train data from CSV file: {y_train_file}")
+        y_train_data = load_csv(y_train_file, headers=config['headers'])
+        print(f"y_train data loaded with shape: {y_train_data.shape}")
+    elif isinstance(y_train_file, int):
+        y_train_data = data.iloc[:, y_train_file]
+        print(f"Using y_train data at column index: {y_train_file}")
     elif target_column is not None:
-        input_data = data.iloc[:, target_column]
+        y_train_data = data.iloc[:, target_column]
         print(f"Using target column at index: {target_column}")
     else:
-        raise ValueError("Either input_timeseries or target_column must be specified in the configuration.")
+        raise ValueError("Either y_train_file or target_column must be specified in the configuration.")
 
-    # Ensure input data is numeric
-    input_data = input_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    # Ensure y_train data is numeric
+    y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     
     # Add debug message to confirm type
-    print(f"Returning data of type: {type(input_data)}")
+    print(f"Returning data of type: {type(y_train_data)}")
     
-    return input_data
+    return data, y_train_data
 
 def run_prediction_pipeline(config, plugin):
     start_time = time.time()
     
     print("Running process_data...")
-    input_data = process_data(config)
-    print(f"Processed data received of type: {type(input_data)} and shape: {input_data.shape}")
+    x_train, y_train = process_data(config)
+    print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
     
     time_horizon = config['time_horizon']
     batch_size = config['batch_size']
     epochs = config['epochs']
     threshold_error = config['threshold_error']
 
-    # Ensure input_data is a DataFrame or Series
-    if isinstance(input_data, (pd.DataFrame, pd.Series)):
+    # Ensure x_train and y_train are DataFrame or Series
+    if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
         # Prepare data for training
-        x_train = input_data[:-time_horizon].to_numpy()
-        y_train = input_data[time_horizon:].to_numpy()
+        x_train = x_train[:-time_horizon].to_numpy()
+        y_train = y_train[time_horizon:].to_numpy()
 
         # Ensure x_train is a 2D array
         if x_train.ndim == 1:
             x_train = x_train.reshape(-1, 1)
         
         # Ensure y_train matches the first dimension of x_train
-        y_train = y_train[:len(x_train)].reshape(-1, 1)
+        y_train = y_train[:len(x_train)]
 
         # Debug messages for shapes
         print(f"x_train shape: {x_train.shape}")
@@ -77,7 +77,7 @@ def run_prediction_pipeline(config, plugin):
         predictions = plugin.predict(x_train)
 
         # Reshape predictions to match y_train shape
-        predictions = predictions.flatten()[:len(y_train)].reshape(y_train.shape)
+        predictions = predictions.reshape(y_train.shape)
 
         # Evaluate the model
         mse = plugin.calculate_mse(y_train, predictions)
@@ -111,8 +111,33 @@ def run_prediction_pipeline(config, plugin):
             print(f"Debug info saved to {config['remote_log']}.")
 
         print(f"Execution time: {execution_time} seconds")
+
+        # Validate the model if validation data is provided
+        if config['x_validation_file'] and config['y_validation_file']:
+            print("Validating model...")
+            x_validation = load_csv(config['x_validation_file'], headers=config['headers']).to_numpy()
+            y_validation = load_csv(config['y_validation_file'], headers=config['headers']).to_numpy()
+            
+            # Ensure x_validation is a 2D array
+            if x_validation.ndim == 1:
+                x_validation = x_validation.reshape(-1, 1)
+            
+            # Ensure y_validation matches the first dimension of x_validation
+            y_validation = y_validation[:len(x_validation)]
+            
+            print(f"x_validation shape: {x_validation.shape}")
+            print(f"y_validation shape: {y_validation.shape}")
+            
+            validation_predictions = plugin.predict(x_validation)
+            validation_predictions = validation_predictions.reshape(y_validation.shape)
+            
+            validation_mse = plugin.calculate_mse(y_validation, validation_predictions)
+            validation_mae = plugin.calculate_mae(y_validation, validation_predictions)
+            print(f"Validation Mean Squared Error: {validation_mse}")
+            print(f"Validation Mean Absolute Error: {validation_mae}")
+
     else:
-        print(f"Invalid data type returned: {type(input_data)}")
+        print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
 
 def load_and_evaluate_model(config, plugin):
@@ -120,10 +145,10 @@ def load_and_evaluate_model(config, plugin):
     plugin.load(config['load_model'])
 
     # Load the input data
-    input_data, _ = process_data(config)
+    x_train, _ = process_data(config)
 
     # Predict using the loaded model
-    predictions = plugin.predict(input_data.to_numpy())
+    predictions = plugin.predict(x_train.to_numpy())
 
     # Save the predictions to CSV
     evaluate_filename = config['evaluate_file']

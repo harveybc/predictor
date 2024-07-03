@@ -1,8 +1,10 @@
 # config.py
 
 DEFAULT_VALUES = {
-    'input_file': './tests/data/encoder_eval.csv',
-    'input_timeseries': './tests/data/csv_sel_unb_norm_512.csv',
+    'x_train_file': './tests/data/encoder_eval.csv',
+    'y_train_file': './tests/data/csv_sel_unb_norm_512.csv',
+    'x_validation_file': None,
+    'y_validation_file': None,
     'target_column': None,
     'output_file': './csv_output.csv',
     'save_model': './predictor_model.keras',
