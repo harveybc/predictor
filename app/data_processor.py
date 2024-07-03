@@ -8,8 +8,8 @@ from app.config_handler import save_debug_info, remote_log
 
 def process_data(config):
     print(f"Loading data from CSV file: {config['x_train_file']}")
-    data = load_csv(config['x_train_file'], headers=config['headers'])
-    print(f"Data loaded with shape: {data.shape}")
+    x_train_data = load_csv(config['x_train_file'], headers=config['headers'])
+    print(f"Data loaded with shape: {x_train_data.shape}")
 
     y_train_file = config['y_train_file']
     target_column = config['target_column']
@@ -19,10 +19,10 @@ def process_data(config):
         y_train_data = load_csv(y_train_file, headers=config['headers'])
         print(f"y_train data loaded with shape: {y_train_data.shape}")
     elif isinstance(y_train_file, int):
-        y_train_data = data.iloc[:, y_train_file]
+        y_train_data = x_train_data.iloc[:, y_train_file]
         print(f"Using y_train data at column index: {y_train_file}")
     elif target_column is not None:
-        y_train_data = data.iloc[:, target_column]
+        y_train_data = x_train_data.iloc[:, target_column]
         print(f"Using target column at index: {target_column}")
     else:
         raise ValueError("Either y_train_file or target_column must be specified in the configuration.")
@@ -33,7 +33,8 @@ def process_data(config):
     # Add debug message to confirm type
     print(f"Returning data of type: {type(y_train_data)}")
     
-    return data, y_train_data
+    return x_train_data, y_train_data
+
 
 def run_prediction_pipeline(config, plugin):
     start_time = time.time()
