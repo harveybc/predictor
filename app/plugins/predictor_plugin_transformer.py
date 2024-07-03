@@ -12,7 +12,7 @@ class Plugin:
     plugin_params = {
         'epochs': 10,
         'batch_size': 256,
-        'intermediate_layers': 3,
+        'intermediate_layers': 1,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
         'num_heads': 2,
