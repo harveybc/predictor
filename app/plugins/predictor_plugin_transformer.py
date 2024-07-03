@@ -13,7 +13,7 @@ class Plugin:
         'epochs': 20,  # Increased number of epochs
         'batch_size': 256,
         'intermediate_layers': 1,  
-        'initial_layer_size': 128,  # Increased initial layer size
+        'initial_layer_size': 64,  
         'layer_size_divisor': 2,
         'num_heads': 2,  # Keeping the number of heads dependent on size as before
         'dropout_rate': 0.2  # Slightly increased dropout rate
