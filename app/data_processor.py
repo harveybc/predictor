@@ -27,14 +27,15 @@ def process_data(config):
     else:
         raise ValueError("Either y_train_file or target_column must be specified in the configuration.")
 
-    # Ensure y_train data is numeric
-    y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    # Ensure both x_train and y_train data are numeric
+    x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0).astype(np.float32)
+    y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0).astype(np.float32)
     
     # Add debug message to confirm type
-    print(f"Returning data of type: {type(y_train_data)}")
+    print(f"x_train_data type: {x_train_data.dtypes}")
+    print(f"y_train_data type: {y_train_data.dtypes}")
     
     return x_train_data, y_train_data
-
 
 def run_prediction_pipeline(config, plugin):
     start_time = time.time()
@@ -51,8 +52,8 @@ def run_prediction_pipeline(config, plugin):
     # Ensure x_train and y_train are DataFrame or Series
     if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
         # Prepare data for training
-        x_train = x_train[:-time_horizon].to_numpy()
-        y_train = y_train[time_horizon:].to_numpy()
+        x_train = x_train[:-time_horizon].to_numpy().astype(np.float32)
+        y_train = y_train[time_horizon:].to_numpy().astype(np.float32)
 
         # Ensure x_train is a 2D array
         if x_train.ndim == 1:
@@ -116,8 +117,8 @@ def run_prediction_pipeline(config, plugin):
         # Validate the model if validation data is provided
         if config['x_validation_file'] and config['y_validation_file']:
             print("Validating model...")
-            x_validation = load_csv(config['x_validation_file'], headers=config['headers']).to_numpy()
-            y_validation = load_csv(config['y_validation_file'], headers=config['headers']).to_numpy()
+            x_validation = load_csv(config['x_validation_file'], headers=config['headers']).to_numpy().astype(np.float32)
+            y_validation = load_csv(config['y_validation_file'], headers=config['headers']).to_numpy().astype(np.float32)
             
             # Ensure x_validation is a 2D array
             if x_validation.ndim == 1:
