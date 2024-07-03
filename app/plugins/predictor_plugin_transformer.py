@@ -56,56 +56,38 @@ class Plugin:
         print(f"Transformer input_shape: {input_shape}")
 
         for size in layers[:-1]:
-            print(f"ADDING DENSE LAYER BEFORE MULTIHEADATTENTION: Current size: {size}")
             x = Dense(size)(x)
-            print(f"Shape after Dense layer: {x.shape}")
-            print(f"ADDING MULTIHEADATTENTION: Current size: {size}")
             x = self.multi_head_attention_block(x, size, self.params['num_heads'], self.params['dropout_rate'])
 
-        print(f"Adding final Dense layer with size {layers[-1]}")
-        x = Dense(layers[-1], activation='linear', name="model_output")(x)
-        print(f"Shape after final Dense layer: {x.shape}")
+        # Add global pooling layer to reduce dimensions
+        x = GlobalAveragePooling1D()(x)
+        print(f"Shape after GlobalAveragePooling1D: {x.shape}")
 
-        self.model = Model(inputs=inputs, outputs=x, name="predictor_model")
+        # Final output layer
+        model_output = Dense(1, activation='linear', name="model_output")(x)
+        print(f"Shape after final Dense layer: {model_output.shape}")
+
+        self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
 
         print("Predictor Model Summary:")
         self.model.summary()
 
     def multi_head_attention_block(self, x, size, num_heads, dropout_rate):
-        print(f"BEFORE MULTIHEADATTENTION: x shape: {x.shape}, size: {size}, num_heads: {num_heads}")
         attn_output = MultiHeadAttention(head_num=num_heads)(x)
-        print(f"AFTER MULTIHEADATTENTION: attn_output shape: {attn_output.shape}")
-
         attn_output = Dropout(dropout_rate)(attn_output)
-        print(f"AFTER DROPOUT: attn_output shape: {attn_output.shape}")
-
         out1 = Add()([x, attn_output])
-        print(f"AFTER ADD: out1 shape: {out1.shape}")
-
         out1 = LayerNormalization(epsilon=1e-6)(out1)
-        print(f"AFTER LAYERNORMALIZATION: out1 shape: {out1.shape}")
 
         ffn_output = Dense(size, activation='relu')(out1)
-        print(f"AFTER FIRST DENSE: ffn_output shape: {ffn_output.shape}")
-
         ffn_output = Dropout(dropout_rate)(ffn_output)
-        print(f"AFTER SECOND DROPOUT: ffn_output shape: {ffn_output.shape}")
-
         ffn_output = Dense(out1.shape[-1])(ffn_output)
-        print(f"AFTER SECOND DENSE: ffn_output shape: {ffn_output.shape}")
-
         out2 = Add()([out1, ffn_output])
-        print(f"AFTER SECOND ADD: out2 shape: {out2.shape}")
-
         out2 = LayerNormalization(epsilon=1e-6)(out2)
-        print(f"AFTER SECOND LAYERNORMALIZATION: out2 shape: {out2.shape}")
 
         return out2
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
-        if x_train.ndim == 2:
-            x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
         print(f"Training predictor model with data shape: {x_train.shape}")
         history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
         print("Training completed.")
@@ -114,13 +96,11 @@ class Plugin:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
 
     def predict(self, data):
-        if data.ndim == 2:
-            data = data.reshape(data.shape[0], data.shape[1], 1)
         print(f"Predicting data with shape: {data.shape}")
         predictions = self.model.predict(data)
         print(f"Predicted data shape: {predictions.shape}")
         return predictions
-
+    
     def calculate_mse(self, y_true, y_pred):
         """
         Calculate the Mean Squared Error (MSE) between the true values and predicted values.
@@ -211,8 +191,9 @@ class Plugin:
         self.model = load_model(file_path)
         print(f"Predictor model loaded from {file_path}")
 
+# Debugging usage example
 if __name__ == "__main__":
     plugin = Plugin()
-    plugin.build_model(input_shape=8)
+    plugin.build_model(input_shape=8)  # Adjusted to 8 as per your data
     debug_info = plugin.get_debug_info()
     print(f"Debug Info: {debug_info}")
