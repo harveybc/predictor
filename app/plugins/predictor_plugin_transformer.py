@@ -1,25 +1,25 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Input, Dense, Dropout, Add, LayerNormalization, GlobalAveragePooling1D, Flatten
+from keras.layers import Dense, Input, Dropout, Add, LayerNormalization, GlobalAveragePooling1D, Flatten
 from keras.optimizers import Adam
 from keras_multi_head import MultiHeadAttention
 
 class Plugin:
     """
-    A predictor plugin using a simple Transformer network based on Keras, with dynamically configurable size.
+    A predictor plugin using a Transformer network based on Keras, with dynamically configurable size.
     """
 
     plugin_params = {
-        'epochs': 10,
+        'epochs': 20,  # Increased number of epochs
         'batch_size': 256,
-        'intermediate_layers': 1,
-        'initial_layer_size': 64,
+        'intermediate_layers': 4,  # Increased number of intermediate layers
+        'initial_layer_size': 128,  # Increased initial layer size
         'layer_size_divisor': 2,
-        'num_heads': 2,
-        'dropout_rate': 0.1
+        'num_heads': 2,  # Keeping the number of heads dependent on size as before
+        'dropout_rate': 0.2  # Slightly increased dropout rate
     }
 
-    plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers']
+    plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
 
     def __init__(self):
         self.params = self.plugin_params.copy()
@@ -37,8 +37,9 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape):
-        self.params['input_shape'] = input_shape
+        self.params['input_dim'] = input_shape
 
+        # Layer configuration
         layers = []
         current_size = self.params['initial_layer_size']
         layer_size_divisor = self.params['layer_size_divisor']
@@ -49,45 +50,36 @@ class Plugin:
             int_layers += 1
         layers.append(1)  # Output layer size
 
+        # Debugging message
         print(f"Transformer Layer sizes: {layers}")
 
+        # Model
         inputs = Input(shape=(input_shape, 1), name="model_input")
         x = inputs
         print(f"Transformer input_shape: {input_shape}")
 
         for size in layers[:-1]:
-            x = Dense(size)(x)
-            x = self.multi_head_attention_block(x, size, self.params['num_heads'], self.params['dropout_rate'])
+            if size > 1:
+                x = Dense(size)(x)
+                x = MultiHeadAttention(head_num=self.params['num_heads'])(x)
+                x = Dropout(self.params['dropout_rate'])(x)
+                x = Add()([x, inputs])
+                x = LayerNormalization(epsilon=1e-6)(x)
 
-        # Add global pooling layer to reduce dimensions
         x = GlobalAveragePooling1D()(x)
-        print(f"Shape after GlobalAveragePooling1D: {x.shape}")
-
-        # Final output layer
-        model_output = Dense(1, activation='linear', name="model_output")(x)
-        print(f"Shape after final Dense layer: {model_output.shape}")
+        x = Flatten()(x)
+        model_output = Dense(layers[-1], activation='linear', name="model_output")(x)
 
         self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
 
+        # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
         self.model.summary()
 
-    def multi_head_attention_block(self, x, size, num_heads, dropout_rate):
-        attn_output = MultiHeadAttention(head_num=num_heads)(x)
-        attn_output = Dropout(dropout_rate)(attn_output)
-        out1 = Add()([x, attn_output])
-        out1 = LayerNormalization(epsilon=1e-6)(out1)
-
-        ffn_output = Dense(size, activation='relu')(out1)
-        ffn_output = Dropout(dropout_rate)(ffn_output)
-        ffn_output = Dense(out1.shape[-1])(ffn_output)
-        out2 = Add()([out1, ffn_output])
-        out2 = LayerNormalization(epsilon=1e-6)(out2)
-
-        return out2
-
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
+        if x_train.ndim == 2:
+            x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
         print(f"Training predictor model with data shape: {x_train.shape}")
         history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
         print("Training completed.")
@@ -96,11 +88,13 @@ class Plugin:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
 
     def predict(self, data):
+        if data.ndim == 2:
+            data = data.reshape(data.shape[0], data.shape[1], 1)
         print(f"Predicting data with shape: {data.shape}")
         predictions = self.model.predict(data)
         print(f"Predicted data shape: {predictions.shape}")
         return predictions
-    
+
     def calculate_mse(self, y_true, y_pred):
         """
         Calculate the Mean Squared Error (MSE) between the true values and predicted values.
