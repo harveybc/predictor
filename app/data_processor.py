@@ -29,14 +29,10 @@ def process_data(config):
     x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     
-    # Apply input offset
-    input_offset = config['input_offset']
-    y_train_data = y_train_data[input_offset:]
-
-    # Apply time horizon shift
-    time_horizon = config['time_horizon']
-    y_train_data = y_train_data[time_horizon:]
-    x_train_data = x_train_data[:-time_horizon]
+    # Apply input offset and time horizon
+    offset = config['input_offset'] + config['time_horizon']
+    y_train_data = y_train_data[offset:]
+    x_train_data = x_train_data[:-config['time_horizon']]
 
     # Ensure the shapes match
     min_length = min(len(x_train_data), len(y_train_data))
