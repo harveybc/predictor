@@ -11,7 +11,7 @@ DEFAULT_VALUES = {
     'load_model': None,
     'evaluate_file': './model_eval.csv',
     'plugin': 'ann',
-    'time_horizon': 12,  # Set an appropriate default value
+    'time_horizon': 12,
     'threshold_error': 0.003,
     'remote_log': None,
     'remote_load_config': None,
@@ -24,4 +24,5 @@ DEFAULT_VALUES = {
     'quiet_mode': False,
     'force_date': False,
     'headers': True,
+    'input_offset': 128  
 }

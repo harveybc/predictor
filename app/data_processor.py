@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import os
 import time
-import json
 from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
 
@@ -19,22 +18,34 @@ def process_data(config):
         print(f"Loading y_train data from CSV file: {y_train_file}")
         y_train_data = load_csv(y_train_file, headers=config['headers'])
         print(f"y_train data loaded with shape: {y_train_data.shape}")
-    elif isinstance(y_train_file, int):
-        y_train_data = x_train_data.iloc[:, y_train_file]
-        print(f"Using y_train data at column index: {y_train_file}")
     elif target_column is not None:
         y_train_data = x_train_data.iloc[:, target_column]
         print(f"Using target column at index: {target_column}")
     else:
         raise ValueError("Either y_train_file or target_column must be specified in the configuration.")
 
-    # Ensure both x_train and y_train data are numeric
-    x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0).astype(np.float32)
-    y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0).astype(np.float32)
+    # Ensure input data is numeric
+    x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     
-    # Add debug message to confirm type
-    print(f"x_train_data type: {x_train_data.dtypes}")
-    print(f"y_train_data type: {y_train_data.dtypes}")
+    # Apply input offset
+    input_offset = config['input_offset']
+    y_train_data = y_train_data[input_offset:]
+
+    # Apply time horizon shift
+    time_horizon = config['time_horizon']
+    y_train_data = y_train_data[time_horizon:]
+    x_train_data = x_train_data[:-time_horizon]
+
+    # Ensure the shapes match
+    min_length = min(len(x_train_data), len(y_train_data))
+    x_train_data = x_train_data[:min_length]
+    y_train_data = y_train_data[:min_length]
+
+    # Debugging messages to confirm types and shapes
+    print(f"Returning data of type: {type(x_train_data)}, {type(y_train_data)}")
+    print(f"x_train_data shape after adjustments: {x_train_data.shape}")
+    print(f"y_train_data shape after adjustments: {y_train_data.shape}")
     
     return x_train_data, y_train_data
 
@@ -52,9 +63,8 @@ def run_prediction_pipeline(config, plugin):
 
     # Ensure x_train and y_train are DataFrame or Series
     if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
-        # Prepare data for training
-        x_train = x_train[:-time_horizon].to_numpy().astype(np.float32)
-        y_train = y_train[time_horizon:].to_numpy().astype(np.float32)
+        x_train = x_train.to_numpy().astype(np.float32)
+        y_train = y_train.to_numpy().astype(np.float32)
 
         # Ensure x_train is a 2D array
         if x_train.ndim == 1:
@@ -98,9 +108,9 @@ def run_prediction_pipeline(config, plugin):
         end_time = time.time()
         execution_time = end_time - start_time
         debug_info = {
-            'execution_time': float(execution_time),
-            'mse': float(mse),
-            'mae': float(mae)
+            'execution_time': execution_time,
+            'mse': mse,
+            'mae': mae
         }
 
         # Save debug info
@@ -142,19 +152,3 @@ def run_prediction_pipeline(config, plugin):
     else:
         print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
-
-def load_and_evaluate_model(config, plugin):
-    # Load the model
-    plugin.load(config['load_model'])
-
-    # Load the input data
-    x_train, _ = process_data(config)
-
-    # Predict using the loaded model
-    predictions = plugin.predict(x_train.to_numpy())
-
-    # Save the predictions to CSV
-    evaluate_filename = config['evaluate_file']
-    predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
-    write_csv(evaluate_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
-    print(f"Predicted data saved to {evaluate_filename}")
