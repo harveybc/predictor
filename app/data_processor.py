@@ -94,8 +94,8 @@ def run_prediction_pipeline(config, plugin):
         predictions = predictions.reshape(y_train.shape)
 
         # Evaluate the model
-        mse = plugin.calculate_mse(y_train, predictions)
-        mae = plugin.calculate_mae(y_train, predictions)
+        mse = float(plugin.calculate_mse(y_train, predictions))
+        mae = float(plugin.calculate_mae(y_train, predictions))
         print(f"Mean Squared Error: {mse}")
         print(f"Mean Absolute Error: {mae}")
 
@@ -109,7 +109,7 @@ def run_prediction_pipeline(config, plugin):
         end_time = time.time()
         execution_time = end_time - start_time
         debug_info = {
-            'execution_time': execution_time,
+            'execution_time': float(execution_time),
             'mse': mse,
             'mae': mae
         }
@@ -145,8 +145,8 @@ def run_prediction_pipeline(config, plugin):
             validation_predictions = plugin.predict(x_validation)
             validation_predictions = validation_predictions.reshape(y_validation.shape)
             
-            validation_mse = plugin.calculate_mse(y_validation, validation_predictions)
-            validation_mae = plugin.calculate_mae(y_validation, validation_predictions)
+            validation_mse = float(plugin.calculate_mse(y_validation, validation_predictions))
+            validation_mae = float(plugin.calculate_mae(y_validation, validation_predictions))
             print(f"Validation Mean Squared Error: {validation_mse}")
             print(f"Validation Mean Absolute Error: {validation_mae}")
 
