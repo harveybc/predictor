@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 import time
+import json
 from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
 
@@ -152,3 +153,19 @@ def run_prediction_pipeline(config, plugin):
     else:
         print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
+
+def load_and_evaluate_model(config, plugin):
+    # Load the model
+    plugin.load(config['load_model'])
+
+    # Load the input data
+    x_train, _ = process_data(config)
+
+    # Predict using the loaded model
+    predictions = plugin.predict(x_train.to_numpy())
+
+    # Save the predictions to CSV
+    evaluate_filename = config['evaluate_file']
+    predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
+    write_csv(evaluate_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
+    print(f"Predicted data saved to {evaluate_filename}")
