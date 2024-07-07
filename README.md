@@ -40,14 +40,14 @@ To install and set up the predictor application, follow these steps:
     ```
 
 6. **(Optional) Run the predictor**:
-    - On Windows, run the following command to verify installation (it generates an example output file csv_output.csv):
+    - On Windows, run the following command to verify installation (it uses all default valuex, use predictor.bat --help for complete command line arguments description):
         ```bash
-        predictor.bat tests\data\csv_sel_unb_norm_512.csv 
+        predictor.bat tests\data\EURUSD_hour_2010_2020.csv
         ```
 
     - On Linux, run:
         ```bash
-        sh predictor.sh tests\data\csv_sel_unb_norm_512.csv
+        sh predictor.sh tests\data\EURUSD_hour_2010_2020.csv
         ```
 
 7. **(Optional) Run Tests**:
