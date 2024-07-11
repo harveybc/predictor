@@ -50,7 +50,7 @@ def merge_config(defaults, plugin_params, config, cli_args, unknown_args):
     
     # Special handling for csv_file
     if len(sys.argv) > 1 and not sys.argv[1].startswith('--'):
-        merged_config['input_file'] = sys.argv[1]
+        merged_config['x_train_file'] = sys.argv[1]
     
     print(f"Actual Step 4 Output: {merged_config}")
     
