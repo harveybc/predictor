@@ -14,7 +14,9 @@ class Plugin:
         'dropout_rate': 0.1,
         'intermediate_layers': 1,
         'initial_layer_size': 64,
-        'layer_size_divisor': 2
+        'layer_size_divisor': 2,
+        'learning_rate': 0.0001,
+        'activation': 'linear'
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
@@ -63,7 +65,16 @@ class Plugin:
         model_output = Dense(layers[-1], activation='tanh', name="model_output")(x)
         
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
-        self.model.compile(optimizer=Adam(), loss='mean_squared_error')
+        # Define the Adam optimizer with custom parameters
+        adam_optimizer = Adam(
+            learning_rate= self.params['learning_rate'],   # Set the learning rate
+            beta_1=0.9,            # Default value
+            beta_2=0.999,          # Default value
+            epsilon=1e-7,          # Default value
+            amsgrad=False          # Default value
+        )
+
+        self.model.compile(adam_optimizer, loss='mse', metrics=['mse','mae'])
 
         # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
