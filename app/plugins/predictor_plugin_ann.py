@@ -62,7 +62,7 @@ class Plugin:
             if size > 1:
                 x = Dense(size, activation='relu')(x)
                 x = Dropout(self.params['dropout_rate'])(x)
-        model_output = Dense(layers[-1], activation='tanh', name="model_output")(x)
+        model_output = Dense(layers[-1], activation=self.params['activation'], name="model_output")(x)
         
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
         # Define the Adam optimizer with custom parameters
