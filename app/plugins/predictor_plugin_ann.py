@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Dense, Input
+from keras.layers import Dense, Input, Dropout
 from keras.optimizers import Adam
 
 class Plugin:
@@ -11,6 +11,7 @@ class Plugin:
     plugin_params = {
         'epochs': 10,
         'batch_size': 256,
+        'dropout_rate': 0.1,
         'intermediate_layers': 1,
         'initial_layer_size': 64,
         'layer_size_divisor': 2
@@ -58,7 +59,8 @@ class Plugin:
         for size in layers[:-1]:
             if size > 1:
                 x = Dense(size, activation='relu')(x)
-        model_output = Dense(layers[-1], activation='linear', name="model_output")(x)
+                x = Dropout(self.params['dropout_rate'])(x)
+        model_output = Dense(layers[-1], activation='tanh', name="model_output")(x)
         
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')

@@ -57,7 +57,7 @@ class Plugin:
                 x = Conv1D(filters=size, kernel_size=3, activation='relu', padding='same')(x)
                 x = MaxPooling1D(pool_size=2)(x)
         x = Flatten()(x)
-        model_output = Dense(layers[-1], activation='linear', name="model_output")(x)
+        model_output = Dense(layers[-1], activation='tanh', name="model_output")(x)
         
         self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
