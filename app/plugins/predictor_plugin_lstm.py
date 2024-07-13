@@ -59,7 +59,7 @@ class Plugin:
             if size > 1:
                 x = LSTM(size, activation='relu', return_sequences=True)(x)
         x = LSTM(layers[-2], activation='relu')(x)
-        model_output = Dense(layers[-1], activation='linear', name="model_output")(x)
+        model_output = Dense(layers[-1], activation='tanh', name="model_output")(x)
         
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
         self.model.compile(optimizer=Adam(), loss='mean_squared_error')
