@@ -11,7 +11,7 @@ class Plugin:
     """
 
     plugin_params = {
-        'epochs': 20,  # Increased number of epochs
+        'epochs': 100,  # Increased number of epochs
         'batch_size': 256,
         'intermediate_layers': 1,  
         'initial_layer_size': 64,  
