@@ -2,6 +2,7 @@ import numpy as np
 from keras.models import Model, load_model, save_model
 from keras.layers import Dense, Input, Dropout
 from keras.optimizers import Adam
+from tensorflow.keras.initializers import GlorotUniform, HeNormal
 
 class Plugin:
     """
@@ -15,7 +16,7 @@ class Plugin:
         'intermediate_layers': 1,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.01,
+        'learning_rate': 0.00001,
         'activation': 'tanh'
     }
 
@@ -60,9 +61,9 @@ class Plugin:
         x = model_input
         for size in layers[:-1]:
             if size > 1:
-                x = Dense(size, activation='relu')(x)
+                x = Dense(size, activation='relu', kernel_initializer=HeNormal())(x)
                 x = Dropout(self.params['dropout_rate'])(x)
-        model_output = Dense(layers[-1], activation=self.params['activation'], name="model_output")(x)
+        model_output = Dense(layers[-1], activation=self.params['activation'], kernel_initializer=GlorotUniform(), name="model_output")(x)
         
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
         # Define the Adam optimizer with custom parameters
