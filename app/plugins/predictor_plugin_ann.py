@@ -16,7 +16,7 @@ class Plugin:
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
         'learning_rate': 0.01,
-        'activation': 'linear'
+        'activation': 'tanh'
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
