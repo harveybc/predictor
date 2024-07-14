@@ -10,7 +10,7 @@ class Plugin:
     """
 
     plugin_params = {
-        'epochs': 10,
+        'epochs': 100,
         'batch_size': 256,
         'dropout_rate': 0.1,
         'intermediate_layers': 1,
