@@ -25,5 +25,5 @@ def parse_args():
     parser.add_argument('-qm', '--quiet_mode', action='store_true', help='Suppress output messages.')
     parser.add_argument('-fd', '--force_date', action='store_true', help='Include date in the output CSV files.')
     parser.add_argument('-hdr', '--headers', action='store_true', help='Indicate if the CSV file has headers.')
-    parser.add_argument('-io', '--input_offset', type=int, default=128, help='Offset for input data to account for feature extraction window size.')
+    parser.add_argument('-io', '--input_offset', type=int,help='Offset for input data to account for feature extraction window size.')
     return parser.parse_known_args()

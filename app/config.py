@@ -2,7 +2,7 @@
 
 DEFAULT_VALUES = {
     'x_train_file': './tests/data/encoder_eval.csv',
-    'y_train_file': './tests/data/csv_sel_unb_norm_512.csv',
+    'y_train_file': './tests/data/close-open_eurusd_1h_norm_10y.csv',
     'x_validation_file': None,
     'y_validation_file': None,
     'target_column': None,
@@ -11,7 +11,7 @@ DEFAULT_VALUES = {
     'load_model': None,
     'evaluate_file': './model_eval.csv',
     'plugin': 'ann',
-    'time_horizon': 12,
+    'time_horizon': 1,
     'threshold_error': 0.00004,
     'remote_log': None,
     'remote_load_config': None,
@@ -24,5 +24,5 @@ DEFAULT_VALUES = {
     'quiet_mode': False,
     'force_date': False,
     'headers': True,
-    'input_offset': 128  
+    'input_offset': 256  
 }
