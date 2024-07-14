@@ -26,6 +26,7 @@ def merge_config(defaults, plugin_params, config, cli_args, unknown_args):
     for k, v in plugin_params.items():
         print(f"Step 2 merging: plugin_param {k} = {v}")
         merged_config[k] = v
+
     
     print(f"Actual Step 2 Output: {merged_config}")
     
@@ -47,9 +48,9 @@ def merge_config(defaults, plugin_params, config, cli_args, unknown_args):
             print(f"Step 4 merging from unknown args: {key} = {value}")
             merged_config[key] = value
     
-    # Special handling for input_file
+    # Special handling for csv_file
     if len(sys.argv) > 1 and not sys.argv[1].startswith('--'):
-        merged_config['input_file'] = sys.argv[1]
+        merged_config['x_train_file'] = sys.argv[1]
     
     print(f"Actual Step 4 Output: {merged_config}")
     
