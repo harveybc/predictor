@@ -2,6 +2,7 @@ import numpy as np
 from keras.models import Model, load_model, save_model
 from keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Input
 from keras.optimizers import Adam
+from tensorflow.keras.initializers import GlorotUniform, HeNormal
 
 class Plugin:
     """
@@ -13,7 +14,10 @@ class Plugin:
         'batch_size': 256,
         'intermediate_layers': 1,
         'initial_layer_size': 64,
-        'layer_size_divisor': 2
+        'layer_size_divisor': 2,
+        'learning_rate': 0.00001,
+        'dropout_rate': 0.1
+
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers', 'initial_layer_size']
@@ -54,13 +58,22 @@ class Plugin:
         x = inputs
         for size in layers[:-1]:
             if size > 1:
-                x = Conv1D(filters=size, kernel_size=3, activation='relu', padding='same')(x)
+                x = Conv1D(filters=size, kernel_size=3, activation='relu', kernel_initializer=HeNormal(), padding='same')(x)
                 x = MaxPooling1D(pool_size=2)(x)
         x = Flatten()(x)
-        model_output = Dense(layers[-1], activation='tanh', name="model_output")(x)
+        model_output = Dense(layers[-1], activation='tanh', kernel_initializer=GlorotUniform(), name="model_output")(x)
         
         self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
-        self.model.compile(optimizer=Adam(), loss='mean_squared_error')
+                # Define the Adam optimizer with custom parameters
+        adam_optimizer = Adam(
+            learning_rate= self.params['learning_rate'],   # Set the learning rate
+            beta_1=0.9,            # Default value
+            beta_2=0.999,          # Default value
+            epsilon=1e-7,          # Default value
+            amsgrad=False          # Default value
+        )
+
+        self.model.compile(optimizer=adam_optimizer, loss='mean_squared_error')
 
         # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
