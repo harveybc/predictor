@@ -10,7 +10,7 @@ class Plugin:
     """
 
     plugin_params = {
-        'epochs': 10,
+        'epochs': 100,
         'batch_size': 256,
         'intermediate_layers': 1,
         'initial_layer_size': 64,
