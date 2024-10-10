@@ -24,5 +24,5 @@ DEFAULT_VALUES = {
     'quiet_mode': False,
     'force_date': False,
     'headers': True,
-    'input_offset': 128  
+    'input_offset': 0  
 }
