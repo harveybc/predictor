@@ -1,10 +1,10 @@
 # config.py
 
 DEFAULT_VALUES = {
-    'x_train_file': '..\\Documents\\encoder_eval_d2_indicators_128.csv',
-    'y_train_file': './tests/data/normalized_d2_target.csv',
-    'x_validation_file': '..\\Documents\\encoder_eval_d3_indicators_128.csv',
-    'y_validation_file': './tests/data/normalized_d3_target.csv',
+    'x_train_file': '..\\Documents\\encoder_eval_d2_indicators_128_close.csv',
+    'y_train_file': './tests/data/target_column_d2.csv',
+    'x_validation_file': '..\\Documents\\encoder_eval_d3_indicators_128_close.csv',
+    'y_validation_file': './tests/data/target_columns_d3.csv',
     'target_column': None,
     'output_file': './csv_output.csv',
     'save_model': './predictor_model.keras',
