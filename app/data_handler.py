@@ -13,13 +13,15 @@ def load_csv(file_path, headers=False):
             else:
                 data.columns = [f'col_{i}' for i in range(len(data.columns))]
 
+            # Ensure numeric columns are properly converted, fill NaNs
             for col in data.columns:
                 if col != 'date':
-                    data[col] = pd.to_numeric(data[col], errors='coerce')
+                    data[col] = pd.to_numeric(data[col], errors='coerce').fillna(0)
     except Exception as e:
         print(f"An error occurred while loading the CSV: {e}")
         raise
     return data
+
 
 def write_csv(file_path, data, include_date=True, headers=True, window_size=None):
     try:
