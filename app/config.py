@@ -10,7 +10,7 @@ DEFAULT_VALUES = {
     'save_model': './predictor_model.keras',
     'load_model': None,
     'evaluate_file': './model_eval.csv',
-    'plugin': 'ann',
+    'plugin': 'cnn',
     'time_horizon': 1,
     'threshold_error': 0.00004,
     'remote_log': None,
