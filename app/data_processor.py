@@ -83,9 +83,6 @@ def run_prediction_pipeline(config, plugin):
         # Predict using the trained model
         predictions = plugin.predict(x_train)
 
-        # Reshape predictions to match y_train shape
-        predictions = predictions.reshape(y_train.shape)
-
         # Evaluate the model
         mse = float(plugin.calculate_mse(y_train, predictions))
         mae = float(plugin.calculate_mae(y_train, predictions))
@@ -129,8 +126,14 @@ def run_prediction_pipeline(config, plugin):
             if x_validation.ndim == 1:
                 x_validation = x_validation.reshape(-1, 1)
             
+            # Shift y_validation to align with x_validation (apply the same time_horizon shift)
+            y_validation = y_validation[time_horizon:]
+            x_validation = x_validation[:-time_horizon]
+            
             # Ensure y_validation matches the first dimension of x_validation
-            y_validation = y_validation[:len(x_validation)]
+            min_length = min(len(x_validation), len(y_validation))
+            x_validation = x_validation[:min_length]
+            y_validation = y_validation[:min_length]
             
             print(f"x_validation shape: {x_validation.shape}")
             print(f"y_validation shape: {y_validation.shape}")
