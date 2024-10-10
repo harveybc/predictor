@@ -67,9 +67,6 @@ def run_prediction_pipeline(config, plugin):
         if x_train.ndim == 1:
             x_train = x_train.reshape(-1, 1)
         
-        # Ensure y_train matches the first dimension of x_train
-        y_train = y_train[:len(x_train)]
-
         # Debug messages for shapes
         print(f"x_train shape: {x_train.shape}")
         print(f"y_train shape: {y_train.shape}")
@@ -85,9 +82,6 @@ def run_prediction_pipeline(config, plugin):
 
         # Predict using the trained model
         predictions = plugin.predict(x_train)
-
-        # Reshape predictions to match y_train shape
-        predictions = predictions.reshape(y_train.shape)
 
         # Evaluate the model
         mse = float(plugin.calculate_mse(y_train, predictions))
@@ -113,12 +107,12 @@ def run_prediction_pipeline(config, plugin):
         # Save debug info
         if config.get('save_log'):
             save_debug_info(debug_info, config['save_log'])
-            print(f"Debug info saved to {config['save_log']}.")
+            print(f"Debug info saved to {config['save_log']}")
 
         # Remote log debug info and config
         if config.get('remote_log'):
             remote_log(config, debug_info, config['remote_log'], config['username'], config['password'])
-            print(f"Debug info saved to {config['remote_log']}.")
+            print(f"Debug info saved to {config['remote_log']}")
 
         print(f"Execution time: {execution_time} seconds")
 
@@ -139,7 +133,6 @@ def run_prediction_pipeline(config, plugin):
             print(f"y_validation shape: {y_validation.shape}")
             
             validation_predictions = plugin.predict(x_validation)
-            validation_predictions = validation_predictions.reshape(y_validation.shape)
             
             validation_mse = float(plugin.calculate_mse(y_validation, validation_predictions))
             validation_mae = float(plugin.calculate_mae(y_validation, validation_predictions))
