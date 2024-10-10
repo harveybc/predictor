@@ -29,10 +29,10 @@ def process_data(config):
     x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     
-    # Apply input offset and time horizon
-    offset = config['input_offset'] + config['time_horizon']
+    # Apply input offset and time horizon only once
+    offset = config['time_horizon']
     y_train_data = y_train_data[offset:]
-    x_train_data = x_train_data[:-config['time_horizon']]
+    x_train_data = x_train_data[:-offset]
 
     # Ensure the shapes match
     min_length = min(len(x_train_data), len(y_train_data))
@@ -82,6 +82,9 @@ def run_prediction_pipeline(config, plugin):
 
         # Predict using the trained model
         predictions = plugin.predict(x_train)
+
+        # Reshape predictions to match y_train shape
+        predictions = predictions.reshape(y_train.shape)
 
         # Evaluate the model
         mse = float(plugin.calculate_mse(y_train, predictions))
@@ -133,6 +136,7 @@ def run_prediction_pipeline(config, plugin):
             print(f"y_validation shape: {y_validation.shape}")
             
             validation_predictions = plugin.predict(x_validation)
+            validation_predictions = validation_predictions[:len(y_validation)]  # Adjust predictions length if necessary
             
             validation_mse = float(plugin.calculate_mse(y_validation, validation_predictions))
             validation_mae = float(plugin.calculate_mae(y_validation, validation_predictions))
