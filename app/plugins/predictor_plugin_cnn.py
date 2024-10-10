@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Input
+from keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Input, BatchNormalization
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 
@@ -12,11 +12,11 @@ class Plugin:
     plugin_params = {
         'epochs': 100,
         'batch_size': 256,
-        'intermediate_layers': 1,
+        'intermediate_layers': 2,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.00001, 
-        'dropout_rate': 0.1
+        'learning_rate': 0.0001
+        
 
     }
 
@@ -59,6 +59,7 @@ class Plugin:
         for size in layers[:-1]:
             if size > 1:
                 x = Conv1D(filters=size, kernel_size=3, activation='relu', kernel_initializer=HeNormal(), padding='same')(x)
+                x= BatchNormalization()(x)
                 x = MaxPooling1D(pool_size=2)(x)
         x = Flatten()(x)
         model_output = Dense(layers[-1], activation='tanh', kernel_initializer=GlorotUniform(), name="model_output")(x)
