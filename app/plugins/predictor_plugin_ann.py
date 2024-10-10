@@ -1,164 +1,192 @@
-import tensorflow as tf
-import pandas as pd
 import numpy as np
-import os
-import time
-import json
-from app.data_handler import load_csv, write_csv
-from app.config_handler import save_debug_info, remote_log
+from keras.models import Model, load_model, save_model
+from keras.layers import Dense, Input, Dropout, BatchNormalization
+from keras.optimizers import Adam
+from tensorflow.keras.initializers import GlorotUniform, HeNormal
 
-def process_data(config):
-    print(f"Loading data from CSV file: {config['x_train_file']}")
-    x_train_data = load_csv(config['x_train_file'], headers=config['headers'])
-    print(f"Data loaded with shape: {x_train_data.shape}")
+class Plugin:
+    """
+    A predictor plugin using a simple neural network based on Keras, with dynamically configurable size.
+    """
 
-    y_train_file = config['y_train_file']
-    target_column = config['target_column']
+    plugin_params = {
+        'epochs': 100,
+        'batch_size': 256,
+        'intermediate_layers': 2,
+        'initial_layer_size': 129,
+        'layer_size_divisor': 2,
+        'learning_rate': 0.0001,
+        'activation': 'tanh'
+    }
 
-    if isinstance(y_train_file, str):
-        print(f"Loading y_train data from CSV file: {y_train_file}")
-        y_train_data = load_csv(y_train_file, headers=config['headers'])
-        print(f"y_train data loaded with shape: {y_train_data.shape}")
-    elif target_column is not None:
-        y_train_data = x_train_data.iloc[:, target_column]
-        print(f"Using target column at index: {target_column}")
-    else:
-        raise ValueError("Either y_train_file or target_column must be specified in the configuration.")
+    plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
 
-    # Ensure input data is numeric
-    x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
-    y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
-    
-    # Apply input offset and time horizon only once
-    offset = config['time_horizon']
-    y_train_data = y_train_data[offset:]
-    x_train_data = x_train_data[:-offset]
+    def __init__(self):
+        self.params = self.plugin_params.copy()
+        self.model = None
 
-    # Ensure the shapes match
-    min_length = min(len(x_train_data), len(y_train_data))
-    x_train_data = x_train_data[:min_length]
-    y_train_data = y_train_data[:min_length]
+    def set_params(self, **kwargs):
+        for key, value in kwargs.items():
+            self.params[key] = value
 
-    # Debugging messages to confirm types and shapes
-    print(f"Returning data of type: {type(x_train_data)}, {type(y_train_data)}")
-    print(f"x_train_data shape after adjustments: {x_train_data.shape}")
-    print(f"y_train_data shape after adjustments: {y_train_data.shape}")
-    
-    return x_train_data, y_train_data
+    def get_debug_info(self):
+        return {var: self.params[var] for var in self.plugin_debug_vars}
 
-def run_prediction_pipeline(config, plugin):
-    start_time = time.time()
-    
-    print("Running process_data...")
-    x_train, y_train = process_data(config)
-    print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
-    
-    time_horizon = config['time_horizon']
-    batch_size = config['batch_size']
-    epochs = config['epochs']
-    threshold_error = config['threshold_error']
+    def add_debug_info(self, debug_info):
+        plugin_debug_info = self.get_debug_info()
+        debug_info.update(plugin_debug_info)
 
-    # Ensure x_train and y_train are DataFrame or Series
-    if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
-        x_train = x_train.to_numpy().astype(np.float32)
-        y_train = y_train.to_numpy().astype(np.float32)
+    def build_model(self, input_shape):
+        self.params['input_dim'] = input_shape
 
-        # Ensure x_train is a 2D array
-        if x_train.ndim == 1:
-            x_train = x_train.reshape(-1, 1)
+        # Layer configuration
+        layers = []
+        current_size = self.params['initial_layer_size']
+        layer_size_divisor = self.params['layer_size_divisor']
+        int_layers = 0
+        while int_layers < self.params['intermediate_layers']:
+            layers.append(current_size)
+            current_size = max(current_size // layer_size_divisor, 1)
+            int_layers += 1
+        layers.append(1)  # Output layer size
+
+        # Debugging message
+        print(f"ANN Layer sizes: {layers}")
+
+        # Model
+        model_input = Input(shape=(input_shape,), name="model_input")
+        print(f"ANN input_shape: {input_shape}")
+
+        x = model_input
+        for size in layers[:-1]:
+            if size > 1:
+                x = Dense(size, activation='relu', kernel_initializer=HeNormal())(x)
+                x = BatchNormalization()(x)
+        model_output = Dense(layers[-1], activation=self.params['activation'], kernel_initializer=GlorotUniform(), name="model_output")(x)
         
-        # Debug messages for shapes
-        print(f"x_train shape: {x_train.shape}")
-        print(f"y_train shape: {y_train.shape}")
+        self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
+        # Define the Adam optimizer with custom parameters
+        adam_optimizer = Adam(
+            learning_rate= self.params['learning_rate'],   # Set the learning rate
+            beta_1=0.9,            # Default value
+            beta_2=0.999,          # Default value
+            epsilon=1e-7,          # Default value
+            amsgrad=False          # Default value
+        )
 
-        # Train the model
-        plugin.build_model(input_shape=x_train.shape[1])
-        plugin.train(x_train, y_train, epochs=epochs, batch_size=batch_size, threshold_error=threshold_error)
+        self.model.compile(adam_optimizer, loss='mse', metrics=['mse','mae'])
 
-        # Save the trained model
-        if config['save_model']:
-            plugin.save(config['save_model'])
-            print(f"Model saved to {config['save_model']}")
+        # Debugging messages to trace the model configuration
+        print("Predictor Model Summary:")
+        self.model.summary()
 
-        # Predict using the trained model
-        predictions = plugin.predict(x_train)
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error):
+        print(f"Training predictor model with data shape: {x_train.shape}")
+        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
+        print("Training completed.")
+        mse = history.history['loss'][-1]
+        if mse > threshold_error:
+            print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
 
-        # Reshape predictions to match y_train shape
-        predictions = predictions.reshape(y_train.shape)
+    def predict(self, data):
+        print(f"Predicting data with shape: {data.shape}")
+        predictions = self.model.predict(data)
+        print(f"Predicted data shape: {predictions.shape}")
+        return predictions
+    
+    def calculate_mse(self, y_true, y_pred):
+        """
+        Calculate the Mean Squared Error (MSE) between the true values and predicted values.
 
-        # Evaluate the model
-        mse = float(plugin.calculate_mse(y_train, predictions))
-        mae = float(plugin.calculate_mae(y_train, predictions))
-        print(f"Mean Squared Error: {mse}")
-        print(f"Mean Absolute Error: {mae}")
+        Parameters:
+        y_true (np.array): The true values.
+        y_pred (np.array): The predicted values.
 
-        # Convert predictions to a DataFrame and save to CSV
-        predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
-        output_filename = config['output_file']
-        write_csv(output_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
-        print(f"Output written to {output_filename}")
+        Returns:
+        float: The calculated MSE.
+        """
+        # Debugging the shapes of input arrays
+        print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
 
-        # Save final configuration and debug information
-        end_time = time.time()
-        execution_time = end_time - start_time
-        debug_info = {
-            'execution_time': float(execution_time),
-            'mse': mse,
-            'mae': mae
-        }
+        # Flatten the predicted values to ensure it is a 1D array
+        y_pred = y_pred.flatten()
 
-        # Save debug info
-        if config.get('save_log'):
-            save_debug_info(debug_info, config['save_log'])
-            print(f"Debug info saved to {config['save_log']}")
+        # Debugging the shapes after flattening
+        print(f"Shapes after flattening: y_true={y_true.shape}, y_pred={y_pred.shape}")
 
-        # Remote log debug info and config
-        if config.get('remote_log'):
-            remote_log(config, debug_info, config['remote_log'], config['username'], config['password'])
-            print(f"Debug info saved to {config['remote_log']}")
+        # Convert to numpy arrays to ensure they are in the correct format for calculations
+        y_true = np.array(y_true).flatten()
+        y_pred = np.array(y_pred)
 
-        print(f"Execution time: {execution_time} seconds")
+        # Calculate the absolute difference between true and predicted values
+        abs_difference = np.abs(y_true - y_pred)
 
-        # Validate the model if validation data is provided
-        if config['x_validation_file'] and config['y_validation_file']:
-            print("Validating model...")
-            x_validation = load_csv(config['x_validation_file'], headers=config['headers']).to_numpy().astype(np.float32)
-            y_validation = load_csv(config['y_validation_file'], headers=config['headers']).to_numpy().astype(np.float32)
-            
-            # Ensure x_validation is a 2D array
-            if x_validation.ndim == 1:
-                x_validation = x_validation.reshape(-1, 1)
-            
-            # Ensure y_validation matches the first dimension of x_validation
-            y_validation = y_validation[:len(x_validation)]
-            
-            print(f"x_validation shape: {x_validation.shape}")
-            print(f"y_validation shape: {y_validation.shape}")
-            
-            validation_predictions = plugin.predict(x_validation)
-            validation_predictions = validation_predictions[:len(y_validation)]  # Adjust predictions length if necessary
-            
-            validation_mse = float(plugin.calculate_mse(y_validation, validation_predictions))
-            validation_mae = float(plugin.calculate_mae(y_validation, validation_predictions))
-            print(f"Validation Mean Squared Error: {validation_mse}")
-            print(f"Validation Mean Absolute Error: {validation_mae}")
+        # Debugging the intermediate results
+        print(f"Absolute differences: {abs_difference}")
 
-    else:
-        print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
-        raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
+        # Square the absolute differences
+        squared_abs_difference = abs_difference ** 2
 
-def load_and_evaluate_model(config, plugin):
-    # Load the model
-    plugin.load(config['load_model'])
+        # Debugging the squared differences
+        print(f"Squared absolute differences: {squared_abs_difference}")
 
-    # Load the input data
-    x_train, _ = process_data(config)
+        # Calculate the mean of the squared differences
+        mse = np.mean(squared_abs_difference)
 
-    # Predict using the loaded model
-    predictions = plugin.predict(x_train.to_numpy())
+        # Debugging the final MSE
+        print(f"Calculated MSE: {mse}")
 
-    # Save the predictions to CSV
-    evaluate_filename = config['evaluate_file']
-    predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
-    write_csv(evaluate_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
-    print(f"Predicted data saved to {evaluate_filename}")
+        return mse
+
+    def calculate_mae(self, y_true, y_pred):
+        """
+        Calculate the Mean Absolute Error (MAE) between the true values and predicted values.
+
+        Parameters:
+        y_true (np.array): The true values.
+        y_pred (np.array): The predicted values.
+
+        Returns:
+        float: The calculated MAE.
+        """
+        # Debugging the shapes of input arrays
+        print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
+
+        # Flatten the predicted values to ensure it is a 1D array
+        y_pred = y_pred.flatten()
+
+        # Debugging the shapes after flattening
+        print(f"Shapes after flattening: y_true={y_true.shape}, y_pred={y_pred.shape}")
+
+        # Convert to numpy arrays to ensure they are in the correct format for calculations
+        y_true = np.array(y_true).flatten()
+        y_pred = np.array(y_pred)
+
+        # Calculate the absolute difference between true and predicted values
+        abs_difference = np.abs(y_true - y_pred)
+
+        # Debugging the intermediate results
+        print(f"Absolute differences: {abs_difference}")
+
+        # Calculate the mean of the absolute differences
+        mae = np.mean(abs_difference)
+
+        # Debugging the final MAE
+        print(f"Calculated MAE: {mae}")
+
+        return mae
+
+    def save(self, file_path):
+        save_model(self.model, file_path)
+        print(f"Predictor model saved to {file_path}")
+
+    def load(self, file_path):
+        self.model = load_model(file_path)
+        print(f"Predictor model loaded from {file_path}")
+
+# Debugging usage example
+if __name__ == "__main__":
+    plugin = Plugin()
+    plugin.build_model(input_shape=8)  # Adjusted to 8 as per your data
+    debug_info = plugin.get_debug_info()
+    print(f"Debug Info: {debug_info}")
