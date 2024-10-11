@@ -39,7 +39,7 @@ def process_data(config):
 
     # Apply offset to y_train_data and x_train_data
     y_train_data = y_train_data[total_offset:]
-    x_train_data = x_train_data[input_offset:-time_horizon]
+    x_train_data = x_train_data[:-time_horizon]
 
     print(f"Data shape after applying offset and time horizon: {x_train_data.shape}, {y_train_data.shape}")
 
