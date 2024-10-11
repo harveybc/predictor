@@ -36,6 +36,12 @@ def process_data(config):
     x_train_data = x_train_data[input_offset:-time_horizon]
     print(f"Data shape after applying offset and time horizon: {x_train_data.shape}, {y_train_data.shape}")
 
+    # if the first dimension of x_train and y_train do not match, exit
+    if len(x_train_data) != len(y_train_data):  
+        raise ValueError("Input and output data shapes do not match.")
+        
+     
+
     # Ensure the shapes match
     min_length = min(len(x_train_data), len(y_train_data))
     x_train_data = x_train_data[:min_length]
