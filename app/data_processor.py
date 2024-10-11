@@ -142,9 +142,12 @@ def run_prediction_pipeline(config, plugin):
             if x_validation.ndim == 1:
                 x_validation = x_validation.reshape(-1, 1)
             
+
+            total_offset = time_horizon + input_offset
+
             # Shift y_validation to align with x_validation (apply the same time_horizon shift)
-            y_validation = y_validation[time_horizon:]
-            x_validation = x_validation[input_offset:-time_horizon]
+            y_validation = y_validation[total_offset:]
+            x_validation = x_validation[:-time_horizon]
             print(f"Validation data shape after adjustments: {x_validation.shape}, {y_validation.shape}")
             
             # Ensure y_validation matches the first dimension of x_validation
