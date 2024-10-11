@@ -30,9 +30,10 @@ def process_data(config):
     y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     
     # Apply input offset and time horizon only once
-    offset = config['time_horizon']
-    y_train_data = y_train_data[offset:]
-    x_train_data = x_train_data[:-offset]
+    time_horizon = config['time_horizon']
+    input_offset = config['input_offset']
+    y_train_data = y_train_data[time_horizon:]
+    x_train_data = x_train_data[input_offset:-time_horizon]
 
     # Ensure the shapes match
     min_length = min(len(x_train_data), len(y_train_data))
@@ -54,6 +55,7 @@ def run_prediction_pipeline(config, plugin):
     print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
     
     time_horizon = config['time_horizon']
+    input_offset = config['input_offset']
     batch_size = config['batch_size']
     epochs = config['epochs']
     threshold_error = config['threshold_error']
@@ -128,7 +130,7 @@ def run_prediction_pipeline(config, plugin):
             
             # Shift y_validation to align with x_validation (apply the same time_horizon shift)
             y_validation = y_validation[time_horizon:]
-            x_validation = x_validation[:-time_horizon]
+            x_validation = x_validation[input_offset:-time_horizon]
             
             # Ensure y_validation matches the first dimension of x_validation
             min_length = min(len(x_validation), len(y_validation))

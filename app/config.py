@@ -1,9 +1,9 @@
 # config.py
 
 DEFAULT_VALUES = {
-    'x_train_file': '..\\Documents\\encoder_eval_d2_indicators_128_close.csv',
+    'x_train_file': '..\\Documents\\encoder_eval_d2_indicators_128_raw.csv',
     'y_train_file': './tests/data/target_column_d2.csv',
-    'x_validation_file': '..\\Documents\\encoder_eval_d3_indicators_128_close.csv',
+    'x_validation_file': '..\\Documents\\encoder_eval_d3_indicators_128_raw.csv',
     'y_validation_file': './tests/data/target_column_d3.csv',
     'target_column': None,
     'output_file': './csv_output.csv',
@@ -24,5 +24,5 @@ DEFAULT_VALUES = {
     'quiet_mode': False,
     'force_date': False,
     'headers': True,
-    'input_offset': 0  
+    'input_offset': 127  
 }
