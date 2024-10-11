@@ -33,7 +33,7 @@ def process_data(config):
     # Apply input offset and time horizon to both x_train_data and y_train_data
     time_horizon = config['time_horizon']
     input_offset = config['input_offset']
-
+    print(f"Applying time horizon: {time_horizon} and input offset: {input_offset}")
     # Calculate total offset to apply to ensure matching lengths
     total_offset = time_horizon + input_offset
 
