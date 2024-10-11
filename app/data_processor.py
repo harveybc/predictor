@@ -143,6 +143,7 @@ def run_prediction_pipeline(config, plugin):
                 x_validation = x_validation.reshape(-1, 1)
             
 
+
             total_offset = time_horizon + input_offset
 
             # Shift y_validation to align with x_validation (apply the same time_horizon shift)
