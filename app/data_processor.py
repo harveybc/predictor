@@ -29,10 +29,25 @@ def process_data(config):
     x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     
-    # Apply input offset and time horizon
-    offset = config['input_offset'] + config['time_horizon']
-    y_train_data = y_train_data[offset:]
-    x_train_data = x_train_data[:-config['time_horizon']]
+
+    # Apply input offset and time horizon to both x_train_data and y_train_data
+    time_horizon = config['time_horizon']
+    input_offset = config['input_offset']
+    print(f"Applying time horizon: {time_horizon} and input offset: {input_offset}")
+    # Calculate total offset to apply to ensure matching lengths
+    total_offset = time_horizon + input_offset
+
+    # Apply offset to y_train_data and x_train_data
+    y_train_data = y_train_data[total_offset:]
+    x_train_data = x_train_data[:-time_horizon]
+
+    print(f"Data shape after applying offset and time horizon: {x_train_data.shape}, {y_train_data.shape}")
+
+    # if the first dimension of x_train and y_train do not match, exit
+    if len(x_train_data) != len(y_train_data):  
+        raise ValueError("Input and output data shapes do not match.")
+        
+     
 
     # Ensure the shapes match
     min_length = min(len(x_train_data), len(y_train_data))
@@ -54,6 +69,7 @@ def run_prediction_pipeline(config, plugin):
     print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
     
     time_horizon = config['time_horizon']
+    input_offset = config['input_offset']
     batch_size = config['batch_size']
     epochs = config['epochs']
     threshold_error = config['threshold_error']
@@ -67,9 +83,6 @@ def run_prediction_pipeline(config, plugin):
         if x_train.ndim == 1:
             x_train = x_train.reshape(-1, 1)
         
-        # Ensure y_train matches the first dimension of x_train
-        y_train = y_train[:len(x_train)]
-
         # Debug messages for shapes
         print(f"x_train shape: {x_train.shape}")
         print(f"y_train shape: {y_train.shape}")
@@ -85,9 +98,6 @@ def run_prediction_pipeline(config, plugin):
 
         # Predict using the trained model
         predictions = plugin.predict(x_train)
-
-        # Reshape predictions to match y_train shape
-        predictions = predictions.reshape(y_train.shape)
 
         # Evaluate the model
         mse = float(plugin.calculate_mse(y_train, predictions))
@@ -113,12 +123,12 @@ def run_prediction_pipeline(config, plugin):
         # Save debug info
         if config.get('save_log'):
             save_debug_info(debug_info, config['save_log'])
-            print(f"Debug info saved to {config['save_log']}.")
+            print(f"Debug info saved to {config['save_log']}")
 
         # Remote log debug info and config
         if config.get('remote_log'):
             remote_log(config, debug_info, config['remote_log'], config['username'], config['password'])
-            print(f"Debug info saved to {config['remote_log']}.")
+            print(f"Debug info saved to {config['remote_log']}")
 
         print(f"Execution time: {execution_time} seconds")
 
@@ -132,14 +142,25 @@ def run_prediction_pipeline(config, plugin):
             if x_validation.ndim == 1:
                 x_validation = x_validation.reshape(-1, 1)
             
+
+
+            total_offset = time_horizon + input_offset
+
+            # Shift y_validation to align with x_validation (apply the same time_horizon shift)
+            y_validation = y_validation[total_offset:]
+            x_validation = x_validation[:-time_horizon]
+            print(f"Validation data shape after adjustments: {x_validation.shape}, {y_validation.shape}")
+            
             # Ensure y_validation matches the first dimension of x_validation
-            y_validation = y_validation[:len(x_validation)]
+            min_length = min(len(x_validation), len(y_validation))
+            x_validation = x_validation[:min_length]
+            y_validation = y_validation[:min_length]
             
             print(f"x_validation shape: {x_validation.shape}")
             print(f"y_validation shape: {y_validation.shape}")
             
             validation_predictions = plugin.predict(x_validation)
-            validation_predictions = validation_predictions.reshape(y_validation.shape)
+            validation_predictions = validation_predictions[:len(y_validation)]  # Adjust predictions length if necessary
             
             validation_mse = float(plugin.calculate_mse(y_validation, validation_predictions))
             validation_mae = float(plugin.calculate_mae(y_validation, validation_predictions))
