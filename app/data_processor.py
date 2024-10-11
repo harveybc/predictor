@@ -29,12 +29,17 @@ def process_data(config):
     x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     
-    # Apply input offset and time horizon only once
+    # Apply input offset and time horizon to both x_train_data and y_train_data
     time_horizon = config['time_horizon']
     input_offset = config['input_offset']
-    y_train_data = y_train_data[time_horizon:]
+
+    # Calculate total offset to apply to ensure matching lengths
+    total_offset = time_horizon + input_offset
+
+    # Apply offset to y_train_data and x_train_data
+    y_train_data = y_train_data[total_offset:]
     x_train_data = x_train_data[input_offset:-time_horizon]
-    print(f"Data shape after applying offset and time horizon: {x_train_data.shape}, {y_train_data.shape}")
+
 
     # if the first dimension of x_train and y_train do not match, exit
     if len(x_train_data) != len(y_train_data):  
