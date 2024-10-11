@@ -34,6 +34,7 @@ def process_data(config):
     input_offset = config['input_offset']
     y_train_data = y_train_data[time_horizon:]
     x_train_data = x_train_data[input_offset:-time_horizon]
+    print(f"Data shape after applying offset and time horizon: {x_train_data.shape}, {y_train_data.shape}")
 
     # Ensure the shapes match
     min_length = min(len(x_train_data), len(y_train_data))
@@ -131,6 +132,7 @@ def run_prediction_pipeline(config, plugin):
             # Shift y_validation to align with x_validation (apply the same time_horizon shift)
             y_validation = y_validation[time_horizon:]
             x_validation = x_validation[input_offset:-time_horizon]
+            print(f"Validation data shape after adjustments: {x_validation.shape}, {y_validation.shape}")
             
             # Ensure y_validation matches the first dimension of x_validation
             min_length = min(len(x_validation), len(y_validation))
