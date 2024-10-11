@@ -1,16 +1,16 @@
 # config.py
 
 DEFAULT_VALUES = {
-    'x_train_file': './tests/data/encoder_eval.csv',
-    'y_train_file': './tests/data/close-open_eurusd_1h_norm_10y.csv',
-    'x_validation_file': None,
-    'y_validation_file': None,
+    'x_train_file': '..\\Documents\\encoder_eval_d2_indicators_128_raw.csv',
+    'y_train_file': './tests/data/target_column_d2.csv',
+    'x_validation_file': '..\\Documents\\encoder_eval_d3_indicators_128_raw.csv',
+    'y_validation_file': './tests/data/target_column_d3.csv',
     'target_column': None,
     'output_file': './csv_output.csv',
     'save_model': './predictor_model.keras',
     'load_model': None,
     'evaluate_file': './model_eval.csv',
-    'plugin': 'ann',
+    'plugin': 'cnn',
     'time_horizon': 1,
     'threshold_error': 0.00004,
     'remote_log': None,
@@ -24,5 +24,5 @@ DEFAULT_VALUES = {
     'quiet_mode': False,
     'force_date': False,
     'headers': True,
-    'input_offset': 256  
+    'input_offset': 127  
 }
