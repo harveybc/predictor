@@ -28,38 +28,48 @@ def process_data(config):
     # Ensure input data is numeric
     x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
-    
 
-    # Apply input offset and time horizon to both x_train_data and y_train_data
     time_horizon = config['time_horizon']
     input_offset = config['input_offset']
     print(f"Applying time horizon: {time_horizon} and input offset: {input_offset}")
-    # Calculate total offset to apply to ensure matching lengths
     total_offset = time_horizon + input_offset
 
-    # Apply offset to y_train_data and x_train_data
+    # Apply the original offset
     y_train_data = y_train_data[total_offset:]
     x_train_data = x_train_data[:-time_horizon]
 
     print(f"Data shape after applying offset and time horizon: {x_train_data.shape}, {y_train_data.shape}")
 
-    # if the first dimension of x_train and y_train do not match, exit
     if len(x_train_data) != len(y_train_data):  
         raise ValueError("Input and output data shapes do not match.")
-        
-     
 
-    # Ensure the shapes match
+    # Ensure they have the same minimum length (just in case)
     min_length = min(len(x_train_data), len(y_train_data))
     x_train_data = x_train_data[:min_length]
     y_train_data = y_train_data[:min_length]
 
-    # Debugging messages to confirm types and shapes
+    # Now convert y_train_data into a structure with multiple step outputs.
+    # We want to predict all ticks from the current to the time_horizon.
+    # We create sliding windows for the output.
+    Y_list = []
+    # Generate windows for y_train_data of size time_horizon
+    # Each X sample will be associated with time_horizon future samples of Y.
+    for i in range(len(y_train_data) - time_horizon + 1):
+        Y_list.append(y_train_data.iloc[i:i+time_horizon].to_numpy())
+    y_train_data = np.array(Y_list)
+
+    # Adjust x_train_data to match the number of samples of y_train_data
+    x_train_data = x_train_data.iloc[:len(y_train_data)]
+
+    # Convert x_train_data to numpy array for consistency
+    x_train_data = x_train_data.to_numpy()
+
     print(f"Returning data of type: {type(x_train_data)}, {type(y_train_data)}")
     print(f"x_train_data shape after adjustments: {x_train_data.shape}")
-    print(f"y_train_data shape after adjustments: {y_train_data.shape}")
-    
+    print(f"y_train_data shape after adjustments (multi-step): {y_train_data.shape}")
+
     return x_train_data, y_train_data
+
 
 def run_prediction_pipeline(config, plugin):
     start_time = time.time()
