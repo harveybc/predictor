@@ -15,7 +15,7 @@ class Plugin:
         'intermediate_layers': 2,
         'initial_layer_size': 256,
         'layer_size_divisor': 2,
-        'learning_rate': 0.00001
+        'learning_rate': 0.001
         
 
     }
