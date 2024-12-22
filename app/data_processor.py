@@ -40,7 +40,7 @@ def process_data(config):
 
     print(f"Data shape after applying offset and time horizon: {x_train_data.shape}, {y_train_data.shape}")
 
-    if len(x_train_data) != len(y_train_data):  
+    if len(x_train_data) != len(y_train_data):
         raise ValueError("Input and output data shapes do not match.")
 
     # Ensure they have the same minimum length (just in case)
@@ -52,17 +52,20 @@ def process_data(config):
     # We want to predict all ticks from the current to the time_horizon.
     # We create sliding windows for the output.
     Y_list = []
-    # Generate windows for y_train_data of size time_horizon
+    # Generate windows for y_train_data of size time_horizon.
     # Each X sample will be associated with time_horizon future samples of Y.
+    # We will flatten each window so that it remains a 2D DataFrame in the end.
     for i in range(len(y_train_data) - time_horizon + 1):
-        Y_list.append(y_train_data.iloc[i:i+time_horizon].to_numpy())
-    y_train_data = np.array(Y_list)
+        # If y_train_data has multiple columns, flatten the future steps.
+        window = y_train_data.iloc[i : i + time_horizon].to_numpy().flatten()
+        Y_list.append(window)
+
+    # Convert Y_list into a DataFrame so run_prediction_pipeline
+    # sees a valid DataFrame/Series type.
+    y_train_data = pd.DataFrame(Y_list)
 
     # Adjust x_train_data to match the number of samples of y_train_data
-    x_train_data = x_train_data.iloc[:len(y_train_data)]
-
-    # Convert x_train_data to numpy array for consistency
-    x_train_data = x_train_data.to_numpy()
+    x_train_data = x_train_data.iloc[:len(y_train_data)].reset_index(drop=True)
 
     print(f"Returning data of type: {type(x_train_data)}, {type(y_train_data)}")
     print(f"x_train_data shape after adjustments: {x_train_data.shape}")
