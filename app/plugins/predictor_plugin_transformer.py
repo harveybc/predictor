@@ -12,12 +12,12 @@ class Plugin:
 
     plugin_params = {
         'epochs': 100,  # Increased number of epochs
-        'batch_size': 256,
+        'batch_size': 128,
         'intermediate_layers': 1,  
         'initial_layer_size': 64,  
         'layer_size_divisor': 2,
         'num_heads': 2,  # Keeping the number of heads dependent on size as before
-        'learning_rate': 0.00001,
+        'learning_rate': 0.0001,
         'dropout_rate': 0.1
     }
 
