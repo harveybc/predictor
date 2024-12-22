@@ -11,7 +11,6 @@ from config_merger import merge_config, process_unknown_args
 def main():
     print("Parsing initial arguments...")
     args, unknown_args = parse_args()
-
     cli_args = vars(args)
 
     print("Loading default configuration...")
@@ -28,19 +27,26 @@ def main():
         file_config = load_config(args.load_config)
         print(f"Loaded local config: {file_config}")
 
-    # Ensure the plugin is taken from the config if it is not explicitly provided in the CLI
-    if 'plugin' not in cli_args or not cli_args['plugin']:
-        cli_args['plugin'] = config.get('plugin', 'ann')  # 'ann' is a fallback
+    # First pass: Merge config with CLI args and unknown args WITHOUT plugin-specific parameters
+    print("Merging configuration with CLI arguments and unknown args (first pass, no plugin params)...")
+    unknown_args_dict = process_unknown_args(unknown_args)
+    # We give empty dicts for plugin_params in this pass
+    config = merge_config(config, {}, {}, file_config, cli_args, unknown_args_dict)
+
+    # If CLI did not provide a plugin, use whatever is in config['plugin']
+    if not cli_args.get('plugin'):
+        cli_args['plugin'] = config.get('plugin', 'ann')
 
     plugin_name = cli_args['plugin']
     print(f"Loading plugin: {plugin_name}")
     plugin_class, _ = load_plugin('predictor.plugins', plugin_name)
     plugin = plugin_class()
 
-    print("Merging configuration with CLI arguments and unknown args...")
-    unknown_args_dict = process_unknown_args(unknown_args)
-    config = merge_config(config, plugin.plugin_params, file_config, cli_args, unknown_args_dict)
-    
+    # Second pass: Merge config with the plugin's parameters (if any)
+    print("Merging configuration with CLI arguments and unknown args (second pass, with plugin params)...")
+    # Now we pass the plugin's parameters as the first dict so they're recognized properly
+    config = merge_config(config, plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
+
     plugin.set_params(**config)
 
     if config['load_model']:
@@ -58,6 +64,7 @@ def main():
         print(f"Remote saving configuration to {config['remote_save_config']}")
         remote_save_config(config, config['remote_save_config'], config['username'], config['password'])
         print(f"Remote configuration saved.")
-        
+
+
 if __name__ == "__main__":
     main()
