@@ -14,7 +14,7 @@ class Plugin:
         'batch_size': 256,
         'intermediate_layers': 4,
         'initial_layer_size': 256,
-        'layer_size_divisor': 2,
+        'layer_size_divisor': 4,
         'learning_rate': 0.00001
         
 
