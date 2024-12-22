@@ -28,6 +28,10 @@ def main():
         file_config = load_config(args.load_config)
         print(f"Loaded local config: {file_config}")
 
+    # Ensure the plugin is taken from the config if it is not explicitly provided in the CLI
+    if 'plugin' not in cli_args or not cli_args['plugin']:
+        cli_args['plugin'] = config.get('plugin', 'ann')  # 'ann' is a fallback
+
     plugin_name = cli_args['plugin']
     print(f"Loading plugin: {plugin_name}")
     plugin_class, _ = load_plugin('predictor.plugins', plugin_name)
@@ -54,6 +58,6 @@ def main():
         print(f"Remote saving configuration to {config['remote_save_config']}")
         remote_save_config(config, config['remote_save_config'], config['username'], config['password'])
         print(f"Remote configuration saved.")
-
+        
 if __name__ == "__main__":
     main()
