@@ -101,6 +101,28 @@ def run_prediction_pipeline(config, plugin):
     and evaluates the model on the validation set.
     """
 
+    # Helper function for sinusoidal positional encoding (only used if plugin == 'transformer')
+    def apply_positional_encoding(x):
+        """
+        Implements the standard sinusoidal positional encoding used in the original Transformer paper.
+        x is assumed to be a 2D NumPy array of shape (batch_size, features).
+        This returns x + positional_encoding_of_same_shape.
+        """
+        import numpy as np
+        seq_len, d_model = x.shape
+        pos_encoding = np.zeros((seq_len, d_model), dtype=np.float32)
+
+        # Generate positional encodings
+        for pos in range(seq_len):
+            for i in range(0, d_model, 2):
+                angle = pos / (10000 ** (i / d_model))
+                pos_encoding[pos, i] = np.sin(angle)
+                if i + 1 < d_model:
+                    pos_encoding[pos, i + 1] = np.cos(angle)
+
+        # Add to original input
+        return x + pos_encoding
+
     start_time = time.time()
     
     print("Running process_data...")
@@ -118,6 +140,11 @@ def run_prediction_pipeline(config, plugin):
         # Convert to numpy for training
         x_train = x_train.to_numpy().astype(np.float32)
         y_train = y_train.to_numpy().astype(np.float32)
+
+        # If the plugin is 'transformer', add positional encoding to x_train
+        if config['plugin'] == 'transformer':
+            print("Applying positional encoding since plugin is 'transformer'.")
+            x_train = apply_positional_encoding(x_train)
 
         # Ensure x_train is 2D
         if x_train.ndim == 1:
@@ -228,6 +255,11 @@ def run_prediction_pipeline(config, plugin):
             x_validation = x_val_df.to_numpy().astype(np.float32)
             y_validation = y_val_df.to_numpy().astype(np.float32)
 
+            # If transformer plugin is used, also apply positional encoding to validation X
+            if config['plugin'] == 'transformer':
+                print("Applying positional encoding to validation data since plugin is 'transformer'.")
+                x_validation = apply_positional_encoding(x_validation)
+
             # Ensure x_validation is 2D
             if x_validation.ndim == 1:
                 x_validation = x_validation.reshape(-1, 1)
@@ -249,6 +281,9 @@ def run_prediction_pipeline(config, plugin):
     else:
         print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
+
+
+
 def load_and_evaluate_model(config, plugin):
     # Load the model
     plugin.load(config['load_model'])
