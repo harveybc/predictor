@@ -16,7 +16,7 @@ class Plugin:
         'intermediate_layers': 2,  
         'initial_layer_size': 32,  
         'layer_size_divisor': 2,
-        'num_heads': 3,  # Keeping the number of heads dependent on size as before
+        'num_heads': 4,  # Keeping the number of heads dependent on size as before
         'learning_rate': 0.0001,
         'dropout_rate': 0.1
     }
