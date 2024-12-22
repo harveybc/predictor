@@ -11,7 +11,7 @@ def parse_args():
     parser.add_argument('-sm', '--save_model', type=str, help='Filename to save the trained predictor model.')
     parser.add_argument('-lm', '--load_model', type=str, help='Filename to load a trained predictor model from (does not perform training, just evaluate input data).')
     parser.add_argument('-ef', '--evaluate_file', type=str, help='Filename for outputting loaded model evaluation results.')
-    parser.add_argument('-pl', '--plugin', type=str, default='default', help='Name of the encoder plugin to use.')
+    parser.add_argument('-pl', '--plugin', type=str,  help='Name of the encoder plugin to use.')
     parser.add_argument('-th', '--time_horizon', type=int, help='Number of ticks ahead to predict.')
     parser.add_argument('-te', '--threshold_error', type=float, help='MSE error threshold to stop the training process.')
     parser.add_argument('-rl', '--remote_log', type=str, help='URL of a remote API endpoint for saving debug variables in JSON format.')
