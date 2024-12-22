@@ -75,7 +75,7 @@ class Plugin:
             amsgrad=False
         )
 
-        self.model.compile(optimizer=adam_optimizer, loss='mean_squared_error')
+        self.model.compile(optimizer=adam_optimizer, loss='mean_squared_error', run_eagerly=True)
 
         # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
