@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Dense, Input, Dropout, Add, LayerNormalization, GlobalAveragePooling1D, Flatten
+from keras.layers import Dense, Input, Dropout, Add, LayerNormalization, GlobalAveragePooling1D, Flatten, BatchNormalization
 from keras.optimizers import Adam
 from keras_multi_head import MultiHeadAttention
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
@@ -63,10 +63,10 @@ class Plugin:
         for size in layers[:-1]:
             if size > 1:
                 x = Dense(size)(x)
+                x = BatchNormalization()(x)
                 x = MultiHeadAttention(head_num=self.params['num_heads'])(x)
-                x = Dropout(self.params['dropout_rate'])(x)
+                x = BatchNormalization()(x)
                 x = Add()([x, inputs])
-                x = LayerNormalization(epsilon=1e-6)(x)
 
         x = GlobalAveragePooling1D()(x)
         x = Flatten()(x)
