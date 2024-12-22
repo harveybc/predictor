@@ -2,10 +2,10 @@
 
 DEFAULT_VALUES = {
     #'x_train_file': '..\\Documents\\encoder_eval_d2_indicators_128_raw.csv', 
-    'x_train_file': './tests/data/normalized_d2.csv',
+    'x_train_file': './tests/data/encoder_eval_d2.csv',
     'y_train_file': './tests/data/normalized_d2.csv',
     #'x_validation_file': '..\\Documents\\encoder_eval_d3_indicators_128_raw.csv',
-    'x_validation_file': './tests/data/normalized_d3.csv',
+    'x_validation_file': './tests/data/encoder_eval_d3.csv',
     'y_validation_file': './tests/data/normalized_d3.csv',
     'target_column': 'CLOSE',
     'output_file': './csv_output.csv',
