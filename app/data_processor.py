@@ -9,10 +9,10 @@ from app.config_handler import save_debug_info, remote_log
 
 def process_data(config):
     """
-    Loads X and Y datasets, aligns them by date if applicable, applies offset and time_horizon,
-    and returns them as DataFrames ready for run_prediction_pipeline.
+    Loads X and Y datasets from CSV, aligns them by their date/index, 
+    applies offset/time_horizon, extracts the target_column from y_train_data, 
+    and returns DataFrames suitable for run_prediction_pipeline.
     """
-
     print(f"Loading data from CSV file: {config['x_train_file']}")
     x_train_data = load_csv(config['x_train_file'], headers=config['headers'])
     print(f"Data loaded with shape: {x_train_data.shape}")
@@ -29,7 +29,6 @@ def process_data(config):
         raise ValueError("Either y_train_file must be specified as a string path to the CSV file.")
 
     # If the user specified a target_column, extract that column from y_train_data
-    # The target_column can be a string (e.g., "CLOSE") or an integer index
     if target_column is not None:
         if isinstance(target_column, str):
             if target_column not in y_train_data.columns:
@@ -38,20 +37,18 @@ def process_data(config):
         elif isinstance(target_column, int):
             if target_column < 0 or target_column >= y_train_data.shape[1]:
                 raise ValueError(f"Target column index {target_column} is out of range in y_train_data.")
-            # Use .iloc[:, [target_column]] so the result is a DataFrame
             y_train_data = y_train_data.iloc[:, [target_column]]
         else:
             raise ValueError("target_column must be either a string (column name) or an integer index.")
     else:
         raise ValueError("No valid target_column was provided for y_train_data.")
 
-    # Align x_train_data and y_train_data on their index (date alignment)
-    # If they do not have a date index, this will simply align on integer indices
+    # Align x_train_data and y_train_data on their date/index
     common_index = x_train_data.index.intersection(y_train_data.index)
     x_train_data = x_train_data.loc[common_index].sort_index()
     y_train_data = y_train_data.loc[common_index].sort_index()
 
-    # Convert data to numeric and fill NaNs
+    # Convert to numeric, fill NaNs (additional safety check if needed)
     x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
 
@@ -61,33 +58,27 @@ def process_data(config):
     total_offset = time_horizon + input_offset
 
     # Apply original offset logic
-    # For multi-step forecasting, we shift y_train_data by total_offset, and
-    # remove the last time_horizon rows from x_train_data
+    # Shift y_train_data by total_offset and remove the last time_horizon rows from x_train_data
     y_train_data = y_train_data.iloc[total_offset:]
     x_train_data = x_train_data.iloc[:-time_horizon]
 
     print(f"Data shape after applying offset and time horizon: {x_train_data.shape}, {y_train_data.shape}")
 
-    # Ensure they have the same minimum length (just in case)
+    # Ensure the same min length
     min_length = min(len(x_train_data), len(y_train_data))
     x_train_data = x_train_data.iloc[:min_length]
     y_train_data = y_train_data.iloc[:min_length]
 
-    # Now convert y_train_data into a DataFrame with multi-step columns.
-    # We want to predict all future ticks (time_horizon steps).
+    # Create multi-step output columns
+    # For each row in y_train_data, capture the next 'time_horizon' future points
+    # Flatten them into columns so run_prediction_pipeline sees a DataFrame
     Y_list = []
-    # Generate windows for y_train_data of size time_horizon
-    # Each X row will be associated with time_horizon future samples of Y.
-    # We'll flatten them into columns so that run_prediction_pipeline
-    # sees a valid DataFrame instead of a numpy array.
     for i in range(len(y_train_data) - time_horizon + 1):
-        # Collect future samples, each is a 1D array if there's only one target column
         row_values = []
         for j in range(time_horizon):
             row_values.append(y_train_data.iloc[i + j].values[0])
         Y_list.append(row_values)
 
-    # Convert to DataFrame for compatibility with run_prediction_pipeline
     y_train_data = pd.DataFrame(Y_list)
 
     # Adjust x_train_data to match new y_train_data length
@@ -99,6 +90,7 @@ def process_data(config):
     print(f"y_train_data shape after adjustments (multi-step): {y_train_data.shape}")
 
     return x_train_data, y_train_data
+
 
 
 def run_prediction_pipeline(config, plugin):
