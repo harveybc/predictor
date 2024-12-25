@@ -15,6 +15,7 @@ def process_data(config):
     y_train_file = config['y_train_file']
     target_column = config['target_column']
 
+    # Load Y data
     if isinstance(y_train_file, str):
         print(f"Loading y_train data from CSV file: {y_train_file}")
         y_train_data = load_csv(y_train_file, headers=config['headers'])
@@ -22,7 +23,7 @@ def process_data(config):
     else:
         raise ValueError("Either y_train_file must be specified as a string path to the CSV file.")
 
-    # If the user specified a target_column, extract that column from y_train_data
+    # Extract target column if specified
     if target_column is not None:
         if isinstance(target_column, str):
             if target_column not in y_train_data.columns:
@@ -37,38 +38,48 @@ def process_data(config):
     else:
         raise ValueError("No valid target_column was provided for y_train_data.")
 
-    # Align x_train_data and y_train_data on their date/index
+    # Convert to numeric, fill NaNs just in case (the load_csv might have done it, but we ensure again)
+    x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+
+    # At this point, load_csv() should have already parsed 'DATE_TIME' and set it as index if found.
+    # But to be safe, confirm that they have an index of type datetime-like.
+    # If not, we cannot align by date properly. 
+    # (If you prefer a different date column name, adjust accordingly.)
+
+    if not isinstance(x_train_data.index, pd.DatetimeIndex) or not isinstance(y_train_data.index, pd.DatetimeIndex):
+        raise ValueError("Either 'DATE_TIME' column wasn't parsed as datetime or no valid DatetimeIndex found. "
+                         "Ensure your CSV has a 'DATE_TIME' column or the first column is recognized as datetime.")
+
+    # Now align by intersection of dates (this is what you want).
     common_index = x_train_data.index.intersection(y_train_data.index)
     x_train_data = x_train_data.loc[common_index].sort_index()
     y_train_data = y_train_data.loc[common_index].sort_index()
 
-    # If there's no overlap at all, we won't be able to train
+    # If no overlap, raise an error
     if x_train_data.empty or y_train_data.empty:
         raise ValueError(
             "No overlapping dates found (or data is empty after alignment). "
-            "Please ensure your CSV files have matching date ranges and that the target_column is correct."
+            "Please ensure your CSV files truly share date ranges."
         )
-
-    # Convert data to numeric, fill NaNs
-    x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
-    y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
 
     time_horizon = config['time_horizon']
     input_offset = config['input_offset']
     print(f"Applying time horizon: {time_horizon} and input offset: {input_offset}")
     total_offset = time_horizon + input_offset
 
-    # Apply original offset logic
+    # Shift y by total_offset, remove last time_horizon from x
+    # e.g., we want to predict future Y
     y_train_data = y_train_data.iloc[total_offset:]
     x_train_data = x_train_data.iloc[:-time_horizon]
 
     print(f"Data shape after applying offset and time horizon: {x_train_data.shape}, {y_train_data.shape}")
 
-    # If one of them is now empty, we won't be able to train
+    # If the offset leads to zero rows, error out
     if x_train_data.empty or y_train_data.empty:
         raise ValueError(
-            "No data remaining after applying time_horizon and offsets. "
-            "Check that your data is long enough and your offsets/time_horizon are appropriate."
+            "After applying time_horizon and offset, no samples remain. "
+            "Check that your dataset is large enough and offsets/time_horizon are correct."
         )
 
     # Ensure the same min length
@@ -76,7 +87,7 @@ def process_data(config):
     x_train_data = x_train_data.iloc[:min_length]
     y_train_data = y_train_data.iloc[:min_length]
 
-    # Multi-step output creation
+    # Build multi-step Y
     Y_list = []
     for i in range(len(y_train_data) - time_horizon + 1):
         row_values = []
@@ -84,7 +95,6 @@ def process_data(config):
             row_values.append(y_train_data.iloc[i + j].values[0])
         Y_list.append(row_values)
 
-    # If time_horizon slicing leads to zero rows, raise an error
     if not Y_list:
         raise ValueError(
             "After creating multi-step slices, no samples remain. "
@@ -93,7 +103,7 @@ def process_data(config):
 
     y_train_data = pd.DataFrame(Y_list)
 
-    # Adjust x_train_data to match new y_train_data length
+    # Adjust X to match the number of Y samples
     x_train_data = x_train_data.iloc[:len(y_train_data)].reset_index(drop=True)
     y_train_data = y_train_data.reset_index(drop=True)
 
@@ -102,6 +112,7 @@ def process_data(config):
     print(f"y_train_data shape after adjustments (multi-step): {y_train_data.shape}")
 
     return x_train_data, y_train_data
+
 
 
 
