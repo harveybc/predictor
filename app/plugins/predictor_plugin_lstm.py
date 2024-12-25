@@ -48,7 +48,8 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
-        layers.append(1)  # Output layer size
+        # Instead of outputting 1, we output `time_horizon` steps
+        layers.append(self.params['time_horizon'])
 
         # Debugging message
         print(f"LSTM Layer sizes: {layers}")
