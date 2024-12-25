@@ -39,9 +39,15 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape):
+        """
+        Build a Transformer-style model that outputs a multi-step forecast of size `config['time_horizon']`.
+        We replace the final layer size with `time_horizon` so the model predicts the next `time_horizon` steps
+        instead of just a single step.
+        """
+        # Store input_shape
         self.params['input_dim'] = input_shape
 
-        # Layer configuration
+        # Configure intermediate layer sizes
         layers = []
         current_size = self.params['initial_layer_size']
         layer_size_divisor = self.params['layer_size_divisor']
@@ -50,61 +56,92 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
-        layers.append(1)  # Output layer size
 
-        # Debugging message
+        # Instead of outputting 1, we output `time_horizon` steps
+        layers.append(self.params['time_horizon'])
+
         print(f"Transformer Layer sizes: {layers}")
-
-        # Model
-        inputs = Input(shape=(input_shape, 1), name="model_input")
-        x = inputs
         print(f"Transformer input_shape: {input_shape}")
 
+        # Define model input
+        inputs = Input(shape=(input_shape, 1), name="model_input")
+        x = inputs
+
+        # Build transformer-like dense + multi-head attention blocks
         for size in layers[:-1]:
             if size > 1:
                 x = Dense(size)(x)
                 x = BatchNormalization()(x)
                 x = MultiHeadAttention(head_num=self.params['num_heads'])(x)
                 x = BatchNormalization()(x)
+                # Skip connection
                 x = Add()([x, inputs])
 
+        # GlobalAveragePooling1D for sequence dimension reduction
         x = GlobalAveragePooling1D()(x)
         x = Flatten()(x)
-        model_output = Dense(layers[-1], activation='tanh', kernel_initializer=GlorotUniform(), name="model_output")(x)
 
+        # Final Dense layer with time_horizon outputs
+        model_output = Dense(
+            layers[-1],
+            activation='tanh',
+            kernel_initializer=GlorotUniform(),
+            name="model_output"
+        )(x)
+
+        # Compile the model
         self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
-                # Define the Adam optimizer with custom parameters
         adam_optimizer = Adam(
-            learning_rate= self.params['learning_rate'],   # Set the learning rate
-            beta_1=0.9,            # Default value
-            beta_2=0.999,          # Default value
-            epsilon=1e-7,          # Default value
-            amsgrad=False          # Default value
+            learning_rate=self.params['learning_rate'],
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-7,
+            amsgrad=False
         )
-
         self.model.compile(optimizer=adam_optimizer, loss='mean_squared_error')
 
-        # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
         self.model.summary()
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
+        """
+        Train method expects y_train to already be shaped for multi-step output
+        (i.e., y_train.shape == (num_samples, time_horizon)).
+        The data pipeline (process_data) must ensure a sliding window with stride = time_horizon.
+        """
+        # Ensure x_train is 3D
         if x_train.ndim == 2:
             x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
+
         print(f"Training predictor model with data shape: {x_train.shape}")
-        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
+        history = self.model.fit(
+            x_train, 
+            y_train,
+            epochs=epochs,
+            batch_size=batch_size,
+            verbose=1
+        )
         print("Training completed.")
+
+        # Check final training loss
         mse = history.history['loss'][-1]
         if mse > threshold_error:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
 
     def predict(self, data):
+        """
+        If the model outputs multiple steps (time_horizon), the returned predictions
+        will have shape (num_samples, time_horizon).
+        """
+        # Ensure data is 3D
         if data.ndim == 2:
             data = data.reshape(data.shape[0], data.shape[1], 1)
+
         print(f"Predicting data with shape: {data.shape}")
         predictions = self.model.predict(data)
         print(f"Predicted data shape: {predictions.shape}")
         return predictions
+
 
     def calculate_mse(self, y_true, y_pred):
         """
