@@ -8,11 +8,6 @@ from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
 
 def process_data(config):
-    """
-    Loads X and Y datasets from CSV, aligns them by their date/index, 
-    applies offset/time_horizon, extracts the target_column from y_train_data, 
-    and returns DataFrames suitable for run_prediction_pipeline.
-    """
     print(f"Loading data from CSV file: {config['x_train_file']}")
     x_train_data = load_csv(config['x_train_file'], headers=config['headers'])
     print(f"Data loaded with shape: {x_train_data.shape}")
@@ -20,7 +15,6 @@ def process_data(config):
     y_train_file = config['y_train_file']
     target_column = config['target_column']
 
-    # Load y_train_data from file
     if isinstance(y_train_file, str):
         print(f"Loading y_train data from CSV file: {y_train_file}")
         y_train_data = load_csv(y_train_file, headers=config['headers'])
@@ -48,7 +42,14 @@ def process_data(config):
     x_train_data = x_train_data.loc[common_index].sort_index()
     y_train_data = y_train_data.loc[common_index].sort_index()
 
-    # Convert to numeric, fill NaNs (additional safety check if needed)
+    # If there's no overlap at all, we won't be able to train
+    if x_train_data.empty or y_train_data.empty:
+        raise ValueError(
+            "No overlapping dates found (or data is empty after alignment). "
+            "Please ensure your CSV files have matching date ranges and that the target_column is correct."
+        )
+
+    # Convert data to numeric, fill NaNs
     x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
     y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
 
@@ -58,26 +59,37 @@ def process_data(config):
     total_offset = time_horizon + input_offset
 
     # Apply original offset logic
-    # Shift y_train_data by total_offset and remove the last time_horizon rows from x_train_data
     y_train_data = y_train_data.iloc[total_offset:]
     x_train_data = x_train_data.iloc[:-time_horizon]
 
     print(f"Data shape after applying offset and time horizon: {x_train_data.shape}, {y_train_data.shape}")
+
+    # If one of them is now empty, we won't be able to train
+    if x_train_data.empty or y_train_data.empty:
+        raise ValueError(
+            "No data remaining after applying time_horizon and offsets. "
+            "Check that your data is long enough and your offsets/time_horizon are appropriate."
+        )
 
     # Ensure the same min length
     min_length = min(len(x_train_data), len(y_train_data))
     x_train_data = x_train_data.iloc[:min_length]
     y_train_data = y_train_data.iloc[:min_length]
 
-    # Create multi-step output columns
-    # For each row in y_train_data, capture the next 'time_horizon' future points
-    # Flatten them into columns so run_prediction_pipeline sees a DataFrame
+    # Multi-step output creation
     Y_list = []
     for i in range(len(y_train_data) - time_horizon + 1):
         row_values = []
         for j in range(time_horizon):
             row_values.append(y_train_data.iloc[i + j].values[0])
         Y_list.append(row_values)
+
+    # If time_horizon slicing leads to zero rows, raise an error
+    if not Y_list:
+        raise ValueError(
+            "After creating multi-step slices, no samples remain. "
+            "Check that your data is sufficient for the given time_horizon."
+        )
 
     y_train_data = pd.DataFrame(Y_list)
 
@@ -90,6 +102,7 @@ def process_data(config):
     print(f"y_train_data shape after adjustments (multi-step): {y_train_data.shape}")
 
     return x_train_data, y_train_data
+
 
 
 
