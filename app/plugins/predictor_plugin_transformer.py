@@ -75,7 +75,7 @@ class Plugin:
         # 2. Feature Projection
         x = Dense(
             d_model,
-            activation='relu',
+            activation='tanh',
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="feature_projection"
@@ -107,7 +107,7 @@ class Plugin:
             if size > 1:
                 x = Dense(
                     size,
-                    activation='relu',
+                    activation='tanh',
                     kernel_initializer=GlorotUniform(),
                     kernel_regularizer=l2(l2_reg),
                     name=f"intermediate_dense_{idx+1}"
@@ -174,7 +174,7 @@ class Plugin:
         # 3. Feed-Forward Network
         ff = Dense(
             ff_dim,
-            activation='relu',
+            activation='tanh',
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name=f"{block_name}_ffn_dense_1"
