@@ -3,6 +3,8 @@ from keras.models import Model, load_model, save_model
 from keras.layers import LSTM, Dense, Input
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
+from tensorflow.keras.callbacks import EarlyStopping
+
 
 class Plugin:
     """
@@ -83,7 +85,22 @@ class Plugin:
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
         print(f"Training predictor model with data shape: {x_train.shape}")
-        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
+
+
+        callbacks = []
+    
+        patience = self.params.get('patience', 2)  # default patience is 10 epochs
+        early_stopping_monitor = EarlyStopping(
+            monitor='loss', 
+            patience=patience, 
+            restore_best_weights=True,
+            verbose=1
+        )
+        callbacks.append(early_stopping_monitor)
+
+
+
+        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1, callbacks=callbacks)
         print("Training completed.")
         mse = history.history['loss'][-1]
         if mse > threshold_error:

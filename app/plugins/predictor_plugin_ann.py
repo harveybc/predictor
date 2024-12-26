@@ -108,15 +108,15 @@ class Plugin:
 
         # Set up optional early stopping if requested in params
         callbacks = []
-        if self.params.get('early_stopping', True):
-            patience = self.params.get('patience', 2)  # default patience is 10 epochs
-            early_stopping_monitor = EarlyStopping(
-                monitor='loss', 
-                patience=patience, 
-                restore_best_weights=True,
-                verbose=1
-            )
-            callbacks.append(early_stopping_monitor)
+    
+        patience = self.params.get('patience', 2)  # default patience is 10 epochs
+        early_stopping_monitor = EarlyStopping(
+            monitor='loss', 
+            patience=patience, 
+            restore_best_weights=True,
+            verbose=1
+        )
+        callbacks.append(early_stopping_monitor)
 
         history = self.model.fit(
             x_train,
