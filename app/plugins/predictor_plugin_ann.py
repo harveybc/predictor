@@ -66,7 +66,7 @@ class Plugin:
         for size in layers[:-1]:
             if size > 1:
                 x = Dense(size, activation='relu', kernel_initializer=HeNormal())(x)
-                x = BatchNormalization()(x)
+                #x = BatchNormalization()(x)
 
         # Final output layer
         model_output = Dense(
