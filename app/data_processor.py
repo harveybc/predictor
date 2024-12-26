@@ -125,16 +125,20 @@ import time
 import pandas as pd
 import numpy as np
 
+import time
+import pandas as pd
+import numpy as np
+
 def create_sliding_windows(x, y, window_size, step=1):
     """
     Creates sliding windows from the dataset.
-    
+
     Parameters:
         x (numpy.ndarray): Input features of shape (N, features).
         y (numpy.ndarray): Targets of shape (N, time_horizon).
         window_size (int): Number of time steps in each window.
         step (int): Step size between windows.
-    
+
     Returns:
         Tuple of numpy.ndarrays: (x_windows, y_windows)
     """
@@ -150,11 +154,11 @@ def run_prediction_pipeline(config, plugin):
     Runs the prediction pipeline with conditional data reshaping for different plugins.
     """
     start_time = time.time()
-    
+
     print("Running process_data...")
     x_train, y_train = process_data(config)
     print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
-    
+
     time_horizon = config['time_horizon']
     input_offset = config['input_offset']
     batch_size = config['batch_size']
@@ -162,10 +166,10 @@ def run_prediction_pipeline(config, plugin):
     threshold_error = config['threshold_error']
     window_size = config.get('window_size', None)  # e.g., 24 for daily patterns
     target_column = config.get('target_column', None)  # Specify the target column
-    
+
     # Debugging: Print window_size
     print(f"Configured window_size: {window_size}")
-    
+
     # Ensure x_train and y_train are DataFrame or Series
     if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
         # Conditional Target Column Selection for CNN
@@ -183,7 +187,7 @@ def run_prediction_pipeline(config, plugin):
                     raise ValueError("target_column must be either a string (column name) or an integer index.")
             else:
                 raise ValueError("y_train must be a pandas DataFrame or Series to select target columns by name or index.")
-        
+
         # Convert to numpy for training
         x_train = x_train.to_numpy().astype(np.float32)
         y_train = y_train.to_numpy().astype(np.float32)
@@ -191,10 +195,10 @@ def run_prediction_pipeline(config, plugin):
         # Ensure x_train is at least 2D
         if x_train.ndim == 1:
             x_train = x_train.reshape(-1, 1)
-        
+
         # Debug messages
-        print(f"x_train shape: {x_train.shape}")
-        print(f"y_train shape: {y_train.shape}")
+        print(f"x_train shape before sliding window: {x_train.shape}")
+        print(f"y_train shape before sliding window: {y_train.shape}")
 
         # ----------------------------
         # CONDITIONAL RESHAPE FOR TRANSFORMER
@@ -205,29 +209,29 @@ def run_prediction_pipeline(config, plugin):
             if x_train.ndim == 2:
                 x_train = x_train.reshape((x_train.shape[0], x_train.shape[1], 1))
                 print(f"Reshaped x_train for transformer: {x_train.shape}")
-            
+
             # Now we pass a 3D tuple: (samples, seq_len, num_features)
             plugin.build_model(input_shape=x_train.shape[1:])
-        
+
         elif config['plugin'] == 'cnn':
             # Apply sliding window
             if window_size is None:
                 raise ValueError("window_size must be specified in config for CNN plugin.")
-            
+
             # Create sliding windows
             x_train_windowed, y_train_windowed = create_sliding_windows(x_train, y_train, window_size)
             print(f"Sliding windows created: x_train_windowed shape: {x_train_windowed.shape}, y_train_windowed shape: {y_train_windowed.shape}")
-            
+
             # Update plugin's window_size parameter if necessary
             plugin.params['window_size'] = window_size
-            
+
             # Build model with window_size
             plugin.build_model(input_shape=x_train_windowed.shape[1:])
-            
+
             # Replace original x_train and y_train with windowed data
             x_train = x_train_windowed
             y_train = y_train_windowed
-        
+
         else:
             # Keep old logic for ANN/LSTM
             # Pass a single integer for input_shape
@@ -243,7 +247,7 @@ def run_prediction_pipeline(config, plugin):
             print("Preparing validation data...")
             x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
             y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
-            
+
             # Conditional Target Column Selection for CNN
             if config['plugin'] == 'cnn' and target_column is not None:
                 if isinstance(y_val_df, pd.DataFrame) or isinstance(y_val_df, pd.Series):
@@ -259,15 +263,15 @@ def run_prediction_pipeline(config, plugin):
                         raise ValueError("target_column must be either a string (column name) or an integer index.")
                 else:
                     raise ValueError("y_val_df must be a pandas DataFrame or Series to select target columns by name or index.")
-            
+
             # Convert to numpy after selecting the target column
             x_val = x_val_df.to_numpy().astype(np.float32)
             y_val = y_val_df.to_numpy().astype(np.float32)
-            
+
             # Ensure x_val is at least 2D
             if x_val.ndim == 1:
                 x_val = x_val.reshape(-1, 1)
-            
+
             # Apply sliding window for CNN
             if config['plugin'] == 'cnn':
                 if window_size is None:
@@ -396,15 +400,15 @@ def run_prediction_pipeline(config, plugin):
                         raise ValueError("target_column must be either a string (column name) or an integer index.")
                 else:
                     raise ValueError("y_val_df must be a pandas DataFrame or Series to select target columns by name or index.")
-            
+
             # Convert to numpy after selecting the target column
             x_val = x_val_df.to_numpy().astype(np.float32)
             y_val = y_val_df.to_numpy().astype(np.float32)
-            
+
             # Ensure x_val is at least 2D
             if x_val.ndim == 1:
                 x_val = x_val.reshape(-1, 1)
-            
+
             # Apply sliding window for CNN
             if config['plugin'] == 'cnn':
                 if window_size is None:
@@ -440,6 +444,11 @@ def run_prediction_pipeline(config, plugin):
                 val_num_steps = validation_predictions.shape[1]
                 val_pred_cols = [f'Prediction_{i+1}' for i in range(val_num_steps)]
                 validation_predictions_df = pd.DataFrame(validation_predictions, columns=val_pred_cols)
+
+            # (Optional) Save or further process validation_predictions_df as needed
+            # For example:
+            # write_csv("validation_predictions.csv", validation_predictions_df)
+
 
 
 
