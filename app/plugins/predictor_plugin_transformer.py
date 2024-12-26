@@ -44,21 +44,22 @@ class Plugin:
 
     def build_model(self, input_shape):
         """
-        Build a Transformer-based model that uses keras_multi_head.MultiHeadAttention
-        without passing a 'mask' argument, preventing the error 
-        'got multiple values for argument mask'.
-        """
+        Build the Transformer-based model with Dropout layers to reduce overfitting.
 
-        # 1) Parse shapes + hyperparams
-        seq_len, num_features = input_shape  # e.g. (1, 50) if you reshaped x_train
+        Parameters:
+            input_shape (tuple): Shape of the input data (seq_len, num_features).
+        """
+        # Extract shapes and hyperparameters
+        seq_len, num_features = input_shape  # e.g., (1, 50)
         time_horizon = self.params['time_horizon']
         d_model = self.params.get('d_model', 64)
         num_heads = self.params.get('num_heads', 2)
         ff_dim = self.params.get('ff_dim', d_model * 4)
         num_blocks = self.params.get('num_blocks', 2)
         dropout_rate = self.params.get('dropout_rate', 0.1)
+        l2_reg = self.params.get('l2_reg', 1e-4)
 
-        # Possibly read extra dense layers from params
+        # Resolve additional Dense layer sizes
         layers = self._resolve_layers()
 
         print("\n--- Transformer Build Info ---")
@@ -67,17 +68,24 @@ class Plugin:
         print(f"Extra layer sizes for final Dense: {layers}")
         print("---------------------------------\n")
 
-        # 2) Input (batch_size, seq_len, num_features)
+        # 1. Define Input
         inputs = Input(shape=(seq_len, num_features), name="model_input")
 
-        # 3) Projection from num_features -> d_model
-        x = Dense(d_model, name="feature_projection")(inputs)
+        # 2. Feature Projection
+        x = Dense(
+            d_model,
+            activation='relu',
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name="feature_projection"
+        )(inputs)
+        x = Dropout(dropout_rate, name="projection_dropout")(x)  # Dropout after projection
 
-        # 4) Mandatory sinusoidal positional encoding
+        # 3. Positional Encoding
         pos_encoding = self._positional_encoding(seq_len, d_model)
         x = Add(name="add_pos_encoding")([x, pos_encoding])
 
-        # 5) Stacked transformer blocks
+        # 4. Transformer Encoder Blocks
         for i in range(num_blocks):
             block_name = f"transformer_block_{i+1}"
             x = self._transformer_encoder_block(
@@ -85,28 +93,39 @@ class Plugin:
                 d_model=d_model,
                 num_heads=num_heads,
                 ff_dim=ff_dim,
+                dropout_rate=dropout_rate,
+                l2_reg=l2_reg,
                 block_name=block_name
             )
 
-        # 6) Global average pool across time => (batch_size, d_model)
-        x = GlobalAveragePooling1D(name="gap")(x)
+        # 5. Global Average Pooling
+        x = GlobalAveragePooling1D(name="global_avg_pool")(x)
 
-        # 7) Optional extra Dense layers
-        for size in layers[:-1]:
+        # 6. Intermediate Dense Layers
+        for idx, size in enumerate(layers[:-1]):
             if size > 1:
-                x = Dense(size, activation='relu')(x)
+                x = Dense(
+                    size,
+                    activation='relu',
+                    kernel_initializer=GlorotUniform(),
+                    kernel_regularizer=l2(l2_reg),
+                    name=f"intermediate_dense_{idx+1}"
+                )(x)
+                x = Dropout(dropout_rate, name=f"intermediate_dropout_{idx+1}")(x)  # Dropout after intermediate Dense
 
-        # 8) Final layer => time_horizon
+        # 7. Final Output Layer
         final_output_dim = layers[-1]
         model_output = Dense(
             final_output_dim,
             activation='tanh',
             kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
             name="model_output"
         )(x)
 
-        # 9) Build & compile
+        # 8. Define and Compile Model
         self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
+
         adam_optimizer = Adam(
             learning_rate=self.params.get('learning_rate', 1e-3),
             beta_1=0.9,
@@ -114,80 +133,104 @@ class Plugin:
             epsilon=1e-7,
             amsgrad=False
         )
+
         self.model.compile(
             optimizer=adam_optimizer,
-            loss='mean_squared_error', 
-            metrics=['mse','mae']
+            loss='mean_squared_error',
+            metrics=['mse', 'mae']
         )
 
         print("Predictor Model Summary:")
         self.model.summary()
 
-
-    def _transformer_encoder_block(self, x, d_model, num_heads, ff_dim, block_name):
+    def _transformer_encoder_block(self, x, d_model, num_heads, ff_dim, dropout_rate, l2_reg, block_name):
         """
-        Single Transformer encoder block using keras_multi_head.MultiHeadAttention
-        without 'mask' param to avoid 'got multiple values for argument mask' error.
-        Attn is self-attention => q == k == v => pass [x, x, x].
+        Define a single Transformer encoder block with Dropout.
+
+        Parameters:
+            x (tensor): Input tensor.
+            d_model (int): Embedding dimension.
+            num_heads (int): Number of attention heads.
+            ff_dim (int): Feed-forward network dimension.
+            dropout_rate (float): Dropout rate.
+            l2_reg (float): L2 regularization factor.
+            block_name (str): Name prefix for layers in this block.
+
+        Returns:
+            tensor: Output tensor after applying the Transformer block.
         """
-
-        # 1) Multi-Head Self-Attention
-        from keras_multi_head import MultiHeadAttention
-
-        # Instead of (x, x, mask=None), do ([x, x, x]) with no mask arg
-        attn_output = MultiHeadAttention(
+        # 1. Multi-Head Self-Attention
+        attn_layer = MultiHeadAttention(
             head_num=num_heads,
             name=f"{block_name}_mha"
-        )([x, x, x])  # q, k, v
+        )
+        attn_output = attn_layer([x, x, x])  # q, k, v
 
-        # Residual + LayerNorm
+        # 2. Add & LayerNorm
         x = Add(name=f"{block_name}_add_attn")([x, attn_output])
-        x = LayerNormalization(name=f"{block_name}_ln_attn")(x)
+        x = LayerNormalization(name=f"{block_name}_layer_norm_attn")(x)
 
-        # 2) Feed-forward sub-block (2-layer)
-        ff = Dense(ff_dim, activation='relu', name=f"{block_name}_ff1")(x)
-        ff = Dense(d_model, name=f"{block_name}_ff2")(ff)
+        # 3. Feed-Forward Network
+        ff = Dense(
+            ff_dim,
+            activation='relu',
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name=f"{block_name}_ffn_dense_1"
+        )(x)
+        ff = Dropout(dropout_rate, name=f"{block_name}_ffn_dropout_1")(ff)  # Dropout after first FF layer
+        ff = Dense(
+            d_model,
+            activation=None,
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name=f"{block_name}_ffn_dense_2"
+        )(ff)
+        ff = Dropout(dropout_rate, name=f"{block_name}_ffn_dropout_2")(ff)  # Dropout after second FF layer
 
-        # Residual + LayerNorm
-        x = Add(name=f"{block_name}_add_ff")([x, ff])
-        x = LayerNormalization(name=f"{block_name}_ln_ff")(x)
+        # 4. Add & LayerNorm
+        x = Add(name=f"{block_name}_add_ffn")([x, ff])
+        x = LayerNormalization(name=f"{block_name}_layer_norm_ffn")(x)
 
         return x
 
-
     def _positional_encoding(self, seq_len, d_model):
         """
-        Always-used sinusoidal positional encoding for shape (1, seq_len, d_model).
-        If seq_len=1, it's basically zeros except sin(0)=0, cos(0)=1 for first dimension,
-        but no mask errors occur now because we do not pass 'mask' to MHA.
+        Create sinusoidal positional encoding.
+
+        Parameters:
+            seq_len (int): Sequence length.
+            d_model (int): Embedding dimension.
+
+        Returns:
+            tensor: Positional encoding tensor of shape (1, seq_len, d_model).
         """
-        import numpy as np
         pos_encoding = np.zeros((seq_len, d_model), dtype=np.float32)
         for pos in range(seq_len):
             for i in range(0, d_model, 2):
                 angle = pos / (10000 ** (i / d_model))
                 pos_encoding[pos, i] = np.sin(angle)
                 if i + 1 < d_model:
-                    pos_encoding[pos, i+1] = np.cos(angle)
-        pos_encoding = np.expand_dims(pos_encoding, axis=0)  # => (1, seq_len, d_model)
+                    pos_encoding[pos, i + 1] = np.cos(angle)
+        pos_encoding = np.expand_dims(pos_encoding, axis=0)  # Shape: (1, seq_len, d_model)
         return tf.constant(pos_encoding, dtype=tf.float32)
-
 
     def _resolve_layers(self):
         """
-        Helper to build the final Dense layer sizes from self.params.
-        e.g.: [64, 32, 16, ... time_horizon].
+        Determine the sizes of intermediate Dense layers based on parameters.
+
+        Returns:
+            list: List of layer sizes ending with 'time_horizon'.
         """
         layers = []
         current_size = self.params.get('initial_layer_size', 64)
         layer_size_divisor = self.params.get('layer_size_divisor', 2)
-        int_layers = self.params.get('intermediate_layers', 2)
-        for _ in range(int_layers):
+        intermediate_layers = self.params.get('intermediate_layers', 3)
+        for _ in range(intermediate_layers):
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
-        layers.append(self.params['time_horizon'])
+        layers.append(self.params['time_horizon'])  # Final layer size
         return layers
-
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
