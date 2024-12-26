@@ -7,6 +7,7 @@ from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 import tensorflow as tf
+from tensorflow.keras.regularizers import l2
 
 
 class Plugin:
