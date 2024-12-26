@@ -120,17 +120,13 @@ import time
 import pandas as pd
 import numpy as np
 
-import time
-import pandas as pd
-import numpy as np
-
 def create_sliding_windows(x, y, window_size, step=1):
     """
     Creates sliding windows from the dataset.
     
     Parameters:
         x (numpy.ndarray): Input features of shape (N, features).
-        y (numpy.ndarray): Targets of shape (N, time_horizon).
+        y (numpy.ndarray): Targets of shape (N, target_features).
         window_size (int): Number of time steps in each window.
         step (int): Step size between windows.
     
@@ -141,8 +137,14 @@ def create_sliding_windows(x, y, window_size, step=1):
     y_windows = []
     for i in range(0, len(x) - window_size - y.shape[1] + 1, step):
         x_windows.append(x[i:i + window_size])
+        # Select only the necessary target columns
+        # Assuming y has been pre-processed to have a single target column
         y_windows.append(y[i + window_size:i + window_size + y.shape[1]].flatten())
     return np.array(x_windows), np.array(y_windows)
+
+import time
+import pandas as pd
+import numpy as np
 
 def run_prediction_pipeline(config, plugin):
     """
@@ -164,22 +166,6 @@ def run_prediction_pipeline(config, plugin):
     
     # Ensure x_train and y_train are DataFrame or Series
     if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
-        # Select target column if specified
-        if target_column is not None:
-            if isinstance(y_train, pd.DataFrame) or isinstance(y_train, pd.Series):
-                if isinstance(target_column, str):
-                    if target_column not in y_train.columns:
-                        raise ValueError(f"Target column '{target_column}' not found in y_train.")
-                    y_train = y_train[[target_column]]  # Keep it as DataFrame
-                elif isinstance(target_column, int):
-                    if target_column < 0 or target_column >= y_train.shape[1]:
-                        raise ValueError(f"Target column index {target_column} is out of range in y_train.")
-                    y_train = y_train.iloc[:, [target_column]]
-                else:
-                    raise ValueError("target_column must be either a string (column name) or an integer index.")
-            else:
-                raise ValueError("y_train must be a pandas DataFrame or Series to select target columns by name or index.")
-        
         # Convert to numpy for training
         x_train = x_train.to_numpy().astype(np.float32)
         y_train = y_train.to_numpy().astype(np.float32)
@@ -188,6 +174,26 @@ def run_prediction_pipeline(config, plugin):
         if x_train.ndim == 1:
             x_train = x_train.reshape(-1, 1)
         
+        # Select target column if specified
+        if target_column is not None:
+            if isinstance(y_train, np.ndarray):
+                if y_train.ndim == 1:
+                    y_train = y_train.reshape(-1, 1)
+                else:
+                    if isinstance(target_column, str):
+                        # Assuming y_train was originally a DataFrame with column names
+                        # Since y_train is now a numpy array, mapping column names isn't straightforward
+                        # It's better to handle target_column selection before converting to numpy
+                        raise ValueError("When using target_column as a string, ensure y_train is a pandas DataFrame before conversion.")
+                    elif isinstance(target_column, int):
+                        if target_column < 0 or target_column >= y_train.shape[1]:
+                            raise ValueError(f"Target column index {target_column} is out of range in y_train.")
+                        y_train = y_train[:, target_column].reshape(-1, 1)
+                    else:
+                        raise ValueError("target_column must be either a string (column name) or an integer index.")
+            else:
+                raise ValueError("y_train must be a numpy.ndarray to select target columns by index.")
+
         # Debug messages
         print(f"x_train shape: {x_train.shape}")
         print(f"y_train shape: {y_train.shape}")
@@ -357,10 +363,8 @@ def run_prediction_pipeline(config, plugin):
             if config['plugin'] == 'cnn':
                 if window_size is None:
                     raise ValueError("window_size must be specified in config for CNN plugin.")
-                x_val_windowed, y_val_windowed = create_sliding_windows(x_val_df.to_numpy(), y_val_df.to_numpy(), window_size)
-                print(f"Sliding windows created for validation: x_val_windowed shape: {x_val_windowed.shape}, y_val_windowed shape: {y_val_windowed.shape}")
-                x_val = x_val_windowed
-                y_val = y_val_windowed
+                x_val, y_val = create_sliding_windows(x_val_df.to_numpy(), y_val_df.to_numpy(), window_size)
+                print(f"Sliding windows created for validation: x_val shape: {x_val.shape}, y_val shape: {y_val.shape}")
             elif config['plugin'] == 'transformer':
                 # Treat each feature as a separate timestep
                 x_val = x_val_df.to_numpy().astype(np.float32)
@@ -401,7 +405,6 @@ def run_prediction_pipeline(config, plugin):
     else:
         print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
-
 
 
 
