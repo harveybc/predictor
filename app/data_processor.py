@@ -117,12 +117,13 @@ def process_data(config):
 
 
 
-import numpy as np
+import time
 import pandas as pd
+import numpy as np
 
 def run_prediction_pipeline(config, plugin):
     """
-    Runs the prediction pipeline with conditional data reshaping for the Transformer plugin.
+    Runs the prediction pipeline with conditional data reshaping for different plugins.
     """
     start_time = time.time()
     
@@ -135,7 +136,8 @@ def run_prediction_pipeline(config, plugin):
     batch_size = config['batch_size']
     epochs = config['epochs']
     threshold_error = config['threshold_error']
-
+    window_size = config.get('window_size', None)  # e.g., 24 for daily patterns
+    
     # Ensure x_train and y_train are DataFrame or Series
     if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
         # Convert to numpy for training
@@ -162,8 +164,28 @@ def run_prediction_pipeline(config, plugin):
             
             # Now we pass a 2D tuple: (seq_len=50, num_features=1)
             plugin.build_model(input_shape=x_train.shape[1:])
+        
+        elif config['plugin'] == 'cnn':
+            # Apply sliding window
+            if window_size is None:
+                raise ValueError("window_size must be specified in config for CNN plugin.")
+            
+            # Create sliding windows
+            x_train_windowed, y_train_windowed = create_sliding_windows(x_train, y_train, window_size)
+            print(f"Sliding windows created: x_train_windowed shape: {x_train_windowed.shape}, y_train_windowed shape: {y_train_windowed.shape}")
+            
+            # Update plugin's window_size parameter if necessary
+            plugin.params['window_size'] = window_size
+            
+            # Build model with window_size
+            plugin.build_model(input_shape=x_train_windowed.shape[1:])
+            
+            # Replace original x_train and y_train with windowed data
+            x_train = x_train_windowed
+            y_train = y_train_windowed
+        
         else:
-            # Keep old logic for ANN/CNN/LSTM
+            # Keep old logic for ANN/LSTM
             # Pass a single integer for input_shape
             plugin.build_model(input_shape=x_train.shape[1])
 
@@ -308,11 +330,16 @@ def run_prediction_pipeline(config, plugin):
             if x_validation.ndim == 1:
                 x_validation = x_validation.reshape(-1, 1)
 
-            # Conditional reshape for transformer
+            # Conditional reshape for transformer or CNN
             if config['plugin'] == 'transformer':
                 if x_validation.ndim == 2:
                     x_validation = x_validation.reshape((x_validation.shape[0], x_validation.shape[1], 1))
                     print(f"Reshaped x_validation for transformer: {x_validation.shape}")
+            elif config['plugin'] == 'cnn':
+                if window_size is None:
+                    raise ValueError("window_size must be specified in config for CNN plugin.")
+                x_validation, y_validation = create_sliding_windows(x_validation, y_validation, window_size)
+                print(f"Sliding windows created for validation: x_validation shape: {x_validation.shape}, y_validation shape: {y_validation.shape}")
 
             print(f"Validation data shape after adjustments: {x_validation.shape}, {y_validation.shape}")
 
@@ -345,8 +372,25 @@ def run_prediction_pipeline(config, plugin):
 
 
 
-
-
+def create_sliding_windows(x, y, window_size, step=1):
+    """
+    Creates sliding windows from the dataset.
+    
+    Parameters:
+        x (numpy.ndarray): Input features of shape (N, features).
+        y (numpy.ndarray): Targets of shape (N, target_size).
+        window_size (int): Number of time steps in each window.
+        step (int): Step size between windows.
+    
+    Returns:
+        Tuple of numpy.ndarrays: (x_windows, y_windows)
+    """
+    x_windows = []
+    y_windows = []
+    for i in range(0, len(x) - window_size - y.shape[1] + 1, step):
+        x_windows.append(x[i:i + window_size])
+        y_windows.append(y[i + window_size:i + window_size + y.shape[1]].flatten())
+    return np.array(x_windows), np.array(y_windows)
 
 
 def load_and_evaluate_model(config, plugin):

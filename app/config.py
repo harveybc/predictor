@@ -26,5 +26,8 @@ DEFAULT_VALUES = {
     'quiet_mode': False,
     'force_date': False,
     'headers': True,
-    'input_offset': 0  
+    'input_offset': 0,
+    'window_size': 24,  # Number of time steps in each window (e.g., 24 for daily patterns)
+    'l2_reg': 1e-4,          # L2 regularization factor
+    'patience': 10           # Early stopping patience
 }
