@@ -131,7 +131,7 @@ def create_sliding_windows(x, y, window_size, step=1):
     
     Parameters:
         x (numpy.ndarray): Input features of shape (N, features).
-        y (numpy.ndarray): Targets of shape (N, target_size).
+        y (numpy.ndarray): Targets of shape (N, target_features).
         window_size (int): Number of time steps in each window.
         step (int): Step size between windows.
     
@@ -142,6 +142,8 @@ def create_sliding_windows(x, y, window_size, step=1):
     y_windows = []
     for i in range(0, len(x) - window_size - y.shape[1] + 1, step):
         x_windows.append(x[i:i + window_size])
+        # Select only the necessary target columns
+        # Assuming y has been pre-processed to have a single target column
         y_windows.append(y[i + window_size:i + window_size + y.shape[1]].flatten())
     return np.array(x_windows), np.array(y_windows)
 
