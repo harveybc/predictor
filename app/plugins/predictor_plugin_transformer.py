@@ -45,13 +45,10 @@ class Plugin:
 
     def build_model(self, input_shape):
         """
-        Build the Transformer-based model with Dropout layers to reduce overfitting.
-
-        Parameters:
-            input_shape (tuple): Shape of the input data (seq_len, num_features).
+        Build the Transformer-based model with Dropout and L2 Regularization.
         """
         # Extract shapes and hyperparameters
-        seq_len, num_features = input_shape  # e.g., (1, 50)
+        seq_len, num_features = input_shape  # e.g., (50, 1)
         time_horizon = self.params['time_horizon']
         d_model = self.params.get('d_model', 64)
         num_heads = self.params.get('num_heads', 2)
@@ -72,10 +69,10 @@ class Plugin:
         # 1. Define Input
         inputs = Input(shape=(seq_len, num_features), name="model_input")
 
-        # 2. Feature Projection
+        # 2. Feature Projection with Dropout and L2 Regularization
         x = Dense(
             d_model,
-            activation='tanh',
+            activation='relu',
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="feature_projection"
@@ -86,7 +83,7 @@ class Plugin:
         pos_encoding = self._positional_encoding(seq_len, d_model)
         x = Add(name="add_pos_encoding")([x, pos_encoding])
 
-        # 4. Transformer Encoder Blocks
+        # 4. Transformer Encoder Blocks with Dropout and L2 Regularization
         for i in range(num_blocks):
             block_name = f"transformer_block_{i+1}"
             x = self._transformer_encoder_block(
@@ -102,19 +99,19 @@ class Plugin:
         # 5. Global Average Pooling
         x = GlobalAveragePooling1D(name="global_avg_pool")(x)
 
-        # 6. Intermediate Dense Layers
+        # 6. Intermediate Dense Layers with Dropout and L2 Regularization
         for idx, size in enumerate(layers[:-1]):
             if size > 1:
                 x = Dense(
                     size,
-                    activation='tanh',
+                    activation='relu',
                     kernel_initializer=GlorotUniform(),
                     kernel_regularizer=l2(l2_reg),
                     name=f"intermediate_dense_{idx+1}"
                 )(x)
                 x = Dropout(dropout_rate, name=f"intermediate_dropout_{idx+1}")(x)  # Dropout after intermediate Dense
 
-        # 7. Final Output Layer
+        # 7. Final Output Layer with L2 Regularization
         final_output_dim = layers[-1]
         model_output = Dense(
             final_output_dim,
@@ -146,21 +143,9 @@ class Plugin:
 
     def _transformer_encoder_block(self, x, d_model, num_heads, ff_dim, dropout_rate, l2_reg, block_name):
         """
-        Define a single Transformer encoder block with Dropout.
-
-        Parameters:
-            x (tensor): Input tensor.
-            d_model (int): Embedding dimension.
-            num_heads (int): Number of attention heads.
-            ff_dim (int): Feed-forward network dimension.
-            dropout_rate (float): Dropout rate.
-            l2_reg (float): L2 regularization factor.
-            block_name (str): Name prefix for layers in this block.
-
-        Returns:
-            tensor: Output tensor after applying the Transformer block.
+        Define a single Transformer encoder block with Dropout and L2 Regularization.
         """
-        # 1. Multi-Head Self-Attention
+        # 1. Multi-Head Self-Attention without mask
         attn_layer = MultiHeadAttention(
             head_num=num_heads,
             name=f"{block_name}_mha"
@@ -171,10 +156,10 @@ class Plugin:
         x = Add(name=f"{block_name}_add_attn")([x, attn_output])
         x = LayerNormalization(name=f"{block_name}_layer_norm_attn")(x)
 
-        # 3. Feed-Forward Network
+        # 3. Feed-Forward Network with Dropout and L2 Regularization
         ff = Dense(
             ff_dim,
-            activation='tanh',
+            activation='relu',
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name=f"{block_name}_ffn_dense_1"
@@ -198,13 +183,6 @@ class Plugin:
     def _positional_encoding(self, seq_len, d_model):
         """
         Create sinusoidal positional encoding.
-
-        Parameters:
-            seq_len (int): Sequence length.
-            d_model (int): Embedding dimension.
-
-        Returns:
-            tensor: Positional encoding tensor of shape (1, seq_len, d_model).
         """
         pos_encoding = np.zeros((seq_len, d_model), dtype=np.float32)
         for pos in range(seq_len):
@@ -219,9 +197,6 @@ class Plugin:
     def _resolve_layers(self):
         """
         Determine the sizes of intermediate Dense layers based on parameters.
-
-        Returns:
-            list: List of layer sizes ending with 'time_horizon'.
         """
         layers = []
         current_size = self.params.get('initial_layer_size', 64)

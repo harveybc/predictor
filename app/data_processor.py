@@ -117,19 +117,13 @@ def process_data(config):
 
 
 
+import numpy as np
+import pandas as pd
+
 def run_prediction_pipeline(config, plugin):
     """
-    Loads and processes the training data, trains the model, optionally saves it,
-    generates predictions on the training data, writes them to CSV, and if validation data
-    is provided, loads and processes validation data, applies the same offset/time_horizon logic,
-    and evaluates the model on the validation set.
-
-    This updated version includes a conditional reshape for the 'transformer' plugin
-    so it receives a 3D input (N, seq_len, features) instead of a 2D input (N, features).
-    We only modify what's strictly necessary so the other plugins (ANN, CNN, LSTM) remain
-    unchanged and continue to receive a single integer for 'input_shape'.
+    Runs the prediction pipeline with conditional data reshaping for the Transformer plugin.
     """
-
     start_time = time.time()
     
     print("Running process_data...")
@@ -160,40 +154,53 @@ def run_prediction_pipeline(config, plugin):
         # CONDITIONAL RESHAPE FOR TRANSFORMER
         # ----------------------------
         if config['plugin'] == 'transformer':
-            # If your data is currently (N, features),
-            # and you want to treat each row as 1 time step with 'features' columns,
-            # reshape to (N, 1, features):
+            # Treat each feature as a separate timestep
+            # Reshape from (N, 50) to (N, 50, 1)
             if x_train.ndim == 2:
-                x_train = x_train.reshape((x_train.shape[0], 1, x_train.shape[1]))
+                x_train = x_train.reshape((x_train.shape[0], x_train.shape[1], 1))
                 print(f"Reshaped x_train for transformer: {x_train.shape}")
             
-            # Now we pass a 2D tuple: (seq_len, features)
-            # e.g. if x_train is (N, 1, features), then input_shape is (1, features).
-            # if x_train is (N, seq_len, features), then input_shape is (seq_len, features).
+            # Now we pass a 2D tuple: (seq_len=50, num_features=1)
             plugin.build_model(input_shape=x_train.shape[1:])
         else:
             # Keep old logic for ANN/CNN/LSTM
             # Pass a single integer for input_shape
             plugin.build_model(input_shape=x_train.shape[1])
 
-        # Train the model
-        plugin.train(x_train, y_train, epochs=epochs, batch_size=batch_size, threshold_error=threshold_error)
+        # ----------------------------
+        # TRAIN THE MODEL
+        # ----------------------------
+        plugin.train(
+            x_train, 
+            y_train, 
+            epochs=epochs, 
+            batch_size=batch_size, 
+            threshold_error=threshold_error
+        )
 
-        # Save the trained model
-        if config['save_model']:
+        # ----------------------------
+        # SAVE THE TRAINED MODEL
+        # ----------------------------
+        if config.get('save_model'):
             plugin.save(config['save_model'])
             print(f"Model saved to {config['save_model']}")
 
-        # Predict on the training data
+        # ----------------------------
+        # PREDICT ON TRAINING DATA
+        # ----------------------------
         predictions = plugin.predict(x_train)
 
-        # Evaluate the model
+        # ----------------------------
+        # EVALUATE THE MODEL
+        # ----------------------------
         mse = float(plugin.calculate_mse(y_train, predictions))
         mae = float(plugin.calculate_mae(y_train, predictions))
         print(f"Mean Squared Error: {mse}")
         print(f"Mean Absolute Error: {mae}")
 
-        # Convert multi-step predictions to multiple columns if needed
+        # ----------------------------
+        # CONVERT PREDICTIONS TO DATAFRAME
+        # ----------------------------
         if predictions.ndim == 1 or predictions.shape[1] == 1:
             predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
         else:
@@ -201,12 +208,21 @@ def run_prediction_pipeline(config, plugin):
             pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
             predictions_df = pd.DataFrame(predictions, columns=pred_cols)
 
-        # Save to CSV
+        # ----------------------------
+        # SAVE PREDICTIONS TO CSV
+        # ----------------------------
         output_filename = config['output_file']
-        write_csv(output_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
+        write_csv(
+            output_filename, 
+            predictions_df, 
+            include_date=config.get('force_date', False), 
+            headers=config.get('headers', True)
+        )
         print(f"Output written to {output_filename}")
 
-        # Save final debug info
+        # ----------------------------
+        # SAVE DEBUG INFO
+        # ----------------------------
         end_time = time.time()
         execution_time = end_time - start_time
         debug_info = {
@@ -215,27 +231,33 @@ def run_prediction_pipeline(config, plugin):
             'mae': mae
         }
 
-        # Save debug info
         if config.get('save_log'):
             save_debug_info(debug_info, config['save_log'])
             print(f"Debug info saved to {config['save_log']}")
 
-        # Remote log debug info and config
         if config.get('remote_log'):
-            remote_log(config, debug_info, config['remote_log'], config['username'], config['password'])
+            remote_log(
+                config, 
+                debug_info, 
+                config['remote_log'], 
+                config.get('username'), 
+                config.get('password')
+            )
             print(f"Debug info saved to {config['remote_log']}")
 
         print(f"Execution time: {execution_time} seconds")
 
-        # Validate the model if validation data is provided
-        if config['x_validation_file'] and config['y_validation_file']:
+        # ----------------------------
+        # VALIDATE THE MODEL (IF VALIDATION DATA PROVIDED)
+        # ----------------------------
+        if config.get('x_validation_file') and config.get('y_validation_file'):
             print("Validating model...")
 
-            x_val_df = load_csv(config['x_validation_file'], headers=config['headers'])
-            y_val_df = load_csv(config['y_validation_file'], headers=config['headers'])
+            x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
+            y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
 
-            # If the user specified a target_column, extract that column from y_val_df
-            target_column = config['target_column']
+            # Extract target column if specified
+            target_column = config.get('target_column', None)
             if target_column is not None:
                 if isinstance(target_column, str):
                     if target_column not in y_val_df.columns:
@@ -248,21 +270,21 @@ def run_prediction_pipeline(config, plugin):
                 else:
                     raise ValueError("target_column must be either a string (column name) or an integer index.")
 
-            # Align x_val_df and y_val_df by date/index
+            # Align by common index
             common_index = x_val_df.index.intersection(y_val_df.index)
             x_val_df = x_val_df.loc[common_index].sort_index()
             y_val_df = y_val_df.loc[common_index].sort_index()
 
-            # Convert data to numeric
+            # Convert to numeric and fill NaNs
             x_val_df = x_val_df.apply(pd.to_numeric, errors='coerce').fillna(0)
             y_val_df = y_val_df.apply(pd.to_numeric, errors='coerce').fillna(0)
 
-            # Apply the same offset/time_horizon logic
-            total_offset = time_horizon + config['input_offset']
+            # Apply offset and time horizon
+            total_offset = time_horizon + input_offset
             y_val_df = y_val_df.iloc[total_offset:]
             x_val_df = x_val_df.iloc[:-time_horizon]
 
-            # Ensure the same min length
+            # Ensure same length
             min_length = min(len(x_val_df), len(y_val_df))
             x_val_df = x_val_df.iloc[:min_length]
             y_val_df = y_val_df.iloc[:min_length]
@@ -286,13 +308,13 @@ def run_prediction_pipeline(config, plugin):
             if x_validation.ndim == 1:
                 x_validation = x_validation.reshape(-1, 1)
 
-            print(f"Validation data shape after adjustments: {x_validation.shape}, {y_validation.shape}")
-
-            # If the plugin is transformer, reshape validation too
+            # Conditional reshape for transformer
             if config['plugin'] == 'transformer':
                 if x_validation.ndim == 2:
-                    x_validation = x_validation.reshape((x_validation.shape[0], 1, x_validation.shape[1]))
+                    x_validation = x_validation.reshape((x_validation.shape[0], x_validation.shape[1], 1))
                     print(f"Reshaped x_validation for transformer: {x_validation.shape}")
+
+            print(f"Validation data shape after adjustments: {x_validation.shape}, {y_validation.shape}")
 
             # Predict on the validation data
             validation_predictions = plugin.predict(x_validation)
@@ -305,7 +327,7 @@ def run_prediction_pipeline(config, plugin):
             print(f"Validation Mean Squared Error: {validation_mse}")
             print(f"Validation Mean Absolute Error: {validation_mae}")
 
-            # Create a DataFrame from validation predictions
+            # Convert validation predictions to DataFrame
             if validation_predictions.ndim == 1 or validation_predictions.shape[1] == 1:
                 validation_predictions_df = pd.DataFrame(validation_predictions, columns=['Prediction'])
             else:
@@ -313,10 +335,14 @@ def run_prediction_pipeline(config, plugin):
                 val_pred_cols = [f'Prediction_{i+1}' for i in range(val_num_steps)]
                 validation_predictions_df = pd.DataFrame(validation_predictions, columns=val_pred_cols)
 
-            # (Optional) Additional logic for saving validation predictions
+            # (Optional) Save or further process validation_predictions_df as needed
+            # For example:
+            # write_csv("validation_predictions.csv", validation_predictions_df)
+
     else:
         print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
+
 
 
 
