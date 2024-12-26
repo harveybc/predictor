@@ -162,12 +162,10 @@ def run_prediction_pipeline(config, plugin):
         print(f"Mean Squared Error: {mse}")
         print(f"Mean Absolute Error: {mae}")
 
-        # Create a DataFrame from predictions. If multi-step (time_horizon>1),
-        # we assign multiple columns. Otherwise, just one.
+        # Convert multi-step predictions to multiple columns
         if predictions.ndim == 1 or predictions.shape[1] == 1:
             predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
         else:
-            # Multi-step output
             num_steps = predictions.shape[1]
             pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
             predictions_df = pd.DataFrame(predictions, columns=pred_cols)
