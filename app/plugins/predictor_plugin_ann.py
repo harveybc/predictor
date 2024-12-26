@@ -5,6 +5,7 @@ from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
+from tensorflow.keras.regularizers import l2
 
 class Plugin:
     """
@@ -43,7 +44,7 @@ class Plugin:
         Build an ANN model that outputs `time_horizon` steps.
         """
         self.params['input_dim'] = input_shape
-
+        l2_reg = self.params.get('l2_reg', 1e-4)
         # Layer configuration
         layers = []
         current_size = self.params['initial_layer_size']
@@ -66,14 +67,15 @@ class Plugin:
         # Hidden layers
         for size in layers[:-1]:
             if size > 1:
-                x = Dense(size, activation='relu', kernel_initializer=HeNormal())(x)
+                x = Dense(size, activation='tanh', kernel_initializer=HeNormal(), kernel_regularizer=l2(l2_reg))(x)
                 #x = BatchNormalization()(x)
 
         # Final output layer
         model_output = Dense(
             layers[-1],
-            activation=self.params['activation'],
+            activation='tanh',
             kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
             name="model_output"
         )(x)
 
