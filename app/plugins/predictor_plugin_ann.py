@@ -67,7 +67,7 @@ class Plugin:
         # Hidden layers
         for size in layers[:-1]:
             if size > 1:
-                x = Dense(size, activation='tanh', kernel_initializer=HeNormal(), kernel_regularizer=l2(l2_reg))(x)
+                x = Dense(size, activation='tanh', kernel_initializer=GlorotUniform(), kernel_regularizer=l2(l2_reg))(x)
                 #x = BatchNormalization()(x)
 
         # Final output layer
