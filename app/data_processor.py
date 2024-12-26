@@ -118,35 +118,6 @@ def process_data(config):
 
 
 def run_prediction_pipeline(config, plugin):
-    """
-    Loads and processes the training data, trains the model, optionally saves it,
-    generates predictions on the training data, writes them to CSV, and if validation data
-    is provided, loads and processes validation data, applies the same offset/time_horizon logic,
-    and evaluates the model on the validation set.
-    """
-
-    # Helper function for sinusoidal positional encoding (only used if plugin == 'transformer')
-    def apply_positional_encoding(x):
-        """
-        Implements the standard sinusoidal positional encoding used in the original Transformer paper.
-        x is assumed to be a 2D NumPy array of shape (batch_size, features).
-        This returns x + positional_encoding_of_same_shape.
-        """
-        import numpy as np
-        seq_len, d_model = x.shape
-        pos_encoding = np.zeros((seq_len, d_model), dtype=np.float32)
-
-        # Generate positional encodings
-        for pos in range(seq_len):
-            for i in range(0, d_model, 2):
-                angle = pos / (10000 ** (i / d_model))
-                pos_encoding[pos, i] = np.sin(angle)
-                if i + 1 < d_model:
-                    pos_encoding[pos, i + 1] = np.cos(angle)
-
-        # Add to original input
-        return x + pos_encoding
-
     start_time = time.time()
     
     print("Running process_data...")
@@ -164,11 +135,6 @@ def run_prediction_pipeline(config, plugin):
         # Convert to numpy for training
         x_train = x_train.to_numpy().astype(np.float32)
         y_train = y_train.to_numpy().astype(np.float32)
-
-        # If the plugin is 'transformer', add positional encoding to x_train
-        if config['plugin'] == 'transformer':
-            print("Applying positional encoding since plugin is 'transformer'.")
-            x_train = apply_positional_encoding(x_train)
 
         # Ensure x_train is 2D
         if x_train.ndim == 1:
@@ -190,14 +156,23 @@ def run_prediction_pipeline(config, plugin):
         # Predict on the training data
         predictions = plugin.predict(x_train)
 
-        # Evaluate on the training data
+        # Evaluate the model
         mse = float(plugin.calculate_mse(y_train, predictions))
         mae = float(plugin.calculate_mae(y_train, predictions))
         print(f"Mean Squared Error: {mse}")
         print(f"Mean Absolute Error: {mae}")
 
-        # Convert predictions to a DataFrame and save to CSV
-        predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
+        # Create a DataFrame from predictions. If multi-step (time_horizon>1),
+        # we assign multiple columns. Otherwise, just one.
+        if predictions.ndim == 1 or predictions.shape[1] == 1:
+            predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
+        else:
+            # Multi-step output
+            num_steps = predictions.shape[1]
+            pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
+            predictions_df = pd.DataFrame(predictions, columns=pred_cols)
+
+        # Save to CSV
         output_filename = config['output_file']
         write_csv(output_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
         print(f"Output written to {output_filename}")
@@ -227,7 +202,6 @@ def run_prediction_pipeline(config, plugin):
         if config['x_validation_file'] and config['y_validation_file']:
             print("Validating model...")
 
-            # Load the validation data as DataFrames (similar to process_data, but inline)
             x_val_df = load_csv(config['x_validation_file'], headers=config['headers'])
             y_val_df = load_csv(config['y_validation_file'], headers=config['headers'])
 
@@ -279,11 +253,6 @@ def run_prediction_pipeline(config, plugin):
             x_validation = x_val_df.to_numpy().astype(np.float32)
             y_validation = y_val_df.to_numpy().astype(np.float32)
 
-            # If transformer plugin is used, also apply positional encoding to validation X
-            if config['plugin'] == 'transformer':
-                print("Applying positional encoding to validation data since plugin is 'transformer'.")
-                x_validation = apply_positional_encoding(x_validation)
-
             # Ensure x_validation is 2D
             if x_validation.ndim == 1:
                 x_validation = x_validation.reshape(-1, 1)
@@ -292,7 +261,6 @@ def run_prediction_pipeline(config, plugin):
 
             # Predict on the validation data
             validation_predictions = plugin.predict(x_validation)
-
             # Adjust predictions length if necessary
             validation_predictions = validation_predictions[:len(y_validation)]
 
@@ -302,9 +270,22 @@ def run_prediction_pipeline(config, plugin):
             print(f"Validation Mean Squared Error: {validation_mse}")
             print(f"Validation Mean Absolute Error: {validation_mae}")
 
+            # Create a DataFrame from validation predictions
+            if validation_predictions.ndim == 1 or validation_predictions.shape[1] == 1:
+                validation_predictions_df = pd.DataFrame(validation_predictions, columns=['Prediction'])
+            else:
+                # Multi-step output
+                val_num_steps = validation_predictions.shape[1]
+                val_pred_cols = [f'Prediction_{i+1}' for i in range(val_num_steps)]
+                validation_predictions_df = pd.DataFrame(validation_predictions, columns=val_pred_cols)
+
+            # (Optional) You can save or process validation_predictions_df as needed
+            # For instance:
+            # write_csv("validation_predictions.csv", validation_predictions_df)
     else:
         print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
+
 
 
 
