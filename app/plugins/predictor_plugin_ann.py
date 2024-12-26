@@ -37,6 +37,9 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape):
+        """
+        Build an ANN model that outputs `time_horizon` steps.
+        """
         self.params['input_dim'] = input_shape
 
         # Layer configuration
@@ -48,48 +51,93 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
-        # Instead of outputting 1, we output `time_horizon` steps
+        # Final layer = time_horizon outputs
         layers.append(self.params['time_horizon'])
 
-        # Debugging message
         print(f"ANN Layer sizes: {layers}")
-
-        # Model
-        model_input = Input(shape=(input_shape,), name="model_input")
         print(f"ANN input_shape: {input_shape}")
 
+        # Define the model
+        model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
+
+        # Hidden layers
         for size in layers[:-1]:
             if size > 1:
                 x = Dense(size, activation='relu', kernel_initializer=HeNormal())(x)
                 x = BatchNormalization()(x)
-        model_output = Dense(layers[-1], activation=self.params['activation'], kernel_initializer=GlorotUniform(), name="model_output")(x)
-        
+
+        # Final output layer
+        model_output = Dense(
+            layers[-1],
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            name="model_output"
+        )(x)
+
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
-        # Define the Adam optimizer with custom parameters
+
+        # Adam optimizer with custom parameters
         adam_optimizer = Adam(
-            learning_rate= self.params['learning_rate'],   # Set the learning rate
-            beta_1=0.9,            # Default value
-            beta_2=0.999,          # Default value
-            epsilon=1e-7,          # Default value
-            amsgrad=False          # Default value
+            learning_rate=self.params['learning_rate'],
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-7,
+            amsgrad=False
         )
 
-        self.model.compile(adam_optimizer, loss='mse', metrics=['mse','mae'])
+        self.model.compile(optimizer=adam_optimizer, loss='mse', metrics=['mse','mae'])
 
-        # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
         self.model.summary()
 
+
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
-        print(f"Training predictor model with data shape: {x_train.shape}")
-        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
+        """
+        Train the model. Uses EarlyStopping if 'early_stopping' param is True.
+        Expects y_train.shape = (N, time_horizon).
+        """
+        # Debug message
+        print(f"Training predictor model with data shape: {x_train.shape}, target shape: {y_train.shape}")
+
+        # Optional check: if there's a mismatch, warn or raise
+        if y_train.ndim != 2 or y_train.shape[1] != self.params['time_horizon']:
+            print(f"Warning: y_train has shape {y_train.shape}, but time_horizon is {self.params['time_horizon']}. "
+                f"Ensure these match or training will not work correctly.")
+
+        # Set up optional early stopping if requested in params
+        callbacks = []
+        if self.params.get('early_stopping', False):
+            patience = self.params.get('patience', 10)  # default patience is 10 epochs
+            early_stopping_monitor = EarlyStopping(
+                monitor='loss', 
+                patience=patience, 
+                restore_best_weights=True,
+                verbose=1
+            )
+            callbacks.append(early_stopping_monitor)
+
+        history = self.model.fit(
+            x_train,
+            y_train,
+            epochs=epochs,
+            batch_size=batch_size,
+            verbose=1,
+            callbacks=callbacks
+        )
+
         print("Training completed.")
+
+        # Final loss from the last epoch
         mse = history.history['loss'][-1]
         if mse > threshold_error:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
 
+
     def predict(self, data):
+        """
+        Predict using the trained model. If time_horizon > 1, shape will be (N, time_horizon).
+        """
         print(f"Predicting data with shape: {data.shape}")
         predictions = self.model.predict(data)
         print(f"Predicted data shape: {predictions.shape}")
