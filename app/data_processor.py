@@ -131,7 +131,7 @@ def create_sliding_windows(x, y, window_size, step=1):
     
     Parameters:
         x (numpy.ndarray): Input features of shape (N, features).
-        y (numpy.ndarray): Targets of shape (N, target_size).
+        y (numpy.ndarray): Targets of shape (N, time_horizon).
         window_size (int): Number of time steps in each window.
         step (int): Step size between windows.
     
@@ -145,13 +145,9 @@ def create_sliding_windows(x, y, window_size, step=1):
         y_windows.append(y[i + window_size:i + window_size + y.shape[1]].flatten())
     return np.array(x_windows), np.array(y_windows)
 
-import time
-import pandas as pd
-import numpy as np
-
 def run_prediction_pipeline(config, plugin):
     """
-    Runs the prediction pipeline with conditional data reshaping for the Transformer plugin.
+    Runs the prediction pipeline with conditional data reshaping for different plugins.
     """
     start_time = time.time()
     
@@ -164,9 +160,27 @@ def run_prediction_pipeline(config, plugin):
     batch_size = config['batch_size']
     epochs = config['epochs']
     threshold_error = config['threshold_error']
-
+    window_size = config.get('window_size', None)  # e.g., 24 for daily patterns
+    target_column = config.get('target_column', None)  # Specify the target column
+    
     # Ensure x_train and y_train are DataFrame or Series
     if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
+        # Conditional Target Column Selection for CNN
+        if config['plugin'] == 'cnn' and target_column is not None:
+            if isinstance(y_train, pd.DataFrame) or isinstance(y_train, pd.Series):
+                if isinstance(target_column, str):
+                    if target_column not in y_train.columns:
+                        raise ValueError(f"Target column '{target_column}' not found in y_train.")
+                    y_train = y_train[[target_column]]  # Keep it as a DataFrame
+                elif isinstance(target_column, int):
+                    if target_column < 0 or target_column >= y_train.shape[1]:
+                        raise ValueError(f"Target column index {target_column} is out of range in y_train.")
+                    y_train = y_train.iloc[:, [target_column]]
+                else:
+                    raise ValueError("target_column must be either a string (column name) or an integer index.")
+            else:
+                raise ValueError("y_train must be a pandas DataFrame or Series to select target columns by name or index.")
+        
         # Convert to numpy for training
         x_train = x_train.to_numpy().astype(np.float32)
         y_train = y_train.to_numpy().astype(np.float32)
@@ -184,28 +198,107 @@ def run_prediction_pipeline(config, plugin):
         # ----------------------------
         if config['plugin'] == 'transformer':
             # Treat each feature as a separate timestep
-            # Reshape from (N, 50) to (N, 50, 1)
+            # Reshape from (N, features) to (N, features, 1)
             if x_train.ndim == 2:
                 x_train = x_train.reshape((x_train.shape[0], x_train.shape[1], 1))
                 print(f"Reshaped x_train for transformer: {x_train.shape}")
             
-            # Now we pass a 2D tuple: (seq_len=50, num_features=1)
+            # Now we pass a 3D tuple: (samples, seq_len, num_features)
             plugin.build_model(input_shape=x_train.shape[1:])
+        
+        elif config['plugin'] == 'cnn':
+            # Apply sliding window
+            if window_size is None:
+                raise ValueError("window_size must be specified in config for CNN plugin.")
+            
+            # Create sliding windows
+            x_train_windowed, y_train_windowed = create_sliding_windows(x_train, y_train, window_size)
+            print(f"Sliding windows created: x_train_windowed shape: {x_train_windowed.shape}, y_train_windowed shape: {y_train_windowed.shape}")
+            
+            # Update plugin's window_size parameter if necessary
+            plugin.params['window_size'] = window_size
+            
+            # Build model with window_size
+            plugin.build_model(input_shape=x_train_windowed.shape[1:])
+            
+            # Replace original x_train and y_train with windowed data
+            x_train = x_train_windowed
+            y_train = y_train_windowed
+        
         else:
-            # Keep old logic for ANN/CNN/LSTM
+            # Keep old logic for ANN/LSTM
             # Pass a single integer for input_shape
-            plugin.build_model(input_shape=x_train.shape[1])
+            plugin.build_model(input_shape=x_train.shape[1:])
 
         # ----------------------------
         # TRAIN THE MODEL
         # ----------------------------
-        plugin.train(
-            x_train, 
-            y_train, 
-            epochs=epochs, 
-            batch_size=batch_size, 
-            threshold_error=threshold_error
-        )
+        # Handle validation data if available
+        x_val = None
+        y_val = None
+        if config.get('x_validation_file') and config.get('y_validation_file'):
+            print("Preparing validation data...")
+            x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
+            y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
+            
+            # Conditional Target Column Selection for CNN
+            if config['plugin'] == 'cnn' and target_column is not None:
+                if isinstance(y_val_df, pd.DataFrame) or isinstance(y_val_df, pd.Series):
+                    if isinstance(target_column, str):
+                        if target_column not in y_val_df.columns:
+                            raise ValueError(f"Target column '{target_column}' not found in y_val_df.")
+                        y_val_df = y_val_df[[target_column]]
+                    elif isinstance(target_column, int):
+                        if target_column < 0 or target_column >= y_val_df.shape[1]:
+                            raise ValueError(f"Target column index {target_column} is out of range in y_val_df.")
+                        y_val_df = y_val_df.iloc[:, [target_column]]
+                    else:
+                        raise ValueError("target_column must be either a string (column name) or an integer index.")
+                else:
+                    raise ValueError("y_val_df must be a pandas DataFrame or Series to select target columns by name or index.")
+            
+            # Convert to numpy after selecting the target column
+            x_val = x_val_df.to_numpy().astype(np.float32)
+            y_val = y_val_df.to_numpy().astype(np.float32)
+            
+            # Ensure x_val is at least 2D
+            if x_val.ndim == 1:
+                x_val = x_val.reshape(-1, 1)
+            
+            # Apply sliding window for CNN
+            if config['plugin'] == 'cnn':
+                if window_size is None:
+                    raise ValueError("window_size must be specified in config for CNN plugin.")
+                x_val_windowed, y_val_windowed = create_sliding_windows(x_val, y_val, window_size)
+                print(f"Sliding windows created for validation: x_val_windowed shape: {x_val_windowed.shape}, y_val_windowed shape: {y_val_windowed.shape}")
+                x_val = x_val_windowed
+                y_val = y_val_windowed
+            elif config['plugin'] == 'transformer':
+                # Reshape for transformer
+                if x_val.ndim == 2:
+                    x_val = x_val.reshape((x_val.shape[0], x_val.shape[1], 1))
+                    print(f"Reshaped x_val for transformer: {x_val.shape}")
+            # No additional processing needed for other plugins
+
+        # Train the model with or without validation data
+        if config['plugin'] == 'cnn' and x_val is not None and y_val is not None:
+            plugin.train(
+                x_train, 
+                y_train, 
+                epochs=epochs, 
+                batch_size=batch_size, 
+                threshold_error=threshold_error,
+                x_val=x_val, 
+                y_val=y_val
+            )
+        else:
+            plugin.train(
+                x_train, 
+                y_train, 
+                epochs=epochs, 
+                batch_size=batch_size, 
+                threshold_error=threshold_error
+            )
 
         # ----------------------------
         # SAVE THE TRAINED MODEL
@@ -285,19 +378,7 @@ def run_prediction_pipeline(config, plugin):
             x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
             y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
 
-            # Extract target column if specified
-            target_column = config.get('target_column', None)
-            if target_column is not None:
-                if isinstance(target_column, str):
-                    if target_column not in y_val_df.columns:
-                        raise ValueError(f"Target column '{target_column}' not found in y_val_df.")
-                    y_val_df = y_val_df[[target_column]]
-                elif isinstance(target_column, int):
-                    if target_column < 0 or target_column >= y_val_df.shape[1]:
-                        raise ValueError(f"Target column index {target_column} is out of range in y_val_df.")
-                    y_val_df = y_val_df.iloc[:, [target_column]]
-                else:
-                    raise ValueError("target_column must be either a string (column name) or an integer index.")
+            # Extract target column if specified (already handled above)
 
             # Align by common index
             common_index = x_val_df.index.intersection(y_val_df.index)
@@ -364,13 +445,6 @@ def run_prediction_pipeline(config, plugin):
                 val_pred_cols = [f'Prediction_{i+1}' for i in range(val_num_steps)]
                 validation_predictions_df = pd.DataFrame(validation_predictions, columns=val_pred_cols)
 
-            # (Optional) Save or further process validation_predictions_df as needed
-            # For example:
-            # write_csv("validation_predictions.csv", validation_predictions_df)
-
-    else:
-        print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
-        raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
 
 
 
