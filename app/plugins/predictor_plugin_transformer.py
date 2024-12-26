@@ -71,7 +71,6 @@ class Plugin:
         from tensorflow.keras.models import Model
         from tensorflow.keras.optimizers import Adam
         from tensorflow.keras.initializers import GlorotUniform
-        from multi_head_attention import MultiHeadAttention  # or your local MHA
         # If you're using a different MHA import, adjust accordingly.
 
         # 1) Extract shape & hyperparams
