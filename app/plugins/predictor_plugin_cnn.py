@@ -42,7 +42,7 @@ class Plugin:
 
     def build_model(self, input_shape):
         """
-        Build a CNN-based model with sliding window input and regularization to mitigate overfitting.
+        Build a CNN-based model with sliding window input.
         
         Parameters:
             input_shape (tuple): Shape of the input data (window_size, features).
@@ -64,8 +64,8 @@ class Plugin:
         # Debugging message
         print(f"CNN Layer sizes: {layers}")
 
-        # Correct Input layer: Remove the extra dimension
-        inputs = Input(shape=input_shape, name="model_input")  # Changed from (input_shape, 1) to input_shape
+        # Correct Input layer: Use the input_shape directly without extra tuple
+        inputs = Input(shape=input_shape, name="model_input")
         x = inputs
 
         for idx, size in enumerate(layers[:-1]):
@@ -73,18 +73,18 @@ class Plugin:
                 x = Conv1D(
                     filters=size, 
                     kernel_size=3, 
-                    activation='relu', 
-                    kernel_initializer=HeNormal(), 
+                    activation='tanh', 
+                    kernel_initializer=GlorotUniform(), 
                     padding='same',
                     kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
                     name=f"conv1d_{idx+1}"
                 )(x)
                 x = BatchNormalization(name=f"batch_norm_{idx+1}")(x)
-                #x = Dropout(self.params.get('dropout_rate', 0.1), name=f"dropout_{idx+1}")(x)  # Dropout after BatchNorm
+                # Dropout lines are removed as per your request
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
 
         x = Flatten(name="flatten")(x)
-        #x = Dropout(self.params.get('dropout_rate', 0.1), name="flatten_dropout")(x)  # Dropout after Flatten
+        # Dropout after Flatten is removed as per your request
         model_output = Dense(
             layers[-1], 
             activation='tanh', 
@@ -93,7 +93,7 @@ class Plugin:
             name="model_output"
         )(x)
         
-        self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
+        self.model = Model(inputs=inputs, outputs=model_output, name="cnn_model")
         
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
@@ -111,10 +111,12 @@ class Plugin:
         )
 
         # Debugging messages to trace the model configuration
-        print("Predictor Model Summary:")
+        print("CNN Model Summary:")
         self.model.summary()
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error):
+    from tensorflow.keras.callbacks import EarlyStopping
+
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train the CNN model with Early Stopping to prevent overfitting.
         
@@ -124,35 +126,46 @@ class Plugin:
             epochs (int): Number of training epochs.
             batch_size (int): Training batch size.
             threshold_error (float): Threshold for loss to trigger warnings.
+            x_val (numpy.ndarray, optional): Validation input data.
+            y_val (numpy.ndarray, optional): Validation target data.
         """
-        # Remove unnecessary reshaping for CNN
-        # CNN expects x_train to be (samples, window_size, features)
-
         callbacks = []
 
-        # Early Stopping based on training loss
+        # Early Stopping based on validation loss if available
         patience = self.params.get('patience', 5)  # default patience is 5 epochs
         early_stopping_monitor = EarlyStopping(
-            monitor='loss', 
+            monitor='val_loss' if (x_val is not None and y_val is not None) else 'loss',
             patience=patience, 
             restore_best_weights=True,
             verbose=1
         )
         callbacks.append(early_stopping_monitor)
 
-        print(f"Training predictor model with data shape: {x_train.shape}")
-        history = self.model.fit(
-            x_train, 
-            y_train, 
-            epochs=epochs, 
-            batch_size=batch_size, 
-            verbose=1, 
-            callbacks=callbacks
-        )
+        print(f"Training CNN model with data shape: {x_train.shape}")
+        if x_val is not None and y_val is not None:
+            history = self.model.fit(
+                x_train, 
+                y_train, 
+                epochs=epochs, 
+                batch_size=batch_size, 
+                verbose=1, 
+                validation_data=(x_val, y_val),
+                callbacks=callbacks
+            )
+        else:
+            history = self.model.fit(
+                x_train, 
+                y_train, 
+                epochs=epochs, 
+                batch_size=batch_size, 
+                verbose=1, 
+                callbacks=callbacks
+            )
         print("Training completed.")
-        mse = history.history['loss'][-1]
+        mse = history.history['val_loss'][-1] if (x_val is not None and y_val is not None) else history.history['loss'][-1]
         if mse > threshold_error:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
+
 
     def predict(self, data):
         """
@@ -164,7 +177,6 @@ class Plugin:
         Returns:
             numpy.ndarray: Predicted outputs.
         """
-        # Remove unnecessary reshaping for CNN
         # CNN expects data to be (samples, window_size, features)
         
         print(f"Predicting data with shape: {data.shape}")
