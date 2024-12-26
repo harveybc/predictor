@@ -11,7 +11,7 @@ class Plugin:
     """
 
     plugin_params = {
-        'epochs': 100,
+        'epochs': 200,
         'batch_size': 128,
         'intermediate_layers': 3,
         'initial_layer_size': 64,
@@ -109,7 +109,7 @@ class Plugin:
         # Set up optional early stopping if requested in params
         callbacks = []
     
-        patience = self.params.get('patience', 3)  # default patience is 10 epochs
+        patience = self.params.get('patience', 5)  # default patience is 10 epochs
         early_stopping_monitor = EarlyStopping(
             monitor='loss', 
             patience=patience, 
