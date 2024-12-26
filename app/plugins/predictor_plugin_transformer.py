@@ -77,7 +77,7 @@ class Plugin:
             kernel_regularizer=l2(l2_reg),
             name="feature_projection"
         )(inputs)
-        x = Dropout(dropout_rate, name="projection_dropout")(x)  # Dropout after projection
+        #x = Dropout(dropout_rate, name="projection_dropout")(x)  # Dropout after projection
 
         # 3. Positional Encoding
         pos_encoding = self._positional_encoding(seq_len, d_model)
@@ -109,7 +109,7 @@ class Plugin:
                     kernel_regularizer=l2(l2_reg),
                     name=f"intermediate_dense_{idx+1}"
                 )(x)
-                x = Dropout(dropout_rate, name=f"intermediate_dropout_{idx+1}")(x)  # Dropout after intermediate Dense
+                #x = Dropout(dropout_rate, name=f"intermediate_dropout_{idx+1}")(x)  # Dropout after intermediate Dense
 
         # 7. Final Output Layer with L2 Regularization
         final_output_dim = layers[-1]
@@ -164,7 +164,7 @@ class Plugin:
             kernel_regularizer=l2(l2_reg),
             name=f"{block_name}_ffn_dense_1"
         )(x)
-        ff = Dropout(dropout_rate, name=f"{block_name}_ffn_dropout_1")(ff)  # Dropout after first FF layer
+        #ff = Dropout(dropout_rate, name=f"{block_name}_ffn_dropout_1")(ff)  # Dropout after first FF layer
         ff = Dense(
             d_model,
             activation=None,
@@ -172,7 +172,7 @@ class Plugin:
             kernel_regularizer=l2(l2_reg),
             name=f"{block_name}_ffn_dense_2"
         )(ff)
-        ff = Dropout(dropout_rate, name=f"{block_name}_ffn_dropout_2")(ff)  # Dropout after second FF layer
+        #ff = Dropout(dropout_rate, name=f"{block_name}_ffn_dropout_2")(ff)  # Dropout after second FF layer
 
         # 4. Add & LayerNorm
         x = Add(name=f"{block_name}_add_ffn")([x, ff])
