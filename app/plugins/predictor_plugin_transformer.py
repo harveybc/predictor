@@ -44,22 +44,21 @@ class Plugin:
 
     def build_model(self, input_shape):
         """
-        Build a Transformer-based model using `keras_multi_head.MultiHeadAttention`, 
-        even if seq_len=1. This code disables mask usage in MHA calls to avoid 
-        rank-4 mask errors for single-time-step cases. All other code remains 
-        unchanged so you can keep using TensorFlow 2.10 and the 'keras-multi-head' library.
+        Build a Transformer-based model that uses keras_multi_head.MultiHeadAttention
+        without passing a 'mask' argument, preventing the error 
+        'got multiple values for argument mask'.
         """
 
-        # For clarity, define or fetch hyperparameters from self.params
-        seq_len, num_features = input_shape  # e.g. (1, 50) if you've reshaped x_train
-        time_horizon = self.params['time_horizon']  # required
+        # 1) Parse shapes + hyperparams
+        seq_len, num_features = input_shape  # e.g. (1, 50) if you reshaped x_train
+        time_horizon = self.params['time_horizon']
         d_model = self.params.get('d_model', 64)
         num_heads = self.params.get('num_heads', 2)
         ff_dim = self.params.get('ff_dim', d_model * 4)
         num_blocks = self.params.get('num_blocks', 2)
         dropout_rate = self.params.get('dropout_rate', 0.1)
 
-        # Extra dense layer sizes if you like
+        # Possibly read extra dense layers from params
         layers = self._resolve_layers()
 
         print("\n--- Transformer Build Info ---")
@@ -68,16 +67,17 @@ class Plugin:
         print(f"Extra layer sizes for final Dense: {layers}")
         print("---------------------------------\n")
 
+        # 2) Input (batch_size, seq_len, num_features)
         inputs = Input(shape=(seq_len, num_features), name="model_input")
 
-        # 1) Project from num_features -> d_model
+        # 3) Projection from num_features -> d_model
         x = Dense(d_model, name="feature_projection")(inputs)
 
-        # 2) Sinusoidal positional encoding (always used)
+        # 4) Mandatory sinusoidal positional encoding
         pos_encoding = self._positional_encoding(seq_len, d_model)
         x = Add(name="add_pos_encoding")([x, pos_encoding])
 
-        # 3) Stack multiple encoder blocks
+        # 5) Stacked transformer blocks
         for i in range(num_blocks):
             block_name = f"transformer_block_{i+1}"
             x = self._transformer_encoder_block(
@@ -88,15 +88,15 @@ class Plugin:
                 block_name=block_name
             )
 
-        # 4) Pool across time dimension -> (batch_size, d_model)
+        # 6) Global average pool across time => (batch_size, d_model)
         x = GlobalAveragePooling1D(name="gap")(x)
 
-        # 5) Optional extra Dense layers from layers[:-1]
+        # 7) Optional extra Dense layers
         for size in layers[:-1]:
             if size > 1:
                 x = Dense(size, activation='relu')(x)
 
-        # 6) Final output => (batch_size, time_horizon)
+        # 8) Final layer => time_horizon
         final_output_dim = layers[-1]
         model_output = Dense(
             final_output_dim,
@@ -105,9 +105,8 @@ class Plugin:
             name="model_output"
         )(x)
 
-        # 7) Build & compile
+        # 9) Build & compile
         self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
-
         adam_optimizer = Adam(
             learning_rate=self.params.get('learning_rate', 1e-3),
             beta_1=0.9,
@@ -115,11 +114,9 @@ class Plugin:
             epsilon=1e-7,
             amsgrad=False
         )
-
-        # Using 'mse' to match prior usage, or Huber() if you prefer
         self.model.compile(
             optimizer=adam_optimizer,
-            loss='mean_squared_error',
+            loss='mean_squared_error', 
             metrics=['mse','mae']
         )
 
@@ -129,36 +126,42 @@ class Plugin:
 
     def _transformer_encoder_block(self, x, d_model, num_heads, ff_dim, block_name):
         """
-        A single Transformer encoder block using 'keras_multi_head.MultiHeadAttention'
-        but forcing mask=None to avoid rank-4 mask errors when seq_len=1.
+        Single Transformer encoder block using keras_multi_head.MultiHeadAttention
+        without 'mask' param to avoid 'got multiple values for argument mask' error.
+        Attn is self-attention => q == k == v => pass [x, x, x].
         """
 
-        # 1) Multi-Head Self-Attention, disabling mask
-        #    If we pass 'mask=None', the library won't try to create a 4D mask.
+        # 1) Multi-Head Self-Attention
+        from keras_multi_head import MultiHeadAttention
+
+        # Instead of (x, x, mask=None), do ([x, x, x]) with no mask arg
         attn_output = MultiHeadAttention(
             head_num=num_heads,
             name=f"{block_name}_mha"
-        )(x, x, mask=None)  # <--- forcibly passing mask=None
+        )([x, x, x])  # q, k, v
 
+        # Residual + LayerNorm
         x = Add(name=f"{block_name}_add_attn")([x, attn_output])
         x = LayerNormalization(name=f"{block_name}_ln_attn")(x)
 
-        # 2) 2-layer feed-forward sub-block
+        # 2) Feed-forward sub-block (2-layer)
         ff = Dense(ff_dim, activation='relu', name=f"{block_name}_ff1")(x)
         ff = Dense(d_model, name=f"{block_name}_ff2")(ff)
 
+        # Residual + LayerNorm
         x = Add(name=f"{block_name}_add_ff")([x, ff])
         x = LayerNormalization(name=f"{block_name}_ln_ff")(x)
+
         return x
 
 
     def _positional_encoding(self, seq_len, d_model):
         """
-        Sinusoidal positional encoding => (1, seq_len, d_model).
-        Always used, even if seq_len=1.
+        Always-used sinusoidal positional encoding for shape (1, seq_len, d_model).
+        If seq_len=1, it's basically zeros except sin(0)=0, cos(0)=1 for first dimension,
+        but no mask errors occur now because we do not pass 'mask' to MHA.
         """
         import numpy as np
-
         pos_encoding = np.zeros((seq_len, d_model), dtype=np.float32)
         for pos in range(seq_len):
             for i in range(0, d_model, 2):
@@ -166,16 +169,14 @@ class Plugin:
                 pos_encoding[pos, i] = np.sin(angle)
                 if i + 1 < d_model:
                     pos_encoding[pos, i+1] = np.cos(angle)
-
-        pos_encoding = np.expand_dims(pos_encoding, axis=0)   # => (1, seq_len, d_model)
+        pos_encoding = np.expand_dims(pos_encoding, axis=0)  # => (1, seq_len, d_model)
         return tf.constant(pos_encoding, dtype=tf.float32)
 
 
     def _resolve_layers(self):
         """
-        Helper method to build the list of Dense layer sizes for final config.
-        E.g. might read from self.params['initial_layer_size'], 
-        self.params['intermediate_layers'], etc., then append time_horizon as last.
+        Helper to build the final Dense layer sizes from self.params.
+        e.g.: [64, 32, 16, ... time_horizon].
         """
         layers = []
         current_size = self.params.get('initial_layer_size', 64)
@@ -184,7 +185,6 @@ class Plugin:
         for _ in range(int_layers):
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
-        # Final layer => time_horizon
         layers.append(self.params['time_horizon'])
         return layers
 
