@@ -121,6 +121,30 @@ import time
 import pandas as pd
 import numpy as np
 
+import time
+import pandas as pd
+import numpy as np
+
+def create_sliding_windows(x, y, window_size, step=1):
+    """
+    Creates sliding windows from the dataset.
+    
+    Parameters:
+        x (numpy.ndarray): Input features of shape (N, features).
+        y (numpy.ndarray): Targets of shape (N, target_size).
+        window_size (int): Number of time steps in each window.
+        step (int): Step size between windows.
+    
+    Returns:
+        Tuple of numpy.ndarrays: (x_windows, y_windows)
+    """
+    x_windows = []
+    y_windows = []
+    for i in range(0, len(x) - window_size - y.shape[1] + 1, step):
+        x_windows.append(x[i:i + window_size])
+        y_windows.append(y[i + window_size:i + window_size + y.shape[1]].flatten())
+    return np.array(x_windows), np.array(y_windows)
+
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline with conditional data reshaping for different plugins.
@@ -187,7 +211,7 @@ def run_prediction_pipeline(config, plugin):
         else:
             # Keep old logic for ANN/LSTM
             # Pass a single integer for input_shape
-            plugin.build_model(input_shape=x_train.shape[1])
+            plugin.build_model(input_shape=x_train.shape[1:])
 
         # ----------------------------
         # TRAIN THE MODEL
@@ -370,27 +394,6 @@ def run_prediction_pipeline(config, plugin):
         print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
 
-
-
-def create_sliding_windows(x, y, window_size, step=1):
-    """
-    Creates sliding windows from the dataset.
-    
-    Parameters:
-        x (numpy.ndarray): Input features of shape (N, features).
-        y (numpy.ndarray): Targets of shape (N, target_size).
-        window_size (int): Number of time steps in each window.
-        step (int): Step size between windows.
-    
-    Returns:
-        Tuple of numpy.ndarrays: (x_windows, y_windows)
-    """
-    x_windows = []
-    y_windows = []
-    for i in range(0, len(x) - window_size - y.shape[1] + 1, step):
-        x_windows.append(x[i:i + window_size])
-        y_windows.append(y[i + window_size:i + window_size + y.shape[1]].flatten())
-    return np.array(x_windows), np.array(y_windows)
 
 
 def load_and_evaluate_model(config, plugin):

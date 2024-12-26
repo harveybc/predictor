@@ -64,26 +64,27 @@ class Plugin:
         # Debugging message
         print(f"CNN Layer sizes: {layers}")
 
-        # Model
-        inputs = Input(shape=input_shape, name="model_input")  # Adjusted for sliding window
+        # Correct Input layer: Remove the extra dimension
+        inputs = Input(shape=input_shape, name="model_input")  # Changed from (input_shape, 1) to input_shape
         x = inputs
+
         for idx, size in enumerate(layers[:-1]):
             if size > 1:
                 x = Conv1D(
                     filters=size, 
                     kernel_size=3, 
-                    activation='tanh', 
-                    kernel_initializer=GlorotUniform(), 
+                    activation='relu', 
+                    kernel_initializer=HeNormal(), 
                     padding='same',
                     kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
                     name=f"conv1d_{idx+1}"
                 )(x)
                 x = BatchNormalization(name=f"batch_norm_{idx+1}")(x)
-                #x = Dropout(self.params.get('dropout_rate', 0.1), name=f"dropout_{idx+1}")(x)  # Dropout after BatchNorm
+                x = Dropout(self.params.get('dropout_rate', 0.1), name=f"dropout_{idx+1}")(x)  # Dropout after BatchNorm
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
-        
+
         x = Flatten(name="flatten")(x)
-        #x = Dropout(self.params.get('dropout_rate', 0.1), name="flatten_dropout")(x)  # Dropout after Flatten
+        x = Dropout(self.params.get('dropout_rate', 0.1), name="flatten_dropout")(x)  # Dropout after Flatten
         model_output = Dense(
             layers[-1], 
             activation='tanh', 
@@ -106,7 +107,7 @@ class Plugin:
             optimizer=adam_optimizer, 
             loss=Huber(), 
             metrics=['mse','mae'], 
-            run_eagerly=True
+            run_eagerly=False  # Set to False for better performance unless debugging
         )
 
         # Debugging messages to trace the model configuration
@@ -114,13 +115,23 @@ class Plugin:
         self.model.summary()
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error):
-        # Ensure x_train is 3D
-        if x_train.ndim == 2:
-            x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
+        """
+        Train the CNN model with Early Stopping to prevent overfitting.
+        
+        Parameters:
+            x_train (numpy.ndarray): Training input data.
+            y_train (numpy.ndarray): Training target data.
+            epochs (int): Number of training epochs.
+            batch_size (int): Training batch size.
+            threshold_error (float): Threshold for loss to trigger warnings.
+        """
+        # Remove unnecessary reshaping for CNN
+        # CNN expects x_train to be (samples, window_size, features)
 
         callbacks = []
-    
-        patience = self.params.get('patience', 5)  # default patience is 10 epochs
+
+        # Early Stopping based on training loss
+        patience = self.params.get('patience', 5)  # default patience is 5 epochs
         early_stopping_monitor = EarlyStopping(
             monitor='loss', 
             patience=patience, 
@@ -130,20 +141,37 @@ class Plugin:
         callbacks.append(early_stopping_monitor)
 
         print(f"Training predictor model with data shape: {x_train.shape}")
-        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1, callbacks=callbacks)
+        history = self.model.fit(
+            x_train, 
+            y_train, 
+            epochs=epochs, 
+            batch_size=batch_size, 
+            verbose=1, 
+            callbacks=callbacks
+        )
         print("Training completed.")
         mse = history.history['loss'][-1]
         if mse > threshold_error:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
 
     def predict(self, data):
-        # Ensure data is 3D
-        if data.ndim == 2:
-            data = data.reshape(data.shape[0], data.shape[1], 1)
+        """
+        Generate predictions using the trained CNN model.
+        
+        Parameters:
+            data (numpy.ndarray): Input data for prediction.
+        
+        Returns:
+            numpy.ndarray: Predicted outputs.
+        """
+        # Remove unnecessary reshaping for CNN
+        # CNN expects data to be (samples, window_size, features)
+        
         print(f"Predicting data with shape: {data.shape}")
         predictions = self.model.predict(data)
         print(f"Predicted data shape: {predictions.shape}")
         return predictions
+
 
     def calculate_mse(self, y_true, y_pred):
         """
