@@ -78,7 +78,7 @@ class Plugin:
                 x = MultiHeadAttention(head_num=self.params['num_heads'])(x)
                 #x = BatchNormalization()(x)
                 # Skip connection
-                x = Add()([x, inputs])
+                #x = Add()([x, inputs])
 
         # GlobalAveragePooling1D for sequence dimension reduction
         x = GlobalAveragePooling1D()(x)
