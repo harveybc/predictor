@@ -3,6 +3,7 @@ from keras.models import Model, load_model, save_model
 from keras.layers import Dense, Input, Dropout, BatchNormalization
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
+from tensorflow.keras.callbacks import EarlyStopping
 
 class Plugin:
     """
