@@ -6,6 +6,7 @@ from keras_multi_head import MultiHeadAttention
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
+import tensorflow as tf
 
 
 class Plugin:
@@ -153,7 +154,7 @@ class Plugin:
         )
         self.model.compile(
             optimizer=adam_optimizer,
-            loss='mean_squared_error',
+            loss=Huber(), 
             metrics=['mse','mae']
         )
 
@@ -174,8 +175,8 @@ class Plugin:
         x = LayerNormalization(name=f"{block_name}_ln_attn")(x)
 
         # 2) Feed-forward sub-block
-        ffn = Dense(ff_dim, activation='relu', name=f"{block_name}_ff1")(x)
-        ffn = Dense(d_model, name=f"{block_name}_ff2")(ffn)
+        ffn = Dense(ff_dim, activation='relu', kernel_initializer=GlorotUniform(), name=f"{block_name}_ff1")(x)
+        ffn = Dense(d_model, kernel_initializer=GlorotUniform(), name=f"{block_name}_ff2")(ffn)
 
         # Residual + LayerNorm
         x = Add(name=f"{block_name}_add_ff")([x, ffn])
