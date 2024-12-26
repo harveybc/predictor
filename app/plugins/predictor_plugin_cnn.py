@@ -43,13 +43,13 @@ class Plugin:
     def build_model(self, input_shape):
         """
         Build a CNN-based model with sliding window input.
-        
+
         Parameters:
             input_shape (tuple): Shape of the input data (window_size, features).
         """
         self.params['input_shape'] = input_shape
         print(f"CNN input_shape: {input_shape}")
-        
+
         layers = []
         current_size = self.params['initial_layer_size']
         layer_size_divisor = self.params['layer_size_divisor']
@@ -73,8 +73,8 @@ class Plugin:
                 x = Conv1D(
                     filters=size, 
                     kernel_size=3, 
-                    activation='tanh', 
-                    kernel_initializer=GlorotUniform(), 
+                    activation='relu', 
+                    kernel_initializer=HeNormal(), 
                     padding='same',
                     kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
                     name=f"conv1d_{idx+1}"
@@ -92,9 +92,9 @@ class Plugin:
             kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
             name="model_output"
         )(x)
-        
+
         self.model = Model(inputs=inputs, outputs=model_output, name="cnn_model")
-        
+
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
             beta_1=0.9,
@@ -114,12 +114,10 @@ class Plugin:
         print("CNN Model Summary:")
         self.model.summary()
 
-    from tensorflow.keras.callbacks import EarlyStopping
-
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train the CNN model with Early Stopping to prevent overfitting.
-        
+
         Parameters:
             x_train (numpy.ndarray): Training input data.
             y_train (numpy.ndarray): Training target data.
@@ -166,19 +164,18 @@ class Plugin:
         if mse > threshold_error:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
 
-
     def predict(self, data):
         """
         Generate predictions using the trained CNN model.
-        
+
         Parameters:
             data (numpy.ndarray): Input data for prediction.
-        
+
         Returns:
             numpy.ndarray: Predicted outputs.
         """
         # CNN expects data to be (samples, window_size, features)
-        
+
         print(f"Predicting data with shape: {data.shape}")
         predictions = self.model.predict(data)
         print(f"Predicted data shape: {predictions.shape}")
