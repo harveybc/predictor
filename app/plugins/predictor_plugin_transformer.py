@@ -5,6 +5,7 @@ from keras.optimizers import Adam
 from keras_multi_head import MultiHeadAttention
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.losses import Huber
 
 
 class Plugin:
@@ -100,7 +101,7 @@ class Plugin:
             epsilon=1e-7,
             amsgrad=False
         )
-        self.model.compile(optimizer=adam_optimizer, loss='mean_squared_error')
+        self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse','mae'])
 
         print("Predictor Model Summary:")
         self.model.summary()
