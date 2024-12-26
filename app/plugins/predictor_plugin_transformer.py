@@ -118,7 +118,7 @@ class Plugin:
 
         callbacks = []
     
-        patience = self.params.get('patience', 2)  # default patience is 10 epochs
+        patience = self.params.get('patience', 3)  # default patience is 10 epochs
         early_stopping_monitor = EarlyStopping(
             monitor='loss', 
             patience=patience, 
