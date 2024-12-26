@@ -163,6 +163,9 @@ def run_prediction_pipeline(config, plugin):
     window_size = config.get('window_size', None)  # e.g., 24 for daily patterns
     target_column = config.get('target_column', None)  # Specify the target column
     
+    # Debugging: Print window_size
+    print(f"Configured window_size: {window_size}")
+    
     # Ensure x_train and y_train are DataFrame or Series
     if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
         # Conditional Target Column Selection for CNN
@@ -378,62 +381,55 @@ def run_prediction_pipeline(config, plugin):
             x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
             y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
 
-            # Extract target column if specified (already handled above)
+            # Conditional Target Column Selection for CNN
+            if config['plugin'] == 'cnn' and target_column is not None:
+                if isinstance(y_val_df, pd.DataFrame) or isinstance(y_val_df, pd.Series):
+                    if isinstance(target_column, str):
+                        if target_column not in y_val_df.columns:
+                            raise ValueError(f"Target column '{target_column}' not found in y_val_df.")
+                        y_val_df = y_val_df[[target_column]]
+                    elif isinstance(target_column, int):
+                        if target_column < 0 or target_column >= y_val_df.shape[1]:
+                            raise ValueError(f"Target column index {target_column} is out of range in y_val_df.")
+                        y_val_df = y_val_df.iloc[:, [target_column]]
+                    else:
+                        raise ValueError("target_column must be either a string (column name) or an integer index.")
+                else:
+                    raise ValueError("y_val_df must be a pandas DataFrame or Series to select target columns by name or index.")
+            
+            # Convert to numpy after selecting the target column
+            x_val = x_val_df.to_numpy().astype(np.float32)
+            y_val = y_val_df.to_numpy().astype(np.float32)
+            
+            # Ensure x_val is at least 2D
+            if x_val.ndim == 1:
+                x_val = x_val.reshape(-1, 1)
+            
+            # Apply sliding window for CNN
+            if config['plugin'] == 'cnn':
+                if window_size is None:
+                    raise ValueError("window_size must be specified in config for CNN plugin.")
+                x_val_windowed, y_val_windowed = create_sliding_windows(x_val, y_val, window_size)
+                print(f"Sliding windows created for validation: x_val_windowed shape: {x_val_windowed.shape}, y_val_windowed shape: {y_val_windowed.shape}")
+                x_val = x_val_windowed
+                y_val = y_val_windowed
+            elif config['plugin'] == 'transformer':
+                # Reshape for transformer
+                if x_val.ndim == 2:
+                    x_val = x_val.reshape((x_val.shape[0], x_val.shape[1], 1))
+                    print(f"Reshaped x_val for transformer: {x_val.shape}")
+            # No additional processing needed for other plugins
 
-            # Align by common index
-            common_index = x_val_df.index.intersection(y_val_df.index)
-            x_val_df = x_val_df.loc[common_index].sort_index()
-            y_val_df = y_val_df.loc[common_index].sort_index()
-
-            # Convert to numeric and fill NaNs
-            x_val_df = x_val_df.apply(pd.to_numeric, errors='coerce').fillna(0)
-            y_val_df = y_val_df.apply(pd.to_numeric, errors='coerce').fillna(0)
-
-            # Apply offset and time horizon
-            total_offset = time_horizon + input_offset
-            y_val_df = y_val_df.iloc[total_offset:]
-            x_val_df = x_val_df.iloc[:-time_horizon]
-
-            # Ensure same length
-            min_length = min(len(x_val_df), len(y_val_df))
-            x_val_df = x_val_df.iloc[:min_length]
-            y_val_df = y_val_df.iloc[:min_length]
-
-            # Multi-step processing for validation
-            Y_val_list = []
-            for i in range(len(y_val_df) - time_horizon + 1):
-                row_values = []
-                for j in range(time_horizon):
-                    row_values.append(y_val_df.iloc[i + j].values[0])
-                Y_val_list.append(row_values)
-
-            y_val_df = pd.DataFrame(Y_val_list).reset_index(drop=True)
-            x_val_df = x_val_df.iloc[:len(y_val_df)].reset_index(drop=True)
-
-            # Convert validation data to numpy
-            x_validation = x_val_df.to_numpy().astype(np.float32)
-            y_validation = y_val_df.to_numpy().astype(np.float32)
-
-            # Ensure x_validation is at least 2D
-            if x_validation.ndim == 1:
-                x_validation = x_validation.reshape(-1, 1)
-
-            # Conditional reshape for transformer
-            if config['plugin'] == 'transformer':
-                if x_validation.ndim == 2:
-                    x_validation = x_validation.reshape((x_validation.shape[0], x_validation.shape[1], 1))
-                    print(f"Reshaped x_validation for transformer: {x_validation.shape}")
-
-            print(f"Validation data shape after adjustments: {x_validation.shape}, {y_validation.shape}")
+            print(f"Validation data shape after adjustments: {x_val.shape}, {y_val.shape}")
 
             # Predict on the validation data
-            validation_predictions = plugin.predict(x_validation)
+            validation_predictions = plugin.predict(x_val)
             # Adjust predictions length if necessary
-            validation_predictions = validation_predictions[:len(y_validation)]
+            validation_predictions = validation_predictions[:len(y_val)]
 
             # Calculate validation errors
-            validation_mse = float(plugin.calculate_mse(y_validation, validation_predictions))
-            validation_mae = float(plugin.calculate_mae(y_validation, validation_predictions))
+            validation_mse = float(plugin.calculate_mse(y_val, validation_predictions))
+            validation_mae = float(plugin.calculate_mae(y_val, validation_predictions))
             print(f"Validation Mean Squared Error: {validation_mse}")
             print(f"Validation Mean Absolute Error: {validation_mae}")
 
@@ -444,6 +440,7 @@ def run_prediction_pipeline(config, plugin):
                 val_num_steps = validation_predictions.shape[1]
                 val_pred_cols = [f'Prediction_{i+1}' for i in range(val_num_steps)]
                 validation_predictions_df = pd.DataFrame(validation_predictions, columns=val_pred_cols)
+
 
 
 
