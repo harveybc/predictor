@@ -4,6 +4,8 @@ from keras.layers import Dense, Input, Dropout, Add, LayerNormalization, GlobalA
 from keras.optimizers import Adam
 from keras_multi_head import MultiHeadAttention
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
+from tensorflow.keras.callbacks import EarlyStopping
+
 
 class Plugin:
     """
@@ -112,6 +114,18 @@ class Plugin:
         # Ensure x_train is 3D
         if x_train.ndim == 2:
             x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
+
+
+        callbacks = []
+    
+        patience = self.params.get('patience', 2)  # default patience is 10 epochs
+        early_stopping_monitor = EarlyStopping(
+            monitor='loss', 
+            patience=patience, 
+            restore_best_weights=True,
+            verbose=1
+        )
+        callbacks.append(early_stopping_monitor)
 
         print(f"Training predictor model with data shape: {x_train.shape}")
         history = self.model.fit(
