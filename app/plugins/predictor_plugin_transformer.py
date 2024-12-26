@@ -73,9 +73,9 @@ class Plugin:
         for size in layers[:-1]:
             if size > 1:
                 x = Dense(size)(x)
-                x = BatchNormalization()(x)
+                #x = BatchNormalization()(x)
                 x = MultiHeadAttention(head_num=self.params['num_heads'])(x)
-                x = BatchNormalization()(x)
+                #x = BatchNormalization()(x)
                 # Skip connection
                 x = Add()([x, inputs])
 
