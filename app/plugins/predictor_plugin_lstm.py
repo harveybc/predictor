@@ -64,9 +64,9 @@ class Plugin:
         x = model_input
         for size in layers[:-1]:
             if size > 1:
-                x = LSTM(size, activation='relu', kernel_initializer=HeNormal(), return_sequences=True)(x)
+                x = LSTM(size, activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal(), return_sequences=True)(x)
                 #x = BatchNormalization()(x)
-        x = LSTM(layers[-2], activation='relu', kernel_initializer=HeNormal())(x)
+        x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal())(x)
         model_output = Dense(layers[-1], activation='tanh', kernel_initializer=GlorotUniform(), name="model_output")(x)
         
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
