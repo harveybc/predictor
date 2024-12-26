@@ -80,11 +80,11 @@ class Plugin:
                     name=f"conv1d_{idx+1}"
                 )(x)
                 x = BatchNormalization(name=f"batch_norm_{idx+1}")(x)
-                x = Dropout(self.params.get('dropout_rate', 0.1), name=f"dropout_{idx+1}")(x)  # Dropout after BatchNorm
+                #x = Dropout(self.params.get('dropout_rate', 0.1), name=f"dropout_{idx+1}")(x)  # Dropout after BatchNorm
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
 
         x = Flatten(name="flatten")(x)
-        x = Dropout(self.params.get('dropout_rate', 0.1), name="flatten_dropout")(x)  # Dropout after Flatten
+        #x = Dropout(self.params.get('dropout_rate', 0.1), name="flatten_dropout")(x)  # Dropout after Flatten
         model_output = Dense(
             layers[-1], 
             activation='tanh', 
