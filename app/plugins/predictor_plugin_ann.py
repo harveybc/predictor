@@ -4,6 +4,7 @@ from keras.layers import Dense, Input, Dropout, BatchNormalization
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.losses import Huber
 
 class Plugin:
     """
@@ -87,7 +88,7 @@ class Plugin:
             amsgrad=False
         )
 
-        self.model.compile(optimizer=adam_optimizer, loss='mse', metrics=['mse','mae'])
+        self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse','mae'])
 
         print("Predictor Model Summary:")
         self.model.summary()

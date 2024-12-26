@@ -4,6 +4,7 @@ from keras.layers import LSTM, Dense, Input, BatchNormalization
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.losses import Huber
 
 
 class Plugin:
@@ -78,7 +79,7 @@ class Plugin:
             amsgrad=False          # Default value
         )
 
-        self.model.compile(optimizer=adam_optimizer, loss='mean_squared_error')
+        self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse','mae'])
 
         # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")

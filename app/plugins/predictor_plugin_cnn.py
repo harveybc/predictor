@@ -4,6 +4,7 @@ from keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Input, BatchNorma
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.losses import Huber
 
 class Plugin:
     """
@@ -76,7 +77,7 @@ class Plugin:
             amsgrad=False
         )
 
-        self.model.compile(optimizer=adam_optimizer, loss='mean_squared_error', run_eagerly=True)
+        self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse','mae'], run_eagerly=True)
 
         # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
