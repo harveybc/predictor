@@ -5,6 +5,7 @@ from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
+from tensorflow.keras.regularizers import l2
 
 class Plugin:
     """
@@ -40,8 +41,15 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape):
+        """
+        Build a CNN-based model with sliding window input and regularization to mitigate overfitting.
+        
+        Parameters:
+            input_shape (tuple): Shape of the input data (window_size, features).
+        """
         self.params['input_shape'] = input_shape
         print(f"CNN input_shape: {input_shape}")
+        
         layers = []
         current_size = self.params['initial_layer_size']
         layer_size_divisor = self.params['layer_size_divisor']
@@ -50,34 +58,56 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
-        # En lugar de 1, ahora el tamaño de salida será time_horizon
+        # Output layer size is time_horizon
         layers.append(self.params['time_horizon'])  # Output layer size
 
         # Debugging message
         print(f"CNN Layer sizes: {layers}")
 
         # Model
-        inputs = Input(shape=(input_shape, 1), name="model_input")
+        inputs = Input(shape=input_shape, name="model_input")  # Adjusted for sliding window
         x = inputs
-        for size in layers[:-1]:
+        for idx, size in enumerate(layers[:-1]):
             if size > 1:
-                x = Conv1D(filters=size, kernel_size=3, activation='relu', kernel_initializer=HeNormal(), padding='same')(x)
-                x = BatchNormalization()(x)
-                x = MaxPooling1D(pool_size=2)(x)
-        x = Flatten()(x)
-        model_output = Dense(layers[-1], activation='tanh', kernel_initializer=GlorotUniform(), name="model_output")(x)
+                x = Conv1D(
+                    filters=size, 
+                    kernel_size=3, 
+                    activation='tanh', 
+                    kernel_initializer=GlorotUniform(), 
+                    padding='same',
+                    kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
+                    name=f"conv1d_{idx+1}"
+                )(x)
+                x = BatchNormalization(name=f"batch_norm_{idx+1}")(x)
+                #x = Dropout(self.params.get('dropout_rate', 0.1), name=f"dropout_{idx+1}")(x)  # Dropout after BatchNorm
+                x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+        
+        x = Flatten(name="flatten")(x)
+        #x = Dropout(self.params.get('dropout_rate', 0.1), name="flatten_dropout")(x)  # Dropout after Flatten
+        model_output = Dense(
+            layers[-1], 
+            activation='tanh', 
+            kernel_initializer=GlorotUniform(), 
+            kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
+            name="model_output"
+        )(x)
         
         self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
         
         adam_optimizer = Adam(
-            learning_rate= self.params['learning_rate'],
+            learning_rate=self.params['learning_rate'],
             beta_1=0.9,
             beta_2=0.999,
             epsilon=1e-7,
             amsgrad=False
         )
 
-        self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse','mae'], run_eagerly=True)
+        self.model.compile(
+            optimizer=adam_optimizer, 
+            loss=Huber(), 
+            metrics=['mse','mae'], 
+            run_eagerly=True
+        )
 
         # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
