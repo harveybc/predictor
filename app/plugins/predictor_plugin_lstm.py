@@ -115,84 +115,56 @@ class Plugin:
 
     def calculate_mse(self, y_true, y_pred):
         """
-        Calculate the Mean Squared Error (MSE) between the true values and predicted values.
-
-        Parameters:
-        y_true (np.array): The true values.
-        y_pred (np.array): The predicted values.
-
-        Returns:
-        float: The calculated MSE.
+        Calculate MSE without losing the 2D alignment (N, time_horizon).
+        We do flatten them both consistently into 1D, but preserve the step count.
         """
-        # Debugging the shapes of input arrays
         print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
 
-        # Flatten the predicted values to ensure it is a 1D array
-        y_pred = y_pred.flatten()
+        # Ensure both y_true and y_pred have the same shape
+        if y_true.shape != y_pred.shape:
+            raise ValueError(
+                f"Shape mismatch in calculate_mse: y_true={y_true.shape}, y_pred={y_pred.shape}"
+            )
 
-        # Debugging the shapes after flattening
-        print(f"Shapes after flattening: y_true={y_true.shape}, y_pred={y_pred.shape}")
+        # Flatten them consistently
+        y_true_flat = y_true.reshape(-1)  # (N * time_horizon,)
+        y_pred_flat = y_pred.reshape(-1)
 
-        # Convert to numpy arrays to ensure they are in the correct format for calculations
-        y_true = np.array(y_true).flatten()
-        y_pred = np.array(y_pred)
+        print(f"Shapes after flattening: y_true={y_true_flat.shape}, y_pred={y_pred_flat.shape}")
 
-        # Calculate the absolute difference between true and predicted values
-        abs_difference = np.abs(y_true - y_pred)
-
-        # Debugging the intermediate results
+        # Calculate absolute diffs and then MSE
+        abs_difference = np.abs(y_true_flat - y_pred_flat)
         print(f"Absolute differences: {abs_difference}")
-
-        # Square the absolute differences
         squared_abs_difference = abs_difference ** 2
-
-        # Debugging the squared differences
         print(f"Squared absolute differences: {squared_abs_difference}")
 
-        # Calculate the mean of the squared differences
         mse = np.mean(squared_abs_difference)
-
-        # Debugging the final MSE
         print(f"Calculated MSE: {mse}")
-
         return mse
 
     def calculate_mae(self, y_true, y_pred):
         """
-        Calculate the Mean Absolute Error (MAE) between the true values and predicted values.
-
-        Parameters:
-        y_true (np.array): The true values.
-        y_pred (np.array): The predicted values.
-
-        Returns:
-        float: The calculated MAE.
+        Calculate MAE without losing the 2D alignment (N, time_horizon).
         """
-        # Debugging the shapes of input arrays
         print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
 
-        # Flatten the predicted values to ensure it is a 1D array
-        y_pred = y_pred.flatten()
+        # Ensure both y_true and y_pred have the same shape
+        if y_true.shape != y_pred.shape:
+            raise ValueError(
+                f"Shape mismatch in calculate_mae: y_true={y_true.shape}, y_pred={y_pred.shape}"
+            )
 
-        # Debugging the shapes after flattening
-        print(f"Shapes after flattening: y_true={y_true.shape}, y_pred={y_pred.shape}")
+        # Flatten them consistently
+        y_true_flat = y_true.reshape(-1)
+        y_pred_flat = y_pred.reshape(-1)
 
-        # Convert to numpy arrays to ensure they are in the correct format for calculations
-        y_true = np.array(y_true).flatten()
-        y_pred = np.array(y_pred)
+        print(f"Shapes after flattening: y_true={y_true_flat.shape}, y_pred={y_pred_flat.shape}")
 
-        # Calculate the absolute difference between true and predicted values
-        abs_difference = np.abs(y_true - y_pred)
-
-        # Debugging the intermediate results
+        abs_difference = np.abs(y_true_flat - y_pred_flat)
         print(f"Absolute differences: {abs_difference}")
 
-        # Calculate the mean of the absolute differences
         mae = np.mean(abs_difference)
-
-        # Debugging the final MAE
         print(f"Calculated MAE: {mae}")
-
         return mae
 
 
