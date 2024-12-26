@@ -2,7 +2,7 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Predictor: A tool for timeseries prediction with plugin support.")
-    parser.add_argument('x_train_file', type=str, help='Path to the input CSV file that is used for training the model (x_train).')
+    parser.add_argument('--x_train_file', type=str, help='Path to the input CSV file that is used for training the model (x_train).')
     parser.add_argument('-ytf', '--y_train_file', type=str, help='Path to the input CSV file that is used for training the model (y_train), IMPORTANT: it is not shifted, must coincide 1 to 1|with the training data.')
     parser.add_argument('-xvf', '--x_validation_file', type=str, help='Path to the input CSV file that is used for validation (x_validation).')
     parser.add_argument('-yvf', '--y_validation_file', type=str, help='Path to the input CSV file that is used for validation (y_validation), IMPORTANT: it is not shifted, must coincide 1 to 1|with the validation data.')
@@ -11,7 +11,7 @@ def parse_args():
     parser.add_argument('-sm', '--save_model', type=str, help='Filename to save the trained predictor model.')
     parser.add_argument('-lm', '--load_model', type=str, help='Filename to load a trained predictor model from (does not perform training, just evaluate input data).')
     parser.add_argument('-ef', '--evaluate_file', type=str, help='Filename for outputting loaded model evaluation results.')
-    parser.add_argument('-pl', '--plugin', type=str, default='default', help='Name of the encoder plugin to use.')
+    parser.add_argument('-pl', '--plugin', type=str,  help='Name of the encoder plugin to use.')
     parser.add_argument('-th', '--time_horizon', type=int, help='Number of ticks ahead to predict.')
     parser.add_argument('-te', '--threshold_error', type=float, help='MSE error threshold to stop the training process.')
     parser.add_argument('-rl', '--remote_log', type=str, help='URL of a remote API endpoint for saving debug variables in JSON format.')

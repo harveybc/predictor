@@ -3,6 +3,8 @@ from keras.models import Model, load_model, save_model
 from keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Input, BatchNormalization
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.losses import Huber
 
 class Plugin:
     """
@@ -10,10 +12,10 @@ class Plugin:
     """
 
     plugin_params = {
-        'epochs': 100,
-        'batch_size': 256,
-        'intermediate_layers': 2,
-        'initial_layer_size': 129,
+        'epochs': 200,
+        'batch_size': 128,
+        'intermediate_layers': 3,
+        'initial_layer_size': 64,
         'layer_size_divisor': 2,
         'learning_rate': 0.0001
         
@@ -48,7 +50,8 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
-        layers.append(1)  # Output layer size
+        # En lugar de 1, ahora el tamaño de salida será time_horizon
+        layers.append(self.params['time_horizon'])  # Output layer size
 
         # Debugging message
         print(f"CNN Layer sizes: {layers}")
@@ -59,22 +62,22 @@ class Plugin:
         for size in layers[:-1]:
             if size > 1:
                 x = Conv1D(filters=size, kernel_size=3, activation='relu', kernel_initializer=HeNormal(), padding='same')(x)
-                x= BatchNormalization()(x)
+                x = BatchNormalization()(x)
                 x = MaxPooling1D(pool_size=2)(x)
         x = Flatten()(x)
         model_output = Dense(layers[-1], activation='tanh', kernel_initializer=GlorotUniform(), name="model_output")(x)
         
         self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
-                # Define the Adam optimizer with custom parameters
+        
         adam_optimizer = Adam(
-            learning_rate= self.params['learning_rate'],   # Set the learning rate
-            beta_1=0.9,            # Default value
-            beta_2=0.999,          # Default value
-            epsilon=1e-7,          # Default value
-            amsgrad=False          # Default value
+            learning_rate= self.params['learning_rate'],
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-7,
+            amsgrad=False
         )
 
-        self.model.compile(optimizer=adam_optimizer, loss='mean_squared_error')
+        self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse','mae'], run_eagerly=True)
 
         # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
@@ -84,8 +87,20 @@ class Plugin:
         # Ensure x_train is 3D
         if x_train.ndim == 2:
             x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
+
+        callbacks = []
+    
+        patience = self.params.get('patience', 5)  # default patience is 10 epochs
+        early_stopping_monitor = EarlyStopping(
+            monitor='loss', 
+            patience=patience, 
+            restore_best_weights=True,
+            verbose=1
+        )
+        callbacks.append(early_stopping_monitor)
+
         print(f"Training predictor model with data shape: {x_train.shape}")
-        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1)
+        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1, callbacks=callbacks)
         print("Training completed.")
         mse = history.history['loss'][-1]
         if mse > threshold_error:
@@ -102,85 +117,58 @@ class Plugin:
 
     def calculate_mse(self, y_true, y_pred):
         """
-        Calculate the Mean Squared Error (MSE) between the true values and predicted values.
-
-        Parameters:
-        y_true (np.array): The true values.
-        y_pred (np.array): The predicted values.
-
-        Returns:
-        float: The calculated MSE.
+        Calculate MSE without losing the 2D alignment (N, time_horizon).
+        We do flatten them both consistently into 1D, but preserve the step count.
         """
-        # Debugging the shapes of input arrays
         print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
 
-        # Flatten the predicted values to ensure it is a 1D array
-        y_pred = y_pred.flatten()
+        # Ensure both y_true and y_pred have the same shape
+        if y_true.shape != y_pred.shape:
+            raise ValueError(
+                f"Shape mismatch in calculate_mse: y_true={y_true.shape}, y_pred={y_pred.shape}"
+            )
 
-        # Debugging the shapes after flattening
-        print(f"Shapes after flattening: y_true={y_true.shape}, y_pred={y_pred.shape}")
+        # Flatten them consistently
+        y_true_flat = y_true.reshape(-1)  # (N * time_horizon,)
+        y_pred_flat = y_pred.reshape(-1)
 
-        # Convert to numpy arrays to ensure they are in the correct format for calculations
-        y_true = np.array(y_true).flatten()
-        y_pred = np.array(y_pred)
+        print(f"Shapes after flattening: y_true={y_true_flat.shape}, y_pred={y_pred_flat.shape}")
 
-        # Calculate the absolute difference between true and predicted values
-        abs_difference = np.abs(y_true - y_pred)
-
-        # Debugging the intermediate results
+        # Calculate absolute diffs and then MSE
+        abs_difference = np.abs(y_true_flat - y_pred_flat)
         print(f"Absolute differences: {abs_difference}")
-
-        # Square the absolute differences
         squared_abs_difference = abs_difference ** 2
-
-        # Debugging the squared differences
         print(f"Squared absolute differences: {squared_abs_difference}")
 
-        # Calculate the mean of the squared differences
         mse = np.mean(squared_abs_difference)
-
-        # Debugging the final MSE
         print(f"Calculated MSE: {mse}")
-
         return mse
 
     def calculate_mae(self, y_true, y_pred):
         """
-        Calculate the Mean Absolute Error (MAE) between the true values and predicted values.
-
-        Parameters:
-        y_true (np.array): The true values.
-        y_pred (np.array): The predicted values.
-
-        Returns:
-        float: The calculated MAE.
+        Calculate MAE without losing the 2D alignment (N, time_horizon).
         """
-        # Debugging the shapes of input arrays
         print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
 
-        # Flatten the predicted values to ensure it is a 1D array
-        y_pred = y_pred.flatten()
+        # Ensure both y_true and y_pred have the same shape
+        if y_true.shape != y_pred.shape:
+            raise ValueError(
+                f"Shape mismatch in calculate_mae: y_true={y_true.shape}, y_pred={y_pred.shape}"
+            )
 
-        # Debugging the shapes after flattening
-        print(f"Shapes after flattening: y_true={y_true.shape}, y_pred={y_pred.shape}")
+        # Flatten them consistently
+        y_true_flat = y_true.reshape(-1)
+        y_pred_flat = y_pred.reshape(-1)
 
-        # Convert to numpy arrays to ensure they are in the correct format for calculations
-        y_true = np.array(y_true).flatten()
-        y_pred = np.array(y_pred)
+        print(f"Shapes after flattening: y_true={y_true_flat.shape}, y_pred={y_pred_flat.shape}")
 
-        # Calculate the absolute difference between true and predicted values
-        abs_difference = np.abs(y_true - y_pred)
-
-        # Debugging the intermediate results
+        abs_difference = np.abs(y_true_flat - y_pred_flat)
         print(f"Absolute differences: {abs_difference}")
 
-        # Calculate the mean of the absolute differences
         mae = np.mean(abs_difference)
-
-        # Debugging the final MAE
         print(f"Calculated MAE: {mae}")
-
         return mae
+
 
     def save(self, file_path):
         save_model(self.model, file_path)
