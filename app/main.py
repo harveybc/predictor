@@ -79,7 +79,7 @@ def main() -> None:
     unknown_args_dict = process_unknown_args(unknown_args)
     # Provide empty plugin_params in this pass to exclude plugin-specific configurations
     config = merge_config(
-        config=config,
+        defaults=config,
         plugin_params={},  # No plugin-specific parameters in the first pass
         file_config=file_config,
         cli_args=cli_args,
@@ -106,7 +106,7 @@ def main() -> None:
     print("Merging configuration with CLI arguments and unknown args (second pass, with plugin params)...")
     # Pass plugin-specific parameters to ensure they are recognized and merged appropriately
     config = merge_config(
-        config=config,
+        defaults=config,
         plugin_params=plugin.plugin_params,  # Include plugin-specific parameters
         file_config=file_config,
         cli_args=cli_args,
