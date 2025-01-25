@@ -43,26 +43,36 @@ def main() -> None:
         Exception: Propagates any exception that occurs during execution.
     """
     print("Parsing initial arguments...")
+    # Parse command-line arguments and any unknown arguments
     args, unknown_args = parse_args()
     cli_args: Dict[str, Any] = vars(args)
 
     print("Loading default configuration...")
+    # Initialize configuration with default values
     config: Dict[str, Any] = DEFAULT_VALUES.copy()
 
     file_config: Dict[str, Any] = {}
     # Remote configuration file loading
     if args.remote_load_config:
-        file_config = remote_load_config(
-            config_url=args.remote_load_config,
-            username=args.username,
-            password=args.password
-        )
-        print(f"Loaded remote config: {file_config}")
+        try:
+            file_config = remote_load_config(
+                config_url=args.remote_load_config,
+                username=args.username,
+                password=args.password
+            )
+            print(f"Loaded remote config: {file_config}")
+        except Exception as e:
+            print(f"Failed to load remote configuration: {e}")
+            sys.exit(1)
 
     # Local configuration file loading
     if args.load_config:
-        file_config = load_config(config_path=args.load_config)
-        print(f"Loaded local config: {file_config}")
+        try:
+            file_config = load_config(config_path=args.load_config)
+            print(f"Loaded local config: {file_config}")
+        except Exception as e:
+            print(f"Failed to load local configuration: {e}")
+            sys.exit(1)
 
     # First pass: Merge config with CLI args and unknown args WITHOUT plugin-specific parameters
     print("Merging configuration with CLI arguments and unknown args (first pass, no plugin params)...")
@@ -82,45 +92,64 @@ def main() -> None:
 
     plugin_name: str = cli_args['plugin']
     print(f"Loading plugin: {plugin_name}")
-    plugin_class, _ = load_plugin(plugin_namespace='predictor.plugins', plugin_name=plugin_name)
-    plugin = plugin_class()
-    # Override plugin parameters with the merged configuration
-    plugin.set_params(**config)
+    try:
+        # Load the specified plugin from the 'predictor.plugins' namespace
+        plugin_class, _ = load_plugin(plugin_namespace='predictor.plugins', plugin_name=plugin_name)
+        plugin = plugin_class()
+        # Override plugin parameters with the merged configuration
+        plugin.set_params(**config)
+    except Exception as e:
+        print(f"Failed to load or initialize plugin '{plugin_name}': {e}")
+        sys.exit(1)
 
     # Second pass: Merge config with the plugin's parameters (if any)
     print("Merging configuration with CLI arguments and unknown args (second pass, with plugin params)...")
     # Pass plugin-specific parameters to ensure they are recognized and merged appropriately
     config = merge_config(
         base_config=config,
-        plugin_params=plugin.plugin_params,
+        plugin_params=plugin.plugin_params,  # Include plugin-specific parameters
         file_config=file_config,
         cli_args=cli_args,
         unknown_args=unknown_args_dict
     )
 
-    # Decide whether to load and evaluate an existing model or run the prediction pipeline
+    # Decision point: Load and evaluate an existing model or run the prediction pipeline
     if config.get('load_model'):
         print("Loading and evaluating model...")
-        load_and_evaluate_model(config=config, plugin=plugin)
+        try:
+            load_and_evaluate_model(config=config, plugin=plugin)
+        except Exception as e:
+            print(f"Model evaluation failed: {e}")
+            sys.exit(1)
     else:
         print("Processing and running prediction pipeline...")
-        run_prediction_pipeline(config=config, plugin=plugin)
+        try:
+            run_prediction_pipeline(config=config, plugin=plugin)
+        except Exception as e:
+            print(f"Prediction pipeline failed: {e}")
+            sys.exit(1)
 
     # Save the current configuration locally if a save path is specified
     if config.get('save_config'):
-        save_config(config=config, save_path=config['save_config'])
-        print(f"Configuration saved to {config['save_config']}.")
+        try:
+            save_config(config=config, save_path=config['save_config'])
+            print(f"Configuration saved to {config['save_config']}.")
+        except Exception as e:
+            print(f"Failed to save configuration locally: {e}")
 
     # Save the current configuration remotely if a remote save endpoint is specified
     if config.get('remote_save_config'):
         print(f"Remote saving configuration to {config['remote_save_config']}")
-        remote_save_config(
-            config=config,
-            remote_url=config['remote_save_config'],
-            username=config.get('username'),
-            password=config.get('password')
-        )
-        print("Remote configuration saved.")
+        try:
+            remote_save_config(
+                config=config,
+                remote_url=config['remote_save_config'],
+                username=config.get('username'),
+                password=config.get('password')
+            )
+            print("Remote configuration saved.")
+        except Exception as e:
+            print(f"Failed to save configuration remotely: {e}")
 
 
 if __name__ == "__main__":
