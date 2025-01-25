@@ -41,13 +41,13 @@ def main():
     print(f"Loading plugin: {plugin_name}")
     plugin_class, _ = load_plugin('predictor.plugins', plugin_name)
     plugin = plugin_class()
+    plugin.set_params(**config)
 
     # Second pass: Merge config with the plugin's parameters (if any)
     print("Merging configuration with CLI arguments and unknown args (second pass, with plugin params)...")
     # Now we pass the plugin's parameters as the first dict so they're recognized properly
     config = merge_config(config, plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
 
-    plugin.set_params(**config)
 
     if config['load_model']:
         print("Loading and evaluating model...")
