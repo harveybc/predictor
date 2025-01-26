@@ -6,6 +6,8 @@ from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
+import logging
+import os
 
 class Plugin:
     """
@@ -220,6 +222,9 @@ class Plugin:
         Returns:
             numpy.ndarray: Predicted values of shape (N, time_horizon).
         """
+                # Suppress TensorFlow logging
+        logging.getLogger("tensorflow").setLevel(logging.ERROR)
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         #print(f"Predicting data with shape: {data.shape}")
         predictions = self.model.predict(data)
         #print(f"Predicted data shape: {predictions.shape}")
