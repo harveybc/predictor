@@ -174,333 +174,388 @@ def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline with conditional data reshaping for different plugins.
     Ensures row-limiting and displays both Training and Validation MAE with separators.
+    Implements multiple iterations and aggregates MAE statistics.
+
+    Args:
+        config (dict): Configuration dictionary containing parameters for the pipeline.
+        plugin (Plugin): The ANN predictor plugin to be used for training and prediction.
     """
     start_time = time.time()
 
-    print("Running process_data...")
-    x_train, y_train = process_data(config)
-    print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
+    iterations = config.get('iterations', 1)
+    print(f"Number of iterations: {iterations}")
 
-    time_horizon = config['time_horizon']
-    input_offset = config['input_offset']
-    batch_size = config['batch_size']
-    epochs = config['epochs']
-    threshold_error = config['threshold_error']
-    window_size = config.get('window_size', None)  # e.g., 24 for daily patterns
-    target_column = config.get('target_column', None)  # Specify the target column
+    # Lists to store MAE values for each iteration
+    training_mae_list = []
+    validation_mae_list = []
 
-    # Debugging: Print window_size
-    print(f"Configured window_size: {window_size}")
+    for iteration in range(1, iterations + 1):
+        print(f"\n=== Iteration {iteration}/{iterations} ===")
+        iteration_start_time = time.time()
 
-    # Ensure x_train and y_train are DataFrame or Series
-    if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
-        # Conditional Target Column Selection for CNN
-        if config['plugin'] == 'cnn' and target_column is not None:
-            if isinstance(y_train, pd.DataFrame) or isinstance(y_train, pd.Series):
-                if isinstance(target_column, str):
-                    if target_column not in y_train.columns:
-                        raise ValueError(f"Target column '{target_column}' not found in y_train.")
-                    y_train = y_train[[target_column]]  # Keep it as a DataFrame
-                elif isinstance(target_column, int):
-                    if target_column < 0 or target_column >= y_train.shape[1]:
-                        raise ValueError(f"Target column index {target_column} is out of range in y_train.")
-                    y_train = y_train.iloc[:, [target_column]]
-                else:
-                    raise ValueError("`target_column` must be either a string (column name) or an integer index.")
-            else:
-                raise ValueError("y_train must be a pandas DataFrame or Series to select target columns by name or index.")
+        try:
+            print("Running process_data...")
+            x_train, y_train = process_data(config)
+            print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
 
-        # Convert to numpy for training
-        x_train = x_train.to_numpy().astype(np.float32)
-        y_train = y_train.to_numpy().astype(np.float32)
+            time_horizon = config['time_horizon']
+            input_offset = config['input_offset']
+            batch_size = config['batch_size']
+            epochs = config['epochs']
+            threshold_error = config['threshold_error']
+            window_size = config.get('window_size', None)  # e.g., 24 for daily patterns
+            target_column = config.get('target_column', None)  # Specify the target column
 
-        # Ensure x_train is at least 2D
-        if x_train.ndim == 1:
-            x_train = x_train.reshape(-1, 1)
+            # Debugging: Print window_size
+            print(f"Configured window_size: {window_size}")
 
-        # Debug messages
-        print(f"x_train shape before sliding window: {x_train.shape}")
-        print(f"y_train shape before sliding window: {y_train.shape}")
-
-        # ----------------------------
-        # CONDITIONAL RESHAPE FOR TRANSFORMER
-        # ----------------------------
-        if config['plugin'] == 'transformer':
-            # Treat each feature as a separate timestep
-            # Reshape from (N, features) to (N, features, 1)
-            if x_train.ndim == 2:
-                x_train = x_train.reshape((x_train.shape[0], x_train.shape[1], 1))
-                print(f"Reshaped x_train for transformer: {x_train.shape}")
-
-            # Now we pass a 3D tuple: (samples, seq_len, num_features)
-            plugin.build_model(input_shape=x_train.shape[1:])
-
-        elif config['plugin'] == 'cnn':
-            # Apply sliding window
-            if window_size is None:
-                raise ValueError("`window_size` must be specified in config for CNN plugin.")
-
-            # Create sliding windows
-            x_train_windowed, y_train_windowed = create_sliding_windows(x_train, y_train, window_size)
-            print(f"Sliding windows created: x_train_windowed shape: {x_train_windowed.shape}, y_train_windowed shape: {y_train_windowed.shape}")
-
-            # Update plugin's window_size parameter if necessary
-            plugin.params['window_size'] = window_size
-
-            # Build model with window_size
-            plugin.build_model(input_shape=x_train_windowed.shape[1:])
-
-            # Replace original x_train and y_train with windowed data
-            x_train = x_train_windowed
-            y_train = y_train_windowed
-
-        else:
-            # Handle ANN separately to pass integer input_shape
-            if config['plugin'] == 'ann':
-                input_shape = x_train.shape[1]  # Pass integer for ANN
-                print(f"ANN input_shape: {input_shape}")
-            else:
-                input_shape = x_train.shape[1:]
-                print(f"{config['plugin'].capitalize()} input_shape: {input_shape}")
-
-            plugin.build_model(input_shape=input_shape)
-
-        # ----------------------------
-        # TRAIN THE MODEL
-        # ----------------------------
-        # Handle validation data if available
-        x_val = None
-        y_val = None
-        if config.get('x_validation_file') and config.get('y_validation_file'):
-            print("Preparing validation data...")
-            x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
-            y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
-
-            # Conditional Target Column Selection for CNN
-            if config['plugin'] == 'cnn' and target_column is not None:
-                if isinstance(y_val_df, pd.DataFrame) or isinstance(y_val_df, pd.Series):
-                    if isinstance(target_column, str):
-                        if target_column not in y_val_df.columns:
-                            raise ValueError(f"Target column '{target_column}' not found in y_val_df.")
-                        y_val_df = y_val_df[[target_column]]
-                    elif isinstance(target_column, int):
-                        if target_column < 0 or target_column >= y_val_df.shape[1]:
-                            raise ValueError(f"Target column index {target_column} is out of range in y_val_df.")
-                        y_val_df = y_val_df.iloc[:, [target_column]]
+            # Ensure x_train and y_train are DataFrame or Series
+            if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
+                # Conditional Target Column Selection for CNN
+                if config['plugin'] == 'cnn' and target_column is not None:
+                    if isinstance(y_train, pd.DataFrame) or isinstance(y_train, pd.Series):
+                        if isinstance(target_column, str):
+                            if target_column not in y_train.columns:
+                                raise ValueError(f"Target column '{target_column}' not found in y_train.")
+                            y_train = y_train[[target_column]]  # Keep it as a DataFrame
+                        elif isinstance(target_column, int):
+                            if target_column < 0 or target_column >= y_train.shape[1]:
+                                raise ValueError(f"Target column index {target_column} is out of range in y_train.")
+                            y_train = y_train.iloc[:, [target_column]]
+                        else:
+                            raise ValueError("`target_column` must be either a string (column name) or an integer index.")
                     else:
-                        raise ValueError("`target_column` must be either a string (column name) or an integer index.")
+                        raise ValueError("y_train must be a pandas DataFrame or Series to select target columns by name or index.")
+
+                # Convert to numpy for training
+                x_train_np = x_train.to_numpy().astype(np.float32)
+                y_train_np = y_train.to_numpy().astype(np.float32)
+
+                # Ensure x_train is at least 2D
+                if x_train_np.ndim == 1:
+                    x_train_np = x_train_np.reshape(-1, 1)
+
+                # Debug messages
+                print(f"x_train shape before sliding window: {x_train_np.shape}")
+                print(f"y_train shape before sliding window: {y_train_np.shape}")
+
+                # ----------------------------
+                # CONDITIONAL RESHAPE FOR TRANSFORMER
+                # ----------------------------
+                if config['plugin'] == 'transformer':
+                    # Treat each feature as a separate timestep
+                    # Reshape from (N, features) to (N, features, 1)
+                    if x_train_np.ndim == 2:
+                        x_train_np = x_train_np.reshape((x_train_np.shape[0], x_train_np.shape[1], 1))
+                        print(f"Reshaped x_train for transformer: {x_train_np.shape}")
+
+                    # Now we pass a 3D tuple: (samples, seq_len, num_features)
+                    plugin.build_model(input_shape=x_train_np.shape[1:])
+
+                elif config['plugin'] == 'cnn':
+                    # Apply sliding window
+                    if window_size is None:
+                        raise ValueError("`window_size` must be specified in config for CNN plugin.")
+
+                    # Create sliding windows
+                    x_train_windowed, y_train_windowed = create_sliding_windows(x_train_np, y_train_np, window_size)
+                    print(f"Sliding windows created: x_train_windowed shape: {x_train_windowed.shape}, y_train_windowed shape: {y_train_windowed.shape}")
+
+                    # Update plugin's window_size parameter if necessary
+                    plugin.params['window_size'] = window_size
+
+                    # Build model with window_size
+                    plugin.build_model(input_shape=x_train_windowed.shape[1:])
+
+                    # Replace original x_train and y_train with windowed data
+                    x_train_np = x_train_windowed
+                    y_train_np = y_train_windowed
+
                 else:
-                    raise ValueError("y_val_df must be a pandas DataFrame or Series to select target columns by name or index.")
+                    # Handle ANN separately to pass integer input_shape
+                    if config['plugin'] == 'ann':
+                        input_shape = x_train_np.shape[1]  # Pass integer for ANN
+                        print(f"ANN input_shape: {input_shape}")
+                    else:
+                        input_shape = x_train_np.shape[1:]
+                        print(f"{config['plugin'].capitalize()} input_shape: {input_shape}")
 
-            # Convert to numpy after selecting the target column
-            x_val = x_val_df.to_numpy().astype(np.float32)
-            y_val = y_val_df.to_numpy().astype(np.float32)
+                    plugin.build_model(input_shape=input_shape)
 
-            # Ensure x_val is at least 2D
-            if x_val.ndim == 1:
-                x_val = x_val.reshape(-1, 1)
+                # ----------------------------
+                # TRAIN THE MODEL
+                # ----------------------------
+                # Handle validation data if available
+                x_val_np = None
+                y_val_np = None
+                if config.get('x_validation_file') and config.get('y_validation_file'):
+                    print("Preparing validation data...")
+                    x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
+                    y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
 
-            # Limit the number of rows based on max_steps_test if specified
-            max_steps_test = config.get('max_steps_test')
-            if isinstance(max_steps_test, int) and max_steps_test > 0:
-                print(f"Limiting validation data to first {max_steps_test} rows.")
-                x_val = x_val[:max_steps_test]
-                y_val = y_val[:max_steps_test]
-                print(f"Validation data shape after limiting: X: {x_val.shape}, Y: {y_val.shape}")
+                    # Conditional Target Column Selection for CNN
+                    if config['plugin'] == 'cnn' and target_column is not None:
+                        if isinstance(y_val_df, pd.DataFrame) or isinstance(y_val_df, pd.Series):
+                            if isinstance(target_column, str):
+                                if target_column not in y_val_df.columns:
+                                    raise ValueError(f"Target column '{target_column}' not found in y_val_df.")
+                                y_val_df = y_val_df[[target_column]]
+                            elif isinstance(target_column, int):
+                                if target_column < 0 or target_column >= y_val_df.shape[1]:
+                                    raise ValueError(f"Target column index {target_column} is out of range in y_val_df.")
+                                y_val_df = y_val_df.iloc[:, [target_column]]
+                            else:
+                                raise ValueError("`target_column` must be either a string (column name) or an integer index.")
+                        else:
+                            raise ValueError("y_val_df must be a pandas DataFrame or Series to select target columns by name or index.")
 
-            # Apply sliding window for CNN
-            if config['plugin'] == 'cnn':
-                if window_size is None:
-                    raise ValueError("`window_size` must be specified in config for CNN plugin.")
-                x_val_windowed, y_val_windowed = create_sliding_windows(x_val, y_val, window_size)
-                print(f"Sliding windows created for validation: x_val_windowed shape: {x_val_windowed.shape}, y_val_windowed shape: {y_val_windowed.shape}")
-                x_val = x_val_windowed
-                y_val = y_val_windowed
-            elif config['plugin'] == 'transformer':
-                # Reshape for transformer
-                if x_val.ndim == 2:
-                    x_val = x_val.reshape((x_val.shape[0], x_val.shape[1], 1))
-                    print(f"Reshaped x_val for transformer: {x_val.shape}")
-            # No additional processing needed for other plugins
+                    # Convert to numpy after selecting the target column
+                    x_val_np = x_val_df.to_numpy().astype(np.float32)
+                    y_val_np = y_val_df.to_numpy().astype(np.float32)
 
-        # Train the model with or without validation data
-        if config['plugin'] == 'cnn' and x_val is not None and y_val is not None:
-            plugin.train(
-                x_train, 
-                y_train, 
-                epochs=epochs, 
-                batch_size=batch_size, 
-                threshold_error=threshold_error,
-                x_val=x_val, 
-                y_val=y_val
-            )
+                    # Ensure x_val is at least 2D
+                    if x_val_np.ndim == 1:
+                        x_val_np = x_val_np.reshape(-1, 1)
+
+                    # Limit the number of rows based on max_steps_test if specified
+                    max_steps_test = config.get('max_steps_test')
+                    if isinstance(max_steps_test, int) and max_steps_test > 0:
+                        print(f"Limiting validation data to first {max_steps_test} rows.")
+                        x_val_np = x_val_np[:max_steps_test]
+                        y_val_np = y_val_np[:max_steps_test]
+                        print(f"Validation data shape after limiting: X: {x_val_np.shape}, Y: {y_val_np.shape}")
+
+                    # Apply sliding window for CNN
+                    if config['plugin'] == 'cnn':
+                        if window_size is None:
+                            raise ValueError("`window_size` must be specified in config for CNN plugin.")
+                        x_val_windowed, y_val_windowed = create_sliding_windows(x_val_np, y_val_np, window_size)
+                        print(f"Sliding windows created for validation: x_val_windowed shape: {x_val_windowed.shape}, y_val_windowed shape: {y_val_windowed.shape}")
+                        x_val_np = x_val_windowed
+                        y_val_np = y_val_windowed
+                    elif config['plugin'] == 'transformer':
+                        # Reshape for transformer
+                        if x_val_np.ndim == 2:
+                            x_val_np = x_val_np.reshape((x_val_np.shape[0], x_val_np.shape[1], 1))
+                            print(f"Reshaped x_val for transformer: {x_val_np.shape}")
+                    # No additional processing needed for other plugins
+
+                # Train the model with or without validation data
+                if config['plugin'] == 'cnn' and x_val_np is not None and y_val_np is not None:
+                    plugin.train(
+                        x_train=x_train_np, 
+                        y_train=y_train_np, 
+                        epochs=epochs, 
+                        batch_size=batch_size, 
+                        threshold_error=threshold_error,
+                        x_val=x_val_np, 
+                        y_val=y_val_np
+                    )
+                else:
+                    plugin.train(
+                        x_train=x_train_np, 
+                        y_train=y_train_np, 
+                        epochs=epochs, 
+                        batch_size=batch_size, 
+                        threshold_error=threshold_error
+                    )
+
+                # ----------------------------
+                # SAVE THE TRAINED MODEL
+                # ----------------------------
+                if config.get('save_model'):
+                    plugin.save(config['save_model'])
+                    print(f"Model saved to {config['save_model']}")
+
+                # ----------------------------
+                # PREDICT ON TRAINING DATA
+                # ----------------------------
+                predictions = plugin.predict(x_train_np)
+
+                # ----------------------------
+                # EVALUATE THE MODEL
+                # ----------------------------
+                mse = float(plugin.calculate_mse(y_train_np, predictions))
+                mae = float(plugin.calculate_mae(y_train_np, predictions))
+                print(f"Mean Squared Error: {mse}")
+                print(f"Mean Absolute Error: {mae}")
+
+                # Append MAE to lists
+                training_mae_list.append(mae)
+
+                # ----------------------------
+                # CONVERT PREDICTIONS TO DATAFRAME
+                # ----------------------------
+                if predictions.ndim == 1 or predictions.shape[1] == 1:
+                    predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
+                else:
+                    num_steps = predictions.shape[1]
+                    pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
+                    predictions_df = pd.DataFrame(predictions, columns=pred_cols)
+
+                # ----------------------------
+                # SAVE PREDICTIONS TO CSV
+                # ----------------------------
+                output_filename = config['output_file']
+                write_csv(
+                    output_filename, 
+                    predictions_df, 
+                    include_date=config.get('force_date', False), 
+                    headers=config.get('headers', True)
+                )
+                print(f"Output written to {output_filename}")
+
+                # ----------------------------
+                # SAVE DEBUG INFO
+                # ----------------------------
+                end_time_iteration = time.time()
+                execution_time_iteration = end_time_iteration - iteration_start_time
+                debug_info = {
+                    'iteration': iteration,
+                    'execution_time': float(execution_time_iteration),
+                    'mse': mse,
+                    'mae': mae
+                }
+
+                if config.get('save_log'):
+                    save_debug_info(debug_info, config['save_log'])
+                    print(f"Debug info saved to {config['save_log']}")
+
+                if config.get('remote_log'):
+                    remote_log(
+                        config, 
+                        debug_info, 
+                        config['remote_log'], 
+                        config.get('username'), 
+                        config.get('password')
+                    )
+                    print(f"Debug info saved to {config['remote_log']}")
+
+                print(f"Iteration {iteration} execution time: {execution_time_iteration} seconds")
+
+                # ----------------------------
+                # VALIDATE THE MODEL (IF VALIDATION DATA PROVIDED)
+                # ----------------------------
+                if config.get('x_validation_file') and config.get('y_validation_file'):
+                    print("Validating model...")
+
+                    # Reload validation data to ensure consistency
+                    x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
+                    y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
+
+                    # Conditional Target Column Selection for CNN
+                    if config['plugin'] == 'cnn' and target_column is not None:
+                        if isinstance(y_val_df, pd.DataFrame) or isinstance(y_val_df, pd.Series):
+                            if isinstance(target_column, str):
+                                if target_column not in y_val_df.columns:
+                                    raise ValueError(f"Target column '{target_column}' not found in y_val_df.")
+                                y_val_df = y_val_df[[target_column]]
+                            elif isinstance(target_column, int):
+                                if target_column < 0 or target_column >= y_val_df.shape[1]:
+                                    raise ValueError(f"Target column index {target_column} is out of range in y_val_df.")
+                                y_val_df = y_val_df.iloc[:, [target_column]]
+                            else:
+                                raise ValueError("`target_column` must be either a string (column name) or an integer index.")
+                        else:
+                            raise ValueError("y_val_df must be a pandas DataFrame or Series to select target columns by name or index.")
+
+                    # Convert to numpy after selecting the target column
+                    x_val_np = x_val_df.to_numpy().astype(np.float32)
+                    y_val_np = y_val_df.to_numpy().astype(np.float32)
+
+                    # Ensure x_val is at least 2D
+                    if x_val_np.ndim == 1:
+                        x_val_np = x_val_np.reshape(-1, 1)
+
+                    # Limit the number of rows based on max_steps_test if specified
+                    max_steps_test = config.get('max_steps_test')
+                    if isinstance(max_steps_test, int) and max_steps_test > 0:
+                        print(f"Limiting validation data to first {max_steps_test} rows.")
+                        x_val_np = x_val_np[:max_steps_test]
+                        y_val_np = y_val_np[:max_steps_test]
+                        print(f"Validation data shape after limiting: X: {x_val_np.shape}, Y: {y_val_np.shape}")
+
+                    # Apply sliding window for CNN
+                    if config['plugin'] == 'cnn':
+                        if window_size is None:
+                            raise ValueError("`window_size` must be specified in config for CNN plugin.")
+                        x_val_windowed, y_val_windowed = create_sliding_windows(x_val_np, y_val_np, window_size)
+                        print(f"Sliding windows created for validation: x_val_windowed shape: {x_val_windowed.shape}, y_val_windowed shape: {y_val_windowed.shape}")
+                        x_val_np = x_val_windowed
+                        y_val_np = y_val_windowed
+                    elif config['plugin'] == 'transformer':
+                        # Reshape for transformer
+                        if x_val_np.ndim == 2:
+                            x_val_np = x_val_np.reshape((x_val_np.shape[0], x_val_np.shape[1], 1))
+                            print(f"Reshaped x_val for transformer: {x_val_np.shape}")
+                    # No additional processing needed for other plugins
+
+                    print(f"Validation data shape after adjustments: {x_val_np.shape}, {y_val_np.shape}")
+
+                    # Predict on the validation data
+                    validation_predictions = plugin.predict(x_val_np)
+                    # Adjust predictions length if necessary
+                    validation_predictions = validation_predictions[:len(y_val_np)]
+
+                    # Calculate validation errors
+                    validation_mse = float(plugin.calculate_mse(y_val_np, validation_predictions))
+                    validation_mae = float(plugin.calculate_mae(y_val_np, validation_predictions))
+                    print(f"Validation Mean Squared Error: {validation_mse}")
+                    print(f"Validation Mean Absolute Error: {validation_mae}")
+
+                    # Append Validation MAE to list
+                    validation_mae_list.append(validation_mae)
+
+                    # ----------------------------
+                    # PRINT TRAINING AND VALIDATION MAE WITH SEPARATORS
+                    # ----------------------------
+                    print("***************************")
+                    print(f"Training MAE = {mae}")
+                    print("***************************")
+                    print(f"Validation MAE = {validation_mae}")
+                    print("***************************")
+
+            except Exception as e:
+                print(f"Iteration {iteration} failed: {e}")
+                continue  # Proceed to the next iteration
+
+        # After all iterations, compute aggregated MAE statistics
+        if iterations > 0 and training_mae_list and validation_mae_list:
+            training_mae_array = np.array(training_mae_list)
+            validation_mae_array = np.array(validation_mae_list)
+
+            avg_training_mae = np.mean(training_mae_array)
+            std_training_mae = np.std(training_mae_array)
+            max_training_mae = np.max(training_mae_array)
+            min_training_mae = np.min(training_mae_array)
+
+            avg_validation_mae = np.mean(validation_mae_array)
+            std_validation_mae = np.std(validation_mae_array)
+            max_validation_mae = np.max(validation_mae_array)
+            min_validation_mae = np.min(validation_mae_array)
+
+            # Print aggregated statistics with separators
+            print("\n***********************************")
+            print("Aggregated MAE Statistics After All Iterations:")
+            print("***********************************")
+            print(f"Average Training MAE: {avg_training_mae}")
+            print(f"Training MAE Std Dev: {std_training_mae}")
+            print(f"Training MAE Max: {max_training_mae}")
+            print(f"Training MAE Min: {min_training_mae}")
+            print("***********************************")
+            print(f"Average Validation MAE: {avg_validation_mae}")
+            print(f"Validation MAE Std Dev: {std_validation_mae}")
+            print(f"Validation MAE Max: {max_validation_mae}")
+            print(f"Validation MAE Min: {min_validation_mae}")
+            print("***********************************")
         else:
-            plugin.train(
-                x_train, 
-                y_train, 
-                epochs=epochs, 
-                batch_size=batch_size, 
-                threshold_error=threshold_error
-            )
+            print("\n***********************************")
+            print("No valid MAE statistics to display.")
+            print("***********************************")
 
-        # ----------------------------
-        # SAVE THE TRAINED MODEL
-        # ----------------------------
-        if config.get('save_model'):
-            plugin.save(config['save_model'])
-            print(f"Model saved to {config['save_model']}")
-
-        # ----------------------------
-        # PREDICT ON TRAINING DATA
-        # ----------------------------
-        predictions = plugin.predict(x_train)
-
-        # ----------------------------
-        # EVALUATE THE MODEL
-        # ----------------------------
-        mse = float(plugin.calculate_mse(y_train, predictions))
-        mae = float(plugin.calculate_mae(y_train, predictions))
-        print(f"Mean Squared Error: {mse}")
-        print(f"Mean Absolute Error: {mae}")
-
-        # ----------------------------
-        # CONVERT PREDICTIONS TO DATAFRAME
-        # ----------------------------
-        if predictions.ndim == 1 or predictions.shape[1] == 1:
-            predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
-        else:
-            num_steps = predictions.shape[1]
-            pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
-            predictions_df = pd.DataFrame(predictions, columns=pred_cols)
-
-        # ----------------------------
-        # SAVE PREDICTIONS TO CSV
-        # ----------------------------
-        output_filename = config['output_file']
-        write_csv(
-            output_filename, 
-            predictions_df, 
-            include_date=config.get('force_date', False), 
-            headers=config.get('headers', True)
-        )
-        print(f"Output written to {output_filename}")
-
-        # ----------------------------
-        # SAVE DEBUG INFO
-        # ----------------------------
         end_time = time.time()
         execution_time = end_time - start_time
-        debug_info = {
-            'execution_time': float(execution_time),
-            'mse': mse,
-            'mae': mae
-        }
-
-        if config.get('save_log'):
-            save_debug_info(debug_info, config['save_log'])
-            print(f"Debug info saved to {config['save_log']}")
-
-        if config.get('remote_log'):
-            remote_log(
-                config, 
-                debug_info, 
-                config['remote_log'], 
-                config.get('username'), 
-                config.get('password')
-            )
-            print(f"Debug info saved to {config['remote_log']}")
-
-        print(f"Execution time: {execution_time} seconds")
-
-        # ----------------------------
-        # VALIDATE THE MODEL (IF VALIDATION DATA PROVIDED)
-        # ----------------------------
-        if config.get('x_validation_file') and config.get('y_validation_file'):
-            print("Validating model...")
-
-            x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
-            y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
-
-            # Conditional Target Column Selection for CNN
-            if config['plugin'] == 'cnn' and target_column is not None:
-                if isinstance(y_val_df, pd.DataFrame) or isinstance(y_val_df, pd.Series):
-                    if isinstance(target_column, str):
-                        if target_column not in y_val_df.columns:
-                            raise ValueError(f"Target column '{target_column}' not found in y_val_df.")
-                        y_val_df = y_val_df[[target_column]]
-                    elif isinstance(target_column, int):
-                        if target_column < 0 or target_column >= y_val_df.shape[1]:
-                            raise ValueError(f"Target column index {target_column} is out of range in y_val_df.")
-                        y_val_df = y_val_df.iloc[:, [target_column]]
-                    else:
-                        raise ValueError("`target_column` must be either a string (column name) or an integer index.")
-                else:
-                    raise ValueError("y_val_df must be a pandas DataFrame or Series to select target columns by name or index.")
-
-            # Convert to numpy after selecting the target column
-            x_val = x_val_df.to_numpy().astype(np.float32)
-            y_val = y_val_df.to_numpy().astype(np.float32)
-
-            # Ensure x_val is at least 2D
-            if x_val.ndim == 1:
-                x_val = x_val.reshape(-1, 1)
-
-            # Limit the number of rows based on max_steps_test if specified
-            max_steps_test = config.get('max_steps_test')
-            if isinstance(max_steps_test, int) and max_steps_test > 0:
-                print(f"Limiting validation data to first {max_steps_test} rows.")
-                x_val = x_val[:max_steps_test]
-                y_val = y_val[:max_steps_test]
-                print(f"Validation data shape after limiting: X: {x_val.shape}, Y: {y_val.shape}")
-
-            # Apply sliding window for CNN
-            if config['plugin'] == 'cnn':
-                if window_size is None:
-                    raise ValueError("`window_size` must be specified in config for CNN plugin.")
-                x_val_windowed, y_val_windowed = create_sliding_windows(x_val, y_val, window_size)
-                print(f"Sliding windows created for validation: x_val_windowed shape: {x_val_windowed.shape}, y_val_windowed shape: {y_val_windowed.shape}")
-                x_val = x_val_windowed
-                y_val = y_val_windowed
-            elif config['plugin'] == 'transformer':
-                # Reshape for transformer
-                if x_val.ndim == 2:
-                    x_val = x_val.reshape((x_val.shape[0], x_val.shape[1], 1))
-                    print(f"Reshaped x_val for transformer: {x_val.shape}")
-            # No additional processing needed for other plugins
-
-            print(f"Validation data shape after adjustments: {x_val.shape}, {y_val.shape}")
-
-            # Predict on the validation data
-            validation_predictions = plugin.predict(x_val)
-            # Adjust predictions length if necessary
-            validation_predictions = validation_predictions[:len(y_val)]
-
-            # Calculate validation errors
-            validation_mse = float(plugin.calculate_mse(y_val, validation_predictions))
-            validation_mae = float(plugin.calculate_mae(y_val, validation_predictions))
-            print(f"Validation Mean Squared Error: {validation_mse}")
-            print(f"Validation Mean Absolute Error: {validation_mae}")
-
-            # ----------------------------
-            # PRINT TRAINING AND VALIDATION MAE WITH SEPARATORS
-            # ----------------------------
-            print("***************************")
-            print(f"Training MAE = {mae}")
-            print("***************************")
-            print(f"Validation MAE = {validation_mae}")
-            print("***************************")
-
-            # Convert validation predictions to DataFrame
-            if validation_predictions.ndim == 1 or validation_predictions.shape[1] == 1:
-                validation_predictions_df = pd.DataFrame(validation_predictions, columns=['Prediction'])
-            else:
-                val_num_steps = validation_predictions.shape[1]
-                val_pred_cols = [f'Prediction_{i+1}' for i in range(val_num_steps)]
-                validation_predictions_df = pd.DataFrame(validation_predictions, columns=val_pred_cols)
-
-            # (Optional) Save or further process validation_predictions_df as needed
-            # For example:
-            # write_csv("validation_predictions.csv", validation_predictions_df)
+        print(f"\nExecution time for all iterations: {execution_time} seconds")
 
 
 def load_and_evaluate_model(config, plugin):
@@ -519,6 +574,7 @@ def load_and_evaluate_model(config, plugin):
                 - 'load_model' (str): Path to the pre-trained model file.
                 - 'x_train_file' (str): Path to the training features CSV file.
                 - 'y_train_file' (str): Path to the training targets CSV file.
+                - 'target_column' (str or int): Column name or index to be used as the target.
                 - 'headers' (bool): Indicates if CSV files contain headers.
                 - 'force_date' (bool): Determines if date should be included in the output CSV.
                 - 'evaluate_file' (str): Path to save the evaluation predictions CSV file.
