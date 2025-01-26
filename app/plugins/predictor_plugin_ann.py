@@ -25,8 +25,7 @@ class Plugin:
         'learning_rate': 0.002,          # Learning rate for the Adam optimizer
         'activation': 'tanh',             # Activation function for Dense layers
         'patience': 10,                     # Patience parameter for Early Stopping
-        'l2_reg': 1e-4,                    # L2 regularization factor
-        'time_horizon': 6                  # Number of future steps to predict (should be set externally)
+        'l2_reg': 1e-4                    # L2 regularization factor
     }
 
     # Variables to include in debug information
@@ -216,11 +215,11 @@ class Plugin:
 
     def predict(self, data):
         """
-        Generates predictions using the trained ANN model.
-        
+        Generate predictions using the trained ANN model.
+
         Args:
-            data (numpy.ndarray): Input data for prediction of shape (N, features).
-        
+            data (numpy.ndarray): Input data for prediction.
+
         Returns:
             numpy.ndarray: Predicted values of shape (N, time_horizon).
         """
@@ -228,6 +227,7 @@ class Plugin:
         predictions = self.model.predict(data)
         print(f"Predicted data shape: {predictions.shape}")
         return predictions
+
 
     def calculate_mse(self, y_true, y_pred):
         """
