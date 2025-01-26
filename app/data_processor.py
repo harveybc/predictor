@@ -262,6 +262,9 @@ def run_prediction_pipeline(config, plugin):
                 x_val, y_val, window_size, time_horizon, stride=1
             )
 
+        print(f"Sliding windows created: x_train shape {x_train.shape}, y_train shape {y_train.shape}")
+
+
     # Ensure x_train is at least 2D for other plugins
     if x_train.ndim == 1:
         x_train = x_train.reshape(-1, 1)
@@ -385,7 +388,21 @@ def run_prediction_pipeline(config, plugin):
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
-    Updated to handle consistent windowing for training and prediction with stride logic.
+    Creates sliding windows for input features and targets with a specified stride.
+
+    Args:
+        x (numpy.ndarray): Input features of shape (N, features).
+        y (numpy.ndarray): Targets of shape (N,) or (N, 1).
+        window_size (int): Number of past steps to include in each window.
+        time_horizon (int): Number of future steps to predict.
+        stride (int): Step size between windows.
+        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
+
+    Returns:
+        tuple:
+            - x_windowed (numpy.ndarray): Shaped (samples, window_size, features).
+            - y_windowed (numpy.ndarray): Shaped (samples, time_horizon).
+            - date_time_windows (list): List of date times for each window (if provided).
     """
     if y.ndim == 2 and y.shape[1] == 1:
         y = y.flatten()
@@ -404,7 +421,7 @@ def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times
         if date_times is not None:
             date_time_windows.append(date_times[i + window_size + time_horizon - 1])
 
-    return np.array(x_windowed), np.array(y_windowed), date_time_windows
+    return np.array(x_windowed), np.array(y_windowed).reshape(-1, time_horizon), date_time_windows
 
 
 def load_and_evaluate_model(config, plugin):
