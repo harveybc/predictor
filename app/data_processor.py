@@ -180,6 +180,7 @@ def run_prediction_pipeline(config, plugin):
     Ensures row-limiting and displays both Training and Validation MAE and R² with separators.
     Implements multiple iterations and aggregates MAE and R² statistics.
     Saves the aggregated statistics to a CSV file specified by config['results_file'].
+    Adds DATE_TIME column to the predictions CSV.
 
     Args:
         config (dict): Configuration dictionary containing parameters for the pipeline.
@@ -351,9 +352,13 @@ def run_prediction_pipeline(config, plugin):
                         if time_horizon > 1:
                             print("Applying multi-step slicing to validation targets...")
                             Y_val_list = []
+                            date_time_val_list = []
                             for i in range(len(y_val_np) - time_horizon + 1):
                                 row_values = [y_val_np[i + j][0] for j in range(time_horizon)]
                                 Y_val_list.append(row_values)
+                                # Assign DATE_TIME corresponding to the last step in the time horizon
+                                date_time = pd.to_datetime(x_val_df.index[i + time_horizon - 1])
+                                date_time_val_list.append(date_time)
                             if not Y_val_list:
                                 raise ValueError(
                                     "After creating multi-step slices, no validation samples remain. "
@@ -362,6 +367,9 @@ def run_prediction_pipeline(config, plugin):
                             y_val_np = np.array(Y_val_list)
                             x_val_np = x_val_np[:len(y_val_np)]  # Adjust x_val_np accordingly
                             print(f"Validation data shape after multi-step slicing: X: {x_val_np.shape}, Y: {y_val_np.shape}")
+
+                            # Create a DataFrame for DATE_TIME
+                            date_time_val_df = pd.DataFrame({'DATE_TIME': date_time_val_list})
 
                 # Train the model with or without validation data
                 if config['plugin'] == 'cnn' and x_val_np is not None and y_val_np is not None:
@@ -414,7 +422,7 @@ def run_prediction_pipeline(config, plugin):
                 training_r2_list.append(r2)
 
                 # ----------------------------
-                # CONVERT PREDICTIONS TO DATAFRAME
+                # CONVERT PREDICTIONS TO DATAFRAME WITH DATE_TIME
                 # ----------------------------
                 if predictions.ndim == 1 or predictions.shape[1] == 1:
                     predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
@@ -423,17 +431,28 @@ def run_prediction_pipeline(config, plugin):
                     pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
                     predictions_df = pd.DataFrame(predictions, columns=pred_cols)
 
+                # Add DATE_TIME column from y_train_data
+                predictions_df['DATE_TIME'] = y_train_data['DATE_TIME']
+
+                # Rearrange columns to have DATE_TIME first
+                cols = ['DATE_TIME'] + [col for col in predictions_df.columns if col != 'DATE_TIME']
+                predictions_df = predictions_df[cols]
+
                 # ----------------------------
                 # SAVE PREDICTIONS TO CSV
                 # ----------------------------
                 output_filename = config['output_file']
-                write_csv(
-                    output_filename, 
-                    predictions_df, 
-                    include_date=config.get('force_date', False), 
-                    headers=config.get('headers', True)
-                )
-                print(f"Output written to {output_filename}")
+                try:
+                    write_csv(
+                        file_path=output_filename, 
+                        data=predictions_df, 
+                        include_date=config.get('force_date', False), 
+                        headers=config.get('headers', True)
+                    )
+                    print(f"Output written to {output_filename}")
+                except Exception as e:
+                    print(f"Failed to save predictions to {output_filename}: {e}")
+                    raise e  # Re-raise to handle in the outer try-except
 
                 # ----------------------------
                 # SAVE DEBUG INFO
@@ -490,6 +509,46 @@ def run_prediction_pipeline(config, plugin):
                     # Append Validation MAE and R² to lists
                     validation_mae_list.append(validation_mae)
                     validation_r2_list.append(validation_r2)
+
+                    # ----------------------------
+                    # CONVERT VALIDATION PREDICTIONS TO DATAFRAME WITH DATE_TIME
+                    # ----------------------------
+                    if validation_predictions.ndim == 1 or validation_predictions.shape[1] == 1:
+                        validation_predictions_df = pd.DataFrame(validation_predictions, columns=['Prediction'])
+                    else:
+                        num_steps_val = validation_predictions.shape[1]
+                        pred_cols_val = [f'Prediction_{i+1}' for i in range(num_steps_val)]
+                        validation_predictions_df = pd.DataFrame(validation_predictions, columns=pred_cols_val)
+
+                    # Add DATE_TIME column from y_val_np
+                    # Since y_val_np is a numpy array, ensure that DATE_TIME was captured during slicing
+                    # Assuming date_time_val_list was created during multi-step slicing
+                    if 'date_time_val_df' in locals():
+                        validation_predictions_df['DATE_TIME'] = date_time_val_df['DATE_TIME']
+                    else:
+                        # If DATE_TIME wasn't captured, skip adding it
+                        validation_predictions_df['DATE_TIME'] = np.nan  # Placeholder
+                        print("Warning: DATE_TIME for validation predictions not captured.")
+
+                    # Rearrange columns to have DATE_TIME first
+                    cols_val = ['DATE_TIME'] + [col for col in validation_predictions_df.columns if col != 'DATE_TIME']
+                    validation_predictions_df = validation_predictions_df[cols_val]
+
+                    # ----------------------------
+                    # SAVE VALIDATION PREDICTIONS TO CSV (Optional)
+                    # ----------------------------
+                    # If you wish to save validation predictions with DATE_TIME, uncomment the following lines:
+                    # validation_output_filename = config.get('validation_output_file', 'validation_predictions.csv')
+                    # try:
+                    #     write_csv(
+                    #         file_path=validation_output_filename, 
+                    #         data=validation_predictions_df, 
+                    #         include_date=config.get('force_date', False), 
+                    #         headers=config.get('headers', True)
+                    #     )
+                    #     print(f"Validation predictions written to {validation_output_filename}")
+                    # except Exception as e:
+                    #     print(f"Failed to save validation predictions to {validation_output_filename}: {e}")
 
                     # ----------------------------
                     # PRINT TRAINING AND VALIDATION MAE AND R² WITH SEPARATORS
@@ -579,7 +638,6 @@ def run_prediction_pipeline(config, plugin):
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"\nExecution time for all iterations: {execution_time} seconds")
-
 
 
 
