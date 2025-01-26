@@ -220,9 +220,9 @@ class Plugin:
         Returns:
             numpy.ndarray: Predicted values of shape (N, time_horizon).
         """
-        print(f"Predicting data with shape: {data.shape}")
+        #print(f"Predicting data with shape: {data.shape}")
         predictions = self.model.predict(data)
-        print(f"Predicted data shape: {predictions.shape}")
+        #print(f"Predicted data shape: {predictions.shape}")
         return predictions
 
 

@@ -190,10 +190,19 @@ def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times
 
 def run_prediction_pipeline(config, plugin):
     """
-    Runs the prediction pipeline with a universal approach for all plugins.
-    Predicts the next `time_horizon` ticks with a stride of `time_horizon`.
+    Runs the prediction pipeline with restored iteration logic and aggregated statistics.
+    Predicts the next `time_horizon` ticks with a stride of `time_horizon`, applicable for all plugins.
     """
     start_time = time.time()
+
+    iterations = config.get('iterations', 1)
+    print(f"Number of iterations: {iterations}")
+
+    # Lists to store MAE and R² values for each iteration
+    training_mae_list = []
+    training_r2_list = []
+    validation_mae_list = []
+    validation_r2_list = []
 
     print("Running process_data...")
     x_train, y_train = process_data(config)
@@ -226,43 +235,96 @@ def run_prediction_pipeline(config, plugin):
         # Set time_horizon in plugin parameters
         plugin.set_params(time_horizon=time_horizon)
 
-        # Build the model
-        plugin.build_model(input_shape=x_train.shape[1])
+        for iteration in range(1, iterations + 1):
+            print(f"\n=== Iteration {iteration}/{iterations} ===")
+            iteration_start_time = time.time()
 
-        # Train the model
-        plugin.train(
-            x_train, 
-            y_train, 
-            epochs=epochs, 
-            batch_size=batch_size, 
-            threshold_error=threshold_error
-        )
+            try:
+                # Build the model
+                plugin.build_model(input_shape=x_train.shape[1])
 
-        # Predict using the stride logic
-        predictions = []
-        for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
-            stride_input = x_train[i:i + time_horizon]
-            if stride_input.shape[0] < time_horizon:
-                break  # Skip incomplete strides
-            stride_pred = plugin.predict(stride_input)
-            predictions.append(stride_pred)
+                # Train the model
+                plugin.train(
+                    x_train,
+                    y_train,
+                    epochs=epochs,
+                    batch_size=batch_size,
+                    threshold_error=threshold_error,
+                )
 
-        # Concatenate predictions
-        predictions = np.vstack(predictions)
-        print(f"Concatenated predictions shape: {predictions.shape}")
+                # Predict using the stride logic
+                predictions = []
+                for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
+                    stride_input = x_train[i:i + time_horizon]
+                    if stride_input.shape[0] < time_horizon:
+                        break  # Skip incomplete strides
+                    stride_pred = plugin.predict(stride_input)
+                    predictions.append(stride_pred)
 
-        # Evaluate the model
-        mse = float(plugin.calculate_mse(y_train[:len(predictions)], predictions))
-        mae = float(plugin.calculate_mae(y_train[:len(predictions)], predictions))
-        print(f"Mean Squared Error: {mse}")
-        print(f"Mean Absolute Error: {mae}")
+                # Concatenate predictions
+                predictions = np.vstack(predictions)
+                print(f"Concatenated predictions shape: {predictions.shape}")
+
+                # Evaluate the model
+                mse = float(plugin.calculate_mse(y_train[:len(predictions)], predictions))
+                mae = float(plugin.calculate_mae(y_train[:len(predictions)], predictions))
+                r2 = float(r2_score(y_train[:len(predictions)], predictions))
+                print(f"Training Mean Squared Error: {mse}")
+                print(f"Training Mean Absolute Error: {mae}")
+                print(f"Training R² Score: {r2}")
+
+                # Append statistics to lists
+                training_mae_list.append(mae)
+                training_r2_list.append(r2)
+
+                iteration_end_time = time.time()
+                print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
+
+            except Exception as e:
+                print(f"Iteration {iteration} failed: {e}")
+                continue  # Proceed to the next iteration
+
+        # Aggregate statistics
+        if training_mae_list and training_r2_list:
+            avg_training_mae = np.mean(training_mae_list)
+            std_training_mae = np.std(training_mae_list)
+            avg_training_r2 = np.mean(training_r2_list)
+            std_training_r2 = np.std(training_r2_list)
+
+            print("\n=== Aggregated Statistics Across Iterations ===")
+            print(f"Average Training MAE: {avg_training_mae:.4f} ± {std_training_mae:.4f}")
+            print(f"Average Training R²: {avg_training_r2:.4f} ± {std_training_r2:.4f}")
 
         end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"Execution time: {execution_time} seconds")
+        print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
+
     else:
         print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
+
+
+def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
+    """
+    Updated to handle consistent windowing for training and prediction with stride logic.
+    """
+    if y.ndim == 2 and y.shape[1] == 1:
+        y = y.flatten()
+    elif y.ndim > 2:
+        raise ValueError("y should be a 1D or 2D array with a single column.")
+
+    x_windowed = []
+    y_windowed = []
+    date_time_windows = []
+
+    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
+        x_window = x[i:i + window_size]
+        y_window = y[i + window_size:i + window_size + time_horizon]
+        x_windowed.append(x_window)
+        y_windowed.append(y_window)
+        if date_times is not None:
+            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
+
+    return np.array(x_windowed), np.array(y_windowed), date_time_windows
 
 
 def load_and_evaluate_model(config, plugin):
