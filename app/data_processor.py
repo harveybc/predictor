@@ -266,7 +266,7 @@ def run_prediction_pipeline(config, plugin):
                     predictions.append(stride_pred)
 
                 # Restore TensorFlow logging level
-                tf.get_logger().setLevel(logging.INFO)
+                pass
                 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 
                 # Concatenate predictions
