@@ -67,6 +67,9 @@ class Plugin:
         Parameters:
             input_shape (tuple): Shape of the input data (window_size, features).
         """
+        if len(input_shape) != 2:
+            raise ValueError(f"Invalid input_shape {input_shape}. CNN requires input with shape (window_size, features).")
+
         self.params['input_shape'] = input_shape
         print(f"CNN input_shape: {input_shape}")
 
@@ -78,7 +81,7 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
-        # Output layer size is dynamically set based on the time_horizon parameter
+        # Output layer size is time_horizon
         layers.append(self.params['time_horizon'])
 
         # Debugging message
@@ -109,7 +112,7 @@ class Plugin:
         # Output Dense layer with 'linear' activation for regression
         model_output = Dense(
             layers[-1], 
-            activation='linear',  # Use 'linear' activation for regression tasks
+            activation='linear', 
             kernel_initializer=GlorotUniform(), 
             kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
             name="model_output"
@@ -131,7 +134,7 @@ class Plugin:
         self.model.compile(
             optimizer=adam_optimizer, 
             loss=Huber(), 
-            metrics=['mse', 'mae'], 
+            metrics=['mse','mae'], 
             run_eagerly=False  # Set to False for better performance unless debugging
         )
 
@@ -144,7 +147,7 @@ class Plugin:
         Train the CNN model with Early Stopping to prevent overfitting.
 
         Parameters:
-            x_train (numpy.ndarray): Training input data.
+            x_train (numpy.ndarray): Training input data with shape (samples, window_size, features).
             y_train (numpy.ndarray): Training target data.
             epochs (int): Number of training epochs.
             batch_size (int): Training batch size.
@@ -152,6 +155,9 @@ class Plugin:
             x_val (numpy.ndarray, optional): Validation input data.
             y_val (numpy.ndarray, optional): Validation target data.
         """
+        if x_train.ndim != 3:
+            raise ValueError(f"x_train must be 3D with shape (samples, window_size, features). Found: {x_train.shape}")
+
         callbacks = []
 
         # Early Stopping based on loss or validation loss
@@ -194,6 +200,7 @@ class Plugin:
         # Check if the final loss exceeds the threshold_error
         if mse > threshold_error:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
+
 
 
     def predict(self, data):
