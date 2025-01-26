@@ -119,9 +119,6 @@ class Plugin:
                     kernel_regularizer=l2(l2_reg),
                     name=f"Dense_{size}"
                 )(x)
-                # Optionally, add Batch Normalization and Dropout for further regularization
-                # x = BatchNormalization()(x)
-                x = Dropout(0.2)(x)
         
         # Add output Dense layer with linear activation for regression
         model_output = Dense(
