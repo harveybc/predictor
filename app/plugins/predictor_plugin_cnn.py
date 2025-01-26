@@ -111,17 +111,17 @@ class Plugin:
         # Flatten the output from Conv layers
         x = Flatten(name="flatten")(x)
 
-        # Output Dense layer with 'tanh' activation
+        # Output Dense layer with 'linear' activation for regression
         model_output = Dense(
             layers[-1], 
-            activation='tanh', 
+            activation='linear',  # Changed from 'tanh' to 'linear' for regression tasks
             kernel_initializer=GlorotUniform(), 
             kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
             name="model_output"
         )(x)
 
-        # Add BatchNormalization to the output
-        model_output = BatchNormalization()(model_output)
+        # Removed BatchNormalization on the output layer
+        # If normalization is needed, consider adding it before the Flatten layer
 
         # Create the Model
         self.model = Model(inputs=inputs, outputs=model_output, name="cnn_model")
