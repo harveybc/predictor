@@ -253,12 +253,12 @@ def run_prediction_pipeline(config, plugin):
     # Handle CNN-specific sliding windows
     if config['plugin'] == 'cnn':
         print("Creating sliding windows for CNN...")
-        x_train, y_train = create_sliding_windows(
+        x_train, y_train, _ = create_sliding_windows(
             x_train, y_train, window_size, time_horizon, stride=1
         )
 
         if x_val is not None and y_val is not None:
-            x_val, y_val = create_sliding_windows(
+            x_val, y_val, _ = create_sliding_windows(
                 x_val, y_val, window_size, time_horizon, stride=1
             )
 
@@ -380,7 +380,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
 
 
 
