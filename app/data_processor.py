@@ -400,6 +400,16 @@ def run_prediction_pipeline(config, plugin):
                         x_val=x_val_np, 
                         y_val=y_val_np
                     )
+                elif x_val_np is not None and y_val_np is not None:
+                    plugin.train(
+                        x_train=x_train_np, 
+                        y_train=y_train_np, 
+                        epochs=epochs, 
+                        batch_size=batch_size, 
+                        threshold_error=threshold_error,
+                        x_val=x_val_np, 
+                        y_val=y_val_np
+                    )
                 else:
                     plugin.train(
                         x_train=x_train_np, 
