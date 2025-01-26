@@ -268,18 +268,18 @@ def run_prediction_pipeline(config, plugin):
                 threshold_error=threshold_error,
             )
 
-            print("Evaluating trained model on training and validation data. Please wait..")
+            print("Evaluating trained model on training and validation data. Please wait...")
+
             # Suppress TensorFlow/Keras logs during prediction
             with open(os.devnull, 'w') as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
                 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
                 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
-                # Predict training data in a single batch rather than using stride logic
+                # Predict training data
                 train_predictions = plugin.predict(x_train)
 
-                # Predict validation data (if available) in a single batch
-                if x_val is not None:
-                    val_predictions = plugin.predict(x_val)
+                # Predict validation data (if available)
+                val_predictions = plugin.predict(x_val) if x_val is not None else None
 
             # Restore TensorFlow logging level
             os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
@@ -306,20 +306,6 @@ def run_prediction_pipeline(config, plugin):
                 validation_mae_list.append(val_mae)
                 validation_r2_list.append(val_r2)
 
-            # Save predictions to CSV
-            output_file = config.get('output_file', f'iteration_{iteration}_predictions.csv')
-            train_predictions_df = pd.DataFrame(train_predictions, columns=[f'Prediction_{i+1}' for i in range(train_predictions.shape[1])])
-            train_predictions_df['DATE_TIME'] = range(len(train_predictions))  # Placeholder for DATE_TIME
-            train_predictions_df.to_csv(output_file, index=False)
-            print(f"Training predictions saved to {output_file}")
-
-            if x_val is not None:
-                val_output_file = config.get('validation_output_file', f'iteration_{iteration}_validation_predictions.csv')
-                val_predictions_df = pd.DataFrame(val_predictions, columns=[f'Prediction_{i+1}' for i in range(val_predictions.shape[1])])
-                val_predictions_df['DATE_TIME'] = range(len(val_predictions))  # Placeholder for DATE_TIME
-                val_predictions_df.to_csv(val_output_file, index=False)
-                print(f"Validation predictions saved to {val_output_file}")
-
             iteration_end_time = time.time()
             print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
@@ -328,25 +314,46 @@ def run_prediction_pipeline(config, plugin):
             continue  # Proceed to the next iteration
 
     # Aggregate statistics
-    if training_mae_list and training_r2_list:
-        avg_train_mae = np.mean(training_mae_list)
-        std_train_mae = np.std(training_mae_list)
-        avg_train_r2 = np.mean(training_r2_list)
-        std_train_r2 = np.std(training_r2_list)
+    results = {
+        'Metric': ['Training MAE', 'Training R²', 'Validation MAE', 'Validation R²'],
+        'Average': [
+            np.mean(training_mae_list),
+            np.mean(training_r2_list),
+            np.mean(validation_mae_list) if validation_mae_list else None,
+            np.mean(validation_r2_list) if validation_r2_list else None,
+        ],
+        'Std Dev': [
+            np.std(training_mae_list),
+            np.std(training_r2_list),
+            np.std(validation_mae_list) if validation_mae_list else None,
+            np.std(validation_r2_list) if validation_r2_list else None,
+        ],
+        'Max': [
+            np.max(training_mae_list),
+            np.max(training_r2_list),
+            np.max(validation_mae_list) if validation_mae_list else None,
+            np.max(validation_r2_list) if validation_r2_list else None,
+        ],
+        'Min': [
+            np.min(training_mae_list),
+            np.min(training_r2_list),
+            np.min(validation_mae_list) if validation_mae_list else None,
+            np.min(validation_r2_list) if validation_r2_list else None,
+        ],
+    }
 
-        print("\n=== Aggregated Training Statistics ===")
-        print(f"Average Training MAE: {avg_train_mae:.4f} ± {std_train_mae:.4f}")
-        print(f"Average Training R²: {avg_train_r2:.4f} ± {std_train_r2:.4f}")
+    # Save results to CSV
+    results_file = config.get('results_file', 'results.csv')
+    results_df = pd.DataFrame(results)
+    results_df.to_csv(results_file, index=False)
+    print(f"Results saved to {results_file}")
 
-    if validation_mae_list and validation_r2_list:
-        avg_val_mae = np.mean(validation_mae_list)
-        std_val_mae = np.std(validation_mae_list)
-        avg_val_r2 = np.mean(validation_r2_list)
-        std_val_r2 = np.std(validation_r2_list)
-
-        print("\n=== Aggregated Validation Statistics ===")
-        print(f"Average Validation MAE: {avg_val_mae:.4f} ± {std_val_mae:.4f}")
-        print(f"Average Validation R²: {avg_val_r2:.4f} ± {std_val_r2:.4f}")
+    # Save final validation predictions (if available)
+    if val_predictions is not None:
+        final_val_file = config.get('output_file', 'validation_predictions.csv')
+        val_predictions_df = pd.DataFrame(val_predictions, columns=[f'Prediction_{i+1}' for i in range(val_predictions.shape[1])])
+        val_predictions_df.to_csv(final_val_file, index=False)
+        print(f"Final validation predictions saved to {final_val_file}")
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
