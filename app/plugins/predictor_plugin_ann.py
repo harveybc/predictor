@@ -22,10 +22,10 @@ class Plugin:
         'epochs': 200,                    # Total number of training epochs
         'batch_size': 128,                # Number of samples per gradient update
         'intermediate_layers': 3,         # Number of hidden Dense layers
-        'initial_layer_size': 64,         # Number of neurons in the first Dense layer
+        'initial_layer_size': 128,         # Number of neurons in the first Dense layer
         'layer_size_divisor': 2,          # Factor to reduce neurons in subsequent layers
         'learning_rate': 0.002,          # Learning rate for the Adam optimizer
-        'activation': 'tanh',             # Activation function for Dense layers
+        'activation': 'relu',             # Activation function for Dense layers
         'patience': 10,                     # Patience parameter for Early Stopping
         'l2_reg': 1e-4                    # L2 regularization factor
     }
@@ -113,7 +113,7 @@ class Plugin:
                 x = Dense(
                     units=size,
                     activation=self.params['activation'],
-                    kernel_initializer=GlorotUniform(),
+                    kernel_initializer=HeNormal(),
                     kernel_regularizer=l2(l2_reg),
                     name=f"Dense_{size}"
                 )(x)
