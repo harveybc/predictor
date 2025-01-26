@@ -252,6 +252,9 @@ def run_prediction_pipeline(config, plugin):
                     threshold_error=threshold_error,
                 )
 
+                # Suppress TensorFlow logging
+                tf.get_logger().setLevel('ERROR')
+
                 # Predict using the stride logic
                 predictions = []
                 for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
@@ -260,6 +263,9 @@ def run_prediction_pipeline(config, plugin):
                         break  # Skip incomplete strides
                     stride_pred = plugin.predict(stride_input)
                     predictions.append(stride_pred)
+
+                # Restore TensorFlow logging level
+                tf.get_logger().setLevel('INFO')
 
                 # Concatenate predictions
                 predictions = np.vstack(predictions)
