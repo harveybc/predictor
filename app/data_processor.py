@@ -268,31 +268,18 @@ def run_prediction_pipeline(config, plugin):
                 threshold_error=threshold_error,
             )
 
+            print("Evaluating trained model on training and validation data. Please wait..")
             # Suppress TensorFlow/Keras logs during prediction
             with open(os.devnull, 'w') as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
                 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
                 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
-                # Predict training data with stride logic
-                train_predictions = []
-                for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
-                    stride_input = x_train[i:i + time_horizon]
-                    if stride_input.shape[0] < time_horizon:
-                        break  # Skip incomplete strides
-                    stride_pred = plugin.predict(stride_input)
-                    train_predictions.append(stride_pred)
-                train_predictions = np.vstack(train_predictions)
+                # Predict training data in a single batch rather than using stride logic
+                train_predictions = plugin.predict(x_train)
 
-                # Predict validation data (if available)
+                # Predict validation data (if available) in a single batch
                 if x_val is not None:
-                    val_predictions = []
-                    for i in range(0, len(x_val) - time_horizon + 1, time_horizon):
-                        stride_input = x_val[i:i + time_horizon]
-                        if stride_input.shape[0] < time_horizon:
-                            break  # Skip incomplete strides
-                        stride_pred = plugin.predict(stride_input)
-                        val_predictions.append(stride_pred)
-                    val_predictions = np.vstack(val_predictions)
+                    val_predictions = plugin.predict(x_val)
 
             # Restore TensorFlow logging level
             os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'

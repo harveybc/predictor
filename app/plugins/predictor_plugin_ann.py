@@ -294,7 +294,7 @@ class Plugin:
         
         # Calculate Mean Absolute Error
         mae = np.mean(np.abs(y_true_flat - y_pred_flat))
-        print(f"Calculated MAE: {mae}")
+        #print(f"Calculated MAE: {mae}")
         return mae
 
     def save(self, file_path):
