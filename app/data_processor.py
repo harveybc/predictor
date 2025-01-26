@@ -8,7 +8,6 @@ import sys
 from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
 
-
 def process_data(config):
     """
     Processes training data by loading, aligning, and preparing it for model training.
@@ -150,7 +149,6 @@ def process_data(config):
     return x_train_data, y_train_data
 
 
-
 def create_sliding_windows(x, y, window_size, step=1):
     """
     Creates sliding windows from the dataset.
@@ -172,10 +170,10 @@ def create_sliding_windows(x, y, window_size, step=1):
     return np.array(x_windows), np.array(y_windows)
 
 
-
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline with conditional data reshaping for different plugins.
+    Ensures row-limiting and displays both Training and Validation MAE with separators.
     """
     start_time = time.time()
 
@@ -356,16 +354,14 @@ def run_prediction_pipeline(config, plugin):
         # PREDICT ON TRAINING DATA
         # ----------------------------
         predictions = plugin.predict(x_train)
-        
+
         # ----------------------------
         # EVALUATE THE MODEL
         # ----------------------------
         mse = float(plugin.calculate_mse(y_train, predictions))
         mae = float(plugin.calculate_mae(y_train, predictions))
-        
-        # Initialize validation metrics
-        validation_mse = None
-        validation_mae = None
+        print(f"Mean Squared Error: {mse}")
+        print(f"Mean Absolute Error: {mae}")
 
         # ----------------------------
         # CONVERT PREDICTIONS TO DATAFRAME
@@ -528,7 +524,7 @@ def load_and_evaluate_model(config, plugin):
                 - 'evaluate_file' (str): Path to save the evaluation predictions CSV file.
                 - 'max_steps_train' (int, optional): Maximum number of rows to read for training data.
 
-        plugin (tf.keras.Model): The machine learning model plugin to be used for evaluation.
+        plugin (Plugin): The ANN predictor plugin to be used for evaluation.
 
     Raises:
         ValueError: If required configuration parameters are missing or invalid.
@@ -546,8 +542,8 @@ def load_and_evaluate_model(config, plugin):
     # Load and process training data with row limit
     print("Loading and processing training data for evaluation...")
     try:
-        x_train, _ = process_data(config)
-        print(f"Processed training data: X shape: {x_train.shape}")
+        x_train, y_train = process_data(config)
+        print(f"Processed training data: X shape: {x_train.shape}, Y shape: {y_train.shape}")
     except Exception as e:
         print(f"Failed to process training data: {e}")
         sys.exit(1)
