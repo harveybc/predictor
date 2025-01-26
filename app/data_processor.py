@@ -338,7 +338,23 @@ def run_prediction_pipeline(config, plugin):
                         if x_val_np.ndim == 2:
                             x_val_np = x_val_np.reshape((x_val_np.shape[0], x_val_np.shape[1], 1))
                             print(f"Reshaped x_val for transformer: {x_val_np.shape}")
-                    # No additional processing needed for other plugins
+                    else:
+                        # **New Addition:** Multi-step slicing for non-CNN plugins
+                        # Ensure y_val has the same multi-step horizons as y_train
+                        if time_horizon > 1:
+                            print("Applying multi-step slicing to validation targets...")
+                            Y_val_list = []
+                            for i in range(len(y_val_np) - time_horizon + 1):
+                                row_values = [y_val_np[i + j][0] for j in range(time_horizon)]
+                                Y_val_list.append(row_values)
+                            if not Y_val_list:
+                                raise ValueError(
+                                    "After creating multi-step slices, no validation samples remain. "
+                                    "Check that your validation data is sufficient for the given time_horizon."
+                                )
+                            y_val_np = np.array(Y_val_list)
+                            x_val_np = x_val_np[:len(y_val_np)]  # Adjust x_val_np accordingly
+                            print(f"Validation data shape after multi-step slicing: X: {x_val_np.shape}, Y: {y_val_np.shape}")
 
                 # Train the model with or without validation data
                 if config['plugin'] == 'cnn' and x_val_np is not None and y_val_np is not None:
@@ -439,59 +455,6 @@ def run_prediction_pipeline(config, plugin):
                 if config.get('x_validation_file') and config.get('y_validation_file'):
                     print("Validating model...")
 
-                    # Reload validation data to ensure consistency
-                    x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
-                    y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
-
-                    # Conditional Target Column Selection for CNN
-                    if config['plugin'] == 'cnn' and target_column is not None:
-                        if isinstance(y_val_df, pd.DataFrame) or isinstance(y_val_df, pd.Series):
-                            if isinstance(target_column, str):
-                                if target_column not in y_val_df.columns:
-                                    raise ValueError(f"Target column '{target_column}' not found in y_val_df.")
-                                y_val_df = y_val_df[[target_column]]
-                            elif isinstance(target_column, int):
-                                if target_column < 0 or target_column >= y_val_df.shape[1]:
-                                    raise ValueError(f"Target column index {target_column} is out of range in y_val_df.")
-                                y_val_df = y_val_df.iloc[:, [target_column]]
-                            else:
-                                raise ValueError("`target_column` must be either a string (column name) or an integer index.")
-                        else:
-                            raise ValueError("y_val_df must be a pandas DataFrame or Series to select target columns by name or index.")
-
-                    # Convert to numpy after selecting the target column
-                    x_val_np = x_val_df.to_numpy().astype(np.float32)
-                    y_val_np = y_val_df.to_numpy().astype(np.float32)
-
-                    # Ensure x_val is at least 2D
-                    if x_val_np.ndim == 1:
-                        x_val_np = x_val_np.reshape(-1, 1)
-
-                    # Limit the number of rows based on max_steps_test if specified
-                    max_steps_test = config.get('max_steps_test')
-                    if isinstance(max_steps_test, int) and max_steps_test > 0:
-                        print(f"Limiting validation data to first {max_steps_test} rows.")
-                        x_val_np = x_val_np[:max_steps_test]
-                        y_val_np = y_val_np[:max_steps_test]
-                        print(f"Validation data shape after limiting: X: {x_val_np.shape}, Y: {y_val_np.shape}")
-
-                    # Apply sliding window for CNN
-                    if config['plugin'] == 'cnn':
-                        if window_size is None:
-                            raise ValueError("`window_size` must be specified in config for CNN plugin.")
-                        x_val_windowed, y_val_windowed = create_sliding_windows(x_val_np, y_val_np, window_size)
-                        print(f"Sliding windows created for validation: x_val_windowed shape: {x_val_windowed.shape}, y_val_windowed shape: {y_val_windowed.shape}")
-                        x_val_np = x_val_windowed
-                        y_val_np = y_val_windowed
-                    elif config['plugin'] == 'transformer':
-                        # Reshape for transformer
-                        if x_val_np.ndim == 2:
-                            x_val_np = x_val_np.reshape((x_val_np.shape[0], x_val_np.shape[1], 1))
-                            print(f"Reshaped x_val for transformer: {x_val_np.shape}")
-                    # No additional processing needed for other plugins
-
-                    print(f"Validation data shape after adjustments: {x_val_np.shape}, {y_val_np.shape}")
-
                     # Predict on the validation data
                     validation_predictions = plugin.predict(x_val_np)
                     # Adjust predictions length if necessary
@@ -556,6 +519,7 @@ def run_prediction_pipeline(config, plugin):
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"\nExecution time for all iterations: {execution_time} seconds")
+
 
 
 def load_and_evaluate_model(config, plugin):
@@ -634,3 +598,25 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save predictions to {evaluate_filename}: {e}")
         sys.exit(1)
+
+
+def create_multi_step_targets(y, time_horizon):
+    """
+    Transforms the target data into multi-step targets based on the specified time horizon.
+    
+    Args:
+        y (numpy.ndarray): Original target data of shape (N,).
+        time_horizon (int): Number of future steps to predict.
+    
+    Returns:
+        numpy.ndarray: Transformed target data of shape (N - time_horizon + 1, time_horizon).
+    """
+    Y_list = []
+    for i in range(len(y) - time_horizon + 1):
+        row = y[i:i + time_horizon].flatten()
+        Y_list.append(row)
+    return np.array(Y_list)
+
+
+
+
