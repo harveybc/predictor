@@ -9,6 +9,7 @@ from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
 import logging
 from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
+import logging
 
 
 def process_data(config):
@@ -189,11 +190,14 @@ def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times
 
     return np.array(x_windowed), np.array(y_windowed), date_time_windows
 
+import logging
+
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline with restored iteration logic and aggregated statistics.
     Predicts the next `time_horizon` ticks with a stride of `time_horizon`, applicable for all plugins.
     """
+    import os
     start_time = time.time()
 
     iterations = config.get('iterations', 1)
@@ -202,8 +206,6 @@ def run_prediction_pipeline(config, plugin):
     # Lists to store MAE and R² values for each iteration
     training_mae_list = []
     training_r2_list = []
-    validation_mae_list = []
-    validation_r2_list = []
 
     print("Running process_data...")
     x_train, y_train = process_data(config)
@@ -252,8 +254,9 @@ def run_prediction_pipeline(config, plugin):
                     batch_size=batch_size,
                     threshold_error=threshold_error,
                 )
+
                 # Suppress TensorFlow logging
-                tf.get_logger().setLevel(logging.ERROR)
+                logging.getLogger("tensorflow").setLevel(logging.ERROR)
                 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
                 # Predict using the stride logic
@@ -266,8 +269,8 @@ def run_prediction_pipeline(config, plugin):
                     predictions.append(stride_pred)
 
                 # Restore TensorFlow logging level
-                pass
                 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
+                logging.getLogger("tensorflow").setLevel(logging.INFO)
 
                 # Concatenate predictions
                 predictions = np.vstack(predictions)
@@ -309,6 +312,7 @@ def run_prediction_pipeline(config, plugin):
     else:
         print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
+
 
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
