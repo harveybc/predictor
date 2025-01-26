@@ -261,7 +261,6 @@ def run_prediction_pipeline(config, plugin):
             x_val, y_val, _ = create_sliding_windows(
                 x_val, y_val, window_size, time_horizon, stride=1
             )
-
         print(f"Sliding windows created: x_train shape {x_train.shape}, y_train shape {y_train.shape}")
 
 
