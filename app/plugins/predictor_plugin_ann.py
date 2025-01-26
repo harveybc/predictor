@@ -186,7 +186,7 @@ class Plugin:
         
         # Set up EarlyStopping callback with patience=5
         early_stopping_monitor = EarlyStopping(
-            monitor='val_loss' if (x_val is not None and y_val is not None) else 'loss',  # Monitor validation loss if available
+            monitor= 'loss',  # Monitor validation loss if available
             patience=self.params['patience'],                                            # Number of epochs with no improvement
             restore_best_weights=True,                                                   # Restore model weights from the epoch with the best value
             verbose=1                                                                    # Verbosity mode
