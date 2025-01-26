@@ -121,7 +121,6 @@ class Plugin:
         )(x)
 
         # Removed BatchNormalization on the output layer
-        # If normalization is needed, consider adding it before the Flatten layer
 
         # Create the Model
         self.model = Model(inputs=inputs, outputs=model_output, name="cnn_model")
@@ -146,6 +145,7 @@ class Plugin:
         # Debugging messages to trace the model configuration
         print("CNN Model Summary:")
         self.model.summary()
+
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
@@ -295,6 +295,42 @@ class Plugin:
         """
         self.model = load_model(file_path)
         print(f"Predictor model loaded from {file_path}")
+
+    def calculate_r2(self, y_true, y_pred):
+        """
+        Calculates the R² (Coefficient of Determination) score between true and predicted values.
+
+        Args:
+            y_true (numpy.ndarray): True target values of shape (N, time_horizon).
+            y_pred (numpy.ndarray): Predicted target values of shape (N, time_horizon).
+
+        Returns:
+            float: Calculated R² score.
+
+        Raises:
+            ValueError: If the shapes of y_true and y_pred do not match.
+        """
+        print(f"Calculating R² for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
+
+        # Ensure both y_true and y_pred have the same shape
+        if y_true.shape != y_pred.shape:
+            raise ValueError(
+                f"Shape mismatch in calculate_r2: y_true={y_true.shape}, y_pred={y_pred.shape}"
+            )
+
+        # Calculate R² score for each sample and then average
+        ss_res = np.sum((y_true - y_pred) ** 2, axis=1)
+        ss_tot = np.sum((y_true - np.mean(y_true, axis=1, keepdims=True)) ** 2, axis=1)
+        r2_scores = 1 - (ss_res / ss_tot)
+
+        # Handle cases where ss_tot is zero
+        r2_scores = np.where(ss_tot == 0, 0, r2_scores)
+
+        # Calculate the average R² score
+        r2 = np.mean(r2_scores)
+        print(f"Calculated R²: {r2}")
+        return r2
+
 
 # Debugging usage example
 if __name__ == "__main__":

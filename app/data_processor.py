@@ -151,440 +151,170 @@ def process_data(config):
     return x_train_data, y_train_data
 
 
-def create_sliding_windows(x, y, window_size, date_times=None, step=1):
+def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
-    Creates sliding windows from the dataset along with corresponding DATE_TIME indices.
+    Creates sliding windows for input features and targets with a specified stride.
 
-    Parameters:
+    Args:
         x (numpy.ndarray): Input features of shape (N, features).
-        y (numpy.ndarray): Targets of shape (N, time_horizon).
-        window_size (int): Number of time steps in each window.
-        date_times (pd.DatetimeIndex, optional): Datetime indices corresponding to each sample.
-        step (int): Step size between windows.
+        y (numpy.ndarray): Targets of shape (N,) or (N, 1).
+        window_size (int): Number of past steps to include in each window.
+        time_horizon (int): Number of future steps to predict.
+        stride (int): Step size between windows.
+        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
 
     Returns:
-        Tuple of numpy.ndarrays and list: (x_windows, y_windows, date_time_windows)
+        tuple:
+            - x_windowed (numpy.ndarray): Shaped (samples, window_size, features).
+            - y_windowed (numpy.ndarray): Shaped (samples, time_horizon).
+            - date_time_windows (list): List of date times for each window (if provided).
     """
-    x_windows = []
-    y_windows = []
+    if y.ndim == 2 and y.shape[1] == 1:
+        y = y.flatten()
+    elif y.ndim > 2:
+        raise ValueError("y should be a 1D or 2D array with a single column.")
+
+    x_windowed = []
+    y_windowed = []
     date_time_windows = []
-    
-    for i in range(0, len(x) - window_size - y.shape[1] + 1, step):
-        x_windows.append(x[i:i + window_size])
-        y_windows.append(y[i + window_size:i + window_size + y.shape[1]].flatten())
+
+    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
+        x_window = x[i:i + window_size]
+        y_window = y[i + window_size:i + window_size + time_horizon]
+        x_windowed.append(x_window)
+        y_windowed.append(y_window)
         if date_times is not None:
-            # Assign the DATE_TIME corresponding to the last step in the y window
-            date_time_windows.append(date_times[i + window_size + y.shape[1] - 1])
-    
-    return np.array(x_windows), np.array(y_windows), date_time_windows
+            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
 
-
+    return np.array(x_windowed), np.array(y_windowed), date_time_windows
 
 def run_prediction_pipeline(config, plugin):
     """
-    Runs the prediction pipeline with conditional data reshaping for different plugins.
-    Ensures row-limiting and displays both Training and Validation MAE and R² with separators.
-    Implements multiple iterations and aggregates MAE and R² statistics.
-    Saves the aggregated statistics to a CSV file specified by config['results_file'].
-
-    Args:
-        config (dict): Configuration dictionary containing parameters for the pipeline.
-        plugin (Plugin): The ANN or CNN predictor plugin to be used for training and prediction.
+    Runs the prediction pipeline with a universal approach for all plugins.
+    Predicts the next `time_horizon` ticks with a stride of `time_horizon`.
     """
     start_time = time.time()
+    
+    print("Running process_data...")
+    x_train, y_train = process_data(config)
+    print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
+    
+    time_horizon = config['time_horizon']
+    batch_size = config['batch_size']
+    epochs = config['epochs']
+    threshold_error = config['threshold_error']
 
-    iterations = config.get('iterations', 1)
-    print(f"Number of iterations: {iterations}")
+    # Ensure x_train and y_train are DataFrame or Series
+    if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
+        # Convert to numpy for training
+        x_train = x_train.to_numpy().astype(np.float32)
+        y_train = y_train.to_numpy().astype(np.float32)
 
-    # Lists to store MAE and R² values for each iteration
-    training_mae_list = []
-    training_r2_list = []
-    validation_mae_list = []
-    validation_r2_list = []
+        # Ensure x_train is at least 2D
+        if x_train.ndim == 1:
+            x_train = x_train.reshape(-1, 1)
+        
+        # Debug messages
+        print(f"x_train shape: {x_train.shape}")
+        print(f"y_train shape: {y_train.shape}")
 
-    # Set 'time_horizon' in plugin params
-    time_horizon = config.get('time_horizon', 1)
-    plugin.set_params(time_horizon=time_horizon)
+        # Build the model
+        plugin.build_model(input_shape=x_train.shape[1])
 
-    # Determine plugin type; default to 'ann' if not specified
-    plugin_type = config.get('plugin', 'ann').lower()
-    if plugin_type not in ['ann', 'cnn']:
-        raise ValueError(f"Unsupported plugin type: '{plugin_type}'. Supported types are 'ann' and 'cnn'.")
+        # ----------------------------
+        # TRAIN THE MODEL
+        # ----------------------------
+        plugin.train(
+            x_train, 
+            y_train, 
+            epochs=epochs, 
+            batch_size=batch_size, 
+            threshold_error=threshold_error
+        )
 
-    for iteration in range(1, iterations + 1):
-        print(f"\n=== Iteration {iteration}/{iterations} ===")
-        iteration_start_time = time.time()
+        # ----------------------------
+        # SAVE THE TRAINED MODEL
+        # ----------------------------
+        if config.get('save_model'):
+            plugin.save(config['save_model'])
+            print(f"Model saved to {config['save_model']}")
 
-        try:
-            print("Running process_data...")
-            x_train, y_train = process_data(config)
-            print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
+        # ----------------------------
+        # PREDICT USING STRIDE LOGIC
+        # ----------------------------
+        print("Predicting data in strides of time_horizon...")
+        predictions = []
+        for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
+            stride_input = x_train[i:i + time_horizon]
+            if stride_input.shape[0] < time_horizon:
+                break  # Skip incomplete strides
+            stride_pred = plugin.predict(stride_input)
+            predictions.append(stride_pred)
 
-            batch_size = config['batch_size']
-            epochs = config['epochs']
-            threshold_error = config['threshold_error']
-            window_size = config.get('window_size', None)  # Required for CNN
-            target_column = config.get('target_column', None)  # Specify the target column
+        # Concatenate predictions
+        predictions = np.vstack(predictions)
+        print(f"Concatenated predictions shape: {predictions.shape}")
 
-            # Debugging: Print window_size
-            print(f"Configured window_size: {window_size}")
+        # ----------------------------
+        # EVALUATE THE MODEL
+        # ----------------------------
+        mse = float(plugin.calculate_mse(y_train[:len(predictions)], predictions))
+        mae = float(plugin.calculate_mae(y_train[:len(predictions)], predictions))
+        print(f"Mean Squared Error: {mse}")
+        print(f"Mean Absolute Error: {mae}")
 
-            # Convert to numpy for training
-            x_train_np = x_train.to_numpy().astype(np.float32)
-            y_train_np = y_train.to_numpy().astype(np.float32)
+        # ----------------------------
+        # CONVERT PREDICTIONS TO DATAFRAME
+        # ----------------------------
+        if predictions.ndim == 1 or predictions.shape[1] == 1:
+            predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
+        else:
+            num_steps = predictions.shape[1]
+            pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
+            predictions_df = pd.DataFrame(predictions, columns=pred_cols)
 
-            # Ensure x_train is at least 2D
-            if x_train_np.ndim == 1:
-                x_train_np = x_train_np.reshape(-1, 1)
+        # ----------------------------
+        # SAVE PREDICTIONS TO CSV
+        # ----------------------------
+        output_filename = config['output_file']
+        write_csv(
+            output_filename, 
+            predictions_df, 
+            include_date=config.get('force_date', False), 
+            headers=config.get('headers', True)
+        )
+        print(f"Output written to {output_filename}")
 
-            # Debug messages
-            print(f"x_train shape before processing: {x_train_np.shape}")
-            print(f"y_train shape before processing: {y_train_np.shape}")
-
-            if plugin_type == 'cnn':
-                # Ensure window_size is specified
-                if window_size is None:
-                    raise ValueError("`window_size` must be specified in config for CNN plugin.")
-
-                # Capture DATE_TIME from x_train if available
-                date_times_train = x_train.index if isinstance(x_train, pd.DataFrame) else None
-
-                # Create sliding windows
-                x_train_windowed, y_train_windowed, date_time_train_windows = create_sliding_windows(
-                    x_train_np, y_train_np, window_size, date_times=date_times_train
-                )
-                print(f"Sliding windows created: x_train_windowed shape: {x_train_windowed.shape}, y_train_windowed shape: {y_train_windowed.shape}")
-
-                # Update plugin's window_size parameter if necessary
-                plugin.set_params(window_size=window_size)
-
-                # Build model with windowed input_shape
-                plugin.build_model(input_shape=x_train_windowed.shape[1:])  # (window_size, features)
-
-                # Replace original x_train and y_train with windowed data
-                x_train_np = x_train_windowed
-                y_train_np = y_train_windowed
-
-            elif plugin_type == 'ann':
-                # ANN expects (samples, features)
-                input_shape = x_train_np.shape[1]  # Integer
-                print(f"ANN input_shape: {input_shape}")
-                plugin.build_model(input_shape=input_shape)
-
-            else:
-                # If additional plugins are added in the future
-                raise ValueError(f"Unsupported plugin type: '{plugin_type}'.")
-
-            # ----------------------------
-            # TRAIN THE MODEL
-            # ----------------------------
-            # Handle validation data if available
-            x_val_np = None
-            y_val_np = None
-            date_time_val_windows = []  # To store DATE_TIME for validation predictions
-            if config.get('x_validation_file') and config.get('y_validation_file'):
-                print("Preparing validation data...")
-                x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
-                y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
-
-                # Extract target column if specified
-                if target_column is not None:
-                    if isinstance(target_column, str):
-                        if target_column not in y_val_df.columns:
-                            raise ValueError(f"Target column '{target_column}' not found in y_val_df.")
-                        y_val_df = y_val_df[[target_column]]
-                    elif isinstance(target_column, int):
-                        if target_column < 0 or target_column >= y_val_df.shape[1]:
-                            raise ValueError(f"Target column index {target_column} is out of range in y_val_df.")
-                        y_val_df = y_val_df.iloc[:, [target_column]]
-                    else:
-                        raise ValueError("`target_column` must be either a string (column name) or an integer index.")
-
-                # Convert to numpy after selecting the target column
-                x_val_np = x_val_df.to_numpy().astype(np.float32)
-                y_val_np = y_val_df.to_numpy().astype(np.float32)
-
-                # Ensure x_val is at least 2D
-                if x_val_np.ndim == 1:
-                    x_val_np = x_val_np.reshape(-1, 1)
-
-                # Limit the number of rows based on max_steps_test if specified
-                max_steps_test = config.get('max_steps_test')
-                if isinstance(max_steps_test, int) and max_steps_test > 0:
-                    print(f"Limiting validation data to first {max_steps_test} rows.")
-                    x_val_np = x_val_np[:max_steps_test]
-                    y_val_np = y_val_np[:max_steps_test]
-                    print(f"Validation data shape after limiting: X: {x_val_np.shape}, Y: {y_val_np.shape}")
-
-                # Apply processing based on plugin type
-                if plugin_type == 'cnn':
-                    # Apply sliding windows
-                    if window_size is None:
-                        raise ValueError("`window_size` must be specified in config for CNN plugin.")
-
-                    date_times_val = x_val_df.index if isinstance(x_val_df, pd.DataFrame) else None
-                    x_val_windowed, y_val_windowed, date_time_val_windows = create_sliding_windows(
-                        x_val_np, y_val_np, window_size, date_times=date_times_val
-                    )
-                    print(f"Sliding windows created for validation: x_val_windowed shape: {x_val_windowed.shape}, y_val_windowed shape: {y_val_windowed.shape}")
-                    x_val_np = x_val_windowed
-                    y_val_np = y_val_windowed
-
-                elif plugin_type == 'ann':
-                    # ANN expects (samples, features), no additional processing
-                    pass
-
-                else:
-                    # If additional plugins are added in the future
-                    raise ValueError(f"Unsupported plugin type: '{plugin_type}'.")
-
-            # Train the model with or without validation data
-            if x_val_np is not None and y_val_np is not None:
-                plugin.train(
-                    x_train=x_train_np,
-                    y_train=y_train_np,
-                    epochs=epochs,
-                    batch_size=batch_size,
-                    threshold_error=threshold_error,
-                    x_val=x_val_np,
-                    y_val=y_val_np
-                )
-            else:
-                plugin.train(
-                    x_train=x_train_np,
-                    y_train=y_train_np,
-                    epochs=epochs,
-                    batch_size=batch_size,
-                    threshold_error=threshold_error
-                )
-
-            # ----------------------------
-            # SAVE THE TRAINED MODEL
-            # ----------------------------
-            if config.get('save_model'):
-                plugin.save(config['save_model'])
-                print(f"Model saved to {config['save_model']}")
-
-            # ----------------------------
-            # PREDICT ON TRAINING DATA
-            # ----------------------------
-            predictions = plugin.predict(x_train_np)
-
-            # ----------------------------
-            # EVALUATE THE MODEL
-            # ----------------------------
-            mse = float(plugin.calculate_mse(y_train_np, predictions))
-            mae = float(plugin.calculate_mae(y_train_np, predictions))
-            try:
-                r2 = float(plugin.calculate_r2(y_train_np, predictions))
-            except AttributeError:
-                # If the plugin does not have calculate_r2, use sklearn
-                r2 = float(r2_score(y_train_np, predictions))
-            print(f"Training Mean Squared Error: {mse}")
-            print(f"Training Mean Absolute Error: {mae}")
-            print(f"Training R² Score: {r2}")
-
-            # Append MAE and R² to lists
-            training_mae_list.append(mae)
-            training_r2_list.append(r2)
-
-            # ----------------------------
-            # CONVERT PREDICTIONS TO DATAFRAME
-            # ----------------------------
-            if predictions.ndim == 1 or predictions.shape[1] == 1:
-                predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
-            else:
-                num_steps = predictions.shape[1]
-                pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
-                predictions_df = pd.DataFrame(predictions, columns=pred_cols)
-
-            # ----------------------------
-            # SAVE PREDICTIONS TO CSV (Training Predictions Removed)
-            # ----------------------------
-            # Removed saving training predictions as per requirement to save validation predictions only
-
-            # ----------------------------
-            # SAVE DEBUG INFO
-            # ----------------------------
-            end_time_iteration = time.time()
-            execution_time_iteration = end_time_iteration - iteration_start_time
-            debug_info = {
-                'iteration': iteration,
-                'execution_time': float(execution_time_iteration),
-                'training_mse': mse,
-                'training_mae': mae,
-                'training_r2': r2
-            }
-
-            if config.get('save_log'):
-                save_debug_info(debug_info, config['save_log'])
-                print(f"Debug info saved to {config['save_log']}")
-
-            if config.get('remote_log'):
-                remote_log(
-                    config,
-                    debug_info,
-                    config['remote_log'],
-                    config.get('username'),
-                    config.get('password')
-                )
-                print(f"Debug info saved to {config['remote_log']}")
-
-            print(f"Iteration {iteration} execution time: {execution_time_iteration} seconds")
-
-            # ----------------------------
-            # VALIDATE THE MODEL (IF VALIDATION DATA PROVIDED)
-            # ----------------------------
-            if config.get('x_validation_file') and config.get('y_validation_file'):
-                print("Validating model...")
-
-                # Predict on the validation data
-                validation_predictions = plugin.predict(x_val_np)
-                # Adjust predictions length if necessary
-                validation_predictions = validation_predictions[:len(y_val_np)]
-
-                # Calculate validation errors
-                validation_mse = float(plugin.calculate_mse(y_val_np, validation_predictions))
-                validation_mae = float(plugin.calculate_mae(y_val_np, validation_predictions))
-                try:
-                    validation_r2 = float(plugin.calculate_r2(y_val_np, validation_predictions))
-                except AttributeError:
-                    # If the plugin does not have calculate_r2, use sklearn
-                    validation_r2 = float(r2_score(y_val_np, validation_predictions))
-                print(f"Validation Mean Squared Error: {validation_mse}")
-                print(f"Validation Mean Absolute Error: {validation_mae}")
-                print(f"Validation R² Score: {validation_r2}")
-
-                # Append Validation MAE and R² to lists
-                validation_mae_list.append(validation_mae)
-                validation_r2_list.append(validation_r2)
-
-                # ----------------------------
-                # CONVERT VALIDATION PREDICTIONS TO DATAFRAME WITH DATE_TIME
-                # ----------------------------
-                if validation_predictions.ndim == 1 or validation_predictions.shape[1] == 1:
-                    validation_predictions_df = pd.DataFrame(validation_predictions, columns=['Prediction'])
-                else:
-                    num_steps_val = validation_predictions.shape[1]
-                    pred_cols_val = [f'Prediction_{i+1}' for i in range(num_steps_val)]
-                    validation_predictions_df = pd.DataFrame(validation_predictions, columns=pred_cols_val)
-
-                # Add DATE_TIME column from date_time_val_windows
-                if date_time_val_windows:
-                    validation_predictions_df['DATE_TIME'] = date_time_val_windows
-                else:
-                    # If DATE_TIME wasn't captured, assign NaT
-                    validation_predictions_df['DATE_TIME'] = pd.NaT
-                    print("Warning: DATE_TIME for validation predictions not captured.")
-
-                # Rearrange columns to have DATE_TIME first
-                cols_val = ['DATE_TIME'] + [col for col in validation_predictions_df.columns if col != 'DATE_TIME']
-                validation_predictions_df = validation_predictions_df[cols_val]
-
-                # ----------------------------
-                # SAVE VALIDATION PREDICTIONS TO CSV
-                # ----------------------------
-                output_filename = config['output_file']
-                try:
-                    write_csv(
-                        file_path=output_filename,
-                        data=validation_predictions_df,
-                        include_date=False,  # DATE_TIME is already included
-                        headers=config.get('headers', True)
-                    )
-                    print(f"Validation predictions with DATE_TIME saved to {output_filename}")
-                except Exception as e:
-                    print(f"Failed to save validation predictions to {output_filename}: {e}")
-                    raise e  # Re-raise to handle in the outer try-except
-
-                # ----------------------------
-                # PRINT TRAINING AND VALIDATION MAE AND R² WITH SEPARATORS
-                # ----------------------------
-                print("***************************")
-                print(f"Training MAE = {mae}")
-                print(f"Training R² = {r2}")
-                print("***************************")
-                print(f"Validation MAE = {validation_mae}")
-                print(f"Validation R² = {validation_r2}")
-                print("***************************")
-
-        except Exception as e:
-            print(f"Iteration {iteration} failed: {e}")
-            continue  # Proceed to the next iteration
-
-    # After all iterations, compute aggregated MAE and R² statistics
-    if iterations > 0 and training_mae_list and validation_mae_list and training_r2_list and validation_r2_list:
-        training_mae_array = np.array(training_mae_list)
-        training_r2_array = np.array(training_r2_list)
-        validation_mae_array = np.array(validation_mae_list)
-        validation_r2_array = np.array(validation_r2_list)
-
-        avg_training_mae = np.mean(training_mae_array)
-        std_training_mae = np.std(training_mae_array)
-        max_training_mae = np.max(training_mae_array)
-        min_training_mae = np.min(training_mae_array)
-
-        avg_training_r2 = np.mean(training_r2_array)
-        std_training_r2 = np.std(training_r2_array)
-        max_training_r2 = np.max(training_r2_array)
-        min_training_r2 = np.min(training_r2_array)
-
-        avg_validation_mae = np.mean(validation_mae_array)
-        std_validation_mae = np.std(validation_mae_array)
-        max_validation_mae = np.max(validation_mae_array)
-        min_validation_mae = np.min(validation_mae_array)
-
-        avg_validation_r2 = np.mean(validation_r2_array)
-        std_validation_r2 = np.std(validation_r2_array)
-        max_validation_r2 = np.max(validation_r2_array)
-        min_validation_r2 = np.min(validation_r2_array)
-
-        # Print aggregated statistics with separators
-        print("\n***********************************")
-        print("Aggregated MAE and R² Statistics After All Iterations:")
-        print("***********************************")
-        print(f"Average Training MAE: {avg_training_mae}")
-        print(f"Training MAE Std Dev: {std_training_mae}")
-        print(f"Training MAE Max: {max_training_mae}")
-        print(f"Training MAE Min: {min_training_mae}")
-        print(f"Average Training R²: {avg_training_r2}")
-        print(f"Training R² Std Dev: {std_training_r2}")
-        print(f"Training R² Max: {max_training_r2}")
-        print(f"Training R² Min: {min_training_r2}")
-        print("***********************************")
-        print(f"Average Validation MAE: {avg_validation_mae}")
-        print(f"Validation MAE Std Dev: {std_validation_mae}")
-        print(f"Validation MAE Max: {max_validation_mae}")
-        print(f"Validation MAE Min: {min_validation_mae}")
-        print(f"Average Validation R²: {avg_validation_r2}")
-        print(f"Validation R² Std Dev: {std_validation_r2}")
-        print(f"Validation R² Max: {max_validation_r2}")
-        print(f"Validation R² Min: {min_validation_r2}")
-        print("***********************************")
-
-        # Save aggregated statistics to results_file in CSV format
-        results = {
-            'Metric': ['Training MAE', 'Training R²', 'Validation MAE', 'Validation R²'],
-            'Average': [avg_training_mae, avg_training_r2, avg_validation_mae, avg_validation_r2],
-            'Std Dev': [std_training_mae, std_training_r2, std_validation_mae, std_validation_r2],
-            'Max': [max_training_mae, max_training_r2, max_validation_mae, max_validation_r2],
-            'Min': [min_training_mae, min_training_r2, min_validation_mae, min_validation_r2]
+        # ----------------------------
+        # SAVE DEBUG INFO
+        # ----------------------------
+        end_time = time.time()
+        execution_time = end_time - start_time
+        debug_info = {
+            'execution_time': float(execution_time),
+            'mse': mse,
+            'mae': mae
         }
-        results_df = pd.DataFrame(results)
-        results_file = config.get('results_file', 'results.csv')
-        try:
-            results_df.to_csv(results_file, index=False)
-            print(f"Aggregated statistics saved to {results_file}")
-        except Exception as e:
-            print(f"Failed to save aggregated statistics to {results_file}: {e}")
-    else:
-        print("\n***********************************")
-        print("No valid MAE and R² statistics to display.")
-        print("***********************************")
 
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print(f"\nExecution time for all iterations: {execution_time} seconds")
+        if config.get('save_log'):
+            save_debug_info(debug_info, config['save_log'])
+            print(f"Debug info saved to {config['save_log']}")
+
+        if config.get('remote_log'):
+            remote_log(
+                config, 
+                debug_info, 
+                config['remote_log'], 
+                config.get('username'), 
+                config.get('password')
+            )
+            print(f"Debug info saved to {config['remote_log']}")
+
+        print(f"Execution time: {execution_time} seconds")
+
+    else:
+        print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
+        raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
 
 
 def load_and_evaluate_model(config, plugin):
@@ -682,19 +412,25 @@ def load_and_evaluate_model(config, plugin):
 def create_multi_step_targets(y, time_horizon):
     """
     Transforms the target data into multi-step targets based on the specified time horizon.
-    
+
     Args:
-        y (numpy.ndarray): Original target data of shape (N,).
+        y (numpy.ndarray): Original target data of shape (N,) or (N, 1).
         time_horizon (int): Number of future steps to predict.
-    
+
     Returns:
         numpy.ndarray: Transformed target data of shape (N - time_horizon + 1, time_horizon).
     """
+    if y.ndim == 2 and y.shape[1] == 1:
+        y = y.flatten()
+    elif y.ndim > 2:
+        raise ValueError("y should be a 1D or 2D array with a single column.")
+
     Y_list = []
     for i in range(len(y) - time_horizon + 1):
-        row = y[i:i + time_horizon].flatten()
+        row = y[i:i + time_horizon]
         Y_list.append(row)
     return np.array(Y_list)
+
 
 
 def create_multi_step_targets(y, time_horizon):
