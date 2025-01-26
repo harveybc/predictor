@@ -19,23 +19,49 @@ class Plugin:
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
         'learning_rate': 0.002,
-        'time_horizon': 6  # Added time_horizon parameter
+        'time_horizon': 6,  # Number of future steps to predict
+        'l2_reg': 1e-4,     # L2 regularization factor
+        'patience': 10      # Patience for Early Stopping
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers', 'initial_layer_size', 'time_horizon']
 
     def __init__(self):
+        """
+        Initializes the Plugin with default parameters and no model.
+        """
         self.params = self.plugin_params.copy()
         self.model = None
 
     def set_params(self, **kwargs):
+        """
+        Updates the plugin parameters with provided keyword arguments.
+        
+        Args:
+            **kwargs: Arbitrary keyword arguments to update plugin parameters.
+        """
         for key, value in kwargs.items():
-            self.params[key] = value
+            if key in self.params:
+                self.params[key] = value
+            else:
+                print(f"Warning: Parameter '{key}' is not recognized and will be ignored.")
 
     def get_debug_info(self):
+        """
+        Retrieves the current values of debug variables.
+        
+        Returns:
+            dict: Dictionary containing debug information.
+        """
         return {var: self.params[var] for var in self.plugin_debug_vars}
 
     def add_debug_info(self, debug_info):
+        """
+        Adds the plugin's debug information to an external debug_info dictionary.
+        
+        Args:
+            debug_info (dict): External dictionary to update with debug information.
+        """
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
@@ -63,10 +89,11 @@ class Plugin:
         # Debugging message
         print(f"CNN Layer sizes: {layers}")
 
-        # Correct Input layer: Use the input_shape directly without extra tuple
+        # Define the Input layer
         inputs = Input(shape=input_shape, name="model_input")
         x = inputs
 
+        # Add intermediate Conv1D and MaxPooling1D layers
         for idx, size in enumerate(layers[:-1]):
             if size > 1:
                 x = Conv1D(
@@ -78,12 +105,13 @@ class Plugin:
                     kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
                     name=f"conv1d_{idx+1}"
                 )(x)
-                #x = BatchNormalization(name=f"batch_norm_{idx+1}")(x)
-                # Dropout lines are removed as per your request
+                x = BatchNormalization(name=f"batch_norm_{idx+1}")(x)
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
 
+        # Flatten the output from Conv layers
         x = Flatten(name="flatten")(x)
-        # Dropout after Flatten is removed as per your request
+
+        # Output Dense layer with 'tanh' activation
         model_output = Dense(
             layers[-1], 
             activation='tanh', 
@@ -92,12 +120,13 @@ class Plugin:
             name="model_output"
         )(x)
 
-         # Add a batch normalization layer to the output
+        # Add BatchNormalization to the output
         model_output = BatchNormalization()(model_output)
 
-
+        # Create the Model
         self.model = Model(inputs=inputs, outputs=model_output, name="cnn_model")
 
+        # Define the Adam optimizer
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
             beta_1=0.9,
@@ -106,6 +135,7 @@ class Plugin:
             amsgrad=False
         )
 
+        # Compile the model with Huber loss and evaluation metrics
         self.model.compile(
             optimizer=adam_optimizer, 
             loss=Huber(), 
@@ -132,10 +162,11 @@ class Plugin:
         """
         callbacks = []
 
-        # Early Stopping based on validation loss if available
-        patience = self.params.get('patience', 10)  # default patience is 5 epochs
+        # Early Stopping based on loss or validation loss
+        patience = self.params.get('patience', 10)  # default patience is 10 epochs
+        monitor_metric = 'val_loss' if (x_val is not None and y_val is not None) else 'loss'
         early_stopping_monitor = EarlyStopping(
-            monitor= 'loss',
+            monitor=monitor_metric,
             patience=patience, 
             restore_best_weights=True,
             verbose=1
@@ -143,16 +174,32 @@ class Plugin:
         callbacks.append(early_stopping_monitor)
 
         print(f"Training CNN model with data shape: {x_train.shape}")
-        history = self.model.fit(
-            x_train, 
-            y_train, 
-            epochs=epochs, 
-            batch_size=batch_size, 
-            verbose=1, 
-            callbacks=callbacks
-        )
+        if x_val is not None and y_val is not None:
+            history = self.model.fit(
+                x_train, 
+                y_train, 
+                epochs=epochs, 
+                batch_size=batch_size, 
+                verbose=1, 
+                validation_data=(x_val, y_val),
+                callbacks=callbacks
+            )
+        else:
+            history = self.model.fit(
+                x_train, 
+                y_train, 
+                epochs=epochs, 
+                batch_size=batch_size, 
+                verbose=1, 
+                callbacks=callbacks
+            )
         print("Training completed.")
-        mse =  history.history['loss'][-1]
+
+        # Retrieve the final loss from the training history
+        mse = history.history['val_loss'][-1] if (x_val is not None and y_val is not None) else history.history['loss'][-1]
+        print(f"Final training loss (Huber): {mse}")
+
+        # Check if the final loss exceeds the threshold_error
         if mse > threshold_error:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
 
@@ -230,10 +277,22 @@ class Plugin:
 
 
     def save(self, file_path):
+        """
+        Saves the trained model to the specified file path.
+
+        Args:
+            file_path (str): Path to save the model.
+        """
         save_model(self.model, file_path)
         print(f"Predictor model saved to {file_path}")
 
     def load(self, file_path):
+        """
+        Loads a trained model from the specified file path.
+
+        Args:
+            file_path (str): Path to load the model from.
+        """
         self.model = load_model(file_path)
         print(f"Predictor model loaded from {file_path}")
 
