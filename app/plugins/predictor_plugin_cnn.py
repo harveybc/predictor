@@ -78,8 +78,8 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
-        # Output layer size is time_horizon
-        layers.append(self.params['time_horizon'])  # Output layer size
+        # Output layer size is dynamically set based on the time_horizon parameter
+        layers.append(self.params['time_horizon'])
 
         # Debugging message
         print(f"CNN Layer sizes: {layers}")
@@ -109,13 +109,11 @@ class Plugin:
         # Output Dense layer with 'linear' activation for regression
         model_output = Dense(
             layers[-1], 
-            activation='linear',  # Changed from 'tanh' to 'linear' for regression tasks
+            activation='linear',  # Use 'linear' activation for regression tasks
             kernel_initializer=GlorotUniform(), 
             kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
             name="model_output"
         )(x)
-
-        # Removed BatchNormalization on the output layer
 
         # Create the Model
         self.model = Model(inputs=inputs, outputs=model_output, name="cnn_model")
@@ -133,14 +131,13 @@ class Plugin:
         self.model.compile(
             optimizer=adam_optimizer, 
             loss=Huber(), 
-            metrics=['mse','mae'], 
+            metrics=['mse', 'mae'], 
             run_eagerly=False  # Set to False for better performance unless debugging
         )
 
         # Debugging messages to trace the model configuration
         print("CNN Model Summary:")
         self.model.summary()
-
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
@@ -197,6 +194,7 @@ class Plugin:
         # Check if the final loss exceeds the threshold_error
         if mse > threshold_error:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
+
 
     def predict(self, data):
         """
