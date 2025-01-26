@@ -198,8 +198,8 @@ import contextlib
 
 def run_prediction_pipeline(config, plugin):
     """
-    Runs the prediction pipeline with restored iteration logic and aggregated statistics.
-    Predicts the next `time_horizon` ticks with a stride of `time_horizon`, applicable for all plugins.
+    Runs the prediction pipeline with restored iteration logic, logging, and CSV outputs.
+    Predicts the next `time_horizon` ticks with a stride of `time_horizon` for all plugins.
     """
     start_time = time.time()
 
@@ -209,7 +209,10 @@ def run_prediction_pipeline(config, plugin):
     # Lists to store MAE and R² values for each iteration
     training_mae_list = []
     training_r2_list = []
+    validation_mae_list = []
+    validation_r2_list = []
 
+    # Process the training data
     print("Running process_data...")
     x_train, y_train = process_data(config)
     print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
@@ -225,97 +228,98 @@ def run_prediction_pipeline(config, plugin):
     epochs = config['epochs']
     threshold_error = config['threshold_error']
 
-    # Ensure x_train and y_train are DataFrame or Series
-    if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
-        # Convert to numpy for training
-        x_train = x_train.to_numpy().astype(np.float32)
-        y_train = y_train.to_numpy().astype(np.float32)
+    # Convert x_train and y_train to numpy arrays
+    x_train = x_train.to_numpy().astype(np.float32)
+    y_train = y_train.to_numpy().astype(np.float32)
 
-        # Ensure x_train is at least 2D
-        if x_train.ndim == 1:
-            x_train = x_train.reshape(-1, 1)
+    if x_train.ndim == 1:
+        x_train = x_train.reshape(-1, 1)
 
-        print(f"x_train shape: {x_train.shape}")
-        print(f"y_train shape: {y_train.shape}")
+    print(f"x_train shape: {x_train.shape}")
+    print(f"y_train shape: {y_train.shape}")
 
-        # Set time_horizon in plugin parameters
-        plugin.set_params(time_horizon=time_horizon)
+    # Set time_horizon in plugin parameters
+    plugin.set_params(time_horizon=time_horizon)
 
-        for iteration in range(1, iterations + 1):
-            print(f"\n=== Iteration {iteration}/{iterations} ===")
-            iteration_start_time = time.time()
+    for iteration in range(1, iterations + 1):
+        print(f"\n=== Iteration {iteration}/{iterations} ===")
+        iteration_start_time = time.time()
 
-            try:
-                # Build the model
-                plugin.build_model(input_shape=x_train.shape[1])
+        try:
+            # Build the model
+            plugin.build_model(input_shape=x_train.shape[1])
 
-                # Train the model
-                plugin.train(
-                    x_train,
-                    y_train,
-                    epochs=epochs,
-                    batch_size=batch_size,
-                    threshold_error=threshold_error,
-                )
+            # Train the model
+            plugin.train(
+                x_train,
+                y_train,
+                epochs=epochs,
+                batch_size=batch_size,
+                threshold_error=threshold_error,
+            )
 
-                # Suppress TensorFlow and Keras logging
-                with open(os.devnull, 'w') as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
-                    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-                    logging.getLogger("tensorflow").setLevel(logging.FATAL)
+            # Predict with stride logic
+            predictions = []
+            for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
+                stride_input = x_train[i:i + time_horizon]
+                if stride_input.shape[0] < time_horizon:
+                    break  # Skip incomplete strides
+                stride_pred = plugin.predict(stride_input)
+                predictions.append(stride_pred)
 
-                    # Predict using the stride logic
-                    predictions = []
-                    for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
-                        stride_input = x_train[i:i + time_horizon]
-                        if stride_input.shape[0] < time_horizon:
-                            break  # Skip incomplete strides
-                        stride_pred = plugin.predict(stride_input)
-                        predictions.append(stride_pred)
+            predictions = np.vstack(predictions)
+            print(f"Concatenated predictions shape: {predictions.shape}")
 
-                # Restore TensorFlow logging level
-                os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
-                logging.getLogger("tensorflow").setLevel(logging.INFO)
+            # Evaluate training metrics
+            mse = float(plugin.calculate_mse(y_train[:len(predictions)], predictions))
+            mae = float(plugin.calculate_mae(y_train[:len(predictions)], predictions))
+            r2 = float(r2_score(y_train[:len(predictions)], predictions))
+            print(f"Training Mean Squared Error: {mse}")
+            print(f"Training Mean Absolute Error: {mae}")
+            print(f"Training R² Score: {r2}")
 
-                # Concatenate predictions
-                predictions = np.vstack(predictions)
-                print(f"Concatenated predictions shape: {predictions.shape}")
+            # Save training metrics
+            training_mae_list.append(mae)
+            training_r2_list.append(r2)
 
-                # Evaluate the model
-                mse = float(plugin.calculate_mse(y_train[:len(predictions)], predictions))
-                mae = float(plugin.calculate_mae(y_train[:len(predictions)], predictions))
-                r2 = float(r2_score(y_train[:len(predictions)], predictions))
-                print(f"Training Mean Squared Error: {mse}")
-                print(f"Training Mean Absolute Error: {mae}")
-                print(f"Training R² Score: {r2}")
+            # Save predictions to CSV (if configured)
+            output_file = config.get('output_file', 'predictions.csv')
+            predictions_df = pd.DataFrame(predictions, columns=[f'Prediction_{i+1}' for i in range(predictions.shape[1])])
+            predictions_df['DATE_TIME'] = range(len(predictions))  # Placeholder for DATE_TIME
+            predictions_df.to_csv(output_file, index=False)
+            print(f"Predictions saved to {output_file}")
 
-                # Append statistics to lists
-                training_mae_list.append(mae)
-                training_r2_list.append(r2)
+            iteration_end_time = time.time()
+            print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
-                iteration_end_time = time.time()
-                print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
+        except Exception as e:
+            print(f"Iteration {iteration} failed: {e}")
+            continue  # Continue to the next iteration
 
-            except Exception as e:
-                print(f"Iteration {iteration} failed: {e}")
-                continue  # Proceed to the next iteration
+    # Aggregate statistics
+    if training_mae_list and training_r2_list:
+        avg_training_mae = np.mean(training_mae_list)
+        std_training_mae = np.std(training_mae_list)
+        avg_training_r2 = np.mean(training_r2_list)
+        std_training_r2 = np.std(training_r2_list)
 
-        # Aggregate statistics
-        if training_mae_list and training_r2_list:
-            avg_training_mae = np.mean(training_mae_list)
-            std_training_mae = np.std(training_mae_list)
-            avg_training_r2 = np.mean(training_r2_list)
-            std_training_r2 = np.std(training_r2_list)
+        print("\n=== Aggregated Statistics Across Iterations ===")
+        print(f"Average Training MAE: {avg_training_mae:.4f} ± {std_training_mae:.4f}")
+        print(f"Average Training R²: {avg_training_r2:.4f} ± {std_training_r2:.4f}")
 
-            print("\n=== Aggregated Statistics Across Iterations ===")
-            print(f"Average Training MAE: {avg_training_mae:.4f} ± {std_training_mae:.4f}")
-            print(f"Average Training R²: {avg_training_r2:.4f} ± {std_training_r2:.4f}")
+        # Save results to CSV (if configured)
+        results_file = config.get('results_file', 'results.csv')
+        results_data = {
+            'Metric': ['Training MAE', 'Training R²'],
+            'Average': [avg_training_mae, avg_training_r2],
+            'Std Dev': [std_training_mae, std_training_r2],
+        }
+        results_df = pd.DataFrame(results_data)
+        results_df.to_csv(results_file, index=False)
+        print(f"Results saved to {results_file}")
 
-        end_time = time.time()
-        print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
-    else:
-        print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
-        raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
+    end_time = time.time()
+    print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
 
 
 
