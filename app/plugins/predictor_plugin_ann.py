@@ -121,7 +121,7 @@ class Plugin:
         # Add output Dense layer with linear activation for regression
         model_output = Dense(
             units=layers[-1],
-            activation='linear',  # 'linear' activation for regression tasks
+            activation='tanh',  # 'linear' activation for regression tasks
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="model_output"
