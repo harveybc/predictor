@@ -194,12 +194,18 @@ def run_prediction_pipeline(config, plugin):
     Predicts the next `time_horizon` ticks with a stride of `time_horizon`.
     """
     start_time = time.time()
-    
+
     print("Running process_data...")
     x_train, y_train = process_data(config)
     print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
-    
-    time_horizon = config['time_horizon']
+
+    # Extract time_horizon from the config
+    time_horizon = config.get('time_horizon')
+    if time_horizon is None:
+        raise ValueError("`time_horizon` is not defined in the configuration.")
+
+    print(f"Time Horizon: {time_horizon}")
+
     batch_size = config['batch_size']
     epochs = config['epochs']
     threshold_error = config['threshold_error']
@@ -213,17 +219,17 @@ def run_prediction_pipeline(config, plugin):
         # Ensure x_train is at least 2D
         if x_train.ndim == 1:
             x_train = x_train.reshape(-1, 1)
-        
-        # Debug messages
+
         print(f"x_train shape: {x_train.shape}")
         print(f"y_train shape: {y_train.shape}")
+
+        # Set time_horizon in plugin parameters
+        plugin.set_params(time_horizon=time_horizon)
 
         # Build the model
         plugin.build_model(input_shape=x_train.shape[1])
 
-        # ----------------------------
-        # TRAIN THE MODEL
-        # ----------------------------
+        # Train the model
         plugin.train(
             x_train, 
             y_train, 
@@ -232,17 +238,7 @@ def run_prediction_pipeline(config, plugin):
             threshold_error=threshold_error
         )
 
-        # ----------------------------
-        # SAVE THE TRAINED MODEL
-        # ----------------------------
-        if config.get('save_model'):
-            plugin.save(config['save_model'])
-            print(f"Model saved to {config['save_model']}")
-
-        # ----------------------------
-        # PREDICT USING STRIDE LOGIC
-        # ----------------------------
-        print("Predicting data in strides of time_horizon...")
+        # Predict using the stride logic
         predictions = []
         for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
             stride_input = x_train[i:i + time_horizon]
@@ -255,63 +251,15 @@ def run_prediction_pipeline(config, plugin):
         predictions = np.vstack(predictions)
         print(f"Concatenated predictions shape: {predictions.shape}")
 
-        # ----------------------------
-        # EVALUATE THE MODEL
-        # ----------------------------
+        # Evaluate the model
         mse = float(plugin.calculate_mse(y_train[:len(predictions)], predictions))
         mae = float(plugin.calculate_mae(y_train[:len(predictions)], predictions))
         print(f"Mean Squared Error: {mse}")
         print(f"Mean Absolute Error: {mae}")
 
-        # ----------------------------
-        # CONVERT PREDICTIONS TO DATAFRAME
-        # ----------------------------
-        if predictions.ndim == 1 or predictions.shape[1] == 1:
-            predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
-        else:
-            num_steps = predictions.shape[1]
-            pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
-            predictions_df = pd.DataFrame(predictions, columns=pred_cols)
-
-        # ----------------------------
-        # SAVE PREDICTIONS TO CSV
-        # ----------------------------
-        output_filename = config['output_file']
-        write_csv(
-            output_filename, 
-            predictions_df, 
-            include_date=config.get('force_date', False), 
-            headers=config.get('headers', True)
-        )
-        print(f"Output written to {output_filename}")
-
-        # ----------------------------
-        # SAVE DEBUG INFO
-        # ----------------------------
         end_time = time.time()
         execution_time = end_time - start_time
-        debug_info = {
-            'execution_time': float(execution_time),
-            'mse': mse,
-            'mae': mae
-        }
-
-        if config.get('save_log'):
-            save_debug_info(debug_info, config['save_log'])
-            print(f"Debug info saved to {config['save_log']}")
-
-        if config.get('remote_log'):
-            remote_log(
-                config, 
-                debug_info, 
-                config['remote_log'], 
-                config.get('username'), 
-                config.get('password')
-            )
-            print(f"Debug info saved to {config['remote_log']}")
-
         print(f"Execution time: {execution_time} seconds")
-
     else:
         print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
         raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
