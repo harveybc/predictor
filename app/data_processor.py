@@ -179,6 +179,7 @@ def create_sliding_windows(x, y, window_size, date_times=None, step=1):
     return np.array(x_windows), np.array(y_windows), date_time_windows
 
 
+
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline with conditional data reshaping for different plugins.
@@ -201,6 +202,10 @@ def run_prediction_pipeline(config, plugin):
     validation_mae_list = []
     validation_r2_list = []
 
+    # Set 'time_horizon' in plugin params
+    time_horizon = config.get('time_horizon', 1)
+    plugin.set_params(time_horizon=time_horizon)
+
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
@@ -210,7 +215,6 @@ def run_prediction_pipeline(config, plugin):
             x_train, y_train = process_data(config)
             print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
 
-            time_horizon = config['time_horizon']
             input_offset = config['input_offset']
             batch_size = config['batch_size']
             epochs = config['epochs']
@@ -269,14 +273,17 @@ def run_prediction_pipeline(config, plugin):
                     if window_size is None:
                         raise ValueError("`window_size` must be specified in config for CNN plugin.")
 
+                    # Capture DATE_TIME from x_train if available
+                    date_times_train = x_train.index if isinstance(x_train, pd.DataFrame) else None
+
                     # Create sliding windows
-                    x_train_windowed, y_train_windowed, _ = create_sliding_windows(
-                        x_train_np, y_train_np, window_size, date_times=x_train.index if isinstance(x_train, pd.DataFrame) else None
+                    x_train_windowed, y_train_windowed, date_time_train_windows = create_sliding_windows(
+                        x_train_np, y_train_np, window_size, date_times=date_times_train
                     )
                     print(f"Sliding windows created: x_train_windowed shape: {x_train_windowed.shape}, y_train_windowed shape: {y_train_windowed.shape}")
 
                     # Update plugin's window_size parameter if necessary
-                    plugin.params['window_size'] = window_size
+                    plugin.set_params(window_size=window_size)
 
                     # Build model with window_size
                     plugin.build_model(input_shape=x_train_windowed.shape[1:])
@@ -344,8 +351,9 @@ def run_prediction_pipeline(config, plugin):
                     if config['plugin'] == 'cnn':
                         if window_size is None:
                             raise ValueError("`window_size` must be specified in config for CNN plugin.")
+                        date_times_val = x_val_df.index if isinstance(x_val_df, pd.DataFrame) else None
                         x_val_windowed, y_val_windowed, date_time_val_windows = create_sliding_windows(
-                            x_val_np, y_val_np, window_size, date_times=x_val_df.index if isinstance(x_val_df, pd.DataFrame) else None
+                            x_val_np, y_val_np, window_size, date_times=date_times_val
                         )
                         print(f"Sliding windows created for validation: x_val_windowed shape: {x_val_windowed.shape}, y_val_windowed shape: {y_val_windowed.shape}")
                         x_val_np = x_val_windowed
@@ -630,7 +638,6 @@ def run_prediction_pipeline(config, plugin):
     print(f"\nExecution time for all iterations: {execution_time} seconds")
 
 
-
 def load_and_evaluate_model(config, plugin):
     """
     Loads a pre-trained model and evaluates it on the validation data.
@@ -719,6 +726,7 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
+
 
 
 
