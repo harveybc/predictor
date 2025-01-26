@@ -9,6 +9,7 @@ DEFAULT_VALUES = {
     'y_validation_file': './tests/data/normalized_d3.csv',
     'target_column': 'CLOSE',
     'output_file': './csv_output.csv',
+    'results_file': './results.csv',
     'save_model': './predictor_model.keras',
     'load_model': None,
     'evaluate_file': './model_eval.csv',
