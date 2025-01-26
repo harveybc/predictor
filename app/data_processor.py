@@ -151,25 +151,32 @@ def process_data(config):
     return x_train_data, y_train_data
 
 
-def create_sliding_windows(x, y, window_size, step=1):
+def create_sliding_windows(x, y, window_size, date_times=None, step=1):
     """
-    Creates sliding windows from the dataset.
+    Creates sliding windows from the dataset along with corresponding DATE_TIME indices.
 
     Parameters:
         x (numpy.ndarray): Input features of shape (N, features).
         y (numpy.ndarray): Targets of shape (N, time_horizon).
         window_size (int): Number of time steps in each window.
+        date_times (pd.DatetimeIndex, optional): Datetime indices corresponding to each sample.
         step (int): Step size between windows.
 
     Returns:
-        Tuple of numpy.ndarrays: (x_windows, y_windows)
+        Tuple of numpy.ndarrays and list: (x_windows, y_windows, date_time_windows)
     """
     x_windows = []
     y_windows = []
+    date_time_windows = []
+    
     for i in range(0, len(x) - window_size - y.shape[1] + 1, step):
         x_windows.append(x[i:i + window_size])
         y_windows.append(y[i + window_size:i + window_size + y.shape[1]].flatten())
-    return np.array(x_windows), np.array(y_windows)
+        if date_times is not None:
+            # Assign the DATE_TIME corresponding to the last step in the y window
+            date_time_windows.append(date_times[i + window_size + y.shape[1] - 1])
+    
+    return np.array(x_windows), np.array(y_windows), date_time_windows
 
 
 def run_prediction_pipeline(config, plugin):
@@ -263,7 +270,9 @@ def run_prediction_pipeline(config, plugin):
                         raise ValueError("`window_size` must be specified in config for CNN plugin.")
 
                     # Create sliding windows
-                    x_train_windowed, y_train_windowed = create_sliding_windows(x_train_np, y_train_np, window_size)
+                    x_train_windowed, y_train_windowed, _ = create_sliding_windows(
+                        x_train_np, y_train_np, window_size, date_times=x_train.index if isinstance(x_train, pd.DataFrame) else None
+                    )
                     print(f"Sliding windows created: x_train_windowed shape: {x_train_windowed.shape}, y_train_windowed shape: {y_train_windowed.shape}")
 
                     # Update plugin's window_size parameter if necessary
@@ -293,6 +302,7 @@ def run_prediction_pipeline(config, plugin):
                 # Handle validation data if available
                 x_val_np = None
                 y_val_np = None
+                date_time_val_windows = []  # To store DATE_TIME for validation predictions
                 if config.get('x_validation_file') and config.get('y_validation_file'):
                     print("Preparing validation data...")
                     x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
@@ -334,7 +344,9 @@ def run_prediction_pipeline(config, plugin):
                     if config['plugin'] == 'cnn':
                         if window_size is None:
                             raise ValueError("`window_size` must be specified in config for CNN plugin.")
-                        x_val_windowed, y_val_windowed = create_sliding_windows(x_val_np, y_val_np, window_size)
+                        x_val_windowed, y_val_windowed, date_time_val_windows = create_sliding_windows(
+                            x_val_np, y_val_np, window_size, date_times=x_val_df.index if isinstance(x_val_df, pd.DataFrame) else None
+                        )
                         print(f"Sliding windows created for validation: x_val_windowed shape: {x_val_windowed.shape}, y_val_windowed shape: {y_val_windowed.shape}")
                         x_val_np = x_val_windowed
                         y_val_np = y_val_windowed
@@ -349,9 +361,16 @@ def run_prediction_pipeline(config, plugin):
                         if time_horizon > 1:
                             print("Applying multi-step slicing to validation targets...")
                             Y_val_list = []
+                            date_time_val_list = []
                             for i in range(len(y_val_np) - time_horizon + 1):
                                 row_values = [y_val_np[i + j][0] for j in range(time_horizon)]
                                 Y_val_list.append(row_values)
+                                # Assign DATE_TIME corresponding to the last step in the time horizon
+                                if isinstance(x_val_df.index, pd.DatetimeIndex):
+                                    date_time = x_val_df.index[i + time_horizon - 1]
+                                else:
+                                    date_time = pd.NaT  # Assign Not-a-Time if index is not datetime
+                                date_time_val_list.append(date_time)
                             if not Y_val_list:
                                 raise ValueError(
                                     "After creating multi-step slices, no validation samples remain. "
@@ -359,6 +378,7 @@ def run_prediction_pipeline(config, plugin):
                                 )
                             y_val_np = np.array(Y_val_list)
                             x_val_np = x_val_np[:len(y_val_np)]  # Adjust x_val_np accordingly
+                            date_time_val_windows = date_time_val_list
                             print(f"Validation data shape after multi-step slicing: X: {x_val_np.shape}, Y: {y_val_np.shape}")
 
                 # Train the model with or without validation data
@@ -403,9 +423,9 @@ def run_prediction_pipeline(config, plugin):
                 except AttributeError:
                     # If the plugin does not have calculate_r2, use sklearn
                     r2 = float(r2_score(y_train_np, predictions))
-                print(f"Mean Squared Error: {mse}")
-                print(f"Mean Absolute Error: {mae}")
-                print(f"R² Score: {r2}")
+                print(f"Training Mean Squared Error: {mse}")
+                print(f"Training Mean Absolute Error: {mae}")
+                print(f"Training R² Score: {r2}")
 
                 # Append MAE and R² to lists
                 training_mae_list.append(mae)
@@ -422,20 +442,9 @@ def run_prediction_pipeline(config, plugin):
                     predictions_df = pd.DataFrame(predictions, columns=pred_cols)
 
                 # ----------------------------
-                # SAVE PREDICTIONS TO CSV
+                # SAVE PREDICTIONS TO CSV (Training Predictions Removed)
                 # ----------------------------
-                output_filename = config['output_file']
-                try:
-                    write_csv(
-                        file_path=output_filename, 
-                        data=predictions_df, 
-                        include_date=config.get('force_date', False), 
-                        headers=config.get('headers', True)
-                    )
-                    print(f"Output written to {output_filename}")
-                except Exception as e:
-                    print(f"Failed to save predictions to {output_filename}: {e}")
-                    raise e  # Re-raise to handle in the outer try-except
+                # Removed saving training predictions as per requirement to save validation predictions only
 
                 # ----------------------------
                 # SAVE DEBUG INFO
@@ -445,9 +454,9 @@ def run_prediction_pipeline(config, plugin):
                 debug_info = {
                     'iteration': iteration,
                     'execution_time': float(execution_time_iteration),
-                    'mse': mse,
-                    'mae': mae,
-                    'r2': r2
+                    'training_mse': mse,
+                    'training_mae': mae,
+                    'training_r2': r2
                 }
 
                 if config.get('save_log'):
@@ -494,7 +503,7 @@ def run_prediction_pipeline(config, plugin):
                     validation_r2_list.append(validation_r2)
 
                     # ----------------------------
-                    # CONVERT VALIDATION PREDICTIONS TO DATAFRAME
+                    # CONVERT VALIDATION PREDICTIONS TO DATAFRAME WITH DATE_TIME
                     # ----------------------------
                     if validation_predictions.ndim == 1 or validation_predictions.shape[1] == 1:
                         validation_predictions_df = pd.DataFrame(validation_predictions, columns=['Prediction'])
@@ -503,21 +512,33 @@ def run_prediction_pipeline(config, plugin):
                         pred_cols_val = [f'Prediction_{i+1}' for i in range(num_steps_val)]
                         validation_predictions_df = pd.DataFrame(validation_predictions, columns=pred_cols_val)
 
+                    # Add DATE_TIME column from date_time_val_windows
+                    if date_time_val_windows:
+                        validation_predictions_df['DATE_TIME'] = date_time_val_windows
+                    else:
+                        # If DATE_TIME wasn't captured, assign NaT
+                        validation_predictions_df['DATE_TIME'] = pd.NaT
+                        print("Warning: DATE_TIME for validation predictions not captured.")
+
+                    # Rearrange columns to have DATE_TIME first
+                    cols_val = ['DATE_TIME'] + [col for col in validation_predictions_df.columns if col != 'DATE_TIME']
+                    validation_predictions_df = validation_predictions_df[cols_val]
+
                     # ----------------------------
-                    # SAVE VALIDATION PREDICTIONS TO CSV (Optional)
+                    # SAVE VALIDATION PREDICTIONS TO CSV
                     # ----------------------------
-                    # If you wish to save validation predictions to a separate CSV, uncomment the following lines:
-                    # validation_output_filename = config.get('validation_output_file', 'validation_predictions.csv')
-                    # try:
-                    #     write_csv(
-                    #         file_path=validation_output_filename, 
-                    #         data=validation_predictions_df, 
-                    #         include_date=config.get('force_date', False), 
-                    #         headers=config.get('headers', True)
-                    #     )
-                    #     print(f"Validation predictions written to {validation_output_filename}")
-                    # except Exception as e:
-                    #     print(f"Failed to save validation predictions to {validation_output_filename}: {e}")
+                    output_filename = config['output_file']
+                    try:
+                        write_csv(
+                            file_path=output_filename, 
+                            data=validation_predictions_df, 
+                            include_date=False,  # DATE_TIME is already included
+                            headers=config.get('headers', True)
+                        )
+                        print(f"Validation predictions with DATE_TIME saved to {output_filename}")
+                    except Exception as e:
+                        print(f"Failed to save validation predictions to {output_filename}: {e}")
+                        raise e  # Re-raise to handle in the outer try-except
 
                     # ----------------------------
                     # PRINT TRAINING AND VALIDATION MAE AND R² WITH SEPARATORS
@@ -612,25 +633,25 @@ def run_prediction_pipeline(config, plugin):
 
 def load_and_evaluate_model(config, plugin):
     """
-    Loads a pre-trained model and evaluates it on the training data.
+    Loads a pre-trained model and evaluates it on the validation data.
 
     This function performs the following steps:
     1. Loads the specified pre-trained model.
-    2. Loads and processes the training data.
+    2. Loads and processes the validation data.
     3. Makes predictions using the loaded model.
-    4. Saves the predictions to a CSV file for evaluation.
+    4. Saves the predictions to a CSV file for evaluation, including the DATE_TIME column.
 
     Args:
         config (dict): Configuration dictionary containing parameters for model evaluation.
             Expected keys include:
                 - 'load_model' (str): Path to the pre-trained model file.
-                - 'x_train_file' (str): Path to the training features CSV file.
-                - 'y_train_file' (str): Path to the training targets CSV file.
+                - 'x_validation_file' (str): Path to the validation features CSV file.
+                - 'y_validation_file' (str): Path to the validation targets CSV file.
                 - 'target_column' (str or int): Column name or index to be used as the target.
                 - 'headers' (bool): Indicates if CSV files contain headers.
                 - 'force_date' (bool): Determines if date should be included in the output CSV.
                 - 'evaluate_file' (str): Path to save the evaluation predictions CSV file.
-                - 'max_steps_train' (int, optional): Maximum number of rows to read for training data.
+                - 'max_steps_val' (int, optional): Maximum number of rows to read for validation data.
 
         plugin (Plugin): The ANN predictor plugin to be used for evaluation.
 
@@ -647,19 +668,20 @@ def load_and_evaluate_model(config, plugin):
         print(f"Failed to load the model from {config['load_model']}: {e}")
         sys.exit(1)
 
-    # Load and process training data with row limit
-    print("Loading and processing training data for evaluation...")
+    # Load and process validation data with row limit
+    print("Loading and processing validation data for evaluation...")
     try:
-        x_train, y_train = process_data(config)
-        print(f"Processed training data: X shape: {x_train.shape}, Y shape: {y_train.shape}")
+        # Assuming process_data can be reused for validation by specifying validation files
+        x_val, y_val = process_data(config)
+        print(f"Processed validation data: X shape: {x_val.shape}, Y shape: {y_val.shape}")
     except Exception as e:
-        print(f"Failed to process training data: {e}")
+        print(f"Failed to process validation data: {e}")
         sys.exit(1)
 
     # Predict using the loaded model
-    print("Making predictions on training data...")
+    print("Making predictions on validation data...")
     try:
-        predictions = plugin.predict(x_train.to_numpy())
+        predictions = plugin.predict(x_val.to_numpy())
         print(f"Predictions shape: {predictions.shape}")
     except Exception as e:
         print(f"Failed to make predictions: {e}")
@@ -673,19 +695,31 @@ def load_and_evaluate_model(config, plugin):
         pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
         predictions_df = pd.DataFrame(predictions, columns=pred_cols)
 
+    # Add DATE_TIME column from y_val
+    if isinstance(y_val.index, pd.DatetimeIndex):
+        predictions_df['DATE_TIME'] = y_val.index[:len(predictions_df)]
+    else:
+        predictions_df['DATE_TIME'] = pd.NaT  # Assign Not-a-Time if index is not datetime
+        print("Warning: DATE_TIME for validation predictions not captured.")
+
+    # Rearrange columns to have DATE_TIME first
+    cols = ['DATE_TIME'] + [col for col in predictions_df.columns if col != 'DATE_TIME']
+    predictions_df = predictions_df[cols]
+
     # Save predictions to CSV for evaluation
     evaluate_filename = config['evaluate_file']
     try:
         write_csv(
             file_path=evaluate_filename,
             data=predictions_df,
-            include_date=config.get('force_date', False),
+            include_date=False,  # DATE_TIME is already included
             headers=config.get('headers', True)
         )
-        print(f"Predicted data saved to {evaluate_filename}")
+        print(f"Validation predictions with DATE_TIME saved to {evaluate_filename}")
     except Exception as e:
-        print(f"Failed to save predictions to {evaluate_filename}: {e}")
+        print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
+
 
 
 def create_multi_step_targets(y, time_horizon):
