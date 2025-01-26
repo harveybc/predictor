@@ -131,7 +131,7 @@ class Plugin:
         # Early Stopping based on validation loss if available
         patience = self.params.get('patience', 5)  # default patience is 5 epochs
         early_stopping_monitor = EarlyStopping(
-            monitor='val_loss' if (x_val is not None and y_val is not None) else 'loss',
+            monitor= 'loss',
             patience=patience, 
             restore_best_weights=True,
             verbose=1
@@ -139,27 +139,16 @@ class Plugin:
         callbacks.append(early_stopping_monitor)
 
         print(f"Training CNN model with data shape: {x_train.shape}")
-        if x_val is not None and y_val is not None:
-            history = self.model.fit(
-                x_train, 
-                y_train, 
-                epochs=epochs, 
-                batch_size=batch_size, 
-                verbose=1, 
-                validation_data=(x_val, y_val),
-                callbacks=callbacks
-            )
-        else:
-            history = self.model.fit(
-                x_train, 
-                y_train, 
-                epochs=epochs, 
-                batch_size=batch_size, 
-                verbose=1, 
-                callbacks=callbacks
-            )
+        history = self.model.fit(
+            x_train, 
+            y_train, 
+            epochs=epochs, 
+            batch_size=batch_size, 
+            verbose=1, 
+            callbacks=callbacks
+        )
         print("Training completed.")
-        mse = history.history['val_loss'][-1] if (x_val is not None and y_val is not None) else history.history['loss'][-1]
+        mse =  history.history['loss'][-1]
         if mse > threshold_error:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
 
