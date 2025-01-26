@@ -9,7 +9,7 @@ from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
 import logging
 from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
-import logging
+import contextlib
 
 
 def process_data(config):
@@ -148,11 +148,7 @@ def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times
 
     return np.array(x_windowed), np.array(y_windowed), date_time_windows
 
-import logging
 
-import os
-import logging
-import contextlib
 
 def run_prediction_pipeline(config, plugin):
     """
