@@ -133,7 +133,7 @@ class Plugin:
         callbacks = []
 
         # Early Stopping based on validation loss if available
-        patience = self.params.get('patience', 5)  # default patience is 5 epochs
+        patience = self.params.get('patience', 10)  # default patience is 5 epochs
         early_stopping_monitor = EarlyStopping(
             monitor= 'loss',
             patience=patience, 
