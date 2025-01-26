@@ -192,12 +192,15 @@ def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times
 
 import logging
 
+import os
+import logging
+import contextlib
+
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline with restored iteration logic and aggregated statistics.
     Predicts the next `time_horizon` ticks with a stride of `time_horizon`, applicable for all plugins.
     """
-    import os
     start_time = time.time()
 
     iterations = config.get('iterations', 1)
@@ -255,18 +258,19 @@ def run_prediction_pipeline(config, plugin):
                     threshold_error=threshold_error,
                 )
 
-                # Suppress TensorFlow logging
-                logging.getLogger("tensorflow").setLevel(logging.ERROR)
-                os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+                # Suppress TensorFlow and Keras logging
+                with open(os.devnull, 'w') as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
+                    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+                    logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
-                # Predict using the stride logic
-                predictions = []
-                for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
-                    stride_input = x_train[i:i + time_horizon]
-                    if stride_input.shape[0] < time_horizon:
-                        break  # Skip incomplete strides
-                    stride_pred = plugin.predict(stride_input)
-                    predictions.append(stride_pred)
+                    # Predict using the stride logic
+                    predictions = []
+                    for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
+                        stride_input = x_train[i:i + time_horizon]
+                        if stride_input.shape[0] < time_horizon:
+                            break  # Skip incomplete strides
+                        stride_pred = plugin.predict(stride_input)
+                        predictions.append(stride_pred)
 
                 # Restore TensorFlow logging level
                 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
