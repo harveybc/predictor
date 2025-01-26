@@ -198,24 +198,33 @@ import contextlib
 
 def run_prediction_pipeline(config, plugin):
     """
-    Runs the prediction pipeline with restored iteration logic, logging, and CSV outputs.
-    Predicts the next `time_horizon` ticks with a stride of `time_horizon` for all plugins.
+    Runs the prediction pipeline with proper handling of training and validation datasets,
+    iterative logging of metrics, and output of predictions and statistics to CSV files.
     """
     start_time = time.time()
 
     iterations = config.get('iterations', 1)
     print(f"Number of iterations: {iterations}")
 
-    # Lists to store MAE and R² values for each iteration
+    # Lists to store metrics for all iterations
     training_mae_list = []
     training_r2_list = []
     validation_mae_list = []
     validation_r2_list = []
 
-    # Process the training data
-    print("Running process_data...")
+    # Process training data
+    print("Processing training data...")
     x_train, y_train = process_data(config)
-    print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
+    print(f"Processed training data shape: {x_train.shape}")
+
+    # Process validation data if available
+    x_val, y_val = None, None
+    if config.get('x_validation_file') and config.get('y_validation_file'):
+        val_config = config.copy()
+        val_config['x_train_file'] = config['x_validation_file']
+        val_config['y_train_file'] = config['y_validation_file']
+        x_val, y_val = process_data(val_config)
+        print(f"Processed validation data shape: {x_val.shape}")
 
     # Extract time_horizon from the config
     time_horizon = config.get('time_horizon')
@@ -228,15 +237,16 @@ def run_prediction_pipeline(config, plugin):
     epochs = config['epochs']
     threshold_error = config['threshold_error']
 
-    # Convert x_train and y_train to numpy arrays
+    # Convert training data to numpy arrays
     x_train = x_train.to_numpy().astype(np.float32)
     y_train = y_train.to_numpy().astype(np.float32)
 
+    if x_val is not None:
+        x_val = x_val.to_numpy().astype(np.float32)
+        y_val = y_val.to_numpy().astype(np.float32)
+
     if x_train.ndim == 1:
         x_train = x_train.reshape(-1, 1)
-
-    print(f"x_train shape: {x_train.shape}")
-    print(f"y_train shape: {y_train.shape}")
 
     # Set time_horizon in plugin parameters
     plugin.set_params(time_horizon=time_horizon)
@@ -258,65 +268,98 @@ def run_prediction_pipeline(config, plugin):
                 threshold_error=threshold_error,
             )
 
-            # Predict with stride logic
-            predictions = []
-            for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
-                stride_input = x_train[i:i + time_horizon]
-                if stride_input.shape[0] < time_horizon:
-                    break  # Skip incomplete strides
-                stride_pred = plugin.predict(stride_input)
-                predictions.append(stride_pred)
+            # Suppress TensorFlow/Keras logs during prediction
+            with open(os.devnull, 'w') as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
+                os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+                logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
-            predictions = np.vstack(predictions)
-            print(f"Concatenated predictions shape: {predictions.shape}")
+                # Predict training data with stride logic
+                train_predictions = []
+                for i in range(0, len(x_train) - time_horizon + 1, time_horizon):
+                    stride_input = x_train[i:i + time_horizon]
+                    if stride_input.shape[0] < time_horizon:
+                        break  # Skip incomplete strides
+                    stride_pred = plugin.predict(stride_input)
+                    train_predictions.append(stride_pred)
+                train_predictions = np.vstack(train_predictions)
+
+                # Predict validation data (if available)
+                if x_val is not None:
+                    val_predictions = []
+                    for i in range(0, len(x_val) - time_horizon + 1, time_horizon):
+                        stride_input = x_val[i:i + time_horizon]
+                        if stride_input.shape[0] < time_horizon:
+                            break  # Skip incomplete strides
+                        stride_pred = plugin.predict(stride_input)
+                        val_predictions.append(stride_pred)
+                    val_predictions = np.vstack(val_predictions)
+
+            # Restore TensorFlow logging level
+            os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
+            logging.getLogger("tensorflow").setLevel(logging.INFO)
 
             # Evaluate training metrics
-            mse = float(plugin.calculate_mse(y_train[:len(predictions)], predictions))
-            mae = float(plugin.calculate_mae(y_train[:len(predictions)], predictions))
-            r2 = float(r2_score(y_train[:len(predictions)], predictions))
-            print(f"Training Mean Squared Error: {mse}")
-            print(f"Training Mean Absolute Error: {mae}")
-            print(f"Training R² Score: {r2}")
+            train_mae = float(plugin.calculate_mae(y_train[:len(train_predictions)], train_predictions))
+            train_r2 = float(r2_score(y_train[:len(train_predictions)], train_predictions))
+            print(f"Training MAE: {train_mae}")
+            print(f"Training R²: {train_r2}")
 
-            # Save training metrics
-            training_mae_list.append(mae)
-            training_r2_list.append(r2)
+            # Append training metrics
+            training_mae_list.append(train_mae)
+            training_r2_list.append(train_r2)
 
-            # Save predictions to CSV (if configured)
-            output_file = config.get('output_file', 'predictions.csv')
-            predictions_df = pd.DataFrame(predictions, columns=[f'Prediction_{i+1}' for i in range(predictions.shape[1])])
-            predictions_df['DATE_TIME'] = range(len(predictions))  # Placeholder for DATE_TIME
-            predictions_df.to_csv(output_file, index=False)
-            print(f"Predictions saved to {output_file}")
+            # Evaluate validation metrics
+            if x_val is not None and y_val is not None:
+                val_mae = float(plugin.calculate_mae(y_val[:len(val_predictions)], val_predictions))
+                val_r2 = float(r2_score(y_val[:len(val_predictions)], val_predictions))
+                print(f"Validation MAE: {val_mae}")
+                print(f"Validation R²: {val_r2}")
+
+                # Append validation metrics
+                validation_mae_list.append(val_mae)
+                validation_r2_list.append(val_r2)
+
+            # Save predictions to CSV
+            output_file = config.get('output_file', f'iteration_{iteration}_predictions.csv')
+            train_predictions_df = pd.DataFrame(train_predictions, columns=[f'Prediction_{i+1}' for i in range(train_predictions.shape[1])])
+            train_predictions_df['DATE_TIME'] = range(len(train_predictions))  # Placeholder for DATE_TIME
+            train_predictions_df.to_csv(output_file, index=False)
+            print(f"Training predictions saved to {output_file}")
+
+            if x_val is not None:
+                val_output_file = config.get('validation_output_file', f'iteration_{iteration}_validation_predictions.csv')
+                val_predictions_df = pd.DataFrame(val_predictions, columns=[f'Prediction_{i+1}' for i in range(val_predictions.shape[1])])
+                val_predictions_df['DATE_TIME'] = range(len(val_predictions))  # Placeholder for DATE_TIME
+                val_predictions_df.to_csv(val_output_file, index=False)
+                print(f"Validation predictions saved to {val_output_file}")
 
             iteration_end_time = time.time()
             print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
         except Exception as e:
             print(f"Iteration {iteration} failed: {e}")
-            continue  # Continue to the next iteration
+            continue  # Proceed to the next iteration
 
     # Aggregate statistics
     if training_mae_list and training_r2_list:
-        avg_training_mae = np.mean(training_mae_list)
-        std_training_mae = np.std(training_mae_list)
-        avg_training_r2 = np.mean(training_r2_list)
-        std_training_r2 = np.std(training_r2_list)
+        avg_train_mae = np.mean(training_mae_list)
+        std_train_mae = np.std(training_mae_list)
+        avg_train_r2 = np.mean(training_r2_list)
+        std_train_r2 = np.std(training_r2_list)
 
-        print("\n=== Aggregated Statistics Across Iterations ===")
-        print(f"Average Training MAE: {avg_training_mae:.4f} ± {std_training_mae:.4f}")
-        print(f"Average Training R²: {avg_training_r2:.4f} ± {std_training_r2:.4f}")
+        print("\n=== Aggregated Training Statistics ===")
+        print(f"Average Training MAE: {avg_train_mae:.4f} ± {std_train_mae:.4f}")
+        print(f"Average Training R²: {avg_train_r2:.4f} ± {std_train_r2:.4f}")
 
-        # Save results to CSV (if configured)
-        results_file = config.get('results_file', 'results.csv')
-        results_data = {
-            'Metric': ['Training MAE', 'Training R²'],
-            'Average': [avg_training_mae, avg_training_r2],
-            'Std Dev': [std_training_mae, std_training_r2],
-        }
-        results_df = pd.DataFrame(results_data)
-        results_df.to_csv(results_file, index=False)
-        print(f"Results saved to {results_file}")
+    if validation_mae_list and validation_r2_list:
+        avg_val_mae = np.mean(validation_mae_list)
+        std_val_mae = np.std(validation_mae_list)
+        avg_val_r2 = np.mean(validation_r2_list)
+        std_val_r2 = np.std(validation_r2_list)
+
+        print("\n=== Aggregated Validation Statistics ===")
+        print(f"Average Validation MAE: {avg_val_mae:.4f} ± {std_val_mae:.4f}")
+        print(f"Average Validation R²: {avg_val_r2:.4f} ± {std_val_r2:.4f}")
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
