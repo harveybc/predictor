@@ -4,9 +4,10 @@ import numpy as np
 import os
 import time
 import json
+import sys
 from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
-import sys
+
 
 def process_data(config):
     """
@@ -43,7 +44,6 @@ def process_data(config):
         Exception: Propagates any exception that occurs during CSV loading or data processing.
     """
     print(f"Loading data from CSV file: {config['x_train_file']}")
-    # Load training features
     x_train_data = load_csv(config['x_train_file'], headers=config['headers'])
     print(f"Data loaded with shape: {x_train_data.shape}")
 
@@ -174,21 +174,6 @@ def create_sliding_windows(x, y, window_size, step=1):
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline with conditional data reshaping for different plugins.
-
-    This function handles the entire prediction pipeline, including:
-    1. Loading and processing training data.
-    2. Building and training the model based on the specified plugin.
-    3. Handling validation data if provided.
-    4. Saving the trained model and predictions.
-    5. Logging debug information.
-
-    Args:
-        config (dict): Configuration dictionary containing parameters for the pipeline.
-        plugin (tf.keras.Model): The machine learning model plugin to be used for training and prediction.
-
-    Raises:
-        ValueError: If any of the validation checks fail or required configuration parameters are missing.
-        Exception: Propagates any exception that occurs during model training or prediction.
     """
     start_time = time.time()
 
@@ -270,9 +255,15 @@ def run_prediction_pipeline(config, plugin):
             y_train = y_train_windowed
 
         else:
-            # Keep old logic for ANN/LSTM
-            # Pass a single integer for input_shape
-            plugin.build_model(input_shape=x_train.shape[1:])
+            # Handle ANN separately to pass integer input_shape
+            if config['plugin'] == 'ann':
+                input_shape = x_train.shape[1]  # Pass integer for ANN
+                print(f"ANN input_shape: {input_shape}")
+            else:
+                input_shape = x_train.shape[1:]
+                print(f"{config['plugin'].capitalize()} input_shape: {input_shape}")
+
+            plugin.build_model(input_shape=input_shape)
 
         # ----------------------------
         # TRAIN THE MODEL
