@@ -515,47 +515,47 @@ def run_prediction_pipeline(config, plugin):
                     print(f"Validation MAE = {validation_mae}")
                     print("***************************")
 
-            except Exception as e:
-                print(f"Iteration {iteration} failed: {e}")
-                continue  # Proceed to the next iteration
+        except Exception as e:
+            print(f"Iteration {iteration} failed: {e}")
+            continue  # Proceed to the next iteration
 
-        # After all iterations, compute aggregated MAE statistics
-        if iterations > 0 and training_mae_list and validation_mae_list:
-            training_mae_array = np.array(training_mae_list)
-            validation_mae_array = np.array(validation_mae_list)
+    # After all iterations, compute aggregated MAE statistics
+    if iterations > 0 and training_mae_list and validation_mae_list:
+        training_mae_array = np.array(training_mae_list)
+        validation_mae_array = np.array(validation_mae_list)
 
-            avg_training_mae = np.mean(training_mae_array)
-            std_training_mae = np.std(training_mae_array)
-            max_training_mae = np.max(training_mae_array)
-            min_training_mae = np.min(training_mae_array)
+        avg_training_mae = np.mean(training_mae_array)
+        std_training_mae = np.std(training_mae_array)
+        max_training_mae = np.max(training_mae_array)
+        min_training_mae = np.min(training_mae_array)
 
-            avg_validation_mae = np.mean(validation_mae_array)
-            std_validation_mae = np.std(validation_mae_array)
-            max_validation_mae = np.max(validation_mae_array)
-            min_validation_mae = np.min(validation_mae_array)
+        avg_validation_mae = np.mean(validation_mae_array)
+        std_validation_mae = np.std(validation_mae_array)
+        max_validation_mae = np.max(validation_mae_array)
+        min_validation_mae = np.min(validation_mae_array)
 
-            # Print aggregated statistics with separators
-            print("\n***********************************")
-            print("Aggregated MAE Statistics After All Iterations:")
-            print("***********************************")
-            print(f"Average Training MAE: {avg_training_mae}")
-            print(f"Training MAE Std Dev: {std_training_mae}")
-            print(f"Training MAE Max: {max_training_mae}")
-            print(f"Training MAE Min: {min_training_mae}")
-            print("***********************************")
-            print(f"Average Validation MAE: {avg_validation_mae}")
-            print(f"Validation MAE Std Dev: {std_validation_mae}")
-            print(f"Validation MAE Max: {max_validation_mae}")
-            print(f"Validation MAE Min: {min_validation_mae}")
-            print("***********************************")
-        else:
-            print("\n***********************************")
-            print("No valid MAE statistics to display.")
-            print("***********************************")
+        # Print aggregated statistics with separators
+        print("\n***********************************")
+        print("Aggregated MAE Statistics After All Iterations:")
+        print("***********************************")
+        print(f"Average Training MAE: {avg_training_mae}")
+        print(f"Training MAE Std Dev: {std_training_mae}")
+        print(f"Training MAE Max: {max_training_mae}")
+        print(f"Training MAE Min: {min_training_mae}")
+        print("***********************************")
+        print(f"Average Validation MAE: {avg_validation_mae}")
+        print(f"Validation MAE Std Dev: {std_validation_mae}")
+        print(f"Validation MAE Max: {max_validation_mae}")
+        print(f"Validation MAE Min: {min_validation_mae}")
+        print("***********************************")
+    else:
+        print("\n***********************************")
+        print("No valid MAE statistics to display.")
+        print("***********************************")
 
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"\nExecution time for all iterations: {execution_time} seconds")
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"\nExecution time for all iterations: {execution_time} seconds")
 
 
 def load_and_evaluate_model(config, plugin):
