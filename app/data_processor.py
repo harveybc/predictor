@@ -150,6 +150,7 @@ def process_data(config):
     return x_train_data, y_train_data
 
 
+
 def create_sliding_windows(x, y, window_size, step=1):
     """
     Creates sliding windows from the dataset.
@@ -169,6 +170,7 @@ def create_sliding_windows(x, y, window_size, step=1):
         x_windows.append(x[i:i + window_size])
         y_windows.append(y[i + window_size:i + window_size + y.shape[1]].flatten())
     return np.array(x_windows), np.array(y_windows)
+
 
 
 def run_prediction_pipeline(config, plugin):
@@ -354,14 +356,16 @@ def run_prediction_pipeline(config, plugin):
         # PREDICT ON TRAINING DATA
         # ----------------------------
         predictions = plugin.predict(x_train)
-
+        
         # ----------------------------
         # EVALUATE THE MODEL
         # ----------------------------
         mse = float(plugin.calculate_mse(y_train, predictions))
         mae = float(plugin.calculate_mae(y_train, predictions))
-        print(f"Mean Squared Error: {mse}")
-        print(f"Mean Absolute Error: {mae}")
+        
+        # Initialize validation metrics
+        validation_mse = None
+        validation_mae = None
 
         # ----------------------------
         # CONVERT PREDICTIONS TO DATAFRAME
@@ -480,6 +484,15 @@ def run_prediction_pipeline(config, plugin):
             validation_mae = float(plugin.calculate_mae(y_val, validation_predictions))
             print(f"Validation Mean Squared Error: {validation_mse}")
             print(f"Validation Mean Absolute Error: {validation_mae}")
+
+            # ----------------------------
+            # PRINT TRAINING AND VALIDATION MAE WITH SEPARATORS
+            # ----------------------------
+            print("***************************")
+            print(f"Training MAE = {mae}")
+            print("***************************")
+            print(f"Validation MAE = {validation_mae}")
+            print("***************************")
 
             # Convert validation predictions to DataFrame
             if validation_predictions.ndim == 1 or validation_predictions.shape[1] == 1:
