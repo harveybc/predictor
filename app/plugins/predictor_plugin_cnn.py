@@ -268,7 +268,7 @@ class Plugin:
         print(f"Absolute differences: {abs_difference}")
 
         mae = np.mean(abs_difference)
-        print(f"Calculated MAE: {mae}")
+        #print(f"Calculated MAE: {mae}")
         return mae
 
 
