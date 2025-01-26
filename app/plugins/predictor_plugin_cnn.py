@@ -19,7 +19,6 @@ class Plugin:
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
         'learning_rate': 0.002,
-        'time_horizon': 6,  # Number of future steps to predict
         'l2_reg': 1e-4,     # L2 regularization factor
         'patience': 10      # Patience for Early Stopping
     }
@@ -36,15 +35,12 @@ class Plugin:
     def set_params(self, **kwargs):
         """
         Updates the plugin parameters with provided keyword arguments.
-        
+
         Args:
             **kwargs: Arbitrary keyword arguments to update plugin parameters.
         """
         for key, value in kwargs.items():
-            if key in self.params:
-                self.params[key] = value
-            else:
-                print(f"Warning: Parameter '{key}' is not recognized and will be ignored.")
+            self.params[key] = value
 
     def get_debug_info(self):
         """
