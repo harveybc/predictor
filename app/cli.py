@@ -30,4 +30,5 @@ def parse_args():
     parser.add_argument('-mstr', '--max_steps_train', type=int,help='Offset for input data to account for feature extraction window size.')
     parser.add_argument('-mste', '--max_steps_test', type=int,help='Offset for input data to account for feature extraction window size.')
     parser.add_argument('-it', '--iterations', type=int,help='number of times the whole process is made and after that the training and validation MAE are averaged and also the std dev, max and min is shown.')
+    parser.add_argument('-e', '--epochs', type=int,help='number of epochs for the plugin model training.')
     return parser.parse_known_args()
