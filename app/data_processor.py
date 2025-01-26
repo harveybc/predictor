@@ -14,143 +14,101 @@ import logging
 
 def process_data(config):
     """
-    Processes training data by loading, aligning, and preparing it for model training.
-
-    This function performs the following steps:
-    1. Loads training features (X) and targets (Y) from CSV files.
-    2. Validates and extracts the specified target column.
-    3. Ensures that both X and Y have datetime indices for alignment.
-    4. Aligns X and Y based on the intersection of their indices.
-    5. Applies time horizon and input offset to prepare multi-step targets.
-    6. Limits the number of rows based on `max_steps_train` if specified.
-    7. Converts the processed data into appropriate formats for model training.
+    Processes training or validation data by loading, aligning, and preparing it for model training or evaluation.
 
     Args:
         config (dict): Configuration dictionary containing parameters for data processing.
-            Expected keys include:
-                - 'x_train_file' (str): Path to the training features CSV file.
-                - 'y_train_file' (str): Path to the training targets CSV file.
-                - 'target_column' (str or int): Column name or index to be used as the target.
-                - 'time_horizon' (int): Number of future steps to predict.
-                - 'input_offset' (int): Offset applied to the input data.
-                - 'headers' (bool): Indicates if CSV files contain headers.
-                - 'max_steps_train' (int, optional): Maximum number of rows to read for training data.
 
     Returns:
-        Tuple[pd.DataFrame, pd.DataFrame]: A tuple containing:
-            - x_train_data (pd.DataFrame): Processed training features.
-            - y_train_data (pd.DataFrame): Processed training targets with multi-step horizons.
-
-    Raises:
-        ValueError: If any of the validation checks fail, such as missing target columns
-                    or insufficient data after applying offsets and horizons.
-        Exception: Propagates any exception that occurs during CSV loading or data processing.
+        Tuple[pd.DataFrame, pd.DataFrame]: Processed features and targets.
     """
-    print(f"Loading data from CSV file: {config['x_train_file']}")
-    x_train_data = load_csv(config['x_train_file'], headers=config['headers'])
-    print(f"Data loaded with shape: {x_train_data.shape}")
+    # Determine if we are processing validation data
+    is_validation = 'max_steps_test' in config
 
-    y_train_file = config['y_train_file']
-    target_column = config['target_column']
+    # Select the appropriate files and parameters
+    x_file = config['x_validation_file'] if is_validation else config['x_train_file']
+    y_file = config['y_validation_file'] if is_validation else config['y_train_file']
+    max_steps = config.get('max_steps_test') if is_validation else config.get('max_steps_train')
+
+    # Load X data
+    print(f"Loading data from CSV file: {x_file}")
+    x_data = load_csv(x_file, headers=config['headers'])
+    print(f"Data loaded with shape: {x_data.shape}")
 
     # Load Y data
-    if isinstance(y_train_file, str):
-        print(f"Loading y_train data from CSV file: {y_train_file}")
-        y_train_data = load_csv(y_train_file, headers=config['headers'])
-        print(f"y_train data loaded with shape: {y_train_data.shape}")
+    print(f"Loading target data from CSV file: {y_file}")
+    y_data = load_csv(y_file, headers=config['headers'])
+    print(f"Target data loaded with shape: {y_data.shape}")
+
+    # Extract target column
+    target_column = config['target_column']
+    if isinstance(target_column, str):
+        if target_column not in y_data.columns:
+            raise ValueError(f"Target column '{target_column}' not found in target data.")
+        y_data = y_data[[target_column]]
+    elif isinstance(target_column, int):
+        if target_column < 0 or target_column >= y_data.shape[1]:
+            raise ValueError(f"Target column index {target_column} is out of range.")
+        y_data = y_data.iloc[:, [target_column]]
     else:
-        raise ValueError("`y_train_file` must be specified as a string path to the CSV file.")
+        raise ValueError("`target_column` must be either a string (column name) or an integer index.")
 
-    # Extract target column if specified
-    if target_column is not None:
-        if isinstance(target_column, str):
-            if target_column not in y_train_data.columns:
-                raise ValueError(f"Target column '{target_column}' not found in y_train_data.")
-            y_train_data = y_train_data[[target_column]]
-        elif isinstance(target_column, int):
-            if target_column < 0 or target_column >= y_train_data.shape[1]:
-                raise ValueError(f"Target column index {target_column} is out of range in y_train_data.")
-            y_train_data = y_train_data.iloc[:, [target_column]]
-        else:
-            raise ValueError("`target_column` must be either a string (column name) or an integer index.")
-    else:
-        raise ValueError("No valid `target_column` was provided for y_train_data.")
+    # Convert to numeric and fill NaNs
+    x_data = x_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    y_data = y_data.apply(pd.to_numeric, errors='coerce').fillna(0)
 
-    # Convert to numeric, fill NaNs
-    x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
-    y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    # Ensure indices are datetime-like
+    if not isinstance(x_data.index, pd.DatetimeIndex) or not isinstance(y_data.index, pd.DatetimeIndex):
+        raise ValueError("Data must have a valid DatetimeIndex. Check your input CSV files.")
 
-    # Confirm that indices are datetime-like
-    if not isinstance(x_train_data.index, pd.DatetimeIndex) or not isinstance(y_train_data.index, pd.DatetimeIndex):
-        raise ValueError("Either 'DATE_TIME' column wasn't parsed as datetime or no valid DatetimeIndex found. "
-                         "Ensure your CSV has a 'DATE_TIME' column or the first column is recognized as datetime.")
+    # Align datasets
+    common_index = x_data.index.intersection(y_data.index)
+    x_data = x_data.loc[common_index].sort_index()
+    y_data = y_data.loc[common_index].sort_index()
 
-    # Align datasets based on common dates
-    common_index = x_train_data.index.intersection(y_train_data.index)
-    x_train_data = x_train_data.loc[common_index].sort_index()
-    y_train_data = y_train_data.loc[common_index].sort_index()
+    if x_data.empty or y_data.empty:
+        raise ValueError("No overlapping dates found or data is empty after alignment.")
 
-    # Validate alignment
-    if x_train_data.empty or y_train_data.empty:
-        raise ValueError(
-            "No overlapping dates found (or data is empty after alignment). "
-            "Please ensure your CSV files share date ranges."
-        )
-
+    # Apply offsets and horizons
     time_horizon = config['time_horizon']
     input_offset = config['input_offset']
     print(f"Applying time horizon: {time_horizon} and input offset: {input_offset}")
     total_offset = time_horizon + input_offset
 
-    # Shift Y by total_offset and adjust X accordingly
-    y_train_data = y_train_data.iloc[total_offset:]
-    x_train_data = x_train_data.iloc[:-time_horizon]
-
-    print(f"Data shape after applying offset and time horizon: X: {x_train_data.shape}, Y: {y_train_data.shape}")
+    y_data = y_data.iloc[total_offset:]
+    x_data = x_data.iloc[:-time_horizon]
 
     # Validate post-offset data
-    if x_train_data.empty or y_train_data.empty:
-        raise ValueError(
-            "After applying time_horizon and offset, no samples remain. "
-            "Check that your dataset is large enough and offsets/time_horizon are correct."
-        )
+    if x_data.empty or y_data.empty:
+        raise ValueError("After applying time_horizon and offset, no samples remain.")
 
-    # Ensure X and Y have the same length
-    min_length = min(len(x_train_data), len(y_train_data))
-    x_train_data = x_train_data.iloc[:min_length]
-    y_train_data = y_train_data.iloc[:min_length]
+    # Limit rows based on max_steps
+    if isinstance(max_steps, int) and max_steps > 0:
+        print(f"Limiting data to first {max_steps} rows.")
+        x_data = x_data.iloc[:max_steps]
+        y_data = y_data.iloc[:max_steps]
 
-    # Limit the number of rows based on max_steps_train if specified
-    max_steps_train = config.get('max_steps_train')
-    if isinstance(max_steps_train, int) and max_steps_train > 0:
-        print(f"Limiting training data to first {max_steps_train} rows.")
-        x_train_data = x_train_data.iloc[:max_steps_train]
-        y_train_data = y_train_data.iloc[:max_steps_train]
-        print(f"Training data shape after limiting: X: {x_train_data.shape}, Y: {y_train_data.shape}")
-
-    # Create multi-step Y for time horizon
+    # Create multi-step Y data
     Y_list = []
-    for i in range(len(y_train_data) - time_horizon + 1):
-        row_values = [y_train_data.iloc[i + j].values[0] for j in range(time_horizon)]
-        Y_list.append(row_values)
+    for i in range(len(y_data) - time_horizon + 1):
+        row = [y_data.iloc[i + j].values[0] for j in range(time_horizon)]
+        Y_list.append(row)
 
     if not Y_list:
-        raise ValueError(
-            "After creating multi-step slices, no samples remain. "
-            "Check that your data is sufficient for the given time_horizon."
-        )
+        raise ValueError("After creating multi-step slices, no samples remain.")
 
-    y_train_data = pd.DataFrame(Y_list)
+    y_data = pd.DataFrame(Y_list)
 
-    # Adjust X to match the number of Y samples
-    x_train_data = x_train_data.iloc[:len(y_train_data)].reset_index(drop=True)
-    y_train_data = y_train_data.reset_index(drop=True)
+    # Adjust X data to match Y length
+    x_data = x_data.iloc[:len(y_data)].reset_index(drop=True)
+    y_data = y_data.reset_index(drop=True)
 
-    print(f"Returning data of type: {type(x_train_data)}, {type(y_train_data)}")
-    print(f"x_train_data shape after adjustments: {x_train_data.shape}")
-    print(f"y_train_data shape after adjustments (multi-step): {y_train_data.shape}")
+    print(f"Returning data of type: {type(x_data)}, {type(y_data)}")
+    print(f"x_data shape after adjustments: {x_data.shape}")
+    print(f"y_data shape after adjustments (multi-step): {y_data.shape}")
 
-    return x_train_data, y_train_data
+    return x_data, y_data
+
 
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
