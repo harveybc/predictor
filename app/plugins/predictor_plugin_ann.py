@@ -135,7 +135,7 @@ class Plugin:
         model_output = BatchNormalization()(model_output)
         
         # add a dropout layer to the output
-        #model_output = Dropout(0.2)(model_output)
+        model_output = Dropout(0.2)(model_output)
 
         # Create the Keras Model
         self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
