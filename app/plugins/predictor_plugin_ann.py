@@ -194,27 +194,15 @@ class Plugin:
         callbacks.append(early_stopping_monitor)
         
         # Train the model with or without validation data
-        if x_val is not None and y_val is not None:
-            print("Training with validation data...")
-            history = self.model.fit(
-                x_train,
-                y_train,
-                epochs=epochs,
-                batch_size=batch_size,
-                verbose=1,
-                callbacks=callbacks,
-                validation_data=(x_val, y_val)
-            )
-        else:
-            print("Training without validation data...")
-            history = self.model.fit(
-                x_train,
-                y_train,
-                epochs=epochs,
-                batch_size=batch_size,
-                verbose=1,
-                callbacks=callbacks
-            )
+        print("Training with only training data...")
+        history = self.model.fit(
+            x_train,
+            y_train,
+            epochs=epochs,
+            batch_size=batch_size,
+            verbose=1,
+            callbacks=callbacks
+        )
         
         print("Training completed.")
         
