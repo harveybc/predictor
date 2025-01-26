@@ -226,10 +226,15 @@ def run_prediction_pipeline(config, plugin):
         x_val, y_val = process_data(val_config)
         print(f"Processed validation data shape: {x_val.shape}")
 
-    # Extract time_horizon from the config
+    # Extract time_horizon and window_size from the config
     time_horizon = config.get('time_horizon')
+    window_size = config.get('window_size')
+
     if time_horizon is None:
         raise ValueError("`time_horizon` is not defined in the configuration.")
+
+    if window_size is None and config['plugin'] == 'cnn':
+        raise ValueError("`window_size` must be defined in the configuration for CNN plugin.")
 
     print(f"Time Horizon: {time_horizon}")
 
@@ -245,6 +250,19 @@ def run_prediction_pipeline(config, plugin):
         x_val = x_val.to_numpy().astype(np.float32)
         y_val = y_val.to_numpy().astype(np.float32)
 
+    # Handle CNN-specific sliding windows
+    if config['plugin'] == 'cnn':
+        print("Creating sliding windows for CNN...")
+        x_train, y_train = create_sliding_windows(
+            x_train, y_train, window_size, time_horizon, stride=1
+        )
+
+        if x_val is not None and y_val is not None:
+            x_val, y_val = create_sliding_windows(
+                x_val, y_val, window_size, time_horizon, stride=1
+            )
+
+    # Ensure x_train is at least 2D for other plugins
     if x_train.ndim == 1:
         x_train = x_train.reshape(-1, 1)
 
@@ -257,7 +275,10 @@ def run_prediction_pipeline(config, plugin):
 
         try:
             # Build the model
-            plugin.build_model(input_shape=x_train.shape[1])
+            if config['plugin'] == 'cnn':
+                plugin.build_model(input_shape=(window_size, x_train.shape[2]))
+            else:
+                plugin.build_model(input_shape=x_train.shape[1])
 
             # Train the model
             plugin.train(
@@ -266,6 +287,8 @@ def run_prediction_pipeline(config, plugin):
                 epochs=epochs,
                 batch_size=batch_size,
                 threshold_error=threshold_error,
+                x_val=x_val,
+                y_val=y_val
             )
 
             print("Evaluating trained model on training and validation data. Please wait...")
@@ -357,6 +380,7 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
+
 
 
 
