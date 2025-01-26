@@ -7,6 +7,7 @@ import json
 import sys
 from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
+import logging
 from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
 
 
@@ -251,9 +252,9 @@ def run_prediction_pipeline(config, plugin):
                     batch_size=batch_size,
                     threshold_error=threshold_error,
                 )
-
                 # Suppress TensorFlow logging
-                tf.get_logger().setLevel('ERROR')
+                tf.get_logger().setLevel(logging.ERROR)
+                os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
                 # Predict using the stride logic
                 predictions = []
@@ -265,7 +266,8 @@ def run_prediction_pipeline(config, plugin):
                     predictions.append(stride_pred)
 
                 # Restore TensorFlow logging level
-                tf.get_logger().setLevel('INFO')
+                tf.get_logger().setLevel(logging.INFO)
+                os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 
                 # Concatenate predictions
                 predictions = np.vstack(predictions)
