@@ -22,7 +22,7 @@ class Plugin:
         'intermediate_layers': 3,         # Number of hidden Dense layers
         'initial_layer_size': 64,         # Number of neurons in the first Dense layer
         'layer_size_divisor': 2,          # Factor to reduce neurons in subsequent layers
-        'learning_rate': 0.001,          # Learning rate for the Adam optimizer
+        'learning_rate': 0.002,          # Learning rate for the Adam optimizer
         'activation': 'tanh',             # Activation function for Dense layers
         'patience': 5,                     # Patience parameter for Early Stopping
         'l2_reg': 1e-4,                    # L2 regularization factor
