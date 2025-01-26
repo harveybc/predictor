@@ -172,15 +172,12 @@ def create_sliding_windows(x, y, window_size, step=1):
     return np.array(x_windows), np.array(y_windows)
 
 
-from sklearn.metrics import r2_score  # Import added for R² calculation
-
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline with conditional data reshaping for different plugins.
     Ensures row-limiting and displays both Training and Validation MAE and R² with separators.
     Implements multiple iterations and aggregates MAE and R² statistics.
     Saves the aggregated statistics to a CSV file specified by config['results_file'].
-    Adds DATE_TIME column to the predictions CSV.
 
     Args:
         config (dict): Configuration dictionary containing parameters for the pipeline.
@@ -352,13 +349,9 @@ def run_prediction_pipeline(config, plugin):
                         if time_horizon > 1:
                             print("Applying multi-step slicing to validation targets...")
                             Y_val_list = []
-                            date_time_val_list = []
                             for i in range(len(y_val_np) - time_horizon + 1):
                                 row_values = [y_val_np[i + j][0] for j in range(time_horizon)]
                                 Y_val_list.append(row_values)
-                                # Assign DATE_TIME corresponding to the last step in the time horizon
-                                date_time = pd.to_datetime(x_val_df.index[i + time_horizon - 1])
-                                date_time_val_list.append(date_time)
                             if not Y_val_list:
                                 raise ValueError(
                                     "After creating multi-step slices, no validation samples remain. "
@@ -367,9 +360,6 @@ def run_prediction_pipeline(config, plugin):
                             y_val_np = np.array(Y_val_list)
                             x_val_np = x_val_np[:len(y_val_np)]  # Adjust x_val_np accordingly
                             print(f"Validation data shape after multi-step slicing: X: {x_val_np.shape}, Y: {y_val_np.shape}")
-
-                            # Create a DataFrame for DATE_TIME
-                            date_time_val_df = pd.DataFrame({'DATE_TIME': date_time_val_list})
 
                 # Train the model with or without validation data
                 if config['plugin'] == 'cnn' and x_val_np is not None and y_val_np is not None:
@@ -422,7 +412,7 @@ def run_prediction_pipeline(config, plugin):
                 training_r2_list.append(r2)
 
                 # ----------------------------
-                # CONVERT PREDICTIONS TO DATAFRAME WITH DATE_TIME
+                # CONVERT PREDICTIONS TO DATAFRAME
                 # ----------------------------
                 if predictions.ndim == 1 or predictions.shape[1] == 1:
                     predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
@@ -430,13 +420,6 @@ def run_prediction_pipeline(config, plugin):
                     num_steps = predictions.shape[1]
                     pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
                     predictions_df = pd.DataFrame(predictions, columns=pred_cols)
-
-                # Add DATE_TIME column from y_train_data
-                predictions_df['DATE_TIME'] = y_train_data['DATE_TIME']
-
-                # Rearrange columns to have DATE_TIME first
-                cols = ['DATE_TIME'] + [col for col in predictions_df.columns if col != 'DATE_TIME']
-                predictions_df = predictions_df[cols]
 
                 # ----------------------------
                 # SAVE PREDICTIONS TO CSV
@@ -511,7 +494,7 @@ def run_prediction_pipeline(config, plugin):
                     validation_r2_list.append(validation_r2)
 
                     # ----------------------------
-                    # CONVERT VALIDATION PREDICTIONS TO DATAFRAME WITH DATE_TIME
+                    # CONVERT VALIDATION PREDICTIONS TO DATAFRAME
                     # ----------------------------
                     if validation_predictions.ndim == 1 or validation_predictions.shape[1] == 1:
                         validation_predictions_df = pd.DataFrame(validation_predictions, columns=['Prediction'])
@@ -520,24 +503,10 @@ def run_prediction_pipeline(config, plugin):
                         pred_cols_val = [f'Prediction_{i+1}' for i in range(num_steps_val)]
                         validation_predictions_df = pd.DataFrame(validation_predictions, columns=pred_cols_val)
 
-                    # Add DATE_TIME column from y_val_np
-                    # Since y_val_np is a numpy array, ensure that DATE_TIME was captured during slicing
-                    # Assuming date_time_val_list was created during multi-step slicing
-                    if 'date_time_val_df' in locals():
-                        validation_predictions_df['DATE_TIME'] = date_time_val_df['DATE_TIME']
-                    else:
-                        # If DATE_TIME wasn't captured, skip adding it
-                        validation_predictions_df['DATE_TIME'] = np.nan  # Placeholder
-                        print("Warning: DATE_TIME for validation predictions not captured.")
-
-                    # Rearrange columns to have DATE_TIME first
-                    cols_val = ['DATE_TIME'] + [col for col in validation_predictions_df.columns if col != 'DATE_TIME']
-                    validation_predictions_df = validation_predictions_df[cols_val]
-
                     # ----------------------------
                     # SAVE VALIDATION PREDICTIONS TO CSV (Optional)
                     # ----------------------------
-                    # If you wish to save validation predictions with DATE_TIME, uncomment the following lines:
+                    # If you wish to save validation predictions to a separate CSV, uncomment the following lines:
                     # validation_output_filename = config.get('validation_output_file', 'validation_predictions.csv')
                     # try:
                     #     write_csv(
