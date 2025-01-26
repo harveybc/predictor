@@ -7,6 +7,8 @@ import json
 import sys
 from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
+from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
+
 
 def process_data(config):
     """
@@ -170,11 +172,14 @@ def create_sliding_windows(x, y, window_size, step=1):
     return np.array(x_windows), np.array(y_windows)
 
 
+from sklearn.metrics import r2_score  # Import added for R² calculation
+
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline with conditional data reshaping for different plugins.
-    Ensures row-limiting and displays both Training and Validation MAE with separators.
-    Implements multiple iterations and aggregates MAE statistics.
+    Ensures row-limiting and displays both Training and Validation MAE and R² with separators.
+    Implements multiple iterations and aggregates MAE and R² statistics.
+    Saves the aggregated statistics to a CSV file specified by config['results_file'].
 
     Args:
         config (dict): Configuration dictionary containing parameters for the pipeline.
@@ -185,9 +190,11 @@ def run_prediction_pipeline(config, plugin):
     iterations = config.get('iterations', 1)
     print(f"Number of iterations: {iterations}")
 
-    # Lists to store MAE values for each iteration
+    # Lists to store MAE and R² values for each iteration
     training_mae_list = []
+    training_r2_list = []
     validation_mae_list = []
+    validation_r2_list = []
 
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
@@ -393,11 +400,18 @@ def run_prediction_pipeline(config, plugin):
                 # ----------------------------
                 mse = float(plugin.calculate_mse(y_train_np, predictions))
                 mae = float(plugin.calculate_mae(y_train_np, predictions))
+                try:
+                    r2 = float(plugin.calculate_r2(y_train_np, predictions))
+                except AttributeError:
+                    # If the plugin does not have calculate_r2, use sklearn
+                    r2 = float(r2_score(y_train_np, predictions))
                 print(f"Mean Squared Error: {mse}")
                 print(f"Mean Absolute Error: {mae}")
+                print(f"R² Score: {r2}")
 
-                # Append MAE to lists
+                # Append MAE and R² to lists
                 training_mae_list.append(mae)
+                training_r2_list.append(r2)
 
                 # ----------------------------
                 # CONVERT PREDICTIONS TO DATAFRAME
@@ -430,7 +444,8 @@ def run_prediction_pipeline(config, plugin):
                     'iteration': iteration,
                     'execution_time': float(execution_time_iteration),
                     'mse': mse,
-                    'mae': mae
+                    'mae': mae,
+                    'r2': r2
                 }
 
                 if config.get('save_log'):
@@ -463,62 +478,108 @@ def run_prediction_pipeline(config, plugin):
                     # Calculate validation errors
                     validation_mse = float(plugin.calculate_mse(y_val_np, validation_predictions))
                     validation_mae = float(plugin.calculate_mae(y_val_np, validation_predictions))
+                    try:
+                        validation_r2 = float(plugin.calculate_r2(y_val_np, validation_predictions))
+                    except AttributeError:
+                        # If the plugin does not have calculate_r2, use sklearn
+                        validation_r2 = float(r2_score(y_val_np, validation_predictions))
                     print(f"Validation Mean Squared Error: {validation_mse}")
                     print(f"Validation Mean Absolute Error: {validation_mae}")
+                    print(f"Validation R² Score: {validation_r2}")
 
-                    # Append Validation MAE to list
+                    # Append Validation MAE and R² to lists
                     validation_mae_list.append(validation_mae)
+                    validation_r2_list.append(validation_r2)
 
                     # ----------------------------
-                    # PRINT TRAINING AND VALIDATION MAE WITH SEPARATORS
+                    # PRINT TRAINING AND VALIDATION MAE AND R² WITH SEPARATORS
                     # ----------------------------
                     print("***************************")
                     print(f"Training MAE = {mae}")
+                    print(f"Training R² = {r2}")
                     print("***************************")
                     print(f"Validation MAE = {validation_mae}")
+                    print(f"Validation R² = {validation_r2}")
                     print("***************************")
 
         except Exception as e:
             print(f"Iteration {iteration} failed: {e}")
             continue  # Proceed to the next iteration
 
-    # After all iterations, compute aggregated MAE statistics
-    if iterations > 0 and training_mae_list and validation_mae_list:
+    # After all iterations, compute aggregated MAE and R² statistics
+    if iterations > 0 and training_mae_list and validation_mae_list and training_r2_list and validation_r2_list:
         training_mae_array = np.array(training_mae_list)
+        training_r2_array = np.array(training_r2_list)
         validation_mae_array = np.array(validation_mae_list)
+        validation_r2_array = np.array(validation_r2_list)
 
         avg_training_mae = np.mean(training_mae_array)
         std_training_mae = np.std(training_mae_array)
         max_training_mae = np.max(training_mae_array)
         min_training_mae = np.min(training_mae_array)
 
+        avg_training_r2 = np.mean(training_r2_array)
+        std_training_r2 = np.std(training_r2_array)
+        max_training_r2 = np.max(training_r2_array)
+        min_training_r2 = np.min(training_r2_array)
+
         avg_validation_mae = np.mean(validation_mae_array)
         std_validation_mae = np.std(validation_mae_array)
         max_validation_mae = np.max(validation_mae_array)
         min_validation_mae = np.min(validation_mae_array)
 
+        avg_validation_r2 = np.mean(validation_r2_array)
+        std_validation_r2 = np.std(validation_r2_array)
+        max_validation_r2 = np.max(validation_r2_array)
+        min_validation_r2 = np.min(validation_r2_array)
+
         # Print aggregated statistics with separators
         print("\n***********************************")
-        print("Aggregated MAE Statistics After All Iterations:")
+        print("Aggregated MAE and R² Statistics After All Iterations:")
         print("***********************************")
         print(f"Average Training MAE: {avg_training_mae}")
         print(f"Training MAE Std Dev: {std_training_mae}")
         print(f"Training MAE Max: {max_training_mae}")
         print(f"Training MAE Min: {min_training_mae}")
+        print(f"Average Training R²: {avg_training_r2}")
+        print(f"Training R² Std Dev: {std_training_r2}")
+        print(f"Training R² Max: {max_training_r2}")
+        print(f"Training R² Min: {min_training_r2}")
         print("***********************************")
         print(f"Average Validation MAE: {avg_validation_mae}")
         print(f"Validation MAE Std Dev: {std_validation_mae}")
         print(f"Validation MAE Max: {max_validation_mae}")
         print(f"Validation MAE Min: {min_validation_mae}")
+        print(f"Average Validation R²: {avg_validation_r2}")
+        print(f"Validation R² Std Dev: {std_validation_r2}")
+        print(f"Validation R² Max: {max_validation_r2}")
+        print(f"Validation R² Min: {min_validation_r2}")
         print("***********************************")
+
+        # Save aggregated statistics to results_file in CSV format
+        results = {
+            'Metric': ['Training MAE', 'Training R²', 'Validation MAE', 'Validation R²'],
+            'Average': [avg_training_mae, avg_training_r2, avg_validation_mae, avg_validation_r2],
+            'Std Dev': [std_training_mae, std_training_r2, std_validation_mae, std_validation_r2],
+            'Max': [max_training_mae, max_training_r2, max_validation_mae, max_validation_r2],
+            'Min': [min_training_mae, min_training_r2, min_validation_mae, min_validation_r2]
+        }
+        results_df = pd.DataFrame(results)
+        results_file = config.get('results_file', 'results.csv')
+        try:
+            results_df.to_csv(results_file, index=False)
+            print(f"Aggregated statistics saved to {results_file}")
+        except Exception as e:
+            print(f"Failed to save aggregated statistics to {results_file}: {e}")
     else:
         print("\n***********************************")
-        print("No valid MAE statistics to display.")
+        print("No valid MAE and R² statistics to display.")
         print("***********************************")
 
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"\nExecution time for all iterations: {execution_time} seconds")
+
 
 
 
@@ -617,6 +678,23 @@ def create_multi_step_targets(y, time_horizon):
         Y_list.append(row)
     return np.array(Y_list)
 
+
+def create_multi_step_targets(y, time_horizon):
+    """
+    Transforms the target data into multi-step targets based on the specified time horizon.
+    
+    Args:
+        y (numpy.ndarray): Original target data of shape (N,).
+        time_horizon (int): Number of future steps to predict.
+    
+    Returns:
+        numpy.ndarray: Transformed target data of shape (N - time_horizon + 1, time_horizon).
+    """
+    Y_list = []
+    for i in range(len(y) - time_horizon + 1):
+        row = y[i:i + time_horizon].flatten()
+        Y_list.append(row)
+    return np.array(Y_list)
 
 
 
