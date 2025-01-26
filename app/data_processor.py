@@ -154,7 +154,7 @@ def create_sliding_windows(x, y, window_size, date_times=None, step=1):
 
 def run_prediction_pipeline(config, plugin):
     """
-    Runs the prediction pipeline with generic data processing suitable for any plugin.
+    Runs the prediction pipeline with conditional data reshaping for different plugins.
     Ensures row-limiting and displays both Training and Validation MAE and R² with separators.
     Implements multiple iterations and aggregates MAE and R² statistics.
     Saves the aggregated statistics to a CSV file specified by config['results_file'].
@@ -190,6 +190,7 @@ def run_prediction_pipeline(config, plugin):
             epochs = config['epochs']
             threshold_error = config['threshold_error']
             window_size = config.get('window_size', None)  # e.g., 24 for daily patterns
+            target_column = config.get('target_column', None)  # Specify the target column
 
             # Debugging: Print window_size
             print(f"Configured window_size: {window_size}")
@@ -209,13 +210,10 @@ def run_prediction_pipeline(config, plugin):
             # ----------------------------
             # GENERIC DATA RESHAPING FOR ANY PLUGIN
             # ----------------------------
-            # Assume that plugins that require sliding windows (like CNN) will handle it internally,
-            # or define a generic mechanism here without differentiating plugins.
+            # Determine if the plugin expects 3D input (e.g., CNN)
+            expects_3d_input = hasattr(plugin, 'expects_3d_input') and plugin.expects_3d_input()
 
-            # For demonstration, we'll check if the plugin expects 3D input (e.g., CNN)
-            expected_input_shape = plugin.get_expected_input_shape()  # Assumes plugins have this method
-
-            if expected_input_shape is not None and len(expected_input_shape) == 3:
+            if expects_3d_input:
                 # Plugin expects (samples, window_size, features)
                 if window_size is None:
                     raise ValueError("`window_size` must be specified in config for plugins expecting windowed input.")
@@ -229,13 +227,15 @@ def run_prediction_pipeline(config, plugin):
                 )
                 print(f"Sliding windows created: x_train_windowed shape: {x_train_windowed.shape}, y_train_windowed shape: {y_train_windowed.shape}")
 
+                # Update plugin's window_size parameter if necessary
+                plugin.set_params(window_size=window_size)
+
                 # Build model with window_size
                 plugin.build_model(input_shape=x_train_windowed.shape[1:])
 
                 # Replace original x_train and y_train with windowed data
                 x_train_np = x_train_windowed
                 y_train_np = y_train_windowed
-
             else:
                 # Plugin expects standard (samples, features) input
                 input_shape = x_train_np.shape[1:]
@@ -255,7 +255,6 @@ def run_prediction_pipeline(config, plugin):
                 y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
 
                 # Extract target column if specified
-                target_column = config.get('target_column', None)
                 if target_column is not None:
                     if isinstance(target_column, str):
                         if target_column not in y_val_df.columns:
@@ -285,7 +284,7 @@ def run_prediction_pipeline(config, plugin):
                     print(f"Validation data shape after limiting: X: {x_val_np.shape}, Y: {y_val_np.shape}")
 
                 # Apply sliding window if plugin expects 3D input
-                if expected_input_shape is not None and len(expected_input_shape) == 3:
+                if expects_3d_input:
                     if window_size is None:
                         raise ValueError("`window_size` must be specified in config for plugins expecting windowed input.")
                     date_times_val = x_val_df.index if isinstance(x_val_df, pd.DataFrame) else None
@@ -546,7 +545,6 @@ def run_prediction_pipeline(config, plugin):
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"\nExecution time for all iterations: {execution_time} seconds")
-
 
 
 def load_and_evaluate_model(config, plugin):
