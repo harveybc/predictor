@@ -18,12 +18,11 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.002
-        
-
+        'learning_rate': 0.002,
+        'time_horizon': 6  # Added time_horizon parameter
     }
 
-    plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers', 'initial_layer_size']
+    plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers', 'initial_layer_size', 'time_horizon']
 
     def __init__(self):
         self.params = self.plugin_params.copy()
@@ -248,6 +247,6 @@ class Plugin:
 # Debugging usage example
 if __name__ == "__main__":
     plugin = Plugin()
-    plugin.build_model(input_shape=8)
+    plugin.build_model(input_shape=(24, 8))  # Example input_shape for CNN
     debug_info = plugin.get_debug_info()
     print(f"Debug Info: {debug_info}")
