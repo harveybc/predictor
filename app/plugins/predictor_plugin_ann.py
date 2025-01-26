@@ -19,7 +19,6 @@ class Plugin:
     
     # Default parameters for the ANN
     plugin_params = {
-        'epochs': 200,                    # Total number of training epochs
         'batch_size': 128,                # Number of samples per gradient update
         'intermediate_layers': 3,         # Number of hidden Dense layers
         'initial_layer_size': 128,         # Number of neurons in the first Dense layer
