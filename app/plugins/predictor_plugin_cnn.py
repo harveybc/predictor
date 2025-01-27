@@ -167,7 +167,7 @@ class Plugin:
 
         # Early Stopping based on loss or validation loss
         patience = self.params.get('patience', 10)  # default patience is 10 epochs
-        monitor_metric = 'val_loss' if (x_val is not None and y_val is not None) else 'loss'
+        monitor_metric = 'loss'
         early_stopping_monitor = EarlyStopping(
             monitor=monitor_metric,
             patience=patience,
@@ -184,7 +184,6 @@ class Plugin:
                 epochs=epochs,
                 batch_size=batch_size,
                 verbose=1,
-                validation_data=(x_val, y_val),
                 callbacks=callbacks
             )
         else:
@@ -199,7 +198,7 @@ class Plugin:
         print("Training completed.")
 
         # Retrieve the final loss from the training history
-        mse = history.history['val_loss'][-1] if (x_val is not None and y_val is not None) else history.history['loss'][-1]
+        mse = history.history['loss'][-1]
         print(f"Final training loss (Huber): {mse}")
 
         # Check if the final loss exceeds the threshold_error
