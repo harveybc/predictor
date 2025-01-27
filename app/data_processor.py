@@ -15,7 +15,7 @@ import contextlib
 def process_data(config):
     """
     Loads and processes both training and validation datasets (features and targets).
-    
+
     Args:
         config (dict): Configuration dictionary containing parameters for data processing.
 
@@ -91,8 +91,27 @@ def process_data(config):
         if datasets[key].empty:
             raise ValueError(f"Dataset '{key}' is empty after alignment and offsets.")
 
-    # Return processed datasets
+    # Transform y_train and y_val into multi-step targets
+    def create_multi_step_targets(df, time_horizon):
+        y_multi_step = []
+        for i in range(len(df) - time_horizon + 1):
+            y_multi_step.append(df.iloc[i:i + time_horizon].values.flatten())
+        return pd.DataFrame(y_multi_step)
+
+    datasets["y_train"] = create_multi_step_targets(datasets["y_train"], time_horizon)
+    datasets["y_val"] = create_multi_step_targets(datasets["y_val"], time_horizon)
+
+    # Adjust x_train and x_val lengths to match transformed y lengths
+    datasets["x_train"] = datasets["x_train"].iloc[:len(datasets["y_train"])].reset_index(drop=True)
+    datasets["x_val"] = datasets["x_val"].iloc[:len(datasets["y_val"])].reset_index(drop=True)
+    datasets["y_train"] = datasets["y_train"].reset_index(drop=True)
+    datasets["y_val"] = datasets["y_val"].reset_index(drop=True)
+
+    print(f"Processed datasets: x_train: {datasets['x_train'].shape}, y_train: {datasets['y_train'].shape}")
+    print(f"x_val: {datasets['x_val'].shape}, y_val: {datasets['y_val'].shape}")
+
     return datasets
+
 
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):

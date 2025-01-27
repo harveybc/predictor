@@ -156,6 +156,8 @@ class Plugin:
             batch_size (int): Training batch size.
             threshold_error (float): Threshold for loss to trigger warnings.
             x_val (numpy.ndarray, optional): Validation input data.
+
+            
             y_val (numpy.ndarray, optional): Validation target data.
         """
         if x_train.ndim != 3:
