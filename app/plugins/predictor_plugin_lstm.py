@@ -15,9 +15,9 @@ class Plugin:
 
     plugin_params = {
         'epochs': 200,
-        'batch_size': 32,
-        'intermediate_layers': 2,
-        'initial_layer_size': 128,
+        'batch_size': 128,
+        'intermediate_layers': 3,
+        'initial_layer_size': 32,
         'layer_size_divisor': 2,
         'learning_rate': 0.001,
         'l2_reg': 1e-4,     # L2 regularization factor
@@ -69,7 +69,7 @@ class Plugin:
                 x = LSTM(size, activation='tanh', recurrent_activation='sigmoid', kernel_initializer=GlorotUniform(),kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)), return_sequences=True)(x)
                 x = BatchNormalization()(x)
         x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', kernel_initializer=GlorotUniform(), kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)))(x)
-        model_output = Dense(layers[-1], activation='tanh', kernel_initializer=HeNormal(), kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)), name="model_output")(x)
+        model_output = Dense(layers[-1], activation='tanh', kernel_initializer=GlorotUniform(), kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)), name="model_output")(x)
         # add batch normalization
         model_output = BatchNormalization()(model_output)
 
