@@ -107,7 +107,7 @@ class Plugin:
         patience = self.params.get('patience', 10)  # Default patience for early stopping
         
         early_stopping_monitor = EarlyStopping(
-            monitor='val_loss' if x_val is not None else 'loss', 
+            monitor='loss', 
             patience=patience, 
             restore_best_weights=True,
             verbose=1
@@ -120,7 +120,6 @@ class Plugin:
         history = self.model.fit(
             x_train, 
             y_train, 
-            validation_data=validation_data, 
             epochs=epochs, 
             batch_size=batch_size, 
             verbose=1, 
@@ -128,7 +127,7 @@ class Plugin:
         )
         
         print("Training completed.")
-        final_loss = history.history['val_loss' if validation_data else 'loss'][-1]
+        final_loss = history.history['loss'][-1]
         if final_loss > threshold_error:
             print(f"Warning: Model training completed with loss {final_loss} exceeding the threshold error {threshold_error}.")
 
