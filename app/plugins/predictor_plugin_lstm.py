@@ -17,10 +17,9 @@ class Plugin:
         'epochs': 200,
         'batch_size': 128,
         'intermediate_layers': 3,
-        'initial_layer_size': 16,
+        'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.002,
-        'l2_reg': 1e-4,     # L2 regularization factor
+        'learning_rate': 0.0001,
         'dropout_rate': 0.1
     }
 
@@ -66,14 +65,11 @@ class Plugin:
         x = model_input
         for size in layers[:-1]:
             if size > 1:
-                x = LSTM(size, return_sequences=True)(x)
-                x = BatchNormalization()(x)
-        x = LSTM(layers[-2])(x)
-        model_output = Dense(layers[-1], activation='linear', name="model_output")(x)
-        # add batch normalization
-        #model_output = BatchNormalization()(model_output)
-
-
+                x = LSTM(size, activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal(), return_sequences=True)(x)
+                #x = BatchNormalization()(x)
+        x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal())(x)
+        model_output = Dense(layers[-1], activation='tanh', kernel_initializer=GlorotUniform(), name="model_output")(x)
+        
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
                 # Define the Adam optimizer with custom parameters
         adam_optimizer = Adam(
@@ -84,13 +80,7 @@ class Plugin:
             amsgrad=False          # Default value
         )
 
-        # Compile the model with Huber loss and evaluation metrics
-        self.model.compile(
-            optimizer=adam_optimizer, 
-            loss=Huber(), 
-            metrics=['mse','mae'], 
-            run_eagerly=False  # Set to False for better performance unless debugging
-        )
+        self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse','mae'])
 
         # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
@@ -112,10 +102,10 @@ class Plugin:
         print(f"Training LSTM model with data shape: {x_train.shape}, target shape: {y_train.shape}")
         
         callbacks = []
-        patience = self.params.get('patience', 10)  # Default patience for early stopping
+        patience = self.params.get('patience', 5)  # Default patience for early stopping
         
         early_stopping_monitor = EarlyStopping(
-            monitor='loss', 
+            monitor='val_loss' if x_val is not None else 'loss', 
             patience=patience, 
             restore_best_weights=True,
             verbose=1
@@ -128,6 +118,7 @@ class Plugin:
         history = self.model.fit(
             x_train, 
             y_train, 
+            validation_data=validation_data, 
             epochs=epochs, 
             batch_size=batch_size, 
             verbose=1, 
@@ -135,7 +126,7 @@ class Plugin:
         )
         
         print("Training completed.")
-        final_loss = history.history['loss'][-1]
+        final_loss = history.history['val_loss' if validation_data else 'loss'][-1]
         if final_loss > threshold_error:
             print(f"Warning: Model training completed with loss {final_loss} exceeding the threshold error {threshold_error}.")
 
