@@ -15,7 +15,7 @@ DEFAULT_VALUES = {
     'evaluate_file': './model_eval.csv',
     'plugin': 'cnn',
     'time_horizon': 6,
-    'threshold_error': 0.00004,
+    'threshold_error': 0.0000001,
     'remote_log': None,
     'remote_load_config': None,
     'remote_save_config': None,
