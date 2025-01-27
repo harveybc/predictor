@@ -86,28 +86,50 @@ class Plugin:
         print("Predictor Model Summary:")
         self.model.summary()
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error):
-        print(f"Training predictor model with data shape: {x_train.shape}")
-
-
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
+        """
+        Train the LSTM model with optional validation data.
+        
+        Args:
+            x_train (np.ndarray): Training input data.
+            y_train (np.ndarray): Training target data.
+            epochs (int): Number of training epochs.
+            batch_size (int): Size of training batches.
+            threshold_error (float): Threshold error to monitor.
+            x_val (np.ndarray, optional): Validation input data. Defaults to None.
+            y_val (np.ndarray, optional): Validation target data. Defaults to None.
+        """
+        print(f"Training LSTM model with data shape: {x_train.shape}, target shape: {y_train.shape}")
+        
         callbacks = []
-    
-        patience = self.params.get('patience', 5)  # default patience is 10 epochs
+        patience = self.params.get('patience', 5)  # Default patience for early stopping
+        
         early_stopping_monitor = EarlyStopping(
-            monitor='loss', 
+            monitor='val_loss' if x_val is not None else 'loss', 
             patience=patience, 
             restore_best_weights=True,
             verbose=1
         )
         callbacks.append(early_stopping_monitor)
+        
+        validation_data = (x_val, y_val) if x_val is not None and y_val is not None else None
 
-
-
-        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1, callbacks=callbacks)
+        # Fit the model
+        history = self.model.fit(
+            x_train, 
+            y_train, 
+            validation_data=validation_data, 
+            epochs=epochs, 
+            batch_size=batch_size, 
+            verbose=1, 
+            callbacks=callbacks
+        )
+        
         print("Training completed.")
-        mse = history.history['loss'][-1]
-        if mse > threshold_error:
-            print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
+        final_loss = history.history['val_loss' if validation_data else 'loss'][-1]
+        if final_loss > threshold_error:
+            print(f"Warning: Model training completed with loss {final_loss} exceeding the threshold error {threshold_error}.")
+
 
     def predict(self, data):
         print(f"Predicting data with shape: {data.shape}")
