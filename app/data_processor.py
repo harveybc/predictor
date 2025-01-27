@@ -98,12 +98,6 @@ def process_data(config):
         pass
     elif plugin_type in ["ann", "lstm"]:
         # Multi-step transformation for ANN and LSTM
-        def create_multi_step_targets(df, time_horizon):
-            y_multi_step = []
-            for i in range(len(df) - time_horizon + 1):
-                y_multi_step.append(df.iloc[i:i + time_horizon].values.flatten())
-            return pd.DataFrame(y_multi_step)
-
         datasets["y_train"] = create_multi_step_targets(datasets["y_train"], time_horizon)
         datasets["y_val"] = create_multi_step_targets(datasets["y_val"], time_horizon)
 
@@ -114,11 +108,6 @@ def process_data(config):
         datasets["y_val"] = datasets["y_val"].reset_index(drop=True)
     elif plugin_type == "transformers":
         # Apply positional encoding
-        def positional_encoding(df):
-            position = np.arange(len(df)).reshape(-1, 1)
-            encoded = np.sin(position / 10000**(2 * np.arange(df.shape[1]) / df.shape[1]))
-            return pd.DataFrame(encoded, index=df.index)
-
         x_train_pe = positional_encoding(datasets["x_train"])
         x_val_pe = positional_encoding(datasets["x_val"])
 
@@ -481,47 +470,25 @@ def load_and_evaluate_model(config, plugin):
 
 
 
-
-def create_multi_step_targets(y, time_horizon):
+def create_multi_step_targets(df, time_horizon):
     """
-    Transforms the target data into multi-step targets based on the specified time horizon.
+    Creates multi-step targets for time-series prediction.
 
     Args:
-        y (numpy.ndarray): Original target data of shape (N,) or (N, 1).
+        df (pd.DataFrame): Target data as a DataFrame.
         time_horizon (int): Number of future steps to predict.
 
     Returns:
-        numpy.ndarray: Transformed target data of shape (N - time_horizon + 1, time_horizon).
+        pd.DataFrame: Multi-step targets aligned with the input data.
     """
-    if y.ndim == 2 and y.shape[1] == 1:
-        y = y.flatten()
-    elif y.ndim > 2:
-        raise ValueError("y should be a 1D or 2D array with a single column.")
+    y_multi_step = []
+    for i in range(len(df) - time_horizon + 1):
+        y_multi_step.append(df.iloc[i:i + time_horizon].values.flatten())
 
-    Y_list = []
-    for i in range(len(y) - time_horizon + 1):
-        row = y[i:i + time_horizon]
-        Y_list.append(row)
-    return np.array(Y_list)
+    # Create DataFrame with aligned indices
+    y_multi_step_df = pd.DataFrame(y_multi_step, index=df.index[:len(y_multi_step)])
+    return y_multi_step_df
 
-
-
-def create_multi_step_targets(y, time_horizon):
-    """
-    Transforms the target data into multi-step targets based on the specified time horizon.
-    
-    Args:
-        y (numpy.ndarray): Original target data of shape (N,).
-        time_horizon (int): Number of future steps to predict.
-    
-    Returns:
-        numpy.ndarray: Transformed target data of shape (N - time_horizon + 1, time_horizon).
-    """
-    Y_list = []
-    for i in range(len(y) - time_horizon + 1):
-        row = y[i:i + time_horizon].flatten()
-        Y_list.append(row)
-    return np.array(Y_list)
 
 
 
