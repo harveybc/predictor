@@ -71,7 +71,7 @@ class Plugin:
         x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', kernel_initializer=GlorotUniform(), kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)))(x)
         model_output = Dense(layers[-1], activation='tanh', kernel_initializer=HeNormal(), kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)), name="model_output")(x)
         # add batch normalization
-        #model_output = BatchNormalization()(model_output)
+        model_output = BatchNormalization()(model_output)
 
 
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
