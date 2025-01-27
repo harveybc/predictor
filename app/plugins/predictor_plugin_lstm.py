@@ -17,9 +17,9 @@ class Plugin:
         'epochs': 200,
         'batch_size': 128,
         'intermediate_layers': 3,
-        'initial_layer_size': 32,
+        'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.001,
+        'learning_rate': 0.002,
         'l2_reg': 1e-4,     # L2 regularization factor
         'dropout_rate': 0.1
     }
@@ -66,12 +66,12 @@ class Plugin:
         x = model_input
         for size in layers[:-1]:
             if size > 1:
-                x = LSTM(size, activation='tanh', recurrent_activation='sigmoid', kernel_initializer=GlorotUniform(),kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)), return_sequences=True)(x)
+                x = LSTM(size, kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)), return_sequences=True)(x)
                 x = BatchNormalization()(x)
-        x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', kernel_initializer=GlorotUniform(), kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)))(x)
-        model_output = Dense(layers[-1], activation='tanh', kernel_initializer=GlorotUniform(), kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)), name="model_output")(x)
+        x = LSTM(layers[-2], kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)))(x)
+        model_output = Dense(layers[-1], activation='linear', kernel_initializer=GlorotUniform(), kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)), name="model_output")(x)
         # add batch normalization
-        model_output = BatchNormalization()(model_output)
+        #model_output = BatchNormalization()(model_output)
 
 
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
