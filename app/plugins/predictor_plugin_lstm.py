@@ -104,7 +104,7 @@ class Plugin:
         print(f"Training LSTM model with data shape: {x_train.shape}, target shape: {y_train.shape}")
         
         callbacks = []
-        patience = self.params.get('patience', 5)  # Default patience for early stopping
+        patience = self.params.get('patience', 10)  # Default patience for early stopping
         
         early_stopping_monitor = EarlyStopping(
             monitor='val_loss' if x_val is not None else 'loss', 
