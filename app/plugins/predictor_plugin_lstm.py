@@ -69,7 +69,7 @@ class Plugin:
                 x = LSTM(size, activation='relu', recurrent_activation='relu', kernel_initializer=HeNormal(),kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)), return_sequences=True)(x)
                 #x = BatchNormalization()(x)
         x = LSTM(layers[-2], activation='relu', recurrent_activation='relu', kernel_initializer=HeNormal(), kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)))(x)
-        model_output = Dense(layers[-1], activation='relu', kernel_initializer=HeNormal(), kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)), name="model_output")(x)
+        model_output = Dense(layers[-1], activation='linear', kernel_initializer=HeNormal(), kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)), name="model_output")(x)
         # add batch normalization
         model_output = BatchNormalization()(model_output)
 
