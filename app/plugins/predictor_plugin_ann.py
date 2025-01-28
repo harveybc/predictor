@@ -112,7 +112,7 @@ class Plugin:
             name="model_output"
         )(x)
         #add batch normalization
-        model_output = BatchNormalization()(model_output)
+        #model_output = BatchNormalization()(model_output)
 
         self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
 
@@ -147,7 +147,7 @@ class Plugin:
         
         callbacks = []
         early_stopping_monitor = EarlyStopping(
-            monitor='val_loss',
+            monitor='loss',
             patience=self.params['patience'],
             restore_best_weights=True,
             verbose=1
