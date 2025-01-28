@@ -125,7 +125,8 @@ class Plugin:
             epochs=epochs, 
             batch_size=batch_size, 
             verbose=1, 
-            callbacks=callbacks
+            callbacks=callbacks,
+            shuffle=False,  # Enable shuffling
         )
         
         print("Training completed.")
