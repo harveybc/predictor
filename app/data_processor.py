@@ -15,21 +15,26 @@ import contextlib
 import pandas as pd
 import numpy as np
 
+import pandas as pd
+import numpy as np
+
 def process_data(config):
     """
-    Loads and processes training & validation datasets for multi-step forecasting,
-    ensuring no misalignment when x and y come from the same file.
+    Loads and processes training & validation datasets for multi-step time-series forecasting,
+    ensuring a 1-step shift so row i in X corresponds to rows (i+1 .. i+time_horizon) in Y.
 
     Steps:
-      1) Load x,y DataFrames (train and val). 
-      2) Convert to numeric, ensure they share the same DatetimeIndex.
-      3) Apply a symmetrical input_offset (drop rows from the start of x & y).
-      4) Create multi-step targets in y, dropping the tail of y.
-      5) Slice x to match the final y length.
+      1) Load X,Y DataFrames (train & val).
+      2) Convert to numeric & fill NAs, ensure DatetimeIndex alignment.
+      3) Shift Y by 1 step so that the first predicted step is the 'next' row.
+      4) Apply symmetrical offset (drop the first 'input_offset' rows of both X & Y).
+      5) Create multi-step columns in Y, dropping the last (time_horizon - 1) from Y.
+      6) Slice X to match the new length of Y (no leftover rows).
     """
+
     datasets = {}
 
-    # 1) LOAD DATASETS
+    # 1) Load Data
     print("Loading training and validation datasets...")
     x_train = load_csv(
         config['x_train_file'],
@@ -41,20 +46,19 @@ def process_data(config):
         headers=config['headers'],
         max_rows=config.get('max_steps_train')
     )
-    x_val = load_csv(
+    x_val   = load_csv(
         config['x_validation_file'],
         headers=config['headers'],
         max_rows=config.get('max_steps_test')
     )
-    y_val = load_csv(
+    y_val   = load_csv(
         config['y_validation_file'],
         headers=config['headers'],
         max_rows=config.get('max_steps_test')
     )
 
-    # 2) EXTRACT TARGET COLUMN
+    # 2) Convert & Extract target column
     target_column = config['target_column']
-
     def extract_target(df, col):
         if isinstance(col, str):
             if col not in df.columns:
@@ -68,27 +72,35 @@ def process_data(config):
     y_train = extract_target(y_train, target_column)
     y_val   = extract_target(y_val,   target_column)
 
-    # CONVERT ALL TO NUMERIC, FILL NAs
     for name, df in zip(['x_train','y_train','x_val','y_val'], [x_train,y_train,x_val,y_val]):
-        df_numeric = df.apply(pd.to_numeric, errors='coerce').fillna(0)
-        datasets[name] = df_numeric
+        df_converted = df.apply(pd.to_numeric, errors='coerce').fillna(0)
+        datasets[name] = df_converted
 
-    # ENSURE DATETIME INDEX
+    # Ensure DatetimeIndex
     for key in ['x_train','y_train','x_val','y_val']:
         if not isinstance(datasets[key].index, pd.DatetimeIndex):
             raise ValueError(f"Dataset '{key}' must have a DatetimeIndex.")
 
-    # ALIGN (x,y) ON COMMON INDEX
+    # Align (x,y) on same index
     for prefix in ['train','val']:
         common_idx = datasets[f'x_{prefix}'].index.intersection(datasets[f'y_{prefix}'].index)
         datasets[f'x_{prefix}'] = datasets[f'x_{prefix}'].loc[common_idx].sort_index()
         datasets[f'y_{prefix}'] = datasets[f'y_{prefix}'].loc[common_idx].sort_index()
 
-    # READ CONFIG
-    time_horizon = config['time_horizon']
-    input_offset = config['input_offset']  # default 0 if not set
+    # 3) Shift Y by 1 (next-step offset)
+    for prefix in ['train','val']:
+        datasets[f'y_{prefix}'] = datasets[f'y_{prefix}'].shift(-1)
 
-    # 3) APPLY A SYMMETRICAL OFFSET (DROP THE FIRST 'input_offset' ROWS FROM BOTH X & Y)
+    # 4) Drop the row that becomes NaN after shift
+    #    or fill it if you prefer forward fill
+    for prefix in ['train','val']:
+        datasets[f'y_{prefix}'].dropna(inplace=True)
+
+    # Also define offset/horizon
+    time_horizon = config['time_horizon']
+    input_offset = config['input_offset']
+
+    # Symmetrical offset from the start
     def apply_offset(x_df, y_df, offset):
         if offset > 0:
             x_df = x_df.iloc[offset:] if len(x_df) > offset else x_df.iloc[0:0]
@@ -98,42 +110,33 @@ def process_data(config):
     datasets['x_train'], datasets['y_train'] = apply_offset(datasets['x_train'], datasets['y_train'], input_offset)
     datasets['x_val'],   datasets['y_val']   = apply_offset(datasets['x_val'],   datasets['y_val'],   input_offset)
 
-    # 4) CREATE MULTI-STEP TARGETS FOR Y
+    # 5) Multi-step creation: row i => [i.. i+horizon-1] in Y
+    # But remember Y is already shifted by 1 step from X's perspective
     def create_multi_step_targets(y_df, horizon):
-        # For row i, we gather [i..i+horizon) from y
-        data_list = []
+        # Each row i in Y -> next horizon rows
+        multi = []
         for i in range(len(y_df) - horizon + 1):
             window = y_df.iloc[i : i + horizon].values.flatten()
-            data_list.append(window)
-        # Reuse the *original* y_df index up to len(data_list)
-        return pd.DataFrame(data_list, index=y_df.index[:len(data_list)])
+            multi.append(window)
+        return pd.DataFrame(multi, index=y_df.index[:len(multi)])
 
-    y_train_multi = create_multi_step_targets(datasets['y_train'], time_horizon)
-    y_val_multi   = create_multi_step_targets(datasets['y_val'],   time_horizon)
-
-    datasets['y_train'] = y_train_multi
-    datasets['y_val']   = y_val_multi
-
-    # 5) SLICE X TO MATCH FINAL LENGTH OF Y
     for prefix in ['train','val']:
-        # We keep as many rows in x as y after multi-step
+        y_multi = create_multi_step_targets(datasets[f'y_{prefix}'], time_horizon)
+        datasets[f'y_{prefix}'] = y_multi
+
+    # 6) Slice X to match new length of Y
+    for prefix in ['train','val']:
         final_len = len(datasets[f'y_{prefix}'])
         datasets[f'x_{prefix}'] = datasets[f'x_{prefix}'].iloc[:final_len]
 
-    # FINAL CHECK: x,y should have same length
+    # Final checks
     for prefix in ['train','val']:
-        x_len = len(datasets[f'x_{prefix}'])
-        y_len = len(datasets[f'y_{prefix}'])
-        if x_len != y_len:
-            raise ValueError(
-                f"Length mismatch in {prefix} sets even after fix: "
-                f"x_{prefix}={x_len}, y_{prefix}={y_len}"
-            )
+        if len(datasets[f'x_{prefix}']) != len(datasets[f'y_{prefix}']):
+            raise ValueError(f"Length mismatch in {prefix} sets after shift & multi-step.")
 
-    # PRINT RESULTS
     print("Processed datasets:")
     print(f"  x_train: {datasets['x_train'].shape}, y_train: {datasets['y_train'].shape}")
-    print(f"  x_val:   {datasets['x_val'].shape},   y_val:   {datasets['y_val'].shape}")
+    print(f"  x_val:   {datasets['x_val'].shape},   y_val: {datasets['y_val'].shape}")
 
     return datasets
 
