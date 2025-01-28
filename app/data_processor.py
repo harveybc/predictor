@@ -18,42 +18,56 @@ import numpy as np
 import pandas as pd
 import numpy as np
 
+##########################
+# process_data.py
+##########################
+
+import pandas as pd
+import numpy as np
+from app.data_handler import load_csv
 
 def process_data(config):
     """
-    From scratch:
-      1. Load (x_train, y_train) and (x_val, y_val), each with DatetimeIndex.
-      2. Align x,y on their intersection of timestamps.
-      3. Shift y by -1 for next-step forecasting.
-      4. Create multi-step targets (time_horizon columns) from y.
-      5. Trim x to match the new y length (no extra offsets).
-      6. Repeat for training and validation.
-
-    Returns:
-        {
-            "x_train": DataFrame,
-            "y_train": DataFrame,
-            "x_val":   DataFrame,
-            "y_val":   DataFrame
-        }
+    1) Loads x_train, y_train, x_val, y_val from CSV.
+    2) Extracts the target column in y_*.
+    3) Ensures all are numeric, have a DatetimeIndex, and are aligned.
+    4) Shifts y by 1 step into the future.
+    5) Builds multi-step columns in y.
+    6) Slices x to the same final length as y.
     """
-    print("Loading training and validation CSVs...")
 
-    # 1) Load raw
-    x_train = load_csv(config["x_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
-    y_train = load_csv(config["y_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
-    x_val   = load_csv(config["x_validation_file"], headers=config["headers"], max_rows=config.get("max_steps_test"))
-    y_val   = load_csv(config["y_validation_file"], headers=config["headers"], max_rows=config.get("max_steps_test"))
+    # 1) Load CSVs
+    x_train = load_csv(
+        config["x_train_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_train")
+    )
+    y_train = load_csv(
+        config["y_train_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_train")
+    )
+    x_val = load_csv(
+        config["x_validation_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_test")
+    )
+    y_val = load_csv(
+        config["y_validation_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_test")
+    )
 
-    # 2) Extract target column if needed
+    # 2) Extract single target column
     target_col = config["target_column"]
+
     def extract_target(df, col):
         if isinstance(col, str):
             return df[[col]]
         elif isinstance(col, int):
             return df.iloc[:, [col]]
         else:
-            raise ValueError("target_column must be str or int")
+            raise ValueError("Invalid target_column")
 
     y_train = extract_target(y_train, target_col)
     y_val   = extract_target(y_val,   target_col)
@@ -62,199 +76,189 @@ def process_data(config):
     for df in [x_train, y_train, x_val, y_val]:
         df.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-    # 3) Ensure all have DatetimeIndex
+    # Ensure DatetimeIndex
     for name, df in zip(["x_train","y_train","x_val","y_val"], [x_train,y_train,x_val,y_val]):
         if not isinstance(df.index, pd.DatetimeIndex):
-            raise ValueError(f"{name} must have DatetimeIndex, found {type(df.index)}.")
+            raise ValueError(f"{name} must have a DatetimeIndex")
 
-    # 4) Align x,y on intersection
-    def align_xy(xdf, ydf):
-        common_idx = xdf.index.intersection(ydf.index)
-        xdf = xdf.loc[common_idx].sort_index()
-        ydf = ydf.loc[common_idx].sort_index()
-        return xdf, ydf
+    # Align each (x,y)
+    def align_xy(x_df, y_df):
+        common_idx = x_df.index.intersection(y_df.index)
+        x_aligned = x_df.loc[common_idx].sort_index()
+        y_aligned = y_df.loc[common_idx].sort_index()
+        return x_aligned, y_aligned
 
     x_train, y_train = align_xy(x_train, y_train)
     x_val,   y_val   = align_xy(x_val,   y_val)
 
-    # 5) SHIFT y by -1 => next-step offset
+    # 3) Shift y by -1 => next-step offset
     y_train = y_train.shift(-1)
     y_val   = y_val.shift(-1)
-
-    # Drop last row if it became NaN
     y_train.dropna(inplace=True)
     y_val.dropna(inplace=True)
 
-    # 6) Create multi-step columns in y
+    # 4) Build multi-step columns
     time_horizon = config["time_horizon"]
 
     def create_multi_step(y_df, horizon):
-        # For row i => y[i.. i+horizon-1], flatten into 1D
-        y_multi = []
-        idx = []
+        blocks = []
+        idx_list = []
         for i in range(len(y_df) - horizon + 1):
-            block = y_df.iloc[i : i + horizon].values.flatten()
-            y_multi.append(block)
-            idx.append(y_df.index[i])  # keep i-th timestamp as the row index
-        return pd.DataFrame(y_multi, index=idx)
+            window = y_df.iloc[i : i + horizon].values.flatten()
+            blocks.append(window)
+            idx_list.append(y_df.index[i])
+        return pd.DataFrame(blocks, index=idx_list)
 
     y_train_multi = create_multi_step(y_train, time_horizon)
     y_val_multi   = create_multi_step(y_val,   time_horizon)
 
-    # 7) Trim x so it matches new y length
-    def trim_x(x_df, y_df):
-        # we keep top len(y_df) rows of x
-        max_len = len(y_df)
-        x_df = x_df.iloc[:max_len]
-        # also align on index if needed
-        common_idx = x_df.index.intersection(y_df.index)
-        x_df = x_df.loc[common_idx].sort_index()
-        y_df = y_df.loc[common_idx].sort_index()
-        return x_df, y_df
+    # 5) Slice x to match final y length
+    def slice_to_y(x_df, y_df):
+        comm_idx = x_df.index.intersection(y_df.index)
+        x_final = x_df.loc[comm_idx].sort_index()
+        y_final = y_df.loc[comm_idx].sort_index()
+        return x_final, y_final
 
-    x_train, y_train_multi = trim_x(x_train, y_train_multi)
-    x_val,   y_val_multi   = trim_x(x_val,   y_val_multi)
+    x_train_final, y_train_final = slice_to_y(x_train, y_train_multi)
+    x_val_final,   y_val_final   = slice_to_y(x_val,   y_val_multi)
 
-    # Final shape checks
-    if len(x_train) != len(y_train_multi):
-        raise ValueError(f"Train mismatch: x={len(x_train)}, y={len(y_train_multi)}")
-    if len(x_val) != len(y_val_multi):
-        raise ValueError(f"Val mismatch: x={len(x_val)}, y={len(y_val_multi)}")
+    # Final checks
+    if len(x_train_final) != len(y_train_final):
+        raise ValueError("Mismatch in train sets after multi-step")
+    if len(x_val_final) != len(y_val_final):
+        raise ValueError("Mismatch in val sets after multi-step")
 
-    print("process_data => Final shapes:")
-    print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
-    print(" x_val:  ", x_val.shape,   " y_val:  ", y_val_multi.shape)
+    print("Processed datasets:")
+    print(" x_train:", x_train_final.shape, " y_train:", y_train_final.shape)
+    print(" x_val:  ", x_val_final.shape,   " y_val:  ", y_val_final.shape)
 
     return {
-        "x_train": x_train,
-        "y_train": y_train_multi,
-        "x_val":   x_val,
-        "y_val":   y_val_multi
+        "x_train": x_train_final,
+        "y_train": y_train_final,
+        "x_val":   x_val_final,
+        "y_val":   y_val_final
     }
 
 
+##########################
+# run_prediction_pipeline.py
+##########################
+
+import time
+import os
+import numpy as np
+import pandas as pd
+from sklearn.metrics import r2_score
+import contextlib
+import sys
+
 def run_prediction_pipeline(config, plugin):
     """
-    From scratch:
-      1. Load final shapes from process_data.
-      2. Convert to numpy, feed EXACT arrays to plugin.train(...).
-      3. Evaluate both with Keras's built-in model.evaluate(...) and plugin's external calculate_mae(...).
-      4. Return matching training/validation metrics to ensure no mismatch.
+    1) Calls process_data once, getting x_train, y_train, x_val, y_val.
+    2) Builds & trains the model on those arrays.
+    3) Evaluates on the same arrays, printing training & validation MAE / R²
+       so the external evaluation matches Keras logs.
     """
-    start = time.time()
+
+    start_time = time.time()
 
     iterations = config.get("iterations", 1)
     print(f"Number of iterations: {iterations}")
 
-    # For storing iteration metrics
     train_mae_list = []
     val_mae_list   = []
     train_r2_list  = []
     val_r2_list    = []
 
-    # 1) Load final data
     from process_data import process_data
     ds = process_data(config)
-    x_train, y_train = ds["x_train"], ds["y_train"]
-    x_val,   y_val   = ds["x_val"],   ds["y_val"]
+    x_train_df, y_train_df = ds["x_train"], ds["y_train"]
+    x_val_df,   y_val_df   = ds["x_val"],   ds["y_val"]
 
-    print("post-process_data => x_train:", x_train.shape, "y_train:", y_train.shape)
-    print("                   x_val:   ", x_val.shape,   "y_val:",   y_val.shape)
+    print("Training data shapes:", x_train_df.shape, y_train_df.shape)
+    print("Validation data shapes:", x_val_df.shape, y_val_df.shape)
 
-    # Convert to numpy
-    x_train_np = x_train.to_numpy().astype(np.float32)
-    y_train_np = y_train.to_numpy().astype(np.float32)
-    x_val_np   = x_val.to_numpy().astype(np.float32)
-    y_val_np   = y_val.to_numpy().astype(np.float32)
+    x_train = x_train_df.to_numpy(dtype=np.float32)
+    y_train = y_train_df.to_numpy(dtype=np.float32)
+    x_val   = x_val_df.to_numpy(dtype=np.float32)
+    y_val   = y_val_df.to_numpy(dtype=np.float32)
 
     time_horizon = config["time_horizon"]
-    window_size  = config.get("window_size")
     plugin.set_params(time_horizon=time_horizon)
 
-    for it in range(1, iterations + 1):
-        print(f"\n=== Iteration {it}/{iterations} ===")
+    plugin_type = config["plugin"].lower()
+    def get_input_shape(x, ptype):
+        if ptype == "cnn":
+            raise NotImplementedError("Add sliding windows if you want CNN support.")
+        elif ptype == "ann":
+            return x.shape[1]
+        else:
+            return (x.shape[1],)
+
+    input_shape = get_input_shape(x_train, plugin_type)
+
+    epochs = config["epochs"]
+    batch_size = config["batch_size"]
+    threshold_error = config.get("threshold_error", 1e-4)
+
+    for iteration in range(1, iterations + 1):
+        print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start = time.time()
 
         try:
-            # 2) Build the model
-            if config["plugin"] == "cnn":
-                # create sliding windows if needed
-                # or assume we do that in process_data. 
-                # For simplicity, let's just say we have final arrays already.
-                # If you do need sliding windows, do them here (but EXACT the same for training & eval).
-                plugin.build_model(input_shape=(window_size, x_train_np.shape[2]))
-            elif config["plugin"].lower() == "ann":
-                plugin.build_model(input_shape=x_train_np.shape[1])
-            else:
-                # LSTM/others => typically input_shape=(features,)
-                plugin.build_model(input_shape=(x_train_np.shape[1],))
+            plugin.build_model(input_shape=input_shape)
 
-            # 3) Train => pass EXACT arrays
+            print("Fitting model on training data...")
             plugin.train(
-                x_train_np,
-                y_train_np,
-                epochs=config["epochs"],
-                batch_size=config["batch_size"],
-                threshold_error=config["threshold_error"],
-                x_val=x_val_np,
-                y_val=y_val_np,
+                x_train,
+                y_train,
+                epochs=epochs,
+                batch_size=batch_size,
+                threshold_error=threshold_error,
+                x_val=x_val,
+                y_val=y_val
             )
 
-            # 4) Evaluate with the EXACT same arrays
-            print("Running Keras model.evaluate on training data for direct comparison...")
-            keras_train_eval = plugin.model.evaluate(x_train_np, y_train_np, verbose=0)
-            # Usually returns [loss, mse, mae], but depends on plugin.model.compile(...)
-            # We'll assume it's [loss, mse, mae]
-            if len(keras_train_eval) == 3:
-                train_loss, train_mse, train_mae_keras = keras_train_eval
-            else:
-                # fallback if user changed metrics
-                train_loss = keras_train_eval[0]
-                train_mae_keras = keras_train_eval[-1]
+            print("Evaluating on training and validation data...")
 
-            print(f"Keras train: loss={train_loss}, mae_keras={train_mae_keras}")
+            train_predictions = plugin.predict(x_train)
+            val_predictions   = plugin.predict(x_val)
 
-            print("Running Keras model.evaluate on validation data for direct comparison...")
-            keras_val_eval = plugin.model.evaluate(x_val_np, y_val_np, verbose=0)
-            if len(keras_val_eval) == 3:
-                val_loss, val_mse, val_mae_keras = keras_val_eval
-            else:
-                val_loss = keras_val_eval[0]
-                val_mae_keras = keras_val_eval[-1]
+            # First 10 lines
+            limit_tr = min(10, len(train_predictions))
+            print("\nFirst 10 training predictions vs actual:")
+            for i in range(limit_tr):
+                print(f"Row {i} => pred={train_predictions[i]}, actual={y_train[i]}")
 
-            print(f"Keras val:   loss={val_loss}, mae_keras={val_mae_keras}")
+            limit_va = min(10, len(val_predictions))
+            print("\nFirst 10 validation predictions vs actual:")
+            for i in range(limit_va):
+                print(f"Row {i} => pred={val_predictions[i]}, actual={y_val[i]}")
 
-            # 5) Evaluate externally
-            #   a) Predictions with plugin.predict(...)
-            print("Predicting with plugin on full train & val sets to measure external MAE/R2...")
-            train_preds = plugin.predict(x_train_np)
-            val_preds   = plugin.predict(x_val_np)
+            train_mae = float(plugin.calculate_mae(y_train, train_predictions))
+            train_r2  = float(r2_score(y_train, train_predictions))
+            print(f"Training MAE: {train_mae}")
+            print(f"Training R²: {train_r2}")
 
-            #   b) External MAE
-            ext_train_mae = plugin.calculate_mae(y_train_np, train_preds)
-            ext_val_mae   = plugin.calculate_mae(y_val_np,   val_preds)
-            #   c) R^2
-            ext_train_r2 = r2_score(y_train_np, train_preds)
-            ext_val_r2   = r2_score(y_val_np,   val_preds)
+            val_mae = float(plugin.calculate_mae(y_val, val_predictions))
+            val_r2  = float(r2_score(y_val, val_predictions))
+            print(f"Validation MAE: {val_mae}")
+            print(f"Validation R²: {val_r2}")
 
-            print(f"External train MAE={ext_train_mae:.4f}, R²={ext_train_r2:.4f}")
-            print(f"External  val  MAE={ext_val_mae:.4f}, R²={ext_val_r2:.4f}")
-
-            train_mae_list.append(ext_train_mae)
-            val_mae_list.append(ext_val_mae)
-            train_r2_list.append(ext_train_r2)
-            val_r2_list.append(ext_val_r2)
+            train_mae_list.append(train_mae)
+            val_mae_list.append(val_mae)
+            train_r2_list.append(train_r2)
+            val_r2_list.append(val_r2)
 
             iteration_end = time.time()
-            print(f"Iteration {it} complete in {iteration_end - iteration_start:.2f} sec.")
+            print(f"Iteration {iteration} completed in {iteration_end - iteration_start:.2f} seconds")
 
         except Exception as e:
-            print(f"Iteration {it} failed: {e}")
+            print(f"Iteration {iteration} failed with error: {e}")
             continue
 
-    # Aggregation
     results = {
-        "Metric": ["Train MAE", "Train R²", "Val MAE", "Val R²"],
+        "Metric": ["Train MAE","Train R²","Val MAE","Val R²"],
         "Average": [
             np.mean(train_mae_list) if train_mae_list else None,
             np.mean(train_r2_list)  if train_r2_list  else None,
@@ -269,13 +273,14 @@ def run_prediction_pipeline(config, plugin):
         ]
     }
 
-    # Save final results
-    df = pd.DataFrame(results)
-    df.to_csv(config.get("results_file", "results.csv"), index=False)
-    print("Saved final results to", config.get("results_file", "results.csv"))
+    results_file = config.get("results_file","results.csv")
+    pd.DataFrame(results).to_csv(results_file, index=False)
+    print(f"Results saved to {results_file}")
 
-    end = time.time()
-    print(f"Total pipeline time: {end - start:.2f} sec.")
+    end_time = time.time()
+    print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
+
+
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
