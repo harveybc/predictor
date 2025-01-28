@@ -187,56 +187,31 @@ def run_prediction_pipeline(config, plugin):
             )
 
             
-            # 3) Replicate final-epoch training MAE
-            final_epoch_mae = replicate_final_epoch_mae(
-                plugin.model, x_train, y_train, batch_size=config["batch_size"]
-            )
-            print(f"[TRAIN] Replicated final-epoch MAE => {final_epoch_mae:.6f}")
+            # 3) Evaluate Training and Validation Metrics
+            print("\n=== Evaluation Results ===")
 
-            # Single-pass evaluate on training data (inference mode)
-            eval_results = plugin.model.evaluate(x_train, y_train, verbose=0)
-            single_pass_mae = eval_results[-1]
-            print(f"[TRAIN] model.evaluate => single-pass MAE => {single_pass_mae:.6f}")
+            # Evaluate on training data
+            train_eval_results = plugin.model.evaluate(x_train, y_train, batch_size=config["batch_size"], verbose=0)
+            train_loss, train_mse, train_mae = train_eval_results  # Assuming loss, mse, mae order in metrics
 
-            # External flatten-based approach on training data
-            predictions = plugin.predict(x_train)
-            ext_mae = plugin.calculate_mae(y_train, predictions)
-            print(f"[TRAIN] Flatten-based external => {ext_mae:.6f}")
+            # Calculate R² for training
+            train_r2 = r2_score(y_train.flatten(), plugin.model.predict(x_train).flatten())
 
-            # 4) Replicate final-epoch validation MAE
-            final_epoch_val_mae = replicate_final_epoch_mae(
-                plugin.model, x_val, y_val, batch_size=config["batch_size"]
-            )
-            print(f"[VAL]   Replicated final-epoch MAE => {final_epoch_val_mae:.6f}")
+            print(f"[TRAIN] Loss: {train_loss:.6f}, MSE: {train_mse:.6f}, MAE: {train_mae:.6f}, R²: {train_r2:.6f}")
 
-            # Single-pass evaluate on validation data (inference mode)
-            eval_results_val = plugin.model.evaluate(x_val, y_val, verbose=0)
-            single_pass_val_mae = eval_results_val[-1]
-            print(f"[VAL]   model.evaluate => single-pass MAE => {single_pass_val_mae:.6f}")
+            # Evaluate on validation data
+            val_eval_results = plugin.model.evaluate(x_val, y_val, batch_size=config["batch_size"], verbose=0)
+            val_loss, val_mse, val_mae = val_eval_results  # Assuming loss, mse, mae order in metrics
 
-            # External flatten-based approach on validation data
-            predictions_val = plugin.predict(x_val)
-            ext_val_mae = plugin.calculate_mae(y_val, predictions_val)
-            print(f"[VAL]   Flatten-based external => {ext_val_mae:.6f}")
+            # Calculate R² for validation
+            val_r2 = r2_score(y_val.flatten(), plugin.model.predict(x_val).flatten())
 
+            print(f"[VAL]   Loss: {val_loss:.6f}, MSE: {val_mse:.6f}, MAE: {val_mae:.6f}, R²: {val_r2:.6f}")
 
-            # 3) Evaluate
-            train_preds = plugin.predict(x_train)
-            val_preds   = plugin.predict(x_val)
-
-            # SHAPE CHECK
-            if train_preds.shape != y_train.shape:
-                raise ValueError(f"train_preds {train_preds.shape} != y_train {y_train.shape}")
-            if val_preds.shape != y_val.shape:
-                raise ValueError(f"val_preds {val_preds.shape} != y_val {y_val.shape}")
-
-            train_mae = plugin.calculate_mae(y_train, train_preds)
-            val_mae   = plugin.calculate_mae(y_val,   val_preds)
-            print(f"Training MAE: {train_mae}")
-            print(f"Validation MAE: {val_mae}")
-
+            # Append results to lists for overall reporting
             train_mae_list.append(train_mae)
             val_mae_list.append(val_mae)
+
 
         except Exception as e:
             print(f"Iteration {iteration} failed => {e}")
