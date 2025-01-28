@@ -209,16 +209,26 @@ def run_prediction_pipeline(config, plugin):
         x_val, y_val, _ = create_sliding_windows(
             x_val, y_val, window_size, time_horizon, stride=1
         )
-        print(f"Sliding windows created:")
+        print("Sliding windows created:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
         print(f"  x_val:   {x_val.shape}, y_val: {y_val.shape}")
 
         # CNN expects (window_size, features) per sample
-        input_shape = (window_size, x_train.shape[2])  
-    else:
-        # For ANN/LSTM/etc. shape is (features,) per sample
+        input_shape = (window_size, x_train.shape[2])
+
+    elif config["plugin"].lower() == "ann":
+        # The ANN plugin expects a single integer for input_shape
+        # If data is 1D, reshape it to (N,1)
         if len(x_train.shape) == 1:
-            # Ensure at least 2D
+            x_train = x_train.reshape(-1, 1)
+        if len(x_val.shape) == 1:
+            x_val = x_val.reshape(-1, 1)
+        input_shape = x_train.shape[1]
+
+    else:
+        # For LSTM, Transformers, or others: typically pass a tuple (features,)
+        # If data is 1D, reshape it to (N,1)
+        if len(x_train.shape) == 1:
             x_train = x_train.reshape(-1, 1)
         if len(x_val.shape) == 1:
             x_val = x_val.reshape(-1, 1)
@@ -333,7 +343,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"Total execution time: {end_time - start_time:.2f} seconds")
-
 
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
