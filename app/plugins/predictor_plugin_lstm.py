@@ -17,9 +17,9 @@ class Plugin:
         'epochs': 200,
         'batch_size': 128,
         'intermediate_layers': 3,
-        'initial_layer_size': 32,
+        'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.001,
+        'learning_rate': 0.0001,
         'dropout_rate': 0.1
     }
 
@@ -94,7 +94,7 @@ class Plugin:
             recurrent_activation='sigmoid',
             kernel_initializer=HeNormal()
         )(x)
-        x=BatchNormalization()(x)   
+  
         # Output layer
         model_output = Dense(
             units=layers[-1],
@@ -103,7 +103,7 @@ class Plugin:
             kernel_regularizer=l2(l2_reg),
             name="model_output"
         )(x)
-        #model_output = BatchNormalization()(model_output)
+        model_output = BatchNormalization()(model_output)
 
         # Build and compile the model
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
