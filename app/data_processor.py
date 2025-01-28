@@ -148,9 +148,13 @@ def run_prediction_pipeline(config, plugin):
     Runs the prediction pipeline using both training and validation datasets.
     Iteratively trains and evaluates the model, while saving metrics and predictions.
 
-    Args:
-        config (dict): Configuration dictionary containing parameters for training and evaluation.
-        plugin (object): Model plugin that implements train, predict, and evaluate methods.
+    After each iteration:
+      - Fits the model
+      - Evaluates on training data (MAE & R²)
+      - Prints first 20 predicted rows vs. actual for training
+      - Evaluates on validation data (MAE & R²)
+      - Prints first 20 predicted rows vs. actual for validation
+      - Stores metrics
     """
     start_time = time.time()
 
@@ -172,39 +176,14 @@ def run_prediction_pipeline(config, plugin):
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
 
-    # Extra debug: confirm indices if they are still DataFrames
+    # Make sure we handle DataFrame index alignment checks, etc.
     if isinstance(x_train, pd.DataFrame) and isinstance(y_train, pd.DataFrame):
         if not x_train.index.equals(y_train.index):
-            # Show conflicting rows
-            x_not_in_y_idx = x_train.index.difference(y_train.index)
-            y_not_in_x_idx = y_train.index.difference(x_train.index)
-            x_not_in_y = x_train.loc[x_not_in_y_idx] if not x_not_in_y_idx.empty else None
-            y_not_in_x = y_train.loc[y_not_in_x_idx] if not y_not_in_x_idx.empty else None
-
-            raise ValueError(
-                "TRAIN DATA MISMATCH: x_train and y_train indices do not match. Check alignment.\n\n"
-                f"Rows in x_train but not y_train:\n{x_not_in_y}\n\n"
-                f"Rows in y_train but not x_train:\n{y_not_in_x}\n"
-            )
-        else:
-            print("Debug: x_train and y_train indices are aligned.")
-
+            raise ValueError("TRAIN DATA MISMATCH: x_train and y_train indices do not match.")
     if isinstance(x_val, pd.DataFrame) and isinstance(y_val, pd.DataFrame):
         if not x_val.index.equals(y_val.index):
-            x_not_in_y_idx = x_val.index.difference(y_val.index)
-            y_not_in_x_idx = y_val.index.difference(x_val.index)
-            x_not_in_y = x_val.loc[x_not_in_y_idx] if not x_not_in_y_idx.empty else None
-            y_not_in_x = y_val.loc[y_not_in_x_idx] if not y_not_in_x_idx.empty else None
+            raise ValueError("VALIDATION DATA MISMATCH: x_val and y_val indices do not match.")
 
-            raise ValueError(
-                "VALIDATION DATA MISMATCH: x_val and y_val indices do not match. Check alignment.\n\n"
-                f"Rows in x_val but not y_val:\n{x_not_in_y}\n\n"
-                f"Rows in y_val but not x_val:\n{y_not_in_x}\n"
-            )
-        else:
-            print("Debug: x_val and y_val indices are aligned.")
-
-    # Basic config checks
     time_horizon = config.get("time_horizon")
     if time_horizon is None:
         raise ValueError("`time_horizon` is not defined in the configuration.")
@@ -239,7 +218,6 @@ def run_prediction_pipeline(config, plugin):
         print(f"  x_train: {x_train_np.shape}, y_train: {y_train_np.shape}")
         print(f"  x_val:   {x_val_np.shape}, y_val: {y_val_np.shape}")
 
-        # Confirm shapes after sliding windows
         if x_train_np.shape[0] != y_train_np.shape[0]:
             raise ValueError("After sliding windows, training x/y have mismatched samples.")
         if x_val_np.shape[0] != y_val_np.shape[0]:
@@ -253,13 +231,10 @@ def run_prediction_pipeline(config, plugin):
 
     # Determine input_shape based on plugin
     if config["plugin"] == "cnn":
-        # CNN expects (window_size, features) per sample
         input_shape = (window_size, x_train_np.shape[2])
     elif config["plugin"].lower() == "ann":
-        # The ANN plugin expects a single integer for input_shape
         input_shape = x_train_np.shape[1]
     else:
-        # For LSTM, Transformers, or others: typically pass a tuple (features,)
         input_shape = (x_train_np.shape[1],)
 
     print(f"Debug: input_shape determined as: {input_shape}")
@@ -267,7 +242,6 @@ def run_prediction_pipeline(config, plugin):
     # Pass time_horizon to the plugin (if it uses it)
     plugin.set_params(time_horizon=time_horizon)
 
-    # Iterative training and evaluation
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
@@ -286,59 +260,28 @@ def run_prediction_pipeline(config, plugin):
                 epochs=epochs,
                 batch_size=batch_size,
                 threshold_error=threshold_error,
-                x_val=x_val_np,
+                x_val=x_val_np,    # If plugin uses validation_data internally
                 y_val=y_val_np,
             )
 
             print("Evaluating trained model on training and validation data. Please wait...")
 
-            # Suppress TensorFlow/Keras logs during prediction
-            with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
-                os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-                logging.getLogger("tensorflow").setLevel(logging.FATAL)
+            # Predict training data
+            train_predictions = plugin.predict(x_train_np)
+            # Predict validation data
+            val_predictions = plugin.predict(x_val_np)
 
-                # Predict training data
-                train_predictions = plugin.predict(x_train_np)
-                # Predict validation data
-                val_predictions = plugin.predict(x_val_np)
-
-            # Restore TensorFlow logs
-            os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
-            logging.getLogger("tensorflow").setLevel(logging.INFO)
-
-            # -----------------------
-            # Dimension checks
-            # -----------------------
+            # Show shapes for debugging
             print(f"Debug: train_predictions shape: {train_predictions.shape}, val_predictions shape: {val_predictions.shape}")
 
-            if train_predictions.shape[0] != y_train_np.shape[0]:
+            # Check dimension alignment
+            if train_predictions.shape != y_train_np.shape:
                 raise ValueError(
-                    "Mismatch in training samples dimension:\n"
-                    f"  train_predictions.shape[0]={train_predictions.shape[0]}, "
-                    f"y_train.shape[0]={y_train_np.shape[0]}.\n"
-                    "Please ensure data alignment in multi-step logic."
+                    f"Mismatch: train_predictions {train_predictions.shape} vs y_train_np {y_train_np.shape}"
                 )
-            if train_predictions.shape[1] != y_train_np.shape[1]:
+            if val_predictions.shape != y_val_np.shape:
                 raise ValueError(
-                    "Mismatch in training time_horizon dimension:\n"
-                    f"  train_predictions.shape[1]={train_predictions.shape[1]}, "
-                    f"y_train.shape[1]={y_train_np.shape[1]}.\n"
-                    "Time horizon dimension must match."
-                )
-
-            if val_predictions.shape[0] != y_val_np.shape[0]:
-                raise ValueError(
-                    "Mismatch in validation samples dimension:\n"
-                    f"  val_predictions.shape[0]={val_predictions.shape[0]}, "
-                    f"y_val.shape[0]={y_val_np.shape[0]}.\n"
-                    "Please ensure data alignment for multi-step validation."
-                )
-            if val_predictions.shape[1] != y_val_np.shape[1]:
-                raise ValueError(
-                    "Mismatch in validation time_horizon dimension:\n"
-                    f"  val_predictions.shape[1]={val_predictions.shape[1]}, "
-                    f"y_val.shape[1]={y_val_np.shape[1]}.\n"
-                    "Time horizon dimension must match for validation."
+                    f"Mismatch: val_predictions {val_predictions.shape} vs y_val_np {y_val_np.shape}"
                 )
 
             # Evaluate training metrics
@@ -347,6 +290,12 @@ def run_prediction_pipeline(config, plugin):
             print(f"Training MAE: {train_mae}")
             print(f"Training R²: {train_r2}")
 
+            # Print first 20 training predictions vs. actual
+            n_samples_display = min(20, train_predictions.shape[0])
+            print("\n** First 20 training predictions vs actual **")
+            for i in range(n_samples_display):
+                print(f"Row {i}:  pred={train_predictions[i]}, actual={y_train_np[i]}")
+
             # Save training metrics
             training_mae_list.append(train_mae)
             training_r2_list.append(train_r2)
@@ -354,19 +303,24 @@ def run_prediction_pipeline(config, plugin):
             # Evaluate validation metrics
             val_mae = float(plugin.calculate_mae(y_val_np, val_predictions))
             val_r2 = float(r2_score(y_val_np, val_predictions))
-            print(f"Validation MAE: {val_mae}")
+            print(f"\nValidation MAE: {val_mae}")
             print(f"Validation R²: {val_r2}")
+
+            # Print first 20 validation predictions vs. actual
+            n_val_display = min(20, val_predictions.shape[0])
+            print("\n** First 20 validation predictions vs actual **")
+            for i in range(n_val_display):
+                print(f"Row {i}:  pred={val_predictions[i]}, actual={y_val_np[i]}")
 
             # Save validation metrics
             validation_mae_list.append(val_mae)
             validation_r2_list.append(val_r2)
 
             iteration_end_time = time.time()
-            print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
+            print(f"\nIteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
         except Exception as e:
             print(f"Iteration {iteration} failed with error:\n  {e}")
-            # Continue to the next iteration if an error occurs
             continue
 
     # -----------------------
@@ -411,7 +365,7 @@ def run_prediction_pipeline(config, plugin):
     results_df.to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
 
-    # Save final validation predictions
+    # Save final validation predictions (from last successful iteration)
     final_val_file = config.get("output_file", "validation_predictions.csv")
     if 'val_predictions' in locals() and val_predictions is not None:
         val_predictions_df = pd.DataFrame(
@@ -425,7 +379,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
