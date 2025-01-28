@@ -133,7 +133,7 @@ class Plugin:
             optimizer=adam_optimizer,
             loss=Huber(),  # or 'mse'
             #loss='mae',  # or 'mse'
-            metrics=['mse', 'mae', 'coeff_r2']  # logs multi-step MSE/MAE
+            metrics=['mse', 'mae', coeff_r2]  # logs multi-step MSE/MAE
         )
         
         print("Predictor Model Summary:")
