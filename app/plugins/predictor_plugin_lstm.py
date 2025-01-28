@@ -142,13 +142,15 @@ class Plugin:
             batch_size=batch_size,
             #validation_data=validation_data,  # Provide validation data
             verbose=1,
-            callbacks=callbacks
+            callbacks=callbacks,
+            validation_split = 0.2,
         )
 
         print("Training completed.")
         final_loss = history.history['val_loss'][-1] if 'val_loss' in history.history else history.history['loss'][-1]
         if final_loss > threshold_error:
             print(f"Warning: Model training completed with loss {final_loss} exceeding the threshold error {threshold_error}.")
+        return history
 
 
 

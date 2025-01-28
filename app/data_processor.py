@@ -10,7 +10,7 @@ from app.config_handler import save_debug_info, remote_log
 import logging
 from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
 import contextlib
-
+import matplotlib.pyplot as plt
 
 def process_data(config):
     """
@@ -307,15 +307,23 @@ def run_prediction_pipeline(config, plugin):
 
 
             # Train the model
-            plugin.train(
+            history = plugin.train(
                 x_train,
                 y_train,
                 epochs=epochs,
                 batch_size=batch_size,
                 threshold_error=threshold_error,
                 x_val=x_val,
-                y_val=y_val,
+                y_val=y_val
             )
+            # Loss History
+            plt.plot(history.history['loss'])
+            plt.plot(history.history['val_loss'])
+            plt.title('Model Loss')
+            plt.ylabel('Loss')
+            plt.xlabel('Epoch')
+            plt.legend(['Train', 'Test'], loc='upper left')
+            plt.show()
 
             print("Evaluating trained model on training and validation data. Please wait...")
 
@@ -339,6 +347,8 @@ def run_prediction_pipeline(config, plugin):
                     batch_size=batch_size,
                     verbose=0
                 )
+                # Predict validation data for evaluation
+                val_predictions = plugin.predict(x_val)
 
             # Restore TensorFlow logs
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
