@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import LSTM, Dense, Input, BatchNormalization
+from keras.layers import LSTM, Dense, Input, BatchNormalization, Dropout
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
