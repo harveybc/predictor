@@ -112,12 +112,17 @@ def process_data(config):
 
         # Create sliding windows for LSTM
         window_size = config["window_size"]  # Ensure `window_size` is in the config
+
         x_train, y_train_multi, _ = create_sliding_windows(
-            x_train, y_train_multi, window_size, time_horizon, stride=1
+            x_train, y_train, window_size, time_horizon, stride=1
         )
         x_val, y_val_multi, _ = create_sliding_windows(
-            x_val, y_val_multi, window_size, time_horizon, stride=1
+            x_val, y_val, window_size, time_horizon, stride=1
         )
+
+        # Ensure y_train_multi matches x_train
+        y_train_multi = y_train_multi[: len(x_train)]
+        y_val_multi = y_val_multi[: len(x_val)]
 
         print(f"LSTM data shapes after sliding windows:")
         print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
