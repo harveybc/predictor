@@ -94,7 +94,7 @@ class Plugin:
             recurrent_activation='sigmoid',
             kernel_initializer=HeNormal()
         )(x)
-        
+
         # Output layer
         model_output = Dense(
             units=layers[-1],
@@ -150,8 +150,7 @@ class Plugin:
             batch_size=batch_size,
             #validation_data=validation_data,  # Provide validation data
             verbose=1,
-            callbacks=callbacks,
-            shuffle=False
+            callbacks=callbacks
         )
 
         print("Training completed.")
