@@ -187,22 +187,37 @@ def run_prediction_pipeline(config, plugin):
             )
 
             
-            # 3) Replicate final-epoch mae aggregator
+            # 3) Replicate final-epoch training MAE
             final_epoch_mae = replicate_final_epoch_mae(
                 plugin.model, x_train, y_train, batch_size=config["batch_size"]
             )
-            print(f"Replicated final-epoch training MAE => {final_epoch_mae:.6f}")
+            print(f"[TRAIN] Replicated final-epoch MAE => {final_epoch_mae:.6f}")
 
-            # Single-pass evaluate in inference mode (for reference)
+            # Single-pass evaluate on training data (inference mode)
             eval_results = plugin.model.evaluate(x_train, y_train, verbose=0)
-            # Typically [loss, mse, mae] => last is mae
             single_pass_mae = eval_results[-1]
-            print(f"model.evaluate => single-pass (inference) MAE => {single_pass_mae:.6f}")
+            print(f"[TRAIN] model.evaluate => single-pass MAE => {single_pass_mae:.6f}")
 
-            # External flatten-based approach also in inference mode
+            # External flatten-based approach on training data
             predictions = plugin.predict(x_train)
             ext_mae = plugin.calculate_mae(y_train, predictions)
-            print(f"Flatten-based external => {ext_mae:.6f}")
+            print(f"[TRAIN] Flatten-based external => {ext_mae:.6f}")
+
+            # 4) Replicate final-epoch validation MAE
+            final_epoch_val_mae = replicate_final_epoch_mae(
+                plugin.model, x_val, y_val, batch_size=config["batch_size"]
+            )
+            print(f"[VAL]   Replicated final-epoch MAE => {final_epoch_val_mae:.6f}")
+
+            # Single-pass evaluate on validation data (inference mode)
+            eval_results_val = plugin.model.evaluate(x_val, y_val, verbose=0)
+            single_pass_val_mae = eval_results_val[-1]
+            print(f"[VAL]   model.evaluate => single-pass MAE => {single_pass_val_mae:.6f}")
+
+            # External flatten-based approach on validation data
+            predictions_val = plugin.predict(x_val)
+            ext_val_mae = plugin.calculate_mae(y_val, predictions_val)
+            print(f"[VAL]   Flatten-based external => {ext_val_mae:.6f}")
 
 
             # 3) Evaluate
