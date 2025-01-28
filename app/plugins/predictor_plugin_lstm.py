@@ -68,11 +68,9 @@ class Plugin:
                 x = LSTM(size, activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal(), return_sequences=True)(x)
                 #x = BatchNormalization()(x)
         x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal())(x)
-        x= Dense(layers[-2], activation='tanh', kernel_initializer=GlorotUniform())(x)
-        x= BatchNormalization()(x)
         model_output = Dense(layers[-1], activation='linear', kernel_initializer=GlorotUniform(), name="model_output")(x)
         # add batch normalization
-        #model_output = BatchNormalization()(model_output)
+        model_output = BatchNormalization()(model_output)
 
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
                 # Define the Adam optimizer with custom parameters
