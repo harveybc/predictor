@@ -319,62 +319,53 @@ def run_prediction_pipeline(config, plugin):
 
             print("Evaluating trained model on training and validation data. Please wait...")
 
-            # Suppress TensorFlow/Keras logs during prediction
+            # Suppress TensorFlow/Keras logs during evaluation
             with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
                 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
                 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
-                # Predict training data
-                train_predictions = plugin.predict(x_train)
+                # Evaluate training data
+                train_results = plugin.evaluate(
+                    x_train,
+                    y_train,
+                    batch_size=batch_size,
+                    verbose=0
+                )
 
-                # Predict validation data
-                val_predictions = plugin.predict(x_val)
+                # Evaluate validation data
+                val_results = plugin.evaluate(
+                    x_val,
+                    y_val,
+                    batch_size=batch_size,
+                    verbose=0
+                )
 
             # Restore TensorFlow logs
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
             logging.getLogger("tensorflow").setLevel(logging.INFO)
 
             # -----------------------
-            # Dimension checks
+            # Assign evaluation metrics
             # -----------------------
-            # Expect train_predictions.shape == (num_train_samples, time_horizon)
-            #  or at least have the same second dimension as y_train, etc.
-            if train_predictions.shape[0] != y_train.shape[0]:
-                raise ValueError(
-                    "Mismatch in training samples dimension:\n"
-                    f"  train_predictions.shape[0]={train_predictions.shape[0]}, "
-                    f"y_train.shape[0]={y_train.shape[0]}.\n"
-                    "Please ensure data alignment in multi-step logic."
-                )
-            if train_predictions.shape[1] != y_train.shape[1]:
-                raise ValueError(
-                    "Mismatch in training time_horizon dimension:\n"
-                    f"  train_predictions.shape[1]={train_predictions.shape[1]}, "
-                    f"y_train.shape[1]={y_train.shape[1]}.\n"
-                    "Time horizon dimension must match."
-                )
+            # Assuming the metrics are ordered as [loss, mae, r2]
+            if len(train_results) < 3 or len(val_results) < 3:
+                raise ValueError("Expected at least three metrics (loss, MAE, R²) from evaluate method.")
 
-            # Same check for validation
-            if val_predictions.shape[0] != y_val.shape[0]:
-                raise ValueError(
-                    "Mismatch in validation samples dimension:\n"
-                    f"  val_predictions.shape[0]={val_predictions.shape[0]}, "
-                    f"y_val.shape[0]={y_val.shape[0]}.\n"
-                    "Please ensure data alignment for multi-step validation."
-                )
-            if val_predictions.shape[1] != y_val.shape[1]:
-                raise ValueError(
-                    "Mismatch in validation time_horizon dimension:\n"
-                    f"  val_predictions.shape[1]={val_predictions.shape[1]}, "
-                    f"y_val.shape[1]={y_val.shape[1]}.\n"
-                    "Time horizon dimension must match for validation."
-                )
+            train_loss, train_mae, train_r2 = train_results
+            val_loss, val_mae, val_r2 = val_results
 
-            # Evaluate training metrics
-            train_mae = float(plugin.calculate_mae(y_train, train_predictions))
-            train_r2 = float(r2_score(y_train, train_predictions))
             print(f"Training MAE: {train_mae}")
             print(f"Training R²: {train_r2}")
+            print(f"Validation MAE: {val_mae}")
+            print(f"Validation R²: {val_r2}")
+
+            # Save training metrics
+            training_mae_list.append(train_mae)
+            training_r2_list.append(train_r2)
+
+            # Save validation metrics
+            validation_mae_list.append(val_mae)
+            validation_r2_list.append(val_r2)
 
             # Save training metrics
             training_mae_list.append(train_mae)
