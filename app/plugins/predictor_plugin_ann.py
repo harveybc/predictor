@@ -6,6 +6,8 @@ from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
+from keras.layers import GaussianNoise
+
 import logging
 import os
 
@@ -19,10 +21,10 @@ class Plugin:
     # Default parameters
     plugin_params = {
         'batch_size': 128,
-        'intermediate_layers': 2,
-        'initial_layer_size': 32,
+        'intermediate_layers': 1,
+        'initial_layer_size': 16,
         'layer_size_divisor': 2,
-        'learning_rate': 0.002,
+        'learning_rate': 0.0002,
         'activation': 'relu',
         'patience': 10,
         'l2_reg': 1e-3
@@ -89,7 +91,7 @@ class Plugin:
         from tensorflow.keras import Model, Input
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
-
+        x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
         # Hidden Dense layers
         for size in layers[:-1]:
             x = Dense(
@@ -145,7 +147,7 @@ class Plugin:
         
         callbacks = []
         early_stopping_monitor = EarlyStopping(
-            monitor='loss',
+            monitor='val_loss',
             patience=self.params['patience'],
             restore_best_weights=True,
             verbose=1
@@ -158,7 +160,8 @@ class Plugin:
             batch_size=batch_size,
             verbose=1,
             shuffle=True,  # Enable shuffling
-            callbacks=callbacks
+            callbacks=callbacks,
+            validation_data=(x_val, y_val)
         )
 
         print("Training completed.")
