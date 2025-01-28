@@ -96,8 +96,12 @@ def process_data(config):
     y_val_multi   = create_multi_step(y_val,   time_horizon)
 
     # 5) TRIM x TO MATCH THE LENGTH OF y
-    x_train = x_train.iloc[:len(y_train_multi)]
-    x_val   = x_val.iloc[:len(y_val_multi)]
+    # Ensure x_train and x_val lengths match the reduced y_train_multi and y_val_multi
+    x_train = x_train.iloc[:len(y_train_multi)].reset_index(drop=True)
+    y_train_multi = y_train_multi.reset_index(drop=True)
+
+    x_val = x_val.iloc[:len(y_val_multi)].reset_index(drop=True)
+    y_val_multi = y_val_multi.reset_index(drop=True)
 
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
