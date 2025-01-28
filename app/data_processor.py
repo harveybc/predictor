@@ -325,7 +325,7 @@ def run_prediction_pipeline(config, plugin):
                 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
                 # Evaluate training data
-                train_results = plugin.evaluate(
+                train_results = plugin.model.evaluate(
                     x_train,
                     y_train,
                     batch_size=batch_size,
@@ -333,7 +333,7 @@ def run_prediction_pipeline(config, plugin):
                 )
 
                 # Evaluate validation data
-                val_results = plugin.evaluate(
+                val_results = plugin.model.evaluate(
                     x_val,
                     y_val,
                     batch_size=batch_size,
