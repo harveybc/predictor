@@ -19,7 +19,7 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.0001,
+        'learning_rate': 0.001,
         'dropout_rate': 0.1
     }
 
@@ -94,7 +94,7 @@ class Plugin:
             recurrent_activation='sigmoid',
             kernel_initializer=HeNormal()
         )(x)
-
+        x=BatchNormalization()(x)   
         # Output layer
         model_output = Dense(
             units=layers[-1],
