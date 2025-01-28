@@ -480,7 +480,6 @@ def run_prediction_pipeline(config, plugin):
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
 
 
-
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
     Creates sliding windows for input features and targets with a specified stride.
