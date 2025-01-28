@@ -116,7 +116,8 @@ class Plugin:
                     kernel_regularizer=l2(l2_reg),
                     name=f"Dense_{size}"
                 )(x)
-
+                #add a batch normalization layer
+                x = BatchNormalization()(x)
         
         # Add output Dense layer with linear activation for regression
         model_output = Dense(
@@ -127,7 +128,7 @@ class Plugin:
             name="model_output"
         )(x)
         # Add a batch normalization layer to the output
-        #model_output = BatchNormalization()(model_output)
+        model_output = BatchNormalization()(model_output)
 
         # Create the Keras Model
         self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
