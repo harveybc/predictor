@@ -3,67 +3,66 @@ from typing import Optional
 from app.reconstruction import unwindow_data
 
 
+import pandas as pd
+from typing import Optional
+import sys
+
 def load_csv(file_path: str, headers: bool = False, max_rows: Optional[int] = None) -> pd.DataFrame:
     """
     Loads a CSV file with optional row limiting and processes it into a cleaned DataFrame.
 
     This function reads a CSV file from the specified path, optionally limiting the number of rows
-    based on the `max_rows` parameter. If `headers` is `True`, the function attempts to parse a
-    column named 'DATE_TIME' as datetime and set it as the DataFrame index. If 'DATE_TIME' is
-    absent or cannot be parsed, it falls back to checking if the first column is of datetime type.
-    All remaining columns are converted to numeric types, with NaN values filled with zeros.
-
-    Args:
-        file_path (str): The path to the CSV file to be loaded.
-        headers (bool, optional): Indicates whether the CSV file includes headers.
-            Defaults to `False`.
-        max_rows (int, optional): The maximum number of rows to read from the CSV file.
-            If `None`, all rows are read. Defaults to `None`.
-
-    Returns:
-        pd.DataFrame: A processed DataFrame with appropriate indexing and numeric conversions.
-
-    Raises:
-        Exception: Propagates any exception that occurs during the CSV loading or processing.
-
-    Example:
-        >>> df = load_csv("data/train.csv", headers=True, max_rows=1000)
+    based on `max_rows`. If `headers` is `True`, it attempts to parse a column named 'DATE_TIME'
+    (in any case) as datetime and set it as the DataFrame index. If not found or can't be parsed,
+    it falls back to checking whether the first column is datetime. All remaining columns are
+    converted to numeric types, with NaN values filled with zeros.
     """
     try:
-        # Load raw CSV data with optional row limit
+        # 1) Load raw CSV data
         if headers:
             data = pd.read_csv(file_path, sep=',', dtype=str, nrows=max_rows)
         else:
             data = pd.read_csv(file_path, header=None, sep=',', dtype=str, nrows=max_rows)
 
-        # If the CSV has a 'DATE_TIME' column, parse it as datetime and set it as index
-        # Otherwise, fallback to the original logic of checking if the first column is datetime
-        if headers and 'DATE_TIME' in data.columns:
-            # Parse DATE_TIME column
-            data['DATE_TIME'] = pd.to_datetime(data['DATE_TIME'], errors='coerce')
-            # Set DATE_TIME as index
-            data.set_index('DATE_TIME', inplace=True)
-            # Drop any additional 'DATE_TIME' columns (case-insensitive)
-            date_time_columns = [c for c in data.columns if c.lower() == 'date_time']
-            if date_time_columns:
-                data.drop(columns=date_time_columns, inplace=True, errors='ignore')
+        # 2) Detect any column named 'DATE_TIME' in a case-insensitive way
+        date_time_cols = [c for c in data.columns if c.strip().lower() == 'date_time']
+
+        if headers and date_time_cols:
+            # 2a) Use the first match as the main date column
+            main_dt_col = date_time_cols[0]
+            data[main_dt_col] = pd.to_datetime(data[main_dt_col], errors='coerce')
+            data.set_index(main_dt_col, inplace=True)
+
+            # If there are duplicates of that column, drop them
+            extra_dt_cols = date_time_cols[1:]
+            for c in extra_dt_cols:
+                if c in data.columns:
+                    data.drop(columns=[c], inplace=True, errors='ignore')
+
         else:
-            # Original fallback logic for date detection
+            # 2b) Fallback logic: check the first column
             first_col = data.iloc[:, 0]
-            if headers and pd.api.types.is_datetime64_any_dtype(first_col):
+            # If user declared `headers=True` and that first column is a recognized datetime
+            if headers and pd.api.types.is_datetime64_any_dtype(pd.to_datetime(first_col, errors='coerce')):
+                # rename columns for clarity
                 data.columns = ['date'] + [f'col_{i}' for i in range(1, len(data.columns))]
+                data['date'] = pd.to_datetime(data['date'], errors='coerce')
                 data.set_index('date', inplace=True)
             else:
+                # Otherwise just rename columns generically if headers=False
+                # or if no date column found
                 data.columns = [f'col_{i}' for i in range(len(data.columns))]
 
-        # Convert all columns to numeric types, filling NaNs with zeros
+        # 3) Convert columns to numeric, fillNa=0
         for col in data.columns:
             data[col] = pd.to_numeric(data[col], errors='coerce').fillna(0)
 
-        # Check for remaining NaNs and issue a warning if any are found
+        # 4) Debug info about final shape and index type
+        print(f"[DEBUG] Loaded CSV '{file_path}' -> shape={data.shape}, index={data.index.dtype}, headers={headers}")
+
+        # 5) Check for leftover NaNs
         if data.isnull().values.any():
-            print("Warning: NaN values found in the data after processing. "
-                  "Please review the loaded dataset.")
+            print(f"Warning: NaN values found after converting CSV: {file_path}")
 
     except Exception as e:
         print(f"An error occurred while loading the CSV: {e}")
