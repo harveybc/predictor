@@ -126,7 +126,7 @@ class Plugin:
 
         # Early stopping based on validation loss
         early_stopping_monitor = EarlyStopping(
-            monitor='val_loss',  # Monitor validation loss
+            monitor='loss',  # Monitor validation loss
             patience=patience,
             restore_best_weights=True,
             verbose=1
@@ -141,7 +141,7 @@ class Plugin:
             y_train,
             epochs=epochs,
             batch_size=batch_size,
-            validation_data=validation_data,  # Provide validation data
+            #validation_data=validation_data,  # Provide validation data
             verbose=1,
             callbacks=callbacks
         )
