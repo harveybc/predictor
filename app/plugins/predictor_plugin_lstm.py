@@ -70,7 +70,7 @@ class Plugin:
         x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal())(x)
         model_output = Dense(layers[-1], activation='linear', kernel_initializer=GlorotUniform(), name="model_output")(x)
         # add batch normalization
-        model_output = BatchNormalization()(model_output)
+        #model_output = BatchNormalization()(model_output)
 
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
                 # Define the Adam optimizer with custom parameters
@@ -124,7 +124,7 @@ class Plugin:
             batch_size=batch_size, 
             verbose=1, 
             callbacks=callbacks,
-            shuffle=False,  # Enable shuffling
+            shuffle=True,  # Enable shuffling
         )
         
         print("Training completed.")
