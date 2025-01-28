@@ -120,6 +120,7 @@ class Plugin:
 
 
 
+
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train the LSTM model with optional validation data.
