@@ -323,7 +323,8 @@ def run_prediction_pipeline(config, plugin):
             plt.ylabel('Loss')
             plt.xlabel('Epoch')
             plt.legend(['Train', 'Test'], loc='upper left')
-            plt.show()
+            plt.savefig('loss_plot.png')
+            plt.close()
 
             print("Evaluating trained model on training and validation data. Please wait...")
 
