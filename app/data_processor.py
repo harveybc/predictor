@@ -105,11 +105,15 @@ def process_data(config):
     if config["plugin"] == "lstm":
         print("Processing data for LSTM plugin...")
 
-        # Convert DataFrames to NumPy arrays
-        x_train = x_train.to_numpy()
-        x_val = x_val.to_numpy()
-        y_train_multi = y_train_multi.to_numpy()
-        y_val_multi = y_val_multi.to_numpy()
+        # Ensure datasets are NumPy arrays
+        if not isinstance(x_train, np.ndarray):
+            x_train = x_train.to_numpy().astype(np.float32)
+        if not isinstance(y_train, np.ndarray):
+            y_train = y_train.to_numpy().astype(np.float32)
+        if not isinstance(x_val, np.ndarray):
+            x_val = x_val.to_numpy().astype(np.float32)
+        if not isinstance(y_val, np.ndarray):
+            y_val = y_val.to_numpy().astype(np.float32)
 
         # Create sliding windows for LSTM
         window_size = config["window_size"]  # Ensure `window_size` is in the config
