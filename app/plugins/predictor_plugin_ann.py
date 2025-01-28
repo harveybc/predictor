@@ -95,7 +95,7 @@ class Plugin:
             x = Dense(
                 units=size,
                 activation=self.params['activation'],
-                kernel_initializer=HeNormal(),
+                kernel_initializer=GlorotUniform(),
                 kernel_regularizer=l2(l2_reg),
             )(x)
             #x = BatchNormalization()(x)
@@ -104,7 +104,7 @@ class Plugin:
         model_output = Dense(
             units=layers[-1],
             activation='linear',
-            kernel_initializer=HeNormal(),
+            kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="model_output"
         )(x)
