@@ -100,11 +100,12 @@ def process_data(config):
     x_val = x_val.iloc[:min_len_val]
     y_val_multi = y_val_multi.iloc[:min_len_val]
 
+    
     # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
         print("Processing data for LSTM plugin...")
 
-        # Convert dataframes to numpy
+        # Convert DataFrames to NumPy arrays
         x_train = x_train.to_numpy()
         x_val = x_val.to_numpy()
         y_train_multi = y_train_multi.to_numpy()
@@ -114,10 +115,10 @@ def process_data(config):
         window_size = config["window_size"]  # Ensure `window_size` is in the config
 
         x_train, y_train_multi, _ = create_sliding_windows(
-            x_train, y_train, window_size, time_horizon, stride=1
+            x_train, y_train_multi, window_size, time_horizon, stride=1
         )
         x_val, y_val_multi, _ = create_sliding_windows(
-            x_val, y_val, window_size, time_horizon, stride=1
+            x_val, y_val_multi, window_size, time_horizon, stride=1
         )
 
         # Ensure y_train_multi matches x_train
@@ -127,7 +128,6 @@ def process_data(config):
         print(f"LSTM data shapes after sliding windows:")
         print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
         print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
-
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
