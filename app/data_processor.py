@@ -12,6 +12,9 @@ from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
 import contextlib
 
 
+import pandas as pd
+import numpy as np
+
 def process_data(config):
     """
     Loads and processes training and validation datasets, ensuring correct alignment
@@ -33,14 +36,30 @@ def process_data(config):
     """
     datasets = {}
 
-    # Load datasets
+    # 1) LOAD ALL DATASETS
     print("Loading training and validation datasets...")
-    x_train = load_csv(config['x_train_file'], headers=config['headers'], max_rows=config.get('max_steps_train'))
-    y_train = load_csv(config['y_train_file'], headers=config['headers'], max_rows=config.get('max_steps_train'))
-    x_val = load_csv(config['x_validation_file'], headers=config['headers'], max_rows=config.get('max_steps_test'))
-    y_val = load_csv(config['y_validation_file'], headers=config['headers'], max_rows=config.get('max_steps_test'))
+    x_train = load_csv(
+        config['x_train_file'],
+        headers=config['headers'],
+        max_rows=config.get('max_steps_train')
+    )
+    y_train = load_csv(
+        config['y_train_file'],
+        headers=config['headers'],
+        max_rows=config.get('max_steps_train')
+    )
+    x_val = load_csv(
+        config['x_validation_file'],
+        headers=config['headers'],
+        max_rows=config.get('max_steps_test')
+    )
+    y_val = load_csv(
+        config['y_validation_file'],
+        headers=config['headers'],
+        max_rows=config.get('max_steps_test')
+    )
 
-    # Extract target column
+    # 2) EXTRACT TARGET COLUMN
     target_column = config['target_column']
 
     def extract_target(df, col):
@@ -54,99 +73,74 @@ def process_data(config):
             raise ValueError("`target_column` must be str or int.")
 
     y_train = extract_target(y_train, target_column)
-    y_val = extract_target(y_val, target_column)
+    y_val   = extract_target(y_val,   target_column)
 
-    # Convert to numeric and fill NAs
-    for name, df in zip(['x_train', 'y_train', 'x_val', 'y_val'], [x_train, y_train, x_val, y_val]):
+    # 3) CONVERT TO NUMERIC / FILL NAs
+    for name, df in zip(['x_train', 'y_train', 'x_val', 'y_val'],
+                        [x_train,   y_train,   x_val,   y_val]):
         datasets[name] = df.apply(pd.to_numeric, errors='coerce').fillna(0)
 
-    # Ensure indices are datetime
+    # 4) ENSURE INDICES ARE DATETIME
     for key in ['x_train', 'y_train', 'x_val', 'y_val']:
         if not isinstance(datasets[key].index, pd.DatetimeIndex):
             raise ValueError(f"Dataset '{key}' must have a DatetimeIndex.")
 
-    # Align datasets
+    # 5) ALIGN DATASETS ON COMMON INDEX
     for prefix in ['train', 'val']:
-        common_index = datasets[f'x_{prefix}'].index.intersection(datasets[f'y_{prefix}'].index)
+        common_index = datasets[f'x_{prefix}'].index.intersection(
+            datasets[f'y_{prefix}'].index
+        )
         datasets[f'x_{prefix}'] = datasets[f'x_{prefix}'].loc[common_index]
         datasets[f'y_{prefix}'] = datasets[f'y_{prefix}'].loc[common_index]
 
-    # Shift y datasets to align with future predictions
-    for prefix in ['train', 'val']:
-        datasets[f'y_{prefix}'] = datasets[f'y_{prefix}'].shift(-1).ffill()
+    # (REMOVED SHIFT) No shift(-1).ffill() here
 
-    # Trim datasets based on time_horizon and input_offset
+    # 6) TRIM BASED ON time_horizon AND input_offset
     time_horizon = config['time_horizon']
     input_offset = config['input_offset']
     total_offset = time_horizon + input_offset
 
-    def trim(x, y):
-        return x.iloc[:-time_horizon], y.iloc[total_offset:]
+    def trim(x_df, y_df):
+        # Drop last 'time_horizon' rows from x
+        x_trimmed = x_df.iloc[:-time_horizon] if len(x_df) > time_horizon else x_df.iloc[0:0]
+
+        # Drop first 'total_offset' rows from y
+        y_trimmed = y_df.iloc[total_offset:] if len(y_df) > total_offset else y_df.iloc[0:0]
+
+        return x_trimmed, y_trimmed
 
     datasets['x_train'], datasets['y_train'] = trim(datasets['x_train'], datasets['y_train'])
-    datasets['x_val'], datasets['y_val'] = trim(datasets['x_val'], datasets['y_val'])
+    datasets['x_val'],   datasets['y_val']   = trim(datasets['x_val'],   datasets['y_val'])
 
-    # Ensure target datasets have the correct shape for multi-step prediction
+    # 7) MULTI-STEP TARGET CREATION
     def create_multi_step_targets(y, horizon):
         y_multi = []
         for i in range(len(y) - horizon + 1):
+            # Each row -> next 'horizon' values
             y_multi.append(y.iloc[i:i + horizon].values.flatten())
         return pd.DataFrame(y_multi, index=y.index[:len(y_multi)])
 
     datasets['y_train'] = create_multi_step_targets(datasets['y_train'], time_horizon)
-    datasets['y_val'] = create_multi_step_targets(datasets['y_val'], time_horizon)
+    datasets['y_val']   = create_multi_step_targets(datasets['y_val'],   time_horizon)
 
-    # Adjust x datasets to match y lengths
+    # 8) ADJUST X DATASETS TO MATCH NEW Y LENGTH
     for prefix in ['train', 'val']:
-        datasets[f'x_{prefix}'] = datasets[f'x_{prefix}'].iloc[:len(datasets[f'y_{prefix}'])]
+        new_len = len(datasets[f'y_{prefix}'])
+        datasets[f'x_{prefix}'] = datasets[f'x_{prefix}'].iloc[:new_len]
 
-    # Final shape validation
+    # 9) FINAL SHAPE VALIDATION
     for prefix in ['train', 'val']:
         if len(datasets[f'x_{prefix}']) != len(datasets[f'y_{prefix}']):
-            raise ValueError(f"Length mismatch: x_{prefix} ({len(datasets[f'x_{prefix}'])}) != y_{prefix} ({len(datasets[f'y_{prefix}'])})")
+            raise ValueError(
+                f"Length mismatch: x_{prefix} ({len(datasets[f'x_{prefix}'])}) "
+                f"!= y_{prefix} ({len(datasets[f'y_{prefix}'])})"
+            )
 
     print("Processed datasets:")
     print(f"  x_train: {datasets['x_train'].shape}, y_train: {datasets['y_train'].shape}")
     print(f"  x_val:   {datasets['x_val'].shape}, y_val:   {datasets['y_val'].shape}")
 
     return datasets
-def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
-    """
-    Creates sliding windows for input features and targets with a specified stride.
-
-    Args:
-        x (numpy.ndarray): Input features of shape (N, features).
-        y (numpy.ndarray): Targets of shape (N,) or (N, 1).
-        window_size (int): Number of past steps to include in each window.
-        time_horizon (int): Number of future steps to predict.
-        stride (int): Step size between windows.
-        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
-
-    Returns:
-        tuple:
-            - x_windowed (numpy.ndarray): Shaped (samples, window_size, features).
-            - y_windowed (numpy.ndarray): Shaped (samples, time_horizon).
-            - date_time_windows (list): List of date times for each window (if provided).
-    """
-    if y.ndim == 2 and y.shape[1] == 1:
-        y = y.flatten()
-    elif y.ndim > 2:
-        raise ValueError("y should be a 1D or 2D array with a single column.")
-
-    x_windowed = []
-    y_windowed = []
-    date_time_windows = []
-
-    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
-        x_window = x[i:i + window_size]
-        y_window = y[i + window_size:i + window_size + time_horizon]
-        x_windowed.append(x_window)
-        y_windowed.append(y_window)
-        if date_times is not None:
-            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
-
-    return np.array(x_windowed), np.array(y_windowed), date_time_windows
-
 
 
 def run_prediction_pipeline(config, plugin):
