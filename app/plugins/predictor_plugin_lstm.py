@@ -40,53 +40,54 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
+    from tensorflow.keras.layers import Dropout
+
     def build_model(self, input_shape):
         self.params['input_dim'] = input_shape
         l2_reg = self.params.get('l2_reg', 1e-4)
-        # Layer configuration
+        dropout_rate = self.params.get('dropout_rate', 0.2)  # Increased dropout rate
+
         layers = []
         current_size = self.params['initial_layer_size']
         layer_size_divisor = self.params['layer_size_divisor']
         int_layers = 0
+
         while int_layers < self.params['intermediate_layers']:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
-        # Instead of outputting 1, we output `time_horizon` steps
+
         layers.append(self.params['time_horizon'])
 
-        # Debugging message
         print(f"LSTM Layer sizes: {layers}")
 
-        # Model
         model_input = Input(shape=(input_shape, 1), name="model_input")
         print(f"LSTM input_shape: {input_shape}")
 
         x = model_input
         for size in layers[:-1]:
             if size > 1:
-                x = LSTM(size, activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal(), return_sequences=True)(x)
-                #x = BatchNormalization()(x)
-        x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal())(x)
+                x = LSTM(size, activation='tanh', recurrent_activation='sigmoid', 
+                        kernel_initializer=HeNormal(), 
+                        return_sequences=True)(x)
+                x = Dropout(dropout_rate)(x)
+
+        x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', 
+                kernel_initializer=HeNormal())(x)
+        x = Dropout(dropout_rate)(x)
+
         model_output = Dense(layers[-1], activation='linear', kernel_initializer=GlorotUniform(), name="model_output")(x)
-        # add batch normalization
-        #model_output = BatchNormalization()(model_output)
 
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
-                # Define the Adam optimizer with custom parameters
         adam_optimizer = Adam(
-            learning_rate= self.params['learning_rate'],   # Set the learning rate
-            beta_1=0.9,            # Default value
-            beta_2=0.999,          # Default value
-            epsilon=1e-7,          # Default value
-            amsgrad=False          # Default value
+            learning_rate=self.params['learning_rate'],
+            beta_1=0.9, beta_2=0.999, epsilon=1e-7, amsgrad=False
         )
+        self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse', 'mae'])
 
-        self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse','mae'])
-
-        # Debugging messages to trace the model configuration
         print("Predictor Model Summary:")
         self.model.summary()
+
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
