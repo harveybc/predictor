@@ -147,7 +147,7 @@ class Plugin:
         
         callbacks = []
         early_stopping_monitor = EarlyStopping(
-            monitor='val_loss',
+            monitor='loss',
             patience=self.params['patience'],
             restore_best_weights=True,
             verbose=1
@@ -161,7 +161,7 @@ class Plugin:
             verbose=1,
             shuffle=True,  # Enable shuffling
             callbacks=callbacks,
-            validation_data=(x_val, y_val)
+            #validation_data=(x_val, y_val)
         )
 
         print("Training completed.")
