@@ -36,13 +36,12 @@ from app.data_handler import load_csv
 
 def process_data(config):
     """
-    1) Load x_train,y_train and x_val,y_val from CSV.
-    2) Extract target column from y_*.
-    3) Convert to numeric, fillna(0), ensure DatetimeIndex.
-    4) Align x,y on intersection of timestamps.
-    5) Shift y by -1 => next-step offset, then drop last row if it becomes NaN.
-    6) Create multi-step columns in y.
-    7) Slice x to match y's final length. 
+    1) Loads x_train, y_train, x_val, y_val from CSV.
+    2) Extracts the target column in y_*.
+    3) Ensures all are numeric, have a DatetimeIndex, and are aligned.
+    4) Shifts y by 1 step into the future.
+    5) Builds multi-step columns in y.
+    6) Slices x to the same final length as y.
     """
 
     # 1) LOAD CSVs
@@ -67,9 +66,8 @@ def process_data(config):
         max_rows=config.get("max_steps_test")
     )
 
-    # 2) EXTRACT TARGET COLUMN
+    # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
-
     def extract_target(df, col):
         if isinstance(col, str):
             if col not in df.columns:
@@ -78,208 +76,140 @@ def process_data(config):
         elif isinstance(col, int):
             return df.iloc[:, [col]]
         else:
-            raise ValueError("Invalid target_column; must be str or int.")
+            raise ValueError("`target_column` must be str or int.")
 
     y_train = extract_target(y_train, target_col)
     y_val   = extract_target(y_val,   target_col)
 
-    # CONVERT TO NUMERIC & FILL NA
+    # 3) CONVERT EACH DF TO NUMERIC, REASSIGN THE RESULT TO AVOID BUG
     x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_train = y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     x_val   = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_val   = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-    # ENSURE DATETIME INDEX
+    # 4) ENSURE DATETIME INDEX
     for name, df in zip(["x_train","y_train","x_val","y_val"], [x_train,y_train,x_val,y_val]):
         if not isinstance(df.index, pd.DatetimeIndex):
-            raise ValueError(f"{name} must have a DatetimeIndex. Found {type(df.index)}")
+            raise ValueError(f"{name} must have a valid DatetimeIndex. Found: {type(df.index)}")
 
-    # ALIGN X,Y
+    # ALIGN x,y ON INTERSECTION
     def align_xy(xd, yd):
-        cidx = xd.index.intersection(yd.index)
-        return xd.loc[cidx].sort_index(), yd.loc[cidx].sort_index()
+        common_idx = xd.index.intersection(yd.index)
+        return xd.loc[common_idx].sort_index(), yd.loc[common_idx].sort_index()
 
     x_train, y_train = align_xy(x_train, y_train)
     x_val,   y_val   = align_xy(x_val,   y_val)
 
-    # SHIFT y by -1 => next-step offset, drop last row if NaN
+    # SHIFT y BY -1 => next-step offset
     y_train = y_train.shift(-1).dropna()
     y_val   = y_val.shift(-1).dropna()
 
-    # CREATE MULTI-STEP
+    # 5) MULTI-STEP COLUMNS
     time_horizon = config["time_horizon"]
     def create_multi_step(y_df, horizon):
         blocks = []
         idx_list = []
         for i in range(len(y_df) - horizon + 1):
-            block = y_df.iloc[i:i+horizon].values.flatten()
-            blocks.append(block)
+            window = y_df.iloc[i : i + horizon].values.flatten()
+            blocks.append(window)
             idx_list.append(y_df.index[i])
         return pd.DataFrame(blocks, index=idx_list)
 
-    y_train_m = create_multi_step(y_train, time_horizon)
-    y_val_m   = create_multi_step(y_val,   time_horizon)
+    y_train_multi = create_multi_step(y_train, time_horizon)
+    y_val_multi   = create_multi_step(y_val,   time_horizon)
 
-    # SLICE x to match final y
-    def slice_to_y(xd, yd):
-        cidx = xd.index.intersection(yd.index)
-        x_f = xd.loc[cidx].sort_index()
-        y_f = yd.loc[cidx].sort_index()
-        return x_f, y_f
+    # 6) SLICE X TO MATCH Y
+    def slice_to_y(x_df, y_df):
+        c_idx = x_df.index.intersection(y_df.index)
+        x_sliced = x_df.loc[c_idx].sort_index()
+        y_sliced = y_df.loc[c_idx].sort_index()
+        return x_sliced, y_sliced
 
-    x_train_f, y_train_f = slice_to_y(x_train, y_train_m)
-    x_val_f,   y_val_f   = slice_to_y(x_val,   y_val_m)
+    x_train_final, y_train_final = slice_to_y(x_train, y_train_multi)
+    x_val_final,   y_val_final   = slice_to_y(x_val,   y_val_multi)
 
-    # CHECK LENGTHS
-    if len(x_train_f) != len(y_train_f):
-        raise ValueError("Train mismatch after multi-step creation.")
-    if len(x_val_f) != len(y_val_f):
-        raise ValueError("Val mismatch after multi-step creation.")
+    if len(x_train_final) != len(y_train_final):
+        raise ValueError("Train mismatch after multi-step.")
+    if len(x_val_final) != len(y_val_final):
+        raise ValueError("Val mismatch after multi-step.")
 
     print("Processed datasets:")
-    print(" x_train:", x_train_f.shape," y_train:", y_train_f.shape)
-    print(" x_val:  ", x_val_f.shape,  " y_val:  ", y_val_f.shape)
+    print(" x_train:", x_train_final.shape, " y_train:", y_train_final.shape)
+    print(" x_val:  ", x_val_final.shape,   " y_val:  ", y_val_final.shape)
 
     return {
-        "x_train": x_train_f,
-        "y_train": y_train_f,
-        "x_val":   x_val_f,
-        "y_val":   y_val_f
+        "x_train": x_train_final,
+        "y_train": y_train_final,
+        "x_val":   x_val_final,
+        "y_val":   y_val_final
     }
 
 
-
 def run_prediction_pipeline(config, plugin):
-    """
-    Single pipeline ensuring the EXACT same training MAE that Keras reports
-    is reproduced by the external flatten-based calculation, ignoring data issues.
-    """
-
     start_time = time.time()
     iterations = config.get("iterations", 1)
     print(f"Number of iterations: {iterations}")
 
-    # We'll store metrics across iterations
     train_mae_list = []
-    train_r2_list = []
-    val_mae_list = []
-    val_r2_list  = []
+    val_mae_list   = []
 
-    # 1) LOAD & PROCESS ONCE
-    ds = process_data(config)
+    # 1) Process data ONCE
+    ds = process_data(config)  # now numeric conversion is correct
     x_train_df, y_train_df = ds["x_train"], ds["y_train"]
     x_val_df,   y_val_df   = ds["x_val"],   ds["y_val"]
 
     print("Training data shapes:", x_train_df.shape, y_train_df.shape)
     print("Validation data shapes:", x_val_df.shape, y_val_df.shape)
 
+    # Convert to numpy
     x_train = x_train_df.to_numpy(dtype=np.float32)
     y_train = y_train_df.to_numpy(dtype=np.float32)
     x_val   = x_val_df.to_numpy(dtype=np.float32)
     y_val   = y_val_df.to_numpy(dtype=np.float32)
 
-    # 2) Set model input shape & pass time_horizon
-    time_horizon = config["time_horizon"]
-    plugin.set_params(time_horizon=time_horizon)
-
-    def get_input_shape(arr):
-        # For ANN => single integer
-        return arr.shape[1]
-
-    input_shape = get_input_shape(x_train)
-    epochs = config["epochs"]
-    batch_size = config["batch_size"]
-    threshold_error = config["threshold_error"]
-
-    for iteration in range(1, iterations + 1):
+    # 2) Build & train the model
+    plugin.set_params(time_horizon=config["time_horizon"])
+    input_shape = x_train.shape[1]
+    
+    for iteration in range(1, iterations+1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
-        it_start = time.time()
-
         try:
-            # a) BUILD MODEL
             plugin.build_model(input_shape=input_shape)
-            print("Fitting model...")
 
-            # b) TRAIN
             plugin.train(
-                x_train,
-                y_train,
-                epochs=epochs,
-                batch_size=batch_size,
-                threshold_error=threshold_error,
+                x_train, y_train,
+                epochs=config["epochs"],
+                batch_size=config["batch_size"],
+                threshold_error=config["threshold_error"],
                 x_val=x_val,
-                y_val=y_val,
+                y_val=y_val
             )
 
-            # c) Evaluate with Keras => entire training set
-            train_eval = plugin.model.evaluate(x_train, y_train, verbose=0)
-            # Typically => [loss, mae], or [loss, mse, mae], etc.
-            keras_train_mae = train_eval[-1]  # we assume the last item is MAE
-            print(f"Keras model.evaluate => training MAE: {keras_train_mae}")
-
-            # d) Evaluate externally (your flatten-based approach)
+            # 3) Evaluate
             train_preds = plugin.predict(x_train)
+            val_preds   = plugin.predict(x_val)
+
+            # SHAPE CHECK
             if train_preds.shape != y_train.shape:
-                raise ValueError(f"train_preds shape {train_preds.shape} != y_train {y_train.shape}")
-
-            ext_train_mae = plugin.calculate_mae(y_train, train_preds)
-            train_r2_val  = r2_score(y_train, train_preds)
-
-            print(f"External flatten-based => training MAE: {ext_train_mae}")
-            print(f"Training R²: {train_r2_val}")
-
-            # e) Validation
-            val_eval = plugin.model.evaluate(x_val, y_val, verbose=0)
-            keras_val_mae = val_eval[-1]
-            print(f"Keras model.evaluate => validation MAE: {keras_val_mae}")
-
-            val_preds = plugin.predict(x_val)
+                raise ValueError(f"train_preds {train_preds.shape} != y_train {y_train.shape}")
             if val_preds.shape != y_val.shape:
-                raise ValueError(f"val_preds shape {val_preds.shape} != y_val {y_val.shape}")
+                raise ValueError(f"val_preds {val_preds.shape} != y_val {y_val.shape}")
 
-            ext_val_mae = plugin.calculate_mae(y_val, val_preds)
-            val_r2_val  = r2_score(y_val, val_preds)
-            print(f"External flatten-based => validation MAE: {ext_val_mae}")
-            print(f"Validation R²: {val_r2_val}")
+            train_mae = plugin.calculate_mae(y_train, train_preds)
+            val_mae   = plugin.calculate_mae(y_val,   val_preds)
+            print(f"Training MAE: {train_mae}")
+            print(f"Validation MAE: {val_mae}")
 
-            # Compare differences
-            diff_train = abs(ext_train_mae - keras_train_mae)
-            diff_val   = abs(ext_val_mae - keras_val_mae)
-            print(f"Diff in training MAE => {diff_train}")
-            print(f"Diff in validation MAE => {diff_val}")
-
-            train_mae_list.append(ext_train_mae)
-            train_r2_list.append(train_r2_val)
-            val_mae_list.append(ext_val_mae)
-            val_r2_list.append(val_r2_val)
-
-            it_end = time.time()
-            print(f"Iteration {iteration} completed in {it_end - it_start:.2f} seconds")
+            train_mae_list.append(train_mae)
+            val_mae_list.append(val_mae)
 
         except Exception as e:
-            print(f"Iteration {iteration} failed with error: {e}")
+            print(f"Iteration {iteration} failed => {e}")
             continue
 
-    # Aggregation
-    results = {
-        "Metric": ["Train MAE","Train R²","Val MAE","Val R²"],
-        "Average": [
-            np.mean(train_mae_list) if train_mae_list else None,
-            np.mean(train_r2_list)  if train_r2_list  else None,
-            np.mean(val_mae_list)   if val_mae_list   else None,
-            np.mean(val_r2_list)    if val_r2_list    else None,
-        ],
-        "StdDev": [
-            np.std(train_mae_list) if train_mae_list else None,
-            np.std(train_r2_list)  if train_r2_list  else None,
-            np.std(val_mae_list)   if val_mae_list   else None,
-            np.std(val_r2_list)    if val_r2_list    else None,
-        ]
-    }
-
-    results_file = config.get("results_file", "results.csv")
-    pd.DataFrame(results).to_csv(results_file, index=False)
-    print(f"Results saved to {results_file}")
+    # Summaries
+    print("Average train MAE:", np.mean(train_mae_list))
+    print("Average val MAE:", np.mean(val_mae_list))
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
