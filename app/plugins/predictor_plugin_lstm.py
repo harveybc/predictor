@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import LSTM, Dense, Input, BatchNormalization
+from keras.layers import LSTM, Dense, Input, BatchNormalization, Dropout
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
@@ -49,6 +49,7 @@ class Plugin:
         """
         self.params['input_dim'] = input_shape
         l2_reg = self.params.get('l2_reg', 1e-4)
+        dropout_rate = self.params.get('dropout_rate', 0.2)
 
         # Layer configuration
         layers = []
@@ -77,21 +78,26 @@ class Plugin:
                     activation='tanh',
                     recurrent_activation='sigmoid',
                     kernel_initializer=HeNormal(),
+                    kernel_regularizer=l2(l2_reg),
                     return_sequences=True
                 )(x)
+                x = BatchNormalization()(x)  # Add batch normalization
+                x = Dropout(dropout_rate)(x)  # Add dropout
 
         # Final LSTM layer
         x = LSTM(
             units=layers[-2],
             activation='tanh',
             recurrent_activation='sigmoid',
-            kernel_initializer=HeNormal()
+            kernel_initializer=HeNormal(),
+            kernel_regularizer=l2(l2_reg)
         )(x)
+        x = Dropout(dropout_rate)(x)  # Add dropout
 
         # Output layer
         model_output = Dense(
             units=layers[-1],
-            activation='linear',
+            activation='linear',  # Use linear for continuous output
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="model_output"
@@ -113,48 +119,43 @@ class Plugin:
         self.model.summary()
 
 
+
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train the LSTM model with optional validation data.
-        
-        Args:
-            x_train (np.ndarray): Training input data.
-            y_train (np.ndarray): Training target data.
-            epochs (int): Number of training epochs.
-            batch_size (int): Size of training batches.
-            threshold_error (float): Threshold error to monitor.
-            x_val (np.ndarray, optional): Validation input data. Defaults to None.
-            y_val (np.ndarray, optional): Validation target data. Defaults to None.
         """
         print(f"Training LSTM model with data shape: {x_train.shape}, target shape: {y_train.shape}")
-        
+
         callbacks = []
-        patience = self.params.get('patience', 10)  # Default patience for early stopping
-        
+        patience = self.params.get('patience', 10)
+
+        # Early stopping based on validation loss
         early_stopping_monitor = EarlyStopping(
-            monitor='loss', 
-            patience=patience, 
+            monitor='val_loss',  # Monitor validation loss
+            patience=patience,
             restore_best_weights=True,
             verbose=1
         )
         callbacks.append(early_stopping_monitor)
-        
+
         validation_data = (x_val, y_val) if x_val is not None and y_val is not None else None
 
         # Fit the model
         history = self.model.fit(
-            x_train, 
-            y_train, 
-            epochs=epochs, 
-            batch_size=batch_size, 
-            verbose=1, 
+            x_train,
+            y_train,
+            epochs=epochs,
+            batch_size=batch_size,
+            validation_data=validation_data,  # Provide validation data
+            verbose=1,
             callbacks=callbacks
         )
-        
+
         print("Training completed.")
-        final_loss = history.history['loss'][-1]
+        final_loss = history.history['val_loss'][-1] if 'val_loss' in history.history else history.history['loss'][-1]
         if final_loss > threshold_error:
             print(f"Warning: Model training completed with loss {final_loss} exceeding the threshold error {threshold_error}.")
+
 
 
     def predict(self, data):
