@@ -22,7 +22,7 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.02,
+        'learning_rate': 0.002,
         'activation': 'relu',
         'patience': 10,
         'l2_reg': 1e-4
