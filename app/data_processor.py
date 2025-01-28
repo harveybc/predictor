@@ -4,363 +4,548 @@ import numpy as np
 import os
 import time
 import json
+import sys
 from app.data_handler import load_csv, write_csv
 from app.config_handler import save_debug_info, remote_log
+import logging
+from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
+import contextlib
+
 
 def process_data(config):
-    print(f"Loading data from CSV file: {config['x_train_file']}")
-    x_train_data = load_csv(config['x_train_file'], headers=config['headers'])
-    print(f"Data loaded with shape: {x_train_data.shape}")
+    """
+    Simplified process_data function assuming x and y datasets are already aligned row by row.
+    """
 
-    y_train_file = config['y_train_file']
-    target_column = config['target_column']
+    # 1) LOAD CSVs
+    x_train = load_csv(
+        config["x_train_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_train")
+    )
+    y_train = load_csv(
+        config["y_train_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_train")
+    )
+    x_val = load_csv(
+        config["x_validation_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_test")
+    )
+    y_val = load_csv(
+        config["y_validation_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_test")
+    )
 
-    # Load Y data
-    if isinstance(y_train_file, str):
-        print(f"Loading y_train data from CSV file: {y_train_file}")
-        y_train_data = load_csv(y_train_file, headers=config['headers'])
-        print(f"y_train data loaded with shape: {y_train_data.shape}")
-    else:
-        raise ValueError("Either y_train_file must be specified as a string path to the CSV file.")
-
-    # Extract target column if specified
-    if target_column is not None:
-        if isinstance(target_column, str):
-            if target_column not in y_train_data.columns:
-                raise ValueError(f"Target column '{target_column}' not found in y_train_data.")
-            y_train_data = y_train_data[[target_column]]
-        elif isinstance(target_column, int):
-            if target_column < 0 or target_column >= y_train_data.shape[1]:
-                raise ValueError(f"Target column index {target_column} is out of range in y_train_data.")
-            y_train_data = y_train_data.iloc[:, [target_column]]
+    # 2) EXTRACT THE TARGET COLUMN
+    target_col = config["target_column"]
+    def extract_target(df, col):
+        if isinstance(col, str):
+            if col not in df.columns:
+                raise ValueError(f"Target column '{col}' not found.")
+            return df[[col]]
+        elif isinstance(col, int):
+            return df.iloc[:, [col]]
         else:
-            raise ValueError("target_column must be either a string (column name) or an integer index.")
-    else:
-        raise ValueError("No valid target_column was provided for y_train_data.")
+            raise ValueError("`target_column` must be str or int.")
 
-    # Convert to numeric, fill NaNs just in case (the load_csv might have done it, but we ensure again)
-    x_train_data = x_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
-    y_train_data = y_train_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+    y_train = extract_target(y_train, target_col)
+    y_val = extract_target(y_val, target_col)
 
-    # At this point, load_csv() should have already parsed 'DATE_TIME' and set it as index if found.
-    # But to be safe, confirm that they have an index of type datetime-like.
-    # If not, we cannot align by date properly. 
-    # (If you prefer a different date column name, adjust accordingly.)
+    # 3) CONVERT EACH DF TO NUMERIC, REASSIGN THE RESULT TO AVOID BUGS
+    x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_train = y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
+    x_val = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_val = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-    if not isinstance(x_train_data.index, pd.DatetimeIndex) or not isinstance(y_train_data.index, pd.DatetimeIndex):
-        raise ValueError("Either 'DATE_TIME' column wasn't parsed as datetime or no valid DatetimeIndex found. "
-                         "Ensure your CSV has a 'DATE_TIME' column or the first column is recognized as datetime.")
+    # 4) MULTI-STEP COLUMNS
+    time_horizon = config["time_horizon"]
+    def create_multi_step(y_df, horizon):
+        """
+        Create multi-step targets for time-series prediction.
 
-    # Now align by intersection of dates (this is what you want).
-    common_index = x_train_data.index.intersection(y_train_data.index)
-    x_train_data = x_train_data.loc[common_index].sort_index()
-    y_train_data = y_train_data.loc[common_index].sort_index()
+        Args:
+            y_df (pd.DataFrame): Target data as a DataFrame.
+            horizon (int): Number of future steps to predict.
 
-    # If no overlap, raise an error
-    if x_train_data.empty or y_train_data.empty:
-        raise ValueError(
-            "No overlapping dates found (or data is empty after alignment). "
-            "Please ensure your CSV files truly share date ranges."
-        )
-
-    time_horizon = config['time_horizon']
-    input_offset = config['input_offset']
-    print(f"Applying time horizon: {time_horizon} and input offset: {input_offset}")
-    total_offset = time_horizon + input_offset
-
-    # Shift y by total_offset, remove last time_horizon from x
-    # e.g., we want to predict future Y
-    y_train_data = y_train_data.iloc[total_offset:]
-    x_train_data = x_train_data.iloc[:-time_horizon]
-
-    print(f"Data shape after applying offset and time horizon: {x_train_data.shape}, {y_train_data.shape}")
-
-    # If the offset leads to zero rows, error out
-    if x_train_data.empty or y_train_data.empty:
-        raise ValueError(
-            "After applying time_horizon and offset, no samples remain. "
-            "Check that your dataset is large enough and offsets/time_horizon are correct."
-        )
-
-    # Ensure the same min length
-    min_length = min(len(x_train_data), len(y_train_data))
-    x_train_data = x_train_data.iloc[:min_length]
-    y_train_data = y_train_data.iloc[:min_length]
-
-    # Build multi-step Y
-    Y_list = []
-    for i in range(len(y_train_data) - time_horizon + 1):
-        row_values = []
-        for j in range(time_horizon):
-            row_values.append(y_train_data.iloc[i + j].values[0])
-        Y_list.append(row_values)
-
-    if not Y_list:
-        raise ValueError(
-            "After creating multi-step slices, no samples remain. "
-            "Check that your data is sufficient for the given time_horizon."
-        )
-
-    y_train_data = pd.DataFrame(Y_list)
-
-    # Adjust X to match the number of Y samples
-    x_train_data = x_train_data.iloc[:len(y_train_data)].reset_index(drop=True)
-    y_train_data = y_train_data.reset_index(drop=True)
-
-    print(f"Returning data of type: {type(x_train_data)}, {type(y_train_data)}")
-    print(f"x_train_data shape after adjustments: {x_train_data.shape}")
-    print(f"y_train_data shape after adjustments (multi-step): {y_train_data.shape}")
-
-    return x_train_data, y_train_data
+        Returns:
+            pd.DataFrame: Multi-step targets aligned with the input data.
+        """
+        blocks = []
+        for i in range(len(y_df) - horizon):
+            # Collect the next `horizon` ticks starting from the *next* row
+            window = y_df.iloc[i + 1 : i + 1 + horizon].values.flatten()
+            blocks.append(window)
+        # Align index to the input data (exclude the last `horizon` rows)
+        return pd.DataFrame(blocks, index=y_df.index[:-horizon])
 
 
+    y_train_multi = create_multi_step(y_train, time_horizon)
+    y_val_multi = create_multi_step(y_val, time_horizon)
+
+    # 5) TRIM x TO MATCH THE LENGTH OF y
+    min_len_train = min(len(x_train), len(y_train_multi))
+    x_train = x_train.iloc[:min_len_train]
+    y_train_multi = y_train_multi.iloc[:min_len_train]
+
+    min_len_val = min(len(x_val), len(y_val_multi))
+    x_val = x_val.iloc[:min_len_val]
+    y_val_multi = y_val_multi.iloc[:min_len_val]
+
+    print("Processed datasets:")
+    print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
+    print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
+
+    print("x_train index:", x_train.index)
+    print("y_train index:", y_train_multi.index)
+    assert len(x_train) == len(y_train_multi), "x_train and y_train are misaligned!"
+    assert len(x_val) == len(y_val_multi), "x_val and y_val are misaligned!"
+
+    return {
+        "x_train": x_train,
+        "y_train": y_train_multi,
+        "x_val": x_val,
+        "y_val": y_val_multi
+    }
 
 
+def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
+    """
+    Creates sliding windows for input features and targets with a specified stride.
 
-import numpy as np
-import pandas as pd
+    Args:
+        x (numpy.ndarray): Input features of shape (N, features).
+        y (numpy.ndarray): Targets of shape (N,) or (N, 1).
+        window_size (int): Number of past steps to include in each window.
+        time_horizon (int): Number of future steps to predict.
+        stride (int): Step size between windows.
+        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
+
+    Returns:
+        tuple:
+            - x_windowed (numpy.ndarray): Shaped (samples, window_size, features).
+            - y_windowed (numpy.ndarray): Shaped (samples, time_horizon).
+            - date_time_windows (list): List of date times for each window (if provided).
+    """
+    if y.ndim == 2 and y.shape[1] == 1:
+        y = y.flatten()
+    elif y.ndim > 2:
+        raise ValueError("y should be a 1D or 2D array with a single column.")
+
+    x_windowed = []
+    y_windowed = []
+    date_time_windows = []
+
+    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
+        x_window = x[i:i + window_size]
+        y_window = y[i + window_size:i + window_size + time_horizon]
+        x_windowed.append(x_window)
+        y_windowed.append(y_window)
+        if date_times is not None:
+            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
+
+    return np.array(x_windowed), np.array(y_windowed), date_time_windows
+
+
 
 def run_prediction_pipeline(config, plugin):
     """
-    Runs the prediction pipeline with conditional data reshaping for the Transformer plugin.
+    Runs the prediction pipeline using both training and validation datasets.
+    Iteratively trains and evaluates the model, while saving metrics and predictions.
+
+    Args:
+        config (dict): Configuration dictionary containing parameters for training and evaluation.
+        plugin (object): Model plugin that implements train, predict, and evaluate methods.
     """
     start_time = time.time()
-    
-    print("Running process_data...")
-    x_train, y_train = process_data(config)
-    print(f"Processed data received of type: {type(x_train)} and shape: {x_train.shape}")
-    
-    time_horizon = config['time_horizon']
-    input_offset = config['input_offset']
-    batch_size = config['batch_size']
-    epochs = config['epochs']
-    threshold_error = config['threshold_error']
 
-    # Ensure x_train and y_train are DataFrame or Series
-    if isinstance(x_train, (pd.DataFrame, pd.Series)) and isinstance(y_train, (pd.DataFrame, pd.Series)):
-        # Convert to numpy for training
-        x_train = x_train.to_numpy().astype(np.float32)
-        y_train = y_train.to_numpy().astype(np.float32)
+    iterations = config.get("iterations", 1)
+    print(f"Number of iterations: {iterations}")
 
-        # Ensure x_train is at least 2D
-        if x_train.ndim == 1:
-            x_train = x_train.reshape(-1, 1)
-        
-        # Debug messages
-        print(f"x_train shape: {x_train.shape}")
-        print(f"y_train shape: {y_train.shape}")
+    # Lists to store metrics for all iterations
+    training_mae_list = []
+    training_r2_list = []
+    validation_mae_list = []
+    validation_r2_list = []
 
-        # ----------------------------
-        # CONDITIONAL RESHAPE FOR TRANSFORMER
-        # ----------------------------
-        if config['plugin'] == 'transformer':
-            # Treat each feature as a separate timestep
-            # Reshape from (N, 50) to (N, 50, 1)
-            if x_train.ndim == 2:
-                x_train = x_train.reshape((x_train.shape[0], x_train.shape[1], 1))
-                print(f"Reshaped x_train for transformer: {x_train.shape}")
-            
-            # Now we pass a 2D tuple: (seq_len=50, num_features=1)
-            plugin.build_model(input_shape=x_train.shape[1:])
-        else:
-            # Keep old logic for ANN/CNN/LSTM
-            # Pass a single integer for input_shape
-            plugin.build_model(input_shape=x_train.shape[1])
+    # Load all datasets
+    print("Loading and processing datasets...")
+    datasets = process_data(config)  # <-- We do not modify how process_data works, just rely on it
+    x_train, y_train = datasets["x_train"], datasets["y_train"]
+    x_val, y_val = datasets["x_val"], datasets["y_val"]
 
-        # ----------------------------
-        # TRAIN THE MODEL
-        # ----------------------------
-        plugin.train(
-            x_train, 
-            y_train, 
-            epochs=epochs, 
-            batch_size=batch_size, 
-            threshold_error=threshold_error
+    print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
+    print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
+
+    # Extract time_horizon and window_size from config
+    time_horizon = config.get("time_horizon")
+    window_size = config.get("window_size")
+
+    if time_horizon is None:
+        raise ValueError("`time_horizon` is not defined in the configuration.")
+
+    # Confirm CNN plugin requires window_size
+    if config["plugin"] == "cnn" and window_size is None:
+        raise ValueError("`window_size` must be defined in the configuration for CNN plugin.")
+
+    print(f"Time Horizon: {time_horizon}")
+
+    batch_size = config["batch_size"]
+    epochs = config["epochs"]
+    threshold_error = config["threshold_error"]
+
+    # Convert datasets to numpy arrays
+    x_train = x_train.to_numpy().astype(np.float32)
+    y_train = y_train.to_numpy().astype(np.float32)
+    x_val = x_val.to_numpy().astype(np.float32)
+    y_val = y_val.to_numpy().astype(np.float32)
+
+    # CNN-specific sliding windows
+    if config["plugin"] == "cnn":
+        print("Creating sliding windows for CNN...")
+        x_train, y_train, _ = create_sliding_windows(
+            x_train, y_train, window_size, time_horizon, stride=1
+        )
+        x_val, y_val, _ = create_sliding_windows(
+            x_val, y_val, window_size, time_horizon, stride=1
         )
 
-        # ----------------------------
-        # SAVE THE TRAINED MODEL
-        # ----------------------------
-        if config.get('save_model'):
-            plugin.save(config['save_model'])
-            print(f"Model saved to {config['save_model']}")
+        print(f"Sliding windows created:")
+        print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
+        print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
 
-        # ----------------------------
-        # PREDICT ON TRAINING DATA
-        # ----------------------------
-        predictions = plugin.predict(x_train)
+    # Ensure x_* are at least 2D
+    if x_train.ndim == 1:
+        x_train = x_train.reshape(-1, 1)
+    if x_val.ndim == 1:
+        x_val = x_val.reshape(-1, 1)
 
-        # ----------------------------
-        # EVALUATE THE MODEL
-        # ----------------------------
-        mse = float(plugin.calculate_mse(y_train, predictions))
-        mae = float(plugin.calculate_mae(y_train, predictions))
-        print(f"Mean Squared Error: {mse}")
-        print(f"Mean Absolute Error: {mae}")
+    # Pass time_horizon to the plugin (if it uses it)
+    plugin.set_params(time_horizon=time_horizon)
 
-        # ----------------------------
-        # CONVERT PREDICTIONS TO DATAFRAME
-        # ----------------------------
-        if predictions.ndim == 1 or predictions.shape[1] == 1:
-            predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
-        else:
-            num_steps = predictions.shape[1]
-            pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
-            predictions_df = pd.DataFrame(predictions, columns=pred_cols)
+    for iteration in range(1, iterations + 1):
+        print(f"\n=== Iteration {iteration}/{iterations} ===")
+        iteration_start_time = time.time()
 
-        # ----------------------------
-        # SAVE PREDICTIONS TO CSV
-        # ----------------------------
-        output_filename = config['output_file']
-        write_csv(
-            output_filename, 
-            predictions_df, 
-            include_date=config.get('force_date', False), 
-            headers=config.get('headers', True)
-        )
-        print(f"Output written to {output_filename}")
-
-        # ----------------------------
-        # SAVE DEBUG INFO
-        # ----------------------------
-        end_time = time.time()
-        execution_time = end_time - start_time
-        debug_info = {
-            'execution_time': float(execution_time),
-            'mse': mse,
-            'mae': mae
-        }
-
-        if config.get('save_log'):
-            save_debug_info(debug_info, config['save_log'])
-            print(f"Debug info saved to {config['save_log']}")
-
-        if config.get('remote_log'):
-            remote_log(
-                config, 
-                debug_info, 
-                config['remote_log'], 
-                config.get('username'), 
-                config.get('password')
-            )
-            print(f"Debug info saved to {config['remote_log']}")
-
-        print(f"Execution time: {execution_time} seconds")
-
-        # ----------------------------
-        # VALIDATE THE MODEL (IF VALIDATION DATA PROVIDED)
-        # ----------------------------
-        if config.get('x_validation_file') and config.get('y_validation_file'):
-            print("Validating model...")
-
-            x_val_df = load_csv(config['x_validation_file'], headers=config.get('headers', True))
-            y_val_df = load_csv(config['y_validation_file'], headers=config.get('headers', True))
-
-            # Extract target column if specified
-            target_column = config.get('target_column', None)
-            if target_column is not None:
-                if isinstance(target_column, str):
-                    if target_column not in y_val_df.columns:
-                        raise ValueError(f"Target column '{target_column}' not found in y_val_df.")
-                    y_val_df = y_val_df[[target_column]]
-                elif isinstance(target_column, int):
-                    if target_column < 0 or target_column >= y_val_df.shape[1]:
-                        raise ValueError(f"Target column index {target_column} is out of range in y_val_df.")
-                    y_val_df = y_val_df.iloc[:, [target_column]]
-                else:
-                    raise ValueError("target_column must be either a string (column name) or an integer index.")
-
-            # Align by common index
-            common_index = x_val_df.index.intersection(y_val_df.index)
-            x_val_df = x_val_df.loc[common_index].sort_index()
-            y_val_df = y_val_df.loc[common_index].sort_index()
-
-            # Convert to numeric and fill NaNs
-            x_val_df = x_val_df.apply(pd.to_numeric, errors='coerce').fillna(0)
-            y_val_df = y_val_df.apply(pd.to_numeric, errors='coerce').fillna(0)
-
-            # Apply offset and time horizon
-            total_offset = time_horizon + input_offset
-            y_val_df = y_val_df.iloc[total_offset:]
-            x_val_df = x_val_df.iloc[:-time_horizon]
-
-            # Ensure same length
-            min_length = min(len(x_val_df), len(y_val_df))
-            x_val_df = x_val_df.iloc[:min_length]
-            y_val_df = y_val_df.iloc[:min_length]
-
-            # Multi-step processing for validation
-            Y_val_list = []
-            for i in range(len(y_val_df) - time_horizon + 1):
-                row_values = []
-                for j in range(time_horizon):
-                    row_values.append(y_val_df.iloc[i + j].values[0])
-                Y_val_list.append(row_values)
-
-            y_val_df = pd.DataFrame(Y_val_list).reset_index(drop=True)
-            x_val_df = x_val_df.iloc[:len(y_val_df)].reset_index(drop=True)
-
-            # Convert validation data to numpy
-            x_validation = x_val_df.to_numpy().astype(np.float32)
-            y_validation = y_val_df.to_numpy().astype(np.float32)
-
-            # Ensure x_validation is at least 2D
-            if x_validation.ndim == 1:
-                x_validation = x_validation.reshape(-1, 1)
-
-            # Conditional reshape for transformer
-            if config['plugin'] == 'transformer':
-                if x_validation.ndim == 2:
-                    x_validation = x_validation.reshape((x_validation.shape[0], x_validation.shape[1], 1))
-                    print(f"Reshaped x_validation for transformer: {x_validation.shape}")
-
-            print(f"Validation data shape after adjustments: {x_validation.shape}, {y_validation.shape}")
-
-            # Predict on the validation data
-            validation_predictions = plugin.predict(x_validation)
-            # Adjust predictions length if necessary
-            validation_predictions = validation_predictions[:len(y_validation)]
-
-            # Calculate validation errors
-            validation_mse = float(plugin.calculate_mse(y_validation, validation_predictions))
-            validation_mae = float(plugin.calculate_mae(y_validation, validation_predictions))
-            print(f"Validation Mean Squared Error: {validation_mse}")
-            print(f"Validation Mean Absolute Error: {validation_mae}")
-
-            # Convert validation predictions to DataFrame
-            if validation_predictions.ndim == 1 or validation_predictions.shape[1] == 1:
-                validation_predictions_df = pd.DataFrame(validation_predictions, columns=['Prediction'])
+        try:
+            # Build the model
+            if config["plugin"] == "cnn":
+                # CNN expects shape (window_size, features)
+                if len(x_train.shape) < 3:
+                    raise ValueError(
+                        f"For CNN, x_train must be 3D. Found: {x_train.shape}."
+                    )
+                plugin.build_model(input_shape=(window_size, x_train.shape[2]))
             else:
-                val_num_steps = validation_predictions.shape[1]
-                val_pred_cols = [f'Prediction_{i+1}' for i in range(val_num_steps)]
-                validation_predictions_df = pd.DataFrame(validation_predictions, columns=val_pred_cols)
+                # For ANN/LSTM/Transformers: typically shape (features,)
+                if len(x_train.shape) != 2:
+                    raise ValueError(
+                        f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}."
+                    )
+                plugin.build_model(input_shape=x_train.shape[1])
 
-            # (Optional) Save or further process validation_predictions_df as needed
-            # For example:
-            # write_csv("validation_predictions.csv", validation_predictions_df)
+            # Train the model
+            plugin.train(
+                x_train,
+                y_train,
+                epochs=epochs,
+                batch_size=batch_size,
+                threshold_error=threshold_error,
+                x_val=x_val,
+                y_val=y_val,
+            )
 
+            print("Evaluating trained model on training and validation data. Please wait...")
+
+            # Suppress TensorFlow/Keras logs during prediction
+            with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
+                os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+                logging.getLogger("tensorflow").setLevel(logging.FATAL)
+
+                # Predict training data
+                train_predictions = plugin.predict(x_train)
+
+                # Predict validation data
+                val_predictions = plugin.predict(x_val)
+
+            # Restore TensorFlow logs
+            os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
+            logging.getLogger("tensorflow").setLevel(logging.INFO)
+
+            # -----------------------
+            # Dimension checks
+            # -----------------------
+            # Expect train_predictions.shape == (num_train_samples, time_horizon)
+            #  or at least have the same second dimension as y_train, etc.
+            if train_predictions.shape[0] != y_train.shape[0]:
+                raise ValueError(
+                    "Mismatch in training samples dimension:\n"
+                    f"  train_predictions.shape[0]={train_predictions.shape[0]}, "
+                    f"y_train.shape[0]={y_train.shape[0]}.\n"
+                    "Please ensure data alignment in multi-step logic."
+                )
+            if train_predictions.shape[1] != y_train.shape[1]:
+                raise ValueError(
+                    "Mismatch in training time_horizon dimension:\n"
+                    f"  train_predictions.shape[1]={train_predictions.shape[1]}, "
+                    f"y_train.shape[1]={y_train.shape[1]}.\n"
+                    "Time horizon dimension must match."
+                )
+
+            # Same check for validation
+            if val_predictions.shape[0] != y_val.shape[0]:
+                raise ValueError(
+                    "Mismatch in validation samples dimension:\n"
+                    f"  val_predictions.shape[0]={val_predictions.shape[0]}, "
+                    f"y_val.shape[0]={y_val.shape[0]}.\n"
+                    "Please ensure data alignment for multi-step validation."
+                )
+            if val_predictions.shape[1] != y_val.shape[1]:
+                raise ValueError(
+                    "Mismatch in validation time_horizon dimension:\n"
+                    f"  val_predictions.shape[1]={val_predictions.shape[1]}, "
+                    f"y_val.shape[1]={y_val.shape[1]}.\n"
+                    "Time horizon dimension must match for validation."
+                )
+
+            # Evaluate training metrics
+            train_mae = float(plugin.calculate_mae(y_train, train_predictions))
+            train_r2 = float(r2_score(y_train, train_predictions))
+            print(f"Training MAE: {train_mae}")
+            print(f"Training R²: {train_r2}")
+
+            # Save training metrics
+            training_mae_list.append(train_mae)
+            training_r2_list.append(train_r2)
+
+            # Evaluate validation metrics
+            val_mae = float(plugin.calculate_mae(y_val, val_predictions))
+            val_r2 = float(r2_score(y_val, val_predictions))
+            print(f"Validation MAE: {val_mae}")
+            print(f"Validation R²: {val_r2}")
+
+            # Save validation metrics
+            validation_mae_list.append(val_mae)
+            validation_r2_list.append(val_r2)
+
+            iteration_end_time = time.time()
+            print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
+
+        except Exception as e:
+            print(f"Iteration {iteration} failed with error:\n  {e}")
+            continue  # Proceed to the next iteration even if one iteration fails
+
+    # -----------------------
+    # Aggregate statistics
+    # -----------------------
+    results = {
+        "Metric": [
+            "Training MAE",
+            "Training R²",
+            "Validation MAE",
+            "Validation R²",
+        ],
+        "Average": [
+            np.mean(training_mae_list) if training_mae_list else None,
+            np.mean(training_r2_list)  if training_r2_list  else None,
+            np.mean(validation_mae_list) if validation_mae_list else None,
+            np.mean(validation_r2_list)  if validation_r2_list  else None,
+        ],
+        "Std Dev": [
+            np.std(training_mae_list) if training_mae_list else None,
+            np.std(training_r2_list)  if training_r2_list  else None,
+            np.std(validation_mae_list) if validation_mae_list else None,
+            np.std(validation_r2_list)  if validation_r2_list  else None,
+        ],
+        "Max": [
+            np.max(training_mae_list) if training_mae_list else None,
+            np.max(training_r2_list)  if training_r2_list  else None,
+            np.max(validation_mae_list) if validation_mae_list else None,
+            np.max(validation_r2_list)  if validation_r2_list  else None,
+        ],
+        "Min": [
+            np.min(training_mae_list) if training_mae_list else None,
+            np.min(training_r2_list)  if training_r2_list  else None,
+            np.min(validation_mae_list) if validation_mae_list else None,
+            np.min(validation_r2_list)  if validation_r2_list  else None,
+        ],
+    }
+
+    # Save results to CSV
+    results_file = config.get("results_file", "results.csv")
+    results_df = pd.DataFrame(results)
+    results_df.to_csv(results_file, index=False)
+    print(f"Results saved to {results_file}")
+
+    # Save final validation predictions
+    final_val_file = config.get("output_file", "validation_predictions.csv")
+    # Because we are inside a loop, `val_predictions` might not exist if iteration always fails,
+    # so we guard with a check:
+    if 'val_predictions' in locals() and val_predictions is not None:
+        val_predictions_df = pd.DataFrame(
+            val_predictions, 
+            columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
+        )
+        val_predictions_df.to_csv(final_val_file, index=False)
+        print(f"Final validation predictions saved to {final_val_file}")
     else:
-        print(f"Invalid data type returned: {type(x_train)}, {type(y_train)}")
-        raise ValueError("Processed data is not in the correct format (DataFrame or Series).")
+        print("Warning: No final validation predictions were generated (all iterations may have failed).")
+
+    end_time = time.time()
+    print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
 
 
 
+def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
+    """
+    Creates sliding windows for input features and targets with a specified stride.
 
+    Args:
+        x (numpy.ndarray): Input features of shape (N, features).
+        y (numpy.ndarray): Targets of shape (N,) or (N, 1).
+        window_size (int): Number of past steps to include in each window.
+        time_horizon (int): Number of future steps to predict.
+        stride (int): Step size between windows.
+        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
 
+    Returns:
+        tuple:
+            - x_windowed (numpy.ndarray): Shaped (samples, window_size, features).
+            - y_windowed (numpy.ndarray): Shaped (samples, time_horizon).
+            - date_time_windows (list): List of date times for each window (if provided).
+    """
+    if y.ndim == 2 and y.shape[1] == 1:
+        y = y.flatten()
+    elif y.ndim > 2:
+        raise ValueError("y should be a 1D or 2D array with a single column.")
+
+    x_windowed = []
+    y_windowed = []
+    date_time_windows = []
+
+    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
+        x_window = x[i:i + window_size]
+        y_window = y[i + window_size:i + window_size + time_horizon]
+        x_windowed.append(x_window)
+        y_windowed.append(y_window)
+        if date_times is not None:
+            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
+
+    return np.array(x_windowed), np.array(y_windowed).reshape(-1, time_horizon), date_time_windows
 
 
 def load_and_evaluate_model(config, plugin):
-    # Load the model
-    plugin.load(config['load_model'])
+    """
+    Loads a pre-trained model and evaluates it on the validation data.
 
-    # Load the input data
-    x_train, _ = process_data(config)
+    This function performs the following steps:
+    1. Loads the specified pre-trained model.
+    2. Loads and processes the validation data.
+    3. Makes predictions using the loaded model.
+    4. Saves the predictions to a CSV file for evaluation, including the DATE_TIME column.
+
+    Args:
+        config (dict): Configuration dictionary containing parameters for model evaluation.
+            Expected keys include:
+                - 'load_model' (str): Path to the pre-trained model file.
+                - 'x_validation_file' (str): Path to the validation features CSV file.
+                - 'y_validation_file' (str): Path to the validation targets CSV file.
+                - 'target_column' (str or int): Column name or index to be used as the target.
+                - 'headers' (bool): Indicates if CSV files contain headers.
+                - 'force_date' (bool): Determines if date should be included in the output CSV.
+                - 'evaluate_file' (str): Path to save the evaluation predictions CSV file.
+                - 'max_steps_val' (int, optional): Maximum number of rows to read for validation data.
+
+        plugin (Plugin): The ANN predictor plugin to be used for evaluation.
+
+    Raises:
+        ValueError: If required configuration parameters are missing or invalid.
+        Exception: Propagates any exception that occurs during model loading or data processing.
+    """
+    # Load the pre-trained model
+    print(f"Loading pre-trained model from {config['load_model']}...")
+    try:
+        plugin.load(config['load_model'])
+        print("Model loaded successfully.")
+    except Exception as e:
+        print(f"Failed to load the model from {config['load_model']}: {e}")
+        sys.exit(1)
+
+    # Load and process validation data with row limit
+    print("Loading and processing validation data for evaluation...")
+    try:
+        # Assuming process_data can be reused for validation by specifying validation files
+        x_val, y_val = process_data(config)
+        print(f"Processed validation data: X shape: {x_val.shape}, Y shape: {y_val.shape}")
+    except Exception as e:
+        print(f"Failed to process validation data: {e}")
+        sys.exit(1)
 
     # Predict using the loaded model
-    predictions = plugin.predict(x_train.to_numpy())
+    print("Making predictions on validation data...")
+    try:
+        predictions = plugin.predict(x_val.to_numpy())
+        print(f"Predictions shape: {predictions.shape}")
+    except Exception as e:
+        print(f"Failed to make predictions: {e}")
+        sys.exit(1)
 
-    # Save the predictions to CSV
+    # Convert predictions to DataFrame
+    if predictions.ndim == 1 or predictions.shape[1] == 1:
+        predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
+    else:
+        num_steps = predictions.shape[1]
+        pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
+        predictions_df = pd.DataFrame(predictions, columns=pred_cols)
+
+    # Add DATE_TIME column from y_val
+    if isinstance(y_val.index, pd.DatetimeIndex):
+        predictions_df['DATE_TIME'] = y_val.index[:len(predictions_df)]
+    else:
+        predictions_df['DATE_TIME'] = pd.NaT  # Assign Not-a-Time if index is not datetime
+        print("Warning: DATE_TIME for validation predictions not captured.")
+
+    # Rearrange columns to have DATE_TIME first
+    cols = ['DATE_TIME'] + [col for col in predictions_df.columns if col != 'DATE_TIME']
+    predictions_df = predictions_df[cols]
+
+    # Save predictions to CSV for evaluation
     evaluate_filename = config['evaluate_file']
-    predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
-    write_csv(evaluate_filename, predictions_df, include_date=config['force_date'], headers=config['headers'])
-    print(f"Predicted data saved to {evaluate_filename}")
+    try:
+        write_csv(
+            file_path=evaluate_filename,
+            data=predictions_df,
+            include_date=False,  # DATE_TIME is already included
+            headers=config.get('headers', True)
+        )
+        print(f"Validation predictions with DATE_TIME saved to {evaluate_filename}")
+    except Exception as e:
+        print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
+        sys.exit(1)
+
+
+
+def create_multi_step_targets(df, time_horizon):
+    """
+    Creates multi-step targets for time-series prediction.
+
+    Args:
+        df (pd.DataFrame): Target data as a DataFrame.
+        time_horizon (int): Number of future steps to predict.
+
+    Returns:
+        pd.DataFrame: Multi-step targets aligned with the input data.
+    """
+    y_multi_step = []
+    for i in range(len(df) - time_horizon + 1):
+        y_multi_step.append(df.iloc[i:i + time_horizon].values.flatten())
+
+    # Create DataFrame with aligned indices
+    y_multi_step_df = pd.DataFrame(y_multi_step, index=df.index[:len(y_multi_step)])
+    return y_multi_step_df
+
+
+
+

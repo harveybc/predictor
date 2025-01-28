@@ -1,51 +1,108 @@
 import pandas as pd
+from typing import Optional
 from app.reconstruction import unwindow_data
 
-def load_csv(file_path, headers=False):
+
+import pandas as pd
+from typing import Optional
+import sys
+
+def load_csv(file_path: str, headers: bool = False, max_rows: Optional[int] = None) -> pd.DataFrame:
     """
-    Loads a CSV file and, if headers is True, attempts to parse a column named 'DATE_TIME' as datetime and use it as the index.
-    Falls back to the original logic if 'DATE_TIME' is not present or cannot be parsed. 
-    Converts all remaining columns to numeric, filling NaNs with zeros.
+    Loads a CSV file with optional row limiting and processes it into a cleaned DataFrame.
+
+    This function ensures consistent index handling by setting 'DATE_TIME' as the index
+    if it exists in the dataset. If 'DATE_TIME' is missing, a RangeIndex is used, and
+    warnings are logged.
+
+    Args:
+        file_path (str): Path to the CSV file.
+        headers (bool): Whether the file contains headers. Defaults to False.
+        max_rows (Optional[int]): Maximum number of rows to read. Defaults to None.
+
+    Returns:
+        pd.DataFrame: A processed DataFrame with numeric columns and a consistent index.
+
+    Raises:
+        Exception: Propagates any exception that occurs during the CSV loading process.
     """
     try:
-        # Load raw CSV data
+        # 1) Load raw CSV data
         if headers:
-            data = pd.read_csv(file_path, sep=',', dtype=str)
+            data = pd.read_csv(file_path, sep=',', dtype=str, nrows=max_rows)
         else:
-            data = pd.read_csv(file_path, header=None, sep=',', dtype=str)
+            data = pd.read_csv(file_path, header=None, sep=',', dtype=str, nrows=max_rows)
 
-        # If the CSV has a 'DATE_TIME' column, parse it as datetime and set it as index
-        # Otherwise, fallback to the original logic of checking if the first column is datetime
-        if headers and 'DATE_TIME' in data.columns:
-            # Parse DATE_TIME column
-            data['DATE_TIME'] = pd.to_datetime(data['DATE_TIME'], errors='coerce')
-            # Set DATE_TIME as index
-            data.set_index('DATE_TIME', inplace=True)
-            # If there's still a column literally named 'DATE_TIME', drop it
-            # (some CSVs might have uppercase/lowercase variants)
-            data.drop(columns=[c for c in data.columns if c.lower() == 'date_time'], inplace=True, errors='ignore')
+        # 2) Detect 'DATE_TIME' column in a case-insensitive manner
+        date_time_cols = [c for c in data.columns if c.strip().lower() == 'date_time']
+
+        if date_time_cols:
+            # 2a) Use the first detected 'DATE_TIME' column as the index
+            main_dt_col = date_time_cols[0]
+            data[main_dt_col] = pd.to_datetime(data[main_dt_col], errors='coerce')
+            data.set_index(main_dt_col, inplace=True)
+
+            # Drop extra 'DATE_TIME' columns if any
+            extra_dt_cols = date_time_cols[1:]
+            for c in extra_dt_cols:
+                if c in data.columns:
+                    data.drop(columns=[c], inplace=True, errors='ignore')
+
         else:
-            # Original fallback logic for date detection
-            if headers and pd.api.types.is_datetime64_any_dtype(data.iloc[:, 0]):
-                data.columns = ['date'] + [f'col_{i-1}' for i in range(1, len(data.columns))]
-                data.set_index('date', inplace=True)
-            else:
-                data.columns = [f'col_{i}' for i in range(len(data.columns))]
+            # 2b) If 'DATE_TIME' is missing, use RangeIndex and log a warning
+            print(f"Warning: No 'DATE_TIME' column found in '{file_path}'. Using RangeIndex.")
+            data.index = pd.RangeIndex(start=0, stop=len(data), step=1)
 
-        # Convert all columns to numeric, fill NaNs with zeros
+        # 3) Rename columns if headers are missing
+        if not headers:
+            data.columns = [f'col_{i}' for i in range(len(data.columns))]
+
+        # 4) Convert all columns to numeric, fill NaN values with 0
         for col in data.columns:
             data[col] = pd.to_numeric(data[col], errors='coerce').fillna(0)
 
-        # Check for remaining NaNs
+        # 5) Debug information
+        print(f"[DEBUG] Loaded CSV '{file_path}' -> shape={data.shape}, index={data.index.dtype}, headers={headers}")
+
+        # 6) Check for leftover NaNs
         if data.isnull().values.any():
-            print("Warning: NaN values found in the data after processing. Please review the loaded dataset.")
-            
+            print(f"Warning: NaN values found after processing CSV: {file_path}")
+
     except Exception as e:
         print(f"An error occurred while loading the CSV: {e}")
         raise
+
     return data
 
-def write_csv(file_path, data, include_date=True, headers=True, window_size=None):
+
+
+def write_csv(file_path: str, data: pd.DataFrame, include_date: bool = True,
+              headers: bool = True, window_size: Optional[int] = None) -> None:
+    """
+    Writes a DataFrame to a CSV file with optional date inclusion and headers.
+
+    This function exports the provided DataFrame to a CSV file at the specified path.
+    It allows for conditional inclusion of the date column and headers. An optional
+    `window_size` parameter is present for future extensions but is not utilized in
+    the current implementation.
+
+    Args:
+        file_path (str): The destination path for the CSV file.
+        data (pd.DataFrame): The DataFrame to be written to the CSV.
+        include_date (bool, optional): Determines whether to include the date column
+            in the CSV. If `True` and the DataFrame contains a 'date' column, it is included
+            as the index. Defaults to `True`.
+        headers (bool, optional): Indicates whether to write the column headers to the CSV.
+            Defaults to `True`.
+        window_size (int, optional): Placeholder for windowing functionality.
+            Not used in the current implementation. Defaults to `None`.
+
+    Raises:
+        Exception: Propagates any exception that occurs during the CSV writing process.
+
+    Example:
+        >>> write_csv("data/output.csv", df, include_date=True, headers=True)
+    """
     try:
         if include_date and 'date' in data.columns:
             data.to_csv(file_path, index=True, header=headers)
