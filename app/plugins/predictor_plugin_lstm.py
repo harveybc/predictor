@@ -17,7 +17,7 @@ class Plugin:
         'epochs': 200,
         'batch_size': 128,
         'intermediate_layers': 3,
-        'initial_layer_size': 128,
+        'initial_layer_size': 32,
         'layer_size_divisor': 2,
         'learning_rate': 0.002,
         'dropout_rate': 0.1
@@ -65,9 +65,9 @@ class Plugin:
         x = model_input
         for size in layers[:-1]:
             if size > 1:
-                x = LSTM(size, activation='tanh', recurrent_activation='tanh', kernel_initializer=HeNormal(), return_sequences=True)(x)
+                x = LSTM(size, activation='tanh', recurrent_activation='linear', kernel_initializer=HeNormal(), return_sequences=True)(x)
                 x = BatchNormalization()(x)
-        x = LSTM(layers[-2], activation='tanh', recurrent_activation='tanh', kernel_initializer=HeNormal())(x)
+        x = LSTM(layers[-2], activation='tanh', recurrent_activation='linear', kernel_initializer=HeNormal())(x)
         model_output = Dense(layers[-1], activation='linear', kernel_initializer=GlorotUniform(), name="model_output")(x)
         # add batch normalization
         #model_output = BatchNormalization()(model_output)
