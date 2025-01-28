@@ -36,7 +36,7 @@ def process_data(config):
     6) Slices x to the same final length as y.
     """
 
-    # 1) Load CSVs
+    # 1) LOAD ALL CSVs
     x_train = load_csv(
         config["x_train_file"],
         headers=config["headers"],
@@ -58,30 +58,35 @@ def process_data(config):
         max_rows=config.get("max_steps_test")
     )
 
-    # 2) Extract single target column
+    # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
 
     def extract_target(df, col):
         if isinstance(col, str):
+            if col not in df.columns:
+                raise ValueError(f"Target column '{col}' not found in DataFrame.")
             return df[[col]]
         elif isinstance(col, int):
             return df.iloc[:, [col]]
         else:
-            raise ValueError("Invalid target_column")
+            raise ValueError("`target_column` must be str or int")
 
     y_train = extract_target(y_train, target_col)
     y_val   = extract_target(y_val,   target_col)
 
-    # Convert to numeric
-    for df in [x_train, y_train, x_val, y_val]:
-        df.apply(pd.to_numeric, errors="coerce").fillna(0)
+    # 3) CONVERT EACH DF TO NUMERIC, REALLY REASSIGN TO DF
+    #    (Previously was `df.apply(...).fillna(0)` without storing the result => bug!)
+    x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_train = y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
+    x_val   = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_val   = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-    # Ensure DatetimeIndex
+    # 4) ENSURE DATETIME INDEX
     for name, df in zip(["x_train","y_train","x_val","y_val"], [x_train,y_train,x_val,y_val]):
         if not isinstance(df.index, pd.DatetimeIndex):
-            raise ValueError(f"{name} must have a DatetimeIndex")
+            raise ValueError(f"{name} must have a DatetimeIndex. Found: {type(df.index)}")
 
-    # Align each (x,y)
+    # ALIGN x,y ON INTERSECTION
     def align_xy(x_df, y_df):
         common_idx = x_df.index.intersection(y_df.index)
         x_aligned = x_df.loc[common_idx].sort_index()
@@ -91,13 +96,11 @@ def process_data(config):
     x_train, y_train = align_xy(x_train, y_train)
     x_val,   y_val   = align_xy(x_val,   y_val)
 
-    # 3) Shift y by -1 => next-step offset
-    y_train = y_train.shift(-1)
-    y_val   = y_val.shift(-1)
-    y_train.dropna(inplace=True)
-    y_val.dropna(inplace=True)
+    # SHIFT y BY -1 => NEXT-STEP OFFSET
+    y_train = y_train.shift(-1).dropna()
+    y_val   = y_val.shift(-1).dropna()
 
-    # 4) Build multi-step columns
+    # BUILD MULTI-STEP COLUMNS
     time_horizon = config["time_horizon"]
 
     def create_multi_step(y_df, horizon):
@@ -112,7 +115,7 @@ def process_data(config):
     y_train_multi = create_multi_step(y_train, time_horizon)
     y_val_multi   = create_multi_step(y_val,   time_horizon)
 
-    # 5) Slice x to match final y length
+    # SLICE X TO MATCH Y LENGTH
     def slice_to_y(x_df, y_df):
         comm_idx = x_df.index.intersection(y_df.index)
         x_final = x_df.loc[comm_idx].sort_index()
@@ -122,7 +125,7 @@ def process_data(config):
     x_train_final, y_train_final = slice_to_y(x_train, y_train_multi)
     x_val_final,   y_val_final   = slice_to_y(x_val,   y_val_multi)
 
-    # Final checks
+    # FINAL CHECKS
     if len(x_train_final) != len(y_train_final):
         raise ValueError("Mismatch in train sets after multi-step")
     if len(x_val_final) != len(y_val_final):
@@ -139,29 +142,14 @@ def process_data(config):
         "y_val":   y_val_final
     }
 
-
-##########################
-# run_prediction_pipeline.py
-##########################
-
-import time
-import os
-import numpy as np
-import pandas as pd
-from sklearn.metrics import r2_score
-import contextlib
-import sys
-
 def run_prediction_pipeline(config, plugin):
     """
-    1) Calls process_data once, getting x_train, y_train, x_val, y_val.
+    1) Calls process_data once => x_train, y_train, x_val, y_val.
     2) Builds & trains the model on those arrays.
-    3) Evaluates on the same arrays, printing training & validation MAE / R²
-       so the external evaluation matches Keras logs.
+    3) Evaluates on the same arrays, printing training & validation MAE / R².
     """
 
     start_time = time.time()
-
     iterations = config.get("iterations", 1)
     print(f"Number of iterations: {iterations}")
 
@@ -170,6 +158,7 @@ def run_prediction_pipeline(config, plugin):
     train_r2_list  = []
     val_r2_list    = []
 
+    # 1) Load data
     ds = process_data(config)
     x_train_df, y_train_df = ds["x_train"], ds["y_train"]
     x_val_df,   y_val_df   = ds["x_val"],   ds["y_val"]
@@ -185,20 +174,16 @@ def run_prediction_pipeline(config, plugin):
     time_horizon = config["time_horizon"]
     plugin.set_params(time_horizon=time_horizon)
 
+    # Determine input shape (example for ANN)
     plugin_type = config["plugin"].lower()
-    def get_input_shape(x, ptype):
-        if ptype == "cnn":
-            raise NotImplementedError("Add sliding windows if you want CNN support.")
-        elif ptype == "ann":
-            return x.shape[1]
-        else:
-            return (x.shape[1],)
+    def get_input_shape(x):
+        # e.g. for ANN => single integer
+        return x.shape[1]
 
-    input_shape = get_input_shape(x_train, plugin_type)
-
+    input_shape = get_input_shape(x_train)
     epochs = config["epochs"]
     batch_size = config["batch_size"]
-    threshold_error = config.get("threshold_error", 1e-4)
+    threshold_error = config["threshold_error"]
 
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
@@ -220,10 +205,24 @@ def run_prediction_pipeline(config, plugin):
 
             print("Evaluating on training and validation data...")
 
+            # 2) Predictions
             train_predictions = plugin.predict(x_train)
             val_predictions   = plugin.predict(x_val)
 
-            # First 10 lines
+            # 2b) Ensure shape is (N, time_horizon)
+            #     If the plugin outputs (N,1) or (N,) => mismatch => raise error
+            if train_predictions.shape != y_train.shape:
+                raise ValueError(
+                    f"train_predictions shape {train_predictions.shape} "
+                    f"!= y_train shape {y_train.shape} (time_horizon mismatch?)"
+                )
+            if val_predictions.shape != y_val.shape:
+                raise ValueError(
+                    f"val_predictions shape {val_predictions.shape} "
+                    f"!= y_val shape {y_val.shape} (time_horizon mismatch?)"
+                )
+
+            # Print first 10 lines for debugging
             limit_tr = min(10, len(train_predictions))
             print("\nFirst 10 training predictions vs actual:")
             for i in range(limit_tr):
@@ -234,6 +233,7 @@ def run_prediction_pipeline(config, plugin):
             for i in range(limit_va):
                 print(f"Row {i} => pred={val_predictions[i]}, actual={y_val[i]}")
 
+            # 3) External MAE & R²
             train_mae = float(plugin.calculate_mae(y_train, train_predictions))
             train_r2  = float(r2_score(y_train, train_predictions))
             print(f"Training MAE: {train_mae}")
@@ -245,8 +245,8 @@ def run_prediction_pipeline(config, plugin):
             print(f"Validation R²: {val_r2}")
 
             train_mae_list.append(train_mae)
-            val_mae_list.append(val_mae)
             train_r2_list.append(train_r2)
+            val_mae_list.append(val_mae)
             val_r2_list.append(val_r2)
 
             iteration_end = time.time()
@@ -256,6 +256,7 @@ def run_prediction_pipeline(config, plugin):
             print(f"Iteration {iteration} failed with error: {e}")
             continue
 
+    # 4) Aggregation
     results = {
         "Metric": ["Train MAE","Train R²","Val MAE","Val R²"],
         "Average": [
@@ -278,7 +279,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
 
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
