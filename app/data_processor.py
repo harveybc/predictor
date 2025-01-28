@@ -170,7 +170,6 @@ def run_prediction_pipeline(config, plugin):
     train_r2_list  = []
     val_r2_list    = []
 
-    from process_data import process_data
     ds = process_data(config)
     x_train_df, y_train_df = ds["x_train"], ds["y_train"]
     x_val_df,   y_val_df   = ds["x_val"],   ds["y_val"]
