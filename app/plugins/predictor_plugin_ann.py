@@ -125,9 +125,9 @@ class Plugin:
         )
         # custom r2 metric
         def coeff_r2(y_true, y_pred):
-            SS_res =  K.sum(K.square( y_true-y_pred )) 
-            SS_tot = K.sum(K.square( y_true - K.mean(y_true) ) ) 
-            return ( 1 - SS_res/(SS_tot + K.epsilon()) )
+            SS_res = K.mean(K.square(y_true - y_pred))
+            SS_tot = K.mean(K.square(y_true - K.mean(y_true)))
+            return 1 - SS_res / (SS_tot + K.epsilon())
         # Compile
         self.model.compile(
             optimizer=adam_optimizer,
