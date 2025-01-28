@@ -291,6 +291,7 @@ def run_prediction_pipeline(config, plugin):
                     # LSTM expects 3D input (time_steps, features)
                     if len(x_train.shape) != 3:
                         raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
+                    # Pass only the time_steps and features (without the batch size)
                     plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
                 else:
                     # For ANN/Transformers: 2D input (samples, features)
