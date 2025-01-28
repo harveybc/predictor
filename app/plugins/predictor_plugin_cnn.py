@@ -198,7 +198,7 @@ class Plugin:
         # Check if the final loss exceeds the threshold_error
         if mse > threshold_error:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
-
+        return history
 
 
 
