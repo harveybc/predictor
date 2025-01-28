@@ -142,7 +142,7 @@ class Plugin:
         
         callbacks = []
         early_stopping_monitor = EarlyStopping(
-            monitor='val_loss',
+            monitor='loss',
             patience=self.params['patience'],
             restore_best_weights=True,
             verbose=1
@@ -154,7 +154,7 @@ class Plugin:
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
-            validation_data=(x_val, y_val) if (x_val is not None and y_val is not None) else None,
+            #validation_data=(x_val, y_val) if (x_val is not None and y_val is not None) else None,
             callbacks=callbacks
         )
 
