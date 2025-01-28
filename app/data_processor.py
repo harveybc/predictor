@@ -37,12 +37,7 @@ from app.data_handler import load_csv
 
 def process_data(config):
     """
-    1) Loads x_train, y_train, x_val, y_val from CSV.
-    2) Extracts the target column in y_*.
-    3) Ensures all are numeric, have a DatetimeIndex, and are aligned.
-    4) Shifts y by 1 step into the future.
-    5) Builds multi-step columns in y.
-    6) Slices x to the same final length as y.
+    Simplified process_data function assuming x and y datasets are already aligned row by row.
     """
 
     # 1) LOAD CSVs
@@ -82,68 +77,39 @@ def process_data(config):
     y_train = extract_target(y_train, target_col)
     y_val   = extract_target(y_val,   target_col)
 
-    # 3) CONVERT EACH DF TO NUMERIC, REASSIGN THE RESULT TO AVOID BUG
+    # 3) CONVERT EACH DF TO NUMERIC, REASSIGN THE RESULT TO AVOID BUGS
     x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_train = y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     x_val   = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_val   = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-    # 4) ENSURE DATETIME INDEX
-    for name, df in zip(["x_train","y_train","x_val","y_val"], [x_train,y_train,x_val,y_val]):
-        if not isinstance(df.index, pd.DatetimeIndex):
-            raise ValueError(f"{name} must have a valid DatetimeIndex. Found: {type(df.index)}")
-
-    # ALIGN x,y ON INTERSECTION
-    def align_xy(xd, yd):
-        common_idx = xd.index.intersection(yd.index)
-        return xd.loc[common_idx].sort_index(), yd.loc[common_idx].sort_index()
-
-    x_train, y_train = align_xy(x_train, y_train)
-    x_val,   y_val   = align_xy(x_val,   y_val)
-
-    # SHIFT y BY -1 => next-step offset
-    #y_train = y_train.shift(-1).dropna()
-    #y_val   = y_val.shift(-1).dropna()
-
-    # 5) MULTI-STEP COLUMNS
+    # 4) MULTI-STEP COLUMNS
     time_horizon = config["time_horizon"]
     def create_multi_step(y_df, horizon):
         blocks = []
-        idx_list = []
         for i in range(len(y_df) - horizon + 1):
             window = y_df.iloc[i : i + horizon].values.flatten()
             blocks.append(window)
-            idx_list.append(y_df.index[i])
-        return pd.DataFrame(blocks, index=idx_list)
+        return pd.DataFrame(blocks)
 
     y_train_multi = create_multi_step(y_train, time_horizon)
     y_val_multi   = create_multi_step(y_val,   time_horizon)
 
-    # 6) SLICE X TO MATCH Y
-    def slice_to_y(x_df, y_df):
-        c_idx = x_df.index.intersection(y_df.index)
-        x_sliced = x_df.loc[c_idx].sort_index()
-        y_sliced = y_df.loc[c_idx].sort_index()
-        return x_sliced, y_sliced
-
-    x_train_final, y_train_final = slice_to_y(x_train, y_train_multi)
-    x_val_final,   y_val_final   = slice_to_y(x_val,   y_val_multi)
-
-    if len(x_train_final) != len(y_train_final):
-        raise ValueError("Train mismatch after multi-step.")
-    if len(x_val_final) != len(y_val_final):
-        raise ValueError("Val mismatch after multi-step.")
+    # 5) TRIM x TO MATCH THE LENGTH OF y
+    x_train = x_train.iloc[:len(y_train_multi)]
+    x_val   = x_val.iloc[:len(y_val_multi)]
 
     print("Processed datasets:")
-    print(" x_train:", x_train_final.shape, " y_train:", y_train_final.shape)
-    print(" x_val:  ", x_val_final.shape,   " y_val:  ", y_val_final.shape)
+    print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
+    print(" x_val:  ", x_val.shape,   " y_val:  ", y_val_multi.shape)
 
     return {
-        "x_train": x_train_final,
-        "y_train": y_train_final,
-        "x_val":   x_val_final,
-        "y_val":   y_val_final
+        "x_train": x_train,
+        "y_train": y_train_multi,
+        "x_val":   x_val,
+        "y_val":   y_val_multi
     }
+
 
 
 def run_prediction_pipeline(config, plugin):
