@@ -224,7 +224,6 @@ class Plugin:
         print(f"Calculated MAE: {mae}")
         return mae
 
-        return mae
 
     def save(self, file_path):
         """
