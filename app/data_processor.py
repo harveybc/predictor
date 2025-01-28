@@ -351,6 +351,7 @@ def run_prediction_pipeline(config, plugin):
             if len(train_results) < 3 or len(val_results) < 3:
                 raise ValueError("Expected at least three metrics (loss, MAE, R²) from evaluate method.")
 
+            print(f"plugin.model.metrics_names={plugin.model.metrics_names}")
             train_loss, train_mae, train_r2 = train_results
             val_loss, val_mae, val_r2 = val_results
 
