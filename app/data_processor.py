@@ -349,7 +349,13 @@ def run_prediction_pipeline(config, plugin):
                     verbose=0
                 )
                 # Predict validation data for evaluation
-                val_predictions = plugin.predict(x_val)
+                train_predictions = plugin.predict(x_train)  # Predict train data
+                val_predictions = plugin.predict(x_val)      # Predict validation data
+
+                # Calculate R² scores
+                train_r2 = r2_score(y_train, train_predictions)
+                val_r2 = r2_score(y_val, val_predictions)
+
 
             # Restore TensorFlow logs
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
@@ -363,8 +369,8 @@ def run_prediction_pipeline(config, plugin):
                 raise ValueError("Expected at least three metrics (loss, MAE, R²) from evaluate method.")
 
             print(f"plugin.model.metrics_names={plugin.model.metrics_names}")
-            train_loss, train_mae, train_r2 = train_results
-            val_loss, val_mae, val_r2 = val_results
+            train_loss, train_mse, train_mae = train_results
+            val_loss, val_mse, val_mae = val_results
 
             print(f"Training MAE: {train_mae}")
             print(f"Training R²: {train_r2}")
@@ -382,12 +388,6 @@ def run_prediction_pipeline(config, plugin):
             # Save training metrics
             training_mae_list.append(train_mae)
             training_r2_list.append(train_r2)
-
-            # Evaluate validation metrics
-            val_mae = float(plugin.calculate_mae(y_val, val_results.predictions))
-            val_r2 = float(r2_score(y_val, val_results.predictions))
-            print(f"Validation MAE: {val_mae}")
-            print(f"Validation R²: {val_r2}")
 
             # Save validation metrics
             validation_mae_list.append(val_mae)
