@@ -185,20 +185,25 @@ def run_prediction_pipeline(config, plugin):
                 y_val=y_val
             )
 
+            
+            # 3) Replicate final-epoch mae aggregator
+            final_epoch_mae = replicate_final_epoch_mae(
+                plugin.model, x_train, y_train, batch_size=config["batch_size"]
+            )
+            print(f"Replicated final-epoch training MAE => {final_epoch_mae:.6f}")
 
-            print("Training completed. Now replicating final-epoch training MAE...")
+            # Single-pass evaluate in inference mode (for reference)
+            eval_results = plugin.model.evaluate(x_train, y_train, verbose=0)
+            # Typically [loss, mse, mae] => last is mae
+            single_pass_mae = eval_results[-1]
+            print(f"model.evaluate => single-pass (inference) MAE => {single_pass_mae:.6f}")
 
-            # Suppose we already have x_train, y_train in numpy form
-            replicate_mae = replicate_training_mae(plugin.model, x_train, y_train, batch_size=config['batch_size'])
-            print(f"Replicated final-epoch training MAE: {replicate_mae:.6f}")
+            # External flatten-based approach also in inference mode
+            predictions = plugin.predict(x_train)
+            ext_mae = plugin.calculate_mae(y_train, predictions)
+            print(f"Flatten-based external => {ext_mae:.6f}")
 
-            # Compare to single-pass model.evaluate (which uses BN in inference mode):
-            keras_eval = plugin.model.evaluate(x_train, y_train, verbose=0)
-            # Typically [loss, mse, mae], so
-            final_epoch_inference_mae = keras_eval[-1]
-            print(f"model.evaluate => inference-mode MAE on the entire set: {final_epoch_inference_mae:.6f}")
-
-
+            
             # 3) Evaluate
             train_preds = plugin.predict(x_train)
             val_preds   = plugin.predict(x_val)
@@ -379,44 +384,32 @@ def create_multi_step_targets(df, time_horizon):
     return y_multi_step_df
 
 
-
-
-
-
-import math
-import tensorflow as tf
-
-def replicate_training_mae(model, x_np, y_np, batch_size=128):
+def replicate_final_epoch_mae(model, x_np, y_np, batch_size):
     """
-    Replicates the final epoch's training aggregator by:
-      1) Splitting data into mini-batches of batch_size
-      2) Forward pass with model(..., training=True) so BN uses training stats
-      3) Summing absolute errors per batch
-      4) Dividing by total number of elements
-
-    Returns: MAE that matches the ephemeral final-epoch training logs.
+    Replicate exactly how Keras logs 'mae' in the last epoch:
+      - same batch boundaries
+      - no shuffle
+      - training=True forward pass
+      - average of batch-level average errors
     """
     num_samples = x_np.shape[0]
-    time_horizon = y_np.shape[1]  # e.g. 6
+    time_horizon = y_np.shape[1]
     steps = math.ceil(num_samples / batch_size)
 
-    total_abs_error = 0.0
-    total_points = num_samples * time_horizon
-
-    # We'll use no GradientTape since we just want the forward pass in training mode
-    for i in range(steps):
-        start = i * batch_size
-        end = min((i+1)*batch_size, num_samples)
+    batch_maes = []
+    idx = 0
+    for step_i in range(steps):
+        start = step_i * batch_size
+        end = min((step_i+1)*batch_size, num_samples)
         x_batch = x_np[start:end]
         y_batch = y_np[start:end]
 
-        # Forward pass in training mode for BN, etc.
-        # If using TF2 Keras with Eager, you can do:
-        predictions = model(x_batch, training=True)  # Force training mode
+        # forward pass in training mode => BN uses ephemeral training stats
+        preds = model(x_batch, training=True)
 
-        # Summation of abs errors in this mini-batch
-        batch_error = tf.reduce_sum(tf.abs(predictions - y_batch))
-        total_abs_error += float(batch_error)
+        # mean absolute error for this batch
+        batch_mae = tf.reduce_mean(tf.abs(preds - y_batch))
+        batch_maes.append(float(batch_mae))
 
-    mae = total_abs_error / float(total_points)
-    return mae
+    # Keras logs the average of the batch-level MAEs
+    return float(np.mean(batch_maes))
