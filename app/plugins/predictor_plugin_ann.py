@@ -123,7 +123,8 @@ class Plugin:
         # Compile
         self.model.compile(
             optimizer=adam_optimizer,
-            loss=Huber(),  # or 'mse'
+            #loss=Huber(),  # or 'mse'
+            loss='mae',  # or 'mse'
             metrics=['mse', 'mae']  # logs multi-step MSE/MAE
         )
         
@@ -156,7 +157,7 @@ class Plugin:
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
-            shuffle=False,
+            shuffle=True,
             #validation_data=(x_val, y_val) if (x_val is not None and y_val is not None) else None,
             callbacks=callbacks
         )
@@ -167,6 +168,12 @@ class Plugin:
 
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
+
+        #Evaluate on the full training dataset for consistency
+        train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
+        train_loss, train_mse, train_mae = train_eval_results
+
+        print(f"[TRAIN] Final Dataset Evaluation - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
 
     def predict(self, data):
         """
