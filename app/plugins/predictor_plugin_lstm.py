@@ -69,6 +69,14 @@ class Plugin:
         model_input = Input(shape=input_shape, name="model_input")  # Corrected input shape
         x = model_input
 
+        x = Dense(
+            units=layers[0],
+            activation='tanh',
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name="model_output"
+        )(x)
+
         # Add LSTM layers
         for size in layers[:-1]:
             if size > 1:
