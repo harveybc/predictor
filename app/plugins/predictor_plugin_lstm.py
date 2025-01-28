@@ -79,7 +79,7 @@ class Plugin:
                     kernel_initializer=HeNormal(),
                     return_sequences=True
                 )(x)
-                x = BatchNormalization()(x)
+                
 
         # Final LSTM layer without `return_sequences`
         x = LSTM(
@@ -88,7 +88,7 @@ class Plugin:
             recurrent_activation='sigmoid',
             kernel_initializer=HeNormal()
         )(x)
-
+        x = BatchNormalization()(x)
         # Output layer
         model_output = Dense(
             units=layers[-1],
