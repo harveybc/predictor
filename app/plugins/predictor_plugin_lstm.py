@@ -42,14 +42,13 @@ class Plugin:
 
     def build_model(self, input_shape):
         """
-        Build the LSTM model with dynamically calculated layer sizes and proper input/output alignment.
-        
+        Build the LSTM model for multi-step time-series forecasting.
+
         Args:
-            input_shape (int): Number of input features for each time step.
+            input_shape (tuple): Shape of the input data (time_steps, features).
         """
         self.params['input_dim'] = input_shape
         l2_reg = self.params.get('l2_reg', 1e-4)
-        dropout_rate = self.params.get('dropout_rate', 0.2)
 
         # Layer configuration
         layers = []
@@ -64,13 +63,13 @@ class Plugin:
 
         # Debugging message
         print(f"LSTM Layer sizes: {layers}")
+        print(f"LSTM input shape: {input_shape}")
 
         # Input shape: (time_steps, features)
-        model_input = Input(shape=(input_shape, 1), name="model_input")  # Add channel dimension
-        print(f"LSTM input_shape: {(input_shape, 1)}")
-
+        model_input = Input(shape=input_shape, name="model_input")  # Corrected input shape
         x = model_input
-        # LSTM layers with dynamically calculated sizes
+
+        # Add LSTM layers
         for size in layers[:-1]:
             if size > 1:
                 x = LSTM(
@@ -78,26 +77,21 @@ class Plugin:
                     activation='tanh',
                     recurrent_activation='sigmoid',
                     kernel_initializer=HeNormal(),
-                    kernel_regularizer=l2(l2_reg),
                     return_sequences=True
                 )(x)
-                x = BatchNormalization()(x)  # Add batch normalization
-                x = Dropout(dropout_rate)(x)  # Add dropout
 
-        # Final LSTM layer
+        # Final LSTM layer without `return_sequences`
         x = LSTM(
             units=layers[-2],
             activation='tanh',
             recurrent_activation='sigmoid',
-            kernel_initializer=HeNormal(),
-            kernel_regularizer=l2(l2_reg)
+            kernel_initializer=HeNormal()
         )(x)
-        x = Dropout(dropout_rate)(x)  # Add dropout
 
         # Output layer
         model_output = Dense(
             units=layers[-1],
-            activation='linear',  # Use linear for continuous output
+            activation='linear',
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="model_output"
