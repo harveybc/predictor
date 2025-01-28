@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Dense, Input, BatchNormalization
+from keras.layers import Dense, Input, Dropout, BatchNormalization
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
@@ -12,12 +12,11 @@ import os
 class Plugin:
     """
     ANN Predictor Plugin using Keras for multi-step forecasting.
-
-    This plugin builds, trains, and evaluates an Artificial Neural Network (ANN) model
-    that outputs (N, time_horizon) predictions to match the pipeline's multi-step data.
+    
+    This plugin builds, trains, and evaluates an ANN that outputs (N, time_horizon).
     """
 
-    # Default parameters for the ANN
+    # Default parameters
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 3,
@@ -28,55 +27,49 @@ class Plugin:
         'patience': 10,
         'l2_reg': 1e-4
     }
-
+    
+    # Variables for debugging
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
     
     def __init__(self):
-        """
-        Initializes the Plugin with default parameters and no model.
-        """
         self.params = self.plugin_params.copy()
         self.model = None
 
     def set_params(self, **kwargs):
         """
-        Updates the plugin parameters with provided keyword arguments.
+        Update plugin parameters with provided kwargs.
         """
         for key, value in kwargs.items():
             self.params[key] = value
 
     def get_debug_info(self):
         """
-        Retrieves current debug info from plugin parameters.
+        Return a dict of debug info from plugin params.
         """
         return {var: self.params[var] for var in self.plugin_debug_vars}
 
     def add_debug_info(self, debug_info):
         """
-        Adds the plugin's debug info to an external dictionary.
+        Add the plugin's debug info to an external dictionary.
         """
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape):
         """
-        Builds the ANN model for multi-step forecasting, with final layer dimension
-        = self.params['time_horizon'].
-
+        Build the ANN with final layer = self.params['time_horizon'] for multi-step outputs.
+        
         Args:
-            input_shape (int): Number of input features (for ANN).
+            input_shape (int): Number of input features for ANN.
         """
         if not isinstance(input_shape, int):
-            raise ValueError(f"Invalid input_shape type: {type(input_shape)}. Must be int for ANN.")
-
-        # Store input dimension for debugging
+            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
+        
         self.params['input_dim'] = input_shape
-
-        # Retrieve L2 factor and time horizon
         l2_reg = self.params.get('l2_reg', 1e-4)
-        time_horizon = self.params['time_horizon']
+        time_horizon = self.params['time_horizon']  # the multi-step dimension
 
-        # Dynamically configure layer sizes
+        # Dynamically set layer sizes
         layers = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
@@ -85,13 +78,15 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // divisor, 1)
             int_layers += 1
-        # Final layer = time_horizon for multi-step output
+
+        # Final layer => time_horizon units (N, time_horizon) output
         layers.append(time_horizon)
 
         print(f"ANN Layer sizes: {layers}")
         print(f"ANN input_shape: {input_shape}")
 
-        # Define model input
+        # Build the model
+        from tensorflow.keras import Model, Input
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
 
@@ -101,11 +96,11 @@ class Plugin:
                 units=size,
                 activation=self.params['activation'],
                 kernel_initializer=HeNormal(),
-                kernel_regularizer=l2(l2_reg)
+                kernel_regularizer=l2(l2_reg),
             )(x)
             x = BatchNormalization()(x)
 
-        # Output layer: shape (None, time_horizon)
+        # Output layer => shape (N, time_horizon)
         model_output = Dense(
             units=layers[-1],
             activation='linear',
@@ -116,20 +111,18 @@ class Plugin:
 
         self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
 
-        # Adam optimizer
+        # Adam
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
-            beta_1=0.9,
-            beta_2=0.999,
-            epsilon=1e-7,
-            amsgrad=False
+            beta_1=0.9, beta_2=0.999,
+            epsilon=1e-7, amsgrad=False
         )
 
-        # Compile with Huber loss and typical regression metrics
+        # Compile
         self.model.compile(
             optimizer=adam_optimizer,
-            loss=Huber(),
-            metrics=['mse', 'mae']
+            loss=Huber(),  # or 'mse'
+            metrics=['mse', 'mae']  # logs multi-step MSE/MAE
         )
         
         print("Predictor Model Summary:")
@@ -137,16 +130,14 @@ class Plugin:
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
-        Trains the ANN model using training data, multi-step shape = (N, time_horizon).
-        Uses EarlyStopping (monitor=val_loss).
+        Train the model with shape => x_train(N, input_dim), y_train(N, time_horizon).
+        Uses EarlyStopping with 'val_loss'.
         """
-        print(f"Training with data shape => X: {x_train.shape}, Y: {y_train.shape}")
-
-        expected_horizon = self.params['time_horizon']
-        if y_train.ndim != 2 or y_train.shape[1] != expected_horizon:
+        print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
+        exp_horizon = self.params['time_horizon']
+        if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(
-                f"y_train has shape {y_train.shape}, but expected (N,{expected_horizon}). "
-                "Check multi-step logic."
+                f"y_train shape {y_train.shape}, expected (N,{exp_horizon})."
             )
         
         callbacks = []
@@ -159,13 +150,12 @@ class Plugin:
         callbacks.append(early_stopping_monitor)
 
         history = self.model.fit(
-            x_train,
-            y_train,
+            x_train, y_train,
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
-            callbacks=callbacks,
-            validation_data=(x_val, y_val) if (x_val is not None and y_val is not None) else None
+            validation_data=(x_val, y_val) if (x_val is not None and y_val is not None) else None,
+            callbacks=callbacks
         )
 
         print("Training completed.")
@@ -177,7 +167,7 @@ class Plugin:
 
     def predict(self, data):
         """
-        Generate predictions => shape (N, time_horizon).
+        Predict => shape (N, time_horizon).
         """
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -190,10 +180,12 @@ class Plugin:
         """
         print(f"Calculating MSE => y_true={y_true.shape}, y_pred={y_pred.shape}")
         if y_true.shape != y_pred.shape:
-            raise ValueError(f"Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}")
-        y_true_flat = y_true.reshape(-1)
-        y_pred_flat = y_pred.reshape(-1)
-        mse = np.mean((y_true_flat - y_pred_flat) ** 2)
+            raise ValueError(
+                f"Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}"
+            )
+        y_true_f = y_true.reshape(-1)
+        y_pred_f = y_pred.reshape(-1)
+        mse = np.mean((y_true_f - y_pred_f) ** 2)
         print(f"Calculated MSE => {mse}")
         return mse
 
@@ -203,22 +195,24 @@ class Plugin:
         """
         print(f"Calculating MAE => y_true={y_true.shape}, y_pred={y_pred.shape}")
         if y_true.shape != y_pred.shape:
-            raise ValueError(f"Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}")
-        y_true_flat = y_true.reshape(-1)
-        y_pred_flat = y_pred.reshape(-1)
-        mae = np.mean(np.abs(y_true_flat - y_pred_flat))
+            raise ValueError(
+                f"Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}"
+            )
+        y_true_f = y_true.reshape(-1)
+        y_pred_f = y_pred.reshape(-1)
+        mae = np.mean(np.abs(y_true_f - y_pred_f))
         return mae
 
     def save(self, file_path):
         """
-        Saves the trained model to file.
+        Save the trained model to file.
         """
         save_model(self.model, file_path)
-        print(f"Model saved to {file_path}")
+        print(f"Predictor model saved to {file_path}")
 
     def load(self, file_path):
         """
-        Loads a model from file.
+        Load a trained model from file.
         """
         self.model = load_model(file_path)
         print(f"Model loaded from {file_path}")
