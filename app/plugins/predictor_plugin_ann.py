@@ -154,6 +154,7 @@ class Plugin:
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
+            shuffle=False,
             #validation_data=(x_val, y_val) if (x_val is not None and y_val is not None) else None,
             callbacks=callbacks
         )
