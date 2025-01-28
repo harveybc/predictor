@@ -372,8 +372,8 @@ def run_prediction_pipeline(config, plugin):
             training_r2_list.append(train_r2)
 
             # Evaluate validation metrics
-            val_mae = float(plugin.calculate_mae(y_val, val_predictions))
-            val_r2 = float(r2_score(y_val, val_predictions))
+            val_mae = float(plugin.calculate_mae(y_val, val_results.predictions))
+            val_r2 = float(r2_score(y_val, val_results.predictions))
             print(f"Validation MAE: {val_mae}")
             print(f"Validation R²: {val_r2}")
 
