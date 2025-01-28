@@ -14,55 +14,39 @@ import contextlib
 
 def process_data(config):
     """
-    Loads and processes both training and validation datasets (features and targets), 
-    tailored for different plugins (ANN/LSTM, CNN, transformers).
+    Loads and processes training and validation datasets, ensuring correct alignment
+    and construction of the training signal for multi-step prediction.
 
-    Steps:
-      1) Read training & validation features (x) and targets (y).
-      2) Shift y by 1 tick so next-tick becomes the current label.
-      3) Forward-fill the last row(s) of y to avoid zeros.
-      4) Apply time horizon + offset trimming (drop first 'total_offset' from y, 
-         drop last 'time_horizon' from x).
-      5) If plugin=ANN/LSTM, create multi-step (time_horizon) columns in y.
-      6) If plugin=transformers, add positional encoding to x.
-      7) Leave CNN x alone (sliding windows are created later in run_prediction_pipeline).
+    Args:
+        config (dict): Configuration dictionary with the following keys:
+            - 'x_train_file', 'y_train_file': Paths to training datasets.
+            - 'x_validation_file', 'y_validation_file': Paths to validation datasets.
+            - 'target_column': Target column name or index.
+            - 'time_horizon': Number of future steps to predict.
+            - 'input_offset': Offset for input trimming.
+            - 'headers': Whether the CSV files have headers.
+            - 'max_steps_train', 'max_steps_test': Maximum rows to load for training and validation.
+            - 'plugin': Type of plugin ("cnn", "lstm", etc.).
+
+    Returns:
+        dict: Processed datasets with keys 'x_train', 'y_train', 'x_val', 'y_val'.
     """
     datasets = {}
 
-    # 1) LOAD TRAINING DATA
-    print(f"Loading training data from {config['x_train_file']} and {config['y_train_file']}...")
-    x_train = load_csv(
-        config['x_train_file'], 
-        headers=config['headers'], 
-        max_rows=config.get('max_steps_train')
-    )
-    y_train = load_csv(
-        config['y_train_file'], 
-        headers=config['headers'], 
-        max_rows=config.get('max_steps_train')
-    )
+    # Load datasets
+    print("Loading training and validation datasets...")
+    x_train = load_csv(config['x_train_file'], headers=config['headers'], max_rows=config.get('max_steps_train'))
+    y_train = load_csv(config['y_train_file'], headers=config['headers'], max_rows=config.get('max_steps_train'))
+    x_val = load_csv(config['x_validation_file'], headers=config['headers'], max_rows=config.get('max_steps_test'))
+    y_val = load_csv(config['y_validation_file'], headers=config['headers'], max_rows=config.get('max_steps_test'))
 
-    # 2) LOAD VALIDATION DATA
-    print(f"Loading validation data from {config['x_validation_file']} and {config['y_validation_file']}...")
-    x_val = load_csv(
-        config['x_validation_file'], 
-        headers=config['headers'], 
-        max_rows=config.get('max_steps_test')
-    )
-    y_val = load_csv(
-        config['y_validation_file'], 
-        headers=config['headers'], 
-        max_rows=config.get('max_steps_test')
-    )
-
-    # Extract the target column
+    # Extract target column
     target_column = config['target_column']
 
     def extract_target(df, col):
-        """Extract the specified target column from DataFrame df."""
         if isinstance(col, str):
             if col not in df.columns:
-                raise ValueError(f"Target column '{col}' not found in data.")
+                raise ValueError(f"Target column '{col}' not found.")
             return df[[col]]
         elif isinstance(col, int):
             return df.iloc[:, [col]]
@@ -70,130 +54,62 @@ def process_data(config):
             raise ValueError("`target_column` must be str or int.")
 
     y_train = extract_target(y_train, target_column)
-    y_val   = extract_target(y_val,   target_column)
+    y_val = extract_target(y_val, target_column)
 
-    # Convert to numeric and fill NAs with 0
-    for ds_name, ds in zip(["x_train","y_train","x_val","y_val"], [x_train,y_train,x_val,y_val]):
-        ds_converted = ds.apply(pd.to_numeric, errors='coerce').fillna(0)
-        datasets[ds_name] = ds_converted
+    # Convert to numeric and fill NAs
+    for name, df in zip(['x_train', 'y_train', 'x_val', 'y_val'], [x_train, y_train, x_val, y_val]):
+        datasets[name] = df.apply(pd.to_numeric, errors='coerce').fillna(0)
 
-    # Ensure datetime indices
-    for key in ["x_train","y_train","x_val","y_val"]:
+    # Ensure indices are datetime
+    for key in ['x_train', 'y_train', 'x_val', 'y_val']:
         if not isinstance(datasets[key].index, pd.DatetimeIndex):
-            raise ValueError(f"Dataset '{key}' must have a valid DatetimeIndex.")
+            raise ValueError(f"Dataset '{key}' must have a DatetimeIndex.")
 
-    # Align each (x, y) pair
-    common_train_index = datasets["x_train"].index.intersection(datasets["y_train"].index)
-    common_val_index   = datasets["x_val"].index.intersection(datasets["y_val"].index)
+    # Align datasets
+    for prefix in ['train', 'val']:
+        common_index = datasets[f'x_{prefix}'].index.intersection(datasets[f'y_{prefix}'].index)
+        datasets[f'x_{prefix}'] = datasets[f'x_{prefix}'].loc[common_index]
+        datasets[f'y_{prefix}'] = datasets[f'y_{prefix}'].loc[common_index]
 
-    datasets["x_train"] = datasets["x_train"].loc[common_train_index].sort_index()
-    datasets["y_train"] = datasets["y_train"].loc[common_train_index].sort_index()
-    datasets["x_val"]   = datasets["x_val"].loc[common_val_index].sort_index()
-    datasets["y_val"]   = datasets["y_val"].loc[common_val_index].sort_index()
+    # Shift y datasets to align with future predictions
+    for prefix in ['train', 'val']:
+        datasets[f'y_{prefix}'] = datasets[f'y_{prefix}'].shift(-1).ffill()
 
-    print("Shifting y datasets by 1 tick forward and filling last row(s):")
-    # SHIFT y forward by 1 => next tick is the label
-    # Then forward-fill to handle trailing NaNs
-    for y_name in ["y_train", "y_val"]:
-        ds = datasets[y_name]
-        ds_shifted = ds.shift(-1)  # shift up by 1
-        ds_filled  = ds_shifted.ffill()
-        datasets[y_name] = ds_filled
-        print(f"  -> {y_name} shape after shift/fill: {datasets[y_name].shape}")
-
-    # time_horizon & offset trimming
+    # Trim datasets based on time_horizon and input_offset
     time_horizon = config['time_horizon']
     input_offset = config['input_offset']
     total_offset = time_horizon + input_offset
-    print(f"Applying time_horizon={time_horizon}, input_offset={input_offset}, total_offset={total_offset}...")
 
-    def trim_datasets(x_df, y_df, label):
-        """Drop first 'total_offset' from y_df, drop last 'time_horizon' from x_df."""
-        if len(y_df) > total_offset:
-            y_df = y_df.iloc[total_offset:]
-        else:
-            y_df = y_df.iloc[0:0]  # empty
+    def trim(x, y):
+        return x.iloc[:-time_horizon], y.iloc[total_offset:]
 
-        if len(x_df) > time_horizon:
-            x_df = x_df.iloc[:-time_horizon]
-        else:
-            x_df = x_df.iloc[0:0]  # empty
+    datasets['x_train'], datasets['y_train'] = trim(datasets['x_train'], datasets['y_train'])
+    datasets['x_val'], datasets['y_val'] = trim(datasets['x_val'], datasets['y_val'])
 
-        print(f"  -> {label}: x->({x_df.shape}), y->({y_df.shape}) after horizon+offset.")
-        return x_df, y_df
+    # Ensure target datasets have the correct shape for multi-step prediction
+    def create_multi_step_targets(y, horizon):
+        y_multi = []
+        for i in range(len(y) - horizon + 1):
+            y_multi.append(y.iloc[i:i + horizon].values.flatten())
+        return pd.DataFrame(y_multi, index=y.index[:len(y_multi)])
 
-    datasets["x_train"], datasets["y_train"] = trim_datasets(datasets["x_train"], datasets["y_train"], "train")
-    datasets["x_val"],   datasets["y_val"]   = trim_datasets(datasets["x_val"],   datasets["y_val"],   "val")
+    datasets['y_train'] = create_multi_step_targets(datasets['y_train'], time_horizon)
+    datasets['y_val'] = create_multi_step_targets(datasets['y_val'], time_horizon)
 
-    # Ensure none are empty now
-    for key in ["x_train","y_train","x_val","y_val"]:
-        if datasets[key].empty:
-            raise ValueError(f"Dataset '{key}' is empty after offset/horizon logic.")
+    # Adjust x datasets to match y lengths
+    for prefix in ['train', 'val']:
+        datasets[f'x_{prefix}'] = datasets[f'x_{prefix}'].iloc[:len(datasets[f'y_{prefix}'])]
 
-    # Plugin-specific transformations
-    plugin_type = (config.get("plugin") or "").lower()
+    # Final shape validation
+    for prefix in ['train', 'val']:
+        if len(datasets[f'x_{prefix}']) != len(datasets[f'y_{prefix}']):
+            raise ValueError(f"Length mismatch: x_{prefix} ({len(datasets[f'x_{prefix}'])}) != y_{prefix} ({len(datasets[f'y_{prefix}'])})")
 
-    # CNN => no multi-step transform here; done later by sliding windows
-    if plugin_type == "cnn":
-        print("CNN plugin => No multi-step transform in process_data().")
-
-    # ANN / LSTM => multi-step transform for y
-    elif plugin_type in ["ann", "lstm"]:
-        print(f"{plugin_type.upper()} plugin => Creating multi-step targets for y with time_horizon={time_horizon}...")
-
-        # We expect the final shape of y => (N, time_horizon)
-        # Because each row will contain the next time_horizon ticks
-        datasets["y_train"] = create_multi_step_targets(datasets["y_train"], time_horizon)
-        datasets["y_val"]   = create_multi_step_targets(datasets["y_val"],   time_horizon)
-
-        # Adjust x to match new y lengths
-        new_len_train = len(datasets["y_train"])
-        new_len_val   = len(datasets["y_val"])
-
-        datasets["x_train"] = datasets["x_train"].iloc[:new_len_train].reset_index(drop=True)
-        datasets["x_val"]   = datasets["x_val"].iloc[:new_len_val].reset_index(drop=True)
-        datasets["y_train"] = datasets["y_train"].reset_index(drop=True)
-        datasets["y_val"]   = datasets["y_val"].reset_index(drop=True)
-
-        # Debug: expected shape for y is (N, time_horizon)
-        print(f"  [ANN/LSTM] Expected y to have shape (N, {time_horizon}) after multi-step transform.")
-        print(f"  [ANN/LSTM] Actual y_train shape: {datasets['y_train'].shape}")
-        print(f"  [ANN/LSTM] Actual y_val   shape: {datasets['y_val'].shape}")
-        print(f"  => x_train->({datasets['x_train'].shape}), y_train->({datasets['y_train'].shape})")
-        print(f"  => x_val->({datasets['x_val'].shape}),   y_val->({datasets['y_val'].shape})")
-
-    # Transformers => add positional encoding
-    elif plugin_type == "transformers":
-        print("Transformers plugin => Adding positional encoding to x...")
-
-        def positional_encoding(df):
-            """Example sine-based positional encoding; #columns match df.shape[1]."""
-            n_rows = len(df)
-            n_feat = df.shape[1]
-            pos_array = np.arange(n_rows).reshape(-1, 1)
-            encoded = np.zeros((n_rows, n_feat), dtype=np.float32)
-            for c in range(n_feat):
-                encoded[:, c] = np.sin(pos_array[:,0] / (10000 ** (2*c/n_feat)))
-            col_names = [f"posenc_{i}" for i in range(n_feat)]
-            return pd.DataFrame(encoded, columns=col_names, index=df.index)
-
-        x_train_pe = positional_encoding(datasets["x_train"])
-        x_val_pe   = positional_encoding(datasets["x_val"])
-        datasets["x_train"] = pd.concat([datasets["x_train"], x_train_pe], axis=1)
-        datasets["x_val"]   = pd.concat([datasets["x_val"],   x_val_pe],   axis=1)
-
-        print(f"  => x_train with PE: {datasets['x_train'].shape}, x_val with PE: {datasets['x_val'].shape}")
-    else:
-        print(f"Plugin '{plugin_type}' => No additional transform applied in process_data().")
-
-    # Final debug prints
-    print("Final shapes after all transformations:")
-    print(f"  x_train: {datasets['x_train'].shape} | y_train: {datasets['y_train'].shape}")
-    print(f"  x_val:   {datasets['x_val'].shape}   | y_val:   {datasets['y_val'].shape}")
+    print("Processed datasets:")
+    print(f"  x_train: {datasets['x_train'].shape}, y_train: {datasets['y_train'].shape}")
+    print(f"  x_val:   {datasets['x_val'].shape}, y_val:   {datasets['y_val'].shape}")
 
     return datasets
-
-
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
     Creates sliding windows for input features and targets with a specified stride.
@@ -255,7 +171,7 @@ def run_prediction_pipeline(config, plugin):
 
     # Load all datasets
     print("Loading and processing datasets...")
-    datasets = process_data(config)  # <-- We do not modify how process_data works, just rely on it
+    datasets = process_data(config)  # <-- Rely on the process_data function
     x_train, y_train = datasets["x_train"], datasets["y_train"]
     x_val, y_val = datasets["x_val"], datasets["y_val"]
 
@@ -478,7 +394,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
