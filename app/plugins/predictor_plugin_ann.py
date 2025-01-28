@@ -7,6 +7,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from keras.layers import GaussianNoise
+from keras import backend as K
 
 import logging
 import os
@@ -122,13 +123,17 @@ class Plugin:
             beta_1=0.9, beta_2=0.999,
             epsilon=1e-7, amsgrad=False
         )
-
+        # custom r2 metric
+        def coeff_r2(self, y_true, y_pred):
+            SS_res =  K.sum(K.square( y_true-y_pred )) 
+            SS_tot = K.sum(K.square( y_true - K.mean(y_true) ) ) 
+            return ( 1 - SS_res/(SS_tot + K.epsilon()) )
         # Compile
         self.model.compile(
             optimizer=adam_optimizer,
             loss=Huber(),  # or 'mse'
             #loss='mae',  # or 'mse'
-            metrics=['mse', 'mae']  # logs multi-step MSE/MAE
+            metrics=['mse', 'mae', 'coeff_r2']  # logs multi-step MSE/MAE
         )
         
         print("Predictor Model Summary:")
@@ -240,3 +245,5 @@ class Plugin:
         """
         self.model = load_model(file_path)
         print(f"Model loaded from {file_path}")
+    
+
