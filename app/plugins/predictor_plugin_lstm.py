@@ -16,8 +16,8 @@ class Plugin:
     plugin_params = {
         'epochs': 200,
         'batch_size': 128,
-        'intermediate_layers': 3,
-        'initial_layer_size': 64,
+        'intermediate_layers': 2,
+        'initial_layer_size': 32,
         'layer_size_divisor': 2,
         'learning_rate': 0.001,
         'dropout_rate': 0.1
@@ -76,7 +76,6 @@ class Plugin:
                     units=size,
                     activation='tanh',
                     recurrent_activation='sigmoid',
-                    kernel_initializer=HeNormal(),
                     return_sequences=True
                 )(x)
                 
@@ -86,15 +85,11 @@ class Plugin:
             units=layers[-2],
             activation='tanh',
             recurrent_activation='sigmoid',
-            kernel_initializer=HeNormal()
         )(x)
-        x = BatchNormalization()(x)
         # Output layer
         model_output = Dense(
             units=layers[-1],
             activation='tanh',
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
             name="model_output"
         )(x)
         
