@@ -162,6 +162,7 @@ class Plugin:
             shuffle=True,  # Enable shuffling
             callbacks=callbacks,
             #validation_data=(x_val, y_val)
+            validation_split = 0.2
         )
 
         print("Training completed.")
