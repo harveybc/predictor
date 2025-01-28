@@ -129,9 +129,13 @@ def process_data(config):
         y_train = y_train[: len(x_train)]
         y_val = y_val[: len(x_val)]
 
+        # Update y_train_multi to match the modified y_train
+        y_train_multi = y_train
+        y_val_multi = y_val
+
         print(f"LSTM data shapes after sliding windows:")
-        print(f"x_train: {x_train.shape}, y_train: {y_train.shape}")
-        print(f"x_val:   {x_val.shape}, y_val:   {y_val.shape}")
+        print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
+        print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
