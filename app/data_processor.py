@@ -232,11 +232,16 @@ def run_prediction_pipeline(config, plugin):
     epochs = config["epochs"]
     threshold_error = config["threshold_error"]
 
-    # Convert datasets to numpy arrays
-    x_train = x_train.to_numpy().astype(np.float32)
-    y_train = y_train.to_numpy().astype(np.float32)
-    x_val = x_val.to_numpy().astype(np.float32)
-    y_val = y_val.to_numpy().astype(np.float32)
+    # Ensure datasets are NumPy arrays
+    if isinstance(x_train, pd.DataFrame):
+        x_train = x_train.to_numpy().astype(np.float32)
+    if isinstance(y_train, pd.DataFrame):
+        y_train = y_train.to_numpy().astype(np.float32)
+    if isinstance(x_val, pd.DataFrame):
+        x_val = x_val.to_numpy().astype(np.float32)
+    if isinstance(y_val, pd.DataFrame):
+        y_val = y_val.to_numpy().astype(np.float32)
+
 
     # CNN-specific sliding windows
     if config["plugin"] == "cnn":
