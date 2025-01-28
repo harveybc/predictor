@@ -106,9 +106,18 @@ def process_data(config):
     x_val = x_val.iloc[:min_len_val].reset_index(drop=True)
     y_val_multi = y_val_multi.iloc[:min_len_val].reset_index(drop=True)
 
+
+
+
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape,   " y_val:  ", y_val_multi.shape)
+
+
+
+    print("x_train index:", x_train.index)
+    print("y_train index:", y_train.index)
+    assert len(x_train) == len(y_train), "x_train and y_train are misaligned!"
 
 
     assert len(x_train) == len(y_train), "x_train and y_train are misaligned!"
