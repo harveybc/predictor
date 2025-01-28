@@ -107,7 +107,8 @@ class Plugin:
             epsilon=1e-7,
             amsgrad=False
         )
-        self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse', 'mae'])
+        #self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse', 'mae'])
+        self.model.compile(optimizer=adam_optimizer, loss='mae', metrics=['mse', 'mae'])
 
         # Debugging messages
         print("Predictor Model Summary:")
