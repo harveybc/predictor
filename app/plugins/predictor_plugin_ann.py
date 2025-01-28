@@ -123,8 +123,8 @@ class Plugin:
         # Compile
         self.model.compile(
             optimizer=adam_optimizer,
-            #loss=Huber(),  # or 'mse'
-            loss='mae',  # or 'mse'
+            loss=Huber(),  # or 'mse'
+            #loss='mae',  # or 'mse'
             metrics=['mse', 'mae']  # logs multi-step MSE/MAE
         )
         
@@ -159,7 +159,7 @@ class Plugin:
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
-            shuffle=False,  # Enable shuffling
+            shuffle=True,  # Enable shuffling
             callbacks=callbacks
         )
 
