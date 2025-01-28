@@ -63,6 +63,8 @@ class Plugin:
         print(f"LSTM input_shape: {input_shape}")
 
         x = model_input
+        x= Dense(layers[0], activation='tanh', kernel_initializer=GlorotUniform())(x)
+        x= BatchNormalization()(x)
         for size in layers[:-1]:
             if size > 1:
                 x = LSTM(size, activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal(), return_sequences=True)(x)
