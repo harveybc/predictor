@@ -61,7 +61,6 @@ def process_data(config):
 
     # 2) EXTRACT TARGET COLUMN
     target_column = config['target_column']
-
     def extract_target(df, col):
         if isinstance(col, str):
             if col not in df.columns:
@@ -87,9 +86,7 @@ def process_data(config):
 
     # 5) ALIGN DATASETS ON COMMON INDEX
     for prefix in ['train', 'val']:
-        common_index = datasets[f'x_{prefix}'].index.intersection(
-            datasets[f'y_{prefix}'].index
-        )
+        common_index = datasets[f'x_{prefix}'].index.intersection(datasets[f'y_{prefix}'].index)
         datasets[f'x_{prefix}'] = datasets[f'x_{prefix}'].loc[common_index]
         datasets[f'y_{prefix}'] = datasets[f'y_{prefix}'].loc[common_index]
 
@@ -103,10 +100,8 @@ def process_data(config):
     def trim(x_df, y_df):
         # Drop last 'time_horizon' rows from x
         x_trimmed = x_df.iloc[:-time_horizon] if len(x_df) > time_horizon else x_df.iloc[0:0]
-
         # Drop first 'total_offset' rows from y
         y_trimmed = y_df.iloc[total_offset:] if len(y_df) > total_offset else y_df.iloc[0:0]
-
         return x_trimmed, y_trimmed
 
     datasets['x_train'], datasets['y_train'] = trim(datasets['x_train'], datasets['y_train'])
@@ -130,11 +125,24 @@ def process_data(config):
 
     # 9) FINAL SHAPE VALIDATION
     for prefix in ['train', 'val']:
-        if len(datasets[f'x_{prefix}']) != len(datasets[f'y_{prefix}']):
-            raise ValueError(
-                f"Length mismatch: x_{prefix} ({len(datasets[f'x_{prefix}'])}) "
-                f"!= y_{prefix} ({len(datasets[f'y_{prefix}'])})"
+        x_len = len(datasets[f'x_{prefix}'])
+        y_len = len(datasets[f'y_{prefix}'])
+        if x_len != y_len:
+            # Collect rows in x that are not in y, and vice versa
+            x_idx = datasets[f'x_{prefix}'].index
+            y_idx = datasets[f'y_{prefix}'].index
+            x_not_in_y_idx = x_idx.difference(y_idx)
+            y_not_in_x_idx = y_idx.difference(x_idx)
+
+            x_not_in_y = datasets[f'x_{prefix}'].loc[x_not_in_y_idx] if not x_not_in_y_idx.empty else None
+            y_not_in_x = datasets[f'y_{prefix}'].loc[y_not_in_x_idx] if not y_not_in_x_idx.empty else None
+
+            error_msg = (
+                f"Length mismatch: x_{prefix} ({x_len}) != y_{prefix} ({y_len}).\n\n"
+                f"Rows in x_{prefix} but not in y_{prefix}:\n{x_not_in_y}\n\n"
+                f"Rows in y_{prefix} but not in x_{prefix}:\n{y_not_in_x}\n"
             )
+            raise ValueError(error_msg)
 
     print("Processed datasets:")
     print(f"  x_train: {datasets['x_train'].shape}, y_train: {datasets['y_train'].shape}")
@@ -175,12 +183,32 @@ def run_prediction_pipeline(config, plugin):
     # Extra debug: confirm indices if they are still DataFrames
     if isinstance(x_train, pd.DataFrame) and isinstance(y_train, pd.DataFrame):
         if not x_train.index.equals(y_train.index):
-            raise ValueError("TRAIN DATA MISMATCH: x_train and y_train indices do not match. Check alignment.")
+            # Show conflicting rows
+            x_not_in_y_idx = x_train.index.difference(y_train.index)
+            y_not_in_x_idx = y_train.index.difference(x_train.index)
+            x_not_in_y = x_train.loc[x_not_in_y_idx] if not x_not_in_y_idx.empty else None
+            y_not_in_x = y_train.loc[y_not_in_x_idx] if not y_not_in_x_idx.empty else None
+
+            raise ValueError(
+                "TRAIN DATA MISMATCH: x_train and y_train indices do not match. Check alignment.\n\n"
+                f"Rows in x_train but not y_train:\n{x_not_in_y}\n\n"
+                f"Rows in y_train but not x_train:\n{y_not_in_x}\n"
+            )
         else:
             print("Debug: x_train and y_train indices are aligned.")
+
     if isinstance(x_val, pd.DataFrame) and isinstance(y_val, pd.DataFrame):
         if not x_val.index.equals(y_val.index):
-            raise ValueError("VALIDATION DATA MISMATCH: x_val and y_val indices do not match. Check alignment.")
+            x_not_in_y_idx = x_val.index.difference(y_val.index)
+            y_not_in_x_idx = y_val.index.difference(x_val.index)
+            x_not_in_y = x_val.loc[x_not_in_y_idx] if not x_not_in_y_idx.empty else None
+            y_not_in_x = y_val.loc[y_not_in_x_idx] if not y_not_in_x_idx.empty else None
+
+            raise ValueError(
+                "VALIDATION DATA MISMATCH: x_val and y_val indices do not match. Check alignment.\n\n"
+                f"Rows in x_val but not y_val:\n{x_not_in_y}\n\n"
+                f"Rows in y_val but not x_val:\n{y_not_in_x}\n"
+            )
         else:
             print("Debug: x_val and y_val indices are aligned.")
 
@@ -224,7 +252,6 @@ def run_prediction_pipeline(config, plugin):
             raise ValueError("After sliding windows, training x/y have mismatched samples.")
         if x_val_np.shape[0] != y_val_np.shape[0]:
             raise ValueError("After sliding windows, validation x/y have mismatched samples.")
-
     else:
         # Ensure x_* are at least 2D
         if x_train_np.ndim == 1:
@@ -280,7 +307,6 @@ def run_prediction_pipeline(config, plugin):
 
                 # Predict training data
                 train_predictions = plugin.predict(x_train_np)
-
                 # Predict validation data
                 val_predictions = plugin.predict(x_val_np)
 
@@ -407,7 +433,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
 
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
