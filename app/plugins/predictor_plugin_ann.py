@@ -25,7 +25,7 @@ class Plugin:
         'learning_rate': 0.002,
         'activation': 'relu',
         'patience': 10,
-        'l2_reg': 1e-4
+        'l2_reg': 1e-3
     }
     
     # Variables for debugging
@@ -99,6 +99,7 @@ class Plugin:
                 kernel_regularizer=l2(l2_reg),
             )(x)
             x = BatchNormalization()(x)
+            x = Dropout(0.3)(x)  # Add Dropout with a rate of 30%
 
         # Output layer => shape (N, time_horizon)
         model_output = Dense(
