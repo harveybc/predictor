@@ -10,6 +10,7 @@ from app.config_handler import save_debug_info, remote_log
 import logging
 from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
 import contextlib
+import math
 
 
 import pandas as pd
@@ -203,7 +204,7 @@ def run_prediction_pipeline(config, plugin):
             ext_mae = plugin.calculate_mae(y_train, predictions)
             print(f"Flatten-based external => {ext_mae:.6f}")
 
-            
+
             # 3) Evaluate
             train_preds = plugin.predict(x_train)
             val_preds   = plugin.predict(x_val)
