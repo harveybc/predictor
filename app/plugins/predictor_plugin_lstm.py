@@ -165,55 +165,23 @@ class Plugin:
 
     def calculate_mse(self, y_true, y_pred):
         """
-        Calculate MSE without losing the 2D alignment (N, time_horizon).
-        We do flatten them both consistently into 1D, but preserve the step count.
+        Flatten-based MSE => consistent with multi-step shape (N, time_horizon).
         """
-        print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-
-        # Ensure both y_true and y_pred have the same shape
+        print(f"Calculating MSE => y_true={y_true.shape}, y_pred={y_pred.shape}")
         if y_true.shape != y_pred.shape:
             raise ValueError(
-                f"Shape mismatch in calculate_mse: y_true={y_true.shape}, y_pred={y_pred.shape}"
+                f"Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}"
             )
-
-        # Flatten them consistently
-        y_true_flat = y_true.reshape(-1)  # (N * time_horizon,)
-        y_pred_flat = y_pred.reshape(-1)
-
-        print(f"Shapes after flattening: y_true={y_true_flat.shape}, y_pred={y_pred_flat.shape}")
-
-        # Calculate absolute diffs and then MSE
-        abs_difference = np.abs(y_true_flat - y_pred_flat)
-        print(f"Absolute differences: {abs_difference}")
-        squared_abs_difference = abs_difference ** 2
-        print(f"Squared absolute differences: {squared_abs_difference}")
-
-        mse = np.mean(squared_abs_difference)
-        print(f"Calculated MSE: {mse}")
+        y_true_f = y_true.reshape(-1)
+        y_pred_f = y_pred.reshape(-1)
+        mse = np.mean((y_true_f - y_pred_f) ** 2)
+        print(f"Calculated MSE => {mse}")
         return mse
 
     def calculate_mae(self, y_true, y_pred):
-        """
-        Calculate MAE without losing the 2D alignment (N, time_horizon).
-        """
-        print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-
-        # Ensure both y_true and y_pred have the same shape
-        if y_true.shape != y_pred.shape:
-            raise ValueError(
-                f"Shape mismatch in calculate_mae: y_true={y_true.shape}, y_pred={y_pred.shape}"
-            )
-
-        # Flatten them consistently
-        y_true_flat = y_true.reshape(-1)
-        y_pred_flat = y_pred.reshape(-1)
-
-        print(f"Shapes after flattening: y_true={y_true_flat.shape}, y_pred={y_pred_flat.shape}")
-
-        abs_difference = np.abs(y_true_flat - y_pred_flat)
-        print(f"Absolute differences: {abs_difference}")
-
-        mae = np.mean(abs_difference)
+        print(f"y_true (sample): {y_true.flatten()[:5]}")
+        print(f"y_pred (sample): {y_pred.flatten()[:5]}")
+        mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
         print(f"Calculated MAE: {mae}")
         return mae
 
