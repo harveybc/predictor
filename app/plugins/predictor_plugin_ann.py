@@ -150,10 +150,7 @@ class Plugin:
             verbose=1
         )
         callbacks.append(early_stopping_monitor)
-        print("Training Data Stats - Before FIT:")
-        print(f"x_train mean: {np.mean(x_train)}, std: {np.std(x_train)}, shape: {x_train.shape}")
-        print(f"y_train mean: {np.mean(y_train)}, std: {np.std(y_train)}, shape: {y_train.shape}")
-
+    
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
@@ -170,9 +167,6 @@ class Plugin:
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
-        print("Evaluation Data Stats after FIT, before evaluate():")
-        print(f"x_train (eval) mean: {np.mean(x_train)}, std: {np.std(x_train)}, shape: {x_train.shape}")
-        print(f"y_train (eval) mean: {np.mean(y_train)}, std: {np.std(y_train)}, shape: {y_train.shape}")
         # Force the model to run in "training mode"
         preds_training_mode = self.model(x_train, training=True)
         mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
@@ -187,10 +181,13 @@ class Plugin:
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mse, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
-
-
+        val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+        val_loss, val_mse, val_mae = val_eval_results
+        
+        print("**********************************************")
         print(f"[TRAIN] Final Dataset Evaluation - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
-
+        print(f"[ VAL ] Final Dataset Evaluation - Loss: {val_loss}, MSE: {val_mse}, MAE: {val_mae}")
+        print("**********************************************")
 
 
 
