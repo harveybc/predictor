@@ -193,6 +193,7 @@ class Plugin:
         print(f"[TRAIN] Final Dataset Evaluation - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
         print(f"[ VAL ] Final Dataset Evaluation - Loss: {val_loss}, MSE: {val_mse}, MAE: {val_mae}")
         print("**********************************************")
+        return history
 
 
 
