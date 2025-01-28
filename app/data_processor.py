@@ -102,8 +102,8 @@ def process_data(config):
     x_val,   y_val   = align_xy(x_val,   y_val)
 
     # SHIFT y BY -1 => next-step offset
-    y_train = y_train.shift(-1).dropna()
-    y_val   = y_val.shift(-1).dropna()
+    #y_train = y_train.shift(-1).dropna()
+    #y_val   = y_val.shift(-1).dropna()
 
     # 5) MULTI-STEP COLUMNS
     time_horizon = config["time_horizon"]
