@@ -100,6 +100,8 @@ class Plugin:
                 kernel_initializer=GlorotUniform(),
                 kernel_regularizer=l2(l2_reg),
             )(x)
+            #add batch normalization
+            x = BatchNormalization()(x)
             
         # Output layer => shape (N, time_horizon)
         model_output = Dense(
@@ -110,7 +112,7 @@ class Plugin:
             name="model_output"
         )(x)
         #add batch normalization
-        model_output = BatchNormalization()(model_output)
+        #model_output = BatchNormalization()(model_output)
 
         self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
 
