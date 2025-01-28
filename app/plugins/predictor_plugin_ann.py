@@ -134,7 +134,6 @@ class Plugin:
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train the model with shape => x_train(N, input_dim), y_train(N, time_horizon).
-        Uses EarlyStopping with 'val_loss'.
         """
         print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
         exp_horizon = self.params['time_horizon']
@@ -157,23 +156,25 @@ class Plugin:
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
-            shuffle=True,
-            #validation_data=(x_val, y_val) if (x_val is not None and y_val is not None) else None,
+            shuffle=True,  # Enable shuffling
             callbacks=callbacks
         )
 
         print("Training completed.")
         final_loss = history.history['loss'][-1]
-        print(f"Final training loss (Huber): {final_loss}")
+        print(f"Final training loss: {final_loss}")
 
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
-        #Evaluate on the full training dataset for consistency
+        # Evaluate on the full training dataset for consistency
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mse, train_mae = train_eval_results
 
         print(f"[TRAIN] Final Dataset Evaluation - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+
+
+
 
     def predict(self, data):
         """
