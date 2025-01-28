@@ -17,7 +17,7 @@ class Plugin:
         'epochs': 200,
         'batch_size': 128,
         'intermediate_layers': 3,
-        'initial_layer_size': 128,
+        'initial_layer_size': 32,
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
         'dropout_rate': 0.1
