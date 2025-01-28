@@ -281,11 +281,25 @@ def run_prediction_pipeline(config, plugin):
                 plugin.build_model(input_shape=(window_size, x_train.shape[2]))
             else:
                 # For ANN/LSTM/Transformers: typically shape (features,)
-                if len(x_train.shape) != 2:
-                    raise ValueError(
-                        f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}."
-                    )
-                plugin.build_model(input_shape=x_train.shape[1])
+                # Build the model based on the plugin type
+                if config["plugin"] == "cnn":
+                    # CNN expects 3D input (window_size, features)
+                    if len(x_train.shape) < 3:
+                        raise ValueError(f"For CNN, x_train must be 3D. Found: {x_train.shape}.")
+                    plugin.build_model(input_shape=(window_size, x_train.shape[2]))
+                elif config["plugin"] == "lstm":
+                    # LSTM expects 3D input (time_steps, features)
+                    if len(x_train.shape) != 3:
+                        raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
+                    plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
+                else:
+                    # For ANN/Transformers: 2D input (samples, features)
+                    if len(x_train.shape) != 2:
+                        raise ValueError(
+                            f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}."
+                        )
+                    plugin.build_model(input_shape=x_train.shape[1])
+
 
             # Train the model
             plugin.train(
