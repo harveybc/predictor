@@ -128,7 +128,7 @@ class Plugin:
             name="model_output"
         )(x)
         # Add a batch normalization layer to the output
-        model_output = BatchNormalization()(model_output)
+        #model_output = BatchNormalization()(model_output)
 
         # Create the Keras Model
         self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
@@ -185,7 +185,8 @@ class Plugin:
         
         # Set up EarlyStopping callback with patience=5
         early_stopping_monitor = EarlyStopping(
-            monitor= 'loss',  # Monitor validation loss if available
+            monitor= 'val_loss',  # Monitor validation loss if available
+
             patience=self.params['patience'],                                            # Number of epochs with no improvement
             restore_best_weights=True,                                                   # Restore model weights from the epoch with the best value
             verbose=1                                                                    # Verbosity mode
@@ -200,7 +201,8 @@ class Plugin:
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
-            callbacks=callbacks
+            callbacks=callbacks,
+            validation_data=(x_val, y_val) if x_val is not None else None
         )
         
         print("Training completed.")
