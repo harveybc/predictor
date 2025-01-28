@@ -16,8 +16,8 @@ class Plugin:
     plugin_params = {
         'epochs': 200,
         'batch_size': 128,
-        'intermediate_layers': 2,
-        'initial_layer_size': 16,
+        'intermediate_layers': 1,
+        'initial_layer_size': 32,
         'layer_size_divisor': 2,
         'learning_rate': 0.002,
         'dropout_rate': 0.1
@@ -72,8 +72,13 @@ class Plugin:
                         return_sequences=True)(x)
                 x = Dropout(dropout_rate)(x)
 
-        x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', 
-                kernel_initializer=HeNormal())(x)
+        x = LSTM(    size,
+            activation='tanh',
+            recurrent_activation='sigmoid',
+            kernel_initializer=HeNormal(),
+            kernel_regularizer=l2(1e-3),  # Increased L2 regularization
+            recurrent_dropout=0.3,  # Higher recurrent dropout
+            return_sequences=True)(x)
         x = Dropout(dropout_rate)(x)
 
         model_output = Dense(layers[-1], activation='linear', kernel_initializer=GlorotUniform(), name="model_output")(x)
