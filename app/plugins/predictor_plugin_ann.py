@@ -150,13 +150,16 @@ class Plugin:
             verbose=1
         )
         callbacks.append(early_stopping_monitor)
+        print("Training Data Stats - Before FIT:")
+        print(f"x_train mean: {np.mean(x_train)}, std: {np.std(x_train)}, shape: {x_train.shape}")
+        print(f"y_train mean: {np.mean(y_train)}, std: {np.std(y_train)}, shape: {y_train.shape}")
 
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
-            shuffle=True,  # Enable shuffling
+            shuffle=False,  # Enable shuffling
             callbacks=callbacks
         )
 
@@ -167,9 +170,24 @@ class Plugin:
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
+        print("Evaluation Data Stats after FIT, before evaluate():")
+        print(f"x_train (eval) mean: {np.mean(x_train)}, std: {np.std(x_train)}, shape: {x_train.shape}")
+        print(f"y_train (eval) mean: {np.mean(y_train)}, std: {np.std(y_train)}, shape: {y_train.shape}")
+        # Force the model to run in "training mode"
+        preds_training_mode = self.model(x_train, training=True)
+        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
+        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
+
+        # Compare with evaluation mode
+        preds_eval_mode = self.model(x_train, training=False)
+        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
+        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+
         # Evaluate on the full training dataset for consistency
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mse, train_mae = train_eval_results
+        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+
 
         print(f"[TRAIN] Final Dataset Evaluation - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
 
@@ -177,12 +195,10 @@ class Plugin:
 
 
     def predict(self, data):
-        """
-        Predict => shape (N, time_horizon).
-        """
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         preds = self.model.predict(data)
+        print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
         return preds
 
     def calculate_mse(self, y_true, y_pred):
@@ -201,17 +217,12 @@ class Plugin:
         return mse
 
     def calculate_mae(self, y_true, y_pred):
-        """
-        Flatten-based MAE => consistent with multi-step shape (N, time_horizon).
-        """
-        print(f"Calculating MAE => y_true={y_true.shape}, y_pred={y_pred.shape}")
-        if y_true.shape != y_pred.shape:
-            raise ValueError(
-                f"Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}"
-            )
-        y_true_f = y_true.reshape(-1)
-        y_pred_f = y_pred.reshape(-1)
-        mae = np.mean(np.abs(y_true_f - y_pred_f))
+        print(f"y_true (sample): {y_true.flatten()[:5]}")
+        print(f"y_pred (sample): {y_pred.flatten()[:5]}")
+        mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
+        print(f"Calculated MAE: {mae}")
+        return mae
+
         return mae
 
     def save(self, file_path):

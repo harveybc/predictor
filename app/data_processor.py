@@ -103,6 +103,10 @@ def process_data(config):
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape,   " y_val:  ", y_val_multi.shape)
 
+
+    assert len(x_train) == len(y_train), "x_train and y_train are misaligned!"
+    assert len(x_val) == len(y_val), "x_val and y_val are misaligned!"
+
     return {
         "x_train": x_train,
         "y_train": y_train_multi,
