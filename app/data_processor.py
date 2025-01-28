@@ -14,33 +14,39 @@ import contextlib
 
 def process_data(config):
     """
-    Simplified process_data function assuming x and y datasets are already aligned row by row.
-    """
+    Processes data for different plugins, including ANN, CNN, and LSTM.
 
+    Args:
+        config (dict): Configuration dictionary with dataset paths and parameters.
+
+    Returns:
+        dict: Processed datasets for training and validation.
+    """
     # 1) LOAD CSVs
     x_train = load_csv(
         config["x_train_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_train")
+        max_rows=config.get("max_steps_train"),
     )
     y_train = load_csv(
         config["y_train_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_train")
+        max_rows=config.get("max_steps_train"),
     )
     x_val = load_csv(
         config["x_validation_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_test")
+        max_rows=config.get("max_steps_test"),
     )
     y_val = load_csv(
         config["y_validation_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_test")
+        max_rows=config.get("max_steps_test"),
     )
 
     # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
+
     def extract_target(df, col):
         if isinstance(col, str):
             if col not in df.columns:
@@ -62,6 +68,7 @@ def process_data(config):
 
     # 4) MULTI-STEP COLUMNS
     time_horizon = config["time_horizon"]
+
     def create_multi_step(y_df, horizon):
         """
         Create multi-step targets for time-series prediction.
@@ -81,7 +88,6 @@ def process_data(config):
         # Align index to the input data (exclude the last `horizon` rows)
         return pd.DataFrame(blocks, index=y_df.index[:-horizon])
 
-
     y_train_multi = create_multi_step(y_train, time_horizon)
     y_val_multi = create_multi_step(y_val, time_horizon)
 
@@ -94,12 +100,33 @@ def process_data(config):
     x_val = x_val.iloc[:min_len_val]
     y_val_multi = y_val_multi.iloc[:min_len_val]
 
+    # 6) LSTM-SPECIFIC PROCESSING
+    if config["plugin"] == "lstm":
+        print("Processing data for LSTM plugin...")
+
+        # Convert dataframes to numpy
+        x_train = x_train.to_numpy()
+        x_val = x_val.to_numpy()
+        y_train_multi = y_train_multi.to_numpy()
+        y_val_multi = y_val_multi.to_numpy()
+
+        # Create sliding windows for LSTM
+        window_size = config["window_size"]  # Ensure `window_size` is in the config
+        x_train, y_train_multi, _ = create_sliding_windows(
+            x_train, y_train_multi, window_size, time_horizon, stride=1
+        )
+        x_val, y_val_multi, _ = create_sliding_windows(
+            x_val, y_val_multi, window_size, time_horizon, stride=1
+        )
+
+        print(f"LSTM data shapes after sliding windows:")
+        print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
+        print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
+
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
 
-    print("x_train index:", x_train.index)
-    print("y_train index:", y_train_multi.index)
     assert len(x_train) == len(y_train_multi), "x_train and y_train are misaligned!"
     assert len(x_val) == len(y_val_multi), "x_val and y_val are misaligned!"
 
@@ -107,7 +134,7 @@ def process_data(config):
         "x_train": x_train,
         "y_train": y_train_multi,
         "x_val": x_val,
-        "y_val": y_val_multi
+        "y_val": y_val_multi,
     }
 
 
