@@ -98,7 +98,7 @@ class Plugin:
                 kernel_initializer=HeNormal(),
                 kernel_regularizer=l2(l2_reg),
             )(x)
-            x = BatchNormalization()(x)
+            #x = BatchNormalization()(x)
 
         # Output layer => shape (N, time_horizon)
         model_output = Dense(
@@ -108,6 +108,8 @@ class Plugin:
             kernel_regularizer=l2(l2_reg),
             name="model_output"
         )(x)
+        #add batch normalization
+        model_output = BatchNormalization()(model_output)
 
         self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
 
