@@ -40,53 +40,52 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    from tensorflow.keras.layers import Dropout
+
 
     def build_model(self, input_shape):
         self.params['input_dim'] = input_shape
-        l2_reg = self.params.get('l2_reg', 1e-4)
-        dropout_rate = self.params.get('dropout_rate', 0.2)  # Increased dropout rate
+        dropout_rate = self.params.get('dropout_rate', 0.3)
 
-        layers = []
-        current_size = self.params['initial_layer_size']
-        layer_size_divisor = self.params['layer_size_divisor']
-        int_layers = 0
-
-        while int_layers < self.params['intermediate_layers']:
-            layers.append(current_size)
-            current_size = max(current_size // layer_size_divisor, 1)
-            int_layers += 1
-
-        layers.append(self.params['time_horizon'])
-
-        print(f"LSTM Layer sizes: {layers}")
-
+        layers = [self.params['initial_layer_size']]
         model_input = Input(shape=(input_shape, 1), name="model_input")
-        print(f"LSTM input_shape: {input_shape}")
 
-        x = model_input
-        for size in layers[:-1]:
-            if size > 1:
-                x = LSTM(size, activation='tanh', recurrent_activation='sigmoid', 
-                        kernel_initializer=HeNormal(), 
-                        return_sequences=True)(x)
-                x = Dropout(dropout_rate)(x)
-
-        x = LSTM(    size,
+        # First LSTM Layer
+        x = LSTM(
+            layers[0],
             activation='tanh',
             recurrent_activation='sigmoid',
             kernel_initializer=HeNormal(),
-            kernel_regularizer=l2(1e-3),  # Increased L2 regularization
-            recurrent_dropout=0.3,  # Higher recurrent dropout
-            return_sequences=True)(x)
+            kernel_regularizer=l2(1e-3),
+            recurrent_dropout=0.3,
+            return_sequences=True
+        )(model_input)
         x = Dropout(dropout_rate)(x)
 
-        model_output = Dense(layers[-1], activation='linear', kernel_initializer=GlorotUniform(), name="model_output")(x)
+        # Second LSTM Layer (if intermediate_layers > 1)
+        if self.params['intermediate_layers'] > 1:
+            x = LSTM(
+                layers[0] // 2,
+                activation='tanh',
+                recurrent_activation='sigmoid',
+                kernel_initializer=HeNormal(),
+                kernel_regularizer=l2(1e-3),
+                recurrent_dropout=0.3,
+                return_sequences=False
+            )(x)
+            x = Dropout(dropout_rate)(x)
 
-        self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
+        # Final Dense Layer
+        model_output = Dense(
+            self.params['time_horizon'],
+            activation='linear',
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(1e-3)
+        )(x)
+
+        self.model = Model(inputs=model_input, outputs=model_output)
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
-            beta_1=0.9, beta_2=0.999, epsilon=1e-7, amsgrad=False
+            decay=1e-6  # Weight decay
         )
         self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse', 'mae'])
 
