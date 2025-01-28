@@ -73,8 +73,7 @@ class Plugin:
             units=layers[0],
             activation='tanh',
             kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name="model_output"
+            kernel_regularizer=l2(l2_reg)
         )(x)
 
         # Add LSTM layers
