@@ -118,20 +118,20 @@ def process_data(config):
         # Create sliding windows for LSTM
         window_size = config["window_size"]  # Ensure `window_size` is in the config
 
-        x_train, y_train_multi, _ = create_sliding_windows(
-            x_train, y_train_multi, window_size, time_horizon, stride=1
+        x_train, y_train, _ = create_sliding_windows(
+            x_train, y_train, window_size, time_horizon, stride=1
         )
-        x_val, y_val_multi, _ = create_sliding_windows(
-            x_val, y_val_multi, window_size, time_horizon, stride=1
+        x_val, y_val, _ = create_sliding_windows(
+            x_val, y_val, window_size, time_horizon, stride=1
         )
 
-        # Ensure y_train_multi matches x_train
-        y_train_multi = y_train_multi[: len(x_train)]
-        y_val_multi = y_val_multi[: len(x_val)]
+        # Ensure y_train matches x_train
+        y_train = y_train[: len(x_train)]
+        y_val = y_val[: len(x_val)]
 
         print(f"LSTM data shapes after sliding windows:")
-        print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
-        print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
+        print(f"x_train: {x_train.shape}, y_train: {y_train.shape}")
+        print(f"x_val:   {x_val.shape}, y_val:   {y_val.shape}")
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
@@ -292,7 +292,7 @@ def run_prediction_pipeline(config, plugin):
                     if len(x_train.shape) != 3:
                         raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
                     # Pass only the time_steps and features (without the batch size)
-                    plugin.build_model(input_shape=(x_train.shape[2], x_train.shape[1]))
+                    plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
                 else:
                     # For ANN/Transformers: 2D input (samples, features)
                     if len(x_train.shape) != 2:
