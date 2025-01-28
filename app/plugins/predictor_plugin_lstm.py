@@ -65,9 +65,12 @@ class Plugin:
         x = model_input
         for size in layers[:-1]:
             if size > 1:
-                x = LSTM(size, activation='tanh', recurrent_activation='elu', kernel_initializer=HeNormal(), return_sequences=True)(x)
+                x = LSTM(size, activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal(), return_sequences=True)(x)
                 #x = BatchNormalization()(x)
-        x = LSTM(layers[-2], activation='tanh', recurrent_activation='elu', kernel_initializer=HeNormal())(x)
+        x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal())(x)
+        x= BatchNormalization()(x)
+        x= Dense(layers[-2], activation='tanh', kernel_initializer=GlorotUniform())(x)
+        x= BatchNormalization()(x)
         model_output = Dense(layers[-1], activation='linear', kernel_initializer=GlorotUniform(), name="model_output")(x)
         # add batch normalization
         #model_output = BatchNormalization()(model_output)
