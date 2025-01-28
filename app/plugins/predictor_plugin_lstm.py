@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import LSTM, Dense, Input, BatchNormalization, Dropout
+from keras.layers import LSTM, Dense, Input, BatchNormalization
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
@@ -16,10 +16,10 @@ class Plugin:
     plugin_params = {
         'epochs': 200,
         'batch_size': 128,
-        'intermediate_layers': 1,
-        'initial_layer_size': 32,
+        'intermediate_layers': 2,
+        'initial_layer_size': 16,
         'layer_size_divisor': 2,
-        'learning_rate': 0.002,
+        'learning_rate': 0.02,
         'dropout_rate': 0.1
     }
 
@@ -40,55 +40,75 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-
-
     def build_model(self, input_shape):
+        """
+        Build the LSTM model with dynamically calculated layer sizes and proper input/output alignment.
+        
+        Args:
+            input_shape (int): Number of input features for each time step.
+        """
         self.params['input_dim'] = input_shape
-        dropout_rate = self.params.get('dropout_rate', 0.3)
+        l2_reg = self.params.get('l2_reg', 1e-4)
 
-        layers = [self.params['initial_layer_size']]
-        model_input = Input(shape=(input_shape, 1), name="model_input")
+        # Layer configuration
+        layers = []
+        current_size = self.params['initial_layer_size']
+        layer_size_divisor = self.params['layer_size_divisor']
+        int_layers = 0
+        while int_layers < self.params['intermediate_layers']:
+            layers.append(current_size)
+            current_size = max(current_size // layer_size_divisor, 1)
+            int_layers += 1
+        layers.append(self.params['time_horizon'])  # Final output layer matches the time horizon
 
-        # First LSTM Layer
+        # Debugging message
+        print(f"LSTM Layer sizes: {layers}")
+
+        # Input shape: (time_steps, features)
+        model_input = Input(shape=(input_shape, 1), name="model_input")  # Add channel dimension
+        print(f"LSTM input_shape: {(input_shape, 1)}")
+
+        x = model_input
+        # LSTM layers with dynamically calculated sizes
+        for size in layers[:-1]:
+            if size > 1:
+                x = LSTM(
+                    units=size,
+                    activation='tanh',
+                    recurrent_activation='sigmoid',
+                    kernel_initializer=HeNormal(),
+                    return_sequences=True
+                )(x)
+
+        # Final LSTM layer
         x = LSTM(
-            layers[0],
+            units=layers[-2],
             activation='tanh',
             recurrent_activation='sigmoid',
-            kernel_initializer=HeNormal(),
-            kernel_regularizer=l2(1e-3),
-            recurrent_dropout=0.3,
-            return_sequences=True
-        )(model_input)
-        x = Dropout(dropout_rate)(x)
-
-        # Second LSTM Layer (if intermediate_layers > 1)
-        if self.params['intermediate_layers'] > 1:
-            x = LSTM(
-                layers[0] // 2,
-                activation='tanh',
-                recurrent_activation='sigmoid',
-                kernel_initializer=HeNormal(),
-                kernel_regularizer=l2(1e-3),
-                recurrent_dropout=0.3,
-                return_sequences=False
-            )(x)
-            x = Dropout(dropout_rate)(x)
-
-        # Final Dense Layer
-        model_output = Dense(
-            self.params['time_horizon'],
-            activation='linear',
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(1e-3)
+            kernel_initializer=HeNormal()
         )(x)
 
-        self.model = Model(inputs=model_input, outputs=model_output)
+        # Output layer
+        model_output = Dense(
+            units=layers[-1],
+            activation='linear',
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name="model_output"
+        )(x)
+
+        # Build and compile the model
+        self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
-            decay=1e-6  # Weight decay
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-7,
+            amsgrad=False
         )
         self.model.compile(optimizer=adam_optimizer, loss=Huber(), metrics=['mse', 'mae'])
 
+        # Debugging messages
         print("Predictor Model Summary:")
         self.model.summary()
 
@@ -128,8 +148,7 @@ class Plugin:
             epochs=epochs, 
             batch_size=batch_size, 
             verbose=1, 
-            callbacks=callbacks,
-            shuffle=True,  # Enable shuffling
+            callbacks=callbacks
         )
         
         print("Training completed.")
