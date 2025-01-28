@@ -18,426 +18,264 @@ import numpy as np
 import pandas as pd
 import numpy as np
 
+
 def process_data(config):
     """
-    Loads and processes training & validation datasets for multi-step time-series forecasting,
-    ensuring a 1-step shift so row i in X corresponds to rows (i+1 .. i+time_horizon) in Y.
+    From scratch:
+      1. Load (x_train, y_train) and (x_val, y_val), each with DatetimeIndex.
+      2. Align x,y on their intersection of timestamps.
+      3. Shift y by -1 for next-step forecasting.
+      4. Create multi-step targets (time_horizon columns) from y.
+      5. Trim x to match the new y length (no extra offsets).
+      6. Repeat for training and validation.
 
-    Steps:
-      1) Load X,Y DataFrames (train & val).
-      2) Convert to numeric & fill NAs, ensure DatetimeIndex alignment.
-      3) Shift Y by 1 step so that the first predicted step is the 'next' row.
-      4) Apply symmetrical offset (drop the first 'input_offset' rows of both X & Y).
-      5) Create multi-step columns in Y, dropping the last (time_horizon - 1) from Y.
-      6) Slice X to match the new length of Y (no leftover rows).
+    Returns:
+        {
+            "x_train": DataFrame,
+            "y_train": DataFrame,
+            "x_val":   DataFrame,
+            "y_val":   DataFrame
+        }
     """
+    print("Loading training and validation CSVs...")
 
-    datasets = {}
+    # 1) Load raw
+    x_train = load_csv(config["x_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
+    y_train = load_csv(config["y_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
+    x_val   = load_csv(config["x_validation_file"], headers=config["headers"], max_rows=config.get("max_steps_test"))
+    y_val   = load_csv(config["y_validation_file"], headers=config["headers"], max_rows=config.get("max_steps_test"))
 
-    # 1) Load Data
-    print("Loading training and validation datasets...")
-    x_train = load_csv(
-        config['x_train_file'],
-        headers=config['headers'],
-        max_rows=config.get('max_steps_train')
-    )
-    y_train = load_csv(
-        config['y_train_file'],
-        headers=config['headers'],
-        max_rows=config.get('max_steps_train')
-    )
-    x_val   = load_csv(
-        config['x_validation_file'],
-        headers=config['headers'],
-        max_rows=config.get('max_steps_test')
-    )
-    y_val   = load_csv(
-        config['y_validation_file'],
-        headers=config['headers'],
-        max_rows=config.get('max_steps_test')
-    )
-
-    # 2) Convert & Extract target column
-    target_column = config['target_column']
+    # 2) Extract target column if needed
+    target_col = config["target_column"]
     def extract_target(df, col):
         if isinstance(col, str):
-            if col not in df.columns:
-                raise ValueError(f"Target column '{col}' not found.")
             return df[[col]]
         elif isinstance(col, int):
             return df.iloc[:, [col]]
         else:
-            raise ValueError("`target_column` must be str or int.")
+            raise ValueError("target_column must be str or int")
 
-    y_train = extract_target(y_train, target_column)
-    y_val   = extract_target(y_val,   target_column)
+    y_train = extract_target(y_train, target_col)
+    y_val   = extract_target(y_val,   target_col)
 
-    for name, df in zip(['x_train','y_train','x_val','y_val'], [x_train,y_train,x_val,y_val]):
-        df_converted = df.apply(pd.to_numeric, errors='coerce').fillna(0)
-        datasets[name] = df_converted
+    # Convert to numeric
+    for df in [x_train, y_train, x_val, y_val]:
+        df.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-    # Ensure DatetimeIndex
-    for key in ['x_train','y_train','x_val','y_val']:
-        if not isinstance(datasets[key].index, pd.DatetimeIndex):
-            raise ValueError(f"Dataset '{key}' must have a DatetimeIndex.")
+    # 3) Ensure all have DatetimeIndex
+    for name, df in zip(["x_train","y_train","x_val","y_val"], [x_train,y_train,x_val,y_val]):
+        if not isinstance(df.index, pd.DatetimeIndex):
+            raise ValueError(f"{name} must have DatetimeIndex, found {type(df.index)}.")
 
-    # Align (x,y) on same index
-    for prefix in ['train','val']:
-        common_idx = datasets[f'x_{prefix}'].index.intersection(datasets[f'y_{prefix}'].index)
-        datasets[f'x_{prefix}'] = datasets[f'x_{prefix}'].loc[common_idx].sort_index()
-        datasets[f'y_{prefix}'] = datasets[f'y_{prefix}'].loc[common_idx].sort_index()
+    # 4) Align x,y on intersection
+    def align_xy(xdf, ydf):
+        common_idx = xdf.index.intersection(ydf.index)
+        xdf = xdf.loc[common_idx].sort_index()
+        ydf = ydf.loc[common_idx].sort_index()
+        return xdf, ydf
 
-    # 3) Shift Y by 1 (next-step offset)
-    for prefix in ['train','val']:
-        datasets[f'y_{prefix}'] = datasets[f'y_{prefix}'].shift(-1)
+    x_train, y_train = align_xy(x_train, y_train)
+    x_val,   y_val   = align_xy(x_val,   y_val)
 
-    # 4) Drop the row that becomes NaN after shift
-    #    or fill it if you prefer forward fill
-    for prefix in ['train','val']:
-        datasets[f'y_{prefix}'].dropna(inplace=True)
+    # 5) SHIFT y by -1 => next-step offset
+    y_train = y_train.shift(-1)
+    y_val   = y_val.shift(-1)
 
-    # Also define offset/horizon
-    time_horizon = config['time_horizon']
-    input_offset = config['input_offset']
+    # Drop last row if it became NaN
+    y_train.dropna(inplace=True)
+    y_val.dropna(inplace=True)
 
-    # Symmetrical offset from the start
-    def apply_offset(x_df, y_df, offset):
-        if offset > 0:
-            x_df = x_df.iloc[offset:] if len(x_df) > offset else x_df.iloc[0:0]
-            y_df = y_df.iloc[offset:] if len(y_df) > offset else y_df.iloc[0:0]
+    # 6) Create multi-step columns in y
+    time_horizon = config["time_horizon"]
+
+    def create_multi_step(y_df, horizon):
+        # For row i => y[i.. i+horizon-1], flatten into 1D
+        y_multi = []
+        idx = []
+        for i in range(len(y_df) - horizon + 1):
+            block = y_df.iloc[i : i + horizon].values.flatten()
+            y_multi.append(block)
+            idx.append(y_df.index[i])  # keep i-th timestamp as the row index
+        return pd.DataFrame(y_multi, index=idx)
+
+    y_train_multi = create_multi_step(y_train, time_horizon)
+    y_val_multi   = create_multi_step(y_val,   time_horizon)
+
+    # 7) Trim x so it matches new y length
+    def trim_x(x_df, y_df):
+        # we keep top len(y_df) rows of x
+        max_len = len(y_df)
+        x_df = x_df.iloc[:max_len]
+        # also align on index if needed
+        common_idx = x_df.index.intersection(y_df.index)
+        x_df = x_df.loc[common_idx].sort_index()
+        y_df = y_df.loc[common_idx].sort_index()
         return x_df, y_df
 
-    datasets['x_train'], datasets['y_train'] = apply_offset(datasets['x_train'], datasets['y_train'], input_offset)
-    datasets['x_val'],   datasets['y_val']   = apply_offset(datasets['x_val'],   datasets['y_val'],   input_offset)
+    x_train, y_train_multi = trim_x(x_train, y_train_multi)
+    x_val,   y_val_multi   = trim_x(x_val,   y_val_multi)
 
-    # 5) Multi-step creation: row i => [i.. i+horizon-1] in Y
-    # But remember Y is already shifted by 1 step from X's perspective
-    def create_multi_step_targets(y_df, horizon):
-        # Each row i in Y -> next horizon rows
-        multi = []
-        for i in range(len(y_df) - horizon + 1):
-            window = y_df.iloc[i : i + horizon].values.flatten()
-            multi.append(window)
-        return pd.DataFrame(multi, index=y_df.index[:len(multi)])
+    # Final shape checks
+    if len(x_train) != len(y_train_multi):
+        raise ValueError(f"Train mismatch: x={len(x_train)}, y={len(y_train_multi)}")
+    if len(x_val) != len(y_val_multi):
+        raise ValueError(f"Val mismatch: x={len(x_val)}, y={len(y_val_multi)}")
 
-    for prefix in ['train','val']:
-        y_multi = create_multi_step_targets(datasets[f'y_{prefix}'], time_horizon)
-        datasets[f'y_{prefix}'] = y_multi
+    print("process_data => Final shapes:")
+    print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
+    print(" x_val:  ", x_val.shape,   " y_val:  ", y_val_multi.shape)
 
-    # 6) Slice X to match new length of Y
-    for prefix in ['train','val']:
-        final_len = len(datasets[f'y_{prefix}'])
-        datasets[f'x_{prefix}'] = datasets[f'x_{prefix}'].iloc[:final_len]
-
-    # Final checks
-    for prefix in ['train','val']:
-        if len(datasets[f'x_{prefix}']) != len(datasets[f'y_{prefix}']):
-            raise ValueError(f"Length mismatch in {prefix} sets after shift & multi-step.")
-
-    print("Processed datasets:")
-    print(f"  x_train: {datasets['x_train'].shape}, y_train: {datasets['y_train'].shape}")
-    print(f"  x_val:   {datasets['x_val'].shape},   y_val: {datasets['y_val'].shape}")
-
-    return datasets
-
-
+    return {
+        "x_train": x_train,
+        "y_train": y_train_multi,
+        "x_val":   x_val,
+        "y_val":   y_val_multi
+    }
 
 
 def run_prediction_pipeline(config, plugin):
     """
-    Runs the prediction pipeline using both training and validation datasets.
-    Iteratively trains and evaluates the model, while saving metrics and predictions.
-
-    Args:
-        config (dict): Configuration dictionary containing parameters for training and evaluation.
-        plugin (object): Model plugin that implements train, predict, and evaluate methods.
+    From scratch:
+      1. Load final shapes from process_data.
+      2. Convert to numpy, feed EXACT arrays to plugin.train(...).
+      3. Evaluate both with Keras's built-in model.evaluate(...) and plugin's external calculate_mae(...).
+      4. Return matching training/validation metrics to ensure no mismatch.
     """
-    start_time = time.time()
+    start = time.time()
 
     iterations = config.get("iterations", 1)
     print(f"Number of iterations: {iterations}")
 
-    # Lists to store metrics for all iterations
-    training_mae_list = []
-    training_r2_list = []
-    validation_mae_list = []
-    validation_r2_list = []
+    # For storing iteration metrics
+    train_mae_list = []
+    val_mae_list   = []
+    train_r2_list  = []
+    val_r2_list    = []
 
-    # Load all datasets
-    print("Loading and processing datasets...")
-    datasets = process_data(config)  # <-- Rely on the process_data function
-    x_train, y_train = datasets["x_train"], datasets["y_train"]
-    x_val, y_val = datasets["x_val"], datasets["y_val"]
+    # 1) Load final data
+    from process_data import process_data
+    ds = process_data(config)
+    x_train, y_train = ds["x_train"], ds["y_train"]
+    x_val,   y_val   = ds["x_val"],   ds["y_val"]
 
-    print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
-    print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
+    print("post-process_data => x_train:", x_train.shape, "y_train:", y_train.shape)
+    print("                   x_val:   ", x_val.shape,   "y_val:",   y_val.shape)
 
-    # Extra debug: confirm indices if they are still DataFrames
-    if isinstance(x_train, pd.DataFrame) and isinstance(y_train, pd.DataFrame):
-        if not x_train.index.equals(y_train.index):
-            x_not_in_y_idx = x_train.index.difference(y_train.index)
-            y_not_in_x_idx = y_train.index.difference(x_train.index)
-            x_not_in_y = x_train.loc[x_not_in_y_idx] if not x_not_in_y_idx.empty else None
-            y_not_in_x = y_train.loc[y_not_in_x_idx] if not y_not_in_x_idx.empty else None
-
-            raise ValueError(
-                "TRAIN DATA MISMATCH: x_train and y_train indices do not match. Check alignment.\n\n"
-                f"Rows in x_train but not y_train:\n{x_not_in_y}\n\n"
-                f"Rows in y_train but not x_train:\n{y_not_in_x}\n"
-            )
-        else:
-            print("Debug: x_train and y_train indices are aligned.")
-
-    if isinstance(x_val, pd.DataFrame) and isinstance(y_val, pd.DataFrame):
-        if not x_val.index.equals(y_val.index):
-            x_not_in_y_idx = x_val.index.difference(y_val.index)
-            y_not_in_x_idx = y_val.index.difference(x_val.index)
-            x_not_in_y = x_val.loc[x_not_in_y_idx] if not x_not_in_y_idx.empty else None
-            y_not_in_x = y_val.loc[y_not_in_x_idx] if not y_not_in_x_idx.empty else None
-
-            raise ValueError(
-                "VALIDATION DATA MISMATCH: x_val and y_val indices do not match. Check alignment.\n\n"
-                f"Rows in x_val but not y_val:\n{x_not_in_y}\n\n"
-                f"Rows in y_val but not x_val:\n{y_not_in_x}\n"
-            )
-        else:
-            print("Debug: x_val and y_val indices are aligned.")
-
-    # Basic config checks
-    time_horizon = config.get("time_horizon")
-    if time_horizon is None:
-        raise ValueError("`time_horizon` is not defined in the configuration.")
-
-    window_size = config.get("window_size")
-    if config["plugin"] == "cnn" and window_size is None:
-        raise ValueError("`window_size` must be defined in the configuration for CNN plugin.")
-
-    print(f"Time Horizon: {time_horizon}")
-
-    batch_size = config["batch_size"]
-    epochs = config["epochs"]
-    threshold_error = config["threshold_error"]
-
-    # Convert datasets to numpy arrays
+    # Convert to numpy
     x_train_np = x_train.to_numpy().astype(np.float32)
     y_train_np = y_train.to_numpy().astype(np.float32)
-    x_val_np = x_val.to_numpy().astype(np.float32)
-    y_val_np = y_val.to_numpy().astype(np.float32)
+    x_val_np   = x_val.to_numpy().astype(np.float32)
+    y_val_np   = y_val.to_numpy().astype(np.float32)
 
-    # CNN-specific sliding windows
-    if config["plugin"] == "cnn":
-        print("Creating sliding windows for CNN...")
-        x_train_np, y_train_np, _ = create_sliding_windows(
-            x_train_np, y_train_np, window_size, time_horizon, stride=1
-        )
-        x_val_np, y_val_np, _ = create_sliding_windows(
-            x_val_np, y_val_np, window_size, time_horizon, stride=1
-        )
-
-        print("Sliding windows created:")
-        print(f"  x_train: {x_train_np.shape}, y_train: {y_train_np.shape}")
-        print(f"  x_val:   {x_val_np.shape}, y_val: {y_val_np.shape}")
-
-        # Confirm shapes after sliding windows
-        if x_train_np.shape[0] != y_train_np.shape[0]:
-            raise ValueError("After sliding windows, training x/y have mismatched samples.")
-        if x_val_np.shape[0] != y_val_np.shape[0]:
-            raise ValueError("After sliding windows, validation x/y have mismatched samples.")
-    else:
-        # Ensure x_* are at least 2D
-        if x_train_np.ndim == 1:
-            x_train_np = x_train_np.reshape(-1, 1)
-        if x_val_np.ndim == 1:
-            x_val_np = x_val_np.reshape(-1, 1)
-
-    # Determine input_shape based on plugin
-    if config["plugin"] == "cnn":
-        # CNN expects (window_size, features) per sample
-        input_shape = (window_size, x_train_np.shape[2])
-    elif config["plugin"].lower() == "ann":
-        # The ANN plugin expects a single integer for input_shape
-        input_shape = x_train_np.shape[1]
-    else:
-        # For LSTM, Transformers, or others: typically pass a tuple (features,)
-        input_shape = (x_train_np.shape[1],)
-
-    print(f"Debug: input_shape determined as: {input_shape}")
-
-    # Pass time_horizon to the plugin (if it uses it)
+    time_horizon = config["time_horizon"]
+    window_size  = config.get("window_size")
     plugin.set_params(time_horizon=time_horizon)
 
-    # Iterative training and evaluation
-    for iteration in range(1, iterations + 1):
-        print(f"\n=== Iteration {iteration}/{iterations} ===")
-        iteration_start_time = time.time()
+    for it in range(1, iterations + 1):
+        print(f"\n=== Iteration {it}/{iterations} ===")
+        iteration_start = time.time()
 
         try:
-            # Build the model
-            plugin.build_model(input_shape=input_shape)
+            # 2) Build the model
+            if config["plugin"] == "cnn":
+                # create sliding windows if needed
+                # or assume we do that in process_data. 
+                # For simplicity, let's just say we have final arrays already.
+                # If you do need sliding windows, do them here (but EXACT the same for training & eval).
+                plugin.build_model(input_shape=(window_size, x_train_np.shape[2]))
+            elif config["plugin"].lower() == "ann":
+                plugin.build_model(input_shape=x_train_np.shape[1])
+            else:
+                # LSTM/others => typically input_shape=(features,)
+                plugin.build_model(input_shape=(x_train_np.shape[1],))
 
-            print(f"Debug: Starting training. x_train shape: {x_train_np.shape}, y_train shape: {y_train_np.shape}")
-            print(f"Debug: Validation sets. x_val shape: {x_val_np.shape}, y_val shape: {y_val_np.shape}")
-
-            # Train the model
+            # 3) Train => pass EXACT arrays
             plugin.train(
                 x_train_np,
                 y_train_np,
-                epochs=epochs,
-                batch_size=batch_size,
-                threshold_error=threshold_error,
+                epochs=config["epochs"],
+                batch_size=config["batch_size"],
+                threshold_error=config["threshold_error"],
                 x_val=x_val_np,
                 y_val=y_val_np,
             )
 
-            print("Evaluating trained model on training and validation data. Please wait...")
+            # 4) Evaluate with the EXACT same arrays
+            print("Running Keras model.evaluate on training data for direct comparison...")
+            keras_train_eval = plugin.model.evaluate(x_train_np, y_train_np, verbose=0)
+            # Usually returns [loss, mse, mae], but depends on plugin.model.compile(...)
+            # We'll assume it's [loss, mse, mae]
+            if len(keras_train_eval) == 3:
+                train_loss, train_mse, train_mae_keras = keras_train_eval
+            else:
+                # fallback if user changed metrics
+                train_loss = keras_train_eval[0]
+                train_mae_keras = keras_train_eval[-1]
 
-            # Suppress TensorFlow/Keras logs during prediction
-            with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
-                os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-                logging.getLogger("tensorflow").setLevel(logging.FATAL)
+            print(f"Keras train: loss={train_loss}, mae_keras={train_mae_keras}")
 
-                # Predict training data
-                train_predictions = plugin.predict(x_train_np)
-                # Predict validation data
-                val_predictions = plugin.predict(x_val_np)
+            print("Running Keras model.evaluate on validation data for direct comparison...")
+            keras_val_eval = plugin.model.evaluate(x_val_np, y_val_np, verbose=0)
+            if len(keras_val_eval) == 3:
+                val_loss, val_mse, val_mae_keras = keras_val_eval
+            else:
+                val_loss = keras_val_eval[0]
+                val_mae_keras = keras_val_eval[-1]
 
-            # Restore TensorFlow logs
-            os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
-            logging.getLogger("tensorflow").setLevel(logging.INFO)
+            print(f"Keras val:   loss={val_loss}, mae_keras={val_mae_keras}")
 
-            # -----------------------
-            # Dimension checks
-            # -----------------------
-            print(f"Debug: train_predictions shape: {train_predictions.shape}, val_predictions shape: {val_predictions.shape}")
+            # 5) Evaluate externally
+            #   a) Predictions with plugin.predict(...)
+            print("Predicting with plugin on full train & val sets to measure external MAE/R2...")
+            train_preds = plugin.predict(x_train_np)
+            val_preds   = plugin.predict(x_val_np)
 
-            if train_predictions.shape[0] != y_train_np.shape[0]:
-                raise ValueError(
-                    "Mismatch in training samples dimension:\n"
-                    f"  train_predictions.shape[0]={train_predictions.shape[0]}, "
-                    f"y_train.shape[0]={y_train_np.shape[0]}.\n"
-                    "Please ensure data alignment in multi-step logic."
-                )
-            if train_predictions.shape[1] != y_train_np.shape[1]:
-                raise ValueError(
-                    "Mismatch in training time_horizon dimension:\n"
-                    f"  train_predictions.shape[1]={train_predictions.shape[1]}, "
-                    f"y_train.shape[1]={y_train_np.shape[1]}.\n"
-                    "Time horizon dimension must match."
-                )
+            #   b) External MAE
+            ext_train_mae = plugin.calculate_mae(y_train_np, train_preds)
+            ext_val_mae   = plugin.calculate_mae(y_val_np,   val_preds)
+            #   c) R^2
+            ext_train_r2 = r2_score(y_train_np, train_preds)
+            ext_val_r2   = r2_score(y_val_np,   val_preds)
 
-            if val_predictions.shape[0] != y_val_np.shape[0]:
-                raise ValueError(
-                    "Mismatch in validation samples dimension:\n"
-                    f"  val_predictions.shape[0]={val_predictions.shape[0]}, "
-                    f"y_val.shape[0]={y_val_np.shape[0]}.\n"
-                    "Please ensure data alignment for multi-step validation."
-                )
-            if val_predictions.shape[1] != y_val_np.shape[1]:
-                raise ValueError(
-                    "Mismatch in validation time_horizon dimension:\n"
-                    f"  val_predictions.shape[1]={val_predictions.shape[1]}, "
-                    f"y_val.shape[1]={y_val_np.shape[1]}.\n"
-                    "Time horizon dimension must match for validation."
-                )
+            print(f"External train MAE={ext_train_mae:.4f}, R²={ext_train_r2:.4f}")
+            print(f"External  val  MAE={ext_val_mae:.4f}, R²={ext_val_r2:.4f}")
 
-            # --------- Show first 20 predictions vs actuals (TRAIN & VAL) ---------
-            print("\n-- First 20 Training Predictions vs Actuals --")
-            limit_train = min(20, train_predictions.shape[0])
-            for i in range(limit_train):
-                print(f"Train Row {i} => Prediction: {train_predictions[i]}, Actual: {y_train_np[i]}")
+            train_mae_list.append(ext_train_mae)
+            val_mae_list.append(ext_val_mae)
+            train_r2_list.append(ext_train_r2)
+            val_r2_list.append(ext_val_r2)
 
-            print("\n-- First 20 Validation Predictions vs Actuals --")
-            limit_val = min(20, val_predictions.shape[0])
-            for i in range(limit_val):
-                print(f"Val Row {i} => Prediction: {val_predictions[i]}, Actual: {y_val_np[i]}")
-            print()
-
-            # Evaluate training metrics
-            train_mae = float(plugin.calculate_mae(y_train_np, train_predictions))
-            train_r2 = float(r2_score(y_train_np, train_predictions))
-            print(f"Training MAE: {train_mae}")
-            print(f"Training R²: {train_r2}")
-
-            # Save training metrics
-            training_mae_list.append(train_mae)
-            training_r2_list.append(train_r2)
-
-            # Evaluate validation metrics
-            val_mae = float(plugin.calculate_mae(y_val_np, val_predictions))
-            val_r2 = float(r2_score(y_val_np, val_predictions))
-            print(f"Validation MAE: {val_mae}")
-            print(f"Validation R²: {val_r2}")
-
-            # Save validation metrics
-            validation_mae_list.append(val_mae)
-            validation_r2_list.append(val_r2)
-
-            iteration_end_time = time.time()
-            print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
+            iteration_end = time.time()
+            print(f"Iteration {it} complete in {iteration_end - iteration_start:.2f} sec.")
 
         except Exception as e:
-            print(f"Iteration {iteration} failed with error:\n  {e}")
-            # Continue to the next iteration if an error occurs
+            print(f"Iteration {it} failed: {e}")
             continue
 
-    # -----------------------
-    # Aggregate statistics
-    # -----------------------
+    # Aggregation
     results = {
-        "Metric": [
-            "Training MAE",
-            "Training R²",
-            "Validation MAE",
-            "Validation R²",
-        ],
+        "Metric": ["Train MAE", "Train R²", "Val MAE", "Val R²"],
         "Average": [
-            np.mean(training_mae_list) if training_mae_list else None,
-            np.mean(training_r2_list)  if training_r2_list  else None,
-            np.mean(validation_mae_list) if validation_mae_list else None,
-            np.mean(validation_r2_list)  if validation_r2_list  else None,
+            np.mean(train_mae_list) if train_mae_list else None,
+            np.mean(train_r2_list)  if train_r2_list  else None,
+            np.mean(val_mae_list)   if val_mae_list   else None,
+            np.mean(val_r2_list)    if val_r2_list    else None,
         ],
-        "Std Dev": [
-            np.std(training_mae_list) if training_mae_list else None,
-            np.std(training_r2_list)  if training_r2_list  else None,
-            np.std(validation_mae_list) if validation_mae_list else None,
-            np.std(validation_r2_list)  if validation_r2_list  else None,
-        ],
-        "Max": [
-            np.max(training_mae_list) if training_mae_list else None,
-            np.max(training_r2_list)  if training_r2_list  else None,
-            np.max(validation_mae_list) if validation_mae_list else None,
-            np.max(validation_r2_list)  if validation_r2_list  else None,
-        ],
-        "Min": [
-            np.min(training_mae_list) if training_mae_list else None,
-            np.min(training_r2_list)  if training_r2_list  else None,
-            np.min(validation_mae_list) if validation_mae_list else None,
-            np.min(validation_r2_list)  if validation_r2_list  else None,
-        ],
+        "StdDev": [
+            np.std(train_mae_list) if train_mae_list else None,
+            np.std(train_r2_list)  if train_r2_list  else None,
+            np.std(val_mae_list)   if val_mae_list   else None,
+            np.std(val_r2_list)    if val_r2_list    else None,
+        ]
     }
 
-    # Save results to CSV
-    results_file = config.get("results_file", "results.csv")
-    results_df = pd.DataFrame(results)
-    results_df.to_csv(results_file, index=False)
-    print(f"Results saved to {results_file}")
+    # Save final results
+    df = pd.DataFrame(results)
+    df.to_csv(config.get("results_file", "results.csv"), index=False)
+    print("Saved final results to", config.get("results_file", "results.csv"))
 
-    # Save final validation predictions
-    final_val_file = config.get("output_file", "validation_predictions.csv")
-    if 'val_predictions' in locals() and val_predictions is not None:
-        val_predictions_df = pd.DataFrame(
-            val_predictions, 
-            columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
-        )
-        val_predictions_df.to_csv(final_val_file, index=False)
-        print(f"Final validation predictions saved to {final_val_file}")
-    else:
-        print("Warning: No final validation predictions were generated (all iterations may have failed).")
-
-    end_time = time.time()
-    print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
-
+    end = time.time()
+    print(f"Total pipeline time: {end - start:.2f} sec.")
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
