@@ -75,13 +75,13 @@ def process_data(config):
             raise ValueError("`target_column` must be str or int.")
 
     y_train = extract_target(y_train, target_col)
-    y_val   = extract_target(y_val,   target_col)
+    y_val = extract_target(y_val, target_col)
 
     # 3) CONVERT EACH DF TO NUMERIC, REASSIGN THE RESULT TO AVOID BUGS
     x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_train = y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
-    x_val   = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
-    y_val   = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
+    x_val = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_val = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
 
     # 4) MULTI-STEP COLUMNS
     time_horizon = config["time_horizon"]
@@ -90,45 +90,36 @@ def process_data(config):
         for i in range(len(y_df) - horizon + 1):
             window = y_df.iloc[i : i + horizon].values.flatten()
             blocks.append(window)
-        return pd.DataFrame(blocks)
+        return pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
 
     y_train_multi = create_multi_step(y_train, time_horizon)
-    y_val_multi   = create_multi_step(y_val,   time_horizon)
+    y_val_multi = create_multi_step(y_val, time_horizon)
 
     # 5) TRIM x TO MATCH THE LENGTH OF y
-    # Ensure x_train and y_train have the same number of rows
     min_len_train = min(len(x_train), len(y_train_multi))
-    x_train = x_train.iloc[:min_len_train].reset_index(drop=True)
-    y_train_multi = y_train_multi.iloc[:min_len_train].reset_index(drop=True)
+    x_train = x_train.iloc[:min_len_train]
+    y_train_multi = y_train_multi.iloc[:min_len_train]
 
-    # Ensure x_val and y_val have the same number of rows
     min_len_val = min(len(x_val), len(y_val_multi))
-    x_val = x_val.iloc[:min_len_val].reset_index(drop=True)
-    y_val_multi = y_val_multi.iloc[:min_len_val].reset_index(drop=True)
-
-
-
+    x_val = x_val.iloc[:min_len_val]
+    y_val_multi = y_val_multi.iloc[:min_len_val]
 
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
-    print(" x_val:  ", x_val.shape,   " y_val:  ", y_val_multi.shape)
-
-
+    print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
 
     print("x_train index:", x_train.index)
-    print("y_train index:", y_train.index)
-    assert len(x_train) == len(y_train), "x_train and y_train are misaligned!"
-
-
-    assert len(x_train) == len(y_train), "x_train and y_train are misaligned!"
-    assert len(x_val) == len(y_val), "x_val and y_val are misaligned!"
+    print("y_train index:", y_train_multi.index)
+    assert len(x_train) == len(y_train_multi), "x_train and y_train are misaligned!"
+    assert len(x_val) == len(y_val_multi), "x_val and y_val are misaligned!"
 
     return {
         "x_train": x_train,
         "y_train": y_train_multi,
-        "x_val":   x_val,
-        "y_val":   y_val_multi
+        "x_val": x_val,
+        "y_val": y_val_multi
     }
+
 
 
 
