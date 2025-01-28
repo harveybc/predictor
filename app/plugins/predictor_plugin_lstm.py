@@ -91,11 +91,12 @@ class Plugin:
         # Output layer
         model_output = Dense(
             units=layers[-1],
-            activation='linear',
+            activation='tanh',
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="model_output"
         )(x)
+        model_output = BatchNormalization()(model_output)
 
         # Build and compile the model
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
