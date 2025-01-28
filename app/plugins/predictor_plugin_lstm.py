@@ -17,7 +17,7 @@ class Plugin:
         'epochs': 200,
         'batch_size': 128,
         'intermediate_layers': 3,
-        'initial_layer_size': 64,
+        'initial_layer_size': 128,
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
         'dropout_rate': 0.1
@@ -66,10 +66,12 @@ class Plugin:
         for size in layers[:-1]:
             if size > 1:
                 x = LSTM(size, activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal(), return_sequences=True)(x)
-                #x = BatchNormalization()(x)
+                x = BatchNormalization()(x)
         x = LSTM(layers[-2], activation='tanh', recurrent_activation='sigmoid', kernel_initializer=HeNormal())(x)
-        model_output = Dense(layers[-1], activation='tanh', kernel_initializer=GlorotUniform(), name="model_output")(x)
-        
+        model_output = Dense(layers[-1], activation='linear', kernel_initializer=GlorotUniform(), name="model_output")(x)
+        # add batch normalization
+        #model_output = BatchNormalization()(model_output)
+
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
                 # Define the Adam optimizer with custom parameters
         adam_optimizer = Adam(
@@ -86,13 +88,24 @@ class Plugin:
         print("Predictor Model Summary:")
         self.model.summary()
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error):
-        print(f"Training predictor model with data shape: {x_train.shape}")
-
-
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
+        """
+        Train the LSTM model with optional validation data.
+        
+        Args:
+            x_train (np.ndarray): Training input data.
+            y_train (np.ndarray): Training target data.
+            epochs (int): Number of training epochs.
+            batch_size (int): Size of training batches.
+            threshold_error (float): Threshold error to monitor.
+            x_val (np.ndarray, optional): Validation input data. Defaults to None.
+            y_val (np.ndarray, optional): Validation target data. Defaults to None.
+        """
+        print(f"Training LSTM model with data shape: {x_train.shape}, target shape: {y_train.shape}")
+        
         callbacks = []
-    
-        patience = self.params.get('patience', 5)  # default patience is 10 epochs
+        patience = self.params.get('patience', 10)  # Default patience for early stopping
+        
         early_stopping_monitor = EarlyStopping(
             monitor='loss', 
             patience=patience, 
@@ -100,14 +113,25 @@ class Plugin:
             verbose=1
         )
         callbacks.append(early_stopping_monitor)
+        
+        validation_data = (x_val, y_val) if x_val is not None and y_val is not None else None
 
-
-
-        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=1, callbacks=callbacks)
+        # Fit the model
+        history = self.model.fit(
+            x_train, 
+            y_train, 
+            epochs=epochs, 
+            batch_size=batch_size, 
+            verbose=1, 
+            shuffle=False,
+            callbacks=callbacks
+        )
+        
         print("Training completed.")
-        mse = history.history['loss'][-1]
-        if mse > threshold_error:
-            print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
+        final_loss = history.history['loss'][-1]
+        if final_loss > threshold_error:
+            print(f"Warning: Model training completed with loss {final_loss} exceeding the threshold error {threshold_error}.")
+
 
     def predict(self, data):
         print(f"Predicting data with shape: {data.shape}")
