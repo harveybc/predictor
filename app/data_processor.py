@@ -86,11 +86,24 @@ def process_data(config):
     # 4) MULTI-STEP COLUMNS
     time_horizon = config["time_horizon"]
     def create_multi_step(y_df, horizon):
+        """
+        Create multi-step targets for time-series prediction.
+
+        Args:
+            y_df (pd.DataFrame): Target data as a DataFrame.
+            horizon (int): Number of future steps to predict.
+
+        Returns:
+            pd.DataFrame: Multi-step targets aligned with the input data.
+        """
         blocks = []
-        for i in range(len(y_df) - horizon + 1):
-            window = y_df.iloc[i : i + horizon].values.flatten()
+        for i in range(len(y_df) - horizon):
+            # Collect the next `horizon` ticks starting from the *next* row
+            window = y_df.iloc[i + 1 : i + 1 + horizon].values.flatten()
             blocks.append(window)
-        return pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
+        # Align index to the input data (exclude the last `horizon` rows)
+        return pd.DataFrame(blocks, index=y_df.index[:-horizon])
+
 
     y_train_multi = create_multi_step(y_train, time_horizon)
     y_val_multi = create_multi_step(y_val, time_horizon)
