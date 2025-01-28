@@ -161,6 +161,9 @@ def run_prediction_pipeline(config, plugin):
     start_time = time.time()
 
     iterations = config.get("iterations", 1)
+    if iterations <= 0:
+        raise ValueError("`iterations` must be a positive integer.")
+
     print(f"Number of iterations: {iterations}")
 
     # Lists to store metrics for all iterations
@@ -171,38 +174,34 @@ def run_prediction_pipeline(config, plugin):
 
     # Load all datasets
     print("Loading and processing datasets...")
-    datasets = process_data(config)  # <-- Rely on the process_data function
+    datasets = process_data(config)
     x_train, y_train = datasets["x_train"], datasets["y_train"]
     x_val, y_val = datasets["x_val"], datasets["y_val"]
 
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
 
-    # Extract time_horizon and window_size from config
+    # Basic config checks
     time_horizon = config.get("time_horizon")
-    window_size = config.get("window_size")
-
     if time_horizon is None:
         raise ValueError("`time_horizon` is not defined in the configuration.")
 
-    # Confirm CNN plugin requires window_size
-    if config["plugin"] == "cnn" and window_size is None:
-        raise ValueError("`window_size` must be defined in the configuration for CNN plugin.")
-
-    print(f"Time Horizon: {time_horizon}")
-
     batch_size = config["batch_size"]
     epochs = config["epochs"]
-    threshold_error = config["threshold_error"]
+    threshold_error = config.get("threshold_error", None)
 
-    # Convert datasets to numpy arrays
+    # Convert DataFrame to numpy
     x_train = x_train.to_numpy().astype(np.float32)
     y_train = y_train.to_numpy().astype(np.float32)
     x_val = x_val.to_numpy().astype(np.float32)
     y_val = y_val.to_numpy().astype(np.float32)
 
-    # CNN-specific sliding windows
+    # If plugin is CNN, create sliding windows
     if config["plugin"] == "cnn":
+        if "window_size" not in config:
+            raise ValueError("`window_size` must be defined in the configuration for CNN plugin.")
+        window_size = config["window_size"]
+
         print("Creating sliding windows for CNN...")
         x_train, y_train, _ = create_sliding_windows(
             x_train, y_train, window_size, time_horizon, stride=1
@@ -210,45 +209,38 @@ def run_prediction_pipeline(config, plugin):
         x_val, y_val, _ = create_sliding_windows(
             x_val, y_val, window_size, time_horizon, stride=1
         )
-
         print(f"Sliding windows created:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
-        print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
+        print(f"  x_val:   {x_val.shape}, y_val: {y_val.shape}")
 
-    # Ensure x_* are at least 2D
-    if x_train.ndim == 1:
-        x_train = x_train.reshape(-1, 1)
-    if x_val.ndim == 1:
-        x_val = x_val.reshape(-1, 1)
+        # CNN expects (window_size, features) per sample
+        input_shape = (window_size, x_train.shape[2])  
+    else:
+        # For ANN/LSTM/etc. shape is (features,) per sample
+        if len(x_train.shape) == 1:
+            # Ensure at least 2D
+            x_train = x_train.reshape(-1, 1)
+        if len(x_val.shape) == 1:
+            x_val = x_val.reshape(-1, 1)
 
-    # Pass time_horizon to the plugin (if it uses it)
+        input_shape = (x_train.shape[1],)
+
+    # Pass time_horizon to the plugin (if applicable)
     plugin.set_params(time_horizon=time_horizon)
 
+    # Iterative training and evaluation
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
 
         try:
             # Build the model
-            if config["plugin"] == "cnn":
-                # CNN expects shape (window_size, features)
-                if len(x_train.shape) < 3:
-                    raise ValueError(
-                        f"For CNN, x_train must be 3D. Found: {x_train.shape}."
-                    )
-                plugin.build_model(input_shape=(window_size, x_train.shape[2]))
-            else:
-                # For ANN/LSTM/Transformers: typically shape (features,)
-                if len(x_train.shape) != 2:
-                    raise ValueError(
-                        f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}."
-                    )
-                plugin.build_model(input_shape=x_train.shape[1])
+            plugin.build_model(input_shape=input_shape)
 
             # Train the model
             plugin.train(
-                x_train,
-                y_train,
+                x_train=x_train,
+                y_train=y_train,
                 epochs=epochs,
                 batch_size=batch_size,
                 threshold_error=threshold_error,
@@ -256,76 +248,35 @@ def run_prediction_pipeline(config, plugin):
                 y_val=y_val,
             )
 
-            print("Evaluating trained model on training and validation data. Please wait...")
+            print("Evaluating trained model on training and validation data...")
 
-            # Suppress TensorFlow/Keras logs during prediction
-            with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
-                os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-                logging.getLogger("tensorflow").setLevel(logging.FATAL)
+            # Get predictions
+            train_predictions = plugin.predict(x_train)
+            val_predictions = plugin.predict(x_val)
 
-                # Predict training data
-                train_predictions = plugin.predict(x_train)
-
-                # Predict validation data
-                val_predictions = plugin.predict(x_val)
-
-            # Restore TensorFlow logs
-            os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
-            logging.getLogger("tensorflow").setLevel(logging.INFO)
-
-            # -----------------------
-            # Dimension checks
-            # -----------------------
-            # Expect train_predictions.shape == (num_train_samples, time_horizon)
-            #  or at least have the same second dimension as y_train, etc.
-            if train_predictions.shape[0] != y_train.shape[0]:
+            # Ensure predictions align with targets
+            if train_predictions.shape != y_train.shape:
                 raise ValueError(
-                    "Mismatch in training samples dimension:\n"
-                    f"  train_predictions.shape[0]={train_predictions.shape[0]}, "
-                    f"y_train.shape[0]={y_train.shape[0]}.\n"
-                    "Please ensure data alignment in multi-step logic."
+                    f"Training predictions shape mismatch: {train_predictions.shape} vs {y_train.shape}"
                 )
-            if train_predictions.shape[1] != y_train.shape[1]:
+            if val_predictions.shape != y_val.shape:
                 raise ValueError(
-                    "Mismatch in training time_horizon dimension:\n"
-                    f"  train_predictions.shape[1]={train_predictions.shape[1]}, "
-                    f"y_train.shape[1]={y_train.shape[1]}.\n"
-                    "Time horizon dimension must match."
+                    f"Validation predictions shape mismatch: {val_predictions.shape} vs {y_val.shape}"
                 )
 
-            # Same check for validation
-            if val_predictions.shape[0] != y_val.shape[0]:
-                raise ValueError(
-                    "Mismatch in validation samples dimension:\n"
-                    f"  val_predictions.shape[0]={val_predictions.shape[0]}, "
-                    f"y_val.shape[0]={y_val.shape[0]}.\n"
-                    "Please ensure data alignment for multi-step validation."
-                )
-            if val_predictions.shape[1] != y_val.shape[1]:
-                raise ValueError(
-                    "Mismatch in validation time_horizon dimension:\n"
-                    f"  val_predictions.shape[1]={val_predictions.shape[1]}, "
-                    f"y_val.shape[1]={y_val.shape[1]}.\n"
-                    "Time horizon dimension must match for validation."
-                )
-
-            # Evaluate training metrics
+            # Compute metrics
             train_mae = float(plugin.calculate_mae(y_train, train_predictions))
             train_r2 = float(r2_score(y_train, train_predictions))
-            print(f"Training MAE: {train_mae}")
-            print(f"Training R²: {train_r2}")
 
-            # Save training metrics
-            training_mae_list.append(train_mae)
-            training_r2_list.append(train_r2)
-
-            # Evaluate validation metrics
             val_mae = float(plugin.calculate_mae(y_val, val_predictions))
             val_r2 = float(r2_score(y_val, val_predictions))
-            print(f"Validation MAE: {val_mae}")
-            print(f"Validation R²: {val_r2}")
 
-            # Save validation metrics
+            print(f"Training MAE: {train_mae}, R²: {train_r2}")
+            print(f"Validation MAE: {val_mae}, R²: {val_r2}")
+
+            # Store metrics
+            training_mae_list.append(train_mae)
+            training_r2_list.append(train_r2)
             validation_mae_list.append(val_mae)
             validation_r2_list.append(val_r2)
 
@@ -333,67 +284,57 @@ def run_prediction_pipeline(config, plugin):
             print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
         except Exception as e:
-            print(f"Iteration {iteration} failed with error:\n  {e}")
-            continue  # Proceed to the next iteration even if one iteration fails
+            print(f"Iteration {iteration} failed: {e}")
+            # Continue to next iteration instead of stopping
+            continue
 
     # -----------------------
-    # Aggregate statistics
+    # Aggregate and save results
     # -----------------------
-    results = {
-        "Metric": [
-            "Training MAE",
-            "Training R²",
-            "Validation MAE",
-            "Validation R²",
-        ],
-        "Average": [
-            np.mean(training_mae_list) if training_mae_list else None,
-            np.mean(training_r2_list)  if training_r2_list  else None,
-            np.mean(validation_mae_list) if validation_mae_list else None,
-            np.mean(validation_r2_list)  if validation_r2_list  else None,
-        ],
-        "Std Dev": [
-            np.std(training_mae_list) if training_mae_list else None,
-            np.std(training_r2_list)  if training_r2_list  else None,
-            np.std(validation_mae_list) if validation_mae_list else None,
-            np.std(validation_r2_list)  if validation_r2_list  else None,
-        ],
-        "Max": [
-            np.max(training_mae_list) if training_mae_list else None,
-            np.max(training_r2_list)  if training_r2_list  else None,
-            np.max(validation_mae_list) if validation_mae_list else None,
-            np.max(validation_r2_list)  if validation_r2_list  else None,
-        ],
-        "Min": [
-            np.min(training_mae_list) if training_mae_list else None,
-            np.min(training_r2_list)  if training_r2_list  else None,
-            np.min(validation_mae_list) if validation_mae_list else None,
-            np.min(validation_r2_list)  if validation_r2_list  else None,
-        ],
-    }
+    if training_mae_list and validation_mae_list:
+        results = {
+            "Metric": ["Training MAE", "Training R²", "Validation MAE", "Validation R²"],
+            "Average": [
+                np.mean(training_mae_list),
+                np.mean(training_r2_list),
+                np.mean(validation_mae_list),
+                np.mean(validation_r2_list),
+            ],
+            "Std Dev": [
+                np.std(training_mae_list),
+                np.std(training_r2_list),
+                np.std(validation_mae_list),
+                np.std(validation_r2_list),
+            ],
+        }
+    else:
+        # If all iterations failed, fill with None
+        results = {
+            "Metric": ["Training MAE", "Training R²", "Validation MAE", "Validation R²"],
+            "Average": [None, None, None, None],
+            "Std Dev": [None, None, None, None],
+        }
 
-    # Save results to CSV
     results_file = config.get("results_file", "results.csv")
-    results_df = pd.DataFrame(results)
-    results_df.to_csv(results_file, index=False)
+    pd.DataFrame(results).to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
 
-    # Save final validation predictions
-    final_val_file = config.get("output_file", "validation_predictions.csv")
-    # Because we are inside a loop, `val_predictions` might not exist if iteration always fails,
-    # so we guard with a check:
+    # Save final validation predictions (from last successful iteration)
+    predictions_file = config.get("output_file", "final_predictions.csv")
     if 'val_predictions' in locals() and val_predictions is not None:
         val_predictions_df = pd.DataFrame(
             val_predictions, 
-            columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
+            columns=[f"Step_{i+1}" for i in range(val_predictions.shape[1])]
         )
-        val_predictions_df.to_csv(final_val_file, index=False)
-        print(f"Final validation predictions saved to {final_val_file}")
+        val_predictions_df.to_csv(predictions_file, index=False)
+        print(f"Final validation predictions saved to {predictions_file}")
     else:
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
 
     end_time = time.time()
-    print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
+    print(f"Total execution time: {end_time - start_time:.2f} seconds")
+
+
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
