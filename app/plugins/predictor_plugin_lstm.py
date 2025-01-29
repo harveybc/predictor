@@ -50,7 +50,7 @@ class Plugin:
             input_shape (tuple): Shape of the input data (time_steps, features).
         """
         self.params['input_dim'] = input_shape
-        l2_reg = self.params.get('l2_reg', 1e-4)
+        l2_reg = self.params.get('l2_reg', 1e-3)
 
         # Layer configuration
         layers = []
@@ -92,7 +92,9 @@ class Plugin:
         # Output layer
         model_output = Dense(
             units=layers[-1],
-            activation='tanh',
+            activation='linear',
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
             name="model_output"
         )(x)
         
