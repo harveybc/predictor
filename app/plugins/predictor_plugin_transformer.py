@@ -111,7 +111,7 @@ class Plugin:
             # Multi-Head Attention Layer
             # Set num_heads=1 and key_dim=size to match output dimension
             attention_output = MultiHeadAttention(
-                num_heads=1,
+                num_heads=2,
                 key_dim=size,
                 name=f"mha_layer_{idx+1}"
             )(x_reshaped, x_reshaped)  # Shape: (batch_size, size, num_heads * key_dim) = (batch_size, size, size)
