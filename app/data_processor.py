@@ -12,6 +12,7 @@ from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
 import contextlib
 import matplotlib.pyplot as plt
 
+
 def process_data(config):
     """
     Processes data for different plugins, including ANN, CNN, and LSTM.
@@ -151,42 +152,6 @@ def process_data(config):
     }
 
 
-def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
-    """
-    Creates sliding windows for input features and targets with a specified stride.
-
-    Args:
-        x (numpy.ndarray): Input features of shape (N, features).
-        y (numpy.ndarray): Targets of shape (N,) or (N, 1).
-        window_size (int): Number of past steps to include in each window.
-        time_horizon (int): Number of future steps to predict.
-        stride (int): Step size between windows.
-        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
-
-    Returns:
-        tuple:
-            - x_windowed (numpy.ndarray): Shaped (samples, window_size, features).
-            - y_windowed (numpy.ndarray): Shaped (samples, time_horizon).
-            - date_time_windows (list): List of date times for each window (if provided).
-    """
-    if y.ndim == 2 and y.shape[1] == 1:
-        y = y.flatten()
-    elif y.ndim > 2:
-        raise ValueError("y should be a 1D or 2D array with a single column.")
-
-    x_windowed = []
-    y_windowed = []
-    date_time_windows = []
-
-    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
-        x_window = x[i:i + window_size]
-        y_window = y[i + window_size:i + window_size + time_horizon]
-        x_windowed.append(x_window)
-        y_windowed.append(y_window)
-        if date_times is not None:
-            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
-
-    return np.array(x_windowed), np.array(y_windowed), date_time_windows
 
 
 
@@ -385,14 +350,6 @@ def run_prediction_pipeline(config, plugin):
             validation_mae_list.append(val_mae)
             validation_r2_list.append(val_r2)
 
-            # Save training metrics
-            training_mae_list.append(train_mae)
-            training_r2_list.append(train_r2)
-
-            # Save validation metrics
-            validation_mae_list.append(val_mae)
-            validation_r2_list.append(val_r2)
-
             iteration_end_time = time.time()
             print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
@@ -441,6 +398,25 @@ def run_prediction_pipeline(config, plugin):
     results_df = pd.DataFrame(results)
     results_df.to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
+
+    # Save plugin debug variables
+    debug_log_file = config.get("save_log", "plugin_debug_log.csv")
+    try:
+        debug_variables = plugin.get_debug_variables()  # Assuming this method exists
+        debug_df = pd.DataFrame(debug_variables)
+        debug_df.to_csv(debug_log_file, index=False)
+        print(f"Plugin debug variables saved to {debug_log_file}")
+    except AttributeError:
+        print("Plugin does not have a 'get_debug_variables' method. Skipping debug log saving.")
+
+    # Save config dict as JSON
+    config_save_path = config.get("save_config", "config.json")
+    try:
+        with open(config_save_path, 'w') as f:
+            json.dump(config, f, indent=4)
+        print(f"Configuration saved to {config_save_path}")
+    except Exception as e:
+        print(f"Failed to save configuration to {config_save_path}: {e}")
 
     # Save final validation predictions
     final_val_file = config.get("output_file", "validation_predictions.csv")
@@ -577,3 +553,39 @@ def create_multi_step_targets(df, time_horizon):
 
 
 
+def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
+    """
+    Creates sliding windows for input features and targets with a specified stride.
+
+    Args:
+        x (numpy.ndarray): Input features of shape (N, features).
+        y (numpy.ndarray): Targets of shape (N,) or (N, 1).
+        window_size (int): Number of past steps to include in each window.
+        time_horizon (int): Number of future steps to predict.
+        stride (int): Step size between windows.
+        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
+
+    Returns:
+        tuple:
+            - x_windowed (numpy.ndarray): Shaped (samples, window_size, features).
+            - y_windowed (numpy.ndarray): Shaped (samples, time_horizon).
+            - date_time_windows (list): List of date times for each window (if provided).
+    """
+    if y.ndim == 2 and y.shape[1] == 1:
+        y = y.flatten()
+    elif y.ndim > 2:
+        raise ValueError("y should be a 1D or 2D array with a single column.")
+
+    x_windowed = []
+    y_windowed = []
+    date_time_windows = []
+
+    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
+        x_window = x[i:i + window_size]
+        y_window = y[i + window_size:i + window_size + time_horizon]
+        x_windowed.append(x_window)
+        y_windowed.append(y_window)
+        if date_times is not None:
+            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
+
+    return np.array(x_windowed), np.array(y_windowed), date_time_windows
