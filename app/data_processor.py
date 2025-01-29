@@ -147,48 +147,22 @@ def process_data(config):
         if not isinstance(x_val, np.ndarray):
             x_val = x_val.to_numpy().astype(np.float32)
 
-        # Define positional encoding function
-        def get_positional_encoding(num_features, d_model):
-            """
-            Generates positional encoding for the Transformer model.
+        # Generate positional encoding
+        pos_dim = config.get("positional_encoding_dim", 16)  # Default positional encoding dimension
+        num_features = x_train.shape[1]
 
-            Args:
-                num_features (int): Number of features in the input data.
-                d_model (int): Dimension of the positional encoding.
+        pos_encoding_train = generate_positional_encoding(num_features, pos_dim)
+        pos_encoding_val = generate_positional_encoding(x_val.shape[1], pos_dim)
 
-            Returns:
-                np.ndarray: Positional encoding matrix of shape (num_features, d_model).
-            """
-            pos = np.arange(num_features)[:, np.newaxis]
-            i = np.arange(d_model)[np.newaxis, :]
-            angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
-            angle_rads = pos * angle_rates
+        # Repeat positional encoding for each sample
+        pos_encoding_train = np.tile(pos_encoding_train, (x_train.shape[0], 1))
+        pos_encoding_val = np.tile(pos_encoding_val, (x_val.shape[0], 1))
 
-            # Apply sin to even indices in the array; 2i
-            angle_rads[:, 0::2] = np.sin(angle_rads[:, 0::2])
+        # Concatenate positional encoding to x_train and x_val horizontally
+        x_train = np.concatenate([x_train, pos_encoding_train], axis=1)
+        x_val = np.concatenate([x_val, pos_encoding_val], axis=1)
 
-            # Apply cos to odd indices in the array; 2i+1
-            angle_rads[:, 1::2] = np.cos(angle_rads[:, 1::2])
-
-            pos_encoding = angle_rads
-            return pos_encoding
-
-        # Retrieve positional encoding dimension from config or set default
-        pos_encoding_dim = config.get("pos_encoding_dim", x_train.shape[1])
-
-        # Generate positional encodings for training and validation data
-        pos_enc_train = get_positional_encoding(x_train.shape[1], pos_encoding_dim)
-        pos_enc_val = get_positional_encoding(x_val.shape[1], pos_encoding_dim)
-
-        # Repeat positional encodings for each sample
-        pos_enc_train = np.tile(pos_enc_train, (x_train.shape[0], 1))
-        pos_enc_val = np.tile(pos_enc_val, (x_val.shape[0], 1))
-
-        # Concatenate positional encodings horizontally with x_train and x_val
-        x_train = np.concatenate([x_train, pos_enc_train], axis=1)
-        x_val = np.concatenate([x_val, pos_enc_val], axis=1)
-
-        print(f"Positional encodings concatenated:")
+        print(f"Positional encoding concatenated:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
         print(f"  x_val:   {x_val.shape},   y_val:   {y_val_multi.shape}")
 
@@ -205,6 +179,7 @@ def process_data(config):
         "x_val": x_val,
         "y_val": y_val_multi,
     }
+
 
 def run_prediction_pipeline(config, plugin):
     """
@@ -622,3 +597,22 @@ def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times
             date_time_windows.append(date_times[i + window_size + time_horizon - 1])
 
     return np.array(x_windowed), np.array(y_windowed), date_time_windows
+
+
+def generate_positional_encoding(num_features, pos_dim=16):
+    """
+    Generates positional encoding for a given number of features.
+
+    Args:
+        num_features (int): Number of features in the dataset.
+        pos_dim (int): Dimension of the positional encoding.
+
+    Returns:
+        np.ndarray: Positional encoding of shape (num_features, pos_dim).
+    """
+    position = np.arange(num_features)[:, np.newaxis]
+    div_term = np.exp(np.arange(0, pos_dim, 2) * -(np.log(10000.0) / pos_dim))
+    pos_encoding = np.zeros((num_features, pos_dim))
+    pos_encoding[:, 0::2] = np.sin(position * div_term)
+    pos_encoding[:, 1::2] = np.cos(position * div_term)
+    return pos_encoding
