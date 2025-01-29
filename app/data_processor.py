@@ -211,7 +211,6 @@ def run_prediction_pipeline(config, plugin):
     if isinstance(y_val, pd.DataFrame):
         y_val = y_val.to_numpy().astype(np.float32)
 
-
     # CNN-specific sliding windows
     if config["plugin"] == "cnn":
         print("Creating sliding windows for CNN...")
@@ -250,17 +249,10 @@ def run_prediction_pipeline(config, plugin):
                 plugin.build_model(input_shape=(window_size, x_train.shape[2]))
             else:
                 # For ANN/LSTM/Transformers: typically shape (features,)
-                # Build the model based on the plugin type
-                if config["plugin"] == "cnn":
-                    # CNN expects 3D input (window_size, features)
-                    if len(x_train.shape) < 3:
-                        raise ValueError(f"For CNN, x_train must be 3D. Found: {x_train.shape}.")
-                    plugin.build_model(input_shape=(window_size, x_train.shape[2]))
-                elif config["plugin"] == "lstm":
+                if config["plugin"] == "lstm":
                     # LSTM expects 3D input (time_steps, features)
                     if len(x_train.shape) != 3:
                         raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
-                    # Pass only the time_steps and features (without the batch size)
                     plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
                 else:
                     # For ANN/Transformers: 2D input (samples, features)
@@ -269,7 +261,6 @@ def run_prediction_pipeline(config, plugin):
                             f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}."
                         )
                     plugin.build_model(input_shape=x_train.shape[1])
-
 
             # Train the model
             history = plugin.train(
@@ -321,7 +312,6 @@ def run_prediction_pipeline(config, plugin):
                 train_r2 = r2_score(y_train, train_predictions)
                 val_r2 = r2_score(y_val, val_predictions)
 
-
             # Restore TensorFlow logs
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
             logging.getLogger("tensorflow").setLevel(logging.INFO)
@@ -349,6 +339,17 @@ def run_prediction_pipeline(config, plugin):
             # Save validation metrics
             validation_mae_list.append(val_mae)
             validation_r2_list.append(val_r2)
+
+            # Calculate current standard deviations
+            current_train_mae_std = np.std(training_mae_list)
+            current_val_mae_std = np.std(validation_mae_list)
+            current_train_r2_std = np.std(training_r2_list)
+            current_val_r2_std = np.std(validation_r2_list)
+
+            print(f"Current Training MAE Std Dev: {current_train_mae_std:.4f}")
+            print(f"Current Validation MAE Std Dev: {current_val_mae_std:.4f}")
+            print(f"Current Training R² Std Dev: {current_train_r2_std:.4f}")
+            print(f"Current Validation R² Std Dev: {current_val_r2_std:.4f}")
 
             iteration_end_time = time.time()
             print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
@@ -400,23 +401,23 @@ def run_prediction_pipeline(config, plugin):
     print(f"Results saved to {results_file}")
 
     # Save plugin debug variables
-    debug_log_file = config.get("save_log", "plugin_debug_log.csv")
+    save_log_file = config.get("save_log", "plugin_debug_log.csv")
     try:
         debug_variables = plugin.get_debug_variables()  # Assuming this method exists
         debug_df = pd.DataFrame(debug_variables)
-        debug_df.to_csv(debug_log_file, index=False)
-        print(f"Plugin debug variables saved to {debug_log_file}")
+        debug_df.to_csv(save_log_file, index=False)
+        print(f"Plugin debug variables saved to {save_log_file}")
     except AttributeError:
         print("Plugin does not have a 'get_debug_variables' method. Skipping debug log saving.")
 
     # Save config dict as JSON
-    config_save_path = config.get("save_config", "config.json")
+    save_config_path = config.get("save_config", "config.json")
     try:
-        with open(config_save_path, 'w') as f:
+        with open(save_config_path, 'w') as f:
             json.dump(config, f, indent=4)
-        print(f"Configuration saved to {config_save_path}")
+        print(f"Configuration saved to {save_config_path}")
     except Exception as e:
-        print(f"Failed to save configuration to {config_save_path}: {e}")
+        print(f"Failed to save configuration to {save_config_path}: {e}")
 
     # Save final validation predictions
     final_val_file = config.get("output_file", "validation_predictions.csv")
