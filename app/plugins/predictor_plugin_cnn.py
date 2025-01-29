@@ -107,10 +107,6 @@ class Plugin:
                     name=f"conv1d_{idx+1}"
                 )(x)
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
-                        
-        # Flatten the output from Conv layers
-        x = Flatten(name="flatten")(x)
-        # add a dense layer
         x = Dense(
             units=size,
             activation=self.params['activation'],
@@ -120,7 +116,9 @@ class Plugin:
 
         #add batch normalization
         x = BatchNormalization()(x)
-
+        
+        # Flatten the output from Conv layers
+        x = Flatten(name="flatten")(x)
                 
         # Output layer => shape (N, time_horizon)
         model_output = Dense(
