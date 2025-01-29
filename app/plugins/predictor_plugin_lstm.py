@@ -24,6 +24,7 @@ class Plugin:
         'learning_rate': 0.01,
         'dropout_rate': 0.1,
         'patience': 10,
+        'activation': 'tanh'
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
