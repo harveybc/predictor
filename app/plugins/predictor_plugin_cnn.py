@@ -213,12 +213,19 @@ class Plugin:
         train_loss, train_mse, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
         
-        val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-        val_loss, val_mse, val_mae = val_eval_results
-        
-        # Predict validation data for evaluation
+        # Only evaluate validation data if it exists
+        if x_val is not None and y_val is not None:
+            val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+            _, _, val_mae = val_eval_results
+            val_predictions = self.predict(x_val)  # Predict validation data
+            val_r2 = r2_score(y_val, val_predictions)
+        else:
+            val_mae = None
+            val_r2 = None
+            val_predictions = None
+
+        # Predict training data for evaluation
         train_predictions = self.predict(x_train)  # Predict train data
-        val_predictions = self.predict(x_val)      # Predict validation data
 
         # Calculate R² scores
         train_r2 = r2_score(y_train, train_predictions)
