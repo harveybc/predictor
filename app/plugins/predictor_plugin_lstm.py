@@ -72,23 +72,6 @@ class Plugin:
         # Input shape: (time_steps, features)
         model_input = Input(shape=input_shape, name="model_input")  # Corrected input shape
         x = model_input
-        
-        x = Dense(
-            units=layers[0],
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name=f"dense_layer_0"
-        )(x)  # Shape: (batch_size, size)
-        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
-        #x = Dense(
-        #        units=input_shape,
-        #        activation=self.params['activation'],
-        #        kernel_initializer=GlorotUniform(),
-        #        kernel_regularizer=l2(l2_reg),
-        #    )(x)
-        #add batch normalization
-        x = BatchNormalization()(x)
         # Add LSTM layers
         for size in layers[:-1]:
             if size > 1:
@@ -106,7 +89,7 @@ class Plugin:
             recurrent_activation='sigmoid',
         )(x)
         x = Dense(
-            units=size,
+            units=units=layers[-2],
             activation=self.params['activation'],
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
