@@ -19,7 +19,7 @@ class Plugin:
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
         'learning_rate': 0.001,
-        'l2_reg': 1e-4,     # L2 regularization factor
+        'l2_reg': 1e-3,     # L2 regularization factor
         'patience': 10      # Patience for Early Stopping
     }
 
@@ -76,6 +76,7 @@ class Plugin:
 
         layers = []
         current_size = self.params['initial_layer_size']
+        l2_reg = self.params.get('l2_reg', 1e-4)
         layer_size_divisor = self.params['layer_size_divisor']
         int_layers = 0
         while int_layers < self.params['intermediate_layers']:
@@ -110,16 +111,14 @@ class Plugin:
         # Flatten the output from Conv layers
         x = Flatten(name="flatten")(x)
 
-        # Output Dense layer with 'linear' activation for regression
+        # Output layer => shape (N, time_horizon)
         model_output = Dense(
-            layers[-1], 
-            activation='linear', 
-            kernel_initializer=GlorotUniform(), 
-            kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
+            units=layers[-1],
+            activation='linear',
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
             name="model_output"
         )(x)
-        # add batch normalization layer
-        model_output = BatchNormalization(name="batch_norm_output")(model_output)
 
 
         # Create the Model
@@ -163,9 +162,11 @@ class Plugin:
         """
         if x_train.ndim != 3:
             raise ValueError(f"x_train must be 3D with shape (samples, window_size, features). Found: {x_train.shape}")
-        if y_train.ndim != 2:
-            raise ValueError(f"y_train must be 2D with shape (samples, time_horizon). Found: {y_train.shape}")
-
+        exp_horizon = self.params['time_horizon']
+        if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
+            raise ValueError(
+                f"y_train shape {y_train.shape}, expected (N,{exp_horizon})."
+            )
         callbacks = []
 
         # Early Stopping based on loss or validation loss

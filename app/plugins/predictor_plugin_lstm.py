@@ -72,6 +72,14 @@ class Plugin:
         model_input = Input(shape=input_shape, name="model_input")  # Corrected input shape
         x = model_input
         x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
+        #x = Dense(
+        #        units=input_shape,
+        #        activation=self.params['activation'],
+        #        kernel_initializer=GlorotUniform(),
+        #        kernel_regularizer=l2(l2_reg),
+        #    )(x)
+        #add batch normalization
+        #x = BatchNormalization()(x)
         # Add LSTM layers
         for size in layers[:-1]:
             if size > 1:
