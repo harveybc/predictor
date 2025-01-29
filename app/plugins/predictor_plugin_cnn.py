@@ -199,12 +199,12 @@ class Plugin:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
         # Force the model to run in "training mode"
-        preds_training_mode = self.model(x_train, training=True)
+        preds_training_mode = self.model(x_train, training=True).numpy()
         mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
         print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
 
         # Compare with evaluation mode
-        preds_eval_mode = self.model(x_train, training=False)
+        preds_eval_mode = self.model(x_train, training=False).numpy()
         mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
 
