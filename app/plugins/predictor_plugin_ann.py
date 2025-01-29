@@ -124,16 +124,23 @@ class Plugin:
             epsilon=1e-7, amsgrad=False
         )
         def coeff_r2(y_true, y_pred):
-            #print the shape of y_true and y_pred
-            print(f"y_true.shape ={y_true.shape}, y_pred.shape={y_pred.shape}")
-             
-            # Take only the last row
-            y_true_last = y_true[-1, :]
-            y_pred_last = y_pred[-1, :]
-            ss_res = K.sum(K.square(y_true_last - y_pred_last))
-            ss_tot = K.sum(K.square(y_true_last - K.mean(y_true_last, axis=0, keepdims=True)))
-            return 1 - ss_res / (ss_tot + K.epsilon())
+            # Calculate R² for multi-step predictions
+            # Compute residual sum of squares (RSS)
+            SS_res = K.sum(K.square(y_true - y_pred))
+            # Compute total sum of squares (TSS)
+            y_mean = K.mean(y_true)
+            SS_tot = K.sum(K.square(y_true - y_mean))
+            # Return R² score, clipped to prevent negative values
+            return K.maximum(1 - SS_res / (SS_tot + K.epsilon()), 0)
         # Compile
+        def rmse(y_true, y_pred):
+            return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
+
+        def r2_score(y_true, y_pred):
+            # Calculate R² across all time steps
+            SS_res = K.sum(K.square(y_true - y_pred))
+            SS_tot = K.sum(K.square(y_true - K.mean(y_true)))
+            return K.maximum(1 - SS_res/(SS_tot + K.epsilon()), K.zeros_like(SS_res))
         self.model.compile(
             optimizer=adam_optimizer,
             loss=Huber(),  # or 'mse'
