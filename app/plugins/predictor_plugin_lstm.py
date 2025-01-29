@@ -94,7 +94,7 @@ class Plugin:
             name="model_output"
         )(x)
         
-        model_output = BatchNormalization()(model_output)
+        #model_output = BatchNormalization()(model_output)
 
         # Build and compile the model
         self.model = Model(inputs=model_input, outputs=model_output, name="predictor_model")
