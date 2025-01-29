@@ -281,6 +281,7 @@ def run_prediction_pipeline(config, plugin):
             plt.legend(['Train', 'Test'], loc='upper left')
             plt.savefig('loss_plot.png')
             plt.close()
+            print("Loss plot saved to loss_plot.png")
 
             print("Evaluating trained model on training and validation data. Please wait...")
 
