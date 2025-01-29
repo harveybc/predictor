@@ -1,332 +1,294 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Dense, Input, Dropout, Add, LayerNormalization, GlobalAveragePooling1D, Flatten, BatchNormalization
+from keras.layers import Dense, Input, Dropout, BatchNormalization, LayerNormalization, GlobalAveragePooling1D, Reshape
 from keras.optimizers import Adam
-from keras_multi_head import MultiHeadAttention
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
-import tensorflow as tf
 from tensorflow.keras.regularizers import l2
+from keras.layers import GaussianNoise, MultiHeadAttention, Add
+from keras import backend as K
+from sklearn.metrics import r2_score, mean_absolute_error
 
+import logging
+import os
+import tensorflow as tf
 
 class Plugin:
     """
-    A predictor plugin using a Transformer network based on Keras, with dynamically configurable size.
+    Transformer Predictor Plugin using Keras for multi-step forecasting.
+    
+    This plugin builds, trains, and evaluates a Transformer that outputs (N, time_horizon).
     """
 
+    # Default parameters
     plugin_params = {
-        'epochs': 200,  # Increased number of epochs
         'batch_size': 128,
-        'intermediate_layers': 3,  
-        'initial_layer_size': 64,  
+        'intermediate_layers': 3,
+        'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'num_heads': 2,  # Keeping the number of heads dependent on size as before
-        'learning_rate': 0.0001,
-        'dropout_rate': 0.1
+        'learning_rate': 0.001,
+        'activation': 'tanh',
+        'patience': 10,
+        'l2_reg': 1e-3,
+        'positional_encoding_dim': 16  # Added for Transformer
     }
-
+    
+    # Variables for debugging
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
-
+    
     def __init__(self):
         self.params = self.plugin_params.copy()
         self.model = None
 
     def set_params(self, **kwargs):
+        """
+        Update plugin parameters with provided kwargs.
+        """
         for key, value in kwargs.items():
             self.params[key] = value
 
     def get_debug_info(self):
+        """
+        Return a dict of debug info from plugin params.
+        """
         return {var: self.params[var] for var in self.plugin_debug_vars}
 
     def add_debug_info(self, debug_info):
+        """
+        Add the plugin's debug info to an external dictionary.
+        """
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape):
         """
-        Build the Transformer-based model with Dropout and L2 Regularization.
+        Build the ANN augmented with Multi-Head Attention layers with final layer = self.params['time_horizon'] for multi-step outputs.
+        
+        Args:
+            input_shape (int): Number of input features for ANN.
         """
-        # Extract shapes and hyperparameters
-        seq_len, num_features = input_shape  # e.g., (50, 1)
-        time_horizon = self.params['time_horizon']
-        d_model = self.params.get('d_model', 64)
-        num_heads = self.params.get('num_heads', 2)
-        ff_dim = self.params.get('ff_dim', d_model * 4)
-        num_blocks = self.params.get('num_blocks', 2)
-        dropout_rate = self.params.get('dropout_rate', 0.1)
+        if not isinstance(input_shape, int):
+            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
+        
+        self.params['input_dim'] = input_shape
         l2_reg = self.params.get('l2_reg', 1e-4)
+        time_horizon = self.params['time_horizon']  # the multi-step dimension
 
-        # Resolve additional Dense layer sizes
-        layers = self._resolve_layers()
+        # Dynamically set layer sizes
+        layers = []
+        current_size = self.params['initial_layer_size']
+        divisor = self.params['layer_size_divisor']
+        int_layers = 0
+        while int_layers < self.params['intermediate_layers']:
+            layers.append(current_size)
+            current_size = max(current_size // divisor, 1)
+            int_layers += 1
 
-        print("\n--- Transformer Build Info ---")
-        print(f"Detected seq_len={seq_len}, num_features={num_features}")
-        print(f"time_horizon={time_horizon}, d_model={d_model}, num_heads={num_heads}, ff_dim={ff_dim}, num_blocks={num_blocks}")
-        print(f"Extra layer sizes for final Dense: {layers}")
-        print("---------------------------------\n")
+        # Final layer => time_horizon units (N, time_horizon) output
+        layers.append(time_horizon)
 
-        # 1. Define Input
-        inputs = Input(shape=(seq_len, num_features), name="model_input")
+        print(f"ANN Layer sizes: {layers}")
+        print(f"ANN input_shape: {input_shape}")
 
-        # 2. Feature Projection with Dropout and L2 Regularization
-        x = Dense(
-            d_model,
-            activation='relu',
+        # Build the model
+        model_input = Input(shape=(input_shape,), name="model_input")
+        x = model_input
+        x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
+        # Dense Layer
+        x_dense = Dense(
+            units=layers[0],
+            activation=self.params['activation'],
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
-            name="feature_projection"
-        )(inputs)
-        #x = Dropout(dropout_rate, name="projection_dropout")(x)  # Dropout after projection
-
-        # 3. Positional Encoding
-        pos_encoding = self._positional_encoding(seq_len, d_model)
-        x = Add(name="add_pos_encoding")([x, pos_encoding])
-
-        # 4. Transformer Encoder Blocks with Dropout and L2 Regularization
-        for i in range(num_blocks):
-            block_name = f"transformer_block_{i+1}"
-            x = self._transformer_encoder_block(
-                x,
-                d_model=d_model,
-                num_heads=num_heads,
-                ff_dim=ff_dim,
-                dropout_rate=dropout_rate,
-                l2_reg=l2_reg,
-                block_name=block_name
-            )
-
-        # 5. Global Average Pooling
-        x = GlobalAveragePooling1D(name="global_avg_pool")(x)
-
-        # 6. Intermediate Dense Layers with Dropout and L2 Regularization
+            name=f"dense_layer_0"
+        )(x)  # Shape: (batch_size, size)
+        # Hidden Dense layers with Multi-Head Attention
+        # Reshape for Multi-Head Attention
+        # Treat each feature as a "time step" with feature_dim=1
+        x_reshaped = Reshape((layers[0], 1))(x_dense)  # Shape: (batch_size, size, 1)
         for idx, size in enumerate(layers[:-1]):
-            if size > 1:
-                x = Dense(
-                    size,
-                    activation='relu',
-                    kernel_initializer=GlorotUniform(),
-                    kernel_regularizer=l2(l2_reg),
-                    name=f"intermediate_dense_{idx+1}"
-                )(x)
-                #x = Dropout(dropout_rate, name=f"intermediate_dropout_{idx+1}")(x)  # Dropout after intermediate Dense
+            # Multi-Head Attention Layer
+            # Set num_heads=1 and key_dim=size to match output dimension
+            attention_output = MultiHeadAttention(
+                num_heads=2,
+                key_dim=size,
+                name=f"mha_layer_{idx+1}"
+            )(x_reshaped, x_reshaped)  # Shape: (batch_size, size, num_heads * key_dim) = (batch_size, size, size)
+            
+            # Reshape attention output back to (batch_size, size)
+            #attention_output = Reshape((size,))(attention_output)  # Shape: (batch_size, size)
+            
+            # Residual Connection: Add attention output to Dense layer output
+            #x = Add(name=f"residual_add_{idx+1}")([x_dense, attention_output])  # Shape: (batch_size, size)
+            
+            # Layer Normalization
+            #x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_{idx+1}")(x)  # Shape: (batch_size, size)
+            
+            # Dropout for Regularization
+            #x = Dropout(0.1, name=f"dropout_{idx+1}")(x)  # Shape: (batch_size, size)
+        
+        # Batch Normalization before Output Layer
+        x_dense = Dense(
+            units=size,
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name=f"dense_layer_0"
+        )(x)  # Shape: (batch_size, size)
+        x = BatchNormalization(name="batch_norm_final")(x)  # Shape: (batch_size, size)
 
-        # 7. Final Output Layer with L2 Regularization
-        final_output_dim = layers[-1]
+        # Output Layer => shape (N, time_horizon)
         model_output = Dense(
-            final_output_dim,
-            activation='tanh',
+            units=layers[-1],
+            activation='linear',
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="model_output"
-        )(x)
+        )(x)  # Shape: (batch_size, time_horizon)
 
-        # 8. Define and Compile Model
-        self.model = Model(inputs=inputs, outputs=model_output, name="predictor_model")
+        self.model = Model(inputs=model_input, outputs=model_output, name="ANN_with_MHA_Predictor_Model")
 
+        # Adam Optimizer
         adam_optimizer = Adam(
-            learning_rate=self.params.get('learning_rate', 1e-3),
-            beta_1=0.9,
-            beta_2=0.999,
-            epsilon=1e-7,
-            amsgrad=False
+            learning_rate=self.params['learning_rate'],
+            beta_1=0.9, beta_2=0.999,
+            epsilon=1e-7, amsgrad=False
         )
 
+        # Compile the model
         self.model.compile(
             optimizer=adam_optimizer,
-            loss='mean_squared_error',
-            metrics=['mse', 'mae']
+            loss=Huber(),  # Robust to outliers
+            metrics=['mse', 'mae']  # Logs multi-step MSE/MAE
         )
-
+        
         print("Predictor Model Summary:")
         self.model.summary()
 
-    def _transformer_encoder_block(self, x, d_model, num_heads, ff_dim, dropout_rate, l2_reg, block_name):
+
+
+
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
-        Define a single Transformer encoder block with Dropout and L2 Regularization.
+        Train the model with shape => x_train(N, input_dim), y_train(N, time_horizon).
         """
-        # 1. Multi-Head Self-Attention without mask
-        attn_layer = MultiHeadAttention(
-            head_num=num_heads,
-            name=f"{block_name}_mha"
-        )
-        attn_output = attn_layer([x, x, x])  # q, k, v
-
-        # 2. Add & LayerNorm
-        x = Add(name=f"{block_name}_add_attn")([x, attn_output])
-        x = LayerNormalization(name=f"{block_name}_layer_norm_attn")(x)
-
-        # 3. Feed-Forward Network with Dropout and L2 Regularization
-        ff = Dense(
-            ff_dim,
-            activation='relu',
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name=f"{block_name}_ffn_dense_1"
-        )(x)
-        #ff = Dropout(dropout_rate, name=f"{block_name}_ffn_dropout_1")(ff)  # Dropout after first FF layer
-        ff = Dense(
-            d_model,
-            activation=None,
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name=f"{block_name}_ffn_dense_2"
-        )(ff)
-        #ff = Dropout(dropout_rate, name=f"{block_name}_ffn_dropout_2")(ff)  # Dropout after second FF layer
-
-        # 4. Add & LayerNorm
-        x = Add(name=f"{block_name}_add_ffn")([x, ff])
-        x = LayerNormalization(name=f"{block_name}_layer_norm_ffn")(x)
-
-        return x
-
-    def _positional_encoding(self, seq_len, d_model):
-        """
-        Create sinusoidal positional encoding.
-        """
-        pos_encoding = np.zeros((seq_len, d_model), dtype=np.float32)
-        for pos in range(seq_len):
-            for i in range(0, d_model, 2):
-                angle = pos / (10000 ** (i / d_model))
-                pos_encoding[pos, i] = np.sin(angle)
-                if i + 1 < d_model:
-                    pos_encoding[pos, i + 1] = np.cos(angle)
-        pos_encoding = np.expand_dims(pos_encoding, axis=0)  # Shape: (1, seq_len, d_model)
-        return tf.constant(pos_encoding, dtype=tf.float32)
-
-    def _resolve_layers(self):
-        """
-        Determine the sizes of intermediate Dense layers based on parameters.
-        """
-        layers = []
-        current_size = self.params.get('initial_layer_size', 64)
-        layer_size_divisor = self.params.get('layer_size_divisor', 2)
-        intermediate_layers = self.params.get('intermediate_layers', 3)
-        for _ in range(intermediate_layers):
-            layers.append(current_size)
-            current_size = max(current_size // layer_size_divisor, 1)
-        layers.append(self.params['time_horizon'])  # Final layer size
-        return layers
-
-
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error):
-        """
-        Train method expects y_train to already be shaped for multi-step output
-        (i.e., y_train.shape == (num_samples, time_horizon)).
-        The data pipeline (process_data) must ensure a sliding window with stride = time_horizon.
-        """
-        # Ensure x_train is 3D
-        if x_train.ndim == 2:
-            x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
-
-
+        print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
+        exp_horizon = self.params['time_horizon']
+        if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
+            raise ValueError(
+                f"y_train shape {y_train.shape}, expected (N,{exp_horizon})."
+            )
+        
         callbacks = []
-    
-        patience = self.params.get('patience', 5)  # default patience is 10 epochs
         early_stopping_monitor = EarlyStopping(
-            monitor='loss', 
-            patience=patience, 
+            monitor='loss',
+            patience=self.params['patience'],
             restore_best_weights=True,
             verbose=1
         )
         callbacks.append(early_stopping_monitor)
-
-        print(f"Training predictor model with data shape: {x_train.shape}")
+    
+        # Determine validation strategy
+        if x_val is not None and y_val is not None:
+            validation_data = (x_val, y_val)
+            validation_split = None
+        else:
+            validation_data = None
+            validation_split = 0.2  # Use 20% of training data as validation
+    
         history = self.model.fit(
-            x_train, 
-            y_train,
+            x_train, y_train,
             epochs=epochs,
             batch_size=batch_size,
-            verbose=1
+            verbose=1,
+            shuffle=True,  # Enable shuffling
+            callbacks=callbacks,
+            validation_data=validation_data,
+            validation_split=validation_split
         )
-        print("Training completed.")
 
-        # Check final training loss
-        mse = history.history['loss'][-1]
-        if mse > threshold_error:
-            print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
+        print("Training completed.")
+        final_loss = history.history['loss'][-1]
+        print(f"Final training loss: {final_loss}")
+
+        if final_loss > threshold_error:
+            print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
+
+        # Force the model to run in "training mode"
+        preds_training_mode = self.model(x_train, training=True)
+        mae_training_mode = np.mean(np.abs(preds_training_mode.numpy() - y_train))
+        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
+
+        # Compare with evaluation mode
+        preds_eval_mode = self.model(x_train, training=False)
+        mae_eval_mode = np.mean(np.abs(preds_eval_mode.numpy() - y_train))
+        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+
+        # Evaluate on the full training dataset for consistency
+        train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
+        train_loss, train_mse, train_mae = train_eval_results
+        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+        
+        if x_val is not None and y_val is not None:
+            val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+            val_loss, val_mse, val_mae = val_eval_results
+        else:
+            val_eval_results = (None, None, None)
+            val_loss = val_mse = val_mae = None
+        
+        # Predict validation data for evaluation
+        train_predictions = self.predict(x_train)  # Predict train data
+        val_predictions = self.predict(x_val) if x_val is not None else None  # Predict validation data
+    
+        # Calculate R² scores
+        train_r2 = r2_score(y_train, train_predictions)
+        val_r2 = r2_score(y_val, val_predictions) if y_val is not None else None
+        
+        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
+
+
 
     def predict(self, data):
-        """
-        If the model outputs multiple steps (time_horizon), the returned predictions
-        will have shape (num_samples, time_horizon).
-        """
-        # Ensure data is 3D
-        if data.ndim == 2:
-            data = data.reshape(data.shape[0], data.shape[1], 1)
-
-        print(f"Predicting data with shape: {data.shape}")
-        predictions = self.model.predict(data)
-        print(f"Predicted data shape: {predictions.shape}")
-        return predictions
-
+        logging.getLogger("tensorflow").setLevel(logging.ERROR)
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+        preds = self.model.predict(data)
+        #print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
+        return preds
 
     def calculate_mse(self, y_true, y_pred):
         """
-        Calculate MSE without losing the 2D alignment (N, time_horizon).
-        We do flatten them both consistently into 1D, but preserve the step count.
+        Flatten-based MSE => consistent with multi-step shape (N, time_horizon).
         """
-        print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-
-        # Ensure both y_true and y_pred have the same shape
+        print(f"Calculating MSE => y_true={y_true.shape}, y_pred={y_pred.shape}")
         if y_true.shape != y_pred.shape:
             raise ValueError(
-                f"Shape mismatch in calculate_mse: y_true={y_true.shape}, y_pred={y_pred.shape}"
+                f"Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}"
             )
-
-        # Flatten them consistently
-        y_true_flat = y_true.reshape(-1)  # (N * time_horizon,)
-        y_pred_flat = y_pred.reshape(-1)
-
-        print(f"Shapes after flattening: y_true={y_true_flat.shape}, y_pred={y_pred_flat.shape}")
-
-        # Calculate absolute diffs and then MSE
-        abs_difference = np.abs(y_true_flat - y_pred_flat)
-        print(f"Absolute differences: {abs_difference}")
-        squared_abs_difference = abs_difference ** 2
-        print(f"Squared absolute differences: {squared_abs_difference}")
-
-        mse = np.mean(squared_abs_difference)
-        print(f"Calculated MSE: {mse}")
+        y_true_f = y_true.reshape(-1)
+        y_pred_f = y_pred.reshape(-1)
+        mse = np.mean((y_true_f - y_pred_f) ** 2)
+        print(f"Calculated MSE => {mse}")
         return mse
 
     def calculate_mae(self, y_true, y_pred):
-        """
-        Calculate MAE without losing the 2D alignment (N, time_horizon).
-        """
-        print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-
-        # Ensure both y_true and y_pred have the same shape
-        if y_true.shape != y_pred.shape:
-            raise ValueError(
-                f"Shape mismatch in calculate_mae: y_true={y_true.shape}, y_pred={y_pred.shape}"
-            )
-
-        # Flatten them consistently
-        y_true_flat = y_true.reshape(-1)
-        y_pred_flat = y_pred.reshape(-1)
-
-        print(f"Shapes after flattening: y_true={y_true_flat.shape}, y_pred={y_pred_flat.shape}")
-
-        abs_difference = np.abs(y_true_flat - y_pred_flat)
-        print(f"Absolute differences: {abs_difference}")
-
-        mae = np.mean(abs_difference)
+        print(f"y_true (sample): {y_true.flatten()[:5]}")
+        print(f"y_pred (sample): {y_pred.flatten()[:5]}")
+        mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
         print(f"Calculated MAE: {mae}")
         return mae
 
 
     def save(self, file_path):
+        """
+        Save the trained model to file.
+        """
         save_model(self.model, file_path)
         print(f"Predictor model saved to {file_path}")
 
     def load(self, file_path):
+        """
+        Load a trained model from file.
+        """
         self.model = load_model(file_path)
-        print(f"Predictor model loaded from {file_path}")
-
-# Debugging usage example
-if __name__ == "__main__":
-    plugin = Plugin()
-    plugin.build_model(input_shape=8)  # Adjusted to 8 as per your data
-    debug_info = plugin.get_debug_info()
-    print(f"Debug Info: {debug_info}")
+        print(f"Model loaded from {file_path}")

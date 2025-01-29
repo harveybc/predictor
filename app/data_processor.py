@@ -15,7 +15,7 @@ from sklearn.model_selection import TimeSeriesSplit
 
 def process_data(config):
     """
-    Processes data for different plugins, including ANN, CNN, and LSTM.
+    Processes data for different plugins, including ANN, CNN, LSTM, and Transformer.
 
     Args:
         config (dict): Configuration dictionary with dataset paths and parameters.
@@ -101,7 +101,6 @@ def process_data(config):
     x_val = x_val.iloc[:min_len_val]
     y_val_multi = y_val_multi.iloc[:min_len_val]
 
-    
     # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
         print("Processing data for LSTM plugin...")
@@ -120,10 +119,10 @@ def process_data(config):
         window_size = config["window_size"]  # Ensure `window_size` is in the config
 
         x_train, y_train, _ = create_sliding_windows(
-            x_train, y_train, window_size, time_horizon, stride=1
+            x_train, y_train, 1, time_horizon, stride=1
         )
         x_val, y_val, _ = create_sliding_windows(
-            x_val, y_val, window_size, time_horizon, stride=1
+            x_val, y_val, 1, time_horizon, stride=1
         )
 
         # Ensure y_train matches x_train
@@ -137,6 +136,36 @@ def process_data(config):
         print(f"LSTM data shapes after sliding windows:")
         print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
         print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
+
+    # 7) TRANSFORMER-SPECIFIC PROCESSING
+    if config["plugin"] == "transformer":
+        print("Processing data for Transformer plugin...")
+
+        # Ensure datasets are NumPy arrays
+        if not isinstance(x_train, np.ndarray):
+            x_train = x_train.to_numpy().astype(np.float32)
+        if not isinstance(x_val, np.ndarray):
+            x_val = x_val.to_numpy().astype(np.float32)
+
+        # Generate positional encoding
+        pos_dim = config.get("positional_encoding_dim", 16)  # Default positional encoding dimension
+        num_features = x_train.shape[1]
+
+        pos_encoding_train = generate_positional_encoding(num_features, pos_dim)  # Shape: (1, num_features * pos_dim)
+        pos_encoding_val = generate_positional_encoding(x_val.shape[1], pos_dim)  # Shape: (1, num_features * pos_dim)
+
+        # Tile positional encoding for each sample
+        pos_encoding_train = np.tile(pos_encoding_train, (x_train.shape[0], 1))  # Shape: (samples, num_features * pos_dim)
+        pos_encoding_val = np.tile(pos_encoding_val, (x_val.shape[0], 1))        # Shape: (samples, num_features * pos_dim)
+
+        # Concatenate positional encoding to x_train and x_val horizontally
+        x_train = np.concatenate([x_train, pos_encoding_train], axis=1)  # Shape: (samples, original_features + pos_enc_features)
+        x_val = np.concatenate([x_val, pos_encoding_val], axis=1)        # Shape: (samples, original_features + pos_enc_features)
+
+        print(f"Positional encoding concatenated:")
+        print(f"  x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
+        print(f"  x_val:   {x_val.shape},   y_val:   {y_val_multi.shape}")
+
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
@@ -150,7 +179,6 @@ def process_data(config):
         "x_val": x_val,
         "y_val": y_val_multi,
     }
-
 
 def run_prediction_pipeline(config, plugin):
     """
@@ -568,3 +596,23 @@ def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times
             date_time_windows.append(date_times[i + window_size + time_horizon - 1])
 
     return np.array(x_windowed), np.array(y_windowed), date_time_windows
+
+
+def generate_positional_encoding(num_features, pos_dim=16):
+    """
+    Generates positional encoding for a given number of features.
+
+    Args:
+        num_features (int): Number of features in the dataset.
+        pos_dim (int): Dimension of the positional encoding.
+
+    Returns:
+        np.ndarray: Positional encoding of shape (1, num_features * pos_dim).
+    """
+    position = np.arange(num_features)[:, np.newaxis]
+    div_term = np.exp(np.arange(0, pos_dim, 2) * -(np.log(10000.0) / pos_dim))
+    pos_encoding = np.zeros((num_features, pos_dim))
+    pos_encoding[:, 0::2] = np.sin(position * div_term)
+    pos_encoding[:, 1::2] = np.cos(position * div_term)
+    pos_encoding_flat = pos_encoding.flatten().reshape(1, -1)  # Shape: (1, num_features * pos_dim)
+    return pos_encoding_flat

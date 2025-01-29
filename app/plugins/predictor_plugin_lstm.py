@@ -21,9 +21,10 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.001,
+        'learning_rate': 0.0002,
         'dropout_rate': 0.1,
         'patience': 10,
+        'activation': 'tanh'
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
@@ -71,15 +72,6 @@ class Plugin:
         # Input shape: (time_steps, features)
         model_input = Input(shape=input_shape, name="model_input")  # Corrected input shape
         x = model_input
-        x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
-        #x = Dense(
-        #        units=input_shape,
-        #        activation=self.params['activation'],
-        #        kernel_initializer=GlorotUniform(),
-        #        kernel_regularizer=l2(l2_reg),
-        #    )(x)
-        #add batch normalization
-        #x = BatchNormalization()(x)
         # Add LSTM layers
         for size in layers[:-1]:
             if size > 1:
@@ -96,8 +88,8 @@ class Plugin:
             activation='tanh',
             recurrent_activation='sigmoid',
         )(x)
-        # add a batch normalization layer
-        x = BatchNormalization()(x)
+
+        x = BatchNormalization(name="batch_norm_final")(x)  # Shape: (batch_size, size)
         
         # Output layer
         model_output = Dense(
