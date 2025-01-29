@@ -10,37 +10,44 @@ from app.config_handler import save_debug_info, remote_log
 import logging
 from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
 import contextlib
+import matplotlib.pyplot as plt
 
 
 def process_data(config):
     """
-    Simplified process_data function assuming x and y datasets are already aligned row by row.
-    """
+    Processes data for different plugins, including ANN, CNN, and LSTM.
 
+    Args:
+        config (dict): Configuration dictionary with dataset paths and parameters.
+
+    Returns:
+        dict: Processed datasets for training and validation.
+    """
     # 1) LOAD CSVs
     x_train = load_csv(
         config["x_train_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_train")
+        max_rows=config.get("max_steps_train"),
     )
     y_train = load_csv(
         config["y_train_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_train")
+        max_rows=config.get("max_steps_train"),
     )
     x_val = load_csv(
         config["x_validation_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_test")
+        max_rows=config.get("max_steps_test"),
     )
     y_val = load_csv(
         config["y_validation_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_test")
+        max_rows=config.get("max_steps_test"),
     )
 
     # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
+
     def extract_target(df, col):
         if isinstance(col, str):
             if col not in df.columns:
@@ -62,6 +69,7 @@ def process_data(config):
 
     # 4) MULTI-STEP COLUMNS
     time_horizon = config["time_horizon"]
+
     def create_multi_step(y_df, horizon):
         """
         Create multi-step targets for time-series prediction.
@@ -81,7 +89,6 @@ def process_data(config):
         # Align index to the input data (exclude the last `horizon` rows)
         return pd.DataFrame(blocks, index=y_df.index[:-horizon])
 
-
     y_train_multi = create_multi_step(y_train, time_horizon)
     y_val_multi = create_multi_step(y_val, time_horizon)
 
@@ -94,12 +101,46 @@ def process_data(config):
     x_val = x_val.iloc[:min_len_val]
     y_val_multi = y_val_multi.iloc[:min_len_val]
 
+    
+    # 6) LSTM-SPECIFIC PROCESSING
+    if config["plugin"] == "lstm":
+        print("Processing data for LSTM plugin...")
+
+        # Ensure datasets are NumPy arrays
+        if not isinstance(x_train, np.ndarray):
+            x_train = x_train.to_numpy().astype(np.float32)
+        if not isinstance(y_train, np.ndarray):
+            y_train = y_train.to_numpy().astype(np.float32)
+        if not isinstance(x_val, np.ndarray):
+            x_val = x_val.to_numpy().astype(np.float32)
+        if not isinstance(y_val, np.ndarray):
+            y_val = y_val.to_numpy().astype(np.float32)
+
+        # Create sliding windows for LSTM
+        window_size = config["window_size"]  # Ensure `window_size` is in the config
+
+        x_train, y_train, _ = create_sliding_windows(
+            x_train, y_train, window_size, time_horizon, stride=1
+        )
+        x_val, y_val, _ = create_sliding_windows(
+            x_val, y_val, window_size, time_horizon, stride=1
+        )
+
+        # Ensure y_train matches x_train
+        y_train = y_train[: len(x_train)]
+        y_val = y_val[: len(x_val)]
+
+        # Update y_train_multi to match the modified y_train
+        y_train_multi = y_train
+        y_val_multi = y_val
+
+        print(f"LSTM data shapes after sliding windows:")
+        print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
+        print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
 
-    print("x_train index:", x_train.index)
-    print("y_train index:", y_train_multi.index)
     assert len(x_train) == len(y_train_multi), "x_train and y_train are misaligned!"
     assert len(x_val) == len(y_val_multi), "x_val and y_val are misaligned!"
 
@@ -107,46 +148,10 @@ def process_data(config):
         "x_train": x_train,
         "y_train": y_train_multi,
         "x_val": x_val,
-        "y_val": y_val_multi
+        "y_val": y_val_multi,
     }
 
 
-def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
-    """
-    Creates sliding windows for input features and targets with a specified stride.
-
-    Args:
-        x (numpy.ndarray): Input features of shape (N, features).
-        y (numpy.ndarray): Targets of shape (N,) or (N, 1).
-        window_size (int): Number of past steps to include in each window.
-        time_horizon (int): Number of future steps to predict.
-        stride (int): Step size between windows.
-        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
-
-    Returns:
-        tuple:
-            - x_windowed (numpy.ndarray): Shaped (samples, window_size, features).
-            - y_windowed (numpy.ndarray): Shaped (samples, time_horizon).
-            - date_time_windows (list): List of date times for each window (if provided).
-    """
-    if y.ndim == 2 and y.shape[1] == 1:
-        y = y.flatten()
-    elif y.ndim > 2:
-        raise ValueError("y should be a 1D or 2D array with a single column.")
-
-    x_windowed = []
-    y_windowed = []
-    date_time_windows = []
-
-    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
-        x_window = x[i:i + window_size]
-        y_window = y[i + window_size:i + window_size + time_horizon]
-        x_windowed.append(x_window)
-        y_windowed.append(y_window)
-        if date_times is not None:
-            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
-
-    return np.array(x_windowed), np.array(y_windowed), date_time_windows
 
 
 
@@ -196,11 +201,15 @@ def run_prediction_pipeline(config, plugin):
     epochs = config["epochs"]
     threshold_error = config["threshold_error"]
 
-    # Convert datasets to numpy arrays
-    x_train = x_train.to_numpy().astype(np.float32)
-    y_train = y_train.to_numpy().astype(np.float32)
-    x_val = x_val.to_numpy().astype(np.float32)
-    y_val = y_val.to_numpy().astype(np.float32)
+    # Ensure datasets are NumPy arrays
+    if isinstance(x_train, pd.DataFrame):
+        x_train = x_train.to_numpy().astype(np.float32)
+    if isinstance(y_train, pd.DataFrame):
+        y_train = y_train.to_numpy().astype(np.float32)
+    if isinstance(x_val, pd.DataFrame):
+        x_val = x_val.to_numpy().astype(np.float32)
+    if isinstance(y_val, pd.DataFrame):
+        y_val = y_val.to_numpy().astype(np.float32)
 
     # CNN-specific sliding windows
     if config["plugin"] == "cnn":
@@ -240,95 +249,107 @@ def run_prediction_pipeline(config, plugin):
                 plugin.build_model(input_shape=(window_size, x_train.shape[2]))
             else:
                 # For ANN/LSTM/Transformers: typically shape (features,)
-                if len(x_train.shape) != 2:
-                    raise ValueError(
-                        f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}."
-                    )
-                plugin.build_model(input_shape=x_train.shape[1])
+                if config["plugin"] == "lstm":
+                    # LSTM expects 3D input (time_steps, features)
+                    if len(x_train.shape) != 3:
+                        raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
+                    plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
+                else:
+                    # For ANN/Transformers: 2D input (samples, features)
+                    if len(x_train.shape) != 2:
+                        raise ValueError(
+                            f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}."
+                        )
+                    plugin.build_model(input_shape=x_train.shape[1])
 
             # Train the model
-            plugin.train(
+            history = plugin.train(
                 x_train,
                 y_train,
                 epochs=epochs,
                 batch_size=batch_size,
                 threshold_error=threshold_error,
                 x_val=x_val,
-                y_val=y_val,
+                y_val=y_val
             )
+            # Loss History
+            plt.plot(history.history['loss'])
+            plt.plot(history.history['val_loss'])
+            plt.title('Model Loss')
+            plt.ylabel('Loss')
+            plt.xlabel('Epoch')
+            plt.legend(['Train', 'Test'], loc='upper left')
+            plt.savefig('loss_plot.png')
+            plt.close()
 
             print("Evaluating trained model on training and validation data. Please wait...")
 
-            # Suppress TensorFlow/Keras logs during prediction
+            # Suppress TensorFlow/Keras logs during evaluation
             with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
                 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
                 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
-                # Predict training data
-                train_predictions = plugin.predict(x_train)
+                # Evaluate training data
+                train_results = plugin.model.evaluate(
+                    x_train,
+                    y_train,
+                    batch_size=batch_size,
+                    verbose=0
+                )
 
-                # Predict validation data
-                val_predictions = plugin.predict(x_val)
+                # Evaluate validation data
+                val_results = plugin.model.evaluate(
+                    x_val,
+                    y_val,
+                    batch_size=batch_size,
+                    verbose=0
+                )
+                # Predict validation data for evaluation
+                train_predictions = plugin.predict(x_train)  # Predict train data
+                val_predictions = plugin.predict(x_val)      # Predict validation data
+
+                # Calculate R² scores
+                train_r2 = r2_score(y_train, train_predictions)
+                val_r2 = r2_score(y_val, val_predictions)
 
             # Restore TensorFlow logs
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
             logging.getLogger("tensorflow").setLevel(logging.INFO)
 
             # -----------------------
-            # Dimension checks
+            # Assign evaluation metrics
             # -----------------------
-            # Expect train_predictions.shape == (num_train_samples, time_horizon)
-            #  or at least have the same second dimension as y_train, etc.
-            if train_predictions.shape[0] != y_train.shape[0]:
-                raise ValueError(
-                    "Mismatch in training samples dimension:\n"
-                    f"  train_predictions.shape[0]={train_predictions.shape[0]}, "
-                    f"y_train.shape[0]={y_train.shape[0]}.\n"
-                    "Please ensure data alignment in multi-step logic."
-                )
-            if train_predictions.shape[1] != y_train.shape[1]:
-                raise ValueError(
-                    "Mismatch in training time_horizon dimension:\n"
-                    f"  train_predictions.shape[1]={train_predictions.shape[1]}, "
-                    f"y_train.shape[1]={y_train.shape[1]}.\n"
-                    "Time horizon dimension must match."
-                )
+            # Assuming the metrics are ordered as [loss, mae, r2]
+            if len(train_results) < 3 or len(val_results) < 3:
+                raise ValueError("Expected at least three metrics (loss, MAE, R²) from evaluate method.")
 
-            # Same check for validation
-            if val_predictions.shape[0] != y_val.shape[0]:
-                raise ValueError(
-                    "Mismatch in validation samples dimension:\n"
-                    f"  val_predictions.shape[0]={val_predictions.shape[0]}, "
-                    f"y_val.shape[0]={y_val.shape[0]}.\n"
-                    "Please ensure data alignment for multi-step validation."
-                )
-            if val_predictions.shape[1] != y_val.shape[1]:
-                raise ValueError(
-                    "Mismatch in validation time_horizon dimension:\n"
-                    f"  val_predictions.shape[1]={val_predictions.shape[1]}, "
-                    f"y_val.shape[1]={y_val.shape[1]}.\n"
-                    "Time horizon dimension must match for validation."
-                )
+            print(f"plugin.model.metrics_names={plugin.model.metrics_names}")
+            train_loss, train_mse, train_mae = train_results
+            val_loss, val_mse, val_mae = val_results
 
-            # Evaluate training metrics
-            train_mae = float(plugin.calculate_mae(y_train, train_predictions))
-            train_r2 = float(r2_score(y_train, train_predictions))
             print(f"Training MAE: {train_mae}")
             print(f"Training R²: {train_r2}")
+            print(f"Validation MAE: {val_mae}")
+            print(f"Validation R²: {val_r2}")
 
             # Save training metrics
             training_mae_list.append(train_mae)
             training_r2_list.append(train_r2)
 
-            # Evaluate validation metrics
-            val_mae = float(plugin.calculate_mae(y_val, val_predictions))
-            val_r2 = float(r2_score(y_val, val_predictions))
-            print(f"Validation MAE: {val_mae}")
-            print(f"Validation R²: {val_r2}")
-
             # Save validation metrics
             validation_mae_list.append(val_mae)
             validation_r2_list.append(val_r2)
+
+            # Calculate current standard deviations
+            current_train_mae_std = np.std(training_mae_list)
+            current_val_mae_std = np.std(validation_mae_list)
+            current_train_r2_std = np.std(training_r2_list)
+            current_val_r2_std = np.std(validation_r2_list)
+
+            print(f"Current Training MAE Std Dev: {current_train_mae_std:.4f}")
+            print(f"Current Validation MAE Std Dev: {current_val_mae_std:.4f}")
+            print(f"Current Training R² Std Dev: {current_train_r2_std:.4f}")
+            print(f"Current Validation R² Std Dev: {current_val_r2_std:.4f}")
 
             iteration_end_time = time.time()
             print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
@@ -379,6 +400,25 @@ def run_prediction_pipeline(config, plugin):
     results_df.to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
 
+    # Save plugin debug variables
+    save_log_file = config.get("save_log", "plugin_debug_log.csv")
+    try:
+        debug_variables = plugin.get_debug_variables()  # Assuming this method exists
+        debug_df = pd.DataFrame(debug_variables)
+        debug_df.to_csv(save_log_file, index=False)
+        print(f"Plugin debug variables saved to {save_log_file}")
+    except AttributeError:
+        print("Plugin does not have a 'get_debug_variables' method. Skipping debug log saving.")
+
+    # Save config dict as JSON
+    save_config_path = config.get("save_config", "config.json")
+    try:
+        with open(save_config_path, 'w') as f:
+            json.dump(config, f, indent=4)
+        print(f"Configuration saved to {save_config_path}")
+    except Exception as e:
+        print(f"Failed to save configuration to {save_config_path}: {e}")
+
     # Save final validation predictions
     final_val_file = config.get("output_file", "validation_predictions.csv")
     # Because we are inside a loop, `val_predictions` might not exist if iteration always fails,
@@ -398,42 +438,7 @@ def run_prediction_pipeline(config, plugin):
 
 
 
-def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
-    """
-    Creates sliding windows for input features and targets with a specified stride.
-
-    Args:
-        x (numpy.ndarray): Input features of shape (N, features).
-        y (numpy.ndarray): Targets of shape (N,) or (N, 1).
-        window_size (int): Number of past steps to include in each window.
-        time_horizon (int): Number of future steps to predict.
-        stride (int): Step size between windows.
-        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
-
-    Returns:
-        tuple:
-            - x_windowed (numpy.ndarray): Shaped (samples, window_size, features).
-            - y_windowed (numpy.ndarray): Shaped (samples, time_horizon).
-            - date_time_windows (list): List of date times for each window (if provided).
-    """
-    if y.ndim == 2 and y.shape[1] == 1:
-        y = y.flatten()
-    elif y.ndim > 2:
-        raise ValueError("y should be a 1D or 2D array with a single column.")
-
-    x_windowed = []
-    y_windowed = []
-    date_time_windows = []
-
-    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
-        x_window = x[i:i + window_size]
-        y_window = y[i + window_size:i + window_size + time_horizon]
-        x_windowed.append(x_window)
-        y_windowed.append(y_window)
-        if date_times is not None:
-            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
-
-    return np.array(x_windowed), np.array(y_windowed).reshape(-1, time_horizon), date_time_windows
+# Removed duplicate create_sliding_windows function to avoid conflicts
 
 
 def load_and_evaluate_model(config, plugin):
@@ -549,3 +554,39 @@ def create_multi_step_targets(df, time_horizon):
 
 
 
+def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
+    """
+    Creates sliding windows for input features and targets with a specified stride.
+
+    Args:
+        x (numpy.ndarray): Input features of shape (N, features).
+        y (numpy.ndarray): Targets of shape (N,) or (N, 1).
+        window_size (int): Number of past steps to include in each window.
+        time_horizon (int): Number of future steps to predict.
+        stride (int): Step size between windows.
+        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
+
+    Returns:
+        tuple:
+            - x_windowed (numpy.ndarray): Shaped (samples, window_size, features).
+            - y_windowed (numpy.ndarray): Shaped (samples, time_horizon).
+            - date_time_windows (list): List of date times for each window (if provided).
+    """
+    if y.ndim == 2 and y.shape[1] == 1:
+        y = y.flatten()
+    elif y.ndim > 2:
+        raise ValueError("y should be a 1D or 2D array with a single column.")
+
+    x_windowed = []
+    y_windowed = []
+    date_time_windows = []
+
+    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
+        x_window = x[i:i + window_size]
+        y_window = y[i + window_size:i + window_size + time_horizon]
+        x_windowed.append(x_window)
+        y_windowed.append(y_window)
+        if date_times is not None:
+            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
+
+    return np.array(x_windowed), np.array(y_windowed), date_time_windows
