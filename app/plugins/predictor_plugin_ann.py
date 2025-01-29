@@ -28,7 +28,7 @@ class Plugin:
         'layer_size_divisor': 2,
         'learning_rate': 0.001,
         'activation': 'tanh',
-        'patience': 10,
+        'patience': 5,
         'l2_reg': 1e-3
     }
     
