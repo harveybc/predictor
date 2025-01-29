@@ -89,13 +89,6 @@ class Plugin:
             recurrent_activation='sigmoid',
         )(x)
 
-        x = Dense(
-            units=layers[-2],
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name=f"dense_layer_last"
-        )(x)  # Shape: (batch_size, size)
         x = BatchNormalization(name="batch_norm_final")(x)  # Shape: (batch_size, size)
         
         # Output layer
