@@ -81,9 +81,14 @@ class Plugin:
                     return_sequences=True
                 )(x)
                 
+                x = Dropout(self.params['dropout_rate'])(x)        
 
-        #add batch normalization
-        x = BatchNormalization()(x)
+        # Final LSTM layer without `return_sequences`
+        x = LSTM(
+            units=layers[-2],
+            activation='tanh',
+            recurrent_activation='sigmoid',
+        )(x)
         # Output layer
         model_output = Dense(
             units=layers[-1],
