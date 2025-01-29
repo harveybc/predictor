@@ -124,6 +124,9 @@ class Plugin:
             epsilon=1e-7, amsgrad=False
         )
         def coeff_r2(y_true, y_pred):
+            #print the shape of y_true and y_pred
+            print(f"y_true.shape ={y_true.shape}, y_pred.shape={y_pred.shape}")
+             
             # Take only the last row
             y_true_last = y_true[-1, :]
             y_pred_last = y_pred[-1, :]
