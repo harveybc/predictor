@@ -243,92 +243,92 @@ def run_prediction_pipeline(config, plugin):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
 
-        try:
-            # Build the model
-            if config["plugin"] == "cnn":
-                # CNN expects shape (window_size, features)
-                if len(x_train.shape) < 3:
-                    raise ValueError(
-                        f"For CNN, x_train must be 3D. Found: {x_train.shape}."
-                    )
-                plugin.build_model(input_shape=(window_size, x_train.shape[2]))
+       # try:
+        # Build the model
+        if config["plugin"] == "cnn":
+            # CNN expects shape (window_size, features)
+            if len(x_train.shape) < 3:
+                raise ValueError(
+                    f"For CNN, x_train must be 3D. Found: {x_train.shape}."
+                )
+            plugin.build_model(input_shape=(window_size, x_train.shape[2]))
+        else:
+            # For ANN/LSTM/Transformers: typically shape (features,)
+            if config["plugin"] == "lstm":
+                # LSTM expects 3D input (time_steps, features)
+                if len(x_train.shape) != 3:
+                    raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
+                plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
             else:
-                # For ANN/LSTM/Transformers: typically shape (features,)
-                if config["plugin"] == "lstm":
-                    # LSTM expects 3D input (time_steps, features)
-                    if len(x_train.shape) != 3:
-                        raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
-                    plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
-                else:
-                    # For ANN/Transformers: 2D input (samples, features)
-                    if len(x_train.shape) != 2:
-                        raise ValueError(
-                            f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}."
-                        )
-                    plugin.build_model(input_shape=x_train.shape[1])
+                # For ANN/Transformers: 2D input (samples, features)
+                if len(x_train.shape) != 2:
+                    raise ValueError(
+                        f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}."
+                    )
+                plugin.build_model(input_shape=x_train.shape[1])
 
-            # Train the model
-            history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions  = plugin.train(
-                x_train,
-                y_train,
-                epochs=epochs,
-                batch_size=batch_size,
-                threshold_error=threshold_error,
-                x_val=x_val,
-                y_val=y_val
-            )
-            # Loss History
-            plt.plot(history.history['loss'])
-            plt.plot(history.history['val_loss'])
-            plt.title('Model Loss for '+f" {config['plugin'].upper()} - {iteration}")
-            plt.ylabel('Loss')
-            plt.xlabel('Epoch')
-            plt.legend(['Train', 'Test'], loc='upper left')
-            plt.savefig(config['loss_plot_file'])
-            plt.close()
-            print(f"Loss plot saved to {config['loss_plot_file']}")
+        # Train the model
+        history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions  = plugin.train(
+            x_train,
+            y_train,
+            epochs=epochs,
+            batch_size=batch_size,
+            threshold_error=threshold_error,
+            x_val=x_val,
+            y_val=y_val
+        )
+        # Loss History
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.title('Model Loss for '+f" {config['plugin'].upper()} - {iteration}")
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig(config['loss_plot_file'])
+        plt.close()
+        print(f"Loss plot saved to {config['loss_plot_file']}")
 
-            print("Evaluating trained model on training and validation data. Please wait...")
+        print("Evaluating trained model on training and validation data. Please wait...")
 
-            # Suppress TensorFlow/Keras logs during evaluation
-            with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
-                os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-                logging.getLogger("tensorflow").setLevel(logging.FATAL)
+        # Suppress TensorFlow/Keras logs during evaluation
+        with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
+            os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+            logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
 
 
-            # Restore TensorFlow logs
-            os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
-            logging.getLogger("tensorflow").setLevel(logging.INFO)
+        # Restore TensorFlow logs
+        os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
+        logging.getLogger("tensorflow").setLevel(logging.INFO)
 
-            # -----------------------
-            # Assign evaluation metrics
-            # -----------------------
-            print("*************************************************")
-            print(f"Iteration {iteration} completed.")
-            print(f"Training MAE: {train_mae}")
-            print(f"Training R²: {train_r2}")
-            print(f"Validation MAE: {val_mae}")
-            print(f"Validation R²: {val_r2}")
-            print("*************************************************")
+        # -----------------------
+        # Assign evaluation metrics
+        # -----------------------
+        print("*************************************************")
+        print(f"Iteration {iteration} completed.")
+        print(f"Training MAE: {train_mae}")
+        print(f"Training R²: {train_r2}")
+        print(f"Validation MAE: {val_mae}")
+        print(f"Validation R²: {val_r2}")
+        print("*************************************************")
 
-            # Save training metrics
-            training_mae_list.append(train_mae)
-            training_r2_list.append(train_r2)
+        # Save training metrics
+        training_mae_list.append(train_mae)
+        training_r2_list.append(train_r2)
 
-            # Save validation metrics
-            validation_mae_list.append(val_mae)
-            validation_r2_list.append(val_r2)
+        # Save validation metrics
+        validation_mae_list.append(val_mae)
+        validation_r2_list.append(val_r2)
 
-            iteration_end_time = time.time()
-            print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
+        iteration_end_time = time.time()
+        print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
-        except Exception as e:
-            print(f"Iteration {iteration} failed with error:\n  {e}")
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
-            continue  # Proceed to the next iteration even if one iteration fails
+        #except Exception as e:
+        #    print(f"Iteration {iteration} failed with error:\n  {e}")
+        #    exc_type, exc_obj, exc_tb = sys.exc_info()
+        #    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        #    print(exc_type, fname, exc_tb.tb_lineno)
+        #    continue  # Proceed to the next iteration even if one iteration fails
 
     # -----------------------
     # Aggregate statistics
