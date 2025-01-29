@@ -8,6 +8,7 @@ from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from keras.layers import GaussianNoise
 from keras import backend as K
+from sklearn.metrics import r2_score 
 
 import logging
 import os
@@ -23,9 +24,9 @@ class Plugin:
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 3,
-        'initial_layer_size': 32,
+        'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.0002,
+        'learning_rate': 0.001,
         'activation': 'tanh',
         'patience': 10,
         'l2_reg': 1e-3
@@ -92,7 +93,7 @@ class Plugin:
         from tensorflow.keras import Model, Input
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
-        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
+        x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
         # Hidden Dense layers
         for size in layers[:-1]:
             x = Dense(
@@ -123,17 +124,13 @@ class Plugin:
             beta_1=0.9, beta_2=0.999,
             epsilon=1e-7, amsgrad=False
         )
-        # custom r2 metric
-        def coeff_r2(y_true, y_pred):
-            SS_res = K.mean(K.square(y_true - y_pred))
-            SS_tot = K.mean(K.square(y_true - K.mean(y_true)))
-            return 1 - SS_res / (SS_tot + K.epsilon())
+
         # Compile
         self.model.compile(
             optimizer=adam_optimizer,
             loss=Huber(),  # or 'mse'
             #loss='mae',  # or 'mse'
-            metrics=['mse', 'mae', coeff_r2]  # logs multi-step MSE/MAE
+            metrics=['mse', 'mae']  # logs multi-step MSE/MAE
         )
         
         print("Predictor Model Summary:")
@@ -191,14 +188,19 @@ class Plugin:
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mse, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+        
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mse, val_mae = val_eval_results
         
-        print("**********************************************")
-        print(f"[TRAIN] Final Dataset Evaluation - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
-        print(f"[ VAL ] Final Dataset Evaluation - Loss: {val_loss}, MSE: {val_mse}, MAE: {val_mae}")
-        print("**********************************************")
-        return history
+        # Predict validation data for evaluation
+        train_predictions = self.predict(x_train)  # Predict train data
+        val_predictions = self.predict(x_val)      # Predict validation data
+
+        # Calculate R² scores
+        train_r2 = r2_score(y_train, train_predictions)
+        val_r2 = r2_score(y_val, val_predictions)
+        
+        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
 
 
@@ -206,7 +208,7 @@ class Plugin:
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         preds = self.model.predict(data)
-        print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
+        #print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
         return preds
 
     def calculate_mse(self, y_true, y_pred):

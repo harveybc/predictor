@@ -6,6 +6,7 @@ from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
+from sklearn.metrics import r2_score
 
 class Plugin:
     """
@@ -18,8 +19,9 @@ class Plugin:
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
         'learning_rate': 0.002,
-        'l2_reg': 1e-4,     # L2 regularization factor
-        'patience': 10      # Patience for Early Stopping
+        'l2_reg': 1e-3,     # L2 regularization factor
+        'patience': 10,      # Patience for Early Stopping
+        'activation': 'tanh'
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers', 'initial_layer_size', 'time_horizon']
@@ -75,6 +77,7 @@ class Plugin:
 
         layers = []
         current_size = self.params['initial_layer_size']
+        l2_reg = self.params.get('l2_reg', 1e-4)
         layer_size_divisor = self.params['layer_size_divisor']
         int_layers = 0
         while int_layers < self.params['intermediate_layers']:
@@ -103,22 +106,28 @@ class Plugin:
                     kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
                     name=f"conv1d_{idx+1}"
                 )(x)
-                #x = BatchNormalization(name=f"batch_norm_{idx+1}")(x)
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+        x = Dense(
+            units=size,
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+        )(x)
 
+        #add batch normalization
+        x = BatchNormalization()(x)
+        
         # Flatten the output from Conv layers
         x = Flatten(name="flatten")(x)
-
-        # Output Dense layer with 'linear' activation for regression
+                
+        # Output layer => shape (N, time_horizon)
         model_output = Dense(
-            layers[-1], 
-            activation='linear', 
-            kernel_initializer=GlorotUniform(), 
-            kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
+            units=layers[-1],
+            activation='linear',
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
             name="model_output"
         )(x)
-        # add batch normalization layer
-        model_output = BatchNormalization(name="batch_norm_output")(model_output)
 
 
         # Create the Model
@@ -162,9 +171,11 @@ class Plugin:
         """
         if x_train.ndim != 3:
             raise ValueError(f"x_train must be 3D with shape (samples, window_size, features). Found: {x_train.shape}")
-        if y_train.ndim != 2:
-            raise ValueError(f"y_train must be 2D with shape (samples, time_horizon). Found: {y_train.shape}")
-
+        exp_horizon = self.params['time_horizon']
+        if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
+            raise ValueError(
+                f"y_train shape {y_train.shape}, expected (N,{exp_horizon})."
+            )
         callbacks = []
 
         # Early Stopping based on loss or validation loss
@@ -190,15 +201,49 @@ class Plugin:
             validation_split = 0.2
         )
         print("Training completed.")
+        final_loss = history.history['loss'][-1]
+        print(f"Final training loss: {final_loss}")
 
-        # Retrieve the final loss from the training history
-        mse = history.history['loss'][-1]
-        print(f"Final training loss (Huber): {mse}")
+        if final_loss > threshold_error:
+            print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
-        # Check if the final loss exceeds the threshold_error
-        if mse > threshold_error:
-            print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
-        return history
+        # Force the model to run in "training mode"
+        print("Forcing training mode for MAE calculation...")
+        preds_training_mode = self.model(x_train, training=True).numpy()
+        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train[:len(preds_training_mode)]))
+        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
+
+        # Compare with evaluation mode
+        print("Forcing evaluation mode for MAE calculation...")
+        preds_eval_mode = self.model(x_train, training=False).numpy()
+        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train[:len(preds_training_mode)]))
+        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+
+        # Evaluate on the full training dataset for consistency
+        print("Evaluating on the full training dataset...")
+        train_eval_results = self.model.evaluate(x_train, y_train[:len(preds_training_mode)], batch_size=batch_size, verbose=0)
+        train_loss, train_mse, train_mae = train_eval_results
+        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+        
+        # Only evaluate validation data if it exists
+        if x_val is not None and y_val is not None:
+            val_eval_results = self.model.evaluate(x_val, y_val[:x_val.shape[0]], batch_size=batch_size, verbose=0)
+            _, _, val_mae = val_eval_results
+            val_predictions = self.predict(x_val)  # Predict validation data
+            val_r2 = r2_score(y_val[:x_val.shape[0]], val_predictions)
+        else:
+            val_mae = None
+            val_r2 = None
+            val_predictions = None
+
+        # Predict training data for evaluation
+        train_predictions = self.predict(x_train)  # Predict train data
+
+        # Calculate R² scores - adjust target shapes to match predictions
+        train_r2 = r2_score(y_train[:x_train.shape[0]], train_predictions)
+        val_r2 = None if val_predictions is None else r2_score(y_val[:x_val.shape[0]], val_predictions)
+        
+        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
 
 

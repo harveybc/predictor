@@ -8,11 +8,11 @@ DEFAULT_VALUES = {
     'x_validation_file': './tests/data/normalized_d3.csv',
     'y_validation_file': './tests/data/normalized_d3.csv',
     'target_column': 'CLOSE',
-    'output_file': './csv_output.csv',
+    'output_file': './prediction.csv',
     'results_file': './results.csv',
     'save_model': './predictor_model.keras',
     'load_model': None,
-    'evaluate_file': './model_eval.csv',
+    'loss_plot_file': './loss_plot.png',
     'plugin': 'cnn',
     'time_horizon': 6,
     'threshold_error': 0.00001,
@@ -28,7 +28,7 @@ DEFAULT_VALUES = {
     'force_date': False,
     'headers': True,
     'input_offset': 0,
-    'window_size': 128,  # Number of time steps in each window (e.g., 24 for daily patterns)
+    'window_size': 48,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'l2_reg': 1e-4,          # L2 regularization factor
     'patience': 10,           # Early stopping patience
     'max_steps_train': 6300,

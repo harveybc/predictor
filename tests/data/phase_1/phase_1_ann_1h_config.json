@@ -1,0 +1,12 @@
+{
+    "x_train_file": "tests\\data\\phase_1\\phase_1_normalized_d2.csv",
+    "y_train_file": "tests\\data\\phase_1\\phase_1_normalized_d2.csv",
+    "x_validation_file": "tests\\data\\phase_1\\phase_1_normalized_d3.csv",
+    "y_validation_file": "tests\\data\\phase_1\\phase_1_normalized_d3.csv",
+    "output_file": "phase_1_ann_1h_prediction.csv",
+    "results_file": "phase_1_ann_1h_results.csv",
+    "loss_plot_file": "phase_1_ann_1h_loss_plot.png",
+    "plugin": "ann",
+    "max_steps_train": 6300,
+    "max_steps_test": 6300
+}
