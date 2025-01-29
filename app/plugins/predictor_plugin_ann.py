@@ -7,6 +7,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from keras.layers import GaussianNoise
+from keras import backend as K
 
 import logging
 import os
@@ -24,7 +25,7 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.002,
+        'learning_rate': 0.0002,
         'activation': 'tanh',
         'patience': 10,
         'l2_reg': 1e-3
@@ -100,7 +101,9 @@ class Plugin:
                 kernel_initializer=GlorotUniform(),
                 kernel_regularizer=l2(l2_reg),
             )(x)
-            
+
+        #add batch normalization
+        x = BatchNormalization()(x)
         # Output layer => shape (N, time_horizon)
         model_output = Dense(
             units=layers[-1],
@@ -110,7 +113,7 @@ class Plugin:
             name="model_output"
         )(x)
         #add batch normalization
-        model_output = BatchNormalization()(model_output)
+        #model_output = BatchNormalization()(model_output)
 
         self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
 
@@ -120,13 +123,17 @@ class Plugin:
             beta_1=0.9, beta_2=0.999,
             epsilon=1e-7, amsgrad=False
         )
-
+        # custom r2 metric
+        def coeff_r2(y_true, y_pred):
+            SS_res = K.mean(K.square(y_true - y_pred))
+            SS_tot = K.mean(K.square(y_true - K.mean(y_true)))
+            return 1 - SS_res / (SS_tot + K.epsilon())
         # Compile
         self.model.compile(
             optimizer=adam_optimizer,
             loss=Huber(),  # or 'mse'
             #loss='mae',  # or 'mse'
-            metrics=['mse', 'mae']  # logs multi-step MSE/MAE
+            metrics=['mse', 'mae', coeff_r2]  # logs multi-step MSE/MAE
         )
         
         print("Predictor Model Summary:")
@@ -160,6 +167,7 @@ class Plugin:
             shuffle=True,  # Enable shuffling
             callbacks=callbacks,
             #validation_data=(x_val, y_val)
+            validation_split = 0.2
         )
 
         print("Training completed.")
@@ -190,6 +198,7 @@ class Plugin:
         print(f"[TRAIN] Final Dataset Evaluation - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
         print(f"[ VAL ] Final Dataset Evaluation - Loss: {val_loss}, MSE: {val_mse}, MAE: {val_mae}")
         print("**********************************************")
+        return history
 
 
 
@@ -222,7 +231,6 @@ class Plugin:
         print(f"Calculated MAE: {mae}")
         return mae
 
-        return mae
 
     def save(self, file_path):
         """
@@ -237,3 +245,5 @@ class Plugin:
         """
         self.model = load_model(file_path)
         print(f"Model loaded from {file_path}")
+    
+

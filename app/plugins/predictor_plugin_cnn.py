@@ -179,24 +179,16 @@ class Plugin:
         callbacks.append(early_stopping_monitor)
 
         print(f"Training CNN model with data shape: {x_train.shape}, target shape: {y_train.shape}")
-        if x_val is not None and y_val is not None:
-            history = self.model.fit(
-                x_train,
-                y_train,
-                epochs=epochs,
-                batch_size=batch_size,
-                verbose=1,
-                callbacks=callbacks
-            )
-        else:
-            history = self.model.fit(
-                x_train,
-                y_train,
-                epochs=epochs,
-                batch_size=batch_size,
-                verbose=1,
-                callbacks=callbacks
-            )
+
+        history = self.model.fit(
+            x_train,
+            y_train,
+            epochs=epochs,
+            batch_size=batch_size,
+            verbose=1,
+            callbacks=callbacks,
+            validation_split = 0.2
+        )
         print("Training completed.")
 
         # Retrieve the final loss from the training history
@@ -206,7 +198,7 @@ class Plugin:
         # Check if the final loss exceeds the threshold_error
         if mse > threshold_error:
             print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
-
+        return history
 
 
 
