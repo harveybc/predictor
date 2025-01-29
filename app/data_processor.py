@@ -152,13 +152,11 @@ def process_data(config):
     }
 
 
-
-
-
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline using both training and validation datasets.
-    Iteratively trains and evaluates the model, while saving metrics and predictions.
+    Iteratively trains and evaluates the model with 5-fold cross-validation,
+    while saving metrics and predictions.
 
     Args:
         config (dict): Configuration dictionary containing parameters for training and evaluation.
@@ -214,12 +212,15 @@ def run_prediction_pipeline(config, plugin):
     # CNN-specific sliding windows
     if config["plugin"] == "cnn":
         print("Creating sliding windows for CNN...")
-        x_train, y_train, _ = create_sliding_windows(
+        x_train, _, _ = create_sliding_windows(
             x_train, y_train, window_size, time_horizon, stride=1
         )
-        x_val, y_val, _ = create_sliding_windows(
+        x_val, _, _ = create_sliding_windows(
             x_val, y_val, window_size, time_horizon, stride=1
         )
+
+        # **Ensure y_train and y_val remain 2D**
+        # No processing on y_train and y_val to keep them as (samples, time_horizon)
 
         print(f"Sliding windows created:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
@@ -233,6 +234,10 @@ def run_prediction_pipeline(config, plugin):
 
     # Pass time_horizon to the plugin (if it uses it)
     plugin.set_params(time_horizon=time_horizon)
+
+    # Initialize TimeSeriesSplit for 5-fold cross-validation
+    n_splits = 5
+    tscv = TimeSeriesSplit(n_splits=n_splits)
 
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
@@ -290,7 +295,7 @@ def run_prediction_pipeline(config, plugin):
                 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
                 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
-                
+
 
             # Restore TensorFlow logs
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
@@ -409,7 +414,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
 
 
 # Removed duplicate create_sliding_windows function to avoid conflicts
