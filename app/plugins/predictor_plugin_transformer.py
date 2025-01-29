@@ -100,26 +100,56 @@ class Plugin:
 
         for i in range(num_transformer_blocks):
             # Multi-Head Attention
+            # Adjust num_heads and key_dim such that projection is easier
+            # Since feature_dim=17, let's set num_heads=1 and key_dim=17
+            # Alternatively, use num_heads=2 and key_dim=8 with projection
             attention = tf.keras.layers.MultiHeadAttention(
-                num_heads=4,  # You can adjust the number of heads
-                key_dim=8,     # Adjusted to ensure compatibility
+                num_heads=2,  # Number of attention heads
+                key_dim=8,     # Dimension of each attention head
                 dropout=0.1,
                 name=f"transformer_block_{i+1}_multihead_attention"
-            )(x, x)
-            
-            # Project attention output back to feature_dim
-            attention = Dense(1 + pos_dim, activation=None, kernel_initializer=GlorotUniform(),
-                              kernel_regularizer=l2(l2_reg),
-                              name=f"attention_projection_{i+1}")(attention)  # Shape: (samples, num_features, feature_dim)
-            
-            attention = Dropout(0.1)(attention)
-            attention = LayerNormalization(epsilon=1e-6)(x + attention)
+            )(x, x)  # Query, Key, Value all from x
+
+            # The attention output shape: (None, num_features, num_heads * key_dim) = (None,8,16)
+
+            # Project attention output back to feature_dim=17
+            attention_proj = Dense(
+                units=1 + pos_dim,
+                activation=None,
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"attention_projection_{i+1}"
+            )(attention)  # Shape: (None,8,17)
+
+            attention_proj = Dropout(0.1)(attention_proj)
+            attention_proj = LayerNormalization(epsilon=1e-6)(x + attention_proj)  # Residual connection
 
             # Feed-Forward Network
-            ffn = Dense(64, activation='relu', kernel_regularizer=l2(l2_reg), name=f"ffn_dense1_block_{i+1}")(attention)
-            ffn = Dense(32, activation='relu', kernel_regularizer=l2(l2_reg), name=f"ffn_dense2_block_{i+1}")(ffn)
+            ffn = Dense(
+                units=64,
+                activation='relu',
+                kernel_regularizer=l2(l2_reg),
+                name=f"ffn_dense1_block_{i+1}"
+            )(attention_proj)
+            ffn = Dense(
+                units=32,
+                activation='relu',
+                kernel_regularizer=l2(l2_reg),
+                name=f"ffn_dense2_block_{i+1}"
+            )(ffn)
             ffn = Dropout(0.1)(ffn)
-            x = LayerNormalization(epsilon=1e-6)(attention + ffn)
+
+            # Project FFN output back to feature_dim=17
+            ffn_proj = Dense(
+                units=1 + pos_dim,
+                activation=None,
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"ffn_projection_block_{i+1}"
+            )(ffn)  # Shape: (None,8,17)
+
+            ffn_proj = Dropout(0.1)(ffn_proj)
+            x = LayerNormalization(epsilon=1e-6)(attention_proj + ffn_proj)  # Residual connection
 
         # Global Average Pooling
         x = GlobalAveragePooling1D()(x)  # Shape: (samples, feature_dim)
