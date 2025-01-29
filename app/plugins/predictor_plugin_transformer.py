@@ -123,12 +123,19 @@ class Plugin:
             #x = Add(name=f"residual_add_{idx+1}")([x_dense, attention_output])  # Shape: (batch_size, size)
             
             # Layer Normalization
-            x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_{idx+1}")(x)  # Shape: (batch_size, size)
+            #x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_{idx+1}")(x)  # Shape: (batch_size, size)
             
             # Dropout for Regularization
             #x = Dropout(0.1, name=f"dropout_{idx+1}")(x)  # Shape: (batch_size, size)
         
         # Batch Normalization before Output Layer
+        x_dense = Dense(
+            units=size,
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name=f"dense_layer_0"
+        )(x)  # Shape: (batch_size, size)
         x = BatchNormalization(name="batch_norm_final")(x)  # Shape: (batch_size, size)
 
         # Output Layer => shape (N, time_horizon)
@@ -158,6 +165,10 @@ class Plugin:
         
         print("Predictor Model Summary:")
         self.model.summary()
+
+
+
+
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train the model with shape => x_train(N, input_dim), y_train(N, time_horizon).
