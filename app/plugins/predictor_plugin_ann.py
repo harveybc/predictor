@@ -8,6 +8,7 @@ from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from keras.layers import GaussianNoise
 from keras import backend as K
+from sklearn.metrics import r2_score 
 
 import logging
 import os
@@ -123,29 +124,15 @@ class Plugin:
             beta_1=0.9, beta_2=0.999,
             epsilon=1e-7, amsgrad=False
         )
-        def coeff_r2(y_true, y_pred):
-            # Calculate R² for multi-step predictions
-            # Compute residual sum of squares (RSS)
-            SS_res = K.sum(K.square(y_true - y_pred))
-            # Compute total sum of squares (TSS)
-            y_mean = K.mean(y_true)
-            SS_tot = K.sum(K.square(y_true - y_mean))
-            # Return R² score, clipped to prevent negative values
-            return K.maximum(1 - SS_res / (SS_tot + K.epsilon()), 0)
-        # Compile
-        def rmse(y_true, y_pred):
-            return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
 
-        def r2_score(y_true, y_pred):
-            # Calculate R² across all time steps
-            SS_res = K.sum(K.square(y_true - y_pred))
-            SS_tot = K.sum(K.square(y_true - K.mean(y_true)))
-            return K.maximum(1 - SS_res/(SS_tot + K.epsilon()), K.zeros_like(SS_res))
+
+
+        # Compile model
         self.model.compile(
             optimizer=adam_optimizer,
             loss=Huber(),  # or 'mse'
             #loss='mae',  # or 'mse'
-            metrics=['mse', 'mae', coeff_r2]  # logs multi-step MSE/MAE
+            metrics=['mse', 'mae', r2_score]  # logs multi-step MSE/MAE
         )
         
         print("Predictor Model Summary:")
