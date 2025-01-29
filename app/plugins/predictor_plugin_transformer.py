@@ -27,10 +27,10 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.0001,
+        'learning_rate': 0.0002,
         'activation': 'tanh',
         'patience': 10,
-        'l2_reg': 1e-2,
+        'l2_reg': 1e-5,
         'positional_encoding_dim': 16  # Added for Transformer
     }
     
