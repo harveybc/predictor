@@ -6,6 +6,7 @@ from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
+from sklearn.metrics import r2_score
 
 class Plugin:
     """
@@ -190,15 +191,39 @@ class Plugin:
             validation_split = 0.2
         )
         print("Training completed.")
+        final_loss = history.history['loss'][-1]
+        print(f"Final training loss: {final_loss}")
 
-        # Retrieve the final loss from the training history
-        mse = history.history['loss'][-1]
-        print(f"Final training loss (Huber): {mse}")
+        if final_loss > threshold_error:
+            print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
-        # Check if the final loss exceeds the threshold_error
-        if mse > threshold_error:
-            print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
-        return history
+        # Force the model to run in "training mode"
+        preds_training_mode = self.model(x_train, training=True)
+        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
+        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
+
+        # Compare with evaluation mode
+        preds_eval_mode = self.model(x_train, training=False)
+        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
+        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+
+        # Evaluate on the full training dataset for consistency
+        train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
+        train_loss, train_mse, train_mae = train_eval_results
+        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+        
+        val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+        val_loss, val_mse, val_mae = val_eval_results
+        
+        # Predict validation data for evaluation
+        train_predictions = self.predict(x_train)  # Predict train data
+        val_predictions = self.predict(x_val)      # Predict validation data
+
+        # Calculate R² scores
+        train_r2 = r2_score(y_train, train_predictions)
+        val_r2 = r2_score(y_val, val_predictions)
+        
+        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
 
 
