@@ -23,7 +23,7 @@ class Plugin:
         'layer_size_divisor': 2,
         'learning_rate': 0.0002,
         'dropout_rate': 0.1,
-        'patience': 3,
+        'patience': 5,
         'activation': 'tanh'
     }
 
