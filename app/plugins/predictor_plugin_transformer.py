@@ -95,22 +95,19 @@ class Plugin:
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
         x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
-
+        # Dense Layer
+        x_dense = Dense(
+            units=size,
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name=f"dense_layer_0"
+        )(x)  # Shape: (batch_size, size)
         # Hidden Dense layers with Multi-Head Attention
+        # Reshape for Multi-Head Attention
+        # Treat each feature as a "time step" with feature_dim=1
+        x_reshaped = Reshape((size, 1))(x_dense)  # Shape: (batch_size, size, 1)
         for idx, size in enumerate(layers[:-1]):
-            # Dense Layer
-            x_dense = Dense(
-                units=size,
-                activation=self.params['activation'],
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
-                name=f"dense_layer_{idx+1}"
-            )(x)  # Shape: (batch_size, size)
-            
-            # Reshape for Multi-Head Attention
-            # Treat each feature as a "time step" with feature_dim=1
-            x_reshaped = Reshape((size, 1))(x_dense)  # Shape: (batch_size, size, 1)
-            
             # Multi-Head Attention Layer
             # Set num_heads=1 and key_dim=size to match output dimension
             attention_output = MultiHeadAttention(
@@ -120,10 +117,10 @@ class Plugin:
             )(x_reshaped, x_reshaped)  # Shape: (batch_size, size, num_heads * key_dim) = (batch_size, size, size)
             
             # Reshape attention output back to (batch_size, size)
-            attention_output = Reshape((size,))(attention_output)  # Shape: (batch_size, size)
+            #attention_output = Reshape((size,))(attention_output)  # Shape: (batch_size, size)
             
             # Residual Connection: Add attention output to Dense layer output
-            x = Add(name=f"residual_add_{idx+1}")([x_dense, attention_output])  # Shape: (batch_size, size)
+            #x = Add(name=f"residual_add_{idx+1}")([x_dense, attention_output])  # Shape: (batch_size, size)
             
             # Layer Normalization
             x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_{idx+1}")(x)  # Shape: (batch_size, size)
