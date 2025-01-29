@@ -7,6 +7,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from sklearn.metrics import r2_score
+from keras.layers import GaussianNoise
 
 
 class Plugin:
@@ -18,7 +19,7 @@ class Plugin:
         'epochs': 200,
         'batch_size': 128,
         'intermediate_layers': 1,
-        'initial_layer_size': 8,
+        'initial_layer_size': 4,
         'layer_size_divisor': 2,
         'learning_rate': 0.001,
         'dropout_rate': 0.1
@@ -69,7 +70,7 @@ class Plugin:
         # Input shape: (time_steps, features)
         model_input = Input(shape=input_shape, name="model_input")  # Corrected input shape
         x = model_input
-
+        x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
         # Add LSTM layers
         for size in layers[:-1]:
             if size > 1:
@@ -87,6 +88,8 @@ class Plugin:
             activation='tanh',
             recurrent_activation='sigmoid',
         )(x)
+        #add batch normalization
+        x = BatchNormalization()(x)
         # Output layer
         model_output = Dense(
             units=layers[-1],
