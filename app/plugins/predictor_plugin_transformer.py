@@ -106,7 +106,7 @@ class Plugin:
         # Hidden Dense layers with Multi-Head Attention
         # Reshape for Multi-Head Attention
         # Treat each feature as a "time step" with feature_dim=1
-        x = Reshape((layers[0], 1))(x)  # Shape: (batch_size, size, 1)
+       #x = Reshape((layers[0], 1))(x)  # Shape: (batch_size, size, 1)
         for idx, size in enumerate(layers[:-1]):
             # Multi-Head Attention Layer
             # Set num_heads=1 and key_dim=size to match output dimension
