@@ -94,9 +94,9 @@ class Plugin:
         # Build the model
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
-        x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
+        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
         # Dense Layer
-        x_dense = Dense(
+        x = Dense(
             units=layers[0],
             activation=self.params['activation'],
             kernel_initializer=GlorotUniform(),
@@ -115,18 +115,6 @@ class Plugin:
                 key_dim=size,
                 name=f"mha_layer_{idx+1}"
             )(x)  # Shape: (batch_size, size, num_heads * key_dim) = (batch_size, size, size)
-            
-            # Reshape attention output back to (batch_size, size)
-            #attention_output = Reshape((size,))(attention_output)  # Shape: (batch_size, size)
-            
-            # Residual Connection: Add attention output to Dense layer output
-            #x = Add(name=f"residual_add_{idx+1}")([x_dense, attention_output])  # Shape: (batch_size, size)
-            
-            # Layer Normalization
-            #x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_{idx+1}")(x)  # Shape: (batch_size, size)
-            
-            # Dropout for Regularization
-            #x = Dropout(0.1, name=f"dropout_{idx+1}")(x)  # Shape: (batch_size, size)
         
         # Batch Normalization before Output Layer
         x = Dense(
