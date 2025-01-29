@@ -88,8 +88,9 @@ class Plugin:
             activation='tanh',
             recurrent_activation='sigmoid',
         )(x)
+
         x = Dense(
-            units=units=layers[-2],
+            units=layers[-2],
             activation=self.params['activation'],
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
