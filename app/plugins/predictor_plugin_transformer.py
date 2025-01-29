@@ -148,7 +148,7 @@ class Plugin:
             # Project attention output back to feature_dim
             attention_proj = Dense(
                 units=feature_dim,
-                activation=None,
+                activation='tanh',
                 kernel_initializer=GlorotUniform(),
                 kernel_regularizer=l2(l2_reg),
                 name=f"mha_projection_{idx+1}"
@@ -161,10 +161,10 @@ class Plugin:
             x = Add(name=f"residual_add_{idx+1}")([x_dense, x_att_proj])  # Shape: (batch_size, size)
 
             # Layer Normalization
-            x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_{idx+1}")(x)  # Shape: (batch_size, size)
+            #x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_{idx+1}")(x)  # Shape: (batch_size, size)
 
             # Dropout for regularization
-            x = Dropout(0.1, name=f"dropout_{idx+1}")(x)  # Shape: (batch_size, size)
+            #x = Dropout(0.1, name=f"dropout_{idx+1}")(x)  # Shape: (batch_size, size)
 
         # Batch Normalization before Output Layer
         x = BatchNormalization(name="batch_norm_final")(x)  # Shape: (batch_size, size)
