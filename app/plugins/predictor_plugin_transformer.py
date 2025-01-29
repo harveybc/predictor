@@ -30,7 +30,7 @@ class Plugin:
         'learning_rate': 0.0001,
         'activation': 'tanh',
         'patience': 10,
-        'l2_reg': 1e-4,
+        'l2_reg': 1e-2,
         'positional_encoding_dim': 16  # Added for Transformer
     }
     
