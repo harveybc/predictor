@@ -82,12 +82,6 @@ class Plugin:
                 )(x)
                 
 
-        # Final LSTM layer without `return_sequences`
-        x = LSTM(
-            units=layers[-2],
-            activation='tanh',
-            recurrent_activation='sigmoid',
-        )(x)
         #add batch normalization
         x = BatchNormalization()(x)
         # Output layer
