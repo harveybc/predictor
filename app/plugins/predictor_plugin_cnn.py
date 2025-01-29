@@ -20,7 +20,8 @@ class Plugin:
         'layer_size_divisor': 2,
         'learning_rate': 0.002,
         'l2_reg': 1e-3,     # L2 regularization factor
-        'patience': 10      # Patience for Early Stopping
+        'patience': 10,      # Patience for Early Stopping
+        'activation': 'tanh'
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers', 'initial_layer_size', 'time_horizon']
