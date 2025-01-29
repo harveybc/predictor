@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Dense, Input, Dropout, LayerNormalization, GlobalAveragePooling1D, Reshape, BatchNormalization
+from keras.layers import Dense, Input, Dropout, BatchNormalization, LayerNormalization, GlobalAveragePooling1D, Reshape
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
@@ -192,6 +192,14 @@ class Plugin:
         )
         callbacks.append(early_stopping_monitor)
     
+        # Determine validation strategy
+        if x_val is not None and y_val is not None:
+            validation_data = (x_val, y_val)
+            validation_split = None
+        else:
+            validation_data = None
+            validation_split = 0.2  # Use 20% of training data as validation
+    
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
@@ -199,8 +207,8 @@ class Plugin:
             verbose=1,
             shuffle=True,  # Enable shuffling
             callbacks=callbacks,
-            validation_split=0.2 if x_val is None or y_val is None else None,
-            validation_data=(x_val, y_val) if x_val is not None and y_val is not None else None
+            validation_data=validation_data,
+            validation_split=validation_split
         )
 
         print("Training completed.")
@@ -241,6 +249,8 @@ class Plugin:
         val_r2 = r2_score(y_val, val_predictions) if y_val is not None else None
         
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
+
+
 
     def predict(self, data):
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
