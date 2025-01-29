@@ -124,16 +124,13 @@ class Plugin:
             beta_1=0.9, beta_2=0.999,
             epsilon=1e-7, amsgrad=False
         )
-        def r2_keras(y_true, y_pred):
-            SS_res = K.sum(K.square(y_true - y_pred))
-            SS_tot = K.sum(K.square(y_true - K.mean(y_true)))
-            return 1 - SS_res/(SS_tot + K.epsilon())
+
         # Compile
         self.model.compile(
             optimizer=adam_optimizer,
             loss=Huber(),  # or 'mse'
             #loss='mae',  # or 'mse'
-            metrics=['mse', 'mae', r2_keras]  # logs multi-step MSE/MAE
+            metrics=['mse', 'mae']  # logs multi-step MSE/MAE
         )
         
         print("Predictor Model Summary:")
@@ -191,6 +188,7 @@ class Plugin:
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mse, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+        
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mse, val_mae = val_eval_results
         
