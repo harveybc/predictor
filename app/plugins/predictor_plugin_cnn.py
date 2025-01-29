@@ -201,7 +201,8 @@ class Plugin:
         # Force the model to run in "training mode"
         print("Forcing training mode for MAE calculation...")
         preds_training_mode = self.model(x_train, training=True).numpy()
-        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
+        window_size = x_train.shape[1]
+        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train[window_size:]))
         print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
 
         # Compare with evaluation mode
