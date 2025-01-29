@@ -13,6 +13,7 @@ DEFAULT_VALUES = {
     'save_model': './predictor_model.keras',
     'load_model': None,
     'evaluate_file': './model_eval.csv',
+    'loss_plot_file': './loss_plot.png',
     'plugin': 'cnn',
     'time_horizon': 6,
     'threshold_error': 0.00001,
