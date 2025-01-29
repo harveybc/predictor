@@ -18,7 +18,7 @@ class Plugin:
         'intermediate_layers': 2,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.001,
+        'learning_rate': 0.0001,
         'l2_reg': 1e-3,     # L2 regularization factor
         'patience': 20,      # Patience for Early Stopping
         'activation': 'tanh'
@@ -100,8 +100,8 @@ class Plugin:
                 x = Conv1D(
                     filters=size, 
                     kernel_size=3, 
-                    activation='relu', 
-                    kernel_initializer=HeNormal(), 
+                    activation='tanh', 
+                    kernel_initializer=GlorotUniform(), 
                     padding='same',
                     kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
                     name=f"conv1d_{idx+1}"
