@@ -294,7 +294,8 @@ def run_prediction_pipeline(config, plugin):
                     x_train,
                     y_train,
                     batch_size=batch_size,
-                    verbose=0
+                    verbose=0,
+                    return_dict=True
                 )
 
                 # Evaluate validation data
@@ -302,7 +303,8 @@ def run_prediction_pipeline(config, plugin):
                     x_val,
                     y_val,
                     batch_size=batch_size,
-                    verbose=0
+                    verbose=0,
+                    return_dict=True
                 )
                 # Predict validation data for evaluation
                 train_predictions = plugin.predict(x_train)  # Predict train data
