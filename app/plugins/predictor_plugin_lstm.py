@@ -81,7 +81,7 @@ class Plugin:
                     return_sequences=True
                 )(x)
                 
-                x = Dropout(self.params['dropout_rate'])(x)        
+        x = Dropout(self.params['dropout_rate'])(x)        
 
         # Final LSTM layer without `return_sequences`
         x = LSTM(
