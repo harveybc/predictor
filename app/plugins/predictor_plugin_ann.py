@@ -103,8 +103,8 @@ class Plugin:
                 kernel_regularizer=l2(l2_reg),
             )(x)
 
-            #add batch normalization
-            x = BatchNormalization()(x)
+        #add batch normalization
+        x = BatchNormalization()(x)
         # Output layer => shape (N, time_horizon)
         model_output = Dense(
             units=layers[-1],
