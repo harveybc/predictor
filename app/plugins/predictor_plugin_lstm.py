@@ -88,7 +88,7 @@ class Plugin:
         #        kernel_regularizer=l2(l2_reg),
         #    )(x)
         #add batch normalization
-        #x = BatchNormalization()(x)
+        x = BatchNormalization()(x)
         # Add LSTM layers
         for size in layers[:-1]:
             if size > 1:
