@@ -11,6 +11,7 @@ import logging
 from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
 import contextlib
 import matplotlib.pyplot as plt
+from sklearn.model_selection import TimeSeriesSplit
 
 
 def process_data(config):
@@ -152,13 +153,11 @@ def process_data(config):
     }
 
 
-
-
-
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline using both training and validation datasets.
-    Iteratively trains and evaluates the model, while saving metrics and predictions.
+    Iteratively trains and evaluates the model with 5-fold cross-validation,
+    while saving metrics and predictions.
 
     Args:
         config (dict): Configuration dictionary containing parameters for training and evaluation.
@@ -178,10 +177,10 @@ def run_prediction_pipeline(config, plugin):
     # Load all datasets
     print("Loading and processing datasets...")
     datasets = process_data(config)  # <-- We do not modify how process_data works, just rely on it
-    x_train, y_train = datasets["x_train"], datasets["y_train"]
+    x_train_full, y_train_full = datasets["x_train"], datasets["y_train"]
     x_val, y_val = datasets["x_val"], datasets["y_val"]
 
-    print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
+    print(f"Training data shapes: x_train: {x_train_full.shape}, y_train: {y_train_full.shape}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
 
     # Extract time_horizon and window_size from config
@@ -202,10 +201,10 @@ def run_prediction_pipeline(config, plugin):
     threshold_error = config["threshold_error"]
 
     # Ensure datasets are NumPy arrays
-    if isinstance(x_train, pd.DataFrame):
-        x_train = x_train.to_numpy().astype(np.float32)
-    if isinstance(y_train, pd.DataFrame):
-        y_train = y_train.to_numpy().astype(np.float32)
+    if isinstance(x_train_full, pd.DataFrame):
+        x_train_full = x_train_full.to_numpy().astype(np.float32)
+    if isinstance(y_train_full, pd.DataFrame):
+        y_train_full = y_train_full.to_numpy().astype(np.float32)
     if isinstance(x_val, pd.DataFrame):
         x_val = x_val.to_numpy().astype(np.float32)
     if isinstance(y_val, pd.DataFrame):
@@ -214,65 +213,116 @@ def run_prediction_pipeline(config, plugin):
     # CNN-specific sliding windows
     if config["plugin"] == "cnn":
         print("Creating sliding windows for CNN...")
-        x_train, y_train, _ = create_sliding_windows(
-            x_train, y_train, window_size, time_horizon, stride=1
+        x_train_full, y_train_full, _ = create_sliding_windows(
+            x_train_full, y_train_full, window_size, time_horizon, stride=1
         )
         x_val, y_val, _ = create_sliding_windows(
             x_val, y_val, window_size, time_horizon, stride=1
         )
 
         print(f"Sliding windows created:")
-        print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
+        print(f"  x_train: {x_train_full.shape}, y_train: {y_train_full.shape}")
         print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
 
     # Ensure x_* are at least 2D
-    if x_train.ndim == 1:
-        x_train = x_train.reshape(-1, 1)
+    if x_train_full.ndim == 1:
+        x_train_full = x_train_full.reshape(-1, 1)
     if x_val.ndim == 1:
         x_val = x_val.reshape(-1, 1)
 
     # Pass time_horizon to the plugin (if it uses it)
     plugin.set_params(time_horizon=time_horizon)
 
+    # Initialize TimeSeriesSplit for 5-fold cross-validation
+    n_splits = 5
+    tscv = TimeSeriesSplit(n_splits=n_splits)
+
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
 
-        try:
-            # Build the model
-            if config["plugin"] == "cnn":
-                # CNN expects shape (window_size, features)
-                if len(x_train.shape) < 3:
-                    raise ValueError(
-                        f"For CNN, x_train must be 3D. Found: {x_train.shape}."
-                    )
-                plugin.build_model(input_shape=(window_size, x_train.shape[2]))
-            else:
-                # For ANN/LSTM/Transformers: typically shape (features,)
-                if config["plugin"] == "lstm":
-                    # LSTM expects 3D input (time_steps, features)
-                    if len(x_train.shape) != 3:
-                        raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
-                    plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
-                else:
-                    # For ANN/Transformers: 2D input (samples, features)
-                    if len(x_train.shape) != 2:
-                        raise ValueError(
-                            f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}."
-                        )
-                    plugin.build_model(input_shape=x_train.shape[1])
+        # Initialize lists to store CV metrics for this iteration
+        cv_train_mae = []
+        cv_train_r2 = []
+        cv_val_mae = []
+        cv_val_r2 = []
 
-            # Train the model
-            history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions  = plugin.train(
-                x_train,
-                y_train,
-                epochs=epochs,
-                batch_size=batch_size,
-                threshold_error=threshold_error,
-                x_val=x_val,
-                y_val=y_val
-            )
-            # Loss History
+        # Perform 5-fold cross-validation
+        try:
+            for fold, (train_idx, val_idx) in enumerate(tscv.split(x_train_full), 1):
+                # Split the data into current fold's training and validation sets
+                x_train_fold, y_train_fold = x_train_full[train_idx], y_train_full[train_idx]
+                x_val_fold, y_val_fold = x_train_full[val_idx], y_train_full[val_idx]
+
+                # Build the model for the current fold
+                if config["plugin"] == "cnn":
+                    # CNN expects shape (window_size, features)
+                    if len(x_train_fold.shape) < 3:
+                        raise ValueError(
+                            f"For CNN, x_train must be 3D. Found: {x_train_fold.shape}."
+                        )
+                    plugin.build_model(input_shape=(window_size, x_train_fold.shape[2]))
+                else:
+                    # For ANN/LSTM/Transformers: typically shape (features,)
+                    if config["plugin"] == "lstm":
+                        # LSTM expects 3D input (samples, time_steps, features)
+                        if len(x_train_fold.shape) != 3:
+                            raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train_fold.shape}.")
+                        plugin.build_model(input_shape=(x_train_fold.shape[1], x_train_fold.shape[2]))
+                    else:
+                        # For ANN/Transformers: 2D input (samples, features)
+                        if len(x_train_fold.shape) != 2:
+                            raise ValueError(
+                                f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train_fold.shape}."
+                            )
+                        plugin.build_model(input_shape=x_train_fold.shape[1])
+
+                # Train the model on the current fold
+                history, train_mae, train_r2, val_mae_fold, val_r2_fold, _, _ = plugin.train(
+                    x_train_fold,
+                    y_train_fold,
+                    epochs=epochs,
+                    batch_size=batch_size,
+                    threshold_error=threshold_error,
+                    x_val=x_val_fold,
+                    y_val=y_val_fold
+                )
+
+                # Append fold metrics
+                cv_train_mae.append(train_mae)
+                cv_train_r2.append(train_r2)
+                cv_val_mae.append(val_mae_fold)
+                cv_val_r2.append(val_r2_fold)
+
+        except Exception as e:
+            print(f"Iteration {iteration} failed during cross-validation with error:\n  {e}")
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            continue  # Proceed to the next iteration even if one iteration fails
+
+        # Calculate average metrics across all folds
+        avg_train_mae = np.mean(cv_train_mae) if cv_train_mae else None
+        avg_train_r2 = np.mean(cv_train_r2) if cv_train_r2 else None
+        avg_val_mae = np.mean(cv_val_mae) if cv_val_mae else None
+        avg_val_r2 = np.mean(cv_val_r2) if cv_val_r2 else None
+
+        # Assign averaged metrics
+        train_mae = avg_train_mae
+        train_r2 = avg_train_r2
+        val_mae = avg_val_mae
+        val_r2 = avg_val_r2
+
+        # Since cross-validation involves training on different folds, 
+        # predictions for the entire training and validation sets are not directly available.
+        # Thus, train_predictions and val_predictions are set to None.
+        train_predictions = None
+        val_predictions = None
+
+        # Loss History plotting
+        # Note: Since multiple models were trained, plotting the last model's history
+        if cv_train_mae:
+            # Assuming the last fold's history is representative
             plt.plot(history.history['loss'])
             plt.plot(history.history['val_loss'])
             plt.title('Model Loss')
@@ -283,47 +333,38 @@ def run_prediction_pipeline(config, plugin):
             plt.close()
             print("Loss plot saved to loss_plot.png")
 
-            print("Evaluating trained model on training and validation data. Please wait...")
+        print("Evaluating trained model on training and validation data. Please wait...")
 
-            # Suppress TensorFlow/Keras logs during evaluation
-            with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
-                os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-                logging.getLogger("tensorflow").setLevel(logging.FATAL)
+        # Suppress TensorFlow/Keras logs during evaluation
+        with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
+            os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+            logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
-                
+        # Restore TensorFlow logs
+        os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
+        logging.getLogger("tensorflow").setLevel(logging.INFO)
 
-            # Restore TensorFlow logs
-            os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
-            logging.getLogger("tensorflow").setLevel(logging.INFO)
+        # -----------------------
+        # Assign evaluation metrics
+        # -----------------------
+        print("*************************************************")
+        print(f"Iteration {iteration} completed.")
+        print(f"Training MAE: {train_mae}")
+        print(f"Training R²: {train_r2}")
+        print(f"Validation MAE: {val_mae}")
+        print(f"Validation R²: {val_r2}")
+        print("*************************************************")
 
-            # -----------------------
-            # Assign evaluation metrics
-            # -----------------------
-            print("*************************************************")
-            print(f"Iteration {iteration} completed.")
-            print(f"Training MAE: {train_mae}")
-            print(f"Training R²: {train_r2}")
-            print(f"Validation MAE: {val_mae}")
-            print(f"Validation R²: {val_r2}")
-            print("*************************************************")
+        # Save training metrics
+        training_mae_list.append(train_mae)
+        training_r2_list.append(train_r2)
 
-            # Save training metrics
-            training_mae_list.append(train_mae)
-            training_r2_list.append(train_r2)
+        # Save validation metrics
+        validation_mae_list.append(val_mae)
+        validation_r2_list.append(val_r2)
 
-            # Save validation metrics
-            validation_mae_list.append(val_mae)
-            validation_r2_list.append(val_r2)
-
-            iteration_end_time = time.time()
-            print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
-
-        except Exception as e:
-            print(f"Iteration {iteration} failed with error:\n  {e}")
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
-            continue  # Proceed to the next iteration even if one iteration fails
+        iteration_end_time = time.time()
+        print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
     # -----------------------
     # Aggregate statistics
@@ -402,6 +443,7 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
+
 
 
 
