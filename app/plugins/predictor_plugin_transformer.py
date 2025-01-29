@@ -97,7 +97,7 @@ class Plugin:
         x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
         # Dense Layer
         x_dense = Dense(
-            units=size,
+            units=layers[0],
             activation=self.params['activation'],
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
@@ -106,7 +106,7 @@ class Plugin:
         # Hidden Dense layers with Multi-Head Attention
         # Reshape for Multi-Head Attention
         # Treat each feature as a "time step" with feature_dim=1
-        x_reshaped = Reshape((size, 1))(x_dense)  # Shape: (batch_size, size, 1)
+        x_reshaped = Reshape((layers[0], 1))(x_dense)  # Shape: (batch_size, size, 1)
         for idx, size in enumerate(layers[:-1]):
             # Multi-Head Attention Layer
             # Set num_heads=1 and key_dim=size to match output dimension
