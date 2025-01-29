@@ -125,9 +125,11 @@ class Plugin:
         )
         # custom r2 metric
         def coeff_r2(y_true, y_pred):
-            SS_res = K.mean(K.square(y_true - y_pred))
-            SS_tot = K.mean(K.square(y_true - K.mean(y_true)))
-            return 1 - SS_res / (SS_tot + K.epsilon())
+            y_true_ = K.flatten(y_true)
+            y_pred_ = K.flatten(y_pred)
+            ss_res = K.sum(K.square(y_true_ - y_pred_))
+            ss_tot = K.sum(K.square(y_true_ - K.mean(y_true_)))
+            return 1 - (ss_res / (ss_tot + K.epsilon()))
         # Compile
         self.model.compile(
             optimizer=adam_optimizer,
@@ -188,14 +190,14 @@ class Plugin:
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
 
         # Evaluate on the full training dataset for consistency
-        train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-        train_loss, train_mse, train_mae, train_r2 = train_eval_results
-        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}, R2: {train_r2}")
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mse, val_mae, val_r2 = val_eval_results
         
         print("**********************************************")
-        print(f"[TRAIN] Final Dataset Evaluation - MAE: {train_mae}, R2: {train_r2}")
+        print(f"[TRAIN] Final Dataset Evaluation - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}, R2: {train_r2}")
+        print(f"[ VAL ] Final Dataset Evaluation - Loss: {val_loss}, MSE: {val_mse}, MAE: {val_mae}, R2: {val_r2}")
+        print("**********************************************")
         print(f"[ VAL ] Final Dataset Evaluation - MAE: {val_mae}, R2: {val_r2}")
         print("**********************************************")
         return history
