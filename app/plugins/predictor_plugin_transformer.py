@@ -72,16 +72,12 @@ class Plugin:
         # 2. Feature Projection with Dropout and L2 Regularization
         x = Dense(
             d_model,
-            activation='relu',
+            activation='tanh',
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="feature_projection"
         )(inputs)
-        #x = Dropout(dropout_rate, name="projection_dropout")(x)  # Dropout after projection
-
-        # 3. Positional Encoding
-        pos_encoding = self._positional_encoding(seq_len, d_model)
-        x = Add(name="add_pos_encoding")([x, pos_encoding])
+        #x = Dropout(dropout_rate, name="projection_dropout")(x)  # Dropout after projectio
 
         # 4. Transformer Encoder Blocks with Dropout and L2 Regularization
         for i in range(num_blocks):
@@ -112,10 +108,10 @@ class Plugin:
                 #x = Dropout(dropout_rate, name=f"intermediate_dropout_{idx+1}")(x)  # Dropout after intermediate Dense
 
         # 7. Final Output Layer with L2 Regularization
-        final_output_dim = layers[-1]
+        # Output layer => shape (N, time_horizon)
         model_output = Dense(
-            final_output_dim,
-            activation='tanh',
+            units=layers[-1],
+            activation='linear',
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="model_output"
@@ -209,43 +205,73 @@ class Plugin:
         return layers
 
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error):
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train method expects y_train to already be shaped for multi-step output
         (i.e., y_train.shape == (num_samples, time_horizon)).
         The data pipeline (process_data) must ensure a sliding window with stride = time_horizon.
         """
         # Ensure x_train is 3D
-        if x_train.ndim == 2:
-            x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
-
-
         callbacks = []
-    
-        patience = self.params.get('patience', 5)  # default patience is 10 epochs
+        patience = self.params.get('patience', 10)
+
+        # Early stopping based on validation loss
         early_stopping_monitor = EarlyStopping(
-            monitor='loss', 
-            patience=patience, 
+            monitor='loss',  # Monitor validation loss
+            patience=patience,
             restore_best_weights=True,
             verbose=1
         )
         callbacks.append(early_stopping_monitor)
 
-        print(f"Training predictor model with data shape: {x_train.shape}")
+        validation_data = (x_val, y_val) if x_val is not None and y_val is not None else None
+
+        # Fit the model
         history = self.model.fit(
-            x_train, 
+            x_train,
             y_train,
             epochs=epochs,
             batch_size=batch_size,
-            verbose=1
+            #validation_data=validation_data,  # Provide validation data
+            verbose=1,
+            callbacks=callbacks,
+            validation_split = 0.2
         )
+
         print("Training completed.")
+        final_loss = history.history['loss'][-1]
+        print(f"Final training loss: {final_loss}")
 
-        # Check final training loss
-        mse = history.history['loss'][-1]
-        if mse > threshold_error:
-            print(f"Warning: Model training completed with MSE {mse} exceeding the threshold error {threshold_error}.")
+        if final_loss > threshold_error:
+            print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
+        # Force the model to run in "training mode"
+        preds_training_mode = self.model(x_train, training=True)
+        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
+        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
+
+        # Compare with evaluation mode
+        preds_eval_mode = self.model(x_train, training=False)
+        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
+        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+
+        # Evaluate on the full training dataset for consistency
+        train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
+        train_loss, train_mse, train_mae = train_eval_results
+        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+        
+        val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+        val_loss, val_mse, val_mae = val_eval_results
+        
+        # Predict validation data for evaluation
+        train_predictions = self.predict(x_train)  # Predict train data
+        val_predictions = self.predict(x_val)      # Predict validation data
+
+        # Calculate R² scores
+        train_r2 = r2_score(y_train, train_predictions)
+        val_r2 = r2_score(y_val, val_predictions)
+        
+        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
     def predict(self, data):
         """
         If the model outputs multiple steps (time_horizon), the returned predictions
