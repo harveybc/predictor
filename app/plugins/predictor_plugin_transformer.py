@@ -106,15 +106,15 @@ class Plugin:
         # Hidden Dense layers with Multi-Head Attention
         # Reshape for Multi-Head Attention
         # Treat each feature as a "time step" with feature_dim=1
-        x_reshaped = Reshape((layers[0], 1))(x_dense)  # Shape: (batch_size, size, 1)
+        x = Reshape((layers[0], 1))(x)  # Shape: (batch_size, size, 1)
         for idx, size in enumerate(layers[:-1]):
             # Multi-Head Attention Layer
             # Set num_heads=1 and key_dim=size to match output dimension
-            attention_output = MultiHeadAttention(
+            x = MultiHeadAttention(
                 num_heads=2,
                 key_dim=size,
                 name=f"mha_layer_{idx+1}"
-            )(x_reshaped, x_reshaped)  # Shape: (batch_size, size, num_heads * key_dim) = (batch_size, size, size)
+            )(x)  # Shape: (batch_size, size, num_heads * key_dim) = (batch_size, size, size)
             
             # Reshape attention output back to (batch_size, size)
             #attention_output = Reshape((size,))(attention_output)  # Shape: (batch_size, size)
@@ -129,7 +129,7 @@ class Plugin:
             #x = Dropout(0.1, name=f"dropout_{idx+1}")(x)  # Shape: (batch_size, size)
         
         # Batch Normalization before Output Layer
-        x_dense = Dense(
+        x = Dense(
             units=size,
             activation=self.params['activation'],
             kernel_initializer=GlorotUniform(),
