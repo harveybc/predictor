@@ -189,16 +189,20 @@ class Plugin:
 
         # Evaluate on the full training dataset for consistency
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-        train_loss, train_mse, train_mae, train_r2 = train_eval_results
+        train_loss, train_mse, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-        val_loss, val_mse, val_mae, val_r2 = val_eval_results
+        val_loss, val_mse, val_mae = val_eval_results
         
-        print("**********************************************")
-        print(f"[TRAIN] Final Dataset Evaluation - MAE: {train_mae}, R2: {train_r2}")
-        print(f"[ VAL ] Final Dataset Evaluation - MAE: {val_mae}, R2: {val_r2}")
-        print("**********************************************")
-        return history
+        # Predict validation data for evaluation
+        train_predictions = self.predict(x_train)  # Predict train data
+        val_predictions = self.predict(x_val)      # Predict validation data
+
+        # Calculate R² scores
+        train_r2 = r2_score(y_train, train_predictions)
+        val_r2 = r2_score(y_val, val_predictions)
+        
+        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
 
 

@@ -263,7 +263,7 @@ def run_prediction_pipeline(config, plugin):
                     plugin.build_model(input_shape=x_train.shape[1])
 
             # Train the model
-            history = plugin.train(
+            history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions  = plugin.train(
                 x_train,
                 y_train,
                 epochs=epochs,
@@ -289,30 +289,7 @@ def run_prediction_pipeline(config, plugin):
                 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
                 logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
-                # Evaluate training data
-                train_results = plugin.model.evaluate(
-                    x_train,
-                    y_train,
-                    batch_size=batch_size,
-                    verbose=0,
-                    return_dict=True
-                )
-
-                # Evaluate validation data
-                val_results = plugin.model.evaluate(
-                    x_val,
-                    y_val,
-                    batch_size=batch_size,
-                    verbose=0,
-                    return_dict=True
-                )
-                # Predict validation data for evaluation
-                train_predictions = plugin.predict(x_train)  # Predict train data
-                val_predictions = plugin.predict(x_val)      # Predict validation data
-
-                # Calculate R² scores
-                train_r2 = r2_score(y_train, train_predictions)
-                val_r2 = r2_score(y_val, val_predictions)
+                
 
             # Restore TensorFlow logs
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
@@ -321,18 +298,13 @@ def run_prediction_pipeline(config, plugin):
             # -----------------------
             # Assign evaluation metrics
             # -----------------------
-            # Assuming the metrics are ordered as [loss, mae, r2]
-            if len(train_results) < 3 or len(val_results) < 3:
-                raise ValueError("Expected at least three metrics (loss, MAE, R²) from evaluate method.")
-
-            print(f"plugin.model.metrics_names={plugin.model.metrics_names}")
-            train_loss, train_mse, train_mae, train_r2 = train_results
-            val_loss, val_mse, val_mae, train_r2 = val_results
-
+            print("*************************************************")
+            print(f"Iteration {iteration} completed.")
             print(f"Training MAE: {train_mae}")
             print(f"Training R²: {train_r2}")
             print(f"Validation MAE: {val_mae}")
             print(f"Validation R²: {val_r2}")
+            print("*************************************************")
 
             # Save training metrics
             training_mae_list.append(train_mae)
@@ -341,17 +313,6 @@ def run_prediction_pipeline(config, plugin):
             # Save validation metrics
             validation_mae_list.append(val_mae)
             validation_r2_list.append(val_r2)
-
-            # Calculate current standard deviations
-            current_train_mae_std = np.std(training_mae_list)
-            current_val_mae_std = np.std(validation_mae_list)
-            current_train_r2_std = np.std(training_r2_list)
-            current_val_r2_std = np.std(validation_r2_list)
-
-            print(f"Current Training MAE Std Dev: {current_train_mae_std:.4f}")
-            print(f"Current Validation MAE Std Dev: {current_val_mae_std:.4f}")
-            print(f"Current Training R² Std Dev: {current_train_r2_std:.4f}")
-            print(f"Current Validation R² Std Dev: {current_val_r2_std:.4f}")
 
             iteration_end_time = time.time()
             print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
