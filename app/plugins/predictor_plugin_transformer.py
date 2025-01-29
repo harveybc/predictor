@@ -6,7 +6,7 @@ from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
-from keras.layers import GaussianNoise
+from keras.layers import GaussianNoise, MultiHeadAttention, Add
 from keras import backend as K
 from sklearn.metrics import r2_score, mean_absolute_error
 
@@ -63,98 +63,19 @@ class Plugin:
 
     def build_model(self, input_shape):
         """
-        Build the Transformer model with final layer = self.params['time_horizon'] for multi-step outputs.
+        Build the ANN augmented with Multi-Head Attention layers with final layer = self.params['time_horizon'] for multi-step outputs.
         
         Args:
-            input_shape (int): Total number of input features after concatenation (num_features * (1 + pos_dim)).
+            input_shape (int): Number of input features for ANN.
         """
         if not isinstance(input_shape, int):
-            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for Transformer.")
-
+            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
+        
         self.params['input_dim'] = input_shape
         l2_reg = self.params.get('l2_reg', 1e-4)
         time_horizon = self.params['time_horizon']  # the multi-step dimension
-        pos_dim = self.params.get('positional_encoding_dim', 16)
 
-        # Calculate number of features
-        if (input_shape % (1 + pos_dim)) != 0:
-            raise ValueError(
-                f"input_shape {input_shape} is not divisible by (1 + pos_dim)={1 + pos_dim}."
-            )
-        num_features = input_shape // (1 + pos_dim)
-
-        print(f"Transformer Layer sizes: {self.params['intermediate_layers']} layers with initial size {self.params['initial_layer_size']} and divisor {self.params['layer_size_divisor']}")
-        print(f"Transformer input_shape: (num_features={num_features}, feature_dim={1 + pos_dim})")
-
-        # Input layer
-        model_input = Input(shape=(input_shape,), name="model_input")
-
-        # Reshape to (num_features, feature_dim)
-        reshaped = Reshape((num_features, 1 + pos_dim))(model_input)  # Shape: (samples, num_features, feature_dim)
-
-        x = reshaped
-        x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
-
-        # Define number of Transformer blocks
-        num_transformer_blocks = 2  # You can adjust this as needed
-
-        for i in range(num_transformer_blocks):
-            # Multi-Head Attention
-            # Adjust num_heads and key_dim such that projection is easier
-            # Since feature_dim=17, let's set num_heads=1 and key_dim=17
-            # Alternatively, use num_heads=2 and key_dim=8 with projection
-            attention = tf.keras.layers.MultiHeadAttention(
-                num_heads=2,  # Number of attention heads
-                key_dim=8,     # Dimension of each attention head
-                dropout=0.1,
-                name=f"transformer_block_{i+1}_multihead_attention"
-            )(x, x)  # Query, Key, Value all from x
-
-            # The attention output shape: (None, num_features, num_heads * key_dim) = (None,8,16)
-
-            # Project attention output back to feature_dim=17
-            attention_proj = Dense(
-                units=1 + pos_dim,
-                activation=None,
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
-                name=f"attention_projection_{i+1}"
-            )(attention)  # Shape: (None,8,17)
-
-            attention_proj = Dropout(0.1)(attention_proj)
-            attention_proj = LayerNormalization(epsilon=1e-6)(x + attention_proj)  # Residual connection
-
-            # Feed-Forward Network
-            ffn = Dense(
-                units=64,
-                activation='relu',
-                kernel_regularizer=l2(l2_reg),
-                name=f"ffn_dense1_block_{i+1}"
-            )(attention_proj)
-            ffn = Dense(
-                units=32,
-                activation='relu',
-                kernel_regularizer=l2(l2_reg),
-                name=f"ffn_dense2_block_{i+1}"
-            )(ffn)
-            ffn = Dropout(0.1)(ffn)
-
-            # Project FFN output back to feature_dim=17
-            ffn_proj = Dense(
-                units=1 + pos_dim,
-                activation=None,
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
-                name=f"ffn_projection_block_{i+1}"
-            )(ffn)  # Shape: (None,8,17)
-
-            ffn_proj = Dropout(0.1)(ffn_proj)
-            x = LayerNormalization(epsilon=1e-6)(attention_proj + ffn_proj)  # Residual connection
-
-        # Global Average Pooling
-        x = GlobalAveragePooling1D()(x)  # Shape: (samples, feature_dim)
-
-        # Dynamically set layer sizes based on plugin_params
+        # Dynamically set layer sizes
         layers = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
@@ -167,32 +88,64 @@ class Plugin:
         # Final layer => time_horizon units (N, time_horizon) output
         layers.append(time_horizon)
 
-        print(f"Transformer Dense Layer sizes: {layers}")
+        print(f"ANN Layer sizes: {layers}")
+        print(f"ANN input_shape: {input_shape}")
 
-        # Hidden Dense layers
-        for size in layers[:-1]:
-            x = Dense(
+        # Build the model
+        model_input = Input(shape=(input_shape,), name="model_input")
+        x = model_input
+        x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
+
+        # Hidden Dense layers with Multi-Head Attention
+        for idx, size in enumerate(layers[:-1]):
+            # Dense Layer
+            x_dense = Dense(
                 units=size,
                 activation=self.params['activation'],
                 kernel_initializer=GlorotUniform(),
                 kernel_regularizer=l2(l2_reg),
-                name=f"dense_layer_{size}"
-            )(x)
-            x = Dropout(0.1)(x)
-            x = BatchNormalization()(x)
+                name=f"dense_layer_{idx+1}"
+            )(x)  # Shape: (batch_size, size)
+            
+            # Reshape for Multi-Head Attention
+            # Treat each feature as a "time step" with feature_dim=1
+            x_reshaped = Reshape((size, 1))(x_dense)  # Shape: (batch_size, size, 1)
+            
+            # Multi-Head Attention Layer
+            # Set num_heads=1 and key_dim=size to match output dimension
+            attention_output = MultiHeadAttention(
+                num_heads=1,
+                key_dim=size,
+                name=f"mha_layer_{idx+1}"
+            )(x_reshaped, x_reshaped)  # Shape: (batch_size, size, num_heads * key_dim) = (batch_size, size, size)
+            
+            # Reshape attention output back to (batch_size, size)
+            attention_output = Reshape((size,))(attention_output)  # Shape: (batch_size, size)
+            
+            # Residual Connection: Add attention output to Dense layer output
+            x = Add(name=f"residual_add_{idx+1}")([x_dense, attention_output])  # Shape: (batch_size, size)
+            
+            # Layer Normalization
+            x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_{idx+1}")(x)  # Shape: (batch_size, size)
+            
+            # Dropout for Regularization
+            #x = Dropout(0.1, name=f"dropout_{idx+1}")(x)  # Shape: (batch_size, size)
+        
+        # Batch Normalization before Output Layer
+        x = BatchNormalization(name="batch_norm_final")(x)  # Shape: (batch_size, size)
 
-        # Output layer => shape (N, time_horizon)
+        # Output Layer => shape (N, time_horizon)
         model_output = Dense(
             units=layers[-1],
             activation='linear',
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="model_output"
-        )(x)
+        )(x)  # Shape: (batch_size, time_horizon)
 
-        self.model = Model(inputs=model_input, outputs=model_output, name="Transformer_Predictor_Model")
+        self.model = Model(inputs=model_input, outputs=model_output, name="ANN_with_MHA_Predictor_Model")
 
-        # Adam optimizer
+        # Adam Optimizer
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
             beta_1=0.9, beta_2=0.999,
@@ -202,13 +155,12 @@ class Plugin:
         # Compile the model
         self.model.compile(
             optimizer=adam_optimizer,
-            loss=Huber(),  # or 'mse'
-            metrics=['mse', 'mae']  # logs multi-step MSE/MAE
+            loss=Huber(),  # Robust to outliers
+            metrics=['mse', 'mae']  # Logs multi-step MSE/MAE
         )
         
         print("Predictor Model Summary:")
         self.model.summary()
-
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train the model with shape => x_train(N, input_dim), y_train(N, time_horizon).
