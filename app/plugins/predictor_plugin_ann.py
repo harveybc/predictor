@@ -124,9 +124,9 @@ class Plugin:
             epsilon=1e-7, amsgrad=False
         )
         def coeff_r2(y_true, y_pred):
-            # Take only the last column
-            y_true_last = y_true[:, -1]
-            y_pred_last = y_pred[:, -1]
+            # Take only the last row
+            y_true_last = y_true[-1, :]
+            y_pred_last = y_pred[-1, :]
             ss_res = K.sum(K.square(y_true_last - y_pred_last))
             ss_tot = K.sum(K.square(y_true_last - K.mean(y_true_last, axis=0, keepdims=True)))
             return 1 - ss_res / (ss_tot + K.epsilon())
