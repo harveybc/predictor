@@ -15,7 +15,7 @@ from sklearn.model_selection import TimeSeriesSplit
 
 def process_data(config):
     """
-    Processes data for different plugins, including ANN, CNN, and LSTM.
+    Processes data for different plugins, including ANN, CNN, LSTM, and Transformer.
 
     Args:
         config (dict): Configuration dictionary with dataset paths and parameters.
@@ -101,7 +101,6 @@ def process_data(config):
     x_val = x_val.iloc[:min_len_val]
     y_val_multi = y_val_multi.iloc[:min_len_val]
 
-    
     # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
         print("Processing data for LSTM plugin...")
@@ -137,6 +136,62 @@ def process_data(config):
         print(f"LSTM data shapes after sliding windows:")
         print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
         print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
+
+    # 7) TRANSFORMER-SPECIFIC PROCESSING
+    if config["plugin"] == "transformer":
+        print("Processing data for Transformer plugin...")
+
+        # Ensure datasets are NumPy arrays
+        if not isinstance(x_train, np.ndarray):
+            x_train = x_train.to_numpy().astype(np.float32)
+        if not isinstance(x_val, np.ndarray):
+            x_val = x_val.to_numpy().astype(np.float32)
+
+        # Define positional encoding function
+        def get_positional_encoding(num_features, d_model):
+            """
+            Generates positional encoding for the Transformer model.
+
+            Args:
+                num_features (int): Number of features in the input data.
+                d_model (int): Dimension of the positional encoding.
+
+            Returns:
+                np.ndarray: Positional encoding matrix of shape (num_features, d_model).
+            """
+            pos = np.arange(num_features)[:, np.newaxis]
+            i = np.arange(d_model)[np.newaxis, :]
+            angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
+            angle_rads = pos * angle_rates
+
+            # Apply sin to even indices in the array; 2i
+            angle_rads[:, 0::2] = np.sin(angle_rads[:, 0::2])
+
+            # Apply cos to odd indices in the array; 2i+1
+            angle_rads[:, 1::2] = np.cos(angle_rads[:, 1::2])
+
+            pos_encoding = angle_rads
+            return pos_encoding
+
+        # Retrieve positional encoding dimension from config or set default
+        pos_encoding_dim = config.get("pos_encoding_dim", x_train.shape[1])
+
+        # Generate positional encodings for training and validation data
+        pos_enc_train = get_positional_encoding(x_train.shape[1], pos_encoding_dim)
+        pos_enc_val = get_positional_encoding(x_val.shape[1], pos_encoding_dim)
+
+        # Repeat positional encodings for each sample
+        pos_enc_train = np.tile(pos_enc_train, (x_train.shape[0], 1))
+        pos_enc_val = np.tile(pos_enc_val, (x_val.shape[0], 1))
+
+        # Concatenate positional encodings horizontally with x_train and x_val
+        x_train = np.concatenate([x_train, pos_enc_train], axis=1)
+        x_val = np.concatenate([x_val, pos_enc_val], axis=1)
+
+        print(f"Positional encodings concatenated:")
+        print(f"  x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
+        print(f"  x_val:   {x_val.shape},   y_val:   {y_val_multi.shape}")
+
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
@@ -150,7 +205,6 @@ def process_data(config):
         "x_val": x_val,
         "y_val": y_val_multi,
     }
-
 
 def run_prediction_pipeline(config, plugin):
     """
