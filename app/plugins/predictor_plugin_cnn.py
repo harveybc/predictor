@@ -199,16 +199,19 @@ class Plugin:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
         # Force the model to run in "training mode"
+        print("Forcing training mode for MAE calculation...")
         preds_training_mode = self.model(x_train, training=True).numpy()
         mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
         print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
 
         # Compare with evaluation mode
+        print("Forcing evaluation mode for MAE calculation...")
         preds_eval_mode = self.model(x_train, training=False).numpy()
         mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
 
         # Evaluate on the full training dataset for consistency
+        print("Evaluating on the full training dataset...")
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mse, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
