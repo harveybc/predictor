@@ -102,16 +102,22 @@ class Plugin:
             # Multi-Head Attention
             attention = tf.keras.layers.MultiHeadAttention(
                 num_heads=4,  # You can adjust the number of heads
-                key_dim=32,
+                key_dim=8,     # Adjusted to ensure compatibility
                 dropout=0.1,
                 name=f"transformer_block_{i+1}_multihead_attention"
             )(x, x)
+            
+            # Project attention output back to feature_dim
+            attention = Dense(1 + pos_dim, activation=None, kernel_initializer=GlorotUniform(),
+                              kernel_regularizer=l2(l2_reg),
+                              name=f"attention_projection_{i+1}")(attention)  # Shape: (samples, num_features, feature_dim)
+            
             attention = Dropout(0.1)(attention)
             attention = LayerNormalization(epsilon=1e-6)(x + attention)
 
             # Feed-Forward Network
-            ffn = Dense(64, activation='relu', kernel_regularizer=l2(l2_reg))(attention)
-            ffn = Dense(32, activation='relu', kernel_regularizer=l2(l2_reg))(ffn)
+            ffn = Dense(64, activation='relu', kernel_regularizer=l2(l2_reg), name=f"ffn_dense1_block_{i+1}")(attention)
+            ffn = Dense(32, activation='relu', kernel_regularizer=l2(l2_reg), name=f"ffn_dense2_block_{i+1}")(ffn)
             ffn = Dropout(0.1)(ffn)
             x = LayerNormalization(epsilon=1e-6)(attention + ffn)
 
@@ -140,6 +146,7 @@ class Plugin:
                 activation=self.params['activation'],
                 kernel_initializer=GlorotUniform(),
                 kernel_regularizer=l2(l2_reg),
+                name=f"dense_layer_{size}"
             )(x)
             x = Dropout(0.1)(x)
             x = BatchNormalization()(x)
