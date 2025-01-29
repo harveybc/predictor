@@ -18,7 +18,7 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.001,
+        'learning_rate': 0.002,
         'l2_reg': 1e-3,     # L2 regularization factor
         'patience': 10      # Patience for Early Stopping
     }
@@ -215,10 +215,10 @@ class Plugin:
         
         # Only evaluate validation data if it exists
         if x_val is not None and y_val is not None:
-            val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+            val_eval_results = self.model.evaluate(x_val, y_val[:x_val.shape[0]], batch_size=batch_size, verbose=0)
             _, _, val_mae = val_eval_results
             val_predictions = self.predict(x_val)  # Predict validation data
-            val_r2 = r2_score(y_val, val_predictions)
+            val_r2 = r2_score(y_val[:x_val.shape[0]], val_predictions)
         else:
             val_mae = None
             val_r2 = None
@@ -227,9 +227,9 @@ class Plugin:
         # Predict training data for evaluation
         train_predictions = self.predict(x_train)  # Predict train data
 
-        # Calculate R² scores
-        train_r2 = r2_score(y_train, train_predictions)
-        val_r2 = r2_score(y_val, val_predictions)
+        # Calculate R² scores - adjust target shapes to match predictions
+        train_r2 = r2_score(y_train[:x_train.shape[0]], train_predictions)
+        val_r2 = None if val_predictions is None else r2_score(y_val[:x_val.shape[0]], val_predictions)
         
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
