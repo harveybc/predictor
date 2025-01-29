@@ -63,19 +63,19 @@ class Plugin:
 
     def build_model(self, input_shape):
         """
-        Build the ANN augmented with Multi-Head Attention layers with final layer = self.params['time_horizon'] for multi-step outputs.
+        Construye la ANN augmentada con capas de Multi-Head Attention con una capa final de tamaño = self.params['time_horizon'] para salidas multi-paso.
         
         Args:
-            input_shape (int): Number of input features for ANN.
+            input_shape (int): Número de características de entrada para la ANN.
         """
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
         
         self.params['input_dim'] = input_shape
         l2_reg = self.params.get('l2_reg', 1e-4)
-        time_horizon = self.params['time_horizon']  # the multi-step dimension
+        time_horizon = self.params['time_horizon']  # Dimensión multi-paso
 
-        # Dynamically set layer sizes
+        # Cálculo dinámico de tamaños de capas
         layers = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
@@ -85,70 +85,92 @@ class Plugin:
             current_size = max(current_size // divisor, 1)
             int_layers += 1
 
-        # Final layer => time_horizon units (N, time_horizon) output
+        # Capa final => unidades = time_horizon (salida (N, time_horizon))
         layers.append(time_horizon)
 
         print(f"ANN Layer sizes: {layers}")
         print(f"ANN input_shape: {input_shape}")
 
-        # Build the model
+        # Construcción del modelo
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
-        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
-        # Dense Layer
-        x = Dense(
-            units=layers[0],
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name=f"dense_layer_0"
-        )(x)  # Shape: (batch_size, size)
-        # Hidden Dense layers with Multi-Head Attention
-        # Reshape for Multi-Head Attention
-        # Treat each feature as a "time step" with feature_dim=1
-       #x = Reshape((layers[0], 1))(x)  # Shape: (batch_size, size, 1)
-        for idx, size in enumerate(layers[:-1]):
-            # Multi-Head Attention Layer
-            # Set num_heads=1 and key_dim=size to match output dimension
-            x = MultiHeadAttention(
-                num_heads=2,
-                key_dim=size,
-                name=f"mha_layer_{idx+1}"
-            )(x)  # Shape: (batch_size, size, num_heads * key_dim) = (batch_size, size, size)
-        
-        # Batch Normalization before Output Layer
-        x = Dense(
-            units=size,
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name=f"dense_layer_0"
-        )(x)  # Shape: (batch_size, size)
-        x = BatchNormalization(name="batch_norm_final")(x)  # Shape: (batch_size, size)
+        # x = GaussianNoise(0.01)(x)  # Puedes descomentar si deseas agregar ruido
 
-        # Output Layer => shape (N, time_horizon)
+        # Capas Dense intermedias con Multi-Head Attention
+        for idx, size in enumerate(layers[:-1]):
+            # Capa Dense
+            x_dense = Dense(
+                units=size,
+                activation=self.params['activation'],
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"dense_layer_{idx+1}"
+            )(x)  # Forma: (batch_size, size)
+
+            # Reshape para Multi-Head Attention
+            # Tratamos cada característica como un "paso de tiempo" con feature_dim=1
+            x_reshaped = Reshape((size, 1))(x_dense)  # Forma: (batch_size, size, 1)
+
+            # Configuración de Multi-Head Attention
+            num_heads = 2
+            key_dim = size // num_heads  # Asegurarse de que size es divisible por num_heads
+
+            if size % num_heads != 0:
+                raise ValueError(f"El tamaño de la capa {size} no es divisible por num_heads={num_heads}.")
+
+            # Capa de Multi-Head Attention
+            attention_output = MultiHeadAttention(
+                num_heads=num_heads,
+                key_dim=key_dim,
+                name=f"mha_layer_{idx+1}"
+            )(x_reshaped, x_reshaped)  # Query, Key, Value = x_reshaped
+
+            # Salida de MHA: (batch_size, size, num_heads * key_dim) = (batch_size, size, size)
+            # Proyección de vuelta a la dimensión original mediante una capa Dense
+            attention_proj = Dense(
+                units=size,
+                activation=None,
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"mha_projection_{idx+1}"
+            )(attention_output)  # Forma: (batch_size, size)
+
+            # Conexión Residual: Añadir la salida proyectada de MHA a la salida de la capa Dense
+            x = Add(name=f"residual_add_{idx+1}")([x_dense, attention_proj])  # Forma: (batch_size, size)
+
+            # Normalización de capa
+            x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_{idx+1}")(x)  # Forma: (batch_size, size)
+
+            # Dropout para regularización
+            x = Dropout(0.1, name=f"dropout_{idx+1}")(x)  # Forma: (batch_size, size)
+
+        # Normalización antes de la capa de salida
+        x = BatchNormalization(name="batch_norm_final")(x)  # Forma: (batch_size, size)
+
+        # Capa de salida => forma (N, time_horizon)
         model_output = Dense(
             units=layers[-1],
             activation='linear',
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg),
             name="model_output"
-        )(x)  # Shape: (batch_size, time_horizon)
+        )(x)  # Forma: (batch_size, time_horizon)
 
+        # Definición del modelo
         self.model = Model(inputs=model_input, outputs=model_output, name="ANN_with_MHA_Predictor_Model")
 
-        # Adam Optimizer
+        # Optimizador Adam
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
             beta_1=0.9, beta_2=0.999,
             epsilon=1e-7, amsgrad=False
         )
 
-        # Compile the model
+        # Compilación del modelo
         self.model.compile(
             optimizer=adam_optimizer,
-            loss=Huber(),  # Robust to outliers
-            metrics=['mse', 'mae']  # Logs multi-step MSE/MAE
+            loss=Huber(),  # Robusto a outliers
+            metrics=['mse', 'mae']  # Registra MSE y MAE multi-paso
         )
         
         print("Predictor Model Summary:")
