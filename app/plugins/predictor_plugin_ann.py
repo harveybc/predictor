@@ -125,8 +125,10 @@ class Plugin:
             epsilon=1e-7, amsgrad=False
         )
         def r2_keras(y_true, y_pred):
-            r2_metric = r2_score(y_true, y_pred) 
-            return ( r2_metric )
+            y_true_np = K.get_value(K.flatten(y_true))
+            y_pred_np = K.get_value(K.flatten(y_pred))
+            r2_metric = K.constant(r2_score(y_true_np, y_pred_np))
+            return r2_metric
         # Compile
         self.model.compile(
             optimizer=adam_optimizer,
