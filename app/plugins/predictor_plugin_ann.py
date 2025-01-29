@@ -124,15 +124,15 @@ class Plugin:
             beta_1=0.9, beta_2=0.999,
             epsilon=1e-7, amsgrad=False
         )
-
-
-
-        # Compile model
+        def r2_keras(y_true, y_pred):
+            r2_metric = r2_score(y_true, y_pred) 
+            return ( r2_metric )
+        # Compile
         self.model.compile(
             optimizer=adam_optimizer,
             loss=Huber(),  # or 'mse'
             #loss='mae',  # or 'mse'
-            metrics=['mse', 'mae', r2_score]  # logs multi-step MSE/MAE
+            metrics=['mse', 'mae', r2_keras]  # logs multi-step MSE/MAE
         )
         
         print("Predictor Model Summary:")
