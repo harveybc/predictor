@@ -208,7 +208,7 @@ class Plugin:
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         preds = self.model.predict(data)
-        print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
+        #print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
         return preds
 
     def calculate_mse(self, y_true, y_pred):
