@@ -207,7 +207,7 @@ class Plugin:
         # Compare with evaluation mode
         print("Forcing evaluation mode for MAE calculation...")
         preds_eval_mode = self.model(x_train, training=False).numpy()
-        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
+        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train[:len(preds_training_mode)]))
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
 
         # Evaluate on the full training dataset for consistency
