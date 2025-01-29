@@ -70,8 +70,15 @@ class Plugin:
 
         # Input shape: (time_steps, features)
         model_input = Input(shape=input_shape, name="model_input")  # Corrected input shape
+        x_dense = Dense(
+            units=layers[0],
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name=f"dense_layer_0"
+        )(x)  # Shape: (batch_size, size)
         x = model_input
-        x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
+        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
         #x = Dense(
         #        units=input_shape,
         #        activation=self.params['activation'],
