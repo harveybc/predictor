@@ -151,16 +151,16 @@ def process_data(config):
         pos_dim = config.get("positional_encoding_dim", 16)  # Default positional encoding dimension
         num_features = x_train.shape[1]
 
-        pos_encoding_train = generate_positional_encoding(num_features, pos_dim)
-        pos_encoding_val = generate_positional_encoding(x_val.shape[1], pos_dim)
+        pos_encoding_train = generate_positional_encoding(num_features, pos_dim)  # Shape: (1, num_features * pos_dim)
+        pos_encoding_val = generate_positional_encoding(x_val.shape[1], pos_dim)  # Shape: (1, num_features * pos_dim)
 
-        # Repeat positional encoding for each sample
-        pos_encoding_train = np.tile(pos_encoding_train, (x_train.shape[0], 1))
-        pos_encoding_val = np.tile(pos_encoding_val, (x_val.shape[0], 1))
+        # Tile positional encoding for each sample
+        pos_encoding_train = np.tile(pos_encoding_train, (x_train.shape[0], 1))  # Shape: (samples, num_features * pos_dim)
+        pos_encoding_val = np.tile(pos_encoding_val, (x_val.shape[0], 1))        # Shape: (samples, num_features * pos_dim)
 
         # Concatenate positional encoding to x_train and x_val horizontally
-        x_train = np.concatenate([x_train, pos_encoding_train], axis=1)
-        x_val = np.concatenate([x_val, pos_encoding_val], axis=1)
+        x_train = np.concatenate([x_train, pos_encoding_train], axis=1)  # Shape: (samples, original_features + pos_enc_features)
+        x_val = np.concatenate([x_val, pos_encoding_val], axis=1)        # Shape: (samples, original_features + pos_enc_features)
 
         print(f"Positional encoding concatenated:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
@@ -179,7 +179,6 @@ def process_data(config):
         "x_val": x_val,
         "y_val": y_val_multi,
     }
-
 
 def run_prediction_pipeline(config, plugin):
     """
@@ -608,11 +607,12 @@ def generate_positional_encoding(num_features, pos_dim=16):
         pos_dim (int): Dimension of the positional encoding.
 
     Returns:
-        np.ndarray: Positional encoding of shape (num_features, pos_dim).
+        np.ndarray: Positional encoding of shape (1, num_features * pos_dim).
     """
     position = np.arange(num_features)[:, np.newaxis]
     div_term = np.exp(np.arange(0, pos_dim, 2) * -(np.log(10000.0) / pos_dim))
     pos_encoding = np.zeros((num_features, pos_dim))
     pos_encoding[:, 0::2] = np.sin(position * div_term)
     pos_encoding[:, 1::2] = np.cos(position * div_term)
-    return pos_encoding
+    pos_encoding_flat = pos_encoding.flatten().reshape(1, -1)  # Shape: (1, num_features * pos_dim)
+    return pos_encoding_flat
