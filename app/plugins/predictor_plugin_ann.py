@@ -93,7 +93,7 @@ class Plugin:
         from tensorflow.keras import Model, Input
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
-        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
+        x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
         # Hidden Dense layers
         for size in layers[:-1]:
             x = Dense(
@@ -104,7 +104,7 @@ class Plugin:
             )(x)
 
         #add batch normalization
-        x = BatchNormalization()(x)
+        #x = BatchNormalization()(x)
         # Output layer => shape (N, time_horizon)
         model_output = Dense(
             units=layers[-1],
@@ -114,7 +114,7 @@ class Plugin:
             name="model_output"
         )(x)
         #add batch normalization
-        #model_output = BatchNormalization()(model_output)
+        model_output = BatchNormalization()(model_output)
 
         self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
 
