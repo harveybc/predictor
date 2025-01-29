@@ -105,12 +105,19 @@ class Plugin:
                     kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
                     name=f"conv1d_{idx+1}"
                 )(x)
-                x = BatchNormalization()(x)
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+        x = Dense(
+            units=size,
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+        )(x)
 
+        #add batch normalization
+        x = BatchNormalization()(x)
+        
         # Flatten the output from Conv layers
         x = Flatten(name="flatten")(x)
-        
                 
         # Output layer => shape (N, time_horizon)
         model_output = Dense(
