@@ -275,7 +275,7 @@ def run_prediction_pipeline(config, plugin):
             # Loss History
             plt.plot(history.history['loss'])
             plt.plot(history.history['val_loss'])
-            plt.title('Model Loss')
+            plt.title('Model Loss for '+f" {config['plugin'].upper()} - {iteration}")
             plt.ylabel('Loss')
             plt.xlabel('Epoch')
             plt.legend(['Train', 'Test'], loc='upper left')

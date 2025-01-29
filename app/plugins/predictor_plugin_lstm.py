@@ -22,7 +22,8 @@ class Plugin:
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
         'learning_rate': 0.001,
-        'dropout_rate': 0.1
+        'dropout_rate': 0.1,
+        'patience': 10,
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
@@ -89,6 +90,7 @@ class Plugin:
         )(x)
         # add a batch normalization layer
         x = BatchNormalization()(x)
+        
         # Output layer
         model_output = Dense(
             units=layers[-1],
