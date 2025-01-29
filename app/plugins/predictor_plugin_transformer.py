@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Dense, Input, Dropout, LayerNormalization, GlobalAveragePooling1D, BatchNormalization
+from keras.layers import Dense, Input, Dropout, LayerNormalization, GlobalAveragePooling1D, Reshape, BatchNormalization
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
@@ -90,7 +90,7 @@ class Plugin:
         model_input = Input(shape=(input_shape,), name="model_input")
 
         # Reshape to (num_features, feature_dim)
-        reshaped = tf.keras.layers.Reshape((num_features, 1 + pos_dim))(model_input)  # Shape: (num_features, feature_dim)
+        reshaped = Reshape((num_features, 1 + pos_dim))(model_input)  # Shape: (samples, num_features, feature_dim)
 
         x = reshaped
         x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
@@ -199,8 +199,8 @@ class Plugin:
             verbose=1,
             shuffle=True,  # Enable shuffling
             callbacks=callbacks,
-            #validation_data=(x_val, y_val)
-            validation_split = 0.2
+            validation_split=0.2 if x_val is None or y_val is None else None,
+            validation_data=(x_val, y_val) if x_val is not None and y_val is not None else None
         )
 
         print("Training completed.")
