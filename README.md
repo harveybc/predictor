@@ -18,9 +18,9 @@ To install and set up the predictor application, follow these steps:
 2. **Add the clonned directory to the Windows or Linux PYTHONPATH environment variable**:
 
 In Windows a close of current command line promp may be required for the PYTHONPATH varible to be usable.
-Confirm you added the directory to the PYTHONPATH with the following commands
+Confirm you added the directory to the PYTHONPATH with the following commands:
 
-- On Windows, run the following command to verify installation (it uses all default valuex, use predictor.bat --help for complete command line arguments description):
+- On Windows, run:
     ```bash
     echo %PYTHONPATH%
     ```
