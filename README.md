@@ -42,12 +42,12 @@ To install and set up the predictor application, follow these steps:
 6. **(Optional) Run the predictor**:
     - On Windows, run the following command to verify installation (it uses all default valuex, use predictor.bat --help for complete command line arguments description):
         ```bash
-        predictor.bat tests\data\EURUSD_hour_2010_2020.csv
+        predictor.bat --load_config examples\config\phase_1\phase_1_ann_6300_1h_config.json
         ```
 
     - On Linux, run:
         ```bash
-        sh predictor.sh tests\data\EURUSD_hour_2010_2020.csv
+        sh predictor.sh --load_config examples\config\phase_1\phase_1_ann_6300_1h_config.json
         ```
 
 7. **(Optional) Run Tests**:
@@ -78,7 +78,7 @@ Please read: [Readme - CUDA](https://github.com/harveybc/predictor/blob/master/R
 The application supports several command line arguments to control its behavior:
 
 ```
-usage: predictor.bat tests\data\csv_sel_unb_norm_512.csv
+usage: predictor.bat --load_config examples\config\phase_1\phase_1_ann_6300_1h_config.json
 ```
 
 ### Directory Structure
