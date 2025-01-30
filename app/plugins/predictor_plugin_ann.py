@@ -103,7 +103,7 @@ class Plugin:
                 activation=self.params['activation'],
                 kernel_initializer=GlorotUniform(),
                 kernel_regularizer=l2(l2_reg),
-                name=f"dense_layer_{idx+1}"
+                name=f"dense_layer_{idx}"
             )(x)
 
         #add batch normalization

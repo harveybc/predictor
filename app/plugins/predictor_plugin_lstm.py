@@ -82,7 +82,7 @@ class Plugin:
                     activation='tanh',
                     recurrent_activation='sigmoid',
                     return_sequences=True,
-                    name=f"lstm_layer_{idx+1}"
+                    name=f"lstm_layer_{idx}"
                 )(x)
                       
         # Final LSTM layer without `return_sequences`
