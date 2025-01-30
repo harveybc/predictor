@@ -447,7 +447,7 @@ def run_prediction_pipeline(config, plugin):
             plugin.model, 
             to_file=config['model_plot_file'],
             show_shapes=True,
-            show_dtype=True,
+            show_dtype=False,
             show_layer_names=True,
             expand_nested=True,
             dpi=300,
