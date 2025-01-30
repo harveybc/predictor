@@ -449,7 +449,7 @@ def run_prediction_pipeline(config, plugin):
             show_shapes=True,
             show_dtype=False,
             show_layer_names=True,
-            expand_nested=True,
+            expand_nested=False,
             dpi=300,
             show_layer_activations=True
         )
