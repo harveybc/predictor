@@ -442,8 +442,6 @@ def run_prediction_pipeline(config, plugin):
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
     # Save model plot
     try:
-        # Ensure the output directory exists
-        os.makedirs(os.path.dirname(config['model_plot_file']), exist_ok=True)
         # Use a simpler call first to test if plotting works
         plot_model(
             plugin.model, 
@@ -453,8 +451,7 @@ def run_prediction_pipeline(config, plugin):
             show_layer_names=True,
             expand_nested=True,
             dpi=600,
-            show_layer_activations=True,
-            show_trainable=False,
+            show_layer_activations=True
         )
         print(f"Model plot saved to {config['model_plot_file']}")
     except Exception as e:
