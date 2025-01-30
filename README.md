@@ -115,7 +115,6 @@ predictor/
 │
 ├── app/                                 # Main application package
 │   ├── __init__.py                     # Package initialization
-│   ├── autoencoder_manager.py          # Manages autoencoder functionality
 │   ├── cli.py                          # Command-line interface handling
 │   ├── config.py                       # Default configuration values
 │   ├── config_handler.py               # Configuration management
@@ -140,8 +139,11 @@ predictor/
 │   └── unit_tests/                    # Unit test modules
 │
 ├── examples/                           # Example files directory
-│   └── scripts/                       # Example execution scripts
-│       └── run_phase_1.bat           # Phase 1 execution script
+│   ├── config/                         # Example configuration files
+│   ├── data/                           # Example training data
+│   ├── results/                        # Example output results
+│   └── scripts/                        # Example execution scripts
+│       └── run_phase_1.bat                 # Phase 1 execution script
 │
 ├── concatenate_csv.py                  # CSV file manipulation utility
 ├── setup.py                           # Package installation script
