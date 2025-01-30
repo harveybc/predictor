@@ -75,40 +75,66 @@ Please read: [Readme - CUDA](https://github.com/harveybc/predictor/blob/master/R
 
 ## Usage
 
-Example config json files are located in examples\config, for a list of individual parameters to call via CLI or in a config json file, use: **predictor --help**
+Example config json files are located in examples\config, for a list of individual parameters to call via CLI or in a config json file, use: **predictor.bat --help**
 
-The application supports several command line arguments to control its behavior:
+After executing the prediction pipeline, the predictor will generate 4 files:
+- **output_file**: csv file, predictions for the selected time_horizon **(see defaults in app\config.py)**
+- **results_file**: csv file, aggregated results for the configured number of iterations of the training with the selected number of training epochs 
+- **loss_plot_file**: png image, the plot of error vs epoch for training and validation in the last iteration 
+- **model_plot_file**: png image, the plot of the used Keras model
+ 
+The application supports several command line arguments to control its behavior for example:
 
 ```
-usage: predictor.bat --load_config examples\config\phase_1\phase_1_ann_6300_1h_config.json
+usage: predictor.bat --load_config examples\config\phase_1\phase_1_ann_6300_1h_config.json --epochs 100 --iterations 5
 ```
+
+There are many examples of config files in the **examples\config directory**, also training data of EURUSD and othertimeseries in **examples\data** and the results of the example config files are set to be on **examples\results**, there are some scripts to automate running sequential predictions in **examples\scripts**.
+
 
 ### Directory Structure
 
-- `app/`: The main application package.
-  - `cli.py`: Handles command-line argument parsing.
-  - `config.py`: Stores default configuration values.
-  - `config_handler.py`: Manages the loading, saving, and merging of configurations.
-  - `config_merger.py`: Merges configurations from various sources.
-  - `data_handler.py`: Handles the loading and saving of data.
-  - `data_processor.py`: Processes input data and runs the prediction pipeline.
-  - `main.py`: Main entry point for the application.
-  - `plugin_loader.py`: Dynamically loads prediction plugins.
-  - `plugins/`: Directory for prediction plugins.
-    - `predictor_plugin_ann.py`: Predictor plugin using an artificial neural network.
-    - `predictor_plugin_cnn.py`: Predictor plugin using a convolutional neural network.
-    - `predictor_plugin_lstm.py`: Predictor plugin using long short-term memory networks.
-    - `predictor_plugin_transformer.py`: Predictor plugin using transformer layers.
+```
+predictor/
+│
+├── app/                                 # Main application package
+│   ├── __init__.py                     # Package initialization
+│   ├── autoencoder_manager.py          # Manages autoencoder functionality
+│   ├── cli.py                          # Command-line interface handling
+│   ├── config.py                       # Default configuration values
+│   ├── config_handler.py               # Configuration management
+│   ├── config_merger.py                # Configuration merging logic
+│   ├── data_handler.py                 # Data loading and saving functions
+│   ├── data_processor.py               # Core data processing pipeline
+│   ├── main.py                         # Application entry point
+│   ├── plugin_loader.py                # Dynamic plugin loading system
+│   ├── reconstruction.py               # Data reconstruction utilities
+│   └── plugins/                        # Prediction plugins directory
+│       ├── predictor_plugin_ann.py     # Artificial Neural Network plugin
+│       ├── predictor_plugin_cnn.py     # Convolutional Neural Network plugin
+│       ├── predictor_plugin_lstm.py    # Long Short-Term Memory plugin
+│       └── predictor_plugin_transformer.py # Transformer model plugin
+│
+├── tests/                              # Test suite directory
+│   ├── __init__.py                    # Test package initialization
+│   ├── conftest.py                    # pytest configuration
+│   ├── acceptance_tests/              # User acceptance tests
+│   ├── integration_tests/             # Integration test modules
+│   ├── system_tests/                  # System-wide test cases
+│   └── unit_tests/                    # Unit test modules
+│
+├── examples/                           # Example files directory
+│   └── scripts/                       # Example execution scripts
+│       └── run_phase_1.bat           # Phase 1 execution script
+│
+├── concatenate_csv.py                  # CSV file manipulation utility
+├── setup.py                           # Package installation script
+├── predictor.bat                      # Windows execution script
+├── predictor.sh                       # Linux execution script
+├── set_env.bat                        # Windows environment setup
+├── set_env.sh                         # Linux environment setup
+├── requirements.txt                    # Python dependencies
+├── LICENSE.txt                        # Project license
+└── prompt.txt                         # Project documentation
+```
 
-- `tests/`: Test modules for the application.
-  - `acceptance`: User acceptance tests.
-  - `system`: System tests.
-  - `integration`: Integration tests.
-  - `unit`: Unit tests.
-
-- `README.md`: Overview and documentation for the project.
-- `requirements.txt`: Lists Python package dependencies.
-- `setup.py`: Script for packaging and installing the project.
-- `set_env.bat`: Batch script for environment setup.
-- `set_env.sh`: Shell script for environment setup.
-- `.gitignore`: Specifies intentionally untracked files to ignore.
