@@ -75,6 +75,8 @@ Please read: [Readme - CUDA](https://github.com/harveybc/predictor/blob/master/R
 
 ## Usage
 
+Example config json files are located in examples\config, for a list of individual parameters to call via CLI or in a config json file, use: **predictor --help**
+
 The application supports several command line arguments to control its behavior:
 
 ```
