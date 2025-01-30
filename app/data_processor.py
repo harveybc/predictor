@@ -12,6 +12,7 @@ from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
 import contextlib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
+from keras.utils.vis_utils import plot_model
 
 def process_data(config):
     """
@@ -439,6 +440,23 @@ def run_prediction_pipeline(config, plugin):
         print(f"Final validation predictions saved to {final_val_file}")
     else:
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
+    # Save model plot
+    try:
+        # Use a simpler call first to test if plotting works
+        plot_model(
+            plugin.model, 
+            to_file=config['model_plot_file'],
+            show_shapes=True,
+            show_dtype=False,
+            show_layer_names=True,
+            expand_nested=True,
+            dpi=300,
+            show_layer_activations=True
+        )
+        print(f"Model plot saved to {config['model_plot_file']}")
+    except Exception as e:
+        print(f"Failed to generate model plot. Ensure Graphviz is installed and in your PATH: {e}")
+        print("Download Graphviz from https://graphviz.org/download/")
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")

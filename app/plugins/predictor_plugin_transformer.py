@@ -27,10 +27,10 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.001,
+        'learning_rate': 0.0002,
         'activation': 'tanh',
         'patience': 10,
-        'l2_reg': 1e-3,
+        'l2_reg': 1e-5,
         'positional_encoding_dim': 16  # Added for Transformer
     }
     
@@ -94,48 +94,79 @@ class Plugin:
         # Build the model
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
-        x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
-        # Dense Layer
-        x_dense = Dense(
-            units=layers[0],
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name=f"dense_layer_0"
-        )(x)  # Shape: (batch_size, size)
+        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01 if desired
+
         # Hidden Dense layers with Multi-Head Attention
-        # Reshape for Multi-Head Attention
-        # Treat each feature as a "time step" with feature_dim=1
-        x_reshaped = Reshape((layers[0], 1))(x_dense)  # Shape: (batch_size, size, 1)
         for idx, size in enumerate(layers[:-1]):
+            # Dense Layer
+            x_dense = Dense(
+                units=size,
+                activation=self.params['activation'],
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"dense_layer_{idx+1}"
+            )(x)  # Shape: (batch_size, size)
+
+            # Define sequence_length and feature_dim for reshaping
+            # Choose sequence_length such that size is divisible by it
+            # Example: for size=64, sequence_length=8, feature_dim=8
+            sequence_length = 8
+            if size % sequence_length != 0:
+                # Fallback to sequence_length=4
+                sequence_length = 4
+                if size % sequence_length != 0:
+                    # Fallback to sequence_length=2
+                    sequence_length = 2
+                    if size % sequence_length != 0:
+                        # Fallback to sequence_length=1
+                        sequence_length = 1
+                        feature_dim = size
+                    else:
+                        feature_dim = size // sequence_length
+                else:
+                    feature_dim = size // sequence_length
+            else:
+                feature_dim = size // sequence_length
+
+            # Reshape for Multi-Head Attention
+            x_reshaped = Reshape((sequence_length, feature_dim), name=f"reshape_{idx+1}")(x_dense)  # Shape: (batch_size, sequence_length, feature_dim)
+
+            # Configure Multi-Head Attention
+            num_heads = 2
+            if feature_dim % num_heads != 0:
+                # Adjust num_heads to ensure feature_dim is divisible by num_heads
+                num_heads = 1
+            key_dim = feature_dim // num_heads
+
             # Multi-Head Attention Layer
-            # Set num_heads=1 and key_dim=size to match output dimension
             attention_output = MultiHeadAttention(
-                num_heads=2,
-                key_dim=size,
+                num_heads=num_heads,
+                key_dim=key_dim,
                 name=f"mha_layer_{idx+1}"
-            )(x_reshaped, x_reshaped)  # Shape: (batch_size, size, num_heads * key_dim) = (batch_size, size, size)
-            
-            # Reshape attention output back to (batch_size, size)
-            #attention_output = Reshape((size,))(attention_output)  # Shape: (batch_size, size)
-            
+            )(query=x_reshaped, value=x_reshaped)  # Shape: (batch_size, sequence_length, num_heads * key_dim)
+
+            # Project attention output back to feature_dim
+            attention_proj = Dense(
+                units=feature_dim,
+                activation='tanh',
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"mha_projection_{idx+1}"
+            )(attention_output)  # Shape: (batch_size, sequence_length, feature_dim)
+
+            # Reshape back to original Dense layer size
+            x_att_proj = Reshape((sequence_length * feature_dim,), name=f"reshape_back_{idx+1}")(attention_proj)  # Shape: (batch_size, size)
+
             # Residual Connection: Add attention output to Dense layer output
-            #x = Add(name=f"residual_add_{idx+1}")([x_dense, attention_output])  # Shape: (batch_size, size)
-            
+            x = Add(name=f"residual_add_{idx+1}")([x_dense, x_att_proj])  # Shape: (batch_size, size)
+
             # Layer Normalization
             #x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_{idx+1}")(x)  # Shape: (batch_size, size)
-            
-            # Dropout for Regularization
+
+            # Dropout for regularization
             #x = Dropout(0.1, name=f"dropout_{idx+1}")(x)  # Shape: (batch_size, size)
-        
+
         # Batch Normalization before Output Layer
-        x_dense = Dense(
-            units=size,
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name=f"dense_layer_0"
-        )(x)  # Shape: (batch_size, size)
         x = BatchNormalization(name="batch_norm_final")(x)  # Shape: (batch_size, size)
 
         # Output Layer => shape (N, time_horizon)
@@ -147,6 +178,7 @@ class Plugin:
             name="model_output"
         )(x)  # Shape: (batch_size, time_horizon)
 
+        # Define the model
         self.model = Model(inputs=model_input, outputs=model_output, name="ANN_with_MHA_Predictor_Model")
 
         # Adam Optimizer
@@ -165,8 +197,6 @@ class Plugin:
         
         print("Predictor Model Summary:")
         self.model.summary()
-
-
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
