@@ -15,7 +15,23 @@ To install and set up the predictor application, follow these steps:
     cd predictor
     ```
 
-2. **Create and Activate a Virtual Environment (Anaconda is required)**:
+2. **Add the clonned directory to the Windows or Linux PYTHONPATH environment variable**:
+
+In Windows a close of current command line promp may be required for the PYTHONPATH varible to be usable.
+Confirm you added the directory to the PYTHONPATH with the following commands:
+    
+    - On Windows, run the following command to verify installation (it uses all default valuex, use predictor.bat --help for complete command line arguments description):
+        ```bash
+        echo %PYTHONPATH%
+        ```
+
+    - On Linux, run:
+        ```bash
+        echo $PYTHONPATH 
+        ```
+If the clonned repo directory appears in the PYTHONPATH, continue to the next step. 
+
+3. **Create and Activate a Virtual Environment (Anaconda is required)**:
 
     - **Using `conda`**:
         ```bash
@@ -23,23 +39,23 @@ To install and set up the predictor application, follow these steps:
         conda activate predictor-env
         ```
 
-3. **Install Dependencies**:
+4. **Install Dependencies**:
     ```bash
     pip install --upgrade pip
     pip install -r requirements.txt
     ```
 
-4. **Build the Package**:
+5. **Build the Package**:
     ```bash
     python -m build
     ```
 
-5. **Install the Package**:
+6. **Install the Package**:
     ```bash
     pip install .
     ```
 
-6. **(Optional) Run the predictor**:
+7. **(Optional) Run the predictor**:
     - On Windows, run the following command to verify installation (it uses all default valuex, use predictor.bat --help for complete command line arguments description):
         ```bash
         predictor.bat --load_config examples\config\phase_1\phase_1_ann_6300_1h_config.json
@@ -50,7 +66,7 @@ To install and set up the predictor application, follow these steps:
         sh predictor.sh --load_config examples\config\phase_1\phase_1_ann_6300_1h_config.json
         ```
 
-7. **(Optional) Run Tests**:
+8. **(Optional) Run Tests**:
 For pasing remote tests, requires an instance of [harveybc/data-logger](https://github.com/harveybc/data-logger)
     - On Windows, run the following command to run the tests:
         ```bash
@@ -64,12 +80,12 @@ For pasing remote tests, requires an instance of [harveybc/data-logger](https://
         pytest
         ```
 
-8. **(Optional) Generate Documentation**:
+9. **(Optional) Generate Documentation**:
     - Run the following command to generate code documentation in HTML format in the docs directory:
         ```bash
         pdoc --html -o docs app
         ```
-9. **(Optional) Install Nvidia CUDA GPU support**:
+10. **(Optional) Install Nvidia CUDA GPU support**:
 
 Please read: [Readme - CUDA](https://github.com/harveybc/predictor/blob/master/README_CUDA.md)
 
