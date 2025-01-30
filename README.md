@@ -18,17 +18,17 @@ To install and set up the predictor application, follow these steps:
 2. **Add the clonned directory to the Windows or Linux PYTHONPATH environment variable**:
 
 In Windows a close of current command line promp may be required for the PYTHONPATH varible to be usable.
-Confirm you added the directory to the PYTHONPATH with the following commands:
-    
-    - On Windows, run the following command to verify installation (it uses all default valuex, use predictor.bat --help for complete command line arguments description):
-        ```bash
-        echo %PYTHONPATH%
-        ```
+Confirm you added the directory to the PYTHONPATH with the following commands
 
-    - On Linux, run:
-        ```bash
-        echo $PYTHONPATH 
-        ```
+- On Windows, run the following command to verify installation (it uses all default valuex, use predictor.bat --help for complete command line arguments description):
+    ```bash
+    echo %PYTHONPATH%
+    ```
+
+- On Linux, run:
+    ```bash
+    echo $PYTHONPATH 
+    ```
 If the clonned repo directory appears in the PYTHONPATH, continue to the next step. 
 
 3. **Create and Activate a Virtual Environment (Anaconda is required)**:
