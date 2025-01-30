@@ -450,7 +450,7 @@ def run_prediction_pipeline(config, plugin):
             show_dtype=True,
             show_layer_names=True,
             expand_nested=True,
-            dpi=400,
+            dpi=300,
             show_layer_activations=True
         )
         print(f"Model plot saved to {config['model_plot_file']}")
