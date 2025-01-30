@@ -95,12 +95,15 @@ class Plugin:
         x = model_input
         #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
         # Hidden Dense layers
+        idx = 0
         for size in layers[:-1]:
+            idx += 1
             x = Dense(
                 units=size,
                 activation=self.params['activation'],
                 kernel_initializer=GlorotUniform(),
                 kernel_regularizer=l2(l2_reg),
+                name=f"dense_layer_{idx+1}"
             )(x)
 
         #add batch normalization

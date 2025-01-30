@@ -441,7 +441,26 @@ def run_prediction_pipeline(config, plugin):
     else:
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
     # Save model plot
-    plot_model(plugin.model, to_file=config['model_plot_file'], show_shapes=True, show_layer_names=True)
+    try:
+        # Ensure the output directory exists
+        os.makedirs(os.path.dirname(config['model_plot_file']), exist_ok=True)
+        # Use a simpler call first to test if plotting works
+        plot_model(
+            plugin.model, 
+            to_file=config['model_plot_file'],
+            show_shapes=True,
+            show_dtype=True,
+            show_layer_names=True,
+            rankdir="TB",
+            expand_nested=True,
+            dpi=600,
+            show_layer_activations=True,
+            show_trainable=False,
+        )
+        print(f"Model plot saved to {config['model_plot_file']}")
+    except Exception as e:
+        print(f"Failed to generate model plot. Ensure Graphviz is installed and in your PATH: {e}")
+        print("Download Graphviz from https://graphviz.org/download/")
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")

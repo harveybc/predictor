@@ -5,6 +5,8 @@ pandas
 h5py
 scipy
 build
-pytest
+pytestpip install graph
 pdoc3
 keras-multi-head
+pydot
+graphviz

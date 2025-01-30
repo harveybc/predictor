@@ -73,13 +73,16 @@ class Plugin:
         model_input = Input(shape=input_shape, name="model_input")  # Corrected input shape
         x = model_input
         # Add LSTM layers
+        idx = 0
         for size in layers[:-1]:
+            idx += 1
             if size > 1:
                 x = LSTM(
                     units=size,
                     activation='tanh',
                     recurrent_activation='sigmoid',
-                    return_sequences=True
+                    return_sequences=True,
+                    name=f"lstm_layer_{idx+1}"
                 )(x)
                       
         # Final LSTM layer without `return_sequences`
