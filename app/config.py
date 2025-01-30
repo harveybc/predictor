@@ -1,12 +1,10 @@
 # config.py
 
 DEFAULT_VALUES = {
-    #'x_train_file': './tests/data/encoder_eval_d2.csv',
-    'x_train_file': './tests/data/normalized_d2.csv',
-    'y_train_file': './tests/data/normalized_d2.csv',
-    #'x_validation_file': './tests/data/encoder_eval_d3.csv',
-    'x_validation_file': './tests/data/normalized_d3.csv',
-    'y_validation_file': './tests/data/normalized_d3.csv',
+    "x_train_file": "examples\\data\\phase_1\\phase_1_normalized_d2.csv",
+    "y_train_file": "examples\\data\\phase_1\\phase_1_normalized_d2.csv",
+    "x_validation_file": "examples\\data\\phase_1\\phase_1_normalized_d1.csv",
+    "y_validation_file": "examples\\data\\phase_1\\phase_1_normalized_d1.csv",
     'target_column': 'CLOSE',
     'output_file': './prediction.csv',
     'results_file': './results.csv',
