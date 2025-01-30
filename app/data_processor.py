@@ -12,6 +12,7 @@ from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
 import contextlib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
+from keras.utils.vis_utils import plot_model
 
 def process_data(config):
     """
@@ -439,6 +440,8 @@ def run_prediction_pipeline(config, plugin):
         print(f"Final validation predictions saved to {final_val_file}")
     else:
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
+    # Save model plot
+    plot_model(plugin.model, to_file=config['model_plot_file'], show_shapes=True, show_layer_names=True)
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
