@@ -72,12 +72,6 @@ class Plugin:
         # Input shape: (time_steps, features)
         model_input = Input(shape=input_shape, name="model_input")  # Corrected input shape
         x = model_input
-        x = Dense(
-            units=layers[0],
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-        )(x)
         # Add LSTM layers
         idx = 0
         for size in layers[:-1]:
