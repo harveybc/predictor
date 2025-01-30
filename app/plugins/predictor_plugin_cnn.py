@@ -93,7 +93,12 @@ class Plugin:
         # Define the Input layer
         inputs = Input(shape=input_shape, name="model_input")
         x = inputs
-
+        x = Dense(
+            units=layers[0],
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+        )(x)
         # Add intermediate Conv1D and MaxPooling1D layers
         for idx, size in enumerate(layers[:-1]):
             if size > 1:
