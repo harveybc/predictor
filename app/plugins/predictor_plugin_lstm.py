@@ -18,10 +18,10 @@ class Plugin:
     plugin_params = {
         'epochs': 200,
         'batch_size': 128,
-        'intermediate_layers': 3,
+        'intermediate_layers':2,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.0002,
+        'learning_rate': 0.0001,
         'dropout_rate': 0.1,
         'patience': 10,
         'activation': 'tanh'
@@ -72,14 +72,18 @@ class Plugin:
         # Input shape: (time_steps, features)
         model_input = Input(shape=input_shape, name="model_input")  # Corrected input shape
         x = model_input
+        
         # Add LSTM layers
+        idx = 0
         for size in layers[:-1]:
+            idx += 1
             if size > 1:
                 x = LSTM(
                     units=size,
                     activation='tanh',
                     recurrent_activation='sigmoid',
-                    return_sequences=True
+                    return_sequences=True,
+                    name=f"lstm_layer_{idx}"
                 )(x)
                       
         # Final LSTM layer without `return_sequences`
@@ -132,7 +136,7 @@ class Plugin:
 
         # Early stopping based on validation loss
         early_stopping_monitor = EarlyStopping(
-            monitor='loss',  # Monitor validation loss
+            monitor='val_mae',  # Monitor validation loss
             patience=patience,
             restore_best_weights=True,
             verbose=1
