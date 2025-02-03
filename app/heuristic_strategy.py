@@ -333,10 +333,8 @@ class HeuristicStrategy(bt.Strategy):
         print(f"Number of Trades: {n_trades}")
         print(f"Average Profit (USD): {avg_profit_usd:.2f}")
         print(f"Average Profit (pips): {avg_profit_pips:.2f}")
-        print(f"Average Absolute Profit (pips): {avg_profit_pips_abs:.2f}")
         print(f"Average Trade Duration (bars): {avg_duration:.2f}")
-        print(f"Average Max Drawdown (pips): {avg_max_dd:.2f}")
-
+        
         # Plot balance vs. date.
         plt.figure(figsize=(10, 5))
         plt.plot(self.date_history, self.balance_history, label="Balance")
