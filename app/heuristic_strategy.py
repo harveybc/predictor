@@ -148,8 +148,8 @@ class HeuristicStrategy(bt.Strategy):
             return  # Do not attempt new entries if a position is open.
         else:
             # Reset intra‐trade extremes when no position is open.
-            self.trade_low = None
-            self.trade_high = None
+            self.trade_low = current_price
+            self.trade_high = current_price
 
         # --- Enforce trade frequency: no more than max_trades_per_5days in the last 5 days ---
         recent_trades = [d for d in self.trade_entry_dates if (dt - d).days < 5]
@@ -210,12 +210,6 @@ class HeuristicStrategy(bt.Strategy):
         order_size = self.compute_size(chosen_rr)
         if order_size <= 0:
             return
-
-
-
-        # Initialize intra‐trade extremes.
-        self.trade_low = current_price
-        self.trade_high = current_price
 
         # Record the trade entry details.
         self.trade_entry_dates.append(dt)
@@ -302,8 +296,6 @@ class HeuristicStrategy(bt.Strategy):
             self.order_entry_price = None
             self.current_tp = None
             self.current_sl = None
-            self.trade_low = None
-            self.trade_high = None
             self.current_direction = None
 
     def stop(self):
