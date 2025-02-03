@@ -63,6 +63,7 @@ class HeuristicStrategy(bt.Strategy):
         ('max_trades_per_5days', 3),
     )
 
+
     def __init__(self):
         # Load prediction data from CSV and filter by the specified date range.
         self.pred_df = pd.read_csv(self.p.pred_file, parse_dates=['DATE_TIME'])
@@ -88,7 +89,10 @@ class HeuristicStrategy(bt.Strategy):
         self.order_entry_price = None  # This is set in notify_order.
         self.current_tp = None
         self.current_sl = None
-        self.order_direction = None  # Will be 'long' or 'short'.
+        self.order_direction = None  # This variable is used for custom attributes if needed.
+        # NEW: Use a dedicated variable to record the trade's direction.
+        self.current_direction = None  # Will be set to 'long' or 'short' when an order is placed.
+
         # For tracking intra‐trade extreme prices:
         self.trade_low = None   # For long trades: the lowest price reached since entry.
         self.trade_high = None  # For short trades: the highest price reached since entry.
@@ -102,6 +106,8 @@ class HeuristicStrategy(bt.Strategy):
 
         # For recording trade details.
         self.trades = []
+    
+
 
     def next(self):
         dt = self.data0.datetime.datetime(0)
@@ -114,10 +120,9 @@ class HeuristicStrategy(bt.Strategy):
 
         # --- If a position is open, update intra‐trade extremes and check for exit ---
         if self.position:
-            if self.order_direction == 'long':
+            if self.current_direction == 'long':
                 if self.trade_low is None or current_price < self.trade_low:
                     self.trade_low = current_price
-                # Get future predictions from both hourly and daily series.
                 if dt_hour in self.pred_df.index:
                     preds_hourly = [self.pred_df.loc[dt_hour].get(f'Prediction_h_{i}', current_price)
                                     for i in range(1, self.num_hourly_preds+1)]
@@ -126,11 +131,10 @@ class HeuristicStrategy(bt.Strategy):
                     predicted_min = min(preds_hourly + preds_daily)
                 else:
                     predicted_min = current_price
-                # Exit if current price is at or above TP or if predictions foresee a drop below SL.
                 if current_price >= self.current_tp or predicted_min < self.current_sl:
                     self.close()
                     return
-            elif self.order_direction == 'short':
+            elif self.current_direction == 'short':
                 if self.trade_high is None or current_price > self.trade_high:
                     self.trade_high = current_price
                 if dt_hour in self.pred_df.index:
@@ -144,7 +148,7 @@ class HeuristicStrategy(bt.Strategy):
                 if current_price <= self.current_tp or predicted_max > self.current_sl:
                     self.close()
                     return
-            return  # If a position is open, do not try to enter a new one.
+            return  # Do not attempt new entries if a position is open.
 
         # Reset intra‐trade extremes when no position is open.
         self.trade_low = None
@@ -213,16 +217,17 @@ class HeuristicStrategy(bt.Strategy):
         # Record the trade entry details.
         self.trade_entry_dates.append(dt)
         self.trade_entry_bar = len(self)
-        # Place the order and attach a custom attribute to capture the signal direction.
+        # Place the order and immediately store the signal direction in self.current_direction.
         if signal == 'long':
-            order = self.buy(size=order_size)
-            order.dir_info = 'long'
+            self.buy(size=order_size)
+            self.current_direction = 'long'
         elif signal == 'short':
-            order = self.sell(size=order_size)
-            order.dir_info = 'short'
+            self.sell(size=order_size)
+            self.current_direction = 'short'
         # Save the chosen TP and SL.
         self.current_tp = chosen_tp
         self.current_sl = chosen_sl
+
 
     def compute_size(self, rr):
         """Compute order size by linear interpolation between min and max volumes based on RR."""
@@ -252,7 +257,9 @@ class HeuristicStrategy(bt.Strategy):
                 self.trade_high = self.order_entry_price
 
     def notify_trade(self, trade):
-        """When a trade closes, record its results and print a summary including max drawdown."""
+        """When a trade closes, record its results and print a summary.
+           Profit (in pips) is computed using the stored trade direction.
+        """
         if trade.isclosed:
             # Determine trade duration.
             duration = len(self) - (self.trade_entry_bar if self.trade_entry_bar is not None else 0)
@@ -261,15 +268,16 @@ class HeuristicStrategy(bt.Strategy):
             exit_price = trade.price
             profit_usd = trade.pnlcomm
 
-            # Determine the trade direction from trade.size.
-            # trade.size > 0 indicates a long trade, < 0 indicates a short trade.
-            direction = 'long' if trade.size > 0 else 'short'
+            # Use the stored current_direction.
+            direction = self.current_direction if self.current_direction is not None else 'unknown'
 
-            # Compute profit in pips based on the trade direction.
+            # Compute profit in pips based on the stored direction.
             if direction == 'long':
                 profit_pips = (exit_price - entry_price) / self.p.pip_cost
-            else:  # 'short'
+            elif direction == 'short':
                 profit_pips = (entry_price - exit_price) / self.p.pip_cost
+            else:
+                profit_pips = 0
 
             # Compute intra‐trade maximum drawdown (in pips) relative to the entry price.
             if direction == 'long':
@@ -290,8 +298,8 @@ class HeuristicStrategy(bt.Strategy):
             })
 
             print(f"TRADE CLOSED ({direction}): Date={dt}, Entry={entry_price:.5f}, Exit={exit_price:.5f}, "
-                f"Profit (pips)={profit_pips:.2f}, Profit (USD)={profit_usd:.2f}, "
-                f"Duration={duration} bars, Max DD (pips)={intra_dd:.2f}, Balance={current_balance:.2f}")
+                  f"Profit (pips)={profit_pips:.2f}, Profit (USD)={profit_usd:.2f}, "
+                  f"Duration={duration} bars, Max DD (pips)={intra_dd:.2f}, Balance={current_balance:.2f}")
 
             # Reset trade-related variables.
             self.order_entry_price = None
@@ -299,7 +307,7 @@ class HeuristicStrategy(bt.Strategy):
             self.current_sl = None
             self.trade_low = None
             self.trade_high = None
-
+            self.current_direction = None
 
     def stop(self):
         """At the end of the simulation, print summary statistics and plot the balance versus date."""
