@@ -15,7 +15,7 @@ class HeuristicStrategy(bt.Strategy):
     (Analogous calculations are made for a short trade.)
 
     It then calculates a risk–reward ratio (RR) and, if the predicted profit meets a threshold,
-    chooses the trade direction (long or short) with the higher RR. The take‐profit (TP) and stop‐loss (SL)
+    chooses the trade direction with the higher RR. The take‐profit (TP) and stop‐loss (SL)
     levels are set by applying configurable multipliers to the ideal profit and drawdown.
 
     Order size is computed by a linear interpolation between a minimum and maximum volume based
@@ -34,7 +34,7 @@ class HeuristicStrategy(bt.Strategy):
       • Average absolute profit in pips,
       • Average trade duration (in bars),
       • Average max drawdown (in pips),
-      • Initial balance, final balance, and minimum balance.
+      • Initial and final balance.
     A balance versus date plot is also saved.
     """
 
@@ -63,6 +63,7 @@ class HeuristicStrategy(bt.Strategy):
         ('max_trades_per_5days', 3),
     )
 
+
     def __init__(self):
         # Load prediction data from CSV and filter by the specified date range.
         self.pred_df = pd.read_csv(self.p.pred_file, parse_dates=['DATE_TIME'])
@@ -88,8 +89,8 @@ class HeuristicStrategy(bt.Strategy):
         self.order_entry_price = None  # This is set in notify_order.
         self.current_tp = None
         self.current_sl = None
-        self.order_direction = None  # This variable may be used for order attributes.
-        # Use a dedicated variable to record the trade's direction.
+        self.order_direction = None  # This variable is used for custom attributes if needed.
+        # NEW: Use a dedicated variable to record the trade's direction.
         self.current_direction = None  # Will be set to 'long' or 'short' when an order is placed.
 
         # For tracking intra‐trade extreme prices:
@@ -105,6 +106,8 @@ class HeuristicStrategy(bt.Strategy):
 
         # For recording trade details.
         self.trades = []
+    
+
 
     def next(self):
         dt = self.data0.datetime.datetime(0)
@@ -225,6 +228,7 @@ class HeuristicStrategy(bt.Strategy):
         self.current_tp = chosen_tp
         self.current_sl = chosen_sl
 
+
     def compute_size(self, rr):
         """Compute order size by linear interpolation between min and max volumes based on RR."""
         min_vol = self.p.min_order_volume
@@ -241,13 +245,15 @@ class HeuristicStrategy(bt.Strategy):
         return min(size, max_from_cash)
 
     def notify_order(self, order):
-        """When an order is completed, record the execution price and initialize intra‐trade extremes."""
+        """When an order is completed, record the execution price and capture its direction."""
         if order.status in [order.Completed]:
             self.order_entry_price = order.executed.price
-            # We use the stored self.current_direction (set in next())
-            if self.current_direction == 'long':
+            #set the direction based on the order size (positive for long, negative for short)
+            self.order_direction = 'long' if order.size > 0 else 'short'
+            # Initialize intra‐trade extremes.
+            if self.order_direction == 'long':
                 self.trade_low = self.order_entry_price
-            elif self.current_direction == 'short':
+            elif self.order_direction == 'short':
                 self.trade_high = self.order_entry_price
 
     def notify_trade(self, trade):
@@ -262,8 +268,23 @@ class HeuristicStrategy(bt.Strategy):
             exit_price = trade.price
             profit_usd = trade.pnlcomm
 
-            # Use the stored trade direction.
-            direction = self.current_direction if self.current_direction is not None else 'unknown'
+            # Deduce the direction based on both profit_usd and the entry vs exit prices.
+            if profit_usd > 0:
+                if entry_price < exit_price:
+                    direction = 'long'
+                elif entry_price > exit_price:
+                    direction = 'short'
+                else:
+                    direction = 'unknown'
+            elif profit_usd < 0:
+                if entry_price < exit_price:
+                    direction = 'short'
+                elif entry_price > exit_price:
+                    direction = 'long'
+                else:
+                    direction = 'unknown'
+            else:
+                direction = 'unknown'
 
             # Compute profit in pips based on the stored direction.
             if direction == 'long':
@@ -275,9 +296,9 @@ class HeuristicStrategy(bt.Strategy):
 
             # Compute intra‐trade maximum drawdown (in pips) relative to the entry price.
             if direction == 'long':
-                intra_dd = (entry_price - self.trade_low) / self.p.pip_cost if self.trade_low is not None else 0
+                intra_dd = (entry_price - self.trade_low) / self.p.pip_cost 
             elif direction == 'short':
-                intra_dd = (self.trade_high - entry_price) / self.p.pip_cost if self.trade_high is not None else 0
+                intra_dd = (self.trade_high - entry_price) / self.p.pip_cost
             else:
                 intra_dd = 0
 
@@ -315,12 +336,9 @@ class HeuristicStrategy(bt.Strategy):
         else:
             avg_profit_usd = avg_profit_pips = avg_profit_pips_abs = avg_duration = avg_max_dd = 0
         final_balance = self.broker.getvalue()
-        min_balance = min(self.balance_history) if self.balance_history else final_balance
-
         print("\n==== Summary ====")
         print(f"Initial Balance (USD): {self.initial_balance:.2f}")
         print(f"Final Balance (USD):   {final_balance:.2f}")
-        print(f"Minimum Balance (USD): {min_balance:.2f}")
         print(f"Number of Trades: {n_trades}")
         print(f"Average Profit (USD): {avg_profit_usd:.2f}")
         print(f"Average Profit (pips): {avg_profit_pips:.2f}")
@@ -337,7 +355,6 @@ class HeuristicStrategy(bt.Strategy):
         plt.legend()
         plt.savefig("balance_plot.png")
         plt.close()
-
 
 if __name__ == '__main__':
     cerebro = bt.Cerebro()
