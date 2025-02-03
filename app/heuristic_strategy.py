@@ -259,7 +259,7 @@ class HeuristicStrategy(bt.Strategy):
                 'duration': duration,
                 'max_dd': intra_dd
             })
-            print(f"TRADE CLOSED: Date={dt}, Entry={entry_price:.5f}, Exit={exit_price:.5f}, "
+            print(f"TRADE CLOSED (self.order_direction ): Date={dt}, Entry={entry_price:.5f}, Exit={exit_price:.5f}, "
                   f"Profit (pips)={profit_pips:.2f}, Profit (EUR)={profit_eur:.2f}, "
                   f"Duration={duration} bars, Max DD (pips)={intra_dd:.2f}, Balance={current_balance:.2f}")
             # Reset trade variables.
