@@ -249,7 +249,7 @@ class HeuristicStrategy(bt.Strategy):
         if order.status in [order.Completed]:
             self.order_entry_price = order.executed.price
             #set the direction based on the order size (positive for long, negative for short)
-            self.order_direction = 'long' if order.size > 0 else 'short'
+            self.order_direction = 'long' if order.isbuy() else 'short'
             # Initialize intra‐trade extremes.
             if self.order_direction == 'long':
                 self.trade_low = self.order_entry_price
