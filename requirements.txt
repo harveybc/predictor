@@ -10,3 +10,4 @@ pdoc3
 keras-multi-head
 pydot
 graphviz
+backtrader
