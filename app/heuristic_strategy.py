@@ -211,9 +211,16 @@ class HeuristicStrategy(bt.Strategy):
         if order_size <= 0:
             return
 
+
+
+        # Initialize intra‐trade extremes.
+        self.trade_low = current_price
+        self.trade_high = current_price
+
         # Record the trade entry details.
         self.trade_entry_dates.append(dt)
         self.trade_entry_bar = len(self)
+
         # Place the order and store the signal direction in self.current_direction.
         if signal == 'long':
             self.buy(size=order_size)
@@ -224,6 +231,7 @@ class HeuristicStrategy(bt.Strategy):
         # Save the chosen TP and SL.
         self.current_tp = chosen_tp
         self.current_sl = chosen_sl
+
 
     def compute_size(self, rr):
         """Compute order size by linear interpolation between min and max volumes based on RR."""
@@ -246,11 +254,7 @@ class HeuristicStrategy(bt.Strategy):
             self.order_entry_price = order.executed.price
             # Set the direction based on order type.
             self.order_direction = 'long' if order.isbuy() else 'short'
-            # Initialize intra‐trade extremes.
-            if self.order_direction == 'long':
-                self.trade_low = self.order_entry_price
-                self.trade_high = self.order_entry_price
-
+            
     def notify_trade(self, trade):
         """When a trade closes, record its results and print a summary.
            Profit (in pips) is computed using the stored order direction.
