@@ -146,10 +146,10 @@ class HeuristicStrategy(bt.Strategy):
                     self.close()
                     return
             return  # Do not attempt new entries if a position is open.
-
-        # Reset intra‐trade extremes when no position is open.
-        self.trade_low = None
-        self.trade_high = None
+        else:
+            # Reset intra‐trade extremes when no position is open.
+            self.trade_low = None
+            self.trade_high = None
 
         # --- Enforce trade frequency: no more than max_trades_per_5days in the last 5 days ---
         recent_trades = [d for d in self.trade_entry_dates if (dt - d).days < 5]
@@ -249,7 +249,6 @@ class HeuristicStrategy(bt.Strategy):
             # Initialize intra‐trade extremes.
             if self.order_direction == 'long':
                 self.trade_low = self.order_entry_price
-            elif self.order_direction == 'short':
                 self.trade_high = self.order_entry_price
 
     def notify_trade(self, trade):
@@ -333,6 +332,7 @@ class HeuristicStrategy(bt.Strategy):
         print(f"Number of Trades: {n_trades}")
         print(f"Average Profit (USD): {avg_profit_usd:.2f}")
         print(f"Average Profit (pips): {avg_profit_pips:.2f}")
+        print(f"Average Max Drawdown (pips): {avg_max_dd:.2f}")
         print(f"Average Trade Duration (bars): {avg_duration:.2f}")
         
         # Plot balance vs. date.
