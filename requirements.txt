@@ -11,3 +11,4 @@ keras-multi-head
 pydot
 graphviz
 backtrader
+deap
