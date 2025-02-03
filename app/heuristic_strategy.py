@@ -252,29 +252,29 @@ class HeuristicStrategy(bt.Strategy):
                 self.trade_high = self.order_entry_price
 
     def notify_trade(self, trade):
-        """When a trade closes, record its details and print a summary.
-           Profit in pips is computed using the difference between exit and entry (for long)
-           or entry and exit (for short), and max drawdown is computed relative to the entry price.
-        """
+        """When a trade closes, record its results and print a summary including max drawdown."""
         if trade.isclosed:
+            # Determine trade duration.
             duration = len(self) - (self.trade_entry_bar if self.trade_entry_bar is not None else 0)
             dt = self.data0.datetime.datetime(0)
             entry_price = self.order_entry_price if self.order_entry_price is not None else 0
             exit_price = trade.price
             profit_usd = trade.pnlcomm
 
-            # Compute profit in pips based on our stored order direction.
-            if self.order_direction == 'long':
+            # Determine the trade direction from trade.size.
+            # trade.size > 0 indicates a long trade, < 0 indicates a short trade.
+            direction = 'long' if trade.size > 0 else 'short'
+
+            # Compute profit in pips based on the trade direction.
+            if direction == 'long':
                 profit_pips = (exit_price - entry_price) / self.p.pip_cost
-            elif self.order_direction == 'short':
+            else:  # 'short'
                 profit_pips = (entry_price - exit_price) / self.p.pip_cost
-            else:
-                profit_pips = 0
 
             # Compute intra‐trade maximum drawdown (in pips) relative to the entry price.
-            if self.order_direction == 'long':
+            if direction == 'long':
                 intra_dd = (entry_price - self.trade_low) / self.p.pip_cost if self.trade_low is not None else 0
-            elif self.order_direction == 'short':
+            elif direction == 'short':
                 intra_dd = (self.trade_high - entry_price) / self.p.pip_cost if self.trade_high is not None else 0
             else:
                 intra_dd = 0
@@ -288,16 +288,18 @@ class HeuristicStrategy(bt.Strategy):
                 'duration': duration,
                 'max_dd': intra_dd
             })
-            print(f"TRADE CLOSED ({self.order_direction}): Date={dt}, Entry={entry_price:.5f}, Exit={exit_price:.5f}, "
-                  f"Profit (pips)={profit_pips:.2f}, Profit (USD)={profit_usd:.2f}, "
-                  f"Duration={duration} bars, Max DD (pips)={intra_dd:.2f}, Balance={current_balance:.2f}")
+
+            print(f"TRADE CLOSED ({direction}): Date={dt}, Entry={entry_price:.5f}, Exit={exit_price:.5f}, "
+                f"Profit (pips)={profit_pips:.2f}, Profit (USD)={profit_usd:.2f}, "
+                f"Duration={duration} bars, Max DD (pips)={intra_dd:.2f}, Balance={current_balance:.2f}")
+
             # Reset trade-related variables.
             self.order_entry_price = None
-            self.order_direction = None
             self.current_tp = None
             self.current_sl = None
             self.trade_low = None
             self.trade_high = None
+
 
     def stop(self):
         """At the end of the simulation, print summary statistics and plot the balance versus date."""
