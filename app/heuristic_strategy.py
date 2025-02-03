@@ -34,6 +34,7 @@ class HeuristicStrategy(bt.Strategy):
       • Average absolute profit in pips,
       • Average trade duration (in bars),
       • Average max drawdown (in pips),
+      • Minimum balance,
       • Initial and final balance.
     A balance versus date plot is also saved.
     """
@@ -63,7 +64,6 @@ class HeuristicStrategy(bt.Strategy):
         ('max_trades_per_5days', 3),
     )
 
-
     def __init__(self):
         # Load prediction data from CSV and filter by the specified date range.
         self.pred_df = pd.read_csv(self.p.pred_file, parse_dates=['DATE_TIME'])
@@ -86,14 +86,13 @@ class HeuristicStrategy(bt.Strategy):
 
         # Variables for managing the current trade.
         self.trade_entry_bar = None
-        self.order_entry_price = None  # This is set in notify_order.
+        self.order_entry_price = None  # Set in notify_order.
         self.current_tp = None
         self.current_sl = None
-        self.order_direction = None  # This variable is used for custom attributes if needed.
-        # NEW: Use a dedicated variable to record the trade's direction.
+        self.order_direction = None  # Used for custom attributes if needed.
         self.current_direction = None  # Will be set to 'long' or 'short' when an order is placed.
 
-        # For tracking intra‐trade extreme prices:
+        # For tracking intra‐trade extreme prices.
         self.trade_low = None   # For long trades: the lowest price reached since entry.
         self.trade_high = None  # For short trades: the highest price reached since entry.
 
@@ -106,8 +105,6 @@ class HeuristicStrategy(bt.Strategy):
 
         # For recording trade details.
         self.trades = []
-    
-
 
     def next(self):
         dt = self.data0.datetime.datetime(0)
@@ -217,7 +214,7 @@ class HeuristicStrategy(bt.Strategy):
         # Record the trade entry details.
         self.trade_entry_dates.append(dt)
         self.trade_entry_bar = len(self)
-        # Place the order and immediately store the signal direction in self.current_direction.
+        # Place the order and store the signal direction in self.current_direction.
         if signal == 'long':
             self.buy(size=order_size)
             self.current_direction = 'long'
@@ -227,7 +224,6 @@ class HeuristicStrategy(bt.Strategy):
         # Save the chosen TP and SL.
         self.current_tp = chosen_tp
         self.current_sl = chosen_sl
-
 
     def compute_size(self, rr):
         """Compute order size by linear interpolation between min and max volumes based on RR."""
@@ -248,7 +244,7 @@ class HeuristicStrategy(bt.Strategy):
         """When an order is completed, record the execution price and capture its direction."""
         if order.status in [order.Completed]:
             self.order_entry_price = order.executed.price
-            #set the direction based on the order size (positive for long, negative for short)
+            # Set the direction based on order type.
             self.order_direction = 'long' if order.isbuy() else 'short'
             # Initialize intra‐trade extremes.
             if self.order_direction == 'long':
@@ -258,7 +254,7 @@ class HeuristicStrategy(bt.Strategy):
 
     def notify_trade(self, trade):
         """When a trade closes, record its results and print a summary.
-           Profit (in pips) is computed using the stored trade direction.
+           Profit (in pips) is computed using the stored order direction.
         """
         if trade.isclosed:
             # Determine trade duration.
@@ -268,11 +264,8 @@ class HeuristicStrategy(bt.Strategy):
             exit_price = trade.price
             profit_usd = trade.pnlcomm
 
-            
-            direction =  self.order_direction
-
-
-            # Compute profit in pips based on the stored direction.
+            # Use the stored order_direction to compute profit in pips.
+            direction = self.order_direction
             if direction == 'long':
                 profit_pips = (exit_price - entry_price) / self.p.pip_cost
             elif direction == 'short':
@@ -280,19 +273,11 @@ class HeuristicStrategy(bt.Strategy):
             else:
                 profit_pips = 0
 
-            # Compute max drawdown relative to the entry price.
+            # Compute intra‐trade maximum drawdown (in pips) relative to the entry price.
             if self.order_direction == 'long':
-                # For a long trade, drawdown is the difference between entry price and the lowest price reached.
-                if self.trade_low is None:
-                    intra_dd = 0
-                else:
-                    intra_dd = (entry_price - self.trade_low) / self.p.pip_cost
+                intra_dd = (entry_price - self.trade_low) / self.p.pip_cost if self.trade_low is not None else 0
             elif self.order_direction == 'short':
-                # For a short trade, drawdown is the difference between the highest price reached and the entry.
-                if self.trade_high is None:
-                    intra_dd = 0
-                else:
-                    intra_dd = (self.trade_high - entry_price) / self.p.pip_cost
+                intra_dd = (self.trade_high - entry_price) / self.p.pip_cost if self.trade_high is not None else 0
             else:
                 intra_dd = 0
 
@@ -319,7 +304,18 @@ class HeuristicStrategy(bt.Strategy):
             self.current_direction = None
 
     def stop(self):
-        """At the end of the simulation, print summary statistics and plot the balance versus date."""
+        """At the end of the simulation, perform analysis, print summary statistics (including minimum balance),
+        and plot the balance versus date."""
+        # If a TradeAnalyzer was added, print its output.
+        if hasattr(self, 'analyzers') and 'tradeanalyzer' in self.analyzers:
+            trade_analyzer = self.analyzers.tradeanalyzer.get_analysis()
+            print("\n==== Trade Analyzer Results ====")
+            for key, value in trade_analyzer.items():
+                print(f"{key}: {value}")
+
+        # Compute the minimum balance encountered during the simulation.
+        min_balance = min(self.balance_history) if self.balance_history else 0
+
         n_trades = len(self.trades)
         if n_trades > 0:
             avg_profit_usd = sum(t['pnl'] for t in self.trades) / n_trades
@@ -333,6 +329,7 @@ class HeuristicStrategy(bt.Strategy):
         print("\n==== Summary ====")
         print(f"Initial Balance (USD): {self.initial_balance:.2f}")
         print(f"Final Balance (USD):   {final_balance:.2f}")
+        print(f"Minimum Balance (USD): {min_balance:.2f}")
         print(f"Number of Trades: {n_trades}")
         print(f"Average Profit (USD): {avg_profit_usd:.2f}")
         print(f"Average Profit (pips): {avg_profit_pips:.2f}")
@@ -340,7 +337,7 @@ class HeuristicStrategy(bt.Strategy):
         print(f"Average Trade Duration (bars): {avg_duration:.2f}")
         print(f"Average Max Drawdown (pips): {avg_max_dd:.2f}")
 
-        # Plot balance versus date.
+        # Plot balance vs. date.
         plt.figure(figsize=(10, 5))
         plt.plot(self.date_history, self.balance_history, label="Balance")
         plt.xlabel("Date")
@@ -349,6 +346,7 @@ class HeuristicStrategy(bt.Strategy):
         plt.legend()
         plt.savefig("balance_plot.png")
         plt.close()
+
 
 if __name__ == '__main__':
     cerebro = bt.Cerebro()
