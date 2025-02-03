@@ -92,7 +92,7 @@ toolbox.register("select", tools.selTournament, tournsize=3)
 def main():
     random.seed(42)
     population = toolbox.population(n=20)
-    CXPB, MUTPB, NGEN = 0.5, 0.2, 20  # Crossover prob, mutation prob, number of generations
+    CXPB, MUTPB, NGEN = 0.5, 0.2, 100  # Crossover prob, mutation prob, number of generations
     print("Starting Genetic Algorithm Optimization")
     
     # Optionally use multiprocessing
