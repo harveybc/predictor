@@ -268,23 +268,9 @@ class HeuristicStrategy(bt.Strategy):
             exit_price = trade.price
             profit_usd = trade.pnlcomm
 
-            # Deduce the direction based on both profit_usd and the entry vs exit prices.
-            if profit_usd > 0:
-                if entry_price < exit_price:
-                    direction = 'long'
-                elif entry_price > exit_price:
-                    direction = 'short'
-                else:
-                    direction = 'unknown'
-            elif profit_usd < 0:
-                if entry_price < exit_price:
-                    direction = 'short'
-                elif entry_price > exit_price:
-                    direction = 'long'
-                else:
-                    direction = 'unknown'
-            else:
-                direction = 'unknown'
+            
+            direction =  self.order_direction
+
 
             # Compute profit in pips based on the stored direction.
             if direction == 'long':
