@@ -356,14 +356,14 @@ if __name__ == '__main__':
         min_order_volume=10000,
         max_order_volume=1000000,
         leverage=1000,
-        profit_threshold=13.38,
+        profit_threshold=5.08,
         date_start=datetime.datetime(2010, 1, 1),
         date_end=datetime.datetime(2015, 1, 1),
         min_drawdown_pips=10,
-        tp_multiplier=0.89,
-        sl_multiplier=6.0,
-        lower_rr_threshold=0.5,
-        upper_rr_threshold=2.0,
+        tp_multiplier=0.92,
+        sl_multiplier=6.3,
+        lower_rr_threshold=-3.4,
+        upper_rr_threshold=-4.95,
         max_trades_per_5days=3
     )
 
