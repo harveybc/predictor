@@ -227,7 +227,12 @@ class HeuristicStrategy(bt.Strategy):
             entry_price = self.order_entry_price if self.order_entry_price is not None else 0
             exit_price = trade.price
             profit_eur = trade.pnlcomm
-            profit_pips = profit_eur / (trade.size * self.p.pip_cost) if trade.size else 0
+            if self.order_direction == 'long':
+                profit_pips = (exit_price - entry_price) / self.p.pip_cost
+            elif self.order_direction == 'short':
+                profit_pips = (entry_price - exit_price) / self.p.pip_cost
+            else:
+                profit_pips = 0
             
             # Compute max drawdown relative to the entry price.
             if self.order_direction == 'long':
