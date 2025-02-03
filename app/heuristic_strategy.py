@@ -280,11 +280,19 @@ class HeuristicStrategy(bt.Strategy):
             else:
                 profit_pips = 0
 
-            # Compute intra‐trade maximum drawdown (in pips) relative to the entry price.
-            if direction == 'long':
-                intra_dd = (entry_price - self.trade_low) / self.p.pip_cost 
-            elif direction == 'short':
-                intra_dd = (self.trade_high - entry_price) / self.p.pip_cost
+            # Compute max drawdown relative to the entry price.
+            if self.order_direction == 'long':
+                # For a long trade, drawdown is the difference between entry price and the lowest price reached.
+                if self.trade_low is None:
+                    intra_dd = 0
+                else:
+                    intra_dd = (entry_price - self.trade_low) / self.p.pip_cost
+            elif self.order_direction == 'short':
+                # For a short trade, drawdown is the difference between the highest price reached and the entry.
+                if self.trade_high is None:
+                    intra_dd = 0
+                else:
+                    intra_dd = (self.trade_high - entry_price) / self.p.pip_cost
             else:
                 intra_dd = 0
 
