@@ -11,12 +11,12 @@ class HeuristicStrategy(bt.Strategy):
     When no position is open, it looks at the daily predictions (columns starting with 'Prediction_d_')
     to compute the ideal profit and drawdown (in pips) relative to the current price.
     
-    It then calculates a risk–reward ratio (RR) and, if the predicted profit meets a threshold, chooses the
+    It then calculates a risk–reward ratio (RR) and, if the predicted profit exceeds a threshold, chooses the
     trade direction (long or short) with the higher RR. The TP and SL levels are set by applying configurable
     multipliers to the ideal profit and drawdown.
     
-    Order size is determined by linearly interpolating between a minimum and maximum volume based on the RR,
-    capped by available cash * rel_volume * leverage.
+    Order size is determined by interpolating between a minimum and maximum volume based on the RR, capped
+    by available cash.
     
     While in a trade, on every bar the strategy checks both the hourly and daily predictions (columns starting
     with 'Prediction_h_' and 'Prediction_d_') to decide if the trade should be closed early.
@@ -35,12 +35,12 @@ class HeuristicStrategy(bt.Strategy):
         ('date_end', datetime.datetime(2015, 1, 1)),
         # Trading parameters.
         ('pip_cost', 0.00001),          # 1 pip = 0.00001 for EURUSD.
-        ('rel_volume', 0.05),           # Maximum fraction of cash to risk.
-        ('min_order_volume', 10000),    # Minimum order volume (currency units).
-        ('max_order_volume', 1000000),  # Maximum order volume (currency units).
+        ('rel_volume', 0.05),           # Max fraction of cash to risk.
+        ('min_order_volume', 10000),    # Minimum order volume (in currency units).
+        ('max_order_volume', 1000000),  # Maximum order volume (in currency units).
         ('leverage', 1000),             # Leverage.
-        ('profit_threshold', 5),        # Minimum ideal profit (in pips) required for entry.
-        ('min_drawdown_pips', 10),      # Minimum drawdown (in pips) if predictions are too tight.
+        ('profit_threshold', 5),        # Minimum ideal profit (pips) required for entry.
+        ('min_drawdown_pips', 10),      # Minimum drawdown (pips) if predictions are too tight.
         # Multipliers for TP and SL.
         ('tp_multiplier', 0.9),         # TP = entry + 0.9 * ideal profit (pips) converted to price.
         ('sl_multiplier', 2.0),         # SL = entry - 2.0 * ideal drawdown (pips) (for long; inverse for short).
@@ -52,42 +52,35 @@ class HeuristicStrategy(bt.Strategy):
     )
     
     def __init__(self):
-        # Load prediction data from CSV and filter by the specified date range.
+        # Load prediction data from CSV and filter by date range.
         self.pred_df = pd.read_csv(self.p.pred_file, parse_dates=['DATE_TIME'])
         self.pred_df = self.pred_df[(self.pred_df['DATE_TIME'] >= self.p.date_start) &
                                      (self.pred_df['DATE_TIME'] <= self.p.date_end)]
-        # Floor DATE_TIME to the hour.
+        # Floor the DATE_TIME to the hour.
         self.pred_df['DATE_TIME'] = self.pred_df['DATE_TIME'].apply(lambda dt: dt.replace(minute=0, second=0, microsecond=0))
         self.pred_df.set_index('DATE_TIME', inplace=True)
-        
-        # Determine number of prediction columns dynamically.
-        self.num_hourly_preds = len([col for col in self.pred_df.columns if col.startswith('Prediction_h_')])
-        self.num_daily_preds = len([col for col in self.pred_df.columns if col.startswith('Prediction_d_')])
         
         # Price feed from the first data feed.
         self.data0 = self.datas[0]
         
-        # Save initial balance.
-        self.initial_balance = self.broker.getvalue()
-        
         # Variables for managing the current trade.
         self.trade_entry_bar = None
-        self.order_entry_price = None  # Will be set in notify_order.
+        self.order_entry_price = None
         self.current_tp = None
         self.current_sl = None
         self.order_direction = None  # 'long' or 'short'
-        # For tracking intra-trade extremes.
-        self.trade_low = None   # For long trades: lowest price reached since entry.
+        # For tracking the intra-trade extreme prices:
+        self.trade_low = None  # For long trades: lowest price reached since entry.
         self.trade_high = None  # For short trades: highest price reached since entry.
         
-        # For enforcing trade frequency.
+        # Record trade entry dates for frequency control.
         self.trade_entry_dates = []
         
-        # For plotting balance vs. date.
+        # For plotting balance versus date.
         self.balance_history = []
         self.date_history = []
         
-        # For recording trade details.
+        # For recording trade results.
         self.trades = []
     
     def next(self):
@@ -99,16 +92,16 @@ class HeuristicStrategy(bt.Strategy):
         self.balance_history.append(self.broker.getvalue())
         self.date_history.append(dt)
         
-        # --- If a position is open, update intra-trade extremes and check exit conditions ---
+        # If a position is open, update intra-trade extreme and check for exit.
         if self.position:
             if self.order_direction == 'long':
+                # Update the lowest price seen since entry.
                 if self.trade_low is None or current_price < self.trade_low:
                     self.trade_low = current_price
+                # Exit conditions: if current price reaches TP or the predicted future minimum is below the SL.
                 if dt_hour in self.pred_df.index:
-                    preds_hourly = [self.pred_df.loc[dt_hour].get(f'Prediction_h_{i}', current_price)
-                                    for i in range(1, self.num_hourly_preds+1)]
-                    preds_daily = [self.pred_df.loc[dt_hour].get(f'Prediction_d_{i}', current_price)
-                                   for i in range(1, self.num_daily_preds+1)]
+                    preds_hourly = [self.pred_df.loc[dt_hour].get(f'Prediction_h_{i}', current_price) for i in range(1, 7)]
+                    preds_daily = [self.pred_df.loc[dt_hour].get(f'Prediction_d_{i}', current_price) for i in range(1, 7)]
                     predicted_min = min(preds_hourly + preds_daily)
                 else:
                     predicted_min = current_price
@@ -116,60 +109,56 @@ class HeuristicStrategy(bt.Strategy):
                     self.close()
                     return
             elif self.order_direction == 'short':
+                # Update the highest price seen since entry.
                 if self.trade_high is None or current_price > self.trade_high:
                     self.trade_high = current_price
                 if dt_hour in self.pred_df.index:
-                    preds_hourly = [self.pred_df.loc[dt_hour].get(f'Prediction_h_{i}', current_price)
-                                    for i in range(1, self.num_hourly_preds+1)]
-                    preds_daily = [self.pred_df.loc[dt_hour].get(f'Prediction_d_{i}', current_price)
-                                   for i in range(1, self.num_daily_preds+1)]
+                    preds_hourly = [self.pred_df.loc[dt_hour].get(f'Prediction_h_{i}', current_price) for i in range(1, 7)]
+                    preds_daily = [self.pred_df.loc[dt_hour].get(f'Prediction_d_{i}', current_price) for i in range(1, 7)]
                     predicted_max = max(preds_hourly + preds_daily)
                 else:
                     predicted_max = current_price
                 if current_price <= self.current_tp or predicted_max > self.current_sl:
                     self.close()
                     return
-            return
+            return  # Do not check for new entries if position is open.
         
-        # --- Reset intra-trade extremes when no position is open ---
+        # Reset intra-trade extremes when no position is open.
         self.trade_low = None
         self.trade_high = None
         
-        # --- Enforce trade frequency: maximum trades per rolling 5-day period ---
+        # Trade frequency control.
         recent_trades = [d for d in self.trade_entry_dates if (dt - d).days < 5]
         if len(recent_trades) >= self.p.max_trades_per_5days:
             return
         
+        # Check for prediction data for the current bar.
         if dt_hour not in self.pred_df.index:
             return
         
         row = self.pred_df.loc[dt_hour]
         try:
-            daily_preds = [row[f'Prediction_d_{i}'] for i in range(1, self.num_daily_preds+1)]
+            daily_preds = [row[f'Prediction_d_{i}'] for i in range(1, 7)]
         except KeyError:
             return
         
-        # --- Long (Buy) Calculations ---
+        # --- Long (Buy) calculations ---
         ideal_profit_pips_buy = (max(daily_preds) - current_price) / self.p.pip_cost
-        if current_price > min(daily_preds):
-            ideal_drawdown_pips_buy = (current_price - min(daily_preds)) / self.p.pip_cost
-        else:
-            ideal_drawdown_pips_buy = self.p.min_drawdown_pips
+        ideal_drawdown_pips_buy = ((current_price - min(daily_preds)) / self.p.pip_cost
+                                    if current_price > min(daily_preds) else self.p.min_drawdown_pips)
         rr_buy = ideal_profit_pips_buy / ideal_drawdown_pips_buy if ideal_drawdown_pips_buy > 0 else 0
         tp_buy = current_price + self.p.tp_multiplier * ideal_profit_pips_buy * self.p.pip_cost
         sl_buy = current_price - self.p.sl_multiplier * ideal_drawdown_pips_buy * self.p.pip_cost
         
-        # --- Short (Sell) Calculations ---
+        # --- Short (Sell) calculations ---
         ideal_profit_pips_sell = (current_price - min(daily_preds)) / self.p.pip_cost
-        if current_price < max(daily_preds):
-            ideal_drawdown_pips_sell = (max(daily_preds) - current_price) / self.p.pip_cost
-        else:
-            ideal_drawdown_pips_sell = self.p.min_drawdown_pips
+        ideal_drawdown_pips_sell = ((max(daily_preds) - current_price) / self.p.pip_cost
+                                     if current_price < max(daily_preds) else self.p.min_drawdown_pips)
         rr_sell = ideal_profit_pips_sell / ideal_drawdown_pips_sell if ideal_drawdown_pips_sell > 0 else 0
         tp_sell = current_price - self.p.tp_multiplier * ideal_profit_pips_sell * self.p.pip_cost
         sl_sell = current_price + self.p.sl_multiplier * ideal_drawdown_pips_sell * self.p.pip_cost
         
-        # Determine if the predicted profit meets the profit threshold.
+        # Determine qualifying signals based on profit threshold.
         long_signal = (ideal_profit_pips_buy >= self.p.profit_threshold)
         short_signal = (ideal_profit_pips_sell >= self.p.profit_threshold)
         
@@ -190,22 +179,27 @@ class HeuristicStrategy(bt.Strategy):
         if signal is None:
             return
         
+        # Compute order size.
         order_size = self.compute_size(chosen_rr)
         if order_size <= 0:
             return
         
+        # Record the trade entry details.
         self.trade_entry_dates.append(dt)
         self.trade_entry_bar = len(self)
         self.order_direction = signal
         self.current_tp = chosen_tp
         self.current_sl = chosen_sl
+        # Also, record the entry price (will be updated in notify_order)
         
+        # Enter the trade.
         if signal == 'long':
             self.buy(size=order_size)
         elif signal == 'short':
             self.sell(size=order_size)
     
     def compute_size(self, rr):
+        """Compute order size by linearly interpolating between min and max volumes based on RR."""
         min_vol = self.p.min_order_volume
         max_vol = self.p.max_order_volume
         if rr >= self.p.upper_rr_threshold:
@@ -213,33 +207,41 @@ class HeuristicStrategy(bt.Strategy):
         elif rr <= self.p.lower_rr_threshold:
             size = min_vol
         else:
-            size = min_vol + ((rr - self.p.lower_rr_threshold) /
+            size = min_vol + ((rr - self.p.lower_rr_threshold) / 
                               (self.p.upper_rr_threshold - self.p.lower_rr_threshold)) * (max_vol - min_vol)
         cash = self.broker.getcash()
         max_from_cash = cash * self.p.rel_volume * self.p.leverage
         return min(size, max_from_cash)
     
     def notify_order(self, order):
+        """Record the execution price when an order is completed."""
         if order.status in [order.Completed]:
             self.order_entry_price = order.executed.price
-            if self.order_direction == 'long':
-                self.trade_low = self.order_entry_price
-            elif self.order_direction == 'short':
-                self.trade_high = self.order_entry_price
     
     def notify_trade(self, trade):
+        """When a trade closes, record its results and print a summary including max drawdown."""
         if trade.isclosed:
+            # Determine trade duration.
             duration = len(self) - (self.trade_entry_bar if self.trade_entry_bar is not None else 0)
             dt = self.data0.datetime.datetime(0)
             entry_price = self.order_entry_price if self.order_entry_price is not None else 0
             exit_price = trade.price
-            profit_usd = trade.pnlcomm
-            profit_pips = profit_usd / (float(trade.size) * float(self.p.pip_cost)) if trade.size else 0
+            profit_eur = trade.pnlcomm
+            profit_pips = profit_eur / (trade.size * self.p.pip_cost) if trade.size else 0
             
+            # Compute max drawdown relative to the entry price.
             if self.order_direction == 'long':
-                intra_dd = (entry_price - self.trade_low) / self.p.pip_cost if self.trade_low is not None else 0
+                # For a long trade, drawdown is the difference between entry price and the lowest price reached.
+                if self.trade_low is None:
+                    intra_dd = 0
+                else:
+                    intra_dd = (entry_price - self.trade_low) / self.p.pip_cost
             elif self.order_direction == 'short':
-                intra_dd = (self.trade_high - entry_price) / self.p.pip_cost if self.trade_high is not None else 0
+                # For a short trade, drawdown is the difference between the highest price reached and the entry.
+                if self.trade_high is None:
+                    intra_dd = 0
+                else:
+                    intra_dd = (self.trade_high - entry_price) / self.p.pip_cost
             else:
                 intra_dd = 0
             
@@ -247,14 +249,15 @@ class HeuristicStrategy(bt.Strategy):
             self.trades.append({
                 'entry': entry_price,
                 'exit': exit_price,
-                'pnl': profit_usd,
+                'pnl': profit_eur,
                 'pips': profit_pips,
                 'duration': duration,
                 'max_dd': intra_dd
             })
             print(f"TRADE CLOSED: Date={dt}, Entry={entry_price:.5f}, Exit={exit_price:.5f}, "
-                  f"Profit (pips)={profit_pips:.2f}, Profit (USD)={profit_usd:.2f}, "
+                  f"Profit (pips)={profit_pips:.2f}, Profit (EUR)={profit_eur:.2f}, "
                   f"Duration={duration} bars, Max DD (pips)={intra_dd:.2f}, Balance={current_balance:.2f}")
+            # Reset trade variables.
             self.order_entry_price = None
             self.order_direction = None
             self.current_tp = None
@@ -263,28 +266,27 @@ class HeuristicStrategy(bt.Strategy):
             self.trade_high = None
     
     def stop(self):
+        """Print summary statistics and plot balance vs date."""
         n_trades = len(self.trades)
         if n_trades > 0:
-            avg_profit_usd = sum(t['pnl'] for t in self.trades) / n_trades
+            avg_profit_eur = sum(t['pnl'] for t in self.trades) / n_trades
             avg_profit_pips = sum(t['pips'] for t in self.trades) / n_trades
             avg_duration = sum(t['duration'] for t in self.trades) / n_trades
             avg_max_dd = sum(t['max_dd'] for t in self.trades) / n_trades
         else:
-            avg_profit_usd = avg_profit_pips = avg_duration = avg_max_dd = 0
-        final_balance = self.broker.getvalue()
+            avg_profit_eur = avg_profit_pips = avg_duration = avg_max_dd = 0
         print("\n==== Summary ====")
-        print(f"Initial Balance (USD): {self.initial_balance:.2f}")
-        print(f"Final Balance (USD):   {final_balance:.2f}")
         print(f"Number of Trades: {n_trades}")
-        print(f"Average Profit (USD): {avg_profit_usd:.2f}")
+        print(f"Average Profit (EUR): {avg_profit_eur:.2f}")
         print(f"Average Profit (pips): {avg_profit_pips:.2f}")
         print(f"Average Trade Duration (bars): {avg_duration:.2f}")
         print(f"Average Max Drawdown (pips): {avg_max_dd:.2f}")
         
+        # Plot balance vs date.
         plt.figure(figsize=(10, 5))
         plt.plot(self.date_history, self.balance_history, label="Balance")
         plt.xlabel("Date")
-        plt.ylabel("Balance (USD)")
+        plt.ylabel("Balance (EUR)")
         plt.title("Balance vs Date")
         plt.legend()
         plt.savefig("balance_plot.png")
@@ -330,6 +332,8 @@ if __name__ == '__main__':
     
     cerebro.adddata(data)
     cerebro.broker.setcash(10000.0)
-    # IMPORTANT: Do NOT add a sizer so that the strategy's computed order size is used.
+    # Dummy sizer since order size is computed by the strategy.
+    cerebro.addsizer(bt.sizers.FixedSize, stake=1)
+    
     cerebro.run()
     print(f"Final Balance: {cerebro.broker.getvalue():.2f}")
