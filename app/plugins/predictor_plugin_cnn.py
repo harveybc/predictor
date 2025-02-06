@@ -18,7 +18,7 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.01,
+        'learning_rate': 0.1,
         'l2_reg': 1e-3,     # L2 regularization factor
         'patience': 10,      # Patience for Early Stopping
         'activation': 'tanh'
