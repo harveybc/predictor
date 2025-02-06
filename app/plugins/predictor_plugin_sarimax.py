@@ -181,6 +181,8 @@ class Plugin:
 
         print("Fitting final SARIMAX model...")
         self.results = self.model.fit(disp=False)
+        # print the summary
+        print(self.results.summary())
         print("Training completed.")
 
         # Keras-like history object
