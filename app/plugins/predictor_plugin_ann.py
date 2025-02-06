@@ -174,13 +174,6 @@ class Plugin:
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
     def predict(self, data):
-        """
-        Predict method: 
-        Produce multi-step forecasts (N, time_horizon) from SARIMAX.
-        We'll do an iterative approach for multi-step (time_horizon>1).
-
-        We must ensure the output shape is (N, time_horizon), same as the ANN.
-        """
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -190,24 +183,21 @@ class Plugin:
         N = len(data)
         horizon = self.params.get('time_horizon', 1)
         preds = np.zeros((N, horizon))
-        
-        # If input_dim > 0, we treat 'data' as exog. Otherwise, no exogenous used.
+
         exog_data = data if self.params['input_dim'] > 0 else None
 
-        # Iterative approach: for each row i, forecast horizon steps 1 by 1.
-        # This ensures (N, horizon) output.
+        # Iterative approach: for each row i, forecast 'horizon' steps:
         for i in range(N):
-            # Make a copy of the fitted results to do iterative appends
             current_results = self.results
             row_preds = []
             for step in range(horizon):
-                # Single row as exog
                 exog_next = exog_data[i].reshape(1, -1) if exog_data is not None else None
                 forecast_res = current_results.get_forecast(steps=1, exog=exog_next)
-                pred_1 = forecast_res.predicted_mean[0]
+                
+                # Use .iloc[0] to get the first forecast element by position:
+                pred_1 = forecast_res.predicted_mean.iloc[0]
+                
                 row_preds.append(pred_1)
-
-                # Update the model's state with the predicted value
                 current_results = current_results.append(
                     endog=[pred_1],
                     exog=exog_next
@@ -217,6 +207,7 @@ class Plugin:
 
         print(f"SARIMAX predict => input data shape: {data.shape}, output preds shape: {preds.shape}")
         return preds
+
 
     def calculate_mse(self, y_true, y_pred):
         """
