@@ -166,6 +166,8 @@ class Plugin:
 
         print("Fitting final SARIMAX model with auto_arima orders...")
         self.results = self.model.fit(disp=False)
+        # print fitted sarimax model
+        print(self.results.summary())
         print("Training completed.")
 
         # Create a mock Keras-like history dict
