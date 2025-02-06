@@ -160,7 +160,7 @@ class Plugin:
             exog=X_train_fourier,
             order=(p, d, q),
             seasonal_order=(P, D, Q, m),
-            enforce_stationarity=True,
+            enforce_stationarity=False,
             enforce_invertibility=False
         )
 
