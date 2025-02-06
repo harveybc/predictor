@@ -148,6 +148,7 @@ class Plugin:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
         # Evaluate multi-step predictions on training data
+        print("Evaluating multi-step predictions on training data ...")
         train_predictions = self.predict(x_train)
         print(f"train_predictions shape: {train_predictions.shape}")
         print(f"y_train shape: {y_train.shape}")
@@ -157,6 +158,7 @@ class Plugin:
 
         # Evaluate on validation if provided
         if x_val is not None and y_val is not None:
+            print(f"Evaluating on validation data => X: {x_val.shape}, Y: {y_val.shape}")
             val_predictions = self.predict(x_val)
             print(f"val_predictions shape: {val_predictions.shape}")
             print(f"y_val shape: {y_val.shape}")
