@@ -18,7 +18,7 @@ def fourier_terms(t, period, K):
         K (int): Number of sine/cosine pairs.
     
     Returns:
-        pd.DataFrame: Columns [sin_period_1, cos_period_1, sin_period_2, cos_period_2, ...].
+        pd.DataFrame: Columns [sin_{period}_1, cos_{period}_1, sin_{period}_2, cos_{period}_2, ...].
     """
     t = np.array(t)
     data = []
@@ -28,22 +28,23 @@ def fourier_terms(t, period, K):
         data.append(np.cos((2.0 * np.pi * k * t) / period))
         columns.append(f'sin_{period}_{k}')
         columns.append(f'cos_{period}_{k}')
+    if len(data) == 0:
+        return pd.DataFrame()
     data = np.column_stack(data)
     return pd.DataFrame(data, columns=columns)
 
 class Plugin:
     """
-    SARIMA Predictor Plugin using auto_arima for parameter selection,
-    with:
-      - restricted (p, d, q, P, D, Q) search to limit complexity,
-      - an iterative multi-step forecasting approach (likely to reduce overfitting).
+    SARIMA Predictor Plugin that:
+      - Uses auto_arima to find (p, d, q) + seasonal order
+      - Incorporates an iterative multi-step forecast approach in predict()
+      - Fixes the numpy.ndarray vs. DataFrame issue that caused the attribute error.
     
-    This plugin retains the exact same interface (methods, parameters, etc.)
-    as the original ANN-based plugin.
+    Retains the same interface as the original ANN-based plugin.
     """
 
-    # Default parameters (same keys, plus some new ones for restricting auto_arima)
     plugin_params = {
+        # Unchanged, matching your plugin’s interface
         'batch_size': 128,
         'intermediate_layers': 3,
         'initial_layer_size': 64,
@@ -53,17 +54,17 @@ class Plugin:
         'patience': 5,
         'l2_reg': 1e-3,
 
-        # ARIMA-related parameters
-        'time_horizon': 6,   # multi-step forecast horizon
+        # ARIMA-related params
+        'time_horizon': 6,   
         
-        # Fourier pairs for weekly/monthly, etc. - with lower defaults to reduce complexity
-        'K_weekly': 1,       # fewer Fourier pairs for weekly cycle to reduce model complexity
-        'K_monthly': 0,      # 0 => skip monthly fourier to further simplify
+        # Fourier pairs for weekly/monthly
+        'K_weekly': 1,
+        'K_monthly': 0,  
+        
+        # single main seasonality for auto_arima
+        'main_seasonal_period': 24,
 
-        # The main single seasonality that auto_arima will handle
-        'main_seasonal_period': 24,  # e.g. daily if data is hourly
-
-        # New parameters to restrict auto_arima
+        # Restrict complexity of auto_arima (optional)
         'max_p': 3,
         'max_d': 2,
         'max_q': 3,
@@ -72,14 +73,12 @@ class Plugin:
         'max_Q': 1,
     }
 
-    # Debug variables (unchanged)
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
 
     def __init__(self):
         self.params = self.plugin_params.copy()
-        self.model = None   # Will hold the SARIMAX model
-        self.results = None # Will hold the fitted results
-        # Optionally store the train time index for alignment
+        self.model = None   
+        self.results = None 
         self._train_length = None
 
     def set_params(self, **kwargs):
@@ -94,82 +93,62 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape):
-        """
-        Build or prepare the SARIMAX model. We'll finalize in train().
-        """
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for SARIMAX.")
-
         self.params['input_dim'] = input_shape
-        print(f"Restricted auto_arima plugin. Exogenous shape: {input_shape}")
+        print(f"Restricted auto_arima + iterative approach plugin. Exogenous shape: {input_shape}")
         self.model = None
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train with shape => x_train(N, input_dim), y_train(N, time_horizon).
-        We'll do:
-         1) Fourier-based exogenous for weekly/monthly (low K to reduce complexity).
-         2) auto_arima with restricted p, q, d, etc.
-         3) fit final SARIMAX
+        1) Generate weekly/monthly Fourier exog
+        2) Restricted auto_arima
+        3) Final SARIMAX fit
         """
         print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
-            raise ValueError(
-                f"y_train shape {y_train.shape}, expected (N,{exp_horizon})."
-            )
+            raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
 
-        # We'll model just the first step for training
+        # Univariate endog => first column if horizon>1
         endog_train = y_train[:, 0]
-        N_train = len(x_train)
-        self._train_length = N_train
+        self._train_length = len(x_train)
 
-        # Build Fourier exogenous for weekly/monthly
-        time_idx = np.arange(N_train)
+        # Build Fourier for weekly/monthly
+        time_idx = np.arange(self._train_length)
         K_weekly = self.params.get('K_weekly', 1)
         K_monthly = self.params.get('K_monthly', 0)
-        weekly_df = fourier_terms(time_idx, 168, K_weekly) if K_weekly > 0 else pd.DataFrame()
-        monthly_df = fourier_terms(time_idx, 720, K_monthly) if K_monthly > 0 else pd.DataFrame()
+        weekly_df = fourier_terms(time_idx, 168, K_weekly)
+        monthly_df = fourier_terms(time_idx, 720, K_monthly)
 
-        # Combine user exog with fourier
-        X_train_df = pd.DataFrame(x_train)
-        X_train_fourier = pd.concat([X_train_df, weekly_df, monthly_df], axis=1)
+        x_train_df = pd.DataFrame(x_train)
+        X_train_fourier = pd.concat([x_train_df, weekly_df, monthly_df], axis=1)
 
-        # auto_arima with restricted parameter search
+        # Restricted auto_arima
         from pmdarima import auto_arima
-        seasonal_period = self.params.get('main_seasonal_period', 24)
-        max_p = self.params.get('max_p', 3)
-        max_d = self.params.get('max_d', 2)
-        max_q = self.params.get('max_q', 3)
-        max_P = self.params.get('max_P', 1)
-        max_D = self.params.get('max_D', 1)
-        max_Q = self.params.get('max_Q', 1)
-
-        print(f"Running restricted auto_arima with max_p={max_p}, max_q={max_q}, max_d={max_d}, "
-              f"max_P={max_P}, max_D={max_D}, max_Q={max_Q} for main seasonality={seasonal_period}.")
-
-        stepwise_model = auto_arima(
+        sp = self.params.get('main_seasonal_period', 24)
+        step_model = auto_arima(
             y=endog_train,
             exogenous=X_train_fourier,
             seasonal=True,
-            m=seasonal_period,
-            max_p=max_p,
-            max_d=max_d,
-            max_q=max_q,
-            max_P=max_P,
-            max_D=max_D,
-            max_Q=max_Q,
+            m=sp,
+            max_p=self.params.get('max_p', 3),
+            max_d=self.params.get('max_d', 2),
+            max_q=self.params.get('max_q', 3),
+            max_P=self.params.get('max_P', 1),
+            max_D=self.params.get('max_D', 1),
+            max_Q=self.params.get('max_Q', 1),
             trace=False,
             error_action='ignore',
             suppress_warnings=True
         )
 
-        print("auto_arima best order =", stepwise_model.order)
-        print("auto_arima best seasonal_order =", stepwise_model.seasonal_order)
+        print("auto_arima best order =", step_model.order)
+        print("auto_arima best seasonal_order =", step_model.seasonal_order)
 
-        # Build final SARIMAX
-        p, d, q = stepwise_model.order
-        P, D, Q, m = stepwise_model.seasonal_order
+        p, d, q = step_model.order
+        P, D, Q, m = step_model.seasonal_order
         self.model = SARIMAX(
             endog=endog_train,
             exog=X_train_fourier,
@@ -178,26 +157,23 @@ class Plugin:
             enforce_stationarity=False,
             enforce_invertibility=False
         )
-
         print("Fitting final SARIMAX model...")
         self.results = self.model.fit(disp=False)
-        # print the summary
-        print(self.results.summary())
+        print(self.results.summary())  # Note: Might show near-singular warnings
         print("Training completed.")
 
-        # Keras-like history object
+        # Keras-like history
         class MockHistory:
             def __init__(self):
                 self.history = {'loss': [], 'val_loss': []}
         history = MockHistory()
 
-        # final_loss: 1-step MAE on train
-        train_predictions_1step = self.results.predict(
-            start=0, end=N_train - 1, exog=X_train_fourier
+        # final_loss = 1-step MAE on training
+        train_pred_1step = self.results.predict(
+            start=0, end=self._train_length - 1, exog=X_train_fourier
         )
-        final_loss = np.mean(np.abs(train_predictions_1step - endog_train))
+        final_loss = np.mean(np.abs(train_pred_1step - endog_train))
         history.history['loss'].append(final_loss)
-
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
@@ -222,9 +198,9 @@ class Plugin:
 
     def predict(self, data):
         """
-        Iterative multi-step forecast approach to reduce overfitting.
-        For each row in 'data', we forecast horizon steps one by one,
-        updating the forecast origin each time.
+        Iterative multi-step forecast: for each row in 'data',
+        we forecast horizon steps 1-by-1 and update the model state 
+        to help reduce error compounding (and overfitting).
         """
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -236,50 +212,28 @@ class Plugin:
         N = len(data)
         preds = np.zeros((N, horizon))
 
-        # We need to replicate how we built exogenous/fourier for training,
-        # but do it row-by-row + step-by-step.
-
-        # We'll do a simplified approach:
-        #  - For each row i, we create a "local" endog series starting from the training data,
-        #    then append 1 forecast at a time. This is memory-intensive if N is large.
-        # A truly online approach would require statsmodels 'append' method after each step.
-
-        # Let's at least replicate exogenous features for each step.
-        # We'll skip advanced hourly alignment here for brevity,
-        # but be mindful of correct time indices for actual usage.
-
         for i in range(N):
-            # We'll copy the final state of 'results' to do iterative steps
+            # Start from the final fitted results
             current_results = self.results
-            # Start with the training endog
-            endog_list = list(current_results.data.endog)
-            # Start with the training exog
-            exog_df_train = current_results.data.exog
-            exog_list = [row for row in exog_df_train.values] if exog_df_train is not None else None
-
-            # For each step in horizon, forecast 1 step ahead, then "append" it
+            # For each 1-step forecast, we append the new data point to the model
             step_preds = []
-            for step in range(horizon):
-                # Build exogenous for the "next" step:
-                # We'll do a naive approach: we replicate data[i] + any Fourier if needed.
-                # This is a single row. 
-                # If you used weekly/monthly Fourier in training, you'd generate them 
-                # for the next time index. We'll do naive replication here.
-                exog_next = np.array(data[i]).reshape(1, -1)
-                # Or you can combine with a single step's Fourier if you have a future time idx
 
-                # 1-step forecast from current model
+            for step in range(horizon):
+                # Build exog for the next step (row i repeated once).
+                exog_next = data[i].reshape(1, -1)  # shape (1, input_dim)
+                # We could also generate Fourier terms for the next time step(s) 
+                # if we want to remain consistent with train. 
+                # For simplicity, skip that here or do it naively.
+
+                # Forecast 1-step
                 forecast_res = current_results.get_forecast(steps=1, exog=exog_next)
                 pred_1 = forecast_res.predicted_mean[0]
                 step_preds.append(pred_1)
 
-                # Now "append" the new data point to the model to update its state
-                # Statsmodels allows .append() or .extend() for dynamic updates. 
-                # We'll use .append(endog=new_value, exog=new_exog).
-                # That returns new results object. 
+                # Append to update model state
                 current_results = current_results.append(
                     endog=[pred_1],
-                    exog=exog_next
+                    exog=exog_next if exog_next.size > 0 else None
                 )
 
             preds[i, :] = step_preds
