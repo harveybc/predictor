@@ -33,5 +33,5 @@ DEFAULT_VALUES = {
     'max_steps_train': 6300,
     'max_steps_test': 6300,
     'iterations': 10,
-    'epochs': 200
+    'epochs': 400
 }
