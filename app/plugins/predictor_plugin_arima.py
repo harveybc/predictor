@@ -1,26 +1,21 @@
 import numpy as np
-from keras.models import Model, load_model, save_model
-from keras.layers import Dense, Input, Dropout, BatchNormalization
-from keras.optimizers import Adam
-from tensorflow.keras.initializers import GlorotUniform, HeNormal
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.losses import Huber
-from tensorflow.keras.regularizers import l2
-from keras.layers import GaussianNoise
-from keras import backend as K
-from sklearn.metrics import r2_score 
-
 import logging
 import os
+import pickle
+
+from sklearn.metrics import r2_score
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 class Plugin:
     """
-    ANN Predictor Plugin using Keras for multi-step forecasting.
-    
-    This plugin builds, trains, and evaluates an ANN that outputs (N, time_horizon).
+    SARIMA Predictor Plugin using statsmodels for multi-step forecasting.
+
+    This plugin builds, trains, and evaluates a SARIMAX model that outputs (N, time_horizon).
+    It preserves exactly the same structure and interface (methods, parameters, return values)
+    as the original ANN-based plugin example, but implements SARIMAX instead.
     """
 
-    # Default parameters
+    # Default parameters (identical to the ANN example for interface consistency)
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 3,
@@ -29,15 +24,24 @@ class Plugin:
         'learning_rate': 0.001,
         'activation': 'tanh',
         'patience': 5,
-        'l2_reg': 1e-3
+        'l2_reg': 1e-3,
+
+        # Typical SARIMA-related parameters stored here for convenience
+        'order': (1, 1, 1),
+        'seasonal_order': (0, 0, 0, 0),
+        'time_horizon': 1  # For multi-step forecasting
     }
-    
-    # Variables for debugging
+
+    # Variables for debugging (identical to the ANN example)
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
-    
+
     def __init__(self):
+        """
+        Initialize the plugin with default parameters.
+        """
         self.params = self.plugin_params.copy()
-        self.model = None
+        self.model = None   # Will store the SARIMAX model specification
+        self.results = None # Will store the fitted SARIMAX results object
 
     def set_params(self, **kwargs):
         """
@@ -50,7 +54,7 @@ class Plugin:
         """
         Return a dict of debug info from plugin params.
         """
-        return {var: self.params[var] for var in self.plugin_debug_vars}
+        return {var: self.params[var] for var in self.plugin_debug_vars if var in self.params}
 
     def add_debug_info(self, debug_info):
         """
@@ -61,157 +65,156 @@ class Plugin:
 
     def build_model(self, input_shape):
         """
-        Build the ANN with final layer = self.params['time_horizon'] for multi-step outputs.
-        
+        Build (prepare) the SARIMAX model specification. 
+        For interface consistency, we receive `input_shape` (int),
+        though SARIMAX does not strictly need it like an ANN does.
+
         Args:
-            input_shape (int): Number of input features for ANN.
+            input_shape (int): Number of input features for exogenous data (x_train).
         """
         if not isinstance(input_shape, int):
-            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
+            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for SARIMAX.")
         
+        # Store input_shape in params for debugging consistency
         self.params['input_dim'] = input_shape
-        l2_reg = self.params.get('l2_reg', 1e-4)
-        time_horizon = self.params['time_horizon']  # the multi-step dimension
 
-        # Dynamically set layer sizes
-        layers = []
-        current_size = self.params['initial_layer_size']
-        divisor = self.params['layer_size_divisor']
-        int_layers = 0
-        while int_layers < self.params['intermediate_layers']:
-            layers.append(current_size)
-            current_size = max(current_size // divisor, 1)
-            int_layers += 1
+        print(f"Preparing SARIMA model with order={self.params['order']} "
+              f"and seasonal_order={self.params['seasonal_order']}.")
+        print(f"Exogenous input shape: {input_shape}")
 
-        # Final layer => time_horizon units (N, time_horizon) output
-        layers.append(time_horizon)
-
-        print(f"ANN Layer sizes: {layers}")
-        print(f"ANN input_shape: {input_shape}")
-
-        # Build the model
-        from tensorflow.keras import Model, Input
-        model_input = Input(shape=(input_shape,), name="model_input")
-        x = model_input
-        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
-        # Hidden Dense layers
-        idx = 0
-        for size in layers[:-1]:
-            idx += 1
-            x = Dense(
-                units=size,
-                activation=self.params['activation'],
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
-                name=f"dense_layer_{idx}"
-            )(x)
-
-        #add batch normalization
-        x = BatchNormalization()(x)
-        # Output layer => shape (N, time_horizon)
-        model_output = Dense(
-            units=layers[-1],
-            activation='linear',
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name="model_output"
-        )(x)
-        #add batch normalization
-        #model_output = BatchNormalization()(model_output)
-
-        self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
-
-        # Adam
-        adam_optimizer = Adam(
-            learning_rate=self.params['learning_rate'],
-            beta_1=0.9, beta_2=0.999,
-            epsilon=1e-7, amsgrad=False
-        )
-
-        # Compile
-        self.model.compile(
-            optimizer=adam_optimizer,
-            loss=Huber(),  # or 'mse'
-            #loss='mae',  # or 'mse'
-            metrics=['mse', 'mae']  # logs multi-step MSE/MAE
-        )
-        
-        print("Predictor Model Summary:")
-        self.model.summary()
+        # We only define the specification here (no direct instantiation with data).
+        # Actual instantiation of SARIMAX will happen during train().
+        self.model = None  # Just a placeholder to mimic the ANN approach
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train the model with shape => x_train(N, input_dim), y_train(N, time_horizon).
+
+        Although SARIMAX typically handles 1D endog, we keep the multi-step
+        shape for interface compatibility. If time_horizon > 1, we will
+        use y_train[:, 0] as the main series for fitting. Multi-step predictions
+        will be handled in `predict()` by forecasting 'time_horizon' steps.
+
+        Args:
+            x_train (np.ndarray): Training exogenous data, shape (N, input_dim).
+            y_train (np.ndarray): Training target data, shape (N, time_horizon).
+            epochs (int): Number of epochs (not used in SARIMAX, but maintained for interface).
+            batch_size (int): Batch size (not used directly in SARIMAX, kept for interface).
+            threshold_error (float): Threshold for printing a warning about final_loss.
+            x_val (np.ndarray, optional): Validation exogenous data, shape (M, input_dim).
+            y_val (np.ndarray, optional): Validation target data, shape (M, time_horizon).
+
+        Returns:
+            tuple: (history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions)
         """
         print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
+
+        # Check the multi-step dimension
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(
                 f"y_train shape {y_train.shape}, expected (N,{exp_horizon})."
             )
-        
-        callbacks = []
-        early_stopping_monitor = EarlyStopping(
-            monitor='loss',
-            patience=self.params['patience'],
-            restore_best_weights=True,
-            verbose=1
-        )
-        callbacks.append(early_stopping_monitor)
-    
-        history = self.model.fit(
-            x_train, y_train,
-            epochs=epochs,
-            batch_size=batch_size,
-            verbose=1,
-            shuffle=True,  # Enable shuffling
-            callbacks=callbacks,
-            #validation_data=(x_val, y_val)
-            validation_split = 0.2
+
+        # For simplicity, we fit only the first step (column) if horizon > 1
+        endog_train = y_train[:, 0] if exp_horizon > 1 else y_train.ravel()
+        exog_train = x_train if self.params['input_dim'] > 0 else None
+
+        # Instantiate SARIMAX now with the training data
+        self.model = SARIMAX(
+            endog=endog_train,
+            exog=exog_train,
+            order=self.params['order'],
+            seasonal_order=self.params['seasonal_order'],
+            enforce_stationarity=False,
+            enforce_invertibility=False
         )
 
+        # Fit the model (equivalent to "training" in the ANN sense)
+        print("Fitting SARIMAX model...")
+        self.results = self.model.fit(disp=False)
         print("Training completed.")
-        final_loss = history.history['loss'][-1]
-        print(f"Final training loss: {final_loss}")
 
+        # Create a minimal history-like object to mimic Keras usage
+        class MockHistory:
+            def __init__(self):
+                self.history = {'loss': []}
+
+        history = MockHistory()
+
+        # We define "final_loss" as a simple train error metric to mimic the ANN example
+        # We'll calculate the MAE on the training set for the single-step approach
+        train_predictions_1step = self.results.predict(
+            start=0, 
+            end=len(endog_train)-1, 
+            exog=exog_train
+        )
+        final_loss = np.mean(np.abs(train_predictions_1step - endog_train))  # MAE
+        history.history['loss'].append(final_loss)
+
+        # Compare final_loss to threshold
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
-        # Force the model to run in "training mode"
-        preds_training_mode = self.model(x_train, training=True)
-        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
-        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
+        # Evaluate on training data (multi-step style for consistency):
+        # We'll produce an array (N, exp_horizon) for train predictions
+        train_predictions = self.predict(x_train)
+        train_mae = self.calculate_mae(y_train, train_predictions)
+        train_r2 = r2_score(y_train, train_predictions) if exp_horizon == 1 \
+            else r2_score(y_train[:, 0], train_predictions[:, 0])  # R² for first step if multi-step
 
-        # Compare with evaluation mode
-        preds_eval_mode = self.model(x_train, training=False)
-        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
-        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+        # Evaluate on validation data if provided
+        if x_val is not None and y_val is not None:
+            val_predictions = self.predict(x_val)
+            val_mae = self.calculate_mae(y_val, val_predictions)
+            if exp_horizon == 1:
+                val_r2 = r2_score(y_val, val_predictions)
+            else:
+                # For multi-step, compare only the first step for R²
+                val_r2 = r2_score(y_val[:, 0], val_predictions[:, 0])
+        else:
+            # If no validation data is provided, set placeholders
+            val_predictions = np.array([])
+            val_mae = None
+            val_r2 = None
 
-        # Evaluate on the full training dataset for consistency
-        train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-        train_loss, train_mse, train_mae = train_eval_results
-        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
-        
-        val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-        val_loss, val_mse, val_mae = val_eval_results
-        
-        # Predict validation data for evaluation
-        train_predictions = self.predict(x_train)  # Predict train data
-        val_predictions = self.predict(x_val)      # Predict validation data
-
-        # Calculate R² scores
-        train_r2 = r2_score(y_train, train_predictions)
-        val_r2 = r2_score(y_val, val_predictions)
-        
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
-
-
     def predict(self, data):
+        """
+        Produce multi-step forecasts of shape (N, time_horizon).
+        For each row in `data` (exogenous input), we forecast time_horizon steps.
+
+        Args:
+            data (np.ndarray): Exogenous data, shape (N, input_dim).
+
+        Returns:
+            np.ndarray: Predictions array of shape (N, time_horizon).
+        """
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-        preds = self.model.predict(data)
-        #print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
+
+        # If there's no fitted model, raise an error
+        if self.results is None:
+            raise ValueError("Model is not trained. Call train() before predict().")
+
+        # Prepare output array
+        N = len(data)
+        horizon = self.params['time_horizon']
+        preds = np.zeros((N, horizon))
+
+        # We do a simple rolling-like approach: for each row i in data, 
+        # we forecast 'horizon' steps ahead. The model state is not updated
+        # with each row's new information (this is a simplified approach).
+        for i in range(N):
+            # Single row as exogenous for the next horizon steps
+            exog_i = np.tile(data[i], (horizon, 1)) if data.ndim == 2 else None
+            # Forecast future horizon steps
+            forecast_result = self.results.get_forecast(steps=horizon, exog=exog_i)
+            forecast_mean = forecast_result.predicted_mean
+            # Store the multi-step forecast in preds[i]
+            preds[i, :] = forecast_mean
+
         return preds
 
     def calculate_mse(self, y_true, y_pred):
@@ -230,25 +233,31 @@ class Plugin:
         return mse
 
     def calculate_mae(self, y_true, y_pred):
-        print(f"y_true (sample): {y_true.flatten()[:5]}")
-        print(f"y_pred (sample): {y_pred.flatten()[:5]}")
+        """
+        Flatten-based MAE => consistent with multi-step shape (N, time_horizon).
+        """
+        if y_true.shape != y_pred.shape:
+            raise ValueError(
+                f"Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}"
+            )
         mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
         print(f"Calculated MAE: {mae}")
         return mae
 
-
     def save(self, file_path):
         """
-        Save the trained model to file.
+        Save the trained SARIMAX model to file.
         """
-        save_model(self.model, file_path)
+        if self.results is None:
+            raise ValueError("No trained model to save. Train the model first.")
+        with open(file_path, 'wb') as f:
+            pickle.dump(self.results, f)
         print(f"Predictor model saved to {file_path}")
 
     def load(self, file_path):
         """
-        Load a trained model from file.
+        Load a trained SARIMAX model from file.
         """
-        self.model = load_model(file_path)
+        with open(file_path, 'rb') as f:
+            self.results = pickle.load(f)
         print(f"Model loaded from {file_path}")
-    
-
