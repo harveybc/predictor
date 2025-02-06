@@ -16,9 +16,9 @@ class Plugin:
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 5,
-        'initial_layer_size': 128,
+        'initial_layer_size': 1024,
         'layer_size_divisor': 2,
-        'learning_rate': 0.00001,
+        'learning_rate': 0.0001,
         'l2_reg': 1e-3,     # L2 regularization factor
         'patience': 3,      # Patience for Early Stopping
         'activation': 'tanh'
