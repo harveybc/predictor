@@ -111,12 +111,8 @@ def main():
             sys.exit(1)
     else:
         print("Processing and running prediction pipeline...")
-        try:
-            run_prediction_pipeline(config, plugin)
-        except Exception as e:
-            print(f"Prediction pipeline failed: {e}")
-            sys.exit(1)
-
+        run_prediction_pipeline(config, plugin)
+        
     # Save the current configuration locally if a save path is specified
     if 'save_config' in config and config['save_config']:
         try:
