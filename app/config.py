@@ -13,7 +13,7 @@ DEFAULT_VALUES = {
     'loss_plot_file': './loss_plot.png',
     'model_plot_file': './model_plot.png',	
     'plugin': 'cnn',
-    'time_horizon': 6,
+    'time_horizon': 120,
     'threshold_error': 0.000001,
     'remote_log': None,
     'remote_load_config': None,
@@ -27,7 +27,7 @@ DEFAULT_VALUES = {
     'force_date': False,
     'headers': True,
     'input_offset': 0,
-    'window_size': 48,  # Number of time steps in each window (e.g., 24 for daily patterns)
+    'window_size': 1024,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'l2_reg': 1e-4,          # L2 regularization factor
     'patience': 10,           # Early stopping patience
     'max_steps_train': 6300,
