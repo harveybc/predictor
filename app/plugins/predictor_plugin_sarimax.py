@@ -11,8 +11,8 @@ class Plugin:
     SARIMA Predictor Plugin using statsmodels for multi-step forecasting.
 
     This plugin builds, trains, and evaluates a SARIMAX model that outputs (N, time_horizon).
-    It preserves exactly the same structure and interface (methods, parameters, return values)
-    as the original ANN-based plugin example, but implements SARIMAX instead.
+    It preserves the same structure and interface (methods, parameters, return values)
+    as an ANN-based plugin, but implements SARIMAX instead.
     """
 
     # Default parameters (identical to the ANN example for interface consistency)
@@ -29,7 +29,7 @@ class Plugin:
         # Typical SARIMA-related parameters stored here for convenience
         'order': (1, 1, 1),
         'seasonal_order': (0, 0, 0, 0),
-        'time_horizon': 6  # For multi-step forecasting
+        'time_horizon': 6  # For multi-step forecasting (example default)
     }
 
     # Variables for debugging (identical to the ANN example)
@@ -67,7 +67,7 @@ class Plugin:
         """
         Build (prepare) the SARIMAX model specification. 
         For interface consistency, we receive `input_shape` (int),
-        though SARIMAX does not strictly need it like an ANN does.
+        although SARIMAX does not strictly need it like an ANN does.
 
         Args:
             input_shape (int): Number of input features for exogenous data (x_train).
@@ -99,7 +99,7 @@ class Plugin:
             x_train (np.ndarray): Training exogenous data, shape (N, input_dim).
             y_train (np.ndarray): Training target data, shape (N, time_horizon).
             epochs (int): Number of epochs (not used in SARIMAX, but maintained for interface).
-            batch_size (int): Batch size (not used directly in SARIMAX, kept for interface).
+            batch_size (int): Batch size (not used directly in SARIMAX, but kept for interface).
             threshold_error (float): Threshold for printing a warning about final_loss.
             x_val (np.ndarray, optional): Validation exogenous data, shape (M, input_dim).
             y_val (np.ndarray, optional): Validation target data, shape (M, time_horizon).
@@ -138,30 +138,36 @@ class Plugin:
         # Create a minimal history-like object to mimic Keras usage
         class MockHistory:
             def __init__(self):
-                self.history = {'loss': []}
+                self.history = {
+                    'loss': [],
+                    'val_loss': []  # we add this for pipeline compatibility
+                }
 
         history = MockHistory()
 
-        # We define "final_loss" as a simple train error metric to mimic the ANN example
+        # We'll define "final_loss" as a simple train error metric to mimic the ANN example
         # We'll calculate the MAE on the training set for the single-step approach
         train_predictions_1step = self.results.predict(
             start=0, 
             end=len(endog_train)-1, 
             exog=exog_train
         )
-        final_loss = np.mean(np.abs(train_predictions_1step - endog_train))  # MAE
+        final_loss = np.mean(np.abs(train_predictions_1step - endog_train))  # Use MAE as 'loss'
         history.history['loss'].append(final_loss)
 
         # Compare final_loss to threshold
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
-        # Evaluate on training data (multi-step style for consistency):
+        # Evaluate on training data (multi-step style for consistency).
         # We'll produce an array (N, exp_horizon) for train predictions
         train_predictions = self.predict(x_train)
         train_mae = self.calculate_mae(y_train, train_predictions)
-        train_r2 = r2_score(y_train, train_predictions) if exp_horizon == 1 \
-            else r2_score(y_train[:, 0], train_predictions[:, 0])  # R² for first step if multi-step
+        # For multi-step, we only compute R² for the first step to be consistent
+        if exp_horizon == 1:
+            train_r2 = r2_score(y_train, train_predictions)
+        else:
+            train_r2 = r2_score(y_train[:, 0], train_predictions[:, 0])
 
         # Evaluate on validation data if provided
         if x_val is not None and y_val is not None:
@@ -170,13 +176,16 @@ class Plugin:
             if exp_horizon == 1:
                 val_r2 = r2_score(y_val, val_predictions)
             else:
-                # For multi-step, compare only the first step for R²
                 val_r2 = r2_score(y_val[:, 0], val_predictions[:, 0])
+
+            # We use val_mae as a stand-in for val_loss
+            history.history['val_loss'].append(val_mae)
         else:
-            # If no validation data is provided, set placeholders
+            # If no validation data is provided, store placeholders
             val_predictions = np.array([])
             val_mae = None
             val_r2 = None
+            history.history['val_loss'].append(None)
 
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
@@ -203,16 +212,12 @@ class Plugin:
         horizon = self.params['time_horizon']
         preds = np.zeros((N, horizon))
 
-        # We do a simple rolling-like approach: for each row i in data, 
-        # we forecast 'horizon' steps ahead. The model state is not updated
-        # with each row's new information (this is a simplified approach).
+        # For each row i in data, forecast 'horizon' steps.
+        # This is a simplified approach that doesn't update model state with each row.
         for i in range(N):
-            # Single row as exogenous for the next horizon steps
             exog_i = np.tile(data[i], (horizon, 1)) if data.ndim == 2 else None
-            # Forecast future horizon steps
             forecast_result = self.results.get_forecast(steps=horizon, exog=exog_i)
             forecast_mean = forecast_result.predicted_mean
-            # Store the multi-step forecast in preds[i]
             preds[i, :] = forecast_mean
 
         return preds
