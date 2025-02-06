@@ -29,7 +29,7 @@ class Plugin:
         # Typical SARIMA-related parameters stored here for convenience
         'order': (1, 1, 1),
         'seasonal_order': (0, 0, 0, 0),
-        'time_horizon': 1  # For multi-step forecasting
+        'time_horizon': 6  # For multi-step forecasting
     }
 
     # Variables for debugging (identical to the ANN example)
