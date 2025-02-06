@@ -12,3 +12,4 @@ pydot
 graphviz
 backtrader
 deap
+pmdarima
