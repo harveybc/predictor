@@ -23,7 +23,7 @@ class Plugin:
         'layer_size_divisor': 2,
         'learning_rate': 0.0002,
         'dropout_rate': 0.1,
-        'patience': 5,
+        'patience': 10,
         'activation': 'tanh'
     }
 
@@ -136,7 +136,7 @@ class Plugin:
 
         # Early stopping based on validation loss
         early_stopping_monitor = EarlyStopping(
-            monitor='val_mae',  # Monitor validation loss
+            monitor='val_loss',  # Monitor validation loss
             patience=patience,
             restore_best_weights=True,
             verbose=1
