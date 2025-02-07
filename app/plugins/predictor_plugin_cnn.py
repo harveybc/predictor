@@ -100,7 +100,7 @@ class Plugin:
                 x = Conv1D(
                     filters=size, 
                     kernel_size=3, 
-                    activation='relu', 
+                    activation='tanh', 
                     kernel_initializer=HeNormal(), 
                     padding='same',
                     kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
