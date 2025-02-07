@@ -20,7 +20,7 @@ class Plugin:
         'intermediate_layers':3,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.00001,
+        'learning_rate': 0.001,
         'dropout_rate': 0.1,
         'activation': 'tanh',
         'l2_reg': 1e-2,     # L2 regularization factor
