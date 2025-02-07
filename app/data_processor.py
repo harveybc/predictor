@@ -70,6 +70,7 @@ def process_data(config):
 
     # 4) MULTI-STEP COLUMNS
     time_horizon = config["time_horizon"]
+    use_daily = config.get("use_daily", False)
 
     def create_multi_step(y_df, horizon):
         """
@@ -83,12 +84,24 @@ def process_data(config):
             pd.DataFrame: Multi-step targets aligned with the input data.
         """
         blocks = []
-        for i in range(len(y_df) - horizon):
-            # Collect the next `horizon` ticks starting from the *next* row
-            window = y_df.iloc[i + 1 : i + 1 + horizon].values.flatten()
-            blocks.append(window)
-        # Align index to the input data (exclude the last `horizon` rows)
-        return pd.DataFrame(blocks, index=y_df.index[:-horizon])
+        if not use_daily:
+            for i in range(len(y_df) - horizon):
+                # Collect the next `horizon` ticks starting from the *next* row
+                window = y_df.iloc[i + 1 : i + 1 + horizon].values.flatten()
+                blocks.append(window)
+            # Align index to the input data (exclude the last `horizon` rows)
+            return pd.DataFrame(blocks, index=y_df.index[:-horizon])
+        else:
+            # Collect the predicted values for the next `horizon` days at the same hour
+            # Assuming data frequency is hourly (i.e. 24 ticks per day)
+            for i in range(len(y_df) - horizon * 24):
+                window = []
+                for d in range(horizon):
+                    # Collect the value at the same hour for the next day (offset by 24 ticks per day)
+                    window.append(y_df.iloc[i + 24 * (d + 1)].values.flatten()[0])
+                blocks.append(window)
+            # Align index to the input data (exclude the last `horizon*24` rows)
+            return pd.DataFrame(blocks, index=y_df.index[:-(horizon * 24)])
 
     y_train_multi = create_multi_step(y_train, time_horizon)
     y_val_multi = create_multi_step(y_val, time_horizon)
@@ -119,12 +132,21 @@ def process_data(config):
         # Create sliding windows for LSTM
         window_size = config["window_size"]  # Ensure `window_size` is in the config
 
-        x_train, y_train, _ = create_sliding_windows(
-            x_train, y_train, 1, time_horizon, stride=1
-        )
-        x_val, y_val, _ = create_sliding_windows(
-            x_val, y_val, 1, time_horizon, stride=1
-        )
+        if config.get("use_daily", False):
+            # Use a daily step (24 ticks) for sliding windows to predict the same hour for the next days
+            x_train, y_train, _ = create_sliding_windows(
+                x_train, y_train, 24, time_horizon, stride=24
+            )
+            x_val, y_val, _ = create_sliding_windows(
+                x_val, y_val, 24, time_horizon, stride=24
+            )
+        else:
+            x_train, y_train, _ = create_sliding_windows(
+                x_train, y_train, 1, time_horizon, stride=1
+            )
+            x_val, y_val, _ = create_sliding_windows(
+                x_val, y_val, 1, time_horizon, stride=1
+            )
 
         # Ensure y_train matches x_train
         y_train = y_train[: len(x_train)]
@@ -180,6 +202,7 @@ def process_data(config):
         "x_val": x_val,
         "y_val": y_val_multi,
     }
+
 
 def run_prediction_pipeline(config, plugin):
     """
