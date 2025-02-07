@@ -16,14 +16,12 @@ class Plugin:
     """
 
     plugin_params = {
-        'epochs': 400,
         'batch_size': 128,
         'intermediate_layers':3,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.01,
+        'learning_rate': 0.002,
         'dropout_rate': 0.1,
-        'patience': 15,      # Patience for Early Stopping
         'activation': 'tanh'
     }
 
@@ -132,11 +130,11 @@ class Plugin:
         print(f"Training LSTM model with data shape: {x_train.shape}, target shape: {y_train.shape}")
 
         callbacks = []
-        patience = self.params.get('patience', 10)
+        patience = self.params.get('patience', 20)
 
         # Early stopping based on validation loss
         early_stopping_monitor = EarlyStopping(
-            monitor='val_mae',  # Monitor validation loss
+            monitor='val_loss',  # Monitor validation loss
             patience=patience,
             restore_best_weights=True,
             verbose=1
