@@ -17,8 +17,8 @@ class Plugin:
 
     plugin_params = {
         'batch_size': 128,
-        'intermediate_layers':4,
-        'initial_layer_size': 64,
+        'intermediate_layers':3,
+        'initial_layer_size': 32,
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
         'dropout_rate': 0.1,
