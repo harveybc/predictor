@@ -32,4 +32,5 @@ def parse_args():
     parser.add_argument('-it', '--iterations', type=int,help='number of times the whole process is made and after that the training and validation MAE are averaged and also the std dev, max and min is shown.')
     parser.add_argument('-e', '--epochs', type=int,help='number of epochs for the plugin model training.')
     parser.add_argument('-ud', '--use_daily', action='store_true',help='isntead of predicting the next time_horizon hours, predict the next time_horizon days.')
+    
     return parser.parse_known_args()
