@@ -20,10 +20,10 @@ class Plugin:
         'intermediate_layers':3,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.0001,
+        'learning_rate': 0.00001,
         'dropout_rate': 0.1,
         'activation': 'tanh',
-        'l2_reg': 1e-4,     # L2 regularization factor
+        'l2_reg': 1e-2,     # L2 regularization factor
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
