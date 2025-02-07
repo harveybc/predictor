@@ -16,12 +16,12 @@ class Plugin:
     """
 
     plugin_params = {
-        'epochs': 400,
+        'epochs': 200,
         'batch_size': 128,
-        'intermediate_layers':3,
-        'initial_layer_size': 128,
+        'intermediate_layers':2,
+        'initial_layer_size': 64,
         'layer_size_divisor': 2,
-        'learning_rate': 0.00001,
+        'learning_rate': 0.0001,
         'dropout_rate': 0.1,
         'patience': 15,
         'activation': 'tanh'
@@ -136,7 +136,7 @@ class Plugin:
 
         # Early stopping based on validation loss
         early_stopping_monitor = EarlyStopping(
-            monitor='val_loss',  # Monitor validation loss
+            monitor='val_mae',  # Monitor validation loss
             patience=patience,
             restore_best_weights=True,
             verbose=1
