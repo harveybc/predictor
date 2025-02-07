@@ -92,21 +92,27 @@ def process_data(config):
 
     def create_multi_step_daily(y_df, horizon):
         """
-        Create multi-step daily targets for time-series prediction.
-        For each tick, generate predictions for the same hour on the next `horizon` days.
+        Create multi-step targets for daily predictions in time-series prediction.
+        For each row in y_df, returns the predicted values for the same hour over the next `horizon` days.
+
+        Args:
+            y_df (pd.DataFrame): Target data as a DataFrame.
+            horizon (int): Number of future days to predict.
+
+        Returns:
+            pd.DataFrame: Multi-step targets aligned with the input data.
         """
         blocks = []
-        # Ensure there are enough rows to get daily targets (each day assumed to have 24 ticks)
+        # For daily mode, each prediction is offset by 24 ticks (hours)
         for i in range(len(y_df) - horizon * 24):
             window = []
             for d in range(1, horizon + 1):
-                # Get the prediction for the same hour on the d-th next day (i.e. jump 24 ticks per day)
+                # Collect the predicted value at the same hour on the d-th day ahead
                 window.extend(y_df.iloc[i + d * 24].values.flatten())
             blocks.append(window)
         # Align index to the input data (exclude the last horizon*24 rows)
         return pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
 
-    # Depending on the use_daily flag, create multi-step targets appropriately.
     if config.get("use_daily", False):
         y_train_multi = create_multi_step_daily(y_train, time_horizon)
         y_val_multi = create_multi_step_daily(y_val, time_horizon)
@@ -115,23 +121,13 @@ def process_data(config):
         y_val_multi = create_multi_step(y_val, time_horizon)
 
     # 5) TRIM x TO MATCH THE LENGTH OF y
-    # For daily targets, the effective length of y is reduced by horizon*24 instead of horizon
-    if config.get("use_daily", False):
-        min_len_train = min(len(x_train), len(y_train_multi))
-        x_train = x_train.iloc[:min_len_train]
-        y_train_multi = y_train_multi.iloc[:min_len_train]
+    min_len_train = min(len(x_train), len(y_train_multi))
+    x_train = x_train.iloc[:min_len_train]
+    y_train_multi = y_train_multi.iloc[:min_len_train]
 
-        min_len_val = min(len(x_val), len(y_val_multi))
-        x_val = x_val.iloc[:min_len_val]
-        y_val_multi = y_val_multi.iloc[:min_len_val]
-    else:
-        min_len_train = min(len(x_train), len(y_train_multi))
-        x_train = x_train.iloc[:min_len_train]
-        y_train_multi = y_train_multi.iloc[:min_len_train]
-
-        min_len_val = min(len(x_val), len(y_val_multi))
-        x_val = x_val.iloc[:min_len_val]
-        y_val_multi = y_val_multi.iloc[:min_len_val]
+    min_len_val = min(len(x_val), len(y_val_multi))
+    x_val = x_val.iloc[:min_len_val]
+    y_val_multi = y_val_multi.iloc[:min_len_val]
 
     # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
@@ -147,20 +143,36 @@ def process_data(config):
         if not isinstance(y_val, np.ndarray):
             y_val = y_val.to_numpy().astype(np.float32)
 
-        # Create sliding windows for LSTM
         window_size = config["window_size"]  # Ensure `window_size` is in the config
 
         if config.get("use_daily", False):
-            # Create sliding windows with daily targets (each prediction is 24 ticks apart, no stride adjustment)
-            # Assumes that create_sliding_windows_daily is defined elsewhere similarly to create_sliding_windows,
-            # but it picks target values at multiples of 24 ticks ahead.
-            x_train, y_train, _ = create_sliding_windows_daily(
-                x_train, y_train, 1, time_horizon, stride=1
-            )
-            x_val, y_val, _ = create_sliding_windows_daily(
-                x_val, y_val, 1, time_horizon, stride=1
-            )
+            # Define an intra-method function to create sliding windows for x only
+            def create_sliding_windows_x(data, window_size, stride=1):
+                """
+                Create sliding windows for input data only.
+
+                Args:
+                    data (np.ndarray): Input data array of shape (n_samples, n_features).
+                    window_size (int): The number of time steps in each window.
+                    stride (int): The stride between successive windows.
+
+                Returns:
+                    np.ndarray: Array of sliding windows of shape (n_windows, window_size, n_features).
+                """
+                windows = []
+                for i in range(0, len(data) - window_size + 1, stride):
+                    windows.append(data[i : i + window_size])
+                return np.array(windows)
+
+            # Create sliding windows for x_train and x_val without altering y (daily targets)
+            x_train = create_sliding_windows_x(x_train, window_size, stride=1)
+            x_val = create_sliding_windows_x(x_val, window_size, stride=1)
+
+            # Adjust y_train_multi and y_val_multi to match the new x dimensions (trim the first window_size-1 samples)
+            y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
+            y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
         else:
+            # Create sliding windows for LSTM (hourly predictions) as before
             x_train, y_train, _ = create_sliding_windows(
                 x_train, y_train, 1, time_horizon, stride=1
             )
@@ -168,13 +180,13 @@ def process_data(config):
                 x_val, y_val, 1, time_horizon, stride=1
             )
 
-        # Ensure y_train matches x_train
-        y_train = y_train[: len(x_train)]
-        y_val = y_val[: len(x_val)]
+            # Ensure y_train matches x_train
+            y_train = y_train[: len(x_train)]
+            y_val = y_val[: len(x_val)]
 
-        # Update y_train_multi to match the modified y_train
-        y_train_multi = y_train
-        y_val_multi = y_val
+            # Update y_train_multi to match the modified y_train
+            y_train_multi = y_train
+            y_val_multi = y_val
 
         print(f"LSTM data shapes after sliding windows:")
         print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
