@@ -20,7 +20,6 @@ class Plugin:
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
         'l2_reg': 1e-3,     # L2 regularization factor
-        'patience': 15,      # Patience for Early Stopping
         'activation': 'tanh'
     }
 
