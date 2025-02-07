@@ -16,7 +16,7 @@ class Plugin:
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 3,
-        'initial_layer_size': 1024,
+        'initial_layer_size': 512,
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
         'l2_reg': 1e-3,     # L2 regularization factor
@@ -93,14 +93,19 @@ class Plugin:
         # Define the Input layer
         inputs = Input(shape=input_shape, name="model_input")
         x = inputs
-        
+        x = Dense(
+            units=layers[0],
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+        )(x)
         # Add intermediate Conv1D and MaxPooling1D layers
         for idx, size in enumerate(layers[:-1]):
             if size > 1:
                 x = Conv1D(
                     filters=size, 
                     kernel_size=3, 
-                    activation='tanh', 
+                    activation='relu', 
                     kernel_initializer=HeNormal(), 
                     padding='same',
                     kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
