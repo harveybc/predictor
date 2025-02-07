@@ -22,7 +22,8 @@ class Plugin:
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
         'dropout_rate': 0.1,
-        'activation': 'tanh'
+        'activation': 'tanh',
+        'l2_reg': 1e-4,     # L2 regularization factor
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
@@ -50,7 +51,7 @@ class Plugin:
             input_shape (tuple): Shape of the input data (time_steps, features).
         """
         self.params['input_dim'] = input_shape
-        l2_reg = self.params.get('l2_reg', 1e-3)
+        l2_reg = self.params.get('l2_reg', 1e-4)
 
         # Layer configuration
         layers = []

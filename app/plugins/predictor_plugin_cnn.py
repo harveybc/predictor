@@ -19,7 +19,7 @@ class Plugin:
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
         'learning_rate': 0.00001,
-        'l2_reg': 1e-4,     # L2 regularization factor
+        'l2_reg': 1e-2,     # L2 regularization factor
         'activation': 'tanh'
     }
 
