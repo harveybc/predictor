@@ -20,7 +20,7 @@ class Plugin:
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
         'l2_reg': 1e-3,     # L2 regularization factor
-        'patience': 5,      # Patience for Early Stopping
+        'patience': 4,      # Patience for Early Stopping
         'activation': 'tanh'
     }
 
@@ -185,7 +185,7 @@ class Plugin:
 
         # Early Stopping based on loss or validation loss
         patience = self.params.get('patience', 10)  # default patience is 10 epochs
-        monitor_metric = 'val_loss'
+        monitor_metric = 'val_mae'
         early_stopping_monitor = EarlyStopping(
             monitor=monitor_metric,
             patience=patience,
