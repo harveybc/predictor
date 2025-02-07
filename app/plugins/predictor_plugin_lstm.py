@@ -131,10 +131,11 @@ class Plugin:
 
         callbacks = []
         patience = self.params.get('patience', 10)
+        use_daily = self.params.get('use_daily', False)
 
         # Early stopping based on validation loss
         early_stopping_monitor = EarlyStopping(
-            monitor='val_loss',  # Monitor validation loss
+            monitor='val_loss' if use_daily else 'val_mae',  # Monitor validation loss
             patience=patience,
             restore_best_weights=True,
             verbose=1
