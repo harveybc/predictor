@@ -16,12 +16,12 @@ class Plugin:
     """
 
     plugin_params = {
-        'epochs': 200,
+        'epochs': 400,
         'batch_size': 128,
         'intermediate_layers':2,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.00001,
+        'learning_rate': 0.002,
         'dropout_rate': 0.1,
         'patience': 5,
         'activation': 'tanh'
