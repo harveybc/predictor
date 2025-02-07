@@ -70,7 +70,6 @@ def process_data(config):
 
     # 4) MULTI-STEP COLUMNS
     time_horizon = config["time_horizon"]
-    use_daily = config.get("use_daily", False)
 
     def create_multi_step(y_df, horizon):
         """
@@ -84,36 +83,55 @@ def process_data(config):
             pd.DataFrame: Multi-step targets aligned with the input data.
         """
         blocks = []
-        if not use_daily:
-            for i in range(len(y_df) - horizon):
-                # Collect the next `horizon` ticks starting from the *next* row
-                window = y_df.iloc[i + 1 : i + 1 + horizon].values.flatten()
-                blocks.append(window)
-            # Align index to the input data (exclude the last `horizon` rows)
-            return pd.DataFrame(blocks, index=y_df.index[:-horizon])
-        else:
-            # Collect the predicted values for the next `horizon` days at the same hour
-            # Assuming data frequency is hourly (i.e. 24 ticks per day)
-            for i in range(len(y_df) - horizon * 24):
-                window = []
-                for d in range(horizon):
-                    # Collect the value at the same hour for the next day (offset by 24 ticks per day)
-                    window.append(y_df.iloc[i + 24 * (d + 1)].values.flatten()[0])
-                blocks.append(window)
-            # Align index to the input data (exclude the last `horizon*24` rows)
-            return pd.DataFrame(blocks, index=y_df.index[:-(horizon * 24)])
+        for i in range(len(y_df) - horizon):
+            # Collect the next `horizon` ticks starting from the *next* row
+            window = y_df.iloc[i + 1 : i + 1 + horizon].values.flatten()
+            blocks.append(window)
+        # Align index to the input data (exclude the last `horizon` rows)
+        return pd.DataFrame(blocks, index=y_df.index[:-horizon])
 
-    y_train_multi = create_multi_step(y_train, time_horizon)
-    y_val_multi = create_multi_step(y_val, time_horizon)
+    def create_multi_step_daily(y_df, horizon):
+        """
+        Create multi-step daily targets for time-series prediction.
+        For each tick, generate predictions for the same hour on the next `horizon` days.
+        """
+        blocks = []
+        # Ensure there are enough rows to get daily targets (each day assumed to have 24 ticks)
+        for i in range(len(y_df) - horizon * 24):
+            window = []
+            for d in range(1, horizon + 1):
+                # Get the prediction for the same hour on the d-th next day (i.e. jump 24 ticks per day)
+                window.extend(y_df.iloc[i + d * 24].values.flatten())
+            blocks.append(window)
+        # Align index to the input data (exclude the last horizon*24 rows)
+        return pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
+
+    # Depending on the use_daily flag, create multi-step targets appropriately.
+    if config.get("use_daily", False):
+        y_train_multi = create_multi_step_daily(y_train, time_horizon)
+        y_val_multi = create_multi_step_daily(y_val, time_horizon)
+    else:
+        y_train_multi = create_multi_step(y_train, time_horizon)
+        y_val_multi = create_multi_step(y_val, time_horizon)
 
     # 5) TRIM x TO MATCH THE LENGTH OF y
-    min_len_train = min(len(x_train), len(y_train_multi))
-    x_train = x_train.iloc[:min_len_train]
-    y_train_multi = y_train_multi.iloc[:min_len_train]
+    # For daily targets, the effective length of y is reduced by horizon*24 instead of horizon
+    if config.get("use_daily", False):
+        min_len_train = min(len(x_train), len(y_train_multi))
+        x_train = x_train.iloc[:min_len_train]
+        y_train_multi = y_train_multi.iloc[:min_len_train]
 
-    min_len_val = min(len(x_val), len(y_val_multi))
-    x_val = x_val.iloc[:min_len_val]
-    y_val_multi = y_val_multi.iloc[:min_len_val]
+        min_len_val = min(len(x_val), len(y_val_multi))
+        x_val = x_val.iloc[:min_len_val]
+        y_val_multi = y_val_multi.iloc[:min_len_val]
+    else:
+        min_len_train = min(len(x_train), len(y_train_multi))
+        x_train = x_train.iloc[:min_len_train]
+        y_train_multi = y_train_multi.iloc[:min_len_train]
+
+        min_len_val = min(len(x_val), len(y_val_multi))
+        x_val = x_val.iloc[:min_len_val]
+        y_val_multi = y_val_multi.iloc[:min_len_val]
 
     # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
@@ -133,12 +151,14 @@ def process_data(config):
         window_size = config["window_size"]  # Ensure `window_size` is in the config
 
         if config.get("use_daily", False):
-            # Use a daily step (24 ticks) for sliding windows to predict the same hour for the next days
-            x_train, y_train, _ = create_sliding_windows(
-                x_train, y_train, 24, time_horizon, stride=24
+            # Create sliding windows with daily targets (each prediction is 24 ticks apart, no stride adjustment)
+            # Assumes that create_sliding_windows_daily is defined elsewhere similarly to create_sliding_windows,
+            # but it picks target values at multiples of 24 ticks ahead.
+            x_train, y_train, _ = create_sliding_windows_daily(
+                x_train, y_train, 1, time_horizon, stride=1
             )
-            x_val, y_val, _ = create_sliding_windows(
-                x_val, y_val, 24, time_horizon, stride=24
+            x_val, y_val, _ = create_sliding_windows_daily(
+                x_val, y_val, 1, time_horizon, stride=1
             )
         else:
             x_train, y_train, _ = create_sliding_windows(
@@ -202,6 +222,7 @@ def process_data(config):
         "x_val": x_val,
         "y_val": y_val_multi,
     }
+
 
 
 def run_prediction_pipeline(config, plugin):
