@@ -21,7 +21,7 @@ class Plugin:
         'intermediate_layers':3,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.0001,
+        'learning_rate': 0.01,
         'dropout_rate': 0.1,
         'patience': 15,      # Patience for Early Stopping
         'activation': 'tanh'
