@@ -130,11 +130,11 @@ class Plugin:
         print(f"Training LSTM model with data shape: {x_train.shape}, target shape: {y_train.shape}")
 
         callbacks = []
-        patience = self.params.get('patience', 20)
+        patience = self.params.get('patience', 10)
 
         # Early stopping based on validation loss
         early_stopping_monitor = EarlyStopping(
-            monitor='loss',  # Monitor validation loss
+            monitor='val_loss',  # Monitor validation loss
             patience=patience,
             restore_best_weights=True,
             verbose=1
