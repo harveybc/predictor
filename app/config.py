@@ -13,7 +13,7 @@ DEFAULT_VALUES = {
     'loss_plot_file': './loss_plot.png',
     'model_plot_file': './model_plot.png',	
     'plugin': 'cnn',
-    'time_horizon': 120,
+    'time_horizon': 6,
     'threshold_error': 0.000001,
     'remote_log': None,
     'remote_load_config': None,
