@@ -184,7 +184,7 @@ class Plugin:
 
         # Early Stopping based on loss or validation loss
         patience = self.params.get('patience', 10)  # default patience is 10 epochs
-        monitor_metric = 'val_mae'
+        monitor_metric = 'loss'
         early_stopping_monitor = EarlyStopping(
             monitor=monitor_metric,
             patience=patience,
