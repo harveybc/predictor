@@ -231,9 +231,9 @@ class Plugin:
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
-            shuffle=True,  # Enable shuffling
+            #shuffle=True,  # Enable shuffling
             callbacks=callbacks,
-            validation_data=validation_data,
+            #validation_data=validation_data,
             validation_split=validation_split
         )
 
