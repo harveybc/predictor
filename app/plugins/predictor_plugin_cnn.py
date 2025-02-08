@@ -18,8 +18,8 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.00001,
-        'l2_reg': 1e-2,     # L2 regularization factor
+        'learning_rate': 0.0002,
+        'l2_reg': 1e-5,     # L2 regularization factor
         'activation': 'tanh'
     }
 
