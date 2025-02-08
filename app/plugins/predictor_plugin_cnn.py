@@ -16,10 +16,10 @@ class Plugin:
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 3,
-        'initial_layer_size': 32,
+        'initial_layer_size': 128,
         'layer_size_divisor': 2,
-        'learning_rate': 0.000002,
-        'l2_reg': 1e-5,     # L2 regularization factor
+        'learning_rate': 0.00001,
+        'l2_reg': 1e-2,     # L2 regularization factor
         'activation': 'tanh'
     }
 
