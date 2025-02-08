@@ -8,6 +8,7 @@
     "loss_plot_file": "examples\\results\\phase_1\\phase_1_base_25200_1h_loss_plot.png",
     "model_plot_file": "examples\\results\\phase_1\\phase_1_base_25200_1h_model_plot.png",
     "plugin": "base",
+    "iterations": 1,
     "max_steps_train": 25200,
     "max_steps_test": 6300
 }
