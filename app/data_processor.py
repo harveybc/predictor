@@ -514,6 +514,14 @@ def run_prediction_pipeline(config, plugin):
         print(f"Failed to generate model plot. Ensure Graphviz is installed and in your PATH: {e}")
         print("Download Graphviz from https://graphviz.org/download/")
 
+    # save the trained predictor model
+    save_model_file = config.get("save_model", "pretrained_model.keras")
+    try:
+        plugin.save(save_model_file)
+        print(f"Model saved to {save_model_file}")  
+    except Exception as e:
+        print(f"Failed to save model to {save_model_file}: {e}")
+
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
 
