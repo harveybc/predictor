@@ -14,7 +14,8 @@ DEFAULT_VALUES = {
     'model_plot_file': './model_plot.png',	
     'plugin': 'cnn',
     'time_horizon': 6,
-    'threshold_error': 0.000001,
+    'use_daily': False, # isntead of predicting the next time_horizon hours, predict the next time_horizon days.
+    'threshold_error': 0.001,
     'remote_log': None,
     'remote_load_config': None,
     'remote_save_config': None,
@@ -27,11 +28,11 @@ DEFAULT_VALUES = {
     'force_date': False,
     'headers': True,
     'input_offset': 0,
-    'window_size': 48,  # Number of time steps in each window (e.g., 24 for daily patterns)
+    'window_size': 256,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'l2_reg': 1e-4,          # L2 regularization factor
-    'patience': 10,           # Early stopping patience
+    'patience': 25,           # Early stopping patience
     'max_steps_train': 6300,
     'max_steps_test': 6300,
-    'iterations': 10,
-    'epochs': 200
+    'iterations': 15,
+    'epochs': 600
 }

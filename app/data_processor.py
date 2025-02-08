@@ -90,8 +90,35 @@ def process_data(config):
         # Align index to the input data (exclude the last `horizon` rows)
         return pd.DataFrame(blocks, index=y_df.index[:-horizon])
 
-    y_train_multi = create_multi_step(y_train, time_horizon)
-    y_val_multi = create_multi_step(y_val, time_horizon)
+    def create_multi_step_daily(y_df, horizon):
+        """
+        Create multi-step targets for daily predictions in time-series prediction.
+        For each row in y_df, returns the predicted values for the same hour over the next `horizon` days.
+
+        Args:
+            y_df (pd.DataFrame): Target data as a DataFrame.
+            horizon (int): Number of future days to predict.
+
+        Returns:
+            pd.DataFrame: Multi-step targets aligned with the input data.
+        """
+        blocks = []
+        # For daily mode, each prediction is offset by 24 ticks (hours)
+        for i in range(len(y_df) - horizon * 24):
+            window = []
+            for d in range(1, horizon + 1):
+                # Collect the predicted value at the same hour on the d-th day ahead
+                window.extend(y_df.iloc[i + d * 24].values.flatten())
+            blocks.append(window)
+        # Align index to the input data (exclude the last horizon*24 rows)
+        return pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
+
+    if config.get("use_daily", False):
+        y_train_multi = create_multi_step_daily(y_train, time_horizon)
+        y_val_multi = create_multi_step_daily(y_val, time_horizon)
+    else:
+        y_train_multi = create_multi_step(y_train, time_horizon)
+        y_val_multi = create_multi_step(y_val, time_horizon)
 
     # 5) TRIM x TO MATCH THE LENGTH OF y
     min_len_train = min(len(x_train), len(y_train_multi))
@@ -116,23 +143,50 @@ def process_data(config):
         if not isinstance(y_val, np.ndarray):
             y_val = y_val.to_numpy().astype(np.float32)
 
-        # Create sliding windows for LSTM
         window_size = config["window_size"]  # Ensure `window_size` is in the config
 
-        x_train, y_train, _ = create_sliding_windows(
-            x_train, y_train, 1, time_horizon, stride=1
-        )
-        x_val, y_val, _ = create_sliding_windows(
-            x_val, y_val, 1, time_horizon, stride=1
-        )
+        if config.get("use_daily", False):
+            # Define an intra-method function to create sliding windows for x only
+            def create_sliding_windows_x(data, window_size, stride=1):
+                """
+                Create sliding windows for input data only.
 
-        # Ensure y_train matches x_train
-        y_train = y_train[: len(x_train)]
-        y_val = y_val[: len(x_val)]
+                Args:
+                    data (np.ndarray): Input data array of shape (n_samples, n_features).
+                    window_size (int): The number of time steps in each window.
+                    stride (int): The stride between successive windows.
 
-        # Update y_train_multi to match the modified y_train
-        y_train_multi = y_train
-        y_val_multi = y_val
+                Returns:
+                    np.ndarray: Array of sliding windows of shape (n_windows, window_size, n_features).
+                """
+                windows = []
+                for i in range(0, len(data) - window_size + 1, stride):
+                    windows.append(data[i : i + window_size])
+                return np.array(windows)
+
+            # Create sliding windows for x_train and x_val without altering y (daily targets)
+            x_train = create_sliding_windows_x(x_train, window_size, stride=1)
+            x_val = create_sliding_windows_x(x_val, window_size, stride=1)
+
+            # Adjust y_train_multi and y_val_multi to match the new x dimensions (trim the first window_size-1 samples)
+            y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
+            y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
+        else:
+            # Create sliding windows for LSTM (hourly predictions) as before
+            x_train, y_train, _ = create_sliding_windows(
+                x_train, y_train, 1, time_horizon, stride=1
+            )
+            x_val, y_val, _ = create_sliding_windows(
+                x_val, y_val, 1, time_horizon, stride=1
+            )
+
+            # Ensure y_train matches x_train
+            y_train = y_train[: len(x_train)]
+            y_val = y_val[: len(x_val)]
+
+            # Update y_train_multi to match the modified y_train
+            y_train_multi = y_train
+            y_val_multi = y_val
 
         print(f"LSTM data shapes after sliding windows:")
         print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
@@ -180,6 +234,8 @@ def process_data(config):
         "x_val": x_val,
         "y_val": y_val_multi,
     }
+
+
 
 def run_prediction_pipeline(config, plugin):
     """
@@ -457,6 +513,14 @@ def run_prediction_pipeline(config, plugin):
     except Exception as e:
         print(f"Failed to generate model plot. Ensure Graphviz is installed and in your PATH: {e}")
         print("Download Graphviz from https://graphviz.org/download/")
+
+    # save the trained predictor model
+    save_model_file = config.get("save_model", "pretrained_model.keras")
+    try:
+        plugin.save(save_model_file)
+        print(f"Model saved to {save_model_file}")  
+    except Exception as e:
+        print(f"Failed to save model to {save_model_file}: {e}")
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")

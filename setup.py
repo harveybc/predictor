@@ -13,7 +13,8 @@ setup(
             'ann=app.plugins.predictor_plugin_ann:Plugin',
             'cnn=app.plugins.predictor_plugin_cnn:Plugin',
             'lstm=app.plugins.predictor_plugin_lstm:Plugin',
-            'transformer=app.plugins.predictor_plugin_transformer:Plugin'
+            'transformer=app.plugins.predictor_plugin_transformer:Plugin',
+            'sarimax=app.plugins.predictor_plugin_sarimax:Plugin'
         ]
     },
     install_requires=[

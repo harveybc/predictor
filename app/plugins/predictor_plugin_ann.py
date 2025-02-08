@@ -28,8 +28,7 @@ class Plugin:
         'layer_size_divisor': 2,
         'learning_rate': 0.001,
         'activation': 'tanh',
-        'patience': 5,
-        'l2_reg': 1e-3
+        'l2_reg': 1e-2
     }
     
     # Variables for debugging
@@ -152,7 +151,7 @@ class Plugin:
         
         callbacks = []
         early_stopping_monitor = EarlyStopping(
-            monitor='loss',
+            monitor='val_loss',
             patience=self.params['patience'],
             restore_best_weights=True,
             verbose=1
