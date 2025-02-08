@@ -1,6 +1,3 @@
-@echo off
-setlocal enabledelayedexpansion
-
 :: Define the configuration directory
 set "CONFIG_DIR=examples\config\phase_1"
 
@@ -14,5 +11,4 @@ predictor.bat --load_config %CONFIG_DIR%\phase_1_base_25200_1h_config.json
 
 
 echo All configurations processed.
-endlocal
-pause
+
