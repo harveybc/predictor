@@ -16,15 +16,14 @@ class Plugin:
     """
 
     plugin_params = {
-        'epochs': 200,
         'batch_size': 128,
-        'intermediate_layers':2,
+        'intermediate_layers':3,
         'initial_layer_size': 32,
         'layer_size_divisor': 2,
-        'learning_rate': 0.0001,
+        'learning_rate': 0.00002,
         'dropout_rate': 0.1,
-        'patience': 10,
-        'activation': 'tanh'
+        'activation': 'tanh',
+        'l2_reg': 1e-2,     # L2 regularization factor
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
@@ -52,7 +51,7 @@ class Plugin:
             input_shape (tuple): Shape of the input data (time_steps, features).
         """
         self.params['input_dim'] = input_shape
-        l2_reg = self.params.get('l2_reg', 1e-3)
+        l2_reg = self.params.get('l2_reg', 1e-4)
 
         # Layer configuration
         layers = []
@@ -132,11 +131,12 @@ class Plugin:
         print(f"Training LSTM model with data shape: {x_train.shape}, target shape: {y_train.shape}")
 
         callbacks = []
-        patience = self.params.get('patience', 10)
+        patience = self.params.get('patience', 14)
+        use_daily = self.params.get('use_daily', False)
 
         # Early stopping based on validation loss
         early_stopping_monitor = EarlyStopping(
-            monitor='val_mae',  # Monitor validation loss
+            monitor='val_mae', 
             patience=patience,
             restore_best_weights=True,
             verbose=1

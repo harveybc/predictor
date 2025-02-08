@@ -3,7 +3,7 @@ from keras.models import Model, load_model, save_model
 from keras.layers import Dense, Input, Dropout, BatchNormalization, LayerNormalization, GlobalAveragePooling1D, Reshape
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
-from tensorflow.keras.callbacks import EarlyStopping
+from  tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from keras.layers import GaussianNoise, MultiHeadAttention, Add
@@ -25,12 +25,11 @@ class Plugin:
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 3,
-        'initial_layer_size': 64,
+        'initial_layer_size': 128,
         'layer_size_divisor': 2,
-        'learning_rate': 0.0002,
+        'learning_rate': 0.0001,
         'activation': 'tanh',
-        'patience': 10,
-        'l2_reg': 1e-5,
+        'l2_reg': 1e-2,
         'positional_encoding_dim': 16  # Added for Transformer
     }
     
@@ -218,24 +217,17 @@ class Plugin:
             verbose=1
         )
         callbacks.append(early_stopping_monitor)
-    
-        # Determine validation strategy
-        if x_val is not None and y_val is not None:
-            validation_data = (x_val, y_val)
-            validation_split = None
-        else:
-            validation_data = None
-            validation_split = 0.2  # Use 20% of training data as validation
+        print(f"Training CNN model with data shape: {x_train.shape}, target shape: {y_train.shape}")
     
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
-            shuffle=True,  # Enable shuffling
+            #shuffle=True,  # Enable shuffling
             callbacks=callbacks,
-            validation_data=validation_data,
-            validation_split=validation_split
+            #validation_data=validation_data,
+            validation_split=0.2
         )
 
         print("Training completed.")

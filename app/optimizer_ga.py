@@ -10,7 +10,7 @@ from deap import base, creator, tools, algorithms
 
 # Import your strategy; make sure your strategy file (for example, forex_dynamic_volume_strategy.py)
 # has been modified to accept the extra parameters: tp_multiplier, sl_multiplier, lower_rr_threshold, and upper_rr_threshold.
-from app.heuristic_strategy import HeuristicStrategy
+from heuristic_strategy import HeuristicStrategy
 
 # Evaluation function: run a backtest with a given set of parameters and return the profit.
 def evaluate_strategy(individual):
@@ -92,7 +92,7 @@ toolbox.register("select", tools.selTournament, tournsize=3)
 def main():
     random.seed(42)
     population = toolbox.population(n=20)
-    CXPB, MUTPB, NGEN = 0.5, 0.2, 20  # Crossover prob, mutation prob, number of generations
+    CXPB, MUTPB, NGEN = 0.5, 0.2, 100  # Crossover prob, mutation prob, number of generations
     print("Starting Genetic Algorithm Optimization")
     
     # Optionally use multiprocessing
