@@ -1,4 +1,4 @@
-@echo off
+
 setlocal enabledelayedexpansion
 
 :: Define the configuration directory
