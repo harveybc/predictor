@@ -15,8 +15,8 @@ class Plugin:
     
     This plugin performs the following steps:
       1. Runs auto_arima on the entire training set (first column of y_train) to obtain ARIMA parameters.
-      2. For both training and validation datasets, it uses a rolling window of a fixed size (48 ticks)
-         with a stride of 1: at each tick t, the model is re-fitted on the last min(rolling_window, t+1)
+      2. For both training and validation datasets, it uses a rolling window (of size specified by 'rolling_window')
+         with stride=1: at each tick t, the model is re-fitted on the last min(rolling_window, t+1)
          observations (using the first target column) and used to forecast the next 'time_horizon' ticks.
       3. Detailed progress is printed (with a tqdm progress bar) and input/output shapes are reported.
       4. A Keras-like history object is returned with keys 'loss' and 'val_loss'.
@@ -113,14 +113,14 @@ class Plugin:
         horizon = self.params['time_horizon']
         window_size = self.params['rolling_window']
         preds = np.empty((N, horizon))
-        preds[:] = np.nan  # Initialize with NaNs
+        preds[:] = np.nan  # initialize with NaNs
 
-        ts = y[:, 0]  # Underlying univariate series from first column
+        # Use the first column of y as the underlying time series
+        ts = y[:, 0]
         print(f"Starting rolling forecast evaluation on data with shape: {x.shape}")
-        # Loop for t from 0 to N - horizon (so that x_forecast exists)
         for t in tqdm(range(N - horizon), desc="Rolling Forecast"):
             start_idx = 0 if t < window_size else t - window_size + 1
-            end_idx = t + 1  # Use data up to time t (inclusive)
+            end_idx = t + 1  # observations up to time t (inclusive)
             y_window = ts[start_idx:end_idx]
             x_window = x[start_idx:end_idx] if x is not None else None
             x_forecast = x[t+1:t+horizon+1] if x is not None else None
@@ -134,9 +134,10 @@ class Plugin:
                     enforce_stationarity=False,
                     enforce_invertibility=False
                 )
-                results = model.fit(disp=False)
+                # Fit with maxiter and disable convergence warnings
+                results = model.fit(disp=False, maxiter=100, warn_convergence=False)
                 forecast = results.get_forecast(steps=horizon, exog=x_forecast)
-                # Use .values if available; otherwise, use the forecast array directly.
+                # Use .values if available; otherwise, use the array directly.
                 if hasattr(forecast.predicted_mean, 'values'):
                     preds[t, :] = forecast.predicted_mean.values
                 else:
@@ -154,8 +155,7 @@ class Plugin:
         
         Procedure:
           1. Run auto_arima on the entire training set (first column of y_train) to obtain ARIMA parameters.
-          2. Evaluate the model using a rolling window (of size specified by 'rolling_window') on both
-             the training and validation datasets.
+          2. Perform a rolling forecast evaluation on both training and validation datasets.
         
         Returns:
             (history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions)
@@ -165,21 +165,21 @@ class Plugin:
         if y_train.ndim != 2 or y_train.shape[1] != horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{horizon}).")
         
-        # Store training (and validation) data for later use in predict()
+        # Store training and validation data for predict()
         self._x_train = x_train
         self._y_train = y_train
         if x_val is not None and y_val is not None:
             self._x_val = x_val
             self._y_val = y_val
 
+        N_train = len(x_train)
         print("Running auto_arima on training data (first column) to determine model order...")
         auto_model = auto_arima(y_train[:, 0], exogenous=x_train, seasonal=False,
                                 trace=True, error_action='ignore', suppress_warnings=True)
         self.order = auto_model.order
-        self.seasonal_order = auto_model.seasonal_order  # e.g., (0, 0, 0, 0)
+        self.seasonal_order = auto_model.seasonal_order  # e.g., (0,0,0,0)
         print(f"Auto_arima determined order: {self.order}, seasonal_order: {self.seasonal_order}")
 
-        # Rolling forecast on training data
         print("Starting rolling forecast evaluation on training data...")
         self.train_predictions = self._rolling_forecast(x_train, y_train)
         valid_train = ~np.isnan(self.train_predictions).any(axis=1)
@@ -189,7 +189,6 @@ class Plugin:
         train_r2 = r2_score(y_train[valid_train], self.train_predictions[valid_train])
         print(f"Training MAE: {train_mae}, Training R2: {train_r2}")
 
-        # Rolling forecast on validation data, if provided
         if self._x_val is not None and self._y_val is not None:
             print("Starting rolling forecast evaluation on validation data...")
             self.val_predictions = self._rolling_forecast(self._x_val, self._y_val)
@@ -203,7 +202,6 @@ class Plugin:
             val_mae = None
             val_r2 = None
 
-        # Build a Keras-like history object with both 'loss' and 'val_loss'
         class MockHistory:
             def __init__(self):
                 self.history = {'loss': [], 'val_loss': []}
@@ -218,7 +216,7 @@ class Plugin:
         Predict method.
         
         If the provided data exactly matches stored training or validation exogenous data,
-        return the stored rolling forecast predictions. Otherwise, run a new rolling forecast.
+        the stored predictions are returned. Otherwise, a new rolling forecast is performed.
         
         Returns:
             np.ndarray of shape (N, time_horizon)
