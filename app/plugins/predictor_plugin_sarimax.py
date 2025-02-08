@@ -22,8 +22,7 @@ class Plugin:
         'learning_rate': 0.001,
         'activation': 'tanh',
         'patience': 5,
-        'l2_reg': 1e-3,
-        'time_horizon': 6  # We fix a 6-step horizon
+        'l2_reg': 1e-3
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
