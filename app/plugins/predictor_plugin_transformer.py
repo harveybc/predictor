@@ -3,7 +3,7 @@ from keras.models import Model, load_model, save_model
 from keras.layers import Dense, Input, Dropout, BatchNormalization, LayerNormalization, GlobalAveragePooling1D, Reshape
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
-from tensorflow.keras.callbacks import EarlyStopping
+from  tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from keras.layers import GaussianNoise, MultiHeadAttention, Add
@@ -27,7 +27,7 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 128,
         'layer_size_divisor': 2,
-        'learning_rate': 0.00001,
+        'learning_rate': 0.00005,
         'activation': 'tanh',
         'l2_reg': 1e-2,
         'positional_encoding_dim': 16  # Added for Transformer
