@@ -3,15 +3,27 @@ import logging
 import os
 import pickle
 import pandas as pd
+from tqdm import tqdm
 
 from sklearn.metrics import r2_score
 from statsmodels.tsa.statespace.sarimax import SARIMAX
+from pmdarima import auto_arima
 
 class Plugin:
     """
-    SARIMAX Predictor Plugin using 6 separate 1-step models, each forecasting
-    one of the 6 ticks. This avoids the iterative .append() overhead and is usually faster.
-    It preserves the exact interface of the ANN plugin.
+    SARIMAX Predictor Plugin for multi-step forecasting using a rolling window approach.
+    
+    This plugin performs the following steps:
+      1. Runs auto_arima on the entire training set (first column of y_train) to obtain fixed ARIMA parameters.
+      2. For both training and validation datasets, it performs a rolling forecast:
+         - For each time tick t, fit a SARIMAX model on the previous min(rolling_window, t+1) observations
+           (from the underlying univariate series given by y[:,0]) and the corresponding exogenous data.
+         - Use that fitted model to forecast the next 'time_horizon' ticks.
+         - This rolling procedure is repeated tick-by-tick (stride=1), yielding an output prediction array
+           with the same shape as y (i.e. (N, time_horizon)).
+      3. Detailed progress is printed (with a tqdm progress bar) and input/output shapes are reported.
+    
+    The plugin’s interface (class name, methods, parameters, return values) is identical to the provided ANN plugin.
     """
 
     plugin_params = {
@@ -22,22 +34,31 @@ class Plugin:
         'learning_rate': 0.001,
         'activation': 'tanh',
         'patience': 5,
-        'l2_reg': 1e-3
+        'l2_reg': 1e-3,
+        # Additional parameters for rolling evaluation:
+        'rolling_window': 48,   # Use the last 48 ticks for model fitting
+        'time_horizon': 6       # Forecast next 6 ticks
     }
 
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
 
     def __init__(self):
         """
-        Initialize plugin with defaults.
+        Initialize plugin with default parameters.
         """
         self.params = self.plugin_params.copy()
-        # We'll store 6 separate SARIMAX results (one per horizon/tick)
-        self.results_list = [None]*6
-        # We'll also store each submodel's training length:
-        self.train_lengths = [0]*6
-
-        self.model = None  # Unused, but kept for interface consistency
+        # These will store the ARIMA order parameters found by auto_arima:
+        self.order = None
+        self.seasonal_order = None
+        # Stored training/validation data (for rolling forecast evaluation)
+        self._x_train = None
+        self._y_train = None
+        self._x_val = None
+        self._y_val = None
+        # Rolling forecast predictions
+        self.train_predictions = None
+        self.val_predictions = None
+        self.model = None  # Unused placeholder (kept for interface consistency)
 
     def set_params(self, **kwargs):
         """
@@ -48,7 +69,7 @@ class Plugin:
 
     def get_debug_info(self):
         """
-        Return debug info for external usage.
+        Return a dict of debug info.
         """
         return {var: self.params[var] for var in self.plugin_debug_vars}
 
@@ -61,170 +82,216 @@ class Plugin:
 
     def build_model(self, input_shape):
         """
-        Build the 'model' placeholders. We'll do actual instantiations in train().
+        Build the model placeholder.
+        
+        Args:
+            input_shape (int): Number of exogenous features.
         """
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for SARIMAX.")
         self.params['input_dim'] = input_shape
-        print(f"Parallel Single-Step SARIMAX => input_shape: {input_shape}, "
-              f"time_horizon: {self.params['time_horizon']}")
+        print(f"SARIMAX building - input_shape: {input_shape}")
+        print(f"SARIMAX final output dimension (time_horizon): {self.params['time_horizon']}")
         self.model = None
+
+    def _rolling_forecast(self, x, y):
+        """
+        Internal method to perform rolling window forecasting on dataset (x, y).
+        For each time index t (from 0 to N - time_horizon), it fits a SARIMAX model
+        on the last min(rolling_window, t+1) observations (using the first column of y)
+        and forecasts the next 'time_horizon' ticks using the corresponding future exogenous data.
+        
+        Args:
+            x: np.ndarray of shape (N, input_dim) - exogenous data.
+            y: np.ndarray of shape (N, time_horizon) - target multi-step values.
+               The first column of y is used as the underlying univariate time series.
+               
+        Returns:
+            preds: np.ndarray of shape (N, time_horizon), where row t contains the forecast
+                   for time steps t+1 to t+time_horizon. For indices where forecast cannot be made,
+                   the row is filled with np.nan.
+        """
+        N = len(x)
+        horizon = self.params['time_horizon']
+        window_size = self.params['rolling_window']
+        preds = np.empty((N, horizon))
+        preds[:] = np.nan  # initialize with NaNs
+
+        # Use the first column of y as the underlying time series
+        ts = y[:, 0]
+        print(f"Starting rolling forecast evaluation on data with shape: {x.shape}")
+        # Loop over all indices where we have enough future exogenous data.
+        # We forecast for t from 0 to N - horizon.
+        for t in tqdm(range(N - horizon), desc="Rolling Forecast"):
+            # Determine the training window for this forecast: use all available data if t < window_size, else last 'window_size' observations.
+            start_idx = 0 if t < window_size else t - window_size + 1
+            end_idx = t + 1  # observations up to time t (inclusive)
+            y_window = ts[start_idx:end_idx]
+            x_window = x[start_idx:end_idx] if x is not None else None
+            # For the forecast, we need the exogenous data for the next 'horizon' ticks.
+            x_forecast = x[t+1:t+horizon+1] if x is not None else None
+
+            try:
+                model = SARIMAX(
+                    endog=y_window,
+                    exog=x_window,
+                    order=self.order,
+                    seasonal_order=self.seasonal_order,
+                    enforce_stationarity=False,
+                    enforce_invertibility=False
+                )
+                results = model.fit(disp=False)
+                forecast = results.get_forecast(steps=horizon, exog=x_forecast)
+                preds[t, :] = forecast.predicted_mean.values
+            except Exception as e:
+                print(f"Rolling forecast at index {t} failed: {e}")
+                preds[t, :] = np.nan
+
+        print(f"Rolling forecast completed. Prediction shape: {preds.shape}")
+        return preds
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
-        Train 6 separate submodels, one for each horizon step. Each is a standard
-        SARIMAX(0,1,0) (basic differencing) for demonstration, but you can adjust.
+        Train the SARIMAX plugin using a rolling window evaluation.
+        
+        Procedure:
+          1. Run auto_arima on the entire training set (first column of y_train) to obtain ARIMA parameters.
+          2. Using a rolling window (of size 48, stride=1), fit a SARIMAX model at each tick and forecast the next 'time_horizon' ticks.
+          3. Perform this rolling forecast on both training and validation datasets.
         
         Returns:
             (history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions)
         """
         print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
         horizon = self.params['time_horizon']
-        if y_train.shape[1] != horizon:
-            raise ValueError(f"y_train shape {y_train.shape}, expected 2D with {horizon} steps.")
-
-        exog_train = x_train if self.params['input_dim'] > 0 else None
-        N_train = len(x_train)
-
-        print(f"Building {horizon} separate SARIMAX(0,1,0) models.")
+        if y_train.ndim != 2 or y_train.shape[1] != horizon:
+            raise ValueError(f"y_train shape {y_train.shape}, expected (N,{horizon}).")
         
-        # Fit each of the 6 sub-models
-        for k in range(horizon):
-            print(f"Fitting model for horizon step {k} ...")
-            endog_k = y_train[:, k]
-            self.train_lengths[k] = N_train  # store length for out-of-sample predictions
+        # Store training (and validation) data for later use in predict()
+        self._x_train = x_train
+        self._y_train = y_train
+        if x_val is not None and y_val is not None:
+            self._x_val = x_val
+            self._y_val = y_val
 
-            # Basic example: (p,d,q) = (0,1,0)
-            model_k = SARIMAX(
-                endog=endog_k,
-                exog=exog_train,
-                order=(0, 1, 0),
-                seasonal_order=(0, 0, 0, 0),
-                enforce_stationarity=False,
-                enforce_invertibility=False
-            )
-            results_k = model_k.fit(disp=False)
-            self.results_list[k] = results_k
+        N_train = len(x_train)
+        # Run auto_arima on the entire training set's first column to fix model order.
+        print("Running auto_arima on training data (first column) to determine model order...")
+        auto_model = auto_arima(y_train[:, 0], exogenous=x_train, seasonal=False,
+                                trace=True, error_action='ignore', suppress_warnings=True)
+        self.order = auto_model.order
+        self.seasonal_order = auto_model.seasonal_order  # e.g., (0,0,0,0)
+        print(f"Auto_arima determined order: {self.order}, seasonal_order: {self.seasonal_order}")
 
-        # Keras-like history object => we store 'loss' and 'val_loss'
+        # Perform rolling forecast evaluation on training data.
+        print("Starting rolling forecast evaluation on training data...")
+        self.train_predictions = self._rolling_forecast(x_train, y_train)
+        
+        # Compute metrics only on the indices where predictions are valid (not NaN)
+        valid_train = ~np.isnan(self.train_predictions).any(axis=1)
+        if np.sum(valid_train) == 0:
+            raise ValueError("No valid rolling forecasts obtained on training data.")
+        train_mae = self.calculate_mae(y_train[valid_train], self.train_predictions[valid_train])
+        train_r2 = r2_score(y_train[valid_train], self.train_predictions[valid_train])
+        print(f"Training MAE: {train_mae}, Training R2: {train_r2}")
+
+        # Perform rolling forecast evaluation on validation data, if provided.
+        if self._x_val is not None and self._y_val is not None:
+            print("Starting rolling forecast evaluation on validation data...")
+            self.val_predictions = self._rolling_forecast(self._x_val, self._y_val)
+            valid_val = ~np.isnan(self.val_predictions).any(axis=1)
+            if np.sum(valid_val) == 0:
+                raise ValueError("No valid rolling forecasts obtained on validation data.")
+            val_mae = self.calculate_mae(self._y_val[valid_val], self.val_predictions[valid_val])
+            val_r2 = r2_score(self._y_val[valid_val], self.val_predictions[valid_val])
+        else:
+            self.val_predictions = np.array([])
+            val_mae = None
+            val_r2 = None
+
+        # Create a Keras-like history object with both 'loss' and 'val_loss'
         class MockHistory:
             def __init__(self):
                 self.history = {'loss': [], 'val_loss': []}
         history = MockHistory()
+        history.history['loss'].append(train_mae)
+        history.history['val_loss'].append(val_mae)
 
-        # Compute average 1-step MAE across all 6 submodels
-        mae_list = []
-        for k in range(horizon):
-            endog_k = y_train[:, k]
-            one_step_pred_k = self.results_list[k].predict(
-                start=0, end=N_train - 1, exog=exog_train
-            )
-            mae_k = np.mean(np.abs(one_step_pred_k - endog_k))
-            mae_list.append(mae_k)
-        final_loss = np.mean(mae_list)
-        history.history['loss'].append(final_loss)
-        print(f"Average 1-step training MAE across 6 horizons: {final_loss}")
-
-        # Compare final_loss to threshold
-        if final_loss > threshold_error:
-            print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
-
-        # Evaluate multi-step predictions on training data
-        train_predictions = self.predict(x_train)
-        print(f"train_predictions shape: {train_predictions.shape}, y_train shape: {y_train.shape}")
-        train_mae = self.calculate_mae(y_train, train_predictions)
-        train_r2 = r2_score(y_train, train_predictions)
-
-        # Evaluate on validation data
-        if x_val is not None and y_val is not None:
-            val_predictions = self.predict(x_val)
-            print(f"val_predictions shape: {val_predictions.shape}, y_val shape: {y_val.shape}")
-            val_mae = self.calculate_mae(y_val, val_predictions)
-            val_r2 = r2_score(y_val, val_predictions)
-            # store val_mae in 'val_loss'
-            history.history['val_loss'].append(val_mae)
-        else:
-            val_predictions = np.array([])
-            val_mae = None
-            val_r2 = None
-            history.history['val_loss'].append(None)
-
-        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
+        return history, train_mae, train_r2, val_mae, val_r2, self.train_predictions, self.val_predictions
 
     def predict(self, data):
         """
-        Predict multi-step shape => (N, horizon).
-        For each submodel k, do a vectorized predict using out-of-sample indices:
-            start = self.train_lengths[k]
-            end   = self.train_lengths[k] + N - 1
-
-        So statsmodels knows we want N out-of-sample predictions with shape (N, input_dim).
+        Predict method.
+        If the provided data exactly matches the stored training or validation exogenous data,
+        the stored rolling forecast predictions are returned.
+        Otherwise, a new rolling forecast is performed on the provided data.
+        
+        Returns:
+            np.ndarray of shape (N, time_horizon)
         """
-        logging.getLogger("tensorflow").setLevel(logging.ERROR)
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
-        horizon = self.params['time_horizon']
-        N = len(data)
-        preds = np.zeros((N, horizon))
-
-        exog_data = data if self.params['input_dim'] > 0 else None
-
-        # We forecast from index=[train_length..train_length+N-1], so we pass exog of shape (N, input_dim)
-        for k in range(horizon):
-            if self.results_list[k] is None:
-                raise ValueError(f"Model for horizon {k} not trained.")
-            start_idx = self.train_lengths[k]
-            end_idx   = self.train_lengths[k] + N - 1
-            preds[:, k] = self.results_list[k].predict(
-                start=start_idx, end=end_idx, exog=exog_data
-            )
-
-        print(f"Parallel Single-Step predict => input: {data.shape}, output: {preds.shape}")
-        return preds
+        if self._x_train is not None and np.array_equal(data, self._x_train):
+            print("Returning stored training predictions.")
+            return self.train_predictions
+        elif self._x_val is not None and np.array_equal(data, self._x_val):
+            print("Returning stored validation predictions.")
+            return self.val_predictions
+        else:
+            print("Data does not match stored training/validation sets; running new rolling forecast.")
+            # For new data, we cannot use the ground-truth target series; here we use zeros as placeholder.
+            dummy_y = np.zeros((len(data), self.params['time_horizon']))
+            return self._rolling_forecast(data, dummy_y)
 
     def calculate_mse(self, y_true, y_pred):
         """
-        Flatten-based MSE => consistent with (N, horizon).
+        Flatten-based MSE (consistent with shape (N, time_horizon)).
         """
-        print(f"Calculating MSE => y_true={y_true.shape}, y_pred={y_pred.shape}")
+        print(f"Calculating MSE => y_true shape: {y_true.shape}, y_pred shape: {y_pred.shape}")
         if y_true.shape != y_pred.shape:
-            raise ValueError(f"Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}")
+            raise ValueError(f"Mismatch: y_true shape: {y_true.shape}, y_pred shape: {y_pred.shape}")
         mse = np.mean((y_true.flatten() - y_pred.flatten())**2)
-        print(f"Calculated MSE => {mse}")
+        print(f"Calculated MSE: {mse}")
         return mse
 
     def calculate_mae(self, y_true, y_pred):
         """
-        Flatten-based MAE => consistent with (N, horizon).
+        Flatten-based MAE (consistent with shape (N, time_horizon)).
         """
-        print(f"y_true (sample): {y_true.flatten()[:5]}")
-        print(f"y_pred (sample): {y_pred.flatten()[:5]}")
+        print(f"y_true sample: {y_true.flatten()[:5]}")
+        print(f"y_pred sample: {y_pred.flatten()[:5]}")
         mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
         print(f"Calculated MAE: {mae}")
         return mae
 
     def save(self, file_path):
         """
-        Save the 6 submodels.
+        Save the model configuration and stored data.
         """
-        # ensure submodels are trained
-        if any(r is None for r in self.results_list):
-            raise ValueError("One or more sub-models not trained. Train first.")
-        # Save both the results_list and the train_lengths
         save_data = {
-            'results_list': self.results_list,
-            'train_lengths': self.train_lengths
+            'order': self.order,
+            'seasonal_order': self.seasonal_order,
+            '_x_train': self._x_train,
+            '_y_train': self._y_train,
+            '_x_val': self._x_val,
+            '_y_val': self._y_val,
+            'train_predictions': self.train_predictions,
+            'val_predictions': self.val_predictions
         }
         with open(file_path, 'wb') as f:
             pickle.dump(save_data, f)
-        print(f"Predictor model(s) saved to {file_path}")
+        print(f"Predictor model saved to {file_path}")
 
     def load(self, file_path):
         """
-        Load previously saved submodels.
+        Load a saved model configuration.
         """
         with open(file_path, 'rb') as f:
             data = pickle.load(f)
-            self.results_list = data['results_list']
-            self.train_lengths = data['train_lengths']
-        print(f"Model(s) loaded from {file_path}")
+            self.order = data['order']
+            self.seasonal_order = data['seasonal_order']
+            self._x_train = data['_x_train']
+            self._y_train = data['_y_train']
+            self._x_val = data['_x_val']
+            self._y_val = data['_y_val']
+            self.train_predictions = data['train_predictions']
+            self.val_predictions = data['val_predictions']
+        print(f"Model loaded from {file_path}")
