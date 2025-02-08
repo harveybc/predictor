@@ -136,7 +136,7 @@ class Plugin:
 
         # Early stopping based on validation loss
         early_stopping_monitor = EarlyStopping(
-            monitor='val_loss', 
+            monitor='val_mae', 
             patience=patience,
             restore_best_weights=True,
             verbose=1
