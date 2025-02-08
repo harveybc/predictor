@@ -217,14 +217,7 @@ class Plugin:
             verbose=1
         )
         callbacks.append(early_stopping_monitor)
-    
-        # Determine validation strategy
-        if x_val is not None and y_val is not None:
-            validation_data = (x_val, y_val)
-            validation_split = None
-        else:
-            validation_data = None
-            validation_split = 0.2  # Use 20% of training data as validation
+        print(f"Training CNN model with data shape: {x_train.shape}, target shape: {y_train.shape}")
     
         history = self.model.fit(
             x_train, y_train,
@@ -234,7 +227,7 @@ class Plugin:
             #shuffle=True,  # Enable shuffling
             callbacks=callbacks,
             #validation_data=validation_data,
-            validation_split=validation_split
+            validation_split=0.2
         )
 
         print("Training completed.")
