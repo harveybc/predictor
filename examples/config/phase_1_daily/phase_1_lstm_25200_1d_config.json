@@ -1,0 +1,14 @@
+{
+    "x_train_file": "examples\\data\\phase_1\\phase_1_normalized_d2.csv",
+    "y_train_file": "examples\\data\\phase_1\\phase_1_normalized_d2.csv",
+    "x_validation_file": "examples\\data\\phase_1\\phase_1_normalized_d1.csv",
+    "y_validation_file": "examples\\data\\phase_1\\phase_1_normalized_d1.csv",
+    "output_file": "examples\\results\\phase_1_daily\\phase_1_lstm_25200_1d_prediction.csv",
+    "results_file": "examples\\results\\phase_1_daily\\phase_1_lstm_25200_1d_results.csv",
+    "loss_plot_file": "examples\\results\\phase_1_daily\\phase_1_lstm_25200_1d_loss_plot.png",
+    "model_plot_file": "examples\\results\\phase_1_daily\\phase_1_lstm_25200_1d_model_plot.png",	
+    "plugin": "lstm",
+    "use_daily": true,
+    "max_steps_train": 25200,
+    "max_steps_test": 6300
+}

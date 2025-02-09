@@ -14,7 +14,7 @@ setup(
             'cnn=app.plugins.predictor_plugin_cnn:Plugin',
             'lstm=app.plugins.predictor_plugin_lstm:Plugin',
             'transformer=app.plugins.predictor_plugin_transformer:Plugin',
-            'sarimax=app.plugins.predictor_plugin_sarimax:Plugin'
+            'base=app.plugins.predictor_plugin_base:Plugin'
         ]
     },
     install_requires=[
