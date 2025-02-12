@@ -14,6 +14,36 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
 from keras.utils.vis_utils import plot_model
 
+def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
+    """
+    Create sliding windows for input data only.
+
+    Args:
+        data (np.ndarray or pd.DataFrame): Input data array of shape (n_samples, n_features).
+        window_size (int): The number of time steps in each window.
+        stride (int): The stride between successive windows.
+        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
+
+    Returns:
+        If date_times is provided:
+            tuple: (windows, date_time_windows) where windows is an array of shape 
+                   (n_windows, window_size, n_features) and date_time_windows is a list of 
+                   the DATE_TIME value corresponding to the last time step of each window.
+        Otherwise:
+            np.ndarray: Array of sliding windows.
+    """
+    windows = []
+    dt_windows = []
+    for i in range(0, len(data) - window_size + 1, stride):
+        windows.append(data[i: i + window_size])
+        if date_times is not None:
+            # Use the date corresponding to the last element in the window
+            dt_windows.append(date_times[i + window_size - 1])
+    if date_times is not None:
+        return np.array(windows), dt_windows
+    else:
+        return np.array(windows)
+
 def process_data(config):
     """
     Processes data for different plugins, including ANN, CNN, LSTM, and Transformer.
@@ -23,6 +53,7 @@ def process_data(config):
 
     Returns:
         dict: Processed datasets for training and validation.
+              Additional keys 'dates_train' and 'dates_val' are added if DATE_TIME information is available.
     """
     # 1) LOAD CSVs
     x_train = load_csv(
@@ -45,6 +76,10 @@ def process_data(config):
         headers=config["headers"],
         max_rows=config.get("max_steps_test"),
     )
+
+    # Capture original DATE_TIME indices (if available)
+    train_dates = x_train.index if isinstance(x_train.index, pd.DatetimeIndex) else None
+    val_dates = x_val.index if isinstance(x_val.index, pd.DatetimeIndex) else None
 
     # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
@@ -129,11 +164,17 @@ def process_data(config):
     x_val = x_val.iloc[:min_len_val]
     y_val_multi = y_val_multi.iloc[:min_len_val]
 
+    # Also trim the date indices accordingly
+    if train_dates is not None:
+        train_dates = train_dates[:min_len_train]
+    if val_dates is not None:
+        val_dates = val_dates[:min_len_val]
+
     # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
         print("Processing data for LSTM plugin...")
 
-        # Ensure datasets are NumPy arrays
+        # Ensure datasets are NumPy arrays (but preserve date info separately)
         if not isinstance(x_train, np.ndarray):
             x_train = x_train.to_numpy().astype(np.float32)
         if not isinstance(y_train, np.ndarray):
@@ -146,38 +187,23 @@ def process_data(config):
         window_size = config["window_size"]  # Ensure `window_size` is in the config
 
         if config.get("use_daily", False):
-            # Define an intra-method function to create sliding windows for x only
-            def create_sliding_windows_x(data, window_size, stride=1):
-                """
-                Create sliding windows for input data only.
-
-                Args:
-                    data (np.ndarray): Input data array of shape (n_samples, n_features).
-                    window_size (int): The number of time steps in each window.
-                    stride (int): The stride between successive windows.
-
-                Returns:
-                    np.ndarray: Array of sliding windows of shape (n_windows, window_size, n_features).
-                """
-                windows = []
-                for i in range(0, len(data) - window_size + 1, stride):
-                    windows.append(data[i : i + window_size])
-                return np.array(windows)
-
-            # Create sliding windows for x_train and x_val without altering y (daily targets)
-            x_train = create_sliding_windows_x(x_train, window_size, stride=1)
-            x_val = create_sliding_windows_x(x_val, window_size, stride=1)
+            # Create sliding windows for x_train and x_val (with DATE_TIME info)
+            x_train, train_date_windows = create_sliding_windows_x(x_train, window_size, stride=1, date_times=train_dates)
+            x_val, val_date_windows = create_sliding_windows_x(x_val, window_size, stride=1, date_times=val_dates)
 
             # Adjust y_train_multi and y_val_multi to match the new x dimensions (trim the first window_size-1 samples)
             y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
             y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
+            # Also trim the date windows to align with y
+            train_date_windows = train_date_windows[window_size - 1:]
+            val_date_windows = val_date_windows[window_size - 1:]
         else:
-            # Create sliding windows for LSTM (hourly predictions) as before
-            x_train, y_train, _ = create_sliding_windows(
-                x_train, y_train, 1, time_horizon, stride=1
+            # Create sliding windows for LSTM (hourly predictions) as before, with DATE_TIME info
+            x_train, y_train, train_date_windows = create_sliding_windows(
+                x_train, y_train, 1, time_horizon, stride=1, date_times=train_dates
             )
-            x_val, y_val, _ = create_sliding_windows(
-                x_val, y_val, 1, time_horizon, stride=1
+            x_val, y_val, val_date_windows = create_sliding_windows(
+                x_val, y_val, 1, time_horizon, stride=1, date_times=val_dates
             )
 
             # Ensure y_train matches x_train
@@ -192,11 +218,15 @@ def process_data(config):
         print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
         print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
 
+        # Overwrite the date info with the sliding window dates
+        train_dates = train_date_windows
+        val_dates = val_date_windows
+
     # 7) TRANSFORMER-SPECIFIC PROCESSING
     if config["plugin"] == "transformer":
         print("Processing data for Transformer plugin...")
 
-        # Ensure datasets are NumPy arrays
+        # Ensure datasets are NumPy arrays but keep the original date indices separately
         if not isinstance(x_train, np.ndarray):
             x_train = x_train.to_numpy().astype(np.float32)
         if not isinstance(x_val, np.ndarray):
@@ -221,6 +251,9 @@ def process_data(config):
         print(f"  x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
         print(f"  x_val:   {x_val.shape},   y_val:   {y_val_multi.shape}")
 
+        # In Transformer, no sliding windows are applied so the original trimmed dates remain
+    # (For other plugins like CNN or ANN, the dates will be further processed in the prediction pipeline)
+
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
@@ -233,9 +266,9 @@ def process_data(config):
         "y_train": y_train_multi,
         "x_val": x_val,
         "y_val": y_val_multi,
+        "dates_train": train_dates,
+        "dates_val": val_dates,
     }
-
-
 
 def run_prediction_pipeline(config, plugin):
     """
@@ -263,6 +296,9 @@ def run_prediction_pipeline(config, plugin):
     datasets = process_data(config)  # <-- We do not modify how process_data works, just rely on it
     x_train, y_train = datasets["x_train"], datasets["y_train"]
     x_val, y_val = datasets["x_val"], datasets["y_val"]
+    # Retrieve DATE_TIME arrays if available
+    train_dates = datasets.get("dates_train")
+    val_dates = datasets.get("dates_val")
 
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
@@ -284,7 +320,7 @@ def run_prediction_pipeline(config, plugin):
     epochs = config["epochs"]
     threshold_error = config["threshold_error"]
 
-    # Ensure datasets are NumPy arrays
+    # Ensure datasets are NumPy arrays (if not already)
     if isinstance(x_train, pd.DataFrame):
         x_train = x_train.to_numpy().astype(np.float32)
     if isinstance(y_train, pd.DataFrame):
@@ -294,18 +330,19 @@ def run_prediction_pipeline(config, plugin):
     if isinstance(y_val, pd.DataFrame):
         y_val = y_val.to_numpy().astype(np.float32)
 
-    # CNN-specific sliding windows
+    # For CNN plugin, create sliding windows (and capture DATE_TIME windows)
     if config["plugin"] == "cnn":
         print("Creating sliding windows for CNN...")
-        x_train, _, _ = create_sliding_windows(
-            x_train, y_train, window_size, time_horizon, stride=1
+        x_train, _, train_date_windows = create_sliding_windows(
+            x_train, y_train, window_size, time_horizon, stride=1, date_times=train_dates
         )
-        x_val, _, _ = create_sliding_windows(
-            x_val, y_val, window_size, time_horizon, stride=1
+        x_val, _, val_date_windows = create_sliding_windows(
+            x_val, y_val, window_size, time_horizon, stride=1, date_times=val_dates
         )
-
-        # **Ensure y_train and y_val remain 2D**
-        # No processing on y_train and y_val to keep them as (samples, time_horizon)
+        # In CNN branch, y_train and y_val remain unchanged to keep them as (samples, time_horizon)
+        # Use the DATE_TIME windows from the sliding window function as the new dates
+        train_dates = train_date_windows
+        val_dates = val_date_windows
 
         print(f"Sliding windows created:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
@@ -379,8 +416,6 @@ def run_prediction_pipeline(config, plugin):
         with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
             logging.getLogger("tensorflow").setLevel(logging.FATAL)
-
-
 
         # Restore TensorFlow logs
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
@@ -492,6 +527,14 @@ def run_prediction_pipeline(config, plugin):
             val_predictions, 
             columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
         )
+        # Append the DATE_TIME column using the stored validation dates (if available)
+        if val_dates is not None:
+            val_predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(val_predictions_df)])
+        else:
+            val_predictions_df['DATE_TIME'] = pd.NaT  # Assign Not-a-Time if date info is not available
+        # Rearrange columns to have DATE_TIME first
+        cols = ['DATE_TIME'] + [col for col in val_predictions_df.columns if col != 'DATE_TIME']
+        val_predictions_df = val_predictions_df[cols]
         val_predictions_df.to_csv(final_val_file, index=False)
         print(f"Final validation predictions saved to {final_val_file}")
     else:
@@ -524,9 +567,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
-
-# Removed duplicate create_sliding_windows function to avoid conflicts
 
 
 def load_and_evaluate_model(config, plugin):
@@ -570,7 +610,10 @@ def load_and_evaluate_model(config, plugin):
     print("Loading and processing validation data for evaluation...")
     try:
         # Assuming process_data can be reused for validation by specifying validation files
-        x_val, y_val = process_data(config)
+        datasets = process_data(config)
+        x_val = datasets["x_val"]
+        y_val = datasets["y_val"]
+        val_dates = datasets.get("dates_val")
         print(f"Processed validation data: X shape: {x_val.shape}, Y shape: {y_val.shape}")
     except Exception as e:
         print(f"Failed to process validation data: {e}")
@@ -593,11 +636,11 @@ def load_and_evaluate_model(config, plugin):
         pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
         predictions_df = pd.DataFrame(predictions, columns=pred_cols)
 
-    # Add DATE_TIME column from y_val
-    if isinstance(y_val.index, pd.DatetimeIndex):
-        predictions_df['DATE_TIME'] = y_val.index[:len(predictions_df)]
+    # Add DATE_TIME column using the stored dates if available
+    if val_dates is not None:
+        predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(predictions_df)])
     else:
-        predictions_df['DATE_TIME'] = pd.NaT  # Assign Not-a-Time if index is not datetime
+        predictions_df['DATE_TIME'] = pd.NaT  # Assign Not-a-Time if date info is not available
         print("Warning: DATE_TIME for validation predictions not captured.")
 
     # Rearrange columns to have DATE_TIME first
@@ -617,7 +660,6 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
-
 
 
 def create_multi_step_targets(df, time_horizon):
@@ -640,6 +682,23 @@ def create_multi_step_targets(df, time_horizon):
     return y_multi_step_df
 
 
+    """
+    Creates multi-step targets for time-series prediction.
+
+    Args:
+        df (pd.DataFrame): Target data as a DataFrame.
+        time_horizon (int): Number of future steps to predict.
+
+    Returns:
+        pd.DataFrame: Multi-step targets aligned with the input data.
+    """
+    y_multi_step = []
+    for i in range(len(df) - time_horizon + 1):
+        y_multi_step.append(df.iloc[i:i + time_horizon].values.flatten())
+
+    # Create DataFrame with aligned indices
+    y_multi_step_df = pd.DataFrame(y_multi_step, index=df.index[:len(y_multi_step)])
+    return y_multi_step_df
 
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
@@ -679,6 +738,25 @@ def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times
 
     return np.array(x_windowed), np.array(y_windowed), date_time_windows
 
+
+def generate_positional_encoding(num_features, pos_dim=16):
+    """
+    Generates positional encoding for a given number of features.
+
+    Args:
+        num_features (int): Number of features in the dataset.
+        pos_dim (int): Dimension of the positional encoding.
+
+    Returns:
+        np.ndarray: Positional encoding of shape (1, num_features * pos_dim).
+    """
+    position = np.arange(num_features)[:, np.newaxis]
+    div_term = np.exp(np.arange(0, pos_dim, 2) * -(np.log(10000.0) / pos_dim))
+    pos_encoding = np.zeros((num_features, pos_dim))
+    pos_encoding[:, 0::2] = np.sin(position * div_term)
+    pos_encoding[:, 1::2] = np.cos(position * div_term)
+    pos_encoding_flat = pos_encoding.flatten().reshape(1, -1)  # Shape: (1, num_features * pos_dim)
+    return pos_encoding_flat
 
 def generate_positional_encoding(num_features, pos_dim=16):
     """
