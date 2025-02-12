@@ -158,10 +158,12 @@ def process_data(config):
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
 
-    # For ANN and Transformer (i.e. non-sliding-window plugins), use the multi-step targets’ index
+    # For ANN and Transformer (i.e. non-sliding-window plugins), adjust the dates so that each prediction’s DATE_TIME
+    # corresponds to the last predicted time step. Since create_multi_step() returns blocks with index = y_df.index[:-horizon],
+    # the correct DATE_TIME for the prediction is from the original y (shifted by time_horizon).
     if config["plugin"] not in ["lstm", "cnn"]:
-        train_dates = y_train_multi.index
-        val_dates = y_val_multi.index
+        train_dates = y_train.index[time_horizon : time_horizon + len(y_train_multi)]
+        val_dates = y_val.index[time_horizon : time_horizon + len(y_val_multi)]
 
     return {
         "x_train": x_train,
@@ -361,7 +363,7 @@ def run_prediction_pipeline(config, plugin):
             val_predictions, 
             columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
         )
-        # Use the processed dates from process_data (which now reflect the multi-step shift)
+        # Use the processed dates from process_data (which now reflect the correct shift)
         if val_dates is not None:
             val_predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(val_predictions_df)])
         else:
@@ -375,7 +377,6 @@ def run_prediction_pipeline(config, plugin):
 
     # Save model plot
     try:
-        # Use a simpler call first to test if plotting works
         plot_model(
             plugin.model, 
             to_file=config['model_plot_file'],
@@ -401,6 +402,7 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
+
 
 
 def load_and_evaluate_model(config, plugin):
