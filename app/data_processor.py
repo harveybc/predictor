@@ -12,6 +12,7 @@ from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
 import contextlib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
+import json
 from keras.utils.vis_utils import plot_model
 
 def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
@@ -270,6 +271,7 @@ def process_data(config):
         "dates_val": val_dates,
     }
 
+
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline using both training and validation datasets.
@@ -346,7 +348,7 @@ def run_prediction_pipeline(config, plugin):
 
         print(f"Sliding windows created:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
-        print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
+        print(f"  x_val:   {x_val.shape},   y_val: {y_val.shape}")
 
     # Ensure x_* are at least 2D
     if x_train.ndim == 1:
@@ -443,7 +445,12 @@ def run_prediction_pipeline(config, plugin):
         iteration_end_time = time.time()
         print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
-        # (Optional) If you want to save predictions per iteration, you could do so here
+        #except Exception as e:
+        #    print(f"Iteration {iteration} failed with error:\n  {e}")
+        #    exc_type, exc_obj, exc_tb = sys.exc_info()
+        #    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        #    print(exc_type, fname, exc_tb.tb_lineno)
+        #    continue  # Proceed to the next iteration even if one iteration fails
 
     # -----------------------
     # Aggregate statistics
@@ -518,17 +525,6 @@ def run_prediction_pipeline(config, plugin):
     # Because we are inside a loop, `val_predictions` might not exist if iteration always fails,
     # so we guard with a check:
     if 'val_predictions' in locals() and val_predictions is not None:
-        # Denormalize predictions if a normalization JSON is provided
-        if config.get("use_normalization_json") is not None:
-            norm_json = config.get("use_normalization_json")
-            # If the normalization JSON is provided as a string, convert it to a dictionary
-            if isinstance(norm_json, str):
-                norm_json = json.loads(norm_json)
-            if "CLOSE" in norm_json:
-                min_val = norm_json["CLOSE"]["min"]
-                max_val = norm_json["CLOSE"]["max"]
-                val_predictions = val_predictions * (max_val - min_val) + min_val
-
         val_predictions_df = pd.DataFrame(
             val_predictions, 
             columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
@@ -563,7 +559,7 @@ def run_prediction_pipeline(config, plugin):
         print(f"Failed to generate model plot. Ensure Graphviz is installed and in your PATH: {e}")
         print("Download Graphviz from https://graphviz.org/download/")
 
-    # Save the trained predictor model
+    # save the trained predictor model
     save_model_file = config.get("save_model", "pretrained_model.keras")
     try:
         plugin.save(save_model_file)
