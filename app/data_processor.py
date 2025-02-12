@@ -443,12 +443,7 @@ def run_prediction_pipeline(config, plugin):
         iteration_end_time = time.time()
         print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
-        #except Exception as e:
-        #    print(f"Iteration {iteration} failed with error:\n  {e}")
-        #    exc_type, exc_obj, exc_tb = sys.exc_info()
-        #    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        #    print(exc_type, fname, exc_tb.tb_lineno)
-        #    continue  # Proceed to the next iteration even if one iteration fails
+        # (Optional) If you want to save predictions per iteration, you could do so here
 
     # -----------------------
     # Aggregate statistics
@@ -523,6 +518,14 @@ def run_prediction_pipeline(config, plugin):
     # Because we are inside a loop, `val_predictions` might not exist if iteration always fails,
     # so we guard with a check:
     if 'val_predictions' in locals() and val_predictions is not None:
+        # Denormalize predictions if a normalization JSON is provided
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if "CLOSE" in norm_json:
+                min_val = norm_json["CLOSE"]["min"]
+                max_val = norm_json["CLOSE"]["max"]
+                val_predictions = val_predictions * (max_val - min_val) + min_val
+
         val_predictions_df = pd.DataFrame(
             val_predictions, 
             columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
@@ -567,7 +570,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
 
 def load_and_evaluate_model(config, plugin):
     """
