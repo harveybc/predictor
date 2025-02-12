@@ -521,6 +521,9 @@ def run_prediction_pipeline(config, plugin):
         # Denormalize predictions if a normalization JSON is provided
         if config.get("use_normalization_json") is not None:
             norm_json = config.get("use_normalization_json")
+            # If the normalization JSON is provided as a string, convert it to a dictionary
+            if isinstance(norm_json, str):
+                norm_json = json.loads(norm_json)
             if "CLOSE" in norm_json:
                 min_val = norm_json["CLOSE"]["min"]
                 max_val = norm_json["CLOSE"]["max"]
@@ -560,7 +563,7 @@ def run_prediction_pipeline(config, plugin):
         print(f"Failed to generate model plot. Ensure Graphviz is installed and in your PATH: {e}")
         print("Download Graphviz from https://graphviz.org/download/")
 
-    # save the trained predictor model
+    # Save the trained predictor model
     save_model_file = config.get("save_model", "pretrained_model.keras")
     try:
         plugin.save(save_model_file)
@@ -570,6 +573,7 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
+
 
 def load_and_evaluate_model(config, plugin):
     """
