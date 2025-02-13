@@ -242,17 +242,38 @@ def run_prediction_pipeline(config, plugin):
         print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
         print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
 
-    # NEW: For LSTM plugin, create sliding windows and update both x and y accordingly
+    # For LSTM plugin, create sliding windows so that each sample's target is a single row
     if config["plugin"] == "lstm":
         print("Creating sliding windows for LSTM...")
-        x_train, y_train, train_date_windows = create_sliding_windows(
-            x_train, y_train, window_size, time_horizon, stride=1, date_times=train_dates
-        )
-        x_val, y_val, val_date_windows = create_sliding_windows(
-            x_val, y_val, window_size, time_horizon, stride=1, date_times=val_dates
-        )
+        x_sliding_train = []
+        y_sliding_train = []
+        train_date_windows = []
+        for i in range(0, len(x_train) - window_size + 1, 1):
+            x_window = x_train[i : i + window_size]
+            # Align the target with the last time step of the input window
+            y_target = y_train[i + window_size - 1]
+            x_sliding_train.append(x_window)
+            y_sliding_train.append(y_target)
+            if train_dates is not None:
+                train_date_windows.append(train_dates[i + window_size - 1])
+        x_train = np.array(x_sliding_train)
+        y_train = np.array(y_sliding_train)
+
+        x_sliding_val = []
+        y_sliding_val = []
+        val_date_windows = []
+        for i in range(0, len(x_val) - window_size + 1, 1):
+            x_window = x_val[i : i + window_size]
+            y_target = y_val[i + window_size - 1]
+            x_sliding_val.append(x_window)
+            y_sliding_val.append(y_target)
+            if val_dates is not None:
+                val_date_windows.append(val_dates[i + window_size - 1])
+        x_val = np.array(x_sliding_val)
+        y_val = np.array(y_sliding_val)
         train_dates = train_date_windows
         val_dates = val_date_windows
+
         print(f"Sliding windows created for LSTM:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
         print(f"  x_val:   {x_val.shape}, y_val: {y_val.shape}")
