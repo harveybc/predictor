@@ -15,7 +15,7 @@ DEFAULT_VALUES = {
     'plugin': 'cnn',
     'time_horizon': 6,
     'use_daily': False, # isntead of predicting the next time_horizon hours, predict the next time_horizon days.
-    'threshold_error': 0.001,
+    'threshold_error': 0.000001,
     'remote_log': None,
     'remote_load_config': None,
     'remote_save_config': None,
