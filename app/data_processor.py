@@ -53,7 +53,7 @@ def process_data(config):
         config (dict): Configuration dictionary with dataset paths and parameters.
 
     Returns:
-        dict: Processed datasets for training and validation.
+        dict: Processed datasets for training and validation, along with corresponding DATE_TIME arrays.
     """
     # 1) LOAD CSVs
     x_train = load_csv(
@@ -76,6 +76,10 @@ def process_data(config):
         headers=config["headers"],
         max_rows=config.get("max_steps_test"),
     )
+
+    # Save original DATE_TIME indices (if available)
+    train_dates_orig = x_train.index if isinstance(x_train.index, pd.DatetimeIndex) else None
+    val_dates_orig = x_val.index if isinstance(x_val.index, pd.DatetimeIndex) else None
 
     # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
@@ -160,11 +164,9 @@ def process_data(config):
     x_val = x_val.iloc[:min_len_val]
     y_val_multi = y_val_multi.iloc[:min_len_val]
 
-    # Also trim the original date indices accordingly
-    if (x_train.index is not None) and (hasattr(x_train.index, "tolist")):
-        train_dates = x_train.index[:min_len_train]
-    if (x_val.index is not None) and (hasattr(x_val.index, "tolist")):
-        val_dates = x_val.index[:min_len_val]
+    # Set initial date variables from the original DataFrame indexes
+    train_dates = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
+    val_dates = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
 
     # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
@@ -205,7 +207,12 @@ def process_data(config):
             x_train = create_sliding_windows_x(x_train, window_size, stride=1)
             x_val = create_sliding_windows_x(x_val, window_size, stride=1)
 
-            # Adjust y_train_multi and y_val_multi to match the new x dimensions (trim the first window_size-1 samples)
+            # For daily predictions, compute new date windows using the original dates.
+            if train_dates is not None:
+                train_dates = [train_dates[i + window_size - 1] for i in range(0, len(train_dates) - window_size + 1)]
+            if val_dates is not None:
+                val_dates = [val_dates[i + window_size - 1] for i in range(0, len(val_dates) - window_size + 1)]
+            # Adjust y_train_multi and y_val_multi to match the new x dimensions
             y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
             y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
         else:
@@ -226,6 +233,11 @@ def process_data(config):
             y_train_multi = y_train
             y_val_multi = y_val
 
+            # For hourly predictions with window size 1, adjust dates by skipping the first (window_size - 1) elements.
+            if train_dates is not None:
+                train_dates = train_dates[window_size - 1:]
+            if val_dates is not None:
+                val_dates = val_dates[window_size - 1:]
         print(f"LSTM data shapes after sliding windows:")
         print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
         print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
@@ -263,16 +275,20 @@ def process_data(config):
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
 
-    # For ANN and Transformer (i.e. non-sliding-window plugins), use the multi-step targets’ index directly.
+    # For ANN and Transformer (i.e. non-sliding-window plugins), if dates were not updated, use the multi-step targets’ index.
     if config["plugin"] not in ["lstm", "cnn"]:
-        train_dates = y_train_multi.index
-        val_dates = y_val_multi.index
+        if train_dates is None:
+            train_dates = y_train_multi.index
+        if val_dates is None:
+            val_dates = y_val_multi.index
 
     return {
         "x_train": x_train,
         "y_train": y_train_multi,
         "x_val": x_val,
         "y_val": y_val_multi,
+        "dates_train": train_dates,
+        "dates_val": val_dates,
     }
 
 def run_prediction_pipeline(config, plugin):
@@ -470,7 +486,7 @@ def run_prediction_pipeline(config, plugin):
             val_predictions, 
             columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
         )
-        # Use the processed dates from process_data (which now reflect the proper alignment)
+        # Use the processed dates from process_data for the DATE_TIME column
         if val_dates is not None:
             val_predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(val_predictions_df)])
         else:
