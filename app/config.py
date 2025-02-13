@@ -3,8 +3,8 @@
 DEFAULT_VALUES = {
     "x_train_file": "examples\\data\\phase_1\\phase_1_normalized_d2.csv",
     "y_train_file": "examples\\data\\phase_1\\phase_1_normalized_d2.csv",
-    "x_validation_file": "examples\\data\\phase_1\\phase_1_normalized_d1.csv",
-    "y_validation_file": "examples\\data\\phase_1\\phase_1_normalized_d1.csv",
+    "x_validation_file": "examples\\data\\phase_1\\phase_1_normalized_d3.csv",
+    "y_validation_file": "examples\\data\\phase_1\\phase_1_normalized_d3.csv",
     'target_column': 'CLOSE',
     'output_file': './prediction.csv',
     'results_file': './results.csv',
@@ -15,7 +15,7 @@ DEFAULT_VALUES = {
     'plugin': 'cnn',
     'time_horizon': 6,
     'use_daily': False, # isntead of predicting the next time_horizon hours, predict the next time_horizon days.
-    'threshold_error': 0.001,
+    'threshold_error': 0.000001,
     'remote_log': None,
     'remote_load_config': None,
     'remote_save_config': None,
@@ -34,5 +34,6 @@ DEFAULT_VALUES = {
     'max_steps_train': 6300,
     'max_steps_test': 6300,
     'iterations': 5,
-    'epochs': 600
+    'epochs': 600,
+    "use_normalization_json": "examples\\config\\phase_1_normalizer_debug_out.json"
 }

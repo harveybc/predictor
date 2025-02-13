@@ -12,7 +12,38 @@ from sklearn.metrics import r2_score  # Ensure sklearn is imported at the top
 import contextlib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
+import json
 from keras.utils.vis_utils import plot_model
+
+def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
+    """
+    Create sliding windows for input data only.
+
+    Args:
+        data (np.ndarray or pd.DataFrame): Input data array of shape (n_samples, n_features).
+        window_size (int): The number of time steps in each window.
+        stride (int): The stride between successive windows.
+        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
+
+    Returns:
+        If date_times is provided:
+            tuple: (windows, date_time_windows) where windows is an array of shape 
+                   (n_windows, window_size, n_features) and date_time_windows is a list of 
+                   the DATE_TIME value corresponding to the last time step of each window.
+        Otherwise:
+            np.ndarray: Array of sliding windows.
+    """
+    windows = []
+    dt_windows = []
+    for i in range(0, len(data) - window_size + 1, stride):
+        windows.append(data[i: i + window_size])
+        if date_times is not None:
+            # Use the date corresponding to the last element in the window
+            dt_windows.append(date_times[i + window_size - 1])
+    if date_times is not None:
+        return np.array(windows), dt_windows
+    else:
+        return np.array(windows)
 
 def process_data(config):
     """
@@ -22,7 +53,7 @@ def process_data(config):
         config (dict): Configuration dictionary with dataset paths and parameters.
 
     Returns:
-        dict: Processed datasets for training and validation.
+        dict: Processed datasets for training and validation, along with corresponding DATE_TIME arrays.
     """
     # 1) LOAD CSVs
     x_train = load_csv(
@@ -45,6 +76,10 @@ def process_data(config):
         headers=config["headers"],
         max_rows=config.get("max_steps_test"),
     )
+
+    # Save original DATE_TIME indices (if available)
+    train_dates_orig = x_train.index if isinstance(x_train.index, pd.DatetimeIndex) else None
+    val_dates_orig = x_val.index if isinstance(x_val.index, pd.DatetimeIndex) else None
 
     # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
@@ -129,6 +164,10 @@ def process_data(config):
     x_val = x_val.iloc[:min_len_val]
     y_val_multi = y_val_multi.iloc[:min_len_val]
 
+    # Set initial date variables from the original DataFrame indexes
+    train_dates = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
+    val_dates = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
+
     # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
         print("Processing data for LSTM plugin...")
@@ -168,26 +207,40 @@ def process_data(config):
             x_train = create_sliding_windows_x(x_train, window_size, stride=1)
             x_val = create_sliding_windows_x(x_val, window_size, stride=1)
 
-            # Adjust y_train_multi and y_val_multi to match the new x dimensions (trim the first window_size-1 samples)
+            # For daily predictions, compute new date windows using the original dates.
+            if train_dates is not None:
+                train_dates = [train_dates[i + window_size - 1] for i in range(0, len(train_dates) - window_size + 1)]
+            if val_dates is not None:
+                val_dates = [val_dates[i + window_size - 1] for i in range(0, len(val_dates) - window_size + 1)]
+            # Adjust y_train_multi and y_val_multi to match the new x dimensions
             y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
             y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
         else:
-            # Create sliding windows for LSTM (hourly predictions) as before
-            x_train, y_train, _ = create_sliding_windows(
-                x_train, y_train, 1, time_horizon, stride=1
-            )
-            x_val, y_val, _ = create_sliding_windows(
-                x_val, y_val, 1, time_horizon, stride=1
-            )
-
-            # Ensure y_train matches x_train
-            y_train = y_train[: len(x_train)]
-            y_val = y_val[: len(x_val)]
-
-            # Update y_train_multi to match the modified y_train
-            y_train_multi = y_train
-            y_val_multi = y_val
-
+            # For hourly predictions with window size 1, do NOT use a sliding window function.
+            # In this case, each row is treated as one sample.
+            new_length_train = len(x_train) - time_horizon
+            new_length_val = len(x_val) - time_horizon
+            # Truncate inputs
+            x_train = x_train[:new_length_train]
+            x_val = x_val[:new_length_val]
+            # Build targets: for each sample at time t, the target is built from rows t+1 to t+time_horizon.
+            y_train_new = np.array([y_train[i+1:i+1+time_horizon] for i in range(new_length_train)])
+            y_val_new = np.array([y_val[i+1:i+1+time_horizon] for i in range(new_length_val)])
+            # Squeeze extra dimension if exists
+            if y_train_new.ndim == 3 and y_train_new.shape[-1] == 1:
+                y_train_new = np.squeeze(y_train_new, axis=-1)
+            if y_val_new.ndim == 3 and y_val_new.shape[-1] == 1:
+                y_val_new = np.squeeze(y_val_new, axis=-1)
+            y_train_multi = y_train_new
+            y_val_multi = y_val_new
+            # Reshape inputs to 3D: (samples, 1, features)
+            x_train = x_train.reshape(-1, 1, x_train.shape[1])
+            x_val = x_val.reshape(-1, 1, x_val.shape[1])
+            # Do NOT shift the dates; simply truncate them to new_length
+            if train_dates is not None:
+                train_dates = train_dates[:new_length_train]
+            if val_dates is not None:
+                val_dates = val_dates[:new_length_val]
         print(f"LSTM data shapes after sliding windows:")
         print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
         print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
@@ -215,7 +268,7 @@ def process_data(config):
 
         # Concatenate positional encoding to x_train and x_val horizontally
         x_train = np.concatenate([x_train, pos_encoding_train], axis=1)  # Shape: (samples, original_features + pos_enc_features)
-        x_val = np.concatenate([x_val, pos_encoding_val], axis=1)        # Shape: (samples, original_features + pos_enc_features)
+        x_val = np.concatenate([x_val, pos_encoding_val], axis=1)          # Shape: (samples, original_features + pos_enc_features)
 
         print(f"Positional encoding concatenated:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
@@ -225,27 +278,27 @@ def process_data(config):
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
 
-    assert len(x_train) == len(y_train_multi), "x_train and y_train are misaligned!"
-    assert len(x_val) == len(y_val_multi), "x_val and y_val are misaligned!"
+    # For ANN and Transformer (i.e. non-sliding-window plugins), if dates were not updated, use the multi-step targets’ index.
+    if config["plugin"] not in ["lstm", "cnn"]:
+        if train_dates is None:
+            train_dates = y_train_multi.index
+        if val_dates is None:
+            val_dates = y_val_multi.index
 
     return {
         "x_train": x_train,
         "y_train": y_train_multi,
         "x_val": x_val,
         "y_val": y_val_multi,
+        "dates_train": train_dates,
+        "dates_val": val_dates,
     }
-
-
 
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline using both training and validation datasets.
     Iteratively trains and evaluates the model with 5-fold cross-validation,
     while saving metrics and predictions.
-
-    Args:
-        config (dict): Configuration dictionary containing parameters for training and evaluation.
-        plugin (object): Model plugin that implements train, predict, and evaluate methods.
     """
     start_time = time.time()
 
@@ -260,9 +313,12 @@ def run_prediction_pipeline(config, plugin):
 
     # Load all datasets
     print("Loading and processing datasets...")
-    datasets = process_data(config)  # <-- We do not modify how process_data works, just rely on it
+    datasets = process_data(config)
     x_train, y_train = datasets["x_train"], datasets["y_train"]
     x_val, y_val = datasets["x_val"], datasets["y_val"]
+    # Retrieve DATE_TIME arrays from processed targets
+    train_dates = datasets.get("dates_train")
+    val_dates = datasets.get("dates_val")
 
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
@@ -270,16 +326,12 @@ def run_prediction_pipeline(config, plugin):
     # Extract time_horizon and window_size from config
     time_horizon = config.get("time_horizon")
     window_size = config.get("window_size")
-
     if time_horizon is None:
         raise ValueError("`time_horizon` is not defined in the configuration.")
-
-    # Confirm CNN plugin requires window_size
     if config["plugin"] == "cnn" and window_size is None:
         raise ValueError("`window_size` must be defined in the configuration for CNN plugin.")
 
     print(f"Time Horizon: {time_horizon}")
-
     batch_size = config["batch_size"]
     epochs = config["epochs"]
     threshold_error = config["threshold_error"]
@@ -294,66 +346,55 @@ def run_prediction_pipeline(config, plugin):
     if isinstance(y_val, pd.DataFrame):
         y_val = y_val.to_numpy().astype(np.float32)
 
-    # CNN-specific sliding windows
+    # For CNN plugin, create sliding windows and update dates accordingly (code unchanged)
     if config["plugin"] == "cnn":
         print("Creating sliding windows for CNN...")
-        x_train, _, _ = create_sliding_windows(
-            x_train, y_train, window_size, time_horizon, stride=1
+        x_train, _, train_date_windows = create_sliding_windows(
+            x_train, y_train, window_size, time_horizon, stride=1, date_times=train_dates
         )
-        x_val, _, _ = create_sliding_windows(
-            x_val, y_val, window_size, time_horizon, stride=1
+        x_val, _, val_date_windows = create_sliding_windows(
+            x_val, y_val, window_size, time_horizon, stride=1, date_times=val_dates
         )
-
-        # **Ensure y_train and y_val remain 2D**
-        # No processing on y_train and y_val to keep them as (samples, time_horizon)
-
+        train_dates = train_date_windows
+        val_dates = val_date_windows
         print(f"Sliding windows created:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
         print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
+    # For LSTM plugin, use the processed data as returned from process_data (window size = 1, with no date shift)
+    if config["plugin"] == "lstm":
+        print("Using LSTM data from process_data (window size 1, no date shift).")
+        # Expecting x_train shape (n_samples, 1, n_features) and y_train shape (n_samples, time_horizon)
+        if x_train.ndim != 3:
+            raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
+    # For other plugins, no additional processing is applied
 
-    # Ensure x_* are at least 2D
     if x_train.ndim == 1:
         x_train = x_train.reshape(-1, 1)
     if x_val.ndim == 1:
         x_val = x_val.reshape(-1, 1)
 
-    # Pass time_horizon to the plugin (if it uses it)
     plugin.set_params(time_horizon=time_horizon)
-
-    # Initialize TimeSeriesSplit for 5-fold cross-validation
     n_splits = 5
     tscv = TimeSeriesSplit(n_splits=n_splits)
 
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
-
-       # try:
-        # Build the model
         if config["plugin"] == "cnn":
-            # CNN expects shape (window_size, features)
             if len(x_train.shape) < 3:
-                raise ValueError(
-                    f"For CNN, x_train must be 3D. Found: {x_train.shape}."
-                )
+                raise ValueError(f"For CNN, x_train must be 3D. Found: {x_train.shape}.")
             plugin.build_model(input_shape=(window_size, x_train.shape[2]))
         else:
-            # For ANN/LSTM/Transformers: typically shape (features,)
             if config["plugin"] == "lstm":
-                # LSTM expects 3D input (time_steps, features)
                 if len(x_train.shape) != 3:
                     raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
                 plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
             else:
-                # For ANN/Transformers: 2D input (samples, features)
                 if len(x_train.shape) != 2:
-                    raise ValueError(
-                        f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}."
-                    )
+                    raise ValueError(f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}.")
                 plugin.build_model(input_shape=x_train.shape[1])
 
-        # Train the model
-        history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions  = plugin.train(
+        history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions = plugin.train(
             x_train,
             y_train,
             epochs=epochs,
@@ -362,7 +403,6 @@ def run_prediction_pipeline(config, plugin):
             x_val=x_val,
             y_val=y_val
         )
-        # Loss History
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
         plt.title('Model Loss for '+f" {config['plugin'].upper()} - {iteration}")
@@ -374,21 +414,12 @@ def run_prediction_pipeline(config, plugin):
         print(f"Loss plot saved to {config['loss_plot_file']}")
 
         print("Evaluating trained model on training and validation data. Please wait...")
-
-        # Suppress TensorFlow/Keras logs during evaluation
         with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
             logging.getLogger("tensorflow").setLevel(logging.FATAL)
-
-
-
-        # Restore TensorFlow logs
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
         logging.getLogger("tensorflow").setLevel(logging.INFO)
 
-        # -----------------------
-        # Assign evaluation metrics
-        # -----------------------
         print("*************************************************")
         print(f"Iteration {iteration} completed.")
         print(f"Training MAE: {train_mae}")
@@ -397,58 +428,27 @@ def run_prediction_pipeline(config, plugin):
         print(f"Validation R²: {val_r2}")
         print("*************************************************")
 
-        # Save training metrics
         training_mae_list.append(train_mae)
         training_r2_list.append(train_r2)
-
-        # Save validation metrics
         validation_mae_list.append(val_mae)
         validation_r2_list.append(val_r2)
 
         iteration_end_time = time.time()
         print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
-        #except Exception as e:
-        #    print(f"Iteration {iteration} failed with error:\n  {e}")
-        #    exc_type, exc_obj, exc_tb = sys.exc_info()
-        #    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        #    print(exc_type, fname, exc_tb.tb_lineno)
-        #    continue  # Proceed to the next iteration even if one iteration fails
-
     # -----------------------
     # Aggregate statistics
     # -----------------------
     results = {
-        "Metric": [
-            "Training MAE",
-            "Training R²",
-            "Validation MAE",
-            "Validation R²",
-        ],
-        "Average": [
-            np.mean(training_mae_list) if training_mae_list else None,
-            np.mean(training_r2_list)  if training_r2_list  else None,
-            np.mean(validation_mae_list) if validation_mae_list else None,
-            np.mean(validation_r2_list)  if validation_r2_list  else None,
-        ],
-        "Std Dev": [
-            np.std(training_mae_list) if training_mae_list else None,
-            np.std(training_r2_list)  if training_r2_list  else None,
-            np.std(validation_mae_list) if validation_mae_list else None,
-            np.std(validation_r2_list)  if validation_r2_list  else None,
-        ],
-        "Max": [
-            np.max(training_mae_list) if training_mae_list else None,
-            np.max(training_r2_list)  if training_r2_list  else None,
-            np.max(validation_mae_list) if validation_mae_list else None,
-            np.max(validation_r2_list)  if validation_r2_list  else None,
-        ],
-        "Min": [
-            np.min(training_mae_list) if training_mae_list else None,
-            np.min(training_r2_list)  if training_r2_list  else None,
-            np.min(validation_mae_list) if validation_mae_list else None,
-            np.min(validation_r2_list)  if validation_r2_list  else None,
-        ],
+        "Metric": ["Training MAE", "Training R²", "Validation MAE", "Validation R²"],
+        "Average": [np.mean(training_mae_list), np.mean(training_r2_list),
+                    np.mean(validation_mae_list), np.mean(validation_r2_list)],
+        "Std Dev": [np.std(training_mae_list), np.std(training_r2_list),
+                    np.std(validation_mae_list), np.std(validation_r2_list)],
+        "Max": [np.max(training_mae_list), np.max(training_r2_list),
+                np.max(validation_mae_list), np.max(validation_r2_list)],
+        "Min": [np.min(training_mae_list), np.min(training_r2_list),
+                np.min(validation_mae_list), np.min(validation_r2_list)],
     }
     print("*************************************************")
     print("Training Statistics:")
@@ -458,47 +458,50 @@ def run_prediction_pipeline(config, plugin):
     print(f"MAE - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
     print(f"R²  - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
     print("*************************************************")
-    # Save results to CSV
     results_file = config.get("results_file", "results.csv")
     results_df = pd.DataFrame(results)
     results_df.to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
 
-    # Save plugin debug variables
-    save_log_file = config.get("save_log", "plugin_debug_log.csv")
-    try:
-        debug_variables = plugin.get_debug_variables()  # Assuming this method exists
-        debug_df = pd.DataFrame(debug_variables)
-        debug_df.to_csv(save_log_file, index=False)
-        print(f"Plugin debug variables saved to {save_log_file}")
-    except AttributeError:
-        print("Plugin does not have a 'get_debug_variables' method. Skipping debug log saving.")
-
-    # Save config dict as JSON
-    save_config_path = config.get("save_config", "config.json")
-    try:
-        with open(save_config_path, 'w') as f:
-            json.dump(config, f, indent=4)
-        print(f"Configuration saved to {save_config_path}")
-    except Exception as e:
-        print(f"Failed to save configuration to {save_config_path}: {e}")
-
     # Save final validation predictions
     final_val_file = config.get("output_file", "validation_predictions.csv")
-    # Because we are inside a loop, `val_predictions` might not exist if iteration always fails,
-    # so we guard with a check:
     if 'val_predictions' in locals() and val_predictions is not None:
+        # Denormalize predictions (simple denormalization using CLOSE values)
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                try:
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                except Exception as e:
+                    print(f"Error loading normalization JSON from {norm_json}: {e}")
+                    norm_json = {}
+            elif not isinstance(norm_json, dict):
+                print("Error: Normalization JSON is not a valid dictionary.")
+                norm_json = {}
+            if "CLOSE" in norm_json:
+                min_val = norm_json["CLOSE"].get("min", 0)
+                max_val = norm_json["CLOSE"].get("max", 1)
+                # Simple denormalization: original = normalized*(max-min) + min
+                val_predictions = val_predictions * (max_val - min_val) + min_val
+
         val_predictions_df = pd.DataFrame(
             val_predictions, 
             columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
         )
+        # Use the processed dates from process_data for the DATE_TIME column
+        if val_dates is not None:
+            val_predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(val_predictions_df)])
+        else:
+            val_predictions_df['DATE_TIME'] = pd.NaT
+        cols = ['DATE_TIME'] + [col for col in val_predictions_df.columns if col != 'DATE_TIME']
+        val_predictions_df = val_predictions_df[cols]
         val_predictions_df.to_csv(final_val_file, index=False)
         print(f"Final validation predictions saved to {final_val_file}")
     else:
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
-    # Save model plot
+
     try:
-        # Use a simpler call first to test if plotting works
         plot_model(
             plugin.model, 
             to_file=config['model_plot_file'],
@@ -514,7 +517,6 @@ def run_prediction_pipeline(config, plugin):
         print(f"Failed to generate model plot. Ensure Graphviz is installed and in your PATH: {e}")
         print("Download Graphviz from https://graphviz.org/download/")
 
-    # save the trained predictor model
     save_model_file = config.get("save_model", "pretrained_model.keras")
     try:
         plugin.save(save_model_file)
@@ -524,10 +526,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
-
-# Removed duplicate create_sliding_windows function to avoid conflicts
-
 
 def load_and_evaluate_model(config, plugin):
     """
@@ -570,7 +568,10 @@ def load_and_evaluate_model(config, plugin):
     print("Loading and processing validation data for evaluation...")
     try:
         # Assuming process_data can be reused for validation by specifying validation files
-        x_val, y_val = process_data(config)
+        datasets = process_data(config)
+        x_val = datasets["x_val"]
+        y_val = datasets["y_val"]
+        val_dates = datasets.get("dates_val")
         print(f"Processed validation data: X shape: {x_val.shape}, Y shape: {y_val.shape}")
     except Exception as e:
         print(f"Failed to process validation data: {e}")
@@ -593,11 +594,11 @@ def load_and_evaluate_model(config, plugin):
         pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
         predictions_df = pd.DataFrame(predictions, columns=pred_cols)
 
-    # Add DATE_TIME column from y_val
-    if isinstance(y_val.index, pd.DatetimeIndex):
-        predictions_df['DATE_TIME'] = y_val.index[:len(predictions_df)]
+    # Add DATE_TIME column using the stored dates if available
+    if val_dates is not None:
+        predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(predictions_df)])
     else:
-        predictions_df['DATE_TIME'] = pd.NaT  # Assign Not-a-Time if index is not datetime
+        predictions_df['DATE_TIME'] = pd.NaT  # Assign Not-a-Time if date info is not available
         print("Warning: DATE_TIME for validation predictions not captured.")
 
     # Rearrange columns to have DATE_TIME first
@@ -617,8 +618,6 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
-
-
 
 def create_multi_step_targets(df, time_horizon):
     """
@@ -640,6 +639,23 @@ def create_multi_step_targets(df, time_horizon):
     return y_multi_step_df
 
 
+    """
+    Creates multi-step targets for time-series prediction.
+
+    Args:
+        df (pd.DataFrame): Target data as a DataFrame.
+        time_horizon (int): Number of future steps to predict.
+
+    Returns:
+        pd.DataFrame: Multi-step targets aligned with the input data.
+    """
+    y_multi_step = []
+    for i in range(len(df) - time_horizon + 1):
+        y_multi_step.append(df.iloc[i:i + time_horizon].values.flatten())
+
+    # Create DataFrame with aligned indices
+    y_multi_step_df = pd.DataFrame(y_multi_step, index=df.index[:len(y_multi_step)])
+    return y_multi_step_df
 
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
@@ -679,6 +695,24 @@ def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times
 
     return np.array(x_windowed), np.array(y_windowed), date_time_windows
 
+def generate_positional_encoding(num_features, pos_dim=16):
+    """
+    Generates positional encoding for a given number of features.
+
+    Args:
+        num_features (int): Number of features in the dataset.
+        pos_dim (int): Dimension of the positional encoding.
+
+    Returns:
+        np.ndarray: Positional encoding of shape (1, num_features * pos_dim).
+    """
+    position = np.arange(num_features)[:, np.newaxis]
+    div_term = np.exp(np.arange(0, pos_dim, 2) * -(np.log(10000.0) / pos_dim))
+    pos_encoding = np.zeros((num_features, pos_dim))
+    pos_encoding[:, 0::2] = np.sin(position * div_term)
+    pos_encoding[:, 1::2] = np.cos(position * div_term)
+    pos_encoding_flat = pos_encoding.flatten().reshape(1, -1)  # Shape: (1, num_features * pos_dim)
+    return pos_encoding_flat
 
 def generate_positional_encoding(num_features, pos_dim=16):
     """
