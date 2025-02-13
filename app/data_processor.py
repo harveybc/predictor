@@ -54,7 +54,6 @@ def process_data(config):
 
     Returns:
         dict: Processed datasets for training and validation.
-              Additional keys 'dates_train' and 'dates_val' are added if DATE_TIME information is available.
     """
     # 1) LOAD CSVs
     x_train = load_csv(
@@ -145,17 +144,91 @@ def process_data(config):
     if val_dates is not None:
         val_dates = val_dates[:min_len_val]
 
-    # 6) LSTM-SPECIFIC PROCESSING (omitted here; remains unchanged)
+    # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
-        # ... [existing LSTM processing code] ...
-        # Overwrite train_dates and val_dates with sliding window dates.
-        # Correction: Since sliding window dates are not computed for LSTM, we default to the original dates.
-        train_date_windows = train_dates
-        val_date_windows = val_dates
-        train_dates = train_date_windows
-        val_dates = val_date_windows
+        print("Processing data for LSTM plugin...")
+        # Ensure datasets are NumPy arrays
+        if not isinstance(x_train, np.ndarray):
+            x_train = x_train.to_numpy().astype(np.float32)
+        if not isinstance(y_train, np.ndarray):
+            y_train = y_train.to_numpy().astype(np.float32)
+        if not isinstance(x_val, np.ndarray):
+            x_val = x_val.to_numpy().astype(np.float32)
+        if not isinstance(y_val, np.ndarray):
+            y_val = y_val.to_numpy().astype(np.float32)
 
-    # 7) TRANSFORMER-SPECIFIC PROCESSING (omitted here; remains unchanged)
+        window_size = config["window_size"]  # Ensure `window_size` is in the config
+
+        if config.get("use_daily", False):
+            # Define an intra-method function to create sliding windows for x only
+            def create_sliding_windows_x(data, window_size, stride=1):
+                """
+                Create sliding windows for input data only.
+
+                Args:
+                    data (np.ndarray): Input data array of shape (n_samples, n_features).
+                    window_size (int): The number of time steps in each window.
+                    stride (int): The stride between successive windows.
+
+                Returns:
+                    np.ndarray: Array of sliding windows of shape (n_windows, window_size, n_features).
+                """
+                windows = []
+                for i in range(0, len(data) - window_size + 1, stride):
+                    windows.append(data[i : i + window_size])
+                return np.array(windows)
+
+            # Create sliding windows for x_train and x_val without altering y (daily targets)
+            x_train = create_sliding_windows_x(x_train, window_size, stride=1)
+            x_val = create_sliding_windows_x(x_val, window_size, stride=1)
+            # Adjust y_train_multi and y_val_multi to match the new x dimensions (trim the first window_size-1 samples)
+            y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
+            y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
+        else:
+            # Create sliding windows for LSTM (hourly predictions) as before
+            x_train, y_train, _ = create_sliding_windows(
+                x_train, y_train, 1, time_horizon, stride=1
+            )
+            x_val, y_val, _ = create_sliding_windows(
+                x_val, y_val, 1, time_horizon, stride=1
+            )
+            # Ensure y_train matches x_train
+            y_train = y_train[: len(x_train)]
+            y_val = y_val[: len(x_val)]
+            # Update y_train_multi to match the modified y_train
+            y_train_multi = y_train
+            y_val_multi = y_val
+
+        print(f"LSTM data shapes after sliding windows:")
+        print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
+        print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
+
+    # 7) TRANSFORMER-SPECIFIC PROCESSING
+    if config["plugin"] == "transformer":
+        print("Processing data for Transformer plugin...")
+        # Ensure datasets are NumPy arrays
+        if not isinstance(x_train, np.ndarray):
+            x_train = x_train.to_numpy().astype(np.float32)
+        if not isinstance(x_val, np.ndarray):
+            x_val = x_val.to_numpy().astype(np.float32)
+        # Generate positional encoding
+        pos_dim = config.get("positional_encoding_dim", 16)  # Default positional encoding dimension
+        num_features = x_train.shape[1]
+
+        pos_encoding_train = generate_positional_encoding(num_features, pos_dim)  # Shape: (1, num_features * pos_dim)
+        pos_encoding_val = generate_positional_encoding(x_val.shape[1], pos_dim)  # Shape: (1, num_features * pos_dim)
+
+        # Tile positional encoding for each sample
+        pos_encoding_train = np.tile(pos_encoding_train, (x_train.shape[0], 1))  # Shape: (samples, num_features * pos_dim)
+        pos_encoding_val = np.tile(pos_encoding_val, (x_val.shape[0], 1))        # Shape: (samples, num_features * pos_dim)
+
+        # Concatenate positional encoding to x_train and x_val horizontally
+        x_train = np.concatenate([x_train, pos_encoding_train], axis=1)  # Shape: (samples, original_features + pos_enc_features)
+        x_val = np.concatenate([x_val, pos_encoding_val], axis=1)          # Shape: (samples, original_features + pos_enc_features)
+
+        print(f"Positional encoding concatenated:")
+        print(f"  x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
+        print(f"  x_val:   {x_val.shape},   y_val:   {y_val_multi.shape}")
 
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
@@ -174,6 +247,7 @@ def process_data(config):
         "dates_train": train_dates,
         "dates_val": val_dates,
     }
+
 
 def run_prediction_pipeline(config, plugin):
     """
