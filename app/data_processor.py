@@ -216,28 +216,26 @@ def process_data(config):
             y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
             y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
         else:
-            # Create sliding windows for LSTM (hourly predictions) as before using a window size of 1.
-            # This means each row is treated as a separate sample.
-            x_train, y_train, _ = create_sliding_windows(
-                x_train, y_train, 1, time_horizon, stride=1
-            )
-            x_val, y_val, _ = create_sliding_windows(
-                x_val, y_val, 1, time_horizon, stride=1
-            )
-
-            # Ensure y_train matches x_train
-            y_train = y_train[: len(x_train)]
-            y_val = y_val[: len(x_val)]
-
-            # Update y_train_multi to match the modified y_train
-            y_train_multi = y_train
-            y_val_multi = y_val
-
-            # For hourly predictions with window size 1, adjust dates by skipping the first (window_size - 1) elements.
+            # For hourly predictions with window size 1, do NOT use a sliding window function.
+            # Each row is treated as one sample. The target for sample at time t is built from rows t+1 to t+time_horizon.
+            new_length_train = len(x_train) - time_horizon
+            new_length_val = len(x_val) - time_horizon
+            # Truncate inputs
+            x_train = x_train[:new_length_train]
+            x_val = x_val[:new_length_val]
+            # Build targets without shifting dates
+            y_train_new = np.array([y_train[i+1:i+1+time_horizon] for i in range(new_length_train)])
+            y_val_new = np.array([y_val[i+1:i+1+time_horizon] for i in range(new_length_val)])
+            y_train_multi = y_train_new
+            y_val_multi = y_val_new
+            # Reshape inputs to 3D: (samples, 1, features)
+            x_train = x_train.reshape(-1, 1, x_train.shape[1])
+            x_val = x_val.reshape(-1, 1, x_val.shape[1])
+            # Do NOT shift the dates; simply truncate them to new_length
             if train_dates is not None:
-                train_dates = train_dates[window_size - 1:]
+                train_dates = train_dates[:new_length_train]
             if val_dates is not None:
-                val_dates = val_dates[window_size - 1:]
+                val_dates = val_dates[:new_length_val]
         print(f"LSTM data shapes after sliding windows:")
         print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
         print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
@@ -357,9 +355,9 @@ def run_prediction_pipeline(config, plugin):
         print(f"Sliding windows created:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
         print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
-    # For LSTM plugin, use the processed data as returned from process_data (window size = 1)
+    # For LSTM plugin, use the processed data as returned from process_data (window size = 1, with no date shift)
     if config["plugin"] == "lstm":
-        print("Using LSTM data from process_data (window size 1).")
+        print("Using LSTM data from process_data (window size 1, no date shift).")
         # Expecting x_train shape (n_samples, 1, n_features) and y_train shape (n_samples, time_horizon)
         if x_train.ndim != 3:
             raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
@@ -691,7 +689,6 @@ def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times
             date_time_windows.append(date_times[i + window_size + time_horizon - 1])
 
     return np.array(x_windowed), np.array(y_windowed), date_time_windows
-
 
 def generate_positional_encoding(num_features, pos_dim=16):
     """
