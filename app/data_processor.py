@@ -209,7 +209,8 @@ def process_data(config):
             y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
             y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
         else:
-            # Create sliding windows for LSTM (hourly predictions) as before
+            # Create sliding windows for LSTM (hourly predictions) as before using a window size of 1.
+            # This means each row is treated as a separate sample.
             x_train, y_train, _ = create_sliding_windows(
                 x_train, y_train, 1, time_horizon, stride=1
             )
@@ -273,8 +274,6 @@ def process_data(config):
         "x_val": x_val,
         "y_val": y_val_multi,
     }
-
-
 
 def run_prediction_pipeline(config, plugin):
     """
@@ -342,42 +341,13 @@ def run_prediction_pipeline(config, plugin):
         print(f"Sliding windows created:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
         print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
-
-    # For LSTM plugin, create sliding windows so that each sample's target is a single row
+    # For LSTM plugin, use the processed data as returned from process_data (window size = 1)
     if config["plugin"] == "lstm":
-        print("Creating sliding windows for LSTM...")
-        x_sliding_train = []
-        y_sliding_train = []
-        train_date_windows = []
-        for i in range(0, len(x_train) - window_size + 1, 1):
-            x_window = x_train[i : i + window_size]
-            # Align the target with the last time step of the input window
-            y_target = y_train[i + window_size - 1]
-            x_sliding_train.append(x_window)
-            y_sliding_train.append(y_target)
-            if train_dates is not None:
-                train_date_windows.append(train_dates[i + window_size - 1])
-        x_train = np.array(x_sliding_train)
-        y_train = np.array(y_sliding_train)
-
-        x_sliding_val = []
-        y_sliding_val = []
-        val_date_windows = []
-        for i in range(0, len(x_val) - window_size + 1, 1):
-            x_window = x_val[i : i + window_size]
-            y_target = y_val[i + window_size - 1]
-            x_sliding_val.append(x_window)
-            y_sliding_val.append(y_target)
-            if val_dates is not None:
-                val_date_windows.append(val_dates[i + window_size - 1])
-        x_val = np.array(x_sliding_val)
-        y_val = np.array(y_sliding_val)
-        train_dates = train_date_windows
-        val_dates = val_date_windows
-
-        print(f"Sliding windows created for LSTM:")
-        print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
-        print(f"  x_val:   {x_val.shape}, y_val: {y_val.shape}")
+        print("Using LSTM data from process_data (window size 1).")
+        # Expecting x_train shape (n_samples, 1, n_features) and y_train shape (n_samples, time_horizon)
+        if x_train.ndim != 3:
+            raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
+    # For other plugins, no additional processing is applied
 
     if x_train.ndim == 1:
         x_train = x_train.reshape(-1, 1)
@@ -538,7 +508,6 @@ def run_prediction_pipeline(config, plugin):
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
 
-
 def load_and_evaluate_model(config, plugin):
     """
     Loads a pre-trained model and evaluates it on the validation data.
@@ -630,7 +599,6 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
-
 
 def create_multi_step_targets(df, time_horizon):
     """
