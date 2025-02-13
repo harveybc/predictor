@@ -217,15 +217,20 @@ def process_data(config):
             y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
         else:
             # For hourly predictions with window size 1, do NOT use a sliding window function.
-            # Each row is treated as one sample. The target for sample at time t is built from rows t+1 to t+time_horizon.
+            # In this case, each row is treated as one sample.
             new_length_train = len(x_train) - time_horizon
             new_length_val = len(x_val) - time_horizon
             # Truncate inputs
             x_train = x_train[:new_length_train]
             x_val = x_val[:new_length_val]
-            # Build targets without shifting dates
+            # Build targets: for each sample at time t, the target is built from rows t+1 to t+time_horizon.
             y_train_new = np.array([y_train[i+1:i+1+time_horizon] for i in range(new_length_train)])
             y_val_new = np.array([y_val[i+1:i+1+time_horizon] for i in range(new_length_val)])
+            # Squeeze extra dimension if exists
+            if y_train_new.ndim == 3 and y_train_new.shape[-1] == 1:
+                y_train_new = np.squeeze(y_train_new, axis=-1)
+            if y_val_new.ndim == 3 and y_val_new.shape[-1] == 1:
+                y_val_new = np.squeeze(y_val_new, axis=-1)
             y_train_multi = y_train_new
             y_val_multi = y_val_new
             # Reshape inputs to 3D: (samples, 1, features)
