@@ -148,7 +148,10 @@ def process_data(config):
     # 6) LSTM-SPECIFIC PROCESSING (omitted here; remains unchanged)
     if config["plugin"] == "lstm":
         # ... [existing LSTM processing code] ...
-        # Overwrite train_dates and val_dates with sliding window dates
+        # Overwrite train_dates and val_dates with sliding window dates.
+        # Correction: Since sliding window dates are not computed for LSTM, we default to the original dates.
+        train_date_windows = train_dates
+        val_date_windows = val_dates
         train_dates = train_date_windows
         val_dates = val_date_windows
 
@@ -171,7 +174,6 @@ def process_data(config):
         "dates_train": train_dates,
         "dates_val": val_dates,
     }
-
 
 def run_prediction_pipeline(config, plugin):
     """
