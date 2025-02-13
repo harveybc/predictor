@@ -77,10 +77,6 @@ def process_data(config):
         max_rows=config.get("max_steps_test"),
     )
 
-    # Capture original DATE_TIME indices (if available)
-    train_dates = x_train.index if isinstance(x_train.index, pd.DatetimeIndex) else None
-    val_dates = x_val.index if isinstance(x_val.index, pd.DatetimeIndex) else None
-
     # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
 
@@ -107,19 +103,45 @@ def process_data(config):
     time_horizon = config["time_horizon"]
 
     def create_multi_step(y_df, horizon):
+        """
+        Create multi-step targets for time-series prediction.
+
+        Args:
+            y_df (pd.DataFrame): Target data as a DataFrame.
+            horizon (int): Number of future steps to predict.
+
+        Returns:
+            pd.DataFrame: Multi-step targets aligned with the input data.
+        """
         blocks = []
         for i in range(len(y_df) - horizon):
+            # Collect the next `horizon` ticks starting from the *next* row
             window = y_df.iloc[i + 1 : i + 1 + horizon].values.flatten()
             blocks.append(window)
+        # Align index to the input data (exclude the last `horizon` rows)
         return pd.DataFrame(blocks, index=y_df.index[:-horizon])
 
     def create_multi_step_daily(y_df, horizon):
+        """
+        Create multi-step targets for daily predictions in time-series prediction.
+        For each row in y_df, returns the predicted values for the same hour over the next `horizon` days.
+
+        Args:
+            y_df (pd.DataFrame): Target data as a DataFrame.
+            horizon (int): Number of future days to predict.
+
+        Returns:
+            pd.DataFrame: Multi-step targets aligned with the input data.
+        """
         blocks = []
+        # For daily mode, each prediction is offset by 24 ticks (hours)
         for i in range(len(y_df) - horizon * 24):
             window = []
             for d in range(1, horizon + 1):
+                # Collect the predicted value at the same hour on the d-th day ahead
                 window.extend(y_df.iloc[i + d * 24].values.flatten())
             blocks.append(window)
+        # Align index to the input data (exclude the last horizon*24 rows)
         return pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
 
     if config.get("use_daily", False):
@@ -139,14 +161,15 @@ def process_data(config):
     y_val_multi = y_val_multi.iloc[:min_len_val]
 
     # Also trim the original date indices accordingly
-    if train_dates is not None:
-        train_dates = train_dates[:min_len_train]
-    if val_dates is not None:
-        val_dates = val_dates[:min_len_val]
+    if (x_train.index is not None) and (hasattr(x_train.index, "tolist")):
+        train_dates = x_train.index[:min_len_train]
+    if (x_val.index is not None) and (hasattr(x_val.index, "tolist")):
+        val_dates = x_val.index[:min_len_val]
 
     # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
         print("Processing data for LSTM plugin...")
+
         # Ensure datasets are NumPy arrays
         if not isinstance(x_train, np.ndarray):
             x_train = x_train.to_numpy().astype(np.float32)
@@ -181,6 +204,7 @@ def process_data(config):
             # Create sliding windows for x_train and x_val without altering y (daily targets)
             x_train = create_sliding_windows_x(x_train, window_size, stride=1)
             x_val = create_sliding_windows_x(x_val, window_size, stride=1)
+
             # Adjust y_train_multi and y_val_multi to match the new x dimensions (trim the first window_size-1 samples)
             y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
             y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
@@ -192,9 +216,11 @@ def process_data(config):
             x_val, y_val, _ = create_sliding_windows(
                 x_val, y_val, 1, time_horizon, stride=1
             )
+
             # Ensure y_train matches x_train
             y_train = y_train[: len(x_train)]
             y_val = y_val[: len(x_val)]
+
             # Update y_train_multi to match the modified y_train
             y_train_multi = y_train
             y_val_multi = y_val
@@ -206,11 +232,13 @@ def process_data(config):
     # 7) TRANSFORMER-SPECIFIC PROCESSING
     if config["plugin"] == "transformer":
         print("Processing data for Transformer plugin...")
+
         # Ensure datasets are NumPy arrays
         if not isinstance(x_train, np.ndarray):
             x_train = x_train.to_numpy().astype(np.float32)
         if not isinstance(x_val, np.ndarray):
             x_val = x_val.to_numpy().astype(np.float32)
+
         # Generate positional encoding
         pos_dim = config.get("positional_encoding_dim", 16)  # Default positional encoding dimension
         num_features = x_train.shape[1]
@@ -244,9 +272,8 @@ def process_data(config):
         "y_train": y_train_multi,
         "x_val": x_val,
         "y_val": y_val_multi,
-        "dates_train": train_dates,
-        "dates_val": val_dates,
     }
+
 
 
 def run_prediction_pipeline(config, plugin):
