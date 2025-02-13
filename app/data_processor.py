@@ -158,12 +158,10 @@ def process_data(config):
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
 
-    # For ANN and Transformer (i.e. non-sliding-window plugins), adjust the dates so that each prediction’s DATE_TIME
-    # corresponds to the last predicted time step. Since create_multi_step() returns blocks with index = y_df.index[:-horizon],
-    # the correct DATE_TIME for the prediction is from the original y (shifted by time_horizon).
+    # For ANN and Transformer (i.e. non-sliding-window plugins), use the multi-step targets’ index directly.
     if config["plugin"] not in ["lstm", "cnn"]:
-        train_dates = y_train.index[time_horizon : time_horizon + len(y_train_multi)]
-        val_dates = y_val.index[time_horizon : time_horizon + len(y_val_multi)]
+        train_dates = y_train_multi.index
+        val_dates = y_val_multi.index
 
     return {
         "x_train": x_train,
@@ -363,7 +361,7 @@ def run_prediction_pipeline(config, plugin):
             val_predictions, 
             columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
         )
-        # Use the processed dates from process_data (which now reflect the correct shift)
+        # Use the processed dates from process_data (which now reflect the proper alignment)
         if val_dates is not None:
             val_predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(val_predictions_df)])
         else:
@@ -375,7 +373,6 @@ def run_prediction_pipeline(config, plugin):
     else:
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
 
-    # Save model plot
     try:
         plot_model(
             plugin.model, 
@@ -392,7 +389,6 @@ def run_prediction_pipeline(config, plugin):
         print(f"Failed to generate model plot. Ensure Graphviz is installed and in your PATH: {e}")
         print("Download Graphviz from https://graphviz.org/download/")
 
-    # save the trained predictor model
     save_model_file = config.get("save_model", "pretrained_model.keras")
     try:
         plugin.save(save_model_file)
@@ -402,7 +398,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
 
 
 def load_and_evaluate_model(config, plugin):
