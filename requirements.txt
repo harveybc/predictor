@@ -5,7 +5,8 @@ pandas
 h5py
 scipy
 build
-pytestpip install graph
+pytestpip
+graph
 pdoc3
 keras-multi-head
 pydot
@@ -13,3 +14,4 @@ graphviz
 backtrader
 deap
 pmdarima
+protobuf==3.19
