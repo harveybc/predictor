@@ -6,7 +6,6 @@ h5py
 scipy
 build
 pytest
-graph
 pdoc3
 keras-multi-head
 pydot
