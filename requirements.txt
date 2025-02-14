@@ -5,7 +5,7 @@ pandas
 h5py
 scipy
 build
-pytestpip
+pytest
 graph
 pdoc3
 keras-multi-head
