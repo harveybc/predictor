@@ -149,11 +149,11 @@ def process_data(config):
         return pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
 
     # --- UPDATED DAILY MODE ---
-    # When using daily mode, compute the centered moving average (window=48, center=True)
+    # When using daily mode, compute the centered moving average (window=48, center=True, min_periods=1)
     # for the target (close) column and use that for multi-step daily target creation.
     if config.get("use_daily", False):
-        y_train_ma = y_train.rolling(window=48, center=True).mean()
-        y_val_ma = y_val.rolling(window=48, center=True).mean()
+        y_train_ma = y_train.rolling(window=48, center=True, min_periods=1).mean()
+        y_val_ma = y_val.rolling(window=48, center=True, min_periods=1).mean()
         y_train_multi = create_multi_step_daily(y_train_ma, time_horizon)
         y_val_multi = create_multi_step_daily(y_val_ma, time_horizon)
     else:
