@@ -35,7 +35,7 @@ DEFAULT_VALUES = {
     'window_size': 256,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'l2_reg': 1e-4,          # L2 regularization factor
     'patience': 25,           # Early stopping patience
-    'max_steps_train': 12600,
+    'max_steps_train': 6300,
     'max_steps_test': 6300,
     'iterations': 1,
     'epochs': 600,
