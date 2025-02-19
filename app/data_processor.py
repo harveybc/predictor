@@ -148,12 +148,18 @@ def process_data(config):
         # Align index to the input data (exclude the last horizon*24 rows)
         return pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
 
+    # --- UPDATED DAILY MODE ---
+    # When using daily mode, compute the centered moving average (window=48, center=True)
+    # for the target (close) column and use that for multi-step daily target creation.
     if config.get("use_daily", False):
-        y_train_multi = create_multi_step_daily(y_train, time_horizon)
-        y_val_multi = create_multi_step_daily(y_val, time_horizon)
+        y_train_ma = y_train.rolling(window=48, center=True).mean()
+        y_val_ma = y_val.rolling(window=48, center=True).mean()
+        y_train_multi = create_multi_step_daily(y_train_ma, time_horizon)
+        y_val_multi = create_multi_step_daily(y_val_ma, time_horizon)
     else:
         y_train_multi = create_multi_step(y_train, time_horizon)
         y_val_multi = create_multi_step(y_val, time_horizon)
+    # --- END UPDATED DAILY MODE ---
 
     # 5) TRIM x TO MATCH THE LENGTH OF y
     min_len_train = min(len(x_train), len(y_train_multi))
@@ -189,14 +195,6 @@ def process_data(config):
             def create_sliding_windows_x(data, window_size, stride=1):
                 """
                 Create sliding windows for input data only.
-
-                Args:
-                    data (np.ndarray): Input data array of shape (n_samples, n_features).
-                    window_size (int): The number of time steps in each window.
-                    stride (int): The stride between successive windows.
-
-                Returns:
-                    np.ndarray: Array of sliding windows of shape (n_windows, window_size, n_features).
                 """
                 windows = []
                 for i in range(0, len(data) - window_size + 1, stride):
@@ -217,26 +215,20 @@ def process_data(config):
             y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
         else:
             # For hourly predictions with window size 1, do NOT use a sliding window function.
-            # In this case, each row is treated as one sample.
             new_length_train = len(x_train) - time_horizon
             new_length_val = len(x_val) - time_horizon
-            # Truncate inputs
             x_train = x_train[:new_length_train]
             x_val = x_val[:new_length_val]
-            # Build targets: for each sample at time t, the target is built from rows t+1 to t+time_horizon.
             y_train_new = np.array([y_train[i+1:i+1+time_horizon] for i in range(new_length_train)])
             y_val_new = np.array([y_val[i+1:i+1+time_horizon] for i in range(new_length_val)])
-            # Squeeze extra dimension if exists
             if y_train_new.ndim == 3 and y_train_new.shape[-1] == 1:
                 y_train_new = np.squeeze(y_train_new, axis=-1)
             if y_val_new.ndim == 3 and y_val_new.shape[-1] == 1:
                 y_val_new = np.squeeze(y_val_new, axis=-1)
             y_train_multi = y_train_new
             y_val_multi = y_val_new
-            # Reshape inputs to 3D: (samples, 1, features)
             x_train = x_train.reshape(-1, 1, x_train.shape[1])
             x_val = x_val.reshape(-1, 1, x_val.shape[1])
-            # Do NOT shift the dates; simply truncate them to new_length
             if train_dates is not None:
                 train_dates = train_dates[:new_length_train]
             if val_dates is not None:
@@ -249,36 +241,31 @@ def process_data(config):
     if config["plugin"] == "transformer":
         print("Processing data for Transformer plugin...")
 
-        # Ensure datasets are NumPy arrays
         if not isinstance(x_train, np.ndarray):
             x_train = x_train.to_numpy().astype(np.float32)
         if not isinstance(x_val, np.ndarray):
             x_val = x_val.to_numpy().astype(np.float32)
 
-        # Generate positional encoding
-        pos_dim = config.get("positional_encoding_dim", 16)  # Default positional encoding dimension
+        pos_dim = config.get("positional_encoding_dim", 16)
         num_features = x_train.shape[1]
 
-        pos_encoding_train = generate_positional_encoding(num_features, pos_dim)  # Shape: (1, num_features * pos_dim)
-        pos_encoding_val = generate_positional_encoding(x_val.shape[1], pos_dim)  # Shape: (1, num_features * pos_dim)
+        pos_encoding_train = generate_positional_encoding(num_features, pos_dim)
+        pos_encoding_val = generate_positional_encoding(x_val.shape[1], pos_dim)
 
-        # Tile positional encoding for each sample
-        pos_encoding_train = np.tile(pos_encoding_train, (x_train.shape[0], 1))  # Shape: (samples, num_features * pos_dim)
-        pos_encoding_val = np.tile(pos_encoding_val, (x_val.shape[0], 1))        # Shape: (samples, num_features * pos_dim)
+        pos_encoding_train = np.tile(pos_encoding_train, (x_train.shape[0], 1))
+        pos_encoding_val = np.tile(pos_encoding_val, (x_val.shape[0], 1))
 
-        # Concatenate positional encoding to x_train and x_val horizontally
-        x_train = np.concatenate([x_train, pos_encoding_train], axis=1)  # Shape: (samples, original_features + pos_enc_features)
-        x_val = np.concatenate([x_val, pos_encoding_val], axis=1)          # Shape: (samples, original_features + pos_enc_features)
+        x_train = np.concatenate([x_train, pos_encoding_train], axis=1)
+        x_val = np.concatenate([x_val, pos_encoding_val], axis=1)
 
         print(f"Positional encoding concatenated:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
-        print(f"  x_val:   {x_val.shape},   y_val:   {y_val_multi.shape}")
+        print(f"  x_val:   {x_val.shape},   y_val: {y_val_multi.shape}")
 
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
 
-    # For ANN and Transformer (i.e. non-sliding-window plugins), if dates were not updated, use the multi-step targets’ index.
     if config["plugin"] not in ["lstm", "cnn"]:
         if train_dates is None:
             train_dates = y_train_multi.index
@@ -293,6 +280,8 @@ def process_data(config):
         "dates_train": train_dates,
         "dates_val": val_dates,
     }
+
+
 
 def run_prediction_pipeline(config, plugin):
     """
