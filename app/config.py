@@ -16,7 +16,7 @@ DEFAULT_VALUES = {
     'load_model': None,
     'loss_plot_file': './loss_plot.png',
     'model_plot_file': './model_plot.png',	
-    'plugin': 'cnn',
+    'plugin': 'ann',
     'time_horizon': 6,
     'use_daily': False, # isntead of predicting the next time_horizon hours, predict the next time_horizon days.
     'threshold_error': 0.000001,
