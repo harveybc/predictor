@@ -151,7 +151,7 @@ class Plugin:
         
         callbacks = []
         early_stopping_monitor = EarlyStopping(
-            monitor='loss',
+            monitor='val_loss',
             patience=self.params['patience'],
             restore_best_weights=True,
             verbose=1
