@@ -109,6 +109,13 @@ def process_data(config):
     def create_multi_step(y_df, horizon):
         """
         Create multi-step targets for time-series prediction.
+
+        Args:
+            y_df (pd.DataFrame): Target data as a DataFrame.
+            horizon (int): Number of future steps to predict.
+
+        Returns:
+            pd.DataFrame: Multi-step targets aligned with the input data.
         """
         blocks = []
         for i in range(len(y_df) - horizon):
@@ -122,6 +129,13 @@ def process_data(config):
         """
         Create multi-step targets for daily predictions in time-series prediction.
         For each row in y_df, returns the predicted values for the same hour over the next `horizon` days.
+
+        Args:
+            y_df (pd.DataFrame): Target data as a DataFrame.
+            horizon (int): Number of future days to predict.
+
+        Returns:
+            pd.DataFrame: Multi-step targets aligned with the input data.
         """
         blocks = []
         # For daily mode, each prediction is offset by 24 ticks (hours)
@@ -135,6 +149,8 @@ def process_data(config):
         return pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
 
     # --- UPDATED DAILY MODE ---
+    # When using daily mode, compute the centered moving average (window=48, center=True, min_periods=1)
+    # for the target (close) column and use that for multi-step daily target creation.
     if config.get("use_daily", False):
         y_train_ma = y_train.rolling(window=48, center=True, min_periods=1).mean()
         y_val_ma = y_val.rolling(window=48, center=True, min_periods=1).mean()
@@ -161,6 +177,7 @@ def process_data(config):
     # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
         print("Processing data for LSTM plugin...")
+
         # Ensure datasets are NumPy arrays
         if not isinstance(x_train, np.ndarray):
             x_train = x_train.to_numpy().astype(np.float32)
@@ -176,6 +193,9 @@ def process_data(config):
         if config.get("use_daily", False):
             # Define an intra-method function to create sliding windows for x only
             def create_sliding_windows_x(data, window_size, stride=1):
+                """
+                Create sliding windows for input data only.
+                """
                 windows = []
                 for i in range(0, len(data) - window_size + 1, stride):
                     windows.append(data[i : i + window_size])
@@ -220,6 +240,7 @@ def process_data(config):
     # 7) TRANSFORMER-SPECIFIC PROCESSING
     if config["plugin"] == "transformer":
         print("Processing data for Transformer plugin...")
+
         if not isinstance(x_train, np.ndarray):
             x_train = x_train.to_numpy().astype(np.float32)
         if not isinstance(x_val, np.ndarray):
@@ -260,72 +281,7 @@ def process_data(config):
         "dates_val": val_dates,
     }
 
-def get_loss_function(config):
-    """
-    Returns the loss function for the predictor.
-    If config['use_mmd'] is True, a statistical MMD term is added to the base Huber loss,
-    so that the predictor learns the distribution of the training signal.
-    The original functionality is preserved.
-    """
-    base_loss = tf.keras.losses.Huber(delta=1.0)
 
-    def gaussian_kernel_matrix(x, y, sigma):
-        # Assume x and y are 2D: (batch_size, features)
-        x_size = tf.shape(x)[0]
-        y_size = tf.shape(y)[0]
-        dim = tf.shape(x)[1]
-        x_expanded = tf.reshape(x, [x_size, 1, dim])
-        y_expanded = tf.reshape(y, [1, y_size, dim])
-        squared_diff = tf.reduce_sum(tf.square(x_expanded - y_expanded), axis=2)
-        return tf.exp(-squared_diff / (2.0 * sigma**2))
-
-    def mmd_loss_term(y_true, y_pred, sigma):
-        # Flatten inputs to ensure they are 2D.
-        y_true_flat = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
-        y_pred_flat = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
-        K_xx = gaussian_kernel_matrix(y_true_flat, y_true_flat, sigma)
-        K_yy = gaussian_kernel_matrix(y_pred_flat, y_pred_flat, sigma)
-        K_xy = gaussian_kernel_matrix(y_true_flat, y_pred_flat, sigma)
-        m = tf.cast(tf.shape(y_true_flat)[0], tf.float32)
-        n = tf.cast(tf.shape(y_pred_flat)[0], tf.float32)
-        mmd = tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
-        return mmd
-
-    def loss_fn(y_true, y_pred):
-        loss = base_loss(y_true, y_pred)
-        if config.get("use_mmd", False):
-            sigma = config.get("mmd_sigma", 1.0)  # Kernel width (default 1.0)
-            stat_weight = config.get("statistical_loss_weight", 1.0)  # Weight for the MMD term
-            mmd_value = mmd_loss_term(y_true, y_pred, sigma)
-            loss += stat_weight * mmd_value
-        return loss
-
-    return loss_fn
-
-def compile_predictor(self, config):
-    """
-    Compiles the predictor model using the loss function that optionally
-    integrates the MMD term. This method preserves all original functionality,
-    messages, parameters, and metrics.
-    """
-    print("[compile_predictor] Compiling the predictor model...")
-    optimizer = tf.keras.optimizers.Adam(
-        learning_rate=config["learning_rate"],
-        beta_1=0.9,
-        beta_2=0.999,
-        epsilon=1e-7,
-        amsgrad=False,
-        clipnorm=1.0,
-        clipvalue=0.5
-    )
-    loss_function = get_loss_function(config)
-    self.model.compile(
-        optimizer=optimizer,
-        loss=loss_function,
-        metrics=["mae"],
-        run_eagerly=True
-    )
-    print("[compile_predictor] Model compiled successfully.")
 
 def run_prediction_pipeline(config, plugin):
     """
@@ -399,6 +355,7 @@ def run_prediction_pipeline(config, plugin):
         # Expecting x_train shape (n_samples, 1, n_features) and y_train shape (n_samples, time_horizon)
         if x_train.ndim != 3:
             raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
+    # For other plugins, no additional processing is applied
 
     if x_train.ndim == 1:
         x_train = x_train.reshape(-1, 1)
@@ -425,11 +382,6 @@ def run_prediction_pipeline(config, plugin):
                 if len(x_train.shape) != 2:
                     raise ValueError(f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}.")
                 plugin.build_model(input_shape=x_train.shape[1])
-        # NEW: Compile the model using the loss function with optional MMD term
-        if hasattr(plugin, "compile_predictor"):
-            plugin.compile_predictor(config)
-        else:
-            raise AttributeError("The plugin does not implement compile_predictor method.")
 
         history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions = plugin.train(
             x_train,
@@ -473,7 +425,9 @@ def run_prediction_pipeline(config, plugin):
         iteration_end_time = time.time()
         print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
+    # -----------------------
     # Aggregate statistics
+    # -----------------------
     results = {
         "Metric": ["Training MAE", "Training R²", "Validation MAE", "Validation R²"],
         "Average": [np.mean(training_mae_list), np.mean(training_r2_list),
@@ -524,6 +478,7 @@ def run_prediction_pipeline(config, plugin):
             val_predictions, 
             columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
         )
+        # Use the processed dates from process_data for the DATE_TIME column
         if val_dates is not None:
             val_predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(val_predictions_df)])
         else:
@@ -570,7 +525,26 @@ def load_and_evaluate_model(config, plugin):
     2. Loads and processes the validation data.
     3. Makes predictions using the loaded model.
     4. Saves the predictions to a CSV file for evaluation, including the DATE_TIME column.
+
+    Args:
+        config (dict): Configuration dictionary containing parameters for model evaluation.
+            Expected keys include:
+                - 'load_model' (str): Path to the pre-trained model file.
+                - 'x_validation_file' (str): Path to the validation features CSV file.
+                - 'y_validation_file' (str): Path to the validation targets CSV file.
+                - 'target_column' (str or int): Column name or index to be used as the target.
+                - 'headers' (bool): Indicates if CSV files contain headers.
+                - 'force_date' (bool): Determines if date should be included in the output CSV.
+                - 'evaluate_file' (str): Path to save the evaluation predictions CSV file.
+                - 'max_steps_val' (int, optional): Maximum number of rows to read for validation data.
+
+        plugin (Plugin): The ANN predictor plugin to be used for evaluation.
+
+    Raises:
+        ValueError: If required configuration parameters are missing or invalid.
+        Exception: Propagates any exception that occurs during model loading or data processing.
     """
+    # Load the pre-trained model
     print(f"Loading pre-trained model from {config['load_model']}...")
     try:
         plugin.load(config['load_model'])
@@ -579,6 +553,7 @@ def load_and_evaluate_model(config, plugin):
         print(f"Failed to load the model from {config['load_model']}: {e}")
         sys.exit(1)
 
+    # Load and process validation data with row limit
     print("Loading and processing validation data for evaluation...")
     try:
         # Assuming process_data can be reused for validation by specifying validation files
@@ -591,6 +566,7 @@ def load_and_evaluate_model(config, plugin):
         print(f"Failed to process validation data: {e}")
         sys.exit(1)
 
+    # Predict using the loaded model
     print("Making predictions on validation data...")
     try:
         predictions = plugin.predict(x_val.to_numpy())
@@ -599,6 +575,7 @@ def load_and_evaluate_model(config, plugin):
         print(f"Failed to make predictions: {e}")
         sys.exit(1)
 
+    # Convert predictions to DataFrame
     if predictions.ndim == 1 or predictions.shape[1] == 1:
         predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
     else:
@@ -606,21 +583,24 @@ def load_and_evaluate_model(config, plugin):
         pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
         predictions_df = pd.DataFrame(predictions, columns=pred_cols)
 
+    # Add DATE_TIME column using the stored dates if available
     if val_dates is not None:
         predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(predictions_df)])
     else:
-        predictions_df['DATE_TIME'] = pd.NaT
+        predictions_df['DATE_TIME'] = pd.NaT  # Assign Not-a-Time if date info is not available
         print("Warning: DATE_TIME for validation predictions not captured.")
 
+    # Rearrange columns to have DATE_TIME first
     cols = ['DATE_TIME'] + [col for col in predictions_df.columns if col != 'DATE_TIME']
     predictions_df = predictions_df[cols]
 
+    # Save predictions to CSV for evaluation
     evaluate_filename = config['evaluate_file']
     try:
         write_csv(
             file_path=evaluate_filename,
             data=predictions_df,
-            include_date=False,
+            include_date=False,  # DATE_TIME is already included
             headers=config.get('headers', True)
         )
         print(f"Validation predictions with DATE_TIME saved to {evaluate_filename}")
@@ -642,8 +622,30 @@ def create_multi_step_targets(df, time_horizon):
     y_multi_step = []
     for i in range(len(df) - time_horizon + 1):
         y_multi_step.append(df.iloc[i:i + time_horizon].values.flatten())
+
+    # Create DataFrame with aligned indices
     y_multi_step_df = pd.DataFrame(y_multi_step, index=df.index[:len(y_multi_step)])
     return y_multi_step_df
+
+
+    """
+    Creates multi-step targets for time-series prediction.
+
+    Args:
+        df (pd.DataFrame): Target data as a DataFrame.
+        time_horizon (int): Number of future steps to predict.
+
+    Returns:
+        pd.DataFrame: Multi-step targets aligned with the input data.
+    """
+    y_multi_step = []
+    for i in range(len(df) - time_horizon + 1):
+        y_multi_step.append(df.iloc[i:i + time_horizon].values.flatten())
+
+    # Create DataFrame with aligned indices
+    y_multi_step_df = pd.DataFrame(y_multi_step, index=df.index[:len(y_multi_step)])
+    return y_multi_step_df
+
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
@@ -698,5 +700,24 @@ def generate_positional_encoding(num_features, pos_dim=16):
     pos_encoding = np.zeros((num_features, pos_dim))
     pos_encoding[:, 0::2] = np.sin(position * div_term)
     pos_encoding[:, 1::2] = np.cos(position * div_term)
-    pos_encoding_flat = pos_encoding.flatten().reshape(1, -1)
+    pos_encoding_flat = pos_encoding.flatten().reshape(1, -1)  # Shape: (1, num_features * pos_dim)
+    return pos_encoding_flat
+
+def generate_positional_encoding(num_features, pos_dim=16):
+    """
+    Generates positional encoding for a given number of features.
+
+    Args:
+        num_features (int): Number of features in the dataset.
+        pos_dim (int): Dimension of the positional encoding.
+
+    Returns:
+        np.ndarray: Positional encoding of shape (1, num_features * pos_dim).
+    """
+    position = np.arange(num_features)[:, np.newaxis]
+    div_term = np.exp(np.arange(0, pos_dim, 2) * -(np.log(10000.0) / pos_dim))
+    pos_encoding = np.zeros((num_features, pos_dim))
+    pos_encoding[:, 0::2] = np.sin(position * div_term)
+    pos_encoding[:, 1::2] = np.cos(position * div_term)
+    pos_encoding_flat = pos_encoding.flatten().reshape(1, -1)  # Shape: (1, num_features * pos_dim)
     return pos_encoding_flat
