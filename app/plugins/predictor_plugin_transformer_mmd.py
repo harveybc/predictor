@@ -145,7 +145,7 @@ class Plugin:
         # The final output shape will be (batch_size, time_horizon)
         self.model = Model(inputs=inp, outputs=out, name="Transformer_Encoder_Predictor_Model")
 
-        # --- NEW: Define combined loss function (Huber + MMD) and metric ---
+        # --- NEW: Define combined loss function (Huber + MMD) and additional metrics ---
         def gaussian_kernel_matrix(x, y, sigma):
             x_size = tf.shape(x)[0]
             y_size = tf.shape(y)[0]
@@ -180,6 +180,11 @@ class Plugin:
             n = tf.cast(tf.shape(y_pred_flat)[0], tf.float32)
             mmd = tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
             return mmd
+        mmd_metric.__name__ = "mmd"
+
+        def huber_metric(y_true, y_pred):
+            return Huber(delta=1.0)(y_true, y_pred)
+        huber_metric.__name__ = "huber"
         # --- END NEW LOSS & METRIC DEFINITION ---
 
         # Adam Optimizer
@@ -191,11 +196,11 @@ class Plugin:
             amsgrad=False
         )
 
-        # Compile the model with the combined loss and additional metric.
+        # Compile the model with the combined loss and additional metrics.
         self.model.compile(
             optimizer=adam_optimizer,
             loss=combined_loss,
-            metrics=['mae', mmd_metric],
+            metrics=['mae', mmd_metric, huber_metric],
             run_eagerly=True
         )
         
@@ -248,14 +253,14 @@ class Plugin:
             print(f"[train_predictor] MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
         
             train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-            train_loss, train_mse, train_mae = train_eval_results
-            print(f"[train_predictor] Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+            train_loss, train_metric2, train_metric3 = train_eval_results  # train_metric2 corresponds to 'mae', train_metric3 to 'mmd'
+            print(f"[train_predictor] Restored Weights - Loss: {train_loss}, MAE: {train_metric2}, MMD: {train_metric3}")
         
             if x_val is not None and y_val is not None:
                 val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-                val_loss, val_mse, val_mae = val_eval_results
+                val_loss, val_metric2, val_metric3 = val_eval_results
             else:
-                val_loss = val_mse = val_mae = None
+                val_loss = val_metric2 = val_metric3 = None
         
             train_predictions = self.predict(x_train)
             val_predictions = self.predict(x_val) if x_val is not None else None
@@ -263,7 +268,7 @@ class Plugin:
             train_r2 = r2_score(y_train, train_predictions)
             val_r2 = r2_score(y_val, val_predictions) if y_val is not None else None
         
-            return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
+            return history, train_metric2, train_r2, val_metric2, val_r2, train_predictions, val_predictions
         except Exception as e:
             print(f"[train_predictor] Exception occurred during training: {e}")
             raise
