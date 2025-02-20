@@ -40,6 +40,6 @@ DEFAULT_VALUES = {
     'max_steps_train': 6300,
     'max_steps_test': 6300,
     'iterations': 1,
-    'epochs': 1100,
+    'epochs': 900,
     "use_normalization_json": "examples\\config\\phase_1_normalizer_debug_out.json"
 }
