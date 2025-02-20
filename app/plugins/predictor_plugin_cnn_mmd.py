@@ -167,8 +167,7 @@ class Plugin:
             K_xy = gaussian_kernel_matrix(y_true_flat, y_pred_flat, sigma)
             m = tf.cast(tf.shape(y_true_flat)[0], tf.float32)
             n = tf.cast(tf.shape(y_pred_flat)[0], tf.float32)
-            mmd = tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
-            return mmd
+            return tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
         mmd_metric.__name__ = "mmd"
 
         def huber_metric(y_true, y_pred):
@@ -186,6 +185,61 @@ class Plugin:
 
         print("CNN_MMD Model Summary:")
         self.model.summary()
+
+    @staticmethod
+    def gaussian_kernel_matrix(x, y, sigma):
+        x_size = tf.shape(x)[0]
+        y_size = tf.shape(y)[0]
+        dim = tf.shape(x)[1]
+        x_expanded = tf.reshape(x, [x_size, 1, dim])
+        y_expanded = tf.reshape(y, [1, y_size, dim])
+        squared_diff = tf.reduce_sum(tf.square(x_expanded - y_expanded), axis=2)
+        return tf.exp(-squared_diff / (2.0 * sigma**2))
+
+    @staticmethod
+    def combined_loss(y_true, y_pred):
+        huber_loss = Huber(delta=1.0)(y_true, y_pred)
+        sigma = 1.0
+        stat_weight = 1.0
+        y_true_flat = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
+        y_pred_flat = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
+        K_xx = Plugin.gaussian_kernel_matrix(y_true_flat, y_true_flat, sigma)
+        K_yy = Plugin.gaussian_kernel_matrix(y_pred_flat, y_pred_flat, sigma)
+        K_xy = Plugin.gaussian_kernel_matrix(y_true_flat, y_pred_flat, sigma)
+        m = tf.cast(tf.shape(y_true_flat)[0], tf.float32)
+        n = tf.cast(tf.shape(y_pred_flat)[0], tf.float32)
+        mmd = tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
+        return huber_loss + stat_weight * mmd
+
+    @staticmethod
+    def mmd_metric(y_true, y_pred):
+        sigma = 1.0
+        y_true_flat = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
+        y_pred_flat = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
+        K_xx = Plugin.gaussian_kernel_matrix(y_true_flat, y_true_flat, sigma)
+        K_yy = Plugin.gaussian_kernel_matrix(y_pred_flat, y_pred_flat, sigma)
+        K_xy = Plugin.gaussian_kernel_matrix(y_true_flat, y_pred_flat, sigma)
+        m = tf.cast(tf.shape(y_true_flat)[0], tf.float32)
+        n = tf.cast(tf.shape(y_pred_flat)[0], tf.float32)
+        return tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
+    mmd_metric.__name__ = "mmd"
+
+    @staticmethod
+    def huber_metric(y_true, y_pred):
+        return Huber(delta=1.0)(y_true, y_pred)
+    huber_metric.__name__ = "huber"
+
+    def load(self, file_path):
+        """
+        Loads a trained model from the specified file path using custom_objects for the custom loss and metrics.
+        """
+        custom_objects = {
+            "combined_loss": Plugin.combined_loss,
+            "mmd": Plugin.mmd_metric,
+            "huber": Plugin.huber_metric
+        }
+        self.model = load_model(file_path, custom_objects=custom_objects)
+        print(f"Predictor model loaded from {file_path}")
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
@@ -262,7 +316,6 @@ class Plugin:
         
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
-
     def predict(self, data):
         """
         Generate predictions using the trained CNN model.
@@ -337,12 +390,17 @@ class Plugin:
 
     def load(self, file_path):
         """
-        Loads a trained model from the specified file path.
+        Loads a trained model from the specified file path using custom_objects for the custom loss and metrics.
         
         Args:
             file_path (str): Path to load the model from.
         """
-        self.model = load_model(file_path)
+        custom_objects = {
+            "combined_loss": Plugin.combined_loss,
+            "mmd": Plugin.mmd_metric,
+            "huber": Plugin.huber_metric
+        }
+        self.model = load_model(file_path, custom_objects=custom_objects)
         print(f"Predictor model loaded from {file_path}")
 
     def calculate_r2(self, y_true, y_pred):
