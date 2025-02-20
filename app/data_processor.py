@@ -573,6 +573,35 @@ def load_and_evaluate_model(config, plugin):
         x_val = datasets["x_val"]
         y_val = datasets["y_val"]
         val_dates = datasets.get("dates_val")
+        # For CNN plugins, create sliding windows and update dates accordingly
+        if config["plugin"] in ["cnn", "cnn_mmd"]:
+            print("Creating sliding windows for CNN...")
+            x_train, _, train_date_windows = create_sliding_windows(
+                x_train, y_train, window_size, time_horizon, stride=1, date_times=train_dates
+            )
+            x_val, _, val_date_windows = create_sliding_windows(
+                x_val, y_val, window_size, time_horizon, stride=1, date_times=val_dates
+            )
+            train_dates = train_date_windows
+            val_dates = val_date_windows
+            print(f"Sliding windows created:")
+            print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
+            print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
+        # For LSTM plugin, use the processed data as returned from process_data (window size = 1, with no date shift)
+        if config["plugin"] == "lstm":
+            print("Using LSTM data from process_data (window size 1, no date shift).")
+            if x_train.ndim != 3:
+                raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
+        # For Transformer plugins, no sliding window is applied; data remains 2D.
+        if config["plugin"] in ["transformer", "transformer_mmd"]:
+            if x_train.ndim != 2:
+                raise ValueError(f"For Transformer plugins, x_train must be 2D. Found: {x_train.shape}.")
+
+        if x_train.ndim == 1:
+            x_train = x_train.reshape(-1, 1)
+        if x_val.ndim == 1:
+            x_val = x_val.reshape(-1, 1)
+
         print(f"Processed validation data: X shape: {x_val.shape}, Y shape: {y_val.shape}")
     except Exception as e:
         print(f"Failed to process validation data: {e}")
