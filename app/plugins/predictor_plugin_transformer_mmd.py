@@ -136,13 +136,13 @@ class Plugin:
                 num_heads = 4
             else:
                 num_heads = 8
-            x = Dense(size, name="dense_transform")(x)
-            x = MultiHeadAttention(head_num=num_heads, name="multi_head_attention")(x)
-            x = LayerNormalization(epsilon=1e-6, name="layer_norm_1")(x)
-            ffn = Dense(ff_dim, activation='tanh', kernel_initializer=HeNormal(), name="ffn_dense_1")(x)
-            ffn = Dense(size, name="ffn_dense_2")(ffn)
-            x = Add(name="ffn_add")([x, ffn])
-            x = LayerNormalization(epsilon=1e-6, name="layer_norm_2")(x)
+            x = Dense(size )(x)
+            x = MultiHeadAttention(head_num=num_heads)(x)
+            x = LayerNormalization(epsilon=1e-6)(x)
+            ffn = Dense(ff_dim, activation='tanh', kernel_initializer=HeNormal())(x)
+            ffn = Dense(size)(ffn)
+            x = Add()([x, ffn])
+            x = LayerNormalization(epsilon=1e-6)(x)
         x = Flatten(name="flatten")(x)
         out = Dense(encoding_dim, activation='linear', kernel_initializer=GlorotUniform(), name="model_output")(x)
         # The final output shape will be (batch_size, time_horizon)
