@@ -556,9 +556,9 @@ def load_and_evaluate_model(config, plugin):
     try:
         from keras.models import load_model
         custom_objects = {
-            "combined_loss": plugin.combined_loss,
-            "mmd": plugin.mmd_metric,
-            "huber": plugin.huber_metric
+            "combined_loss": combined_loss,
+            "mmd": mmd_metric,
+            "huber": huber_metric
         }
         plugin.model = load_model(config['load_model'], custom_objects=custom_objects)
         print("Model loaded successfully.")
