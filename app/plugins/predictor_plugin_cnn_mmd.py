@@ -206,9 +206,9 @@ class Plugin:
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
         callbacks = []
-        patience = self.params.get('patience', 25)
+        patience = self.params.get('patience', 30)
         early_stopping_monitor = EarlyStopping(
-            monitor='val_loss',
+            monitor='val_mae',
             patience=patience,
             restore_best_weights=True,
             verbose=1
