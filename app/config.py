@@ -36,10 +36,10 @@ DEFAULT_VALUES = {
     'input_offset': 0,
     'window_size': 256,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'l2_reg': 1e-4,          # L2 regularization factor
-    'patience': 25,           # Early stopping patience
+    'patience': 30,           # Early stopping patience
     'max_steps_train': 6300,
     'max_steps_test': 6300,
     'iterations': 1,
-    'epochs': 2000,
+    'epochs': 1500,
     "use_normalization_json": "examples\\config\\phase_1_normalizer_debug_out.json"
 }
