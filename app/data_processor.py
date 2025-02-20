@@ -149,8 +149,6 @@ def process_data(config):
         return pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
 
     # --- UPDATED DAILY MODE ---
-    # When using daily mode, compute the centered moving average (window=48, center=True, min_periods=1)
-    # for the target (close) column and use that for multi-step daily target creation.
     if config.get("use_daily", False):
         y_train_ma = y_train.rolling(window=48, center=True, min_periods=1).mean()
         y_val_ma = y_val.rolling(window=48, center=True, min_periods=1).mean()
@@ -238,9 +236,8 @@ def process_data(config):
         print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
 
     # 7) TRANSFORMER-SPECIFIC PROCESSING
-    if config["plugin"] == "transformer":
+    if config["plugin"] in ["transformer", "transformer_mmd"]:
         print("Processing data for Transformer plugin...")
-
         if not isinstance(x_train, np.ndarray):
             x_train = x_train.to_numpy().astype(np.float32)
         if not isinstance(x_val, np.ndarray):
@@ -266,7 +263,7 @@ def process_data(config):
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
 
-    if config["plugin"] not in ["lstm", "cnn"]:
+    if config["plugin"] not in ["lstm", "cnn", "cnn_mmd", "transformer", "transformer_mmd"]:
         if train_dates is None:
             train_dates = y_train_multi.index
         if val_dates is None:
@@ -317,8 +314,8 @@ def run_prediction_pipeline(config, plugin):
     window_size = config.get("window_size")
     if time_horizon is None:
         raise ValueError("`time_horizon` is not defined in the configuration.")
-    if config["plugin"] == "cnn" and window_size is None:
-        raise ValueError("`window_size` must be defined in the configuration for CNN plugin.")
+    if config["plugin"] in ["cnn", "cnn_mmd"] and window_size is None:
+        raise ValueError("`window_size` must be defined in the configuration for CNN plugins.")
 
     print(f"Time Horizon: {time_horizon}")
     batch_size = config["batch_size"]
@@ -335,8 +332,8 @@ def run_prediction_pipeline(config, plugin):
     if isinstance(y_val, pd.DataFrame):
         y_val = y_val.to_numpy().astype(np.float32)
 
-    # For CNN plugin, create sliding windows and update dates accordingly (code unchanged)
-    if config["plugin"] == "cnn":
+    # For CNN plugins, create sliding windows and update dates accordingly
+    if config["plugin"] in ["cnn", "cnn_mmd"]:
         print("Creating sliding windows for CNN...")
         x_train, _, train_date_windows = create_sliding_windows(
             x_train, y_train, window_size, time_horizon, stride=1, date_times=train_dates
@@ -352,10 +349,12 @@ def run_prediction_pipeline(config, plugin):
     # For LSTM plugin, use the processed data as returned from process_data (window size = 1, with no date shift)
     if config["plugin"] == "lstm":
         print("Using LSTM data from process_data (window size 1, no date shift).")
-        # Expecting x_train shape (n_samples, 1, n_features) and y_train shape (n_samples, time_horizon)
         if x_train.ndim != 3:
             raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
-    # For other plugins, no additional processing is applied
+    # For Transformer plugins, no sliding window is applied; data remains 2D.
+    if config["plugin"] in ["transformer", "transformer_mmd"]:
+        if x_train.ndim != 2:
+            raise ValueError(f"For Transformer plugins, x_train must be 2D. Found: {x_train.shape}.")
 
     if x_train.ndim == 1:
         x_train = x_train.reshape(-1, 1)
@@ -369,19 +368,23 @@ def run_prediction_pipeline(config, plugin):
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
-        if config["plugin"] == "cnn":
+        if config["plugin"] in ["cnn", "cnn_mmd"]:
             if len(x_train.shape) < 3:
-                raise ValueError(f"For CNN, x_train must be 3D. Found: {x_train.shape}.")
+                raise ValueError(f"For CNN plugins, x_train must be 3D. Found: {x_train.shape}.")
             plugin.build_model(input_shape=(window_size, x_train.shape[2]))
+        elif config["plugin"] == "lstm":
+            if len(x_train.shape) != 3:
+                raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
+            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
+        elif config["plugin"] in ["transformer", "transformer_mmd"]:
+            if len(x_train.shape) != 2:
+                raise ValueError(f"For Transformer plugins, x_train must be 2D. Found: {x_train.shape}.")
+            plugin.build_model(input_shape=x_train.shape[1])
         else:
-            if config["plugin"] == "lstm":
-                if len(x_train.shape) != 3:
-                    raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
-                plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
-            else:
-                if len(x_train.shape) != 2:
-                    raise ValueError(f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}.")
-                plugin.build_model(input_shape=x_train.shape[1])
+            # Fallback: assume 2D input.
+            if len(x_train.shape) != 2:
+                raise ValueError(f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}.")
+            plugin.build_model(input_shape=x_train.shape[1])
 
         history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions = plugin.train(
             x_train,
@@ -394,7 +397,7 @@ def run_prediction_pipeline(config, plugin):
         )
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
-        plt.title('Model Loss for '+f" {config['plugin'].upper()} - {iteration}")
+        plt.title('Model Loss for ' + f"{config['plugin'].upper()} - {iteration}")
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
@@ -478,7 +481,6 @@ def run_prediction_pipeline(config, plugin):
             val_predictions, 
             columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
         )
-        # Use the processed dates from process_data for the DATE_TIME column
         if val_dates is not None:
             val_predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(val_predictions_df)])
         else:
@@ -515,6 +517,8 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
+
+
 
 def load_and_evaluate_model(config, plugin):
     """
