@@ -233,13 +233,13 @@ class Plugin:
         """
         Loads a trained model from the specified file path using custom_objects for the custom loss and metrics.
         """
-        custom_objects = {
-            "combined_loss": Plugin.combined_loss,
-            "mmd": Plugin.mmd_metric,
-            "huber": Plugin.huber_metric
-        }
-        self.model = load_model(file_path, custom_objects=custom_objects)
+        from tensorflow.keras.utils import get_custom_objects
+        get_custom_objects()["combined_loss"] = Plugin.combined_loss
+        get_custom_objects()["mmd"] = Plugin.mmd_metric
+        get_custom_objects()["huber"] = Plugin.huber_metric
+        self.model = load_model(file_path)
         print(f"Predictor model loaded from {file_path}")
+
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
