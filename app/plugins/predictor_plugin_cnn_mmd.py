@@ -7,6 +7,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from sklearn.metrics import r2_score
+import tensorflow as tf
 
 class Plugin:
     """
@@ -46,7 +47,7 @@ class Plugin:
 
     def add_debug_info(self, debug_info):
         """
-        Adds the plugin's debug information to an external debug_info dictionary.
+        Adds the plugin's debug information to an external dictionary.
         """
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
@@ -56,13 +57,17 @@ class Plugin:
         Build a CNN-based model with sliding window input.
         
         Parameters:
-            input_shape (tuple): Shape of the input data (window_size, features).
+            input_shape (tuple or int): If tuple, should be (window_size, features).
+                                        If int, it is interpreted as the number of features with window_size=1.
         """
-        if len(input_shape) != 2:
+        # Adapt input_shape if provided as an int.
+        if isinstance(input_shape, int):
+            input_shape = (1, input_shape)
+        elif len(input_shape) != 2:
             raise ValueError(f"Invalid input_shape {input_shape}. CNN requires input with shape (window_size, features).")
 
         self.params['input_shape'] = input_shape
-        print(f"CNN input_shape: {input_shape}")
+        print(f"CNN_MMD input_shape: {input_shape}")
 
         layers = []
         current_size = self.params['initial_layer_size']
@@ -78,7 +83,7 @@ class Plugin:
             raise ValueError("Parameter 'time_horizon' must be set in plugin parameters.")
         layers.append(self.params['time_horizon'])
 
-        print(f"CNN Layer sizes: {layers}")
+        print(f"CNN_MMD Layer sizes: {layers}")
 
         # Define the Input layer
         inputs = Input(shape=input_shape, name="model_input")
@@ -89,7 +94,7 @@ class Plugin:
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg)
         )(x)
-        # Add intermediate Conv1D and MaxPooling1D layers
+        # Add intermediate Conv1D and MaxPooling1D layers with unique names
         for idx, size in enumerate(layers[:-1]):
             if size > 1:
                 x = Conv1D(
@@ -107,7 +112,8 @@ class Plugin:
             units=layers[0],
             activation=self.params['activation'],
             kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg)
+            kernel_regularizer=l2(l2_reg),
+            name="dense_final"
         )(x)
         x = BatchNormalization(name="batch_norm")(x)
         x = Flatten(name="flatten")(x)
@@ -187,7 +193,7 @@ class Plugin:
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train the CNN model with Early Stopping to prevent overfitting.
-
+        
         Parameters:
             x_train (numpy.ndarray): Training input data with shape (samples, window_size, features).
             y_train (numpy.ndarray): Training target data with shape (samples, time_horizon).
@@ -262,7 +268,7 @@ class Plugin:
     def predict(self, data):
         """
         Generate predictions using the trained CNN model.
-
+        
         Parameters:
             data (numpy.ndarray): Input data for prediction.
         
