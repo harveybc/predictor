@@ -14,7 +14,7 @@ setup(
             'cnn=app.plugins.predictor_plugin_cnn:Plugin',
             'lstm=app.plugins.predictor_plugin_lstm:Plugin',
             'transformer=app.plugins.predictor_plugin_transformer:Plugin',
-            'transformer=app.plugins.predictor_plugin_transformer_mmd:Plugin',
+            'transformer_mmd=app.plugins.predictor_plugin_transformer_mmd:Plugin',
             'base=app.plugins.predictor_plugin_base:Plugin'
         ]
     },
