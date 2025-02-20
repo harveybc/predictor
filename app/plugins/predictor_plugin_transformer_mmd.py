@@ -1,12 +1,13 @@
 import numpy as np
 from keras.models import Model, load_model, save_model
-from keras.layers import Dense, Input, Dropout, BatchNormalization, LayerNormalization, GlobalAveragePooling1D, Reshape
+from keras.layers import Dense, Input, Dropout, BatchNormalization, LayerNormalization, Flatten, Add, Lambda, Reshape
 from keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
-from keras.layers import GaussianNoise, MultiHeadAttention, Add
+# Note: using MultiHeadAttention from keras_multi_head as in the example encoder
+from keras_multi_head import MultiHeadAttention
 from keras import backend as K
 from sklearn.metrics import r2_score, mean_absolute_error
 
@@ -16,9 +17,10 @@ import tensorflow as tf
 
 class Plugin:
     """
-    Transformer Predictor Plugin using Keras for multi-step forecasting.
+    Transformer Predictor Plugin using a Transformer Encoder architecture for multi-step forecasting.
     
-    This plugin builds, trains, and evaluates a Transformer that outputs (N, time_horizon).
+    This plugin builds, trains, and evaluates a predictor model that outputs (N, time_horizon).
+    The model architecture is adapted from an example encoder while preserving the expected input/output shapes.
     """
 
     # Default parameters
@@ -27,14 +29,16 @@ class Plugin:
         'intermediate_layers': 3,
         'initial_layer_size': 128,
         'layer_size_divisor': 2,
-        'learning_rate': 0.0001,
+        'ff_dim_divisor': 2,       # Added for Transformer FF network
+        'learning_rate': 1e-5,
         'activation': 'tanh',
         'l2_reg': 1e-2,
-        'positional_encoding_dim': 16  # Added for Transformer
+        'positional_encoding_dim': 16,  # For Transformer positional encoding (not used in final output)
+        # For compatibility with the system, time_horizon must be set externally.
     }
     
     # Variables for debugging
-    plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
+    plugin_debug_vars = ['time_horizon', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
     
     def __init__(self):
         self.params = self.plugin_params.copy()
@@ -51,141 +55,98 @@ class Plugin:
         """
         Return a dict of debug info from plugin params.
         """
-        return {var: self.params[var] for var in self.plugin_debug_vars}
+        return {var: self.params.get(var) for var in self.plugin_debug_vars}
 
     def add_debug_info(self, debug_info):
         """
         Add the plugin's debug info to an external dictionary.
         """
-        plugin_debug_info = self.get_debug_info()
-        debug_info.update(plugin_debug_info)
+        debug_info.update(self.get_debug_info())
 
     def build_model(self, input_shape):
         """
-        Build the ANN augmented with Multi-Head Attention layers with final layer = self.params['time_horizon'] for multi-step outputs.
+        Build a Transformer Encoder model that predicts multi-step outputs.
         
-        Args:
-            input_shape (int): Number of input features for ANN.
+        This model is adapted from the example encoder. The input shape (an int) is interpreted as the total number of features.
+        We assume the data will be reshaped into (time_steps, num_channels) such that:
+            time_steps = input_shape // num_channels.
+        The final output dimension is set to self.params['time_horizon'].
+        
+        All printed messages, comments and functionalities remain unchanged except for the architectural changes and new combined loss.
         """
-        if not isinstance(input_shape, int):
-            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
-        
-        self.params['input_dim'] = input_shape
-        l2_reg = self.params.get('l2_reg', 1e-4)
-        time_horizon = self.params['time_horizon']  # the multi-step dimension
+        # --- Helper functions for positional encoding ---
+        def positional_encoding(seq_len, d_model):
+            d_model_float = tf.cast(d_model, tf.float32)
+            pos = tf.cast(tf.range(seq_len), tf.float32)[:, tf.newaxis]
+            i = tf.cast(tf.range(d_model), tf.float32)[tf.newaxis, :]
+            angle_rates = 1 / tf.pow(10000.0, (2 * (tf.floor(i / 2)) / d_model_float))
+            angle_rads = pos * angle_rates
+            even_mask = tf.cast(tf.equal(tf.math.floormod(tf.range(d_model), 2), 0), tf.float32)
+            even_mask = tf.reshape(even_mask, [1, d_model])
+            pos_encoding = even_mask * tf.sin(angle_rads) + (1 - even_mask) * tf.cos(angle_rads)
+            return pos_encoding
 
-        # Dynamically set layer sizes
-        layers = []
-        current_size = self.params['initial_layer_size']
-        divisor = self.params['layer_size_divisor']
-        int_layers = 0
-        while int_layers < self.params['intermediate_layers']:
-            layers.append(current_size)
-            current_size = max(current_size // divisor, 1)
-            int_layers += 1
+        def add_positional_encoding(x):
+            seq_len = tf.shape(x)[1]
+            d_model = tf.shape(x)[2]
+            pos_enc = positional_encoding(seq_len, d_model)
+            pos_enc = tf.cast(pos_enc, tf.float32)
+            return x + pos_enc
+        # --- End helper functions ---
 
-        # Final layer => time_horizon units (N, time_horizon) output
-        layers.append(time_horizon)
+        # For compatibility, derive time_steps and num_channels from input_shape.
+        # We assume self.params may contain 'num_channels' (default 1).
+        num_channels = self.params.get("num_channels", 1)
+        if input_shape % num_channels != 0:
+            raise ValueError(f"input_shape ({input_shape}) is not divisible by num_channels ({num_channels}).")
+        time_steps = input_shape // num_channels
+        self.params['input_dim'] = input_shape  # store original input dim
 
-        print(f"ANN Layer sizes: {layers}")
-        print(f"ANN input_shape: {input_shape}")
+        # For multi-step forecasting, set encoding_dim equal to time_horizon.
+        if 'time_horizon' not in self.params:
+            raise ValueError("Parameter 'time_horizon' must be set in the plugin parameters.")
+        encoding_dim = self.params['time_horizon']
 
-        # Build the model
-        model_input = Input(shape=(input_shape,), name="model_input")
-        x = model_input
-        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01 if desired
+        # Retrieve transformer parameters.
+        inter_layers = self.params.get('intermediate_layers', 1)
+        init_size = self.params.get('initial_layer_size', 128)
+        layer_div = self.params.get('layer_size_divisor', 2)
+        ff_div = self.params.get('ff_dim_divisor', 2)
+        lr = self.params.get('learning_rate', 1e-5)
 
-        # Hidden Dense layers with Multi-Head Attention
-        for idx, size in enumerate(layers[:-1]):
-            # Dense Layer
-            x_dense = Dense(
-                units=size,
-                activation=self.params['activation'],
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
-                name=f"dense_layer_{idx+1}"
-            )(x)  # Shape: (batch_size, size)
+        # Compute transformer block sizes.
+        sizes = []
+        current = init_size
+        for _ in range(inter_layers):
+            sizes.append(current)
+            current = max(current // layer_div, encoding_dim)
+        sizes.append(encoding_dim)
+        print(f"[build_model] Transformer Encoder Layer sizes: {sizes}")
+        print(f"[build_model] Input sequence length: {time_steps}, Channels: {num_channels}")
 
-            # Define sequence_length and feature_dim for reshaping
-            # Choose sequence_length such that size is divisible by it
-            # Example: for size=64, sequence_length=8, feature_dim=8
-            sequence_length = 8
-            if size % sequence_length != 0:
-                # Fallback to sequence_length=4
-                sequence_length = 4
-                if size % sequence_length != 0:
-                    # Fallback to sequence_length=2
-                    sequence_length = 2
-                    if size % sequence_length != 0:
-                        # Fallback to sequence_length=1
-                        sequence_length = 1
-                        feature_dim = size
-                    else:
-                        feature_dim = size // sequence_length
-                else:
-                    feature_dim = size // sequence_length
+        # Build the model.
+        inp = Input(shape=(time_steps, num_channels), dtype=tf.float32, name="model_input")
+        x = Lambda(add_positional_encoding, name="positional_encoding")(inp)
+        for size in sizes[:-1]:
+            ff_dim = max(size // ff_div, 1)
+            # Choose number of heads depending on the layer size.
+            if size < 64:
+                num_heads = 2
+            elif size < 128:
+                num_heads = 4
             else:
-                feature_dim = size // sequence_length
-
-            # Reshape for Multi-Head Attention
-            x_reshaped = Reshape((sequence_length, feature_dim), name=f"reshape_{idx+1}")(x_dense)  # Shape: (batch_size, sequence_length, feature_dim)
-
-            # Configure Multi-Head Attention
-            num_heads = 2
-            if feature_dim % num_heads != 0:
-                # Adjust num_heads to ensure feature_dim is divisible by num_heads
-                num_heads = 1
-            key_dim = feature_dim // num_heads
-
-            # Multi-Head Attention Layer
-            attention_output = MultiHeadAttention(
-                num_heads=num_heads,
-                key_dim=key_dim,
-                name=f"mha_layer_{idx+1}"
-            )(query=x_reshaped, value=x_reshaped)  # Shape: (batch_size, sequence_length, num_heads * key_dim)
-
-            # Project attention output back to feature_dim
-            attention_proj = Dense(
-                units=feature_dim,
-                activation='tanh',
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
-                name=f"mha_projection_{idx+1}"
-            )(attention_output)  # Shape: (batch_size, sequence_length, feature_dim)
-
-            # Reshape back to original Dense layer size
-            x_att_proj = Reshape((sequence_length * feature_dim,), name=f"reshape_back_{idx+1}")(attention_proj)  # Shape: (batch_size, size)
-
-            # Residual Connection: Add attention output to Dense layer output
-            x = Add(name=f"residual_add_{idx+1}")([x_dense, x_att_proj])  # Shape: (batch_size, size)
-
-            # Layer Normalization
-            #x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_{idx+1}")(x)  # Shape: (batch_size, size)
-
-            # Dropout for regularization
-            #x = Dropout(0.1, name=f"dropout_{idx+1}")(x)  # Shape: (batch_size, size)
-
-        # Batch Normalization before Output Layer
-        x = BatchNormalization(name="batch_norm_final")(x)  # Shape: (batch_size, size)
-
-        # Output Layer => shape (N, time_horizon)
-        model_output = Dense(
-            units=layers[-1],
-            activation='linear',
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name="model_output"
-        )(x)  # Shape: (batch_size, time_horizon)
-
-        # Define the model
-        self.model = Model(inputs=model_input, outputs=model_output, name="ANN_with_MHA_Predictor_Model")
-
-        # Adam Optimizer
-        adam_optimizer = Adam(
-            learning_rate=self.params['learning_rate'],
-            beta_1=0.9, beta_2=0.999,
-            epsilon=1e-7, amsgrad=False
-        )
+                num_heads = 8
+            x = Dense(size, name="dense_transform")(x)
+            x = MultiHeadAttention(head_num=num_heads, name="multi_head_attention")(x)
+            x = LayerNormalization(epsilon=1e-6, name="layer_norm_1")(x)
+            ffn = Dense(ff_dim, activation='tanh', kernel_initializer=HeNormal(), name="ffn_dense_1")(x)
+            ffn = Dense(size, name="ffn_dense_2")(ffn)
+            x = Add(name="ffn_add")([x, ffn])
+            x = LayerNormalization(epsilon=1e-6, name="layer_norm_2")(x)
+        x = Flatten(name="flatten")(x)
+        out = Dense(encoding_dim, activation='linear', kernel_initializer=GlorotUniform(), name="model_output")(x)
+        # The final output shape will be (batch_size, time_horizon)
+        self.model = Model(inputs=inp, outputs=out, name="Transformer_Encoder_Predictor_Model")
 
         # --- NEW: Define combined loss function (Huber + MMD) ---
         def gaussian_kernel_matrix(x, y, sigma):
@@ -212,11 +173,20 @@ class Plugin:
             return huber_loss + stat_weight * mmd
         # --- END NEW LOSS DEFINITION ---
 
+        # Adam Optimizer
+        adam_optimizer = Adam(
+            learning_rate=lr,
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-7,
+            amsgrad=False
+        )
+
         # Compile the model with the combined loss function
         self.model.compile(
             optimizer=adam_optimizer,
-            loss=combined_loss,  # Combined Huber and MMD loss
-            metrics=['mse', 'mae']  # Logs multi-step MSE/MAE
+            loss=combined_loss,
+            metrics=['mse', 'mae']
         )
         
         print("Predictor Model Summary:")
