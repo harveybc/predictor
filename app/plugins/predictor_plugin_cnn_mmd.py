@@ -186,8 +186,8 @@ class Plugin:
         print("CNN_MMD Model Summary:")
         self.model.summary()
 
-    @staticmethod
-    def gaussian_kernel_matrix(x, y, sigma):
+    
+    def gaussian_kernel_matrix(self, x, y, sigma):
         x_size = tf.shape(x)[0]
         y_size = tf.shape(y)[0]
         dim = tf.shape(x)[1]
@@ -196,8 +196,7 @@ class Plugin:
         squared_diff = tf.reduce_sum(tf.square(x_expanded - y_expanded), axis=2)
         return tf.exp(-squared_diff / (2.0 * sigma**2))
 
-    @staticmethod
-    def combined_loss(y_true, y_pred):
+    def combined_loss(self, y_true, y_pred):
         huber_loss = Huber(delta=1.0)(y_true, y_pred)
         sigma = 1.0
         stat_weight = 1.0
@@ -211,8 +210,7 @@ class Plugin:
         mmd = tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
         return huber_loss + stat_weight * mmd
 
-    @staticmethod
-    def mmd_metric(y_true, y_pred):
+    def mmd_metric(self, y_true, y_pred):
         sigma = 1.0
         y_true_flat = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
         y_pred_flat = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
@@ -224,8 +222,7 @@ class Plugin:
         return tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
     mmd_metric.__name__ = "mmd"
 
-    @staticmethod
-    def huber_metric(y_true, y_pred):
+    def huber_metric(self, y_true, y_pred):
         return Huber(delta=1.0)(y_true, y_pred)
     huber_metric.__name__ = "huber"
 
