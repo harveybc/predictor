@@ -6,7 +6,6 @@ from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
-# Note: using MultiHeadAttention from keras_multi_head as in the example encoder
 from keras_multi_head import MultiHeadAttention
 from keras import backend as K
 from sklearn.metrics import r2_score, mean_absolute_error
@@ -26,15 +25,17 @@ class Plugin:
     # Default parameters
     plugin_params = {
         'batch_size': 128,
-        'intermediate_layers': 3,
+        'intermediate_layers': 1,
         'initial_layer_size': 128,
         'layer_size_divisor': 2,
-        'ff_dim_divisor': 2,       # Added for Transformer FF network
+        'ff_dim_divisor': 2,       # For Transformer feed-forward network
         'learning_rate': 1e-5,
         'activation': 'tanh',
         'l2_reg': 1e-2,
         'positional_encoding_dim': 16,  # For Transformer positional encoding (not used in final output)
-        # For compatibility with the system, time_horizon must be set externally.
+        # 'time_horizon' must be set externally.
+        # 'num_channels' may be provided (default is 1)
+        # 'patience' should be set for early stopping (e.g., 25)
     }
     
     # Variables for debugging
@@ -67,12 +68,10 @@ class Plugin:
         """
         Build a Transformer Encoder model that predicts multi-step outputs.
         
-        This model is adapted from the example encoder. The input shape (an int) is interpreted as the total number of features.
-        We assume the data will be reshaped into (time_steps, num_channels) such that:
+        This model is adapted from an example encoder. The input shape (an int) is interpreted as the total number of features.
+        The data will be reshaped into (time_steps, num_channels) where:
             time_steps = input_shape // num_channels.
-        The final output dimension is set to self.params['time_horizon'].
-        
-        All printed messages, comments and functionalities remain unchanged except for the architectural changes and new combined loss.
+        The final dense layer outputs time_horizon units so that the output shape is (batch_size, time_horizon).
         """
         # --- Helper functions for positional encoding ---
         def positional_encoding(seq_len, d_model):
@@ -95,7 +94,6 @@ class Plugin:
         # --- End helper functions ---
 
         # For compatibility, derive time_steps and num_channels from input_shape.
-        # We assume self.params may contain 'num_channels' (default 1).
         num_channels = self.params.get("num_channels", 1)
         if input_shape % num_channels != 0:
             raise ValueError(f"input_shape ({input_shape}) is not divisible by num_channels ({num_channels}).")
@@ -127,22 +125,21 @@ class Plugin:
         # Build the model.
         inp = Input(shape=(time_steps, num_channels), dtype=tf.float32, name="model_input")
         x = Lambda(add_positional_encoding, name="positional_encoding")(inp)
-        for size in sizes[:-1]:
+        for i, size in enumerate(sizes[:-1]):
             ff_dim = max(size // ff_div, 1)
-            # Choose number of heads depending on the layer size.
             if size < 64:
                 num_heads = 2
             elif size < 128:
                 num_heads = 4
             else:
                 num_heads = 8
-            x = Dense(size )(x)
-            x = MultiHeadAttention(head_num=num_heads)(x)
-            x = LayerNormalization(epsilon=1e-6)(x)
-            ffn = Dense(ff_dim, activation='tanh', kernel_initializer=HeNormal())(x)
-            ffn = Dense(size)(ffn)
-            x = Add()([x, ffn])
-            x = LayerNormalization(epsilon=1e-6)(x)
+            x = Dense(size, name=f"dense_transform_{i+1}")(x)
+            x = MultiHeadAttention(head_num=num_heads, name=f"multi_head_attention_{i+1}")(x)
+            x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_1_{i+1}")(x)
+            ffn = Dense(ff_dim, activation='tanh', kernel_initializer=HeNormal(), name=f"ffn_dense_1_{i+1}")(x)
+            ffn = Dense(size, name=f"ffn_dense_2_{i+1}")(ffn)
+            x = Add(name=f"ffn_add_{i+1}")([x, ffn])
+            x = LayerNormalization(epsilon=1e-6, name=f"layer_norm_2_{i+1}")(x)
         x = Flatten(name="flatten")(x)
         out = Dense(encoding_dim, activation='linear', kernel_initializer=GlorotUniform(), name="model_output")(x)
         # The final output shape will be (batch_size, time_horizon)
@@ -196,100 +193,92 @@ class Plugin:
         """
         Train the model with shape => x_train(N, input_dim), y_train(N, time_horizon).
         """
-        print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
-        exp_horizon = self.params['time_horizon']
-        if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
-            raise ValueError(
-                f"y_train shape {y_train.shape}, expected (N,{exp_horizon})."
+        try:
+            print(f"[train_predictor] Received training data with shapes: X: {x_train.shape}, Y: {y_train.shape}")
+            exp_horizon = self.params['time_horizon']
+            if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
+                raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
+            
+            callbacks = []
+            early_stopping_monitor = EarlyStopping(
+                monitor='loss',
+                patience=self.params.get('patience', 25),
+                restore_best_weights=True,
+                verbose=1
+            )
+            callbacks.append(early_stopping_monitor)
+            print(f"[train_predictor] Training predictor with data shape: {x_train.shape}, target shape: {y_train.shape}")
+        
+            history = self.model.fit(
+                x_train, y_train,
+                epochs=epochs,
+                batch_size=batch_size,
+                verbose=1,
+                callbacks=callbacks,
+                validation_split=0.2
             )
         
-        callbacks = []
-        early_stopping_monitor = EarlyStopping(
-            monitor='loss',
-            patience=self.params['patience'],
-            restore_best_weights=True,
-            verbose=1
-        )
-        callbacks.append(early_stopping_monitor)
-        print(f"Training CNN model with data shape: {x_train.shape}, target shape: {y_train.shape}")
-    
-        history = self.model.fit(
-            x_train, y_train,
-            epochs=epochs,
-            batch_size=batch_size,
-            verbose=1,
-            #shuffle=True,  # Enable shuffling
-            callbacks=callbacks,
-            #validation_data=validation_data,
-            validation_split=0.2
-        )
-
-        print("Training completed.")
-        final_loss = history.history['loss'][-1]
-        print(f"Final training loss: {final_loss}")
-
-        if final_loss > threshold_error:
-            print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
-
-        # Force the model to run in "training mode"
-        preds_training_mode = self.model(x_train, training=True)
-        mae_training_mode = np.mean(np.abs(preds_training_mode.numpy() - y_train))
-        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
-
-        # Compare with evaluation mode
-        preds_eval_mode = self.model(x_train, training=False)
-        mae_eval_mode = np.mean(np.abs(preds_eval_mode.numpy() - y_train))
-        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
-
-        # Evaluate on the full training dataset for consistency
-        train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-        train_loss, train_mse, train_mae = train_eval_results
-        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+            print(f"[train_predictor] Training loss values: {history.history['loss']}")
+            print("[train_predictor] Training completed.")
+            final_loss = history.history['loss'][-1]
+            print(f"[train_predictor] Final training loss: {final_loss}")
         
-        if x_val is not None and y_val is not None:
-            val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-            val_loss, val_mse, val_mae = val_eval_results
-        else:
-            val_eval_results = (None, None, None)
-            val_loss = val_mse = val_mae = None
+            if final_loss > threshold_error:
+                print(f"[train_predictor] Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
         
-        # Predict validation data for evaluation
-        train_predictions = self.predict(x_train)  # Predict train data
-        val_predictions = self.predict(x_val) if x_val is not None else None  # Predict validation data
-    
-        # Calculate R² scores
-        train_r2 = r2_score(y_train, train_predictions)
-        val_r2 = r2_score(y_val, val_predictions) if y_val is not None else None
+            preds_training_mode = self.model(x_train, training=True)
+            mae_training_mode = np.mean(np.abs(preds_training_mode.numpy() - y_train))
+            print(f"[train_predictor] MAE in Training Mode (manual): {mae_training_mode:.6f}")
         
-        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
+            preds_eval_mode = self.model(x_train, training=False)
+            mae_eval_mode = np.mean(np.abs(preds_eval_mode.numpy() - y_train))
+            print(f"[train_predictor] MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+        
+            train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
+            train_loss, train_mse, train_mae = train_eval_results
+            print(f"[train_predictor] Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+        
+            if x_val is not None and y_val is not None:
+                val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+                val_loss, val_mse, val_mae = val_eval_results
+            else:
+                val_loss = val_mse = val_mae = None
+        
+            train_predictions = self.predict(x_train)
+            val_predictions = self.predict(x_val) if x_val is not None else None
+        
+            train_r2 = r2_score(y_train, train_predictions)
+            val_r2 = r2_score(y_val, val_predictions) if y_val is not None else None
+        
+            return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
+        except Exception as e:
+            print(f"[train_predictor] Exception occurred during training: {e}")
+            raise
 
     def predict(self, data):
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         preds = self.model.predict(data)
-        #print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
         return preds
 
     def calculate_mse(self, y_true, y_pred):
         """
         Flatten-based MSE => consistent with multi-step shape (N, time_horizon).
         """
-        print(f"Calculating MSE => y_true={y_true.shape}, y_pred={y_pred.shape}")
+        print(f"[calculate_mse] Calculating MSE => y_true={y_true.shape}, y_pred={y_pred.shape}")
         if y_true.shape != y_pred.shape:
-            raise ValueError(
-                f"Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}"
-            )
+            raise ValueError(f"[calculate_mse] Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}")
         y_true_f = y_true.reshape(-1)
         y_pred_f = y_pred.reshape(-1)
         mse = np.mean((y_true_f - y_pred_f) ** 2)
-        print(f"Calculated MSE => {mse}")
+        print(f"[calculate_mse] Calculated MSE => {mse}")
         return mse
 
     def calculate_mae(self, y_true, y_pred):
-        print(f"y_true (sample): {y_true.flatten()[:5]}")
-        print(f"y_pred (sample): {y_pred.flatten()[:5]}")
+        print(f"[calculate_mae] y_true (sample): {y_true.flatten()[:5]}")
+        print(f"[calculate_mae] y_pred (sample): {y_pred.flatten()[:5]}")
         mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
-        print(f"Calculated MAE: {mae}")
+        print(f"[calculate_mae] Calculated MAE: {mae}")
         return mae
 
     def save(self, file_path):
@@ -297,11 +286,11 @@ class Plugin:
         Save the trained model to file.
         """
         save_model(self.model, file_path)
-        print(f"Predictor model saved to {file_path}")
+        print(f"[save] Predictor model saved to {file_path}")
 
     def load(self, file_path):
         """
         Load a trained model from file.
         """
         self.model = load_model(file_path)
-        print(f"Model loaded from {file_path}")
+        print(f"[load] Model loaded from {file_path}")
