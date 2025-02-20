@@ -530,7 +530,8 @@ def load_and_evaluate_model(config, plugin):
     1. Loads the specified pre-trained model.
     2. Loads and processes the validation data.
     3. Makes predictions using the loaded model.
-    4. Saves the predictions to a CSV file for evaluation, including the DATE_TIME column.
+    4. Denormalizes predictions if a normalization JSON is provided.
+    5. Saves the predictions to a CSV file for evaluation, including the DATE_TIME column.
 
     Args:
         config (dict): Configuration dictionary containing parameters for model evaluation.
@@ -543,7 +544,7 @@ def load_and_evaluate_model(config, plugin):
                 - 'force_date' (bool): Determines if date should be included in the output CSV.
                 - 'evaluate_file' (str): Path to save the evaluation predictions CSV file.
                 - 'max_steps_val' (int, optional): Maximum number of rows to read for validation data.
-
+                - 'use_normalization_json' (str or dict, optional): Path to a JSON file or dictionary for normalization parameters.
         plugin (Plugin): The ANN predictor plugin to be used for evaluation.
 
     Raises:
@@ -568,7 +569,6 @@ def load_and_evaluate_model(config, plugin):
     # Load and process validation data with row limit
     print("Loading and processing validation data for evaluation...")
     try:
-        # Assuming process_data can be reused for validation by specifying validation files
         datasets = process_data(config)
         x_val = datasets["x_val"]
         y_val = datasets["y_val"]
@@ -582,16 +582,13 @@ def load_and_evaluate_model(config, plugin):
             val_dates = val_date_windows
             print(f"Sliding windows created:")
             print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
-        # For LSTM plugin, use the processed data as returned from process_data (window size = 1, with no date shift)
         if config["plugin"] == "lstm":
             print("Using LSTM data from process_data (window size 1, no date shift).")
             if x_val.ndim != 3:
                 raise ValueError(f"For LSTM, x_val must be 3D. Found: {x_val.shape}.")
-        # For Transformer plugins, no sliding window is applied; data remains 2D.
         if config["plugin"] in ["transformer", "transformer_mmd"]:
             if x_val.ndim != 2:
                 raise ValueError(f"For Transformer plugins, x_val must be 2D. Found: {x_val.shape}.")
-
         print(f"Processed validation data: X shape: {x_val.shape}, Y shape: {y_val.shape}")
     except Exception as e:
         print(f"Failed to process validation data: {e}")
@@ -600,16 +597,32 @@ def load_and_evaluate_model(config, plugin):
     # Predict using the loaded model
     print("Making predictions on validation data...")
     try:
-        # If x_val is already a NumPy array, pass it directly; otherwise, convert it.
-        if isinstance(x_val, np.ndarray):
-            x_val_array = x_val
-        else:
-            x_val_array = x_val.to_numpy()
+        # If x_val is already a NumPy array, pass it directly.
+        x_val_array = x_val if isinstance(x_val, np.ndarray) else x_val.to_numpy()
         predictions = plugin.predict(x_val_array)
         print(f"Predictions shape: {predictions.shape}")
     except Exception as e:
         print(f"Failed to make predictions: {e}")
         sys.exit(1)
+
+    # Denormalize predictions if a normalization JSON is provided.
+    if config.get("use_normalization_json") is not None:
+        norm_json = config.get("use_normalization_json")
+        if isinstance(norm_json, str):
+            try:
+                with open(norm_json, 'r') as f:
+                    norm_json = json.load(f)
+            except Exception as e:
+                print(f"Error loading normalization JSON from {norm_json}: {e}")
+                norm_json = {}
+        elif not isinstance(norm_json, dict):
+            print("Error: Normalization JSON is not a valid dictionary.")
+            norm_json = {}
+        # If "CLOSE" exists in the normalization JSON, denormalize predictions.
+        if "CLOSE" in norm_json:
+            min_val = norm_json["CLOSE"].get("min", 0)
+            max_val = norm_json["CLOSE"].get("max", 1)
+            predictions = predictions * (max_val - min_val) + min_val
 
     # Convert predictions to DataFrame
     if predictions.ndim == 1 or predictions.shape[1] == 1:
@@ -623,7 +636,7 @@ def load_and_evaluate_model(config, plugin):
     if val_dates is not None:
         predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(predictions_df)])
     else:
-        predictions_df['DATE_TIME'] = pd.NaT  # Assign Not-a-Time if date info is not available
+        predictions_df['DATE_TIME'] = pd.NaT
         print("Warning: DATE_TIME for validation predictions not captured.")
 
     # Rearrange columns to have DATE_TIME first
@@ -631,18 +644,20 @@ def load_and_evaluate_model(config, plugin):
     predictions_df = predictions_df[cols]
 
     # Save predictions to CSV for evaluation
-    evaluate_filename = config['output_file']
+    evaluate_filename = config['evaluate_file']
     try:
         write_csv(
             file_path=evaluate_filename,
             data=predictions_df,
-            include_date=False,  # DATE_TIME is already included
+            include_date=False,
             headers=config.get('headers', True)
         )
         print(f"Validation predictions with DATE_TIME saved to {evaluate_filename}")
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
+
+
 
 def create_multi_step_targets(df, time_horizon):
     """
