@@ -13,7 +13,9 @@ import contextlib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
 import json
+
 from keras.utils.vis_utils import plot_model
+from tensorflow.keras.losses import Huber
 
 def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
     """
@@ -553,9 +555,9 @@ def load_and_evaluate_model(config, plugin):
     try:
         from keras.models import load_model
         custom_objects = {
-            "combined_loss": plugin.combined_loss,
-            "mmd": plugin.mmd_metric,
-            "huber": plugin.huber_metric
+            "combined_loss": combined_loss,
+            "mmd": mmd_metric,
+            "huber": huber_metric
         }
         plugin.model = load_model(config['load_model'], custom_objects=custom_objects)
         print("Model loaded successfully.")
@@ -620,25 +622,6 @@ def load_and_evaluate_model(config, plugin):
 
 
 def create_multi_step_targets(df, time_horizon):
-    """
-    Creates multi-step targets for time-series prediction.
-
-    Args:
-        df (pd.DataFrame): Target data as a DataFrame.
-        time_horizon (int): Number of future steps to predict.
-
-    Returns:
-        pd.DataFrame: Multi-step targets aligned with the input data.
-    """
-    y_multi_step = []
-    for i in range(len(df) - time_horizon + 1):
-        y_multi_step.append(df.iloc[i:i + time_horizon].values.flatten())
-
-    # Create DataFrame with aligned indices
-    y_multi_step_df = pd.DataFrame(y_multi_step, index=df.index[:len(y_multi_step)])
-    return y_multi_step_df
-
-
     """
     Creates multi-step targets for time-series prediction.
 
@@ -732,3 +715,44 @@ def generate_positional_encoding(num_features, pos_dim=16):
     pos_encoding[:, 1::2] = np.cos(position * div_term)
     pos_encoding_flat = pos_encoding.flatten().reshape(1, -1)  # Shape: (1, num_features * pos_dim)
     return pos_encoding_flat
+
+
+def gaussian_kernel_matrix(self, x, y, sigma):
+    x_size = tf.shape(x)[0]
+    y_size = tf.shape(y)[0]
+    dim = tf.shape(x)[1]
+    x_expanded = tf.reshape(x, [x_size, 1, dim])
+    y_expanded = tf.reshape(y, [1, y_size, dim])
+    squared_diff = tf.reduce_sum(tf.square(x_expanded - y_expanded), axis=2)
+    return tf.exp(-squared_diff / (2.0 * sigma**2))
+
+def combined_loss(y_true, y_pred):
+    huber_loss = Huber(delta=1.0)(y_true, y_pred)
+    sigma = 1.0
+    stat_weight = 1.0
+    y_true_flat = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
+    y_pred_flat = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
+    K_xx = gaussian_kernel_matrix(y_true_flat, y_true_flat, sigma)
+    K_yy = gaussian_kernel_matrix(y_pred_flat, y_pred_flat, sigma)
+    K_xy = gaussian_kernel_matrix(y_true_flat, y_pred_flat, sigma)
+    m = tf.cast(tf.shape(y_true_flat)[0], tf.float32)
+    n = tf.cast(tf.shape(y_pred_flat)[0], tf.float32)
+    mmd = tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
+    return huber_loss + stat_weight * mmd
+
+def mmd_metric(y_true, y_pred):
+    sigma = 1.0
+    y_true_flat = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
+    y_pred_flat = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
+    K_xx = gaussian_kernel_matrix(y_true_flat, y_true_flat, sigma)
+    K_yy = gaussian_kernel_matrix(y_pred_flat, y_pred_flat, sigma)
+    K_xy = gaussian_kernel_matrix(y_true_flat, y_pred_flat, sigma)
+    m = tf.cast(tf.shape(y_true_flat)[0], tf.float32)
+    n = tf.cast(tf.shape(y_pred_flat)[0], tf.float32)
+    return tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
+mmd_metric.__name__ = "mmd"
+
+def huber_metric(y_true, y_pred):
+    return Huber(delta=1.0)(y_true, y_pred)
+
+huber_metric.__name__ = "huber"
