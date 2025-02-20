@@ -631,7 +631,7 @@ def load_and_evaluate_model(config, plugin):
     predictions_df = predictions_df[cols]
 
     # Save predictions to CSV for evaluation
-    evaluate_filename = config['evaluate_file']
+    evaluate_filename = config['output_file']
     try:
         write_csv(
             file_path=evaluate_filename,
