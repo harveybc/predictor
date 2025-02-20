@@ -145,7 +145,7 @@ class Plugin:
         # The final output shape will be (batch_size, time_horizon)
         self.model = Model(inputs=inp, outputs=out, name="Transformer_Encoder_Predictor_Model")
 
-        # --- NEW: Define combined loss function (Huber + MMD) ---
+        # --- NEW: Define combined loss function (Huber + MMD) and metric ---
         def gaussian_kernel_matrix(x, y, sigma):
             x_size = tf.shape(x)[0]
             y_size = tf.shape(y)[0]
@@ -168,7 +168,19 @@ class Plugin:
             n = tf.cast(tf.shape(y_pred_flat)[0], tf.float32)
             mmd = tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
             return huber_loss + stat_weight * mmd
-        # --- END NEW LOSS DEFINITION ---
+
+        def mmd_metric(y_true, y_pred):
+            sigma = 1.0
+            y_true_flat = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
+            y_pred_flat = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
+            K_xx = gaussian_kernel_matrix(y_true_flat, y_true_flat, sigma)
+            K_yy = gaussian_kernel_matrix(y_pred_flat, y_pred_flat, sigma)
+            K_xy = gaussian_kernel_matrix(y_true_flat, y_pred_flat, sigma)
+            m = tf.cast(tf.shape(y_true_flat)[0], tf.float32)
+            n = tf.cast(tf.shape(y_pred_flat)[0], tf.float32)
+            mmd = tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
+            return mmd
+        # --- END NEW LOSS & METRIC DEFINITION ---
 
         # Adam Optimizer
         adam_optimizer = Adam(
@@ -179,11 +191,12 @@ class Plugin:
             amsgrad=False
         )
 
-        # Compile the model with the combined loss function
+        # Compile the model with the combined loss and additional metric.
         self.model.compile(
             optimizer=adam_optimizer,
             loss=combined_loss,
-            metrics=['mse', 'mae']
+            metrics=['mae', mmd_metric],
+            run_eagerly=True
         )
         
         print("Predictor Model Summary:")
