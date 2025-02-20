@@ -393,9 +393,9 @@ class Plugin:
             file_path (str): Path to load the model from.
         """
         custom_objects = {
-            "combined_loss": Plugin.combined_loss,
-            "mmd": Plugin.mmd_metric,
-            "huber": Plugin.huber_metric
+            "combined_loss": self.combined_loss,
+            "mmd": self.mmd_metric,
+            "huber": self.huber_metric
         }
         self.model = load_model(file_path, custom_objects=custom_objects)
         print(f"Predictor model loaded from {file_path}")
