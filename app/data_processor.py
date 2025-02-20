@@ -548,10 +548,16 @@ def load_and_evaluate_model(config, plugin):
         ValueError: If required configuration parameters are missing or invalid.
         Exception: Propagates any exception that occurs during model loading or data processing.
     """
-    # Load the pre-trained model
+    # Load the pre-trained model using custom_objects for the custom loss and metrics.
     print(f"Loading pre-trained model from {config['load_model']}...")
     try:
-        plugin.load(config['load_model'])
+        from keras.models import load_model
+        custom_objects = {
+            "combined_loss": plugin.combined_loss,
+            "mmd": plugin.mmd_metric,
+            "huber": plugin.huber_metric
+        }
+        plugin.model = load_model(config['load_model'], custom_objects=custom_objects)
         print("Model loaded successfully.")
     except Exception as e:
         print(f"Failed to load the model from {config['load_model']}: {e}")
@@ -611,6 +617,7 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
+
 
 def create_multi_step_targets(df, time_horizon):
     """
