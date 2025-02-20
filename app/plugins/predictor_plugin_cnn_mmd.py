@@ -208,7 +208,7 @@ class Plugin:
         callbacks = []
         patience = self.params.get('patience', 30)
         early_stopping_monitor = EarlyStopping(
-            monitor='val_mmd',
+            monitor='val_hubber',
             patience=patience,
             restore_best_weights=True,
             verbose=1
