@@ -7,6 +7,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from sklearn.metrics import r2_score
+import tensorflow as tf
 
 class Plugin:
     """
