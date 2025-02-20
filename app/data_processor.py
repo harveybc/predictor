@@ -585,15 +585,15 @@ def load_and_evaluate_model(config, plugin):
         # For LSTM plugin, use the processed data as returned from process_data (window size = 1, with no date shift)
         if config["plugin"] == "lstm":
             print("Using LSTM data from process_data (window size 1, no date shift).")
-            if x_train.ndim != 3:
-                raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
+            if x_val.ndim != 3:
+                raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_val.shape}.")
         # For Transformer plugins, no sliding window is applied; data remains 2D.
         if config["plugin"] in ["transformer", "transformer_mmd"]:
-            if x_train.ndim != 2:
-                raise ValueError(f"For Transformer plugins, x_train must be 2D. Found: {x_train.shape}.")
+            if x_val.ndim != 2:
+                raise ValueError(f"For Transformer plugins, x_train must be 2D. Found: {x_val.shape}.")
 
-        if x_train.ndim == 1:
-            x_train = x_train.reshape(-1, 1)
+        if x_val.ndim == 1:
+            x_val = x_val.reshape(-1, 1)
         if x_val.ndim == 1:
             x_val = x_val.reshape(-1, 1)
 
