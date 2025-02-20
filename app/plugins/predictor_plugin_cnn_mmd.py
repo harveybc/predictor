@@ -202,9 +202,9 @@ class Plugin:
         stat_weight = 1.0
         y_true_flat = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
         y_pred_flat = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
-        K_xx = Plugin.gaussian_kernel_matrix(y_true_flat, y_true_flat, sigma)
-        K_yy = Plugin.gaussian_kernel_matrix(y_pred_flat, y_pred_flat, sigma)
-        K_xy = Plugin.gaussian_kernel_matrix(y_true_flat, y_pred_flat, sigma)
+        K_xx = self.gaussian_kernel_matrix(y_true_flat, y_true_flat, sigma)
+        K_yy = self.gaussian_kernel_matrix(y_pred_flat, y_pred_flat, sigma)
+        K_xy = self.gaussian_kernel_matrix(y_true_flat, y_pred_flat, sigma)
         m = tf.cast(tf.shape(y_true_flat)[0], tf.float32)
         n = tf.cast(tf.shape(y_pred_flat)[0], tf.float32)
         mmd = tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
@@ -214,9 +214,9 @@ class Plugin:
         sigma = 1.0
         y_true_flat = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
         y_pred_flat = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
-        K_xx = Plugin.gaussian_kernel_matrix(y_true_flat, y_true_flat, sigma)
-        K_yy = Plugin.gaussian_kernel_matrix(y_pred_flat, y_pred_flat, sigma)
-        K_xy = Plugin.gaussian_kernel_matrix(y_true_flat, y_pred_flat, sigma)
+        K_xx = self.gaussian_kernel_matrix(y_true_flat, y_true_flat, sigma)
+        K_yy = self.gaussian_kernel_matrix(y_pred_flat, y_pred_flat, sigma)
+        K_xy = self.gaussian_kernel_matrix(y_true_flat, y_pred_flat, sigma)
         m = tf.cast(tf.shape(y_true_flat)[0], tf.float32)
         n = tf.cast(tf.shape(y_pred_flat)[0], tf.float32)
         return tf.reduce_sum(K_xx) / (m * m) + tf.reduce_sum(K_yy) / (n * n) - 2 * tf.reduce_sum(K_xy) / (m * n)
@@ -231,9 +231,9 @@ class Plugin:
         Loads a trained model from the specified file path using custom_objects for the custom loss and metrics.
         """
         custom_objects = {
-            "combined_loss": Plugin.combined_loss,
-            "mmd": Plugin.mmd_metric,
-            "huber": Plugin.huber_metric
+            "combined_loss": self.combined_loss,
+            "mmd": self.mmd_metric,
+            "huber": self.huber_metric
         }
         self.model = load_model(file_path, custom_objects=custom_objects)
         print(f"Predictor model loaded from {file_path}")
@@ -429,6 +429,6 @@ class Plugin:
 if __name__ == "__main__":
     plugin = Plugin()
     # Example input_shape for CNN: window_size=24, features=8
-    plugin.build_model(input_shape=(24, 8))
-    debug_info = plugin.get_debug_info()
+    self.build_model(input_shape=(24, 8))
+    debug_info = self.get_debug_info()
     print(f"Debug Info: {debug_info}")
