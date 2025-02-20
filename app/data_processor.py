@@ -576,16 +576,11 @@ def load_and_evaluate_model(config, plugin):
         # For CNN plugins, create sliding windows and update dates accordingly
         if config["plugin"] in ["cnn", "cnn_mmd"]:
             print("Creating sliding windows for CNN...")
-            x_train, _, train_date_windows = create_sliding_windows(
-                x_train, y_train, window_size, time_horizon, stride=1, date_times=train_dates
-            )
             x_val, _, val_date_windows = create_sliding_windows(
-                x_val, y_val, window_size, time_horizon, stride=1, date_times=val_dates
+                x_val, y_val, config['window_size'], config['time_horizon'], stride=1, date_times=val_dates
             )
-            train_dates = train_date_windows
             val_dates = val_date_windows
             print(f"Sliding windows created:")
-            print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
             print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
         # For LSTM plugin, use the processed data as returned from process_data (window size = 1, with no date shift)
         if config["plugin"] == "lstm":
