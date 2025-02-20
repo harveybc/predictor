@@ -244,12 +244,12 @@ class Plugin:
 
         print("Evaluating on the full training dataset...")
         train_eval_results = self.model.evaluate(x_train, y_train[:len(preds_training_mode)], batch_size=batch_size, verbose=0)
-        train_loss, train_mae, train_mmd = train_eval_results
-        print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}, MMD: {train_mmd}")
+        train_loss, train_mae, train_mmd, train_huber = train_eval_results
+        print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}, MMD: {train_mmd}, Huber: {train_huber}")
         
         if x_val is not None and y_val is not None:
             val_eval_results = self.model.evaluate(x_val, y_val[:x_val.shape[0]], batch_size=batch_size, verbose=0)
-            _, val_mae, _ = val_eval_results
+            _, val_mae, val_mmd, val_huber = val_eval_results
             val_predictions = self.predict(x_val)
             val_r2 = r2_score(y_val[:x_val.shape[0]], val_predictions)
         else:
@@ -261,6 +261,7 @@ class Plugin:
         train_r2 = r2_score(y_train[:x_train.shape[0]], train_predictions)
         
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
+
 
     def predict(self, data):
         """
