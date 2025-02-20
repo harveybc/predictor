@@ -7,13 +7,13 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from sklearn.metrics import r2_score
-import tensorflow as tf
 
 class Plugin:
     """
     A predictor plugin using a convolutional neural network (CNN) based on Keras, with dynamically configurable size.
     This version integrates an MMD loss term into the training loss.
     """
+
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 3,
@@ -23,6 +23,7 @@ class Plugin:
         'l2_reg': 1e-2,     # L2 regularization factor
         'activation': 'tanh'
     }
+
     plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers', 'initial_layer_size', 'time_horizon']
 
     def __init__(self):
@@ -47,7 +48,7 @@ class Plugin:
 
     def add_debug_info(self, debug_info):
         """
-        Adds the plugin's debug information to an external dictionary.
+        Adds the plugin's debug information to an external debug_info dictionary.
         """
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
@@ -57,14 +58,10 @@ class Plugin:
         Build a CNN-based model with sliding window input.
         
         Parameters:
-            input_shape (tuple or int): If tuple, should be (window_size, features).
-                                        If int, it is interpreted as the number of features with window_size=1.
+            input_shape (tuple): Must be of the form (window_size, features).
         """
-        # Adapt input_shape if provided as an int.
-        if isinstance(input_shape, int):
-            input_shape = (1, input_shape)
-        elif len(input_shape) != 2:
-            raise ValueError(f"Invalid input_shape {input_shape}. CNN requires input with shape (window_size, features).")
+        if not (isinstance(input_shape, tuple) and len(input_shape) == 2):
+            raise ValueError(f"Invalid input_shape {input_shape}. For CNN, input_shape must be a tuple (window_size, features).")
 
         self.params['input_shape'] = input_shape
         print(f"CNN_MMD input_shape: {input_shape}")
@@ -107,7 +104,6 @@ class Plugin:
                     name=f"conv1d_{idx+1}"
                 )(x)
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
-        # Add a final Dense layer before output
         x = Dense(
             units=layers[0],
             activation=self.params['activation'],
@@ -375,6 +371,7 @@ class Plugin:
 # Debugging usage example
 if __name__ == "__main__":
     plugin = Plugin()
-    plugin.build_model(input_shape=(24, 8))  # Example input_shape for CNN
+    # Example input_shape for CNN: window_size=24, features=8
+    plugin.build_model(input_shape=(24, 8))
     debug_info = plugin.get_debug_info()
     print(f"Debug Info: {debug_info}")
