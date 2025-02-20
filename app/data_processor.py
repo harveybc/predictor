@@ -555,9 +555,9 @@ def load_and_evaluate_model(config, plugin):
     try:
         from keras.models import load_model
         custom_objects = {
-            "combined_loss": combined_loss,
-            "mmd": mmd_metric,
-            "huber": huber_metric
+            "combined_loss": plugin.combined_loss,
+            "mmd": plugin.mmd_metric,
+            "huber": plugin.huber_metric
         }
         plugin.model = load_model(config['load_model'], custom_objects=custom_objects)
         print("Model loaded successfully.")
@@ -586,16 +586,11 @@ def load_and_evaluate_model(config, plugin):
         if config["plugin"] == "lstm":
             print("Using LSTM data from process_data (window size 1, no date shift).")
             if x_val.ndim != 3:
-                raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_val.shape}.")
+                raise ValueError(f"For LSTM, x_val must be 3D. Found: {x_val.shape}.")
         # For Transformer plugins, no sliding window is applied; data remains 2D.
         if config["plugin"] in ["transformer", "transformer_mmd"]:
             if x_val.ndim != 2:
-                raise ValueError(f"For Transformer plugins, x_train must be 2D. Found: {x_val.shape}.")
-
-        if x_val.ndim == 1:
-            x_val = x_val.reshape(-1, 1)
-        if x_val.ndim == 1:
-            x_val = x_val.reshape(-1, 1)
+                raise ValueError(f"For Transformer plugins, x_val must be 2D. Found: {x_val.shape}.")
 
         print(f"Processed validation data: X shape: {x_val.shape}, Y shape: {y_val.shape}")
     except Exception as e:
@@ -605,7 +600,12 @@ def load_and_evaluate_model(config, plugin):
     # Predict using the loaded model
     print("Making predictions on validation data...")
     try:
-        predictions = plugin.predict(x_val.to_numpy())
+        # If x_val is already a NumPy array, pass it directly; otherwise, convert it.
+        if isinstance(x_val, np.ndarray):
+            x_val_array = x_val
+        else:
+            x_val_array = x_val.to_numpy()
+        predictions = plugin.predict(x_val_array)
         print(f"Predictions shape: {predictions.shape}")
     except Exception as e:
         print(f"Failed to make predictions: {e}")
@@ -643,7 +643,6 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
-
 
 def create_multi_step_targets(df, time_horizon):
     """
