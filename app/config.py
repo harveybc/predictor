@@ -39,7 +39,7 @@ DEFAULT_VALUES = {
     'patience': 30,           # Early stopping patience
     'max_steps_train': 6300,
     'max_steps_test': 6300,
-    'iterations': 1,
+    'iterations': 3,
     'epochs': 1000,
     "use_normalization_json": "examples\\config\\phase_1_normalizer_debug_out.json"
 }
