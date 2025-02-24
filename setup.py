@@ -12,8 +12,10 @@ setup(
             'default=app.plugins.predictor_plugin_ann:Plugin',
             'ann=app.plugins.predictor_plugin_ann:Plugin',
             'cnn=app.plugins.predictor_plugin_cnn:Plugin',
+            'cnn_mmd=app.plugins.predictor_plugin_cnn_mmd:Plugin',
             'lstm=app.plugins.predictor_plugin_lstm:Plugin',
             'transformer=app.plugins.predictor_plugin_transformer:Plugin',
+            'transformer_mmd=app.plugins.predictor_plugin_transformer_mmd:Plugin',
             'base=app.plugins.predictor_plugin_base:Plugin'
         ]
     },
