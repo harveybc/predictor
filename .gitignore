@@ -130,6 +130,11 @@ venv.bak/
 .vscode/
 !tests/data/*.csv
 # Data files
+!examples/data/phase_1/*.csv
+!examples/data/phase_2/exp_1/*.csv
+!examples/data/phase_2/exp_2/*.csv
+!examples/data/phase_2/exp_3/*.csv
+!examples/data/phase_2/exp_4/*.csv
 
 # Log files
 *.log
