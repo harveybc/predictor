@@ -1,4 +1,5 @@
 {
+    "use_normalization_json": "examples\\config\\phase_2_normalizer_debug_out.json",
     "x_train_file": "examples\\data\\phase_2\\exp_4\\normalized_d2.csv",
     "y_train_file": "examples\\data\\phase_2\\exp_4\\normalized_d2.csv",
     "x_validation_file": "examples\\data\\phase_2\\exp_4\\normalized_d3.csv",
