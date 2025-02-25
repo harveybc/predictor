@@ -42,7 +42,7 @@ DEFAULT_VALUES = {
     'patience': 30,           # Early stopping patience
     'max_steps_train': 6300,
     'max_steps_test': 6300,
-    'iterations': 3,
+    'iterations': 1,
     'epochs': 1000
     
 }
