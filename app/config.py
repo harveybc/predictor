@@ -1,6 +1,9 @@
 # config.py
 
 DEFAULT_VALUES = {
+    "use_normalization_json": "examples\\config\\phase_2_normalizer_debug_out.json",
+
+
     "x_train_file": "examples\\data\\phase_1\\phase_1_normalized_d2.csv",
     #"x_train_file": "examples\\data\\phase_2\\normalized_d2.csv",
     #"x_train_file": "examples\\data\\phase_3\\extracted_features_transformer_va_d2.csv",
@@ -40,6 +43,6 @@ DEFAULT_VALUES = {
     'max_steps_train': 6300,
     'max_steps_test': 6300,
     'iterations': 3,
-    'epochs': 1000,
-    "use_normalization_json": "examples\\config\\phase_1_normalizer_debug_out.json"
+    'epochs': 1000
+    
 }
