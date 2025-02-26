@@ -1,0 +1,15 @@
+{
+    "use_normalization_json": "examples\\config\\phase_2_normalizer_debug_out.json",
+    "x_train_file": "examples\\data\\phase_2\\exp_2\\normalized_d2.csv",
+    "y_train_file": "examples\\data\\phase_2\\exp_2\\normalized_d2.csv",
+    "x_validation_file": "examples\\data\\phase_2\\exp_2\\normalized_d3.csv",
+    "y_validation_file": "examples\\data\\phase_2\\exp_2\\normalized_d3.csv",
+    "output_file": "examples\\results\\phase_2_daily\\phase_2_2_transformer_1d_prediction.csv",
+    "results_file": "examples\\results\\phase_2_daily\\phase_2_2_transformer_1d_results.csv",
+    "loss_plot_file": "examples\\results\\phase_2_daily\\phase_2_2_transformer_1d_loss_plot.png",
+    "model_plot_file": "examples\\results\\phase_2_daily\\phase_2_2_transformer_1d_model_plot.png",
+    "plugin": "transformer",
+    "max_steps_train": 6300,
+    "max_steps_test": 6300,
+    "use_daily": true
+}
