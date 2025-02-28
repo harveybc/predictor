@@ -1,7 +1,0 @@
-1. Necesitamos sección de justificación?
-2. Como organizamos la sección de antecedentes (creo que esos titulos con el nombre del artículo se ven mal)
-3. Falta gráfico de SNR vs periodicidad para selección de periodicidad de corto y largo plazo en sección 6.3.
-4. el gráfico de STL horario está mal, hacerlo de nuevo con un rango mas corto para que se aprecie el patrón estacional que debe aparecer (al menos debería aparecer el diario)
-5. Preguntar si es necesario hacer una sección 6.4 (peude haberse movido por edición) con descripciones de cada columna de cada dataset usado.
-6. En la sección 6.1 debemos colocar referencias bibliográficas con el link de los repositorios en Github y la fecha de consulta?
-7. La Tabla 1 usada para selección de periodicidad debe contener en la preimera columna la periodicidad en texto por legibilidad(1 min, 5min, 15min,1hora, 4horas, 24horas)
