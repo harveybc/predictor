@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 :: Define the configuration directory
-set "CONFIG_DIR=examples\config\phase_3"
+set "CONFIG_DIR=examples\config\phase_3\exp_1"
 
 :: Iterate over all JSON files in the directory
 for %%F in ("%CONFIG_DIR%\*.json") do (
