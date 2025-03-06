@@ -45,7 +45,7 @@ DEFAULT_VALUES = {
     'headers': True,
     'learning_rate': 0.0001,
     'time_horizon': 6,
-    'window_size': 256,  # Number of time steps in each window (e.g., 24 for daily patterns)
+    'window_size': 32,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'intermediate_layers': 5,
     'initial_layer_size': 256,
     'layer_size_divisor': 2,
