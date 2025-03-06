@@ -55,6 +55,12 @@ DEFAULT_VALUES = {
     'max_steps_test': 20000,
     'iterations': 3,
     'epochs': 2000,
-    'use_mmd': True
+    'use_mmd':True,
+    'mmd_sigma': 1.0,  # adjust as needed
+    'statistical_loss_weight': 0.5,  # adjust as needed
+    'use_pos_enc': False,
+    'l2_reg': 1e-5,
+    'early_monitor': 'val_loss',
+    'early_patience': 45
     
 }
