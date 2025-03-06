@@ -45,10 +45,10 @@ DEFAULT_VALUES = {
     'headers': True,
     'learning_rate': 0.0001,
     'time_horizon': 6,
-    'window_size': 32,  # Number of time steps in each window (e.g., 24 for daily patterns)
-    'intermediate_layers': 2,
+    'window_size': 256,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'initial_layer_size': 256,
-    'layer_size_divisor': 5,
+    'intermediate_layers': 5,
+    'layer_size_divisor': 2,
     'l2_reg': 1e-3,          # L2 regularization factor
     'early_patience': 32,           # Early stopping patience
     'max_steps_train': 20000,
