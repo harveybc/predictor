@@ -11,14 +11,6 @@ import gc
 import tensorflow as tf
 from keras.callbacks import Callback, EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.losses import Huber
-# --- Callback and helper functions (same as in your autoencoder manager) ---
-
-import gc
-import tensorflow as tf
-from keras.callbacks import Callback, EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.losses import Huber
-
-# --- Callback and helper functions (same as in your autoencoder manager) ---
 
 class UpdateOverfitPenalty(Callback):
     """
@@ -39,6 +31,8 @@ class UpdateOverfitPenalty(Callback):
 class DebugLearningRateCallback(Callback):
     """
     Prints the current learning rate, EarlyStopping wait counter, and ReduceLROnPlateau wait and best values.
+    Additionally, updates the l2 regularization factor in layers that have a kernel_regularizer of type L2,
+    scaling it proportionally to the learning rate change relative to the initial learning rate.
     """
     def __init__(self, early_stopping_cb, lr_reducer_cb):
         super(DebugLearningRateCallback, self).__init__()
@@ -52,6 +46,18 @@ class DebugLearningRateCallback(Callback):
         lr_wait = getattr(self.lr_reducer_cb, "wait", None)
         best_val = getattr(self.lr_reducer_cb, "best", None)
         print(f"[DebugLR] Epoch {epoch+1}: Learning Rate = {current_lr:.6e}, EarlyStopping wait = {es_wait}, LRReducer wait = {lr_wait}, LRReducer best = {best_val}")
+        # Update l2_reg in all layers with a kernel_regularizer of type L2.
+        if hasattr(self.model, 'initial_lr') and self.model.initial_lr is not None:
+            scaling_factor = current_lr / self.model.initial_lr
+            if hasattr(self.model, 'initial_l2') and self.model.initial_l2 is not None:
+                for layer in self.model.layers:
+                    if hasattr(layer, 'kernel_regularizer') and layer.kernel_regularizer is not None:
+                        if isinstance(layer.kernel_regularizer, tf.keras.regularizers.L2):
+                            old_l2 = layer.kernel_regularizer.l2
+                            new_l2 = self.model.initial_l2 * scaling_factor
+                            layer.kernel_regularizer.l2 = new_l2
+                            print(f"[DebugLR] Updated l2_reg in layer {layer.name} from {old_l2} to {new_l2}")
+
 
 class MemoryCleanupCallback(Callback):
     """
@@ -170,6 +176,7 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
+        # Output layer size equals time_horizon (target dimension)
         layers.append(self.params['time_horizon'])
         print(f"CNN Layer sizes: {layers}")
 
@@ -178,7 +185,6 @@ class Plugin:
         x = inputs
 
         # If using sliding windows, add positional encoding to the input.
-        # This mirrors the decoder's addition of positional information.
         if self.params.get('use_pos_enc', False):
             def add_pos_enc(x):
                 window_size = tf.shape(x)[1]
@@ -191,34 +197,27 @@ class Plugin:
                 angle_rads = tf.cast(positions, tf.float32) * angle_rates
                 sinusoids = tf.concat([tf.sin(angle_rads[:, 0::2]), tf.cos(angle_rads[:, 1::2])], axis=-1)
                 pos_encoding = tf.expand_dims(sinusoids, axis=0)  # (1, window_size, feat_dim)
-                pos_encoding = tf.cast(pos_encoding, x.dtype)      # Cast to match x's dtype
+                pos_encoding = tf.cast(pos_encoding, x.dtype)
                 return x + pos_encoding
 
             x = tf.keras.layers.Lambda(add_pos_enc, name="encoder_positional_encoding")(x)
 
-        # Build convolutional blocks that downsample the input
-        # Each block applies a Conv1D layer then downsampling via MaxPooling1D.
-        self.skip_connections = []  # Reset skip connections (to be used by the decoder)
-        l2_reg = self.params.get('l2_reg', 1e-4)
-        for idx, size in enumerate(layers[:-1]):  # Exclude the final interface_size
+        # Build convolutional blocks
+        self.skip_connections = []
+        l2_reg = self.params.get('l2_reg', 1e-2)
+        for idx, size in enumerate(layers[:-1]):
             x = Conv1D(filters=size,
-                       kernel_size=3,
-                       activation=self.params['activation'],
-                       kernel_initializer=HeNormal(),
-                       padding='same',
-                       kernel_regularizer=l2(l2_reg),
-                       name=f"conv1d_{idx+1}")(x)
-            # Store skip connection BEFORE pooling for later concatenation in the decoder.
+                    kernel_size=3,
+                    activation=self.params['activation'],
+                    kernel_initializer=HeNormal(),
+                    padding='same',
+                    kernel_regularizer=l2(l2_reg),
+                    name=f"conv1d_{idx+1}")(x)
             self.skip_connections.append(x)
             x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
 
-        # Apply batch normalization and a dense transformation to refine features.
-        x = BatchNormalization(name="batch_norm1")(x)
-        self.pre_flatten_shape = x.shape[1:]
-        print(f"[Encoder] Pre-flatten shape: {self.pre_flatten_shape}")
+        x = BatchNormalization()(x)
         x = Flatten(name="flatten")(x)
-        # Final Dense layer to produce the latent vector.
-        
         model_output = Dense(
             units=layers[-1],
             activation='linear',
@@ -256,7 +255,6 @@ class Plugin:
         else:
             loss_fn = Huber(delta=1.0)
             metrics = ['mse', 'mae']
-        #print if using mmd loss
         if config is not None and config.get('use_mmd', False):
             print("Using combined loss with MMD and overfit penalty.")
         else:
@@ -268,6 +266,9 @@ class Plugin:
             run_eagerly=False
         )
         print("Model compiled successfully.")
+        # Store the initial learning rate and l2 regularization value for dynamic updates
+        self.model.initial_lr = self.params['learning_rate']
+        self.model.initial_l2 = self.params.get('l2_reg', 1e-2)
 
 
 
@@ -282,7 +283,7 @@ class Plugin:
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N, {exp_horizon}).")
 
-        from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+
         callbacks = []
         early_patience = self.params.get('early_patience', 32)
         early_monitor = 'val_loss'
