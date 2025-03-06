@@ -24,7 +24,7 @@ class UpdateOverfitPenalty(Callback):
         if train_mae is None or val_mae is None:
             print("[UpdateOverfitPenalty] MAE metrics not available; overfit penalty not updated.")
             return
-        penalty = 0.01 * max(0, val_mae - train_mae)
+        penalty = 0.03 * max(0, val_mae - train_mae)
         tf.keras.backend.set_value(self.model.overfit_penalty, penalty)
         print(f"[UpdateOverfitPenalty] Epoch {epoch+1}: Updated overfit penalty to {penalty:.6f}")
 
@@ -252,12 +252,12 @@ class Plugin:
                 stat_weight = config.get('statistical_loss_weight', 1.0)
                 mmd = mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
                 penalty_term = tf.cast(1.0, tf.float32) * tf.stop_gradient(self.overfit_penalty)
-                return huber_loss + stat_weight * mmd + penalty_term,  huber_loss
-            loss_fn, huber_loss = combined_loss
-            metrics = ['mae', huber_loss , lambda yt, yp: mmd_metric(yt, yp, config)]
+                return huber_loss + stat_weight * mmd + penalty_term
+            loss_fn = combined_loss
+            metrics = ['mae', lambda yt, yp: mmd_metric(yt, yp, config)]
         else:
             loss_fn = Huber(delta=1.0)
-            metrics = ['mae',  mmd_metric]
+            metrics = ['mae']
         if config is not None and config.get('use_mmd', False):
             print("Using combined loss with MMD and overfit penalty.")
         else:
