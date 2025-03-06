@@ -236,6 +236,8 @@ class Plugin:
         #print if using mmd loss
         if config is not None and config.get('use_mmd', False):
             print("Using combined loss with MMD and overfit penalty.")
+        else:
+            print("Using Huber loss.")
         self.model.compile(
             optimizer=adam_optimizer,
             loss=loss_fn,
