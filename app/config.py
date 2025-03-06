@@ -50,7 +50,6 @@ DEFAULT_VALUES = {
     'intermediate_layers': 3,
     'layer_size_divisor': 2,
     'l2_reg': 1e-5,          # L2 regularization factor, best 1e-3 = TestMAE:0.0103 R2:0.9921
-    'early_patience': 45,           # Early stopping patience
     'max_steps_train': 20000,
     'max_steps_test': 20000,
     'iterations': 3,
@@ -61,6 +60,6 @@ DEFAULT_VALUES = {
     'use_pos_enc': False,
     'l2_reg': 1e-5,
     'early_monitor': 'val_loss',
-    'early_patience': 45
+    'early_patience': 45 #early stopping patience
     
 }
