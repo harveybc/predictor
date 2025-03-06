@@ -273,7 +273,8 @@ class Plugin:
         self.model.compile(
             optimizer=adam_optimizer,
             loss=loss_fn,
-            metrics=metrics
+            metrics=metrics,
+            run_eagerly=True
         )
         print("Model compiled successfully.")
         # Store the initial learning rate and l2 regularization value for dynamic updates
