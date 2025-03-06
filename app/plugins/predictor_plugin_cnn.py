@@ -56,7 +56,9 @@ class DebugLearningRateCallback(Callback):
                             old_l2 = layer.kernel_regularizer.l2
                             new_l2 = self.model.initial_l2 * scaling_factor
                             layer.kernel_regularizer.l2 = new_l2
-                            print(f"[DebugLR] Updated l2_reg in layer {layer.name} from {old_l2} to {new_l2}")
+                            # if old!=new, print the change
+                            if old_l2 != new_l2:
+                                print(f"[DebugLR] Updated l2_reg in layer {layer.name} from {old_l2} to {new_l2}")
 
 
 class MemoryCleanupCallback(Callback):
