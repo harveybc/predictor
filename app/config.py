@@ -29,6 +29,7 @@ DEFAULT_VALUES = {
     'loss_plot_file': './loss_plot.png',
     'model_plot_file': './model_plot.png',	
     'plugin': 'cnn',
+    'input_offset': 0,
     'use_daily': False, # isntead of predicting the next time_horizon hours, predict the next time_horizon days.
     'threshold_error': 0.0001,
     'remote_log': None,
@@ -42,7 +43,7 @@ DEFAULT_VALUES = {
     'quiet_mode': False,
     'force_date': False,
     'headers': True,
-    'input_offset': 0,
+    'learning_rate': 0.0001,
     'time_horizon': 6,
     'window_size': 256,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'intermediate_layers': 2,
