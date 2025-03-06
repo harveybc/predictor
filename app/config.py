@@ -30,7 +30,7 @@ DEFAULT_VALUES = {
     'model_plot_file': './model_plot.png',	
     'plugin': 'cnn',
     'input_offset': 0,
-    'use_daily': False, # isntead of predicting the next time_horizon hours, predict the next time_horizon days.
+    'use_daily': True, # isntead of predicting the next time_horizon hours, predict the next time_horizon days.
     'threshold_error': 0.0001,
     'remote_log': None,
     'remote_load_config': None,
@@ -56,7 +56,7 @@ DEFAULT_VALUES = {
     'epochs': 2000,
     'use_mmd':True,
     'mmd_sigma': 1.0,  # adjust as needed
-    'statistical_loss_weight': 3.0,  # adjust as needed
+    'statistical_loss_weight': 2.0,  # adjust as needed
     'use_pos_enc': False,
     'l2_reg': 1e-5,
     'early_monitor': 'val_loss',
