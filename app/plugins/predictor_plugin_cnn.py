@@ -204,26 +204,27 @@ class Plugin:
                 return x + pos_encoding
 
             x = tf.keras.layers.Lambda(add_pos_enc, name="encoder_positional_encoding")(x)
-        # first  dense layer
-        model_output = Dense(
-            units=input_shape,
-            activation='linear',
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name="linear_dense"
-        )(x)
-        x = BatchNormalization()(x)
         # Build convolutional blocks
         self.skip_connections = []
         l2_reg = self.params.get('l2_reg', 1e-2)
         for idx, size in enumerate(layers[:-1]):
-            x = Conv1D(filters=size,
-                    kernel_size=3,
-                    activation=self.params['activation'],
-                    kernel_initializer=HeNormal(),
-                    padding='same',
-                    kernel_regularizer=l2(l2_reg),
-                    name=f"conv1d_{idx+1}")(x)
+            if idx==0:
+                x = Conv1D(filters=size,
+                        kernel_size=3,
+                        activation='linear',
+                        kernel_initializer=GlorotUniform(),
+                        padding='same',
+                        kernel_regularizer=l2(l2_reg),
+                        name=f"conv1d_{idx+1}")(x)
+            else:
+                x = Conv1D(filters=size,
+                        kernel_size=3,
+                        activation=self.params['activation'],
+                        kernel_initializer=HeNormal(),
+                        padding='same',
+                        kernel_regularizer=l2(l2_reg),
+                        name=f"conv1d_{idx+1}")(x)
+                
             self.skip_connections.append(x)
             x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
 
