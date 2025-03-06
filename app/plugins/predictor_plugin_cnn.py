@@ -296,7 +296,7 @@ class Plugin:
         lr_reducer = ReduceLROnPlateau(
             monitor=early_monitor,
             factor=0.316227766,
-            patience=int(early_patience / 4),
+            patience=int(early_patience / 3),
             verbose=1,
             min_lr=self.params.get('min_lr', 1e-8)
         )
