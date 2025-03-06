@@ -186,7 +186,7 @@ class Plugin:
         from keras.layers import Input, Dense, Conv1D, MaxPooling1D, BatchNormalization, Flatten
         inputs = Input(shape=input_shape, name="model_input")
         x = inputs
-
+    
         # If using sliding windows, add positional encoding to the input.
         if self.params.get('use_pos_enc', False):
             def add_pos_enc(x):
@@ -204,7 +204,15 @@ class Plugin:
                 return x + pos_encoding
 
             x = tf.keras.layers.Lambda(add_pos_enc, name="encoder_positional_encoding")(x)
-
+        # first  dense layer
+        model_output = Dense(
+            units=input_shape,
+            activation='linear',
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name="linear_dense"
+        )(x)
+        x = BatchNormalization()(x)
         # Build convolutional blocks
         self.skip_connections = []
         l2_reg = self.params.get('l2_reg', 1e-2)
