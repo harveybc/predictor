@@ -161,6 +161,7 @@ class Plugin:
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
         Train the CNN model with Early Stopping to prevent overfitting.
+        Uses provided validation_data if available; otherwise falls back to validation_split.
 
         Parameters:
             x_train (numpy.ndarray): Training input data with shape (samples, window_size, features).
@@ -169,21 +170,20 @@ class Plugin:
             batch_size (int): Training batch size.
             threshold_error (float): Threshold for loss to trigger warnings.
             x_val (numpy.ndarray, optional): Validation input data.
-
-
             y_val (numpy.ndarray, optional): Validation target data.
+
+        Returns:
+            tuple: (history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions)
         """
         if x_train.ndim != 3:
             raise ValueError(f"x_train must be 3D with shape (samples, window_size, features). Found: {x_train.shape}")
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
-            raise ValueError(
-                f"y_train shape {y_train.shape}, expected (N,{exp_horizon})."
-            )
+            raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
         callbacks = []
 
-        # Early Stopping based on loss or validation loss
-        patience = self.params.get('patience', 25)  # default patience is 10 epochs
+        # Early Stopping based on validation loss
+        patience = self.params.get('patience', 25)
         monitor_metric = 'val_loss'
         early_stopping_monitor = EarlyStopping(
             monitor=monitor_metric,
@@ -195,58 +195,65 @@ class Plugin:
 
         print(f"Training CNN model with data shape: {x_train.shape}, target shape: {y_train.shape}")
 
-        history = self.model.fit(
-            x_train,
-            y_train,
-            epochs=epochs,
-            batch_size=batch_size,
-            verbose=1,
-            callbacks=callbacks,
-            validation_split = 0.2
-        )
+        # Use validation_data if provided, else fallback to validation_split
+        if x_val is not None and y_val is not None:
+            history = self.model.fit(
+                x_train,
+                y_train,
+                epochs=epochs,
+                batch_size=batch_size,
+                verbose=1,
+                callbacks=callbacks,
+                validation_data=(x_val, y_val)
+            )
+        else:
+            history = self.model.fit(
+                x_train,
+                y_train,
+                epochs=epochs,
+                batch_size=batch_size,
+                verbose=1,
+                callbacks=callbacks,
+                validation_split=0.2
+            )
         print("Training completed.")
         final_loss = history.history['loss'][-1]
         print(f"Final training loss: {final_loss}")
-
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
-        # Force the model to run in "training mode"
-        print("Forcing training mode for MAE calculation...")
+        # Calculate MAE manually in both training and evaluation modes
+        print("Calculating MAE in Training Mode...")
         preds_training_mode = self.model(x_train, training=True).numpy()
         mae_training_mode = np.mean(np.abs(preds_training_mode - y_train[:len(preds_training_mode)]))
         print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
 
-        # Compare with evaluation mode
-        print("Forcing evaluation mode for MAE calculation...")
+        print("Calculating MAE in Evaluation Mode...")
         preds_eval_mode = self.model(x_train, training=False).numpy()
         mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train[:len(preds_training_mode)]))
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
 
-        # Evaluate on the full training dataset for consistency
-        print("Evaluating on the full training dataset...")
+        # Evaluate on full training dataset
+        print("Evaluating on full training dataset...")
         train_eval_results = self.model.evaluate(x_train, y_train[:len(preds_training_mode)], batch_size=batch_size, verbose=0)
         train_loss, train_mse, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
-        
-        # Only evaluate validation data if it exists
+
         if x_val is not None and y_val is not None:
             val_eval_results = self.model.evaluate(x_val, y_val[:x_val.shape[0]], batch_size=batch_size, verbose=0)
             _, _, val_mae = val_eval_results
-            val_predictions = self.predict(x_val)  # Predict validation data
+            val_predictions = self.predict(x_val)
+            from sklearn.metrics import r2_score
             val_r2 = r2_score(y_val[:x_val.shape[0]], val_predictions)
         else:
             val_mae = None
             val_r2 = None
             val_predictions = None
 
-        # Predict training data for evaluation
-        train_predictions = self.predict(x_train)  # Predict train data
-
-        # Calculate R² scores - adjust target shapes to match predictions
+        train_predictions = self.predict(x_train)
+        from sklearn.metrics import r2_score
         train_r2 = r2_score(y_train[:x_train.shape[0]], train_predictions)
-        val_r2 = None if val_predictions is None else r2_score(y_val[:x_val.shape[0]], val_predictions)
-        
+
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
 

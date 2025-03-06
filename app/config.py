@@ -17,6 +17,9 @@ DEFAULT_VALUES = {
     #"x_validation_file": "examples\\data\\phase_3\\extracted_features_transformer_va_d2.csv",
     "x_validation_file": "examples\\data\\phase_3\\exp_2\\phase_3_encoder_eval_d3.csv",
     "y_validation_file": "examples\\data\\phase_3\\exp_2\\normalized_d3.csv",
+
+    "x_test_file": "examples\\data\\phase_3\\exp_2\\phase_3_encoder_eval_d1.csv",
+    "y_test_file": "examples\\data\\phase_3\\exp_2\\normalized_d1.csv",
     
     'target_column': 'CLOSE',
     'output_file': './prediction.csv',
