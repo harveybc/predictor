@@ -49,7 +49,7 @@ DEFAULT_VALUES = {
     'initial_layer_size': 48,
     'intermediate_layers': 3,
     'layer_size_divisor': 2,
-    'l2_reg': 1e-5,          # L2 regularization factor, best 1e-3 = TestMAE:0.0103 R2:0.9921
+    'l2_reg': 1e-4,          # L2 regularization factor, best 1e-3 = TestMAE:0.0103 R2:0.9921
     'max_steps_train': 20000,
     'max_steps_test': 20000,
     'iterations': 3,
@@ -58,7 +58,6 @@ DEFAULT_VALUES = {
     'mmd_sigma': 1.0,  # adjust as needed
     'statistical_loss_weight': 2.0,  # adjust as needed
     'use_pos_enc': False,
-    'l2_reg': 1e-5,
     'early_monitor': 'val_loss',
     'early_patience': 45 #early stopping patience
     
