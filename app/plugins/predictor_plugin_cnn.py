@@ -53,7 +53,7 @@ class DebugLearningRateCallback(Callback):
                     if hasattr(layer, 'kernel_regularizer') and layer.kernel_regularizer is not None:
                         if isinstance(layer.kernel_regularizer, tf.keras.regularizers.L2):
                             old_l2 = layer.kernel_regularizer.l2
-                            new_l2 = self.model.initial_l2 * scaling_factor
+                            new_l2 = self.model.initial_l2 / scaling_factor
                             layer.kernel_regularizer.l2 = new_l2
                             # if old!=new, print the change
                             if old_l2 != new_l2:
@@ -271,7 +271,7 @@ class Plugin:
         print("Model compiled successfully.")
         # Store the initial learning rate and l2 regularization value for dynamic updates
         self.model.initial_lr = self.params['learning_rate']
-        self.model.initial_l2 = self.params.get('l2_reg', 1e-2)
+        self.model.initial_l2 = self.params.get('l2_reg', 1e-3)
 
 
 
