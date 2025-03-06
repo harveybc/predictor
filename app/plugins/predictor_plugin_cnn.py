@@ -257,7 +257,7 @@ class Plugin:
 
         from keras.callbacks import EarlyStopping, ReduceLROnPlateau
         callbacks = []
-        early_patience = self.params.get('patience', 25)
+        early_patience = self.params.get('early_patience', 25)
         early_monitor = 'val_loss'
         early_stopping = EarlyStopping(monitor=early_monitor, patience=early_patience,
                                     restore_best_weights=True, verbose=1)
