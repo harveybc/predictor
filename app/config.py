@@ -46,8 +46,8 @@ DEFAULT_VALUES = {
     'learning_rate': 0.001,
     'time_horizon': 6,
     'window_size': 48,  # Number of time steps in each window (e.g., 24 for daily patterns)
-    'initial_layer_size': 24,
-    'intermediate_layers': 2,
+    'initial_layer_size': 48,
+    'intermediate_layers': 3,
     'layer_size_divisor': 2,
     'l2_reg': 1e-4,          # L2 regularization factor
     'early_patience': 32,           # Early stopping patience
