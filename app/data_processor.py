@@ -47,31 +47,72 @@ def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
     else:
         return np.array(windows)
 
+
+
 def process_data(config):
     """
-    Processes data for different plugins (ANN, CNN, LSTM, Transformer) by loading
-    training, validation, and test datasets. It extracts DATE_TIME information (if available),
-    creates multi-step targets, and applies per-plugin preprocessing (e.g., sliding windows for CNN).
+    Processes data for different plugins, including ANN, CNN, LSTM, and Transformer.
+    Loads and processes training, validation, and test datasets; extracts DATE_TIME information,
+    and trims each pair (x and y) to the common date range so that they share the same number of rows.
     
     Returns:
-        dict: A dictionary with keys "x_train", "y_train", "x_val", "y_val", "x_test", "y_test",
-              and corresponding DATE_TIME arrays ("dates_train", "dates_val", "dates_test").
+        dict: Processed datasets for training, validation, and test, along with corresponding DATE_TIME arrays.
     """
-    # 1) LOAD CSVs for train, validation and test
-    x_train = load_csv(config["x_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
-    y_train = load_csv(config["y_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
-    x_val = load_csv(config["x_validation_file"], headers=config["headers"], max_rows=config.get("max_steps_val"))
-    y_val = load_csv(config["y_validation_file"], headers=config["headers"], max_rows=config.get("max_steps_val"))
-    x_test = load_csv(config["x_test_file"], headers=config["headers"], max_rows=config.get("max_steps_test"))
-    y_test = load_csv(config["y_test_file"], headers=config["headers"], max_rows=config.get("max_steps_test"))
+    import pandas as pd
+    # 1) LOAD CSVs for train, validation, and test
+    x_train = load_csv(
+        config["x_train_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_train")
+    )
+    y_train = load_csv(
+        config["y_train_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_train")
+    )
+    x_val = load_csv(
+        config["x_validation_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_val")
+    )
+    y_val = load_csv(
+        config["y_validation_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_val")
+    )
+    x_test = load_csv(
+        config["x_test_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_test")
+    )
+    y_test = load_csv(
+        config["y_test_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_test")
+    )
     
-    # Save original DATE_TIME indices (if available)
+    # 1a) If both x and y have DatetimeIndex, trim them to their common date range
+    if isinstance(x_train.index, pd.DatetimeIndex) and isinstance(y_train.index, pd.DatetimeIndex):
+        common_train_index = x_train.index.intersection(y_train.index)
+        x_train = x_train.loc[common_train_index]
+        y_train = y_train.loc[common_train_index]
+    if isinstance(x_val.index, pd.DatetimeIndex) and isinstance(y_val.index, pd.DatetimeIndex):
+        common_val_index = x_val.index.intersection(y_val.index)
+        x_val = x_val.loc[common_val_index]
+        y_val = y_val.loc[common_val_index]
+    if isinstance(x_test.index, pd.DatetimeIndex) and isinstance(y_test.index, pd.DatetimeIndex):
+        common_test_index = x_test.index.intersection(y_test.index)
+        x_test = x_test.loc[common_test_index]
+        y_test = y_test.loc[common_test_index]
+    
+    # Save original DATE_TIME indices (if available) AFTER trimming
     train_dates_orig = x_train.index if isinstance(x_train.index, pd.DatetimeIndex) else None
-    val_dates_orig   = x_val.index   if isinstance(x_val.index, pd.DatetimeIndex) else None
-    test_dates_orig  = x_test.index  if isinstance(x_test.index, pd.DatetimeIndex) else None
+    val_dates_orig = x_val.index if isinstance(x_val.index, pd.DatetimeIndex) else None
+    test_dates_orig = x_test.index if isinstance(x_test.index, pd.DatetimeIndex) else None
 
     # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
+
     def extract_target(df, col):
         if isinstance(col, str):
             if col not in df.columns:
@@ -81,70 +122,75 @@ def process_data(config):
             return df.iloc[:, [col]]
         else:
             raise ValueError("`target_column` must be str or int.")
-    y_train = extract_target(y_train, target_col)
-    y_val   = extract_target(y_val, target_col)
-    y_test  = extract_target(y_test, target_col)
 
-    # 3) CONVERT DFs TO NUMERIC
+    y_train = extract_target(y_train, target_col)
+    y_val = extract_target(y_val, target_col)
+    y_test = extract_target(y_test, target_col)
+
+    # 3) CONVERT EACH DF TO NUMERIC, REASSIGN THE RESULT TO AVOID BUGS
     x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_train = y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
-    x_val   = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
-    y_val   = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
-    x_test  = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
-    y_test  = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
+    x_val = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_val = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
+    x_test = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_test = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-    # 4) CREATE MULTI-STEP TARGETS
+    # 4) MULTI-STEP TARGETS
     time_horizon = config["time_horizon"]
+
     def create_multi_step(y_df, horizon):
         blocks = []
         for i in range(len(y_df) - horizon):
-            window = y_df.iloc[i+1 : i+1+horizon].values.flatten()
+            window = y_df.iloc[i + 1 : i + 1 + horizon].values.flatten()
             blocks.append(window)
         return pd.DataFrame(blocks, index=y_df.index[:-horizon])
+
     def create_multi_step_daily(y_df, horizon):
         blocks = []
         for i in range(len(y_df) - horizon * 24):
             window = []
-            for d in range(1, horizon+1):
-                window.extend(y_df.iloc[i + d*24].values.flatten())
+            for d in range(1, horizon + 1):
+                window.extend(y_df.iloc[i + d * 24].values.flatten())
             blocks.append(window)
-        return pd.DataFrame(blocks, index=y_df.index[:-horizon*24])
-    
+        return pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
+
     if config.get("use_daily", False):
         y_train_ma = y_train.rolling(window=48, center=True, min_periods=1).mean()
-        y_val_ma   = y_val.rolling(window=48, center=True, min_periods=1).mean()
-        y_test_ma  = y_test.rolling(window=48, center=True, min_periods=1).mean()
+        y_val_ma = y_val.rolling(window=48, center=True, min_periods=1).mean()
+        y_test_ma = y_test.rolling(window=48, center=True, min_periods=1).mean()
         y_train_multi = create_multi_step_daily(y_train_ma, time_horizon)
-        y_val_multi   = create_multi_step_daily(y_val_ma, time_horizon)
-        y_test_multi  = create_multi_step_daily(y_test_ma, time_horizon)
+        y_val_multi = create_multi_step_daily(y_val_ma, time_horizon)
+        y_test_multi = create_multi_step_daily(y_test_ma, time_horizon)
     else:
         y_train_multi = create_multi_step(y_train, time_horizon)
-        y_val_multi   = create_multi_step(y_val, time_horizon)
-        y_test_multi  = create_multi_step(y_test, time_horizon)
-    
-    # 5) TRIM X TO MATCH THE LENGTH OF Y (for each dataset)
+        y_val_multi = create_multi_step(y_val, time_horizon)
+        y_test_multi = create_multi_step(y_test, time_horizon)
+
+    # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
     min_len_train = min(len(x_train), len(y_train_multi))
     x_train = x_train.iloc[:min_len_train]
     y_train_multi = y_train_multi.iloc[:min_len_train]
-    
+
     min_len_val = min(len(x_val), len(y_val_multi))
     x_val = x_val.iloc[:min_len_val]
     y_val_multi = y_val_multi.iloc[:min_len_val]
-    
+
     min_len_test = min(len(x_test), len(y_test_multi))
     x_test = x_test.iloc[:min_len_test]
     y_test_multi = y_test_multi.iloc[:min_len_test]
-    
-    train_dates = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
-    val_dates   = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
-    test_dates  = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
 
-    # 6) PER-PLUGIN PROCESSING (ONLY MODIFY WHAT IS NEEDED)
+    # Use the trimmed DATE_TIME indices
+    train_dates = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
+    val_dates = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
+    test_dates = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
+
+    # 6) PER-PLUGIN PROCESSING
     if config["plugin"] == "lstm":
         print("Processing data for LSTM plugin...")
+        # (LSTM-specific processing remains unchanged.)
         x_train = x_train.to_numpy().astype(np.float32)
-        x_val   = x_val.to_numpy().astype(np.float32)
-        x_test  = x_test.to_numpy().astype(np.float32)
+        x_val = x_val.to_numpy().astype(np.float32)
+        x_test = x_test.to_numpy().astype(np.float32)
         window_size = config["window_size"]
         def create_sliding_windows_x(data, window_size, stride=1):
             windows = []
@@ -152,21 +198,20 @@ def process_data(config):
                 windows.append(data[i : i + window_size])
             return np.array(windows)
         x_train = create_sliding_windows_x(x_train, window_size, stride=1)
-        x_val   = create_sliding_windows_x(x_val, window_size, stride=1)
-        x_test  = create_sliding_windows_x(x_test, window_size, stride=1)
+        x_val = create_sliding_windows_x(x_val, window_size, stride=1)
+        x_test = create_sliding_windows_x(x_test, window_size, stride=1)
         if train_dates is not None:
             train_dates = [train_dates[i + window_size - 1] for i in range(0, len(train_dates) - window_size + 1)]
         if val_dates is not None:
             val_dates = [val_dates[i + window_size - 1] for i in range(0, len(val_dates) - window_size + 1)]
         if test_dates is not None:
             test_dates = [test_dates[i + window_size - 1] for i in range(0, len(test_dates) - window_size + 1)]
-        y_train_multi = y_train_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
-        y_val_multi   = y_val_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
-        y_test_multi  = y_test_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
+        y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
+        y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
+        y_test_multi = y_test_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
     elif config["plugin"] in ["cnn", "cnn_mmd"]:
         print("Processing data for CNN plugin using sliding windows...")
-        # For CNN, we assume x_* and y_* are still in raw DataFrame form.
-        # Create sliding windows only here.
+        # For CNN, create sliding windows for x only now.
         x_train, _, train_date_windows = create_sliding_windows(
             x_train, y_train_multi, config['window_size'], time_horizon, stride=1, date_times=train_dates
         )
@@ -181,8 +226,8 @@ def process_data(config):
         test_dates = test_date_windows
     elif config["plugin"] in ["transformer", "transformer_mmd"]:
         x_train = x_train.to_numpy().astype(np.float32)
-        x_val   = x_val.to_numpy().astype(np.float32)
-        x_test  = x_test.to_numpy().astype(np.float32)
+        x_val = x_val.to_numpy().astype(np.float32)
+        x_test = x_test.to_numpy().astype(np.float32)
         pos_dim = config.get("positional_encoding_dim", 16)
         num_features = x_train.shape[1]
         pos_encoding_train = generate_positional_encoding(num_features, pos_dim)
@@ -194,13 +239,13 @@ def process_data(config):
         x_train = np.concatenate([x_train, pos_encoding_train], axis=1)
         x_val = np.concatenate([x_val, pos_encoding_val], axis=1)
         x_test = np.concatenate([x_test, pos_encoding_test], axis=1)
-    # For other plugins, assume data remains as loaded.
-    
+    # For other plugins, data remains unchanged.
+
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
     print(" x_test: ", x_test.shape, " y_test: ", y_test_multi.shape)
-    
+
     return {
         "x_train": x_train,
         "y_train": y_train_multi,
