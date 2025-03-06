@@ -53,10 +53,11 @@ def process_data(config):
     """
     Processes data for different plugins, including ANN, CNN, LSTM, and Transformer.
     Loads and processes training, validation, and test datasets; extracts DATE_TIME information,
-    and trims each pair (x and y) to the common date range so that they share the same number of rows.
+    and trims each pair (x and y) to their common date range so that they share the same number of rows.
     
     Returns:
-        dict: Processed datasets for training, validation, and test, along with corresponding DATE_TIME arrays.
+        dict: Processed datasets for training, validation, and test, along with corresponding
+              DATE_TIME arrays.
     """
     import pandas as pd
     # 1) LOAD CSVs for train, validation, and test
@@ -107,12 +108,11 @@ def process_data(config):
     
     # Save original DATE_TIME indices (if available) AFTER trimming
     train_dates_orig = x_train.index if isinstance(x_train.index, pd.DatetimeIndex) else None
-    val_dates_orig = x_val.index if isinstance(x_val.index, pd.DatetimeIndex) else None
-    test_dates_orig = x_test.index if isinstance(x_test.index, pd.DatetimeIndex) else None
+    val_dates_orig   = x_val.index   if isinstance(x_val.index, pd.DatetimeIndex) else None
+    test_dates_orig  = x_test.index  if isinstance(x_test.index, pd.DatetimeIndex) else None
 
     # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
-
     def extract_target(df, col):
         if isinstance(col, str):
             if col not in df.columns:
@@ -122,29 +122,26 @@ def process_data(config):
             return df.iloc[:, [col]]
         else:
             raise ValueError("`target_column` must be str or int.")
-
     y_train = extract_target(y_train, target_col)
-    y_val = extract_target(y_val, target_col)
-    y_test = extract_target(y_test, target_col)
+    y_val   = extract_target(y_val, target_col)
+    y_test  = extract_target(y_test, target_col)
 
     # 3) CONVERT EACH DF TO NUMERIC, REASSIGN THE RESULT TO AVOID BUGS
     x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_train = y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
-    x_val = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
-    y_val = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
-    x_test = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
-    y_test = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
+    x_val   = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_val   = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
+    x_test  = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_test  = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
 
     # 4) MULTI-STEP TARGETS
     time_horizon = config["time_horizon"]
-
     def create_multi_step(y_df, horizon):
         blocks = []
         for i in range(len(y_df) - horizon):
             window = y_df.iloc[i + 1 : i + 1 + horizon].values.flatten()
             blocks.append(window)
         return pd.DataFrame(blocks, index=y_df.index[:-horizon])
-
     def create_multi_step_daily(y_df, horizon):
         blocks = []
         for i in range(len(y_df) - horizon * 24):
@@ -153,18 +150,17 @@ def process_data(config):
                 window.extend(y_df.iloc[i + d * 24].values.flatten())
             blocks.append(window)
         return pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
-
     if config.get("use_daily", False):
         y_train_ma = y_train.rolling(window=48, center=True, min_periods=1).mean()
-        y_val_ma = y_val.rolling(window=48, center=True, min_periods=1).mean()
-        y_test_ma = y_test.rolling(window=48, center=True, min_periods=1).mean()
+        y_val_ma   = y_val.rolling(window=48, center=True, min_periods=1).mean()
+        y_test_ma  = y_test.rolling(window=48, center=True, min_periods=1).mean()
         y_train_multi = create_multi_step_daily(y_train_ma, time_horizon)
-        y_val_multi = create_multi_step_daily(y_val_ma, time_horizon)
-        y_test_multi = create_multi_step_daily(y_test_ma, time_horizon)
+        y_val_multi   = create_multi_step_daily(y_val_ma, time_horizon)
+        y_test_multi  = create_multi_step_daily(y_test_ma, time_horizon)
     else:
         y_train_multi = create_multi_step(y_train, time_horizon)
-        y_val_multi = create_multi_step(y_val, time_horizon)
-        y_test_multi = create_multi_step(y_test, time_horizon)
+        y_val_multi   = create_multi_step(y_val, time_horizon)
+        y_test_multi  = create_multi_step(y_test, time_horizon)
 
     # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
     min_len_train = min(len(x_train), len(y_train_multi))
@@ -179,18 +175,16 @@ def process_data(config):
     x_test = x_test.iloc[:min_len_test]
     y_test_multi = y_test_multi.iloc[:min_len_test]
 
-    # Use the trimmed DATE_TIME indices
     train_dates = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
-    val_dates = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
-    test_dates = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
+    val_dates   = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
+    test_dates  = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
 
     # 6) PER-PLUGIN PROCESSING
     if config["plugin"] == "lstm":
         print("Processing data for LSTM plugin...")
-        # (LSTM-specific processing remains unchanged.)
         x_train = x_train.to_numpy().astype(np.float32)
-        x_val = x_val.to_numpy().astype(np.float32)
-        x_test = x_test.to_numpy().astype(np.float32)
+        x_val   = x_val.to_numpy().astype(np.float32)
+        x_test  = x_test.to_numpy().astype(np.float32)
         window_size = config["window_size"]
         def create_sliding_windows_x(data, window_size, stride=1):
             windows = []
@@ -198,8 +192,8 @@ def process_data(config):
                 windows.append(data[i : i + window_size])
             return np.array(windows)
         x_train = create_sliding_windows_x(x_train, window_size, stride=1)
-        x_val = create_sliding_windows_x(x_val, window_size, stride=1)
-        x_test = create_sliding_windows_x(x_test, window_size, stride=1)
+        x_val   = create_sliding_windows_x(x_val, window_size, stride=1)
+        x_test  = create_sliding_windows_x(x_test, window_size, stride=1)
         if train_dates is not None:
             train_dates = [train_dates[i + window_size - 1] for i in range(0, len(train_dates) - window_size + 1)]
         if val_dates is not None:
@@ -207,18 +201,18 @@ def process_data(config):
         if test_dates is not None:
             test_dates = [test_dates[i + window_size - 1] for i in range(0, len(test_dates) - window_size + 1)]
         y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
-        y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
-        y_test_multi = y_test_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
+        y_val_multi   = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
+        y_test_multi  = y_test_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
     elif config["plugin"] in ["cnn", "cnn_mmd"]:
         print("Processing data for CNN plugin using sliding windows...")
-        # For CNN, create sliding windows for x only now.
-        x_train, _, train_date_windows = create_sliding_windows(
+        # For CNN, apply sliding windows to both x and y so that their windowed versions share the same number of samples.
+        x_train, y_train_multi, train_date_windows = create_sliding_windows(
             x_train, y_train_multi, config['window_size'], time_horizon, stride=1, date_times=train_dates
         )
-        x_val, _, val_date_windows = create_sliding_windows(
+        x_val, y_val_multi, val_date_windows = create_sliding_windows(
             x_val, y_val_multi, config['window_size'], time_horizon, stride=1, date_times=val_dates
         )
-        x_test, _, test_date_windows = create_sliding_windows(
+        x_test, y_test_multi, test_date_windows = create_sliding_windows(
             x_test, y_test_multi, config['window_size'], time_horizon, stride=1, date_times=test_dates
         )
         train_dates = train_date_windows
@@ -226,8 +220,8 @@ def process_data(config):
         test_dates = test_date_windows
     elif config["plugin"] in ["transformer", "transformer_mmd"]:
         x_train = x_train.to_numpy().astype(np.float32)
-        x_val = x_val.to_numpy().astype(np.float32)
-        x_test = x_test.to_numpy().astype(np.float32)
+        x_val   = x_val.to_numpy().astype(np.float32)
+        x_test  = x_test.to_numpy().astype(np.float32)
         pos_dim = config.get("positional_encoding_dim", 16)
         num_features = x_train.shape[1]
         pos_encoding_train = generate_positional_encoding(num_features, pos_dim)
@@ -239,13 +233,13 @@ def process_data(config):
         x_train = np.concatenate([x_train, pos_encoding_train], axis=1)
         x_val = np.concatenate([x_val, pos_encoding_val], axis=1)
         x_test = np.concatenate([x_test, pos_encoding_test], axis=1)
-    # For other plugins, data remains unchanged.
-
+    # For other plugins, assume data remains as loaded.
+    
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
     print(" x_test: ", x_test.shape, " y_test: ", y_test_multi.shape)
-
+    
     return {
         "x_train": x_train,
         "y_train": y_train_multi,
