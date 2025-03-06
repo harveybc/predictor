@@ -49,7 +49,7 @@ DEFAULT_VALUES = {
     'initial_layer_size': 256,
     'intermediate_layers': 5,
     'layer_size_divisor': 2,
-    'l2_reg': 1e-3,          # L2 regularization factor
+    'l2_reg': 1e-1,          # L2 regularization factor
     'early_patience': 32,           # Early stopping patience
     'max_steps_train': 20000,
     'max_steps_test': 20000,
