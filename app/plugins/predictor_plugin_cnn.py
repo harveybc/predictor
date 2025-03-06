@@ -176,26 +176,49 @@ class Plugin:
         from keras.layers import Input, Dense, Conv1D, MaxPooling1D, BatchNormalization, Flatten
         inputs = Input(shape=input_shape, name="model_input")
         x = inputs
-        x = Dense(
-            units=layers[0],
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg)
-        )(x)
-        for idx, size in enumerate(layers[:-1]):
-            if size > 1:
-                x = Conv1D(
-                    filters=size,
-                    kernel_size=3,
-                    activation='relu',
-                    kernel_initializer=HeNormal(),
-                    padding='same',
-                    kernel_regularizer=l2(self.params.get('l2_reg', 1e-2)),
-                    name=f"conv1d_{idx+1}"
-                )(x)
-                x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
-        x = BatchNormalization()(x)
+
+        # If using sliding windows, add positional encoding to the input.
+        # This mirrors the decoder's addition of positional information.
+        if self.params.get('use_pos_enc', False):
+            def add_pos_enc(x):
+                window_size = tf.shape(x)[1]
+                positions = tf.range(start=0, limit=window_size, delta=1, dtype=tf.float32)
+                positions = tf.expand_dims(positions, axis=1)  # (window_size, 1)
+                feat_dim = tf.shape(x)[-1]
+                i = tf.range(start=0, limit=feat_dim, delta=1, dtype=tf.float32)
+                i = tf.expand_dims(i, axis=0)  # (1, feat_dim)
+                angle_rates = 1 / tf.pow(10000.0, (2 * (tf.floor(i/2))) / tf.cast(feat_dim, tf.float32))
+                angle_rads = tf.cast(positions, tf.float32) * angle_rates
+                sinusoids = tf.concat([tf.sin(angle_rads[:, 0::2]), tf.cos(angle_rads[:, 1::2])], axis=-1)
+                pos_encoding = tf.expand_dims(sinusoids, axis=0)  # (1, window_size, feat_dim)
+                pos_encoding = tf.cast(pos_encoding, x.dtype)      # Cast to match x's dtype
+                return x + pos_encoding
+
+            x = tf.keras.layers.Lambda(add_pos_enc, name="encoder_positional_encoding")(x)
+
+        # Build convolutional blocks that downsample the input
+        # Each block applies a Conv1D layer then downsampling via MaxPooling1D.
+        self.skip_connections = []  # Reset skip connections (to be used by the decoder)
+        l2_reg = self.params.get('l2_reg', 1e-4)
+        for idx, size in enumerate(layers[:-1]):  # Exclude the final interface_size
+            x = Conv1D(filters=size,
+                       kernel_size=3,
+                       activation=self.params['activation'],
+                       kernel_initializer=HeNormal(),
+                       padding='same',
+                       kernel_regularizer=l2(l2_reg),
+                       name=f"conv1d_{idx+1}")(x)
+            # Store skip connection BEFORE pooling for later concatenation in the decoder.
+            self.skip_connections.append(x)
+            x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+
+        # Apply batch normalization and a dense transformation to refine features.
+        x = BatchNormalization(name="batch_norm1")(x)
+        self.pre_flatten_shape = x.shape[1:]
+        print(f"[Encoder] Pre-flatten shape: {self.pre_flatten_shape}")
         x = Flatten(name="flatten")(x)
+        # Final Dense layer to produce the latent vector.
+        
         model_output = Dense(
             units=layers[-1],
             activation='linear',
