@@ -317,7 +317,7 @@ def run_prediction_pipeline(config, plugin):
 
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
-        iter_start_time = time.time()
+        iteration_start_time = time.time()
         if config["plugin"] in ["cnn", "cnn_mmd"]:
             plugin.build_model(input_shape=(window_size, x_train.shape[2]), config=config)
         elif config["plugin"] == "lstm":
@@ -349,49 +349,131 @@ def run_prediction_pipeline(config, plugin):
         plt.close()
         print(f"Loss plot saved to {config['loss_plot_file']}")
 
+        # Evaluate on test dataset
+        print("\nEvaluating on test dataset...")
+        test_predictions = plugin.predict(x_test)
+        from sklearn.metrics import r2_score
+        # Make sure to use the same number of samples as in predictions.
+        n_test = test_predictions.shape[0]
+        test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
+        test_r2 = r2_score(y_test[:n_test], test_predictions)
+        
+
         print("*************************************************")
         print(f"Iteration {iteration} completed.")
         print(f"Training MAE: {train_mae}")
         print(f"Training R²: {train_r2}")
         print(f"Validation MAE: {val_mae}")
         print(f"Validation R²: {val_r2}")
+        print(f"Test MAE: {test_mae}")
+        print(f"Test R²: {test_r2}")
         print("*************************************************")
         
         training_mae_list.append(train_mae)
         training_r2_list.append(train_r2)
         validation_mae_list.append(val_mae)
         validation_r2_list.append(val_r2)
-        
-        iter_end_time = time.time()
-        print(f"Iteration {iteration} completed in {iter_end_time - iter_start_time:.2f} seconds")
-    
-    # Evaluate on test dataset
-    print("\nEvaluating on test dataset...")
-    test_predictions = plugin.predict(x_test)
-    from sklearn.metrics import r2_score
-    # Make sure to use the same number of samples as in predictions.
-    n_test = test_predictions.shape[0]
-    test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
-    test_r2 = r2_score(y_test[:n_test], test_predictions)
+        test_mae_list.append(test_mae)
+        test_r2_list.append(test_r2)
+
+
+        iteration_end_time = time.time()
+        print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
+
+    # -----------------------
+    # Aggregate statistics
+    # -----------------------
+    results = {
+        "Metric": ["Training MAE", "Training R²", "Validation MAE", "Validation R²", "Test MAE", "Test R²"],
+        "Average": [np.mean(training_mae_list), np.mean(training_r2_list),
+                    np.mean(validation_mae_list), np.mean(validation_r2_list),
+                    np.mean(test_mae_list), np.mean(test_r2_list)],
+        "Std Dev": [np.std(training_mae_list), np.std(training_r2_list),
+                    np.std(validation_mae_list), np.std(validation_r2_list),
+                    np.std(test_mae_list), np.std(test_r2_list)],
+        "Max": [np.max(training_mae_list), np.max(training_r2_list),
+                np.max(validation_mae_list), np.max(validation_r2_list),
+                np.max(test_mae_list), np.max(test_r2_list)],
+        "Min": [np.min(training_mae_list), np.min(training_r2_list),
+                np.min(validation_mae_list), np.min(validation_r2_list),
+                np.min(test_mae_list), np.min(test_r2_list)],
+    }
     print("*************************************************")
-    print(f"Test MAE: {test_mae}")
-    print(f"Test R²: {test_r2}")
+    print("Training Statistics:")
+    print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
+    print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
+    print("\nValidation Statistics:")
+    print(f"MAE - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
+    print(f"R²  - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
+    print("\nTest Statistics:")
+    print(f"MAE - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
+    print(f"R²  - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
     print("*************************************************")
-    test_mae_list.append(test_mae)
-    test_r2_list.append(test_r2)
-    
-    # Save test predictions to CSV, including DATE_TIME if available.
-    test_output_file = config.get("output_test_file", "test_predictions.csv")
-    test_predictions_df = pd.DataFrame(test_predictions, columns=[f"Prediction_{i+1}" for i in range(test_predictions.shape[1])])
-    if test_dates is not None:
-        test_predictions_df.insert(0, "DATE_TIME", pd.Series(test_dates[:len(test_predictions_df)]))
+    results_file = config.get("results_file", "results.csv")
+    results_df = pd.DataFrame(results)
+    results_df.to_csv(results_file, index=False)
+    print(f"Results saved to {results_file}")
+
+    # Save final validation predictions
+    final_test_file = config.get("output_file", "test_predictions.csv")
+    if 'test_predictions' in locals() and test_predictions is not None:
+        # Denormalize predictions (simple denormalization using CLOSE values)
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                try:
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                except Exception as e:
+                    print(f"Error loading normalization JSON from {norm_json}: {e}")
+                    norm_json = {}
+            elif not isinstance(norm_json, dict):
+                print("Error: Normalization JSON is not a valid dictionary.")
+                norm_json = {}
+            if "CLOSE" in norm_json:
+                min_val = norm_json["CLOSE"].get("min", 0)
+                max_val = norm_json["CLOSE"].get("max", 1)
+                # Simple denormalization: original = normalized*(max-min) + min
+                test_predictions = test_predictions * (max_val - min_val) + min_val
+
+        test_predictions_df = pd.DataFrame(
+            test_predictions, 
+            columns=[f"Prediction_{i+1}" for i in range(test_predictions.shape[1])]
+        )
+        if test_dates is not None:
+            test_predictions_df['DATE_TIME'] = pd.Series(test_dates[:len(test_predictions_df)])
+        else:
+            test_predictions_df['DATE_TIME'] = pd.NaT
+        cols = ['DATE_TIME'] + [col for col in test_predictions_df.columns if col != 'DATE_TIME']
+        test_predictions_df = test_predictions_df[cols]
+        test_predictions_df.to_csv(final_test_file, index=False)
+        print(f"Final validation predictions saved to {final_test_file}")
     else:
-        test_predictions_df['DATE_TIME'] = pd.NaT
-    cols = ['DATE_TIME'] + [col for col in test_predictions_df.columns if col != 'DATE_TIME']
-    test_predictions_df = test_predictions_df[cols]
-    test_predictions_df.to_csv(test_output_file, index=False)
-    print(f"Test predictions saved to {test_output_file}")
-    
+        print("Warning: No final validation predictions were generated (all iterations may have failed).")
+
+    try:
+        plot_model(
+            plugin.model, 
+            to_file=config['model_plot_file'],
+            show_shapes=True,
+            show_dtype=False,
+            show_layer_names=True,
+            expand_nested=True,
+            dpi=300,
+            show_layer_activations=True
+        )
+        print(f"Model plot saved to {config['model_plot_file']}")
+    except Exception as e:
+        print(f"Failed to generate model plot. Ensure Graphviz is installed and in your PATH: {e}")
+        print("Download Graphviz from https://graphviz.org/download/")
+
+    save_model_file = config.get("save_model", "pretrained_model.keras")
+    try:
+        plugin.save(save_model_file)
+        print(f"Model saved to {save_model_file}")  
+    except Exception as e:
+        print(f"Failed to save model to {save_model_file}: {e}")
+
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
 
