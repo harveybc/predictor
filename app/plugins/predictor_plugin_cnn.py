@@ -295,7 +295,7 @@ class Plugin:
         callbacks.append(early_stopping)
         lr_reducer = ReduceLROnPlateau(
             monitor=early_monitor,
-            factor=0.1,
+            factor=0.5,
             patience=int(early_patience / 3),
             verbose=1,
             min_lr=self.params.get('min_lr', 1e-8)
