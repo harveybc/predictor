@@ -92,7 +92,7 @@ def process_data(config):
         max_rows=config.get("max_steps_test")
     )
     
-    # 1a) Trim each pair to their common date range (if both have a DatetimeIndex)
+    # 1a) If both x and y have DatetimeIndex, trim them to their common date range.
     if isinstance(x_train.index, pd.DatetimeIndex) and isinstance(y_train.index, pd.DatetimeIndex):
         common_train_index = x_train.index.intersection(y_train.index)
         x_train = x_train.loc[common_train_index]
@@ -184,7 +184,6 @@ def process_data(config):
         x_val = x_val.to_numpy().astype(np.float32)
         x_test = x_test.to_numpy().astype(np.float32)
         window_size = config["window_size"]
-        # Create sliding windows for x only
         def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
             windows = []
             dt_windows = []
@@ -212,7 +211,7 @@ def process_data(config):
         x_train, train_dates = create_sliding_windows_x(x_train, config['window_size'], stride=1, date_times=train_dates)
         x_val, val_dates = create_sliding_windows_x(x_val, config['window_size'], stride=1, date_times=val_dates)
         x_test, test_dates = create_sliding_windows_x(x_test, config['window_size'], stride=1, date_times=test_dates)
-        # Trim target arrays so that their lengths match the sliding-windowed x arrays.
+        # For CNN, trim the targets by the same amount (window_size - 1)
         trim_amount = config['window_size'] - 1
         y_train_multi = y_train_multi.to_numpy().astype(np.float32)[trim_amount:]
         y_val_multi = y_val_multi.to_numpy().astype(np.float32)[trim_amount:]
@@ -250,7 +249,6 @@ def process_data(config):
         "dates_val": val_dates,
         "dates_test": test_dates,
     }
-
 
 def run_prediction_pipeline(config, plugin):
     """
@@ -302,7 +300,7 @@ def run_prediction_pipeline(config, plugin):
     epochs = config["epochs"]
     threshold_error = config["threshold_error"]
 
-    # Ensure data are NumPy arrays
+    # Ensure data are NumPy arrays (if not already)
     for var_name in ["x_train", "y_train", "x_val", "y_val", "x_test", "y_test"]:
         arr = locals()[var_name]
         if isinstance(arr, pd.DataFrame):
@@ -371,8 +369,10 @@ def run_prediction_pipeline(config, plugin):
     print("\nEvaluating on test dataset...")
     test_predictions = plugin.predict(x_test)
     from sklearn.metrics import r2_score
-    test_mae = np.mean(np.abs(test_predictions - y_test[:x_test.shape[0]]))
-    test_r2 = r2_score(y_test[:x_test.shape[0]], test_predictions)
+    # Make sure to use the same number of samples as in predictions.
+    n_test = test_predictions.shape[0]
+    test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
+    test_r2 = r2_score(y_test[:n_test], test_predictions)
     print("*************************************************")
     print(f"Test MAE: {test_mae}")
     print(f"Test R²: {test_r2}")

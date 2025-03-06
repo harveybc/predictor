@@ -29,7 +29,6 @@ DEFAULT_VALUES = {
     'loss_plot_file': './loss_plot.png',
     'model_plot_file': './model_plot.png',	
     'plugin': 'cnn',
-    'time_horizon': 6,
     'use_daily': False, # isntead of predicting the next time_horizon hours, predict the next time_horizon days.
     'threshold_error': 0.0001,
     'remote_log': None,
@@ -44,11 +43,15 @@ DEFAULT_VALUES = {
     'force_date': False,
     'headers': True,
     'input_offset': 0,
+    'time_horizon': 6,
     'window_size': 256,  # Number of time steps in each window (e.g., 24 for daily patterns)
+    'intermediate_layers': 2,
+    'initial_layer_size': 16,
+    'layer_size_divisor': 2,
     'l2_reg': 1e-4,          # L2 regularization factor
     'patience': 30,           # Early stopping patience
-    'max_steps_train': 6300,
-    'max_steps_test': 6300,
+    'max_steps_train': 20000,
+    'max_steps_test': 20000,
     'iterations': 3,
     'epochs': 1000
     
