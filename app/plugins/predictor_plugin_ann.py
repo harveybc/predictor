@@ -58,7 +58,7 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    def build_model(self, input_shape):
+    def build_model(self, input_shape, config=None):
         """
         Build the ANN with final layer = self.params['time_horizon'] for multi-step outputs.
         
