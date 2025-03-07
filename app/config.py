@@ -1,18 +1,18 @@
 # config.py
 
 DEFAULT_VALUES = {
-    "use_normalization_json": "examples\\data\\phase_3\\debug_out.json",
+    "use_normalization_json": "examples\\config\\phase_2_normalizer_debug_out.json",
 
 
     "x_train_file": "examples\\data\\phase_3\\phase_3_encoder_eval_d2.csv",
     #"x_train_file": "examples\\data\\phase_2\\normalized_d2.csv",
     #"x_train_file": "examples\\data\\phase_3\\extracted_features_transformer_va_d2.csv",
-    "y_train_file": "examples\\data\\phase_3\\phase_3_normalized_d2.csv",
+    "y_train_file": "examples\\data\\phase_3\\phase_2_normalized_d2.csv",
     
     "x_validation_file": "examples\\data\\phase_3\\phase_3_encoder_eval_d3.csv",
     #"x_validation_file": "examples\\data\\phase_2\\normalized_d3.csv",
     #"x_validation_file": "examples\\data\\phase_3\\extracted_features_transformer_va_d2.csv",
-    "y_validation_file": "examples\\data\\phase_3\\phase_3_normalized_d3.csv",
+    "y_validation_file": "examples\\data\\phase_3\\phase_2_normalized_d3.csv",
     
     'target_column': 'CLOSE',
     'output_file': './prediction.csv',
