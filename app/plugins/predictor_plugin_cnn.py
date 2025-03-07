@@ -224,8 +224,7 @@ class Plugin:
                         padding='same')(x)
                 
             self.skip_connections.append(x)
-            if idx < len(layers) - 2:
-                x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+            x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
         x = Flatten()(x)
         model_output = Dense(units=layers[-1],
                              activation=self.params['activation'],
