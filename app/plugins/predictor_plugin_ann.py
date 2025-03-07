@@ -28,7 +28,7 @@ class Plugin:
 
     # Default parameters
     plugin_params = {
-        'batch_size': 128,
+        'batch_size': 32,
         'intermediate_layers': 3,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
