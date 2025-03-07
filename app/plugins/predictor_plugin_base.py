@@ -214,14 +214,19 @@ class Plugin:
         return mse
 
     def calculate_mae(self, y_true, y_pred):
-        """
-        Compute the flatten-based MAE, consistent with shape (N, time_horizon).
-        """
         # Convert to numpy array if inputs are DataFrames
         if isinstance(y_true, pd.DataFrame):
-            y_true = y_true.to_numpy()
+            # Use to_numpy() if available, otherwise use .values
+            y_true = y_true.to_numpy() if hasattr(y_true, "to_numpy") else y_true.values
+        else:
+            # Ensure conversion in case y_true is not an ndarray already
+            y_true = np.array(y_true)
+        
         if isinstance(y_pred, pd.DataFrame):
-            y_pred = y_pred.to_numpy()
+            y_pred = y_pred.to_numpy() if hasattr(y_pred, "to_numpy") else y_pred.values
+        else:
+            y_pred = np.array(y_pred)
+
         print(f"y_true sample: {y_true.flatten()[:5]}")
         print(f"y_pred sample: {y_pred.flatten()[:5]}")
         mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
