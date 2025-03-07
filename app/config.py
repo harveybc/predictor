@@ -49,7 +49,7 @@ DEFAULT_VALUES = {
     'initial_layer_size': 24,
     'intermediate_layers': 3,
     'layer_size_divisor': 2,
-    'l2_reg':2e-5,          # L2 regularization factor, best 1e-3 = TestMAE:0.0103 R2:0.9921
+    'l2_reg':3e-5,          # L2 regularization factor, best 1e-3 = TestMAE:0.0103 R2:0.9921
     'max_steps_train': 20000,
     'max_steps_test': 20000,
     'iterations': 3,
