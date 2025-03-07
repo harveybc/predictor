@@ -222,12 +222,12 @@ class Plugin:
                         activation=self.params['activation'],
                         kernel_initializer=HeNormal(),
                         padding='same',
-                        name=f"conv1d_{idx+1}",
-                        kernel_regularizer=l2(l2_reg))(x)
+                        name=f"conv1d_{idx+1}")(x)
                 
             self.skip_connections.append(x)
             if idx < len(layers) - 2:
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+        x=BatchNormalization()(x)
         x = Conv1D(filters=1,
                         kernel_size=3,
                         activation='tanh',
