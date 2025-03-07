@@ -5,7 +5,7 @@ DEFAULT_VALUES = {
 
 
     #"x_train_file": "examples\\data\\phase_3\\exp_2\\phase_3_encoder_eval_d1.csv",
-    "y_train_file": "examples\\data\\phase_3\\exp_2\\normalized_d1.csv",
+    "x_train_file": "examples\\data\\phase_3\\exp_2\\normalized_d1.csv",
     
     "y_train_file": "examples\\data\\phase_3\\exp_2\\normalized_d1.csv",
     #"x_train_file": "examples\\data\\phase_2\\normalized_d2.csv",
