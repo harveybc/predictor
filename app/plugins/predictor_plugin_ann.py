@@ -103,14 +103,22 @@ class Plugin:
         idx = 0
         for size in layers[:-1]:
             idx += 1
-            x = Dense(
-                units=size,
-                activation=self.params['activation'],
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
-                name=f"dense_layer_{idx}"
-            )(x)
-
+            if idx==1:
+                x = Dense(
+                    units=size,
+                    activation='linear',
+                    kernel_initializer=GlorotUniform(),
+                    kernel_regularizer=l2(l2_reg),
+                    name=f"dense_layer_{idx}"
+                )(x)
+            else:
+                x = Dense(
+                    units=size,
+                    activation=self.params['activation'],
+                    kernel_initializer=GlorotUniform(),
+                    kernel_regularizer=l2(l2_reg),
+                    name=f"dense_layer_{idx}"
+                )(x)
         #add batch normalization
         x = BatchNormalization()(x)
         # Output layer => shape (N, time_horizon)
