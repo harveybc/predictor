@@ -43,20 +43,20 @@ DEFAULT_VALUES = {
     'quiet_mode': False,
     'force_date': False,
     'headers': True,
-    'learning_rate': 1e-3,
+    'learning_rate': 1e-4,
     'time_horizon': 6,
     'window_size': 24,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'initial_layer_size': 128,
     'intermediate_layers': 3,
     'layer_size_divisor': 2,
-    'l2_reg': 1e-2,          # L2 regularization factor, best 1e-3 = TestMAE:0.0103 R2:0.9921
+    'l2_reg': 5e-3,          # L2 regularization factor, best 1e-3 = TestMAE:0.0103 R2:0.9921
     'max_steps_train': 20000,
     'max_steps_test': 20000,
     'iterations': 3,
     'epochs': 2000,
     'use_mmd':True,
     'mmd_sigma': 1.0,  # adjust as needed
-    'statistical_loss_weight': 0.01,  # adjust as needed
+    'statistical_loss_weight': 1e-3,  # adjust as needed
     'use_pos_enc': False,
     'early_monitor': 'val_loss',
     'early_patience': 45 #early stopping patience
