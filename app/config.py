@@ -43,7 +43,7 @@ DEFAULT_VALUES = {
     'quiet_mode': False,
     'force_date': False,
     'headers': True,
-    'learning_rate': 1e-3,
+    'learning_rate': 1e-4,
     'time_horizon': 6,
     'window_size': 192,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'initial_layer_size': 32,
