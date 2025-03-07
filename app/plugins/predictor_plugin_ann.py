@@ -33,7 +33,7 @@ class Plugin:
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
-        'activation': 'tanh',
+        'activation': 'relu',
         'l2_reg': 1e-5
     }
     
