@@ -74,7 +74,7 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    def build_model(self, input_shape):
+    def build_model(self, input_shape, config=None):
         """
         Build the model placeholder.
 
@@ -121,7 +121,7 @@ class Plugin:
 
         return preds
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the plugin with a single-pass multi-output regression.
 
