@@ -43,7 +43,7 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    def build_model(self, input_shape):
+    def build_model(self, input_shape, config=None):
         """
         Build the LSTM model for multi-step time-series forecasting.
 
@@ -124,7 +124,7 @@ class Plugin:
 
 
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the LSTM model with optional validation data.
         """
