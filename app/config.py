@@ -46,7 +46,7 @@ DEFAULT_VALUES = {
     'learning_rate': 1e-4,
     'time_horizon': 6,
     'window_size': 24,  # Number of time steps in each window (e.g., 24 for daily patterns)
-    'initial_layer_size': 24,
+    'initial_layer_size': 256,
     'intermediate_layers': 3,
     'layer_size_divisor': 2,
     'l2_reg':3e-5,          # L2 regularization factor, best 1e-3 = TestMAE:0.0103 R2:0.9921
