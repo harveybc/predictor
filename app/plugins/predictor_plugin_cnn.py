@@ -207,7 +207,7 @@ class Plugin:
             x = tf.keras.layers.Lambda(add_pos_enc, name="encoder_positional_encoding")(x)
         # Build convolutional blocks
         self.skip_connections = []
-        l2_reg = self.params.get('l2_reg', 1e-2)
+        l2_reg = self.params.get('l2_reg', 1e-4)
         for idx, size in enumerate(layers[:-1]):
             if idx==0:
                 x = Conv1D(filters=size,
@@ -221,10 +221,13 @@ class Plugin:
                         kernel_size=3,
                         activation=self.params['activation'],
                         kernel_initializer=HeNormal(),
-                        padding='same')(x)
+                        padding='same',
+                        kernel_regularizer=l2(l2_reg))(x)
                 
             self.skip_connections.append(x)
-        x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+            x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+        # Apply batch normalization and a dense transformation to refine features.
+        x = BatchNormalization()(x)    
         x = Flatten()(x)
         model_output = Dense(units=layers[-1],
                              activation='linear',
