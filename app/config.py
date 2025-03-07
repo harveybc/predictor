@@ -56,7 +56,7 @@ DEFAULT_VALUES = {
     'epochs': 2000,
     'use_mmd':True,
     'mmd_sigma': 1.0,  # adjust as needed
-    'statistical_loss_weight': 0.2,  # adjust as needed
+    'statistical_loss_weight': 0.01,  # adjust as needed
     'use_pos_enc': False,
     'early_monitor': 'val_loss',
     'early_patience': 45 #early stopping patience
