@@ -212,10 +212,9 @@ class Plugin:
             if idx==0:
                 x = Conv1D(filters=size,
                         kernel_size=3,
-                        activation='linear',
+                        activation='tanh',
                         kernel_initializer=HeNormal(),
                         padding='same',
-                        kernel_regularizer=l2(l2_reg),
                         name=f"conv1d_{idx+1}")(x)
             else:
                 x = Conv1D(filters=size,
@@ -223,18 +222,18 @@ class Plugin:
                         activation=self.params['activation'],
                         kernel_initializer=HeNormal(),
                         padding='same',
-                        kernel_regularizer=l2(l2_reg),
-                        name=f"conv1d_{idx+1}")(x)
+                        name=f"conv1d_{idx+1}",
+                        kernel_regularizer=l2(l2_reg))(x)
                 
             self.skip_connections.append(x)
             if idx < len(layers) - 2:
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
         x = Conv1D(filters=1,
                         kernel_size=3,
-                        activation='linear',
+                        activation='tanh',
                         kernel_initializer=HeNormal(),
-                        padding='same',
-                        kernel_regularizer=l2(l2_reg))(x)
+                        padding='same')(x)
+                        
         model_output = Flatten()(x)
         
         self.model = Model(inputs=inputs, outputs=model_output, name="cnn_model")
