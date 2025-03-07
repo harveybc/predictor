@@ -172,11 +172,9 @@ class Plugin:
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
-        Train the CNN predictor model using EarlyStopping, ReduceLROnPlateau, DebugLearningRate,
+        Train the predictor model using EarlyStopping, ReduceLROnPlateau, DebugLearningRate,
         UpdateOverfitPenalty, and MemoryCleanup callbacks.
         """
-        if x_train.ndim != 3:
-            raise ValueError(f"x_train must be 3D with shape (samples, window_size, features). Found: {x_train.shape}")
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N, {exp_horizon}).")
