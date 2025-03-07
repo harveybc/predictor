@@ -214,7 +214,7 @@ class Plugin:
                         kernel_size=3,
                         activation='tanh',
                         kernel_initializer=HeNormal(),
-                        padding='same'
+                        padding='same',
                         kernel_regularizer=l2(l2_reg))(x)
             else:
                 x = Conv1D(filters=size,
