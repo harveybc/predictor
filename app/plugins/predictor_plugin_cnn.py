@@ -226,13 +226,14 @@ class Plugin:
             self.skip_connections.append(x)
             if idx < len(layers) - 2:
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
-        x = Conv1D(filters=1,
-                        kernel_size=3,
-                        activation='tanh',
-                        kernel_initializer=HeNormal(),
-                        padding='same')(x)
+        x = Flatten()(x)
+        model_output = Dense(units=layers[-1],
+                             activation=self.params['activation'],
+                             kernel_initializer=GlorotUniform(),
+                             kernel_regularizer=l2(l2_reg),
+                             name="model_output")(x)
                         
-        model_output = Flatten()(x)
+        
         
         self.model = Model(inputs=inputs, outputs=model_output, name="cnn_model")
         print("CNN Model Summary:")
