@@ -212,7 +212,7 @@ class Plugin:
             if idx==0:
                 x = Conv1D(filters=size,
                         kernel_size=3,
-                        activation='linear',
+                        activation='tanh',
                         kernel_initializer=HeNormal(),
                         padding='same',
                         kernel_regularizer=l2(l2_reg))(x)
@@ -224,10 +224,10 @@ class Plugin:
                         padding='same')(x)
                 
             self.skip_connections.append(x)
-            x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+        x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
         x = Flatten()(x)
         model_output = Dense(units=layers[-1],
-                             activation='linear',
+                             activation=self.params['activation'],
                              kernel_initializer=GlorotUniform(),
                              kernel_regularizer=l2(l2_reg),
                              name="model_output")(x)
