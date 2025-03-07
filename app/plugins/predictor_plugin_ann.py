@@ -138,7 +138,7 @@ class Plugin:
         print("Predictor Model Summary:")
         self.model.summary()
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the model with shape => x_train(N, input_dim), y_train(N, time_horizon).
         """
