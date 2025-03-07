@@ -212,7 +212,7 @@ class Plugin:
                 x = Conv1D(filters=size,
                         kernel_size=3,
                         activation='linear',
-                        kernel_initializer=GlorotUniform(),
+                        kernel_initializer=HeNormal(),
                         padding='same',
                         kernel_regularizer=l2(l2_reg),
                         name=f"conv1d_{idx+1}")(x)
