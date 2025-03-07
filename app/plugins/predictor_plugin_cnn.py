@@ -25,7 +25,7 @@ class UpdateOverfitPenalty(Callback):
         if loss is None or val_loss is None:
             print("[UpdateOverfitPenalty] MAE metrics not available; overfit penalty not updated.")
             return
-        penalty = 0.05 * max(0, val_loss - loss)
+        penalty = 0.2 * max(0, val_loss - loss)
         tf.keras.backend.set_value(self.model.overfit_penalty, penalty)
         print(f"[UpdateOverfitPenalty] Epoch {epoch+1}: Updated overfit penalty to {penalty:.6f}")
 
