@@ -30,7 +30,7 @@ DEFAULT_VALUES = {
     'model_plot_file': './model_plot.png',	
     'plugin': 'cnn',
     'input_offset': 0,
-    'use_daily': True, # isntead of predicting the next time_horizon hours, predict the next time_horizon days.
+    'use_daily': True,  # isntead of predicting the next time_horizon hours, predict the next time_horizon days.
     'threshold_error': 0.0001,
     'remote_log': None,
     'remote_load_config': None,
