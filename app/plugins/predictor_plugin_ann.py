@@ -10,14 +10,6 @@ from keras.layers import GaussianNoise
 from keras import backend as K
 from sklearn.metrics import r2_score 
 
-import tensorflow_probability as tfp
-import tensorflow as tf
-from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import BatchNormalization, Dense
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import Huber
-
-
 import logging
 import os
 
@@ -66,219 +58,85 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    def build_model(self, input_shape, x_train):
+    def build_model(self, input_shape):
         """
-        Builds a Bayesian ANN using TensorFlow Probability.
-
+        Build the ANN with final layer = self.params['time_horizon'] for multi-step outputs.
+        
         Args:
-            input_shape (int): Number of input features.
-            x_train (np.ndarray): Training dataset to automatically determine train_size.
+            input_shape (int): Number of input features for ANN.
         """
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
+        
+        self.params['input_dim'] = input_shape
+        l2_reg = self.params.get('l2_reg', 1e-4)
+        time_horizon = self.params['time_horizon']  # the multi-step dimension
 
-        train_size = x_train.shape[0]  # Automatically get the number of training samples
-        kl_weight = 1 / max(1, train_size)  # Normalize KL divergence, avoid division by zero
-
-        # Define layer sizes
-        layer_sizes = []
+        # Dynamically set layer sizes
+        layers = []
         current_size = self.params['initial_layer_size']
-        divisor = self.params.get('layer_size_divisor', 2)
-        int_layers = self.params.get('intermediate_layers', 3)
-        time_horizon = self.params['time_horizon']
-
-        for _ in range(int_layers):
-            layer_sizes.append(current_size)
+        divisor = self.params['layer_size_divisor']
+        int_layers = 0
+        while int_layers < self.params['intermediate_layers']:
+            layers.append(current_size)
             current_size = max(current_size // divisor, 1)
-        layer_sizes.append(time_horizon)
+            int_layers += 1
 
-        print("Bayesian ANN Layer sizes:", layer_sizes)
-        print(f"Bayesian ANN input_shape: {input_shape}")
+        # Final layer => time_horizon units (N, time_horizon) output
+        layers.append(time_horizon)
 
-        # Custom posterior function with three arguments.
-        def posterior_fn(arg0, shape, name):
-            # The first argument is expected to be a tf.DType, but sometimes an integer is passed.
-            dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
-            # Convert the passed shape to a tuple; if it is empty, use () to represent a scalar.
-            try:
-                new_shape = tuple(shape)
-            except Exception:
-                new_shape = shape
-            if len(new_shape) == 0:
-                new_shape = ()
-            loc = tf.Variable(
-                initial_value=tf.random.normal(new_shape, stddev=0.1, dtype=dtype),
-                name=name + '_loc',
-                trainable=True
-            )
-            rho = tf.Variable(
-                initial_value=tf.constant(-3.0, shape=new_shape, dtype=dtype),
-                name=name + '_rho',
-                trainable=True
-            )
-            scale = tf.nn.softplus(rho)
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc, scale=scale),
-                reinterpreted_batch_ndims=1
-            )
+        print(f"ANN Layer sizes: {layers}")
+        print(f"ANN input_shape: {input_shape}")
 
-        # Custom prior function with three arguments.
-        def prior_fn(arg0, shape, name):
-            dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
-            try:
-                new_shape = tuple(shape)
-            except Exception:
-                new_shape = shape
-            if len(new_shape) == 0:
-                new_shape = ()
-            loc = tf.zeros(new_shape, dtype=dtype)
-            scale = tf.ones(new_shape, dtype=dtype)
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc, scale=scale),
-                reinterpreted_batch_ndims=1
-            )
-
-        # Build the Bayesian ANN
-        inputs = Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
-        x = inputs
-
-        # Intermediate Bayesian layers
-        for idx, size in enumerate(layer_sizes[:-1]):
-            x = tfp.layers.DenseVariational(
+        # Build the model
+        from tensorflow.keras import Model, Input
+        model_input = Input(shape=(input_shape,), name="model_input")
+        x = model_input
+        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
+        # Hidden Dense layers
+        idx = 0
+        for size in layers[:-1]:
+            idx += 1
+            x = Dense(
                 units=size,
-                make_posterior_fn=posterior_fn,
-                make_prior_fn=prior_fn,
-                kl_weight=kl_weight,
-                activation=self.params.get('activation', 'tanh'),
-                name=f"dense_layer_{idx+1}"
+                activation=self.params['activation'],
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"dense_layer_{idx}"
             )(x)
-            x = BatchNormalization()(x)
 
-        # Final Bayesian output layer
-        outputs = tfp.layers.DenseVariational(
-            units=layer_sizes[-1],
-            make_posterior_fn=posterior_fn,
-            make_prior_fn=prior_fn,
-            kl_weight=kl_weight,
+        #add batch normalization
+        x = BatchNormalization()(x)
+        # Output layer => shape (N, time_horizon)
+        model_output = Dense(
+            units=layers[-1],
             activation='linear',
-            name="output_layer"
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name="model_output"
         )(x)
+        #add batch normalization
+        #model_output = BatchNormalization()(model_output)
 
-        self.model = Model(inputs=inputs, outputs=outputs)
+        self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
 
-        # Compile the model
-        optimizer = Adam(learning_rate=self.params.get('learning_rate', 0.0001))
-        self.model.compile(
-            optimizer=optimizer,
-            loss=Huber(),
-            metrics=['mse', 'mae']
+        # Adam
+        adam_optimizer = Adam(
+            learning_rate=self.params['learning_rate'],
+            beta_1=0.9, beta_2=0.999,
+            epsilon=1e-7, amsgrad=False
         )
 
-        print("✅ Bayesian ANN model built successfully.")
-
-
-
-    def build_model(self, input_shape, x_train):
-        """
-        Builds a Bayesian ANN using TensorFlow Probability.
-
-        Args:
-            input_shape (int): Number of input features.
-            x_train (np.ndarray): Training dataset to automatically determine train_size.
-        """
-        if not isinstance(input_shape, int):
-            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
-
-        train_size = x_train.shape[0]  # Automatically get the number of training samples
-        kl_weight = 1 / max(1, train_size)  # Normalize KL divergence, avoid division by zero
-
-        # Define layer sizes
-        layer_sizes = []
-        current_size = self.params['initial_layer_size']
-        divisor = self.params.get('layer_size_divisor', 2)
-        int_layers = self.params.get('intermediate_layers', 3)
-        time_horizon = self.params['time_horizon']
-
-        for _ in range(int_layers):
-            layer_sizes.append(current_size)
-            current_size = max(current_size // divisor, 1)
-        layer_sizes.append(time_horizon)
-
-        print("Bayesian ANN Layer sizes:", layer_sizes)
-        print(f"Bayesian ANN input_shape: {input_shape}")
-
-        # Custom posterior function with three arguments.
-        def posterior_fn(arg0, shape, name):
-            # arg0 should be a tf.DType but sometimes it's not (e.g. 64), so default to tf.float32.
-            dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
-            # Ensure shape is non-empty; if empty, default to [1].
-            shape = shape if shape else [1]
-            loc = tf.Variable(
-                initial_value=tf.random.normal(shape, stddev=0.1, dtype=dtype),
-                name=name + '_loc',
-                trainable=True
-            )
-            rho = tf.Variable(
-                initial_value=tf.constant(-3.0, shape=shape, dtype=dtype),
-                name=name + '_rho',
-                trainable=True
-            )
-            scale = tf.nn.softplus(rho)
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc, scale=scale),
-                reinterpreted_batch_ndims=1
-            )
-
-        # Custom prior function with three arguments.
-        def prior_fn(arg0, shape, name):
-            dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
-            shape = shape if shape else [1]
-            loc = tf.zeros(shape, dtype=dtype)
-            scale = tf.ones(shape, dtype=dtype)
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc, scale=scale),
-                reinterpreted_batch_ndims=1
-            )
-
-        # Build the Bayesian ANN
-        inputs = Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
-        x = inputs
-
-        # Intermediate Bayesian layers
-        for idx, size in enumerate(layer_sizes[:-1]):
-            x = tfp.layers.DenseVariational(
-                units=size,
-                make_posterior_fn=posterior_fn,
-                make_prior_fn=prior_fn,
-                kl_weight=kl_weight,
-                activation=self.params.get('activation', 'tanh'),
-                name=f"dense_layer_{idx+1}"
-            )(x)
-            x = BatchNormalization()(x)
-
-        # Final Bayesian output layer
-        outputs = tfp.layers.DenseVariational(
-            units=layer_sizes[-1],
-            make_posterior_fn=posterior_fn,
-            make_prior_fn=prior_fn,
-            kl_weight=kl_weight,
-            activation='linear',
-            name="output_layer"
-        )(x)
-
-        self.model = Model(inputs=inputs, outputs=outputs)
-
-        # Compile the model
-        optimizer = Adam(learning_rate=self.params.get('learning_rate', 0.0001))
+        # Compile
         self.model.compile(
-            optimizer=optimizer,
-            loss=Huber(),
-            metrics=['mse', 'mae']
+            optimizer=adam_optimizer,
+            loss=Huber(),  # or 'mse'
+            #loss='mae',  # or 'mse'
+            metrics=['mse', 'mae']  # logs multi-step MSE/MAE
         )
-
-        print("✅ Bayesian ANN model built successfully.")
-
-
+        
+        print("Predictor Model Summary:")
+        self.model.summary()
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
@@ -348,23 +206,12 @@ class Plugin:
 
 
 
-    def predict(self, data, num_samples=50):
-        """
-        Predict with multiple stochastic forward passes for uncertainty estimation.
-        """
+    def predict(self, data):
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
-        predictions_samples = np.array([
-            self.model(data, training=True).numpy()
-            for _ in range(num_samples)
-        ])
-
-        predictions_mean = np.mean(predictions_samples, axis=0)
-        predictions_std = np.std(predictions_samples, axis=0)
-
-        return predictions_mean, predictions_std
-
+        preds = self.model.predict(data)
+        #print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
+        return preds
 
     def calculate_mse(self, y_true, y_pred):
         """
