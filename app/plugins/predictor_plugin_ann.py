@@ -120,7 +120,7 @@ class Plugin:
                 reinterpreted_batch_ndims=1
             )
 
-        inputs = Input(shape=(self.params['input_dim'],), dtype=tf.float32)
+        inputs =  Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         x = inputs
 
         # Intermediate Bayesian layers
