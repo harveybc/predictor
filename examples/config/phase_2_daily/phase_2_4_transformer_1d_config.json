@@ -9,7 +9,7 @@
     "loss_plot_file": "examples\\results\\phase_2_daily\\phase_2_4_transformer_1d_loss_plot.png",
     "model_plot_file": "examples\\results\\phase_2_daily\\phase_2_4_transformer_1d_model_plot.png",
     "plugin": "transformer",
-    "max_steps_train": 6300,
+    "max_steps_train": 25200,
     "max_steps_test": 6300,
     "use_daily": true
 }

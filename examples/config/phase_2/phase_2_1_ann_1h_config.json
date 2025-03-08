@@ -9,6 +9,6 @@
     "loss_plot_file": "examples\\results\\phase_2\\phase_2_1_ann_1h_loss_plot.png",
     "model_plot_file": "examples\\results\\phase_2\\phase_2_1_ann_1h_model_plot.png",
     "plugin": "ann",
-    "max_steps_train": 6300,
+    "max_steps_train": 12600,
     "max_steps_test": 6300
 }
