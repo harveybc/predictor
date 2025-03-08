@@ -69,10 +69,9 @@ class Plugin:
 
     def build_model(self, input_shape, train_size):
         """
-        Builds an ANN model with Bayesian Dense layers, compatible with TFP 0.18+.
+        Builds a Bayesian ANN model fully compatible with TensorFlow Probability 0.18.x.
         """
         import tensorflow_probability as tfp
-        import tensorflow as tf
         from tensorflow.keras import Model, Input
         from tensorflow.keras.layers import BatchNormalization
         from tensorflow.keras.optimizers import Adam
@@ -81,6 +80,7 @@ class Plugin:
         l2_reg = self.params.get('l2_reg', 1e-5)
         time_horizon = self.params['time_horizon']
 
+        # Dynamic determination of layer sizes
         layers_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
@@ -91,23 +91,22 @@ class Plugin:
         print(f"Bayesian ANN Layer sizes: {layers_sizes + [time_horizon]}")
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Prior and posterior definitions (fully compatible with TFP 0.18)
+        # Define prior and posterior functions explicitly for TFP 0.18
         def prior(kernel_size, bias_size, dtype=None):
             n = kernel_size + bias_size
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=tf.zeros(n, dtype=dtype), scale=1),
-                reinterpreted_batch_ndims=1
-            )
+                reinterpreted_batch_ndims=1)
 
         def posterior(kernel_size, bias_size, dtype=None):
-            n = kernel_size + bias_size
             return tfp.layers.default_mean_field_normal_fn(
                 loc_initializer=tf.random_normal_initializer(stddev=0.1),
                 untransformed_scale_initializer=tf.constant_initializer(-3.0),
-                is_singular=False
-            )(kernel_size, bias_size, dtype)
+                is_singular=False)(
+                shape=(kernel_size + bias_size,), dtype=dtype,
+                trainable=True, add_variable_fn=tf.Variable)
 
-        # Model Input
+        # Input Layer
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
 
@@ -122,7 +121,7 @@ class Plugin:
                 name=f"bayesian_dense_{idx}"
             )(x)
 
-        # Batch normalization
+        # Batch Normalization Layer
         x = BatchNormalization()(x)
 
         # Output Bayesian Dense Layer
@@ -137,6 +136,7 @@ class Plugin:
 
         self.model = Model(inputs=model_input, outputs=model_output, name="Bayesian_ANN_Predictor_Model")
 
+        # Compile the model
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
             beta_1=0.9, beta_2=0.999,
