@@ -159,7 +159,24 @@ class Plugin:
             units=layer_sizes[-1],
             make_posterior_fn=posterior_fn,
             make_prior_fn=prior_fn,
-            kl_weight=kl_weigh
+            kl_weight=kl_weight,
+            activation='linear',
+            name="output_layer"
+        )(x)
+
+        self.model = Model(inputs=inputs, outputs=outputs)
+
+        # Compile the model
+        optimizer = Adam(learning_rate=self.params.get('learning_rate', 0.0001))
+        self.model.compile(
+            optimizer=optimizer,
+            loss=Huber(),
+            metrics=['mse', 'mae']
+        )
+
+        print("✅ Bayesian ANN model built successfully.")
+
+
 
     def build_model(self, input_shape, x_train):
         """
