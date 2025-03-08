@@ -96,18 +96,24 @@ class Plugin:
         print("Bayesian ANN Layer sizes:", layer_sizes)
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Posterior function now has the signature (shape, dtype, name)
-        def posterior_fn(shape, dtype, name):
-            dtype = tf.as_dtype(dtype)
-            loc = tf.Variable(
-                initial_value=tf.random.normal(shape, stddev=0.1, dtype=dtype),
+        # Custom posterior function with the 5-argument signature.
+        def posterior_fn(dtype, shape, name, trainable, add_variable_fn):
+            # When constructing bias variables, DenseVariational may pass an integer instead of a tf.DType.
+            if not isinstance(dtype, tf.DType):
+                dtype = tf.float32
+            loc = add_variable_fn(
                 name=name + '_loc',
-                trainable=True
+                shape=shape,
+                initializer=tf.keras.initializers.RandomNormal(stddev=0.1),
+                dtype=dtype,
+                trainable=trainable
             )
-            rho = tf.Variable(
-                initial_value=tf.constant(-3.0, shape=shape, dtype=dtype),
+            rho = add_variable_fn(
                 name=name + '_rho',
-                trainable=True
+                shape=shape,
+                initializer=tf.keras.initializers.Constant(-3.0),
+                dtype=dtype,
+                trainable=trainable
             )
             scale = tf.nn.softplus(rho)
             return tfp.distributions.Independent(
@@ -115,9 +121,10 @@ class Plugin:
                 reinterpreted_batch_ndims=1
             )
 
-        # Prior function now has the signature (shape, dtype, name)
-        def prior_fn(shape, dtype, name):
-            dtype = tf.as_dtype(dtype)
+        # Custom prior function with the same 5-argument signature.
+        def prior_fn(dtype, shape, name, trainable, add_variable_fn):
+            if not isinstance(dtype, tf.DType):
+                dtype = tf.float32
             loc = tf.zeros(shape, dtype=dtype)
             scale = tf.ones(shape, dtype=dtype)
             return tfp.distributions.Independent(
