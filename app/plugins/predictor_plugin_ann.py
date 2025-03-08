@@ -68,49 +68,39 @@ class Plugin:
 
 
     def build_model(self, input_shape, train_size):
-        import tensorflow as tf
-        import tensorflow_probability as tfp
-        from tensorflow.keras.models import Model
-        from tensorflow.keras.layers import Input, BatchNormalization
-        from tensorflow.keras.losses import Huber
-        from tensorflow.keras.optimizers import Adam
-
-        if not isinstance(input_shape, int):
-            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
-
-        self.params['input_dim'] = input_shape
-        l2_reg = self.params.get('l2_reg', 1e-5)
-        activation = self.params.get('activation', 'tanh')
-
-        # Calculate layers automatically
-        initial_units = self.params.get('initial_units', 64)
+        layer_sizes = []
+        current_size = self.params['initial_layer_size']
         divisor = self.params.get('layer_size_divisor', 2)
-        intermediate_layers = self.params.get('intermediate_layers', 3)
-        layers = []
-        current_size = initial_size = self.params.get('initial_units', 64)
+        int_layers = self.params.get('intermediate_layers', 3)
+        time_horizon = self.params['time_horizon']
 
-        for _ in range(self.params.get('intermediate_layers', 3)):
-            layers.append(current_size)
-            current_size = max(current_size // self.params.get('layer_size_divisor', 2), 1)
+        # Automatically build layer sizes
+        for _ in range(int_layers):
+            layer_sizes.append(current_size)
+            current_size = max(current_size // divisor, 1)
+        layer_sizes.append(time_horizon)
 
-        layers.append(self.params['time_horizon'])
-
-        print(f"Bayesian ANN Layer sizes: {layers}")
+        print("Bayesian ANN Layer sizes:", layer_sizes)
         print(f"Bayesian ANN input_shape: {input_shape}")
 
+        import tensorflow as tf
         import tensorflow_probability as tfp
+        from tensorflow.keras.layers import Input, BatchNormalization
+        from tensorflow.keras.models import Model
+        from tensorflow.keras.optimizers import Adam
+        from tensorflow.keras.losses import Huber
 
-        # Posterior function
-        def posterior_fn(kernel_size, bias_size, dtype, name="", trainable=True, add_variable_fn=None):
+        # Explicitly define posterior and prior functions
+        def posterior_fn(kernel_size, bias_size, dtype, name, trainable, add_variable_fn):
             loc = add_variable_fn(
-                name=name + '_posterior_loc',
+                name=name + '_loc',
                 shape=[kernel_size + bias_size],
                 initializer=tf.keras.initializers.RandomNormal(stddev=0.1),
                 dtype=dtype,
                 trainable=trainable
             )
             rho = add_variable_fn(
-                name=name + '_posterior_rho',
+                name=name + '_rho',
                 shape=[kernel_size + bias_size],
                 initializer=tf.keras.initializers.Constant(-3.0),
                 dtype=dtype,
@@ -123,46 +113,47 @@ class Plugin:
             )
 
         def prior_fn(kernel_size, bias_size, dtype, name, trainable, add_variable_fn):
-            loc = tf.zeros(kernel_size + bias_size, dtype=dtype)
-            scale = tf.ones(kernel_size + bias_size, dtype=dtype)
+            loc = tf.zeros([kernel_size + bias_size], dtype=dtype)
+            scale = tf.ones([kernel_size + bias_size], dtype=dtype)
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc, scale=scale),
                 reinterpreted_batch_ndims=1
             )
 
-        inputs = tf.keras.Input(shape=(input_shape,))
+        inputs = Input(shape=(self.params['input_dim'],), dtype=tf.float32)
         x = inputs
 
-        for size in layers[:-1]:
+        # Intermediate Bayesian layers
+        for size in layer_sizes[:-1]:
             x = tfp.layers.DenseVariational(
                 units=size,
                 make_posterior_fn=posterior_fn,
                 make_prior_fn=prior_fn,
-                kl_weight=1.0/train_size,
-                activation=activation
-            )(x)
+                kl_weight=1 / self.params['train_size'],
+                activation=self.params.get('activation', 'tanh')
+            )(inputs)
             x = BatchNormalization()(x)
 
+        # Final Bayesian output layer
         outputs = tfp.layers.DenseVariational(
-            units=layers[-1],
+            units=layer_sizes[-1],
             make_posterior_fn=posterior_fn,
             make_prior_fn=prior_fn,
-            kl_weight=1.0/train_size,
+            kl_weight=1 / self.params['train_size'],
             activation='linear'
         )(x)
 
-        self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
+        self.model = Model(inputs=inputs, outputs=outputs)
 
-        optimizer = Adam(learning_rate=self.params.get('learning_rate', 1e-4))
-
+        # Compile the model
+        optimizer = Adam(learning_rate=self.params.get('learning_rate', 0.0001))
         self.model.compile(
             optimizer=optimizer,
             loss=Huber(),
-            metrics=['mae', 'mse']
+            metrics=['mse', 'mae']
         )
 
-        print("Bayesian ANN model compiled successfully.")
-
+        print("✅ Bayesian ANN model built successfully.")
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
