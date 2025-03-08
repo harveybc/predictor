@@ -98,9 +98,10 @@ class Plugin:
 
         # Custom posterior function with three arguments.
         def posterior_fn(arg0, shape, name):
-            # The expected signature is (dtype, shape, name),
-            # but here arg0 might not be a valid dtype (e.g. it might be 64).
+            # arg0 should be a tf.DType but sometimes it's not (e.g. 64), so default to tf.float32.
             dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
+            # Ensure shape is non-empty; if empty, default to [1].
+            shape = shape if shape else [1]
             loc = tf.Variable(
                 initial_value=tf.random.normal(shape, stddev=0.1, dtype=dtype),
                 name=name + '_loc',
@@ -120,6 +121,7 @@ class Plugin:
         # Custom prior function with three arguments.
         def prior_fn(arg0, shape, name):
             dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
+            shape = shape if shape else [1]
             loc = tf.zeros(shape, dtype=dtype)
             scale = tf.ones(shape, dtype=dtype)
             return tfp.distributions.Independent(
