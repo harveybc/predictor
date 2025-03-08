@@ -69,23 +69,22 @@ class Plugin:
 
     def build_model(self, input_shape, train_size):
         """
-        Builds a Bayesian ANN model with DenseVariational layers, correctly implementing
-        prior and posterior initialization for compatibility with tfp.layers.DenseVariational.
-
+        Builds an ANN model with Bayesian Dense layers, compatible with TFP DenseVariational layers.
+        
         Args:
             input_shape (int): Number of input features.
-            train_size (int): Number of training samples.
+            train_size (int): Number of training samples for kl_weight.
         """
         import tensorflow_probability as tfp
         from tensorflow.keras import Model, Input
         from tensorflow.keras.layers import BatchNormalization
         from tensorflow.keras.optimizers import Adam
+        import tensorflow as tf
 
         self.params['input_dim'] = input_shape
-        l2_reg = self.params.get('l2_reg', 1e-4)
+        l2_reg = self.params.get('l2_reg', 1e-5)
         time_horizon = self.params['time_horizon']
 
-        # Layer sizes calculation
         layers_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
@@ -96,40 +95,44 @@ class Plugin:
         print(f"Bayesian ANN Layer sizes: {layers_sizes + [time_horizon]}")
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Corrected prior and posterior functions
-        def prior(kernel_size, bias_size, dtype, trainable, add_variable_fn):
+        # Properly defined prior function
+        def prior(kernel_size, bias_size, dtype=None, trainable=True, add_variable_fn=None):
             n = kernel_size + bias_size
-            prior_model = tfp.distributions.MultivariateNormalDiag(
-                loc=tf.zeros(n, dtype=dtype), scale_diag=tf.ones(n, dtype=dtype))
+            prior_model = tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=tf.zeros(n, dtype=dtype), scale=1.0),
+                reinterpreted_batch_ndims=1
+            )
             return prior_model
 
+        # Corrected posterior function with proper signature
         def posterior(kernel_size, bias_size, dtype, trainable, add_variable_fn):
             n = kernel_size + bias_size
             loc = add_variable_fn(
                 name='posterior_loc',
-                shape=[n],
-                initializer=tf.random_normal_initializer(stddev=0.1),
+                shape=(n,),
+                initializer=tf.initializers.RandomNormal(stddev=0.1),
                 dtype=dtype,
                 trainable=trainable
             )
             scale = add_variable_fn(
                 name='posterior_scale',
                 shape=[n],
-                initializer=tf.random_normal_initializer(mean=-3.0, stddev=0.1),
+                initializer=tf.constant_initializer(-3.0),
                 dtype=dtype,
                 trainable=trainable
             )
-            scale = tf.nn.softplus(scale)
-            return tfp.distributions.Independent(
+            scale = tf.nn.softplus(scale) + 1e-5
+            posterior_model = tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc, scale=scale),
                 reinterpreted_batch_ndims=1
             )
+            return posterior_model
 
-        # Input layer
+        # Input Layer
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
 
-        # Bayesian Dense Layers
+        # Hidden Bayesian Dense Layers
         for idx, size in enumerate(layers_sizes, start=1):
             x = tfp.layers.DenseVariational(
                 units=size,
@@ -140,10 +143,10 @@ class Plugin:
                 name=f"bayesian_dense_{idx}"
             )(x)
 
-        # Batch normalization layer
+        # Batch normalization
         x = BatchNormalization()(x)
 
-        # Output Bayesian Dense layer
+        # Output Bayesian Dense Layer
         model_output = tfp.layers.DenseVariational(
             units=time_horizon,
             make_prior_fn=prior,
@@ -155,7 +158,7 @@ class Plugin:
 
         self.model = Model(inputs=model_input, outputs=model_output, name="Bayesian_ANN_Predictor_Model")
 
-        # Compile model
+        # Compile
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
             beta_1=0.9, beta_2=0.999,
