@@ -99,7 +99,7 @@ class Plugin:
         # Define posterior and prior functions (Fixed Argument Order)
         def posterior_fn(dtype, shape, name, trainable, add_variable_fn):
             loc = add_variable_fn(
-                name=name + '_loc',
+                name=name,
                 shape=shape,
                 initializer=tf.keras.initializers.RandomNormal(stddev=0.1),
                 dtype=dtype,
