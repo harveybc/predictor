@@ -122,14 +122,15 @@ class Plugin:
 
         inputs =  Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         x = inputs
-
+        train_size = x_train.shape[0]  # Automatically get the number of training samples
+        kl_weight = 1 / train_size  # Normalize KL divergence
         # Intermediate Bayesian layers
         for size in layer_sizes[:-1]:
             x = tfp.layers.DenseVariational(
                 units=size,
                 make_posterior_fn=posterior_fn,
                 make_prior_fn=prior_fn,
-                kl_weight=1 / self.params['train_size'],
+                kl_weight=1 / train_size,
                 activation=self.params.get('activation', 'tanh')
             )(inputs)
             x = BatchNormalization()(x)
