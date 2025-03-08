@@ -69,26 +69,25 @@ class Plugin:
 
     def build_model(self, input_shape, train_size):
         """
-        Builds ANN with Bayesian Dense layers (fully automatic KL weighting).
+        Builds an ANN model with Bayesian Dense layers, preserving original pipeline behavior,
+        including multi-step predictions and adding uncertainty estimation.
 
         Args:
-            input_shape (int): Number of input features.
-            train_size (int): Automatically passed size of the training dataset.
+            input_shape (int): Number of input features for the ANN.
+            train_size (int): Number of training samples, used for KL-divergence weighting.
         """
         from tensorflow.keras import Model, Input
         from tensorflow.keras.layers import BatchNormalization
         from tensorflow.keras.optimizers import Adam
-        from tensorflow.keras.regularizers import l2
         import tensorflow_probability as tfp
-        import tensorflow as tf
 
         if not isinstance(input_shape, int):
-            raise ValueError(f"input_shape must be int, got {type(input_shape)}")
+            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
 
         self.params['input_dim'] = input_shape
-        l2_reg = self.params.get('l2_reg', 1e-4)
         time_horizon = self.params['time_horizon']
 
+        # Dynamically determine layer sizes
         layers_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
@@ -99,44 +98,49 @@ class Plugin:
         print(f"Bayesian ANN Layer sizes: {layers_sizes + [time_horizon]}")
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Prior and posterior functions
+        # Bayesian prior and posterior functions
         def prior(kernel_size, bias_size, dtype=None):
             return tfp.layers.default_multivariate_normal_fn()(kernel_size, bias_size, dtype)
 
         def posterior(kernel_size, bias_size, dtype=None):
             return tfp.layers.default_mean_field_normal_fn()(kernel_size, bias_size, dtype)
 
-        # Input
-        inputs = Input(shape=(input_shape,), name="model_input")
-        x = inputs
+        # Input layer
+        model_input = Input(shape=(input_shape,), name="model_input")
+        x = model_input
 
-        # Hidden Bayesian Layers
+        # Hidden Bayesian Dense Layers (Removed kernel_regularizer argument)
         for idx, size in enumerate(layers_sizes, start=1):
             x = tfp.layers.DenseVariational(
                 units=size,
-                activation=self.params['activation'],
                 make_prior_fn=prior,
                 make_posterior_fn=posterior,
                 kl_weight=1/train_size,
-                kernel_regularizer=l2(l2_reg),
+                activation=self.params['activation'],
                 name=f"bayesian_dense_{idx}"
             )(x)
 
+        # Batch normalization (originally present)
         x = BatchNormalization()(x)
 
-        # Output Bayesian Layer
-        outputs = tfp.layers.DenseVariational(
+        # Output Bayesian Dense layer (linear activation for regression)
+        model_output = tfp.layers.DenseVariational(
             units=time_horizon,
-            activation='linear',
             make_prior_fn=prior,
             make_posterior_fn=posterior,
             kl_weight=1/train_size,
+            activation='linear',
             name="bayesian_output"
         )(x)
 
-        self.model = Model(inputs=inputs, outputs=outputs, name="Bayesian_ANN_Predictor_Model")
+        self.model = Model(inputs=model_input, outputs=model_output, name="Bayesian_ANN_Predictor_Model")
 
-        adam_optimizer = Adam(learning_rate=self.params['learning_rate'], beta_1=0.9, beta_2=0.999, epsilon=1e-7)
+        # Compile the model with Adam optimizer and existing combined loss
+        adam_optimizer = Adam(
+            learning_rate=self.params['learning_rate'],
+            beta_1=0.9, beta_2=0.999,
+            epsilon=1e-7
+        )
 
         self.model.compile(
             optimizer=adam_optimizer,
