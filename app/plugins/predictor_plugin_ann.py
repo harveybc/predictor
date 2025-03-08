@@ -96,24 +96,20 @@ class Plugin:
         print("Bayesian ANN Layer sizes:", layer_sizes)
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Custom posterior function with the 5-argument signature.
-        def posterior_fn(dtype, shape, name, trainable, add_variable_fn):
-            # When constructing bias variables, DenseVariational may pass an integer instead of a tf.DType.
-            if not isinstance(dtype, tf.DType):
-                dtype = tf.float32
-            loc = add_variable_fn(
+        # Custom posterior function with three arguments.
+        def posterior_fn(arg0, shape, name):
+            # The expected signature is (dtype, shape, name),
+            # but here arg0 might not be a valid dtype (e.g. it might be 64).
+            dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
+            loc = tf.Variable(
+                initial_value=tf.random.normal(shape, stddev=0.1, dtype=dtype),
                 name=name + '_loc',
-                shape=shape,
-                initializer=tf.keras.initializers.RandomNormal(stddev=0.1),
-                dtype=dtype,
-                trainable=trainable
+                trainable=True
             )
-            rho = add_variable_fn(
+            rho = tf.Variable(
+                initial_value=tf.constant(-3.0, shape=shape, dtype=dtype),
                 name=name + '_rho',
-                shape=shape,
-                initializer=tf.keras.initializers.Constant(-3.0),
-                dtype=dtype,
-                trainable=trainable
+                trainable=True
             )
             scale = tf.nn.softplus(rho)
             return tfp.distributions.Independent(
@@ -121,10 +117,9 @@ class Plugin:
                 reinterpreted_batch_ndims=1
             )
 
-        # Custom prior function with the same 5-argument signature.
-        def prior_fn(dtype, shape, name, trainable, add_variable_fn):
-            if not isinstance(dtype, tf.DType):
-                dtype = tf.float32
+        # Custom prior function with three arguments.
+        def prior_fn(arg0, shape, name):
+            dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
             loc = tf.zeros(shape, dtype=dtype)
             scale = tf.ones(shape, dtype=dtype)
             return tfp.distributions.Independent(
