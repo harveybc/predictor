@@ -96,8 +96,8 @@ class Plugin:
         print("Bayesian ANN Layer sizes:", layer_sizes)
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Posterior function with exactly three arguments.
-        def posterior_fn(dtype, shape, name):
+        # Posterior function now has the signature (shape, dtype, name)
+        def posterior_fn(shape, dtype, name):
             dtype = tf.as_dtype(dtype)
             loc = tf.Variable(
                 initial_value=tf.random.normal(shape, stddev=0.1, dtype=dtype),
@@ -115,8 +115,8 @@ class Plugin:
                 reinterpreted_batch_ndims=1
             )
 
-        # Prior function with exactly three arguments.
-        def prior_fn(dtype, shape, name):
+        # Prior function now has the signature (shape, dtype, name)
+        def prior_fn(shape, dtype, name):
             dtype = tf.as_dtype(dtype)
             loc = tf.zeros(shape, dtype=dtype)
             scale = tf.ones(shape, dtype=dtype)
