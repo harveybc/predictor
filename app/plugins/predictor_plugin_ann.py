@@ -135,8 +135,8 @@ class Plugin:
         for idx, size in enumerate(layer_sizes[:-1]):
             x = tfp.layers.DenseVariational(
                 units=size,
-                make_posterior_fn=lambda dtype, shape, name: posterior_fn(dtype, shape, name, True, tf.Variable),
-                make_prior_fn=lambda dtype, shape, name: prior_fn(dtype, shape, name, True, tf.Variable),
+                make_posterior_fn=posterior_fn,
+                make_prior_fn=prior_fn,
                 kl_weight=kl_weight,
                 activation=self.params.get('activation', 'tanh'),
                 name=f"dense_layer_{idx+1}"
@@ -146,8 +146,8 @@ class Plugin:
         # Final Bayesian output layer
         outputs = tfp.layers.DenseVariational(
             units=layer_sizes[-1],
-            make_posterior_fn=lambda dtype, shape, name: posterior_fn(dtype, shape, name, True, tf.Variable),
-            make_prior_fn=lambda dtype, shape, name: prior_fn(dtype, shape, name, True, tf.Variable),
+            make_posterior_fn=posterior_fn,
+            make_prior_fn=prior_fn,
             kl_weight=kl_weight,
             activation='linear',
             name="output_layer"
