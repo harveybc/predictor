@@ -96,21 +96,17 @@ class Plugin:
         print("Bayesian ANN Layer sizes:", layer_sizes)
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Define posterior and prior functions (Fixed Argument Order)
-        def posterior_fn(dtype, shape, name, trainable, add_variable_fn):
-            loc = add_variable_fn(
-                name=name,
-                shape=shape,
-                initializer=tf.keras.initializers.RandomNormal(stddev=0.1),
-                dtype=dtype,
-                trainable=trainable
+        # Define posterior and prior functions with the new 3-argument signature.
+        def posterior_fn(dtype, shape, name):
+            loc = tf.Variable(
+                initial_value=tf.random.normal(shape, stddev=0.1, dtype=dtype),
+                name=name + '_loc',
+                trainable=True
             )
-            rho = add_variable_fn(
+            rho = tf.Variable(
+                initial_value=tf.constant(-3.0, shape=shape, dtype=dtype),
                 name=name + '_rho',
-                shape=shape,
-                initializer=tf.keras.initializers.Constant(-3.0),
-                dtype=dtype,
-                trainable=trainable
+                trainable=True
             )
             scale = tf.nn.softplus(rho)
             return tfp.distributions.Independent(
@@ -118,8 +114,7 @@ class Plugin:
                 reinterpreted_batch_ndims=1
             )
 
-        def prior_fn(dtype, shape, name, trainable, add_variable_fn):
-            del name, trainable, add_variable_fn  # Unused
+        def prior_fn(dtype, shape, name):
             loc = tf.zeros(shape, dtype=dtype)
             scale = tf.ones(shape, dtype=dtype)
             return tfp.distributions.Independent(
