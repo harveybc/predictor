@@ -69,97 +69,79 @@ class Plugin:
 
     def build_model(self, input_shape, train_size):
         """
-        Build an ANN model with Bayesian Dense layers, incorporating TensorFlow Probability layers.
+        Build the ANN with final layer = self.params['time_horizon'] for multi-step outputs.
 
         Args:
             input_shape (int): Number of input features.
-            train_size (int): Number of training samples for calculating KL divergence weight.
+            train_size (int): Number of training samples, used for Bayesian layers' kl_weight.
         """
-        import tensorflow as tf
-        import tensorflow_probability as tfp
-        from tensorflow.keras.layers import Input
-        from tensorflow.keras.losses import Huber
-        from tensorflow.keras.optimizers import Adam
-        from tensorflow.keras.models import Model
+        if not isinstance(input_shape, int):
+            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
 
-        if train_size <= 0:
-            raise ValueError("train_size must be positive and greater than zero.")
-
-        self.params['train_size'] = train_size
-        self.params['input_shape'] = input_shape
+        self.params['input_dim'] = input_shape
         l2_reg = self.params.get('l2_reg', 1e-4)
-        time_horizon = self.params['time_horizon']
+        time_horizon = self.params['time_horizon']  # Multi-step prediction horizon
 
         # Dynamically set layer sizes
-        layers_sizes = []
+        layers = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
-
         for _ in range(self.params['intermediate_layers']):
-            layers_sizes.append(current_size)
-            current_size = max(current_size // divisor, time_horizon)
+            layers.append(current_size)
+            current_size = max(current_size // divisor, 1)
 
-        layers_sizes.append(time_horizon)  # Output layer size
+        # Append output layer size
+        layers.append(time_horizon)
 
-        print(f"Bayesian ANN Layer sizes: {layers_sizes}")
-        print(f"Bayesian ANN input_shape: {input_shape}")
+        print(f"ANN Layer sizes: {layers}")
+        print(f"ANN input_shape: {input_shape}")
 
-        # Prior and posterior distributions for Bayesian layers
-        def prior(kernel_size, bias_size, dtype=None):
-            n = kernel_size + bias_size
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=tf.zeros(n), scale=1.0),
-                reinterpreted_batch_ndims=1
-            )
+        # Build the model
+        from tensorflow.keras import Model, Input
+        model_input = Input(shape=(input_shape,), name="model_input")
+        x = model_input
 
-        def posterior(kernel_size, bias_size, dtype=None):
-            n = kernel_size + bias_size
-            return tfp.layers.default_mean_field_normal_fn()(kernel_size, bias_size, dtype)
-
-        kl_weight = 1.0 / train_size
-
-        # Input layer
-        inputs = Input(shape=(input_shape,), name="model_input")
-        x = inputs
-
-        # Bayesian hidden layers
-        for idx, size in enumerate(layers_sizes, start=1):
-            x = tfp.layers.DenseVariational(
-                units=size,
-                make_prior_fn=prior,
-                make_posterior_fn=posterior,
-                kl_weight=kl_weight,
-                activation='relu',
-                name=f"bayesian_dense_{idx}"
+        # Add intermediate layers
+        for idx, size in enumerate(layers[:-1], start=1):
+            x = Dense(
+                size,
+                activation=self.params['activation'],
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"dense_layer_{idx}"
             )(x)
-            x = tf.keras.layers.BatchNormalization()(x)
 
-        # Bayesian output layer (linear activation for regression)
-        outputs = tfp.layers.DenseVariational(
-            units=time_horizon,
-            make_prior_fn=prior,
-            make_posterior_fn=posterior,
-            kl_weight=kl_weight,
-            activation='linear'
+        # Add batch normalization
+        x = BatchNormalization()(x)
+
+        # Output layer for multi-step prediction
+        outputs = Dense(
+            layers[-1],
+            activation='linear',
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg),
+            name="output_layer"
         )(x)
 
-        # Create the model
-        self.model = Model(inputs=inputs, outputs=outputs, name="bayesian_ann")
+        self.model = Model(inputs=model_input, outputs=outputs, name="ANN_Predictor_Model")
 
-        # Compile the Bayesian ANN
-        optimizer = Adam(
-            learning_rate=self.params.get('learning_rate', 1e-3),
-            epsilon=1e-7
+        # Adam optimizer
+        adam_optimizer = Adam(
+            learning_rate=self.params['learning_rate'],
+            beta_1=0.9, beta_2=0.999,
+            epsilon=1e-7,
+            amsgrad=False
         )
 
+        # Compile the model
         self.model.compile(
-            optimizer=optimizer,
-            loss=Huber(delta=1.0),
+            optimizer=adam_optimizer,
+            loss='mae',
             metrics=['mse', 'mae']
         )
 
-        print(f"Bayesian ANN Layer sizes: {layers_sizes + [time_horizon]}")
-        print(f"Bayesian ANN input_shape: {input_shape}")
+        print("Predictor Model Summary:")
+        self.model.summary()
 
 
 
