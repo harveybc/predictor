@@ -10,6 +10,14 @@ from keras.layers import GaussianNoise
 from keras import backend as K
 from sklearn.metrics import r2_score 
 
+import tensorflow_probability as tfp
+import tensorflow as tf
+from tensorflow.keras import Model, Input
+from tensorflow.keras.layers import BatchNormalization, Dense
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import Huber
+
+
 import logging
 import os
 
@@ -58,85 +66,94 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
+
     def build_model(self, input_shape):
         """
-        Build the ANN with final layer = self.params['time_horizon'] for multi-step outputs.
-        
+        Build an ANN model with Bayesian Dense layers for uncertainty estimation.
+
         Args:
-            input_shape (int): Number of input features for ANN.
+            input_shape (int): Number of input features.
         """
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
-        
+
         self.params['input_dim'] = input_shape
         l2_reg = self.params.get('l2_reg', 1e-4)
-        time_horizon = self.params['time_horizon']  # the multi-step dimension
+        time_horizon = self.params['time_horizon']
 
         # Dynamically set layer sizes
-        layers = []
+        layers_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
         int_layers = 0
         while int_layers < self.params['intermediate_layers']:
-            layers.append(current_size)
+            layers_sizes.append(current_size)
             current_size = max(current_size // divisor, 1)
             int_layers += 1
 
-        # Final layer => time_horizon units (N, time_horizon) output
-        layers.append(time_horizon)
+        print(f"Bayesian ANN Layer sizes: {layers_sizes + [time_horizon]}")
+        print(f"Bayesian ANN input_shape: {input_shape}")
 
-        print(f"ANN Layer sizes: {layers}")
-        print(f"ANN input_shape: {input_shape}")
+        # Prior and posterior distributions for Bayesian layers
+        def prior(kernel_size, bias_size, dtype=None):
+            n = kernel_size + bias_size
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=tf.zeros(n, dtype=dtype), scale=1),
+                reinterpreted_batch_ndims=1
+            )
 
-        # Build the model
-        from tensorflow.keras import Model, Input
-        model_input = Input(shape=(input_shape,), name="model_input")
-        x = model_input
-        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
-        # Hidden Dense layers
-        idx = 0
-        for size in layers[:-1]:
-            idx += 1
-            x = Dense(
+        def posterior(kernel_size, bias_size, dtype=None):
+            n = kernel_size + bias_size
+            return tfp.layers.default_mean_field_normal_fn()(kernel_size, bias_size, dtype)
+
+        # Input layer
+        inputs = Input(shape=(input_shape,), name="model_input")
+        x = inputs
+
+        # Bayesian hidden layers
+        for idx, size in enumerate(layers_sizes, start=1):
+            x = tfp.layers.DenseVariational(
                 units=size,
                 activation=self.params['activation'],
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
-                name=f"dense_layer_{idx}"
+                make_prior_fn=prior,
+                make_posterior_fn=posterior,
+                kl_weight=1/x.shape[0],
+                name=f"bayesian_dense_{idx}"
             )(x)
 
-        #add batch normalization
+        # Batch normalization (your existing preference)
         x = BatchNormalization()(x)
-        # Output layer => shape (N, time_horizon)
-        model_output = Dense(
-            units=layers[-1],
+
+        # Bayesian output layer (linear activation for regression)
+        outputs = tfp.layers.DenseVariational(
+            units=time_horizon,
             activation='linear',
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name="model_output"
+            make_prior_fn=prior,
+            make_posterior_fn=posterior,
+            kl_weight=1/x.shape[0],
+            name="bayesian_output"
         )(x)
-        #add batch normalization
-        #model_output = BatchNormalization()(model_output)
 
-        self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
+        self.model = Model(inputs=inputs, outputs=outputs, name="Bayesian_ANN_Predictor_Model")
 
-        # Adam
+        # Optimizer
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
             beta_1=0.9, beta_2=0.999,
             epsilon=1e-7, amsgrad=False
         )
 
-        # Compile
+        # Compile the Bayesian ANN
         self.model.compile(
             optimizer=adam_optimizer,
-            loss=Huber(),  # or 'mse'
-            #loss='mae',  # or 'mse'
-            metrics=['mse', 'mae']  # logs multi-step MSE/MAE
+            loss=Huber(),  # maintain your existing choice
+            metrics=['mse', 'mae']
         )
-        
-        print("Predictor Model Summary:")
+
+        print("Bayesian ANN Predictor Model Summary:")
         self.model.summary()
+
+
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
@@ -206,12 +223,23 @@ class Plugin:
 
 
 
-    def predict(self, data):
+    def predict(self, data, num_samples=50):
+        """
+        Predict with multiple stochastic forward passes for uncertainty estimation.
+        """
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-        preds = self.model.predict(data)
-        #print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
-        return preds
+
+        predictions_samples = np.array([
+            self.model(data, training=True).numpy()
+            for _ in range(num_samples)
+        ])
+
+        predictions_mean = np.mean(predictions_samples, axis=0)
+        predictions_std = np.std(predictions_samples, axis=0)
+
+        return predictions_mean, predictions_std
+
 
     def calculate_mse(self, y_true, y_pred):
         """
