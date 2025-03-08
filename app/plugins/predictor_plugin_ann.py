@@ -96,20 +96,24 @@ class Plugin:
         print("Bayesian ANN Layer sizes:", layer_sizes)
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Define posterior and prior functions with the expected 5-argument signature.
-        def posterior_fn(dtype, shape, name, trainable, add_variable_fn):
+        # Updated posterior function with default parameters for trainable and add_variable_fn.
+        def posterior_fn(dtype, shape, name, trainable=True, add_variable_fn=None):
             dtype = tf.as_dtype(dtype)
+            # If no add_variable_fn is provided, use a default lambda that wraps tf.Variable.
+            if add_variable_fn is None:
+                add_variable_fn = lambda name, shape, initializer, dtype, trainable: tf.Variable(
+                    initial_value=initializer, shape=shape, dtype=dtype, trainable=trainable)
             loc = add_variable_fn(
-                name=name,
+                name=name + '_loc',
                 shape=shape,
-                initial_value=tf.random.normal(shape, stddev=0.1, dtype=dtype),
+                initializer=tf.random.normal(shape, stddev=0.1, dtype=dtype),
                 dtype=dtype,
                 trainable=trainable
             )
             rho = add_variable_fn(
                 name=name + '_rho',
                 shape=shape,
-                initial_value=tf.constant(-3.0, shape=shape, dtype=dtype),
+                initializer=tf.constant(-3.0, shape=shape, dtype=dtype),
                 dtype=dtype,
                 trainable=trainable
             )
@@ -119,7 +123,8 @@ class Plugin:
                 reinterpreted_batch_ndims=1
             )
 
-        def prior_fn(dtype, shape, name, trainable, add_variable_fn):
+        # Updated prior function with default parameters.
+        def prior_fn(dtype, shape, name, trainable=True, add_variable_fn=None):
             dtype = tf.as_dtype(dtype)
             loc = tf.zeros(shape, dtype=dtype)
             scale = tf.ones(shape, dtype=dtype)
