@@ -79,15 +79,15 @@ class Plugin:
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
 
         train_size = x_train.shape[0]  # Automatically get the number of training samples
-        kl_weight = 1 / train_size  # Normalize KL divergence
+        kl_weight = 1 / max(1, train_size)  # Normalize KL divergence, avoid division by zero
 
+        # Define layer sizes
         layer_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params.get('layer_size_divisor', 2)
         int_layers = self.params.get('intermediate_layers', 3)
         time_horizon = self.params['time_horizon']
 
-        # Automatically build layer sizes
         for _ in range(int_layers):
             layer_sizes.append(current_size)
             current_size = max(current_size // divisor, 1)
@@ -96,7 +96,7 @@ class Plugin:
         print("Bayesian ANN Layer sizes:", layer_sizes)
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Explicitly define posterior and prior functions
+        # Define posterior and prior functions
         def posterior_fn(dtype, shape, name, trainable, add_variable_fn):
             loc = add_variable_fn(
                 name=name + '_loc',
@@ -119,6 +119,7 @@ class Plugin:
             )
 
         def prior_fn(dtype, shape, name, trainable, add_variable_fn):
+            del name, trainable, add_variable_fn  # Unused
             loc = tf.zeros(shape, dtype=dtype)
             scale = tf.ones(shape, dtype=dtype)
             return tfp.distributions.Independent(
@@ -163,6 +164,7 @@ class Plugin:
         )
 
         print("✅ Bayesian ANN model built successfully.")
+
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
