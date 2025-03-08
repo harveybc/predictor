@@ -67,43 +67,6 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
 
-    import numpy as np
-import tensorflow as tf
-import tensorflow_probability as tfp
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, BatchNormalization
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import Huber
-
-class Plugin:
-    """
-    Bayesian ANN Predictor Plugin using TensorFlow Probability.
-    
-    Builds, trains, and evaluates a Bayesian ANN that outputs (N, time_horizon).
-    """
-
-    # Default parameters
-    plugin_params = {
-        'batch_size': 128,
-        'intermediate_layers': 3,
-        'initial_layer_size': 64,
-        'layer_size_divisor': 2,
-        'learning_rate': 0.0001,
-        'activation': 'tanh',
-        'l2_reg': 1e-5
-    }
-
-    def __init__(self):
-        self.params = self.plugin_params.copy()
-        self.model = None
-
-    def set_params(self, **kwargs):
-        """
-        Update plugin parameters with provided kwargs.
-        """
-        for key, value in kwargs.items():
-            self.params[key] = value
-
     def build_model(self, input_shape, x_train):
         """
         Builds a Bayesian ANN using TensorFlow Probability.
@@ -201,7 +164,6 @@ class Plugin:
         )
 
         print("✅ Bayesian ANN model built successfully.")
-
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
