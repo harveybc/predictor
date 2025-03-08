@@ -67,27 +67,27 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
 
-    def build_model(self, input_shape, train_size=None):
+    def build_model(self, input_shape, train_size=1):
         """
-        Builds ANN with Bayesian Dense layers for multi-step predictions, including uncertainty estimation.
+        Builds an ANN model with Bayesian Dense layers for multi-step prediction with uncertainty estimation.
 
         Args:
             input_shape (int): Number of input features.
-            train_size (int): Number of training samples for KL-divergence weighting.
-                            Automatically defaults to 1 if not provided to avoid division by zero.
+            train_size (int): Number of training samples, auto-calculated by caller.
         """
         import tensorflow_probability as tfp
         from tensorflow.keras import Model, Input
         from tensorflow.keras.layers import BatchNormalization
         from tensorflow.keras.optimizers import Adam
 
-        if train_size is None or train_size <= 0:
-            train_size = 1
+        if train_size <= 0:
+            raise ValueError(f"train_size must be positive. Received: {train_size}")
 
         self.params['input_dim'] = input_shape
+        l2_reg = self.params.get('l2_reg', 1e-5)
         time_horizon = self.params['time_horizon']
 
-        # Dynamically calculate layer sizes
+        # Dynamically determine layer sizes
         layers_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
@@ -98,49 +98,47 @@ class Plugin:
         print(f"Bayesian ANN Layer sizes: {layers_sizes + [time_horizon]}")
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Correctly defined prior and posterior functions compatible with TFP v0.18+
+        # Correct prior and posterior definitions:
         def posterior(kernel_size, bias_size, dtype=None, trainable=True, add_variable_fn=None):
-            fn = tfp.layers.default_mean_field_normal_fn()
-            return fn(kernel_size, bias_size, dtype, trainable, add_variable_fn)
+            return tfp.layers.default_mean_field_normal_fn(
+                loc_initializer=tf.random_normal_initializer(stddev=0.1),
+                untransformed_scale_initializer=tf.random_normal_initializer(mean=-3.0, stddev=0.1)
+            )(dtype, [kernel_size + bias_size], 'posterior', trainable, add_variable_fn)
 
         def prior(kernel_size, bias_size, dtype=None):
-            return tfp.layers.default_multivariate_normal_fn()(kernel_size, bias_size, dtype)
+            return tfp.layers.default_multivariate_normal_fn()(
+                dtype, [kernel_size + bias_size], 'prior', False, None
+            )
 
-        # Input layer
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
 
-        # Hidden Bayesian Dense Layers
         for idx, size in enumerate(layers_sizes, start=1):
             x = tfp.layers.DenseVariational(
                 units=size,
                 make_prior_fn=prior,
                 make_posterior_fn=posterior,
-                kl_weight=1.0 / train_size,
+                kl_weight=1/train_size,
                 activation=self.params['activation'],
                 name=f"bayesian_dense_{idx}"
             )(x)
 
-        # Batch normalization (originally present)
         x = BatchNormalization()(x)
 
-        # Output Bayesian Dense layer (linear activation for regression)
         model_output = tfp.layers.DenseVariational(
-            units=self.params['time_horizon'],
+            units=time_horizon,
             make_prior_fn=prior,
             make_posterior_fn=posterior,
-            kl_weight=1.0 / train_size,
+            kl_weight=1/train_size,
             activation='linear',
             name="bayesian_output"
         )(x)
 
         self.model = Model(inputs=model_input, outputs=model_output, name="Bayesian_ANN_Predictor_Model")
 
-        # Compile the model with Adam optimizer and existing combined loss
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
-            beta_1=0.9, beta_2=0.999,
-            epsilon=1e-7
+            beta_1=0.9, beta_2=0.999, epsilon=1e-7
         )
 
         self.model.compile(
@@ -151,6 +149,8 @@ class Plugin:
 
         print("Bayesian ANN Predictor Model Summary:")
         self.model.summary()
+        
+
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
