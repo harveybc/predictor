@@ -97,22 +97,22 @@ class Plugin:
 
         # Custom posterior function with three arguments.
         def posterior_fn(arg0, shape, name):
-            # arg0 is expected to be a tf.DType; if not, default to tf.float32.
+            # The first argument is expected to be a tf.DType, but sometimes an integer is passed.
             dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
-            # Convert shape to a list; if it's empty, convert to an empty tuple to represent a scalar.
+            # Convert the passed shape to a tuple; if it is empty, use () to represent a scalar.
             try:
-                shape_list = list(shape)
+                new_shape = tuple(shape)
             except Exception:
-                shape_list = shape
-            if len(shape_list) == 0:
-                shape_list = ()  # TensorFlow uses () for scalars.
+                new_shape = shape
+            if len(new_shape) == 0:
+                new_shape = ()
             loc = tf.Variable(
-                initial_value=tf.random.normal(shape_list, stddev=0.1, dtype=dtype),
+                initial_value=tf.random.normal(new_shape, stddev=0.1, dtype=dtype),
                 name=name + '_loc',
                 trainable=True
             )
             rho = tf.Variable(
-                initial_value=tf.constant(-3.0, shape=shape_list, dtype=dtype),
+                initial_value=tf.constant(-3.0, shape=new_shape, dtype=dtype),
                 name=name + '_rho',
                 trainable=True
             )
@@ -126,13 +126,13 @@ class Plugin:
         def prior_fn(arg0, shape, name):
             dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
             try:
-                shape_list = list(shape)
+                new_shape = tuple(shape)
             except Exception:
-                shape_list = shape
-            if len(shape_list) == 0:
-                shape_list = ()
-            loc = tf.zeros(shape_list, dtype=dtype)
-            scale = tf.ones(shape_list, dtype=dtype)
+                new_shape = shape
+            if len(new_shape) == 0:
+                new_shape = ()
+            loc = tf.zeros(new_shape, dtype=dtype)
+            scale = tf.ones(new_shape, dtype=dtype)
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc, scale=scale),
                 reinterpreted_batch_ndims=1
@@ -159,22 +159,7 @@ class Plugin:
             units=layer_sizes[-1],
             make_posterior_fn=posterior_fn,
             make_prior_fn=prior_fn,
-            kl_weight=kl_weight,
-            activation='linear',
-            name="output_layer"
-        )(x)
-
-        self.model = Model(inputs=inputs, outputs=outputs)
-
-        # Compile the model
-        optimizer = Adam(learning_rate=self.params.get('learning_rate', 0.0001))
-        self.model.compile(
-            optimizer=optimizer,
-            loss=Huber(),
-            metrics=['mse', 'mae']
-        )
-
-        print("✅ Bayesian ANN model built successfully.")
+            kl_weight=kl_weigh
 
     def build_model(self, input_shape, x_train):
         """
