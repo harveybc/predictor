@@ -68,18 +68,12 @@ class Plugin:
 
 
     def build_model(self, input_shape, train_size):
-        """
-        Builds an ANN model with Bayesian Dense layers, compatible with TFP DenseVariational layers.
-        
-        Args:
-            input_shape (int): Number of input features.
-            train_size (int): Number of training samples for kl_weight.
-        """
         import tensorflow_probability as tfp
+        import tensorflow as tf
         from tensorflow.keras import Model, Input
         from tensorflow.keras.layers import BatchNormalization
         from tensorflow.keras.optimizers import Adam
-        import tensorflow as tf
+        from tensorflow.keras.initializers import RandomNormal, Constant
 
         self.params['input_dim'] = input_shape
         l2_reg = self.params.get('l2_reg', 1e-5)
@@ -95,7 +89,7 @@ class Plugin:
         print(f"Bayesian ANN Layer sizes: {layers_sizes + [time_horizon]}")
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Properly defined prior function
+        # Correctly defined prior
         def prior(kernel_size, bias_size, dtype=None, trainable=True, add_variable_fn=None):
             n = kernel_size + bias_size
             prior_model = tfp.distributions.Independent(
@@ -104,12 +98,12 @@ class Plugin:
             )
             return prior_model
 
-        # Corrected posterior function with proper signature
-        def posterior(kernel_size, bias_size, dtype, trainable, add_variable_fn):
+        # Corrected posterior with exact signature
+        def posterior(kernel_size, bias_size, dtype=None, trainable=True, add_variable_fn=None):
             n = kernel_size + bias_size
             loc = add_variable_fn(
                 name='posterior_loc',
-                shape=(n,),
+                shape=[n],
                 initializer=tf.initializers.RandomNormal(stddev=0.1),
                 dtype=dtype,
                 trainable=trainable
@@ -117,18 +111,17 @@ class Plugin:
             scale = add_variable_fn(
                 name='posterior_scale',
                 shape=[n],
-                initializer=tf.constant_initializer(-3.0),
+                initializer=tf.initializers.Constant(-3.0),
                 dtype=dtype,
                 trainable=trainable
             )
-            scale = tf.nn.softplus(scale) + 1e-5
             posterior_model = tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc, scale=scale),
+                tfp.distributions.Normal(loc=loc, scale=tf.nn.softplus(scale)),
                 reinterpreted_batch_ndims=1
             )
             return posterior_model
 
-        # Input Layer
+        # Model Input
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
 
@@ -150,15 +143,14 @@ class Plugin:
         model_output = tfp.layers.DenseVariational(
             units=time_horizon,
             make_prior_fn=prior,
-            make_posterior_fn=posterior,
-            kl_weight=1/train_size,
-            activation='linear',
-            name="bayesian_output"
-        )(x)
+                make_posterior_fn=posterior,
+                kl_weight=1/train_size,
+                activation='linear',
+                name="bayesian_output"
+            )(x)
 
         self.model = Model(inputs=model_input, outputs=model_output, name="Bayesian_ANN_Predictor_Model")
 
-        # Compile
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
             beta_1=0.9, beta_2=0.999,
