@@ -101,7 +101,7 @@ class Plugin:
         import tensorflow_probability as tfp
 
         # Posterior function
-        def posterior_fn(kernel_size, bias_size, dtype, name, trainable, add_variable_fn):
+        def posterior_fn(kernel_size, bias_size, dtype, name="", trainable=True, add_variable_fn=None):
             loc = add_variable_fn(
                 name=name + '_posterior_loc',
                 shape=[kernel_size + bias_size],
