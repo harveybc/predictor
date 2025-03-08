@@ -70,12 +70,13 @@ class Plugin:
     def build_model(self, input_shape, train_size):
         import tensorflow_probability as tfp
         import tensorflow as tf
-        from tensorflow.keras import Model, Input
+        from tensorflow.keras import Input, Model
+        from tensorflow.keras.regularizers import l2
         from tensorflow.keras.layers import BatchNormalization
         from tensorflow.keras.optimizers import Adam
 
         if not isinstance(input_shape, int):
-            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
+            raise ValueError("input_shape must be an integer representing the number of input features.")
 
         self.params['input_dim'] = input_shape
         l2_reg = self.params.get('l2_reg', 1e-4)
@@ -84,57 +85,52 @@ class Plugin:
         layers_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
-        for _ in range(self.params['intermediate_layers']):
+
+        while current_size > time_horizon:
             layers_sizes.append(current_size)
-            current_size = max(current_size // divisor, 1)
+            current_size = max(int(current_size // divisor), time_horizon)
 
         print(f"Bayesian ANN Layer sizes: {layers_sizes + [time_horizon]}")
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Corrected prior and posterior functions
-        def prior(kernel_size, bias_size, dtype=None, trainable=True, add_variable_fn=None):
-            prior_fn = tfp.layers.default_multivariate_normal_fn()
-            return prior_fn(kernel_size, bias_size, dtype=dtype, trainable=trainable, add_variable_fn=add_variable_fn)
+        # Proper prior function with correct arguments
+        def prior_fn(kernel_size, bias_size, dtype, name, trainable, add_variable_fn):
+            dist = tfp.layers.default_multivariate_normal_fn()
+            return prior_fn(dtype=dtype, shape=kernel_size + bias_size, name=name, trainable=trainable, add_variable_fn=add_variable_fn)
 
-        def posterior(kernel_size, bias_size, dtype=None, trainable=True, add_variable_fn=None):
-            posterior_fn = tfp.layers.default_mean_field_normal_fn()
-            return posterior_fn(kernel_size, bias_size, dtype=dtype, trainable=trainable, add_variable_fn=add_variable_fn)
+        # Proper posterior function with correct arguments
+        def posterior_fn(kernel_size, bias_size, dtype, name, trainable, add_variable_fn):
+            return tfp.layers.default_mean_field_normal_fn()(dtype, kernel_size + bias_size, name, trainable, add_variable_fn)
 
-        model_input = Input(shape=(input_shape,), name="model_input")
+        model_input = tf.keras.Input(shape=(input_shape,), name="model_input")
         x = model_input
 
+        # Bayesian hidden layers
         for idx, size in enumerate(layers_sizes, start=1):
             x = tfp.layers.DenseVariational(
                 units=size,
-                make_prior_fn=prior,
-                make_posterior_fn=posterior,
-                kl_weight=1/train_size,
-                activation=self.params['activation'],
-                name=f"bayesian_dense_{idx}"
+                make_prior_fn=prior_fn,
+                make_posterior_fn=posterior_fn,
+                kl_weight=1.0/train_size,
+                activation='relu'
             )(x)
+            x = tf.keras.layers.BatchNormalization()(x)
 
-        x = BatchNormalization()(x)
-
+        # Bayesian output layer
         model_output = tfp.layers.DenseVariational(
-            units=self.params['time_horizon'],
-            make_prior_fn=prior,
-            make_posterior_fn=posterior,
+            units=time_horizon,
+            make_prior_fn=prior_fn,
+            make_posterior_fn=posterior_fn,
             kl_weight=1/train_size,
-            activation='linear',
-            name="bayesian_output"
+            activation='linear'
         )(x)
 
-        self.model = Model(inputs=model_input, outputs=model_output, name="Bayesian_ANN_Predictor_Model")
+        self.model = tf.keras.Model(inputs=model_input, outputs=model_output, name="Bayesian_ANN_Predictor")
 
-        adam_optimizer = Adam(
-            learning_rate=self.params['learning_rate'],
-            beta_1=0.9, beta_2=0.999,
-            epsilon=1e-7
-        )
-
+        adam_lr = self.params.get("learning_rate", 0.001)
         self.model.compile(
-            optimizer=adam_optimizer,
-            loss=combined_loss,
+            optimizer=Adam(learning_rate=adam_lr),
+            loss='mse',
             metrics=[mmd_metric, huber_metric]
         )
 
