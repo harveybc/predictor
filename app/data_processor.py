@@ -357,11 +357,11 @@ def run_prediction_pipeline(config, plugin):
 
         # Build model with dynamically calculated train_size
         if config["plugin"] in ["cnn", "cnn_mmd"]:
-            plugin.build_model(input_shape=(window_size, x_train.shape[2]), train_size=train_size)
+            plugin.build_model(input_shape=(window_size, x_train.shape[2]))
         elif config["plugin"] == "lstm":
-            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]), train_size=train_size)
+            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
         else:
-            plugin.build_model(input_shape=x_train.shape[1], train_size=train_size)
+            plugin.build_model(input_shape=x_train.shape[1])
 
         # Train model
         history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions = plugin.train(
