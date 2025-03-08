@@ -97,15 +97,15 @@ class Plugin:
 
         # Custom posterior function with three arguments.
         def posterior_fn(arg0, shape, name):
-            # arg0 is expected to be a tf.DType, but if not, default to tf.float32.
+            # arg0 is expected to be a tf.DType; if not, default to tf.float32.
             dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
-            # Convert shape to a list (if possible) and check if it's empty.
+            # Convert shape to a list; if it's empty, convert to an empty tuple to represent a scalar.
             try:
                 shape_list = list(shape)
             except Exception:
                 shape_list = shape
-            if not shape_list or len(shape_list) == 0:
-                shape_list = [1]
+            if len(shape_list) == 0:
+                shape_list = ()  # TensorFlow uses () for scalars.
             loc = tf.Variable(
                 initial_value=tf.random.normal(shape_list, stddev=0.1, dtype=dtype),
                 name=name + '_loc',
@@ -129,8 +129,8 @@ class Plugin:
                 shape_list = list(shape)
             except Exception:
                 shape_list = shape
-            if not shape_list or len(shape_list) == 0:
-                shape_list = [1]
+            if len(shape_list) == 0:
+                shape_list = ()
             loc = tf.zeros(shape_list, dtype=dtype)
             scale = tf.ones(shape_list, dtype=dtype)
             return tfp.distributions.Independent(
