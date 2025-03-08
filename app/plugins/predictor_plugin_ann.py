@@ -68,9 +68,6 @@ class Plugin:
 
 
     def build_model(self, input_shape, train_size):
-        """
-        Builds Bayesian ANN model fully compatible with TFP 0.18.x.
-        """
         import tensorflow_probability as tfp
         import tensorflow as tf
         from tensorflow.keras import Model, Input
@@ -78,9 +75,10 @@ class Plugin:
         from tensorflow.keras.optimizers import Adam
 
         self.params['input_dim'] = input_shape
+        l2_reg = self.params.get('l2_reg', 1e-4)
         time_horizon = self.params['time_horizon']
 
-        # Layer sizes
+        # Dynamically determine layer sizes
         layers_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
@@ -91,54 +89,46 @@ class Plugin:
         print(f"Bayesian ANN Layer sizes: {layers_sizes + [time_horizon]}")
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Proper prior and posterior definitions
-        def prior(kernel_size, bias_size, dtype=None):
-            n = kernel_size + bias_size
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=tf.zeros(n, dtype=dtype), scale=1),
-                reinterpreted_batch_ndims=1)
+        # Bayesian prior and posterior definitions
+        def prior(kernel_size, bias_size, dtype=None, trainable=True, add_variable_fn=None):
+            prior_fn = tfp.layers.default_multivariate_normal_fn()
+            return prior_fn(kernel_size, bias_size, dtype, trainable, add_variable_fn)
 
         def posterior(kernel_size, bias_size, dtype=None, trainable=True, add_variable_fn=None):
-            n = kernel_size + bias_size
-            posterior_model = tfp.layers.default_mean_field_normal_fn(
-                loc_initializer=tf.keras.initializers.RandomNormal(stddev=0.1),
-                untransformed_scale_initializer=tfp.layers.default_mean_field_normal_fn().keywords['untransformed_scale_initializer']
-            )
-            return posterior_fn(kernel_size, bias_size, dtype, trainable, add_variable_fn)
-
-        # Corrected posterior_fn with all required arguments
-        posterior_fn = tfp.layers.default_mean_field_normal_fn()
+            posterior_fn = tfp.layers.default_mean_field_normal_fn()
+            return posterior_fn(kernel_size, bias_size, dtype, trainable=trainable, add_variable_fn=add_variable_fn)
 
         # Input layer
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
 
-        # Hidden layers
+        # Hidden Bayesian Dense Layers
         for idx, size in enumerate(layers_sizes, start=1):
             x = tfp.layers.DenseVariational(
                 units=size,
                 make_prior_fn=prior,
-                make_posterior_fn=tfp.layers.default_mean_field_normal_fn(),
+                make_posterior_fn=posterior,
                 kl_weight=1/train_size,
                 activation=self.params['activation'],
                 name=f"bayesian_dense_{idx}"
             )(x)
 
-        # Batch Normalization layer
+        # Batch normalization
         x = BatchNormalization()(x)
 
-        # Output layer
+        # Output Bayesian Dense layer
         model_output = tfp.layers.DenseVariational(
             units=time_horizon,
             make_prior_fn=prior,
-            make_posterior_fn=tfp.layers.default_mean_field_normal_fn(),
+            make_posterior_fn=posterior,
             kl_weight=1/train_size,
             activation='linear',
             name="bayesian_output"
         )(x)
 
         # Model compilation
-        self.model = Model(inputs=Input(shape=(input_shape,)), outputs=model_output, name="Bayesian_ANN_Predictor_Model")
+        self.model = Model(inputs=model_input, outputs=model_output, name="Bayesian_ANN_Predictor_Model")
+
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
             beta_1=0.9, beta_2=0.999,
@@ -153,8 +143,6 @@ class Plugin:
 
         print("Bayesian ANN Predictor Model Summary:")
         self.model.summary()
-
-
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
