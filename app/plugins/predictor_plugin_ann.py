@@ -67,7 +67,20 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
 
-    def build_model(self, input_shape, train_size):
+    def build_model(self, input_shape, x_train):
+        """
+        Builds a Bayesian ANN using TensorFlow Probability.
+
+        Args:
+            input_shape (int): Number of input features.
+            x_train (np.ndarray): Training dataset to automatically determine train_size.
+        """
+        if not isinstance(input_shape, int):
+            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
+
+        train_size = x_train.shape[0]  # Automatically get the number of training samples
+        kl_weight = 1 / train_size  # Normalize KL divergence
+
         layer_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params.get('layer_size_divisor', 2)
@@ -83,25 +96,18 @@ class Plugin:
         print("Bayesian ANN Layer sizes:", layer_sizes)
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        import tensorflow as tf
-        import tensorflow_probability as tfp
-        from tensorflow.keras.layers import Input, BatchNormalization
-        from tensorflow.keras.models import Model
-        from tensorflow.keras.optimizers import Adam
-        from tensorflow.keras.losses import Huber
-
         # Explicitly define posterior and prior functions
-        def posterior_fn(kernel_size, bias_size, dtype, name, trainable, add_variable_fn):
+        def posterior_fn(dtype, shape, name, trainable, add_variable_fn):
             loc = add_variable_fn(
                 name=name + '_loc',
-                shape=[kernel_size + bias_size],
+                shape=shape,
                 initializer=tf.keras.initializers.RandomNormal(stddev=0.1),
                 dtype=dtype,
                 trainable=trainable
             )
             rho = add_variable_fn(
                 name=name + '_rho',
-                shape=[kernel_size + bias_size],
+                shape=shape,
                 initializer=tf.keras.initializers.Constant(-3.0),
                 dtype=dtype,
                 trainable=trainable
@@ -112,27 +118,28 @@ class Plugin:
                 reinterpreted_batch_ndims=1
             )
 
-        def prior_fn(kernel_size, bias_size, dtype, name, trainable, add_variable_fn):
-            loc = tf.zeros([kernel_size + bias_size], dtype=dtype)
-            scale = tf.ones([kernel_size + bias_size], dtype=dtype)
+        def prior_fn(dtype, shape, name, trainable, add_variable_fn):
+            loc = tf.zeros(shape, dtype=dtype)
+            scale = tf.ones(shape, dtype=dtype)
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc, scale=scale),
                 reinterpreted_batch_ndims=1
             )
 
-        inputs =  Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
+        # Build the Bayesian ANN
+        inputs = Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         x = inputs
-        train_size = x_train.shape[0]  # Automatically get the number of training samples
-        kl_weight = 1 / train_size  # Normalize KL divergence
+
         # Intermediate Bayesian layers
-        for size in layer_sizes[:-1]:
+        for idx, size in enumerate(layer_sizes[:-1]):
             x = tfp.layers.DenseVariational(
                 units=size,
                 make_posterior_fn=posterior_fn,
                 make_prior_fn=prior_fn,
-                kl_weight=1 / train_size,
-                activation=self.params.get('activation', 'tanh')
-            )(inputs)
+                kl_weight=kl_weight,
+                activation=self.params.get('activation', 'tanh'),
+                name=f"dense_layer_{idx+1}"
+            )(x)
             x = BatchNormalization()(x)
 
         # Final Bayesian output layer
@@ -140,8 +147,9 @@ class Plugin:
             units=layer_sizes[-1],
             make_posterior_fn=posterior_fn,
             make_prior_fn=prior_fn,
-            kl_weight=1 / self.params['train_size'],
-            activation='linear'
+            kl_weight=kl_weight,
+            activation='linear',
+            name="output_layer"
         )(x)
 
         self.model = Model(inputs=inputs, outputs=outputs)
@@ -155,7 +163,6 @@ class Plugin:
         )
 
         print("✅ Bayesian ANN model built successfully.")
-
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
