@@ -70,68 +70,89 @@ class Plugin:
     def build_model(self, input_shape, train_size):
         import tensorflow as tf
         import tensorflow_probability as tfp
+        from tensorflow.keras.models import Model
 
-        layers = self.params['layers']
-        time_horizon = self.params['time_horizon']
+        if not isinstance(input_shape, int):
+            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
+
+        self.params['input_dim'] = input_shape
         l2_reg = self.params.get('l2_reg', 1e-4)
-        
-        print("Bayesian ANN Layer sizes:", layers + [time_horizon])
-        print("Bayesian ANN input_shape:", input_shape)
 
-        # Define posterior and prior functions correctly
+        # Layer sizes generation (exactly as original)
+        layers = []
+        current_size = self.params.get('initial_layer_size', 64)
+        divisor = self.params.get('layer_size_divisor', 2)
+        for _ in range(self.params['intermediate_layers']):
+            layers.append(current_size)
+            current_size = max(current_size // divisor, 1)
+
+        # Add output layer based on time horizon
+        layers.append(self.params['time_horizon'])
+
+        print(f"Bayesian ANN Layer sizes: {layers}")
+        print(f"Bayesian ANN input_shape: {input_shape}")
+
+        # Correct posterior and prior functions for TFP 0.18
         def posterior_fn(kernel_size, bias_size, dtype, name, trainable, add_variable_fn):
-            n = kernel_size + bias_size
-            loc = add_variable_fn(name=name+'_loc',
-                                shape=(n,),
+            loc = add_variable_fn(name=name + '_posterior_loc',
+                                shape=[kernel_size + bias_size],
                                 initializer=tf.keras.initializers.RandomNormal(stddev=0.1),
                                 dtype=dtype,
                                 trainable=trainable)
-            rho = add_variable_fn(name=name+'_rho',
-                                shape=(n,),
-                                initializer=tf.keras.initializers.Constant(-3.0),
-                                dtype=dtype,
-                                trainable=trainable)
+            rho = add_variable_fn(
+                name=name + '_posterior_rho',
+                shape=(kernel_size + bias_size,),
+                initializer=tf.constant_initializer(-3.0),
+                dtype=dtype,
+                trainable=trainable
+            )
             scale = tf.nn.softplus(rho)
-            return tfp.distributions.Independent(tfp.distributions.Normal(loc=loc, scale=tf.nn.softplus(scale)), 
-                                                reinterpreted_batch_ndims=1)
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=loc, scale=scale),
+                reinterpreted_batch_ndims=1
+            )
 
         def prior_fn(kernel_size, bias_size, dtype, name, trainable, add_variable_fn):
-            dist = tfp.distributions.Normal(loc=tf.zeros(kernel_size + bias_size, dtype=dtype),
-                                            scale=1.0)
-            return tfp.distributions.Independent(dist, reinterpreted_batch_ndims=1)
+            dist = tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=tf.zeros(kernel_size + bias_size, dtype=dtype),
+                                        scale=1.0),
+                reinterpreted_batch_ndims=1
+            )
+            return dist
 
-        inputs = tf.keras.Input(shape=(self.params['input_dim'],), name="model_input")
+        inputs = tf.keras.Input(shape=(input_shape,), name="model_input")
         x = inputs
 
-        for units in layers:
+        for units in layers[:-1]:
             x = tfp.layers.DenseVariational(
                 units=units,
-                make_posterior_fn=tfp.layers.default_mean_field_normal_fn(),
-                make_prior_fn=tfp.layers.default_multivariate_normal_fn,
+                make_posterior_fn=posterior_fn,
+                make_prior_fn=prior_fn,
                 kl_weight=1.0/train_size,
-                activation='relu'
+                activation=self.params.get('activation', 'tanh')
             )(x)
             x = tf.keras.layers.BatchNormalization()(x)
 
         outputs = tfp.layers.DenseVariational(
-            units=time_horizon,
-            make_posterior_fn=tfp.layers.default_mean_field_normal_fn(),
-            make_prior_fn=tfp.layers.default_multivariate_normal_fn,
+            units=layers[-1],
+            make_posterior_fn=posterior_fn,
+            make_prior_fn=prior_fn,
             kl_weight=1.0/train_size,
             activation='linear'
         )(x)
 
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
 
+        # Optimizer setup
+        adam = tf.keras.optimizers.Adam(self.params.get('learning_rate', 1e-4))
+
         self.model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=self.params.get("learning_rate", 1e-3)),
-            loss='mse',
-            metrics=[mmd_metric, huber_metric]
+            optimizer=adam_optimizer,
+            loss=Huber(),  # or any loss you prefer
+            metrics=['mae', 'mse']
         )
 
-        print("Bayesian ANN Predictor Model Summary:")
-        self.model.summary()
-
+        print("Bayesian ANN model compiled successfully.")
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
