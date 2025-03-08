@@ -69,26 +69,24 @@ class Plugin:
 
     def build_model(self, input_shape, train_size=None):
         """
-        Builds a Bayesian ANN model with DenseVariational layers, correctly handling the prior and posterior functions.
+        Builds an ANN model with Bayesian Dense layers, preserving original pipeline behavior,
+        including multi-step predictions and adding uncertainty estimation.
 
         Args:
             input_shape (int): Number of input features.
-            train_size (int, optional): Automatically inferred if not provided.
+            train_size (int): Number of training samples, automatically calculated if not provided.
         """
         import tensorflow_probability as tfp
         from tensorflow.keras import Model, Input
         from tensorflow.keras.layers import BatchNormalization
         from tensorflow.keras.optimizers import Adam
 
-        if train_size is None:
-            train_size = 1  # default fallback
-        if not isinstance(input_shape, int):
-            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
-
+        if train_size is None or train_size <= 0:
+            train_size = 1  # Default fallback to avoid division by zero
+        
         self.params['input_dim'] = input_shape
         time_horizon = self.params['time_horizon']
 
-        # Dynamically determine layer sizes
         layers_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params['layer_size_divisor']
@@ -99,12 +97,12 @@ class Plugin:
         print(f"Bayesian ANN Layer sizes: {layers_sizes + [time_horizon]}")
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Correct prior and posterior without seed
+        # Corrected prior and posterior functions
+        def posterior(kernel_size, bias_size, dtype=None, trainable=True, add_variable_fn=None):
+            return tfp.layers.default_mean_field_normal_fn()(kernel_size=kernel_size, bias_size=bias_size, dtype=dtype, trainable=trainable, add_variable_fn=add_variable_fn)
+
         def prior(kernel_size, bias_size, dtype=None):
             return tfp.layers.default_multivariate_normal_fn()(kernel_size, bias_size, dtype)
-
-        def posterior(kernel_size, bias_size, dtype=None):
-            return tfp.layers.default_mean_field_normal_fn()(kernel_size, bias_size, dtype)
 
         model_input = Input(shape=(input_shape,), name="model_input")
         x = model_input
@@ -114,7 +112,7 @@ class Plugin:
                 units=size,
                 make_prior_fn=prior,
                 make_posterior_fn=posterior,
-                kl_weight=1/(train_size or 1),
+                kl_weight=1/train_size,
                 activation=self.params['activation'],
                 name=f"bayesian_dense_{idx}"
             )(x)
@@ -122,15 +120,15 @@ class Plugin:
         x = BatchNormalization()(x)
 
         model_output = tfp.layers.DenseVariational(
-            units=time_horizon,
+            units=self.params['time_horizon'],
             make_prior_fn=prior,
             make_posterior_fn=posterior,
-            kl_weight=1/(train_size or 1),
+            kl_weight=1/train_size,
             activation='linear',
             name="bayesian_output"
         )(x)
 
-        self.model = Model(inputs=model_input, outputs=model_output)
+        self.model = Model(inputs=model_input, outputs=model_output, name="Bayesian_ANN_Predictor_Model")
 
         adam_optimizer = Adam(
             learning_rate=self.params['learning_rate'],
