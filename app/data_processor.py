@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
 import json
 
-from keras.utils.vis_utils import plot_model
+from keras.utils import plot_model
 from tensorflow.keras.losses import Huber
 
 def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
