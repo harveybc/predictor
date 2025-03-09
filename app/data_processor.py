@@ -360,8 +360,7 @@ def run_prediction_pipeline(config, plugin):
             batch_size=batch_size,
             threshold_error=threshold_error,
             x_val=x_val,
-            y_val=y_val,
-            config=config
+            y_val=y_val
         )
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
