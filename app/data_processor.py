@@ -282,14 +282,6 @@ def run_prediction_pipeline(config, plugin):
     iterations = config.get("iterations", 1)
     print(f"Number of iterations: {iterations}")
 
-    # Lists to store metrics for all iterations
-    training_mae_list = []
-    training_r2_list = []
-    validation_mae_list = []
-    validation_r2_list = []
-    test_mae_list = []
-    test_r2_list = []
-
     print("Loading and processing datasets...")
     datasets = process_data(config)
     x_train, y_train = datasets["x_train"], datasets["y_train"]
@@ -299,10 +291,10 @@ def run_prediction_pipeline(config, plugin):
     val_dates = datasets.get("dates_val")
     test_dates = datasets.get("dates_test")
 
-    # Force conversion to NumPy arrays.
-    x_train = np.asarray(x_train)
-    x_val   = np.asarray(x_val)
-    x_test  = np.asarray(x_test)
+    # Force conversion to NumPy arrays to avoid tuple issues.
+    x_train = np.array(x_train)
+    x_val   = np.array(x_val)
+    x_test  = np.array(x_test)
 
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
@@ -320,7 +312,6 @@ def run_prediction_pipeline(config, plugin):
     epochs = config["epochs"]
     threshold_error = config["threshold_error"]
 
-    # Ensure data are NumPy arrays if not already.
     for var_name in ["x_train", "y_train", "x_val", "y_val", "x_test", "y_test"]:
         arr = locals()[var_name]
         if isinstance(arr, pd.DataFrame):
@@ -329,7 +320,7 @@ def run_prediction_pipeline(config, plugin):
     if config["plugin"] in ["cnn", "cnn_mmd"]:
         if x_train.ndim != 3:
             raise ValueError(f"For CNN plugins, x_train must be 3D. Found: {x_train.shape}.")
-        print("Using pre-processed sliding windows for CNN (if enabled); otherwise, raw data are used.")
+        print("Using raw data for CNN (sliding windows not enabled).")
 
     plugin.set_params(time_horizon=time_horizon)
     n_splits = 5
@@ -339,9 +330,9 @@ def run_prediction_pipeline(config, plugin):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
         if config["plugin"] in ["cnn", "cnn_mmd"]:
-            plugin.build_model(input_shape=(window_size, x_train.shape[2]), config=config, x_train=x_train)
+            plugin.build_model(input_shape=x_train.shape[1], config=config, x_train=x_train)
         elif config["plugin"] == "lstm":
-            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]), config=config, x_train=x_train)
+            plugin.build_model(input_shape=x_train.shape[1], config=config, x_train=x_train)
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
             plugin.build_model(input_shape=x_train.shape[1], config=config, x_train=x_train)
         else:
@@ -396,7 +387,107 @@ def run_prediction_pipeline(config, plugin):
         iteration_end_time = time.time()
         print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
-    # (Rest of run_prediction_pipeline remains unchanged)
+    # (The rest of run_prediction_pipeline remains unchanged.)
+
+    # (Rest of run_prediction_pipeline remains unchanged.)
+    # ...
+
+    # -----------------------
+    # Aggregate statistics
+    # -----------------------
+    results = {
+        "Metric": ["Training MAE", "Training R²", "Validation MAE", "Validation R²", "Test MAE", "Test R²"],
+        "Average": [np.mean(training_mae_list), np.mean(training_r2_list),
+                    np.mean(validation_mae_list), np.mean(validation_r2_list),
+                    np.mean(test_mae_list), np.mean(test_r2_list)],
+        "Std Dev": [np.std(training_mae_list), np.std(training_r2_list),
+                    np.std(validation_mae_list), np.std(validation_r2_list),
+                    np.std(test_mae_list), np.std(test_r2_list)],
+        "Max": [np.max(training_mae_list), np.max(training_r2_list),
+                np.max(validation_mae_list), np.max(validation_r2_list),
+                np.max(test_mae_list), np.max(test_r2_list)],
+        "Min": [np.min(training_mae_list), np.min(training_r2_list),
+                np.min(validation_mae_list), np.min(validation_r2_list),
+                np.min(test_mae_list), np.min(test_r2_list)],
+    }
+    print("*************************************************")
+    print("Training Statistics:")
+    print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
+    print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
+    print("\nValidation Statistics:")
+    print(f"MAE - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
+    print(f"R²  - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
+    print("\nTest Statistics:")
+    print(f"MAE - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
+    print(f"R²  - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
+    print("*************************************************")
+    results_file = config.get("results_file", "results.csv")
+    results_df = pd.DataFrame(results)
+    results_df.to_csv(results_file, index=False)
+    print(f"Results saved to {results_file}")
+
+    # Save final validation predictions
+    final_test_file = config.get("output_file", "test_predictions.csv")
+    if 'test_predictions' in locals() and test_predictions is not None:
+        # Denormalize predictions (simple denormalization using CLOSE values)
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                try:
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                except Exception as e:
+                    print(f"Error loading normalization JSON from {norm_json}: {e}")
+                    norm_json = {}
+            elif not isinstance(norm_json, dict):
+                print("Error: Normalization JSON is not a valid dictionary.")
+                norm_json = {}
+            if "CLOSE" in norm_json:
+                min_val = norm_json["CLOSE"].get("min", 0)
+                max_val = norm_json["CLOSE"].get("max", 1)
+                # Simple denormalization: original = normalized*(max-min) + min
+                test_predictions = test_predictions * (max_val - min_val) + min_val
+
+        test_predictions_df = pd.DataFrame(
+            test_predictions, 
+            columns=[f"Prediction_{i+1}" for i in range(test_predictions.shape[1])]
+        )
+        if test_dates is not None:
+            test_predictions_df['DATE_TIME'] = pd.Series(test_dates[:len(test_predictions_df)])
+        else:
+            test_predictions_df['DATE_TIME'] = pd.NaT
+        cols = ['DATE_TIME'] + [col for col in test_predictions_df.columns if col != 'DATE_TIME']
+        test_predictions_df = test_predictions_df[cols]
+        test_predictions_df.to_csv(final_test_file, index=False)
+        print(f"Final validation predictions saved to {final_test_file}")
+    else:
+        print("Warning: No final validation predictions were generated (all iterations may have failed).")
+
+    try:
+        plot_model(
+            plugin.model, 
+            to_file=config['model_plot_file'],
+            show_shapes=True,
+            show_dtype=False,
+            show_layer_names=True,
+            expand_nested=True,
+            dpi=300,
+            show_layer_activations=True
+        )
+        print(f"Model plot saved to {config['model_plot_file']}")
+    except Exception as e:
+        print(f"Failed to generate model plot. Ensure Graphviz is installed and in your PATH: {e}")
+        print("Download Graphviz from https://graphviz.org/download/")
+
+    save_model_file = config.get("save_model", "pretrained_model.keras")
+    try:
+        plugin.save(save_model_file)
+        print(f"Model saved to {save_model_file}")  
+    except Exception as e:
+        print(f"Failed to save model to {save_model_file}: {e}")
+
+    end_time = time.time()
+    print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
 
 
 

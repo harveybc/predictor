@@ -63,109 +63,64 @@ class Plugin:
 
     def build_model(self, input_shape, x_train, config=None):
         """
-        Builds a Bayesian ANN using TensorFlow Probability.
+        Builds a standard ANN (without Bayesian uncertainty estimation) using Keras Dense layers.
 
         Args:
             input_shape (int): Number of input features.
             x_train (np.ndarray): Training dataset to automatically determine train_size.
         """
-        # Force conversion to a NumPy array to avoid tuple issues.
-        x_train = np.asarray(x_train)
-
+        # Ensure x_train is a proper NumPy array.
+        x_train = np.array(x_train)
+        
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
-
+        
         train_size = x_train.shape[0]
-        kl_weight = 1 / max(1, train_size)
-
-        # Define layer sizes.
+        print("Standard ANN: Number of training samples =", train_size)
+        
+        # Compute layer sizes.
         layer_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params.get('layer_size_divisor', 2)
         int_layers = self.params.get('intermediate_layers', 3)
         time_horizon = self.params['time_horizon']
-
+        
         for _ in range(int_layers):
             layer_sizes.append(current_size)
             current_size = max(current_size // divisor, 1)
         layer_sizes.append(time_horizon)
-
-        print("Bayesian ANN Layer sizes:", layer_sizes)
-        print(f"Bayesian ANN input_shape: {input_shape}")
-
-        # Custom posterior function with 5 arguments.
-        def posterior_fn(dtype, shape, name, trainable, add_variable_fn):
-            dtype = tf.as_dtype(dtype) if isinstance(dtype, tf.DType) else tf.float32
-            new_shape = tuple(shape) if shape is not None else ()
-            if len(new_shape) == 0:
-                new_shape = ()
-            loc = add_variable_fn(
-                name=name + '_loc',
-                shape=new_shape,
-                initializer=tf.random_normal_initializer(stddev=0.1),
-                dtype=dtype,
-                trainable=trainable
-            )
-            rho = add_variable_fn(
-                name=name + '_rho',
-                shape=new_shape,
-                initializer=tf.constant_initializer(-3.0),
-                dtype=dtype,
-                trainable=trainable
-            )
-            scale = tf.nn.softplus(rho)
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc, scale=scale),
-                reinterpreted_batch_ndims=1
-            )
-
-        # Custom prior function with 5 arguments.
-        def prior_fn(dtype, shape, name, trainable, add_variable_fn):
-            dtype = tf.as_dtype(dtype) if isinstance(dtype, tf.DType) else tf.float32
-            new_shape = tuple(shape) if shape is not None else ()
-            if len(new_shape) == 0:
-                new_shape = ()
-            loc = tf.zeros(new_shape, dtype=dtype)
-            scale = tf.ones(new_shape, dtype=dtype)
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc, scale=scale),
-                reinterpreted_batch_ndims=1
-            )
-
-        # Build the model.
+        
+        print("Standard ANN Layer sizes:", layer_sizes)
+        print(f"Standard ANN input_shape: {input_shape}")
+        
+        # Build the model using standard Dense layers.
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         x = inputs
-
+        
+        # Create intermediate layers.
         for idx, size in enumerate(layer_sizes[:-1]):
-            x = tfp.layers.DenseVariational(
-                units=size,
-                make_posterior_fn=posterior_fn,
-                make_prior_fn=prior_fn,
-                kl_weight=kl_weight,
-                activation=self.params.get('activation', 'tanh'),
-                name=f"dense_layer_{idx+1}"
-            )(x)
+            x = tf.keras.layers.Dense(units=size, 
+                                    activation=self.params.get('activation', 'tanh'),
+                                    kernel_initializer='glorot_uniform',
+                                    name=f"dense_layer_{idx+1}")(x)
             x = tf.keras.layers.BatchNormalization()(x)
-
-        outputs = tfp.layers.DenseVariational(
-            units=layer_sizes[-1],
-            make_posterior_fn=posterior_fn,
-            make_prior_fn=prior_fn,
-            kl_weight=kl_weight,
-            activation='linear',
-            name="output_layer"
-        )(x)
-
+        
+        # Final output layer.
+        outputs = tf.keras.layers.Dense(units=layer_sizes[-1], 
+                                        activation='linear', 
+                                        name="output_layer")(x)
+        
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
-
+        
         optimizer = tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001))
         self.model.compile(
             optimizer=optimizer,
             loss=Huber(),
             metrics=['mse', 'mae']
         )
+        
+        print("✅ Standard ANN model built successfully.")
 
-        print("✅ Bayesian ANN model built successfully.")
 
 
 
