@@ -20,7 +20,7 @@ setup(
         ]
     },
     install_requires=[
-
+        'build'           
     ],
     author='Harvey Bastidas',
     author_email='your.email@example.com',
