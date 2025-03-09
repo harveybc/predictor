@@ -44,6 +44,7 @@ DEFAULT_VALUES = {
     'max_steps_test': 6300,
     'iterations': 3,
     'epochs': 1000,
-    'uncertainty_file': 'prediction_uncertainties.csv'
+    'uncertainty_file': 'prediction_uncertainties.csv',
+    'batch_size': 32
     
 }
