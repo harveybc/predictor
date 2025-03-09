@@ -130,9 +130,9 @@ class Plugin:
         # Compile
         self.model.compile(
             optimizer=adam_optimizer,
-            loss=Huber(),  # or 'mse'
-            #loss='mae',  # or 'mse'
-            metrics=['mse', 'mae']  # logs multi-step MSE/MAE
+            loss=Huber(),  
+            #loss='mae',  
+            metrics=['mae']  # logs multi-step MAE
         )
         
         print("Predictor Model Summary:")
@@ -188,11 +188,11 @@ class Plugin:
 
         # Evaluate on the full training dataset for consistency
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-        train_loss, train_mse, train_mae = train_eval_results
-        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
+        train_loss, train_mae = train_eval_results
+        print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
         
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-        val_loss, val_mse, val_mae = val_eval_results
+        val_loss, val_mae = val_eval_results
         
         # Predict validation data for evaluation
         train_predictions = self.predict(x_train)  # Predict train data
@@ -212,21 +212,6 @@ class Plugin:
         preds = self.model.predict(data)
         #print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
         return preds
-
-    def calculate_mse(self, y_true, y_pred):
-        """
-        Flatten-based MSE => consistent with multi-step shape (N, time_horizon).
-        """
-        print(f"Calculating MSE => y_true={y_true.shape}, y_pred={y_pred.shape}")
-        if y_true.shape != y_pred.shape:
-            raise ValueError(
-                f"Mismatch => y_true={y_true.shape}, y_pred={y_pred.shape}"
-            )
-        y_true_f = y_true.reshape(-1)
-        y_pred_f = y_pred.reshape(-1)
-        mse = np.mean((y_true_f - y_pred_f) ** 2)
-        print(f"Calculated MSE => {mse}")
-        return mse
 
     def calculate_mae(self, y_true, y_pred):
         print(f"y_true (sample): {y_true.flatten()[:5]}")
