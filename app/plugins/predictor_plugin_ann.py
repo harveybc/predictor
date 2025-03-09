@@ -72,7 +72,7 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    def build_model(self, input_shape, x_train):
+    def build_model(self, input_shape, x_train, config=None):
         """
         Builds a Bayesian ANN using TensorFlow Probability.
 
