@@ -11,6 +11,6 @@
     "plugin": "ann",
     "use_daily": true,
     "max_steps_train": 25200,
-    "max_steps_test": 6300,
+    "max_steps_test": 6300
     
 }
