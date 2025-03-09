@@ -69,7 +69,7 @@ class Plugin:
             input_shape (int): Number of input features.
             x_train (np.ndarray): Training dataset to automatically determine train_size.
         """
-        # Fix: if x_train is a tuple (e.g. from sliding windows), extract the array.
+        # If x_train is a tuple (e.g. from sliding windows), extract the array.
         if isinstance(x_train, tuple):
             x_train = x_train[0]
 
@@ -151,13 +151,13 @@ class Plugin:
 
         # Final Bayesian output layer.
         outputs = tfp.layers.DenseVariational(
-                units=layer_sizes[-1],
-                make_posterior_fn=posterior_fn,
-                make_prior_fn=prior_fn,
-                kl_weight=kl_weight,
-                activation='linear',
-                name="output_layer"
-            )(x)
+            units=layer_sizes[-1],
+            make_posterior_fn=posterior_fn,
+            make_prior_fn=prior_fn,
+            kl_weight=kl_weight,
+            activation='linear',
+            name="output_layer"
+        )(x)
 
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
 
