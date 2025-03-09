@@ -106,7 +106,7 @@ class Plugin:
             )(x)
 
         #add batch normalization
-        x = BatchNormalization()(x)
+        #x = BatchNormalization()(x)
         # Output layer => shape (N, time_horizon)
         model_output = Dense(
             units=layers[-1],
