@@ -69,13 +69,17 @@ class Plugin:
             input_shape (int): Number of input features.
             x_train (np.ndarray): Training dataset to automatically determine train_size.
         """
+        # If x_train is a tuple (e.g. (windows_array, date_times)), use the first element.
+        if isinstance(x_train, tuple):
+            x_train = x_train[0]
+
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
 
         train_size = x_train.shape[0]  # Automatically get the number of training samples
         kl_weight = 1 / max(1, train_size)  # Normalize KL divergence, avoid division by zero
 
-        # Define layer sizes
+        # Define layer sizes.
         layer_sizes = []
         current_size = self.params['initial_layer_size']
         divisor = self.params.get('layer_size_divisor', 2)
@@ -92,9 +96,7 @@ class Plugin:
 
         # Custom posterior function with 5 arguments.
         def posterior_fn(dtype, shape, name, trainable, add_variable_fn):
-            # Ensure dtype is valid.
             dtype = tf.as_dtype(dtype) if isinstance(dtype, tf.DType) else tf.float32
-            # Convert shape to tuple; if empty, use () to represent a scalar.
             new_shape = tuple(shape) if shape is not None else ()
             if len(new_shape) == 0:
                 new_shape = ()
