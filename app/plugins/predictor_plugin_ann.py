@@ -58,85 +58,115 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    def build_model(self, input_shape):
+    def build_model(self, input_shape, x_train):
         """
-        Build the ANN with final layer = self.params['time_horizon'] for multi-step outputs.
-        
+        Builds a Bayesian ANN using TensorFlow Probability.
+
         Args:
-            input_shape (int): Number of input features for ANN.
+            input_shape (int): Number of input features.
+            x_train (np.ndarray): Training dataset to automatically determine train_size.
         """
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
-        
-        self.params['input_dim'] = input_shape
-        l2_reg = self.params.get('l2_reg', 1e-4)
-        time_horizon = self.params['time_horizon']  # the multi-step dimension
 
-        # Dynamically set layer sizes
-        layers = []
+        train_size = x_train.shape[0]  # Automatically get the number of training samples
+        kl_weight = 1 / max(1, train_size)  # Normalize KL divergence, avoid division by zero
+
+        # Define layer sizes
+        layer_sizes = []
         current_size = self.params['initial_layer_size']
-        divisor = self.params['layer_size_divisor']
-        int_layers = 0
-        while int_layers < self.params['intermediate_layers']:
-            layers.append(current_size)
+        divisor = self.params.get('layer_size_divisor', 2)
+        int_layers = self.params.get('intermediate_layers', 3)
+        time_horizon = self.params['time_horizon']
+
+        for _ in range(int_layers):
+            layer_sizes.append(current_size)
             current_size = max(current_size // divisor, 1)
-            int_layers += 1
+        layer_sizes.append(time_horizon)
 
-        # Final layer => time_horizon units (N, time_horizon) output
-        layers.append(time_horizon)
+        print("Bayesian ANN Layer sizes:", layer_sizes)
+        print(f"Bayesian ANN input_shape: {input_shape}")
 
-        print(f"ANN Layer sizes: {layers}")
-        print(f"ANN input_shape: {input_shape}")
+        # Custom posterior function with three arguments.
+        def posterior_fn(arg0, shape, name):
+            # The first argument is expected to be a tf.DType, but sometimes an integer is passed.
+            dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
+            # Convert the passed shape to a tuple; if it is empty, use () to represent a scalar.
+            try:
+                new_shape = tuple(shape)
+            except Exception:
+                new_shape = shape
+            if len(new_shape) == 0:
+                new_shape = ()
+            loc = tf.Variable(
+                initial_value=tf.random.normal(new_shape, stddev=0.1, dtype=dtype),
+                name=name + '_loc',
+                trainable=True
+            )
+            rho = tf.Variable(
+                initial_value=tf.constant(-3.0, shape=new_shape, dtype=dtype),
+                name=name + '_rho',
+                trainable=True
+            )
+            scale = tf.nn.softplus(rho)
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=loc, scale=scale),
+                reinterpreted_batch_ndims=1
+            )
 
-        # Build the model
-        from tensorflow.keras import Model, Input
-        model_input = Input(shape=(input_shape,), name="model_input")
-        x = model_input
-        #x = GaussianNoise(0.01)(x)  # Add noise with stddev=0.01
-        # Hidden Dense layers
-        idx = 0
-        for size in layers[:-1]:
-            idx += 1
-            x = Dense(
+        # Custom prior function with three arguments.
+        def prior_fn(arg0, shape, name):
+            dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
+            try:
+                new_shape = tuple(shape)
+            except Exception:
+                new_shape = shape
+            if len(new_shape) == 0:
+                new_shape = ()
+            loc = tf.zeros(new_shape, dtype=dtype)
+            scale = tf.ones(new_shape, dtype=dtype)
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=loc, scale=scale),
+                reinterpreted_batch_ndims=1
+            )
+
+        # Build the Bayesian ANN
+        inputs = Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
+        x = inputs
+
+        # Intermediate Bayesian layers
+        for idx, size in enumerate(layer_sizes[:-1]):
+            x = tfp.layers.DenseVariational(
                 units=size,
-                activation=self.params['activation'],
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
-                name=f"dense_layer_{idx}"
+                make_posterior_fn=posterior_fn,
+                make_prior_fn=prior_fn,
+                kl_weight=kl_weight,
+                activation=self.params.get('activation', 'tanh'),
+                name=f"dense_layer_{idx+1}"
             )(x)
+            x = BatchNormalization()(x)
 
-        #add batch normalization
-        x = BatchNormalization()(x)
-        # Output layer => shape (N, time_horizon)
-        model_output = Dense(
-            units=layers[-1],
+        # Final Bayesian output layer
+        outputs = tfp.layers.DenseVariational(
+            units=layer_sizes[-1],
+            make_posterior_fn=posterior_fn,
+            make_prior_fn=prior_fn,
+            kl_weight=kl_weight,
             activation='linear',
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name="model_output"
+            name="output_layer"
         )(x)
-        #add batch normalization
-        #model_output = BatchNormalization()(model_output)
 
-        self.model = Model(inputs=model_input, outputs=model_output, name="ANN_Predictor_Model")
+        self.model = Model(inputs=inputs, outputs=outputs)
 
-        # Adam
-        adam_optimizer = Adam(
-            learning_rate=self.params['learning_rate'],
-            beta_1=0.9, beta_2=0.999,
-            epsilon=1e-7, amsgrad=False
-        )
-
-        # Compile
+        # Compile the model
+        optimizer = Adam(learning_rate=self.params.get('learning_rate', 0.0001))
         self.model.compile(
-            optimizer=adam_optimizer,
-            loss=Huber(),  
-            #loss='mae',  
-            metrics=['mae']  # logs multi-step MAE
+            optimizer=optimizer,
+            loss=Huber(),
+            metrics=['mse', 'mae']
         )
-        
-        print("Predictor Model Summary:")
-        self.model.summary()
+
+        print("✅ Bayesian ANN model built successfully.")
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
