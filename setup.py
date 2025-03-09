@@ -20,16 +20,7 @@ setup(
         ]
     },
     install_requires=[
-            'tensorflow-gpu',
-            'nvidia-cudnn-cu11',
-            'numpy',
-            'pandas',
-            'h5py',
-            'scipy',
-            'build',
-            'pytest',
-            'pdoc3',
-            'keras-multi-head'
+
     ],
     author='Harvey Bastidas',
     author_email='your.email@example.com',
