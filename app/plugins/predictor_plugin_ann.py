@@ -69,15 +69,15 @@ class Plugin:
             input_shape (int): Number of input features.
             x_train (np.ndarray): Training dataset to automatically determine train_size.
         """
-        # If x_train is a tuple (e.g. (windows_array, date_times)), use the first element.
+        # Fix: if x_train is a tuple (e.g. from sliding windows), extract the array.
         if isinstance(x_train, tuple):
             x_train = x_train[0]
 
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
 
-        train_size = x_train.shape[0]  # Automatically get the number of training samples
-        kl_weight = 1 / max(1, train_size)  # Normalize KL divergence, avoid division by zero
+        train_size = x_train.shape[0]  # Get the number of training samples
+        kl_weight = 1 / max(1, train_size)  # Normalize KL divergence
 
         # Define layer sizes.
         layer_sizes = []
@@ -151,15 +151,15 @@ class Plugin:
 
         # Final Bayesian output layer.
         outputs = tfp.layers.DenseVariational(
-            units=layer_sizes[-1],
-            make_posterior_fn=posterior_fn,
-            make_prior_fn=prior_fn,
-            kl_weight=kl_weight,
-            activation='linear',
-            name="output_layer"
-        )(x)
+                units=layer_sizes[-1],
+                make_posterior_fn=posterior_fn,
+                make_prior_fn=prior_fn,
+                kl_weight=kl_weight,
+                activation='linear',
+                name="output_layer"
+            )(x)
 
-        self.model = Model(inputs=inputs, outputs=outputs)
+        self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
 
         # Compile the model.
         optimizer = Adam(learning_rate=self.params.get('learning_rate', 0.0001))
