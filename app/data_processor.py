@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
 import json
 
-from keras.utils import plot_model
+from keras.utils.vis_utils import plot_model
 from tensorflow.keras.losses import Huber
 
 def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
@@ -319,15 +319,15 @@ def run_prediction_pipeline(config, plugin):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
         if config["plugin"] in ["cnn", "cnn_mmd"]:
-            plugin.build_model(input_shape=(window_size, x_train.shape[2]))
+            plugin.build_model(input_shape=(window_size, x_train.shape[2]), config=config)
         elif config["plugin"] == "lstm":
-            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
+            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]), config=config)
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
-            plugin.build_model(input_shape=x_train.shape[1])
+            plugin.build_model(input_shape=x_train.shape[1], config=config)
         else:
             if len(x_train.shape) != 2:
                 raise ValueError(f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}.")
-            plugin.build_model(input_shape=x_train.shape[1])
+            plugin.build_model(input_shape=x_train.shape[1], config=config)
         
         history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions = plugin.train(
             x_train,
@@ -336,7 +336,8 @@ def run_prediction_pipeline(config, plugin):
             batch_size=batch_size,
             threshold_error=threshold_error,
             x_val=x_val,
-            y_val=y_val
+            y_val=y_val,
+            config=config
         )
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
