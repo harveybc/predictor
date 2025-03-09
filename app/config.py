@@ -45,6 +45,7 @@ DEFAULT_VALUES = {
     'iterations': 3,
     'epochs': 1000,
     'uncertainty_file': 'prediction_uncertainties.csv',
-    'batch_size': 32
+    'batch_size': 32,
+    'use_sliding_window' : False    
     
 }
