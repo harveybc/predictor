@@ -14,7 +14,8 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
 import json
 
-from keras.utils.vis_utils import plot_model
+# Updated import: use tensorflow.keras instead of keras.
+from tensorflow.keras.utils import plot_model
 from tensorflow.keras.losses import Huber
 
 def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
@@ -511,7 +512,8 @@ def load_and_evaluate_model(config, plugin):
     # Load the pre-trained model using custom_objects for the custom loss and metrics.
     print(f"Loading pre-trained model from {config['load_model']}...")
     try:
-        from keras.models import load_model
+        # Updated import: use tensorflow.keras.models.load_model instead of keras.models.load_model.
+        from tensorflow.keras.models import load_model
         custom_objects = {
             "combined_loss": combined_loss,
             "mmd": mmd_metric,
@@ -711,8 +713,7 @@ def generate_positional_encoding(num_features, pos_dim=16):
     pos_encoding_flat = pos_encoding.flatten().reshape(1, -1)  # Shape: (1, num_features * pos_dim)
     return pos_encoding_flat
 
-
-def gaussian_kernel_matrix(self, x, y, sigma):
+def gaussian_kernel_matrix(x, y, sigma):
     x_size = tf.shape(x)[0]
     y_size = tf.shape(y)[0]
     dim = tf.shape(x)[1]
