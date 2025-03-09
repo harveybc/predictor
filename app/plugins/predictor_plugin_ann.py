@@ -124,6 +124,83 @@ class Plugin:
 
 
 
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
+        """
+        Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
+        """
+        # Extract array if x_train or x_val is a tuple.
+        if isinstance(x_train, tuple):
+            x_train = x_train[0]
+        if x_val is not None and isinstance(x_val, tuple):
+            x_val = x_val[0]
+
+        print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
+        exp_horizon = self.params['time_horizon']
+        if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
+            raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
+        
+        callbacks = []
+        early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss',
+            patience=self.params['patience'],
+            restore_best_weights=True,
+            verbose=1
+        )
+        callbacks.append(early_stopping_monitor)
+        
+        history = self.model.fit(
+            x_train, y_train,
+            epochs=epochs,
+            batch_size=batch_size,
+            verbose=1,
+            shuffle=True,
+            callbacks=callbacks,
+            validation_split=0.2
+        )
+
+        print("Training completed.")
+        final_loss = history.history['loss'][-1]
+        print(f"Final training loss: {final_loss}")
+
+        if final_loss > threshold_error:
+            print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
+
+        preds_training_mode = self.model(x_train, training=True)
+        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
+        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
+
+        preds_eval_mode = self.model(x_train, training=False)
+        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
+        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+
+        train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
+        train_loss, train_mae = train_eval_results
+        print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
+        
+        val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+        val_loss, val_mae = val_eval_results
+        
+        from sklearn.metrics import r2_score
+        train_predictions = self.predict(x_train)
+        val_predictions = self.predict(x_val)
+        train_r2 = r2_score(y_train, train_predictions)
+        val_r2 = r2_score(y_val, val_predictions)
+        
+        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
+
+
+
+    def predict(self, data):
+        logging.getLogger("tensorflow").setLevel(logging.ERROR)
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+        # Extract array if data is a tuple.
+        if isinstance(data, tuple):
+            data = data[0]
+        preds = self.model.predict(data)
+        return preds
+
+
+
     def calculate_mae(self, y_true, y_pred):
         print(f"y_true (sample): {y_true.flatten()[:5]}")
         print(f"y_pred (sample): {y_pred.flatten()[:5]}")
