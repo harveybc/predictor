@@ -9,6 +9,20 @@ from tensorflow.keras.regularizers import l2
 from keras.layers import GaussianNoise
 from keras import backend as K
 from sklearn.metrics import r2_score 
+import tensorflow as tf
+import tensorflow_probability as tfp
+from tensorflow_probability import layers as tfpl
+from tensorflow_probability import distributions as tfd
+from tensorflow_probability.python.layers import DenseVariational
+from tensorflow_probability.python.layers import DenseFlipout
+from tensorflow_probability.python.layers import DenseReparameterization
+from tensorflow_probability.python.layers import DenseVariationalDropout
+from tensorflow_probability.python.layers import DenseLocalReparameterization
+from tensorflow_probability.python.layers import Convolution2DFlipout
+from tensorflow_probability.python.layers import Convolution2DReparameterization
+from tensorflow_probability.python.layers import Convolution2DVariational
+from tensorflow_probability.python.layers import Convolution2DVariationalDropout
+from tensorflow_probability.python.layers import Convolution2DLocalReparameterization
 
 import logging
 import os
