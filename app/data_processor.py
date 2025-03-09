@@ -282,6 +282,14 @@ def run_prediction_pipeline(config, plugin):
     iterations = config.get("iterations", 1)
     print(f"Number of iterations: {iterations}")
 
+    # Lists to store metrics for all iterations
+    training_mae_list = []
+    training_r2_list = []
+    validation_mae_list = []
+    validation_r2_list = []
+    test_mae_list = []
+    test_r2_list = []
+
     print("Loading and processing datasets...")
     datasets = process_data(config)
     x_train, y_train = datasets["x_train"], datasets["y_train"]
@@ -291,10 +299,14 @@ def run_prediction_pipeline(config, plugin):
     val_dates = datasets.get("dates_val")
     test_dates = datasets.get("dates_test")
 
-    # Force conversion to NumPy arrays to avoid tuple issues.
-    x_train = np.array(x_train)
-    x_val   = np.array(x_val)
-    x_test  = np.array(x_test)
+    # --- NEW UPDATE: If any of x_train, x_val, or x_test is a tuple, extract the data array.
+    if isinstance(x_train, tuple):
+        x_train = x_train[0]
+    if isinstance(x_val, tuple):
+        x_val = x_val[0]
+    if isinstance(x_test, tuple):
+        x_test = x_test[0]
+    # ---------------------------------------------------------------
 
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
@@ -312,6 +324,7 @@ def run_prediction_pipeline(config, plugin):
     epochs = config["epochs"]
     threshold_error = config["threshold_error"]
 
+    # Ensure data are NumPy arrays.
     for var_name in ["x_train", "y_train", "x_val", "y_val", "x_test", "y_test"]:
         arr = locals()[var_name]
         if isinstance(arr, pd.DataFrame):
@@ -320,7 +333,7 @@ def run_prediction_pipeline(config, plugin):
     if config["plugin"] in ["cnn", "cnn_mmd"]:
         if x_train.ndim != 3:
             raise ValueError(f"For CNN plugins, x_train must be 3D. Found: {x_train.shape}.")
-        print("Using raw data for CNN (sliding windows not enabled).")
+        print("Using pre-processed sliding windows for CNN (no reprocessing).")
 
     plugin.set_params(time_horizon=time_horizon)
     n_splits = 5
@@ -330,9 +343,9 @@ def run_prediction_pipeline(config, plugin):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
         if config["plugin"] in ["cnn", "cnn_mmd"]:
-            plugin.build_model(input_shape=x_train.shape[1], config=config, x_train=x_train)
+            plugin.build_model(input_shape=(window_size, x_train.shape[2]), config=config, x_train=x_train)
         elif config["plugin"] == "lstm":
-            plugin.build_model(input_shape=x_train.shape[1], config=config, x_train=x_train)
+            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]), config=config, x_train=x_train)
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
             plugin.build_model(input_shape=x_train.shape[1], config=config, x_train=x_train)
         else:
@@ -360,6 +373,7 @@ def run_prediction_pipeline(config, plugin):
         plt.close()
         print(f"Loss plot saved to {config['loss_plot_file']}")
 
+        # Evaluate on test dataset
         print("\nEvaluating on test dataset...")
         test_predictions = plugin.predict(x_test)
         from sklearn.metrics import r2_score
@@ -386,8 +400,6 @@ def run_prediction_pipeline(config, plugin):
 
         iteration_end_time = time.time()
         print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
-
-    # (The rest of run_prediction_pipeline remains unchanged.)
 
     # (Rest of run_prediction_pipeline remains unchanged.)
     # ...
