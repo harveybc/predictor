@@ -16,3 +16,4 @@ pmdarima
 protobuf
 matplotlib
 tensorflow-probability
+keras.utils
