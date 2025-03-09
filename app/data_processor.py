@@ -343,15 +343,15 @@ def run_prediction_pipeline(config, plugin):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
         if config["plugin"] in ["cnn", "cnn_mmd"]:
-            plugin.build_model(input_shape=(window_size, x_train.shape[2]), config=config, x_train=x_train)
+            plugin.build_model(input_shape=(window_size, x_train.shape[2]),  x_train=x_train)
         elif config["plugin"] == "lstm":
-            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]), config=config, x_train=x_train)
+            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]),  x_train=x_train)
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
-            plugin.build_model(input_shape=x_train.shape[1], config=config, x_train=x_train)
+            plugin.build_model(input_shape=x_train.shape[1],  x_train=x_train)
         else:
             if len(x_train.shape) != 2:
                 raise ValueError(f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}.")
-            plugin.build_model(input_shape=x_train.shape[1], config=config, x_train=x_train)
+            plugin.build_model(input_shape=x_train.shape[1],  x_train=x_train)
         
         history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions = plugin.train(
             x_train,
