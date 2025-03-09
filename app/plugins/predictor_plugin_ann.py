@@ -9,6 +9,8 @@ from tensorflow.keras.regularizers import l2
 from keras.layers import GaussianNoise
 from keras import backend as K
 from sklearn.metrics import r2_score 
+#import leaky relu
+from keras.layers import LeakyReLU, sigmoid
 
 import logging
 import os

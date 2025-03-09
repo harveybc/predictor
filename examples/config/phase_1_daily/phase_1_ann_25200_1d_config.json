@@ -16,7 +16,7 @@
     "initial_layer_size": 24,
     "layer_size_divisor": 2,
     "learning_rate": 1e-4,
-    "activation": "gaussian",
+    "activation": "leaky_relu",
     "l2_reg": 0    
     
 }
