@@ -76,7 +76,7 @@ class Plugin:
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
 
-        train_size = x_train.shape[0]  # Get the number of training samples
+        train_size = x_train.shape[0]  # Number of training samples
         kl_weight = 1 / max(1, train_size)  # Normalize KL divergence
 
         # Define layer sizes.
@@ -133,11 +133,10 @@ class Plugin:
                 reinterpreted_batch_ndims=1
             )
 
-        # Build the Bayesian ANN.
+        # Build the model using tensorflow.keras.
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         x = inputs
 
-        # Intermediate Bayesian layers.
         for idx, size in enumerate(layer_sizes[:-1]):
             x = tfp.layers.DenseVariational(
                 units=size,
@@ -147,9 +146,8 @@ class Plugin:
                 activation=self.params.get('activation', 'tanh'),
                 name=f"dense_layer_{idx+1}"
             )(x)
-            x = BatchNormalization()(x)
+            x = tf.keras.layers.BatchNormalization()(x)
 
-        # Final Bayesian output layer.
         outputs = tfp.layers.DenseVariational(
             units=layer_sizes[-1],
             make_posterior_fn=posterior_fn,
@@ -161,8 +159,7 @@ class Plugin:
 
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
 
-        # Compile the model.
-        optimizer = Adam(learning_rate=self.params.get('learning_rate', 0.0001))
+        optimizer = tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001))
         self.model.compile(
             optimizer=optimizer,
             loss=Huber(),
@@ -175,33 +172,36 @@ class Plugin:
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
-        Train the model with shape => x_train(N, input_dim), y_train(N, time_horizon).
+        Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
         """
+        # Extract array if x_train or x_val is a tuple.
+        if isinstance(x_train, tuple):
+            x_train = x_train[0]
+        if x_val is not None and isinstance(x_val, tuple):
+            x_val = x_val[0]
+
         print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
-            raise ValueError(
-                f"y_train shape {y_train.shape}, expected (N,{exp_horizon})."
-            )
+            raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
         
         callbacks = []
-        early_stopping_monitor = EarlyStopping(
+        early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
             monitor='val_loss',
             patience=self.params['patience'],
             restore_best_weights=True,
             verbose=1
         )
         callbacks.append(early_stopping_monitor)
-    
+        
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
-            shuffle=True,  # Enable shuffling
+            shuffle=True,
             callbacks=callbacks,
-            #validation_data=(x_val, y_val)
-            validation_split = 0.2
+            validation_split=0.2
         )
 
         print("Training completed.")
@@ -211,17 +211,14 @@ class Plugin:
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
-        # Force the model to run in "training mode"
         preds_training_mode = self.model(x_train, training=True)
         mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
         print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
 
-        # Compare with evaluation mode
         preds_eval_mode = self.model(x_train, training=False)
         mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
 
-        # Evaluate on the full training dataset for consistency
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
@@ -229,11 +226,9 @@ class Plugin:
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mae = val_eval_results
         
-        # Predict validation data for evaluation
-        train_predictions = self.predict(x_train)  # Predict train data
-        val_predictions = self.predict(x_val)      # Predict validation data
-
-        # Calculate R² scores
+        from sklearn.metrics import r2_score
+        train_predictions = self.predict(x_train)
+        val_predictions = self.predict(x_val)
         train_r2 = r2_score(y_train, train_predictions)
         val_r2 = r2_score(y_val, val_predictions)
         
@@ -244,9 +239,12 @@ class Plugin:
     def predict(self, data):
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+        # Extract array if data is a tuple.
+        if isinstance(data, tuple):
+            data = data[0]
         preds = self.model.predict(data)
-        #print(f"Predictions (first 5 rows): {preds[:5]}")  # Add debug
         return preds
+
 
     def calculate_mae(self, y_true, y_pred):
         print(f"y_true (sample): {y_true.flatten()[:5]}")
