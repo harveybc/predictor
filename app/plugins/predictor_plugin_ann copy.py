@@ -9,8 +9,6 @@ from tensorflow.keras.regularizers import l2
 from keras.layers import GaussianNoise
 from keras import backend as K
 from sklearn.metrics import r2_score 
-#import leaky relu
-from keras.layers import LeakyReLU
 
 import logging
 import os
@@ -99,25 +97,16 @@ class Plugin:
         idx = 0
         for size in layers[:-1]:
             idx += 1
-            if idx == 1:
-                x = Dense(
-                    units=size,
-                    activation='linear',
-                    kernel_initializer=GlorotUniform(),
-                    kernel_regularizer=l2(l2_reg),
-                    name=f"dense_layer_{idx}"
-                )(x)
-            else:
-                x = Dense(
-                    units=size,
-                    activation=self.params['activation'],
-                    kernel_initializer=GlorotUniform(),
-                    kernel_regularizer=l2(l2_reg),
-                    name=f"dense_layer_{idx}"
-                )(x)
+            x = Dense(
+                units=size,
+                activation=self.params['activation'],
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"dense_layer_{idx}"
+            )(x)
 
         #add batch normalization
-        #x = BatchNormalization()(x)
+        x = BatchNormalization()(x)
         # Output layer => shape (N, time_horizon)
         model_output = Dense(
             units=layers[-1],
@@ -143,7 +132,7 @@ class Plugin:
             optimizer=adam_optimizer,
             loss=Huber(),  # or 'mse'
             #loss='mae',  # or 'mse'
-            metrics=['mae']  # logs multi-step MSE/MAE
+            metrics=['mse', 'mae']  # logs multi-step MSE/MAE
         )
         
         print("Predictor Model Summary:")
@@ -199,8 +188,8 @@ class Plugin:
 
         # Evaluate on the full training dataset for consistency
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-        train_loss, train_mae = train_eval_results
-        print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
+        train_loss, train_mse, train_mae = train_eval_results
+        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
         
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mse, val_mae = val_eval_results
