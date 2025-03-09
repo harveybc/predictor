@@ -1,5 +1,5 @@
-tensorflow-gpu==2.10.1
-nvidia-cudnn-cu11==8.9.5.29
+tensorflow-gpu
+nvidia-cudnn-cu12
 numpy
 pandas
 h5py
@@ -13,6 +13,6 @@ graphviz
 backtrader
 deap
 pmdarima
-protobuf==3.19
+protobuf
 matplotlib
-tensorflow-probability==0.18.0
+tensorflow-probability
