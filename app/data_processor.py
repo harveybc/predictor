@@ -285,6 +285,15 @@ def run_prediction_pipeline(config, plugin):
     val_dates = datasets.get("dates_val")
     test_dates = datasets.get("dates_test")
 
+    # --- NEW UPDATE: If any of x_train, x_val, or x_test is a tuple, extract the data array.
+    if isinstance(x_train, tuple):
+        x_train = x_train[0]
+    if isinstance(x_val, tuple):
+        x_val = x_val[0]
+    if isinstance(x_test, tuple):
+        x_test = x_test[0]
+    # ---------------------------------------------------------------
+
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
     print(f"Test data shapes: x_test: {x_test.shape}, y_test: {y_test.shape}")
@@ -301,7 +310,7 @@ def run_prediction_pipeline(config, plugin):
     epochs = config["epochs"]
     threshold_error = config["threshold_error"]
 
-    # Ensure data are NumPy arrays (if not already)
+    # Ensure data are NumPy arrays.
     for var_name in ["x_train", "y_train", "x_val", "y_val", "x_test", "y_test"]:
         arr = locals()[var_name]
         if isinstance(arr, pd.DataFrame):
@@ -354,12 +363,10 @@ def run_prediction_pipeline(config, plugin):
         print("\nEvaluating on test dataset...")
         test_predictions = plugin.predict(x_test)
         from sklearn.metrics import r2_score
-        # Make sure to use the same number of samples as in predictions.
         n_test = test_predictions.shape[0]
         test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
         test_r2 = r2_score(y_test[:n_test], test_predictions)
         
-
         print("*************************************************")
         print(f"Iteration {iteration} completed.")
         print(f"Training MAE: {train_mae}")
@@ -377,9 +384,11 @@ def run_prediction_pipeline(config, plugin):
         test_mae_list.append(test_mae)
         test_r2_list.append(test_r2)
 
-
         iteration_end_time = time.time()
         print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
+
+    # (Rest of run_prediction_pipeline remains unchanged.)
+    # ...
 
     # -----------------------
     # Aggregate statistics
