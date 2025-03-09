@@ -124,16 +124,16 @@ class Plugin:
 
 
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
         """
-        # Extract array if x_train or x_val is a tuple.
+        # Ensure x_train and x_val are proper NumPy arrays.
         if isinstance(x_train, tuple):
             x_train = x_train[0]
         if x_val is not None and isinstance(x_val, tuple):
             x_val = x_val[0]
-
+        
         print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
@@ -142,7 +142,7 @@ class Plugin:
         callbacks = []
         early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
             monitor='val_loss',
-            patience=self.params['patience'],
+            patience=self.params.get('patience', 10),
             restore_best_weights=True,
             verbose=1
         )
@@ -157,28 +157,29 @@ class Plugin:
             callbacks=callbacks,
             validation_split=0.2
         )
-
+        
         print("Training completed.")
         final_loss = history.history['loss'][-1]
         print(f"Final training loss: {final_loss}")
-
+        
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
-
+        
         preds_training_mode = self.model(x_train, training=True)
         mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
         print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
-
+        
         preds_eval_mode = self.model(x_train, training=False)
         mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
-
+        
+        # Unpack three values since metrics includes 'mse' and 'mae'
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-        train_loss, train_mae = train_eval_results
+        train_loss, train_mse, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
         
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-        val_loss, val_mae = val_eval_results
+        val_loss, val_mse, val_mae = val_eval_results
         
         from sklearn.metrics import r2_score
         train_predictions = self.predict(x_train)
