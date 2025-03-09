@@ -90,26 +90,27 @@ class Plugin:
         print("Bayesian ANN Layer sizes:", layer_sizes)
         print(f"Bayesian ANN input_shape: {input_shape}")
 
-        # Custom posterior function with three arguments.
-        def posterior_fn(arg0, shape, name):
-            # The first argument is expected to be a tf.DType, but sometimes an integer is passed.
-            dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
-            # Convert the passed shape to a tuple; if it is empty, use () to represent a scalar.
-            try:
-                new_shape = tuple(shape)
-            except Exception:
-                new_shape = shape
+        # Custom posterior function with 5 arguments.
+        def posterior_fn(dtype, shape, name, trainable, add_variable_fn):
+            # Ensure dtype is valid.
+            dtype = tf.as_dtype(dtype) if isinstance(dtype, tf.DType) else tf.float32
+            # Convert shape to tuple; if empty, use () to represent a scalar.
+            new_shape = tuple(shape) if shape is not None else ()
             if len(new_shape) == 0:
                 new_shape = ()
-            loc = tf.Variable(
-                initial_value=tf.random.normal(new_shape, stddev=0.1, dtype=dtype),
+            loc = add_variable_fn(
                 name=name + '_loc',
-                trainable=True
+                shape=new_shape,
+                initializer=tf.random_normal_initializer(stddev=0.1),
+                dtype=dtype,
+                trainable=trainable
             )
-            rho = tf.Variable(
-                initial_value=tf.constant(-3.0, shape=new_shape, dtype=dtype),
+            rho = add_variable_fn(
                 name=name + '_rho',
-                trainable=True
+                shape=new_shape,
+                initializer=tf.constant_initializer(-3.0),
+                dtype=dtype,
+                trainable=trainable
             )
             scale = tf.nn.softplus(rho)
             return tfp.distributions.Independent(
@@ -117,13 +118,10 @@ class Plugin:
                 reinterpreted_batch_ndims=1
             )
 
-        # Custom prior function with three arguments.
-        def prior_fn(arg0, shape, name):
-            dtype = arg0 if isinstance(arg0, tf.DType) else tf.float32
-            try:
-                new_shape = tuple(shape)
-            except Exception:
-                new_shape = shape
+        # Custom prior function with 5 arguments.
+        def prior_fn(dtype, shape, name, trainable, add_variable_fn):
+            dtype = tf.as_dtype(dtype) if isinstance(dtype, tf.DType) else tf.float32
+            new_shape = tuple(shape) if shape is not None else ()
             if len(new_shape) == 0:
                 new_shape = ()
             loc = tf.zeros(new_shape, dtype=dtype)
@@ -133,11 +131,11 @@ class Plugin:
                 reinterpreted_batch_ndims=1
             )
 
-        # Build the Bayesian ANN
-        inputs = Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
+        # Build the Bayesian ANN.
+        inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         x = inputs
 
-        # Intermediate Bayesian layers
+        # Intermediate Bayesian layers.
         for idx, size in enumerate(layer_sizes[:-1]):
             x = tfp.layers.DenseVariational(
                 units=size,
@@ -149,7 +147,7 @@ class Plugin:
             )(x)
             x = BatchNormalization()(x)
 
-        # Final Bayesian output layer
+        # Final Bayesian output layer.
         outputs = tfp.layers.DenseVariational(
             units=layer_sizes[-1],
             make_posterior_fn=posterior_fn,
@@ -161,7 +159,7 @@ class Plugin:
 
         self.model = Model(inputs=inputs, outputs=outputs)
 
-        # Compile the model
+        # Compile the model.
         optimizer = Adam(learning_rate=self.params.get('learning_rate', 0.0001))
         self.model.compile(
             optimizer=optimizer,
@@ -170,6 +168,8 @@ class Plugin:
         )
 
         print("✅ Bayesian ANN model built successfully.")
+
+
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
         """
