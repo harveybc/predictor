@@ -267,7 +267,7 @@ class Plugin:
             loss_fn = Huber(delta=1.0)
             metrics = ['mae']
         
-        self.autoencoder_model.compile(
+        self.model.compile(
             optimizer=adam_optimizer,
             loss=loss_fn,
             metrics=metrics   
