@@ -62,8 +62,8 @@ class Plugin:
     def build_model(self, input_shape, x_train, config=None):
         """
         Builds a Bayesian ANN using Keras Dense layers with TensorFlow Probability's DenseFlipout for
-        uncertainty estimation, employing KL annealing. The final output layer is replaced by a DenseFlipout 
-        layer wrapped in a Lambda layer.
+        uncertainty estimation, employing KL annealing and custom posterior/prior functions.
+        The final output layer is replaced by a DenseFlipout layer wrapped in a Lambda layer.
         
         Args:
             input_shape (int): Number of input features.
@@ -165,13 +165,38 @@ class Plugin:
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight is", target_kl)
         
         # ---------------------------
+        # Define custom posterior and prior functions for stability.
+        # ---------------------------
+        def posterior_mean_field_custom(kernel_size, bias_size=0, dtype=None):
+            n = kernel_size + bias_size
+            c = np.log(np.expm1(1.))
+            return tf.keras.Sequential([
+                tfp.layers.VariableLayer(2 * n, dtype=dtype),
+                tfp.layers.DistributionLambda(
+                    lambda t: tfp.distributions.Independent(
+                        tfp.distributions.Normal(loc=t[..., :n],
+                                                scale=1e-3 + tf.nn.softplus(c + t[..., n:])),
+                        reinterpreted_batch_ndims=1))
+            ])
+        def prior_fn(kernel_size, bias_size=0, dtype=None):
+            n = kernel_size + bias_size
+            return tf.keras.Sequential([
+                tfp.layers.DistributionLambda(
+                    lambda t: tfp.distributions.Independent(
+                        tfp.distributions.Normal(loc=tf.zeros(n, dtype=dtype), scale=1.0),
+                        reinterpreted_batch_ndims=1))
+            ])
+        
+        # ---------------------------
         # Build final Bayesian output layer using DenseFlipout, wrapped in a Lambda layer.
         # ---------------------------
         DenseFlipout = tfp.layers.DenseFlipout
         print("DEBUG: Creating DenseFlipout final layer with units (expected):", layer_sizes[-1])
         flipout_layer = DenseFlipout(
-            units=layer_sizes[-1], 
+            units=layer_sizes[-1],
             activation='linear',
+            kernel_posterior_fn=posterior_mean_field_custom,
+            kernel_prior_fn=prior_fn,
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.kl_weight_var,
             name="output_layer"
         )
