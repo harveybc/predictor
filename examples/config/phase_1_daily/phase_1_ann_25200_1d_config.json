@@ -23,11 +23,11 @@
     "learning_rate": 5e-5,
     "activation": "relu",
     "l2_reg": 1e-6,
-    "kl_weight": 1e-3,
+    "kl_weight": 1e-2,
     "kl_anneal_epochs": 50,
     "early_patience": 60,
     "use_mmd": true,
-    "statistical_loss_weight": 1e-3,
+    "statistical_loss_weight": 1e-2,
     "overfitting_penalty": 1.0
 
     
