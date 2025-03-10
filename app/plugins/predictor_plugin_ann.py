@@ -251,28 +251,52 @@ class Plugin:
         print("✅ Standard ANN model built successfully.")
 
 
+    def compute_mmd(self, x, y, sigma=1.0):
+        """
+        Compute Maximum Mean Discrepancy (MMD) using a Gaussian Kernel.
+        
+        Args:
+            x (tf.Tensor): First sample (predicted outputs).
+            y (tf.Tensor): Second sample (true outputs).
+            sigma (float): Bandwidth parameter for the Gaussian kernel.
+        
+        Returns:
+            tf.Tensor: The computed MMD loss.
+        """
+        def gaussian_kernel(x, y, sigma):
+            x = tf.expand_dims(x, 1)
+            y = tf.expand_dims(y, 0)
+            dist = tf.reduce_sum(tf.square(x - y), axis=-1)
+            return tf.exp(-dist / (2.0 * sigma ** 2))
+
+        K_xx = gaussian_kernel(x, x, sigma)
+        K_yy = gaussian_kernel(y, y, sigma)
+        K_xy = gaussian_kernel(x, y, sigma)
+        return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
+
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
-        Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
-        Implements KL annealing via a custom callback.
+        Train the model with additional MMD loss logging.
         """
         import tensorflow as tf
+
         if isinstance(x_train, tuple):
             x_train = x_train[0]
         if x_val is not None and isinstance(x_val, tuple):
             x_val = x_val[0]
-        
+
         print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
-        
+
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
                 self.plugin = plugin
                 self.target_kl = target_kl
                 self.anneal_epochs = anneal_epochs
+
             def on_epoch_begin(self, epoch, logs=None):
                 new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
                 self.plugin.kl_weight_var.assign(new_kl)
@@ -282,7 +306,7 @@ class Plugin:
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
         callbacks = [kl_callback]
-        
+
         early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
             monitor='val_loss',
             patience=self.params.get('early_patience', 10),
@@ -291,7 +315,7 @@ class Plugin:
             start_from_epoch=30
         )
         callbacks.append(early_stopping_monitor)
-        
+
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
@@ -301,37 +325,38 @@ class Plugin:
             callbacks=callbacks,
             validation_split=0.2
         )
-        
+
         print("Training completed.")
         final_loss = history.history['loss'][-1]
         print(f"Final training loss: {final_loss}")
-        
+
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
-        
+
         preds_training_mode = self.model(x_train, training=True)
         mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
-        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
-        
+        mmd_training_mode = self.compute_mmd(preds_training_mode, y_train)
+        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}, MMD: {mmd_training_mode:.6f}")
+
         preds_eval_mode = self.model(x_train, training=False)
         mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
-        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
-        
+        mmd_eval_mode = self.compute_mmd(preds_eval_mode, y_train)
+        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}, MMD: {mmd_eval_mode:.6f}")
+
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
-        
+
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mae = val_eval_results
-        
+
         from sklearn.metrics import r2_score
         train_predictions = self.predict(x_train)
         val_predictions = self.predict(x_val)
         train_r2 = r2_score(y_train, train_predictions)
         val_r2 = r2_score(y_val, val_predictions)
-        
-        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
+        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
     def predict_with_uncertainty(self, data, mc_samples=100):
         """
