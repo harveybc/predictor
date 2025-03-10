@@ -12,7 +12,7 @@ from tensorflow.keras.layers import GaussianNoise
 from keras import backend as K
 from sklearn.metrics import r2_score 
 import logging
-import os
+import os,gc
 from tensorflow.keras.mixed_precision import set_global_policy
 
 
@@ -312,22 +312,21 @@ class Plugin:
 
         early_patience = config.get('early_patience', 32)
         early_monitor = config.get('early_monitor', 'val_loss')
-        early_stopping = EarlyStopping(monitor=early_monitor, patience=early_patience, restore_best_weights=True)
-        
+        early_stopping = EarlyStopping(monitor=early_monitor, patience=early_patience, restore_best_weights=True, verbose=1)
+
         update_penalty_cb = UpdateOverfitPenalty()
-        
-        lr_reducer = ReduceLROnPlateau(
+
+        lr_reducer = tf.keras.callbacks.ReduceLROnPlateau(
             monitor=early_monitor,
-            factor=0.316227766,
-            patience=int(early_patience / 3),
+            factor=0.316227766,  # approx. 1/sqrt(10)
+            patience=int(self.params.get('patience', 10) / 3),
             verbose=1,
             min_lr=config.get('min_lr', 1e-8)
         )
-        
+
         debug_lr_cb = DebugLearningRateCallback(early_stopping, lr_reducer)
         memory_cleanup_cb = MemoryCleanupCallback()
-        
-        
+
         val_data = (x_val, y_val)
 
         callbacks = [kl_callback, early_stopping, update_penalty_cb, lr_reducer, debug_lr_cb, memory_cleanup_cb]
@@ -371,6 +370,7 @@ class Plugin:
         val_r2 = r2_score(y_val, val_predictions)
 
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
+
 
     def predict_with_uncertainty(self, data, mc_samples=100):
         """
@@ -454,7 +454,7 @@ class DebugLearningRateCallback(Callback):
     """
     Debug Callback that prints the current learning rate,
     the wait counter for EarlyStopping, and for the LR reducer.
-    Additionally, updates the l2 regularization factor in layers with a kernel_regularizer of type L2,
+    Additionally, updates the L2 regularization factor in layers with a kernel_regularizer of type L2,
     scaling it proportionally to the learning rate change relative to the initial learning rate.
     """
     def __init__(self, early_stopping_cb, lr_reducer_cb):
@@ -464,10 +464,16 @@ class DebugLearningRateCallback(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
-        current_lr = tf.keras.backend.get_value(self.model.optimizer.lr)
+        # Retrieve current learning rate from optimizer: try 'lr' first, if not available, use 'learning_rate'
+        optimizer = self.model.optimizer
+        if hasattr(optimizer, 'lr'):
+            current_lr = tf.keras.backend.get_value(optimizer.lr)
+        else:
+            current_lr = tf.keras.backend.get_value(optimizer.learning_rate)
         es_wait = getattr(self.early_stopping_cb, "wait", None)
         lr_wait = getattr(self.lr_reducer_cb, "wait", None)
         best_val = getattr(self.lr_reducer_cb, "best", None)
+        new_l2 = 0.0
         # Update L2 regularization if initial values are stored on the model.
         if hasattr(self.model, 'initial_lr') and self.model.initial_lr is not None:
             scaling_factor = current_lr / self.model.initial_lr
@@ -480,7 +486,8 @@ class DebugLearningRateCallback(Callback):
                             layer.kernel_regularizer.l2 = new_l2
                             if old_l2 != new_l2:
                                 print(f"[DebugLR] Updated l2_reg in layer {layer.name} from {old_l2} to {new_l2}")
-        print(f"\n[DebugLR] Epoch {epoch+1}: Learning Rate = {current_lr:.4e}, l2_reg ={new_l2:.4e} , EarlyStopping wait = {es_wait}, LRReducer wait = {lr_wait}, LRReducer best = {best_val}")
+        print(f"\n[DebugLR] Epoch {epoch+1}: Learning Rate = {current_lr:.4e}, l2_reg = {new_l2:.4e}, "
+              f"EarlyStopping wait = {es_wait}, LRReducer wait = {lr_wait}, LRReducer best = {best_val}")
 
 
 class MemoryCleanupCallback(Callback):
