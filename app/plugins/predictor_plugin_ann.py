@@ -71,6 +71,8 @@ class Plugin:
         from tensorflow.keras.losses import Huber
 
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
+        l2_reg = self.params.get('l2_reg', 1e-5)
+
 
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
@@ -122,7 +124,10 @@ class Plugin:
         print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
         x = tf.keras.layers.BatchNormalization()(x)
         print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
-        
+        x = tf.keras.layers.Dense(
+            units=size,
+            activation=self.params.get('activation', 'tanh'),
+            kernel_initializer=random_normal_initializer_42)(x)
         if hasattr(x, '_keras_history'):
             print("DEBUG: x is already a KerasTensor; no conversion needed.")
         else:
@@ -212,6 +217,7 @@ class Plugin:
             activation='linear',
             use_bias=True,
             kernel_initializer=random_normal_initializer_44,
+
             name="deterministic_bias"
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
