@@ -48,6 +48,6 @@ DEFAULT_VALUES = {
     'batch_size': 32,
     'use_sliding_window' : False,
     "kl_weight": 1e-6,
-    "kl_anneal_epochs": 5,        
+    "kl_anneal_epochs": 100,        
     
 }
