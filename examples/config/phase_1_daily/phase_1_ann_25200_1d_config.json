@@ -23,6 +23,6 @@
     "learning_rate": 1e-4,
     "activation": "leaky_relu",
     "l2_reg": 0,
-    "kl_weight": 0
+    "kl_weight": 1e-8
     
 }
