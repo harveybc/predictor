@@ -333,8 +333,8 @@ class Plugin:
 
         val_data = (x_val, y_val)
 
-        callbacks = [kl_callback, early_stopping, update_penalty_cb, lr_reducer, debug_lr_cb, memory_cleanup_cb]
-
+        #callbacks = [kl_callback, early_stopping, update_penalty_cb, lr_reducer, debug_lr_cb, memory_cleanup_cb]
+        callbacks = [kl_callback, early_stopping, ]    
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
@@ -509,7 +509,7 @@ class MemoryCleanupCallback(Callback):
         gc.collect()
         #print(f"[MemoryCleanup] Epoch {epoch+1}: Garbage collection executed.")
 
-        
+
 @tf.function(experimental_compile=False)
 def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
     """
