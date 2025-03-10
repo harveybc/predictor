@@ -423,7 +423,7 @@ class DebugLearningRateMMDCallback(Callback):
         self.mmd_sigma = mmd_sigma
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
-        current_lr = tf.keras.backend.get_value(self.model.optimizer.lr)
+        current_lr = tf.keras.backend.get_value(self.model.optimizer.learning_rate)
         es_wait = getattr(self.early_stopping_cb, "wait", None)
         lr_wait = getattr(self.lr_reducer_cb, "wait", None)
         best_val = getattr(self.lr_reducer_cb, "best", None)
