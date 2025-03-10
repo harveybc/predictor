@@ -276,6 +276,7 @@ class Plugin:
 
 
     # --------------------- Updated train Method in Plugin ---------------------
+    # --------------------- Updated train Method in Plugin ---------------------
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
@@ -293,6 +294,9 @@ class Plugin:
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
+
+        # Disable XLA JIT compilation to avoid register spillage warnings.
+        tf.config.optimizer.set_jit(False)
 
         # KL Annealing Callback (same as before)
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
