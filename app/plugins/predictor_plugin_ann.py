@@ -247,12 +247,12 @@ class Plugin:
             x_train = x_train[0]
         if x_val is not None and isinstance(x_val, tuple):
             x_val = x_val[0]
-        
+
         print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
-        
+
         # KL Annealing Callback
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):
@@ -264,18 +264,18 @@ class Plugin:
                 new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
                 self.plugin.kl_weight_var.assign(new_kl)
                 print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
-        
+
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        
+
         early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
             monitor='val_loss',
             patience=self.params.get('patience', 10),
             restore_best_weights=True,
             verbose=1
         )
-        
+
         lr_reducer = tf.keras.callbacks.ReduceLROnPlateau(
             monitor='val_loss',
             factor=0.316227766,  # approx. 1/sqrt(10)
@@ -283,12 +283,12 @@ class Plugin:
             verbose=1,
             min_lr=config.get('min_lr', 1e-8)
         )
-        
-        debug_lr_mmd_cb = DebugLearningRateMMDCallback(early_stopping_monitor, lr_reducer, x_val, y_val, mmd_sigma=config.get('mmd_sigma', 1.0))
+
+        debug_lr_cb = DebugLearningRateCallback(early_stopping_monitor, lr_reducer, x_val, y_val, mmd_sigma=config.get('mmd_sigma', 1.0))
         memory_cleanup_cb = MemoryCleanupCallback()
-        
-        callbacks = [kl_callback, early_stopping_monitor, lr_reducer, debug_lr_mmd_cb, memory_cleanup_cb]
-        
+
+        callbacks = [kl_callback, early_stopping_monitor, lr_reducer, debug_lr_cb, memory_cleanup_cb]
+
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
@@ -298,35 +298,35 @@ class Plugin:
             callbacks=callbacks,
             validation_split=0.2
         )
-        
+
         print("Training completed.")
         final_loss = history.history['loss'][-1]
         print(f"Final training loss: {final_loss}")
-        
+
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
-        
+
         preds_training_mode = self.model(x_train, training=True)
         mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
         print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
-        
+
         preds_eval_mode = self.model(x_train, training=False)
         mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
-        
+
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
-        
+
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mae = val_eval_results
-        
+
         from sklearn.metrics import r2_score
         train_predictions = self.predict(x_train)
         val_predictions = self.predict(x_val)
         train_r2 = r2_score(y_train, train_predictions)
         val_r2 = r2_score(y_val, val_predictions)
-        
+
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
 
@@ -408,35 +408,50 @@ def mmd_metric_fn(y_true, y_pred, sigma=1.0):
     mmd = K_xx/(m*m) + K_yy/(n*n) - 2*K_xy/(m*n)
     return mmd.numpy()
 
-# --------------------- New Callback Classes ---------------------
-class DebugLearningRateMMDCallback(Callback):
+import gc  # For garbage collection
+
+class DebugLearningRateCallback(Callback):
     """
-    Callback that prints the current learning rate, the wait counters for EarlyStopping and ReduceLROnPlateau,
-    and computes the MMD metric on the validation data.
+    Debug Callback that prints the current learning rate,
+    the wait counter for EarlyStopping and for the LR reducer,
+    updates L2 regularization factors, and computes the MMD metric on the validation set.
     """
     def __init__(self, early_stopping_cb, lr_reducer_cb, x_val, y_val, mmd_sigma=1.0):
-        super(DebugLearningRateMMDCallback, self).__init__()
+        super(DebugLearningRateCallback, self).__init__()
         self.early_stopping_cb = early_stopping_cb
         self.lr_reducer_cb = lr_reducer_cb
         self.x_val = x_val
         self.y_val = y_val
         self.mmd_sigma = mmd_sigma
+
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
-        current_lr = tf.keras.backend.get_value(self.model.optimizer.learning_rate)
+        # Use the decayed learning rate to get the current effective LR.
+        current_lr = tf.keras.backend.get_value(self.model.optimizer._decayed_lr(tf.float32))
         es_wait = getattr(self.early_stopping_cb, "wait", None)
         lr_wait = getattr(self.lr_reducer_cb, "wait", None)
         best_val = getattr(self.lr_reducer_cb, "best", None)
-        # Compute MMD on validation set
+        # Update L2 regularization if initial values are stored on the model.
+        if hasattr(self.model, 'initial_lr') and self.model.initial_lr is not None:
+            scaling_factor = current_lr / self.model.initial_lr
+            if hasattr(self.model, 'initial_l2') and self.model.initial_l2 is not None:
+                for layer in self.model.layers:
+                    if hasattr(layer, 'kernel_regularizer') and layer.kernel_regularizer is not None:
+                        if isinstance(layer.kernel_regularizer, tf.keras.regularizers.L2):
+                            old_l2 = layer.kernel_regularizer.l2
+                            new_l2 = self.model.initial_l2 * scaling_factor
+                            layer.kernel_regularizer.l2 = new_l2
+                            if old_l2 != new_l2:
+                                print(f"[DebugLR] Updated l2_reg in layer {layer.name} from {old_l2} to {new_l2}")
+        # Compute MMD on validation set using our existing helper
         y_pred = self.model.predict(self.x_val)
         mmd_value = mmd_metric_fn(self.y_val, y_pred, sigma=self.mmd_sigma)
-        print(f"[DebugLRMMD] Epoch {epoch+1}: LR = {current_lr:.4e}, ES wait = {es_wait}, LRReducer wait = {lr_wait}, LRReducer best = {best_val}, MMD = {mmd_value:.4e}")
+        print(f"[DebugLR] Epoch {epoch+1}: LR = {current_lr:.4e}, EarlyStopping wait = {es_wait}, "
+              f"LRReducer wait = {lr_wait}, LRReducer best = {best_val}, MMD = {mmd_value:.4e}")
 
 class MemoryCleanupCallback(Callback):
     """
-    Forces garbage collection at the end of each epoch.
+    Callback to force garbage collection at the end of each epoch.
     """
     def on_epoch_end(self, epoch, logs=None):
-        import gc
         gc.collect()
-        #print(f"[MemoryCleanup] Epoch {epoch+1}: Garbage collection done.")
