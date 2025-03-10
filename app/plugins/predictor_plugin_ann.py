@@ -166,13 +166,19 @@ class Plugin:
         
         # ---------------------------
         # Define custom posterior and prior functions for stability.
+        # These functions now accept extra arguments via *args.
         # ---------------------------
         def posterior_mean_field_custom(*args, **kwargs):
-            # Expecting: kernel_size, bias_size, dtype, and possibly more.
-            kernel_size = args[0]
-            bias_size = args[1] if len(args) > 1 else 0
-            dtype = args[2] if len(args) > 2 else None
-            n = kernel_size + bias_size
+            # If the first argument is a DType, assume the order is: dtype, kernel_shape, bias_size, ...
+            if isinstance(args[0], tf.dtypes.DType):
+                dtype = args[0]
+                kernel_shape = args[1]
+                bias_size = args[2] if len(args) > 2 else 0
+            else:
+                kernel_shape = args[0]
+                bias_size = args[1] if len(args) > 1 else 0
+                dtype = args[2] if len(args) > 2 else None
+            n = int(np.prod(kernel_shape)) + bias_size
             c = np.log(np.expm1(1.))
             return tf.keras.Sequential([
                 tfp.layers.VariableLayer(2 * n, dtype=dtype),
@@ -182,18 +188,24 @@ class Plugin:
                                                 scale=1e-3 + tf.nn.softplus(c + t[..., n:])),
                         reinterpreted_batch_ndims=1))
             ])
+
         def prior_fn(*args, **kwargs):
-            kernel_size = args[0]
-            bias_size = args[1] if len(args) > 1 else 0
-            dtype = args[2] if len(args) > 2 else None
-            n = kernel_size + bias_size
+            if isinstance(args[0], tf.dtypes.DType):
+                dtype = args[0]
+                kernel_shape = args[1]
+                bias_size = args[2] if len(args) > 2 else 0
+            else:
+                kernel_shape = args[0]
+                bias_size = args[1] if len(args) > 1 else 0
+                dtype = args[2] if len(args) > 2 else None
+            n = int(np.prod(kernel_shape)) + bias_size
             return tf.keras.Sequential([
                 tfp.layers.DistributionLambda(
                     lambda t: tfp.distributions.Independent(
                         tfp.distributions.Normal(loc=tf.zeros(n, dtype=dtype), scale=1.0),
                         reinterpreted_batch_ndims=1))
             ])
-        
+
         # ---------------------------
         # Build final Bayesian output layer using DenseFlipout, wrapped in a Lambda layer.
         # ---------------------------
