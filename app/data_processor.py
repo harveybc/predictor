@@ -497,6 +497,74 @@ def run_prediction_pipeline(config, plugin):
     except Exception as e:
         print(f"Failed to compute or save uncertainty predictions: {e}")
 
+
+    # ------------------------------
+    # NEW: Plot Last 1k Predictions with True Values and Uncertainty Band
+    # ------------------------------
+    try:
+        n_plot = 1000
+        # Use the last n_plot rows from test predictions (assuming test_predictions is denormalized)
+        if test_predictions.shape[0] > n_plot:
+            pred_plot = test_predictions[-n_plot:, 0]  # using first prediction column
+            true_plot = y_test[-n_plot:, 0]             # true values for first time step (still normalized)
+            if test_dates is not None:
+                dates_plot = test_dates[-n_plot:]
+            else:
+                dates_plot = np.arange(test_predictions.shape[0]-n_plot, test_predictions.shape[0])
+            # For uncertainties, take the corresponding rows and first column
+            uncertainty_norm = uncertainty_estimates[-n_plot:, 0]
+        else:
+            pred_plot = test_predictions[:, 0]
+            true_plot = y_test[:, 0]
+            dates_plot = test_dates if test_dates is not None else np.arange(test_predictions.shape[0])
+            uncertainty_norm = uncertainty_estimates[:, 0]
+        
+        # Denormalize true_plot and uncertainty if a normalization JSON is provided.
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                try:
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                except Exception as e:
+                    print(f"Error loading normalization JSON from {norm_json}: {e}")
+                    norm_json = {}
+            elif not isinstance(norm_json, dict):
+                print("Error: Normalization JSON is not a valid dictionary.")
+                norm_json = {}
+            if "CLOSE" in norm_json:
+                min_val = norm_json["CLOSE"].get("min", 0)
+                max_val = norm_json["CLOSE"].get("max", 1)
+                # true_plot is normalized; denormalize it:
+                true_plot = true_plot * (max_val - min_val) + min_val
+                # uncertainty (std) should be scaled by (max_val - min_val)
+                uncertainty_plot = uncertainty_norm * (max_val - min_val)
+            else:
+                uncertainty_plot = uncertainty_norm
+        else:
+            uncertainty_plot = uncertainty_norm
+
+        # Create the plot
+        plt.figure(figsize=(12, 6))
+        plt.plot(dates_plot, pred_plot, label="Predicted", color="blue", linewidth=2)
+        plt.plot(dates_plot, true_plot, label="True", color="green", linewidth=2)
+        # Plot the uncertainty band around the predicted values
+        plt.fill_between(dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
+                         color="blue", alpha=0.3, label="Uncertainty")
+        plt.title("Last 1000 Predictions vs True Values with Uncertainty")
+        plt.xlabel("Time")
+        plt.ylabel("CLOSE")
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        predictions_plot_file = config.get("predictions_plot_file", "predictions_plot.png")
+        plt.savefig(predictions_plot_file)
+        plt.close()
+        print(f"Prediction plot saved to {predictions_plot_file}")
+    except Exception as e:
+        print(f"Failed to generate prediction plot: {e}")
+
+
     try:
         plot_model(
             plugin.model, 

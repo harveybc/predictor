@@ -10,7 +10,7 @@
     "results_file": "examples/results/phase_1_daily/phase_1_ann_25200_1d_results.csv",
     "loss_plot_file": "examples/results/phase_1_daily/phase_1_ann_25200_1d_loss_plot.png",
     "model_plot_file": "examples/results/phase_1_daily/phase_1_ann_25200_1d_model_plot.png",
-    "uncertainties_file": "examples/results/phase_1_daily/phase_1_ann_25200_1d_model_plot.png",
+    "uncertainties_file": "examples/results/phase_1_daily/phase_1_ann_25200_1d_uncertanties.csv",
     
     "plugin": "ann",
     "use_daily": true,
