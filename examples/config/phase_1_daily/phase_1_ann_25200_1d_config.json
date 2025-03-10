@@ -22,10 +22,11 @@
     "layer_size_divisor": 2,
     "learning_rate": 2e-4,
     "activation": "tanh",
-    "l2_reg": 1e-8,
+    "l2_reg": 1e-3,
     "kl_weight": 1e-1,
     "kl_anneal_epochs": 200,
-    "patience": 60       
+    "patience": 60
+           
 
     
 }
