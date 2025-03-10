@@ -62,7 +62,7 @@ class Plugin:
     def build_model(self, input_shape, x_train, config=None):
         """
         Builds a Bayesian ANN using Keras Dense layers with TensorFlow Probability's DenseFlipout for
-        uncertainty estimation. The final output layer is replaced by a DenseFlipout layer.
+        uncertainty estimation. The final output layer is replaced by a DenseFlipout layer wrapped in a Lambda layer.
         
         Args:
             input_shape (int): Number of input features.
@@ -157,16 +157,18 @@ class Plugin:
             print("DEBUG: Converted x to tensor using tf.convert_to_tensor. New type:", type(x))
         
         # ---------------------------
-        # Build final Bayesian output layer using DenseFlipout
+        # Build final Bayesian output layer using DenseFlipout, wrapped in a Lambda layer
         # ---------------------------
         DenseFlipout = tfp.layers.DenseFlipout
         print("DEBUG: Creating DenseFlipout final layer with units (expected):", layer_sizes[-1])
-        outputs = DenseFlipout(
+        flipout_layer = DenseFlipout(
             units=layer_sizes[-1], 
             activation='linear', 
             name="output_layer"
-        )(x)
-        print("DEBUG: After DenseFlipout final layer, outputs shape:", outputs.shape, "Type:", type(outputs))
+        )
+        # Wrap the DenseFlipout call inside a Lambda layer to ensure proper KerasTensor flow.
+        outputs = tf.keras.layers.Lambda(lambda t: flipout_layer(t), name="flipout_wrapper")(x)
+        print("DEBUG: After DenseFlipout final layer (via Lambda), outputs shape:", outputs.shape, "Type:", type(outputs))
         
         # ---------------------------
         # Create and compile the model
