@@ -21,7 +21,7 @@
     "initial_layer_size": 96,
     "layer_size_divisor": 2,
     "learning_rate": 2e-4,
-    "activation": "leaky_relu",
+    "activation": "tanh",
     "l2_reg": 1e-8,
     "kl_weight": 1e-1,
     "kl_anneal_epochs": 200,
