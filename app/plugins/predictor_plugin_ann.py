@@ -314,7 +314,7 @@ class Plugin:
         early_monitor = config.get('early_monitor', 'val_loss')
         early_stopping = EarlyStopping(monitor=early_monitor, patience=early_patience, restore_best_weights=True, verbose=1)
 
-        update_penalty_cb = UpdateOverfitPenalty()
+        update_penalty_cb = UpdateOverfitPenalty(config)
 
         lr_reducer = tf.keras.callbacks.ReduceLROnPlateau(
             monitor=early_monitor,
@@ -439,6 +439,10 @@ class UpdateOverfitPenalty(Callback):
     multiplies it by a scaling factor (0.1), and updates a TensorFlow variable in the model.
     The penalty is applied only if validation MAE is higher than training MAE.
     """
+    def __init__(self, config):
+        self.config = config
+
+    
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
         train_mae = logs.get('mae')
@@ -446,7 +450,8 @@ class UpdateOverfitPenalty(Callback):
         if train_mae is None or val_mae is None:
             print("[UpdateOverfitPenalty] MAE metrics not available; overfit penalty not updated.")
             return
-        penalty = 0.02 * max(0, val_mae - train_mae)
+        overfitting_penalty = self.config.get('overfitting_penalty', 0.1)
+        penalty = overfitting_penalty * max(0, val_mae - train_mae)
         tf.keras.backend.set_value(self.model.overfit_penalty, penalty)
         print(f"[UpdateOverfitPenalty] Epoch {epoch+1}: Updated overfit penalty to {penalty:.6f}")
 
@@ -495,7 +500,7 @@ class MemoryCleanupCallback(Callback):
     Callback to force garbage collection at the end of each epoch.
     This can help free up unused memory and mitigate memory leaks.
     """
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch, logs=None, overfit_penalty=1.0):
         gc.collect()
         #print(f"[MemoryCleanup] Epoch {epoch+1}: Garbage collection executed.")
 

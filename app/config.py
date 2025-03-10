@@ -39,7 +39,7 @@ DEFAULT_VALUES = {
     'input_offset': 0,
     'window_size': 256,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'l2_reg': 1e-4,          # L2 regularization factor
-    'patience': 30,           # Early stopping patience
+    'early_patience': 30,           # Early stopping patience
     'max_steps_train': 6300,
     'max_steps_test': 6300,
     'iterations': 3,
@@ -50,4 +50,6 @@ DEFAULT_VALUES = {
     "kl_weight": 1e-6,
     "kl_anneal_epochs": 100,        
     "use_mmd": True,
+    "statistical_loss_weight": 0.1,
+    "overfitting_penalty": 0.1
 }
