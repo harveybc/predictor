@@ -164,8 +164,10 @@ class Plugin:
             print("DEBUG: posterior: computed n =", n)
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior: computed c =", c)
-            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
-            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
+            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42),
+                              dtype=dtype, trainable=trainable, name="posterior_loc")
+            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43),
+                                dtype=dtype, trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
             print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
@@ -216,8 +218,10 @@ class Plugin:
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
             name="output_layer"
         )
-        # Remove the Lambda wrapper and call DenseFlipout directly.
+        # Directly call the flipout_layer and, if a tuple is returned, take its first element.
         bayesian_output = flipout_layer(x)
+        if isinstance(bayesian_output, (tuple, list)):
+            bayesian_output = bayesian_output[0]
         print("DEBUG: After DenseFlipout, bayesian_output shape:", bayesian_output.shape)
         
         bias_layer = tf.keras.layers.Dense(
