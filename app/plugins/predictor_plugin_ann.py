@@ -183,9 +183,9 @@ class Plugin:
         self.model.compile(
             optimizer=optimizer,
             loss=Huber(),
-            metrics=['mse', 'mae']
+            metrics=['mae']
         )
-        print("DEBUG: Model compiled with loss=Huber, metrics=['mse','mae']")
+        print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
         
         print("✅ Standard ANN model built successfully.")
 
@@ -269,13 +269,13 @@ class Plugin:
         mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
         
-        # Unpack three values since metrics includes 'mse' and 'mae'
+        # Unpack three values since metrics includes  'mae'
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-        train_loss, train_mse, train_mae = train_eval_results
+        train_loss, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
         
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-        val_loss, val_mse, val_mae = val_eval_results
+        val_loss,  val_mae = val_eval_results
         
         from sklearn.metrics import r2_score
         train_predictions = self.predict(x_train)
