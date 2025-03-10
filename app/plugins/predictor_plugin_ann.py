@@ -115,17 +115,26 @@ class Plugin:
         
         for idx, size in enumerate(layer_sizes[:-1]):
             print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
-            x = tf.keras.layers.Dense(
-                units=size,
-                activation=self.params.get('activation', 'tanh'),
-                kernel_initializer=random_normal_initializer_42,
-                name=f"dense_layer_{idx+1}"
-            )(x)
+            if idx==1:
+                x = tf.keras.layers.Dense(
+                    units=size,
+                    activation='linear',
+                    kernel_initializer=random_normal_initializer_42,
+                    name=f"dense_layer_{idx+1}"
+                )(x)
+            else:
+                x = tf.keras.layers.Dense(
+                    units=size,
+                    activation=self.params.get('activation', 'tanh'),
+                    kernel_initializer=random_normal_initializer_42,
+                    name=f"dense_layer_{idx+1}"
+                )(x)
         print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
         x = tf.keras.layers.BatchNormalization()(x)
         print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
         x = tf.keras.layers.Dense(
-            units=size,
+            units=layer_sizes[-1],
+            kernel_regularizer=l2(l2_reg),
             activation=self.params.get('activation', 'tanh'),
             kernel_initializer=random_normal_initializer_42)(x)
         if hasattr(x, '_keras_history'):
@@ -217,12 +226,15 @@ class Plugin:
             activation='linear',
             use_bias=True,
             kernel_initializer=random_normal_initializer_44,
+            kernel_regularizer=l2(l2_reg)
 
             name="deterministic_bias"
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
         
         outputs = bayesian_output + bias_layer
+        outputs = tf.keras.layers.BatchNormalization()(outputs)
+        
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
         
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)

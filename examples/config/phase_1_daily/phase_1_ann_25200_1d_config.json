@@ -20,15 +20,15 @@
     "intermediate_layers": 4,
     "initial_layer_size": 96,
     "layer_size_divisor": 2,
-    "learning_rate": 2e-3,
+    "learning_rate": 1e-5,
     "activation": "relu",
-    "l2_reg": 0,
-    "kl_weight": 0,
+    "l2_reg": 1e-5,
+    "kl_weight": 1,
     "kl_anneal_epochs": 50,
     "early_patience": 60,
-    "use_mmd": false,
-    "statistical_loss_weight": 0.0,
-    "overfitting_penalty": 0.0
+    "use_mmd": true,
+    "statistical_loss_weight": 1.0,
+    "overfitting_penalty": 1.0
 
     
 }
