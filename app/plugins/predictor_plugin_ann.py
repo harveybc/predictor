@@ -509,6 +509,8 @@ class MemoryCleanupCallback(Callback):
         gc.collect()
         #print(f"[MemoryCleanup] Epoch {epoch+1}: Garbage collection executed.")
 
+        
+@tf.function(experimental_compile=False)
 def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
     """
     Compute the sum of Gaussian kernel values between each pair of rows in x and y
@@ -518,8 +520,6 @@ def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
     y: Tensor of shape [m, d]
     sigma: Bandwidth parameter for the Gaussian kernel.
     Returns a scalar equal to the sum of exp(–||x_i – y_j||²/(2*sigma²)) for all pairs.
-    
-    Note: Debug print statements have been removed to prevent unsupported XLA ops.
     """
     n = tf.shape(x)[0]
     total = tf.constant(0.0, dtype=tf.float32)
@@ -543,12 +543,14 @@ def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
     return total
 
 
+@tf.function(experimental_compile=False)
 def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
     """
     Compute the Maximum Mean Discrepancy (MMD) loss between y_true and y_pred using
     a memory‑efficient chunked Gaussian kernel sum.
     
-    Debug printing has been removed to avoid generating unsupported XLA ops.
+    By disabling experimental compilation for this function (via the decorator),
+    we avoid the XLA register spilling (and thus the associated warnings).
     """
     y_true = tf.cast(y_true, tf.float32)
     y_pred = tf.cast(y_pred, tf.float32)
