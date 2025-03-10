@@ -131,12 +131,12 @@ class Plugin:
                 )(x)
         print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
         x = tf.keras.layers.BatchNormalization()(x)
-        print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
-        x = tf.keras.layers.Dense(
-            units=layer_sizes[-1],
-            kernel_regularizer=l2(l2_reg),
-            activation=self.params.get('activation', 'tanh'),
-            kernel_initializer=random_normal_initializer_42)(x)
+        #print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
+        #x = tf.keras.layers.Dense(
+        #    units=layer_sizes[-1],
+        #    kernel_regularizer=l2(l2_reg),
+        #    activation=self.params.get('activation', 'tanh'),
+        #    kernel_initializer=random_normal_initializer_42)(x)
         if hasattr(x, '_keras_history'):
             print("DEBUG: x is already a KerasTensor; no conversion needed.")
         else:
@@ -212,7 +212,8 @@ class Plugin:
             kernel_posterior_fn=posterior_mean_field_custom,
             kernel_prior_fn=prior_fn,
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-            name="output_layer"
+            name="output_layer",
+            kernel_regularizer=l2(l2_reg)
         )
         bayesian_output = tf.keras.layers.Lambda(
             lambda t: flipout_layer(t),
@@ -224,7 +225,6 @@ class Plugin:
         bias_layer = tf.keras.layers.Dense(
             units=layer_sizes[-1],
             activation='linear',
-            use_bias=True,
             kernel_initializer=random_normal_initializer_44,
             kernel_regularizer=l2(l2_reg),
 
@@ -233,7 +233,6 @@ class Plugin:
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
         
         outputs = bayesian_output + bias_layer
-        outputs = tf.keras.layers.BatchNormalization()(outputs)
         
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
         
