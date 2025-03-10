@@ -525,55 +525,45 @@ def random_normal_initializer_44(shape, dtype=None):
     seed = (44, 0)
     return tf.random.stateless_normal(shape, seed=seed, mean=0.0, stddev=0.05, dtype=dtype)
 
-# Updated MMD helper functions: disable XLA compilation for these functions
-@tf.function(experimental_compile=False)
+#@tf.function(experimental_compile=False)
 def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
+    # Get dynamic shape
     n = tf.shape(x)[0]
     total = tf.constant(0.0, dtype=tf.float32)
-    i = tf.constant(0)
-    max_iter = tf.math.floordiv(n + chunk_size - 1, chunk_size)
-    tf.print("DEBUG: In gaussian_kernel_sum: n =", n, "max_iter =", max_iter)
-    
+    i = tf.constant(0, dtype=tf.int32)
+    # Try to get static batch size; if not available, use a fixed fallback
+    static_n = x.shape[0]
+    if static_n is not None:
+        max_iter = tf.constant((static_n + chunk_size - 1) // chunk_size, dtype=tf.int32)
+    else:
+        max_iter = tf.constant(1000, dtype=tf.int32)  # fallback value; adjust if needed
     def cond(i, total):
         return tf.less(i, n)
-    
     def body(i, total):
         end_i = tf.minimum(i + chunk_size, n)
-        x_chunk = x[i:end_i]
-        tf.print("DEBUG: Processing chunk from", i, "to", end_i, "x_chunk shape =", tf.shape(x_chunk))
-        diff = tf.expand_dims(x_chunk, axis=1) - tf.expand_dims(y, axis=0)
-        squared_diff = tf.reduce_sum(tf.square(diff), axis=2)
+        x_chunk = x[i:end_i]  # shape [chunk, d]
+        diff = tf.expand_dims(x_chunk, axis=1) - tf.expand_dims(y, axis=0)  # shape [chunk, m, d]
+        squared_diff = tf.reduce_sum(tf.square(diff), axis=2)  # shape [chunk, m]
         divisor = 2.0 * tf.square(sigma)
         kernel_chunk = tf.exp(-squared_diff / divisor)
-        chunk_sum = tf.reduce_sum(kernel_chunk)
-        tf.print("DEBUG: Chunk sum =", chunk_sum)
-        total += chunk_sum
+        total += tf.reduce_sum(kernel_chunk)
         return i + chunk_size, total
-
     i, total = tf.while_loop(cond, body, [i, total], maximum_iterations=max_iter)
-    tf.print("DEBUG: Finished gaussian_kernel_sum; total =", total)
     return total
 
 @tf.function(experimental_compile=False)
 def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
-    tf.print("DEBUG: In mmd_loss_term: original y_true shape =", tf.shape(y_true),
-             "y_pred shape =", tf.shape(y_pred))
+    # Ensure inputs are float32 and reshape to 2D
     y_true = tf.cast(y_true, tf.float32)
     y_pred = tf.cast(y_pred, tf.float32)
     y_true = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
     y_pred = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
-    tf.print("DEBUG: Reshaped y_true shape =", tf.shape(y_true), "y_pred shape =", tf.shape(y_pred))
-    
     sum_K_xx = gaussian_kernel_sum(y_true, y_true, sigma, chunk_size)
     sum_K_yy = gaussian_kernel_sum(y_pred, y_pred, sigma, chunk_size)
     sum_K_xy = gaussian_kernel_sum(y_true, y_pred, sigma, chunk_size)
-    
     m = tf.cast(tf.shape(y_true)[0], tf.float32)
     n = tf.cast(tf.shape(y_pred)[0], tf.float32)
-    tf.print("DEBUG: m =", m, "n =", n)
-    
     mmd = sum_K_xx / (m * m) + sum_K_yy / (n * n) - 2 * sum_K_xy / (m * n)
-    tf.print("DEBUG: Computed mmd =", mmd)
     return mmd
 
 def mmd_metric(y_true, y_pred, config):
