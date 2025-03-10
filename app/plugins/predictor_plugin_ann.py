@@ -165,27 +165,22 @@ class Plugin:
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight is", target_kl)
         
         # ---------------------------
-        # Get default bias_size from configuration (default to 1)
-        # ---------------------------
-        default_bias_size = self.params.get('bias_size', 1)
-        print("DEBUG: Using default_bias_size =", default_bias_size)
-        
-        # ---------------------------
         # Define custom posterior and prior functions with explicit signature.
         # These functions assume: (dtype, kernel_shape, bias_size, trainable, name)
-        # They will ignore the passed bias_size and use default_bias_size.
+        # Here, we force bias_size to 0 (ignoring any unexpected value) so that the number of parameters
+        # matches np.prod(kernel_shape) exactly.
         # ---------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
             print("       dtype =", dtype)
             print("       kernel_shape =", kernel_shape)
-            print("       Received bias_size =", bias_size, "; using default_bias_size =", default_bias_size)
+            print("       Received bias_size =", bias_size, "; overriding to 0 for kernel posterior")
             print("       trainable =", trainable)
             print("       name =", name)
             if not isinstance(name, str):
                 print("DEBUG: 'name' is not a string; setting name to None")
                 name = None
-            bias_size = int(default_bias_size)
+            bias_size = 0  # Force bias_size to 0 for the kernel posterior
             n = int(np.prod(kernel_shape)) + bias_size
             print("DEBUG: posterior_mean_field_custom: computed n =", n)
             c = np.log(np.expm1(1.))
@@ -211,13 +206,13 @@ class Plugin:
             print("DEBUG: In prior_fn:")
             print("       dtype =", dtype)
             print("       kernel_shape =", kernel_shape)
-            print("       Received bias_size =", bias_size, "; using default_bias_size =", default_bias_size)
+            print("       Received bias_size =", bias_size, "; overriding to 0 for kernel prior")
             print("       trainable =", trainable)
             print("       name =", name)
             if not isinstance(name, str):
                 print("DEBUG: 'name' is not a string in prior_fn; setting name to None")
                 name = None
-            bias_size = int(default_bias_size)
+            bias_size = 0  # Force bias_size to 0 for the kernel prior
             n = int(np.prod(kernel_shape)) + bias_size
             print("DEBUG: prior_fn: computed n =", n)
             loc = tf.zeros([n], dtype=dtype)
