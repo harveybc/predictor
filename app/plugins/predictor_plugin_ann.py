@@ -269,9 +269,10 @@ class Plugin:
         
         early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
             monitor='val_loss',
-            patience=self.params.get('patience', 10),
+            patience=self.params.get('early_patience', 10),
             restore_best_weights=True,
-            verbose=1
+            verbose=1,
+            start_from_epoch=30
         )
         callbacks.append(early_stopping_monitor)
         
