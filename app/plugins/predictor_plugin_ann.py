@@ -455,6 +455,7 @@ class UpdateOverfitPenalty(Callback):
         tf.keras.backend.set_value(self.model.overfit_penalty, penalty)
         print(f"[UpdateOverfitPenalty] Epoch {epoch+1}: Updated overfit penalty to {penalty:.6f}")
 
+# --------------------- Updated DebugLearningRateCallback.on_epoch_end ---------------------
 class DebugLearningRateCallback(Callback):
     """
     Debug Callback that prints the current learning rate,
@@ -469,8 +470,8 @@ class DebugLearningRateCallback(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
-        # Retrieve current learning rate from optimizer: try 'lr' first, if not available, use 'learning_rate'
         optimizer = self.model.optimizer
+        # Retrieve current learning rate from optimizer (check both 'lr' and 'learning_rate')
         if hasattr(optimizer, 'lr'):
             current_lr = tf.keras.backend.get_value(optimizer.lr)
         else:
@@ -516,6 +517,8 @@ def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
     n = tf.shape(x)[0]
     total = tf.constant(0.0, dtype=tf.float32)
     i = tf.constant(0)
+    # Set a fixed maximum number of iterations to satisfy XLA's requirements
+    max_iter = tf.math.floordiv(n + chunk_size - 1, chunk_size)
     
     def cond(i, total):
         return tf.less(i, n)
@@ -530,12 +533,10 @@ def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
         total += tf.reduce_sum(kernel_chunk)
         return i + chunk_size, total
 
-    max_iter = tf.math.floordiv(n + chunk_size - 1, chunk_size)
     i, total = tf.while_loop(cond, body, [i, total], maximum_iterations=max_iter)
     return total
 
-
-
+# --------------------- Updated mmd_loss_term ---------------------
 def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
     """
     Compute the Maximum Mean Discrepancy (MMD) loss between y_true and y_pred using
