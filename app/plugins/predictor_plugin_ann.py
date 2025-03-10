@@ -65,6 +65,7 @@ class Plugin:
     def __init__(self):
         self.params = self.plugin_params.copy()
         self.model = None
+        self.overfit_penalty = None  
 
     def set_params(self, **kwargs):
         for key, value in kwargs.items():
@@ -237,14 +238,41 @@ class Plugin:
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
         
-        optimizer = tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001))
-        print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
-        self.model.compile(
-            optimizer=optimizer,
-            loss=Huber(),
-            metrics=['mae']
+        self.overfit_penalty = tf.Variable(0.0, trainable=False, dtype=tf.float32)
+        self.model.overfit_penalty = self.overfit_penalty
+        
+        initial_lr = config.get('learning_rate', 0.01)
+        adam_optimizer = Adam(
+            learning_rate=initial_lr,
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-7,
+            amsgrad=False,
+            clipnorm=1.0,
+            clipvalue=0.5
         )
-        print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
+        
+        def combined_loss(y_true, y_pred):
+            huber_loss = Huber(delta=1.0)(y_true, y_pred)
+            sigma = config.get('mmd_sigma', 1.0)
+            stat_weight = config.get('statistical_loss_weight', 1.0)
+            mmd = mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
+            penalty_term = tf.cast(1.0, tf.float32) * tf.stop_gradient(self.overfit_penalty)
+            return huber_loss + (stat_weight * mmd) + penalty_term
+        
+        if config.get('use_mmd', False):
+            loss_fn = combined_loss
+            metrics = ['mae', lambda yt, yp: mmd_metric(yt, yp, config)]
+        else:
+            loss_fn = Huber(delta=1.0)
+            metrics = ['mae']
+        
+        self.autoencoder_model.compile(
+            optimizer=adam_optimizer,
+            loss=loss_fn,
+            metrics=metrics   
+        )
+        print("DEBUG: Model compiled")
         print("Predictor Model Summary:")
         self.model.summary()
         print("✅ Standard ANN model built successfully.")
