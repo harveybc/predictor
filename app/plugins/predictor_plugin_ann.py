@@ -14,14 +14,18 @@ from sklearn.metrics import r2_score
 import logging
 import os
 
-# ------------------ Begin Monkey Patch for DenseFlipout ------------------
-# Replace calls to layer.add_variable with layer.add_weight in DenseFlipout
+# --- Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable ---
 def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
-    # Use add_weight instead of add_variable
     return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
-# Patch DenseFlipout class method (this patch affects the instance method used in TFP)
 tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-# ------------------ End Monkey Patch ------------------
+
+# --- Named initializers to avoid lambda serialization warnings ---
+def random_normal_initializer_42(shape, dtype=None):
+    return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=42)
+
+def random_normal_initializer_44(shape, dtype=None):
+    return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
+
 
 class Plugin:
     """
@@ -30,7 +34,6 @@ class Plugin:
     This plugin builds, trains, and evaluates an ANN that outputs (N, time_horizon).
     """
 
-    # Default parameters (note new 'kl_weight' added to tune KL divergence in DenseFlipout)
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 3,
@@ -39,11 +42,9 @@ class Plugin:
         'learning_rate': 0.0001,
         'activation': 'tanh',
         'l2_reg': 1e-5,
-        # You can also add a default KL weight here if desired:
         'kl_weight': 1e-3
     }
     
-    # Variables for debugging
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
     
     def __init__(self):
@@ -51,56 +52,30 @@ class Plugin:
         self.model = None
 
     def set_params(self, **kwargs):
-        """
-        Update plugin parameters with provided kwargs.
-        """
         for key, value in kwargs.items():
             self.params[key] = value
 
     def get_debug_info(self):
-        """
-        Return a dict of debug info from plugin params.
-        """
         return {var: self.params[var] for var in self.plugin_debug_vars}
 
     def add_debug_info(self, debug_info):
-        """
-        Add the plugin's debug info to an external dictionary.
-        """
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    # Monkey-patch DenseFlipout so that its internal calls use add_weight instead of the deprecated add_variable.
-    def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
-        return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
-    tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-
-    # ------------------ Updated Methods in the Plugin ------------------
-
     def build_model(self, input_shape, x_train, config=None):
         """
-        Builds a Bayesian ANN using Keras Dense layers with TensorFlow Probability's DenseFlipout for
-        uncertainty estimation, employing KL annealing and custom posterior/prior functions.
-        The final output layer is replaced by a DenseFlipout layer (without bias) plus a separate 
+        Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
+        The final output layer is replaced by a DenseFlipout (without bias) plus a separate 
         deterministic bias layer.
-        
-        Args:
-            input_shape (int): Number of input features.
-            x_train (np.ndarray): Training dataset to automatically determine train_size.
         """
         from tensorflow.keras.losses import Huber
-        from tensorflow.keras.initializers import RandomNormal
-        import tensorflow as tf
-        import tensorflow_probability as tfp
-        import numpy as np
 
-        # Set KL divergence weight to a higher value.
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-        l2_reg = self.params.get('l2_reg', 1e-5)
+
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
         print("DEBUG: numpy version:", np.__version__)
-        
+
         x_train = np.array(x_train)
         print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
         
@@ -136,16 +111,12 @@ class Plugin:
         x = inputs
         print("DEBUG: x tensor from inputs. Shape:", x.shape, "Type:", type(x))
         
-        # Use a lambda initializer for deterministic layers.
-        dense_init = lambda shape, dtype=None: tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=42)
-        
         for idx, size in enumerate(layer_sizes[:-1]):
             print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
             x = tf.keras.layers.Dense(
                 units=size,
                 activation=self.params.get('activation', 'tanh'),
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
+                kernel_initializer=random_normal_initializer_42,
                 name=f"dense_layer_{idx+1}"
             )(x)
             print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
@@ -161,7 +132,6 @@ class Plugin:
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", KL_WEIGHT)
         
-        # For DenseFlipout, force bias_size to 0.
         default_bias_size = 0
         print("DEBUG: Using default_bias_size =", default_bias_size)
         
@@ -181,7 +151,6 @@ class Plugin:
             loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
             scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
-            # Apply a maximum norm constraint to scale
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
             print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
             try:
@@ -242,7 +211,7 @@ class Plugin:
             units=layer_sizes[-1],
             activation='linear',
             use_bias=True,
-            kernel_initializer=lambda shape, dtype=None: tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44),
+            kernel_initializer=random_normal_initializer_44,
             name="deterministic_bias"
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
@@ -266,141 +235,141 @@ class Plugin:
         print("✅ Standard ANN model built successfully.")
 
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
-        """
-        Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
-        Implements KL annealing via a custom callback.
-        """
-        import tensorflow as tf
-        if isinstance(x_train, tuple):
-            x_train = x_train[0]
-        if x_val is not None and isinstance(x_val, tuple):
-            x_val = x_val[0]
-        
-        print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
-        exp_horizon = self.params['time_horizon']
-        if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
-            raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
-        
-        class KLAnnealingCallback(tf.keras.callbacks.Callback):
-            def __init__(self, plugin, target_kl, anneal_epochs):
-                super().__init__()
-                self.plugin = plugin
-                self.target_kl = target_kl
-                self.anneal_epochs = anneal_epochs
-            def on_epoch_begin(self, epoch, logs=None):
-                new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
-                self.plugin.kl_weight_var.assign(new_kl)
-                print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
+def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
+    """
+    Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
+    Implements KL annealing via a custom callback.
+    """
+    import tensorflow as tf
+    if isinstance(x_train, tuple):
+        x_train = x_train[0]
+    if x_val is not None and isinstance(x_val, tuple):
+        x_val = x_val[0]
+    
+    print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
+    exp_horizon = self.params['time_horizon']
+    if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
+        raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
+    
+    class KLAnnealingCallback(tf.keras.callbacks.Callback):
+        def __init__(self, plugin, target_kl, anneal_epochs):
+            super().__init__()
+            self.plugin = plugin
+            self.target_kl = target_kl
+            self.anneal_epochs = anneal_epochs
+        def on_epoch_begin(self, epoch, logs=None):
+            new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
+            self.plugin.kl_weight_var.assign(new_kl)
+            print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
 
-        anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
-        target_kl = self.params.get('kl_weight', 1e-3)
-        kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        callbacks = [kl_callback]
-        
-        early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
-            monitor='val_loss',
-            patience=self.params.get('patience', 10),
-            restore_best_weights=True,
-            verbose=1
-        )
-        callbacks.append(early_stopping_monitor)
-        
-        history = self.model.fit(
-            x_train, y_train,
-            epochs=epochs,
-            batch_size=batch_size,
-            verbose=1,
-            shuffle=True,
-            callbacks=callbacks,
-            validation_split=0.2
-        )
-        
-        print("Training completed.")
-        final_loss = history.history['loss'][-1]
-        print(f"Final training loss: {final_loss}")
-        
-        if final_loss > threshold_error:
-            print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
-        
-        preds_training_mode = self.model(x_train, training=True)
-        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
-        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
-        
-        preds_eval_mode = self.model(x_train, training=False)
-        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
-        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
-        
-        train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-        train_loss, train_mae = train_eval_results
-        print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
-        
-        val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-        val_loss, val_mae = val_eval_results
-        
-        from sklearn.metrics import r2_score
-        train_predictions = self.predict(x_train)
-        val_predictions = self.predict(x_val)
-        train_r2 = r2_score(y_train, train_predictions)
-        val_r2 = r2_score(y_val, val_predictions)
-        
-        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
-
-
-    def predict_with_uncertainty(self, data, mc_samples=100):
-        """
-        Perform multiple forward passes through the model to estimate prediction uncertainty.
-        
-        Args:
-            data (np.ndarray): Input data for prediction.
-            mc_samples (int): Number of Monte Carlo samples.
-        
-        Returns:
-            tuple: (mean_predictions, uncertainty_estimates) where both are np.ndarray with shape (n_samples, time_horizon)
-        """
-        import numpy as np
-        print("DEBUG: Starting predict_with_uncertainty with mc_samples (expected):", mc_samples)
-        predictions = []
-        for i in range(mc_samples):
-            preds = self.model(data, training=True)
-            preds_np = preds.numpy()
-            print(f"DEBUG: Sample {i+1}/{mc_samples} prediction. Expected shape: (n_samples, time_horizon), Actual shape:", preds_np.shape)
-            predictions.append(preds_np)
-        predictions = np.array(predictions)
-        print("DEBUG: All predictions collected. Expected shape: (mc_samples, n_samples, time_horizon), Actual shape:", predictions.shape)
-        mean_predictions = np.mean(predictions, axis=0)
-        uncertainty_estimates = np.std(predictions, axis=0)
-        print("DEBUG: Mean predictions shape:", mean_predictions.shape)
-        print("DEBUG: Uncertainty estimates shape:", uncertainty_estimates.shape)
-        return mean_predictions, uncertainty_estimates
+    anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
+    target_kl = self.params.get('kl_weight', 1e-3)
+    kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
+    callbacks = [kl_callback]
+    
+    early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
+        monitor='val_loss',
+        patience=self.params.get('patience', 10),
+        restore_best_weights=True,
+        verbose=1
+    )
+    callbacks.append(early_stopping_monitor)
+    
+    history = self.model.fit(
+        x_train, y_train,
+        epochs=epochs,
+        batch_size=batch_size,
+        verbose=1,
+        shuffle=True,
+        callbacks=callbacks,
+        validation_split=0.2
+    )
+    
+    print("Training completed.")
+    final_loss = history.history['loss'][-1]
+    print(f"Final training loss: {final_loss}")
+    
+    if final_loss > threshold_error:
+        print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
+    
+    preds_training_mode = self.model(x_train, training=True)
+    mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
+    print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
+    
+    preds_eval_mode = self.model(x_train, training=False)
+    mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
+    print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+    
+    train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
+    train_loss, train_mae = train_eval_results
+    print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
+    
+    val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+    val_loss, val_mae = val_eval_results
+    
+    from sklearn.metrics import r2_score
+    train_predictions = self.predict(x_train)
+    val_predictions = self.predict(x_val)
+    train_r2 = r2_score(y_train, train_predictions)
+    val_r2 = r2_score(y_val, val_predictions)
+    
+    return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
 
-    def predict(self, data):
-        import os
-        import logging
-        logging.getLogger("tensorflow").setLevel(logging.ERROR)
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-        if isinstance(data, tuple):
-            data = data[0]
-        preds = self.model.predict(data)
-        return preds
+def predict_with_uncertainty(self, data, mc_samples=100):
+    """
+    Perform multiple forward passes through the model to estimate prediction uncertainty.
+    
+    Args:
+        data (np.ndarray): Input data for prediction.
+        mc_samples (int): Number of Monte Carlo samples.
+    
+    Returns:
+        tuple: (mean_predictions, uncertainty_estimates) where both are np.ndarray with shape (n_samples, time_horizon)
+    """
+    import numpy as np
+    print("DEBUG: Starting predict_with_uncertainty with mc_samples (expected):", mc_samples)
+    predictions = []
+    for i in range(mc_samples):
+        preds = self.model(data, training=True)
+        preds_np = preds.numpy()
+        print(f"DEBUG: Sample {i+1}/{mc_samples} prediction. Expected shape: (n_samples, time_horizon), Actual shape:", preds_np.shape)
+        predictions.append(preds_np)
+    predictions = np.array(predictions)
+    print("DEBUG: All predictions collected. Expected shape: (mc_samples, n_samples, time_horizon), Actual shape:", predictions.shape)
+    mean_predictions = np.mean(predictions, axis=0)
+    uncertainty_estimates = np.std(predictions, axis=0)
+    print("DEBUG: Mean predictions shape:", mean_predictions.shape)
+    print("DEBUG: Uncertainty estimates shape:", uncertainty_estimates.shape)
+    return mean_predictions, uncertainty_estimates
 
 
-    def calculate_mae(self, y_true, y_pred):
-        print(f"y_true (sample): {y_true.flatten()[:5]}")
-        print(f"y_pred (sample): {y_pred.flatten()[:5]}")
-        mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
-        print(f"Calculated MAE: {mae}")
-        return mae
+def predict(self, data):
+    import os
+    import logging
+    logging.getLogger("tensorflow").setLevel(logging.ERROR)
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    if isinstance(data, tuple):
+        data = data[0]
+    preds = self.model.predict(data)
+    return preds
 
 
-    def save(self, file_path):
-        from tensorflow.keras.models import save_model
-        save_model(self.model, file_path)
-        print(f"Predictor model saved to {file_path}")
+def calculate_mae(self, y_true, y_pred):
+    print(f"y_true (sample): {y_true.flatten()[:5]}")
+    print(f"y_pred (sample): {y_pred.flatten()[:5]}")
+    mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
+    print(f"Calculated MAE: {mae}")
+    return mae
 
 
-    def load(self, file_path):
-        from tensorflow.keras.models import load_model
-        self.model = load_model(file_path)
-        print(f"Model loaded from {file_path}")
+def save(self, file_path):
+    from tensorflow.keras.models import save_model
+    save_model(self.model, file_path)
+    print(f"Predictor model saved to {file_path}")
+
+
+def load(self, file_path):
+    from tensorflow.keras.models import load_model
+    self.model = load_model(file_path)
+    print(f"Model loaded from {file_path}")
