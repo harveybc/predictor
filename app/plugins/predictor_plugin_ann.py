@@ -27,50 +27,41 @@ def random_normal_initializer_44(shape, dtype=None):
     return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
 
 
-# --- New Vectorized MMD Loss and Combined Loss Function ---
-@tf.function(experimental_compile=True)
-def vectorized_mmd_loss_term(y_true, y_pred, sigma):
-    """
-    Computes the Maximum Mean Discrepancy (MMD) loss in a fully vectorized way.
-    y_true and y_pred are 2D tensors of shape (batch_size, features).
-    """
-    # Compute squared L2 norms
-    norm_true = tf.reduce_sum(tf.square(y_true), axis=1, keepdims=True)  # shape (n,1)
-    norm_pred = tf.reduce_sum(tf.square(y_pred), axis=1, keepdims=True)  # shape (m,1)
-    # Compute pairwise squared Euclidean distances
-    dists_true = norm_true - 2 * tf.matmul(y_true, y_true, transpose_b=True) + tf.transpose(norm_true)
-    dists_pred = norm_pred - 2 * tf.matmul(y_pred, y_pred, transpose_b=True) + tf.transpose(norm_pred)
-    dists_cross = norm_true - 2 * tf.matmul(y_true, y_pred, transpose_b=True) + tf.transpose(norm_pred)
-    # Compute Gaussian kernels
-    K_xx = tf.exp(-dists_true / (2.0 * sigma * sigma))
-    K_yy = tf.exp(-dists_pred / (2.0 * sigma * sigma))
-    K_xy = tf.exp(-dists_cross / (2.0 * sigma * sigma))
-    n = tf.cast(tf.shape(y_true)[0], tf.float32)
-    m = tf.cast(tf.shape(y_pred)[0], tf.float32)
-    mmd = tf.reduce_sum(K_xx) / (n * n) + tf.reduce_sum(K_yy) / (m * m) - 2 * tf.reduce_sum(K_xy) / (n * m)
-    return mmd
-
-def combined_loss_fn(y_true, y_pred, config, overfit_penalty):
-    """Combined loss: Huber loss + statistical (MMD) loss + overfit penalty.
-       This function prints the current MMD value."""
-    base_loss = Huber(delta=1.0)(y_true, y_pred)
-    sigma = config.get('mmd_sigma', 1.0)
-    stat_weight = config.get('statistical_loss_weight', 1.0)
-    mmd = vectorized_mmd_loss_term(y_true, y_pred, sigma)
-    tf.print("DEBUG: Current MMD =", mmd)  # Print the MMD value each time the loss is computed.
-    return base_loss + stat_weight * mmd + overfit_penalty
-
-# --- A custom callback to print validation loss and MAE after each epoch ---
-class DebugEpochInfo(Callback):
-    def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
-        tf.print("DEBUG: Epoch", epoch+1, "validation loss =", logs.get('val_loss', 'NA'),
-                 "validation mae =", logs.get('val_mae', 'NA'))
-
-# ================= Updated Methods in Plugin =================
 class Plugin:
-    # ... (other parts of the class remain unchanged)
+    """
+    ANN Predictor Plugin using Keras for multi-step forecasting.
     
+    This plugin builds, trains, and evaluates an ANN that outputs (N, time_horizon).
+    """
+
+    plugin_params = {
+        'batch_size': 128,
+        'intermediate_layers': 3,
+        'initial_layer_size': 64,
+        'layer_size_divisor': 2,
+        'learning_rate': 0.0001,
+        'activation': 'tanh',
+        'l2_reg': 1e-5,
+        'kl_weight': 1e-3
+    }
+    
+    plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size']
+    
+    def __init__(self):
+        self.params = self.plugin_params.copy()
+        self.model = None
+
+    def set_params(self, **kwargs):
+        for key, value in kwargs.items():
+            self.params[key] = value
+
+    def get_debug_info(self):
+        return {var: self.params[var] for var in self.plugin_debug_vars}
+
+    def add_debug_info(self, debug_info):
+        plugin_debug_info = self.get_debug_info()
+        debug_info.update(plugin_debug_info)
+
     def build_model(self, input_shape, x_train, config=None):
         """
         Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
@@ -80,18 +71,21 @@ class Plugin:
         from tensorflow.keras.losses import Huber
 
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
+
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
         print("DEBUG: numpy version:", np.__version__)
+
         x_train = np.array(x_train)
         print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
+        
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
         print("DEBUG: input_shape is valid. Value:", input_shape)
+        
         train_size = x_train.shape[0]
         print("DEBUG: Number of training samples:", train_size)
         
-        # Create layer sizes
         layer_sizes = []
         current_size = self.params['initial_layer_size']
         print("DEBUG: Initial layer size:", current_size)
@@ -101,6 +95,7 @@ class Plugin:
         print("DEBUG: Number of intermediate layers:", int_layers)
         time_horizon = self.params['time_horizon']
         print("DEBUG: Time horizon (final layer size):", time_horizon)
+        
         for i in range(int_layers):
             layer_sizes.append(current_size)
             print(f"DEBUG: Appended layer size at layer {i+1}: {current_size}")
@@ -110,10 +105,12 @@ class Plugin:
         print("DEBUG: Final layer sizes:", layer_sizes)
         
         print("DEBUG: Standard ANN input_shape:", input_shape)
+        
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         print("DEBUG: Created input layer. Shape:", inputs.shape)
         x = inputs
         print("DEBUG: x tensor from inputs. Shape:", x.shape, "Type:", type(x))
+        
         for idx, size in enumerate(layer_sizes[:-1]):
             print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
             x = tf.keras.layers.Dense(
@@ -125,15 +122,20 @@ class Plugin:
         print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
         x = tf.keras.layers.BatchNormalization()(x)
         print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
-        if not hasattr(x, '_keras_history'):
+        
+        if hasattr(x, '_keras_history'):
+            print("DEBUG: x is already a KerasTensor; no conversion needed.")
+        else:
             x = tf.convert_to_tensor(x)
             print("DEBUG: Converted x to tensor. New type:", type(x))
+        
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", KL_WEIGHT)
         
-        # Use the old DenseFlipout code (unchanged)
+        default_bias_size = 0
+        print("DEBUG: Using default_bias_size =", default_bias_size)
+        
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
-            # (Same as before; debug prints retained)
             print("DEBUG: In posterior_mean_field_custom:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
             print("       Received bias_size =", bias_size, "; overriding to 0")
@@ -142,7 +144,7 @@ class Plugin:
                 print("DEBUG: 'name' is not a string; setting to None")
                 name = None
             bias_size = 0
-            n = int(np.prod(kernel_shape))
+            n = int(np.prod(kernel_shape)) + bias_size
             print("DEBUG: posterior: computed n =", n)
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior: computed c =", c)
@@ -151,9 +153,13 @@ class Plugin:
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
             print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
-            loc_reshaped = tf.reshape(loc, kernel_shape)
-            scale_reshaped = tf.reshape(scale, kernel_shape)
-            print("DEBUG: posterior: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: posterior: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape in posterior:", e)
+                raise e
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
@@ -168,13 +174,17 @@ class Plugin:
                 print("DEBUG: 'name' is not a string in prior_fn; setting to None")
                 name = None
             bias_size = 0
-            n = int(np.prod(kernel_shape))
+            n = int(np.prod(kernel_shape)) + bias_size
             print("DEBUG: prior_fn: computed n =", n)
             loc = tf.zeros([n], dtype=dtype)
             scale = tf.ones([n], dtype=dtype)
-            loc_reshaped = tf.reshape(loc, kernel_shape)
-            scale_reshaped = tf.reshape(scale, kernel_shape)
-            print("DEBUG: prior_fn: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: prior_fn: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape in prior_fn:", e)
+                raise e
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
@@ -196,6 +206,7 @@ class Plugin:
             name="bayesian_dense_flipout"
         )(x)
         print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
+        
         bias_layer = tf.keras.layers.Dense(
             units=layer_sizes[-1],
             activation='linear',
@@ -204,33 +215,30 @@ class Plugin:
             name="deterministic_bias"
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
+        
         outputs = bayesian_output + bias_layer
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+        
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
         
-        # Compile the model using our combined loss (with MMD)
-        adam_optimizer = Adam(learning_rate=self.params.get('learning_rate', 0.0001))
+        optimizer = tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001))
         print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
-        # Wrap combined_loss_fn inside a lambda that passes config and overfit_penalty.
-        loss_fn = lambda yt, yp: combined_loss_fn(yt, yp, config, self.overfit_penalty)
-        # Disable XLA compilation for the loss function to avoid fusion issues.
-        loss_fn = tf.function(loss_fn, experimental_compile=False)
         self.model.compile(
-            optimizer=adam_optimizer,
-            loss=loss_fn,
+            optimizer=optimizer,
+            loss=Huber(),
             metrics=['mae']
         )
-        print("DEBUG: Model compiled with combined loss (MMD+Huber)")
-        # Optionally, add the DebugEpochInfo callback during training.
+        print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
         print("Predictor Model Summary:")
         self.model.summary()
         print("✅ Standard ANN model built successfully.")
 
+
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
-        Implements KL annealing via a custom callback and prints debug info each epoch.
+        Implements KL annealing via a custom callback.
         """
         import tensorflow as tf
         if isinstance(x_train, tuple):
@@ -253,17 +261,19 @@ class Plugin:
                 new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
                 self.plugin.kl_weight_var.assign(new_kl)
                 print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
-        
+
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        # Create a custom callback to print epoch info (validation loss and mae)
-        debug_epoch_cb = DebugEpochInfo()
-        callbacks = [kl_callback, debug_epoch_cb]
+        callbacks = [kl_callback]
         
-        early_stopping = EarlyStopping(monitor='val_loss', patience=self.params.get('patience', 10),
-                                       restore_best_weights=True, verbose=1)
-        callbacks.append(early_stopping)
+        early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss',
+            patience=self.params.get('patience', 10),
+            restore_best_weights=True,
+            verbose=1
+        )
+        callbacks.append(early_stopping_monitor)
         
         history = self.model.fit(
             x_train, y_train,
@@ -278,27 +288,45 @@ class Plugin:
         print("Training completed.")
         final_loss = history.history['loss'][-1]
         print(f"Final training loss: {final_loss}")
+        
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
+        
         preds_training_mode = self.model(x_train, training=True)
-        mae_training_mode = float(tf.reduce_mean(tf.abs(preds_training_mode - y_train)).numpy())
+        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
         print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
+        
         preds_eval_mode = self.model(x_train, training=False)
-        mae_eval_mode = float(tf.reduce_mean(tf.abs(preds_eval_mode - y_train)).numpy())
+        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+        
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
+        
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mae = val_eval_results
+        
         from sklearn.metrics import r2_score
         train_predictions = self.predict(x_train)
         val_predictions = self.predict(x_val)
         train_r2 = r2_score(y_train, train_predictions)
         val_r2 = r2_score(y_val, val_predictions)
+        
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
+
     def predict_with_uncertainty(self, data, mc_samples=100):
+        """
+        Perform multiple forward passes through the model to estimate prediction uncertainty.
+        
+        Args:
+            data (np.ndarray): Input data for prediction.
+            mc_samples (int): Number of Monte Carlo samples.
+        
+        Returns:
+            tuple: (mean_predictions, uncertainty_estimates) where both are np.ndarray with shape (n_samples, time_horizon)
+        """
         import numpy as np
         print("DEBUG: Starting predict_with_uncertainty with mc_samples (expected):", mc_samples)
         predictions = []
@@ -315,14 +343,17 @@ class Plugin:
         print("DEBUG: Uncertainty estimates shape:", uncertainty_estimates.shape)
         return mean_predictions, uncertainty_estimates
 
+
     def predict(self, data):
-        import os, logging
+        import os
+        import logging
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         if isinstance(data, tuple):
             data = data[0]
         preds = self.model.predict(data)
         return preds
+
 
     def calculate_mae(self, y_true, y_pred):
         print(f"y_true (sample): {y_true.flatten()[:5]}")
@@ -331,16 +362,16 @@ class Plugin:
         print(f"Calculated MAE: {mae}")
         return mae
 
+
     def save(self, file_path):
         from tensorflow.keras.models import save_model
         save_model(self.model, file_path)
         print(f"Predictor model saved to {file_path}")
 
+
     def load(self, file_path):
         from tensorflow.keras.models import load_model
         self.model = load_model(file_path)
         print(f"Model loaded from {file_path}")
-
-
 
 
