@@ -68,63 +68,151 @@ class Plugin:
             input_shape (int): Number of input features.
             x_train (np.ndarray): Training dataset to automatically determine train_size.
         """
-        # Ensure x_train is a proper NumPy array.
+        import tensorflow as tf
+        import tensorflow_probability as tfp
+        import numpy as np
+        from tensorflow.keras.losses import Huber
+
+        # ---------------------------
+        # Print versions of key packages
+        # ---------------------------
+        print("DEBUG: tensorflow version:", tf.__version__)
+        print("DEBUG: tensorflow_probability version:", tfp.__version__)
+        print("DEBUG: numpy version:", np.__version__)
+
+        # ---------------------------
+        # Convert x_train to a numpy array and print details
+        # ---------------------------
         x_train = np.array(x_train)
+        print("DEBUG: x_train converted to numpy array.")
+        print("       Expected type: <class 'numpy.ndarray'>, Actual type:", type(x_train))
+        print("       Expected shape: (n_samples, n_features), Actual shape:", x_train.shape)
         
+        # ---------------------------
+        # Validate input_shape
+        # ---------------------------
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
+        print("DEBUG: input_shape is valid. Expected type int. Actual input_shape:", input_shape)
         
+        # ---------------------------
+        # Determine training sample count
+        # ---------------------------
         train_size = x_train.shape[0]
-        print("Standard ANN: Number of training samples =", train_size)
+        print("DEBUG: Number of training samples (expected):", train_size)
         
-        # Compute layer sizes.
+        # ---------------------------
+        # Compute layer sizes based on parameters
+        # ---------------------------
         layer_sizes = []
         current_size = self.params['initial_layer_size']
+        print("DEBUG: Initial layer size (expected):", current_size)
         divisor = self.params.get('layer_size_divisor', 2)
+        print("DEBUG: Layer size divisor (expected):", divisor)
         int_layers = self.params.get('intermediate_layers', 3)
+        print("DEBUG: Number of intermediate layers (expected):", int_layers)
         time_horizon = self.params['time_horizon']
+        print("DEBUG: Time horizon (expected final layer size):", time_horizon)
         
-        for _ in range(int_layers):
+        for i in range(int_layers):
             layer_sizes.append(current_size)
+            print(f"DEBUG: Appended layer size at layer {i+1}: {current_size}")
             current_size = max(current_size // divisor, 1)
+            print(f"DEBUG: Updated current_size after division at layer {i+1}: {current_size}")
         layer_sizes.append(time_horizon)
+        print("DEBUG: Final layer sizes (expected):", layer_sizes)
         
-        print("Standard ANN Layer sizes:", layer_sizes)
-        print(f"Standard ANN input_shape: {input_shape}")
+        print("DEBUG: Standard ANN input_shape (expected):", input_shape)
         
-        # Build the model using standard Dense layers for hidden layers.
+        # ---------------------------
+        # Build input layer
+        # ---------------------------
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
+        print("DEBUG: Created input layer. Expected shape: (None, {})".format(input_shape))
         x = inputs
+        print("DEBUG: Initial x tensor from inputs. Shape:", x.shape, "Type:", type(x))
         
-        # Create intermediate layers.
+        # ---------------------------
+        # Build intermediate Dense layers with BatchNormalization
+        # ---------------------------
         for idx, size in enumerate(layer_sizes[:-1]):
-            x = tf.keras.layers.Dense(units=size, 
-                                    activation=self.params.get('activation', 'tanh'),
-                                    kernel_initializer='glorot_uniform',
-                                    name=f"dense_layer_{idx+1}")(x)
-            x = tf.keras.layers.BatchNormalization()(x)
+            print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
+            x = tf.keras.layers.Dense(
+                units=size, 
+                activation=self.params.get('activation', 'tanh'),
+                kernel_initializer='glorot_uniform',
+                name=f"dense_layer_{idx+1}"
+            )(x)
+            print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape, "Type:", type(x))
+            x = tf.keras.layers.BatchNormalization(name=f"batchnorm_{idx+1}")(x)
+            print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape, "Type:", type(x))
         
-        # Ensure x is a tensor (in case a tuple is returned by previous layers)
-        x = tf.keras.layers.Lambda(lambda t: t)(x)
+        # ---------------------------
+        # Ensure x is a tensor (convert in case it's a tuple)
+        # ---------------------------
+        x = tf.convert_to_tensor(x)
+        print("DEBUG: After tf.convert_to_tensor, x shape:", x.shape, "Type:", type(x))
         
-        # Final output layer using Bayesian Dense layer (DenseFlipout)
+        # ---------------------------
+        # Build final Bayesian output layer using DenseFlipout
+        # ---------------------------
         DenseFlipout = tfp.layers.DenseFlipout
+        print("DEBUG: Creating DenseFlipout final layer with units (expected):", layer_sizes[-1])
         outputs = DenseFlipout(
             units=layer_sizes[-1], 
             activation='linear', 
             name="output_layer"
         )(x)
+        print("DEBUG: After DenseFlipout final layer, outputs shape:", outputs.shape, "Type:", type(outputs))
         
+        # ---------------------------
+        # Create and compile the model
+        # ---------------------------
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
+        print("DEBUG: Model created.")
+        print("       Model input shape (actual):", self.model.input_shape)
+        print("       Model output shape (actual):", self.model.output_shape)
         
         optimizer = tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001))
+        print("DEBUG: Adam optimizer created with learning_rate (expected):", self.params.get('learning_rate', 0.0001))
         self.model.compile(
             optimizer=optimizer,
             loss=Huber(),
             metrics=['mse', 'mae']
         )
+        print("DEBUG: Model compiled with loss=Huber, metrics=['mse','mae']")
         
         print("✅ Standard ANN model built successfully.")
+
+
+    def predict_with_uncertainty(self, data, mc_samples=100):
+        """
+        Perform multiple forward passes through the model to estimate prediction uncertainty.
+        
+        Args:
+            data (np.ndarray): Input data for prediction.
+            mc_samples (int): Number of Monte Carlo samples.
+        
+        Returns:
+            tuple: (mean_predictions, uncertainty_estimates) where both are np.ndarray with shape (n_samples, time_horizon)
+        """
+        import numpy as np
+        print("DEBUG: Starting predict_with_uncertainty with mc_samples (expected):", mc_samples)
+        predictions = []
+        for i in range(mc_samples):
+            preds = self.model(data, training=True)
+            preds_np = preds.numpy()
+            print(f"DEBUG: Sample {i+1}/{mc_samples} prediction. Expected shape: (n_samples, time_horizon), Actual shape:", preds_np.shape)
+            predictions.append(preds_np)
+        predictions = np.array(predictions)
+        print("DEBUG: All predictions collected. Expected predictions array shape: (mc_samples, n_samples, time_horizon), Actual shape:", predictions.shape)
+        mean_predictions = np.mean(predictions, axis=0)
+        uncertainty_estimates = np.std(predictions, axis=0)
+        print("DEBUG: Mean predictions computed. Shape:", mean_predictions.shape)
+        print("DEBUG: Uncertainty estimates computed (std dev). Shape:", uncertainty_estimates.shape)
+        return mean_predictions, uncertainty_estimates
+
+
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
@@ -201,26 +289,7 @@ class Plugin:
         preds = self.model.predict(data)
         return preds
 
-    def predict_with_uncertainty(self, data, mc_samples=100):
-        """
-        Perform multiple forward passes through the model to estimate prediction uncertainty.
-        
-        Args:
-            data (np.ndarray): Input data for prediction.
-            mc_samples (int): Number of Monte Carlo samples.
-        
-        Returns:
-            tuple: (mean_predictions, uncertainty_estimates) where both are np.ndarray with shape (n_samples, time_horizon)
-        """
-        import numpy as np
-        predictions = []
-        for i in range(mc_samples):
-            preds = self.model(data, training=True)
-            predictions.append(preds.numpy())
-        predictions = np.array(predictions)  # shape: (mc_samples, n_samples, time_horizon)
-        mean_predictions = np.mean(predictions, axis=0)
-        uncertainty_estimates = np.std(predictions, axis=0)
-        return mean_predictions, uncertainty_estimates
+
 
     def calculate_mae(self, y_true, y_pred):
         print(f"y_true (sample): {y_true.flatten()[:5]}")
