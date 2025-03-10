@@ -104,11 +104,16 @@ class Plugin:
                                     name=f"dense_layer_{idx+1}")(x)
             x = tf.keras.layers.BatchNormalization()(x)
         
+        # Ensure x is a tensor (in case a tuple is returned by previous layers)
+        x = tf.keras.layers.Lambda(lambda t: t)(x)
+        
         # Final output layer using Bayesian Dense layer (DenseFlipout)
         DenseFlipout = tfp.layers.DenseFlipout
-        outputs = DenseFlipout(units=layer_sizes[-1], 
-                               activation='linear', 
-                               name="output_layer")(x)
+        outputs = DenseFlipout(
+            units=layer_sizes[-1], 
+            activation='linear', 
+            name="output_layer"
+        )(x)
         
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         
@@ -120,6 +125,7 @@ class Plugin:
         )
         
         print("✅ Standard ANN model built successfully.")
+
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
