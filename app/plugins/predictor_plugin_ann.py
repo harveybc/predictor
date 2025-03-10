@@ -96,7 +96,7 @@ class Plugin:
 
         # Set KL divergence weight to a higher value.
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-        
+        l2_reg = self.params.get('l2_reg', 1e-5)
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
         print("DEBUG: numpy version:", np.__version__)
@@ -144,7 +144,8 @@ class Plugin:
             x = tf.keras.layers.Dense(
                 units=size,
                 activation=self.params.get('activation', 'tanh'),
-                kernel_initializer=lambda shape, dtype=None: tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=42),
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
                 name=f"dense_layer_{idx+1}"
             )(x)
             print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
