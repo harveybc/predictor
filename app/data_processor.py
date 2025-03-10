@@ -547,10 +547,10 @@ def run_prediction_pipeline(config, plugin):
         # Create the plot
         plt.figure(figsize=(12, 6))
         plt.plot(dates_plot, pred_plot, label="Predicted", color="blue", linewidth=2)
-        plt.plot(dates_plot, true_plot, label="True", color="green", linewidth=2)
+        plt.plot(dates_plot, true_plot, label="True", color="red", linewidth=2)
         # Plot the uncertainty band around the predicted values
         plt.fill_between(dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
-                         color="blue", alpha=0.3, label="Uncertainty")
+                         color="blue", alpha=0.2, label="Uncertainty")
         plt.title("Last 1000 Predictions vs True Values with Uncertainty")
         plt.xlabel("Time")
         plt.ylabel("CLOSE")
@@ -558,7 +558,7 @@ def run_prediction_pipeline(config, plugin):
         plt.grid(True)
         plt.tight_layout()
         predictions_plot_file = config.get("predictions_plot_file", "predictions_plot.png")
-        plt.savefig(predictions_plot_file)
+        plt.savefig(predictions_plot_file, dpi=300)
         plt.close()
         print(f"Prediction plot saved to {predictions_plot_file}")
     except Exception as e:
