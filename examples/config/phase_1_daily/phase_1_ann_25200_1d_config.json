@@ -22,9 +22,9 @@
     "layer_size_divisor": 2,
     "learning_rate": 2e-4,
     "activation": "relu",
-    "l2_reg": 1e-5,
+    "l2_reg": 0,
     "kl_weight": 1e-1,
-    "kl_anneal_epochs": 200,
+    "kl_anneal_epochs": 50,
     "patience": 60
            
 

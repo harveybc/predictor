@@ -5,7 +5,7 @@ from tensorflow.keras.models import Model, load_model, save_model
 from tensorflow.keras.layers import Dense, Input, Dropout, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.initializers import RandomNormal, GlorotUniform, HeNormal
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.layers import GaussianNoise
@@ -235,10 +235,12 @@ class Plugin:
         print("✅ Standard ANN model built successfully.")
 
 
+    # --------------------- Updated train Method ---------------------
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
-        Implements KL annealing via a custom callback.
+        Implements KL annealing, ReduceLROnPlateau, and uses custom callbacks to monitor learning rate,
+        EarlyStopping and LRReducer wait counters, and the MMD metric on the validation set.
         """
         import tensorflow as tf
         if isinstance(x_train, tuple):
@@ -251,6 +253,7 @@ class Plugin:
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
         
+        # KL Annealing Callback
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
@@ -261,11 +264,10 @@ class Plugin:
                 new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
                 self.plugin.kl_weight_var.assign(new_kl)
                 print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
-
+        
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        callbacks = [kl_callback]
         
         early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
             monitor='val_loss',
@@ -273,7 +275,19 @@ class Plugin:
             restore_best_weights=True,
             verbose=1
         )
-        callbacks.append(early_stopping_monitor)
+        
+        lr_reducer = tf.keras.callbacks.ReduceLROnPlateau(
+            monitor='val_loss',
+            factor=0.316227766,  # approx. 1/sqrt(10)
+            patience=int(self.params.get('patience', 10) / 3),
+            verbose=1,
+            min_lr=config.get('min_lr', 1e-8)
+        )
+        
+        debug_lr_mmd_cb = DebugLearningRateMMDCallback(early_stopping_monitor, lr_reducer, x_val, y_val, mmd_sigma=config.get('mmd_sigma', 1.0))
+        memory_cleanup_cb = MemoryCleanupCallback()
+        
+        callbacks = [kl_callback, early_stopping_monitor, lr_reducer, debug_lr_mmd_cb, memory_cleanup_cb]
         
         history = self.model.fit(
             x_train, y_train,
@@ -373,3 +387,56 @@ class Plugin:
         from tensorflow.keras.models import load_model
         self.model = load_model(file_path)
         print(f"Model loaded from {file_path}")
+
+
+# --------------------- New Helper Functions ---------------------
+def gaussian_kernel_sum(x, y, sigma):
+    # x: shape [n, d], y: shape [m, d]
+    diff = tf.expand_dims(x, axis=1) - tf.expand_dims(y, axis=0)
+    dist_sq = tf.reduce_sum(tf.square(diff), axis=-1)
+    return tf.reduce_sum(tf.exp(-dist_sq / (2.0 * sigma**2)))
+
+def mmd_metric_fn(y_true, y_pred, sigma=1.0):
+    # Reshape to 2D: [n, features]
+    y_true = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
+    y_pred = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
+    m = tf.cast(tf.shape(y_true)[0], tf.float32)
+    n = tf.cast(tf.shape(y_pred)[0], tf.float32)
+    K_xx = gaussian_kernel_sum(y_true, y_true, sigma)
+    K_yy = gaussian_kernel_sum(y_pred, y_pred, sigma)
+    K_xy = gaussian_kernel_sum(y_true, y_pred, sigma)
+    mmd = K_xx/(m*m) + K_yy/(n*n) - 2*K_xy/(m*n)
+    return mmd.numpy()
+
+# --------------------- New Callback Classes ---------------------
+class DebugLearningRateMMDCallback(Callback):
+    """
+    Callback that prints the current learning rate, the wait counters for EarlyStopping and ReduceLROnPlateau,
+    and computes the MMD metric on the validation data.
+    """
+    def __init__(self, early_stopping_cb, lr_reducer_cb, x_val, y_val, mmd_sigma=1.0):
+        super(DebugLearningRateMMDCallback, self).__init__()
+        self.early_stopping_cb = early_stopping_cb
+        self.lr_reducer_cb = lr_reducer_cb
+        self.x_val = x_val
+        self.y_val = y_val
+        self.mmd_sigma = mmd_sigma
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        current_lr = tf.keras.backend.get_value(self.model.optimizer.lr)
+        es_wait = getattr(self.early_stopping_cb, "wait", None)
+        lr_wait = getattr(self.lr_reducer_cb, "wait", None)
+        best_val = getattr(self.lr_reducer_cb, "best", None)
+        # Compute MMD on validation set
+        y_pred = self.model.predict(self.x_val)
+        mmd_value = mmd_metric_fn(self.y_val, y_pred, sigma=self.mmd_sigma)
+        print(f"[DebugLRMMD] Epoch {epoch+1}: LR = {current_lr:.4e}, ES wait = {es_wait}, LRReducer wait = {lr_wait}, LRReducer best = {best_val}, MMD = {mmd_value:.4e}")
+
+class MemoryCleanupCallback(Callback):
+    """
+    Forces garbage collection at the end of each epoch.
+    """
+    def on_epoch_end(self, epoch, logs=None):
+        import gc
+        gc.collect()
+        #print(f"[MemoryCleanup] Epoch {epoch+1}: Garbage collection done.")
