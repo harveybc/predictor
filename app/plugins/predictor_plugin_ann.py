@@ -166,32 +166,37 @@ class Plugin:
         
         # ---------------------------
         # Define custom posterior and prior functions as closures.
-        # These functions now return a function that accepts (kernel_size, bias_size, dtype, ...) as expected.
+        # These functions now assume the call signature: (dtype, kernel_shape, bias_size)
         # ---------------------------
-        def posterior_mean_field_custom():
-            def fn(kernel_size, bias_size=0, dtype=None, trainable=True, name=None, **kwargs):
-                n = kernel_size + bias_size
-                c = np.log(np.expm1(1.))
-                return tf.keras.Sequential([
-                    tfp.layers.VariableLayer(2 * n, dtype=dtype, trainable=trainable, name=name),
-                    tfp.layers.DistributionLambda(
-                        lambda t: tfp.distributions.Independent(
-                            tfp.distributions.Normal(loc=t[..., :n],
-                                                    scale=1e-3 + tf.nn.softplus(c + t[..., n:])),
-                            reinterpreted_batch_ndims=1))
-                ])
-            return fn
+        def posterior_mean_field_custom(*args, **kwargs):
+            # Expect: args[0] = dtype, args[1] = kernel_shape, args[2] = bias_size (optional)
+            dtype = args[0]
+            kernel_shape = args[1]
+            bias_size = args[2] if len(args) > 2 else 0
+            bias_size = int(bias_size)
+            n = int(np.prod(kernel_shape)) + bias_size
+            c = np.log(np.expm1(1.))
+            return tf.keras.Sequential([
+                tfp.layers.VariableLayer(2 * n, dtype=dtype),
+                tfp.layers.DistributionLambda(
+                    lambda t: tfp.distributions.Independent(
+                        tfp.distributions.Normal(loc=t[..., :n],
+                                                scale=1e-3 + tf.nn.softplus(c + t[..., n:])),
+                        reinterpreted_batch_ndims=1))
+            ])
 
-        def prior_fn():
-            def fn(kernel_size, bias_size=0, dtype=None, trainable=True, name=None, **kwargs):
-                n = kernel_size + bias_size
-                return tf.keras.Sequential([
-                    tfp.layers.DistributionLambda(
-                        lambda t: tfp.distributions.Independent(
-                            tfp.distributions.Normal(loc=tf.zeros(n, dtype=dtype), scale=1.0),
-                            reinterpreted_batch_ndims=1))
-                ])
-            return fn
+        def prior_fn(*args, **kwargs):
+            dtype = args[0]
+            kernel_shape = args[1]
+            bias_size = args[2] if len(args) > 2 else 0
+            bias_size = int(bias_size)
+            n = int(np.prod(kernel_shape)) + bias_size
+            return tf.keras.Sequential([
+                tfp.layers.DistributionLambda(
+                    lambda t: tfp.distributions.Independent(
+                        tfp.distributions.Normal(loc=tf.zeros(n, dtype=dtype), scale=1.0),
+                        reinterpreted_batch_ndims=1))
+            ])
 
         # ---------------------------
         # Build final Bayesian output layer using DenseFlipout, wrapped in a Lambda layer.
@@ -201,8 +206,8 @@ class Plugin:
         flipout_layer = DenseFlipout(
             units=layer_sizes[-1],
             activation='linear',
-            kernel_posterior_fn=posterior_mean_field_custom(),
-            kernel_prior_fn=prior_fn(),
+            kernel_posterior_fn=posterior_mean_field_custom,
+            kernel_prior_fn=prior_fn,
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.kl_weight_var,
             name="output_layer"
         )
