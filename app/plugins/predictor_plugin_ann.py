@@ -170,12 +170,22 @@ class Plugin:
         # If bias_size cannot be converted to int, default to 0.
         # ---------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size=0, trainable=True, name=None):
+            print("DEBUG: In posterior_mean_field_custom: dtype =", dtype, 
+                "kernel_shape =", kernel_shape, 
+                "bias_size =", bias_size, 
+                "trainable =", trainable, 
+                "name =", name)
+            if not isinstance(name, str):
+                print("DEBUG: 'name' is not a string; setting name to None")
+                name = None
             try:
                 bias_size = int(bias_size)
-            except Exception:
+            except Exception as e:
+                print("DEBUG: Exception converting bias_size to int:", e)
                 bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
             c = np.log(np.expm1(1.))
+            print("DEBUG: posterior_mean_field_custom: computed n =", n, "c =", c)
             return tf.keras.Sequential([
                 tfp.layers.VariableLayer(2 * n, dtype=dtype, trainable=trainable, name=name),
                 tfp.layers.DistributionLambda(
@@ -186,11 +196,21 @@ class Plugin:
             ])
 
         def prior_fn(dtype, kernel_shape, bias_size=0, trainable=True, name=None):
+            print("DEBUG: In prior_fn: dtype =", dtype, 
+                "kernel_shape =", kernel_shape, 
+                "bias_size =", bias_size, 
+                "trainable =", trainable, 
+                "name =", name)
+            if not isinstance(name, str):
+                print("DEBUG: 'name' is not a string in prior_fn; setting name to None")
+                name = None
             try:
                 bias_size = int(bias_size)
-            except Exception:
+            except Exception as e:
+                print("DEBUG: Exception converting bias_size to int in prior_fn:", e)
                 bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: prior_fn: computed n =", n)
             return tf.keras.Sequential([
                 tfp.layers.DistributionLambda(
                     lambda t: tfp.distributions.Independent(
