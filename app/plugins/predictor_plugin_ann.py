@@ -336,12 +336,12 @@ class Plugin:
         preds_training_mode = self.model(x_train, training=True)
         mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
         mmd_training_mode = self.compute_mmd(preds_training_mode, y_train)
-        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}, MMD: {mmd_training_mode:.6f}")
+        print(f"MAE in Training Mode: {mae_training_mode:.6f}, MMD Lambda: {mmd_training_mode:.6f}")
 
         preds_eval_mode = self.model(x_train, training=False)
         mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
         mmd_eval_mode = self.compute_mmd(preds_eval_mode, y_train)
-        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}, MMD: {mmd_eval_mode:.6f}")
+        print(f"MAE in Evaluation Mode: {mae_eval_mode:.6f}, MMD Lambda: {mmd_eval_mode:.6f}")
 
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mae = train_eval_results
