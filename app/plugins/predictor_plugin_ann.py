@@ -62,7 +62,8 @@ class Plugin:
     def build_model(self, input_shape, x_train, config=None):
         """
         Builds a Bayesian ANN using Keras Dense layers with TensorFlow Probability's DenseFlipout for
-        uncertainty estimation. The final output layer is replaced by a DenseFlipout layer wrapped in a Lambda layer.
+        uncertainty estimation, employing KL annealing. The final output layer is replaced by a DenseFlipout 
+        layer wrapped in a Lambda layer.
         
         Args:
             input_shape (int): Number of input features.
@@ -157,20 +158,23 @@ class Plugin:
             print("DEBUG: Converted x to tensor using tf.convert_to_tensor. New type:", type(x))
         
         # ---------------------------
-        # Build final Bayesian output layer using DenseFlipout, wrapped in a Lambda layer
+        # KL Annealing: Initialize KL weight variable.
+        # ---------------------------
+        target_kl = self.params.get('kl_weight', 1e-4)
+        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
+        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight is", target_kl)
+        
+        # ---------------------------
+        # Build final Bayesian output layer using DenseFlipout, wrapped in a Lambda layer.
         # ---------------------------
         DenseFlipout = tfp.layers.DenseFlipout
-        # Get the KL weight parameter to control the KL divergence loss
-        kl_weight = self.params.get('kl_weight', None)
-        print("DEBUG: Using kl_weight for DenseFlipout:", kl_weight)
         print("DEBUG: Creating DenseFlipout final layer with units (expected):", layer_sizes[-1])
         flipout_layer = DenseFlipout(
             units=layer_sizes[-1], 
             activation='linear',
-            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * kl_weight,
+            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.kl_weight_var,
             name="output_layer"
         )
-        # Wrap the DenseFlipout call inside a Lambda layer to ensure proper KerasTensor flow.
         outputs = tf.keras.layers.Lambda(lambda t: flipout_layer(t), name="bayesian_dense_flipout")(x)
         print("DEBUG: After DenseFlipout final layer (via Lambda), outputs shape:", outputs.shape, "Type:", type(outputs))
         
@@ -196,40 +200,12 @@ class Plugin:
         print("✅ Standard ANN model built successfully.")
 
 
-    def predict_with_uncertainty(self, data, mc_samples=100):
-        """
-        Perform multiple forward passes through the model to estimate prediction uncertainty.
-        
-        Args:
-            data (np.ndarray): Input data for prediction.
-            mc_samples (int): Number of Monte Carlo samples.
-        
-        Returns:
-            tuple: (mean_predictions, uncertainty_estimates) where both are np.ndarray with shape (n_samples, time_horizon)
-        """
-        import numpy as np
-        print("DEBUG: Starting predict_with_uncertainty with mc_samples (expected):", mc_samples)
-        predictions = []
-        for i in range(mc_samples):
-            preds = self.model(data, training=True)
-            preds_np = preds.numpy()
-            print(f"DEBUG: Sample {i+1}/{mc_samples} prediction. Expected shape: (n_samples, time_horizon), Actual shape:", preds_np.shape)
-            predictions.append(preds_np)
-        predictions = np.array(predictions)
-        print("DEBUG: All predictions collected. Expected predictions array shape: (mc_samples, n_samples, time_horizon), Actual shape:", predictions.shape)
-        mean_predictions = np.mean(predictions, axis=0)
-        uncertainty_estimates = np.std(predictions, axis=0)
-        print("DEBUG: Mean predictions computed. Shape:", mean_predictions.shape)
-        print("DEBUG: Uncertainty estimates computed (std dev). Shape:", uncertainty_estimates.shape)
-        return mean_predictions, uncertainty_estimates
-
-
-
-
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
+        Implements KL annealing via a custom callback.
         """
+        import tensorflow as tf
         # Ensure x_train and x_val are proper NumPy arrays.
         if isinstance(x_train, tuple):
             x_train = x_train[0]
@@ -241,7 +217,28 @@ class Plugin:
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
         
-        callbacks = []
+        # ---------------------------
+        # Define KL Annealing Callback
+        # ---------------------------
+        class KLAnnealingCallback(tf.keras.callbacks.Callback):
+            def __init__(self, plugin, target_kl, anneal_epochs):
+                super().__init__()
+                self.plugin = plugin
+                self.target_kl = target_kl
+                self.anneal_epochs = anneal_epochs
+            def on_epoch_begin(self, epoch, logs=None):
+                new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
+                self.plugin.kl_weight_var.assign(new_kl)
+                print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
+
+        # ---------------------------
+        # Get annealing parameters and create callbacks
+        # ---------------------------
+        anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
+        target_kl = self.params.get('kl_weight', 1e-4)
+        kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
+        callbacks = [kl_callback]
+        
         early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
             monitor='val_loss',
             patience=self.params.get('patience', 10),
@@ -275,13 +272,12 @@ class Plugin:
         mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
         
-        # Unpack three values since metrics includes  'mae'
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
         
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-        val_loss,  val_mae = val_eval_results
+        val_loss, val_mae = val_eval_results
         
         from sklearn.metrics import r2_score
         train_predictions = self.predict(x_train)
@@ -290,6 +286,38 @@ class Plugin:
         val_r2 = r2_score(y_val, val_predictions)
         
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
+
+
+    def predict_with_uncertainty(self, data, mc_samples=100):
+        """
+        Perform multiple forward passes through the model to estimate prediction uncertainty.
+        
+        Args:
+            data (np.ndarray): Input data for prediction.
+            mc_samples (int): Number of Monte Carlo samples.
+        
+        Returns:
+            tuple: (mean_predictions, uncertainty_estimates) where both are np.ndarray with shape (n_samples, time_horizon)
+        """
+        import numpy as np
+        print("DEBUG: Starting predict_with_uncertainty with mc_samples (expected):", mc_samples)
+        predictions = []
+        for i in range(mc_samples):
+            preds = self.model(data, training=True)
+            preds_np = preds.numpy()
+            print(f"DEBUG: Sample {i+1}/{mc_samples} prediction. Expected shape: (n_samples, time_horizon), Actual shape:", preds_np.shape)
+            predictions.append(preds_np)
+        predictions = np.array(predictions)
+        print("DEBUG: All predictions collected. Expected predictions array shape: (mc_samples, n_samples, time_horizon), Actual shape:", predictions.shape)
+        mean_predictions = np.mean(predictions, axis=0)
+        uncertainty_estimates = np.std(predictions, axis=0)
+        print("DEBUG: Mean predictions computed. Shape:", mean_predictions.shape)
+        print("DEBUG: Uncertainty estimates computed (std dev). Shape:", uncertainty_estimates.shape)
+        return mean_predictions, uncertainty_estimates
+
+
+
+
 
     def predict(self, data):
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
