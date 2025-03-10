@@ -226,7 +226,7 @@ class Plugin:
             activation='linear',
             use_bias=True,
             kernel_initializer=random_normal_initializer_44,
-            kernel_regularizer=l2(l2_reg)
+            kernel_regularizer=l2(l2_reg),
 
             name="deterministic_bias"
         )(x)
