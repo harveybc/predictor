@@ -166,10 +166,10 @@ class Plugin:
         
         # ---------------------------
         # Define custom posterior and prior functions for stability.
-        # These functions now accept extra arguments via *args.
+        # These functions accept extra arguments via *args.
         # ---------------------------
         def posterior_mean_field_custom(*args, **kwargs):
-            # If the first argument is a DType, assume the order is: dtype, kernel_shape, bias_size, ...
+            # If the first argument is a DType, assume order: dtype, kernel_shape, bias_size, ...
             if isinstance(args[0], tf.dtypes.DType):
                 dtype = args[0]
                 kernel_shape = args[1]
@@ -178,6 +178,8 @@ class Plugin:
                 kernel_shape = args[0]
                 bias_size = args[1] if len(args) > 1 else 0
                 dtype = args[2] if len(args) > 2 else None
+            # Ensure bias_size is an integer.
+            bias_size = int(bias_size)
             n = int(np.prod(kernel_shape)) + bias_size
             c = np.log(np.expm1(1.))
             return tf.keras.Sequential([
@@ -198,6 +200,7 @@ class Plugin:
                 kernel_shape = args[0]
                 bias_size = args[1] if len(args) > 1 else 0
                 dtype = args[2] if len(args) > 2 else None
+            bias_size = int(bias_size)
             n = int(np.prod(kernel_shape)) + bias_size
             return tf.keras.Sequential([
                 tfp.layers.DistributionLambda(
