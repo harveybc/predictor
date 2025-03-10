@@ -161,7 +161,7 @@ class Plugin:
         # ---------------------------
         DenseFlipout = tfp.layers.DenseFlipout
         # Get the KL weight parameter to control the KL divergence loss
-        kl_weight = self.params.get('kl_weight', 1e-4)
+        kl_weight = self.params.get('kl_weight', None)
         print("DEBUG: Using kl_weight for DenseFlipout:", kl_weight)
         print("DEBUG: Creating DenseFlipout final layer with units (expected):", layer_sizes[-1])
         flipout_layer = DenseFlipout(
