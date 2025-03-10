@@ -22,6 +22,7 @@
     "layer_size_divisor": 2,
     "learning_rate": 1e-4,
     "activation": "leaky_relu",
-    "l2_reg": 0
+    "l2_reg": 0,
+    "kl_weight": 1e-2    
     
 }
