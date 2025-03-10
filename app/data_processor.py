@@ -528,7 +528,7 @@ def run_prediction_pipeline(config, plugin):
     # NEW: Plot Last 1k Predictions with True Values and Uncertainty Band
     # ------------------------------
     try:
-        n_plot = 1000
+        n_plot = 2000
         # Use the last n_plot rows from test predictions (assuming test_predictions is denormalized)
         if test_predictions.shape[0] > n_plot:
             pred_plot = test_predictions[-n_plot:, 0]  # using first prediction column
