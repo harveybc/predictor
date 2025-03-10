@@ -550,10 +550,10 @@ def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
     return total
 
 
-def mmd_loss_term(y_true, y_pred, sigma, chunk_size=8):
+def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
     """
     Compute the Maximum Mean Discrepancy (MMD) loss between y_true and y_pred using
-    a memory-efficient chunked Gaussian kernel sum.
+    a memory‑efficient chunked Gaussian kernel sum.
     """
     y_true = tf.cast(y_true, tf.float32)
     y_pred = tf.cast(y_pred, tf.float32)
@@ -564,17 +564,23 @@ def mmd_loss_term(y_true, y_pred, sigma, chunk_size=8):
     sum_K_yy = gaussian_kernel_sum(y_pred, y_pred, sigma, chunk_size)
     sum_K_xy = gaussian_kernel_sum(y_true, y_pred, sigma, chunk_size)
     
-    tf.print("DEBUG: Computed kernel sums: sum_K_xx =", sum_K_xx, 
-             "sum_K_yy =", sum_K_yy, "sum_K_xy =", sum_K_xy)
+    # Only print debug messages if running eagerly
+    if tf.executing_eagerly():
+        tf.print("DEBUG: Computed kernel sums:",
+                 "sum_K_xx =", sum_K_xx,
+                 "sum_K_yy =", sum_K_yy,
+                 "sum_K_xy =", sum_K_xy)
     
     m = tf.cast(tf.shape(y_true)[0], tf.float32)
     n = tf.cast(tf.shape(y_pred)[0], tf.float32)
-    
     mmd = sum_K_xx / (m * m) + sum_K_yy / (n * n) - 2 * sum_K_xy / (m * n)
-    tf.print("DEBUG: m =", m, "n =", n, "MMD =", mmd)
+    
+    if tf.executing_eagerly():
+        tf.print("DEBUG: m =", m, "n =", n, "MMD =", mmd)
     
     return mmd
 
 def mmd_metric(y_true, y_pred, config):
     sigma = config.get('mmd_sigma', 1.0)
-    return mmd_loss_term(y_true, y_pred, sigma, chunk_size=8)
+    return mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
+
