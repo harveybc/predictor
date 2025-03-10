@@ -139,7 +139,7 @@ class Plugin:
         for idx, size in enumerate(layer_sizes[:-1]):
             print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
             x = tf.keras.layers.Dense(
-                units=size, 
+                units=size,
                 activation=self.params.get('activation', 'tanh'),
                 kernel_initializer='glorot_uniform',
                 name=f"dense_layer_{idx+1}"
@@ -167,8 +167,8 @@ class Plugin:
         # ---------------------------
         # Define custom posterior and prior functions with explicit signature.
         # These functions assume: (dtype, kernel_shape, bias_size, trainable, name)
-        # If bias_size is not convertible to int, default to 0.
-        # They reshape the variables to match kernel_shape.
+        # If bias_size is a string, we default it to 0.
+        # They then reshape variables to match kernel_shape.
         # ---------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
@@ -180,22 +180,24 @@ class Plugin:
             if not isinstance(name, str):
                 print("DEBUG: 'name' is not a string; setting name to None")
                 name = None
-            try:
-                bias_size = int(bias_size)
-            except Exception as e:
-                print("DEBUG: Exception converting bias_size to int:", e)
+            if isinstance(bias_size, str):
+                print(f"DEBUG: bias_size is a string ('{bias_size}'); defaulting to 0")
                 bias_size = 0
+            else:
+                try:
+                    bias_size = int(bias_size)
+                except Exception as e:
+                    print("DEBUG: Exception converting bias_size to int:", e)
+                    bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
             print("DEBUG: posterior_mean_field_custom: computed n =", n)
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior_mean_field_custom: computed c =", c)
-            # Create trainable variables for loc and scale of shape (n,)
             loc = tf.Variable(tf.random.normal([n]), dtype=dtype, trainable=trainable, name="posterior_loc")
             scale = tf.Variable(tf.random.normal([n]), dtype=dtype, trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
             print("DEBUG: posterior_mean_field_custom: created loc with shape", loc.shape,
                 "and scale with shape", scale.shape)
-            # Reshape variables to kernel_shape
             try:
                 loc_reshaped = tf.reshape(loc, kernel_shape)
                 scale_reshaped = tf.reshape(scale, kernel_shape)
@@ -218,11 +220,15 @@ class Plugin:
             if not isinstance(name, str):
                 print("DEBUG: 'name' is not a string in prior_fn; setting name to None")
                 name = None
-            try:
-                bias_size = int(bias_size)
-            except Exception as e:
-                print("DEBUG: Exception converting bias_size to int in prior_fn:", e)
+            if isinstance(bias_size, str):
+                print(f"DEBUG: bias_size is a string ('{bias_size}') in prior_fn; defaulting to 0")
                 bias_size = 0
+            else:
+                try:
+                    bias_size = int(bias_size)
+                except Exception as e:
+                    print("DEBUG: Exception converting bias_size to int in prior_fn:", e)
+                    bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
             print("DEBUG: prior_fn: computed n =", n)
             loc = tf.zeros([n], dtype=dtype)
