@@ -27,7 +27,7 @@
     "kl_anneal_epochs": 50,
     "early_patience": 60,
     "use_mmd": true,
-    "statistical_loss_weight": 0.1,
+    "statistical_loss_weight": 0.0,
     "overfitting_penalty": 0.0
 
     
