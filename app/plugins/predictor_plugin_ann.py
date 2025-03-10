@@ -165,15 +165,15 @@ class Plugin:
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight is", target_kl)
         
         # ---------------------------
-        # Define custom posterior and prior functions as closures.
-        # These functions now assume the call signature: (dtype, kernel_shape, bias_size)
+        # Define custom posterior and prior functions with explicit signature.
+        # These functions assume: (kernel_shape, bias_size, dtype)
+        # If bias_size is not convertible, default to 0.
         # ---------------------------
-        def posterior_mean_field_custom(*args, **kwargs):
-            # Expect: args[0] = dtype, args[1] = kernel_shape, args[2] = bias_size (optional)
-            dtype = args[0]
-            kernel_shape = args[1]
-            bias_size = args[2] if len(args) > 2 else 0
-            bias_size = int(bias_size)
+        def posterior_mean_field_custom(kernel_shape, bias_size, dtype=None):
+            try:
+                bias_size = int(bias_size)
+            except Exception:
+                bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
             c = np.log(np.expm1(1.))
             return tf.keras.Sequential([
@@ -185,11 +185,11 @@ class Plugin:
                         reinterpreted_batch_ndims=1))
             ])
 
-        def prior_fn(*args, **kwargs):
-            dtype = args[0]
-            kernel_shape = args[1]
-            bias_size = args[2] if len(args) > 2 else 0
-            bias_size = int(bias_size)
+        def prior_fn(kernel_shape, bias_size, dtype=None):
+            try:
+                bias_size = int(bias_size)
+            except Exception:
+                bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
             return tf.keras.Sequential([
                 tfp.layers.DistributionLambda(
