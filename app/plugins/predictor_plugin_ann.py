@@ -12,7 +12,22 @@ from tensorflow.keras.layers import GaussianNoise
 from keras import backend as K
 from sklearn.metrics import r2_score 
 import logging
-import os
+import os,gc
+from tensorflow.keras.mixed_precision import set_global_policy
+
+
+#Enable GPU memory growth
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+    except Exception as e:
+        print("Error setting GPU memory growth:", e)
+
+# Set global mixed precision policy
+set_global_policy('mixed_float16')
+
 
 # --- Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable ---
 def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
@@ -50,6 +65,7 @@ class Plugin:
     def __init__(self):
         self.params = self.plugin_params.copy()
         self.model = None
+        self.overfit_penalty = None  
 
     def set_params(self, **kwargs):
         for key, value in kwargs.items():
@@ -222,35 +238,67 @@ class Plugin:
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
         
-        optimizer = tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001))
-        print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
+        self.overfit_penalty = tf.Variable(0.0, trainable=False, dtype=tf.float32)
+        self.model.overfit_penalty = self.overfit_penalty
+        
+        initial_lr = config.get('learning_rate', 0.01)
+        adam_optimizer = Adam(
+            learning_rate=initial_lr,
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-7,
+            amsgrad=False)
+        
+        def combined_loss(y_true, y_pred):
+            huber_loss = Huber(delta=1.0)(y_true, y_pred)
+            sigma = config.get('mmd_sigma', 1.0)
+            stat_weight = config.get('statistical_loss_weight', 1.0)
+            mmd = mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
+            penalty_term = tf.cast(1.0, tf.float32) * tf.stop_gradient(self.overfit_penalty)
+            return huber_loss + (stat_weight * mmd) + penalty_term
+        
+        if config.get('use_mmd', False):
+            loss_fn = combined_loss
+            metrics = ['mae', lambda yt, yp: mmd_metric(yt, yp, config)]
+        else:
+            loss_fn = Huber(delta=1.0)
+            metrics = ['mae']
+        
         self.model.compile(
-            optimizer=optimizer,
-            loss=Huber(),
-            metrics=['mae']
+            optimizer=adam_optimizer,
+            loss=loss_fn,
+            metrics=metrics   
         )
-        print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
+        print("DEBUG: Model compiled")
         print("Predictor Model Summary:")
         self.model.summary()
         print("✅ Standard ANN model built successfully.")
 
 
+    # --------------------- Updated train Method in Plugin ---------------------
+    # --------------------- Updated train Method in Plugin ---------------------
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
-        Implements KL annealing via a custom callback.
+        Implements KL annealing, ReduceLROnPlateau, and uses custom callbacks to monitor learning rate,
+        EarlyStopping and LRReducer wait counters, and the MMD metric on the validation set.
+        This implementation follows the exact structure and prints the exact same messages as used in the autoencoder.
         """
         import tensorflow as tf
         if isinstance(x_train, tuple):
             x_train = x_train[0]
         if x_val is not None and isinstance(x_val, tuple):
             x_val = x_val[0]
-        
+
         print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
-        
+
+        # Disable XLA JIT compilation to avoid register spillage warnings.
+        tf.config.optimizer.set_jit(False)
+
+        # KL Annealing Callback (same as before)
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
@@ -265,16 +313,28 @@ class Plugin:
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        callbacks = [kl_callback]
-        
-        early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
-            monitor='val_loss',
-            patience=self.params.get('patience', 10),
-            restore_best_weights=True,
-            verbose=1
+
+        early_patience = config.get('early_patience', 32)
+        early_monitor = config.get('early_monitor', 'val_loss')
+        early_stopping = EarlyStopping(monitor=early_monitor, patience=early_patience, restore_best_weights=True, verbose=1)
+
+        update_penalty_cb = UpdateOverfitPenalty(config)
+
+        lr_reducer = tf.keras.callbacks.ReduceLROnPlateau(
+            monitor=early_monitor,
+            factor=0.316227766,  # approx. 1/sqrt(10)
+            patience=int(self.params.get('patience', 10) / 3),
+            verbose=1,
+            min_lr=config.get('min_lr', 1e-8)
         )
-        callbacks.append(early_stopping_monitor)
-        
+
+        debug_lr_cb = DebugLearningRateCallback(early_stopping, lr_reducer)
+        memory_cleanup_cb = MemoryCleanupCallback()
+
+        val_data = (x_val, y_val)
+
+        #callbacks = [kl_callback, early_stopping, update_penalty_cb, lr_reducer, debug_lr_cb, memory_cleanup_cb]
+        callbacks = []    
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
@@ -282,37 +342,37 @@ class Plugin:
             verbose=1,
             shuffle=True,
             callbacks=callbacks,
-            validation_split=0.2
+            validation_data=val_data
         )
-        
+
         print("Training completed.")
         final_loss = history.history['loss'][-1]
         print(f"Final training loss: {final_loss}")
-        
+
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
-        
+
         preds_training_mode = self.model(x_train, training=True)
-        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
+        mae_training_mode = float(tf.reduce_mean(tf.abs(preds_training_mode - y_train)).numpy())
         print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
-        
+
         preds_eval_mode = self.model(x_train, training=False)
-        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
+        mae_eval_mode = float(tf.reduce_mean(tf.abs(preds_eval_mode - y_train)).numpy())
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
-        
+
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
-        
+
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mae = val_eval_results
-        
+
         from sklearn.metrics import r2_score
         train_predictions = self.predict(x_train)
         val_predictions = self.predict(x_val)
         train_r2 = r2_score(y_train, train_predictions)
         val_r2 = r2_score(y_val, val_predictions)
-        
+
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
 
@@ -375,3 +435,138 @@ class Plugin:
         print(f"Model loaded from {file_path}")
 
 
+
+class UpdateOverfitPenalty(Callback):
+    """
+    Custom Callback to update the overfit penalty value used in the loss function.
+    At the end of each epoch, it computes the difference between validation MAE and training MAE,
+    multiplies it by a scaling factor (0.1), and updates a TensorFlow variable in the model.
+    The penalty is applied only if validation MAE is higher than training MAE.
+    """
+    def __init__(self, config):
+        self.config = config
+
+    
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        train_mae = logs.get('mae')
+        val_mae = logs.get('val_mae')
+        if train_mae is None or val_mae is None:
+            print("[UpdateOverfitPenalty] MAE metrics not available; overfit penalty not updated.")
+            return
+        overfitting_penalty = self.config.get('overfitting_penalty', 0.1)
+        penalty = overfitting_penalty * max(0, val_mae - train_mae)
+        tf.keras.backend.set_value(self.model.overfit_penalty, penalty)
+        print(f"[UpdateOverfitPenalty] Epoch {epoch+1}: Updated overfit penalty to {penalty:.6f}")
+
+# --------------------- Updated DebugLearningRateCallback.on_epoch_end ---------------------
+class DebugLearningRateCallback(Callback):
+    """
+    Debug Callback that prints the current learning rate,
+    the wait counter for EarlyStopping, and for the LR reducer.
+    Additionally, updates the L2 regularization factor in layers with a kernel_regularizer of type L2,
+    scaling it proportionally to the learning rate change relative to the initial learning rate.
+    """
+    def __init__(self, early_stopping_cb, lr_reducer_cb):
+        super(DebugLearningRateCallback, self).__init__()
+        self.early_stopping_cb = early_stopping_cb
+        self.lr_reducer_cb = lr_reducer_cb
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        optimizer = self.model.optimizer
+        # Retrieve current learning rate from optimizer (check both 'lr' and 'learning_rate')
+        if hasattr(optimizer, 'lr'):
+            current_lr = tf.keras.backend.get_value(optimizer.lr)
+        else:
+            current_lr = tf.keras.backend.get_value(optimizer.learning_rate)
+        es_wait = getattr(self.early_stopping_cb, "wait", None)
+        lr_wait = getattr(self.lr_reducer_cb, "wait", None)
+        best_val = getattr(self.lr_reducer_cb, "best", None)
+        new_l2 = 0.0
+        # Update L2 regularization if initial values are stored on the model.
+        if hasattr(self.model, 'initial_lr') and self.model.initial_lr is not None:
+            scaling_factor = current_lr / self.model.initial_lr
+            if hasattr(self.model, 'initial_l2') and self.model.initial_l2 is not None:
+                for layer in self.model.layers:
+                    if hasattr(layer, 'kernel_regularizer') and layer.kernel_regularizer is not None:
+                        if isinstance(layer.kernel_regularizer, tf.keras.regularizers.L2):
+                            old_l2 = layer.kernel_regularizer.l2
+                            new_l2 = self.model.initial_l2 * scaling_factor
+                            layer.kernel_regularizer.l2 = new_l2
+                            if old_l2 != new_l2:
+                                print(f"[DebugLR] Updated l2_reg in layer {layer.name} from {old_l2} to {new_l2}")
+        print(f"\n[DebugLR] Epoch {epoch+1}: Learning Rate = {current_lr:.4e}, l2_reg = {new_l2:.4e}, "
+              f"EarlyStopping wait = {es_wait}, LRReducer wait = {lr_wait}, LRReducer best = {best_val}")
+
+
+class MemoryCleanupCallback(Callback):
+    """
+    Callback to force garbage collection at the end of each epoch.
+    This can help free up unused memory and mitigate memory leaks.
+    """
+    def on_epoch_end(self, epoch, logs=None, overfit_penalty=1.0):
+        gc.collect()
+        #print(f"[MemoryCleanup] Epoch {epoch+1}: Garbage collection executed.")
+
+
+@tf.function(experimental_compile=False)
+def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
+    """
+    Compute the sum of Gaussian kernel values between each pair of rows in x and y
+    in a memory‑efficient manner by processing in chunks.
+    
+    x: Tensor of shape [n, d]
+    y: Tensor of shape [m, d]
+    sigma: Bandwidth parameter for the Gaussian kernel.
+    Returns a scalar equal to the sum of exp(–||x_i – y_j||²/(2*sigma²)) for all pairs.
+    """
+    n = tf.shape(x)[0]
+    total = tf.constant(0.0, dtype=tf.float32)
+    i = tf.constant(0)
+    max_iter = tf.math.floordiv(n + chunk_size - 1, chunk_size)
+    
+    def cond(i, total):
+        return tf.less(i, n)
+    
+    def body(i, total):
+        end_i = tf.minimum(i + chunk_size, n)
+        x_chunk = x[i:end_i]  # shape [chunk, d]
+        diff = tf.expand_dims(x_chunk, axis=1) - tf.expand_dims(y, axis=0)  # shape [chunk, m, d]
+        squared_diff = tf.reduce_sum(tf.square(diff), axis=2)  # shape [chunk, m]
+        divisor = 2.0 * tf.square(sigma)
+        kernel_chunk = tf.exp(-squared_diff / divisor)
+        total += tf.reduce_sum(kernel_chunk)
+        return i + chunk_size, total
+
+    i, total = tf.while_loop(cond, body, [i, total], maximum_iterations=max_iter)
+    return total
+
+
+@tf.function(experimental_compile=False)
+def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
+    """
+    Compute the Maximum Mean Discrepancy (MMD) loss between y_true and y_pred using
+    a memory‑efficient chunked Gaussian kernel sum.
+    
+    By disabling experimental compilation for this function (via the decorator),
+    we avoid the XLA register spilling (and thus the associated warnings).
+    """
+    y_true = tf.cast(y_true, tf.float32)
+    y_pred = tf.cast(y_pred, tf.float32)
+    y_true = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
+    y_pred = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
+    
+    sum_K_xx = gaussian_kernel_sum(y_true, y_true, sigma, chunk_size)
+    sum_K_yy = gaussian_kernel_sum(y_pred, y_pred, sigma, chunk_size)
+    sum_K_xy = gaussian_kernel_sum(y_true, y_pred, sigma, chunk_size)
+    
+    m = tf.cast(tf.shape(y_true)[0], tf.float32)
+    n = tf.cast(tf.shape(y_pred)[0], tf.float32)
+    mmd = sum_K_xx / (m * m) + sum_K_yy / (n * n) - 2 * sum_K_xy / (m * n)
+    return mmd
+
+
+def mmd_metric(y_true, y_pred, config):
+    sigma = config.get('mmd_sigma', 1.0)
+    return mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
