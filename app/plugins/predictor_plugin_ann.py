@@ -256,8 +256,8 @@ class Plugin:
         Compute Maximum Mean Discrepancy (MMD) using a Gaussian Kernel.
         
         Args:
-            x (tf.Tensor): First sample (predicted outputs).
-            y (tf.Tensor): Second sample (true outputs).
+            x (tf.Tensor): Predicted outputs.
+            y (tf.Tensor): True outputs.
             sigma (float): Bandwidth parameter for the Gaussian kernel.
         
         Returns:
@@ -274,9 +274,18 @@ class Plugin:
         K_xy = gaussian_kernel(x, y, sigma)
         return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
 
+    def custom_loss(self, y_true, y_pred):
+        """
+        Custom loss function combining Huber loss and MMD loss.
+        """
+        huber_loss = tf.keras.losses.Huber()(y_true, y_pred)
+        mmd_loss = self.compute_mmd(y_pred, y_true)
+        total_loss = huber_loss + self.mmd_lambda * mmd_loss
+        return total_loss
+
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
-        Train the model with additional MMD loss logging.
+        Train the model with MMD loss incorporated and logged at every epoch.
         """
         import tensorflow as tf
 
@@ -290,6 +299,9 @@ class Plugin:
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
 
+        # Initialize MMD lambda
+        self.mmd_lambda = tf.Variable(0.01, trainable=False, dtype=tf.float32, name='mmd_lambda')
+
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
@@ -302,10 +314,23 @@ class Plugin:
                 self.plugin.kl_weight_var.assign(new_kl)
                 print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
 
+        class MMDLoggingCallback(tf.keras.callbacks.Callback):
+            def __init__(self, plugin, x_train, y_train):
+                super().__init__()
+                self.plugin = plugin
+                self.x_train = x_train
+                self.y_train = y_train
+
+            def on_epoch_end(self, epoch, logs=None):
+                preds = self.plugin.model(self.x_train, training=True)
+                mmd_value = self.plugin.compute_mmd(preds, self.y_train)
+                print(f"Epoch {epoch+1}: MMD Lambda = {self.plugin.mmd_lambda.numpy():.6f}, MMD Loss = {mmd_value.numpy():.6f}")
+
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        callbacks = [kl_callback]
+        mmd_logging_callback = MMDLoggingCallback(self, x_train, y_train)
+        callbacks = [kl_callback, mmd_logging_callback]
 
         early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
             monitor='val_loss',
@@ -315,6 +340,13 @@ class Plugin:
             start_from_epoch=30
         )
         callbacks.append(early_stopping_monitor)
+
+        # Compile the model with the custom loss function
+        self.model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
+            loss=self.custom_loss,
+            metrics=['mae']
+        )
 
         history = self.model.fit(
             x_train, y_train,
@@ -336,12 +368,12 @@ class Plugin:
         preds_training_mode = self.model(x_train, training=True)
         mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
         mmd_training_mode = self.compute_mmd(preds_training_mode, y_train)
-        print(f"MAE in Training Mode: {mae_training_mode:.6f}, MMD Lambda: {mmd_training_mode:.6f}")
+        print(f"MAE in Training Mode: {mae_training_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_training_mode:.6f}")
 
         preds_eval_mode = self.model(x_train, training=False)
         mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
         mmd_eval_mode = self.compute_mmd(preds_eval_mode, y_train)
-        print(f"MAE in Evaluation Mode: {mae_eval_mode:.6f}, MMD Lambda: {mmd_eval_mode:.6f}")
+        print(f"MAE in Evaluation Mode: {mae_eval_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_eval_mode:.6f}")
 
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mae = train_eval_results
