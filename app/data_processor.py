@@ -498,6 +498,32 @@ def run_prediction_pipeline(config, plugin):
         print(f"Failed to compute or save uncertainty predictions: {e}")
 
 
+
+    # Denormalize predictions if a normalization JSON is provided.
+    if config.get("use_normalization_json") is not None:
+        norm_json = config.get("use_normalization_json")
+        if isinstance(norm_json, str):
+            try:
+                with open(norm_json, 'r') as f:
+                    norm_json = json.load(f)
+            except Exception as e:
+                print(f"Error loading normalization JSON from {norm_json}: {e}")
+                norm_json = {}
+        elif not isinstance(norm_json, dict):
+            print("Error: Normalization JSON is not a valid dictionary.")
+            norm_json = {}
+
+        if "CLOSE" in norm_json:
+            min_val = norm_json["CLOSE"].get("min", 0)
+            max_val = norm_json["CLOSE"].get("max", 1)
+            # Simple denormalization: original = normalized * (max - min) + min
+            test_predictions = test_predictions * (max_val - min_val) + min_val
+            uncertainty_estimates = uncertainty_estimates * (max_val - min_val)
+
+            # Also denormalize true values just in case
+            y_test = y_test * (max_val - min_val) + min_val
+
+
     # ------------------------------
     # NEW: Plot Last 1k Predictions with True Values and Uncertainty Band
     # ------------------------------
