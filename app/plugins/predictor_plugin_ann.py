@@ -185,7 +185,7 @@ class Plugin:
             print("DEBUG: In prior_fn:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
             print("       Received bias_size =", bias_size, "; overriding to 0")
-            print("       trainable =", trainable, "name =", name)
+            print("DEBUG: prior_fn: trainable =", trainable, "name =", name)
             if not isinstance(name, str):
                 print("DEBUG: 'name' is not a string in prior_fn; setting to None")
                 name = None
@@ -216,12 +216,9 @@ class Plugin:
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
             name="output_layer"
         )
-        bayesian_output = tf.keras.layers.Lambda(
-            lambda t: flipout_layer(t),
-            output_shape=lambda s: (s[0], layer_sizes[-1]),
-            name="bayesian_dense_flipout"
-        )(x)
-        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
+        # Remove the Lambda wrapper and call DenseFlipout directly.
+        bayesian_output = flipout_layer(x)
+        print("DEBUG: After DenseFlipout, bayesian_output shape:", bayesian_output.shape)
         
         bias_layer = tf.keras.layers.Dense(
             units=layer_sizes[-1],
