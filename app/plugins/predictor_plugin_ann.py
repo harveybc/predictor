@@ -550,35 +550,31 @@ def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
     return total
 
 
-def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
+def mmd_loss_term(y_true, y_pred, sigma, chunk_size=8):
     """
     Compute the Maximum Mean Discrepancy (MMD) loss between y_true and y_pred using
     a memory-efficient chunked Gaussian kernel sum.
     """
-    print("DEBUG: Starting mmd_loss_term")
-    print("DEBUG: Original y_true shape:", y_true.shape, "y_pred shape:", y_pred.shape)
     y_true = tf.cast(y_true, tf.float32)
     y_pred = tf.cast(y_pred, tf.float32)
-    # Reshape to [batch, features]
     y_true = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
     y_pred = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
-    print("DEBUG: Reshaped y_true shape:", y_true.shape, "y_pred shape:", y_pred.shape)
     
     sum_K_xx = gaussian_kernel_sum(y_true, y_true, sigma, chunk_size)
     sum_K_yy = gaussian_kernel_sum(y_pred, y_pred, sigma, chunk_size)
     sum_K_xy = gaussian_kernel_sum(y_true, y_pred, sigma, chunk_size)
     
-    print("DEBUG: Computed kernel sums: sum_K_xx =", sum_K_xx.numpy(),
-          "sum_K_yy =", sum_K_yy.numpy(),
-          "sum_K_xy =", sum_K_xy.numpy())
+    tf.print("DEBUG: Computed kernel sums: sum_K_xx =", sum_K_xx, 
+             "sum_K_yy =", sum_K_yy, "sum_K_xy =", sum_K_xy)
     
     m = tf.cast(tf.shape(y_true)[0], tf.float32)
     n = tf.cast(tf.shape(y_pred)[0], tf.float32)
+    
     mmd = sum_K_xx / (m * m) + sum_K_yy / (n * n) - 2 * sum_K_xy / (m * n)
-    print("DEBUG: m =", m.numpy(), "n =", n.numpy(), "MMD =", mmd.numpy())
+    tf.print("DEBUG: m =", m, "n =", n, "MMD =", mmd)
+    
     return mmd
-
 
 def mmd_metric(y_true, y_pred, config):
     sigma = config.get('mmd_sigma', 1.0)
-    return mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
+    return mmd_loss_term(y_true, y_pred, sigma, chunk_size=8)
