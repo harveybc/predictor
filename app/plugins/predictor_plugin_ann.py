@@ -1,18 +1,16 @@
 import numpy as np
-from keras.models import Model, load_model, save_model
-from keras.layers import Dense, Input, Dropout, BatchNormalization
-from keras.optimizers import Adam
+import tensorflow as tf
+import tensorflow_probability as tfp
+from tensorflow.keras.models import Model, load_model, save_model
+from tensorflow.keras.layers import Dense, Input, Dropout, BatchNormalization
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
-from keras.layers import GaussianNoise
+from tensorflow.keras.layers import GaussianNoise
 from keras import backend as K
 from sklearn.metrics import r2_score 
-import tensorflow as tf
-import tensorflow_probability as tfp
-
-
 import logging
 import os
 
@@ -63,8 +61,9 @@ class Plugin:
 
     def build_model(self, input_shape, x_train, config=None):
         """
-        Builds a standard ANN (without Bayesian uncertainty estimation) using Keras Dense layers.
-
+        Builds a Bayesian ANN using Keras Dense layers with TensorFlow Probability's DenseFlipout for
+        uncertainty estimation. The final output layer is replaced by a DenseFlipout layer.
+        
         Args:
             input_shape (int): Number of input features.
             x_train (np.ndarray): Training dataset to automatically determine train_size.
@@ -93,7 +92,7 @@ class Plugin:
         print("Standard ANN Layer sizes:", layer_sizes)
         print(f"Standard ANN input_shape: {input_shape}")
         
-        # Build the model using standard Dense layers.
+        # Build the model using standard Dense layers for hidden layers.
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         x = inputs
         
@@ -105,10 +104,11 @@ class Plugin:
                                     name=f"dense_layer_{idx+1}")(x)
             x = tf.keras.layers.BatchNormalization()(x)
         
-        # Final output layer.
-        outputs = tf.keras.layers.Dense(units=layer_sizes[-1], 
-                                        activation='linear', 
-                                        name="output_layer")(x)
+        # Final output layer using Bayesian Dense layer (DenseFlipout)
+        DenseFlipout = tfp.layers.DenseFlipout
+        outputs = DenseFlipout(units=layer_sizes[-1], 
+                               activation='linear', 
+                               name="output_layer")(x)
         
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         
@@ -120,9 +120,6 @@ class Plugin:
         )
         
         print("✅ Standard ANN model built successfully.")
-
-
-
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
@@ -189,8 +186,6 @@ class Plugin:
         
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
-
-
     def predict(self, data):
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -200,7 +195,26 @@ class Plugin:
         preds = self.model.predict(data)
         return preds
 
-
+    def predict_with_uncertainty(self, data, mc_samples=100):
+        """
+        Perform multiple forward passes through the model to estimate prediction uncertainty.
+        
+        Args:
+            data (np.ndarray): Input data for prediction.
+            mc_samples (int): Number of Monte Carlo samples.
+        
+        Returns:
+            tuple: (mean_predictions, uncertainty_estimates) where both are np.ndarray with shape (n_samples, time_horizon)
+        """
+        import numpy as np
+        predictions = []
+        for i in range(mc_samples):
+            preds = self.model(data, training=True)
+            predictions.append(preds.numpy())
+        predictions = np.array(predictions)  # shape: (mc_samples, n_samples, time_horizon)
+        mean_predictions = np.mean(predictions, axis=0)
+        uncertainty_estimates = np.std(predictions, axis=0)
+        return mean_predictions, uncertainty_estimates
 
     def calculate_mae(self, y_true, y_pred):
         print(f"y_true (sample): {y_true.flatten()[:5]}")
@@ -208,7 +222,6 @@ class Plugin:
         mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
         print(f"Calculated MAE: {mae}")
         return mae
-
 
     def save(self, file_path):
         """
@@ -223,5 +236,3 @@ class Plugin:
         """
         self.model = load_model(file_path)
         print(f"Model loaded from {file_path}")
-    
-

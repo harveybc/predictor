@@ -401,8 +401,6 @@ def run_prediction_pipeline(config, plugin):
         print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
     # (Rest of run_prediction_pipeline remains unchanged.)
-    # ...
-
     # -----------------------
     # Aggregate statistics
     # -----------------------
@@ -473,6 +471,31 @@ def run_prediction_pipeline(config, plugin):
         print(f"Final validation predictions saved to {final_test_file}")
     else:
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
+
+    # ------------------------------
+    # NEW: Compute Uncertainty Estimates
+    # ------------------------------
+    print("Computing uncertainty estimates using MC sampling...")
+    try:
+        mc_samples = config.get("mc_samples", 100)
+        # This new plugin method performs multiple forward passes (with training=True) to get prediction samples.
+        _, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
+        # uncertainty_estimates shape is (n_test, time_horizon)
+        uncertainty_df = pd.DataFrame(
+            uncertainty_estimates,
+            columns=[f"Uncertainty_{i+1}" for i in range(uncertainty_estimates.shape[1])]
+        )
+        if test_dates is not None:
+            uncertainty_df['DATE_TIME'] = pd.Series(test_dates[:len(uncertainty_df)])
+        else:
+            uncertainty_df['DATE_TIME'] = pd.NaT
+        cols = ['DATE_TIME'] + [col for col in uncertainty_df.columns if col != 'DATE_TIME']
+        uncertainty_df = uncertainty_df[cols]
+        uncertainty_file = config.get("uncertainty_file", "test_uncertainty.csv")
+        uncertainty_df.to_csv(uncertainty_file, index=False)
+        print(f"Uncertainty predictions saved to {uncertainty_file}")
+    except Exception as e:
+        print(f"Failed to compute or save uncertainty predictions: {e}")
 
     try:
         plot_model(
