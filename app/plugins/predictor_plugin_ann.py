@@ -249,6 +249,7 @@ class Plugin:
             epsilon=1e-7,
             amsgrad=False)
         
+        @tf.function(experimental_compile=False)
         def combined_loss(y_true, y_pred):
             huber_loss = Huber(delta=1.0)(y_true, y_pred)
             sigma = config.get('mmd_sigma', 1.0)
@@ -573,16 +574,6 @@ def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
 def mmd_metric(y_true, y_pred, config):
     sigma = config.get('mmd_sigma', 1.0)
     return mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
-
-# Updated combined loss function (wrapped with tf.function and experimental_compile=False)
-@tf.function(experimental_compile=False)
-def combined_loss(y_true, y_pred):
-    huber_loss = Huber(delta=1.0)(y_true, y_pred)
-    sigma = config.get('mmd_sigma', 1.0)
-    stat_weight = config.get('statistical_loss_weight', 1.0)
-    mmd = mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
-    penalty_term = tf.cast(1.0, tf.float32) * tf.stop_gradient(self.overfit_penalty)
-    return huber_loss + (stat_weight * mmd) + penalty_term
 
 
 # --- Updated Named initializers using stateless_random ---
