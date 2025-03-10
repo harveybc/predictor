@@ -139,7 +139,7 @@ class Plugin:
         for idx, size in enumerate(layer_sizes[:-1]):
             print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
             x = tf.keras.layers.Dense(
-                units=size,
+                units=size, 
                 activation=self.params.get('activation', 'tanh'),
                 kernel_initializer='glorot_uniform',
                 name=f"dense_layer_{idx+1}"
@@ -166,16 +166,17 @@ class Plugin:
         
         # ---------------------------
         # Define custom posterior and prior functions with explicit signature.
-        # These functions assume the call signature: (dtype, kernel_shape, bias_size, trainable, name)
+        # These functions assume: (dtype, kernel_shape, bias_size, trainable, name)
         # If bias_size is not convertible to int, default to 0.
+        # They reshape the variables to match kernel_shape.
         # ---------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
-            print("DEBUG: In posterior_mean_field_custom: dtype =", dtype,
-                "kernel_shape =", kernel_shape,
-                "bias_size =", bias_size,
-                "trainable =", trainable,
-                "name =", name)
-            # If name is not a string, set to None
+            print("DEBUG: In posterior_mean_field_custom:")
+            print("       dtype =", dtype)
+            print("       kernel_shape =", kernel_shape)
+            print("       bias_size =", bias_size)
+            print("       trainable =", trainable)
+            print("       name =", name)
             if not isinstance(name, str):
                 print("DEBUG: 'name' is not a string; setting name to None")
                 name = None
@@ -188,22 +189,32 @@ class Plugin:
             print("DEBUG: posterior_mean_field_custom: computed n =", n)
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior_mean_field_custom: computed c =", c)
-            # Manually create posterior variables
+            # Create trainable variables for loc and scale of shape (n,)
             loc = tf.Variable(tf.random.normal([n]), dtype=dtype, trainable=trainable, name="posterior_loc")
             scale = tf.Variable(tf.random.normal([n]), dtype=dtype, trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
             print("DEBUG: posterior_mean_field_custom: created loc with shape", loc.shape,
                 "and scale with shape", scale.shape)
+            # Reshape variables to kernel_shape
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: Reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape:", e)
+                raise e
             return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc, scale=scale),
-                reinterpreted_batch_ndims=1)
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
+            )
 
         def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
-            print("DEBUG: In prior_fn: dtype =", dtype,
-                "kernel_shape =", kernel_shape,
-                "bias_size =", bias_size,
-                "trainable =", trainable,
-                "name =", name)
+            print("DEBUG: In prior_fn:")
+            print("       dtype =", dtype)
+            print("       kernel_shape =", kernel_shape)
+            print("       bias_size =", bias_size)
+            print("       trainable =", trainable)
+            print("       name =", name)
             if not isinstance(name, str):
                 print("DEBUG: 'name' is not a string in prior_fn; setting name to None")
                 name = None
@@ -214,9 +225,19 @@ class Plugin:
                 bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
             print("DEBUG: prior_fn: computed n =", n)
+            loc = tf.zeros([n], dtype=dtype)
+            scale = tf.ones([n], dtype=dtype)
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: prior_fn: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape in prior_fn:", e)
+                raise e
             return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=tf.zeros(n, dtype=dtype), scale=1.0),
-                reinterpreted_batch_ndims=1)
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
+            )
 
         # ---------------------------
         # Build final Bayesian output layer using DenseFlipout, wrapped in a Lambda layer.
