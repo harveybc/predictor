@@ -186,7 +186,9 @@ class Plugin:
             metrics=['mae']
         )
         print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
-        
+        print("Predictor Model Summary:")
+        self.model.summary()
+
         print("✅ Standard ANN model built successfully.")
 
 
