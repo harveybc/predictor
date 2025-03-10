@@ -200,7 +200,11 @@ class Plugin:
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.kl_weight_var,
             name="output_layer"
         )
-        outputs = tf.keras.layers.Lambda(lambda t: flipout_layer(t), name="bayesian_dense_flipout")(x)
+        outputs = tf.keras.layers.Lambda(
+            lambda t: flipout_layer(t),
+            output_shape=lambda s: (s[0], layer_sizes[-1]),
+            name="bayesian_dense_flipout"
+        )(x)
         print("DEBUG: After DenseFlipout final layer (via Lambda), outputs shape:", outputs.shape, "Type:", type(outputs))
         
         # ---------------------------
