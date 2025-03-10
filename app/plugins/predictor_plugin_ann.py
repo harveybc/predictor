@@ -390,3 +390,110 @@ class Plugin:
         print(f"Model loaded from {file_path}")
 
 
+# --- New Callback: MMDAndEarlyStoppingCallback ---
+class MMDAndEarlyStoppingCallback(Callback):
+    """
+    Callback that, at the end of each epoch, computes the MMD loss on the validation set (if available)
+    and prints the early-stopping wait counter along with the current MMD lambda (statistical_loss_weight).
+    """
+    def __init__(self, early_stopping_cb, x_val, y_val, config):
+        super().__init__()
+        self.early_stopping_cb = early_stopping_cb
+        self.x_val = x_val
+        self.y_val = y_val
+        self.mmd_lambda = config.get('statistical_loss_weight', 1.0)
+        self.mmd_sigma = config.get('mmd_sigma', 1.0)
+    def on_epoch_end(self, epoch, logs=None):
+        es_wait = getattr(self.early_stopping_cb, "wait", None)
+        # Compute MMD on validation set using the current model predictions
+        y_pred = self.model.predict(self.x_val)
+        mmd_val = mmd_metric(self.y_val, y_pred, {'mmd_sigma': self.mmd_sigma})
+        print(f"DEBUG: Epoch {epoch+1}: EarlyStopping wait = {es_wait}, MMD lambda = {self.mmd_lambda}, Validation MMD = {mmd_val}")
+
+# --- Updated train method ---
+def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
+    """
+    Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
+    Implements KL annealing (if desired) and uses the combined loss (Huber + MMD).
+    Also prints early stopping counter and MMD lambda at the end of each epoch.
+    """
+    import tensorflow as tf
+    if isinstance(x_train, tuple):
+        x_train = x_train[0]
+    if x_val is not None and isinstance(x_val, tuple):
+        x_val = x_val[0]
+
+    print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
+    exp_horizon = self.params['time_horizon']
+    if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
+        raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
+
+    # Disable XLA JIT compilation to prevent issues
+    tf.config.optimizer.set_jit(False)
+
+    class KLAnnealingCallback(tf.keras.callbacks.Callback):
+        def __init__(self, plugin, target_kl, anneal_epochs):
+            super().__init__()
+            self.plugin = plugin
+            self.target_kl = target_kl
+            self.anneal_epochs = anneal_epochs
+        def on_epoch_begin(self, epoch, logs=None):
+            new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
+            self.plugin.kl_weight_var.assign(new_kl)
+            print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
+
+    anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
+    target_kl = self.params.get('kl_weight', 1e-3)
+    kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
+
+    early_stopping = tf.keras.callbacks.EarlyStopping(
+        monitor='val_loss',
+        patience=self.params.get('patience', 10),
+        restore_best_weights=True,
+        verbose=1
+    )
+
+    # Create a callback to print MMD and early-stopping counter at each epoch
+    mmd_es_callback = MMDAndEarlyStoppingCallback(early_stopping, x_val, y_val, config)
+
+    callbacks = [kl_callback, early_stopping, mmd_es_callback]
+
+    history = self.model.fit(
+        x_train, y_train,
+        epochs=epochs,
+        batch_size=batch_size,
+        verbose=1,
+        shuffle=True,
+        callbacks=callbacks,
+        validation_data=(x_val, y_val)
+    )
+
+    print("Training completed.")
+    final_loss = history.history['loss'][-1]
+    print(f"Final training loss: {final_loss}")
+
+    if final_loss > threshold_error:
+        print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
+
+    preds_training_mode = self.model(x_train, training=True)
+    mae_training_mode = float(tf.reduce_mean(tf.abs(preds_training_mode - y_train)).numpy())
+    print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
+
+    preds_eval_mode = self.model(x_train, training=False)
+    mae_eval_mode = float(tf.reduce_mean(tf.abs(preds_eval_mode - y_train)).numpy())
+    print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+
+    train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
+    train_loss, train_mae = train_eval_results
+    print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
+
+    val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+    val_loss, val_mae = val_eval_results
+
+    from sklearn.metrics import r2_score
+    train_predictions = self.predict(x_train)
+    val_predictions = self.predict(x_val)
+    train_r2 = r2_score(y_train, train_predictions)
+    val_r2 = r2_score(y_val, val_predictions)
+
+    return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
