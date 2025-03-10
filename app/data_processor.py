@@ -351,7 +351,7 @@ def run_prediction_pipeline(config, plugin):
         else:
             if len(x_train.shape) != 2:
                 raise ValueError(f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}.")
-            plugin.build_model(input_shape=x_train.shape[1],  x_train=x_train)
+            plugin.build_model(input_shape=x_train.shape[1],  x_train=x_train, config=config)
         
         history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions = plugin.train(
             x_train,
