@@ -63,7 +63,8 @@ class Plugin:
         """
         Builds a Bayesian ANN using Keras Dense layers with TensorFlow Probability's DenseFlipout for
         uncertainty estimation, employing KL annealing and custom posterior/prior functions.
-        The final output layer is replaced by a DenseFlipout layer (without bias) plus a separate deterministic bias layer.
+        The final output layer is replaced by a DenseFlipout layer (without bias) plus a separate 
+        deterministic bias layer.
         
         Args:
             input_shape (int): Number of input features.
@@ -139,7 +140,7 @@ class Plugin:
         for idx, size in enumerate(layer_sizes[:-1]):
             print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
             x = tf.keras.layers.Dense(
-                units=size, 
+                units=size,
                 activation=self.params.get('activation', 'tanh'),
                 kernel_initializer='glorot_uniform',
                 name=f"dense_layer_{idx+1}"
@@ -165,9 +166,16 @@ class Plugin:
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight is", target_kl)
         
         # ---------------------------
+        # Get default bias_size from configuration (if needed)
+        # Here we set the bias_size to 0 for the DenseFlipout layer.
+        # ---------------------------
+        default_bias_size = 0
+        print("DEBUG: Using default_bias_size =", default_bias_size)
+        
+        # ---------------------------
         # Define custom posterior and prior functions with explicit signature.
         # These functions assume: (dtype, kernel_shape, bias_size, trainable, name)
-        # We force bias_size to 0 here so that only the kernel weights are modeled.
+        # We force bias_size to 0 so that the number of parameters equals np.prod(kernel_shape).
         # ---------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
@@ -233,11 +241,9 @@ class Plugin:
         # ---------------------------
         DenseFlipout = tfp.layers.DenseFlipout
         print("DEBUG: Creating DenseFlipout final layer with units (expected):", layer_sizes[-1])
-        # Set use_bias=False in DenseFlipout; we'll add a deterministic bias layer separately.
         flipout_layer = DenseFlipout(
             units=layer_sizes[-1],
             activation='linear',
-            use_bias=False,
             kernel_posterior_fn=posterior_mean_field_custom,
             kernel_prior_fn=prior_fn,
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.kl_weight_var,
