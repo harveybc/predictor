@@ -4,7 +4,7 @@ import tensorflow_probability as tfp
 from tensorflow.keras.models import Model, load_model, save_model
 from tensorflow.keras.layers import Dense, Input, Dropout, BatchNormalization
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.initializers import GlorotUniform, HeNormal
+from tensorflow.keras.initializers import RandomNormal, GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
@@ -13,6 +13,15 @@ from keras import backend as K
 from sklearn.metrics import r2_score 
 import logging
 import os
+
+# ------------------ Begin Monkey Patch for DenseFlipout ------------------
+# Replace calls to layer.add_variable with layer.add_weight in DenseFlipout
+def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
+    # Use add_weight instead of add_variable
+    return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
+# Patch DenseFlipout class method (this patch affects the instance method used in TFP)
+tfp.layers.DenseFlipout.add_variable = _patched_add_variable
+# ------------------ End Monkey Patch ------------------
 
 class Plugin:
     """
@@ -29,7 +38,9 @@ class Plugin:
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
         'activation': 'tanh',
-        'l2_reg': 1e-5
+        'l2_reg': 1e-5,
+        # You can also add a default KL weight here if desired:
+        'kl_weight': 1e-3
     }
     
     # Variables for debugging
@@ -70,13 +81,10 @@ class Plugin:
             input_shape (int): Number of input features.
             x_train (np.ndarray): Training dataset to automatically determine train_size.
         """
-        import tensorflow as tf
-        import tensorflow_probability as tfp
-        import numpy as np
         from tensorflow.keras.losses import Huber
 
-        # Set KL divergence weight to a higher value for stronger regularization.
-        KL_WEIGHT = 1e-3
+        # Set KL divergence weight (increased)
+        KL_WEIGHT = self.params.get('kl_weight', 1e-3)
 
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
@@ -124,7 +132,7 @@ class Plugin:
             x = tf.keras.layers.Dense(
                 units=size,
                 activation=self.params.get('activation', 'tanh'),
-                kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=42),
+                kernel_initializer=RandomNormal(mean=0.0, stddev=0.05, seed=42),
                 name=f"dense_layer_{idx+1}"
             )(x)
             print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape, "Type:", type(x))
@@ -137,11 +145,10 @@ class Plugin:
             x = tf.convert_to_tensor(x)
             print("DEBUG: Converted x to tensor using tf.convert_to_tensor. New type:", type(x))
         
-        target_kl = self.params.get('kl_weight', 1e-4)
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
-        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight is", target_kl)
+        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight is", KL_WEIGHT)
         
-        # We force bias_size to 0 for the DenseFlipout layer.
+        # Force bias_size to 0 for the DenseFlipout layer
         default_bias_size = 0
         print("DEBUG: Using default_bias_size =", default_bias_size)
         
@@ -203,7 +210,6 @@ class Plugin:
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
 
-        # Build final Bayesian output layer using DenseFlipout, without bias.
         DenseFlipout = tfp.layers.DenseFlipout
         print("DEBUG: Creating DenseFlipout final layer with units (expected):", layer_sizes[-1])
         flipout_layer = DenseFlipout(
@@ -221,12 +227,11 @@ class Plugin:
         )(x)
         print("DEBUG: After DenseFlipout final layer (via Lambda), bayesian_output shape:", bayesian_output.shape, "Type:", type(bayesian_output))
         
-        # Add a separate deterministic bias layer.
         bias_layer = tf.keras.layers.Dense(
             units=layer_sizes[-1],
             activation='linear',
             use_bias=True,
-            kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=44),
+            kernel_initializer=RandomNormal(mean=0.0, stddev=0.05, seed=44),
             name="deterministic_bias"
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
@@ -281,7 +286,7 @@ class Plugin:
                 print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
 
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
-        target_kl = self.params.get('kl_weight', 1e-4)
+        target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
         callbacks = [kl_callback]
         
