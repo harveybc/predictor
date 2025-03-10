@@ -167,7 +167,11 @@ class Plugin:
         # ---------------------------
         # Define custom posterior and prior functions for stability.
         # ---------------------------
-        def posterior_mean_field_custom(kernel_size, bias_size=0, dtype=None, **kwargs):
+        def posterior_mean_field_custom(*args, **kwargs):
+            # Expecting: kernel_size, bias_size, dtype, and possibly more.
+            kernel_size = args[0]
+            bias_size = args[1] if len(args) > 1 else 0
+            dtype = args[2] if len(args) > 2 else None
             n = kernel_size + bias_size
             c = np.log(np.expm1(1.))
             return tf.keras.Sequential([
@@ -178,7 +182,10 @@ class Plugin:
                                                 scale=1e-3 + tf.nn.softplus(c + t[..., n:])),
                         reinterpreted_batch_ndims=1))
             ])
-        def prior_fn(kernel_size, bias_size=0, dtype=None, **kwargs):
+        def prior_fn(*args, **kwargs):
+            kernel_size = args[0]
+            bias_size = args[1] if len(args) > 1 else 0
+            dtype = args[2] if len(args) > 2 else None
             n = kernel_size + bias_size
             return tf.keras.Sequential([
                 tfp.layers.DistributionLambda(
