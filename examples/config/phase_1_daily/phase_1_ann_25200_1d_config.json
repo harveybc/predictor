@@ -28,7 +28,7 @@
     "early_patience": 60,
     "use_mmd": true,
     "statistical_loss_weight": 0.1,
-    "overfitting_penalty": 0.1
+    "overfitting_penalty": 0.0
 
     
 }
