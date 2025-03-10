@@ -12,22 +12,7 @@ from tensorflow.keras.layers import GaussianNoise
 from keras import backend as K
 from sklearn.metrics import r2_score 
 import logging
-import os,gc
-from tensorflow.keras.mixed_precision import set_global_policy
-
-
-#Enable GPU memory growth
-gpus = tf.config.list_physical_devices('GPU')
-if gpus:
-    try:
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-    except Exception as e:
-        print("Error setting GPU memory growth:", e)
-
-# Set global mixed precision policy
-set_global_policy('mixed_float16')
-
+import os
 
 # --- Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable ---
 def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
@@ -65,7 +50,6 @@ class Plugin:
     def __init__(self):
         self.params = self.plugin_params.copy()
         self.model = None
-        self.overfit_penalty = None  
 
     def set_params(self, **kwargs):
         for key, value in kwargs.items():
@@ -78,8 +62,14 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    # ----- Updated build_model method -----
+    # --- Updated build_model method ---
     def build_model(self, input_shape, x_train, config=None):
+        """
+        Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
+        The final output layer is replaced by a DenseFlipout (without bias) plus a separate 
+        deterministic bias layer. If config.get('use_mmd', True) is True, the loss will be
+        defined as Huber loss + (statistical_loss_weight * MMD loss).
+        """
         from tensorflow.keras.losses import Huber
 
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
@@ -90,15 +80,14 @@ class Plugin:
 
         x_train = np.array(x_train)
         print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
-
+        
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
         print("DEBUG: input_shape is valid. Value:", input_shape)
-
+        
         train_size = x_train.shape[0]
         print("DEBUG: Number of training samples:", train_size)
-
-        # Compute layer sizes
+        
         layer_sizes = []
         current_size = self.params['initial_layer_size']
         print("DEBUG: Initial layer size:", current_size)
@@ -108,6 +97,7 @@ class Plugin:
         print("DEBUG: Number of intermediate layers:", int_layers)
         time_horizon = self.params['time_horizon']
         print("DEBUG: Time horizon (final layer size):", time_horizon)
+        
         for i in range(int_layers):
             layer_sizes.append(current_size)
             print(f"DEBUG: Appended layer size at layer {i+1}: {current_size}")
@@ -115,14 +105,14 @@ class Plugin:
             print(f"DEBUG: Updated current_size after division at layer {i+1}: {current_size}")
         layer_sizes.append(time_horizon)
         print("DEBUG: Final layer sizes:", layer_sizes)
-
+        
         print("DEBUG: Standard ANN input_shape:", input_shape)
+        
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         print("DEBUG: Created input layer. Shape:", inputs.shape)
         x = inputs
         print("DEBUG: x tensor from inputs. Shape:", x.shape, "Type:", type(x))
-
-        # Build dense layers
+        
         for idx, size in enumerate(layer_sizes[:-1]):
             print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
             x = tf.keras.layers.Dense(
@@ -134,17 +124,19 @@ class Plugin:
         print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
         x = tf.keras.layers.BatchNormalization()(x)
         print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
-
+        
         if hasattr(x, '_keras_history'):
             print("DEBUG: x is already a KerasTensor; no conversion needed.")
         else:
             x = tf.convert_to_tensor(x)
             print("DEBUG: Converted x to tensor. New type:", type(x))
-
-        # Set up the DenseFlipout final (Bayesian) layer.
+        
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", KL_WEIGHT)
-        # Define custom posterior and prior functions (unchanged)
+        
+        default_bias_size = 0
+        print("DEBUG: Using default_bias_size =", default_bias_size)
+        
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
@@ -158,10 +150,11 @@ class Plugin:
             print("DEBUG: posterior: computed n =", n)
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior: computed c =", c)
-            loc = tf.Variable(tf.random.stateless_normal([n], seed=[42,0], stddev=0.05, dtype=dtype), trainable=trainable, name="posterior_loc")
-            scale = tf.Variable(tf.random.stateless_normal([n], seed=[43,0], stddev=0.05, dtype=dtype), trainable=trainable, name="posterior_scale")
+            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
+            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
+            print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
             try:
                 loc_reshaped = tf.reshape(loc, kernel_shape)
                 scale_reshaped = tf.reshape(scale, kernel_shape)
@@ -173,7 +166,7 @@ class Plugin:
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-
+        
         def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In prior_fn:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
@@ -198,7 +191,7 @@ class Plugin:
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-
+        
         DenseFlipout = tfp.layers.DenseFlipout
         print("DEBUG: Creating DenseFlipout final layer with units:", layer_sizes[-1])
         flipout_layer = DenseFlipout(
@@ -209,11 +202,13 @@ class Plugin:
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
             name="output_layer"
         )
-        # Use a Lambda layer wrapper so that the DenseFlipout is called as a function
-        bayesian_output = tf.keras.layers.Lambda(lambda t: flipout_layer(t), 
-                                                output_shape=lambda s: (s[0], layer_sizes[-1]),
-                                                name="bayesian_dense_flipout")(x)
+        bayesian_output = tf.keras.layers.Lambda(
+            lambda t: flipout_layer(t),
+            output_shape=lambda s: (s[0], layer_sizes[-1]),
+            name="bayesian_dense_flipout"
+        )(x)
         print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
+        
         bias_layer = tf.keras.layers.Dense(
             units=layer_sizes[-1],
             activation='linear',
@@ -222,61 +217,55 @@ class Plugin:
             name="deterministic_bias"
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
+        
         outputs = bayesian_output + bias_layer
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+        
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
-
-        # Set up overfit penalty variable (if needed)
+        
         self.overfit_penalty = tf.Variable(0.0, trainable=False, dtype=tf.float32)
         self.model.overfit_penalty = self.overfit_penalty
+        # --- Define combined loss function using MMD ---
+        # Wrap the loss function so that XLA is disabled for it
+        @tf.function(experimental_compile=False)
+        def combined_loss_fn(y_true, y_pred):
+            huber_loss = Huber(delta=1.0)(y_true, y_pred)
+            sigma = config.get('mmd_sigma', 1.0)
+            stat_weight = config.get('statistical_loss_weight', 1.0)
+            mmd = mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
+            return huber_loss + (stat_weight * mmd) + tf.cast(0.0, tf.float32)  # You can add any additional penalty here if desired
 
-        # Create the optimizer
-        initial_lr = config.get('learning_rate', 0.01)
-        adam_optimizer = Adam(
-            learning_rate=initial_lr,
-            beta_1=0.9,
-            beta_2=0.999,
-            epsilon=1e-7,
-            amsgrad=False
-        )
-        print("DEBUG: Adam optimizer created with learning_rate:", initial_lr)
-
-        # For KL-based loss we simply use Huber as the base loss.
-        # (DenseFlipout already adds its own KL divergence loss to model.losses.)
-        loss_fn = Huber(delta=1.0)
-        metrics = ['mae']
-
-        # Wrap the loss function to disable XLA compilation.
-        loss_fn = tf.function(loss_fn, experimental_compile=False)
-
+        # Choose loss function based on config (here we always use combined loss for MMD)
+        loss_fn = combined_loss_fn
+        optimizer = tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001))
+        print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
         self.model.compile(
-            optimizer=adam_optimizer,
+            optimizer=optimizer,
             loss=loss_fn,
-            metrics=metrics
+            metrics=['mae']
         )
-        print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
+        print("DEBUG: Model compiled with combined MMD loss and Huber loss, metrics=['mae']")
         print("Predictor Model Summary:")
         self.model.summary()
         print("✅ Standard ANN model built successfully.")
 
-
-    # ----- Updated train method -----
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
+        """
+        Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
+        Implements KL annealing via a custom callback.
+        """
         import tensorflow as tf
-        # Disable XLA JIT globally to avoid fusion issues (this should prevent the StringFormat error)
-        tf.config.optimizer.set_jit(False)
         if isinstance(x_train, tuple):
             x_train = x_train[0]
         if x_val is not None and isinstance(x_val, tuple):
             x_val = x_val[0]
-
+        
         print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
-
-        # KL Annealing Callback
+        
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
@@ -291,16 +280,16 @@ class Plugin:
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-
-        early_patience = config.get('early_patience', 32)
-        early_monitor = config.get('early_monitor', 'val_loss')
-        early_stopping = tf.keras.callbacks.EarlyStopping(
-            monitor=early_monitor, patience=early_patience, restore_best_weights=True, verbose=1
+        callbacks = [kl_callback]
+        
+        early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss',
+            patience=self.params.get('patience', 10),
+            restore_best_weights=True,
+            verbose=1
         )
-
-        # Use only the KL annealing callback (and early stopping) since we are no longer using MMD.
-        callbacks = [kl_callback, early_stopping]
-
+        callbacks.append(early_stopping_monitor)
+        
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
@@ -310,35 +299,35 @@ class Plugin:
             callbacks=callbacks,
             validation_split=0.2
         )
-
+        
         print("Training completed.")
         final_loss = history.history['loss'][-1]
         print(f"Final training loss: {final_loss}")
-
+        
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
-
+        
         preds_training_mode = self.model(x_train, training=True)
-        mae_training_mode = float(tf.reduce_mean(tf.abs(preds_training_mode - y_train)).numpy())
+        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
         print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
-
+        
         preds_eval_mode = self.model(x_train, training=False)
-        mae_eval_mode = float(tf.reduce_mean(tf.abs(preds_eval_mode - y_train)).numpy())
+        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
-
+        
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mae = train_eval_results
         print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
-
+        
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mae = val_eval_results
-
+        
         from sklearn.metrics import r2_score
         train_predictions = self.predict(x_train)
         val_predictions = self.predict(x_val)
         train_r2 = r2_score(y_train, train_predictions)
         val_r2 = r2_score(y_val, val_predictions)
-
+        
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
 
@@ -400,143 +389,4 @@ class Plugin:
         self.model = load_model(file_path)
         print(f"Model loaded from {file_path}")
 
-
-
-class UpdateOverfitPenalty(Callback):
-    """
-    Custom Callback to update the overfit penalty value used in the loss function.
-    At the end of each epoch, it computes the difference between validation MAE and training MAE,
-    multiplies it by a scaling factor (0.1), and updates a TensorFlow variable in the model.
-    The penalty is applied only if validation MAE is higher than training MAE.
-    """
-    def __init__(self, config):
-        self.config = config
-
-    
-    def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
-        train_mae = logs.get('mae')
-        val_mae = logs.get('val_mae')
-        if train_mae is None or val_mae is None:
-            print("[UpdateOverfitPenalty] MAE metrics not available; overfit penalty not updated.")
-            return
-        overfitting_penalty = self.config.get('overfitting_penalty', 0.1)
-        penalty = overfitting_penalty * max(0, val_mae - train_mae)
-        tf.keras.backend.set_value(self.model.overfit_penalty, penalty)
-        print(f"[UpdateOverfitPenalty] Epoch {epoch+1}: Updated overfit penalty to {penalty:.6f}")
-
-# --------------------- Updated DebugLearningRateCallback.on_epoch_end ---------------------
-class DebugLearningRateCallback(Callback):
-    """
-    Debug Callback that prints the current learning rate,
-    the wait counter for EarlyStopping, and for the LR reducer.
-    Additionally, updates the L2 regularization factor in layers with a kernel_regularizer of type L2,
-    scaling it proportionally to the learning rate change relative to the initial learning rate.
-    """
-    def __init__(self, early_stopping_cb, lr_reducer_cb):
-        super(DebugLearningRateCallback, self).__init__()
-        self.early_stopping_cb = early_stopping_cb
-        self.lr_reducer_cb = lr_reducer_cb
-
-    def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
-        optimizer = self.model.optimizer
-        # Retrieve current learning rate from optimizer (check both 'lr' and 'learning_rate')
-        if hasattr(optimizer, 'lr'):
-            current_lr = tf.keras.backend.get_value(optimizer.lr)
-        else:
-            current_lr = tf.keras.backend.get_value(optimizer.learning_rate)
-        es_wait = getattr(self.early_stopping_cb, "wait", None)
-        lr_wait = getattr(self.lr_reducer_cb, "wait", None)
-        best_val = getattr(self.lr_reducer_cb, "best", None)
-        new_l2 = 0.0
-        # Update L2 regularization if initial values are stored on the model.
-        if hasattr(self.model, 'initial_lr') and self.model.initial_lr is not None:
-            scaling_factor = current_lr / self.model.initial_lr
-            if hasattr(self.model, 'initial_l2') and self.model.initial_l2 is not None:
-                for layer in self.model.layers:
-                    if hasattr(layer, 'kernel_regularizer') and layer.kernel_regularizer is not None:
-                        if isinstance(layer.kernel_regularizer, tf.keras.regularizers.L2):
-                            old_l2 = layer.kernel_regularizer.l2
-                            new_l2 = self.model.initial_l2 * scaling_factor
-                            layer.kernel_regularizer.l2 = new_l2
-                            if old_l2 != new_l2:
-                                print(f"[DebugLR] Updated l2_reg in layer {layer.name} from {old_l2} to {new_l2}")
-        print(f"\n[DebugLR] Epoch {epoch+1}: Learning Rate = {current_lr:.4e}, l2_reg = {new_l2:.4e}, "
-              f"EarlyStopping wait = {es_wait}, LRReducer wait = {lr_wait}, LRReducer best = {best_val}")
-
-
-class MemoryCleanupCallback(Callback):
-    """
-    Callback to force garbage collection at the end of each epoch.
-    This can help free up unused memory and mitigate memory leaks.
-    """
-    def on_epoch_end(self, epoch, logs=None, overfit_penalty=1.0):
-        gc.collect()
-        #print(f"[MemoryCleanup] Epoch {epoch+1}: Garbage collection executed.")
-
-
-# Updated named initializers using stateless random ops
-def random_normal_initializer_42(shape, dtype=None):
-    seed = (42, 0)
-    return tf.random.stateless_normal(shape, seed=seed, mean=0.0, stddev=0.05, dtype=dtype)
-
-def random_normal_initializer_44(shape, dtype=None):
-    seed = (44, 0)
-    return tf.random.stateless_normal(shape, seed=seed, mean=0.0, stddev=0.05, dtype=dtype)
-
-#@tf.function(experimental_compile=False)
-def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
-    # Get dynamic shape
-    n = tf.shape(x)[0]
-    total = tf.constant(0.0, dtype=tf.float32)
-    i = tf.constant(0, dtype=tf.int32)
-    # Try to get static batch size; if not available, use a fixed fallback
-    static_n = x.shape[0]
-    if static_n is not None:
-        max_iter = tf.constant((static_n + chunk_size - 1) // chunk_size, dtype=tf.int32)
-    else:
-        max_iter = tf.constant(1000, dtype=tf.int32)  # fallback value; adjust if needed
-    def cond(i, total):
-        return tf.less(i, n)
-    def body(i, total):
-        end_i = tf.minimum(i + chunk_size, n)
-        x_chunk = x[i:end_i]  # shape [chunk, d]
-        diff = tf.expand_dims(x_chunk, axis=1) - tf.expand_dims(y, axis=0)  # shape [chunk, m, d]
-        squared_diff = tf.reduce_sum(tf.square(diff), axis=2)  # shape [chunk, m]
-        divisor = 2.0 * tf.square(sigma)
-        kernel_chunk = tf.exp(-squared_diff / divisor)
-        total += tf.reduce_sum(kernel_chunk)
-        return i + chunk_size, total
-    i, total = tf.while_loop(cond, body, [i, total], maximum_iterations=max_iter)
-    return total
-
-@tf.function(experimental_compile=False)
-def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
-    # Ensure inputs are float32 and reshape to 2D
-    y_true = tf.cast(y_true, tf.float32)
-    y_pred = tf.cast(y_pred, tf.float32)
-    y_true = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
-    y_pred = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
-    sum_K_xx = gaussian_kernel_sum(y_true, y_true, sigma, chunk_size)
-    sum_K_yy = gaussian_kernel_sum(y_pred, y_pred, sigma, chunk_size)
-    sum_K_xy = gaussian_kernel_sum(y_true, y_pred, sigma, chunk_size)
-    m = tf.cast(tf.shape(y_true)[0], tf.float32)
-    n = tf.cast(tf.shape(y_pred)[0], tf.float32)
-    mmd = sum_K_xx / (m * m) + sum_K_yy / (n * n) - 2 * sum_K_xy / (m * n)
-    return mmd
-
-def mmd_metric(y_true, y_pred, config):
-    sigma = config.get('mmd_sigma', 1.0)
-    return mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
-
-
-# --- Updated Named initializers using stateless_random ---
-def random_normal_initializer_42(shape, dtype=None):
-    # Use a fixed seed vector, e.g. [42, 0]
-    return tf.random.stateless_normal(shape, seed=[42, 0], mean=0.0, stddev=0.05, dtype=dtype)
-
-def random_normal_initializer_44(shape, dtype=None):
-    # Use a different fixed seed vector, e.g. [44, 0]
-    return tf.random.stateless_normal(shape, seed=[44, 0], mean=0.0, stddev=0.05, dtype=dtype)
 
