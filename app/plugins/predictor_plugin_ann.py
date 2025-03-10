@@ -504,7 +504,7 @@ class MemoryCleanupCallback(Callback):
         gc.collect()
         #print(f"[MemoryCleanup] Epoch {epoch+1}: Garbage collection executed.")
 
-def gaussian_kernel_sum(x, y, sigma, chunk_size=16):
+def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
     """
     Compute the sum of Gaussian kernel values between each pair of rows in x and y
     in a memory-efficient manner by processing in chunks.
@@ -533,6 +533,7 @@ def gaussian_kernel_sum(x, y, sigma, chunk_size=16):
     max_iter = tf.math.floordiv(n + chunk_size - 1, chunk_size)
     i, total = tf.while_loop(cond, body, [i, total], maximum_iterations=max_iter)
     return total
+
 
 
 def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
