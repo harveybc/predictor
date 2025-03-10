@@ -70,6 +70,13 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
+    # Monkey-patch DenseFlipout so that its internal calls use add_weight instead of the deprecated add_variable.
+    def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
+        return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
+    tfp.layers.DenseFlipout.add_variable = _patched_add_variable
+
+    # ------------------ Updated Methods in the Plugin ------------------
+
     def build_model(self, input_shape, x_train, config=None):
         """
         Builds a Bayesian ANN using Keras Dense layers with TensorFlow Probability's DenseFlipout for
@@ -82,35 +89,37 @@ class Plugin:
             x_train (np.ndarray): Training dataset to automatically determine train_size.
         """
         from tensorflow.keras.losses import Huber
+        from tensorflow.keras.initializers import RandomNormal
+        import tensorflow as tf
+        import tensorflow_probability as tfp
+        import numpy as np
 
-        # Set KL divergence weight (increased)
+        # Set KL divergence weight to a higher value.
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-
+        
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
         print("DEBUG: numpy version:", np.__version__)
-
+        
         x_train = np.array(x_train)
-        print("DEBUG: x_train converted to numpy array.")
-        print("       Expected type: <class 'numpy.ndarray'>, Actual type:", type(x_train))
-        print("       Expected shape: (n_samples, n_features), Actual shape:", x_train.shape)
+        print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
         
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
-        print("DEBUG: input_shape is valid. Expected type int. Actual input_shape:", input_shape)
+        print("DEBUG: input_shape is valid. Value:", input_shape)
         
         train_size = x_train.shape[0]
-        print("DEBUG: Number of training samples (expected):", train_size)
+        print("DEBUG: Number of training samples:", train_size)
         
         layer_sizes = []
         current_size = self.params['initial_layer_size']
-        print("DEBUG: Initial layer size (expected):", current_size)
+        print("DEBUG: Initial layer size:", current_size)
         divisor = self.params.get('layer_size_divisor', 2)
-        print("DEBUG: Layer size divisor (expected):", divisor)
+        print("DEBUG: Layer size divisor:", divisor)
         int_layers = self.params.get('intermediate_layers', 3)
-        print("DEBUG: Number of intermediate layers (expected):", int_layers)
+        print("DEBUG: Number of intermediate layers:", int_layers)
         time_horizon = self.params['time_horizon']
-        print("DEBUG: Time horizon (expected final layer size):", time_horizon)
+        print("DEBUG: Time horizon (final layer size):", time_horizon)
         
         for i in range(int_layers):
             layer_sizes.append(current_size)
@@ -118,80 +127,81 @@ class Plugin:
             current_size = max(current_size // divisor, 1)
             print(f"DEBUG: Updated current_size after division at layer {i+1}: {current_size}")
         layer_sizes.append(time_horizon)
-        print("DEBUG: Final layer sizes (expected):", layer_sizes)
+        print("DEBUG: Final layer sizes:", layer_sizes)
         
-        print("DEBUG: Standard ANN input_shape (expected):", input_shape)
+        print("DEBUG: Standard ANN input_shape:", input_shape)
         
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
-        print("DEBUG: Created input layer. Expected shape: (None, {})".format(input_shape))
+        print("DEBUG: Created input layer. Shape:", inputs.shape)
         x = inputs
-        print("DEBUG: Initial x tensor from inputs. Shape:", x.shape, "Type:", type(x))
+        print("DEBUG: x tensor from inputs. Shape:", x.shape, "Type:", type(x))
+        
+        # Use a lambda initializer for deterministic layers.
+        dense_init = lambda shape, dtype=None: tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=42)
         
         for idx, size in enumerate(layer_sizes[:-1]):
             print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
             x = tf.keras.layers.Dense(
                 units=size,
                 activation=self.params.get('activation', 'tanh'),
-                kernel_initializer=RandomNormal(mean=0.0, stddev=0.05, seed=42),
+                kernel_initializer=lambda shape, dtype=None: tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=42),
                 name=f"dense_layer_{idx+1}"
             )(x)
-            print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape, "Type:", type(x))
+            print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
             x = tf.keras.layers.BatchNormalization(name=f"batchnorm_{idx+1}")(x)
-            print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape, "Type:", type(x))
+            print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
         
         if hasattr(x, '_keras_history'):
-            print("DEBUG: x is already a KerasTensor; skipping tf.convert_to_tensor conversion.")
+            print("DEBUG: x is already a KerasTensor; no conversion needed.")
         else:
             x = tf.convert_to_tensor(x)
-            print("DEBUG: Converted x to tensor using tf.convert_to_tensor. New type:", type(x))
+            print("DEBUG: Converted x to tensor. New type:", type(x))
         
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
-        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight is", KL_WEIGHT)
+        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", KL_WEIGHT)
         
-        # Force bias_size to 0 for the DenseFlipout layer
+        # For DenseFlipout, force bias_size to 0.
         default_bias_size = 0
         print("DEBUG: Using default_bias_size =", default_bias_size)
         
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
-            print("       dtype =", dtype)
-            print("       kernel_shape =", kernel_shape)
-            print("       Received bias_size =", bias_size, "; overriding to 0 for kernel posterior")
-            print("       trainable =", trainable)
-            print("       name =", name)
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
             if not isinstance(name, str):
-                print("DEBUG: 'name' is not a string; setting name to None")
+                print("DEBUG: 'name' is not a string; setting to None")
                 name = None
             bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
-            print("DEBUG: posterior_mean_field_custom: computed n =", n)
+            print("DEBUG: posterior: computed n =", n)
             c = np.log(np.expm1(1.))
-            print("DEBUG: posterior_mean_field_custom: computed c =", c)
+            print("DEBUG: posterior: computed c =", c)
             loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
             scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
-            print("DEBUG: posterior_mean_field_custom: created loc with shape", loc.shape, "and scale with shape", scale.shape)
+            # Apply a maximum norm constraint to scale
+            scale = tf.clip_by_value(scale, 1e-3, 1.0)
+            print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
             try:
                 loc_reshaped = tf.reshape(loc, kernel_shape)
                 scale_reshaped = tf.reshape(scale, kernel_shape)
-                print("DEBUG: Reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+                print("DEBUG: posterior: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
             except Exception as e:
-                print("DEBUG: Exception during reshape:", e)
+                print("DEBUG: Exception during reshape in posterior:", e)
                 raise e
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-
+        
         def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In prior_fn:")
-            print("       dtype =", dtype)
-            print("       kernel_shape =", kernel_shape)
-            print("       Received bias_size =", bias_size, "; overriding to 0 for kernel prior")
-            print("       trainable =", trainable)
-            print("       name =", name)
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
             if not isinstance(name, str):
-                print("DEBUG: 'name' is not a string in prior_fn; setting name to None")
+                print("DEBUG: 'name' is not a string in prior_fn; setting to None")
                 name = None
             bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
@@ -209,9 +219,9 @@ class Plugin:
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-
+        
         DenseFlipout = tfp.layers.DenseFlipout
-        print("DEBUG: Creating DenseFlipout final layer with units (expected):", layer_sizes[-1])
+        print("DEBUG: Creating DenseFlipout final layer with units:", layer_sizes[-1])
         flipout_layer = DenseFlipout(
             units=layer_sizes[-1],
             activation='linear',
@@ -225,13 +235,13 @@ class Plugin:
             output_shape=lambda s: (s[0], layer_sizes[-1]),
             name="bayesian_dense_flipout"
         )(x)
-        print("DEBUG: After DenseFlipout final layer (via Lambda), bayesian_output shape:", bayesian_output.shape, "Type:", type(bayesian_output))
+        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
         
         bias_layer = tf.keras.layers.Dense(
             units=layer_sizes[-1],
             activation='linear',
             use_bias=True,
-            kernel_initializer=RandomNormal(mean=0.0, stddev=0.05, seed=44),
+            kernel_initializer=lambda shape, dtype=None: tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44),
             name="deterministic_bias"
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
@@ -240,12 +250,10 @@ class Plugin:
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
         
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
-        print("DEBUG: Model created.")
-        print("       Model input shape (actual):", self.model.input_shape)
-        print("       Model output shape (actual):", self.model.output_shape)
+        print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
         
         optimizer = tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001))
-        print("DEBUG: Adam optimizer created with learning_rate (expected):", self.params.get('learning_rate', 0.0001))
+        print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
         self.model.compile(
             optimizer=optimizer,
             loss=Huber(),
@@ -254,7 +262,6 @@ class Plugin:
         print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
         print("Predictor Model Summary:")
         self.model.summary()
-
         print("✅ Standard ANN model built successfully.")
 
 
@@ -359,11 +366,11 @@ class Plugin:
             print(f"DEBUG: Sample {i+1}/{mc_samples} prediction. Expected shape: (n_samples, time_horizon), Actual shape:", preds_np.shape)
             predictions.append(preds_np)
         predictions = np.array(predictions)
-        print("DEBUG: All predictions collected. Expected predictions array shape: (mc_samples, n_samples, time_horizon), Actual shape:", predictions.shape)
+        print("DEBUG: All predictions collected. Expected shape: (mc_samples, n_samples, time_horizon), Actual shape:", predictions.shape)
         mean_predictions = np.mean(predictions, axis=0)
         uncertainty_estimates = np.std(predictions, axis=0)
-        print("DEBUG: Mean predictions computed. Shape:", mean_predictions.shape)
-        print("DEBUG: Uncertainty estimates computed (std dev). Shape:", uncertainty_estimates.shape)
+        print("DEBUG: Mean predictions shape:", mean_predictions.shape)
+        print("DEBUG: Uncertainty estimates shape:", uncertainty_estimates.shape)
         return mean_predictions, uncertainty_estimates
 
 
