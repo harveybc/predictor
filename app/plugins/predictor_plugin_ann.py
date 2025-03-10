@@ -249,15 +249,19 @@ class Plugin:
             epsilon=1e-7,
             amsgrad=False)
         
-        @tf.function(experimental_compile=False)
-        def combined_loss(y_true, y_pred):
+        # Define the combined loss function and disable XLA for it
+        def combined_loss_fn(y_true, y_pred):
             huber_loss = Huber(delta=1.0)(y_true, y_pred)
             sigma = config.get('mmd_sigma', 1.0)
             stat_weight = config.get('statistical_loss_weight', 1.0)
             mmd = mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
             penalty_term = tf.cast(1.0, tf.float32) * tf.stop_gradient(self.overfit_penalty)
             return huber_loss + (stat_weight * mmd) + penalty_term
+
+        # Wrap the loss function with a tf.function and disable XLA compilation for it.
+        combined_loss = tf.function(combined_loss_fn, experimental_compile=False)
         
+        # Choose the loss function based on the configuration.
         if config.get('use_mmd', False):
             loss_fn = combined_loss
             metrics = ['mae', lambda yt, yp: mmd_metric(yt, yp, config)]
