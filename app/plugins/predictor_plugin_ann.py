@@ -525,14 +525,15 @@ def gaussian_kernel_sum(x, y, sigma, chunk_size=16):
         x_chunk = x[i:end_i]  # shape [chunk, d]
         diff = tf.expand_dims(x_chunk, axis=1) - tf.expand_dims(y, axis=0)  # shape [chunk, m, d]
         squared_diff = tf.reduce_sum(tf.square(diff), axis=2)  # shape [chunk, m]
-        # Use tf.square for sigma to avoid potential issues with inline exponentiation.
         divisor = 2.0 * tf.square(sigma)
         kernel_chunk = tf.exp(-squared_diff / divisor)
         total += tf.reduce_sum(kernel_chunk)
         return i + chunk_size, total
-    
-    i, total = tf.while_loop(cond, body, [i, total])
+
+    max_iter = tf.math.floordiv(n + chunk_size - 1, chunk_size)
+    i, total = tf.while_loop(cond, body, [i, total], maximum_iterations=max_iter)
     return total
+
 
 def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
     """
