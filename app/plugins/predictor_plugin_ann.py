@@ -240,16 +240,17 @@ class Plugin:
         
         self.overfit_penalty = tf.Variable(0.0, trainable=False, dtype=tf.float32)
         self.model.overfit_penalty = self.overfit_penalty
-        
+        # Create the optimizer (as before)
         initial_lr = config.get('learning_rate', 0.01)
         adam_optimizer = Adam(
             learning_rate=initial_lr,
             beta_1=0.9,
             beta_2=0.999,
             epsilon=1e-7,
-            amsgrad=False)
-        
-        # Define the combined loss function and disable XLA for it
+            amsgrad=False
+        )
+
+        # Define the combined loss function (for when MMD is used)
         def combined_loss_fn(y_true, y_pred):
             huber_loss = Huber(delta=1.0)(y_true, y_pred)
             sigma = config.get('mmd_sigma', 1.0)
@@ -258,21 +259,21 @@ class Plugin:
             penalty_term = tf.cast(1.0, tf.float32) * tf.stop_gradient(self.overfit_penalty)
             return huber_loss + (stat_weight * mmd) + penalty_term
 
-        # Wrap the loss function with a tf.function and disable XLA compilation for it.
+        # Wrap the loss function with tf.function and disable XLA compilation
         combined_loss = tf.function(combined_loss_fn, experimental_compile=False)
-        
-        # Choose the loss function based on the configuration.
+
+        # Choose the loss function and metrics based on configuration
         if config.get('use_mmd', False):
             loss_fn = combined_loss
             metrics = ['mae', lambda yt, yp: mmd_metric(yt, yp, config)]
         else:
             loss_fn = Huber(delta=1.0)
             metrics = ['mae']
-        
+
         self.model.compile(
             optimizer=adam_optimizer,
             loss=loss_fn,
-            metrics=metrics   
+            metrics=metrics
         )
         print("DEBUG: Model compiled")
         print("Predictor Model Summary:")
