@@ -78,12 +78,8 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
+    # ----- Updated build_model method -----
     def build_model(self, input_shape, x_train, config=None):
-        """
-        Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
-        The final output layer is replaced by a DenseFlipout (without bias) plus a separate 
-        deterministic bias layer.
-        """
         from tensorflow.keras.losses import Huber
 
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
@@ -94,14 +90,15 @@ class Plugin:
 
         x_train = np.array(x_train)
         print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
-        
+
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
         print("DEBUG: input_shape is valid. Value:", input_shape)
-        
+
         train_size = x_train.shape[0]
         print("DEBUG: Number of training samples:", train_size)
-        
+
+        # Compute layer sizes
         layer_sizes = []
         current_size = self.params['initial_layer_size']
         print("DEBUG: Initial layer size:", current_size)
@@ -111,7 +108,6 @@ class Plugin:
         print("DEBUG: Number of intermediate layers:", int_layers)
         time_horizon = self.params['time_horizon']
         print("DEBUG: Time horizon (final layer size):", time_horizon)
-        
         for i in range(int_layers):
             layer_sizes.append(current_size)
             print(f"DEBUG: Appended layer size at layer {i+1}: {current_size}")
@@ -119,14 +115,14 @@ class Plugin:
             print(f"DEBUG: Updated current_size after division at layer {i+1}: {current_size}")
         layer_sizes.append(time_horizon)
         print("DEBUG: Final layer sizes:", layer_sizes)
-        
+
         print("DEBUG: Standard ANN input_shape:", input_shape)
-        
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         print("DEBUG: Created input layer. Shape:", inputs.shape)
         x = inputs
         print("DEBUG: x tensor from inputs. Shape:", x.shape, "Type:", type(x))
-        
+
+        # Build dense layers
         for idx, size in enumerate(layer_sizes[:-1]):
             print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
             x = tf.keras.layers.Dense(
@@ -138,19 +134,17 @@ class Plugin:
         print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
         x = tf.keras.layers.BatchNormalization()(x)
         print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
-        
+
         if hasattr(x, '_keras_history'):
             print("DEBUG: x is already a KerasTensor; no conversion needed.")
         else:
             x = tf.convert_to_tensor(x)
             print("DEBUG: Converted x to tensor. New type:", type(x))
-        
+
+        # Set up the DenseFlipout final (Bayesian) layer.
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", KL_WEIGHT)
-        
-        default_bias_size = 0
-        print("DEBUG: Using default_bias_size =", default_bias_size)
-        
+        # Define custom posterior and prior functions (unchanged)
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
@@ -164,11 +158,10 @@ class Plugin:
             print("DEBUG: posterior: computed n =", n)
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior: computed c =", c)
-            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
-            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
+            loc = tf.Variable(tf.random.stateless_normal([n], seed=[42,0], stddev=0.05, dtype=dtype), trainable=trainable, name="posterior_loc")
+            scale = tf.Variable(tf.random.stateless_normal([n], seed=[43,0], stddev=0.05, dtype=dtype), trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
-            print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
             try:
                 loc_reshaped = tf.reshape(loc, kernel_shape)
                 scale_reshaped = tf.reshape(scale, kernel_shape)
@@ -180,7 +173,7 @@ class Plugin:
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-        
+
         def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In prior_fn:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
@@ -205,7 +198,7 @@ class Plugin:
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-        
+
         DenseFlipout = tfp.layers.DenseFlipout
         print("DEBUG: Creating DenseFlipout final layer with units:", layer_sizes[-1])
         flipout_layer = DenseFlipout(
@@ -216,13 +209,11 @@ class Plugin:
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
             name="output_layer"
         )
-        bayesian_output = tf.keras.layers.Lambda(
-            lambda t: flipout_layer(t),
-            output_shape=lambda s: (s[0], layer_sizes[-1]),
-            name="bayesian_dense_flipout"
-        )(x)
+        # Use a Lambda layer wrapper so that the DenseFlipout is called as a function
+        bayesian_output = tf.keras.layers.Lambda(lambda t: flipout_layer(t), 
+                                                output_shape=lambda s: (s[0], layer_sizes[-1]),
+                                                name="bayesian_dense_flipout")(x)
         print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
-        
         bias_layer = tf.keras.layers.Dense(
             units=layer_sizes[-1],
             activation='linear',
@@ -231,16 +222,16 @@ class Plugin:
             name="deterministic_bias"
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
-        
         outputs = bayesian_output + bias_layer
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
-        
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
-        
+
+        # Set up overfit penalty variable (if needed)
         self.overfit_penalty = tf.Variable(0.0, trainable=False, dtype=tf.float32)
         self.model.overfit_penalty = self.overfit_penalty
-        # Create the optimizer (as before)
+
+        # Create the optimizer
         initial_lr = config.get('learning_rate', 0.01)
         adam_optimizer = Adam(
             learning_rate=initial_lr,
@@ -249,48 +240,32 @@ class Plugin:
             epsilon=1e-7,
             amsgrad=False
         )
+        print("DEBUG: Adam optimizer created with learning_rate:", initial_lr)
 
-        # Define the combined loss function (for when MMD is used)
-        def combined_loss_fn(y_true, y_pred):
-            huber_loss = Huber(delta=1.0)(y_true, y_pred)
-            sigma = config.get('mmd_sigma', 1.0)
-            stat_weight = config.get('statistical_loss_weight', 1.0)
-            mmd = mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
-            penalty_term = tf.cast(1.0, tf.float32) * tf.stop_gradient(self.overfit_penalty)
-            return huber_loss + (stat_weight * mmd) + penalty_term
+        # For KL-based loss we simply use Huber as the base loss.
+        # (DenseFlipout already adds its own KL divergence loss to model.losses.)
+        loss_fn = Huber(delta=1.0)
+        metrics = ['mae']
 
-        # Wrap the loss function with tf.function and disable XLA compilation
-        combined_loss = tf.function(combined_loss_fn, experimental_compile=False)
-
-        # Choose the loss function and metrics based on configuration
-        if config.get('use_mmd', False):
-            loss_fn = combined_loss
-            metrics = ['mae', lambda yt, yp: mmd_metric(yt, yp, config)]
-        else:
-            loss_fn = Huber(delta=1.0)
-            metrics = ['mae']
+        # Wrap the loss function to disable XLA compilation.
+        loss_fn = tf.function(loss_fn, experimental_compile=False)
 
         self.model.compile(
             optimizer=adam_optimizer,
             loss=loss_fn,
             metrics=metrics
         )
-        print("DEBUG: Model compiled")
+        print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
         print("Predictor Model Summary:")
         self.model.summary()
         print("✅ Standard ANN model built successfully.")
 
 
-    # --------------------- Updated train Method in Plugin ---------------------
-    # --------------------- Updated train Method in Plugin ---------------------
+    # ----- Updated train method -----
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
-        """
-        Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
-        Implements KL annealing, ReduceLROnPlateau, and uses custom callbacks to monitor learning rate,
-        EarlyStopping and LRReducer wait counters, and the MMD metric on the validation set.
-        This implementation follows the exact structure and prints the exact same messages as used in the autoencoder.
-        """
         import tensorflow as tf
+        # Disable XLA JIT globally to avoid fusion issues (this should prevent the StringFormat error)
+        tf.config.optimizer.set_jit(False)
         if isinstance(x_train, tuple):
             x_train = x_train[0]
         if x_val is not None and isinstance(x_val, tuple):
@@ -301,10 +276,7 @@ class Plugin:
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
 
-        # Disable XLA JIT compilation to avoid register spillage warnings.
-        tf.config.optimizer.set_jit(False)
-
-        # KL Annealing Callback (same as before)
+        # KL Annealing Callback
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
@@ -322,25 +294,13 @@ class Plugin:
 
         early_patience = config.get('early_patience', 32)
         early_monitor = config.get('early_monitor', 'val_loss')
-        early_stopping = EarlyStopping(monitor=early_monitor, patience=early_patience, restore_best_weights=True, verbose=1)
-
-        update_penalty_cb = UpdateOverfitPenalty(config)
-
-        lr_reducer = tf.keras.callbacks.ReduceLROnPlateau(
-            monitor=early_monitor,
-            factor=0.316227766,  # approx. 1/sqrt(10)
-            patience=int(self.params.get('patience', 10) / 3),
-            verbose=1,
-            min_lr=config.get('min_lr', 1e-8)
+        early_stopping = tf.keras.callbacks.EarlyStopping(
+            monitor=early_monitor, patience=early_patience, restore_best_weights=True, verbose=1
         )
 
-        debug_lr_cb = DebugLearningRateCallback(early_stopping, lr_reducer)
-        memory_cleanup_cb = MemoryCleanupCallback()
+        # Use only the KL annealing callback (and early stopping) since we are no longer using MMD.
+        callbacks = [kl_callback, early_stopping]
 
-        val_data = (x_val, y_val)
-
-        #callbacks = [kl_callback, early_stopping, update_penalty_cb, lr_reducer, debug_lr_cb, memory_cleanup_cb]
-        callbacks = [kl_callback, early_stopping, update_penalty_cb, lr_reducer, debug_lr_cb, memory_cleanup_cb]    
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
@@ -348,7 +308,7 @@ class Plugin:
             verbose=1,
             shuffle=True,
             callbacks=callbacks,
-            validation_data=val_data
+            validation_split=0.2
         )
 
         print("Training completed.")
