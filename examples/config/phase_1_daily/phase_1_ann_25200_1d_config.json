@@ -25,7 +25,8 @@
     "l2_reg": 0,
     "kl_weight": 1e-1,
     "kl_anneal_epochs": 50,
-    "patience": 60
+    "early_patience": 60,
+    "use_mmd": true
            
 
     

@@ -49,5 +49,5 @@ DEFAULT_VALUES = {
     'use_sliding_window' : False,
     "kl_weight": 1e-6,
     "kl_anneal_epochs": 100,        
-    
+    "use_mmd": True,
 }
