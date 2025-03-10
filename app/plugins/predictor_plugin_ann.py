@@ -119,9 +119,9 @@ class Plugin:
                 kernel_initializer=random_normal_initializer_42,
                 name=f"dense_layer_{idx+1}"
             )(x)
-            print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
-            x = tf.keras.layers.BatchNormalization(name=f"batchnorm_{idx+1}")(x)
-            print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
+        print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
+        x = tf.keras.layers.BatchNormalization()(x)
+        print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
         
         if hasattr(x, '_keras_history'):
             print("DEBUG: x is already a KerasTensor; no conversion needed.")
