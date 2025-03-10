@@ -212,8 +212,7 @@ class Plugin:
             kernel_posterior_fn=posterior_mean_field_custom,
             kernel_prior_fn=prior_fn,
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-            name="output_layer",
-            kernel_regularizer=l2(l2_reg)
+            name="output_layer"
         )
         bayesian_output = tf.keras.layers.Lambda(
             lambda t: flipout_layer(t),
