@@ -167,7 +167,7 @@ class Plugin:
             name="output_layer"
         )
         # Wrap the DenseFlipout call inside a Lambda layer to ensure proper KerasTensor flow.
-        outputs = tf.keras.layers.Lambda(lambda t: flipout_layer(t), name="flipout_wrapper")(x)
+        outputs = tf.keras.layers.Lambda(lambda t: flipout_layer(t), name="bayesian_dense_flipout")(x)
         print("DEBUG: After DenseFlipout final layer (via Lambda), outputs shape:", outputs.shape, "Type:", type(outputs))
         
         # ---------------------------
