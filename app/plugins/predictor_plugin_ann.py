@@ -166,10 +166,10 @@ class Plugin:
         
         # ---------------------------
         # Define custom posterior and prior functions with explicit signature.
-        # These functions assume: (kernel_shape, bias_size, dtype)
-        # If bias_size is not convertible, default to 0.
+        # These functions assume the call signature: (dtype, kernel_shape, bias_size, trainable, name)
+        # If bias_size cannot be converted to int, default to 0.
         # ---------------------------
-        def posterior_mean_field_custom(kernel_shape, bias_size, dtype=None):
+        def posterior_mean_field_custom(dtype, kernel_shape, bias_size=0, trainable=True, name=None):
             try:
                 bias_size = int(bias_size)
             except Exception:
@@ -177,7 +177,7 @@ class Plugin:
             n = int(np.prod(kernel_shape)) + bias_size
             c = np.log(np.expm1(1.))
             return tf.keras.Sequential([
-                tfp.layers.VariableLayer(2 * n, dtype=dtype),
+                tfp.layers.VariableLayer(2 * n, dtype=dtype, trainable=trainable, name=name),
                 tfp.layers.DistributionLambda(
                     lambda t: tfp.distributions.Independent(
                         tfp.distributions.Normal(loc=t[..., :n],
@@ -185,7 +185,7 @@ class Plugin:
                         reinterpreted_batch_ndims=1))
             ])
 
-        def prior_fn(kernel_shape, bias_size, dtype=None):
+        def prior_fn(dtype, kernel_shape, bias_size=0, trainable=True, name=None):
             try:
                 bias_size = int(bias_size)
             except Exception:
