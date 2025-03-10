@@ -575,13 +575,22 @@ def mmd_metric(y_true, y_pred, config):
     return mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
 
 # Updated combined loss function (wrapped with tf.function and experimental_compile=False)
-def create_combined_loss(config, overfit_penalty):
-    @tf.function(experimental_compile=False)
-    def combined_loss(y_true, y_pred):
-        huber_loss = Huber(delta=1.0)(y_true, y_pred)
-        sigma = config.get('mmd_sigma', 1.0)
-        stat_weight = config.get('statistical_loss_weight', 1.0)
-        mmd = mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
-        penalty_term = tf.cast(1.0, tf.float32) * tf.stop_gradient(overfit_penalty)
-        return huber_loss + (stat_weight * mmd) + penalty_term
-    return combined_loss
+@tf.function(experimental_compile=False)
+def combined_loss(y_true, y_pred):
+    huber_loss = Huber(delta=1.0)(y_true, y_pred)
+    sigma = config.get('mmd_sigma', 1.0)
+    stat_weight = config.get('statistical_loss_weight', 1.0)
+    mmd = mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
+    penalty_term = tf.cast(1.0, tf.float32) * tf.stop_gradient(self.overfit_penalty)
+    return huber_loss + (stat_weight * mmd) + penalty_term
+
+
+# --- Updated Named initializers using stateless_random ---
+def random_normal_initializer_42(shape, dtype=None):
+    # Use a fixed seed vector, e.g. [42, 0]
+    return tf.random.stateless_normal(shape, seed=[42, 0], mean=0.0, stddev=0.05, dtype=dtype)
+
+def random_normal_initializer_44(shape, dtype=None):
+    # Use a different fixed seed vector, e.g. [44, 0]
+    return tf.random.stateless_normal(shape, seed=[44, 0], mean=0.0, stddev=0.05, dtype=dtype)
+
