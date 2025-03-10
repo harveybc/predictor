@@ -148,10 +148,13 @@ class Plugin:
             print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape, "Type:", type(x))
         
         # ---------------------------
-        # Ensure x is a tensor (convert in case it's a tuple)
+        # Check if x is already a KerasTensor; skip conversion if so.
         # ---------------------------
-        x = tf.convert_to_tensor(x)
-        print("DEBUG: After tf.convert_to_tensor, x shape:", x.shape, "Type:", type(x))
+        if hasattr(x, '_keras_history'):
+            print("DEBUG: x is already a KerasTensor; skipping tf.convert_to_tensor conversion.")
+        else:
+            x = tf.convert_to_tensor(x)
+            print("DEBUG: Converted x to tensor using tf.convert_to_tensor. New type:", type(x))
         
         # ---------------------------
         # Build final Bayesian output layer using DenseFlipout
