@@ -75,37 +75,25 @@ class Plugin:
         import numpy as np
         from tensorflow.keras.losses import Huber
 
-        # ---------------------------
-        # Print versions of key packages
-        # ---------------------------
+        # Set KL divergence weight to a higher value for stronger regularization.
+        KL_WEIGHT = 1e-3
+
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
         print("DEBUG: numpy version:", np.__version__)
 
-        # ---------------------------
-        # Convert x_train to a numpy array and print details
-        # ---------------------------
         x_train = np.array(x_train)
         print("DEBUG: x_train converted to numpy array.")
         print("       Expected type: <class 'numpy.ndarray'>, Actual type:", type(x_train))
         print("       Expected shape: (n_samples, n_features), Actual shape:", x_train.shape)
         
-        # ---------------------------
-        # Validate input_shape
-        # ---------------------------
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
         print("DEBUG: input_shape is valid. Expected type int. Actual input_shape:", input_shape)
         
-        # ---------------------------
-        # Determine training sample count
-        # ---------------------------
         train_size = x_train.shape[0]
         print("DEBUG: Number of training samples (expected):", train_size)
         
-        # ---------------------------
-        # Compute layer sizes based on parameters
-        # ---------------------------
         layer_sizes = []
         current_size = self.params['initial_layer_size']
         print("DEBUG: Initial layer size (expected):", current_size)
@@ -126,57 +114,37 @@ class Plugin:
         
         print("DEBUG: Standard ANN input_shape (expected):", input_shape)
         
-        # ---------------------------
-        # Build input layer
-        # ---------------------------
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         print("DEBUG: Created input layer. Expected shape: (None, {})".format(input_shape))
         x = inputs
         print("DEBUG: Initial x tensor from inputs. Shape:", x.shape, "Type:", type(x))
         
-        # ---------------------------
-        # Build intermediate Dense layers with BatchNormalization
-        # ---------------------------
         for idx, size in enumerate(layer_sizes[:-1]):
             print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
             x = tf.keras.layers.Dense(
                 units=size,
                 activation=self.params.get('activation', 'tanh'),
-                kernel_initializer='glorot_uniform',
+                kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=42),
                 name=f"dense_layer_{idx+1}"
             )(x)
             print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape, "Type:", type(x))
             x = tf.keras.layers.BatchNormalization(name=f"batchnorm_{idx+1}")(x)
             print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape, "Type:", type(x))
         
-        # ---------------------------
-        # Check if x is already a KerasTensor; skip conversion if so.
-        # ---------------------------
         if hasattr(x, '_keras_history'):
             print("DEBUG: x is already a KerasTensor; skipping tf.convert_to_tensor conversion.")
         else:
             x = tf.convert_to_tensor(x)
             print("DEBUG: Converted x to tensor using tf.convert_to_tensor. New type:", type(x))
         
-        # ---------------------------
-        # KL Annealing: Initialize KL weight variable.
-        # ---------------------------
         target_kl = self.params.get('kl_weight', 1e-4)
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight is", target_kl)
         
-        # ---------------------------
-        # Get default bias_size from configuration (if needed)
-        # Here we set the bias_size to 0 for the DenseFlipout layer.
-        # ---------------------------
+        # We force bias_size to 0 for the DenseFlipout layer.
         default_bias_size = 0
         print("DEBUG: Using default_bias_size =", default_bias_size)
         
-        # ---------------------------
-        # Define custom posterior and prior functions with explicit signature.
-        # These functions assume: (dtype, kernel_shape, bias_size, trainable, name)
-        # We force bias_size to 0 so that the number of parameters equals np.prod(kernel_shape).
-        # ---------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
             print("       dtype =", dtype)
@@ -187,16 +155,15 @@ class Plugin:
             if not isinstance(name, str):
                 print("DEBUG: 'name' is not a string; setting name to None")
                 name = None
-            bias_size = 0  # Force bias_size to 0
+            bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
             print("DEBUG: posterior_mean_field_custom: computed n =", n)
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior_mean_field_custom: computed c =", c)
-            loc = tf.Variable(tf.random.normal([n]), dtype=dtype, trainable=trainable, name="posterior_loc")
-            scale = tf.Variable(tf.random.normal([n]), dtype=dtype, trainable=trainable, name="posterior_scale")
+            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
+            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
-            print("DEBUG: posterior_mean_field_custom: created loc with shape", loc.shape,
-                "and scale with shape", scale.shape)
+            print("DEBUG: posterior_mean_field_custom: created loc with shape", loc.shape, "and scale with shape", scale.shape)
             try:
                 loc_reshaped = tf.reshape(loc, kernel_shape)
                 scale_reshaped = tf.reshape(scale, kernel_shape)
@@ -219,7 +186,7 @@ class Plugin:
             if not isinstance(name, str):
                 print("DEBUG: 'name' is not a string in prior_fn; setting name to None")
                 name = None
-            bias_size = 0  # Force bias_size to 0
+            bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
             print("DEBUG: prior_fn: computed n =", n)
             loc = tf.zeros([n], dtype=dtype)
@@ -236,9 +203,7 @@ class Plugin:
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
 
-        # ---------------------------
-        # Build final Bayesian output layer using DenseFlipout, wrapped in a Lambda layer.
-        # ---------------------------
+        # Build final Bayesian output layer using DenseFlipout, without bias.
         DenseFlipout = tfp.layers.DenseFlipout
         print("DEBUG: Creating DenseFlipout final layer with units (expected):", layer_sizes[-1])
         flipout_layer = DenseFlipout(
@@ -246,7 +211,7 @@ class Plugin:
             activation='linear',
             kernel_posterior_fn=posterior_mean_field_custom,
             kernel_prior_fn=prior_fn,
-            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.kl_weight_var,
+            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
             name="output_layer"
         )
         bayesian_output = tf.keras.layers.Lambda(
@@ -261,6 +226,7 @@ class Plugin:
             units=layer_sizes[-1],
             activation='linear',
             use_bias=True,
+            kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=44),
             name="deterministic_bias"
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
@@ -268,9 +234,6 @@ class Plugin:
         outputs = bayesian_output + bias_layer
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
         
-        # ---------------------------
-        # Create and compile the model
-        # ---------------------------
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         print("DEBUG: Model created.")
         print("       Model input shape (actual):", self.model.input_shape)
@@ -296,7 +259,6 @@ class Plugin:
         Implements KL annealing via a custom callback.
         """
         import tensorflow as tf
-        # Ensure x_train and x_val are proper NumPy arrays.
         if isinstance(x_train, tuple):
             x_train = x_train[0]
         if x_val is not None and isinstance(x_val, tuple):
@@ -307,9 +269,6 @@ class Plugin:
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
         
-        # ---------------------------
-        # Define KL Annealing Callback
-        # ---------------------------
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
@@ -321,9 +280,6 @@ class Plugin:
                 self.plugin.kl_weight_var.assign(new_kl)
                 print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
 
-        # ---------------------------
-        # Get annealing parameters and create callbacks
-        # ---------------------------
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
         target_kl = self.params.get('kl_weight', 1e-4)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
@@ -406,18 +362,15 @@ class Plugin:
         return mean_predictions, uncertainty_estimates
 
 
-
-
-
     def predict(self, data):
+        import os
+        import logging
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-        # Extract array if data is a tuple.
         if isinstance(data, tuple):
             data = data[0]
         preds = self.model.predict(data)
         return preds
-
 
 
     def calculate_mae(self, y_true, y_pred):
@@ -427,16 +380,14 @@ class Plugin:
         print(f"Calculated MAE: {mae}")
         return mae
 
+
     def save(self, file_path):
-        """
-        Save the trained model to file.
-        """
+        from tensorflow.keras.models import save_model
         save_model(self.model, file_path)
         print(f"Predictor model saved to {file_path}")
 
+
     def load(self, file_path):
-        """
-        Load a trained model from file.
-        """
+        from tensorflow.keras.models import load_model
         self.model = load_model(file_path)
         print(f"Model loaded from {file_path}")
