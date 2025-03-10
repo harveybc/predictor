@@ -21,7 +21,7 @@ class Plugin:
     This plugin builds, trains, and evaluates an ANN that outputs (N, time_horizon).
     """
 
-    # Default parameters
+    # Default parameters (note new 'kl_weight' added to tune KL divergence in DenseFlipout)
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 3,
@@ -29,7 +29,8 @@ class Plugin:
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
         'activation': 'tanh',
-        'l2_reg': 1e-5
+        'l2_reg': 1e-5,
+        'kl_weight': 1e-4
     }
     
     # Variables for debugging
@@ -160,10 +161,14 @@ class Plugin:
         # Build final Bayesian output layer using DenseFlipout, wrapped in a Lambda layer
         # ---------------------------
         DenseFlipout = tfp.layers.DenseFlipout
+        # Get the KL weight parameter to control the KL divergence loss
+        kl_weight = self.params.get('kl_weight', 1e-4)
+        print("DEBUG: Using kl_weight for DenseFlipout:", kl_weight)
         print("DEBUG: Creating DenseFlipout final layer with units (expected):", layer_sizes[-1])
         flipout_layer = DenseFlipout(
             units=layer_sizes[-1], 
-            activation='linear', 
+            activation='linear',
+            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * kl_weight,
             name="output_layer"
         )
         # Wrap the DenseFlipout call inside a Lambda layer to ensure proper KerasTensor flow.
