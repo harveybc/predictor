@@ -27,6 +27,50 @@ def random_normal_initializer_44(shape, dtype=None):
     return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
 
 
+def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
+    """
+    Compute the sum of Gaussian kernel values between each pair of rows in x and y
+    in a memory-efficient manner by processing in chunks.
+    """
+    n = tf.shape(x)[0]
+    total = tf.constant(0.0, dtype=tf.float32)
+    i = tf.constant(0, dtype=tf.int32)
+    # Try to use a static value if available; otherwise use a fallback.
+    static_n = x.shape[0]
+    if static_n is not None:
+        max_iter = tf.constant((static_n + chunk_size - 1) // chunk_size, dtype=tf.int32)
+    else:
+        max_iter = tf.constant(1000, dtype=tf.int32)  # fallback value
+    def cond(i, total):
+        return tf.less(i, n)
+    def body(i, total):
+        end_i = tf.minimum(i + chunk_size, n)
+        x_chunk = x[i:end_i]  # shape [chunk, d]
+        diff = tf.expand_dims(x_chunk, axis=1) - tf.expand_dims(y, axis=0)  # shape [chunk, m, d]
+        squared_diff = tf.reduce_sum(tf.square(diff), axis=2)  # shape [chunk, m]
+        divisor = 2.0 * tf.square(sigma)
+        kernel_chunk = tf.exp(-squared_diff / divisor)
+        total += tf.reduce_sum(kernel_chunk)
+        return i + chunk_size, total
+    i, total = tf.while_loop(cond, body, [i, total], maximum_iterations=max_iter)
+    return total
+
+def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
+    """
+    Compute the Maximum Mean Discrepancy (MMD) loss between y_true and y_pred.
+    """
+    y_true = tf.cast(y_true, tf.float32)
+    y_pred = tf.cast(y_pred, tf.float32)
+    y_true = tf.reshape(y_true, [tf.shape(y_true)[0], -1])
+    y_pred = tf.reshape(y_pred, [tf.shape(y_pred)[0], -1])
+    sum_K_xx = gaussian_kernel_sum(y_true, y_true, sigma, chunk_size)
+    sum_K_yy = gaussian_kernel_sum(y_pred, y_pred, sigma, chunk_size)
+    sum_K_xy = gaussian_kernel_sum(y_true, y_pred, sigma, chunk_size)
+    m = tf.cast(tf.shape(y_true)[0], tf.float32)
+    n = tf.cast(tf.shape(y_pred)[0], tf.float32)
+    mmd = sum_K_xx / (m * m) + sum_K_yy / (n * n) - 2 * sum_K_xy / (m * n)
+    return mmd
+
 class Plugin:
     """
     ANN Predictor Plugin using Keras for multi-step forecasting.
@@ -253,7 +297,8 @@ class Plugin:
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the model with shape => x_train (N, input_dim), y_train (N, time_horizon).
-        Implements KL annealing via a custom callback.
+        Implements KL annealing via a custom callback and uses a combined loss
+        that adds Huber loss and an MMD loss term. Early-stopping and MMD info are printed.
         """
         import tensorflow as tf
         if isinstance(x_train, tuple):
@@ -266,6 +311,10 @@ class Plugin:
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
         
+        # Disable XLA JIT compilation to help prevent register spills.
+        tf.config.optimizer.set_jit(False)
+        
+        # Define KL annealing callback.
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
@@ -276,19 +325,52 @@ class Plugin:
                 new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
                 self.plugin.kl_weight_var.assign(new_kl)
                 print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
-
+        
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        callbacks = [kl_callback]
         
-        early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
+        early_stopping = tf.keras.callbacks.EarlyStopping(
             monitor='val_loss',
             patience=self.params.get('patience', 10),
             restore_best_weights=True,
             verbose=1
         )
-        callbacks.append(early_stopping_monitor)
+        
+        # New callback to print early stopping counter and MMD lambda.
+        class MMDAndEarlyStoppingCallback(tf.keras.callbacks.Callback):
+            def __init__(self, early_stopping_cb, x_val, y_val, config):
+                super().__init__()
+                self.early_stopping_cb = early_stopping_cb
+                self.x_val = x_val
+                self.y_val = y_val
+                self.mmd_lambda = config.get('statistical_loss_weight', 1.0)
+                self.mmd_sigma = config.get('mmd_sigma', 1.0)
+            def on_epoch_end(self, epoch, logs=None):
+                es_wait = getattr(self.early_stopping_cb, "wait", None)
+                # Compute MMD on the validation set using the current model predictions.
+                y_pred = self.model.predict(self.x_val)
+                mmd_val = mmd_loss_term(self.y_val, y_pred, self.mmd_sigma, chunk_size=16)
+                print(f"DEBUG: Epoch {epoch+1}: EarlyStopping wait = {es_wait}, MMD lambda = {self.mmd_lambda}, Validation MMD = {mmd_val.numpy()}")
+        
+        mmd_es_callback = MMDAndEarlyStoppingCallback(early_stopping, x_val, y_val, config)
+        
+        callbacks = [kl_callback, early_stopping, mmd_es_callback]
+        
+        # --- Define the combined loss function using MMD (wrapped with tf.function) ---
+        @tf.function(experimental_compile=False)
+        def combined_loss_fn(y_true, y_pred):
+            huber_loss = Huber(delta=1.0)(y_true, y_pred)
+            sigma = config.get('mmd_sigma', 1.0)
+            stat_weight = config.get('statistical_loss_weight', 1.0)
+            mmd = mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
+            return huber_loss + (stat_weight * mmd)
+        
+        loss_fn = combined_loss_fn  # We always use the combined loss here.
+        
+        # Recompile the model with the new loss function.
+        optimizer = tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001))
+        self.model.compile(optimizer=optimizer, loss=loss_fn, metrics=['mae'])
         
         history = self.model.fit(
             x_train, y_train,
@@ -297,7 +379,7 @@ class Plugin:
             verbose=1,
             shuffle=True,
             callbacks=callbacks,
-            validation_split=0.2
+            validation_data=(x_val, y_val)
         )
         
         print("Training completed.")
@@ -308,11 +390,11 @@ class Plugin:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
         
         preds_training_mode = self.model(x_train, training=True)
-        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
+        mae_training_mode = float(tf.reduce_mean(tf.abs(preds_training_mode - y_train)).numpy())
         print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
         
         preds_eval_mode = self.model(x_train, training=False)
-        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
+        mae_eval_mode = float(tf.reduce_mean(tf.abs(preds_eval_mode - y_train)).numpy())
         print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
         
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
@@ -329,7 +411,6 @@ class Plugin:
         val_r2 = r2_score(y_val, val_predictions)
         
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
-
 
     def predict_with_uncertainty(self, data, mc_samples=100):
         """
