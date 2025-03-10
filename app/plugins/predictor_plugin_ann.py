@@ -247,10 +247,7 @@ class Plugin:
             beta_1=0.9,
             beta_2=0.999,
             epsilon=1e-7,
-            amsgrad=False,
-            clipnorm=1.0,
-            clipvalue=0.5
-        )
+            amsgrad=False)
         
         def combined_loss(y_true, y_pred):
             huber_loss = Huber(delta=1.0)(y_true, y_pred)
