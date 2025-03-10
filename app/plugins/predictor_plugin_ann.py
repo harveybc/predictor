@@ -29,8 +29,7 @@ class Plugin:
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
         'activation': 'tanh',
-        'l2_reg': 1e-5,
-        'kl_weight': 1e-4
+        'l2_reg': 1e-5
     }
     
     # Variables for debugging
