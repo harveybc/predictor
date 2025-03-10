@@ -512,23 +512,19 @@ class MemoryCleanupCallback(Callback):
 def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
     """
     Compute the sum of Gaussian kernel values between each pair of rows in x and y
-    in a memory-efficient manner by processing in chunks.
+    in a memory‑efficient manner by processing in chunks.
+    
     x: Tensor of shape [n, d]
     y: Tensor of shape [m, d]
     sigma: Bandwidth parameter for the Gaussian kernel.
-    Returns a scalar equal to the sum of exp(-||x_i - y_j||^2/(2*sigma^2)) for all pairs.
+    Returns a scalar equal to the sum of exp(–||x_i – y_j||²/(2*sigma²)) for all pairs.
+    
+    Note: Debug print statements have been removed to prevent unsupported XLA ops.
     """
     n = tf.shape(x)[0]
     total = tf.constant(0.0, dtype=tf.float32)
     i = tf.constant(0)
-    # Try to get a static value for n for maximum_iterations.
-    n_static = tf.get_static_value(n)
-    if n_static is not None:
-        max_iter = (n_static + chunk_size - 1) // chunk_size
-        print(f"DEBUG: Static n found: {n_static}; setting maximum_iterations = {max_iter}")
-    else:
-        max_iter = tf.math.floordiv(n + chunk_size - 1, chunk_size)
-        print("DEBUG: n is dynamic; maximum_iterations set to", max_iter)
+    max_iter = tf.math.floordiv(n + chunk_size - 1, chunk_size)
     
     def cond(i, total):
         return tf.less(i, n)
@@ -540,13 +536,10 @@ def gaussian_kernel_sum(x, y, sigma, chunk_size=8):
         squared_diff = tf.reduce_sum(tf.square(diff), axis=2)  # shape [chunk, m]
         divisor = 2.0 * tf.square(sigma)
         kernel_chunk = tf.exp(-squared_diff / divisor)
-        new_total = total + tf.reduce_sum(kernel_chunk)
-        # Debug: Print current iteration and new_total (if small enough)
-        tf.print("DEBUG: gaussian_kernel_sum - i:", i, "end_i:", end_i, "partial sum:", tf.reduce_sum(kernel_chunk))
-        return i + chunk_size, new_total
+        total += tf.reduce_sum(kernel_chunk)
+        return i + chunk_size, total
 
     i, total = tf.while_loop(cond, body, [i, total], maximum_iterations=max_iter)
-    print("DEBUG: Finished gaussian_kernel_sum; total =", total)
     return total
 
 
@@ -554,6 +547,8 @@ def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
     """
     Compute the Maximum Mean Discrepancy (MMD) loss between y_true and y_pred using
     a memory‑efficient chunked Gaussian kernel sum.
+    
+    Debug printing has been removed to avoid generating unsupported XLA ops.
     """
     y_true = tf.cast(y_true, tf.float32)
     y_pred = tf.cast(y_pred, tf.float32)
@@ -564,23 +559,12 @@ def mmd_loss_term(y_true, y_pred, sigma, chunk_size=16):
     sum_K_yy = gaussian_kernel_sum(y_pred, y_pred, sigma, chunk_size)
     sum_K_xy = gaussian_kernel_sum(y_true, y_pred, sigma, chunk_size)
     
-    # Only print debug messages if running eagerly
-    if tf.executing_eagerly():
-        tf.print("DEBUG: Computed kernel sums:",
-                 "sum_K_xx =", sum_K_xx,
-                 "sum_K_yy =", sum_K_yy,
-                 "sum_K_xy =", sum_K_xy)
-    
     m = tf.cast(tf.shape(y_true)[0], tf.float32)
     n = tf.cast(tf.shape(y_pred)[0], tf.float32)
     mmd = sum_K_xx / (m * m) + sum_K_yy / (n * n) - 2 * sum_K_xy / (m * n)
-    
-    if tf.executing_eagerly():
-        tf.print("DEBUG: m =", m, "n =", n, "MMD =", mmd)
-    
     return mmd
+
 
 def mmd_metric(y_true, y_pred, config):
     sigma = config.get('mmd_sigma', 1.0)
     return mmd_loss_term(y_true, y_pred, sigma, chunk_size=16)
-
