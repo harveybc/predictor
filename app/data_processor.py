@@ -367,6 +367,8 @@ def run_prediction_pipeline(config, plugin):
     from sklearn.metrics import r2_score
     from sklearn.model_selection import TimeSeriesSplit
     import matplotlib.pyplot as plt
+    import json
+
     start_time = time.time()
 
     iterations = config.get("iterations", 1)
@@ -491,7 +493,6 @@ def run_prediction_pipeline(config, plugin):
         iteration_end_time = time.time()
         print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
-    # (Rest of run_prediction_pipeline remains unchanged.)
     # -----------------------
     # Aggregate statistics
     # -----------------------
@@ -526,7 +527,9 @@ def run_prediction_pipeline(config, plugin):
     results_df.to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
 
+    # -----------------------
     # Save final validation predictions
+    # -----------------------
     final_test_file = config.get("output_file", "test_predictions.csv")
     if 'test_predictions' in locals() and test_predictions is not None:
         # Denormalize predictions (simple denormalization)
@@ -543,25 +546,23 @@ def run_prediction_pipeline(config, plugin):
                 print("Error: Normalization JSON is not a valid dictionary.")
                 norm_json = {}
             if config.get("use_returns", False):
-                # Use BC-BO normalization parameters instead of CLOSE
-                if "BC-BO" in norm_json:
-                    min_val = norm_json["BC-BO"].get("min", 0)
-                    max_val = norm_json["BC-BO"].get("max", 1)
-                    test_predictions = test_predictions * (max_val - min_val) + min_val
+                if "BC-BO" in norm_json and "CLOSE" in norm_json:
+                    # Denormalize predicted returns using BC-BO parameters
+                    bcbo_min = norm_json["BC-BO"].get("min", 0)
+                    bcbo_max = norm_json["BC-BO"].get("max", 1)
+                    denorm_pred_returns = test_predictions * (bcbo_max - bcbo_min) + bcbo_min
+                    # Denormalize baseline (current close) using CLOSE parameters
+                    close_min = norm_json["CLOSE"].get("min", 0)
+                    close_max = norm_json["CLOSE"].get("max", 1)
+                    denorm_baseline = datasets["baseline_test"] * (close_max - close_min) + close_min
+                    test_predictions = denorm_pred_returns + denorm_baseline
                 else:
-                    print("Warning: 'BC-BO' not found in normalization JSON; skipping denormalization for returns.")
+                    print("Warning: 'BC-BO' and/or 'CLOSE' not found in normalization JSON; skipping proper denormalization for returns.")
             else:
                 if "CLOSE" in norm_json:
-                    min_val = norm_json["CLOSE"].get("min", 0)
-                    max_val = norm_json["CLOSE"].get("max", 1)
-                    test_predictions = test_predictions * (max_val - min_val) + min_val
-        # If use_returns is true, add the baseline close values to the predicted returns
-        if config.get("use_returns", False):
-            if "baseline_test" in datasets:
-                test_predictions = test_predictions + datasets["baseline_test"]
-            else:
-                print("Warning: Baseline test values not found; cannot convert returns to predicted close values.")
-    
+                    close_min = norm_json["CLOSE"].get("min", 0)
+                    close_max = norm_json["CLOSE"].get("max", 1)
+                    test_predictions = test_predictions * (close_max - close_min) + close_min
         test_predictions_df = pd.DataFrame(
             test_predictions, 
             columns=[f"Prediction_{i+1}" for i in range(test_predictions.shape[1])]
@@ -578,81 +579,84 @@ def run_prediction_pipeline(config, plugin):
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
 
     # ------------------------------
-    # NEW: Compute Uncertainty Estimates
-    # ------------------------------
-    print("Computing uncertainty estimates using MC sampling...")
-    try:
-        mc_samples = config.get("mc_samples", 100)
-        # This new plugin method performs multiple forward passes (with training=True) to get prediction samples.
-        _, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
-        # uncertainty_estimates shape is (n_test, time_horizon)
-        uncertainty_df = pd.DataFrame(
-            uncertainty_estimates,
-            columns=[f"Uncertainty_{i+1}" for i in range(uncertainty_estimates.shape[1])]
-        )
-        if test_dates is not None:
-            uncertainty_df['DATE_TIME'] = pd.Series(test_dates[:len(uncertainty_df)])
-        else:
-            uncertainty_df['DATE_TIME'] = pd.NaT
-        cols = ['DATE_TIME'] + [col for col in uncertainty_df.columns if col != 'DATE_TIME']
-        uncertainty_df = uncertainty_df[cols]
-        uncertainty_file = config.get("uncertainty_file", "test_uncertainty.csv")
-        uncertainty_df.to_csv(uncertainty_file, index=False)
-        print(f"Uncertainty predictions saved to {uncertainty_file}")
-    except Exception as e:
-        print(f"Failed to compute or save uncertainty predictions: {e}")
-
-    # ------------------------------
     # NEW: Plot Last 1k Predictions with True Values and Uncertainty Band
     # ------------------------------
     try:
         n_plot = 2000
-        # Use the last n_plot rows from test predictions (assuming test_predictions is denormalized)
+        # Use the last n_plot rows from test predictions (assumed to be denormalized now)
         if test_predictions.shape[0] > n_plot:
             pred_plot = test_predictions[-n_plot:, 0]  # using first prediction column
-            true_plot = y_test[-n_plot:, 0]             # true values for first time step (still normalized)
+            true_plot = y_test[-n_plot:, 0]             # true values (still normalized returns if use_returns is true)
             if test_dates is not None:
                 dates_plot = test_dates[-n_plot:]
             else:
                 dates_plot = np.arange(test_predictions.shape[0]-n_plot, test_predictions.shape[0])
-            # For uncertainties, take the corresponding rows and first column
             uncertainty_norm = uncertainty_estimates[-n_plot:, 0]
+            # If use_returns is true, denormalize true values similarly
+            if config.get("use_returns", False) and config.get("use_normalization_json") is not None:
+                norm_json = config.get("use_normalization_json")
+                if isinstance(norm_json, str):
+                    try:
+                        with open(norm_json, 'r') as f:
+                            norm_json = json.load(f)
+                    except Exception as e:
+                        print(f"Error loading normalization JSON from {norm_json}: {e}")
+                        norm_json = {}
+                elif not isinstance(norm_json, dict):
+                    print("Error: Normalization JSON is not a valid dictionary.")
+                    norm_json = {}
+                if "BC-BO" in norm_json and "CLOSE" in norm_json:
+                    bcbo_min = norm_json["BC-BO"].get("min", 0)
+                    bcbo_max = norm_json["BC-BO"].get("max", 1)
+                    close_min = norm_json["CLOSE"].get("min", 0)
+                    close_max = norm_json["CLOSE"].get("max", 1)
+                    # Denormalize the true returns and add the baseline for true values
+                    true_returns_denorm = true_plot * (bcbo_max - bcbo_min) + bcbo_min
+                    baseline_true = datasets["baseline_test"][-n_plot:, 0]
+                    baseline_true_denorm = baseline_true * (close_max - close_min) + close_min
+                    true_plot = true_returns_denorm + baseline_true_denorm
+                    # Uncertainty is denormalized using BC-BO parameters
+                    uncertainty_plot = uncertainty_norm * (bcbo_max - bcbo_min)
+                else:
+                    print("Warning: 'BC-BO' and/or 'CLOSE' not found in normalization JSON; using default denormalization for plot.")
+                    if "CLOSE" in norm_json:
+                        min_val = norm_json["CLOSE"].get("min", 0)
+                        max_val = norm_json["CLOSE"].get("max", 1)
+                        true_plot = true_plot * (max_val - min_val) + min_val
+                        uncertainty_plot = uncertainty_norm * (max_val - min_val)
+                    else:
+                        uncertainty_plot = uncertainty_norm
+            else:
+                if config.get("use_normalization_json") is not None:
+                    norm_json = config.get("use_normalization_json")
+                    if isinstance(norm_json, str):
+                        try:
+                            with open(norm_json, 'r') as f:
+                                norm_json = json.load(f)
+                        except Exception as e:
+                            print(f"Error loading normalization JSON from {norm_json}: {e}")
+                            norm_json = {}
+                    elif not isinstance(norm_json, dict):
+                        print("Error: Normalization JSON is not a valid dictionary.")
+                        norm_json = {}
+                    if "CLOSE" in norm_json:
+                        min_val = norm_json["CLOSE"].get("min", 0)
+                        max_val = norm_json["CLOSE"].get("max", 1)
+                        true_plot = true_plot * (max_val - min_val) + min_val
+                        uncertainty_plot = uncertainty_norm * (max_val - min_val)
+                    else:
+                        uncertainty_plot = uncertainty_norm
+                else:
+                    uncertainty_plot = uncertainty_norm
         else:
             pred_plot = test_predictions[:, 0]
             true_plot = y_test[:, 0]
             dates_plot = test_dates if test_dates is not None else np.arange(test_predictions.shape[0])
-            uncertainty_norm = uncertainty_estimates[:, 0]
-        
-        # Denormalize true_plot and uncertainty if a normalization JSON is provided.
-        if config.get("use_normalization_json") is not None:
-            norm_json = config.get("use_normalization_json")
-            if isinstance(norm_json, str):
-                try:
-                    with open(norm_json, 'r') as f:
-                        norm_json = json.load(f)
-                except Exception as e:
-                    print(f"Error loading normalization JSON from {norm_json}: {e}")
-                    norm_json = {}
-            elif not isinstance(norm_json, dict):
-                print("Error: Normalization JSON is not a valid dictionary.")
-                norm_json = {}
-            if "CLOSE" in norm_json:
-                min_val = norm_json["CLOSE"].get("min", 0)
-                max_val = norm_json["CLOSE"].get("max", 1)
-                # true_plot is normalized; denormalize it:
-                true_plot = true_plot * (max_val - min_val) + min_val
-                # uncertainty (std) should be scaled by (max_val - min_val)
-                uncertainty_plot = uncertainty_norm * (max_val - min_val)
-            else:
-                uncertainty_plot = uncertainty_norm
-        else:
             uncertainty_plot = uncertainty_norm
-
-        # Create the plot
+        
         plt.figure(figsize=(12, 6))
         plt.plot(dates_plot, pred_plot, label="Predicted", color="blue", linewidth=2)
         plt.plot(dates_plot, true_plot, label="True", color="red", linewidth=2)
-        # Plot the uncertainty band around the predicted values
         plt.fill_between(dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
                          color="blue", alpha=0.2, label="Uncertainty")
         plt.title("Last 1000 Predictions vs True Values with Uncertainty")
@@ -708,26 +712,15 @@ def load_and_evaluate_model(config, plugin):
        If config['use_returns'] is True, the predictions (predicted returns) are converted to 
        predicted close values by adding the baseline CLOSE value from the corresponding tick.
     5. Saves the predictions to a CSV file for evaluation, including the DATE_TIME column.
-
-    Args:
-        config (dict): Configuration dictionary containing parameters for model evaluation.
-            Expected keys include:
-                - 'load_model' (str): Path to the pre-trained model file.
-                - 'x_validation_file' (str): Path to the validation features CSV file.
-                - 'y_validation_file' (str): Path to the validation targets CSV file.
-                - 'target_column' (str or int): Column name or index to be used as the target.
-                - 'headers' (bool): Indicates if CSV files contain headers.
-                - 'force_date' (bool): Determines if date should be included in the output CSV.
-                - 'evaluate_file' (str): Path to save the evaluation predictions CSV file.
-                - 'max_steps_val' (int, optional): Maximum number of rows to read for validation data.
-                - 'use_normalization_json' (str or dict, optional): Path to a JSON file or dictionary for normalization parameters.
-        plugin (Plugin): The ANN predictor plugin to be used for evaluation.
     """
-    # Load the pre-trained model using custom_objects for the custom loss and metrics.
+    import sys
+    import numpy as np
+    import pandas as pd
+    import json
+    from tensorflow.keras.models import load_model
+
     print(f"Loading pre-trained model from {config['load_model']}...")
     try:
-        # Updated import: use tensorflow.keras.models.load_model instead of keras.models.load_model.
-        from tensorflow.keras.models import load_model
         custom_objects = {
             "combined_loss": combined_loss,
             "mmd": mmd_metric,
@@ -739,14 +732,12 @@ def load_and_evaluate_model(config, plugin):
         print(f"Failed to load the model from {config['load_model']}: {e}")
         sys.exit(1)
 
-    # Load and process validation data with row limit
     print("Loading and processing validation data for evaluation...")
     try:
         datasets = process_data(config)
         x_val = datasets["x_val"]
         y_val = datasets["y_val"]
         val_dates = datasets.get("dates_val")
-        # For CNN plugins, create sliding windows and update dates accordingly
         if config["plugin"] in ["cnn", "cnn_mmd"]:
             print("Creating sliding windows for CNN...")
             x_val, _, val_date_windows = create_sliding_windows(
@@ -767,10 +758,8 @@ def load_and_evaluate_model(config, plugin):
         print(f"Failed to process validation data: {e}")
         sys.exit(1)
 
-    # Predict using the loaded model
     print("Making predictions on validation data...")
     try:
-        # If x_val is already a NumPy array, pass it directly.
         x_val_array = x_val if isinstance(x_val, np.ndarray) else x_val.to_numpy()
         predictions = plugin.predict(x_val_array)
         print(f"Predictions shape: {predictions.shape}")
@@ -792,26 +781,29 @@ def load_and_evaluate_model(config, plugin):
             print("Error: Normalization JSON is not a valid dictionary.")
             norm_json = {}
         if config.get("use_returns", False):
-            if "BC-BO" in norm_json:
-                min_val = norm_json["BC-BO"].get("min", 0)
-                max_val = norm_json["BC-BO"].get("max", 1)
-                predictions = predictions * (max_val - min_val) + min_val
+            if "BC-BO" in norm_json and "CLOSE" in norm_json:
+                bcbo_min = norm_json["BC-BO"].get("min", 0)
+                bcbo_max = norm_json["BC-BO"].get("max", 1)
+                denorm_pred_returns = predictions * (bcbo_max - bcbo_min) + bcbo_min
+                close_min = norm_json["CLOSE"].get("min", 0)
+                close_max = norm_json["CLOSE"].get("max", 1)
+                denorm_baseline = datasets["baseline_val"] * (close_max - close_min) + close_min
+                predictions = denorm_pred_returns + denorm_baseline
             else:
-                print("Warning: 'BC-BO' not found in normalization JSON; skipping denormalization for returns.")
+                print("Warning: 'BC-BO' and/or 'CLOSE' not found in normalization JSON; skipping proper denormalization for returns.")
         else:
             if "CLOSE" in norm_json:
-                min_val = norm_json["CLOSE"].get("min", 0)
-                max_val = norm_json["CLOSE"].get("max", 1)
-                predictions = predictions * (max_val - min_val) + min_val
+                close_min = norm_json["CLOSE"].get("min", 0)
+                close_max = norm_json["CLOSE"].get("max", 1)
+                predictions = predictions * (close_max - close_min) + close_min
 
-    # If use_returns is true, add the baseline close values to the predicted returns
     if config.get("use_returns", False):
         if "baseline_val" in datasets:
-            predictions = predictions + datasets["baseline_val"]
+            # Already incorporated above during denormalization
+            pass
         else:
             print("Warning: Baseline validation values not found; cannot convert returns to predicted close values.")
 
-    # Convert predictions to DataFrame
     if predictions.ndim == 1 or predictions.shape[1] == 1:
         predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
     else:
@@ -819,18 +811,15 @@ def load_and_evaluate_model(config, plugin):
         pred_cols = [f'Prediction_{i+1}' for i in range(num_steps)]
         predictions_df = pd.DataFrame(predictions, columns=pred_cols)
 
-    # Add DATE_TIME column using the stored dates if available
     if val_dates is not None:
         predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(predictions_df)])
     else:
         predictions_df['DATE_TIME'] = pd.NaT
         print("Warning: DATE_TIME for validation predictions not captured.")
 
-    # Rearrange columns to have DATE_TIME first
     cols = ['DATE_TIME'] + [col for col in predictions_df.columns if col != 'DATE_TIME']
     predictions_df = predictions_df[cols]
 
-    # Save predictions to CSV for evaluation
     evaluate_filename = config['output_file']
     try:
         write_csv(
@@ -843,6 +832,8 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
+
+
 
 def generate_positional_encoding(num_features, pos_dim=16):
     """
