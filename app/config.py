@@ -51,5 +51,6 @@ DEFAULT_VALUES = {
     "kl_anneal_epochs": 100,        
     "use_mmd": True,
     "statistical_loss_weight": 0.1,
-    "overfitting_penalty": 0.1
+    "overfitting_penalty": 0.1,
+    "use_returns": True
 }
