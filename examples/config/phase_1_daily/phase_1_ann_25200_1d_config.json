@@ -17,7 +17,7 @@
     "use_daily": true,
     "max_steps_train": 25200,
     "max_steps_test": 6300,
-    "intermediate_layers": 2,
+    "intermediate_layers": 4,
     "initial_layer_size": 96,
     "layer_size_divisor": 2,
     "learning_rate": 5e-5,
