@@ -23,15 +23,16 @@ def eval_arima(individual, series):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Optimiza los parámetros ARIMA usando DEAP (algoritmos evolutivos) para minimizar el AIC."
+        description="Optimiza los parámetros ARIMA usando DEAP para minimizar el AIC, usando un subconjunto de la serie si se desea."
     )
     parser.add_argument("csv_file", type=str, help="Ruta al archivo CSV con la serie de tiempo.")
-    parser.add_argument("--column", type=str, default="CLOSE", help="Nombre de la columna que contiene la serie de tiempo (por defecto 'CLOSE').")
+    parser.add_argument("--column", type=str, default="CLOSE", help="Nombre de la columna con la serie de tiempo (por defecto 'CLOSE').")
     parser.add_argument("--p_max", type=int, default=10, help="Valor máximo para p (orden autorregresivo).")
     parser.add_argument("--d_max", type=int, default=5, help="Valor máximo para d (diferenciación).")
     parser.add_argument("--q_max", type=int, default=10, help="Valor máximo para q (orden de media móvil).")
     parser.add_argument("--pop_size", type=int, default=20, help="Tamaño de la población.")
     parser.add_argument("--ngen", type=int, default=10, help="Número de generaciones.")
+    parser.add_argument("--max_steps", type=int, default=None, help="Máximo número de filas a usar durante el ajuste de ARIMA.")
     args = parser.parse_args()
 
     # Leer el CSV y seleccionar la columna de la serie
@@ -51,6 +52,11 @@ def main():
         series = pd.to_numeric(series)
     except Exception as e:
         sys.exit(f"Error al convertir la serie a valores numéricos: {e}")
+
+    # Limitar la serie al número de filas especificado en max_steps (si se define)
+    if args.max_steps is not None:
+        series = series.iloc[:args.max_steps]
+        print(f"Se utilizarán las primeras {args.max_steps} filas de la serie.")
 
     warnings.filterwarnings("ignore")
 
