@@ -50,47 +50,142 @@ def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
 
 
 
+def create_multi_step(y_df, horizon, use_returns=False):
+    """
+    Creates multi-step targets for time-series prediction.
+    If use_returns is True, targets are computed as the difference between each future value 
+    and the current (baseline) value.
+    
+    Args:
+        y_df (pd.DataFrame): Target data as a DataFrame.
+        horizon (int): Number of future steps to predict.
+        use_returns (bool): If True, compute returns instead of absolute values.
+    
+    Returns:
+        pd.DataFrame: Multi-step targets aligned with the input data.
+        (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
+    """
+    blocks = []
+    baselines = []
+    for i in range(len(y_df) - horizon):
+        base = y_df.iloc[i].values.flatten()
+        if use_returns:
+            window = list(y_df.iloc[i+1: i+1+horizon].values.flatten() - base)
+        else:
+            window = list(y_df.iloc[i+1: i+1+horizon].values.flatten())
+        blocks.append(window)
+        if use_returns:
+            baselines.append(base)
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon])
+    if use_returns:
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon])
+        return df_targets, df_baselines
+    else:
+        return df_targets
+
+
+def create_multi_step_daily(y_df, horizon, use_returns=False):
+    """
+    Creates multi-step targets for time-series prediction using daily data.
+    If use_returns is True, targets are computed as the difference between each future value 
+    and the current (baseline) value.
+    
+    Args:
+        y_df (pd.DataFrame): Target data as a DataFrame.
+        horizon (int): Number of future days to predict.
+        use_returns (bool): If True, compute returns instead of absolute values.
+    
+    Returns:
+        pd.DataFrame: Multi-step targets aligned with the input data.
+        (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
+    """
+    blocks = []
+    baselines = []
+    for i in range(len(y_df) - horizon * 24):
+        base = y_df.iloc[i].values.flatten()
+        window = []
+        for d in range(1, horizon + 1):
+            val = y_df.iloc[i + d * 24].values.flatten()
+            if use_returns:
+                window.extend(list(val - base))
+            else:
+                window.extend(list(val))
+        blocks.append(window)
+        if use_returns:
+            baselines.append(base)
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
+    if use_returns:
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24])
+        return df_targets, df_baselines
+    else:
+        return df_targets
+
+
 def process_data(config):
     """
     Processes data for different plugins, including ANN, CNN, LSTM, and Transformer.
-
-    Args:
-        config (dict): Configuration dictionary with dataset paths and parameters.
-
+    Loads and processes training, validation, and test datasets; extracts DATE_TIME information,
+    and trims each pair (x and y) to their common date range so that they share the same number of rows.
+    
     Returns:
-        dict: Processed datasets for training and validation, along with corresponding DATE_TIME arrays.
-              Additionally, if config['use_returns'] is True, includes the current close values for training
-              and validation in keys 'current_train' and 'current_val' respectively.
+        dict: Processed datasets for training, validation, and test, along with corresponding
+              DATE_TIME arrays. Additionally, if config['use_returns'] is True, the corresponding 
+              baseline target values (the original CLOSE values) are also returned.
     """
-    # 1) LOAD CSVs
+    import pandas as pd
+    # 1) LOAD CSVs for train, validation, and test
     x_train = load_csv(
         config["x_train_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_train"),
+        max_rows=config.get("max_steps_train")
     )
     y_train = load_csv(
         config["y_train_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_train"),
+        max_rows=config.get("max_steps_train")
     )
     x_val = load_csv(
         config["x_validation_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_test"),
+        max_rows=config.get("max_steps_val")
     )
     y_val = load_csv(
         config["y_validation_file"],
         headers=config["headers"],
-        max_rows=config.get("max_steps_test"),
+        max_rows=config.get("max_steps_val")
     )
-
-    # Save original DATE_TIME indices (if available)
+    x_test = load_csv(
+        config["x_test_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_test")
+    )
+    y_test = load_csv(
+        config["y_test_file"],
+        headers=config["headers"],
+        max_rows=config.get("max_steps_test")
+    )
+    
+    # 1a) Trim to common date range if possible.
+    if isinstance(x_train.index, pd.DatetimeIndex) and isinstance(y_train.index, pd.DatetimeIndex):
+        common_train_index = x_train.index.intersection(y_train.index)
+        x_train = x_train.loc[common_train_index]
+        y_train = y_train.loc[common_train_index]
+    if isinstance(x_val.index, pd.DatetimeIndex) and isinstance(y_val.index, pd.DatetimeIndex):
+        common_val_index = x_val.index.intersection(y_val.index)
+        x_val = x_val.loc[common_val_index]
+        y_val = y_val.loc[common_val_index]
+    if isinstance(x_test.index, pd.DatetimeIndex) and isinstance(y_test.index, pd.DatetimeIndex):
+        common_test_index = x_test.index.intersection(y_test.index)
+        x_test = x_test.loc[common_test_index]
+        y_test = y_test.loc[common_test_index]
+    
+    # Save original DATE_TIME indices AFTER trimming.
     train_dates_orig = x_train.index if isinstance(x_train.index, pd.DatetimeIndex) else None
     val_dates_orig = x_val.index if isinstance(x_val.index, pd.DatetimeIndex) else None
+    test_dates_orig = x_test.index if isinstance(x_test.index, pd.DatetimeIndex) else None
 
     # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
-
     def extract_target(df, col):
         if isinstance(col, str):
             if col not in df.columns:
@@ -100,219 +195,178 @@ def process_data(config):
             return df.iloc[:, [col]]
         else:
             raise ValueError("`target_column` must be str or int.")
-
     y_train = extract_target(y_train, target_col)
     y_val = extract_target(y_val, target_col)
+    y_test = extract_target(y_test, target_col)
 
-    # 3) CONVERT EACH DF TO NUMERIC, REASSIGN THE RESULT TO AVOID BUGS
+    # 3) CONVERT EACH DF TO NUMERIC.
     x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_train = y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     x_val = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_val = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
+    x_test = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_test = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-    # 4) MULTI-STEP COLUMNS
+    # 4) MULTI-STEP TARGETS
     time_horizon = config["time_horizon"]
-
-    def create_multi_step(y_df, horizon):
-        """
-        Create multi-step targets for time-series prediction.
-
-        Args:
-            y_df (pd.DataFrame): Target data as a DataFrame.
-            horizon (int): Number of future steps to predict.
-
-        Returns:
-            pd.DataFrame: Multi-step targets aligned with the input data.
-        """
-        blocks = []
-        for i in range(len(y_df) - horizon):
-            # Collect the next `horizon` ticks starting from the *next* row
-            window = y_df.iloc[i + 1 : i + 1 + horizon].values.flatten()
-            blocks.append(window)
-        # Align index to the input data (exclude the last `horizon` rows)
-        return pd.DataFrame(blocks, index=y_df.index[:-horizon])
-
-    def create_multi_step_daily(y_df, horizon):
-        """
-        Create multi-step targets for daily predictions in time-series prediction.
-        For each row in y_df, returns the predicted values for the same hour over the next `horizon` days.
-
-        Args:
-            y_df (pd.DataFrame): Target data as a DataFrame.
-            horizon (int): Number of future days to predict.
-
-        Returns:
-            pd.DataFrame: Multi-step targets aligned with the input data.
-        """
-        blocks = []
-        # For daily mode, each prediction is offset by 24 ticks (hours)
-        for i in range(len(y_df) - horizon * 24):
-            window = []
-            for d in range(1, horizon + 1):
-                # Collect the predicted value at the same hour on the d-th day ahead
-                window.extend(y_df.iloc[i + d * 24].values.flatten())
-            blocks.append(window)
-        # Align index to the input data (exclude the last horizon*24 rows)
-        return pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
-
-    # --- UPDATED DAILY MODE ---
     if config.get("use_daily", False):
         y_train_ma = y_train.rolling(window=48, center=True, min_periods=1).mean()
         y_val_ma = y_val.rolling(window=48, center=True, min_periods=1).mean()
-        y_train_multi = create_multi_step_daily(y_train_ma, time_horizon)
-        y_val_multi = create_multi_step_daily(y_val_ma, time_horizon)
+        y_test_ma = y_test.rolling(window=48, center=True, min_periods=1).mean()
+        if config.get("use_returns", False):
+            y_train_multi, baseline_train = create_multi_step_daily(y_train_ma, time_horizon, use_returns=True)
+            y_val_multi, baseline_val = create_multi_step_daily(y_val_ma, time_horizon, use_returns=True)
+            y_test_multi, baseline_test = create_multi_step_daily(y_test_ma, time_horizon, use_returns=True)
+        else:
+            y_train_multi = create_multi_step_daily(y_train_ma, time_horizon, use_returns=False)
+            y_val_multi = create_multi_step_daily(y_val_ma, time_horizon, use_returns=False)
+            y_test_multi = create_multi_step_daily(y_test_ma, time_horizon, use_returns=False)
     else:
-        y_train_multi = create_multi_step(y_train, time_horizon)
-        y_val_multi = create_multi_step(y_val, time_horizon)
-    # --- END UPDATED DAILY MODE ---
+        if config.get("use_returns", False):
+            y_train_multi, baseline_train = create_multi_step(y_train, time_horizon, use_returns=True)
+            y_val_multi, baseline_val = create_multi_step(y_val, time_horizon, use_returns=True)
+            y_test_multi, baseline_test = create_multi_step(y_test, time_horizon, use_returns=True)
+        else:
+            y_train_multi = create_multi_step(y_train, time_horizon, use_returns=False)
+            y_val_multi = create_multi_step(y_val, time_horizon, use_returns=False)
+            y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
 
-    # 5) TRIM x TO MATCH THE LENGTH OF y
+    # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
     min_len_train = min(len(x_train), len(y_train_multi))
     x_train = x_train.iloc[:min_len_train]
     y_train_multi = y_train_multi.iloc[:min_len_train]
-
+    if config.get("use_returns", False):
+        baseline_train = baseline_train.iloc[:min_len_train]
     min_len_val = min(len(x_val), len(y_val_multi))
     x_val = x_val.iloc[:min_len_val]
     y_val_multi = y_val_multi.iloc[:min_len_val]
-
-    # Set initial date variables from the original DataFrame indexes
+    if config.get("use_returns", False):
+        baseline_val = baseline_val.iloc[:min_len_val]
+    min_len_test = min(len(x_test), len(y_test_multi))
+    x_test = x_test.iloc[:min_len_test]
+    y_test_multi = y_test_multi.iloc[:min_len_test]
+    if config.get("use_returns", False):
+        baseline_test = baseline_test.iloc[:min_len_test]
+    
     train_dates = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
     val_dates = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
+    test_dates = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
 
-    # --- NEW FUNCTIONALITY: Adjust targets to returns if requested ---
-    # If use_returns is True, for each row subtract the current tick's close value.
-    # For daily mode, use the rolling average values.
-    if config.get("use_returns", False):
-        if config.get("use_daily", False):
-            current_train = y_train_ma.iloc[:len(y_train_multi)]
-            current_val = y_val_ma.iloc[:len(y_val_multi)]
-        else:
-            current_train = y_train.iloc[:len(y_train_multi)]
-            current_val = y_val.iloc[:len(y_val_multi)]
-        # Subtract current value from each future value (broadcasting along each row)
-        y_train_multi = y_train_multi - current_train.values
-        y_val_multi = y_val_multi - current_val.values
-    else:
-        current_train = None
-        current_val = None
-    # --- END NEW FUNCTIONALITY ---
-
-    # 6) LSTM-SPECIFIC PROCESSING
-    if config["plugin"] == "lstm":
-        print("Processing data for LSTM plugin...")
-
-        # Ensure datasets are NumPy arrays
-        if not isinstance(x_train, np.ndarray):
+    # 6) PER-PLUGIN PROCESSING
+    # Use sliding windows only if explicitly enabled by config['use_sliding_windows'].
+    if config.get("use_sliding_windows", False):
+        if config["plugin"] in ["lstm"]:
+            print("Processing data for LSTM plugin with sliding windows...")
             x_train = x_train.to_numpy().astype(np.float32)
-        if not isinstance(y_train, np.ndarray):
-            y_train = y_train.to_numpy().astype(np.float32)
-        if not isinstance(x_val, np.ndarray):
             x_val = x_val.to_numpy().astype(np.float32)
-        if not isinstance(y_val, np.ndarray):
-            y_val = y_val.to_numpy().astype(np.float32)
-
-        window_size = config["window_size"]  # Ensure `window_size` is in the config
-
-        if config.get("use_daily", False):
-            # Define an intra-method function to create sliding windows for x only
-            def create_sliding_windows_x(data, window_size, stride=1):
-                """
-                Create sliding windows for input data only.
-                """
+            x_test = x_test.to_numpy().astype(np.float32)
+            window_size = config["window_size"]
+            def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
                 windows = []
+                dt_windows = []
                 for i in range(0, len(data) - window_size + 1, stride):
-                    windows.append(data[i : i + window_size])
-                return np.array(windows)
-
-            # Create sliding windows for x_train and x_val without altering y (daily targets)
-            x_train = create_sliding_windows_x(x_train, window_size, stride=1)
-            x_val = create_sliding_windows_x(x_val, window_size, stride=1)
-
-            # For daily predictions, compute new date windows using the original dates.
-            if train_dates is not None:
-                train_dates = [train_dates[i + window_size - 1] for i in range(0, len(train_dates) - window_size + 1)]
-            if val_dates is not None:
-                val_dates = [val_dates[i + window_size - 1] for i in range(0, len(val_dates) - window_size + 1)]
-            # Adjust y_train_multi and y_val_multi to match the new x dimensions
-            y_train_multi = y_train_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
-            y_val_multi = y_val_multi.iloc[window_size - 1 :].to_numpy().astype(np.float32)
-        else:
-            # For hourly predictions with window size 1, do NOT use a sliding window function.
-            new_length_train = len(x_train) - time_horizon
-            new_length_val = len(x_val) - time_horizon
-            x_train = x_train[:new_length_train]
-            x_val = x_val[:new_length_val]
-            y_train_new = np.array([y_train[i+1:i+1+time_horizon] for i in range(new_length_train)])
-            y_val_new = np.array([y_val[i+1:i+1+time_horizon] for i in range(new_length_val)])
-            if y_train_new.ndim == 3 and y_train_new.shape[-1] == 1:
-                y_train_new = np.squeeze(y_train_new, axis=-1)
-            if y_val_new.ndim == 3 and y_val_new.shape[-1] == 1:
-                y_val_new = np.squeeze(y_val_new, axis=-1)
-            y_train_multi = y_train_new
-            y_val_multi = y_val_new
-            x_train = x_train.reshape(-1, 1, x_train.shape[1])
-            x_val = x_val.reshape(-1, 1, x_val.shape[1])
-            if train_dates is not None:
-                train_dates = train_dates[:new_length_train]
-            if val_dates is not None:
-                val_dates = val_dates[:new_length_val]
-        print(f"LSTM data shapes after sliding windows:")
-        print(f"x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
-        print(f"x_val:   {x_val.shape}, y_val:   {y_val_multi.shape}")
-
-    # 7) TRANSFORMER-SPECIFIC PROCESSING
-    if config["plugin"] in ["transformer", "transformer_mmd"]:
-        print("Processing data for Transformer plugin...")
-        if not isinstance(x_train, np.ndarray):
+                    windows.append(data[i:i+window_size])
+                    if date_times is not None:
+                        dt_windows.append(date_times[i+window_size-1])
+                return np.array(windows), dt_windows if date_times is not None else np.array(windows)
+            x_train, train_dates = create_sliding_windows_x(x_train, window_size, stride=1, date_times=train_dates)
+            x_val, val_dates = create_sliding_windows_x(x_val, window_size, stride=1, date_times=val_dates)
+            x_test, test_dates = create_sliding_windows_x(x_test, window_size, stride=1, date_times=test_dates)
+            y_train_multi = y_train_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
+            y_val_multi = y_val_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
+            y_test_multi = y_test_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
+            if config.get("use_returns", False):
+                baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
+                baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
+                baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
+        elif config["plugin"] in ["cnn", "cnn_mmd"]:
+            print("Processing data for CNN plugin using sliding windows...")
+            def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
+                windows = []
+                dt_windows = []
+                for i in range(0, len(data) - window_size + 1, stride):
+                    windows.append(data[i:i+window_size])
+                    if date_times is not None:
+                        dt_windows.append(date_times[i+window_size-1])
+                return np.array(windows), dt_windows if date_times is not None else np.array(windows)
+            x_train, train_dates = create_sliding_windows_x(x_train, config['window_size'], stride=1, date_times=train_dates)
+            x_val, val_dates = create_sliding_windows_x(x_val, config['window_size'], stride=1, date_times=val_dates)
+            x_test, test_dates = create_sliding_windows_x(x_test, config['window_size'], stride=1, date_times=test_dates)
+            trim_amount = config['window_size'] - 1
+            y_train_multi = y_train_multi.to_numpy().astype(np.float32)[trim_amount:]
+            y_val_multi = y_val_multi.to_numpy().astype(np.float32)[trim_amount:]
+            y_test_multi = y_test_multi.to_numpy().astype(np.float32)[trim_amount:]
+            if config.get("use_returns", False):
+                baseline_train = baseline_train.to_numpy().astype(np.float32)[trim_amount:]
+                baseline_val = baseline_val.to_numpy().astype(np.float32)[trim_amount:]
+                baseline_test = baseline_test.to_numpy().astype(np.float32)[trim_amount:]
+        elif config["plugin"] in ["transformer", "transformer_mmd"]:
+            # If sliding windows are enabled for transformer plugins, you can add similar logic.
+            print("Processing data for Transformer plugin with sliding windows...")
             x_train = x_train.to_numpy().astype(np.float32)
-        if not isinstance(x_val, np.ndarray):
             x_val = x_val.to_numpy().astype(np.float32)
-
-        pos_dim = config.get("positional_encoding_dim", 16)
-        num_features = x_train.shape[1]
-
-        pos_encoding_train = generate_positional_encoding(num_features, pos_dim)
-        pos_encoding_val = generate_positional_encoding(x_val.shape[1], pos_dim)
-
-        pos_encoding_train = np.tile(pos_encoding_train, (x_train.shape[0], 1))
-        pos_encoding_val = np.tile(pos_encoding_val, (x_val.shape[0], 1))
-
-        x_train = np.concatenate([x_train, pos_encoding_train], axis=1)
-        x_val = np.concatenate([x_val, pos_encoding_val], axis=1)
-
-        print(f"Positional encoding concatenated:")
-        print(f"  x_train: {x_train.shape}, y_train: {y_train_multi.shape}")
-        print(f"  x_val:   {x_val.shape},   y_val: {y_val_multi.shape}")
+            x_test = x_test.to_numpy().astype(np.float32)
+            # (Add sliding window logic here if needed)
+            # For now, we simply use the raw data.
+            y_train_multi = y_train_multi.to_numpy().astype(np.float32)
+            y_val_multi = y_val_multi.to_numpy().astype(np.float32)
+            y_test_multi = y_test_multi.to_numpy().astype(np.float32)
+        else:
+            x_train = x_train.to_numpy().astype(np.float32)
+            x_val = x_val.to_numpy().astype(np.float32)
+            x_test = x_test.to_numpy().astype(np.float32)
+            y_train_multi = y_train_multi.to_numpy().astype(np.float32)
+            y_val_multi = y_val_multi.to_numpy().astype(np.float32)
+            y_test_multi = y_test_multi.to_numpy().astype(np.float32)
+    else:
+        # If sliding windows are not used, convert everything to NumPy arrays.
+        print("Not using sliding windows; converting data to NumPy arrays without windowing.")
+        x_train = x_train.to_numpy().astype(np.float32)
+        x_val = x_val.to_numpy().astype(np.float32)
+        x_test = x_test.to_numpy().astype(np.float32)
+        y_train_multi = y_train_multi.to_numpy().astype(np.float32)
+        y_val_multi = y_val_multi.to_numpy().astype(np.float32)
+        y_test_multi = y_test_multi.to_numpy().astype(np.float32)
+        if config.get("use_returns", False):
+            baseline_train = baseline_train.to_numpy().astype(np.float32)
+            baseline_val = baseline_val.to_numpy().astype(np.float32)
+            baseline_test = baseline_test.to_numpy().astype(np.float32)
 
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
-
-    if config["plugin"] not in ["lstm", "cnn", "cnn_mmd", "transformer", "transformer_mmd"]:
-        if train_dates is None:
-            train_dates = y_train_multi.index
-        if val_dates is None:
-            val_dates = y_val_multi.index
-
-    return {
+    print(" x_test: ", x_test.shape, " y_test: ", y_test_multi.shape)
+    
+    ret = {
         "x_train": x_train,
         "y_train": y_train_multi,
         "x_val": x_val,
         "y_val": y_val_multi,
+        "x_test": x_test,
+        "y_test": y_test_multi,
         "dates_train": train_dates,
         "dates_val": val_dates,
-        # Include current close values for use in denormalization if use_returns is True
-        "current_train": current_train,
-        "current_val": current_val,
+        "dates_test": test_dates,
     }
+    if config.get("use_returns", False):
+        ret["baseline_train"] = baseline_train
+        ret["baseline_val"] = baseline_val
+        ret["baseline_test"] = baseline_test
+    return ret
 
 
 def run_prediction_pipeline(config, plugin):
     """
-    Runs the prediction pipeline using both training and validation datasets.
+    Runs the prediction pipeline using training, validation, and test datasets.
     Iteratively trains and evaluates the model with 5-fold cross-validation,
-    while saving metrics and predictions.
+    saves metrics and predictions, and prints/exports test evaluation metrics.
     """
+    import time
+    import numpy as np
+    import pandas as pd
+    from sklearn.metrics import r2_score
+    from sklearn.model_selection import TimeSeriesSplit
+    import matplotlib.pyplot as plt
     start_time = time.time()
 
     iterations = config.get("iterations", 1)
@@ -323,23 +377,31 @@ def run_prediction_pipeline(config, plugin):
     training_r2_list = []
     validation_mae_list = []
     validation_r2_list = []
+    test_mae_list = []
+    test_r2_list = []
 
-    # Load all datasets
     print("Loading and processing datasets...")
     datasets = process_data(config)
     x_train, y_train = datasets["x_train"], datasets["y_train"]
     x_val, y_val = datasets["x_val"], datasets["y_val"]
-    # Retrieve DATE_TIME arrays from processed targets
+    x_test, y_test = datasets["x_test"], datasets["y_test"]
     train_dates = datasets.get("dates_train")
     val_dates = datasets.get("dates_val")
+    test_dates = datasets.get("dates_test")
+
+    # --- NEW UPDATE: If any of x_train, x_val, or x_test is a tuple, extract the data array.
+    if isinstance(x_train, tuple):
+        x_train = x_train[0]
+    if isinstance(x_val, tuple):
+        x_val = x_val[0]
+    if isinstance(x_test, tuple):
+        x_test = x_test[0]
+    # ---------------------------------------------------------------
 
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
+    print(f"Test data shapes: x_test: {x_test.shape}, y_test: {y_test.shape}")
 
-    # Retrieve current close values if use_returns is enabled
-    orig_current_val = datasets.get("current_val")
-
-    # Extract time_horizon and window_size from config
     time_horizon = config.get("time_horizon")
     window_size = config.get("window_size")
     if time_horizon is None:
@@ -352,55 +414,16 @@ def run_prediction_pipeline(config, plugin):
     epochs = config["epochs"]
     threshold_error = config["threshold_error"]
 
-    # Ensure datasets are NumPy arrays
-    if isinstance(x_train, pd.DataFrame):
-        x_train = x_train.to_numpy().astype(np.float32)
-    if isinstance(y_train, pd.DataFrame):
-        y_train = y_train.to_numpy().astype(np.float32)
-    if isinstance(x_val, pd.DataFrame):
-        x_val = x_val.to_numpy().astype(np.float32)
-    if isinstance(y_val, pd.DataFrame):
-        y_val = y_val.to_numpy().astype(np.float32)
+    # Ensure data are NumPy arrays.
+    for var_name in ["x_train", "y_train", "x_val", "y_val", "x_test", "y_test"]:
+        arr = locals()[var_name]
+        if isinstance(arr, pd.DataFrame):
+            locals()[var_name] = arr.to_numpy().astype(np.float32)
 
-    # For CNN plugins, create sliding windows and update dates accordingly
     if config["plugin"] in ["cnn", "cnn_mmd"]:
-        print("Creating sliding windows for CNN...")
-        x_train, _, train_date_windows = create_sliding_windows(
-            x_train, y_train, window_size, time_horizon, stride=1, date_times=train_dates
-        )
-        x_val, _, val_date_windows = create_sliding_windows(
-            x_val, y_val, window_size, time_horizon, stride=1, date_times=val_dates
-        )
-        train_dates = train_date_windows
-        val_dates = val_date_windows
-        print(f"Sliding windows created:")
-        print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
-        print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
-        # --- NEW: Adjust current close for sliding windows if using returns ---
-        if config.get("use_returns", False) and orig_current_val is not None:
-            # For CNN, the current close corresponding to each window is taken from the original current values,
-            # offset by (window_size - 1)
-            current_val_all = orig_current_val.to_numpy() if hasattr(orig_current_val, "to_numpy") else orig_current_val
-            current_val = current_val_all[window_size - 1 : window_size - 1 + x_val.shape[0]]
-        else:
-            current_val = orig_current_val
-    else:
-        current_val = orig_current_val
-
-    # For LSTM plugin, use the processed data as returned from process_data (window size = 1, with no date shift)
-    if config["plugin"] == "lstm":
-        print("Using LSTM data from process_data (window size 1, no date shift).")
         if x_train.ndim != 3:
-            raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
-    # For Transformer plugins, no sliding window is applied; data remains 2D.
-    if config["plugin"] in ["transformer", "transformer_mmd"]:
-        if x_train.ndim != 2:
-            raise ValueError(f"For Transformer plugins, x_train must be 2D. Found: {x_train.shape}.")
-
-    if x_train.ndim == 1:
-        x_train = x_train.reshape(-1, 1)
-    if x_val.ndim == 1:
-        x_val = x_val.reshape(-1, 1)
+            raise ValueError(f"For CNN plugins, x_train must be 3D. Found: {x_train.shape}.")
+        print("Using pre-processed sliding windows for CNN (no reprocessing).")
 
     plugin.set_params(time_horizon=time_horizon)
     n_splits = 5
@@ -410,23 +433,16 @@ def run_prediction_pipeline(config, plugin):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
         if config["plugin"] in ["cnn", "cnn_mmd"]:
-            if len(x_train.shape) < 3:
-                raise ValueError(f"For CNN plugins, x_train must be 3D. Found: {x_train.shape}.")
-            plugin.build_model(input_shape=(window_size, x_train.shape[2]))
+            plugin.build_model(input_shape=(window_size, x_train.shape[2]),  x_train=x_train)
         elif config["plugin"] == "lstm":
-            if len(x_train.shape) != 3:
-                raise ValueError(f"For LSTM, x_train must be 3D. Found: {x_train.shape}.")
-            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]))
+            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]),  x_train=x_train)
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
-            if len(x_train.shape) != 2:
-                raise ValueError(f"For Transformer plugins, x_train must be 2D. Found: {x_train.shape}.")
-            plugin.build_model(input_shape=x_train.shape[1])
+            plugin.build_model(input_shape=x_train.shape[1],  x_train=x_train)
         else:
-            # Fallback: assume 2D input.
             if len(x_train.shape) != 2:
                 raise ValueError(f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}.")
-            plugin.build_model(input_shape=x_train.shape[1])
-
+            plugin.build_model(input_shape=x_train.shape[1],  x_train=x_train, config=config)
+        
         history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions = plugin.train(
             x_train,
             y_train,
@@ -434,54 +450,65 @@ def run_prediction_pipeline(config, plugin):
             batch_size=batch_size,
             threshold_error=threshold_error,
             x_val=x_val,
-            y_val=y_val
+            y_val=y_val,
+            config=config
         )
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
         plt.title('Model Loss for ' + f"{config['plugin'].upper()} - {iteration}")
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
-        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.legend(['Train', 'Val'], loc='upper left')
         plt.savefig(config['loss_plot_file'])
         plt.close()
         print(f"Loss plot saved to {config['loss_plot_file']}")
 
-        print("Evaluating trained model on training and validation data. Please wait...")
-        with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(fnull), contextlib.redirect_stderr(fnull):
-            os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-            logging.getLogger("tensorflow").setLevel(logging.FATAL)
-        os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
-        logging.getLogger("tensorflow").setLevel(logging.INFO)
-
+        # Evaluate on test dataset
+        print("\nEvaluating on test dataset...")
+        test_predictions = plugin.predict(x_test)
+        from sklearn.metrics import r2_score
+        n_test = test_predictions.shape[0]
+        test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
+        test_r2 = r2_score(y_test[:n_test], test_predictions)
+        
         print("*************************************************")
         print(f"Iteration {iteration} completed.")
         print(f"Training MAE: {train_mae}")
         print(f"Training R²: {train_r2}")
         print(f"Validation MAE: {val_mae}")
         print(f"Validation R²: {val_r2}")
+        print(f"Test MAE: {test_mae}")
+        print(f"Test R²: {test_r2}")
         print("*************************************************")
-
+        
         training_mae_list.append(train_mae)
         training_r2_list.append(train_r2)
         validation_mae_list.append(val_mae)
         validation_r2_list.append(val_r2)
+        test_mae_list.append(test_mae)
+        test_r2_list.append(test_r2)
 
         iteration_end_time = time.time()
         print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
+    # (Rest of run_prediction_pipeline remains unchanged.)
     # -----------------------
     # Aggregate statistics
     # -----------------------
     results = {
-        "Metric": ["Training MAE", "Training R²", "Validation MAE", "Validation R²"],
+        "Metric": ["Training MAE", "Training R²", "Validation MAE", "Validation R²", "Test MAE", "Test R²"],
         "Average": [np.mean(training_mae_list), np.mean(training_r2_list),
-                    np.mean(validation_mae_list), np.mean(validation_r2_list)],
+                    np.mean(validation_mae_list), np.mean(validation_r2_list),
+                    np.mean(test_mae_list), np.mean(test_r2_list)],
         "Std Dev": [np.std(training_mae_list), np.std(training_r2_list),
-                    np.std(validation_mae_list), np.std(validation_r2_list)],
+                    np.std(validation_mae_list), np.std(validation_r2_list),
+                    np.std(test_mae_list), np.std(test_r2_list)],
         "Max": [np.max(training_mae_list), np.max(training_r2_list),
-                np.max(validation_mae_list), np.max(validation_r2_list)],
+                np.max(validation_mae_list), np.max(validation_r2_list),
+                np.max(test_mae_list), np.max(test_r2_list)],
         "Min": [np.min(training_mae_list), np.min(training_r2_list),
-                np.min(validation_mae_list), np.min(validation_r2_list)],
+                np.min(validation_mae_list), np.min(validation_r2_list),
+                np.min(test_mae_list), np.min(test_r2_list)],
     }
     print("*************************************************")
     print("Training Statistics:")
@@ -490,6 +517,9 @@ def run_prediction_pipeline(config, plugin):
     print("\nValidation Statistics:")
     print(f"MAE - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
     print(f"R²  - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
+    print("\nTest Statistics:")
+    print(f"MAE - Avg: {results['Average'][4]:.4f}, Std: {results['Std Dev'][4]:.4f}, Max: {results['Max'][4]:.4f}, Min: {results['Min'][4]:.4f}")
+    print(f"R²  - Avg: {results['Average'][5]:.4f}, Std: {results['Std Dev'][5]:.4f}, Max: {results['Max'][5]:.4f}, Min: {results['Min'][5]:.4f}")
     print("*************************************************")
     results_file = config.get("results_file", "results.csv")
     results_df = pd.DataFrame(results)
@@ -497,71 +527,147 @@ def run_prediction_pipeline(config, plugin):
     print(f"Results saved to {results_file}")
 
     # Save final validation predictions
-    final_val_file = config.get("output_file", "validation_predictions.csv")
-    if 'val_predictions' in locals() and val_predictions is not None:
-        # --- NEW DENORMALIZATION for returns ---
-        if config.get("use_returns", False):
-            if config.get("use_normalization_json") is not None:
-                norm_json = config.get("use_normalization_json")
-                if isinstance(norm_json, str):
-                    try:
-                        with open(norm_json, 'r') as f:
-                            norm_json = json.load(f)
-                    except Exception as e:
-                        print(f"Error loading normalization JSON from {norm_json}: {e}")
-                        norm_json = {}
-                elif not isinstance(norm_json, dict):
-                    print("Error: Normalization JSON is not a valid dictionary.")
+    final_test_file = config.get("output_file", "test_predictions.csv")
+    if 'test_predictions' in locals() and test_predictions is not None:
+        # Denormalize predictions (simple denormalization)
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                try:
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                except Exception as e:
+                    print(f"Error loading normalization JSON from {norm_json}: {e}")
                     norm_json = {}
+            elif not isinstance(norm_json, dict):
+                print("Error: Normalization JSON is not a valid dictionary.")
+                norm_json = {}
+            if config.get("use_returns", False):
+                # Use BC-BO normalization parameters instead of CLOSE
                 if "BC-BO" in norm_json:
                     min_val = norm_json["BC-BO"].get("min", 0)
                     max_val = norm_json["BC-BO"].get("max", 1)
+                    test_predictions = test_predictions * (max_val - min_val) + min_val
                 else:
-                    print("Warning: 'BC-BO' not found in normalization JSON. Falling back to 'CLOSE'.")
-                    min_val = norm_json.get("CLOSE", {}).get("min", 0)
-                    max_val = norm_json.get("CLOSE", {}).get("max", 1)
-                # Denormalize predicted returns
-                val_predictions = val_predictions * (max_val - min_val) + min_val
-                # Add current close values to get predicted close; ensure alignment based on sliding windows if applicable
-                if current_val is not None:
-                    current_val = current_val.flatten()
-                    val_predictions = val_predictions + current_val.reshape(-1, 1)
-                else:
-                    print("Warning: Current close values not available for denormalization of returns.")
+                    print("Warning: 'BC-BO' not found in normalization JSON; skipping denormalization for returns.")
             else:
-                print("Warning: Normalization JSON not provided, cannot denormalize predicted returns properly.")
-        else:
-            # Original denormalization using "CLOSE" parameters
-            if config.get("use_normalization_json") is not None:
-                norm_json = config.get("use_normalization_json")
-                if isinstance(norm_json, str):
-                    try:
-                        with open(norm_json, 'r') as f:
-                            norm_json = json.load(f)
-                    except Exception as e:
-                        print(f"Error loading normalization JSON from {norm_json}: {e}")
-                        norm_json = {}
-                elif not isinstance(norm_json, dict):
-                    print("Error: Normalization JSON is not a valid dictionary.")
-                    norm_json = {}
                 if "CLOSE" in norm_json:
                     min_val = norm_json["CLOSE"].get("min", 0)
                     max_val = norm_json["CLOSE"].get("max", 1)
-                    val_predictions = val_predictions * (max_val - min_val) + min_val
-        val_predictions_df = pd.DataFrame(
-            val_predictions, 
-            columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
+                    test_predictions = test_predictions * (max_val - min_val) + min_val
+        # If use_returns is true, add the baseline close values to the predicted returns
+        if config.get("use_returns", False):
+            if "baseline_test" in datasets:
+                test_predictions = test_predictions + datasets["baseline_test"]
+            else:
+                print("Warning: Baseline test values not found; cannot convert returns to predicted close values.")
+    
+        test_predictions_df = pd.DataFrame(
+            test_predictions, 
+            columns=[f"Prediction_{i+1}" for i in range(test_predictions.shape[1])]
         )
-        if val_dates is not None:
-            val_predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(val_predictions_df)])
+        if test_dates is not None:
+            test_predictions_df['DATE_TIME'] = pd.Series(test_dates[:len(test_predictions_df)])
         else:
-            val_predictions_df['DATE_TIME'] = pd.NaT
-        cols = ['DATE_TIME'] + [col for col in val_predictions_df.columns if col != 'DATE_TIME']
-        val_predictions_df = val_predictions_df[cols]
-        val_predictions_df.to_csv(final_val_file, index=False)
-        print(f"Final validation predictions saved to {final_val_file}")
+            test_predictions_df['DATE_TIME'] = pd.NaT
+        cols = ['DATE_TIME'] + [col for col in test_predictions_df.columns if col != 'DATE_TIME']
+        test_predictions_df = test_predictions_df[cols]
+        test_predictions_df.to_csv(final_test_file, index=False)
+        print(f"Final validation predictions saved to {final_test_file}")
     else:
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
+
+    # ------------------------------
+    # NEW: Compute Uncertainty Estimates
+    # ------------------------------
+    print("Computing uncertainty estimates using MC sampling...")
+    try:
+        mc_samples = config.get("mc_samples", 100)
+        # This new plugin method performs multiple forward passes (with training=True) to get prediction samples.
+        _, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
+        # uncertainty_estimates shape is (n_test, time_horizon)
+        uncertainty_df = pd.DataFrame(
+            uncertainty_estimates,
+            columns=[f"Uncertainty_{i+1}" for i in range(uncertainty_estimates.shape[1])]
+        )
+        if test_dates is not None:
+            uncertainty_df['DATE_TIME'] = pd.Series(test_dates[:len(uncertainty_df)])
+        else:
+            uncertainty_df['DATE_TIME'] = pd.NaT
+        cols = ['DATE_TIME'] + [col for col in uncertainty_df.columns if col != 'DATE_TIME']
+        uncertainty_df = uncertainty_df[cols]
+        uncertainty_file = config.get("uncertainty_file", "test_uncertainty.csv")
+        uncertainty_df.to_csv(uncertainty_file, index=False)
+        print(f"Uncertainty predictions saved to {uncertainty_file}")
+    except Exception as e:
+        print(f"Failed to compute or save uncertainty predictions: {e}")
+
+    # ------------------------------
+    # NEW: Plot Last 1k Predictions with True Values and Uncertainty Band
+    # ------------------------------
+    try:
+        n_plot = 2000
+        # Use the last n_plot rows from test predictions (assuming test_predictions is denormalized)
+        if test_predictions.shape[0] > n_plot:
+            pred_plot = test_predictions[-n_plot:, 0]  # using first prediction column
+            true_plot = y_test[-n_plot:, 0]             # true values for first time step (still normalized)
+            if test_dates is not None:
+                dates_plot = test_dates[-n_plot:]
+            else:
+                dates_plot = np.arange(test_predictions.shape[0]-n_plot, test_predictions.shape[0])
+            # For uncertainties, take the corresponding rows and first column
+            uncertainty_norm = uncertainty_estimates[-n_plot:, 0]
+        else:
+            pred_plot = test_predictions[:, 0]
+            true_plot = y_test[:, 0]
+            dates_plot = test_dates if test_dates is not None else np.arange(test_predictions.shape[0])
+            uncertainty_norm = uncertainty_estimates[:, 0]
+        
+        # Denormalize true_plot and uncertainty if a normalization JSON is provided.
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                try:
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                except Exception as e:
+                    print(f"Error loading normalization JSON from {norm_json}: {e}")
+                    norm_json = {}
+            elif not isinstance(norm_json, dict):
+                print("Error: Normalization JSON is not a valid dictionary.")
+                norm_json = {}
+            if "CLOSE" in norm_json:
+                min_val = norm_json["CLOSE"].get("min", 0)
+                max_val = norm_json["CLOSE"].get("max", 1)
+                # true_plot is normalized; denormalize it:
+                true_plot = true_plot * (max_val - min_val) + min_val
+                # uncertainty (std) should be scaled by (max_val - min_val)
+                uncertainty_plot = uncertainty_norm * (max_val - min_val)
+            else:
+                uncertainty_plot = uncertainty_norm
+        else:
+            uncertainty_plot = uncertainty_norm
+
+        # Create the plot
+        plt.figure(figsize=(12, 6))
+        plt.plot(dates_plot, pred_plot, label="Predicted", color="blue", linewidth=2)
+        plt.plot(dates_plot, true_plot, label="True", color="red", linewidth=2)
+        # Plot the uncertainty band around the predicted values
+        plt.fill_between(dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
+                         color="blue", alpha=0.2, label="Uncertainty")
+        plt.title("Last 1000 Predictions vs True Values with Uncertainty")
+        plt.xlabel("Time")
+        plt.ylabel("CLOSE")
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        predictions_plot_file = config.get("predictions_plot_file", "predictions_plot.png")
+        plt.savefig(predictions_plot_file, dpi=300)
+        plt.close()
+        print(f"Prediction plot saved to {predictions_plot_file}")
+    except Exception as e:
+        print(f"Failed to generate prediction plot: {e}")
+
 
     try:
         plot_model(
@@ -599,6 +705,8 @@ def load_and_evaluate_model(config, plugin):
     2. Loads and processes the validation data.
     3. Makes predictions using the loaded model.
     4. Denormalizes predictions if a normalization JSON is provided.
+       If config['use_returns'] is True, the predictions (predicted returns) are converted to 
+       predicted close values by adding the baseline CLOSE value from the corresponding tick.
     5. Saves the predictions to a CSV file for evaluation, including the DATE_TIME column.
 
     Args:
@@ -614,15 +722,12 @@ def load_and_evaluate_model(config, plugin):
                 - 'max_steps_val' (int, optional): Maximum number of rows to read for validation data.
                 - 'use_normalization_json' (str or dict, optional): Path to a JSON file or dictionary for normalization parameters.
         plugin (Plugin): The ANN predictor plugin to be used for evaluation.
-
-    Raises:
-        ValueError: If required configuration parameters are missing or invalid.
-        Exception: Propagates any exception that occurs during model loading or data processing.
     """
     # Load the pre-trained model using custom_objects for the custom loss and metrics.
     print(f"Loading pre-trained model from {config['load_model']}...")
     try:
-        from keras.models import load_model
+        # Updated import: use tensorflow.keras.models.load_model instead of keras.models.load_model.
+        from tensorflow.keras.models import load_model
         custom_objects = {
             "combined_loss": combined_loss,
             "mmd": mmd_metric,
@@ -641,7 +746,6 @@ def load_and_evaluate_model(config, plugin):
         x_val = datasets["x_val"]
         y_val = datasets["y_val"]
         val_dates = datasets.get("dates_val")
-        orig_current_val = datasets.get("current_val")
         # For CNN plugins, create sliding windows and update dates accordingly
         if config["plugin"] in ["cnn", "cnn_mmd"]:
             print("Creating sliding windows for CNN...")
@@ -651,14 +755,6 @@ def load_and_evaluate_model(config, plugin):
             val_dates = val_date_windows
             print(f"Sliding windows created:")
             print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
-            # Adjust current close for sliding windows if using returns
-            if config.get("use_returns", False) and orig_current_val is not None:
-                current_val_all = orig_current_val.to_numpy() if hasattr(orig_current_val, "to_numpy") else orig_current_val
-                current_val = current_val_all[config["window_size"] - 1 : config["window_size"] - 1 + x_val.shape[0]]
-            else:
-                current_val = orig_current_val
-        else:
-            current_val = orig_current_val
         if config["plugin"] == "lstm":
             print("Using LSTM data from process_data (window size 1, no date shift).")
             if x_val.ndim != 3:
@@ -683,52 +779,37 @@ def load_and_evaluate_model(config, plugin):
         sys.exit(1)
 
     # Denormalize predictions if a normalization JSON is provided.
-    if config.get("use_returns", False):
-        if config.get("use_normalization_json") is not None:
-            norm_json = config.get("use_normalization_json")
-            if isinstance(norm_json, str):
-                try:
-                    with open(norm_json, 'r') as f:
-                        norm_json = json.load(f)
-                except Exception as e:
-                    print(f"Error loading normalization JSON from {norm_json}: {e}")
-                    norm_json = {}
-            elif not isinstance(norm_json, dict):
-                print("Error: Normalization JSON is not a valid dictionary.")
+    if config.get("use_normalization_json") is not None:
+        norm_json = config.get("use_normalization_json")
+        if isinstance(norm_json, str):
+            try:
+                with open(norm_json, 'r') as f:
+                    norm_json = json.load(f)
+            except Exception as e:
+                print(f"Error loading normalization JSON from {norm_json}: {e}")
                 norm_json = {}
+        elif not isinstance(norm_json, dict):
+            print("Error: Normalization JSON is not a valid dictionary.")
+            norm_json = {}
+        if config.get("use_returns", False):
             if "BC-BO" in norm_json:
                 min_val = norm_json["BC-BO"].get("min", 0)
                 max_val = norm_json["BC-BO"].get("max", 1)
+                predictions = predictions * (max_val - min_val) + min_val
             else:
-                print("Warning: 'BC-BO' not found in normalization JSON. Falling back to 'CLOSE'.")
-                min_val = norm_json.get("CLOSE", {}).get("min", 0)
-                max_val = norm_json.get("CLOSE", {}).get("max", 1)
-            predictions = predictions * (max_val - min_val) + min_val
-            # Add current close to convert predicted return to predicted close.
-            if current_val is not None:
-                current_val = current_val.flatten()
-                predictions = predictions + current_val.reshape(-1, 1)
-            else:
-                print("Warning: Current close values not available for denormalization of returns.")
+                print("Warning: 'BC-BO' not found in normalization JSON; skipping denormalization for returns.")
         else:
-            print("Warning: Normalization JSON not provided, cannot denormalize predicted returns properly.")
-    else:
-        if config.get("use_normalization_json") is not None:
-            norm_json = config.get("use_normalization_json")
-            if isinstance(norm_json, str):
-                try:
-                    with open(norm_json, 'r') as f:
-                        norm_json = json.load(f)
-                except Exception as e:
-                    print(f"Error loading normalization JSON from {norm_json}: {e}")
-                    norm_json = {}
-            elif not isinstance(norm_json, dict):
-                print("Error: Normalization JSON is not a valid dictionary.")
-                norm_json = {}
             if "CLOSE" in norm_json:
                 min_val = norm_json["CLOSE"].get("min", 0)
                 max_val = norm_json["CLOSE"].get("max", 1)
                 predictions = predictions * (max_val - min_val) + min_val
+
+    # If use_returns is true, add the baseline close values to the predicted returns
+    if config.get("use_returns", False):
+        if "baseline_val" in datasets:
+            predictions = predictions + datasets["baseline_val"]
+        else:
+            print("Warning: Baseline validation values not found; cannot convert returns to predicted close values.")
 
     # Convert predictions to DataFrame
     if predictions.ndim == 1 or predictions.shape[1] == 1:
@@ -762,83 +843,6 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
-
-
-def create_multi_step_targets(df, time_horizon):
-    """
-    Creates multi-step targets for time-series prediction.
-
-    Args:
-        df (pd.DataFrame): Target data as a DataFrame.
-        time_horizon (int): Number of future steps to predict.
-
-    Returns:
-        pd.DataFrame: Multi-step targets aligned with the input data.
-    """
-    y_multi_step = []
-    for i in range(len(df) - time_horizon + 1):
-        y_multi_step.append(df.iloc[i:i + time_horizon].values.flatten())
-
-    # Create DataFrame with aligned indices
-    y_multi_step_df = pd.DataFrame(y_multi_step, index=df.index[:len(y_multi_step)])
-    return y_multi_step_df
-
-
-def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
-    """
-    Creates sliding windows for input features and targets with a specified stride.
-
-    Args:
-        x (numpy.ndarray): Input features of shape (N, features).
-        y (numpy.ndarray): Targets of shape (N,) or (N, 1).
-        window_size (int): Number of past steps to include in each window.
-        time_horizon (int): Number of future steps to predict.
-        stride (int): Step size between windows.
-        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
-
-    Returns:
-        tuple:
-            - x_windowed (numpy.ndarray): Shaped (samples, window_size, features).
-            - y_windowed (numpy.ndarray): Shaped (samples, time_horizon).
-            - date_time_windows (list): List of date times for each window (if provided).
-    """
-    if y.ndim == 2 and y.shape[1] == 1:
-        y = y.flatten()
-    elif y.ndim > 2:
-        raise ValueError("y should be a 1D or 2D array with a single column.")
-
-    x_windowed = []
-    y_windowed = []
-    date_time_windows = []
-
-    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
-        x_window = x[i:i + window_size]
-        y_window = y[i + window_size:i + window_size + time_horizon]
-        x_windowed.append(x_window)
-        y_windowed.append(y_window)
-        if date_times is not None:
-            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
-
-    return np.array(x_windowed), np.array(y_windowed), date_time_windows
-
-def generate_positional_encoding(num_features, pos_dim=16):
-    """
-    Generates positional encoding for a given number of features.
-
-    Args:
-        num_features (int): Number of features in the dataset.
-        pos_dim (int): Dimension of the positional encoding.
-
-    Returns:
-        np.ndarray: Positional encoding of shape (1, num_features * pos_dim).
-    """
-    position = np.arange(num_features)[:, np.newaxis]
-    div_term = np.exp(np.arange(0, pos_dim, 2) * -(np.log(10000.0) / pos_dim))
-    pos_encoding = np.zeros((num_features, pos_dim))
-    pos_encoding[:, 0::2] = np.sin(position * div_term)
-    pos_encoding[:, 1::2] = np.cos(position * div_term)
-    pos_encoding_flat = pos_encoding.flatten().reshape(1, -1)  # Shape: (1, num_features * pos_dim)
-    return pos_encoding_flat
 
 def generate_positional_encoding(num_features, pos_dim=16):
     """
