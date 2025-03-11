@@ -30,9 +30,9 @@ def main():
     parser.add_argument("--p_max", type=int, default=10, help="Valor máximo para p (orden autorregresivo).")
     parser.add_argument("--d_max", type=int, default=5, help="Valor máximo para d (diferenciación).")
     parser.add_argument("--q_max", type=int, default=10, help="Valor máximo para q (orden de media móvil).")
-    parser.add_argument("--pop_size", type=int, default=20, help="Tamaño de la población.")
+    parser.add_argument("--pop_size", type=int, default=10, help="Tamaño de la población.")
     parser.add_argument("--ngen", type=int, default=10, help="Número de generaciones.")
-    parser.add_argument("--max_steps", type=int, default=None, help="Máximo número de filas a usar durante el ajuste de ARIMA.")
+    parser.add_argument("--max_steps", type=int, default=6300, help="Máximo número de filas a usar durante el ajuste de ARIMA.")
     args = parser.parse_args()
 
     # Leer el CSV y seleccionar la columna de la serie
