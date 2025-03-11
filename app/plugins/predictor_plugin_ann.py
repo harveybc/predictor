@@ -13,6 +13,14 @@ from keras import backend as K
 from sklearn.metrics import r2_score 
 import logging
 import os
+import gc
+import tensorflow.keras.backend as K
+
+class ClearMemoryCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        K.clear_session()
+        gc.collect()
+
 
 # --- Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable ---
 def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
@@ -35,7 +43,7 @@ class Plugin:
     """
 
     plugin_params = {
-        'batch_size': 128,
+        'batch_size': 32,
         'intermediate_layers': 3,
         'initial_layer_size': 64,
         'layer_size_divisor': 2,
@@ -251,28 +259,28 @@ class Plugin:
         print("✅ Standard ANN model built successfully.")
 
 
-    def compute_mmd(self, x, y, sigma=1.0):
+    def compute_mmd(self, x, y, sigma=1.0, sample_size=256):
         """
-        Compute Maximum Mean Discrepancy (MMD) using a Gaussian Kernel.
-        
-        Args:
-            x (tf.Tensor): Predicted outputs.
-            y (tf.Tensor): True outputs.
-            sigma (float): Bandwidth parameter for the Gaussian kernel.
-        
-        Returns:
-            tf.Tensor: The computed MMD loss.
+        Compute Maximum Mean Discrepancy (MMD) using a Gaussian Kernel
+        with a reduced sample size to avoid memory issues.
         """
-        def gaussian_kernel(x, y, sigma):
-            x = tf.expand_dims(x, 1)
-            y = tf.expand_dims(y, 0)
-            dist = tf.reduce_sum(tf.square(x - y), axis=-1)
-            return tf.exp(-dist / (2.0 * sigma ** 2))
+        with tf.device('/CPU:0'):  # Move computation to CPU
+            # Randomly sample from x and y to reduce memory usage
+            idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:sample_size]
+            x_sample = tf.gather(x, idx)
+            y_sample = tf.gather(y, idx)
 
-        K_xx = gaussian_kernel(x, x, sigma)
-        K_yy = gaussian_kernel(y, y, sigma)
-        K_xy = gaussian_kernel(x, y, sigma)
-        return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
+            def gaussian_kernel(x, y, sigma):
+                x = tf.expand_dims(x, 1)
+                y = tf.expand_dims(y, 0)
+                dist = tf.reduce_sum(tf.square(x - y), axis=-1)
+                return tf.exp(-dist / (2.0 * sigma ** 2))
+
+            K_xx = gaussian_kernel(x_sample, x_sample, sigma)
+            K_yy = gaussian_kernel(y_sample, y_sample, sigma)
+            K_xy = gaussian_kernel(x_sample, y_sample, sigma)
+            return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
+
 
     def custom_loss(self, y_true, y_pred):
         """
@@ -340,6 +348,7 @@ class Plugin:
             start_from_epoch=30
         )
         callbacks.append(early_stopping_monitor)
+        callbacks.append(ClearMemoryCallback())
 
         # Compile the model with the custom loss function
         self.model.compile(
