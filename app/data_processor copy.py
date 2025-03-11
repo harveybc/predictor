@@ -56,6 +56,8 @@ def process_data(config):
 
     Returns:
         dict: Processed datasets for training and validation, along with corresponding DATE_TIME arrays.
+              Additionally, if config['use_returns'] is True, includes the current close values for training
+              and validation in keys 'current_train' and 'current_val' respectively.
     """
     # 1) LOAD CSVs
     x_train = load_csv(
@@ -174,6 +176,24 @@ def process_data(config):
     train_dates = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
     val_dates = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
 
+    # --- NEW FUNCTIONALITY: Adjust targets to returns if requested ---
+    # If use_returns is True, for each row subtract the current tick's close value.
+    # For daily mode, use the rolling average values.
+    if config.get("use_returns", False):
+        if config.get("use_daily", False):
+            current_train = y_train_ma.iloc[:len(y_train_multi)]
+            current_val = y_val_ma.iloc[:len(y_val_multi)]
+        else:
+            current_train = y_train.iloc[:len(y_train_multi)]
+            current_val = y_val.iloc[:len(y_val_multi)]
+        # Subtract current value from each future value (broadcasting along each row)
+        y_train_multi = y_train_multi - current_train.values
+        y_val_multi = y_val_multi - current_val.values
+    else:
+        current_train = None
+        current_val = None
+    # --- END NEW FUNCTIONALITY ---
+
     # 6) LSTM-SPECIFIC PROCESSING
     if config["plugin"] == "lstm":
         print("Processing data for LSTM plugin...")
@@ -278,8 +298,10 @@ def process_data(config):
         "y_val": y_val_multi,
         "dates_train": train_dates,
         "dates_val": val_dates,
+        # Include current close values for use in denormalization if use_returns is True
+        "current_train": current_train,
+        "current_val": current_val,
     }
-
 
 
 def run_prediction_pipeline(config, plugin):
@@ -310,6 +332,9 @@ def run_prediction_pipeline(config, plugin):
 
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
+
+    # Retrieve current close values if use_returns is enabled
+    orig_current_val = datasets.get("current_val")
 
     # Extract time_horizon and window_size from config
     time_horizon = config.get("time_horizon")
@@ -348,6 +373,17 @@ def run_prediction_pipeline(config, plugin):
         print(f"Sliding windows created:")
         print(f"  x_train: {x_train.shape}, y_train: {y_train.shape}")
         print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
+        # --- NEW: Adjust current close for sliding windows if using returns ---
+        if config.get("use_returns", False) and orig_current_val is not None:
+            # For CNN, the current close corresponding to each window is taken from the original current values,
+            # offset by (window_size - 1)
+            current_val_all = orig_current_val.to_numpy() if hasattr(orig_current_val, "to_numpy") else orig_current_val
+            current_val = current_val_all[window_size - 1 : window_size - 1 + x_val.shape[0]]
+        else:
+            current_val = orig_current_val
+    else:
+        current_val = orig_current_val
+
     # For LSTM plugin, use the processed data as returned from process_data (window size = 1, with no date shift)
     if config["plugin"] == "lstm":
         print("Using LSTM data from process_data (window size 1, no date shift).")
@@ -460,25 +496,55 @@ def run_prediction_pipeline(config, plugin):
     # Save final validation predictions
     final_val_file = config.get("output_file", "validation_predictions.csv")
     if 'val_predictions' in locals() and val_predictions is not None:
-        # Denormalize predictions (simple denormalization using CLOSE values)
-        if config.get("use_normalization_json") is not None:
-            norm_json = config.get("use_normalization_json")
-            if isinstance(norm_json, str):
-                try:
-                    with open(norm_json, 'r') as f:
-                        norm_json = json.load(f)
-                except Exception as e:
-                    print(f"Error loading normalization JSON from {norm_json}: {e}")
+        # --- NEW DENORMALIZATION for returns ---
+        if config.get("use_returns", False):
+            if config.get("use_normalization_json") is not None:
+                norm_json = config.get("use_normalization_json")
+                if isinstance(norm_json, str):
+                    try:
+                        with open(norm_json, 'r') as f:
+                            norm_json = json.load(f)
+                    except Exception as e:
+                        print(f"Error loading normalization JSON from {norm_json}: {e}")
+                        norm_json = {}
+                elif not isinstance(norm_json, dict):
+                    print("Error: Normalization JSON is not a valid dictionary.")
                     norm_json = {}
-            elif not isinstance(norm_json, dict):
-                print("Error: Normalization JSON is not a valid dictionary.")
-                norm_json = {}
-            if "CLOSE" in norm_json:
-                min_val = norm_json["CLOSE"].get("min", 0)
-                max_val = norm_json["CLOSE"].get("max", 1)
-                # Simple denormalization: original = normalized*(max-min) + min
+                if "BC-BO" in norm_json:
+                    min_val = norm_json["BC-BO"].get("min", 0)
+                    max_val = norm_json["BC-BO"].get("max", 1)
+                else:
+                    print("Warning: 'BC-BO' not found in normalization JSON. Falling back to 'CLOSE'.")
+                    min_val = norm_json.get("CLOSE", {}).get("min", 0)
+                    max_val = norm_json.get("CLOSE", {}).get("max", 1)
+                # Denormalize predicted returns
                 val_predictions = val_predictions * (max_val - min_val) + min_val
-
+                # Add current close values to get predicted close; ensure alignment based on sliding windows if applicable
+                if current_val is not None:
+                    current_val = current_val.flatten()
+                    val_predictions = val_predictions + current_val.reshape(-1, 1)
+                else:
+                    print("Warning: Current close values not available for denormalization of returns.")
+            else:
+                print("Warning: Normalization JSON not provided, cannot denormalize predicted returns properly.")
+        else:
+            # Original denormalization using "CLOSE" parameters
+            if config.get("use_normalization_json") is not None:
+                norm_json = config.get("use_normalization_json")
+                if isinstance(norm_json, str):
+                    try:
+                        with open(norm_json, 'r') as f:
+                            norm_json = json.load(f)
+                    except Exception as e:
+                        print(f"Error loading normalization JSON from {norm_json}: {e}")
+                        norm_json = {}
+                elif not isinstance(norm_json, dict):
+                    print("Error: Normalization JSON is not a valid dictionary.")
+                    norm_json = {}
+                if "CLOSE" in norm_json:
+                    min_val = norm_json["CLOSE"].get("min", 0)
+                    max_val = norm_json["CLOSE"].get("max", 1)
+                    val_predictions = val_predictions * (max_val - min_val) + min_val
         val_predictions_df = pd.DataFrame(
             val_predictions, 
             columns=[f"Prediction_{i+1}" for i in range(val_predictions.shape[1])]
@@ -519,7 +585,6 @@ def run_prediction_pipeline(config, plugin):
 
     end_time = time.time()
     print(f"\nTotal Execution Time: {end_time - start_time:.2f} seconds")
-
 
 
 def load_and_evaluate_model(config, plugin):
@@ -573,6 +638,7 @@ def load_and_evaluate_model(config, plugin):
         x_val = datasets["x_val"]
         y_val = datasets["y_val"]
         val_dates = datasets.get("dates_val")
+        orig_current_val = datasets.get("current_val")
         # For CNN plugins, create sliding windows and update dates accordingly
         if config["plugin"] in ["cnn", "cnn_mmd"]:
             print("Creating sliding windows for CNN...")
@@ -582,6 +648,14 @@ def load_and_evaluate_model(config, plugin):
             val_dates = val_date_windows
             print(f"Sliding windows created:")
             print(f"  x_val:   {x_val.shape},   y_val:   {y_val.shape}")
+            # Adjust current close for sliding windows if using returns
+            if config.get("use_returns", False) and orig_current_val is not None:
+                current_val_all = orig_current_val.to_numpy() if hasattr(orig_current_val, "to_numpy") else orig_current_val
+                current_val = current_val_all[config["window_size"] - 1 : config["window_size"] - 1 + x_val.shape[0]]
+            else:
+                current_val = orig_current_val
+        else:
+            current_val = orig_current_val
         if config["plugin"] == "lstm":
             print("Using LSTM data from process_data (window size 1, no date shift).")
             if x_val.ndim != 3:
@@ -606,23 +680,52 @@ def load_and_evaluate_model(config, plugin):
         sys.exit(1)
 
     # Denormalize predictions if a normalization JSON is provided.
-    if config.get("use_normalization_json") is not None:
-        norm_json = config.get("use_normalization_json")
-        if isinstance(norm_json, str):
-            try:
-                with open(norm_json, 'r') as f:
-                    norm_json = json.load(f)
-            except Exception as e:
-                print(f"Error loading normalization JSON from {norm_json}: {e}")
+    if config.get("use_returns", False):
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                try:
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                except Exception as e:
+                    print(f"Error loading normalization JSON from {norm_json}: {e}")
+                    norm_json = {}
+            elif not isinstance(norm_json, dict):
+                print("Error: Normalization JSON is not a valid dictionary.")
                 norm_json = {}
-        elif not isinstance(norm_json, dict):
-            print("Error: Normalization JSON is not a valid dictionary.")
-            norm_json = {}
-        # If "CLOSE" exists in the normalization JSON, denormalize predictions.
-        if "CLOSE" in norm_json:
-            min_val = norm_json["CLOSE"].get("min", 0)
-            max_val = norm_json["CLOSE"].get("max", 1)
+            if "BC-BO" in norm_json:
+                min_val = norm_json["BC-BO"].get("min", 0)
+                max_val = norm_json["BC-BO"].get("max", 1)
+            else:
+                print("Warning: 'BC-BO' not found in normalization JSON. Falling back to 'CLOSE'.")
+                min_val = norm_json.get("CLOSE", {}).get("min", 0)
+                max_val = norm_json.get("CLOSE", {}).get("max", 1)
             predictions = predictions * (max_val - min_val) + min_val
+            # Add current close to convert predicted return to predicted close.
+            if current_val is not None:
+                current_val = current_val.flatten()
+                predictions = predictions + current_val.reshape(-1, 1)
+            else:
+                print("Warning: Current close values not available for denormalization of returns.")
+        else:
+            print("Warning: Normalization JSON not provided, cannot denormalize predicted returns properly.")
+    else:
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                try:
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                except Exception as e:
+                    print(f"Error loading normalization JSON from {norm_json}: {e}")
+                    norm_json = {}
+            elif not isinstance(norm_json, dict):
+                print("Error: Normalization JSON is not a valid dictionary.")
+                norm_json = {}
+            if "CLOSE" in norm_json:
+                min_val = norm_json["CLOSE"].get("min", 0)
+                max_val = norm_json["CLOSE"].get("max", 1)
+                predictions = predictions * (max_val - min_val) + min_val
 
     # Convert predictions to DataFrame
     if predictions.ndim == 1 or predictions.shape[1] == 1:
