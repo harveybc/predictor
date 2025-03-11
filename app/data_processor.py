@@ -391,14 +391,13 @@ def run_prediction_pipeline(config, plugin):
     val_dates = datasets.get("dates_val")
     test_dates = datasets.get("dates_test")
 
-    # --- NEW UPDATE: If any of x_train, x_val, or x_test is a tuple, extract the data array.
+    # If sliding window output is a tuple, extract the data array.
     if isinstance(x_train, tuple):
         x_train = x_train[0]
     if isinstance(x_val, tuple):
         x_val = x_val[0]
     if isinstance(x_test, tuple):
         x_test = x_test[0]
-    # ---------------------------------------------------------------
 
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
@@ -468,7 +467,6 @@ def run_prediction_pipeline(config, plugin):
         # Evaluate on test dataset
         print("\nEvaluating on test dataset...")
         test_predictions = plugin.predict(x_test)
-        from sklearn.metrics import r2_score
         n_test = test_predictions.shape[0]
         test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
         test_r2 = r2_score(y_test[:n_test], test_predictions)
@@ -532,7 +530,6 @@ def run_prediction_pipeline(config, plugin):
     # -----------------------
     final_test_file = config.get("output_file", "test_predictions.csv")
     if 'test_predictions' in locals() and test_predictions is not None:
-        # Denormalize predictions (simple denormalization)
         if config.get("use_normalization_json") is not None:
             norm_json = config.get("use_normalization_json")
             if isinstance(norm_json, str):
@@ -546,16 +543,24 @@ def run_prediction_pipeline(config, plugin):
                 print("Error: Normalization JSON is not a valid dictionary.")
                 norm_json = {}
             if config.get("use_returns", False):
+                # For predicted returns: denormalize using BC-BO parameters...
                 if "BC-BO" in norm_json and "CLOSE" in norm_json:
-                    # Denormalize predicted returns using BC-BO parameters
                     bcbo_min = norm_json["BC-BO"].get("min", 0)
                     bcbo_max = norm_json["BC-BO"].get("max", 1)
                     denorm_pred_returns = test_predictions * (bcbo_max - bcbo_min) + bcbo_min
-                    # Denormalize baseline (current close) using CLOSE parameters
+                    # And add the current tick's close value (baseline) denormalized using CLOSE parameters.
                     close_min = norm_json["CLOSE"].get("min", 0)
                     close_max = norm_json["CLOSE"].get("max", 1)
-                    denorm_baseline = datasets["baseline_test"] * (close_max - close_min) + close_min
-                    test_predictions = denorm_pred_returns + denorm_baseline
+                    # Note: The baseline values were stored in process_data as "baseline_test"
+                    if "baseline_test" in datasets:
+                        # Ensure proper broadcasting (if test_predictions is 2D, reshape baseline accordingly)
+                        baseline = datasets["baseline_test"]
+                        if baseline.ndim == 1:
+                            baseline = baseline.reshape(-1, 1)
+                        denorm_baseline = baseline * (close_max - close_min) + close_min
+                        test_predictions = denorm_pred_returns + denorm_baseline
+                    else:
+                        print("Warning: Baseline test values not found; cannot convert returns to predicted close values.")
                 else:
                     print("Warning: 'BC-BO' and/or 'CLOSE' not found in normalization JSON; skipping proper denormalization for returns.")
             else:
@@ -579,21 +584,20 @@ def run_prediction_pipeline(config, plugin):
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
 
     # ------------------------------
-    # NEW: Plot Last 1k Predictions with True Values and Uncertainty Band
+    # Plot Last 1k Predictions with True Values and Uncertainty Band
     # ------------------------------
     try:
         n_plot = 2000
-        # Use the last n_plot rows from test predictions (assumed to be denormalized now)
         if test_predictions.shape[0] > n_plot:
-            pred_plot = test_predictions[-n_plot:, 0]  # using first prediction column
-            true_plot = y_test[-n_plot:, 0]             # true values (still normalized returns if use_returns is true)
+            pred_plot = test_predictions[-n_plot:, 0]
+            true_plot = y_test[-n_plot:, 0]
             if test_dates is not None:
                 dates_plot = test_dates[-n_plot:]
             else:
                 dates_plot = np.arange(test_predictions.shape[0]-n_plot, test_predictions.shape[0])
             uncertainty_norm = uncertainty_estimates[-n_plot:, 0]
-            # If use_returns is true, denormalize true values similarly
             if config.get("use_returns", False) and config.get("use_normalization_json") is not None:
+                # Denormalize true returns and add the corresponding baseline
                 norm_json = config.get("use_normalization_json")
                 if isinstance(norm_json, str):
                     try:
@@ -610,15 +614,19 @@ def run_prediction_pipeline(config, plugin):
                     bcbo_max = norm_json["BC-BO"].get("max", 1)
                     close_min = norm_json["CLOSE"].get("min", 0)
                     close_max = norm_json["CLOSE"].get("max", 1)
-                    # Denormalize the true returns and add the baseline for true values
                     true_returns_denorm = true_plot * (bcbo_max - bcbo_min) + bcbo_min
-                    baseline_true = datasets["baseline_test"][-n_plot:, 0]
-                    baseline_true_denorm = baseline_true * (close_max - close_min) + close_min
-                    true_plot = true_returns_denorm + baseline_true_denorm
-                    # Uncertainty is denormalized using BC-BO parameters
-                    uncertainty_plot = uncertainty_norm * (bcbo_max - bcbo_min)
+                    # For the true values, obtain baseline from the last n_plot rows of the test baseline.
+                    if "baseline_test" in datasets:
+                        base_true = datasets["baseline_test"][-n_plot:]
+                        if base_true.ndim == 1:
+                            base_true = base_true.reshape(-1, 1)
+                        baseline_true_denorm = base_true * (close_max - close_min) + close_min
+                        true_plot = true_returns_denorm + baseline_true_denorm.flatten()
+                        uncertainty_plot = uncertainty_norm * (bcbo_max - bcbo_min)
+                    else:
+                        print("Warning: Baseline test values not found for plotting.")
+                        uncertainty_plot = uncertainty_norm * (bcbo_max - bcbo_min)
                 else:
-                    print("Warning: 'BC-BO' and/or 'CLOSE' not found in normalization JSON; using default denormalization for plot.")
                     if "CLOSE" in norm_json:
                         min_val = norm_json["CLOSE"].get("min", 0)
                         max_val = norm_json["CLOSE"].get("max", 1)
@@ -672,8 +680,8 @@ def run_prediction_pipeline(config, plugin):
     except Exception as e:
         print(f"Failed to generate prediction plot: {e}")
 
-
     try:
+        from tensorflow.keras.utils import plot_model
         plot_model(
             plugin.model, 
             to_file=config['model_plot_file'],
@@ -767,7 +775,6 @@ def load_and_evaluate_model(config, plugin):
         print(f"Failed to make predictions: {e}")
         sys.exit(1)
 
-    # Denormalize predictions if a normalization JSON is provided.
     if config.get("use_normalization_json") is not None:
         norm_json = config.get("use_normalization_json")
         if isinstance(norm_json, str):
@@ -787,8 +794,14 @@ def load_and_evaluate_model(config, plugin):
                 denorm_pred_returns = predictions * (bcbo_max - bcbo_min) + bcbo_min
                 close_min = norm_json["CLOSE"].get("min", 0)
                 close_max = norm_json["CLOSE"].get("max", 1)
-                denorm_baseline = datasets["baseline_val"] * (close_max - close_min) + close_min
-                predictions = denorm_pred_returns + denorm_baseline
+                if "baseline_val" in datasets:
+                    baseline = datasets["baseline_val"]
+                    if baseline.ndim == 1:
+                        baseline = baseline.reshape(-1, 1)
+                    denorm_baseline = baseline * (close_max - close_min) + close_min
+                    predictions = denorm_pred_returns + denorm_baseline
+                else:
+                    print("Warning: Baseline validation values not found; cannot convert returns to predicted close values.")
             else:
                 print("Warning: 'BC-BO' and/or 'CLOSE' not found in normalization JSON; skipping proper denormalization for returns.")
         else:
@@ -796,13 +809,6 @@ def load_and_evaluate_model(config, plugin):
                 close_min = norm_json["CLOSE"].get("min", 0)
                 close_max = norm_json["CLOSE"].get("max", 1)
                 predictions = predictions * (close_max - close_min) + close_min
-
-    if config.get("use_returns", False):
-        if "baseline_val" in datasets:
-            # Already incorporated above during denormalization
-            pass
-        else:
-            print("Warning: Baseline validation values not found; cannot convert returns to predicted close values.")
 
     if predictions.ndim == 1 or predictions.shape[1] == 1:
         predictions_df = pd.DataFrame(predictions, columns=['Prediction'])
