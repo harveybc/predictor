@@ -23,7 +23,7 @@
     "learning_rate": 1e-5,
     "activation": "tanh",
     "l2_reg": 1e-7,
-    "kl_weight": 1e-3,
+    "kl_weight": 1e-2,
     "kl_anneal_epochs": 50,
     "early_patience": 60,
 
@@ -31,7 +31,7 @@
     "use_returns": true,
     "mc_samples":1000,
     "plotted_horizon": 6,
-    "mmd_lambda": 0.01
+    "mmd_lambda": 0.1
 
     
 }
