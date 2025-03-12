@@ -385,8 +385,10 @@ def run_prediction_pipeline(config, plugin):
     train_dates = datasets.get("dates_train")
     val_dates = datasets.get("dates_val")
     test_dates = datasets.get("dates_test")
-    # When using returns, process_data returns baseline_test (and baseline_val, etc.)
+    # When using returns, process_data returns baseline values
     if config.get("use_returns", False):
+        baseline_train = datasets.get("baseline_train")
+        baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
 
     # If sliding windows output is a tuple, extract the data.
@@ -409,7 +411,7 @@ def run_prediction_pipeline(config, plugin):
     epochs = config["epochs"]
     threshold_error = config["threshold_error"]
 
-    # Convert DataFrames to NumPy arrays if needed.
+    # Ensure variables are NumPy arrays.
     for var in ["x_train", "y_train", "x_val", "y_val", "x_test", "y_test"]:
         arr = locals()[var]
         if isinstance(arr, pd.DataFrame):
@@ -438,10 +440,24 @@ def run_prediction_pipeline(config, plugin):
                 raise ValueError(f"Expected 2D x_train for {config['plugin']}; got {x_train.shape}")
             plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=config)
 
-        history, train_mae, train_r2, val_mae, val_r2, train_preds, val_preds = plugin.train(
+        history, train_mae, train_r2_orig, val_mae, val_r2_orig, train_preds, val_preds = plugin.train(
             x_train, y_train, epochs=epochs, batch_size=batch_size,
             threshold_error=threshold_error, x_val=x_val, y_val=y_val, config=config
         )
+        # If using returns, recalc r2 based on baseline + predictions.
+        if config.get("use_returns", False):
+            train_r2 = r2_score((baseline_train + y_train).flatten(), (baseline_train + train_preds).flatten())
+            val_r2 = r2_score((baseline_val + y_val).flatten(), (baseline_val + val_preds).flatten())
+        else:
+            train_r2 = r2_score(y_train, train_preds)
+            val_r2 = r2_score(y_val, val_preds)
+
+        # Append the recalculated values
+        training_mae_list.append(train_mae)
+        training_r2_list.append(train_r2)
+        validation_mae_list.append(val_mae)
+        validation_r2_list.append(val_r2)
+
         # Save loss plot
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
@@ -456,18 +472,17 @@ def run_prediction_pipeline(config, plugin):
         print("\nEvaluating on test dataset...")
         test_predictions = plugin.predict(x_test)
         n_test = test_predictions.shape[0]
+        if config.get("use_returns", False):
+            test_r2 = r2_score((baseline_test + y_test[:n_test]).flatten(), (baseline_test + test_predictions).flatten())
+        else:
+            test_r2 = r2_score(y_test[:n_test], test_predictions)
         test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
-        test_r2 = r2_score(y_test[:n_test], test_predictions)
         print("*************************************************")
         print(f"Iteration {iteration} completed.")
         print(f"Training MAE: {train_mae}, Training R²: {train_r2}")
         print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}")
         print(f"Test MAE: {test_mae}, Test R²: {test_r2}")
         print("*************************************************")
-        training_mae_list.append(train_mae)
-        training_r2_list.append(train_r2)
-        validation_mae_list.append(val_mae)
-        validation_r2_list.append(val_r2)
         test_mae_list.append(test_mae)
         test_r2_list.append(test_r2)
         print(f"Iteration {iteration} completed in {time.time()-iter_start:.2f} seconds")
@@ -503,24 +518,13 @@ def run_prediction_pipeline(config, plugin):
         if isinstance(norm_json, str):
             with open(norm_json, 'r') as f:
                 norm_json = json.load(f)
-        # When using returns, denormalize predicted returns and baseline using only CLOSE range,
-        # then compute: (predicted_return + baseline)*diff + close_min
         if config.get("use_returns", False):
             if "CLOSE" in norm_json:
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
                 diff = close_max - close_min
-                # Do NOT add close_min to predicted returns; just scale them.
-                denorm_pred_returns = test_predictions * diff
-                if "baseline_test" in datasets:
-                    baseline = datasets["baseline_test"]
-                    if baseline.ndim == 1:
-                        baseline = baseline.reshape(-1, 1)
-                    denorm_baseline = baseline * diff + close_min
-                    # Final predicted close = (predicted_return + baseline)*diff + close_min
-                    test_predictions = (test_predictions + baseline) * diff + close_min
-                else:
-                    print("Warning: Baseline test values not found.")
+                # Final predicted close = (predicted_return + baseline)*diff + close_min
+                test_predictions = (test_predictions + baseline_test) * diff + close_min
             else:
                 print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
         else:
@@ -548,7 +552,7 @@ def run_prediction_pipeline(config, plugin):
     try:
         mc_samples = config.get("mc_samples", 100)
         _, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
-        # Denormalize uncertainties using CLOSE range only (do not add close_min)
+        # Denormalize uncertainties using CLOSE range only (do not add offset)
         if config.get("use_normalization_json") is not None:
             norm_json = config.get("use_normalization_json")
             if isinstance(norm_json, str):
@@ -584,7 +588,6 @@ def run_prediction_pipeline(config, plugin):
         plotted_idx = plotted_horizon - 1
         if test_predictions.shape[0] > n_plot:
             pred_plot = test_predictions[-n_plot:, plotted_idx]
-            # For true values: if using returns, denormalize the y_test slice and add baseline using CLOSE range.
             if config.get("use_returns", False) and config.get("use_normalization_json") is not None:
                 norm_json = config.get("use_normalization_json")
                 if isinstance(norm_json, str):
@@ -593,18 +596,8 @@ def run_prediction_pipeline(config, plugin):
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
                 diff = close_max - close_min
-                true_slice = y_test[-n_plot:, plotted_idx]
-                # Here, true_slice represents the normalized returns.
-                # Compute true close = (true_return + baseline) * diff + close_min
-                true_returns_denorm = true_slice * diff
-                if "baseline_test" in datasets:
-                    base_true = datasets["baseline_test"][-n_plot:]
-                    if base_true.ndim == 1:
-                        base_true = base_true.reshape(-1, 1)
-                    baseline_true_denorm = base_true * diff + close_min
-                    true_plot = (y_test[-n_plot:, plotted_idx] + base_true.flatten()) * diff + close_min
-                else:
-                    true_plot = true_returns_denorm
+                # For true values: final true close = (true_return + baseline)*diff + close_min
+                true_plot = (y_test[-n_plot:, plotted_idx] + datasets["baseline_test"][-n_plot:]) * diff + close_min
             else:
                 if config.get("use_normalization_json") is not None:
                     norm_json = config.get("use_normalization_json")
@@ -620,7 +613,7 @@ def run_prediction_pipeline(config, plugin):
                 else:
                     true_plot = y_test[-n_plot:, plotted_idx]
             dates_plot = test_dates[-n_plot:] if test_dates is not None else np.arange(test_predictions.shape[0]-n_plot, test_predictions.shape[0])
-            # Use the already denormalized uncertainties:
+            # Use the denormalized uncertainties computed above:
             uncertainty_plot = denorm_uncertainty[-n_plot:, plotted_idx]
         else:
             pred_plot = test_predictions[:, plotted_idx]
@@ -754,11 +747,8 @@ def load_and_evaluate_model(config, plugin):
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
                 diff = close_max - close_min
-                # predicted close = (predicted_return + baseline)*diff + close_min
                 if "baseline_val" in datasets:
                     baseline = datasets["baseline_val"]
-                    if baseline.ndim == 1:
-                        baseline = baseline.reshape(-1, 1)
                     predictions = (predictions + baseline) * diff + close_min
                 else:
                     print("Warning: Baseline validation values not found; cannot convert returns to predicted close values.")
