@@ -157,15 +157,15 @@ class Plugin:
                 x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
                 print(f"DEBUG: After MaxPooling1D layer {idx+1}, x shape: {x.shape}")
 
-        # Another Dense layer after conv layers
-        x = Dense(
-            units=layer_sizes[-2],
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg)
-        )(x)
-        print(f"DEBUG: After second Dense layer, x shape: {x.shape}")
-
+            x = Conv1D(
+                    filters=1,
+                    kernel_size=3,
+                    activation='tanh',
+                    kernel_initializer=HeNormal(),
+                    padding='same',
+                    kernel_regularizer=l2(l2_reg),
+                    name=f"conv1d_{idx+1}"
+                )(x)
 
         # --- Bayesian Output Layer Implementation (copied from ANN/LSTM plugin) ---
         # Convert x to tensor if necessary
