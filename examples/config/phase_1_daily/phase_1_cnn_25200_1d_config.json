@@ -31,5 +31,5 @@
     "plotted_horizon": 6,
     "mmd_lambda": 0.01,
     "window_size": 24,
-    "batch_size": 128
+    "batch_size": 64
 }
