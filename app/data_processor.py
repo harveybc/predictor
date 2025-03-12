@@ -255,7 +255,7 @@ def process_data(config):
     # 6) PER-PLUGIN PROCESSING
     # Use sliding windows only if explicitly enabled by config['use_sliding_windows'].
     if config.get("use_sliding_windows", False):
-        if config["plugin"] in ["lstm"]:
+        if config["plugin"] in ["lstm","cnn"]:
             print("Processing data for LSTM plugin with sliding windows...")
             x_train = x_train.to_numpy().astype(np.float32)
             x_val = x_val.to_numpy().astype(np.float32)
@@ -279,7 +279,7 @@ def process_data(config):
                 baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
                 baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
                 baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
-        elif config["plugin"] in ["cnn", "cnn_mmd"]:
+        elif config["plugin"] in ["cnn", "lstm"]:
             print("Processing data for CNN plugin using sliding windows...")
             def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
                 windows = []
@@ -404,7 +404,7 @@ def run_prediction_pipeline(config, plugin):
     window_size = config.get("window_size")
     if time_horizon is None:
         raise ValueError("`time_horizon` is not defined in the configuration.")
-    if config["plugin"] in ["cnn", "cnn_mmd"] and window_size is None:
+    if config["plugin"] in ["cnn", "lstm"] and window_size is None:
         raise ValueError("`window_size` must be defined for CNN plugins.")
     print(f"Time Horizon: {time_horizon}")
     batch_size = config["batch_size"]
@@ -417,9 +417,9 @@ def run_prediction_pipeline(config, plugin):
         if isinstance(arr, pd.DataFrame):
             locals()[var] = arr.to_numpy().astype(np.float32)
 
-    if config["plugin"] in ["cnn", "cnn_mmd"]:
+    if config["plugin"] in ["cnn", "lstm"]:
         if x_train.ndim != 3:
-            raise ValueError(f"For CNN, x_train must be 3D. Found: {x_train.shape}")
+            raise ValueError(f"For CNN and LSTM, x_train must be 3D. Found: {x_train.shape}")
         print("Using pre-processed sliding windows for CNN.")
 
     plugin.set_params(time_horizon=time_horizon)
@@ -429,10 +429,8 @@ def run_prediction_pipeline(config, plugin):
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iter_start = time.time()
-        if config["plugin"] in ["cnn", "cnn_mmd"]:
+        if config["plugin"] in ["cnn", "lstm"]:
             plugin.build_model(input_shape=(window_size, x_train.shape[2]), x_train=x_train)
-        elif config["plugin"] == "lstm":
-            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]), x_train=x_train)
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
             plugin.build_model(input_shape=x_train.shape[1], x_train=x_train)
         else:
@@ -716,17 +714,15 @@ def load_and_evaluate_model(config, plugin):
         x_val = datasets["x_val"]
         y_val = datasets["y_val"]
         val_dates = datasets.get("dates_val")
-        if config["plugin"] in ["cnn", "cnn_mmd"]:
+        if config["plugin"] in ["cnn", "lstm"]:
             print("Creating sliding windows for CNN...")
             x_val, _, val_date_windows = create_sliding_windows(
                 x_val, y_val, config['window_size'], config['time_horizon'], stride=1, date_times=val_dates
             )
             val_dates = val_date_windows
             print(f"Sliding windows created: x_val: {x_val.shape}, y_val: {y_val.shape}")
-        if config["plugin"] == "lstm":
-            print("Using LSTM data from process_data (window size 1, no date shift).")
             if x_val.ndim != 3:
-                raise ValueError(f"For LSTM, x_val must be 3D. Found: {x_val.shape}.")
+                raise ValueError(f"For CNN and LSTM, x_val must be 3D. Found: {x_val.shape}.")
         if config["plugin"] in ["transformer", "transformer_mmd"]:
             if x_val.ndim != 2:
                 raise ValueError(f"For Transformer, x_val must be 2D. Found: {x_val.shape}.")
