@@ -611,7 +611,7 @@ def run_prediction_pipeline(config, plugin):
             # True values (Baseline Close)
             true_plot = baseline_plot * diff + close_min  # ✅ Correct
             # Predictions (Adding Correctly Denormalized Returns)
-            #pred_plot = true_plot + (pred_plot * diff)  # ✅ Fixing double denormalization
+            pred_plot = true_plot + (pred_plot * diff)  # ✅ Fixing double denormalization
         else:
             print("Warning: 'CLOSE' not found; skipping denormalization for predictions.")
             true_plot = baseline_plot
