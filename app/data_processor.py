@@ -254,7 +254,7 @@ def process_data(config):
 
     # 6) PER-PLUGIN PROCESSING
     # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
-    if config.get("use_sliding_windows", False) or config["plugin"] == "lstm":
+    if config["plugin"] == "cnn" or config["plugin"] == "lstm":
         if config["plugin"] in ["lstm", "cnn"]:
             if config["plugin"] == "lstm":
                 print("Processing data for LSTM plugin with sliding windows...")
