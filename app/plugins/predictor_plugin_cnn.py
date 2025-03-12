@@ -406,10 +406,10 @@ class Plugin:
         from sklearn.metrics import r2_score
         #train_predictions = self.predict(x_train)
         mc_samples = config.get("mc_samples", 100)
-        train_predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_train, mc_samples=mc_samples/10)
+        train_predictions, uncertainty_estimates = self.predict_with_uncertainty(x_train, mc_samples=mc_samples/10)
         
         #val_predictions = self.predict(x_val)
-        val_predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_val, mc_samples=mc_samples/10)
+        val_predictions, uncertainty_estimates =  self.predict_with_uncertainty(x_val, mc_samples=mc_samples/10)
         
         train_r2 = r2_score(y_train, train_predictions)
         val_r2 = r2_score(y_val, val_predictions)
