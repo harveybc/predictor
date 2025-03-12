@@ -10,7 +10,6 @@ from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.layers import GaussianNoise
 from keras import backend as K
-from keras.layers import LSTM
 from sklearn.metrics import r2_score 
 import logging
 import os
@@ -105,83 +104,152 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    def build_model(self, input_shape, **kwargs):
+    def build_model(self, input_shape, x_train, config=None):
         """
-        Builds an LSTM model with a Bayesian output layer.
+        Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
+        The final output layer is replaced by a DenseFlipout (without bias) plus a separate 
+        deterministic bias layer.
         """
-        self.params['input_dim'] = input_shape
-        l2_reg = self.params.get('l2_reg', 1e-4)
+        from tensorflow.keras.losses import Huber
 
-        # Layer configuration
-        layers = []
-        current_size = self.params['initial_layer_size']
-        layer_size_divisor = self.params['layer_size_divisor']
-        for _ in range(self.params['intermediate_layers']):
-            layers.append(current_size)
-            current_size = max(current_size // layer_size_divisor, 1)
-        layers.append(self.params['time_horizon'])
-
-        print(f"LSTM Layer sizes: {layers}")
-        print(f"LSTM input shape: {input_shape}")
-
-        # Input layer
-        model_input = Input(shape=input_shape, name="model_input")
-        x = model_input
-
-        # LSTM layers
-        for idx, size in enumerate(layers[:-1]):
-            x = LSTM(
-                units=size,
-                activation='tanh',
-                recurrent_activation='sigmoid',
-                return_sequences=True if idx < len(layers) - 2 else False,
-                name=f"lstm_layer_{idx+1}"
-            )(x)
-
-        x = BatchNormalization(name="batch_norm_final")(x)
-
-        # --- Bayesian Output Layer Implementation (copied from ANN plugin) ---
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
+        l2_reg = self.params.get('l2_reg', 1e-5)
+
+
+        print("DEBUG: tensorflow version:", tf.__version__)
+        print("DEBUG: tensorflow_probability version:", tfp.__version__)
+        print("DEBUG: numpy version:", np.__version__)
+
+        x_train = np.array(x_train)
+        print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
         
-        # Monkey-patch DenseFlipout to use add_weight instead of the deprecated add_variable
-        def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
-            return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
-        tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-
+        if not isinstance(input_shape, int):
+            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
+        print("DEBUG: input_shape is valid. Value:", input_shape)
+        
+        train_size = x_train.shape[0]
+        print("DEBUG: Number of training samples:", train_size)
+        
+        layer_sizes = []
+        current_size = self.params['initial_layer_size']
+        print("DEBUG: Initial layer size:", current_size)
+        divisor = self.params.get('layer_size_divisor', 2)
+        print("DEBUG: Layer size divisor:", divisor)
+        int_layers = self.params.get('intermediate_layers', 3)
+        print("DEBUG: Number of intermediate layers:", int_layers)
+        time_horizon = self.params['time_horizon']
+        print("DEBUG: Time horizon (final layer size):", time_horizon)
+        
+        for i in range(int_layers):
+            layer_sizes.append(current_size)
+            print(f"DEBUG: Appended layer size at layer {i+1}: {current_size}")
+            current_size = max(current_size // divisor, 1)
+            print(f"DEBUG: Updated current_size after division at layer {i+1}: {current_size}")
+        layer_sizes.append(time_horizon)
+        print("DEBUG: Final layer sizes:", layer_sizes)
+        
+        print("DEBUG: Standard ANN input_shape:", input_shape)
+        
+        inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
+        print("DEBUG: Created input layer. Shape:", inputs.shape)
+        x = inputs
+        print("DEBUG: x tensor from inputs. Shape:", x.shape, "Type:", type(x))
+        
+        for idx, size in enumerate(layer_sizes[:-1]):
+            print(f"DEBUG: Building Dense layer {idx+1} with size {size}")
+            if idx==1:
+                x = tf.keras.layers.Dense(
+                    units=size,
+                    activation='linear',
+                    kernel_initializer=random_normal_initializer_42,
+                    name=f"dense_layer_{idx+1}"
+                )(x)
+            else:
+                x = tf.keras.layers.Dense(
+                    units=size,
+                    activation=self.params.get('activation', 'tanh'),
+                    kernel_initializer=random_normal_initializer_42,
+                    name=f"dense_layer_{idx+1}"
+                )(x)
+        print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
+        #x = tf.keras.layers.BatchNormalization()(x)
+        #print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
+        #x = tf.keras.layers.Dense(
+        #    units=layer_sizes[-1],
+        #    kernel_regularizer=l2(l2_reg),
+        #    activation=self.params.get('activation', 'tanh'),
+        #    kernel_initializer=random_normal_initializer_42)(x)
+        if hasattr(x, '_keras_history'):
+            print("DEBUG: x is already a KerasTensor; no conversion needed.")
+        else:
+            x = tf.convert_to_tensor(x)
+            print("DEBUG: Converted x to tensor. New type:", type(x))
+        
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
-
+        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", KL_WEIGHT)
+        
+        default_bias_size = 0
+        print("DEBUG: Using default_bias_size =", default_bias_size)
+        
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
-            # Override bias_size to 0
+            print("DEBUG: In posterior_mean_field_custom:")
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
+            if not isinstance(name, str):
+                print("DEBUG: 'name' is not a string; setting to None")
+                name = None
             bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: posterior: computed n =", n)
             c = np.log(np.expm1(1.))
+            print("DEBUG: posterior: computed c =", c)
             loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
             scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
-            loc_reshaped = tf.reshape(loc, kernel_shape)
-            scale_reshaped = tf.reshape(scale, kernel_shape)
+            print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: posterior: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape in posterior:", e)
+                raise e
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
         
         def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
-            # Override bias_size to 0
+            print("DEBUG: In prior_fn:")
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
+            if not isinstance(name, str):
+                print("DEBUG: 'name' is not a string in prior_fn; setting to None")
+                name = None
             bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: prior_fn: computed n =", n)
             loc = tf.zeros([n], dtype=dtype)
             scale = tf.ones([n], dtype=dtype)
-            loc_reshaped = tf.reshape(loc, kernel_shape)
-            scale_reshaped = tf.reshape(scale, kernel_shape)
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: prior_fn: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape in prior_fn:", e)
+                raise e
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-
+        
         DenseFlipout = tfp.layers.DenseFlipout
+        print("DEBUG: Creating DenseFlipout final layer with units:", layer_sizes[-1])
         flipout_layer = DenseFlipout(
-            units=layers[-1],
+            units=layer_sizes[-1],
             activation='linear',
             kernel_posterior_fn=posterior_mean_field_custom,
             kernel_prior_fn=prior_fn,
@@ -190,35 +258,42 @@ class Plugin:
         )
         bayesian_output = tf.keras.layers.Lambda(
             lambda t: flipout_layer(t),
-            output_shape=lambda s: (s[0], layers[-1]),
+            output_shape=lambda s: (s[0], layer_sizes[-1]),
             name="bayesian_dense_flipout"
         )(x)
-
-        # Deterministic bias layer using the ANN plugin's kernel initializer
-        def random_normal_initializer_44(shape, dtype=None):
-            return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
-
+        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
+        
         bias_layer = tf.keras.layers.Dense(
-            units=layers[-1],
+            units=layer_sizes[-1],
             activation='linear',
             kernel_initializer=random_normal_initializer_44,
+            #kernel_regularizer=l2(l2_reg),
+
             name="deterministic_bias"
         )(x)
-
+        print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
+        
         outputs = bayesian_output + bias_layer
-        # --- End of Bayesian Output Layer Implementation ---
-
-        self.model = Model(inputs=model_input, outputs=outputs, name="predictor_model")
-
-        # Compile model
+        
+        print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+        
+        self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
+        print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
+        
+        
+        # Compile the model with the custom loss function
         self.model.compile(
-            optimizer=Adam(learning_rate=self.params['learning_rate']),
+            optimizer=tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
             loss=self.custom_loss,
             metrics=['mae']
         )
+        print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
+        
 
+        print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
         print("Predictor Model Summary:")
         self.model.summary()
+        print("✅ Standard ANN model built successfully.")
 
 
     def compute_mmd(self, x, y, sigma=1.0, sample_size=256):
