@@ -16,6 +16,22 @@ import os
 import gc
 import tensorflow.keras.backend as K
 
+class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
+    """
+    Custom ReduceLROnPlateau callback that prints the patience counter.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.patience_counter = 0  # Track the patience counter
+
+    def on_epoch_end(self, epoch, logs=None):
+        super().on_epoch_end(epoch, logs)
+        if self.wait > 0:
+            self.patience_counter = self.wait
+        else:
+            self.patience_counter = 0
+        print(f"DEBUG: ReduceLROnPlateau : {self.patience_counter}")
+
 
 class EarlyStoppingWithPatienceCounter(EarlyStopping):
     """
@@ -370,6 +386,19 @@ class Plugin:
             start_from_epoch=30,
             min_delta=min_delta
         )
+
+        # ReduceLROnPlateau with patience = 1/3 of early stopping patience
+        reduce_lr_patience = max(1, self.params.get('early_patience', 10) // 3)  # Ensure at least 1 patience
+        reduce_lr_monitor = ReduceLROnPlateauWithCounter(
+            monitor='val_loss',
+            factor=0.5,
+            patience=reduce_lr_patience,
+            min_lr=1e-6,
+            verbose=1
+        )
+
+        callbacks = [early_stopping_monitor, reduce_lr_monitor, ClearMemoryCallback()]
+
         callbacks.append(early_stopping_monitor)
         callbacks.append(ClearMemoryCallback())
 
