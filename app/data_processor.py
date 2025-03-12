@@ -434,16 +434,16 @@ def run_prediction_pipeline(config, plugin):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iteration_start_time = time.time()
         if config["plugin"] in ["cnn", "cnn_mmd"]:
-            plugin.build_model(input_shape=(window_size, x_train.shape[2]),  x_train=x_train)
+            plugin.build_model(input_shape=(window_size, x_train.shape[2]), x_train=x_train)
         elif config["plugin"] == "lstm":
-            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]),  x_train=x_train)
+            plugin.build_model(input_shape=(x_train.shape[1], x_train.shape[2]), x_train=x_train)
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
-            plugin.build_model(input_shape=x_train.shape[1],  x_train=x_train)
+            plugin.build_model(input_shape=x_train.shape[1], x_train=x_train)
         else:
             if len(x_train.shape) != 2:
                 raise ValueError(f"Expected x_train to be 2D for {config['plugin']}. Found: {x_train.shape}.")
-            plugin.build_model(input_shape=x_train.shape[1],  x_train=x_train, config=config)
-        
+            plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=config)
+
         history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions = plugin.train(
             x_train,
             y_train,
@@ -470,7 +470,7 @@ def run_prediction_pipeline(config, plugin):
         n_test = test_predictions.shape[0]
         test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
         test_r2 = r2_score(y_test[:n_test], test_predictions)
-        
+
         print("*************************************************")
         print(f"Iteration {iteration} completed.")
         print(f"Training MAE: {train_mae}")
@@ -480,7 +480,7 @@ def run_prediction_pipeline(config, plugin):
         print(f"Test MAE: {test_mae}")
         print(f"Test R²: {test_r2}")
         print("*************************************************")
-        
+
         training_mae_list.append(train_mae)
         training_r2_list.append(train_r2)
         validation_mae_list.append(val_mae)
@@ -543,17 +543,15 @@ def run_prediction_pipeline(config, plugin):
                 print("Error: Normalization JSON is not a valid dictionary.")
                 norm_json = {}
             if config.get("use_returns", False):
-                # For predicted returns: denormalize using BC-BO parameters...
+                # Denormalize predicted returns using BC-BO parameters
                 if "BC-BO" in norm_json and "CLOSE" in norm_json:
                     bcbo_min = norm_json["BC-BO"].get("min", 0)
                     bcbo_max = norm_json["BC-BO"].get("max", 1)
                     denorm_pred_returns = test_predictions * (bcbo_max - bcbo_min) + bcbo_min
-                    # And add the current tick's close value (baseline) denormalized using CLOSE parameters.
+                    # Denormalize the current close values using CLOSE parameters
                     close_min = norm_json["CLOSE"].get("min", 0)
                     close_max = norm_json["CLOSE"].get("max", 1)
-                    # Note: The baseline values were stored in process_data as "baseline_test"
                     if "baseline_test" in datasets:
-                        # Ensure proper broadcasting (if test_predictions is 2D, reshape baseline accordingly)
                         baseline = datasets["baseline_test"]
                         if baseline.ndim == 1:
                             baseline = baseline.reshape(-1, 1)
@@ -583,9 +581,32 @@ def run_prediction_pipeline(config, plugin):
     else:
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
 
-    # ------------------------------
+    # -----------------------
+    # Compute Uncertainty Estimates
+    # -----------------------
+    print("Computing uncertainty estimates using MC sampling...")
+    try:
+        mc_samples = config.get("mc_samples", 100)
+        _, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
+        uncertainty_df = pd.DataFrame(
+            uncertainty_estimates,
+            columns=[f"Uncertainty_{i+1}" for i in range(uncertainty_estimates.shape[1])]
+        )
+        if test_dates is not None:
+            uncertainty_df['DATE_TIME'] = pd.Series(test_dates[:len(uncertainty_df)])
+        else:
+            uncertainty_df['DATE_TIME'] = pd.NaT
+        cols = ['DATE_TIME'] + [col for col in uncertainty_df.columns if col != 'DATE_TIME']
+        uncertainty_df = uncertainty_df[cols]
+        uncertainty_file = config.get("uncertainty_file", "test_uncertainty.csv")
+        uncertainty_df.to_csv(uncertainty_file, index=False)
+        print(f"Uncertainty predictions saved to {uncertainty_file}")
+    except Exception as e:
+        print(f"Failed to compute or save uncertainty predictions: {e}")
+
+    # -----------------------
     # Plot Last 1k Predictions with True Values and Uncertainty Band
-    # ------------------------------
+    # -----------------------
     try:
         n_plot = 2000
         if test_predictions.shape[0] > n_plot:
@@ -597,7 +618,6 @@ def run_prediction_pipeline(config, plugin):
                 dates_plot = np.arange(test_predictions.shape[0]-n_plot, test_predictions.shape[0])
             uncertainty_norm = uncertainty_estimates[-n_plot:, 0]
             if config.get("use_returns", False) and config.get("use_normalization_json") is not None:
-                # Denormalize true returns and add the corresponding baseline
                 norm_json = config.get("use_normalization_json")
                 if isinstance(norm_json, str):
                     try:
@@ -615,7 +635,6 @@ def run_prediction_pipeline(config, plugin):
                     close_min = norm_json["CLOSE"].get("min", 0)
                     close_max = norm_json["CLOSE"].get("max", 1)
                     true_returns_denorm = true_plot * (bcbo_max - bcbo_min) + bcbo_min
-                    # For the true values, obtain baseline from the last n_plot rows of the test baseline.
                     if "baseline_test" in datasets:
                         base_true = datasets["baseline_test"][-n_plot:]
                         if base_true.ndim == 1:
@@ -661,7 +680,7 @@ def run_prediction_pipeline(config, plugin):
             true_plot = y_test[:, 0]
             dates_plot = test_dates if test_dates is not None else np.arange(test_predictions.shape[0])
             uncertainty_plot = uncertainty_norm
-        
+
         plt.figure(figsize=(12, 6))
         plt.plot(dates_plot, pred_plot, label="Predicted", color="blue", linewidth=2)
         plt.plot(dates_plot, true_plot, label="True", color="red", linewidth=2)
@@ -683,7 +702,7 @@ def run_prediction_pipeline(config, plugin):
     try:
         from tensorflow.keras.utils import plot_model
         plot_model(
-            plugin.model, 
+            plugin.model,
             to_file=config['model_plot_file'],
             show_shapes=True,
             show_dtype=False,
@@ -700,7 +719,7 @@ def run_prediction_pipeline(config, plugin):
     save_model_file = config.get("save_model", "pretrained_model.keras")
     try:
         plugin.save(save_model_file)
-        print(f"Model saved to {save_model_file}")  
+        print(f"Model saved to {save_model_file}")
     except Exception as e:
         print(f"Failed to save model to {save_model_file}: {e}")
 
@@ -717,7 +736,7 @@ def load_and_evaluate_model(config, plugin):
     2. Loads and processes the validation data.
     3. Makes predictions using the loaded model.
     4. Denormalizes predictions if a normalization JSON is provided.
-       If config['use_returns'] is True, the predictions (predicted returns) are converted to 
+       If config['use_returns'] is True, the predictions (predicted returns) are converted to
        predicted close values by adding the baseline CLOSE value from the corresponding tick.
     5. Saves the predictions to a CSV file for evaluation, including the DATE_TIME column.
     """
