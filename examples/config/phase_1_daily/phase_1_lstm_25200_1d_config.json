@@ -26,7 +26,7 @@
     "kl_lstmeal_epochs": 50,
     "early_patience": 35,
     "start_from_epoch": 10,
-    "use_returns": true,
+    "use_returns": false,
     "mc_samples":1000,
     "plotted_horizon": 6,
     "mmd_lambda": 0.01,
