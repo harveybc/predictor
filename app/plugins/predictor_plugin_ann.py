@@ -16,6 +16,24 @@ import os
 import gc
 import tensorflow.keras.backend as K
 
+
+class EarlyStoppingWithPatienceCounter(EarlyStopping):
+    """
+    Custom EarlyStopping callback that prints the patience counter.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.patience_counter = 0  # Track the patience counter
+
+    def on_epoch_end(self, epoch, logs=None):
+        super().on_epoch_end(epoch, logs)
+        if self.wait > 0:
+            self.patience_counter = self.wait
+        else:
+            self.patience_counter = 0
+        print(f"DEBUG: EarlyStopping patience counter after epoch {epoch + 1}: {self.patience_counter}")
+
+
 class ClearMemoryCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         K.clear_session()
@@ -344,7 +362,7 @@ class Plugin:
         mmd_logging_callback = MMDLoggingCallback(self, x_train, y_train)
         callbacks = [kl_callback, mmd_logging_callback]
         min_delta=config.get("min_delta", 1e-4) if config is not None else 1e-4
-        early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
+        early_stopping_monitor = EarlyStoppingWithPatienceCounter(
             monitor='val_loss',
             patience=self.params.get('early_patience', 10),
             restore_best_weights=True,

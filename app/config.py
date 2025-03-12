@@ -53,5 +53,6 @@ DEFAULT_VALUES = {
     "overfitting_penalty": 0.1,
     "use_returns": True,
     "mc_samples":1000,
-    "plotted_horizon": 6
+    "plotted_horizon": 6,
+    "min_delta": 1e-4
 }
