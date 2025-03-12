@@ -476,7 +476,7 @@ def run_prediction_pipeline(config, plugin):
         iteration_end_time = time.time()
         print(f"Iteration {iteration} completed in {iteration_end_time - iteration_start_time:.2f} seconds")
 
-    # Aggregate statistics and save results
+    # Aggregate and save results
     results = {
         "Metric": ["Training MAE", "Training R²", "Validation MAE", "Validation R²", "Test MAE", "Test R²"],
         "Average": [np.mean(training_mae_list), np.mean(training_r2_list),
@@ -535,7 +535,7 @@ def run_prediction_pipeline(config, plugin):
                     else:
                         print("Warning: Baseline test values not found; cannot convert returns to predicted close values.")
                 else:
-                    print("Warning: 'BC-BO' and/or 'CLOSE' not found in normalization JSON; skipping proper denormalization for returns.")
+                    print("Warning: 'BC-BO' and/or 'CLOSE' not found; skipping proper denormalization for returns.")
             else:
                 if "CLOSE" in norm_json:
                     close_min = norm_json["CLOSE"].get("min", 0)
@@ -556,12 +556,12 @@ def run_prediction_pipeline(config, plugin):
     else:
         print("Warning: No final validation predictions were generated (all iterations may have failed).")
 
-    # Compute and save uncertainty estimates (denormalized)
+    # --- Compute and save uncertainty estimates (denormalized) ---
     print("Computing uncertainty estimates using MC sampling...")
     try:
         mc_samples = config.get("mc_samples", 100)
         _, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
-        # Denormalize uncertainties using the same scale as predictions.
+        # Denormalize uncertainties once and store in denorm_uncertainty
         if config.get("use_normalization_json") is not None:
             norm_json = config.get("use_normalization_json")
             if isinstance(norm_json, str):
@@ -574,18 +574,23 @@ def run_prediction_pipeline(config, plugin):
             if config.get("use_returns", False):
                 if "BC-BO" in norm_json:
                     scale = norm_json["BC-BO"].get("max", 1) - norm_json["BC-BO"].get("min", 0)
-                    uncertainty_estimates = uncertainty_estimates * scale
+                    denorm_uncertainty = uncertainty_estimates * scale
                 else:
-                    print("Warning: 'BC-BO' not found in normalization JSON; uncertainty estimates not denormalized.")
+                    print("Warning: 'BC-BO' not found; uncertainties remain normalized.")
+                    denorm_uncertainty = uncertainty_estimates
             else:
                 if "CLOSE" in norm_json:
                     scale = norm_json["CLOSE"].get("max", 1) - norm_json["CLOSE"].get("min", 0)
-                    uncertainty_estimates = uncertainty_estimates * scale
+                    denorm_uncertainty = uncertainty_estimates * scale
                 else:
-                    print("Warning: 'CLOSE' not found in normalization JSON; uncertainty estimates not denormalized.")
+                    print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
+                    denorm_uncertainty = uncertainty_estimates
+        else:
+            denorm_uncertainty = uncertainty_estimates
+
         uncertainty_df = pd.DataFrame(
-            uncertainty_estimates,
-            columns=[f"Uncertainty_{i+1}" for i in range(uncertainty_estimates.shape[1])]
+            denorm_uncertainty,
+            columns=[f"Uncertainty_{i+1}" for i in range(denorm_uncertainty.shape[1])]
         )
         if test_dates is not None:
             uncertainty_df['DATE_TIME'] = pd.Series(test_dates[:len(uncertainty_df)])
@@ -599,7 +604,7 @@ def run_prediction_pipeline(config, plugin):
     except Exception as e:
         print(f"Failed to compute or save uncertainty predictions: {e}")
 
-    # Plot predictions (only the prediction at the horizon specified by config['plotted_horizon'])
+    # --- Plot predictions (only the prediction at the selected horizon) ---
     try:
         n_plot = 2000
         plotted_horizon = config.get("plotted_horizon", 6)
@@ -611,66 +616,13 @@ def run_prediction_pipeline(config, plugin):
                 dates_plot = test_dates[-n_plot:]
             else:
                 dates_plot = np.arange(test_predictions.shape[0]-n_plot, test_predictions.shape[0])
-            uncertainty_norm = uncertainty_estimates[-n_plot:, plotted_idx]
-            # If using returns, true values must be converted to close using baseline.
-            if config.get("use_returns", False) and config.get("use_normalization_json") is not None:
-                norm_json = config.get("use_normalization_json")
-                if isinstance(norm_json, str):
-                    try:
-                        with open(norm_json, 'r') as f:
-                            norm_json = json.load(f)
-                    except Exception as e:
-                        print(f"Error loading normalization JSON: {e}")
-                        norm_json = {}
-                if "BC-BO" in norm_json and "CLOSE" in norm_json:
-                    bcbo_min = norm_json["BC-BO"].get("min", 0)
-                    bcbo_max = norm_json["BC-BO"].get("max", 1)
-                    close_min = norm_json["CLOSE"].get("min", 0)
-                    close_max = norm_json["CLOSE"].get("max", 1)
-                    # Denormalize true returns then add baseline
-                    true_returns_denorm = true_plot * (bcbo_max - bcbo_min) + bcbo_min
-                    if "baseline_test" in datasets:
-                        base_true = datasets["baseline_test"][-n_plot:]
-                        if base_true.ndim == 1:
-                            base_true = base_true.reshape(-1, 1)
-                        baseline_true_denorm = base_true * (close_max - close_min) + close_min
-                        true_plot = true_returns_denorm + baseline_true_denorm.flatten()
-                        uncertainty_plot = uncertainty_norm * (bcbo_max - bcbo_min)
-                    else:
-                        print("Warning: Baseline test values not found for plotting.")
-                        uncertainty_plot = uncertainty_norm * (bcbo_max - bcbo_min)
-                else:
-                    if "CLOSE" in norm_json:
-                        min_val = norm_json["CLOSE"].get("min", 0)
-                        max_val = norm_json["CLOSE"].get("max", 1)
-                        true_plot = true_plot * (max_val - min_val) + min_val
-                        uncertainty_plot = uncertainty_norm * (max_val - min_val)
-                    else:
-                        uncertainty_plot = uncertainty_norm
-            else:
-                if config.get("use_normalization_json") is not None:
-                    norm_json = config.get("use_normalization_json")
-                    if isinstance(norm_json, str):
-                        try:
-                            with open(norm_json, 'r') as f:
-                                norm_json = json.load(f)
-                        except Exception as e:
-                            print(f"Error loading normalization JSON: {e}")
-                            norm_json = {}
-                    if "CLOSE" in norm_json:
-                        min_val = norm_json["CLOSE"].get("min", 0)
-                        max_val = norm_json["CLOSE"].get("max", 1)
-                        true_plot = true_plot * (max_val - min_val) + min_val
-                        uncertainty_plot = uncertainty_norm * (max_val - min_val)
-                    else:
-                        uncertainty_plot = uncertainty_norm
-                else:
-                    uncertainty_plot = uncertainty_norm
+            # Use the already denormalized uncertainties from denorm_uncertainty:
+            uncertainty_plot = denorm_uncertainty[-n_plot:, plotted_idx]
         else:
             pred_plot = test_predictions[:, plotted_idx]
             true_plot = y_test[:, plotted_idx]
             dates_plot = test_dates if test_dates is not None else np.arange(test_predictions.shape[0])
-            uncertainty_plot = uncertainty_norm
+            uncertainty_plot = denorm_uncertainty[:, plotted_idx]
 
         plt.figure(figsize=(12, 6))
         plt.plot(dates_plot, pred_plot, label="Predicted", color="blue", linewidth=2)
@@ -795,7 +747,7 @@ def load_and_evaluate_model(config, plugin):
                 else:
                     print("Warning: Baseline validation values not found; cannot convert returns to predicted close values.")
             else:
-                print("Warning: 'BC-BO' and/or 'CLOSE' not found in normalization JSON; skipping proper denormalization for returns.")
+                print("Warning: 'BC-BO' and/or 'CLOSE' not found; skipping proper denormalization for returns.")
         else:
             if "CLOSE" in norm_json:
                 close_min = norm_json["CLOSE"].get("min", 0)
