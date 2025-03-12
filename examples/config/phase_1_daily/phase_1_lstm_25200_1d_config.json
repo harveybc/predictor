@@ -30,6 +30,8 @@
     "use_returns": true,
     "mc_samples":1000,
     "plotted_horizon": 6,
-    "mmd_lambda": 1.0
+    "mmd_lambda": 1.0,
+    "window_size": 24
+
     
 }
