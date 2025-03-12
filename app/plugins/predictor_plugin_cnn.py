@@ -140,21 +140,14 @@ class Plugin:
 
         # --- CNN Feature Extraction ---
         # Initial Dense layer to mix features before convolutional layers
-        x = Dense(
-            units=layer_sizes[0],
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg)
-        )(x)
-        print(f"DEBUG: After initial Dense layer, x shape: {x.shape}")
-
+        
         # Add intermediate Conv1D and MaxPooling1D layers
         for idx, size in enumerate(layer_sizes[:-1]):
             if size > 1:
                 x = Conv1D(
                     filters=size,
                     kernel_size=3,
-                    activation='relu',
+                    activation='tanh',
                     kernel_initializer=HeNormal(),
                     padding='same',
                     kernel_regularizer=l2(l2_reg),
