@@ -145,7 +145,7 @@ class Plugin:
                     activation='linear',
                     recurrent_activation='sigmoid',
                     return_sequences=True, 
-                    return_state=True,
+                    #return_state=True,
                     name=f"lstm_layer_{idx+1}"
                 )(x)
             else:
