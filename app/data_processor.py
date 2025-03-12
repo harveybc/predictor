@@ -594,7 +594,7 @@ def run_prediction_pipeline(config, plugin):
     pred_plot = test_predictions[:, plotted_idx]
 
     # Define the test dates for plotting
-    n_plot = 200  # Number of points to display
+    n_plot = 240  # Number of points to display
     if len(pred_plot) > n_plot:
         pred_plot = pred_plot[-n_plot:]
         test_dates_plot = test_dates[-n_plot:] if test_dates is not None else np.arange(len(pred_plot))
