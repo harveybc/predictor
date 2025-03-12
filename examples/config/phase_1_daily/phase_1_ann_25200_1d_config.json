@@ -25,7 +25,7 @@
     "l2_reg": 0.0,
     "kl_weight": 1e0,
     "kl_anneal_epochs": 50,
-    "early_patience": 60,
+    "early_patience": 20,
 
     "overfitting_penalty": 1.0,
     "use_returns": true,
