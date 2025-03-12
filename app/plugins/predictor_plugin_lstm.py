@@ -210,7 +210,7 @@ class Plugin:
         """
         return Huber()(y_true, y_pred)
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the LSTM model with all the required callbacks.
         """
@@ -246,7 +246,18 @@ class Plugin:
             validation_data=(x_val, y_val)
         )
 
-        return history
+        # Compute predictions on training and validation sets
+        train_preds = self.predict(x_train)
+        val_preds = self.predict(x_val) if x_val is not None else None
+
+        train_mae = self.calculate_mae(y_train, train_preds)
+        val_mae = self.calculate_mae(y_val, val_preds) if y_val is not None else None
+
+        train_r2_orig = r2_score(y_train, train_preds)
+        val_r2_orig = r2_score(y_val, val_preds) if y_val is not None else None
+
+        return history, train_mae, train_r2_orig, val_mae, val_r2_orig, train_preds, val_preds
+
 
     def predict(self, data):
         return self.model.predict(data)
