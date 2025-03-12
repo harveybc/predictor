@@ -169,7 +169,7 @@ class Plugin:
     def custom_loss(self, y_true, y_pred):
         return Huber()(y_true, y_pred)
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         patience_value = self.params.get('early_patience', 10)
         min_delta = 1e-4
 
@@ -202,7 +202,13 @@ class Plugin:
             validation_data=(x_val, y_val)
         )
 
-        return history
+        #train_predictions = self.predict(x_train)
+        mc_samples = config.get("mc_samples", 100)
+        train_predictions, uncertainty_estimates = self.predict_with_uncertainty(x_train, mc_samples=mc_samples)
+        #val_predictions = self.predict(x_val)
+        val_predictions, uncertainty_estimates =  self.predict_with_uncertainty(x_val, mc_samples=mc_samples)
+        return history, train_predictions, val_predictions
+
 
     def predict(self, data):
         return self.model.predict(data)

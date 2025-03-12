@@ -137,12 +137,6 @@ class Plugin:
         inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
         print("DEBUG: Created input layer. Shape:", inputs.shape)
         x = inputs
-        x = Dense(
-            units=layer_sizes[0],
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg)
-        )(x)
         print(f"DEBUG: After initial Dense layer, x shape: {x.shape}")
 
         # Build LSTM layers
@@ -423,14 +417,13 @@ class Plugin:
 
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mae = val_eval_results
+        #train_predictions = self.predict(x_train)
+        mc_samples = config.get("mc_samples", 100)
+        train_predictions, uncertainty_estimates = self.predict_with_uncertainty(x_train, mc_samples=mc_samples)
+        #val_predictions = self.predict(x_val)
+        val_predictions, uncertainty_estimates =  self.predict_with_uncertainty(x_val, mc_samples=mc_samples)
+        return history, train_predictions, val_predictions
 
-        from sklearn.metrics import r2_score
-        train_predictions = self.predict(x_train)
-        val_predictions = self.predict(x_val)
-        train_r2 = r2_score(y_train, train_predictions)
-        val_r2 = r2_score(y_val, val_predictions)
-
-        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
     def predict_with_uncertainty(self, data, mc_samples=100):
         """
