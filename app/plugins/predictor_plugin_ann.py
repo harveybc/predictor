@@ -333,7 +333,7 @@ class Plugin:
             def on_epoch_end(self, epoch, logs=None):
                 preds = self.plugin.model(self.x_train, training=True)
                 mmd_value = self.plugin.compute_mmd(preds, self.y_train)
-                print(f"Epoch {epoch+1}: MMD Lambda = {self.plugin.mmd_lambda.numpy():.6f}, MMD Loss = {mmd_value.numpy():.6f}")
+                print(f"\nEpoch {epoch+1}: MMD Lambda = {self.plugin.mmd_lambda.numpy():.6f}, MMD Loss = {mmd_value.numpy():.6f}")
 
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
         target_kl = self.params.get('kl_weight', 1e-3)
