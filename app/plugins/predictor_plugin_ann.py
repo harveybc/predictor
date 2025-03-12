@@ -138,7 +138,7 @@ class Plugin:
                     name=f"dense_layer_{idx+1}"
                 )(x)
         print(f"DEBUG: After Dense layer {idx+1}, x shape:", x.shape)
-        x = tf.keras.layers.BatchNormalization()(x)
+        #x = tf.keras.layers.BatchNormalization()(x)
         #print(f"DEBUG: After BatchNormalization at layer {idx+1}, x shape:", x.shape)
         #x = tf.keras.layers.Dense(
         #    units=layer_sizes[-1],
@@ -233,7 +233,7 @@ class Plugin:
             units=layer_sizes[-1],
             activation='linear',
             kernel_initializer=random_normal_initializer_44,
-            kernel_regularizer=l2(l2_reg),
+            #kernel_regularizer=l2(l2_reg),
 
             name="deterministic_bias"
         )(x)
