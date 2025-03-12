@@ -377,7 +377,7 @@ class Plugin:
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
-            shuffle=True,
+            shuffle=False,
             callbacks=callbacks,
             validation_data=(x_val, y_val)
         )

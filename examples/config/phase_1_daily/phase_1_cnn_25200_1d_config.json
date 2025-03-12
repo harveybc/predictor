@@ -21,7 +21,7 @@
     "layer_size_divisor": 2,
     "learning_rate": 1e-3,
     "activation": "tanh",
-    "l2_reg": 0.1,
+    "l2_reg": 0.01,
     "kl_weight": 1e-2,
     "kl_cnneal_epochs": 50,
     "early_patience": 22,
