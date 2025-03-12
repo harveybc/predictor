@@ -413,6 +413,8 @@ class Plugin:
         
         train_r2 = r2_score(y_train, train_predictions)
         val_r2 = r2_score(y_val, val_predictions)
+        train_mae = self.calculate_mae(y_train, train_predictions)
+        val_mae = self.calculate_mae(y_val, val_predictions)    
 
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
