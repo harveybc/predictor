@@ -646,7 +646,7 @@ def run_prediction_pipeline(config, plugin):
     plt.plot(test_dates_plot, pred_plot, label="Predicted Close", color="blue", linewidth=2)
     plt.plot(test_dates_plot, true_plot, label="True Close", color="red", linewidth=2)
     plt.fill_between(test_dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
-                    color="green", alpha=0.4, label="Uncertainty")
+                    color="green", alpha=0.5, label="Uncertainty")
     plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon})")
     plt.xlabel("Time")
     plt.ylabel("CLOSE")
