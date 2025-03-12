@@ -29,7 +29,8 @@
     "use_mmd": true,
     "statistical_loss_weight": 1e-2,
     "overfitting_penalty": 1.0,
-    "use_returns": true
+    "use_returns": true,
+    "mc_samples":100
 
     
 }

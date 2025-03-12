@@ -52,5 +52,6 @@ DEFAULT_VALUES = {
     "use_mmd": True,
     "statistical_loss_weight": 0.1,
     "overfitting_penalty": 0.1,
-    "use_returns": True
+    "use_returns": True,
+    "mc_samples":100
 }
