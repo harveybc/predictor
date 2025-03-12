@@ -253,10 +253,13 @@ def process_data(config):
     test_dates = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
 
     # 6) PER-PLUGIN PROCESSING
-    # Use sliding windows only if explicitly enabled by config['use_sliding_windows'].
-    if config.get("use_sliding_windows", False):
-        if config["plugin"] in ["lstm","cnn"]:
-            print("Processing data for LSTM plugin with sliding windows...")
+    # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
+    if config.get("use_sliding_windows", False) or config["plugin"] == "lstm":
+        if config["plugin"] in ["lstm", "cnn"]:
+            if config["plugin"] == "lstm":
+                print("Processing data for LSTM plugin with sliding windows...")
+            else:
+                print("Processing data for CNN plugin using sliding windows...")
             x_train = x_train.to_numpy().astype(np.float32)
             x_val = x_val.to_numpy().astype(np.float32)
             x_test = x_test.to_numpy().astype(np.float32)
@@ -279,29 +282,7 @@ def process_data(config):
                 baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
                 baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
                 baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
-        elif config["plugin"] in ["cnn", "lstm"]:
-            print("Processing data for CNN plugin using sliding windows...")
-            def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
-                windows = []
-                dt_windows = []
-                for i in range(0, len(data) - window_size + 1, stride):
-                    windows.append(data[i:i+window_size])
-                    if date_times is not None:
-                        dt_windows.append(date_times[i+window_size-1])
-                return np.array(windows), dt_windows if date_times is not None else np.array(windows)
-            x_train, train_dates = create_sliding_windows_x(x_train, config['window_size'], stride=1, date_times=train_dates)
-            x_val, val_dates = create_sliding_windows_x(x_val, config['window_size'], stride=1, date_times=val_dates)
-            x_test, test_dates = create_sliding_windows_x(x_test, config['window_size'], stride=1, date_times=test_dates)
-            trim_amount = config['window_size'] - 1
-            y_train_multi = y_train_multi.to_numpy().astype(np.float32)[trim_amount:]
-            y_val_multi = y_val_multi.to_numpy().astype(np.float32)[trim_amount:]
-            y_test_multi = y_test_multi.to_numpy().astype(np.float32)[trim_amount:]
-            if config.get("use_returns", False):
-                baseline_train = baseline_train.to_numpy().astype(np.float32)[trim_amount:]
-                baseline_val = baseline_val.to_numpy().astype(np.float32)[trim_amount:]
-                baseline_test = baseline_test.to_numpy().astype(np.float32)[trim_amount:]
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
-            # If sliding windows are enabled for transformer plugins, you can add similar logic.
             print("Processing data for Transformer plugin with sliding windows...")
             x_train = x_train.to_numpy().astype(np.float32)
             x_val = x_val.to_numpy().astype(np.float32)
@@ -319,7 +300,6 @@ def process_data(config):
             y_val_multi = y_val_multi.to_numpy().astype(np.float32)
             y_test_multi = y_test_multi.to_numpy().astype(np.float32)
     else:
-        # If sliding windows are not used, convert everything to NumPy arrays.
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
         x_train = x_train.to_numpy().astype(np.float32)
         x_val = x_val.to_numpy().astype(np.float32)
@@ -405,7 +385,7 @@ def run_prediction_pipeline(config, plugin):
     if time_horizon is None:
         raise ValueError("`time_horizon` is not defined in the configuration.")
     if config["plugin"] in ["cnn", "lstm"] and window_size is None:
-        raise ValueError("`window_size` must be defined for CNN plugins.")
+        raise ValueError("`window_size` must be defined for CNN and LSTM plugins.")
     print(f"Time Horizon: {time_horizon}")
     batch_size = config["batch_size"]
     epochs = config["epochs"]
@@ -420,8 +400,7 @@ def run_prediction_pipeline(config, plugin):
     if config["plugin"] in ["cnn", "lstm"]:
         if x_train.ndim != 3:
             raise ValueError(f"For CNN and LSTM, x_train must be 3D. Found: {x_train.shape}")
-        print("Using pre-processed sliding windows for CNN.")
-
+        print("Using pre-processed sliding windows for CNN and LSTM.")
     plugin.set_params(time_horizon=time_horizon)
     tscv = TimeSeriesSplit(n_splits=5)
 
