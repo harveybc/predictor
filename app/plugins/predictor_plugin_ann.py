@@ -246,13 +246,16 @@ class Plugin:
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
         
-        optimizer = tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001))
-        print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
+        
+        # Compile the model with the custom loss function
         self.model.compile(
-            optimizer=optimizer,
-            loss=Huber(),
+            optimizer=tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
+            loss=self.custom_loss,
             metrics=['mae']
         )
+        print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
+        
+
         print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
         print("Predictor Model Summary:")
         self.model.summary()
@@ -351,13 +354,6 @@ class Plugin:
         callbacks.append(early_stopping_monitor)
         callbacks.append(ClearMemoryCallback())
 
-        # Compile the model with the custom loss function
-        self.model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
-            loss=self.custom_loss,
-            metrics=['mae']
-        )
-
         history = self.model.fit(
             x_train, y_train,
             epochs=epochs,
@@ -365,7 +361,7 @@ class Plugin:
             verbose=1,
             shuffle=True,
             callbacks=callbacks,
-            validation_split=0.2
+            validation_data=(x_val, y_val)
         )
 
         print("Training completed.")
