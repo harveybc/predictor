@@ -343,13 +343,14 @@ class Plugin:
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
         mmd_logging_callback = MMDLoggingCallback(self, x_train, y_train)
         callbacks = [kl_callback, mmd_logging_callback]
-
+        min_delta=config.get("min_delta", 1e-4) if config is not None else 1e-4
         early_stopping_monitor = tf.keras.callbacks.EarlyStopping(
             monitor='val_loss',
             patience=self.params.get('early_patience', 10),
             restore_best_weights=True,
             verbose=1,
-            start_from_epoch=30
+            start_from_epoch=30,
+            min_delta=min_delta
         )
         callbacks.append(early_stopping_monitor)
         callbacks.append(ClearMemoryCallback())
