@@ -166,11 +166,6 @@ class Plugin:
         )(x)
         print(f"DEBUG: After second Dense layer, x shape: {x.shape}")
 
-        # Add BatchNormalization and Flatten
-        x = BatchNormalization()(x)
-        print("DEBUG: After BatchNormalization, x shape:", x.shape)
-        x = Flatten(name="flatten")(x)
-        print("DEBUG: After Flatten, x shape:", x.shape)
 
         # --- Bayesian Output Layer Implementation (copied from ANN/LSTM plugin) ---
         # Convert x to tensor if necessary
