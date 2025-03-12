@@ -383,7 +383,7 @@ class Plugin:
             patience=self.params.get('early_patience', 10),
             restore_best_weights=True,
             verbose=1,
-            start_from_epoch=20,
+            start_from_epoch=10,
             min_delta=min_delta
         )
 
