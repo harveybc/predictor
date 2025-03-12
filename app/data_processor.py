@@ -389,7 +389,7 @@ def run_prediction_pipeline(config, plugin):
     if config.get("use_returns", False):
         baseline_test = datasets.get("baseline_test")
 
-    # If sliding windows return a tuple, extract the data.
+    # If sliding windows output is a tuple, extract the data.
     if isinstance(x_train, tuple): x_train = x_train[0]
     if isinstance(x_val, tuple): x_val = x_val[0]
     if isinstance(x_test, tuple): x_test = x_test[0]
@@ -490,8 +490,6 @@ def run_prediction_pipeline(config, plugin):
     }
     print("*************************************************")
     print("Training Statistics:")
-    for key in results:
-        if key == "Metric": continue
     print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
     print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
     print("*************************************************")
@@ -506,12 +504,10 @@ def run_prediction_pipeline(config, plugin):
             with open(norm_json, 'r') as f:
                 norm_json = json.load(f)
         if config.get("use_returns", False):
-            if "BC-BO" in norm_json and "CLOSE" in norm_json:
-                bcbo_min = norm_json["BC-BO"]["min"]
-                bcbo_max = norm_json["BC-BO"]["max"]
-                denorm_pred_returns = test_predictions * (bcbo_max - bcbo_min) + bcbo_min
+            if "CLOSE" in norm_json:
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
+                denorm_pred_returns = test_predictions * (close_max - close_min) + close_min
                 if "baseline_test" in datasets:
                     baseline = datasets["baseline_test"]
                     if baseline.ndim == 1:
@@ -521,7 +517,7 @@ def run_prediction_pipeline(config, plugin):
                 else:
                     print("Warning: Baseline test values not found.")
             else:
-                print("Warning: 'BC-BO' and/or 'CLOSE' not found; skipping denormalization for returns.")
+                print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
         else:
             if "CLOSE" in norm_json:
                 close_min = norm_json["CLOSE"]["min"]
@@ -547,26 +543,18 @@ def run_prediction_pipeline(config, plugin):
     try:
         mc_samples = config.get("mc_samples", 100)
         _, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
-        # Denormalize uncertainties only once:
+        # Denormalize uncertainties using CLOSE range (instead of BC-BO)
         if config.get("use_normalization_json") is not None:
             norm_json = config.get("use_normalization_json")
             if isinstance(norm_json, str):
                 with open(norm_json, 'r') as f:
                     norm_json = json.load(f)
-            if config.get("use_returns", False):
-                if "BC-BO" in norm_json:
-                    scale = norm_json["BC-BO"]["max"] - norm_json["BC-BO"]["min"]
-                    denorm_uncertainty = uncertainty_estimates * scale
-                else:
-                    print("Warning: 'BC-BO' not found; uncertainties remain normalized.")
-                    denorm_uncertainty = uncertainty_estimates
+            if "CLOSE" in norm_json:
+                scale = norm_json["CLOSE"]["max"] - norm_json["CLOSE"]["min"]
+                denorm_uncertainty = uncertainty_estimates * scale
             else:
-                if "CLOSE" in norm_json:
-                    scale = norm_json["CLOSE"]["max"] - norm_json["CLOSE"]["min"]
-                    denorm_uncertainty = uncertainty_estimates * scale
-                else:
-                    print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
-                    denorm_uncertainty = uncertainty_estimates
+                print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
+                denorm_uncertainty = uncertainty_estimates
         else:
             denorm_uncertainty = uncertainty_estimates
         uncertainty_df = pd.DataFrame(
@@ -584,7 +572,7 @@ def run_prediction_pipeline(config, plugin):
     except Exception as e:
         print(f"Failed to compute or save uncertainty predictions: {e}")
 
-    # --- Plot predictions for the selected horizon ---
+    # --- Plot predictions (only the prediction at the selected horizon) ---
     try:
         n_plot = 2000
         plotted_horizon = config.get("plotted_horizon", 6)
@@ -597,13 +585,10 @@ def run_prediction_pipeline(config, plugin):
                 if isinstance(norm_json, str):
                     with open(norm_json, 'r') as f:
                         norm_json = json.load(f)
-                bcbo_min = norm_json["BC-BO"]["min"]
-                bcbo_max = norm_json["BC-BO"]["max"]
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
                 true_slice = y_test[-n_plot:, plotted_idx]
-                # Denormalize true returns:
-                true_returns_denorm = true_slice * (bcbo_max - bcbo_min) + bcbo_min
+                true_returns_denorm = true_slice * (close_max - close_min) + close_min
                 if "baseline_test" in datasets:
                     base_true = datasets["baseline_test"][-n_plot:]
                     if base_true.ndim == 1:
@@ -627,7 +612,7 @@ def run_prediction_pipeline(config, plugin):
                 else:
                     true_plot = y_test[-n_plot:, plotted_idx]
             dates_plot = test_dates[-n_plot:] if test_dates is not None else np.arange(test_predictions.shape[0]-n_plot, test_predictions.shape[0])
-            # Use the denormalized uncertainty we computed above:
+            # Use the denormalized uncertainties computed above:
             uncertainty_plot = denorm_uncertainty[-n_plot:, plotted_idx]
         else:
             pred_plot = test_predictions[:, plotted_idx]
@@ -637,12 +622,10 @@ def run_prediction_pipeline(config, plugin):
                     with open(norm_json, 'r') as f:
                         norm_json = json.load(f)
                 if config.get("use_returns", False):
-                    bcbo_min = norm_json["BC-BO"]["min"]
-                    bcbo_max = norm_json["BC-BO"]["max"]
                     close_min = norm_json["CLOSE"]["min"]
                     close_max = norm_json["CLOSE"]["max"]
                     true_slice = y_test[:, plotted_idx]
-                    true_returns_denorm = true_slice * (bcbo_max - bcbo_min) + bcbo_min
+                    true_returns_denorm = true_slice * (close_max - close_min) + close_min
                     if "baseline_test" in datasets:
                         base_true = datasets["baseline_test"]
                         if base_true.ndim == 1:
@@ -766,12 +749,10 @@ def load_and_evaluate_model(config, plugin):
             with open(norm_json, 'r') as f:
                 norm_json = json.load(f)
         if config.get("use_returns", False):
-            if "BC-BO" in norm_json and "CLOSE" in norm_json:
-                bcbo_min = norm_json["BC-BO"]["min"]
-                bcbo_max = norm_json["BC-BO"]["max"]
-                denorm_pred_returns = predictions * (bcbo_max - bcbo_min) + bcbo_min
+            if "CLOSE" in norm_json:
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
+                denorm_pred_returns = predictions * (close_max - close_min) + close_min
                 if "baseline_val" in datasets:
                     baseline = datasets["baseline_val"]
                     if baseline.ndim == 1:
@@ -781,7 +762,7 @@ def load_and_evaluate_model(config, plugin):
                 else:
                     print("Warning: Baseline validation values not found; cannot convert returns to predicted close values.")
             else:
-                print("Warning: 'BC-BO' and/or 'CLOSE' not found; skipping proper denormalization for returns.")
+                print("Warning: 'CLOSE' not found; skipping proper denormalization for returns.")
         else:
             if "CLOSE" in norm_json:
                 close_min = norm_json["CLOSE"]["min"]
@@ -811,7 +792,6 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
-
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
