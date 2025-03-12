@@ -54,5 +54,6 @@ DEFAULT_VALUES = {
     "use_returns": True,
     "mc_samples":1000,
     "plotted_horizon": 6,
-    "min_delta": 1e-4
+    "min_delta": 1e-4,
+    "start_from_epoch": 10
 }

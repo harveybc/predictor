@@ -30,7 +30,7 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
             self.patience_counter = self.wait
         else:
             self.patience_counter = 0
-        print(f"DEBUG: ReduceLROnPlateau : {self.patience_counter}")
+        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}")
 
 
 class EarlyStoppingWithPatienceCounter(EarlyStopping):
@@ -47,7 +47,7 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
             self.patience_counter = self.wait
         else:
             self.patience_counter = 0
-        print(f"DEBUG: EarlyStopping patience counter after epoch {epoch + 1}: {self.patience_counter}")
+        print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}")
 
 
 class ClearMemoryCallback(tf.keras.callbacks.Callback):
