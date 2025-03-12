@@ -122,22 +122,74 @@ class Plugin:
 
         x = BatchNormalization(name="batch_norm_final")(x)
 
-        # Bayesian Output Layer (DenseFlipout + Deterministic Bias)
+        # --- Bayesian Output Layer Implementation (copied from ANN plugin) ---
+        KL_WEIGHT = self.params.get('kl_weight', 1e-3)
+        
+        # Monkey-patch DenseFlipout to use add_weight instead of the deprecated add_variable
+        def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
+            return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
+        tfp.layers.DenseFlipout.add_variable = _patched_add_variable
+
+        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
+
+        def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
+            # Override bias_size to 0
+            bias_size = 0
+            n = int(np.prod(kernel_shape)) + bias_size
+            c = np.log(np.expm1(1.))
+            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
+            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
+            scale = 1e-3 + tf.nn.softplus(scale + c)
+            scale = tf.clip_by_value(scale, 1e-3, 1.0)
+            loc_reshaped = tf.reshape(loc, kernel_shape)
+            scale_reshaped = tf.reshape(scale, kernel_shape)
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
+            )
+        
+        def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
+            # Override bias_size to 0
+            bias_size = 0
+            n = int(np.prod(kernel_shape)) + bias_size
+            loc = tf.zeros([n], dtype=dtype)
+            scale = tf.ones([n], dtype=dtype)
+            loc_reshaped = tf.reshape(loc, kernel_shape)
+            scale_reshaped = tf.reshape(scale, kernel_shape)
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
+            )
+
         DenseFlipout = tfp.layers.DenseFlipout
-        bayesian_output = DenseFlipout(
+        flipout_layer = DenseFlipout(
             units=layers[-1],
             activation='linear',
+            kernel_posterior_fn=posterior_mean_field_custom,
+            kernel_prior_fn=prior_fn,
+            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
             name="output_layer"
+        )
+        bayesian_output = tf.keras.layers.Lambda(
+            lambda t: flipout_layer(t),
+            output_shape=lambda s: (s[0], layers[-1]),
+            name="bayesian_dense_flipout"
         )(x)
 
-        bias_layer = Dense(
+        # Deterministic bias layer using the ANN plugin's kernel initializer
+        def random_normal_initializer_44(shape, dtype=None):
+            return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
+
+        bias_layer = tf.keras.layers.Dense(
             units=layers[-1],
             activation='linear',
-            kernel_initializer=GlorotUniform(),
+            kernel_initializer=random_normal_initializer_44,
             name="deterministic_bias"
         )(x)
 
         outputs = bayesian_output + bias_layer
+        # --- End of Bayesian Output Layer Implementation ---
+
         self.model = Model(inputs=model_input, outputs=outputs, name="predictor_model")
 
         # Compile model
@@ -149,6 +201,8 @@ class Plugin:
 
         print("Predictor Model Summary:")
         self.model.summary()
+
+
 
     def custom_loss(self, y_true, y_pred):
         """
