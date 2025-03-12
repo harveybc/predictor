@@ -22,14 +22,14 @@
     "learning_rate": 1e-3,
     "activation": "tanh",
     "l2_reg": 0.0,
-    "kl_weight": 1e-0,
+    "kl_weight": 1e-2,
     "kl_cnneal_epochs": 50,
     "early_patience": 21,
     "start_from_epoch": 5,
     "use_returns": true,
     "mc_samples":1000,
     "plotted_horizon": 6,
-    "mmd_lambda": 1.0,
+    "mmd_lambda": 0.1,
     "window_size": 256,
     "batch_size": 64
 }
