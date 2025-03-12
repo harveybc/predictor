@@ -53,5 +53,6 @@ DEFAULT_VALUES = {
     "statistical_loss_weight": 0.1,
     "overfitting_penalty": 0.1,
     "use_returns": True,
-    "mc_samples":100
+    "mc_samples":100,
+    "plotted_horizon": 6
 }
