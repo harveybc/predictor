@@ -611,7 +611,7 @@ def run_prediction_pipeline(config, plugin):
     else:
         raise ValueError("Baseline test values not found; unable to reconstruct actual predictions.")
 
-    # --- Correcting Denormalization for True Values ---
+    # --- Correcting Denormalization ---
     if config.get("use_normalization_json") is not None:
         norm_json = config.get("use_normalization_json")
         if isinstance(norm_json, str):
@@ -622,13 +622,13 @@ def run_prediction_pipeline(config, plugin):
             close_max = norm_json["CLOSE"]["max"]
             diff = close_max - close_min
 
-            # Denormalizing the true values (baseline close)
-            true_plot = baseline_plot * diff + close_min  # ✅ Fixing the true values
-
-            # Denormalizing the predicted close values
-            pred_plot = (baseline_plot + pred_plot) * diff + close_min  # ✅ Fixing the predicted values
+            # ✅ Correct Denormalization
+            # True values (Baseline Close)
+            true_plot = baseline_plot * diff + close_min  # ✅ Correct
+            # Predictions (Adding Correctly Denormalized Returns)
+            pred_plot = true_plot + (pred_plot * diff)  # ✅ Fixing double denormalization
         else:
-            print("Warning: 'CLOSE' not found; skipping denormalization for true values.")
+            print("Warning: 'CLOSE' not found; skipping denormalization for predictions.")
             true_plot = baseline_plot
             pred_plot = baseline_plot + pred_plot
     else:
