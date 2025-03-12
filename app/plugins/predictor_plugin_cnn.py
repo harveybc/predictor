@@ -156,14 +156,14 @@ class Plugin:
                 x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
                 print(f"DEBUG: After MaxPooling1D layer {idx+1}, x shape: {x.shape}")
 
-            x = Conv1D(
-                    filters=1,
-                    kernel_size=3,
-                    activation='tanh',
-                    kernel_initializer=HeNormal(),
-                    padding='same',
-                    kernel_regularizer=l2(l2_reg)
-                )(x)
+        x = Conv1D(
+                filters=1,
+                kernel_size=3,
+                activation='tanh',
+                kernel_initializer=HeNormal(),
+                padding='same',
+                kernel_regularizer=l2(l2_reg)
+            )(x)
 
         # --- Bayesian Output Layer Implementation (copied from ANN/LSTM plugin) ---
         # Convert x to tensor if necessary
