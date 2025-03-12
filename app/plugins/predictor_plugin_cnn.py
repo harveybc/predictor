@@ -150,8 +150,7 @@ class Plugin:
                     activation='tanh',
                     kernel_initializer=HeNormal(),
                     padding='same',
-                    kernel_regularizer=l2(l2_reg),
-                    name=f"conv1d_{idx+1}"
+                    kernel_regularizer=l2(l2_reg)
                 )(x)
                 print(f"DEBUG: After Conv1D layer {idx+1}, x shape: {x.shape}")
                 x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
