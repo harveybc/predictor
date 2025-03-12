@@ -9,6 +9,8 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from sklearn.metrics import r2_score
+#flaten
+from tensorflow.keras.layers import Flatten
 import tensorflow.keras.backend as K
 import gc
 
@@ -135,6 +137,13 @@ class Plugin:
         inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
         print("DEBUG: Created input layer. Shape:", inputs.shape)
         x = inputs
+        x = Dense(
+            units=layer_sizes[0],
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg)
+        )(x)
+        print(f"DEBUG: After initial Dense layer, x shape: {x.shape}")
 
         # Build LSTM layers
         for idx, size in enumerate(layer_sizes[:-1]):
@@ -160,7 +169,21 @@ class Plugin:
 
         #x = BatchNormalization(name="batch_norm_final")(x)
         #print("DEBUG: After BatchNormalization, x shape:", x.shape)
+        x = Dense(
+            units=layer_sizes[-2],
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg)
+        )(x)
+        print(f"DEBUG: After second Dense layer, x shape: {x.shape}")
 
+        # Add BatchNormalization and Flatten
+        #x = BatchNormalization()(x)
+        #print("DEBUG: After BatchNormalization, x shape:", x.shape)
+        x = Flatten(name="flatten")(x)
+        print("DEBUG: After Flatten, x shape:", x.shape)
+
+        
         # --- Bayesian Output Layer Implementation (copied from ANN plugin) ---
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
 
