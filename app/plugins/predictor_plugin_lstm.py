@@ -153,7 +153,7 @@ class Plugin:
                     units=size,
                     activation='tanh',
                     recurrent_activation='sigmoid',
-                    return_sequences=True if idx < len(layer_sizes) - 1 else False,
+                    return_sequences=True if idx < len(layer_sizes) - 2 else False,
                     name=f"lstm_layer_{idx+1}"
                 )(x)
             print(f"DEBUG: After LSTM layer {idx+1}, x shape: {x.shape}")
