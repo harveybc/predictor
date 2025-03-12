@@ -1,79 +1,116 @@
 import numpy as np
-from keras.models import Model, load_model, save_model
-from keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Input, BatchNormalization
-from keras.optimizers import Adam
+import tensorflow as tf
+import tensorflow_probability as tfp
+from tensorflow.keras.models import Model, load_model, save_model
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Input, BatchNormalization
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
+from keras import backend as K
 from sklearn.metrics import r2_score
+import logging
+import os
+import gc
+import tensorflow.keras.backend as K
+
+# Callbacks
+class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
+    """
+    Custom ReduceLROnPlateau callback that prints the patience counter.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.patience_counter = 0  # Track the patience counter
+
+    def on_epoch_end(self, epoch, logs=None):
+        super().on_epoch_end(epoch, logs)
+        if self.wait > 0:
+            self.patience_counter = self.wait
+        else:
+            self.patience_counter = 0
+        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}")
+
+class EarlyStoppingWithPatienceCounter(EarlyStopping):
+    """
+    Custom EarlyStopping callback that prints the patience counter.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.patience_counter = 0  # Track the patience counter
+
+    def on_epoch_end(self, epoch, logs=None):
+        super().on_epoch_end(epoch, logs)
+        if self.wait > 0:
+            self.patience_counter = self.wait
+        else:
+            self.patience_counter = 0
+        print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}")
+
+class ClearMemoryCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        K.clear_session()
+        gc.collect()
+
+# --- Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable ---
+def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
+    return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
+tfp.layers.DenseFlipout.add_variable = _patched_add_variable
+
+# --- Named initializers ---
+def random_normal_initializer_42(shape, dtype=None):
+    return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=42)
+def random_normal_initializer_44(shape, dtype=None):
+    return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
 
 class Plugin:
     """
-    A predictor plugin using a convolutional neural network (CNN) based on Keras, with dynamically configurable size.
+    CNN Predictor Plugin using Keras for multi-step forecasting.
+    
+    This plugin builds, trains, and evaluates a CNN with sliding window input.
+    Now it uses the same callbacks and Bayesian final output layer as the ANN plugin.
     """
-
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 3,
         'initial_layer_size': 128,
         'layer_size_divisor': 2,
         'learning_rate': 0.0001,
-        'l2_reg': 1e-2,     # L2 regularization factor
-        'activation': 'tanh'
+        'l2_reg': 1e-2,
+        'activation': 'tanh',
+        'kl_weight': 1e-3,
+        'time_horizon': 6  # must be provided in config
     }
-
     plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers', 'initial_layer_size', 'time_horizon']
 
     def __init__(self):
-        """
-        Initializes the Plugin with default parameters and no model.
-        """
         self.params = self.plugin_params.copy()
         self.model = None
 
     def set_params(self, **kwargs):
-        """
-        Updates the plugin parameters with provided keyword arguments.
-
-        Args:
-            **kwargs: Arbitrary keyword arguments to update plugin parameters.
-        """
         for key, value in kwargs.items():
             self.params[key] = value
 
     def get_debug_info(self):
-        """
-        Retrieves the current values of debug variables.
-        
-        Returns:
-            dict: Dictionary containing debug information.
-        """
         return {var: self.params[var] for var in self.plugin_debug_vars}
 
     def add_debug_info(self, debug_info):
-        """
-        Adds the plugin's debug information to an external debug_info dictionary.
-        
-        Args:
-            debug_info (dict): External dictionary to update with debug information.
-        """
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape):
         """
-        Build a CNN-based model with sliding window input.
-
-        Parameters:
-            input_shape (tuple): Shape of the input data (window_size, features).
+        Builds a Bayesian CNN using DenseFlipout for uncertainty estimation.
+        The final output layer is replaced by a DenseFlipout (without bias) plus a separate 
+        deterministic bias layer.
         """
         if len(input_shape) != 2:
             raise ValueError(f"Invalid input_shape {input_shape}. CNN requires input with shape (window_size, features).")
-
         self.params['input_shape'] = input_shape
         print(f"CNN input_shape: {input_shape}")
 
+        # Determine layer sizes
         layers = []
         current_size = self.params['initial_layer_size']
         l2_reg = self.params.get('l2_reg', 1e-4)
@@ -83,318 +120,341 @@ class Plugin:
             layers.append(current_size)
             current_size = max(current_size // layer_size_divisor, 1)
             int_layers += 1
-        # Output layer size is time_horizon
+        # Append final output layer size = time_horizon
         layers.append(self.params['time_horizon'])
-
-        # Debugging message
         print(f"CNN Layer sizes: {layers}")
 
-        # Define the Input layer
+        # Define Input
         inputs = Input(shape=input_shape, name="model_input")
         x = inputs
+
+        # Initial Dense to mix features before conv layers
         x = Dense(
             units=layers[0],
             activation=self.params['activation'],
             kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
+            kernel_regularizer=l2(l2_reg)
         )(x)
+
         # Add intermediate Conv1D and MaxPooling1D layers
         for idx, size in enumerate(layers[:-1]):
             if size > 1:
                 x = Conv1D(
-                    filters=size, 
-                    kernel_size=3, 
-                    activation='relu', 
-                    kernel_initializer=HeNormal(), 
+                    filters=size,
+                    kernel_size=3,
+                    activation='relu',
+                    kernel_initializer=HeNormal(),
                     padding='same',
                     kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
                     name=f"conv1d_{idx+1}"
                 )(x)
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+        # Another Dense layer after convs
         x = Dense(
-            units=size,
+            units=layers[-2],
             activation=self.params['activation'],
             kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
+            kernel_regularizer=l2(l2_reg)
         )(x)
 
-        #add batch normalization
+        # Add BatchNormalization
         x = BatchNormalization()(x)
-        
-        # Flatten the output from Conv layers
+        # Flatten the features
         x = Flatten(name="flatten")(x)
-                
-        # Output layer => shape (N, time_horizon)
-        model_output = Dense(
-            units=layers[-1],
+
+        # --- Begin Bayesian Output Layer ---
+        # Convert x if necessary
+        if not hasattr(x, '_keras_history'):
+            x = tf.convert_to_tensor(x)
+            print("DEBUG: Converted x to tensor. New type:", type(x))
+
+        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
+        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
+
+        # Define custom posterior and prior functions
+        def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
+            print("DEBUG: In posterior_mean_field_custom:")
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
+            if not isinstance(name, str):
+                print("DEBUG: 'name' is not a string; setting to None")
+                name = None
+            bias_size = 0
+            n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: posterior: computed n =", n)
+            c = np.log(np.expm1(1.))
+            print("DEBUG: posterior: computed c =", c)
+            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42),
+                              dtype=dtype, trainable=trainable, name="posterior_loc")
+            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43),
+                                dtype=dtype, trainable=trainable, name="posterior_scale")
+            scale = 1e-3 + tf.nn.softplus(scale + c)
+            scale = tf.clip_by_value(scale, 1e-3, 1.0)
+            print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: posterior: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape in posterior:", e)
+                raise e
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
+            )
+
+        def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
+            print("DEBUG: In prior_fn:")
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
+            if not isinstance(name, str):
+                print("DEBUG: 'name' is not a string in prior_fn; setting to None")
+                name = None
+            bias_size = 0
+            n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: prior_fn: computed n =", n)
+            loc = tf.zeros([n], dtype=dtype)
+            scale = tf.ones([n], dtype=dtype)
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: prior_fn: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape in prior_fn:", e)
+                raise e
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
+            )
+
+        KL_WEIGHT = self.params.get('kl_weight', 1e-3)
+        DenseFlipout = tfp.layers.DenseFlipout
+        print("DEBUG: Creating DenseFlipout final layer with units:", self.params['time_horizon'])
+        flipout_layer = DenseFlipout(
+            units=self.params['time_horizon'],
             activation='linear',
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg),
-            name="model_output"
+            kernel_posterior_fn=posterior_mean_field_custom,
+            kernel_prior_fn=prior_fn,
+            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+            name="output_layer"
+        )
+        bayesian_output = tf.keras.layers.Lambda(
+            lambda t: flipout_layer(t),
+            output_shape=lambda s: (s[0], self.params['time_horizon']),
+            name="bayesian_dense_flipout"
         )(x)
+        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
+        
+        bias_layer = Dense(
+            units=self.params['time_horizon'],
+            activation='linear',
+            kernel_initializer=random_normal_initializer_44,
+            name="deterministic_bias"
+        )(x)
+        print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
+        
+        outputs = bayesian_output + bias_layer
+        print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+        
+        self.model = Model(inputs=inputs, outputs=outputs)
+        print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
+        # --- End Bayesian Output Layer ---
 
-
-        # Create the Model
-        self.model = Model(inputs=inputs, outputs=model_output, name="cnn_model")
-
-        # Define the Adam optimizer
-        adam_optimizer = Adam(
-            learning_rate=self.params['learning_rate'],
-            beta_1=0.9,
-            beta_2=0.999,
-            epsilon=1e-7,
-            amsgrad=False
-        )
-
-        # Compile the model with Huber loss and evaluation metrics
+        # Compile the model
         self.model.compile(
-            optimizer=adam_optimizer, 
-            loss=Huber(), 
-            metrics=['mse','mae'], 
-            run_eagerly=False  # Set to False for better performance unless debugging
+            optimizer=Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
+            loss=self.custom_loss,
+            metrics=['mae']
         )
-
-        # Debugging messages to trace the model configuration
+        print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
+        print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
         print("CNN Model Summary:")
         self.model.summary()
+        print("✅ Standard ANN model built successfully.")
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
-        """
-        Train the CNN model with Early Stopping to prevent overfitting.
+    def compute_mmd(self, x, y, sigma=1.0, sample_size=256):
+        with tf.device('/CPU:0'):
+            idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:sample_size]
+            x_sample = tf.gather(x, idx)
+            y_sample = tf.gather(y, idx)
+            def gaussian_kernel(x, y, sigma):
+                x = tf.expand_dims(x, 1)
+                y = tf.expand_dims(y, 0)
+                dist = tf.reduce_sum(tf.square(x - y), axis=-1)
+                return tf.exp(-dist / (2.0 * sigma ** 2))
+            K_xx = gaussian_kernel(x_sample, x_sample, sigma)
+            K_yy = gaussian_kernel(y_sample, y_sample, sigma)
+            K_xy = gaussian_kernel(x_sample, y_sample, sigma)
+            return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
 
-        Parameters:
-            x_train (numpy.ndarray): Training input data with shape (samples, window_size, features).
-            y_train (numpy.ndarray): Training target data with shape (samples, time_horizon).
-            epochs (int): Number of training epochs.
-            batch_size (int): Training batch size.
-            threshold_error (float): Threshold for loss to trigger warnings.
-            x_val (numpy.ndarray, optional): Validation input data.
+    def custom_loss(self, y_true, y_pred):
+        huber_loss = Huber()(y_true, y_pred)
+        mmd_loss = self.compute_mmd(y_pred, y_true)
+        total_loss = huber_loss + self.mmd_lambda * mmd_loss
+        return total_loss
 
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
+        import tensorflow as tf
 
-            y_val (numpy.ndarray, optional): Validation target data.
-        """
-        if x_train.ndim != 3:
-            raise ValueError(f"x_train must be 3D with shape (samples, window_size, features). Found: {x_train.shape}")
+        if isinstance(x_train, tuple):
+            x_train = x_train[0]
+        if x_val is not None and isinstance(x_val, tuple):
+            x_val = x_val[0]
+
+        print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
         exp_horizon = self.params['time_horizon']
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
-            raise ValueError(
-                f"y_train shape {y_train.shape}, expected (N,{exp_horizon})."
-            )
-        callbacks = []
+            raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
 
-        # Early Stopping based on loss or validation loss
-        patience = self.params.get('patience', 25)  # default patience is 10 epochs
-        monitor_metric = 'val_loss'
-        early_stopping_monitor = EarlyStopping(
-            monitor=monitor_metric,
-            patience=patience,
+        mmd_lambda = self.params.get('mmd_lambda', 0.01)
+        self.mmd_lambda = tf.Variable(mmd_lambda, trainable=False, dtype=tf.float32, name='mmd_lambda')
+
+        class KLAnnealingCallback(tf.keras.callbacks.Callback):
+            def __init__(self, plugin, target_kl, anneal_epochs):
+                super().__init__()
+                self.plugin = plugin
+                self.target_kl = target_kl
+                self.anneal_epochs = anneal_epochs
+            def on_epoch_begin(self, epoch, logs=None):
+                new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
+                self.plugin.kl_weight_var.assign(new_kl)
+                print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
+
+        class MMDLoggingCallback(tf.keras.callbacks.Callback):
+            def __init__(self, plugin, x_train, y_train):
+                super().__init__()
+                self.plugin = plugin
+                self.x_train = x_train
+                self.y_train = y_train
+            def on_epoch_end(self, epoch, logs=None):
+                preds = self.plugin.model(self.x_train, training=True)
+                mmd_value = self.plugin.compute_mmd(preds, self.y_train)
+                print(f"                                        MMD Lambda = {self.plugin.mmd_lambda.numpy():.6f}, MMD Loss = {mmd_value.numpy():.6f}")
+
+        anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
+        target_kl = self.params.get('kl_weight', 1e-3)
+        kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
+        mmd_logging_callback = MMDLoggingCallback(self, x_train, y_train)
+
+        min_delta = config.get("min_delta", 1e-4) if config is not None else 1e-4
+        early_stopping_monitor = EarlyStoppingWithPatienceCounter(
+            monitor='val_loss',
+            patience=self.params.get('early_patience', 10),
             restore_best_weights=True,
+            verbose=1,
+            start_from_epoch=10,
+            min_delta=min_delta
+        )
+        reduce_lr_patience = max(1, self.params.get('early_patience', 10) // 3)
+        reduce_lr_monitor = ReduceLROnPlateauWithCounter(
+            monitor='val_loss',
+            factor=0.1,
+            patience=reduce_lr_patience,
+            min_lr=1e-6,
             verbose=1
         )
-        callbacks.append(early_stopping_monitor)
-
-        print(f"Training CNN model with data shape: {x_train.shape}, target shape: {y_train.shape}")
+        callbacks = [kl_callback, mmd_logging_callback, early_stopping_monitor, reduce_lr_monitor, ClearMemoryCallback()]
 
         history = self.model.fit(
-            x_train,
-            y_train,
+            x_train, y_train,
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
+            shuffle=True,
             callbacks=callbacks,
-            validation_split = 0.2
+            validation_data=(x_val, y_val)
         )
+
         print("Training completed.")
         final_loss = history.history['loss'][-1]
         print(f"Final training loss: {final_loss}")
-
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
-        # Force the model to run in "training mode"
-        print("Forcing training mode for MAE calculation...")
-        preds_training_mode = self.model(x_train, training=True).numpy()
-        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train[:len(preds_training_mode)]))
-        print(f"MAE in Training Mode (manual): {mae_training_mode:.6f}")
+        preds_training_mode = self.model(x_train, training=True)
+        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
+        mmd_training_mode = self.compute_mmd(preds_training_mode, y_train)
+        print(f"MAE in Training Mode: {mae_training_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_training_mode:.6f}")
 
-        # Compare with evaluation mode
-        print("Forcing evaluation mode for MAE calculation...")
-        preds_eval_mode = self.model(x_train, training=False).numpy()
-        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train[:len(preds_training_mode)]))
-        print(f"MAE in Evaluation Mode (manual): {mae_eval_mode:.6f}")
+        preds_eval_mode = self.model(x_train, training=False)
+        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
+        mmd_eval_mode = self.compute_mmd(preds_eval_mode, y_train)
+        print(f"MAE in Evaluation Mode: {mae_eval_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_eval_mode:.6f}")
 
-        # Evaluate on the full training dataset for consistency
-        print("Evaluating on the full training dataset...")
-        train_eval_results = self.model.evaluate(x_train, y_train[:len(preds_training_mode)], batch_size=batch_size, verbose=0)
-        train_loss, train_mse, train_mae = train_eval_results
-        print(f"Restored Weights - Loss: {train_loss}, MSE: {train_mse}, MAE: {train_mae}")
-        
-        # Only evaluate validation data if it exists
-        if x_val is not None and y_val is not None:
-            val_eval_results = self.model.evaluate(x_val, y_val[:x_val.shape[0]], batch_size=batch_size, verbose=0)
-            _, _, val_mae = val_eval_results
-            val_predictions = self.predict(x_val)  # Predict validation data
-            val_r2 = r2_score(y_val[:x_val.shape[0]], val_predictions)
-        else:
-            val_mae = None
-            val_r2 = None
-            val_predictions = None
+        train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
+        train_loss, train_mae = train_eval_results
+        print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
 
-        # Predict training data for evaluation
-        train_predictions = self.predict(x_train)  # Predict train data
+        val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+        val_loss, val_mae = val_eval_results
 
-        # Calculate R² scores - adjust target shapes to match predictions
-        train_r2 = r2_score(y_train[:x_train.shape[0]], train_predictions)
-        val_r2 = None if val_predictions is None else r2_score(y_val[:x_val.shape[0]], val_predictions)
-        
+        from sklearn.metrics import r2_score
+        train_predictions = self.predict(x_train)
+        val_predictions = self.predict(x_val)
+        train_r2 = r2_score(y_train, train_predictions)
+        val_r2 = r2_score(y_val, val_predictions)
+
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
-
+    def predict_with_uncertainty(self, data, mc_samples=100):
+        import numpy as np
+        print("DEBUG: Starting predict_with_uncertainty with mc_samples (expected):", mc_samples)
+        predictions = []
+        for i in range(mc_samples):
+            preds = self.model(data, training=True)
+            preds_np = preds.numpy()
+            print(f"DEBUG: Sample {i+1}/{mc_samples} prediction. Expected shape: (n_samples, time_horizon), Actual shape:", preds_np.shape)
+            predictions.append(preds_np)
+        predictions = np.array(predictions)
+        print("DEBUG: All predictions collected. Expected shape: (mc_samples, n_samples, time_horizon), Actual shape:", predictions.shape)
+        mean_predictions = np.mean(predictions, axis=0)
+        uncertainty_estimates = np.std(predictions, axis=0)
+        print("DEBUG: Mean predictions shape:", mean_predictions.shape)
+        print("DEBUG: Uncertainty estimates shape:", uncertainty_estimates.shape)
+        return mean_predictions, uncertainty_estimates
 
     def predict(self, data):
-        """
-        Generate predictions using the trained CNN model.
-
-        Parameters:
-            data (numpy.ndarray): Input data for prediction.
-
-        Returns:
-            numpy.ndarray: Predicted outputs.
-        """
-        # CNN expects data to be (samples, window_size, features)
-
-        print(f"Predicting data with shape: {data.shape}")
-        predictions = self.model.predict(data)
-        print(f"Predicted data shape: {predictions.shape}")
-        return predictions
-
-
-    def calculate_mse(self, y_true, y_pred):
-        """
-        Calculates the Mean Squared Error (MSE) between true and predicted values.
-        
-        Args:
-            y_true (numpy.ndarray): True target values of shape (N, time_horizon).
-            y_pred (numpy.ndarray): Predicted target values of shape (N, time_horizon).
-        
-        Returns:
-            float: Calculated MSE.
-        
-        Raises:
-            ValueError: If the shapes of y_true and y_pred do not match.
-        """
-        print(f"Calculating MSE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        
-        # Ensure both y_true and y_pred have the same shape
-        if y_true.shape != y_pred.shape:
-            raise ValueError(
-                f"Shape mismatch in calculate_mse: y_true={y_true.shape}, y_pred={y_pred.shape}"
-            )
-        
-        # Flatten the arrays to 1D for MSE calculation
-        y_true_flat = y_true.reshape(-1)
-        y_pred_flat = y_pred.reshape(-1)
-        
-        print(f"Shapes after flattening: y_true={y_true_flat.shape}, y_pred={y_pred_flat.shape}")
-        
-        # Calculate Mean Squared Error
-        mse = np.mean((y_true_flat - y_pred_flat) ** 2)
-        print(f"Calculated MSE: {mse}")
-        return mse
+        import os
+        import logging
+        logging.getLogger("tensorflow").setLevel(logging.ERROR)
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+        preds = self.model.predict(data)
+        return preds
 
     def calculate_mae(self, y_true, y_pred):
-        """
-        Calculates the Mean Absolute Error (MAE) between true and predicted values.
-        
-        Args:
-            y_true (numpy.ndarray): True target values of shape (N, time_horizon).
-            y_pred (numpy.ndarray): Predicted target values of shape (N, time_horizon).
-        
-        Returns:
-            float: Calculated MAE.
-        
-        Raises:
-            ValueError: If the shapes of y_true and y_pred do not match.
-        """
-        print(f"Calculating MAE for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-        
-        # Ensure both y_true and y_pred have the same shape
-        if y_true.shape != y_pred.shape:
-            raise ValueError(
-                f"Shape mismatch in calculate_mae: y_true={y_true.shape}, y_pred={y_pred.shape}"
-            )
-        
-        # Flatten the arrays to 1D for MAE calculation
-        y_true_flat = y_true.reshape(-1)
-        y_pred_flat = y_pred.reshape(-1)
-        
-        print(f"Shapes after flattening: y_true={y_true_flat.shape}, y_pred={y_pred_flat.shape}")
-        
-        # Calculate Mean Absolute Error
-        mae = np.mean(np.abs(y_true_flat - y_pred_flat))
-        #print(f"Calculated MAE: {mae}")
+        print(f"y_true (sample): {y_true.flatten()[:5]}")
+        print(f"y_pred (sample): {y_pred.flatten()[:5]}")
+        mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
+        print(f"Calculated MAE: {mae}")
         return mae
 
-
     def save(self, file_path):
-        """
-        Saves the trained model to the specified file path.
-
-        Args:
-            file_path (str): Path to save the model.
-        """
+        from tensorflow.keras.models import save_model
         save_model(self.model, file_path)
         print(f"Predictor model saved to {file_path}")
 
     def load(self, file_path):
-        """
-        Loads a trained model from the specified file path.
-
-        Args:
-            file_path (str): Path to load the model from.
-        """
+        from tensorflow.keras.models import load_model
         self.model = load_model(file_path)
         print(f"Predictor model loaded from {file_path}")
 
     def calculate_r2(self, y_true, y_pred):
-        """
-        Calculates the R² (Coefficient of Determination) score between true and predicted values.
-
-        Args:
-            y_true (numpy.ndarray): True target values of shape (N, time_horizon).
-            y_pred (numpy.ndarray): Predicted target values of shape (N, time_horizon).
-
-        Returns:
-            float: Calculated R² score.
-
-        Raises:
-            ValueError: If the shapes of y_true and y_pred do not match.
-        """
         print(f"Calculating R² for shapes: y_true={y_true.shape}, y_pred={y_pred.shape}")
-
-        # Ensure both y_true and y_pred have the same shape
         if y_true.shape != y_pred.shape:
-            raise ValueError(
-                f"Shape mismatch in calculate_r2: y_true={y_true.shape}, y_pred={y_pred.shape}"
-            )
-
-        # Calculate R² score for each sample and then average
+            raise ValueError(f"Shape mismatch in calculate_r2: y_true={y_true.shape}, y_pred={y_pred.shape}")
         ss_res = np.sum((y_true - y_pred) ** 2, axis=1)
         ss_tot = np.sum((y_true - np.mean(y_true, axis=1, keepdims=True)) ** 2, axis=1)
         r2_scores = 1 - (ss_res / ss_tot)
-
-        # Handle cases where ss_tot is zero
         r2_scores = np.where(ss_tot == 0, 0, r2_scores)
-
-        # Calculate the average R² score
         r2 = np.mean(r2_scores)
         print(f"Calculated R²: {r2}")
         return r2
 
-
 # Debugging usage example
 if __name__ == "__main__":
     plugin = Plugin()
-    plugin.build_model(input_shape=(24, 8))  # Example input_shape for CNN
+    plugin.build_model(input_shape=(24, 8))
     debug_info = plugin.get_debug_info()
     print(f"Debug Info: {debug_info}")
