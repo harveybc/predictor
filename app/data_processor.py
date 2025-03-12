@@ -210,9 +210,9 @@ def process_data(config):
     # 4) MULTI-STEP TARGETS
     time_horizon = config["time_horizon"]
     if config.get("use_daily", False):
-        y_train_ma = y_train.rolling(window=24, center=True, min_periods=1).mean()
-        y_val_ma = y_val.rolling(window=24, center=True, min_periods=1).mean()
-        y_test_ma = y_test.rolling(window=24, center=True, min_periods=1).mean()
+        y_train_ma = y_train.rolling(window=48, center=True, min_periods=1).mean()
+        y_val_ma = y_val.rolling(window=48, center=True, min_periods=1).mean()
+        y_test_ma = y_test.rolling(window=48, center=True, min_periods=1).mean()
         if config.get("use_returns", False):
             y_train_multi, baseline_train = create_multi_step_daily(y_train_ma, time_horizon, use_returns=True)
             y_val_multi, baseline_val = create_multi_step_daily(y_val_ma, time_horizon, use_returns=True)
@@ -254,7 +254,7 @@ def process_data(config):
 
     # 6) PER-PLUGIN PROCESSING
     # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
-    if config["plugin"] == "cnn" or config["plugin"] == "lstm":
+    if config.get("use_sliding_windows", False) or config["plugin"] == "lstm":
         if config["plugin"] in ["lstm", "cnn"]:
             if config["plugin"] == "lstm":
                 print("Processing data for LSTM plugin with sliding windows...")
@@ -409,9 +409,9 @@ def run_prediction_pipeline(config, plugin):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iter_start = time.time()
         if config["plugin"] in ["cnn", "lstm"]:
-            plugin.build_model(input_shape=(window_size, x_train.shape[2]), x_train=x_train, config=config)
+            plugin.build_model(input_shape=(window_size, x_train.shape[2]), x_train=x_train)
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
-            plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=config)
+            plugin.build_model(input_shape=x_train.shape[1], x_train=x_train)
         else:
             if len(x_train.shape) != 2:
                 raise ValueError(f"Expected 2D x_train for {config['plugin']}; got {x_train.shape}")
@@ -447,7 +447,9 @@ def run_prediction_pipeline(config, plugin):
         print(f"Loss plot saved to {config['loss_plot_file']}")
 
         print("\nEvaluating on test dataset...")
-        test_predictions = plugin.predict(x_test)
+        #test_predictions = plugin.predict(x_test)
+        mc_samples = config.get("mc_samples", 100)
+        test_predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
         n_test = test_predictions.shape[0]
         if config.get("use_returns", False):
             test_r2 = r2_score((baseline_test + y_test[:n_test]).flatten(), (baseline_test + test_predictions).flatten())
@@ -713,7 +715,12 @@ def load_and_evaluate_model(config, plugin):
     print("Making predictions on validation data...")
     try:
         x_val_array = x_val if isinstance(x_val, np.ndarray) else x_val.to_numpy()
-        predictions = plugin.predict(x_val_array)
+
+        #predictions = plugin.predict(x_val_array)
+        mc_samples = config.get("mc_samples", 100)
+        predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_val_array, mc_samples=mc_samples)
+        
+        
         print(f"Predictions shape: {predictions.shape}")
     except Exception as e:
         print(f"Failed to make predictions: {e}")
