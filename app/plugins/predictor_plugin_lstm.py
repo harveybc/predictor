@@ -254,12 +254,7 @@ class Plugin:
         
         outputs = bayesian_output + bias_layer
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
-        outputs = tf.keras.layers.Dense(
-            units=layer_sizes[-1],
-            activation='linear',
-            kernel_initializer=random_normal_initializer_44
-            
-        )(outputs)
+        
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
         
