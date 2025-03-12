@@ -582,74 +582,60 @@ def run_prediction_pipeline(config, plugin):
         print(f"Failed to compute or save uncertainty predictions: {e}")
 
     # --- Plot predictions (only the prediction at the selected horizon) ---
-    try:
-        n_plot = 2000
-        plotted_horizon = config.get("plotted_horizon", 6)
-        plotted_idx = plotted_horizon - 1
-        if test_predictions.shape[0] > n_plot:
-            pred_plot = test_predictions[-n_plot:, plotted_idx]
-            if config.get("use_returns", False) and config.get("use_normalization_json") is not None:
-                norm_json = config.get("use_normalization_json")
-                if isinstance(norm_json, str):
-                    with open(norm_json, 'r') as f:
-                        norm_json = json.load(f)
-                close_min = norm_json["CLOSE"]["min"]
-                close_max = norm_json["CLOSE"]["max"]
-                diff = close_max - close_min
-                # For true values: final true close = (true_return + baseline)*diff + close_min
-                true_plot = (y_test[-n_plot:, plotted_idx] + datasets["baseline_test"][-n_plot:]) * diff + close_min
-            else:
-                if config.get("use_normalization_json") is not None:
-                    norm_json = config.get("use_normalization_json")
-                    if isinstance(norm_json, str):
-                        with open(norm_json, 'r') as f:
-                            norm_json = json.load(f)
-                    if "CLOSE" in norm_json:
-                        close_min = norm_json["CLOSE"]["min"]
-                        close_max = norm_json["CLOSE"]["max"]
-                        true_plot = y_test[-n_plot:, plotted_idx] * (close_max - close_min) + close_min
-                    else:
-                        true_plot = y_test[-n_plot:, plotted_idx]
-                else:
-                    true_plot = y_test[-n_plot:, plotted_idx]
-            dates_plot = test_dates[-n_plot:] if test_dates is not None else np.arange(test_predictions.shape[0]-n_plot, test_predictions.shape[0])
-            # Use the denormalized uncertainties computed above:
-            uncertainty_plot = denorm_uncertainty[-n_plot:, plotted_idx]
-        else:
-            pred_plot = test_predictions[:, plotted_idx]
-            if config.get("use_normalization_json") is not None:
-                norm_json = config.get("use_normalization_json")
-                if isinstance(norm_json, str):
-                    with open(norm_json, 'r') as f:
-                        norm_json = json.load(f)
-                if config.get("use_returns", False):
-                    close_min = norm_json["CLOSE"]["min"]
-                    close_max = norm_json["CLOSE"]["max"]
-                    diff = close_max - close_min
-                    true_plot = (y_test[:, plotted_idx] + datasets["baseline_test"].flatten()) * diff + close_min
-                else:
-                    if "CLOSE" in norm_json:
-                        close_min = norm_json["CLOSE"]["min"]
-                        close_max = norm_json["CLOSE"]["max"]
-                        true_plot = y_test[:, plotted_idx] * (close_max - close_min) + close_min
-                    else:
-                        true_plot = y_test[:, plotted_idx]
-            else:
-                true_plot = y_test[:, plotted_idx]
-            dates_plot = test_dates if test_dates is not None else np.arange(test_predictions.shape[0])
-            uncertainty_plot = denorm_uncertainty[:, plotted_idx]
+    # Define the plotted horizon (zero-indexed)
+    plotted_horizon = config.get("plotted_horizon", 6)
+    plotted_idx = plotted_horizon - 1  # Zero-based index for the chosen horizon
 
-        plt.figure(figsize=(12, 6))
-        plt.plot(dates_plot, pred_plot, label="Predicted", color="blue", linewidth=2)
-        plt.plot(dates_plot, true_plot, label="True", color="red", linewidth=2)
-        plt.fill_between(dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
-                         color="blue", alpha=0.2, label="Uncertainty")
-        plt.title("Last 1000 Predictions vs True Values with Uncertainty (Prediction Horizon: " + str(plotted_horizon) + ")")
-        plt.xlabel("Time")
-        plt.ylabel("CLOSE")
-        plt.legend()
-        plt.grid(True)
-        plt.tight_layout()
+    # Ensure indices are valid
+    if plotted_idx >= test_predictions.shape[1]:
+        raise ValueError(f"Plotted horizon index {plotted_idx} is out of bounds for predictions shape {test_predictions.shape}")
+
+    # Extract predictions for the selected horizon
+    pred_plot = test_predictions[:, plotted_idx]
+
+    # Define the test dates for plotting
+    n_plot = 200  # Number of points to display
+    if len(pred_plot) > n_plot:
+        pred_plot = pred_plot[-n_plot:]
+        test_dates_plot = test_dates[-n_plot:] if test_dates is not None else np.arange(len(pred_plot))
+    else:
+        test_dates_plot = test_dates if test_dates is not None else np.arange(len(pred_plot))
+
+    # Extract the baseline close value (current tick's true value)
+    if "baseline_test" in datasets:
+        baseline_plot = datasets["baseline_test"][:, 0]  # Use first column if multi-step
+
+        # Keep only last n_plot values if necessary
+        if len(baseline_plot) > n_plot:
+            baseline_plot = baseline_plot[-n_plot:]
+
+    else:
+        raise ValueError("Baseline test values not found; unable to reconstruct actual predictions.")
+
+    # Compute denormalized predictions: baseline + predicted return
+    true_plot = baseline_plot  # True value is just the baseline close (current tick)
+    pred_plot = baseline_plot + pred_plot  # Add predicted return to baseline
+
+    # Extract uncertainty for the plotted horizon
+    uncertainty_plot = denorm_uncertainty[:, plotted_idx]
+    if len(uncertainty_plot) > n_plot:
+        uncertainty_plot = uncertainty_plot[-n_plot:]
+
+    # Plot results
+    plt.figure(figsize=(12, 6))
+    plt.plot(test_dates_plot, pred_plot, label="Predicted Close", color="blue", linewidth=2)
+    plt.plot(test_dates_plot, true_plot, label="True Close", color="red", linewidth=2)
+    plt.fill_between(test_dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
+                    color="blue", alpha=0.2, label="Uncertainty")
+    plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon})")
+    plt.xlabel("Time")
+    plt.ylabel("CLOSE")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+
+    # Save the plot
+    try:
         predictions_plot_file = config.get("predictions_plot_file", "predictions_plot.png")
         plt.savefig(predictions_plot_file, dpi=300)
         plt.close()
@@ -657,6 +643,8 @@ def run_prediction_pipeline(config, plugin):
     except Exception as e:
         print(f"Failed to generate prediction plot: {e}")
 
+
+    # Plot the model
     try:
         from tensorflow.keras.utils import plot_model
         plot_model(
