@@ -417,7 +417,7 @@ def run_prediction_pipeline(config, plugin):
                 raise ValueError(f"Expected 2D x_train for {config['plugin']}; got {x_train.shape}")
             plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=config)
 
-        history, train_mae, train_r2_orig, val_mae, val_r2_orig, train_preds, val_preds = plugin.train(
+        history,  train_preds, val_preds = plugin.train(
             x_train, y_train, epochs=epochs, batch_size=batch_size,
             threshold_error=threshold_error, x_val=x_val, y_val=y_val, config=config
         )
@@ -429,6 +429,12 @@ def run_prediction_pipeline(config, plugin):
             train_r2 = r2_score(y_train, train_preds)
             val_r2 = r2_score(y_val, val_preds)
 
+
+        # Calculate MAE  train_mae = np.mean(np.abs(train_predictions - y_train[:n_test]))
+        n_train = train_preds.shape[0]
+        n_val = val_preds.shape[0]
+        train_mae = np.mean(np.abs(train_preds - y_train[:n_train]))
+        val_mae = np.mean(np.abs(val_preds - y_val[:n_val]))    
         # Append the recalculated values
         training_mae_list.append(train_mae)
         training_r2_list.append(train_r2)
@@ -573,7 +579,7 @@ def run_prediction_pipeline(config, plugin):
     pred_plot = test_predictions[:, plotted_idx]
 
     # Define the test dates for plotting
-    n_plot = 240  # Number of points to display
+    n_plot = 1575  # Number of points to display
     if len(pred_plot) > n_plot:
         pred_plot = pred_plot[-n_plot:]
         test_dates_plot = test_dates[-n_plot:] if test_dates is not None else np.arange(len(pred_plot))

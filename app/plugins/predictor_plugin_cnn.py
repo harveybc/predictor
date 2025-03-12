@@ -410,13 +410,9 @@ class Plugin:
         
         #val_predictions = self.predict(x_val)
         val_predictions, uncertainty_estimates =  self.predict_with_uncertainty(x_val, mc_samples=mc_samples)
-        
-        train_r2 = r2_score(y_train, train_predictions)
-        val_r2 = r2_score(y_val, val_predictions)
-        train_mae = self.calculate_mae(y_train, train_predictions)
-        val_mae = self.calculate_mae(y_val, val_predictions)    
 
-        return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
+
+        return history, train_predictions, val_predictions
 
     def predict_with_uncertainty(self, data, mc_samples=100):
         """
