@@ -139,17 +139,26 @@ class Plugin:
         # Build LSTM layers
         for idx, size in enumerate(layer_sizes[:-1]):
             print(f"DEBUG: Building LSTM layer {idx+1} with size {size}")
-            x = LSTM(
-                units=size,
-                activation='tanh',
-                recurrent_activation='sigmoid',
-                return_sequences=True if idx < len(layer_sizes) - 2 else False,
-                name=f"lstm_layer_{idx+1}"
-            )(x)
+            if idx==1:
+                x = LSTM(
+                    units=size,
+                    activation='linear',
+                    recurrent_activation='sigmoid',
+                    return_sequences=True if idx < len(layer_sizes) - 2 else False,
+                    name=f"lstm_layer_{idx+1}"
+                )(x)
+            else:
+                x = LSTM(
+                    units=size,
+                    activation='tanh',
+                    recurrent_activation='sigmoid',
+                    return_sequences=True if idx < len(layer_sizes) - 2 else False,
+                    name=f"lstm_layer_{idx+1}"
+                )(x)
             print(f"DEBUG: After LSTM layer {idx+1}, x shape: {x.shape}")
 
-        x = BatchNormalization(name="batch_norm_final")(x)
-        print("DEBUG: After BatchNormalization, x shape:", x.shape)
+        #x = BatchNormalization(name="batch_norm_final")(x)
+        #print("DEBUG: After BatchNormalization, x shape:", x.shape)
 
         # --- Bayesian Output Layer Implementation (copied from ANN plugin) ---
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
