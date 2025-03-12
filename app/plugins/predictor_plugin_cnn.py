@@ -163,8 +163,7 @@ class Plugin:
                     activation='tanh',
                     kernel_initializer=HeNormal(),
                     padding='same',
-                    kernel_regularizer=l2(l2_reg),
-                    name=f"conv1d_{idx+1}"
+                    kernel_regularizer=l2(l2_reg)
                 )(x)
 
         # --- Bayesian Output Layer Implementation (copied from ANN/LSTM plugin) ---
