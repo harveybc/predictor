@@ -376,7 +376,7 @@ class Plugin:
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
         mmd_logging_callback = MMDLoggingCallback(self, x_train, y_train)
-        callbacks = [kl_callback, mmd_logging_callback]
+        
         min_delta=config.get("min_delta", 1e-4) if config is not None else 1e-4
         early_stopping_monitor = EarlyStoppingWithPatienceCounter(
             monitor='val_loss',
@@ -391,16 +391,13 @@ class Plugin:
         reduce_lr_patience = max(1, self.params.get('early_patience', 10) // 3)  # Ensure at least 1 patience
         reduce_lr_monitor = ReduceLROnPlateauWithCounter(
             monitor='val_loss',
-            factor=0.5,
+            factor=0.1,
             patience=reduce_lr_patience,
             min_lr=1e-6,
             verbose=1
         )
 
-        callbacks = [early_stopping_monitor, reduce_lr_monitor, ClearMemoryCallback()]
-
-        callbacks.append(early_stopping_monitor)
-        callbacks.append(ClearMemoryCallback())
+        callbacks = [kl_callback, mmd_logging_callback, early_stopping_monitor, reduce_lr_monitor, ClearMemoryCallback()]
 
         history = self.model.fit(
             x_train, y_train,
