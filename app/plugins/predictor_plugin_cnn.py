@@ -164,7 +164,8 @@ class Plugin:
                 padding='same',
                 kernel_regularizer=l2(l2_reg)
             )(x)
-
+        #flaten
+        x = Flatten()(x)
         # --- Bayesian Output Layer Implementation (copied from ANN/LSTM plugin) ---
         # Convert x to tensor if necessary
         if not hasattr(x, '_keras_history'):
