@@ -5,26 +5,21 @@ from tensorflow.keras.models import Model, load_model, save_model
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Input, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.initializers import GlorotUniform, HeNormal
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
-from keras import backend as K
 from sklearn.metrics import r2_score
-import logging
-import os
-import gc
 import tensorflow.keras.backend as K
+import gc
 
-# ---------------------------
-# Callbacks
-# ---------------------------
+# --- Custom Callbacks ---
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
     """
     Custom ReduceLROnPlateau callback that prints the patience counter.
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.patience_counter = 0  # Track the patience counter
+        self.patience_counter = 0
 
     def on_epoch_end(self, epoch, logs=None):
         super().on_epoch_end(epoch, logs)
@@ -40,7 +35,7 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.patience_counter = 0  # Track the patience counter
+        self.patience_counter = 0
 
     def on_epoch_end(self, epoch, logs=None):
         super().on_epoch_end(epoch, logs)
@@ -55,29 +50,20 @@ class ClearMemoryCallback(tf.keras.callbacks.Callback):
         K.clear_session()
         gc.collect()
 
-# ---------------------------
-# Monkey-patch and Named Initializers
-# ---------------------------
-def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
-    return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
-tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-
-def random_normal_initializer_42(shape, dtype=None):
-    return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=42)
-
+# --- Named initializer to avoid lambda serialization warnings ---
 def random_normal_initializer_44(shape, dtype=None):
     return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
 
 # ---------------------------
-# Plugin Definition
+# CNN Plugin Definition
 # ---------------------------
 class Plugin:
     """
-    CNN Predictor Plugin using Keras for multi-step forecasting.
-    This plugin builds, trains, and evaluates a CNN with sliding window input.
-    It now uses the same callbacks and Bayesian final output layer (with MMD loss and KL annealing)
-    as the ANN plugin, including all debug printed messages.
+    CNN Predictor Plugin using Keras for multi-step forecasting with Bayesian uncertainty estimation,
+    MMD loss and additional debug print messages (mirroring the ANN/LSTM plugin).
     """
+
+    # Note: Ensure that 'time_horizon' and 'mmd_lambda' are provided in the parameters.
     plugin_params = {
         'batch_size': 128,
         'intermediate_layers': 3,
@@ -108,45 +94,62 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    def build_model(self, input_shape):
+    def build_model(self, input_shape, **kwargs):
         """
         Builds a Bayesian CNN using DenseFlipout for uncertainty estimation.
         The final output layer is replaced by a DenseFlipout (without bias)
         plus a separate deterministic bias layer.
+        This method mirrors the LSTM plugin's build_model, except using Conv1D layers.
         """
-        if len(input_shape) != 2:
-            raise ValueError(f"Invalid input_shape {input_shape}. CNN requires input with shape (window_size, features).")
+        # Print version info
+        print("DEBUG: tensorflow version:", tf.__version__)
+        print("DEBUG: tensorflow_probability version:", tfp.__version__)
+        print("DEBUG: numpy version:", np.__version__)
+
+        # Optionally convert x_train to numpy and print info if provided
+        x_train = kwargs.get("x_train", None)
+        if x_train is not None:
+            x_train = np.array(x_train)
+            print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
+
         self.params['input_shape'] = input_shape
-        print(f"CNN input_shape: {input_shape}")
-
-        # Determine layer sizes
-        layers = []
-        current_size = self.params['initial_layer_size']
         l2_reg = self.params.get('l2_reg', 1e-4)
-        layer_size_divisor = self.params['layer_size_divisor']
-        int_layers = 0
-        while int_layers < self.params['intermediate_layers']:
-            layers.append(current_size)
-            current_size = max(current_size // layer_size_divisor, 1)
-            int_layers += 1
-        # Append final output layer size = time_horizon
-        layers.append(self.params['time_horizon'])
-        print(f"CNN Layer sizes: {layers}")
 
-        # Define Input
-        inputs = Input(shape=input_shape, name="model_input")
+        # Build layer configuration based on parameters
+        layer_sizes = []
+        current_size = self.params['initial_layer_size']
+        print("DEBUG: Initial layer size:", current_size)
+        divisor = self.params.get('layer_size_divisor', 2)
+        print("DEBUG: Layer size divisor:", divisor)
+        int_layers = self.params.get('intermediate_layers', 3)
+        print("DEBUG: Number of intermediate layers:", int_layers)
+        time_horizon = self.params['time_horizon']
+        print("DEBUG: Time horizon (final layer size):", time_horizon)
+        for i in range(int_layers):
+            layer_sizes.append(current_size)
+            print(f"DEBUG: Appended layer size at layer {i+1}: {current_size}")
+            current_size = max(current_size // divisor, 1)
+            print(f"DEBUG: Updated current_size after division at layer {i+1}: {current_size}")
+        layer_sizes.append(time_horizon)
+        print("DEBUG: Final layer sizes:", layer_sizes)
+
+        print("DEBUG: CNN input shape:", input_shape)
+        inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
+        print("DEBUG: Created input layer. Shape:", inputs.shape)
         x = inputs
 
-        # Initial Dense layer to mix features before conv layers
+        # --- CNN Feature Extraction ---
+        # Initial Dense layer to mix features before convolutional layers
         x = Dense(
-            units=layers[0],
+            units=layer_sizes[0],
             activation=self.params['activation'],
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg)
         )(x)
+        print(f"DEBUG: After initial Dense layer, x shape: {x.shape}")
 
         # Add intermediate Conv1D and MaxPooling1D layers
-        for idx, size in enumerate(layers[:-1]):
+        for idx, size in enumerate(layer_sizes[:-1]):
             if size > 1:
                 x = Conv1D(
                     filters=size,
@@ -157,20 +160,26 @@ class Plugin:
                     kernel_regularizer=l2(l2_reg),
                     name=f"conv1d_{idx+1}"
                 )(x)
-                x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+                print(f"DEBUG: After Conv1D layer {idx+1}, x shape: {x.shape}")
+                x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
+                print(f"DEBUG: After MaxPooling1D layer {idx+1}, x shape: {x.shape}")
+
         # Another Dense layer after conv layers
         x = Dense(
-            units=layers[-2],
+            units=layer_sizes[-2],
             activation=self.params['activation'],
             kernel_initializer=GlorotUniform(),
             kernel_regularizer=l2(l2_reg)
         )(x)
+        print(f"DEBUG: After second Dense layer, x shape: {x.shape}")
 
         # Add BatchNormalization and Flatten
         x = BatchNormalization()(x)
+        print("DEBUG: After BatchNormalization, x shape:", x.shape)
         x = Flatten(name="flatten")(x)
+        print("DEBUG: After Flatten, x shape:", x.shape)
 
-        # --- Begin Bayesian Output Layer ---
+        # --- Bayesian Output Layer Implementation (copied from ANN/LSTM plugin) ---
         # Convert x to tensor if necessary
         if not hasattr(x, '_keras_history'):
             x = tf.convert_to_tensor(x)
@@ -192,10 +201,8 @@ class Plugin:
             print("DEBUG: posterior: computed n =", n)
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior: computed c =", c)
-            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42),
-                              dtype=dtype, trainable=trainable, name="posterior_loc")
-            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43),
-                                dtype=dtype, trainable=trainable, name="posterior_scale")
+            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
+            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
             print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
@@ -210,7 +217,7 @@ class Plugin:
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-
+        
         def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In prior_fn:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
@@ -235,7 +242,7 @@ class Plugin:
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-
+        
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
         DenseFlipout = tfp.layers.DenseFlipout
         print("DEBUG: Creating DenseFlipout final layer with units:", self.params['time_horizon'])
@@ -253,7 +260,7 @@ class Plugin:
             name="bayesian_dense_flipout"
         )(x)
         print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
-
+        
         bias_layer = Dense(
             units=self.params['time_horizon'],
             activation='linear',
@@ -261,14 +268,13 @@ class Plugin:
             name="deterministic_bias"
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
-
+        
         outputs = bayesian_output + bias_layer
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
-
+        
         self.model = Model(inputs=inputs, outputs=outputs)
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
-        # --- End Bayesian Output Layer ---
-
+        
         self.model.compile(
             optimizer=Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
             loss=self.custom_loss,
@@ -308,6 +314,9 @@ class Plugin:
         return total_loss
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
+        """
+        Train the CNN model with MMD loss incorporated and logged at every epoch.
+        """
         import tensorflow as tf
 
         if isinstance(x_train, tuple):
@@ -352,16 +361,17 @@ class Plugin:
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
         mmd_logging_callback = MMDLoggingCallback(self, x_train, y_train)
-
+        
         min_delta = config.get("min_delta", 1e-4) if config is not None else 1e-4
         early_stopping_monitor = EarlyStoppingWithPatienceCounter(
             monitor='val_loss',
             patience=self.params.get('early_patience', 10),
             restore_best_weights=True,
-            verbose=1,
+            verbose=2,
             start_from_epoch=10,
             min_delta=min_delta
         )
+
         reduce_lr_patience = max(1, self.params.get('early_patience', 10) // 3)
         reduce_lr_monitor = ReduceLROnPlateauWithCounter(
             monitor='val_loss',
@@ -370,6 +380,7 @@ class Plugin:
             min_lr=1e-6,
             verbose=1
         )
+
         callbacks = [kl_callback, mmd_logging_callback, early_stopping_monitor, reduce_lr_monitor, ClearMemoryCallback()]
 
         history = self.model.fit(
@@ -414,6 +425,9 @@ class Plugin:
         return history, train_mae, train_r2, val_mae, val_r2, train_predictions, val_predictions
 
     def predict_with_uncertainty(self, data, mc_samples=100):
+        """
+        Perform multiple forward passes through the model to estimate prediction uncertainty.
+        """
         import numpy as np
         print("DEBUG: Starting predict_with_uncertainty with mc_samples (expected):", mc_samples)
         predictions = []
@@ -435,6 +449,8 @@ class Plugin:
         import logging
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+        if isinstance(data, tuple):
+            data = data[0]
         preds = self.model.predict(data)
         return preds
 
