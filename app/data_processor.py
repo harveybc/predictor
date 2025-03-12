@@ -503,11 +503,11 @@ def run_prediction_pipeline(config, plugin):
                 np.min(validation_mae_list), np.min(validation_r2_list),
                 np.min(test_mae_list), np.min(test_r2_list)],
     }
-    print("*************************************************")
-    print("Training Statistics:")
-    print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
-    print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
-    print("*************************************************")
+    #print("*************************************************")
+    #print("Training Statistics:")
+    #print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
+    #print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
+    #print("*************************************************")
     results_file = config.get("results_file", "results.csv")
     pd.DataFrame(results).to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
@@ -646,7 +646,7 @@ def run_prediction_pipeline(config, plugin):
     plt.plot(test_dates_plot, pred_plot, label="Predicted Close", color="blue", linewidth=2)
     plt.plot(test_dates_plot, true_plot, label="True Close", color="red", linewidth=2)
     plt.fill_between(test_dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
-                    color="blue", alpha=0.2, label="Uncertainty")
+                    color="green", alpha=0.4, label="Uncertainty")
     plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon})")
     plt.xlabel("Time")
     plt.ylabel("CLOSE")
