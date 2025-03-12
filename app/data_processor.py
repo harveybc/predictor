@@ -497,23 +497,28 @@ def run_prediction_pipeline(config, plugin):
     pd.DataFrame(results).to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
 
-    # Denormalize final test predictions (if normalization provided)
+    # --- Denormalize final test predictions (if normalization provided) ---
     if config.get("use_normalization_json") is not None:
         norm_json = config.get("use_normalization_json")
         if isinstance(norm_json, str):
             with open(norm_json, 'r') as f:
                 norm_json = json.load(f)
+        # When using returns, denormalize predicted returns and baseline using only CLOSE range,
+        # then compute: (predicted_return + baseline)*diff + close_min
         if config.get("use_returns", False):
             if "CLOSE" in norm_json:
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
-                denorm_pred_returns = test_predictions * (close_max - close_min) + close_min
+                diff = close_max - close_min
+                # Do NOT add close_min to predicted returns; just scale them.
+                denorm_pred_returns = test_predictions * diff
                 if "baseline_test" in datasets:
                     baseline = datasets["baseline_test"]
                     if baseline.ndim == 1:
                         baseline = baseline.reshape(-1, 1)
-                    denorm_baseline = baseline * (close_max - close_min) + close_min
-                    test_predictions = denorm_pred_returns + denorm_baseline
+                    denorm_baseline = baseline * diff + close_min
+                    # Final predicted close = (predicted_return + baseline)*diff + close_min
+                    test_predictions = (test_predictions + baseline) * diff + close_min
                 else:
                     print("Warning: Baseline test values not found.")
             else:
@@ -543,15 +548,15 @@ def run_prediction_pipeline(config, plugin):
     try:
         mc_samples = config.get("mc_samples", 100)
         _, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
-        # Denormalize uncertainties using CLOSE range (instead of BC-BO)
+        # Denormalize uncertainties using CLOSE range only (do not add close_min)
         if config.get("use_normalization_json") is not None:
             norm_json = config.get("use_normalization_json")
             if isinstance(norm_json, str):
                 with open(norm_json, 'r') as f:
                     norm_json = json.load(f)
             if "CLOSE" in norm_json:
-                scale = norm_json["CLOSE"]["max"] - norm_json["CLOSE"]["min"]
-                denorm_uncertainty = uncertainty_estimates * scale
+                diff = norm_json["CLOSE"]["max"] - norm_json["CLOSE"]["min"]
+                denorm_uncertainty = uncertainty_estimates * diff
             else:
                 print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
                 denorm_uncertainty = uncertainty_estimates
@@ -579,7 +584,7 @@ def run_prediction_pipeline(config, plugin):
         plotted_idx = plotted_horizon - 1
         if test_predictions.shape[0] > n_plot:
             pred_plot = test_predictions[-n_plot:, plotted_idx]
-            # Denormalize true values for plotting:
+            # For true values: if using returns, denormalize the y_test slice and add baseline using CLOSE range.
             if config.get("use_returns", False) and config.get("use_normalization_json") is not None:
                 norm_json = config.get("use_normalization_json")
                 if isinstance(norm_json, str):
@@ -587,14 +592,17 @@ def run_prediction_pipeline(config, plugin):
                         norm_json = json.load(f)
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
+                diff = close_max - close_min
                 true_slice = y_test[-n_plot:, plotted_idx]
-                true_returns_denorm = true_slice * (close_max - close_min) + close_min
+                # Here, true_slice represents the normalized returns.
+                # Compute true close = (true_return + baseline) * diff + close_min
+                true_returns_denorm = true_slice * diff
                 if "baseline_test" in datasets:
                     base_true = datasets["baseline_test"][-n_plot:]
                     if base_true.ndim == 1:
                         base_true = base_true.reshape(-1, 1)
-                    baseline_true_denorm = base_true * (close_max - close_min) + close_min
-                    true_plot = true_returns_denorm + baseline_true_denorm.flatten()
+                    baseline_true_denorm = base_true * diff + close_min
+                    true_plot = (y_test[-n_plot:, plotted_idx] + base_true.flatten()) * diff + close_min
                 else:
                     true_plot = true_returns_denorm
             else:
@@ -612,7 +620,7 @@ def run_prediction_pipeline(config, plugin):
                 else:
                     true_plot = y_test[-n_plot:, plotted_idx]
             dates_plot = test_dates[-n_plot:] if test_dates is not None else np.arange(test_predictions.shape[0]-n_plot, test_predictions.shape[0])
-            # Use the denormalized uncertainties computed above:
+            # Use the already denormalized uncertainties:
             uncertainty_plot = denorm_uncertainty[-n_plot:, plotted_idx]
         else:
             pred_plot = test_predictions[:, plotted_idx]
@@ -624,16 +632,8 @@ def run_prediction_pipeline(config, plugin):
                 if config.get("use_returns", False):
                     close_min = norm_json["CLOSE"]["min"]
                     close_max = norm_json["CLOSE"]["max"]
-                    true_slice = y_test[:, plotted_idx]
-                    true_returns_denorm = true_slice * (close_max - close_min) + close_min
-                    if "baseline_test" in datasets:
-                        base_true = datasets["baseline_test"]
-                        if base_true.ndim == 1:
-                            base_true = base_true.reshape(-1, 1)
-                        baseline_true_denorm = base_true * (close_max - close_min) + close_min
-                        true_plot = true_returns_denorm + baseline_true_denorm.flatten()
-                    else:
-                        true_plot = true_returns_denorm
+                    diff = close_max - close_min
+                    true_plot = (y_test[:, plotted_idx] + datasets["baseline_test"].flatten()) * diff + close_min
                 else:
                     if "CLOSE" in norm_json:
                         close_min = norm_json["CLOSE"]["min"]
@@ -748,17 +748,18 @@ def load_and_evaluate_model(config, plugin):
         if isinstance(norm_json, str):
             with open(norm_json, 'r') as f:
                 norm_json = json.load(f)
+        # Denormalize predictions using CLOSE range.
         if config.get("use_returns", False):
             if "CLOSE" in norm_json:
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
-                denorm_pred_returns = predictions * (close_max - close_min) + close_min
+                diff = close_max - close_min
+                # predicted close = (predicted_return + baseline)*diff + close_min
                 if "baseline_val" in datasets:
                     baseline = datasets["baseline_val"]
                     if baseline.ndim == 1:
                         baseline = baseline.reshape(-1, 1)
-                    denorm_baseline = baseline * (close_max - close_min) + close_min
-                    predictions = denorm_pred_returns + denorm_baseline
+                    predictions = (predictions + baseline) * diff + close_min
                 else:
                     print("Warning: Baseline validation values not found; cannot convert returns to predicted close values.")
             else:
@@ -792,6 +793,8 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
+
+
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
