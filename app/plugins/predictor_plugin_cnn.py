@@ -94,7 +94,7 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    def build_model(self, input_shape, x_train, config=None):
+    def build_model(self, input_shape, **kwargs):
         """
         Builds a Bayesian CNN using DenseFlipout for uncertainty estimation.
         The final output layer is replaced by a DenseFlipout (without bias)
@@ -107,6 +107,7 @@ class Plugin:
         print("DEBUG: numpy version:", np.__version__)
 
         # Optionally convert x_train to numpy and print info if provided
+        x_train = kwargs.get("x_train", None)
         if x_train is not None:
             x_train = np.array(x_train)
             print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
@@ -139,37 +140,41 @@ class Plugin:
 
         # --- CNN Feature Extraction ---
         # Initial Dense layer to mix features before convolutional layers
+        x = Dense(
+            units=layer_sizes[0],
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg)
+        )(x)
         print(f"DEBUG: After initial Dense layer, x shape: {x.shape}")
 
         # Add intermediate Conv1D and MaxPooling1D layers
         for idx, size in enumerate(layer_sizes[:-1]):
             if size > 1:
-                if idx == 1:
-                    x = Conv1D(
-                        filters=size,
-                        kernel_size=3,
-                        activation='linear',
-                        kernel_initializer=GlorotUniform(),
-                        padding='same',
-                        #kernel_regularizer=l2(l2_reg),
-                        name=f"conv1d_{idx+1}"
-                    )(x)
-                else:
-                    x = Conv1D(
-                        filters=size,
-                        kernel_size=3,
-                        activation=config.get('activation', 'tanh'),
-                        kernel_initializer=HeNormal(),
-                        padding='same',
-                        #kernel_regularizer=l2(l2_reg),
-                        name=f"conv1d_{idx+1}"
-                    )(x)
+                x = Conv1D(
+                    filters=size,
+                    kernel_size=3,
+                    activation='relu',
+                    kernel_initializer=HeNormal(),
+                    padding='same',
+                    kernel_regularizer=l2(l2_reg),
+                    name=f"conv1d_{idx+1}"
+                )(x)
                 print(f"DEBUG: After Conv1D layer {idx+1}, x shape: {x.shape}")
                 x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
                 print(f"DEBUG: After MaxPooling1D layer {idx+1}, x shape: {x.shape}")
 
         # Another Dense layer after conv layers
-        
+        x = Dense(
+            units=layer_sizes[-2],
+            activation=self.params['activation'],
+            kernel_initializer=GlorotUniform(),
+            kernel_regularizer=l2(l2_reg)
+        )(x)
+        print(f"DEBUG: After second Dense layer, x shape: {x.shape}")
+
+        # Add BatchNormalization and Flatten
+        x = BatchNormalization()(x)
         print("DEBUG: After BatchNormalization, x shape:", x.shape)
         x = Flatten(name="flatten")(x)
         print("DEBUG: After Flatten, x shape:", x.shape)
