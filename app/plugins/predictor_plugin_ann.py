@@ -308,7 +308,8 @@ class Plugin:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
 
         # Initialize MMD lambda
-        self.mmd_lambda = tf.Variable(0.01, trainable=False, dtype=tf.float32, name='mmd_lambda')
+        mmd_lambda = self.params.get('mmd_lambda', 0.01)
+        self.mmd_lambda = tf.Variable(mmd_lambda, trainable=False, dtype=tf.float32, name='mmd_lambda')
 
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):

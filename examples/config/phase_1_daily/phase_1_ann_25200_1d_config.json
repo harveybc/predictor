@@ -20,18 +20,18 @@
     "intermediate_layers": 4,
     "initial_layer_size": 96,
     "layer_size_divisor": 2,
-    "learning_rate": 5e-5,
+    "learning_rate": 1e-4,
     "activation": "tanh",
     "l2_reg": 1e-6,
     "kl_weight": 1e-2,
     "kl_anneal_epochs": 50,
     "early_patience": 60,
-    "use_mmd": true,
-    "statistical_loss_weight": 1e-2,
+
     "overfitting_penalty": 1.0,
     "use_returns": true,
     "mc_samples":100,
-    "plotted_horizon": 6
+    "plotted_horizon": 6,
+    "mmd_lambda": 0.1
 
     
 }
