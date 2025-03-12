@@ -15,7 +15,9 @@ import os
 import gc
 import tensorflow.keras.backend as K
 
+# ---------------------------
 # Callbacks
+# ---------------------------
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
     """
     Custom ReduceLROnPlateau callback that prints the patience counter.
@@ -53,23 +55,28 @@ class ClearMemoryCallback(tf.keras.callbacks.Callback):
         K.clear_session()
         gc.collect()
 
-# --- Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable ---
+# ---------------------------
+# Monkey-patch and Named Initializers
+# ---------------------------
 def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
     return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
 tfp.layers.DenseFlipout.add_variable = _patched_add_variable
 
-# --- Named initializers ---
 def random_normal_initializer_42(shape, dtype=None):
     return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=42)
+
 def random_normal_initializer_44(shape, dtype=None):
     return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
 
+# ---------------------------
+# Plugin Definition
+# ---------------------------
 class Plugin:
     """
     CNN Predictor Plugin using Keras for multi-step forecasting.
-    
     This plugin builds, trains, and evaluates a CNN with sliding window input.
-    Now it uses the same callbacks and Bayesian final output layer as the ANN plugin.
+    It now uses the same callbacks and Bayesian final output layer (with MMD loss and KL annealing)
+    as the ANN plugin, including all debug printed messages.
     """
     plugin_params = {
         'batch_size': 128,
@@ -80,7 +87,9 @@ class Plugin:
         'l2_reg': 1e-2,
         'activation': 'tanh',
         'kl_weight': 1e-3,
-        'time_horizon': 6  # must be provided in config
+        'time_horizon': 6,    # final output size
+        'mmd_lambda': 0.01,   # MMD loss weight
+        'early_patience': 10
     }
     plugin_debug_vars = ['epochs', 'batch_size', 'input_shape', 'intermediate_layers', 'initial_layer_size', 'time_horizon']
 
@@ -102,8 +111,8 @@ class Plugin:
     def build_model(self, input_shape):
         """
         Builds a Bayesian CNN using DenseFlipout for uncertainty estimation.
-        The final output layer is replaced by a DenseFlipout (without bias) plus a separate 
-        deterministic bias layer.
+        The final output layer is replaced by a DenseFlipout (without bias)
+        plus a separate deterministic bias layer.
         """
         if len(input_shape) != 2:
             raise ValueError(f"Invalid input_shape {input_shape}. CNN requires input with shape (window_size, features).")
@@ -128,7 +137,7 @@ class Plugin:
         inputs = Input(shape=input_shape, name="model_input")
         x = inputs
 
-        # Initial Dense to mix features before conv layers
+        # Initial Dense layer to mix features before conv layers
         x = Dense(
             units=layers[0],
             activation=self.params['activation'],
@@ -145,11 +154,11 @@ class Plugin:
                     activation='relu',
                     kernel_initializer=HeNormal(),
                     padding='same',
-                    kernel_regularizer=l2(self.params.get('l2_reg', 1e-4)),
+                    kernel_regularizer=l2(l2_reg),
                     name=f"conv1d_{idx+1}"
                 )(x)
                 x = MaxPooling1D(pool_size=2, name=f"max_pool_{idx+1}")(x)
-        # Another Dense layer after convs
+        # Another Dense layer after conv layers
         x = Dense(
             units=layers[-2],
             activation=self.params['activation'],
@@ -157,13 +166,12 @@ class Plugin:
             kernel_regularizer=l2(l2_reg)
         )(x)
 
-        # Add BatchNormalization
+        # Add BatchNormalization and Flatten
         x = BatchNormalization()(x)
-        # Flatten the features
         x = Flatten(name="flatten")(x)
 
         # --- Begin Bayesian Output Layer ---
-        # Convert x if necessary
+        # Convert x to tensor if necessary
         if not hasattr(x, '_keras_history'):
             x = tf.convert_to_tensor(x)
             print("DEBUG: Converted x to tensor. New type:", type(x))
@@ -171,7 +179,6 @@ class Plugin:
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
 
-        # Define custom posterior and prior functions
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
@@ -246,7 +253,7 @@ class Plugin:
             name="bayesian_dense_flipout"
         )(x)
         print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
-        
+
         bias_layer = Dense(
             units=self.params['time_horizon'],
             activation='linear',
@@ -254,15 +261,14 @@ class Plugin:
             name="deterministic_bias"
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
-        
+
         outputs = bayesian_output + bias_layer
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
-        
+
         self.model = Model(inputs=inputs, outputs=outputs)
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
         # --- End Bayesian Output Layer ---
 
-        # Compile the model
         self.model.compile(
             optimizer=Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
             loss=self.custom_loss,
@@ -272,9 +278,12 @@ class Plugin:
         print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
         print("CNN Model Summary:")
         self.model.summary()
-        print("✅ Standard ANN model built successfully.")
+        print("✅ Standard CNN model built successfully.")
 
     def compute_mmd(self, x, y, sigma=1.0, sample_size=256):
+        """
+        Compute Maximum Mean Discrepancy (MMD) using a Gaussian Kernel with a reduced sample size.
+        """
         with tf.device('/CPU:0'):
             idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:sample_size]
             x_sample = tf.gather(x, idx)
@@ -290,6 +299,9 @@ class Plugin:
             return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
 
     def custom_loss(self, y_true, y_pred):
+        """
+        Custom loss function combining Huber loss and MMD loss.
+        """
         huber_loss = Huber()(y_true, y_pred)
         mmd_loss = self.compute_mmd(y_pred, y_true)
         total_loss = huber_loss + self.mmd_lambda * mmd_loss
@@ -308,6 +320,7 @@ class Plugin:
         if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
             raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
 
+        # Initialize MMD lambda
         mmd_lambda = self.params.get('mmd_lambda', 0.01)
         self.mmd_lambda = tf.Variable(mmd_lambda, trainable=False, dtype=tf.float32, name='mmd_lambda')
 
@@ -317,6 +330,7 @@ class Plugin:
                 self.plugin = plugin
                 self.target_kl = target_kl
                 self.anneal_epochs = anneal_epochs
+
             def on_epoch_begin(self, epoch, logs=None):
                 new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
                 self.plugin.kl_weight_var.assign(new_kl)
@@ -328,6 +342,7 @@ class Plugin:
                 self.plugin = plugin
                 self.x_train = x_train
                 self.y_train = y_train
+
             def on_epoch_end(self, epoch, logs=None):
                 preds = self.plugin.model(self.x_train, training=True)
                 mmd_value = self.plugin.compute_mmd(preds, self.y_train)
@@ -431,12 +446,10 @@ class Plugin:
         return mae
 
     def save(self, file_path):
-        from tensorflow.keras.models import save_model
         save_model(self.model, file_path)
         print(f"Predictor model saved to {file_path}")
 
     def load(self, file_path):
-        from tensorflow.keras.models import load_model
         self.model = load_model(file_path)
         print(f"Predictor model loaded from {file_path}")
 
@@ -452,7 +465,9 @@ class Plugin:
         print(f"Calculated R²: {r2}")
         return r2
 
+# ---------------------------
 # Debugging usage example
+# ---------------------------
 if __name__ == "__main__":
     plugin = Plugin()
     plugin.build_model(input_shape=(24, 8))
