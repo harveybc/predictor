@@ -594,27 +594,47 @@ def run_prediction_pipeline(config, plugin):
     pred_plot = test_predictions[:, plotted_idx]
 
     # Define the test dates for plotting
-    n_plot = 200  # Number of points to display
+    n_plot = 2000  # Number of points to display
     if len(pred_plot) > n_plot:
         pred_plot = pred_plot[-n_plot:]
         test_dates_plot = test_dates[-n_plot:] if test_dates is not None else np.arange(len(pred_plot))
     else:
         test_dates_plot = test_dates if test_dates is not None else np.arange(len(pred_plot))
 
-    # Extract the baseline close value (current tick's true value)
+    # Extract and correctly denormalize the baseline close value (current tick's true value)
     if "baseline_test" in datasets:
         baseline_plot = datasets["baseline_test"][:, 0]  # Use first column if multi-step
 
         # Keep only last n_plot values if necessary
         if len(baseline_plot) > n_plot:
             baseline_plot = baseline_plot[-n_plot:]
-
     else:
         raise ValueError("Baseline test values not found; unable to reconstruct actual predictions.")
 
-    # Compute denormalized predictions: baseline + predicted return
-    true_plot = baseline_plot  # True value is just the baseline close (current tick)
-    pred_plot = baseline_plot + pred_plot  # Add predicted return to baseline
+    # --- Correcting Denormalization for True Values ---
+    if config.get("use_normalization_json") is not None:
+        norm_json = config.get("use_normalization_json")
+        if isinstance(norm_json, str):
+            with open(norm_json, 'r') as f:
+                norm_json = json.load(f)
+        if "CLOSE" in norm_json:
+            close_min = norm_json["CLOSE"]["min"]
+            close_max = norm_json["CLOSE"]["max"]
+            diff = close_max - close_min
+
+            # Denormalizing the true values (baseline close)
+            true_plot = baseline_plot * diff + close_min  # ✅ Fixing the true values
+
+            # Denormalizing the predicted close values
+            pred_plot = (baseline_plot + pred_plot) * diff + close_min  # ✅ Fixing the predicted values
+        else:
+            print("Warning: 'CLOSE' not found; skipping denormalization for true values.")
+            true_plot = baseline_plot
+            pred_plot = baseline_plot + pred_plot
+    else:
+        print("Warning: Normalization JSON not provided; assuming raw values.")
+        true_plot = baseline_plot
+        pred_plot = baseline_plot + pred_plot
 
     # Extract uncertainty for the plotted horizon
     uncertainty_plot = denorm_uncertainty[:, plotted_idx]
