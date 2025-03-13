@@ -420,8 +420,8 @@ def run_prediction_pipeline(config, plugin):
         )
         # If using returns, recalc r2 based on baseline + predictions.
         if config.get("use_returns", False):
-            train_r2 = r2_score((baseline_train + y_train).flatten(), (baseline_train + train_preds).flatten())
-            val_r2 = r2_score((baseline_val + y_val).flatten(), (baseline_val + val_preds).flatten())
+            train_r2 = r2_score((y_train).flatten(), (train_preds).flatten())
+            val_r2 = r2_score((y_val).flatten(), (val_preds).flatten())
         else:
             train_r2 = r2_score(y_train, train_preds)
             val_r2 = r2_score(y_val, val_preds)
