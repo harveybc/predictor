@@ -632,8 +632,8 @@ def run_prediction_pipeline(config, plugin):
     plot_color_true = config.get("plot_color_true", "red")  # Default: red
     plot_color_uncertainty = config.get("plot_color_uncertainty", "green")  # Default: green    
     plt.figure(figsize=(12, 6))
-    plt.plot(test_dates_plot, pred_plot, label="Predicted Close", color=plot_color_predicted, linewidth=2)
-    plt.plot(test_dates_plot, true_plot, label="True Close", color=plot_color_true, linewidth=2)
+    plt.plot(test_dates_plot, pred_plot, label="Predicted Price", color=plot_color_predicted, linewidth=2)
+    plt.plot(test_dates_plot, true_plot, label="True Price", color=plot_color_true, linewidth=2)
     plt.fill_between(test_dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
                     color=plot_color_uncertainty, alpha=0.15, label="Uncertainty")
     if config.get("use_daily", False):    
