@@ -89,7 +89,7 @@ class Plugin:
 
         # We'll use a random forest for multi-output regression
         # You can switch to another model if desired, e.g. LinearRegression, etc.
-        self.model = RandomForestRegressor(n_estimators=50, random_state=42)
+        self.model = RandomForestRegressor(n_estimators=500, random_state=42)
 
     def _rolling_forecast(self, x, y):
         """
