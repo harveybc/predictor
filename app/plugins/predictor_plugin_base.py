@@ -7,6 +7,7 @@ from tqdm import tqdm
 
 from sklearn.metrics import r2_score
 from sklearn.ensemble import RandomForestRegressor
+import tensorflow as tf
 
 class Plugin:
     """
@@ -306,3 +307,25 @@ class Plugin:
             self.val_predictions = data['val_predictions']
             self.model = data['model']
         print(f"Model loaded from {file_path}")
+
+    def compute_mmd(self, x, y, sigma=1.0, sample_size=256):
+        """
+        Compute Maximum Mean Discrepancy (MMD) using a Gaussian Kernel
+        with a reduced sample size to avoid memory issues.
+        """
+        with tf.device('/CPU:0'):  # Move computation to CPU
+            # Randomly sample from x and y to reduce memory usage
+            idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:sample_size]
+            x_sample = tf.gather(x, idx)
+            y_sample = tf.gather(y, idx)
+
+            def gaussian_kernel(x, y, sigma):
+                x = tf.expand_dims(x, 1)
+                y = tf.expand_dims(y, 0)
+                dist = tf.reduce_sum(tf.square(x - y), axis=-1)
+                return tf.exp(-dist / (2.0 * sigma ** 2))
+
+            K_xx = gaussian_kernel(x_sample, x_sample, sigma)
+            K_yy = gaussian_kernel(y_sample, y_sample, sigma)
+            K_xy = gaussian_kernel(x_sample, y_sample, sigma)
+            return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
