@@ -163,13 +163,13 @@ class Plugin:
 
         #x = BatchNormalization(name="batch_norm_final")(x)
         #print("DEBUG: After BatchNormalization, x shape:", x.shape)
-        x = Dense(
-            units=layer_sizes[-2],
-            activation=self.params['activation'],
-            kernel_initializer=GlorotUniform(),
-            kernel_regularizer=l2(l2_reg)
-        )(x)
-        print(f"DEBUG: After second Dense layer, x shape: {x.shape}")
+        #x = Dense(
+        #    units=layer_sizes[-2],
+        #    activation=self.params['activation'],
+        #    kernel_initializer=GlorotUniform(),
+        #    kernel_regularizer=l2(l2_reg)
+        #)(x)
+        #print(f"DEBUG: After second Dense layer, x shape: {x.shape}")
 
         # Add BatchNormalization and Flatten
         #x = BatchNormalization()(x)
