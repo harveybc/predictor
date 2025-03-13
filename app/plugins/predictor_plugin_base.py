@@ -74,7 +74,7 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    def build_model(self, input_shape):
+    def build_model(self, input_shape, x_train=None, config=None):
         """
         Build the model placeholder.
 
@@ -121,7 +121,7 @@ class Plugin:
 
         return preds
 
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None):
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
         Train the plugin with a single-pass multi-output regression.
 
@@ -179,7 +179,47 @@ class Plugin:
         history.history['loss'].append(train_mae)
         history.history['val_loss'].append(val_mae)
 
-        return history, train_mae, train_r2, val_mae, val_r2, self.train_predictions, self.val_predictions
+        return history, self.train_predictions, self.val_predictions
+    
+
+    def predict_with_uncertainty(self, data, mc_samples=100):
+        """
+        Perform prediction and uncertainty estimation using predictions from individual trees
+        of RandomForestRegressor.
+
+        For each input sample, the function computes the mean prediction and the standard 
+        deviation (as an uncertainty estimate) across a subset of trees.
+
+        Args:
+            data (np.ndarray): Input data for prediction.
+            mc_samples (int): Number of trees to sample for uncertainty estimation. If greater
+                              than the available trees, all trees are used.
+        
+        Returns:
+            tuple: (mean_predictions, uncertainty_estimates) where both are np.ndarray with shape 
+                   (n_samples, time_horizon)
+        """
+        if self.model is None or not hasattr(self.model, 'estimators_'):
+            raise ValueError("Model not built or doesn't support uncertainty estimation.")
+
+        estimators = self.model.estimators_
+        n_estimators = len(estimators)
+        # Use all trees if mc_samples exceeds the available number of trees
+        if mc_samples > n_estimators:
+            mc_samples = n_estimators
+        
+        # Randomly select a subset of trees from the forest
+        selected_estimators = np.random.choice(estimators, size=mc_samples, replace=False)
+        
+        # Gather predictions from each selected tree
+        preds = np.array([est.predict(data) for est in selected_estimators])  # shape: (mc_samples, n_samples, time_horizon)
+        
+        # Calculate mean and std deviation across the trees
+        mean_predictions = np.mean(preds, axis=0)          # shape: (n_samples, time_horizon)
+        uncertainty_estimates = np.std(preds, axis=0)        # shape: (n_samples, time_horizon)
+                
+        return mean_predictions, uncertainty_estimates
+
 
     def predict(self, data):
         """
