@@ -500,13 +500,6 @@ def run_prediction_pipeline(config, plugin):
                 np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_unc_list),
                 np.min(test_mae_list), np.min(test_r2_list), np.min(test_unc_list)],
     }
-    print("*************************************************")
-    print("Training Statistics:")
-    print
-    print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
-    print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
-    print(f"Uncertainty - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
-    print("*************************************************")
     results_file = config.get("results_file", "results.csv")
     pd.DataFrame(results).to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
@@ -694,6 +687,23 @@ def run_prediction_pipeline(config, plugin):
         print(f"Model saved to {save_model_file}")
     except Exception as e:
         print(f"Failed to save model to {save_model_file}: {e}")
+    
+    print("*************************************************")
+    print("Training Statistics:")
+    print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
+    print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
+    print(f"Uncertainty - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
+    print("*************************************************")
+    print("Validation Statistics:")
+    print(f"MAE - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
+    print(f"R²  - Avg: {results['Average'][4]:.4f}, Std: {results['Std Dev'][4]:.4f}, Max: {results['Max'][4]:.4f}, Min: {results['Min'][4]:.4f}")
+    print(f"Uncertainty - Avg: {results['Average'][5]:.4f}, Std: {results['Std Dev'][5]:.4f}, Max: {results['Max'][5]:.4f}, Min: {results['Min'][5]:.4f}")
+    print("*************************************************")
+    print("Test Statistics:")
+    print(f"MAE - Avg: {results['Average'][6]:.4f}, Std: {results['Std Dev'][6]:.4f}, Max: {results['Max'][6]:.4f}, Min: {results['Min'][6]:.4f}")
+    print(f"R²  - Avg: {results['Average'][7]:.4f}, Std: {results['Std Dev'][7]:.4f}, Max: {results['Max'][7]:.4f}, Min: {results['Min'][7]:.4f}")
+    print(f"Uncertainty - Avg: {results['Average'][8]:.4f}, Std: {results['Std Dev'][8]:.4f}, Max: {results['Max'][8]:.4f}, Min: {results['Min'][8]:.4f}")
+    print("*************************************************")
     print(f"\nTotal Execution Time: {time.time() - start_time:.2f} seconds")
 
 
