@@ -420,18 +420,18 @@ def run_prediction_pipeline(config, plugin):
         )
         # If using returns, recalc r2 based on baseline + predictions.
         if config.get("use_returns", False):
-            train_r2 = r2_score((baseline_train + y_train).flatten(), (baseline_train + train_preds).flatten())
-            val_r2 = r2_score((baseline_val + y_val).flatten(), (baseline_val + val_preds).flatten())
+            train_r2 = r2_score((baseline_train[ : , -1] + y_train[ : , -1]).flatten(), (baseline_train[ : , -1] + train_preds[ : , -1]).flatten())
+            val_r2 = r2_score((baseline_val[ : , -1] + y_val[ : , -1]).flatten(), (baseline_val[ : , -1] + val_preds[ : , -1]).flatten())
         else:
-            train_r2 = r2_score(y_train, train_preds)
-            val_r2 = r2_score(y_val, val_preds)
+            train_r2 = r2_score(y_train[ : , -1], train_preds[ : , -1])
+            val_r2 = r2_score(y_val[ : , -1], val_preds[ : , -1])
 
 
         # Calculate MAE  train_mae = np.mean(np.abs(train_predictions - y_train[:n_test]))
         n_train = train_preds.shape[0]
         n_val = val_preds.shape[0]
-        train_mae = np.mean(np.abs(train_preds - y_train[:n_train]))
-        val_mae = np.mean(np.abs(val_preds - y_val[:n_val]))    
+        train_mae = np.mean(np.abs(train_preds[ : , -1] - y_train[:n_train,-1]))
+        val_mae = np.mean(np.abs(val_preds[ : , -1] - y_val[:n_val,-1]))    
         # Append the recalculated values
         training_mae_list.append(train_mae)
         training_r2_list.append(train_r2)
@@ -455,10 +455,10 @@ def run_prediction_pipeline(config, plugin):
         test_predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
         n_test = test_predictions.shape[0]
         if config.get("use_returns", False):
-            test_r2 = r2_score((baseline_test + y_test[:n_test]).flatten(), (baseline_test + test_predictions).flatten())
+            test_r2 = r2_score((baseline_test[ : , -1] + y_test[:n_test, -1]).flatten(), (baseline_test[ : , -1] + test_predictions[ : , -1]).flatten())
         else:
-            test_r2 = r2_score(y_test[:n_test], test_predictions)
-        test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
+            test_r2 = r2_score(y_test[:n_test, -1], test_predictions[ : , -1])
+        test_mae = np.mean(np.abs(test_predictions[ : , -1] - y_test[:n_test, -1]))
         # calculate mmd for train, val and test
         #print("\nCalculating MMD for train, val and test datasets...")
         #train_mmd = plugin.compute_mmd(train_preds.astype(np.float64) , y_train.astype(np.float64), sigma=1.0, sample_size=mc_samples)
