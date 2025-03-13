@@ -250,7 +250,8 @@ class Plugin:
             units=self.params['time_horizon'],
             activation='linear',
             kernel_initializer=random_normal_initializer_44,
-            name="deterministic_bias"
+            name="deterministic_bias",
+            kernel_regularizer=l2(l2_reg)
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
         
