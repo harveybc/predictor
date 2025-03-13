@@ -401,10 +401,12 @@ class Plugin:
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
         val_loss, val_mae = val_eval_results
 
-        mc_samples = config.get("mc_samples", 100) if config is not None else 100
-        train_predictions, _ = self.predict_with_uncertainty(x_train, mc_samples=mc_samples)
-        val_predictions, _ = self.predict_with_uncertainty(x_val, mc_samples=mc_samples)
-        return history, train_predictions, val_predictions
+        #train_predictions = self.predict(x_train)
+        mc_samples = config.get("mc_samples", 100)
+        train_predictions, train_unc = self.predict_with_uncertainty(x_train, mc_samples=mc_samples)
+        #val_predictions = self.predict(x_val)
+        val_predictions, val_unc =  self.predict_with_uncertainty(x_val, mc_samples=mc_samples)
+        return history, train_predictions, train_unc, val_predictions, val_unc
 
     def predict_with_uncertainty(self, data, mc_samples=100):
         """

@@ -121,7 +121,7 @@ class Plugin:
         if preds.shape != (N, horizon):
             raise ValueError(f"Expected predictions shape {(N, horizon)}, got {preds.shape}")
 
-        return preds
+        return preds, uncertainties
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
@@ -159,14 +159,14 @@ class Plugin:
         self.model.fit(x_train, y_train)
 
         # Generate predictions on training set
-        self.train_predictions = self._rolling_forecast(x_train, y_train)
+        self.train_predictions, train_unc = self._rolling_forecast(x_train, y_train)
         train_mae = self.calculate_mae(y_train, self.train_predictions)
         train_r2 = r2_score(y_train, self.train_predictions)
         print(f"Training MAE: {train_mae}, Training R2: {train_r2}")
 
         # Generate predictions on validation set (if provided)
         if x_val is not None and y_val is not None:
-            self.val_predictions = self._rolling_forecast(x_val, y_val)
+            self.val_predictions, val_unc = self._rolling_forecast(x_val, y_val)
             val_mae = self.calculate_mae(y_val, self.val_predictions)
             val_r2 = r2_score(y_val, self.val_predictions)
         else:
@@ -180,9 +180,8 @@ class Plugin:
         history = MockHistory()
         history.history['loss'].append(train_mae)
         history.history['val_loss'].append(val_mae)
-
-        return history, self.train_predictions, self.val_predictions
-    
+        
+        return history, self.train_predictions, train_unc, self.val_predictions, val_unc    
 
     def predict_with_uncertainty(self, data, mc_samples=100):
         """
