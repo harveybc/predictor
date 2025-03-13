@@ -455,7 +455,7 @@ def run_prediction_pipeline(config, plugin):
         test_predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
         n_test = test_predictions.shape[0]
         if config.get("use_returns", False):
-            test_r2 = r2_score((baseline_test + y_test[:n_test]).flatten(), (baseline_test + test_predictions).flatten())
+            test_r2 = r2_score((y_test[:n_test]).flatten(), (test_predictions).flatten())
         else:
             test_r2 = r2_score(y_test[:n_test], test_predictions)
         test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
