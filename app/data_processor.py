@@ -350,9 +350,9 @@ def run_prediction_pipeline(config, plugin):
     print(f"Number of iterations: {iterations}")
 
     # Lists for metrics
-    training_mae_list, training_r2_list = [], []
-    validation_mae_list, validation_r2_list = [], []
-    test_mae_list, test_r2_list = [], []
+    training_mae_list, training_r2_list, training_mmd_list = [], [], []
+    validation_mae_list, validation_r2_list, validation_mmd_list = [], [], []
+    test_mae_list, test_r2_list, test_mmd_list = [], [], []
 
     print("Loading and processing datasets...")
     datasets = process_data(config)
@@ -420,8 +420,8 @@ def run_prediction_pipeline(config, plugin):
         )
         # If using returns, recalc r2 based on baseline + predictions.
         if config.get("use_returns", False):
-            train_r2 = r2_score((y_train).flatten(), (train_preds).flatten())
-            val_r2 = r2_score((y_val).flatten(), (val_preds).flatten())
+            train_r2 = r2_score((baseline_train + y_train).flatten(), (baseline_train + train_preds).flatten())
+            val_r2 = r2_score((baseline_val + y_val).flatten(), (baseline_val + val_preds).flatten())
         else:
             train_r2 = r2_score(y_train, train_preds)
             val_r2 = r2_score(y_val, val_preds)
@@ -455,15 +455,25 @@ def run_prediction_pipeline(config, plugin):
         test_predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
         n_test = test_predictions.shape[0]
         if config.get("use_returns", False):
-            test_r2 = r2_score((y_test[:n_test]).flatten(), (test_predictions).flatten())
+            test_r2 = r2_score((baseline_test + y_test[:n_test]).flatten(), (baseline_test + test_predictions).flatten())
         else:
             test_r2 = r2_score(y_test[:n_test], test_predictions)
         test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
+        # calculate mmd for train, val and test
+        print("\nCalculating MMD for train, val and test datasets...")
+        train_mmd = plugin.compute_mmd(x_train, y_train, mc_samples=mc_samples)
+        val_mmd = plugin.compute_mmd(x_val, y_val, mc_samples=mc_samples)
+        test_mmd = plugin.compute_mmd(x_test, y_test, mc_samples=mc_samples)
+        # add to the lists
+        training_mmd_list.append(train_mmd)
+        validation_mmd_list.append(val_mmd)
+        test_mmd_list.append(test_mmd)
+
         print("*************************************************")
         print(f"Iteration {iteration} completed.")
-        print(f"Training MAE: {train_mae}, Training R²: {train_r2}")
-        print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}")
-        print(f"Test MAE: {test_mae}, Test R²: {test_r2}")
+        print(f"Training MAE: {train_mae}, Training R²: {train_r2}, Training MMD: {train_mmd}")
+        print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation MMD: {val_mmd}")
+        print(f"Test MAE: {test_mae}, Test R²: {test_r2}", f"Test MMD: {test_mmd}")
         print("*************************************************")
         test_mae_list.append(test_mae)
         test_r2_list.append(test_r2)
@@ -471,19 +481,19 @@ def run_prediction_pipeline(config, plugin):
 
     # Save aggregate results
     results = {
-        "Metric": ["Training MAE", "Training R²", "Validation MAE", "Validation R²", "Test MAE", "Test R²"],
-        "Average": [np.mean(training_mae_list), np.mean(training_r2_list),
-                    np.mean(validation_mae_list), np.mean(validation_r2_list),
-                    np.mean(test_mae_list), np.mean(test_r2_list)],
-        "Std Dev": [np.std(training_mae_list), np.std(training_r2_list),
-                    np.std(validation_mae_list), np.std(validation_r2_list),
-                    np.std(test_mae_list), np.std(test_r2_list)],
-        "Max": [np.max(training_mae_list), np.max(training_r2_list),
-                np.max(validation_mae_list), np.max(validation_r2_list),
-                np.max(test_mae_list), np.max(test_r2_list)],
-        "Min": [np.min(training_mae_list), np.min(training_r2_list),
-                np.min(validation_mae_list), np.min(validation_r2_list),
-                np.min(test_mae_list), np.min(test_r2_list)],
+        "Metric": ["Training MAE", "Training R²", "Training MMD", "Validation MAE", "Validation R²", "Validation MMD", "Test MAE", "Test R²", "Test MMD"],
+        "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_mmd_list),
+                    np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_mmd_list),
+                    np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_mmd_list)],
+        "Std Dev": [np.std(training_mae_list), np.std(training_r2_list), np.std(training_mmd_list),
+                    np.std(validation_mae_list), np.std(validation_r2_list), np.std(training_mmd_list),
+                    np.std(test_mae_list), np.std(test_r2_list), np.std(training_mmd_list)],
+        "Max": [np.max(training_mae_list), np.max(training_r2_list), np.max(training_mmd_list),
+                np.max(validation_mae_list), np.max(validation_r2_list), np.max(validation_mmd_list),
+                np.max(test_mae_list), np.max(test_r2_list), np.max(test_mmd_list)],
+        "Min": [np.min(training_mae_list), np.min(training_r2_list), np.min(training_mmd_list),
+                np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_mmd_list),
+                np.min(test_mae_list), np.min(test_r2_list), np.min(test_mmd_list)],
     }
     #print("*************************************************")
     #print("Training Statistics:")
