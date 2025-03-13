@@ -32,10 +32,10 @@
     "mmd_lambda": 0.1,
     "window_size": 64,
     "batch_size": 32,
-    "plot_color_predicted": "#A9B5A2",
-    "plot_color_true": "#90AFC5",
-    "plot_color_uncertainty": "#D4B9C6",
-    "uncertainty_color_alpha": 1.0,
+    "plot_color_predicted": "blue",
+    "plot_color_true": "orange",
+    "plot_color_uncertainty": "green",
+    "uncertainty_color_alpha": 0.05,
     "plot_points": 1575
 
 }   
