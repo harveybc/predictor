@@ -37,5 +37,5 @@
     "plot_color_uncertainty": "green",
     "uncertainty_color_alpha": 0.01,
     "plot_points": 1575,
-    "epochs": 50
+    "epochs": 100
 }   

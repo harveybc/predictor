@@ -52,7 +52,7 @@ DEFAULT_VALUES = {
     "mmd_lambda": 0.1,
     "overfitting_penalty": 0.1,
     "use_returns": True,
-    "mc_samples":1000,
+    "mc_samples":100,
     "plotted_horizon": 6,
     "min_delta": 1e-4,
     "start_from_epoch": 10,

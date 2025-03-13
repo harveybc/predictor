@@ -212,6 +212,8 @@ class Plugin:
 
     def predict(self, data):
         return self.model.predict(data)
+    
+    
 
     def predict_with_uncertainty(self, data, mc_samples=100):
         predictions = np.array([self.model(data, training=True).numpy() for _ in range(mc_samples)])

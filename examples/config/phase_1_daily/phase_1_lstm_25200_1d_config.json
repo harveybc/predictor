@@ -27,11 +27,16 @@
     "early_patience": 21,
     "start_from_epoch": 5,
     "use_returns": true,
-    "mc_samples":1000,
+    "mc_samples":100,
     "plotted_horizon": 6,
-    "mmd_lambda": 0.01,
-    "window_size": 32,
-    "batch_size": 128
-
+    "mmd_lambda": 0.1,
+    "window_size": 64,
+    "batch_size": 32,
+    "plot_color_predicted": "orange",
+    "plot_color_true": "blue",
+    "plot_color_uncertainty": "green",
+    "uncertainty_color_alpha": 0.01,
+    "plot_points": 1575,
+    "epochs": 50
     
 }
