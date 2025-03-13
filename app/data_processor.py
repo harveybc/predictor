@@ -627,14 +627,21 @@ def run_prediction_pipeline(config, plugin):
         uncertainty_plot = uncertainty_plot[-n_plot:]
 
     # Plot results
+    plot_color_predicted = config.get("plot_color_predicted", "blue")
+    plot_color_true = config.get("plot_color_true", "red")  # Default: red
+    plot_color_uncertainty = config.get("plot_color_uncertainty", "green")  # Default: green    
+    plot_color_background = config.get("plot_color_background", "white")  # Default: white
     plt.figure(figsize=(12, 6))
-    plt.plot(test_dates_plot, pred_plot, label="Predicted Close", color="blue", linewidth=2)
-    plt.plot(test_dates_plot, true_plot, label="True Close", color="red", linewidth=2)
+    plt.plot(test_dates_plot, pred_plot, label="Predicted Close", color="red", linewidth=2)
+    plt.plot(test_dates_plot, true_plot, label="True Close", color="blue", linewidth=2)
     plt.fill_between(test_dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
-                    color="green", alpha=0.4, label="Uncertainty")
-    plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon})")
-    plt.xlabel("Time")
-    plt.ylabel("CLOSE")
+                    color="green", alpha=0.15, label="Uncertainty")
+    if config.get("use_daily", False):    
+        plt.title(f"EUR/USD Predictions vs True Values (Horizon: {plotted_horizon} days)")
+    else:
+        plt.title(f"EUR/USD Predictions vs True Values (Horizon: {plotted_horizon} hours)")
+    plt.xlabel("Close Time")
+    plt.ylabel("EUR Price [USD]")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
