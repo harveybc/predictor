@@ -579,7 +579,8 @@ def run_prediction_pipeline(config, plugin):
     pred_plot = test_predictions[:, plotted_idx]
 
     # Define the test dates for plotting
-    n_plot = 1575  # Number of points to display
+    
+    n_plot = config.get("plot_points",1575)  # Number of points to display
     if len(pred_plot) > n_plot:
         pred_plot = pred_plot[-n_plot:]
         test_dates_plot = test_dates[-n_plot:] if test_dates is not None else np.arange(len(pred_plot))
@@ -637,9 +638,9 @@ def run_prediction_pipeline(config, plugin):
     plt.fill_between(test_dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
                     color="green", alpha=0.15, label="Uncertainty")
     if config.get("use_daily", False):    
-        plt.title(f"EUR/USD Predictions vs True Values (Horizon: {plotted_horizon} days)")
+        plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon} days)")
     else:
-        plt.title(f"EUR/USD Predictions vs True Values (Horizon: {plotted_horizon} hours)")
+        plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon} hours)")
     plt.xlabel("Close Time")
     plt.ylabel("EUR Price [USD]")
     plt.legend()

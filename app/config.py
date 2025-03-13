@@ -55,5 +55,11 @@ DEFAULT_VALUES = {
     "mc_samples":1000,
     "plotted_horizon": 6,
     "min_delta": 1e-4,
-    "start_from_epoch": 10
+    "start_from_epoch": 10,
+    "plot_color_predicted": "red",
+    "plot_color_true": "blue",
+    "plot_color_uncertainty": "green",
+    "uncertainty_color_alpha": 0.15,
+    "plot_color_background": "white",
+    "plot_points": 500
 }
