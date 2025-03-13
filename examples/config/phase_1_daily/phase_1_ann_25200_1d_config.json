@@ -24,7 +24,7 @@
     "l2_reg": 0.0,
     "kl_weight": 1e-2,
     "kl_anneal_epochs": 50,
-    "early_patience": 35,
+    "early_patience": 60,
     "start_from_epoch": 10,
     "use_returns": true,
     "mc_samples":100,
@@ -37,5 +37,6 @@
     "plot_color_uncertainty": "green",
     "uncertainty_color_alpha": 0.01,
     "plot_points": 1575,
-    "epochs": 50
+    "min_delta": 1e-5,
+    "epochs": 200
 }
