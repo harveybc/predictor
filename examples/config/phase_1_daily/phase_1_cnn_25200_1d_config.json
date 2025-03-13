@@ -35,7 +35,7 @@
     "plot_color_predicted": "blue",
     "plot_color_true": "orange",
     "plot_color_uncertainty": "green",
-    "uncertainty_color_alpha": 0.05,
+    "uncertainty_color_alpha": 0.02,
     "plot_points": 1575
 
 }   
