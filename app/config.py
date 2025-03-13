@@ -61,5 +61,5 @@ DEFAULT_VALUES = {
     "plot_color_uncertainty": "green",
     "uncertainty_color_alpha": 0.15,
     "plot_color_background": "white",
-    "plot_points": 500
+    "plot_points": 1575
 }
