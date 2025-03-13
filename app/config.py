@@ -56,10 +56,11 @@ DEFAULT_VALUES = {
     "plotted_horizon": 6,
     "min_delta": 1e-4,
     "start_from_epoch": 10,
-    "plot_color_predicted": "red",
+    "plot_color_predicted": "orange",
     "plot_color_true": "blue",
     "plot_color_uncertainty": "green",
-    "uncertainty_color_alpha": 0.15,
-    "plot_color_background": "white",
+    "uncertainty_color_alpha": 0.01,
+    "plot_points": 1575,
+    "min_delta": 1e-5,
     "plot_points": 1575
 }
