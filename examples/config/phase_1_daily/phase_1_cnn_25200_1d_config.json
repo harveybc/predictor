@@ -23,7 +23,7 @@
     "activation": "tanh",
     "l2_reg": 0.01,
     "kl_weight": 1e-2,
-    "kl_cnneal_epochs": 50,
+    "kl_anneal_epochs": 50,
     "early_patience": 22,
     "start_from_epoch": 5,
     "use_returns": true,
@@ -31,5 +31,10 @@
     "plotted_horizon": 6,
     "mmd_lambda": 0.1,
     "window_size": 64,
-    "batch_size": 32
-}
+    "batch_size": 32,
+    "plot_color_predicted": "#A9B5A2",
+    "plot_color_true": "#90AFC5",
+    "plot_color_uncertainty": "#D4B9C6",
+    "plot_color_background": "#FFFFFF",
+    "epochs": 20
+}   
