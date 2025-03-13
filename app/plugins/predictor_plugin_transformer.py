@@ -92,13 +92,15 @@ class Plugin:
     def add_debug_info(self, debug_info):
         debug_info.update(self.get_debug_info())
 
+
+
     def build_model(self, input_shape, **kwargs):
         """
         Builds a Transformer model with a Bayesian output layer.
         The input is expected as a 3D tensor: (window_size, num_features).
         The architecture first projects the input into a fixed embedding dimension,
-        then applies several transformer blocks, global average pooling, and finally
-        a Bayesian output layer.
+        adds positional encoding, then applies several transformer blocks, global average pooling,
+        and finally a Bayesian output layer.
         """
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
@@ -123,8 +125,12 @@ class Plugin:
 
         # Project input to fixed embedding dimension
         x = Dense(embedding_dim, activation=self.params['activation'],
-                  kernel_initializer=GlorotUniform(), name="input_projection")(x)
+                kernel_initializer=GlorotUniform(), name="input_projection")(x)
         print("DEBUG: After input projection, x shape:", x.shape)
+        # Add positional encoding to capture temporal order
+        pos_enc = positional_encoding(input_shape[0], embedding_dim)
+        x = x + pos_enc
+        print("DEBUG: After adding positional encoding, x shape:", x.shape)
         # Now x is (batch, window_size, embedding_dim)
 
         # Build transformer blocks (same number as intermediate_layers)
@@ -139,11 +145,10 @@ class Plugin:
                 name=f"mha_layer_{idx+1}"
             )(x_norm, x_norm)
             print(f"DEBUG: After MultiHeadAttention in block {idx+1}, attn_output shape: {attn_output.shape}")
-            # Residual connection: project x if needed
+            # Residual connection for attention sub-layer
             x = Add(name=f"residual_add_attn_{idx+1}")([x, attn_output])
             # Feedforward network
             x_ff_norm = LayerNormalization(name=f"layer_norm_ff_{idx+1}")(x)
-            # A simple feedforward layer with output dimension equal to embedding_dim
             ff_output = Dense(
                 units=embedding_dim,
                 activation=self.params['activation'],
@@ -162,8 +167,7 @@ class Plugin:
         x = BatchNormalization(name="batch_norm_final")(x)
         print("DEBUG: After final BatchNormalization, x shape:", x.shape)
 
-        # --- Bayesian Output Layer Implementation ---
-        # Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable
+        # --- Bayesian Output Layer Implementation (copied from CNN/LSTM plugins) ---
         def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
             return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
         tfp.layers.DenseFlipout.add_variable = _patched_add_variable
@@ -185,7 +189,7 @@ class Plugin:
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior: computed c =", c)
             loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42),
-                              dtype=dtype, trainable=trainable, name="posterior_loc")
+                            dtype=dtype, trainable=trainable, name="posterior_loc")
             scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43),
                                 dtype=dtype, trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
@@ -442,6 +446,21 @@ class Plugin:
         r2 = np.mean(r2_scores)
         print(f"Calculated R²: {r2}")
         return r2
+
+def get_angles(pos, i, d_model):
+    angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
+    return pos * angle_rates
+
+def positional_encoding(position, d_model):
+    angle_rads = get_angles(np.arange(position)[:, np.newaxis],
+                            np.arange(d_model)[np.newaxis, :],
+                            d_model)
+    # Apply sin to even indices; cos to odd indices
+    sines = np.sin(angle_rads[:, 0::2])
+    cosines = np.cos(angle_rads[:, 1::2])
+    pos_encoding = np.concatenate([sines, cosines], axis=-1)
+    pos_encoding = pos_encoding[np.newaxis, ...]  # Shape: (1, position, d_model)
+    return tf.cast(pos_encoding, dtype=tf.float32)
 
 # ---------------------------
 # Debugging usage example
