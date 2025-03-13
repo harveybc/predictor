@@ -36,7 +36,6 @@
     "plot_color_true": "#90AFC5",
     "plot_color_uncertainty": "#D4B9C6",
     "uncertainty_color_alpha": 0.3,
-    "plot_color_background": "#FFFFFF",
-    "epochs": 30,
-    "iterations": 1
+    "plot_color_background": "#FFFFFF"
+
 }   
