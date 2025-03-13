@@ -113,7 +113,8 @@ class Plugin:
             raise ValueError("Model not found. Did you forget to call train() or build_model()?")
 
         # Predict using the trained multi-output regressor
-        preds = self.model.predict(x)  # shape: (N, horizon)
+        #preds = self.model.predict(x)  # shape: (N, horizon)
+        preds,uncertainties = self.model.predict_with_uncertainty(x,self.params.get('mc_samples', 20))  # shape: (N, horizon)
 
         # Ensure it has the expected shape
         if preds.shape != (N, horizon):
