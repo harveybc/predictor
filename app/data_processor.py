@@ -254,12 +254,9 @@ def process_data(config):
 
     # 6) PER-PLUGIN PROCESSING
     # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
-    if config["plugin"] == "cnn" or config["plugin"] == "lstm":
-        if config["plugin"] in ["lstm", "cnn"]:
-            if config["plugin"] == "lstm":
-                print("Processing data for LSTM plugin with sliding windows...")
-            else:
-                print("Processing data for CNN plugin using sliding windows...")
+    if config["plugin"] in ["lstm", "cnn", "transformer"]:
+        if config["plugin"] in ["lstm", "cnn", "transformer"]:
+            print("Processing data with sliding windows...")
             x_train = x_train.to_numpy().astype(np.float32)
             x_val = x_val.to_numpy().astype(np.float32)
             x_test = x_test.to_numpy().astype(np.float32)
@@ -384,8 +381,8 @@ def run_prediction_pipeline(config, plugin):
     window_size = config.get("window_size")
     if time_horizon is None:
         raise ValueError("`time_horizon` is not defined in the configuration.")
-    if config["plugin"] in ["cnn", "lstm"] and window_size is None:
-        raise ValueError("`window_size` must be defined for CNN and LSTM plugins.")
+    if config["plugin"] in ["lstm", "cnn", "transformer"] and window_size is None:
+        raise ValueError("`window_size` must be defined for CNN, Transformer and LSTM plugins.")
     print(f"Time Horizon: {time_horizon}")
     batch_size = config["batch_size"]
     epochs = config["epochs"]
@@ -397,7 +394,7 @@ def run_prediction_pipeline(config, plugin):
         if isinstance(arr, pd.DataFrame):
             locals()[var] = arr.to_numpy().astype(np.float32)
 
-    if config["plugin"] in ["cnn", "lstm"]:
+    if config["plugin"] in ["lstm", "cnn", "transformer"]:
         if x_train.ndim != 3:
             raise ValueError(f"For CNN and LSTM, x_train must be 3D. Found: {x_train.shape}")
         print("Using pre-processed sliding windows for CNN and LSTM.")
@@ -408,7 +405,7 @@ def run_prediction_pipeline(config, plugin):
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iter_start = time.time()
-        if config["plugin"] in ["cnn", "lstm"]:
+        if config["plugin"] in ["lstm", "cnn", "transformer"]:
             plugin.build_model(input_shape=(window_size, x_train.shape[2]), x_train=x_train)
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
             plugin.build_model(input_shape=x_train.shape[1], x_train=x_train)
@@ -708,7 +705,7 @@ def load_and_evaluate_model(config, plugin):
         x_val = datasets["x_val"]
         y_val = datasets["y_val"]
         val_dates = datasets.get("dates_val")
-        if config["plugin"] in ["cnn", "lstm"]:
+        if config["plugin"] in ["lstm", "cnn", "transformer"]:
             print("Creating sliding windows for CNN...")
             x_val, _, val_date_windows = create_sliding_windows(
                 x_val, y_val, config['window_size'], config['time_horizon'], stride=1, date_times=val_dates
@@ -717,9 +714,7 @@ def load_and_evaluate_model(config, plugin):
             print(f"Sliding windows created: x_val: {x_val.shape}, y_val: {y_val.shape}")
             if x_val.ndim != 3:
                 raise ValueError(f"For CNN and LSTM, x_val must be 3D. Found: {x_val.shape}.")
-        if config["plugin"] in ["transformer", "transformer_mmd"]:
-            if x_val.ndim != 2:
-                raise ValueError(f"For Transformer, x_val must be 2D. Found: {x_val.shape}.")
+
         print(f"Processed validation data: X shape: {x_val.shape}, Y shape: {y_val.shape}")
     except Exception as e:
         print(f"Failed to process validation data: {e}")
