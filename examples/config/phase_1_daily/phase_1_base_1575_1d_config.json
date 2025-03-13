@@ -16,5 +16,6 @@
     "iterations": 1,
     "use_daily": true,
     "max_steps_train": 1575,
-    "max_steps_test": 6300
+    "max_steps_test": 6300,
+    "use_returns": true
 }
