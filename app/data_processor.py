@@ -461,9 +461,9 @@ def run_prediction_pipeline(config, plugin):
         test_mae = np.mean(np.abs(test_predictions - y_test[:n_test]))
         # calculate mmd for train, val and test
         print("\nCalculating MMD for train, val and test datasets...")
-        train_mmd = plugin.compute_mmd(x_train, y_train, mc_samples=mc_samples)
-        val_mmd = plugin.compute_mmd(x_val, y_val, mc_samples=mc_samples)
-        test_mmd = plugin.compute_mmd(x_test, y_test, mc_samples=mc_samples)
+        train_mmd = plugin.compute_mmd(x_train, y_train, sigma=1.0, sample_size=mc_samples)
+        val_mmd = plugin.compute_mmd(x_val, y_val, sigma=1.0, sample_size=mc_samples)
+        test_mmd = plugin.compute_mmd(x_test, y_test, sigma=1.0, sample_size=mc_samples)
         # add to the lists
         training_mmd_list.append(train_mmd)
         validation_mmd_list.append(val_mmd)
