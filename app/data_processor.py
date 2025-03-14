@@ -496,7 +496,9 @@ def run_prediction_pipeline(config, plugin):
 
     # Save aggregate results
     results = {
-        "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Validation MAE", "Validation R²", "Validation Uncertainty", "Test MAE", "Test R²", "Test Uncertainty"],
+        "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", 
+                    "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR",
+                    "Test MAE", "Test R²", "Test Uncertainty", "Test SNR"],
         "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_unc_list), np.mean(training_snr_list),
                     np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_unc_list), np.mean(validation_snr_list),
                     np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_unc_list), np.mean(test_snr_list)],
