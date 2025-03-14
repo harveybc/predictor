@@ -116,8 +116,8 @@ class Plugin:
         # Predict using the trained multi-output regressor
         #preds = self.model.predict(x)  # shape: (N, horizon)
         preds,uncertainties = self.predict_with_uncertainty(x,self.params.get('mc_samples', 20))  # shape: (N, horizon)
-        preds = self.predict(x)
-
+        preds = self.model.predict(x)  # shape: (N, horizon)
+        
         # Ensure it has the expected shape
         if preds.shape != (N, horizon):
             raise ValueError(f"Expected predictions shape {(N, horizon)}, got {preds.shape}")
