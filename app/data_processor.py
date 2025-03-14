@@ -476,16 +476,16 @@ def run_prediction_pipeline(config, plugin):
         test_unc_list.append(test_unc_last)
 
         # calcula the the SNR as the 1/(uncertainty/mae)^2
-        train_snr = 1/(train_unc_last/train_mae)^2
-        val_snr = 1/(val_unc_last/val_mae)^2
-        test_snr = 1/(test_unc_last/test_mae)^2
+        train_snr = 1/((train_unc_last/train_mae)*(train_unc_last/train_mae))
+        val_snr = 1/((val_unc_last/val_mae)*(val_unc_last/val_mae))
+        test_snr = 1/((test_unc_last/test_mae)*(test_unc_last/test_mae))
 
-        print("**********************************************************************")
+        print("************************************************************************")
         print(f"Iteration {iteration} completed.")
         print(f"Training MAE: {train_mae}, Training R²: {train_r2}, Training Uncertainty: {train_unc_last}, Trainign SNR: {train_snr}")
         print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation Uncertainty: {val_unc_last}, Validation SNR: {val_snr}")
         print(f"Test MAE: {test_mae}, Test R²: {test_r2}, Test Uncertainty: {test_unc_last}, Test SNR: {test_snr}")
-        print("**********************************************************************")
+        print("************************************************************************")
         test_mae_list.append(test_mae)
         test_r2_list.append(test_r2)
         print(f"Iteration {iteration} completed in {time.time()-iter_start:.2f} seconds")
