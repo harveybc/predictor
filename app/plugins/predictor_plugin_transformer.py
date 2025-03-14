@@ -300,7 +300,7 @@ class Plugin:
         """
         huber_loss = Huber()(y_true, y_pred)
         mmd_loss = self.compute_mmd(y_pred, y_true)
-        error = tf.math.reduce_mean(tf.math.abs(tf.math.substract(y_true,y_pred)))
+        error = tf.math.reduce_mean(tf.math.abs(tf.math.subtract(y_true,y_pred)))
         cv=tf.math.divide(tf.math.reduce_mean(error),tf.math.reduce_std(error))
         total_loss = huber_loss + (self.mmd_lambda * mmd_loss) + cv
         return total_loss
