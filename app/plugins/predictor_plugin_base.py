@@ -116,6 +116,7 @@ class Plugin:
         # Predict using the trained multi-output regressor
         #preds = self.model.predict(x)  # shape: (N, horizon)
         preds,uncertainties = self.predict_with_uncertainty(x,self.params.get('mc_samples', 20))  # shape: (N, horizon)
+        preds = self.predict(x)
 
         # Ensure it has the expected shape
         if preds.shape != (N, horizon):
@@ -216,7 +217,8 @@ class Plugin:
         preds = np.array([est.predict(data) for est in selected_estimators])  # shape: (mc_samples, n_samples, time_horizon)
         
         # Calculate mean and std deviation across the trees
-        mean_predictions = np.mean(preds, axis=0)          # shape: (n_samples, time_horizon)
+        #mean_predictions = np.mean(preds, axis=0)          # shape: (n_samples, time_horizon)
+        mean_predictions = self.predict(data)
         uncertainty_estimates = np.std(preds, axis=0)        # shape: (n_samples, time_horizon)
                 
         return mean_predictions, uncertainty_estimates
