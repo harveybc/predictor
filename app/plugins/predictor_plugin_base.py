@@ -218,7 +218,7 @@ class Plugin:
         
         # Calculate mean and std deviation across the trees
         #mean_predictions = np.mean(preds, axis=0)          # shape: (n_samples, time_horizon)
-        mean_predictions = self.predict(data)
+        mean_predictions = self.model.predict(data)  # shape: (N, horizon)
         uncertainty_estimates = np.std(preds, axis=0)        # shape: (n_samples, time_horizon)
                 
         return mean_predictions, uncertainty_estimates
