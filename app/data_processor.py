@@ -350,9 +350,10 @@ def run_prediction_pipeline(config, plugin):
     print(f"Number of iterations: {iterations}")
 
     # Lists for metrics
-    training_mae_list, training_r2_list, training_unc_list = [], [], []
-    validation_mae_list, validation_r2_list, validation_unc_list = [], [], []
-    test_mae_list, test_r2_list, test_unc_list = [], [], []
+    training_mae_list, training_r2_list, training_unc_list, training_snr_list = [], [], [], []
+    validation_mae_list, validation_r2_list, validation_unc_list, validation_snr_list = [], [], [], []
+    test_mae_list, test_r2_list, test_unc_list, test_snr_list = [], [], [], []
+
 
     print("Loading and processing datasets...")
     datasets = process_data(config)
@@ -474,12 +475,17 @@ def run_prediction_pipeline(config, plugin):
         validation_unc_list.append(val_unc_last)
         test_unc_list.append(test_unc_last)
 
-        print("*************************************************")
+        # calcula the the SNR as the 1/(uncertainty/mae)^2
+        train_snr = 1/(train_unc_last/train_mae)^2
+        val_snr = 1/(val_unc_last/val_mae)^2
+        test_snr = 1/(test_unc_last/test_mae)^2
+
+        print("**********************************************************************")
         print(f"Iteration {iteration} completed.")
-        print(f"Training MAE: {train_mae}, Training R²: {train_r2}, Training Uncertainty: {train_unc_last}")
-        print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation Uncertainty: {val_unc_last}")
-        print(f"Test MAE: {test_mae}, Test R²: {test_r2}", f"Test Uncertainty: {test_unc_last}")
-        print("*************************************************")
+        print(f"Training MAE: {train_mae}, Training R²: {train_r2}, Training Uncertainty: {train_unc_last}, Trainign SNR: {train_snr}")
+        print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation Uncertainty: {val_unc_last}, Validation SNR: {val_snr}")
+        print(f"Test MAE: {test_mae}, Test R²: {test_r2}, Test Uncertainty: {test_unc_last}, Test SNR: {test_snr}")
+        print("**********************************************************************")
         test_mae_list.append(test_mae)
         test_r2_list.append(test_r2)
         print(f"Iteration {iteration} completed in {time.time()-iter_start:.2f} seconds")
@@ -487,18 +493,18 @@ def run_prediction_pipeline(config, plugin):
     # Save aggregate results
     results = {
         "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Validation MAE", "Validation R²", "Validation Uncertainty", "Test MAE", "Test R²", "Test Uncertainty"],
-        "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_unc_list),
-                    np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_unc_list),
-                    np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_unc_list)],
-        "Std Dev": [np.std(training_mae_list), np.std(training_r2_list), np.std(training_unc_list),
-                    np.std(validation_mae_list), np.std(validation_r2_list), np.std(training_unc_list),
-                    np.std(test_mae_list), np.std(test_r2_list), np.std(training_unc_list)],
-        "Max": [np.max(training_mae_list), np.max(training_r2_list), np.max(training_unc_list),
-                np.max(validation_mae_list), np.max(validation_r2_list), np.max(validation_unc_list),
-                np.max(test_mae_list), np.max(test_r2_list), np.max(test_unc_list)],
-        "Min": [np.min(training_mae_list), np.min(training_r2_list), np.min(training_unc_list),
-                np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_unc_list),
-                np.min(test_mae_list), np.min(test_r2_list), np.min(test_unc_list)],
+        "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_unc_list), np.mean(training_snr_list),
+                    np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_unc_list), np.mean(validation_snr_list),
+                    np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_unc_list), np.mean(test_snr_list)],
+        "Std Dev": [np.std(training_mae_list), np.std(training_r2_list), np.std(training_unc_list), np.std(training_snr_list),
+                    np.std(validation_mae_list), np.std(validation_r2_list), np.std(validation_unc_list), np.std(validation_snr_list),
+                    np.std(test_mae_list), np.std(test_r2_list), np.std(test_unc_list), np.std(test_snr_list)],
+        "Max": [np.max(training_mae_list), np.max(training_r2_list), np.max(training_unc_list), np.max(training_snr_list),
+                np.max(validation_mae_list), np.max(validation_r2_list), np.max(validation_unc_list), np.max(validation_snr_list),
+                np.max(test_mae_list), np.max(test_r2_list), np.max(test_unc_list), np.max(test_snr_list)],
+        "Min": [np.min(training_mae_list), np.min(training_r2_list), np.min(training_unc_list), np.min(training_snr_list),
+                np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_unc_list), np.min(validation_snr_list),
+                np.min(test_mae_list), np.min(test_r2_list), np.min(test_unc_list), np.min(test_snr_list)],
     }
     results_file = config.get("results_file", "results.csv")
     pd.DataFrame(results).to_csv(results_file, index=False)
@@ -693,16 +699,19 @@ def run_prediction_pipeline(config, plugin):
     print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
     print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
     print(f"Uncertainty - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
+    print(f"SNR - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
     print("*************************************************")
     print("Validation Statistics:")
     print(f"MAE - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
     print(f"R²  - Avg: {results['Average'][4]:.4f}, Std: {results['Std Dev'][4]:.4f}, Max: {results['Max'][4]:.4f}, Min: {results['Min'][4]:.4f}")
     print(f"Uncertainty - Avg: {results['Average'][5]:.4f}, Std: {results['Std Dev'][5]:.4f}, Max: {results['Max'][5]:.4f}, Min: {results['Min'][5]:.4f}")
+    print(f"SNR - Avg: {results['Average'][6]:.4f}, Std: {results['Std Dev'][6]:.4f}, Max: {results['Max'][6]:.4f}, Min: {results['Min'][6]:.4f}") 
     print("*************************************************")
     print("Test Statistics:")
     print(f"MAE - Avg: {results['Average'][6]:.4f}, Std: {results['Std Dev'][6]:.4f}, Max: {results['Max'][6]:.4f}, Min: {results['Min'][6]:.4f}")
     print(f"R²  - Avg: {results['Average'][7]:.4f}, Std: {results['Std Dev'][7]:.4f}, Max: {results['Max'][7]:.4f}, Min: {results['Min'][7]:.4f}")
     print(f"Uncertainty - Avg: {results['Average'][8]:.4f}, Std: {results['Std Dev'][8]:.4f}, Max: {results['Max'][8]:.4f}, Min: {results['Min'][8]:.4f}")
+    print(f"SNR - Avg: {results['Average'][9]:.4f}, Std: {results['Std Dev'][9]:.4f}, Max: {results['Max'][9]:.4f}, Min: {results['Min'][9]:.4f}")
     print("*************************************************")
     print(f"\nTotal Execution Time: {time.time() - start_time:.2f} seconds")
 
