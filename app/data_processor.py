@@ -479,6 +479,10 @@ def run_prediction_pipeline(config, plugin):
         train_snr = 1/((train_unc_last/train_mae)*(train_unc_last/train_mae))
         val_snr = 1/((val_unc_last/val_mae)*(val_unc_last/val_mae))
         test_snr = 1/((test_unc_last/test_mae)*(test_unc_last/test_mae))
+        # add to the lists of SNR
+        training_snr_list.append(train_snr)
+        validation_snr_list.append(val_snr)
+        test_snr_list.append(test_snr)
 
         print("************************************************************************")
         print(f"Iteration {iteration} completed.")
