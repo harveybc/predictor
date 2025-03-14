@@ -17,5 +17,11 @@
     "iterations": 1,
     "max_steps_train": 25200,
     "max_steps_test": 6300,
-    "use_returns": true
+    "use_returns": true,
+    "plot_color_predicted": "orange",
+    "plot_color_true": "blue",
+    "plot_color_uncertainty": "green",
+    "uncertainty_color_alpha": 0.01,
+    "plot_points": 240,
+    "epochs": 2000
 }
