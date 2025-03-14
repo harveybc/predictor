@@ -305,7 +305,7 @@ class Plugin:
         std_error = tf.math.reduce_std(error)
         epsilon = 1e-6
         cv = tf.math.divide(std_error, mean_error + epsilon)
-        total_loss = huber_loss + (self.mmd_lambda * mmd_loss) + cv
+        total_loss = huber_loss + (self.mmd_lambda * mmd_loss) + 0.1*cv
         return total_loss
     
 
