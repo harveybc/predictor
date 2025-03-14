@@ -300,8 +300,11 @@ class Plugin:
         """
         huber_loss = Huber()(y_true, y_pred)
         mmd_loss = self.compute_mmd(y_pred, y_true)
-        total_loss = huber_loss + self.mmd_lambda * mmd_loss
+        error = np.mean(np.abs(y_true-y_pred))
+        cv=np.mean(error)/np.std(error)
+        total_loss = huber_loss + (self.mmd_lambda * mmd_loss) + cv
         return total_loss
+    
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
