@@ -212,7 +212,7 @@ def process_data(config):
     if config.get("use_daily", False):
         y_train_ma = y_train.rolling(window=24, center=True, min_periods=1).mean()
         y_val_ma = y_val.rolling(window=24, center=True, min_periods=1).mean()
-        y_test_ma = y_test.rolling(window=24, center=True, min_periods=1).mean()
+        y_test_ma = y_test.rolling(window=24, center=True, min_periods=1).mean() 
         if config.get("use_returns", False):
             y_train_multi, baseline_train = create_multi_step_daily(y_train_ma, time_horizon, use_returns=True)
             y_val_multi, baseline_val = create_multi_step_daily(y_val_ma, time_horizon, use_returns=True)
