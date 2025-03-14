@@ -481,9 +481,9 @@ def run_prediction_pipeline(config, plugin):
         test_mean = np.mean(baseline_test[ : , -1] + test_predictions[ : , -1])
         
         # calcula the the SNR as the 1/(uncertainty/mae)^2
-        train_snr = 1/((train_unc_last/train_mean)*(train_unc_last/train_mean))
-        val_snr = 1/((val_unc_last/val_mean)*(val_unc_last/val_mean))
-        test_snr = 1/((test_unc_last/test_mean)*(test_unc_last/test_mean))
+        train_snr = 1/(train_unc_last/train_mean)
+        val_snr = 1/(val_unc_last/val_mean)
+        test_snr = 1/(test_unc_last/test_mean)
         # add to the lists of SNR
         training_snr_list.append(train_snr)
         validation_snr_list.append(val_snr)
