@@ -49,7 +49,6 @@ def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
     else:
         return np.array(windows)
 
-
 def create_multi_step(y_df, horizon, use_returns=False):
     """
     Creates multi-step targets for time-series prediction.
@@ -84,7 +83,6 @@ def create_multi_step(y_df, horizon, use_returns=False):
         return df_targets, df_baselines
     else:
         return df_targets
-
 
 def create_multi_step_daily(y_df, horizon, use_returns=False):
     """
@@ -123,7 +121,6 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
         return df_targets, df_baselines
     else:
         return df_targets
-
 
 def process_data(config):
     """
@@ -295,7 +292,6 @@ def process_data(config):
         ret["baseline_test"] = baseline_test
     return ret
 
-
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline using training, validation, and test datasets.
@@ -333,9 +329,8 @@ def run_prediction_pipeline(config, plugin):
         baseline_test = datasets.get("baseline_test")
 
     # ---- Verification check before feeding data to the model ----
-    # For training data only (similar checks can be added for validation and test if needed)
-    # We reload the original y_train CSV and compare the expected future value (at t+shift)
-    # with the computed multi-step target from process_data.
+    # For training data only, we verify that for the first sample,
+    # the computed multi-step target for t+shift equals the original y value at t+shift.
     try:
         original_y_train = load_csv(config["y_train_file"], headers=config["headers"])
         original_y_train = original_y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
@@ -344,9 +339,11 @@ def run_prediction_pipeline(config, plugin):
         else:
             shift = config["time_horizon"]
         expected_value = original_y_train.iloc[shift].values[0]
-        # Note: y_train (the multi-step targets) has as its first column the value at t+1,
-        # so the desired target (for t+shift) should be at column index shift-1.
-        computed_value = datasets["y_train"].iloc[0].values[shift - 1]
+        # Depending on whether y_train is a DataFrame or np.ndarray:
+        if isinstance(datasets["y_train"], pd.DataFrame):
+            computed_value = datasets["y_train"].iloc[0].values[shift - 1]
+        else:
+            computed_value = datasets["y_train"][0, shift - 1]
         print(f"Verification check: expected target value at t+{shift} = {expected_value}, computed multi-step target = {computed_value}")
         if not np.isclose(expected_value, computed_value):
             print("Verification check failed: the multi-step target does not match the expected future value.")
@@ -404,22 +401,22 @@ def run_prediction_pipeline(config, plugin):
                 raise ValueError(f"Expected 2D x_train for {config['plugin']}; got {x_train.shape}")
             plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=config)
 
-        history,  train_preds, train_unc, val_preds, val_unc = plugin.train(
+        history, train_preds, train_unc, val_preds, val_unc = plugin.train(
             x_train, y_train, epochs=epochs, batch_size=batch_size,
             threshold_error=threshold_error, x_val=x_val, y_val=y_val, config=config
         )
         # If using returns, recalc r2 based on baseline + predictions.
         if config.get("use_returns", False):
-            train_r2 = r2_score((baseline_train[ : , -1] + y_train[ : , -1]).flatten(), (baseline_train[ : , -1] + train_preds[ : , -1]).flatten())
-            val_r2 = r2_score((baseline_val[ : , -1] + y_val[ : , -1]).flatten(), (baseline_val[ : , -1] + val_preds[ : , -1]).flatten())
+            train_r2 = r2_score((baseline_train[:, -1] + y_train[:, -1]).flatten(), (baseline_train[:, -1] + train_preds[:, -1]).flatten())
+            val_r2 = r2_score((baseline_val[:, -1] + y_val[:, -1]).flatten(), (baseline_val[:, -1] + val_preds[:, -1]).flatten())
         else:
-            train_r2 = r2_score(y_train[ : , -1], train_preds[ : , -1])
-            val_r2 = r2_score(y_val[ : , -1], val_preds[ : , -1])
+            train_r2 = r2_score(y_train[:, -1], train_preds[:, -1])
+            val_r2 = r2_score(y_val[:, -1], val_preds[:, -1])
 
         n_train = train_preds.shape[0]
         n_val = val_preds.shape[0]
-        train_mae = np.mean(np.abs(train_preds[ : , -1] - y_train[:n_train,-1]))
-        val_mae = np.mean(np.abs(val_preds[ : , -1] - y_val[:n_val,-1]))
+        train_mae = np.mean(np.abs(train_preds[:, -1] - y_train[:n_train, -1]))
+        val_mae = np.mean(np.abs(val_preds[:, -1] - y_val[:n_val, -1]))
 
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
@@ -436,16 +433,16 @@ def run_prediction_pipeline(config, plugin):
         test_predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
         n_test = test_predictions.shape[0]
         if config.get("use_returns", False):
-            test_r2 = r2_score((baseline_test[ : , -1] + y_test[:n_test, -1]).flatten(), (baseline_test[ : , -1] + test_predictions[ : , -1]).flatten())
+            test_r2 = r2_score((baseline_test[:, -1] + y_test[:n_test, -1]).flatten(), (baseline_test[:, -1] + test_predictions[:, -1]).flatten())
         else:
-            test_r2 = r2_score(y_test[:n_test, -1], test_predictions[ : , -1])
-        test_mae = np.mean(np.abs(test_predictions[ : , -1] - y_test[:n_test, -1]))
-        train_unc_last = np.mean(train_unc[ : , -1])
-        val_unc_last = np.mean(val_unc[ : , -1])
-        test_unc_last = np.mean(uncertainty_estimates[ : , -1])
-        train_mean = np.mean(baseline_train[ : , -1] + train_preds[ : , -1])
-        val_mean = np.mean(baseline_val[ : , -1] + val_preds[ : , -1])
-        test_mean = np.mean(baseline_test[ : , -1] + test_predictions[ : , -1])
+            test_r2 = r2_score(y_test[:n_test, -1], test_predictions[:, -1])
+        test_mae = np.mean(np.abs(test_predictions[:, -1] - y_test[:n_test, -1]))
+        train_unc_last = np.mean(train_unc[:, -1])
+        val_unc_last = np.mean(val_unc[:, -1])
+        test_unc_last = np.mean(uncertainty_estimates[:, -1])
+        train_mean = np.mean(baseline_train[:, -1] + train_preds[:, -1])
+        val_mean = np.mean(baseline_val[:, -1] + val_preds[:, -1])
+        test_mean = np.mean(baseline_test[:, -1] + test_predictions[:, -1])
         train_snr = 1/(train_unc_last/train_mean)
         val_snr = 1/(val_unc_last/val_mean)
         test_snr = 1/(test_unc_last/test_mean)
@@ -477,7 +474,7 @@ def run_prediction_pipeline(config, plugin):
         print(f"Test MAE: {test_mae}, Test R²: {test_r2}, Test Uncertainty: {test_unc_last}, Test SNR: {test_snr}, Test Profit: {test_profit}, Test Risk: {test_risk}")
         print("************************************************************************")
         print(f"Iteration {iteration} completed in {time.time()-iter_start:.2f} seconds")
-    if config.get("use_strategy", False): 
+    if config.get("use_strategy", False):
         results = {
             "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", "Train Profit", "Train Risk", 
                         "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR", "Validation Profit", "Validation Risk",
@@ -494,7 +491,7 @@ def run_prediction_pipeline(config, plugin):
             "Min": [np.min(training_mae_list), np.min(training_r2_list), np.min(training_unc_list), np.min(training_snr_list), np.min(training_profit_list), np.min(training_risk_list),
                     np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_unc_list), np.min(validation_snr_list), np.min(validation_profit_list), np.min(validation_risk_list),
                     np.min(test_mae_list), np.min(test_r2_list), np.min(test_unc_list), np.min(test_snr_list), np.min(test_profit_list), np.min(test_risk_list)]
-            }
+        }
     else:
         results = {
             "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", 
@@ -512,7 +509,7 @@ def run_prediction_pipeline(config, plugin):
             "Min": [np.min(training_mae_list), np.min(training_r2_list), np.min(training_unc_list), np.min(training_snr_list),
                     np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_unc_list), np.min(validation_snr_list),
                     np.min(test_mae_list), np.min(test_r2_list), np.min(test_unc_list), np.min(test_snr_list)],
-            }
+        }
     results_file = config.get("results_file", "results.csv")
     pd.DataFrame(results).to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
@@ -632,7 +629,7 @@ def run_prediction_pipeline(config, plugin):
     plt.plot(test_dates_plot, true_plot, label="True Price", color=plot_color_true, linewidth=2)
     plt.fill_between(test_dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
                     color=plot_color_uncertainty, alpha=0.15, label="Uncertainty")
-    if config.get("use_daily", False):    
+    if config.get("use_daily", False):
         plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon} days)")
     else:
         plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon} hours)")
@@ -721,7 +718,6 @@ def run_prediction_pipeline(config, plugin):
         print("*************************************************")
     
     print(f"\nTotal Execution Time: {time.time() - start_time:.2f} seconds")
-    
 
 def load_and_evaluate_model(config, plugin):
     """
@@ -811,6 +807,7 @@ def load_and_evaluate_model(config, plugin):
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
+
 
 
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
