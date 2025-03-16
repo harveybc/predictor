@@ -36,7 +36,7 @@
     "plot_color_true": "blue",
     "plot_color_uncertainty": "green",
     "uncertainty_color_alpha": 0.01,
-    "plot_points": 1575,
+    "plot_points": 240,
     "min_delta": 1e-5,
-    "epochs": 500
+    "epochs": 2000
 }
