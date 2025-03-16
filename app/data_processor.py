@@ -48,25 +48,26 @@ def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
 
 def create_multi_step(y_df, horizon, use_returns=False):
     """
-    Creates multi-step targets for time-series prediction.
-    If use_returns is True, targets are computed as the difference between the future value 
-    (at current tick + horizon) and the current (baseline) value.
+    Creates single-step targets for time-series prediction.
+    For each base tick, the target is taken from the value exactly at i+horizon.
+    If use_returns is True, the target is computed as (future value – current value).
     
     Args:
         y_df (pd.DataFrame): Target data as a DataFrame.
-        horizon (int): Number of future steps to predict.
+        horizon (int): Number of steps in the future to predict.
         use_returns (bool): If True, compute returns instead of absolute values.
     
     Returns:
-        pd.DataFrame: Single-step targets (one value per base tick) aligned with the input data.
+        pd.DataFrame: Targets (one value per base tick) aligned with the base ticks.
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
     baselines = []
-    # For each valid base tick, target is the value at i + horizon.
-    for i in range(len(y_df) - horizon + 1):
+    L = len(y_df)
+    # Iterate only over indices where i+horizon is a valid index.
+    for i in range(L - horizon):
         base = y_df.iloc[i].values.flatten()
-        future = y_df.iloc[i + horizon].values.flatten()  # take value at exactly i+horizon
+        future = y_df.iloc[i + horizon].values.flatten()  # take value at i+horizon
         if use_returns:
             target = future - base
         else:
@@ -84,9 +85,9 @@ def create_multi_step(y_df, horizon, use_returns=False):
 
 def create_multi_step_daily(y_df, horizon, use_returns=False):
     """
-    Creates multi-step targets for time-series prediction using daily data.
-    If use_returns is True, targets are computed as the difference between the future value 
-    (at current tick + horizon days) and the current (baseline) value.
+    Creates single-step targets for daily time-series prediction.
+    For each base tick, the target is taken from the value exactly at i + (horizon * 24).
+    If use_returns is True, the target is computed as (future value – current value).
     
     Args:
         y_df (pd.DataFrame): Target data as a DataFrame.
@@ -94,15 +95,15 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
         use_returns (bool): If True, compute returns instead of absolute values.
     
     Returns:
-        pd.DataFrame: Single-step targets (one value per base tick) aligned with the input data.
+        pd.DataFrame: Targets aligned with the base ticks.
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
     baselines = []
-    # Each base tick gets the value at i + (horizon * 24) rows later.
-    for i in range(len(y_df) - horizon * 24 + 1):
+    L = len(y_df)
+    for i in range(L - horizon * 24):
         base = y_df.iloc[i].values.flatten()
-        future = y_df.iloc[i + horizon * 24].values.flatten()  # value at i + (horizon*24)
+        future = y_df.iloc[i + horizon * 24].values.flatten()  # take value at i + (horizon * 24)
         if use_returns:
             target = future - base
         else:
@@ -116,6 +117,7 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
         return df_targets, df_baselines
     else:
         return df_targets
+
 
 def create_multi_step_daily(y_df, horizon, use_returns=False):
     """
@@ -268,36 +270,36 @@ def process_data(config):
 
     # --- CHUNK: Verify multi-step targets before sliding windows ---
     print("[VERIFICATION] Verifying multi-step targets before applying sliding windows...")
-    # Choose a base index (e.g. 0) for verification.
     verif_index = 0
-    # Determine the offset: 24 if daily, 1 if hourly.
+    # Use offset=24 if daily mode is True, else offset=1 (for hourly data)
     offset = 24 if config.get("use_daily", False) else 1
-    expected_targets = []
-    for step in range(0, config["time_horizon"]):
-        idx = verif_index + step * offset
-        if idx >= len(y_train):
-            print(f"[VERIFICATION] Warning: index {idx} out of bounds; skipping step {step}.")
-            break
-        value = y_train.iloc[idx].values[0]
-        if config.get("use_returns", False):
-            expected_targets.append(value - y_train.iloc[verif_index].values[0])
-        else:
-            expected_targets.append(value)
-    expected_targets = np.array(expected_targets)
-    if isinstance(y_train_multi, pd.DataFrame):
-        computed_targets = y_train_multi.iloc[verif_index].values
+
+    # Compute expected target value for base tick at verif_index:
+    if verif_index + config["time_horizon"] * offset >= len(y_train):
+        print("[VERIFICATION] ERROR: Not enough data to verify multi-step targets.")
+        sys.exit(1)
+    base_value = y_train.iloc[verif_index].values[0]
+    future_value = y_train.iloc[verif_index + config["time_horizon"] * offset].values[0]
+    if config.get("use_returns", False):
+        expected_target = future_value - base_value
     else:
-        computed_targets = y_train_multi[verif_index, :]
+        expected_target = future_value
 
-    print("[VERIFICATION] Base value at index", verif_index, ":", y_train.iloc[verif_index].values[0])
-    print("[VERIFICATION] Expected multi-step target row:", expected_targets)
-    print("[VERIFICATION] Computed multi-step target row:", computed_targets)
+    # Retrieve computed target from y_train_multi for the same base tick.
+    if isinstance(y_train_multi, pd.DataFrame):
+        computed_target = y_train_multi.iloc[verif_index].values[0]
+    else:
+        computed_target = y_train_multi[verif_index, 0]
 
-    if not np.allclose(expected_targets, computed_targets, atol=1e-5):
-        print("[VERIFICATION] ERROR: Multi-step target row does not match expected values.")
+    print("[VERIFICATION] Base value at index", verif_index, ":", base_value)
+    print("[VERIFICATION] Expected target value:", expected_target)
+    print("[VERIFICATION] Computed target value:", computed_target)
+    if not np.isclose(expected_target, computed_target, atol=1e-5):
+        print("[VERIFICATION] ERROR: Multi-step target value does not match expected value.")
         sys.exit(1)
     else:
-        print("[VERIFICATION] Multi-step target row verified successfully.")
+        print("[VERIFICATION] Multi-step target value verified successfully.")
+
 
     # --- End of Verification Chunk ---
 
