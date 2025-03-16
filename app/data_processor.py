@@ -486,7 +486,8 @@ def run_prediction_pipeline(config, plugin):
             strategy_plugin_name = config.get("strategy_plugin_name", None)
             if strategy_plugin_group is None or strategy_plugin_name is None:
                 raise ValueError("strategy_plugin_group and strategy_plugin_name must be defined in the configuration.")
-            strategy_plugin = load_plugin(strategy_plugin_group, strategy_plugin_name)
+            plugin_class, _ = load_plugin(strategy_plugin_group, strategy_plugin_name)
+            strategy_plugin=plugin_class()
             # load simulation parameters (mandatory)
             if config.get("strategy_load_parameters") is not None:
                 try:
