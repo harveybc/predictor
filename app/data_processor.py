@@ -268,6 +268,7 @@ def process_data(config):
         print("[VERIFICATION] Multi-step target value verified successfully.")
 
     # --- End of Verification Chunk ---
+    window_size = config.get("window_size", 256)
     y_train_multi = y_train_multi.iloc[window_size - 1:]
     y_val_multi = y_val_multi.iloc[window_size - 1:]
     y_test_multi = y_test_multi.iloc[window_size - 1:]
