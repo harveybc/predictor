@@ -332,40 +332,38 @@ def run_prediction_pipeline(config, plugin):
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
 
-      # ---- Verification check before feeding data to the model ----
+        # ---- Verification check before feeding data to the model ----
     try:
         # Load the original y_train from file using the same max_rows as in process_data.
         original_y_train = load_csv(config["y_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
         original_y_train = original_y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
         
-        # If sliding windows are used (plugin in ["lstm", "cnn", "transformer"]), then
-        # the multi-step targets fed to the model come from rows starting at offset = window_size - 1.
+        # Determine the offset: if sliding windows are used, offset = window_size - 1; otherwise, 0.
         offset = config["window_size"] - 1 if config["plugin"] in ["lstm", "cnn", "transformer"] else 0
 
-        # Process y_train in the same way as in process_data.
+        # Process y_train similarly as in process_data.
         if config.get("use_daily", False):
             processed_y = original_y_train.rolling(window=3, center=True, min_periods=1).mean()
         else:
             processed_y = original_y_train
 
-        # Use the row at index = offset as the base.
+        # Use the row at index 'offset' as the base.
         base_value = processed_y.iloc[offset].values[0]
         expected_values = []
         debug_details = []
         if config.get("use_daily", False):
-            # Daily mode: step size = 24 rows.
+            # For daily mode: use step = 24 rows.
             for d in range(1, config["time_horizon"] + 1):
                 idx = offset + 24 * d
                 if idx >= len(processed_y):
                     debug_details.append(f"[DEBUG] Day {d}: index {idx} is out of bounds (length {len(processed_y)})")
                     continue
                 future_value = processed_y.iloc[idx].values[0]
-                # If use_returns is true, expected value is the difference.
                 diff_value = future_value - base_value if config.get("use_returns", False) else future_value
                 expected_values.append(diff_value)
                 debug_details.append(f"[DEBUG] Day {d}: row index {idx}: future value = {future_value:.8f}, base = {base_value:.8f}, diff = {diff_value:.8f}")
         else:
-            # Non-daily mode: step size = 1 row.
+            # For non-daily mode: use step = 1 row.
             for d in range(1, config["time_horizon"] + 1):
                 idx = offset + d
                 if idx >= len(processed_y):
@@ -375,22 +373,23 @@ def run_prediction_pipeline(config, plugin):
                 diff_value = future_value - base_value if config.get("use_returns", False) else future_value
                 expected_values.append(diff_value)
                 debug_details.append(f"[DEBUG] Tick {d}: row index {idx}: future value = {future_value:.8f}, base = {base_value:.8f}, diff = {diff_value:.8f}")
-
         expected_row = np.array(expected_values)
+        
         print(f"[DEBUG] Verification offset: {offset}")
         print(f"[DEBUG] Base row at index {offset}: {processed_y.iloc[offset].values}")
         for detail in debug_details:
             print(detail)
-
-        # Adjust the computed row: if sliding windows are applied, use the row at index = offset.
-        if config["plugin"] in ["lstm", "cnn", "transformer"]:
+        
+        # Retrieve the computed multi-step target row from the processed dataset.
+        # Use .iloc if available; otherwise, use standard NumPy indexing.
+        if hasattr(datasets["y_train"], 'iloc'):
             computed_row = datasets["y_train"].iloc[offset].values
         else:
-            computed_row = datasets["y_train"].iloc[0].values
-
+            computed_row = datasets["y_train"][offset, :]
+        
         print(f"[DEBUG] Expected multi-step target row: {expected_row}")
         print(f"[DEBUG] Computed multi-step target row: {computed_row}")
-
+        
         if not np.allclose(expected_row, computed_row, atol=1e-5):
             print("Verification check failed: the multi-step target does not match the expected future values.")
             sys.exit(1)
@@ -400,6 +399,7 @@ def run_prediction_pipeline(config, plugin):
         print(f"Verification check error: {e}")
         sys.exit(1)
     # ---- End of verification check ----
+
 
 
     # If sliding windows output is a tuple, extract the data.
