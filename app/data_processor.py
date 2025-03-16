@@ -140,36 +140,12 @@ def process_data(config):
     """
     import pandas as pd
     # 1) LOAD CSVs for train, validation, and test
-    x_train = load_csv(
-        config["x_train_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_train")
-    )
-    y_train = load_csv(
-        config["y_train_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_train")
-    )
-    x_val = load_csv(
-        config["x_validation_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_val")
-    )
-    y_val = load_csv(
-        config["y_validation_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_val")
-    )
-    x_test = load_csv(
-        config["x_test_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_test")
-    )
-    y_test = load_csv(
-        config["y_test_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_test")
-    )
+    x_train = load_csv(config["x_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
+    y_train = load_csv(config["y_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
+    x_val = load_csv(config["x_validation_file"], headers=config["headers"], max_rows=config.get("max_steps_val"))
+    y_val = load_csv(config["y_validation_file"], headers=config["headers"], max_rows=config.get("max_steps_val"))
+    x_test = load_csv(config["x_test_file"], headers=config["headers"], max_rows=config.get("max_steps_test"))
+    y_test = load_csv(config["y_test_file"], headers=config["headers"], max_rows=config.get("max_steps_test"))
     
     # 1a) Trim to common date range if possible.
     if isinstance(x_train.index, pd.DatetimeIndex) and isinstance(y_train.index, pd.DatetimeIndex):
@@ -355,6 +331,32 @@ def run_prediction_pipeline(config, plugin):
         baseline_train = datasets.get("baseline_train")
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
+
+    # ---- Verification check before feeding data to the model ----
+    # For training data only (similar checks can be added for validation and test if needed)
+    # We reload the original y_train CSV and compare the expected future value (at t+shift)
+    # with the computed multi-step target from process_data.
+    try:
+        original_y_train = load_csv(config["y_train_file"], headers=config["headers"])
+        original_y_train = original_y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
+        if config.get("use_daily", False):
+            shift = config["time_horizon"] * 24
+        else:
+            shift = config["time_horizon"]
+        expected_value = original_y_train.iloc[shift].values[0]
+        # Note: y_train (the multi-step targets) has as its first column the value at t+1,
+        # so the desired target (for t+shift) should be at column index shift-1.
+        computed_value = datasets["y_train"].iloc[0].values[shift - 1]
+        print(f"Verification check: expected target value at t+{shift} = {expected_value}, computed multi-step target = {computed_value}")
+        if not np.isclose(expected_value, computed_value):
+            print("Verification check failed: the multi-step target does not match the expected future value.")
+            sys.exit(1)
+        else:
+            print("Verification check passed: multi-step target values are correctly shifted.")
+    except Exception as e:
+        print(f"Verification check error: {e}")
+        sys.exit(1)
+    # ---- End of verification check ----
 
     # If sliding windows output is a tuple, extract the data.
     if isinstance(x_train, tuple): x_train = x_train[0]
@@ -719,7 +721,7 @@ def run_prediction_pipeline(config, plugin):
         print("*************************************************")
     
     print(f"\nTotal Execution Time: {time.time() - start_time:.2f} seconds")
-
+    
 
 def load_and_evaluate_model(config, plugin):
     """

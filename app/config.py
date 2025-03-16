@@ -41,6 +41,7 @@ DEFAULT_VALUES = {
     'l2_reg': 1e-4,          # L2 regularization factor
     'early_patience': 30,           # Early stopping patience
     'max_steps_train': 6300,
+    'max_steps_val': 6300,
     'max_steps_test': 6300,
     'iterations': 5,
     'epochs': 1000,
