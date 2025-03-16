@@ -292,6 +292,8 @@ def process_data(config):
         ret["baseline_test"] = baseline_test
     return ret
 
+
+
 def run_prediction_pipeline(config, plugin):
     """
     Runs the prediction pipeline using training, validation, and test datasets.
@@ -329,27 +331,27 @@ def run_prediction_pipeline(config, plugin):
         baseline_test = datasets.get("baseline_test")
 
     # ---- Verification check before feeding data to the model ----
-    # For training data only, we verify that for the first sample,
-    # the computed multi-step target for t+shift equals the original y value at t+shift.
     try:
+        # Load the original y_train from file (do not modify dates)
         original_y_train = load_csv(config["y_train_file"], headers=config["headers"])
         original_y_train = original_y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
         if config.get("use_daily", False):
-            shift = config["time_horizon"] * 24
+            # For daily mode, expected multi-step row should contain values at indices 24, 48, ... up to time_horizon*24
+            expected_row = np.array([original_y_train.iloc[d * 24].values[0] for d in range(1, config["time_horizon"] + 1)])
         else:
-            shift = config["time_horizon"]
-        expected_value = original_y_train.iloc[shift].values[0]
-        # Depending on whether y_train is a DataFrame or np.ndarray:
+            # For non-daily mode, expected row contains values at indices 1 ... time_horizon
+            expected_row = np.array([original_y_train.iloc[i].values[0] for i in range(1, config["time_horizon"] + 1)])
+        # The processed multi-step target row from y_train should be computed already.
         if isinstance(datasets["y_train"], pd.DataFrame):
-            computed_value = datasets["y_train"].iloc[0].values[shift - 1]
+            computed_row = datasets["y_train"].iloc[0].values
         else:
-            computed_value = datasets["y_train"][0, shift - 1]
-        print(f"Verification check: expected target value at t+{shift} = {expected_value}, computed multi-step target = {computed_value}")
-        if not np.isclose(expected_value, computed_value):
-            print("Verification check failed: the multi-step target does not match the expected future value.")
+            computed_row = datasets["y_train"][0, :]
+        print(f"Verification check: expected multi-step target row = {expected_row}, computed multi-step target row = {computed_row}")
+        if not np.allclose(expected_row, computed_row, atol=1e-5):
+            print("Verification check failed: the multi-step target does not match the expected future values.")
             sys.exit(1)
         else:
-            print("Verification check passed: multi-step target values are correctly shifted.")
+            print("Verification check passed: multi-step target values are correctly shifted without altering dates.")
     except Exception as e:
         print(f"Verification check error: {e}")
         sys.exit(1)
@@ -443,9 +445,9 @@ def run_prediction_pipeline(config, plugin):
         train_mean = np.mean(baseline_train[:, -1] + train_preds[:, -1])
         val_mean = np.mean(baseline_val[:, -1] + val_preds[:, -1])
         test_mean = np.mean(baseline_test[:, -1] + test_predictions[:, -1])
-        train_snr = 1/(train_unc_last/train_mean)
-        val_snr = 1/(val_unc_last/val_mean)
-        test_snr = 1/(test_unc_last/test_mean)
+        train_snr = 1 / (train_unc_last / train_mean)
+        val_snr = 1 / (val_unc_last / val_mean)
+        test_snr = 1 / (test_unc_last / test_mean)
         test_profit = 0.0
         test_risk = 0.0
 
@@ -473,12 +475,12 @@ def run_prediction_pipeline(config, plugin):
         print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation Uncertainty: {val_unc_last}, Validation SNR: {val_snr}")
         print(f"Test MAE: {test_mae}, Test R²: {test_r2}, Test Uncertainty: {test_unc_last}, Test SNR: {test_snr}, Test Profit: {test_profit}, Test Risk: {test_risk}")
         print("************************************************************************")
-        print(f"Iteration {iteration} completed in {time.time()-iter_start:.2f} seconds")
+        print(f"Iteration {iteration} completed in {time.time() - iter_start:.2f} seconds")
     if config.get("use_strategy", False):
         results = {
-            "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", "Train Profit", "Train Risk", 
-                        "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR", "Validation Profit", "Validation Risk",
-                        "Test MAE", "Test R²", "Test Uncertainty", "Test SNR", "Test Profit", "Test Risk"],
+            "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", "Train Profit", "Train Risk",
+                       "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR", "Validation Profit", "Validation Risk",
+                       "Test MAE", "Test R²", "Test Uncertainty", "Test SNR", "Test Profit", "Test Risk"],
             "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_unc_list), np.mean(training_snr_list), np.mean(training_profit_list), np.mean(training_risk_list),
                         np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_unc_list), np.mean(validation_snr_list), np.mean(validation_profit_list), np.mean(validation_risk_list),
                         np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_unc_list), np.mean(test_snr_list), np.mean(test_profit_list), np.mean(test_risk_list)],
@@ -494,9 +496,9 @@ def run_prediction_pipeline(config, plugin):
         }
     else:
         results = {
-            "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", 
-                        "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR",
-                        "Test MAE", "Test R²", "Test Uncertainty", "Test SNR"],
+            "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR",
+                       "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR",
+                       "Test MAE", "Test R²", "Test Uncertainty", "Test SNR"],
             "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_unc_list), np.mean(training_snr_list),
                         np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_unc_list), np.mean(validation_snr_list),
                         np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_unc_list), np.mean(test_snr_list)],
@@ -587,7 +589,7 @@ def run_prediction_pipeline(config, plugin):
     if plotted_idx >= test_predictions.shape[1]:
         raise ValueError(f"Plotted horizon index {plotted_idx} is out of bounds for predictions shape {test_predictions.shape}")
     pred_plot = test_predictions[:, plotted_idx]
-    n_plot = config.get("plot_points",1575)
+    n_plot = config.get("plot_points", 1575)
     if len(pred_plot) > n_plot:
         pred_plot = pred_plot[-n_plot:]
         test_dates_plot = test_dates[-n_plot:] if test_dates is not None else np.arange(len(pred_plot))
@@ -628,7 +630,7 @@ def run_prediction_pipeline(config, plugin):
     plt.plot(test_dates_plot, pred_plot, label="Predicted Price", color=plot_color_predicted, linewidth=2)
     plt.plot(test_dates_plot, true_plot, label="True Price", color=plot_color_true, linewidth=2)
     plt.fill_between(test_dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
-                    color=plot_color_uncertainty, alpha=0.15, label="Uncertainty")
+                     color=plot_color_uncertainty, alpha=0.15, label="Uncertainty")
     if config.get("use_daily", False):
         plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon} days)")
     else:
@@ -669,7 +671,7 @@ def run_prediction_pipeline(config, plugin):
         print(f"Model saved to {save_model_file}")
     except Exception as e:
         print(f"Failed to save model to {save_model_file}: {e}")
-    
+
     if config.get("use_strategy", False):
         print("*************************************************")
         print("Training Statistics:")
@@ -718,6 +720,8 @@ def run_prediction_pipeline(config, plugin):
         print("*************************************************")
     
     print(f"\nTotal Execution Time: {time.time() - start_time:.2f} seconds")
+
+
 
 def load_and_evaluate_model(config, plugin):
     """
