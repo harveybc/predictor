@@ -191,10 +191,10 @@ def process_data(config):
         #y_train_ma = y_train.rolling(window=3, center=True, min_periods=1).mean()
         #y_val_ma = y_val.rolling(window=3, center=True, min_periods=1).mean()
         #y_test_ma = y_test.rolling(window=3, center=True, min_periods=1).mean() 
+        # When using daily mode, we now use the raw data without rolling average.
         y_train_ma = y_train
         y_val_ma = y_val    
         y_test_ma = y_test
-        
         if config.get("use_returns", False):
             y_train_multi, baseline_train = create_multi_step_daily(y_train_ma, time_horizon, use_returns=True)
             y_val_multi, baseline_val = create_multi_step_daily(y_val_ma, time_horizon, use_returns=True)
@@ -203,8 +203,7 @@ def process_data(config):
             y_train_multi = create_multi_step_daily(y_train_ma, time_horizon, use_returns=False)
             y_val_multi = create_multi_step_daily(y_val_ma, time_horizon, use_returns=False)
             y_test_multi = create_multi_step_daily(y_test_ma, time_horizon, use_returns=False)
-        # Use the processed rolling-averaged data for verification.
-        y_proc = y_train_ma
+        y_proc = y_train_ma  # for verification use the raw daily data
     else:
         if config.get("use_returns", False):
             y_train_multi, baseline_train = create_multi_step(y_train, time_horizon, use_returns=True)
@@ -216,11 +215,13 @@ def process_data(config):
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
         y_proc = y_train
 
-    # ---- Verification Check: Ensure that the multi-step target row is computed correctly ----
+    # ---- VERIFICATION BLOCK: Check that the raw multi-step targets were computed correctly ----
     try:
-        # When using sliding windows for CNN/LSTM/Transformer, the first processed multi-step
-        # target row corresponds to the original row at index (window_size - 1).
-        verif_index = (config["window_size"] - 1) if config["plugin"] in ["lstm", "cnn", "transformer"] else 0
+        # For verification, we use a chosen index.
+        # If sliding windows will be applied later, the raw multi-step targets are later trimmed.
+        # Here we verify on the raw multi-step targets.
+        # You can choose verif_index = 0 (the first row) or any valid index.
+        verif_index = 0  
         base_val = y_proc.iloc[verif_index].values[0]
         expected_values = []
         debug_details = []
@@ -245,11 +246,11 @@ def process_data(config):
                 expected_values.append(diff_val)
                 debug_details.append(f"[DEBUG] Tick {d}: index {idx}: future = {future_val:.8f}, base = {base_val:.8f}, diff = {diff_val:.8f}")
         expected_row = np.array(expected_values)
-        # Get the first multi-step target row from the computed y_train_multi.
+        # Get the first raw multi-step target row as computed by our function.
         if isinstance(y_train_multi, pd.DataFrame):
-            computed_row = y_train_multi.iloc[0].values
+            computed_row = y_train_multi.iloc[verif_index].values
         else:
-            computed_row = y_train_multi[0, :]
+            computed_row = y_train_multi[verif_index, :]
         print(f"[DEBUG] Verification index: {verif_index}")
         print(f"[DEBUG] Base row at original index {verif_index}: {y_proc.iloc[verif_index].values}")
         for detail in debug_details:
@@ -264,7 +265,7 @@ def process_data(config):
     except Exception as e:
         print(f"Verification check error: {e}")
         sys.exit(1)
-    # ---- End of Verification Check ----
+    # ---- End of VERIFICATION BLOCK ----
 
     # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
     min_len_train = min(len(x_train), len(y_train_multi))
