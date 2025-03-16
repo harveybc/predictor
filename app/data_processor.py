@@ -331,55 +331,60 @@ def run_prediction_pipeline(config, plugin):
         baseline_test = datasets.get("baseline_test")
 
     # ---- Verification check before feeding data to the model ----
+        # ---- Verification check before feeding data to the model ----
     try:
         # Load the original y_train from file using the same max_rows as in process_data.
         original_y_train = load_csv(config["y_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
         original_y_train = original_y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
         
-        # For use_daily mode, process the targets with the rolling mean as in process_data.
-        if config.get("use_daily", False):
-            processed_y = original_y_train.rolling(window=3, center=True, min_periods=1).mean()
+        # Determine the verification index.
+        # When using sliding windows (for CNN/LSTM/Transformer), the processed y_train is already shifted:
+        if config["plugin"] in ["lstm", "cnn", "transformer"]:
+            verif_index = config["window_size"] - 1
+            # After sliding windows, row 0 of datasets["y_train"] corresponds to original index verif_index.
+            if isinstance(datasets["y_train"], np.ndarray):
+                computed_row = datasets["y_train"][0, :]
+            else:
+                computed_row = datasets["y_train"].iloc[0].values
         else:
-            processed_y = original_y_train
+            verif_index = 0
+            if isinstance(datasets["y_train"], np.ndarray):
+                computed_row = datasets["y_train"][0, :]
+            else:
+                computed_row = datasets["y_train"].iloc[0].values
 
-        # Determine verification offset: for sliding windows, offset = window_size - 1; else 0.
-        offset = config["window_size"] - 1 if config["plugin"] in ["lstm", "cnn", "transformer"] else 0
-        base_value = processed_y.iloc[offset].values[0]
+        base_value = original_y_train.iloc[verif_index].values[0]
         expected_values = []
         debug_details = []
         if config.get("use_daily", False):
+            # For daily mode, use an offset of 24 per day.
             for d in range(1, config["time_horizon"] + 1):
-                idx = offset + 24 * d
-                if idx >= len(processed_y):
-                    debug_details.append(f"[DEBUG] Day {d}: index {idx} is out of bounds (length {len(processed_y)})")
+                idx = verif_index + 24 * d
+                if idx >= len(original_y_train):
+                    debug_details.append(f"[DEBUG] Day {d}: index {idx} out of bounds (length {len(original_y_train)})")
                     continue
-                future_value = processed_y.iloc[idx].values[0]
+                future_value = original_y_train.iloc[idx].values[0]
+                # If using returns, compute difference; otherwise, use the raw future value.
                 diff_value = future_value - base_value if config.get("use_returns", False) else future_value
                 expected_values.append(diff_value)
                 debug_details.append(f"[DEBUG] Day {d}: row index {idx}: future value = {future_value:.8f}, base = {base_value:.8f}, diff = {diff_value:.8f}")
         else:
+            # For non-daily mode, use an offset of 1 per tick.
             for d in range(1, config["time_horizon"] + 1):
-                idx = offset + d
-                if idx >= len(processed_y):
-                    debug_details.append(f"[DEBUG] Tick {d}: index {idx} is out of bounds (length {len(processed_y)})")
+                idx = verif_index + d
+                if idx >= len(original_y_train):
+                    debug_details.append(f"[DEBUG] Tick {d}: index {idx} out of bounds (length {len(original_y_train)})")
                     continue
-                future_value = processed_y.iloc[idx].values[0]
+                future_value = original_y_train.iloc[idx].values[0]
                 diff_value = future_value - base_value if config.get("use_returns", False) else future_value
                 expected_values.append(diff_value)
                 debug_details.append(f"[DEBUG] Tick {d}: row index {idx}: future value = {future_value:.8f}, base = {base_value:.8f}, diff = {diff_value:.8f}")
         expected_row = np.array(expected_values)
         
-        print(f"[DEBUG] Verification offset: {offset}")
-        print(f"[DEBUG] Base row at index {offset}: {processed_y.iloc[offset].values}")
+        print(f"[DEBUG] Verification index (from original file): {verif_index}")
+        print(f"[DEBUG] Base row at original index {verif_index}: {original_y_train.iloc[verif_index].values}")
         for detail in debug_details:
             print(detail)
-        
-        # Retrieve computed multi-step target row from processed y_train.
-        if hasattr(datasets["y_train"], 'iloc'):
-            computed_row = datasets["y_train"].iloc[offset].values
-        else:
-            computed_row = datasets["y_train"][offset, :]
-        
         print(f"[DEBUG] Expected multi-step target row: {expected_row}")
         print(f"[DEBUG] Computed multi-step target row: {computed_row}")
         
