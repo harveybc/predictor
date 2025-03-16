@@ -13,6 +13,7 @@ import contextlib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
 import json
+from plugin_loader import load_plugin
 
 # Updated import: use tensorflow.keras instead of keras.
 from tensorflow.keras.utils import plot_model
@@ -434,11 +435,6 @@ def run_prediction_pipeline(config, plugin):
         n_val = val_preds.shape[0]
         train_mae = np.mean(np.abs(train_preds[ : , -1] - y_train[:n_train,-1]))
         val_mae = np.mean(np.abs(val_preds[ : , -1] - y_val[:n_val,-1]))    
-        # Append the recalculated values
-        training_mae_list.append(train_mae)
-        training_r2_list.append(train_r2)
-        validation_mae_list.append(val_mae)
-        validation_r2_list.append(val_r2)
 
         # Save loss plot
         plt.plot(history.history['loss'])
@@ -471,11 +467,7 @@ def run_prediction_pipeline(config, plugin):
         train_unc_last = np.mean(train_unc[ : , -1])
         val_unc_last = np.mean(val_unc[ : , -1])
         test_unc_last = np.mean(uncertainty_estimates[ : , -1])
-        # add to the lists of Uncertanties
-        training_unc_list.append(train_unc_last)
-        validation_unc_list.append(val_unc_last)
-        test_unc_list.append(test_unc_last)
-
+        
         # calcula los promedios de la señal para calcular SNR (la desviación es el uncertainty)
         train_mean = np.mean(baseline_train[ : , -1] + train_preds[ : , -1])
         val_mean = np.mean(baseline_val[ : , -1] + val_preds[ : , -1])
@@ -485,21 +477,46 @@ def run_prediction_pipeline(config, plugin):
         train_snr = 1/(train_unc_last/train_mean)
         val_snr = 1/(val_unc_last/val_mean)
         test_snr = 1/(test_unc_last/test_mean)
-        # add to the lists of SNR
-        training_snr_list.append(train_snr)
-        validation_snr_list.append(val_snr)
-        test_snr_list.append(test_snr)
+        
+        # calcula el profit y el risk si se está usando una estrategia
+        if config.get("use_strategy", False):
+            # carga el plugin usando strategy_plugin_group y strategy_plugin_name
+            strategy_plugin_group = config.get("strategy_plugin_group", None)
+            strategy_plugin_name = config.get("strategy_plugin_name", None)
+            if strategy_plugin_group is None or strategy_plugin_name is None:
+                raise ValueError("strategy_plugin_group and strategy_plugin_name must be defined in the configuration.")
+            strategy_plugin = load_plugin(strategy_plugin_group, strategy_plugin_name)
 
-        print("************************************************************************")
-        print(f"Iteration {iteration} completed.")
-        print(f"Training MAE: {train_mae}, Training R²: {train_r2}, Training Uncertainty: {train_unc_last}, Trainign SNR: {train_snr}")
-        print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation Uncertainty: {val_unc_last}, Validation SNR: {val_snr}")
-        print(f"Test MAE: {test_mae}, Test R²: {test_r2}, Test Uncertainty: {test_unc_last}, Test SNR: {test_snr}")
-        print("************************************************************************")
+        
+        # Append the calculated train values
+        training_mae_list.append(train_mae)
+        training_r2_list.append(train_r2)
+        training_unc_list.append(train_unc_last)
+        training_snr_list.append(train_snr)
+        training_profit_list.append(train_profit)
+        training_risk_list.append(train_risk)
+        # Append the calculated validation values
+        validation_mae_list.append(val_mae)
+        validation_r2_list.append(val_r2)
+        validation_unc_list.append(val_unc_last)
+        validation_snr_list.append(val_snr)
+        validation_profit_list.append(val_profit)
+        validation_risk_list.append(val_risk)
+        # Append the calculated test values
         test_mae_list.append(test_mae)
         test_r2_list.append(test_r2)
+        test_unc_list.append(test_unc_last)
+        test_snr_list.append(test_snr)
+        test_profit_list.append(test_profit)
+        test_risk_list.append(test_risk)
+        # print iteration results
+        print("************************************************************************")
+        print(f"Iteration {iteration} completed.")
+        print(f"Training MAE: {train_mae}, Training R²: {train_r2}, Training Uncertainty: {train_unc_last}, Trainign SNR: {train_snr}, Training Profit: {train_profit}, Trainign Risk: {train_risk}")
+        print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation Uncertainty: {val_unc_last}, Validation SNR: {val_snr}, Validation Profit: {val_profit}, Validation Risk: {val_risk}")
+        print(f"Test MAE: {test_mae}, Test R²: {test_r2}, Test Uncertainty: {test_unc_last}, Test SNR: {test_snr}, Test Profit: {test_profit}, Test Risk: {test_risk}")
+        print("************************************************************************")
         print(f"Iteration {iteration} completed in {time.time()-iter_start:.2f} seconds")
-
     # Save consolidated results
     if config.get("use_strategy", False): 
         results = {
