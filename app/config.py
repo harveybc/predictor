@@ -62,5 +62,11 @@ DEFAULT_VALUES = {
     "uncertainty_color_alpha": 0.01,
     "plot_points": 1575,
     "min_delta": 1e-5,
-    "plot_points": 1575
+    "plot_points": 1575,
+    "strategy_plugin_group": "ls_pred_strategy",
+    "strategy_plugin_name": "ls_pred_strategy",
+    "strategy_1h_prediction": "examples/results/phase_1/phase_1_cnn_25200_1h_prediction.csv",
+    "strategy_1h_uncertainty": "examples/results/phase_1/phase_1_cnn_25200_1h_uncertanties.csv"
+
+
 }
