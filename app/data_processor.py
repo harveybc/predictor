@@ -56,14 +56,16 @@ def create_multi_step(y_df, horizon, use_returns=False):
     Creates multi-step targets for time-series prediction.
     If use_returns is True, targets are computed as the difference between each future value 
     and the current (baseline) value.
-    
+
     Args:
         y_df (pd.DataFrame): Target data as a DataFrame.
         horizon (int): Number of future steps to predict.
         use_returns (bool): If True, compute returns instead of absolute values.
-    
+
     Returns:
-        pd.DataFrame: Multi-step targets aligned with the input data.
+        pd.DataFrame: Multi-step targets aligned with the input data, where the index 
+                      is shifted so that each target is labeled with the date of the 
+                      last predicted value.
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
@@ -77,9 +79,10 @@ def create_multi_step(y_df, horizon, use_returns=False):
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon])
+    # Shift the index so that the label corresponds to the date of the last predicted value
+    df_targets = pd.DataFrame(blocks, index=y_df.index[horizon:])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[horizon:])
         return df_targets, df_baselines
     else:
         return df_targets
@@ -90,14 +93,15 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
     Creates multi-step targets for time-series prediction using daily data.
     If use_returns is True, targets are computed as the difference between each future value 
     and the current (baseline) value.
-    
+
     Args:
         y_df (pd.DataFrame): Target data as a DataFrame.
         horizon (int): Number of future days to predict.
         use_returns (bool): If True, compute returns instead of absolute values.
-    
+
     Returns:
-        pd.DataFrame: Multi-step targets aligned with the input data.
+        pd.DataFrame: Multi-step targets aligned with the input data, with the index shifted so that 
+                      each target corresponds to the date of the last predicted day.
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
@@ -114,9 +118,10 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
+    # Shift the index by horizon*24 to label targets with the last predicted day's date
+    df_targets = pd.DataFrame(blocks, index=y_df.index[horizon * 24:])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[horizon * 24:])
         return df_targets, df_baselines
     else:
         return df_targets
@@ -127,7 +132,9 @@ def process_data(config):
     Processes data for different plugins, including ANN, CNN, LSTM, and Transformer.
     Loads and processes training, validation, and test datasets; extracts DATE_TIME information,
     and trims each pair (x and y) to their common date range so that they share the same number of rows.
-    
+    The multi-step targets are now generated with their index shifted so that each target corresponds
+    to the date of the final predicted time step.
+
     Returns:
         dict: Processed datasets for training, validation, and test, along with corresponding
               DATE_TIME arrays. Additionally, if config['use_returns'] is True, the corresponding 
@@ -253,50 +260,32 @@ def process_data(config):
     val_dates = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
     test_dates = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
 
-    # 6) PER-PLUGIN PROCESSING
-    # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
+    # 6) PER-PLUGIN PROCESSING (including optional sliding windows)
     if config["plugin"] in ["lstm", "cnn", "transformer"]:
-        if config["plugin"] in ["lstm", "cnn", "transformer"]:
-            print("Processing data with sliding windows...")
-            x_train = x_train.to_numpy().astype(np.float32)
-            x_val = x_val.to_numpy().astype(np.float32)
-            x_test = x_test.to_numpy().astype(np.float32)
-            window_size = config["window_size"]
-            def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
-                windows = []
-                dt_windows = []
-                for i in range(0, len(data) - window_size + 1, stride):
-                    windows.append(data[i:i+window_size])
-                    if date_times is not None:
-                        dt_windows.append(date_times[i+window_size-1])
-                return np.array(windows), dt_windows if date_times is not None else np.array(windows)
-            x_train, train_dates = create_sliding_windows_x(x_train, window_size, stride=1, date_times=train_dates)
-            x_val, val_dates = create_sliding_windows_x(x_val, window_size, stride=1, date_times=val_dates)
-            x_test, test_dates = create_sliding_windows_x(x_test, window_size, stride=1, date_times=test_dates)
-            y_train_multi = y_train_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
-            y_val_multi = y_val_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
-            y_test_multi = y_test_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
-            if config.get("use_returns", False):
-                baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
-                baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
-                baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
-        elif config["plugin"] in ["transformer", "transformer_mmd"]:
-            print("Processing data for Transformer plugin with sliding windows...")
-            x_train = x_train.to_numpy().astype(np.float32)
-            x_val = x_val.to_numpy().astype(np.float32)
-            x_test = x_test.to_numpy().astype(np.float32)
-            # (Add sliding window logic here if needed)
-            # For now, we simply use the raw data.
-            y_train_multi = y_train_multi.to_numpy().astype(np.float32)
-            y_val_multi = y_val_multi.to_numpy().astype(np.float32)
-            y_test_multi = y_test_multi.to_numpy().astype(np.float32)
-        else:
-            x_train = x_train.to_numpy().astype(np.float32)
-            x_val = x_val.to_numpy().astype(np.float32)
-            x_test = x_test.to_numpy().astype(np.float32)
-            y_train_multi = y_train_multi.to_numpy().astype(np.float32)
-            y_val_multi = y_val_multi.to_numpy().astype(np.float32)
-            y_test_multi = y_test_multi.to_numpy().astype(np.float32)
+        print("Processing data with sliding windows...")
+        x_train = x_train.to_numpy().astype(np.float32)
+        x_val = x_val.to_numpy().astype(np.float32)
+        x_test = x_test.to_numpy().astype(np.float32)
+        window_size = config["window_size"]
+        def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
+            windows = []
+            dt_windows = []
+            for i in range(0, len(data) - window_size + 1, stride):
+                windows.append(data[i:i+window_size])
+                if date_times is not None:
+                    dt_windows.append(date_times[i+window_size-1])
+            return np.array(windows), dt_windows if date_times is not None else np.array(windows)
+        x_train, train_dates = create_sliding_windows_x(x_train, window_size, stride=1, date_times=train_dates)
+        x_val, val_dates = create_sliding_windows_x(x_val, window_size, stride=1, date_times=val_dates)
+        x_test, test_dates = create_sliding_windows_x(x_test, window_size, stride=1, date_times=test_dates)
+        # Align multi-step targets with sliding windows:
+        y_train_multi = y_train_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
+        y_val_multi = y_val_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
+        y_test_multi = y_test_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
+        if config.get("use_returns", False):
+            baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
+            baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
+            baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
         x_train = x_train.to_numpy().astype(np.float32)
@@ -331,6 +320,7 @@ def process_data(config):
         ret["baseline_val"] = baseline_val
         ret["baseline_test"] = baseline_test
     return ret
+
 
 
 def run_prediction_pipeline(config, plugin):
@@ -479,6 +469,8 @@ def run_prediction_pipeline(config, plugin):
         test_snr = 1/(test_unc_last/test_mean)
         
         # calcula el profit y el risk si se está usando una estrategia de trading
+        test_profit = 0.0
+        test_risk = 0.0
         if (config.get("use_strategy", False) and config.get("use_daily"), True):
             candidate = None
             # carga el plugin usando strategy_plugin_group y strategy_plugin_name
