@@ -508,9 +508,9 @@ def run_prediction_pipeline(config, plugin):
                 raise ValueError("Parameters json file for strategy are required.")
             
             # load the denormalized hourly predictions from the strategy_1h_prediction file
-            hourly_df = load_csv(config["hourly_predictions_file"], headers=config["headers"])
+            hourly_df = load_csv(config["strategy_1h_prediction"], headers=config["headers"])
             # load the denormalized predictions uncertainty from the strategy_1h_uncertainty file
-            uncertainty_hourly_df = load_csv(config["uncertainty_hourly_file"], headers=config["headers"])
+            uncertainty_hourly_df = load_csv(config["strategy_1h_uncertainty"], headers=config["headers"])
             # use the current iteration normalized daily predictions
             daily_df = None
             uncertainty_daily_df = None
