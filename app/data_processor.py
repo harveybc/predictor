@@ -478,7 +478,7 @@ def run_prediction_pipeline(config, plugin):
         val_snr = 1/(val_unc_last/val_mean)
         test_snr = 1/(test_unc_last/test_mean)
         
-        # calcula el profit y el risk si se está usando una estrategia
+        # calcula el profit y el risk si se está usando una estrategia de trading
         if config.get("use_strategy", False):
             # carga el plugin usando strategy_plugin_group y strategy_plugin_name
             strategy_plugin_group = config.get("strategy_plugin_group", None)
@@ -486,6 +486,7 @@ def run_prediction_pipeline(config, plugin):
             if strategy_plugin_group is None or strategy_plugin_name is None:
                 raise ValueError("strategy_plugin_group and strategy_plugin_name must be defined in the configuration.")
             strategy_plugin = load_plugin(strategy_plugin_group, strategy_plugin_name)
+            #
 
         
         # Append the calculated train values
