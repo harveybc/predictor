@@ -199,6 +199,8 @@ def process_data(config):
             y_train_multi = create_multi_step_daily(y_train_ma, time_horizon, use_returns=False)
             y_val_multi = create_multi_step_daily(y_val_ma, time_horizon, use_returns=False)
             y_test_multi = create_multi_step_daily(y_test_ma, time_horizon, use_returns=False)
+        # Use the processed rolling-averaged data for verification.
+        y_proc = y_train_ma
     else:
         if config.get("use_returns", False):
             y_train_multi, baseline_train = create_multi_step(y_train, time_horizon, use_returns=True)
@@ -208,48 +210,44 @@ def process_data(config):
             y_train_multi = create_multi_step(y_train, time_horizon, use_returns=False)
             y_val_multi = create_multi_step(y_val, time_horizon, use_returns=False)
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
+        y_proc = y_train
 
-    # ---- Verification Check (BEFORE sliding window conversion) ----
-    # We verify that the multi-step target for the first sample is correct.
-    # In our design, we want the multi-step targets to use the same dates as the original y data
-    # while the target values come from the future starting at row i+horizon.
-    # For example, if use_daily is False and time_horizon is 3,
-    # for the first row (i=0) the expected target row should come from original y values at rows 1, 2, and 3.
-    # If use_daily is True, it should come from rows 24, 48, 72 (for time_horizon=3).
+    # ---- Verification Check: Ensure that the multi-step target row is computed correctly ----
     try:
-        # Use the original y_train (before any sliding windows)
+        # When using sliding windows for CNN/LSTM/Transformer, the first processed multi-step
+        # target row corresponds to the original row at index (window_size - 1).
         verif_index = (config["window_size"] - 1) if config["plugin"] in ["lstm", "cnn", "transformer"] else 0
-        base_val = y_train.iloc[verif_index].values[0]
+        base_val = y_proc.iloc[verif_index].values[0]
         expected_values = []
         debug_details = []
         if config.get("use_daily", False):
             for d in range(1, config["time_horizon"] + 1):
                 idx = verif_index + 24 * d
-                if idx >= len(y_train):
-                    debug_details.append(f"[DEBUG] Day {d}: index {idx} out of bounds (length {len(y_train)})")
+                if idx >= len(y_proc):
+                    debug_details.append(f"[DEBUG] Day {d}: index {idx} out of bounds (length {len(y_proc)})")
                     continue
-                future_val = y_train.iloc[idx].values[0]
+                future_val = y_proc.iloc[idx].values[0]
                 diff_val = future_val - base_val if config.get("use_returns", False) else future_val
                 expected_values.append(diff_val)
                 debug_details.append(f"[DEBUG] Day {d}: index {idx}: future = {future_val:.8f}, base = {base_val:.8f}, diff = {diff_val:.8f}")
         else:
             for d in range(1, config["time_horizon"] + 1):
                 idx = verif_index + d
-                if idx >= len(y_train):
-                    debug_details.append(f"[DEBUG] Tick {d}: index {idx} out of bounds (length {len(y_train)})")
+                if idx >= len(y_proc):
+                    debug_details.append(f"[DEBUG] Tick {d}: index {idx} out of bounds (length {len(y_proc)})")
                     continue
-                future_val = y_train.iloc[idx].values[0]
+                future_val = y_proc.iloc[idx].values[0]
                 diff_val = future_val - base_val if config.get("use_returns", False) else future_val
                 expected_values.append(diff_val)
                 debug_details.append(f"[DEBUG] Tick {d}: index {idx}: future = {future_val:.8f}, base = {base_val:.8f}, diff = {diff_val:.8f}")
         expected_row = np.array(expected_values)
-        # Get computed multi-step target row from the processed y_train_multi.
+        # Get the first multi-step target row from the computed y_train_multi.
         if isinstance(y_train_multi, pd.DataFrame):
             computed_row = y_train_multi.iloc[0].values
         else:
             computed_row = y_train_multi[0, :]
         print(f"[DEBUG] Verification index: {verif_index}")
-        print(f"[DEBUG] Base row at original index {verif_index}: {y_train.iloc[verif_index].values}")
+        print(f"[DEBUG] Base row at original index {verif_index}: {y_proc.iloc[verif_index].values}")
         for detail in debug_details:
             print(detail)
         print(f"[DEBUG] Expected multi-step target row: {expected_row}")
