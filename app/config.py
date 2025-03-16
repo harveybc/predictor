@@ -66,7 +66,8 @@ DEFAULT_VALUES = {
     "strategy_plugin_group": "ls_pred_strategy",
     "strategy_plugin_name": "ls_pred_strategy",
     "strategy_1h_prediction": "examples/results/phase_1/phase_1_cnn_25200_1h_prediction.csv",
-    "strategy_1h_uncertainty": "examples/results/phase_1/phase_1_cnn_25200_1h_uncertanties.csv"
+    "strategy_1h_uncertainty": "examples/results/phase_1/phase_1_cnn_25200_1h_uncertanties.csv",
+    "strategy_base_dataset": "examples/data/phase_1/phase_1_base_d3.csv"
 
 
 }

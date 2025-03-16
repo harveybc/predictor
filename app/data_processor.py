@@ -480,6 +480,7 @@ def run_prediction_pipeline(config, plugin):
         
         # calcula el profit y el risk si se está usando una estrategia de trading
         if (config.get("use_strategy", False) and config.get("use_daily"), True):
+            candidate = None
             # carga el plugin usando strategy_plugin_group y strategy_plugin_name
             strategy_plugin_group = config.get("strategy_plugin_group", None)
             strategy_plugin_name = config.get("strategy_plugin_name", None)
@@ -487,34 +488,32 @@ def run_prediction_pipeline(config, plugin):
                 raise ValueError("strategy_plugin_group and strategy_plugin_name must be defined in the configuration.")
             strategy_plugin = load_plugin(strategy_plugin_group, strategy_plugin_name)
             # load simulation parameters (mandatory)
-        else:
-            # trow error on no parameters loaded, and exit execution
-            raise ValueError("Both strategy_plugin_group and strategy_plugin_name must be True.")
-        # Loa the strategy aprameters from the configuration file
-        if config.get("load_parameters") is not None:
-            try:
-                with open(config["load_parameters"], "r") as f:
-                    loaded_params = json.load(f)
-                print(f"Loaded evaluation parameters from {config['load_parameters']}: {loaded_params}")
-                # load the parameters from the loaded file
-                candidate = [
-                    loaded_params.get("profit_threshold", plugin.params["profit_threshold"]),
-                    loaded_params.get("tp_multiplier", plugin.params["tp_multiplier"]),
-                    loaded_params.get("sl_multiplier", plugin.params["sl_multiplier"]),
-                    loaded_params.get("lower_rr_threshold", plugin.params["lower_rr_threshold"]),
-                    loaded_params.get("upper_rr_threshold", plugin.params["upper_rr_threshold"]),
-                    int(loaded_params.get("time_horizon", 3))
-                ]
-            except Exception as e:
-                raise ValueError(f"Failed to load parameters from {config['load_parameters']}: {e}")
-        
+            if config.get("load_parameters") is not None:
+                try:
+                    with open(config["load_parameters"], "r") as f:
+                        loaded_params = json.load(f)
+                    print(f"Loaded evaluation parameters from {config['load_parameters']}: {loaded_params}")
+                    # load the parameters from the loaded file
+                    candidate = [
+                        loaded_params.get("profit_threshold", plugin.params["profit_threshold"]),
+                        loaded_params.get("tp_multiplier", plugin.params["tp_multiplier"]),
+                        loaded_params.get("sl_multiplier", plugin.params["sl_multiplier"]),
+                        loaded_params.get("lower_rr_threshold", plugin.params["lower_rr_threshold"]),
+                        loaded_params.get("upper_rr_threshold", plugin.params["upper_rr_threshold"]),
+                        int(loaded_params.get("time_horizon", 3))
+                    ]
+                except Exception as e:
+                    raise ValueError(f"Failed to load parameters from {config['load_parameters']}: {e}")
+            else:   
+                raise ValueError("PArameters json file for strategy are required.")
+            
             # load the denormalized hourly predictions from the strategy_1h_prediction file
-            denorm_hourly_predictions = load_csv(config["hourly_predictions_file"], headers=config["headers"])
+            hourly_df = load_csv(config["hourly_predictions_file"], headers=config["headers"])
             # load the denormalized predictions uncertainty from the strategy_1h_uncertainty file
-            denorm_hourly_uncertainty = load_csv(config["uncertainty_hourly_file"], headers=config["headers"])
+            uncertainty_hourly_df = load_csv(config["uncertainty_hourly_file"], headers=config["headers"])
             # use the current iteration normalized daily predictions
-            denorm_daily_predictions = None
-            denorm_daily_uncertainty = None
+            daily_df = None
+            uncertainty_daily_df = None
             # denormalize the hourly predictions 
             if config.get("use_normalization_json") is not None:
                 norm_json = config.get("use_normalization_json")
@@ -527,14 +526,25 @@ def run_prediction_pipeline(config, plugin):
                         close_max = norm_json["CLOSE"]["max"]
                         diff = close_max - close_min
                         # Final predicted close = (predicted_return + baseline)*diff + close_min
-                        denorm_daily_predictions = (test_predictions + baseline_test) * diff + close_min
+                        daily_df = (test_predictions + baseline_test) * diff + close_min
                     else:
                         print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
                 else:
                     if "CLOSE" in norm_json:
                         close_min = norm_json["CLOSE"]["min"]
                         close_max = norm_json["CLOSE"]["max"]
-                        denorm_daily_predictions = test_predictions * (close_max - close_min) + close_min
+                        daily_df = test_predictions * (close_max - close_min) + close_min
+            # Rename columns and add DATE_TIME column if required
+            daily_df = pd.DataFrame(
+                daily_df, columns=[f"Prediction_{i+1}" for i in range(daily_df.shape[1])]
+            )
+            if test_dates is not None:
+                daily_df['DATE_TIME'] = pd.Series(test_dates[:len(daily_df)])
+            else:
+                daily_df['DATE_TIME'] = pd.NaT
+            cols = ['DATE_TIME'] + [col for col in daily_df.columns if col != 'DATE_TIME']
+            daily_df = daily_df[cols]
+            
             # Denormalize uncertainties using CLOSE range only 
             if config.get("use_normalization_json") is not None:
                 norm_json = config.get("use_normalization_json")
@@ -543,21 +553,99 @@ def run_prediction_pipeline(config, plugin):
                         norm_json = json.load(f)
                 if "CLOSE" in norm_json:
                     diff = norm_json["CLOSE"]["max"] - norm_json["CLOSE"]["min"]
-                    denorm_daily_uncertainty = uncertainty_estimates * diff
+                    uncertainty_daily_df = uncertainty_estimates * diff
                 else:
                     print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
-                    denorm_daily_uncertainty = uncertainty_estimates
+                    uncertainty_daily_df = uncertainty_estimates
             else:
-                denorm_uncertainty = uncertainty_estimates
+                uncertainty_daily_df = uncertainty_estimates
             uncertainty_df = pd.DataFrame(
-                denorm_daily_uncertainty, columns=[f"Uncertainty_{i+1}" for i in range(denorm_uncertainty.shape[1])]
-            )                    
-
-                
-
-
-                
+                uncertainty_daily_df, columns=[f"Uncertainty_{i+1}" for i in range(uncertainty_daily_df.shape[1])]
+            )    
+            # Add DATE_TIME column to uncertainties if available                
+            if test_dates is not None:  
+                uncertainty_daily_df['DATE_TIME'] = pd.Series(test_dates[:len(uncertainty_daily_df)])
+            else:
+                uncertainty_daily_df['DATE_TIME'] = pd.NaT
+            cols = ['DATE_TIME'] + [col for col in uncertainty_daily_df.columns if col != 'DATE_TIME']
+            uncertainty_daily_df = uncertainty_daily_df[cols]
             
+            # load the strategy base (unnormalized) hourly data
+            base_df = load_csv(config["strategy_base_dataset"], headers=config["headers"])
+
+            # Ensure all datasets have a datetime index based on DATE_TIME column.
+            def ensure_datetime(df, name):
+                if not isinstance(df.index, pd.DatetimeIndex):
+                    if "DATE_TIME" in df.columns:
+                        df.index = pd.to_datetime(df["DATE_TIME"])
+                    else:
+                        raise ValueError(f"{name} does not have a DATE_TIME column.")
+                return df
+
+            base_df = ensure_datetime(base_df, "base_df")
+            hourly_df = ensure_datetime(hourly_df, "hourly_df")
+            daily_df = ensure_datetime(daily_df, "daily_df")
+            if uncertainty_hourly_df is not None:
+                uncertainty_hourly_df = ensure_datetime(uncertainty_hourly_df, "uncertainty_hourly_df")
+            if uncertainty_daily_df is not None:
+                uncertainty_daily_df = ensure_datetime(uncertainty_daily_df, "uncertainty_daily_df")
+
+            # Compute common index across all datasets (only include uncertainties if available)
+            common_index = base_df.index.intersection(hourly_df.index).intersection(daily_df.index)
+            if uncertainty_hourly_df is not None:
+                common_index = common_index.intersection(uncertainty_hourly_df.index)
+            if uncertainty_daily_df is not None:
+                common_index = common_index.intersection(uncertainty_daily_df.index)
+            if common_index.empty:
+                raise ValueError("No common date range found among base, predictions, and uncertainties.")
+
+            # Trim all datasets to the common date range
+            base_df = base_df.loc[common_index]
+            hourly_df = hourly_df.loc[common_index]
+            daily_df = daily_df.loc[common_index]
+            if uncertainty_hourly_df is not None:
+                uncertainty_hourly_df = uncertainty_hourly_df.loc[common_index]
+            if uncertainty_daily_df is not None:
+                uncertainty_daily_df = uncertainty_daily_df.loc[common_index]
+
+            # Apply max_steps if provided: truncate all datasets to the same number of rows.
+            if "max_steps" in config:
+                max_steps = config["max_steps"]
+                base_df = base_df.iloc[:max_steps]
+                hourly_df = hourly_df.iloc[:max_steps]
+                daily_df = daily_df.iloc[:max_steps]
+                if uncertainty_hourly_df is not None:
+                    uncertainty_hourly_df = uncertainty_hourly_df.iloc[:max_steps]
+                if uncertainty_daily_df is not None:
+                    uncertainty_daily_df = uncertainty_daily_df.iloc[:max_steps]
+
+            # Print aligned date ranges and shapes.
+            print(f"Aligned Base dataset range: {base_df.index.min()} to {base_df.index.max()}")
+            print(f"Aligned Hourly predictions range: {hourly_df.index.min()} to {hourly_df.index.max()}")
+            print(f"Aligned Daily predictions range: {daily_df.index.min()} to {daily_df.index.max()}")
+            if uncertainty_hourly_df is not None:
+                print(f"Aligned Hourly uncertainties range: {uncertainty_hourly_df.index.min()} to {uncertainty_hourly_df.index.max()}")
+            if uncertainty_daily_df is not None:
+                print(f"Aligned Daily uncertainties range: {uncertainty_daily_df.index.min()} to {uncertainty_daily_df.index.max()}")
+
+            # Print the candidate.
+            individual = candidate
+            print(f"[EVALUATE] Evaluating candidate (genome): {individual}")
+            
+            result = strategy_plugin.evaluate_candidate(individual, base_df, hourly_df, daily_df, config)
+            
+            # If the result returns both profit and stats, extract and print them.
+            test_profit, stats = result
+            test_risk = stats.get('risk', 0)
+            print(f"[EVALUATE] Strategy result on Test Data => Profit: {test_profit:.2f}, Risk: {test_risk:.2f}",
+                f"Trades: {stats.get('num_trades', 0)}, "
+                f"Win%: {stats.get('win_pct', 0):.1f}, "
+                f"MaxDD: {stats.get('max_dd', 0):.2f}, "
+                f"Sharpe: {stats.get('sharpe', 0):.2f}")
+
+        else: #end use strategy
+            # trow error on no parameters loaded, and exit execution
+            raise ValueError("Both strategy_plugin_group and strategy_plugin_name must be True.")            
             
         
         # Append the calculated train values
@@ -565,15 +653,15 @@ def run_prediction_pipeline(config, plugin):
         training_r2_list.append(train_r2)
         training_unc_list.append(train_unc_last)
         training_snr_list.append(train_snr)
-        training_profit_list.append(train_profit)
-        training_risk_list.append(train_risk)
+        training_profit_list.append(0)
+        training_risk_list.append(0)
         # Append the calculated validation values
         validation_mae_list.append(val_mae)
         validation_r2_list.append(val_r2)
         validation_unc_list.append(val_unc_last)
         validation_snr_list.append(val_snr)
-        validation_profit_list.append(val_profit)
-        validation_risk_list.append(val_risk)
+        validation_profit_list.append(0)
+        validation_risk_list.append(0)
         # Append the calculated test values
         test_mae_list.append(test_mae)
         test_r2_list.append(test_r2)
