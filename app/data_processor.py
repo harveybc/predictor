@@ -576,11 +576,24 @@ def run_prediction_pipeline(config, plugin):
             # Ensure all datasets have a datetime index based on DATE_TIME column.
             def ensure_datetime(df, name):
                 if not isinstance(df.index, pd.DatetimeIndex):
-                    if "DATE_TIME" in df.columns:
-                        df.index = pd.to_datetime(df["DATE_TIME"])
+                    # Try to find a column named "DATE_TIME" (case-insensitive)
+                    dt_col = None
+                    for col in df.columns:
+                        if col.strip().upper() == "DATE_TIME":
+                            dt_col = col
+                            break
+                    if dt_col is not None:
+                        df.index = pd.to_datetime(df[dt_col])
+                    elif len(df.columns) > 0:
+                        # Fallback: attempt to convert the first column to datetime
+                        try:
+                            df.index = pd.to_datetime(df.iloc[:, 0])
+                        except Exception as e:
+                            raise ValueError(f"{name} does not have a valid DATE_TIME column: {e}")
                     else:
                         raise ValueError(f"{name} does not have a DATE_TIME column.")
                 return df
+
 
             base_df = ensure_datetime(base_df, "base_df")
             hourly_df = ensure_datetime(hourly_df, "hourly_df")
