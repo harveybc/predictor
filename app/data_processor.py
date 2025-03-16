@@ -479,15 +479,86 @@ def run_prediction_pipeline(config, plugin):
         test_snr = 1/(test_unc_last/test_mean)
         
         # calcula el profit y el risk si se está usando una estrategia de trading
-        if config.get("use_strategy", False):
+        if (config.get("use_strategy", False) and config.get("use_daily"), True):
             # carga el plugin usando strategy_plugin_group y strategy_plugin_name
             strategy_plugin_group = config.get("strategy_plugin_group", None)
             strategy_plugin_name = config.get("strategy_plugin_name", None)
             if strategy_plugin_group is None or strategy_plugin_name is None:
                 raise ValueError("strategy_plugin_group and strategy_plugin_name must be defined in the configuration.")
             strategy_plugin = load_plugin(strategy_plugin_group, strategy_plugin_name)
-            #
+            # load simulation parameters (mandatory)
+        else:
+            # trow error on no parameters loaded, and exit execution
+            raise ValueError("Both strategy_plugin_group and strategy_plugin_name must be True.")
+        # Loa the strategy aprameters from the configuration file
+        if config.get("load_parameters") is not None:
+            try:
+                with open(config["load_parameters"], "r") as f:
+                    loaded_params = json.load(f)
+                print(f"Loaded evaluation parameters from {config['load_parameters']}: {loaded_params}")
+                # load the parameters from the loaded file
+                candidate = [
+                    loaded_params.get("profit_threshold", plugin.params["profit_threshold"]),
+                    loaded_params.get("tp_multiplier", plugin.params["tp_multiplier"]),
+                    loaded_params.get("sl_multiplier", plugin.params["sl_multiplier"]),
+                    loaded_params.get("lower_rr_threshold", plugin.params["lower_rr_threshold"]),
+                    loaded_params.get("upper_rr_threshold", plugin.params["upper_rr_threshold"]),
+                    int(loaded_params.get("time_horizon", 3))
+                ]
+            except Exception as e:
+                raise ValueError(f"Failed to load parameters from {config['load_parameters']}: {e}")
+        
+            # load the denormalized hourly predictions from the strategy_1h_prediction file
+            denorm_hourly_predictions = load_csv(config["hourly_predictions_file"], headers=config["headers"])
+            # load the denormalized predictions uncertainty from the strategy_1h_uncertainty file
+            denorm_hourly_uncertainty = load_csv(config["uncertainty_hourly_file"], headers=config["headers"])
+            # use the current iteration normalized daily predictions
+            denorm_daily_predictions = None
+            denorm_daily_uncertainty = None
+            # denormalize the hourly predictions 
+            if config.get("use_normalization_json") is not None:
+                norm_json = config.get("use_normalization_json")
+                if isinstance(norm_json, str):
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                if config.get("use_returns", False):
+                    if "CLOSE" in norm_json:
+                        close_min = norm_json["CLOSE"]["min"]
+                        close_max = norm_json["CLOSE"]["max"]
+                        diff = close_max - close_min
+                        # Final predicted close = (predicted_return + baseline)*diff + close_min
+                        denorm_daily_predictions = (test_predictions + baseline_test) * diff + close_min
+                    else:
+                        print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
+                else:
+                    if "CLOSE" in norm_json:
+                        close_min = norm_json["CLOSE"]["min"]
+                        close_max = norm_json["CLOSE"]["max"]
+                        denorm_daily_predictions = test_predictions * (close_max - close_min) + close_min
+            # Denormalize uncertainties using CLOSE range only 
+            if config.get("use_normalization_json") is not None:
+                norm_json = config.get("use_normalization_json")
+                if isinstance(norm_json, str):
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                if "CLOSE" in norm_json:
+                    diff = norm_json["CLOSE"]["max"] - norm_json["CLOSE"]["min"]
+                    denorm_daily_uncertainty = uncertainty_estimates * diff
+                else:
+                    print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
+                    denorm_daily_uncertainty = uncertainty_estimates
+            else:
+                denorm_uncertainty = uncertainty_estimates
+            uncertainty_df = pd.DataFrame(
+                denorm_daily_uncertainty, columns=[f"Uncertainty_{i+1}" for i in range(denorm_uncertainty.shape[1])]
+            )                    
 
+                
+
+
+                
+            
+            
         
         # Append the calculated train values
         training_mae_list.append(train_mae)
