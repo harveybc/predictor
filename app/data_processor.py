@@ -495,11 +495,11 @@ def run_prediction_pipeline(config, plugin):
                     print(f"Loaded evaluation parameters from {config['strategy_load_parameters']}: {loaded_params}")
                     # load the parameters from the loaded file
                     candidate = [
-                        loaded_params.get("profit_threshold", plugin.params["profit_threshold"]),
-                        loaded_params.get("tp_multiplier", plugin.params["tp_multiplier"]),
-                        loaded_params.get("sl_multiplier", plugin.params["sl_multiplier"]),
-                        loaded_params.get("lower_rr_threshold", plugin.params["lower_rr_threshold"]),
-                        loaded_params.get("upper_rr_threshold", plugin.params["upper_rr_threshold"]),
+                        loaded_params.get("profit_threshold"),
+                        loaded_params.get("tp_multiplier"),
+                        loaded_params.get("sl_multiplier"),
+                        loaded_params.get("lower_rr_threshold"),
+                        loaded_params.get("upper_rr_threshold"),
                         int(loaded_params.get("time_horizon", 3))
                     ]
                 except Exception as e:
