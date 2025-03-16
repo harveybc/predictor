@@ -812,6 +812,7 @@ def load_and_evaluate_model(config, plugin):
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)
 
+
 def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
     """
     Creates sliding windows for input features and targets with a specified stride.
