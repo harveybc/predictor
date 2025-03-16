@@ -616,8 +616,19 @@ def run_prediction_pipeline(config, plugin):
                 common_index = common_index.intersection(uncertainty_hourly_df.index)
             if uncertainty_daily_df is not None:
                 common_index = common_index.intersection(uncertainty_daily_df.index)
+            
+            # Print date ranges for debugging
+            print("Base dataset date range:", base_df.index.min(), "to", base_df.index.max())
+            print("Hourly predictions date range:", hourly_df.index.min(), "to", hourly_df.index.max())
+            print("Daily predictions date range:", daily_df.index.min(), "to", daily_df.index.max())
+            if uncertainty_hourly_df is not None:
+                print("Hourly uncertainties date range:", uncertainty_hourly_df.index.min(), "to", uncertainty_hourly_df.index.max())
+            if uncertainty_daily_df is not None:
+                print("Daily uncertainties date range:", uncertainty_daily_df.index.min(), "to", uncertainty_daily_df.index.max())
+            
             if common_index.empty:
                 raise ValueError("No common date range found among base, predictions, and uncertainties.")
+
 
             # Trim all datasets to the common date range
             base_df = base_df.loc[common_index]
