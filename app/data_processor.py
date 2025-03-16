@@ -505,7 +505,7 @@ def run_prediction_pipeline(config, plugin):
                 except Exception as e:
                     raise ValueError(f"Failed to load parameters from {config['load_parameters']}: {e}")
             else:   
-                raise ValueError("PArameters json file for strategy are required.")
+                raise ValueError("Parameters json file for strategy are required.")
             
             # load the denormalized hourly predictions from the strategy_1h_prediction file
             hourly_df = load_csv(config["hourly_predictions_file"], headers=config["headers"])
@@ -672,8 +672,8 @@ def run_prediction_pipeline(config, plugin):
         # print iteration results
         print("************************************************************************")
         print(f"Iteration {iteration} completed.")
-        print(f"Training MAE: {train_mae}, Training R²: {train_r2}, Training Uncertainty: {train_unc_last}, Trainign SNR: {train_snr}, Training Profit: {train_profit}, Trainign Risk: {train_risk}")
-        print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation Uncertainty: {val_unc_last}, Validation SNR: {val_snr}, Validation Profit: {val_profit}, Validation Risk: {val_risk}")
+        print(f"Training MAE: {train_mae}, Training R²: {train_r2}, Training Uncertainty: {train_unc_last}, Trainign SNR: {train_snr}")
+        print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation Uncertainty: {val_unc_last}, Validation SNR: {val_snr}")
         print(f"Test MAE: {test_mae}, Test R²: {test_r2}, Test Uncertainty: {test_unc_last}, Test SNR: {test_snr}, Test Profit: {test_profit}, Test Risk: {test_risk}")
         print("************************************************************************")
         print(f"Iteration {iteration} completed in {time.time()-iter_start:.2f} seconds")
