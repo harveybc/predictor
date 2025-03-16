@@ -42,7 +42,7 @@ DEFAULT_VALUES = {
     'early_patience': 30,           # Early stopping patience
     'max_steps_train': 6300,
     'max_steps_test': 6300,
-    'iterations': 3,
+    'iterations': 5,
     'epochs': 1000,
     'uncertainty_file': 'prediction_uncertainties.csv',
     'batch_size': 32,
