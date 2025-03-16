@@ -232,38 +232,39 @@ def process_data(config):
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
 
 
-    # --- CHUNK: Verify multi-step targets before sliding windows ---
-    print("[VERIFICATION] Verifying multi-step targets before applying sliding windows...")
-    verif_index = 0
-    # Use offset=24 if daily mode is True, else offset=1 (for hourly data)
-    offset = 24 if config.get("use_daily", False) else 1
+    # --- CHUNK: Verify multi-step targets before sliding windows (UPDATED) ---
+print("[VERIFICATION] Verifying multi-step targets before applying sliding windows...")
+verif_index = 0
+# Use offset=24 if daily mode is True, else offset=1 (for hourly data)
+offset = 24 if config.get("use_daily", False) else 1
 
-    # Compute expected target value for base tick at verif_index:
-    if verif_index + config["time_horizon"] * offset >= len(y_train):
-        print("[VERIFICATION] ERROR: Not enough data to verify multi-step targets.")
-        sys.exit(1)
-    base_value = y_train.iloc[verif_index].values[0]
-    future_value = y_train.iloc[verif_index + config["time_horizon"] * offset].values[0]
-    if config.get("use_returns", False):
-        expected_target = future_value - base_value
-    else:
-        expected_target = future_value
+# Check that there is enough data for the verification.
+if verif_index + config["time_horizon"] * offset >= len(y_train):
+    print("[VERIFICATION] ERROR: Not enough data to verify multi-step targets.")
+    sys.exit(1)
 
-    # Retrieve computed target from y_train_multi for the same base tick.
-    if isinstance(y_train_multi, pd.DataFrame):
-        computed_target = y_train_multi.iloc[verif_index].values[0]
-    else:
-        computed_target = y_train_multi[verif_index, 0]
+base_value = y_train.iloc[verif_index].values[0]
+future_value = y_train.iloc[verif_index + config["time_horizon"] * offset].values[0]
+if config.get("use_returns", False):
+    expected_target = future_value - base_value
+else:
+    expected_target = future_value
 
-    print("[VERIFICATION] Base value at index", verif_index, ":", base_value)
-    print("[VERIFICATION] Expected target value:", expected_target)
-    print("[VERIFICATION] Computed target value:", computed_target)
-    if not np.isclose(expected_target, computed_target, atol=1e-5):
-        print("[VERIFICATION] ERROR: Multi-step target value does not match expected value.")
-        sys.exit(1)
-    else:
-        print("[VERIFICATION] Multi-step target value verified successfully.")
+# IMPORTANT: For multi-step targets with time_horizon columns, we now check the last column.
+if isinstance(y_train_multi, pd.DataFrame):
+    computed_target = y_train_multi.iloc[verif_index].values[-1]
+else:
+    computed_target = y_train_multi[verif_index, -1]
 
+print("[VERIFICATION] Base value at index", verif_index, ":", base_value)
+print("[VERIFICATION] Expected target value (from t+time_horizon):", expected_target)
+print("[VERIFICATION] Computed target value (last column):", computed_target)
+
+if not np.isclose(expected_target, computed_target, atol=1e-5):
+    print("[VERIFICATION] ERROR: Multi-step target value does not match expected value.")
+    sys.exit(1)
+else:
+    print("[VERIFICATION] Multi-step target value verified successfully.")
 
     # --- End of Verification Chunk ---
     y_train_multi = y_train_multi.iloc[window_size - 1:]
