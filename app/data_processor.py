@@ -337,29 +337,42 @@ def run_prediction_pipeline(config, plugin):
         # Load the original y_train from file using the same max_rows as in process_data
         original_y_train = load_csv(config["y_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
         original_y_train = original_y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
-        # For daily mode, apply the same rolling mean as in process_data
+        # Determine offset: if sliding windows are used, the multi-step targets are trimmed by (window_size - 1)
+        offset = config["window_size"] - 1 if config["plugin"] in ["lstm", "cnn", "transformer"] else 0
+
+        # Apply rolling mean if daily mode is used
         if config.get("use_daily", False):
             processed_y = original_y_train.rolling(window=3, center=True, min_periods=1).mean()
             if config.get("use_returns", False):
-                # For daily returns: expected row = difference between value at t+24*d and base at t=0, for d=1..time_horizon
-                expected_row = np.array([processed_y.iloc[24 * d].values[0] - processed_y.iloc[0].values[0]
-                                           for d in range(1, config["time_horizon"] + 1)])
+                # For daily returns: expected row = difference between value at t = offset + 24*d and base at t = offset
+                expected_row = np.array([
+                    processed_y.iloc[offset + 24 * d].values[0] - processed_y.iloc[offset].values[0]
+                    for d in range(1, config["time_horizon"] + 1)
+                ])
             else:
-                # For daily mode without returns: expected row = value at t+24*d for d=1..time_horizon
-                expected_row = np.array([processed_y.iloc[24 * d].values[0]
-                                           for d in range(1, config["time_horizon"] + 1)])
+                # For daily mode without returns: expected row = value at t = offset + 24*d
+                expected_row = np.array([
+                    processed_y.iloc[offset + 24 * d].values[0]
+                    for d in range(1, config["time_horizon"] + 1)
+                ])
         else:
             # Non-daily mode: no rolling mean applied
             processed_y = original_y_train
             if config.get("use_returns", False):
-                # For non-daily returns: expected row = difference between value at t+time_horizon+i and base at t=0 for i=0..time_horizon-1
-                expected_row = np.array([processed_y.iloc[config["time_horizon"] + i].values[0] - processed_y.iloc[0].values[0]
-                                           for i in range(config["time_horizon"])])
+                expected_row = np.array([
+                    processed_y.iloc[offset + d].values[0] - processed_y.iloc[offset].values[0]
+                    for d in range(1, config["time_horizon"] + 1)
+                ])
             else:
-                # For non-daily mode without returns: expected row = value at t+time_horizon+i for i=0..time_horizon-1
-                expected_row = np.array([processed_y.iloc[config["time_horizon"] + i].values[0]
-                                           for i in range(config["time_horizon"])])
-        # Get the first multi-step target row from the processed y_train dataset
+                expected_row = np.array([
+                    processed_y.iloc[offset + d].values[0]
+                    for d in range(1, config["time_horizon"] + 1)
+                ])
+        # Debug message to display offset and base value
+        base_value = processed_y.iloc[offset].values[0]
+        print(f"[DEBUG] Verification offset: {offset}, base value: {base_value}")
+
+        # Get the computed multi-step target row from the processed dataset
         if isinstance(datasets["y_train"], pd.DataFrame):
             computed_row = datasets["y_train"].iloc[0].values
         else:
