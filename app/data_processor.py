@@ -333,7 +333,8 @@ def run_prediction_pipeline(config, plugin):
         baseline_test = datasets.get("baseline_test")
 
     # ---- Verification check before feeding data to the model ----
-     try:
+
+    try:
         # Load the original y_train from file using the same max_rows as in process_data
         original_y_train = load_csv(config["y_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
         original_y_train = original_y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
@@ -398,6 +399,7 @@ def run_prediction_pipeline(config, plugin):
     except Exception as e:
         print(f"Verification check error: {e}")
         sys.exit(1)
+
     # ---- End of verification check ----
 
     # If sliding windows output is a tuple, extract the data.
