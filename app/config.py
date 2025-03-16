@@ -24,7 +24,7 @@ DEFAULT_VALUES = {
     'plugin': 'ann',
     'time_horizon': 6,
     'use_daily': True, # isntead of predicting the next time_horizon hours, predict the next time_horizon days.
-    'threshold_error': 0.0001,
+    'threshold_error': 0.000000001,
     'remote_log': None,
     'remote_load_config': None,
     'remote_save_config': None,

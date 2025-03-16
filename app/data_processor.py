@@ -488,11 +488,11 @@ def run_prediction_pipeline(config, plugin):
                 raise ValueError("strategy_plugin_group and strategy_plugin_name must be defined in the configuration.")
             strategy_plugin = load_plugin(strategy_plugin_group, strategy_plugin_name)
             # load simulation parameters (mandatory)
-            if config.get("load_parameters") is not None:
+            if config.get("strategy_load_parameters") is not None:
                 try:
-                    with open(config["load_parameters"], "r") as f:
+                    with open(config["strategy_load_parameters"], "r") as f:
                         loaded_params = json.load(f)
-                    print(f"Loaded evaluation parameters from {config['load_parameters']}: {loaded_params}")
+                    print(f"Loaded evaluation parameters from {config['strategy_load_parameters']}: {loaded_params}")
                     # load the parameters from the loaded file
                     candidate = [
                         loaded_params.get("profit_threshold", plugin.params["profit_threshold"]),
@@ -503,7 +503,7 @@ def run_prediction_pipeline(config, plugin):
                         int(loaded_params.get("time_horizon", 3))
                     ]
                 except Exception as e:
-                    raise ValueError(f"Failed to load parameters from {config['load_parameters']}: {e}")
+                    raise ValueError(f"Failed to load parameters from {config['strategy_load_parameters']}: {e}")
             else:   
                 raise ValueError("Parameters json file for strategy are required.")
             
