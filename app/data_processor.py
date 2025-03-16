@@ -64,8 +64,7 @@ def create_multi_step(y_df, horizon, use_returns=False):
 
     Returns:
         pd.DataFrame: Multi-step targets aligned with the input data, where the index 
-                      is shifted so that each target is labeled with the date of the 
-                      last predicted value.
+                      is shifted back so that each target is labeled with the same date as the input.
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
@@ -79,10 +78,10 @@ def create_multi_step(y_df, horizon, use_returns=False):
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    # Shift the index so that the label corresponds to the date of the last predicted value
-    df_targets = pd.DataFrame(blocks, index=y_df.index[horizon:])
+    # Use the same dates as the original rows (except for the last 'horizon' rows)
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[horizon:])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon])
         return df_targets, df_baselines
     else:
         return df_targets
@@ -100,8 +99,8 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
         use_returns (bool): If True, compute returns instead of absolute values.
 
     Returns:
-        pd.DataFrame: Multi-step targets aligned with the input data, with the index shifted so that 
-                      each target corresponds to the date of the last predicted day.
+        pd.DataFrame: Multi-step targets aligned with the input data, with the index shifted back so that 
+                      each target is labeled with the same date as the input.
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
@@ -118,10 +117,10 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    # Shift the index by horizon*24 to label targets with the last predicted day's date
-    df_targets = pd.DataFrame(blocks, index=y_df.index[horizon * 24:])
+    # Use the same dates as the original rows (except for the last horizon*24 rows)
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[horizon * 24:])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24])
         return df_targets, df_baselines
     else:
         return df_targets
@@ -132,8 +131,8 @@ def process_data(config):
     Processes data for different plugins, including ANN, CNN, LSTM, and Transformer.
     Loads and processes training, validation, and test datasets; extracts DATE_TIME information,
     and trims each pair (x and y) to their common date range so that they share the same number of rows.
-    The multi-step targets are now generated with their index shifted so that each target corresponds
-    to the date of the final predicted time step.
+    The multi-step targets are now generated with their index shifted back so that each target corresponds
+    to the same date as the input data (or later trimmed to align with sliding window dates).
 
     Returns:
         dict: Processed datasets for training, validation, and test, along with corresponding
@@ -142,36 +141,12 @@ def process_data(config):
     """
     import pandas as pd
     # 1) LOAD CSVs for train, validation, and test
-    x_train = load_csv(
-        config["x_train_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_train")
-    )
-    y_train = load_csv(
-        config["y_train_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_train")
-    )
-    x_val = load_csv(
-        config["x_validation_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_val")
-    )
-    y_val = load_csv(
-        config["y_validation_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_val")
-    )
-    x_test = load_csv(
-        config["x_test_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_test")
-    )
-    y_test = load_csv(
-        config["y_test_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_test")
-    )
+    x_train = load_csv(config["x_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
+    y_train = load_csv(config["y_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
+    x_val = load_csv(config["x_validation_file"], headers=config["headers"], max_rows=config.get("max_steps_val"))
+    y_val = load_csv(config["y_validation_file"], headers=config["headers"], max_rows=config.get("max_steps_val"))
+    x_test = load_csv(config["x_test_file"], headers=config["headers"], max_rows=config.get("max_steps_test"))
+    y_test = load_csv(config["y_test_file"], headers=config["headers"], max_rows=config.get("max_steps_test"))
     
     # 1a) Trim to common date range if possible.
     if isinstance(x_train.index, pd.DatetimeIndex) and isinstance(y_train.index, pd.DatetimeIndex):
@@ -215,7 +190,7 @@ def process_data(config):
     x_test = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_test = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-    # 4) MULTI-STEP TARGETS
+    # 4) MULTI-STEP TARGETS (using our updated target generators)
     time_horizon = config["time_horizon"]
     if config.get("use_daily", False):
         y_train_ma = y_train.rolling(window=3, center=True, min_periods=1).mean()
