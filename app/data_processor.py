@@ -333,51 +333,63 @@ def run_prediction_pipeline(config, plugin):
         baseline_test = datasets.get("baseline_test")
 
     # ---- Verification check before feeding data to the model ----
-    try:
+     try:
         # Load the original y_train from file using the same max_rows as in process_data
         original_y_train = load_csv(config["y_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
         original_y_train = original_y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
-        # Determine offset: if sliding windows are used, the multi-step targets are trimmed by (window_size - 1)
+        # Determine offset: if sliding windows are used, multi-step targets are trimmed by (window_size - 1)
         offset = config["window_size"] - 1 if config["plugin"] in ["lstm", "cnn", "transformer"] else 0
 
-        # Apply rolling mean if daily mode is used
+        # Process y_train as in process_data (apply rolling mean if daily)
         if config.get("use_daily", False):
             processed_y = original_y_train.rolling(window=3, center=True, min_periods=1).mean()
-            if config.get("use_returns", False):
-                # For daily returns: expected row = difference between value at t = offset + 24*d and base at t = offset
-                expected_row = np.array([
-                    processed_y.iloc[offset + 24 * d].values[0] - processed_y.iloc[offset].values[0]
-                    for d in range(1, config["time_horizon"] + 1)
-                ])
-            else:
-                # For daily mode without returns: expected row = value at t = offset + 24*d
-                expected_row = np.array([
-                    processed_y.iloc[offset + 24 * d].values[0]
-                    for d in range(1, config["time_horizon"] + 1)
-                ])
         else:
-            # Non-daily mode: no rolling mean applied
             processed_y = original_y_train
-            if config.get("use_returns", False):
-                expected_row = np.array([
-                    processed_y.iloc[offset + d].values[0] - processed_y.iloc[offset].values[0]
-                    for d in range(1, config["time_horizon"] + 1)
-                ])
-            else:
-                expected_row = np.array([
-                    processed_y.iloc[offset + d].values[0]
-                    for d in range(1, config["time_horizon"] + 1)
-                ])
-        # Debug message to display offset and base value
-        base_value = processed_y.iloc[offset].values[0]
-        print(f"[DEBUG] Verification offset: {offset}, base value: {base_value}")
 
-        # Get the computed multi-step target row from the processed dataset
+        base_value = processed_y.iloc[offset].values[0]
+        expected_values = []
+        debug_details = []
+
+        if config.get("use_daily", False):
+            # In daily mode, use a step of 24 rows for each day
+            for d in range(1, config["time_horizon"] + 1):
+                idx = offset + 24 * d
+                if idx >= len(processed_y):
+                    debug_details.append(f"Day {d}: index {idx} is out of bounds (length {len(processed_y)})")
+                    continue
+                future_value = processed_y.iloc[idx].values[0]
+                # If use_returns is True, expected value is the difference
+                diff_value = future_value - base_value if config.get("use_returns", False) else future_value
+                expected_values.append(diff_value)
+                debug_details.append(f"[DEBUG] Day {d}: Using row at index {idx}: future value = {future_value:.8f}, "
+                                     f"base value = {base_value:.8f}, diff = {diff_value:.8f}")
+        else:
+            # Non-daily mode: use a step of 1 row for each tick
+            for d in range(1, config["time_horizon"] + 1):
+                idx = offset + d
+                if idx >= len(processed_y):
+                    debug_details.append(f"Tick {d}: index {idx} is out of bounds (length {len(processed_y)})")
+                    continue
+                future_value = processed_y.iloc[idx].values[0]
+                diff_value = future_value - base_value if config.get("use_returns", False) else future_value
+                expected_values.append(diff_value)
+                debug_details.append(f"[DEBUG] Tick {d}: Using row at index {idx}: future value = {future_value:.8f}, "
+                                     f"base value = {base_value:.8f}, diff = {diff_value:.8f}")
+
+        expected_row = np.array(expected_values)
+        print(f"[DEBUG] Verification offset: {offset}")
+        print(f"[DEBUG] Base row at index {offset}: {processed_y.iloc[offset].values}")
+        for detail in debug_details:
+            print(detail)
+
+        # Get the computed multi-step target row from the processed dataset (y_train from process_data)
         if isinstance(datasets["y_train"], pd.DataFrame):
             computed_row = datasets["y_train"].iloc[0].values
         else:
             computed_row = datasets["y_train"][0, :]
-        print(f"Verification check: expected multi-step target row = {expected_row}, computed multi-step target row = {computed_row}")
+        print(f"[DEBUG] Expected multi-step target row: {expected_row}")
+        print(f"[DEBUG] Computed multi-step target row: {computed_row}")
+
         if not np.allclose(expected_row, computed_row, atol=1e-5):
             print("Verification check failed: the multi-step target does not match the expected future values.")
             sys.exit(1)
