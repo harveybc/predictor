@@ -506,11 +506,18 @@ def run_prediction_pipeline(config, plugin):
                     raise ValueError(f"Failed to load parameters from {config['strategy_load_parameters']}: {e}")
             else:   
                 raise ValueError("Parameters json file for strategy are required.")
-            
+            def load_csv_d(file_path, headers=True, **kwargs):
+                # Read CSV with header if specified
+                df = pd.read_csv(file_path, header=0 if headers else None, **kwargs)
+                # If headers are enabled and the first column is 'DATE_TIME', use it as the index
+                if headers and df.columns[0].strip().upper() == "DATE_TIME":
+                    df.index = pd.to_datetime(df.iloc[:, 0], errors='raise')
+                    df.drop(df.columns[0], axis=1, inplace=True)
+                return df
             # load the denormalized hourly predictions from the strategy_1h_prediction file
-            hourly_df = load_csv(config["strategy_1h_prediction"], headers=config["headers"])
+            hourly_df = load_csv_d(config["strategy_1h_prediction"], headers=config["headers"])
             # load the denormalized predictions uncertainty from the strategy_1h_uncertainty file
-            uncertainty_hourly_df = load_csv(config["strategy_1h_uncertainty"], headers=config["headers"])
+            uncertainty_hourly_df = load_csv_d(config["strategy_1h_uncertainty"], headers=config["headers"])
             # use the current iteration normalized daily predictions
             daily_df = None
             uncertainty_daily_df = None
@@ -571,7 +578,7 @@ def run_prediction_pipeline(config, plugin):
             uncertainty_daily_df = uncertainty_daily_df[cols]
             
             # load the strategy base (unnormalized) hourly data
-            base_df = load_csv(config["strategy_base_dataset"], headers=config["headers"])
+            base_df = load_csv_d(config["strategy_base_dataset"], headers=config["headers"])
 
             # Ensure all datasets have a datetime index based on DATE_TIME column.
             def ensure_datetime(df, name):
