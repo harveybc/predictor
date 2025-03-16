@@ -63,13 +63,12 @@ def create_multi_step(y_df, horizon, use_returns=False):
     Returns:
         pd.DataFrame: Multi-step targets aligned with the input data, where the index 
                       remains the same as the original (i.e. the date is not shifted)
-                      but the values are taken from the future (starting at row i+horizon).
+                      but the target values are taken from the future starting at row i+horizon.
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
     baselines = []
-    # We loop until len(y_df) - 2*horizon + 1 so that for each row i, we can take values from i+horizon to i+2*horizon-1.
-    for i in range(len(y_df) - 2 * horizon + 1):
+    for i in range(len(y_df) - horizon):
         base = y_df.iloc[i].values.flatten()
         if use_returns:
             window = list(y_df.iloc[i + horizon : i + horizon + horizon].values.flatten() - base)
@@ -78,7 +77,7 @@ def create_multi_step(y_df, horizon, use_returns=False):
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    # Preserve the original dates for rows 0 to len(blocks)-1.
+    # Use the same dates as the original rows (up to the row before the last horizon rows)
     df_targets = pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
     if use_returns:
         df_baselines = pd.DataFrame(baselines, index=y_df.index[:len(baselines)])
@@ -100,14 +99,13 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
 
     Returns:
         pd.DataFrame: Multi-step targets aligned with the input data, with the index remaining
-                      the same as the original (i.e. the date is not shifted) while the values
-                      are taken from rows at 24-tick intervals (i.e. from t+24, t+48, ..., t+24*horizon).
+                      the same as the original while the target values are taken from rows at
+                      24-tick intervals (i.e. from t+24, t+48, ..., t+24*horizon).
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
     baselines = []
-    # Loop until len(y_df) - 24*horizon + 1 so that for each row i, we can take values from i+24, i+48, ..., i+24*horizon.
-    for i in range(len(y_df) - 24 * horizon + 1):
+    for i in range(len(y_df) - horizon * 24):
         base = y_df.iloc[i].values.flatten()
         window = []
         for d in range(1, horizon + 1):
@@ -329,7 +327,6 @@ def run_prediction_pipeline(config, plugin):
     train_dates = datasets.get("dates_train")
     val_dates = datasets.get("dates_val")
     test_dates = datasets.get("dates_test")
-    # When using returns, process_data returns baseline values
     if config.get("use_returns", False):
         baseline_train = datasets.get("baseline_train")
         baseline_val = datasets.get("baseline_val")
@@ -337,16 +334,24 @@ def run_prediction_pipeline(config, plugin):
 
     # ---- Verification check before feeding data to the model ----
     try:
-        # Load the original y_train from file (do not modify dates)
+        # Load the original y_train from file (without modifying dates)
         original_y_train = load_csv(config["y_train_file"], headers=config["headers"])
         original_y_train = original_y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
-        if config.get("use_daily", False):
-            # For daily mode, expected multi-step target row should contain values at indices 24, 48, ..., 24*time_horizon
-            expected_row = np.array([original_y_train.iloc[24 * d].values[0] for d in range(1, config["time_horizon"] + 1)])
+        if config.get("use_returns", False):
+            if config.get("use_daily", False):
+                # For daily mode with returns, expected row = [y[24] - y[0], y[48] - y[0], ..., y[24*time_horizon] - y[0]]
+                expected_row = np.array([original_y_train.iloc[24 * d].values[0] - original_y_train.iloc[0].values[0]
+                                           for d in range(1, config["time_horizon"] + 1)])
+            else:
+                # For non-daily mode with returns, expected row = [y[time_horizon] - y[0], y[time_horizon+1] - y[0], ..., y[time_horizon+(time_horizon-1)] - y[0]]
+                expected_row = np.array([original_y_train.iloc[config["time_horizon"] + i].values[0] - original_y_train.iloc[0].values[0]
+                                           for i in range(config["time_horizon"])])
         else:
-            # For non-daily mode, expected row contains values at indices time_horizon, time_horizon+1, ..., time_horizon + (time_horizon-1)
-            expected_row = np.array([original_y_train.iloc[config["time_horizon"] + i].values[0] for i in range(config["time_horizon"])])
-        # The processed multi-step target row from y_train should be computed already.
+            if config.get("use_daily", False):
+                expected_row = np.array([original_y_train.iloc[24 * d].values[0] for d in range(1, config["time_horizon"] + 1)])
+            else:
+                expected_row = np.array([original_y_train.iloc[config["time_horizon"] + i].values[0] for i in range(config["time_horizon"])])
+        # Get the first row from the processed multi-step y_train target.
         if isinstance(datasets["y_train"], pd.DataFrame):
             computed_row = datasets["y_train"].iloc[0].values
         else:
