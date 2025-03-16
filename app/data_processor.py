@@ -500,24 +500,44 @@ def run_prediction_pipeline(config, plugin):
         test_r2_list.append(test_r2)
         print(f"Iteration {iteration} completed in {time.time()-iter_start:.2f} seconds")
 
-    # Save aggregate results
-    results = {
-        "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", "Train Profit", "Train Risk", 
-                    "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR", "Validation Profit", "Validation Risk",
-                    "Test MAE", "Test R²", "Test Uncertainty", "Test SNR", "Test Profit", "Test Risk"],
-        "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_unc_list), np.mean(training_snr_list), np.mean(training_profit_list), np.mean(training_risk_list),
-                    np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_unc_list), np.mean(validation_snr_list), np.mean(validation_profit_list), np.mean(validation_risk_list),
-                    np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_unc_list), np.mean(test_snr_list), np.mean(test_profit_list), np.mean(test_risk_list)],
-        "Std Dev": [np.std(training_mae_list), np.std(training_r2_list), np.std(training_unc_list), np.std(training_snr_list), np.std(training_profit_list), np.std(training_risk_list),
-                    np.std(validation_mae_list), np.std(validation_r2_list), np.std(validation_unc_list), np.std(validation_snr_list), np.std(validation_profit_list), np.std(validation_risk_list),
-                    np.std(test_mae_list), np.std(test_r2_list), np.std(test_unc_list), np.std(test_snr_list), np.std(test_profit_list), np.std(test_risk_list)],
-        "Max": [np.max(training_mae_list), np.max(training_r2_list), np.max(training_unc_list), np.max(training_snr_list), np.max(training_profit_list), np.max(training_risk_list),
-                np.max(validation_mae_list), np.max(validation_r2_list), np.max(validation_unc_list), np.max(validation_snr_list), np.max(validation_profit_list), np.max(validation_risk_list),
-                np.max(test_mae_list), np.max(test_r2_list), np.max(test_unc_list), np.max(test_snr_list), np.max(test_profit_list), np.max(test_risk_list)],
-        "Min": [np.min(training_mae_list), np.min(training_r2_list), np.min(training_unc_list), np.min(training_snr_list), np.min(training_profit_list), np.min(training_risk_list),
-                np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_unc_list), np.min(validation_snr_list), np.min(validation_profit_list), np.min(validation_risk_list),
-                np.min(test_mae_list), np.min(test_r2_list), np.min(test_unc_list), np.min(test_snr_list), np.min(test_profit_list), np.min(test_risk_list)]
-    }
+    # Save consolidated results
+    if config.get("use_strategy", False): 
+        results = {
+            "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", "Train Profit", "Train Risk", 
+                        "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR", "Validation Profit", "Validation Risk",
+                        "Test MAE", "Test R²", "Test Uncertainty", "Test SNR", "Test Profit", "Test Risk"],
+            "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_unc_list), np.mean(training_snr_list), np.mean(training_profit_list), np.mean(training_risk_list),
+                        np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_unc_list), np.mean(validation_snr_list), np.mean(validation_profit_list), np.mean(validation_risk_list),
+                        np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_unc_list), np.mean(test_snr_list), np.mean(test_profit_list), np.mean(test_risk_list)],
+            "Std Dev": [np.std(training_mae_list), np.std(training_r2_list), np.std(training_unc_list), np.std(training_snr_list), np.std(training_profit_list), np.std(training_risk_list),
+                        np.std(validation_mae_list), np.std(validation_r2_list), np.std(validation_unc_list), np.std(validation_snr_list), np.std(validation_profit_list), np.std(validation_risk_list),
+                        np.std(test_mae_list), np.std(test_r2_list), np.std(test_unc_list), np.std(test_snr_list), np.std(test_profit_list), np.std(test_risk_list)],
+            "Max": [np.max(training_mae_list), np.max(training_r2_list), np.max(training_unc_list), np.max(training_snr_list), np.max(training_profit_list), np.max(training_risk_list),
+                    np.max(validation_mae_list), np.max(validation_r2_list), np.max(validation_unc_list), np.max(validation_snr_list), np.max(validation_profit_list), np.max(validation_risk_list),
+                    np.max(test_mae_list), np.max(test_r2_list), np.max(test_unc_list), np.max(test_snr_list), np.max(test_profit_list), np.max(test_risk_list)],
+            "Min": [np.min(training_mae_list), np.min(training_r2_list), np.min(training_unc_list), np.min(training_snr_list), np.min(training_profit_list), np.min(training_risk_list),
+                    np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_unc_list), np.min(validation_snr_list), np.min(validation_profit_list), np.min(validation_risk_list),
+                    np.min(test_mae_list), np.min(test_r2_list), np.min(test_unc_list), np.min(test_snr_list), np.min(test_profit_list), np.min(test_risk_list)]
+            }
+    else:
+        results = {
+            "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", 
+                        "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR",
+                        "Test MAE", "Test R²", "Test Uncertainty", "Test SNR"],
+            "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_unc_list), np.mean(training_snr_list),
+                        np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_unc_list), np.mean(validation_snr_list),
+                        np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_unc_list), np.mean(test_snr_list)],
+            "Std Dev": [np.std(training_mae_list), np.std(training_r2_list), np.std(training_unc_list), np.std(training_snr_list),
+                        np.std(validation_mae_list), np.std(validation_r2_list), np.std(validation_unc_list), np.std(validation_snr_list),
+                        np.std(test_mae_list), np.std(test_r2_list), np.std(test_unc_list), np.std(test_snr_list)],
+            "Max": [np.max(training_mae_list), np.max(training_r2_list), np.max(training_unc_list), np.max(training_snr_list),
+                    np.max(validation_mae_list), np.max(validation_r2_list), np.max(validation_unc_list), np.max(validation_snr_list),
+                    np.max(test_mae_list), np.max(test_r2_list), np.max(test_unc_list), np.max(test_snr_list)],
+            "Min": [np.min(training_mae_list), np.min(training_r2_list), np.min(training_unc_list), np.min(training_snr_list),
+                    np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_unc_list), np.min(validation_snr_list),
+                    np.min(test_mae_list), np.min(test_r2_list), np.min(test_unc_list), np.min(test_snr_list)],
+            }
+    # Save consolidated results to CSV
     results_file = config.get("results_file", "results.csv")
     pd.DataFrame(results).to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
