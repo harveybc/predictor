@@ -20,30 +20,13 @@ from tensorflow.keras.utils import plot_model
 from tensorflow.keras.losses import Huber
 
 def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
-    """
-    Create sliding windows for input data only.
-
-    Args:
-        data (np.ndarray or pd.DataFrame): Input data array of shape (n_samples, n_features).
-        window_size (int): The number of time steps in each window.
-        stride (int): The stride between successive windows.
-        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
-
-    Returns:
-        If date_times is provided:
-            tuple: (windows, date_time_windows) where windows is an array of shape 
-                   (n_windows, window_size, n_features) and date_time_windows is a list of 
-                   the DATE_TIME value corresponding to the last time step of each window.
-        Otherwise:
-            np.ndarray: Array of sliding windows.
-    """
     windows = []
     dt_windows = []
     for i in range(0, len(data) - window_size + 1, stride):
         windows.append(data[i: i + window_size])
         if date_times is not None:
-            # Use the date corresponding to the last element in the window
-            dt_windows.append(date_times[i + window_size - 1])
+            # Now taking the date of the first tick (base) in the window:
+            dt_windows.append(date_times[i])
     if date_times is not None:
         return np.array(windows), dt_windows
     else:
@@ -295,14 +278,7 @@ def process_data(config):
         x_val = x_val.to_numpy().astype(np.float32)
         x_test = x_test.to_numpy().astype(np.float32)
         window_size = config["window_size"]
-        def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
-            windows = []
-            dt_windows = []
-            for i in range(0, len(data) - window_size + 1, stride):
-                windows.append(data[i:i+window_size])
-                if date_times is not None:
-                    dt_windows.append(date_times[i+window_size-1])
-            return np.array(windows), dt_windows if date_times is not None else np.array(windows)
+    
         x_train, train_dates = create_sliding_windows_x(x_train, window_size, stride=1, date_times=train_dates)
         x_val, val_dates = create_sliding_windows_x(x_val, window_size, stride=1, date_times=val_dates)
         x_test, test_dates = create_sliding_windows_x(x_test, window_size, stride=1, date_times=test_dates)
