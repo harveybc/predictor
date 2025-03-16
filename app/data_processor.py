@@ -20,17 +20,35 @@ from tensorflow.keras.utils import plot_model
 from tensorflow.keras.losses import Huber
 
 def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
+    """
+    Create sliding windows for input data only.
+    
+    Args:
+        data (np.ndarray or pd.DataFrame): Input data array of shape (n_samples, n_features).
+        window_size (int): The number of time steps in each window.
+        stride (int): The stride between successive windows.
+        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
+    
+    Returns:
+        If date_times is provided:
+            tuple: (windows, base_dates) where windows is an array of shape 
+                   (n_windows, window_size, n_features) and base_dates is a list of 
+                   the DATE_TIME value corresponding to the *first* element in each window.
+        Otherwise:
+            np.ndarray: Array of sliding windows.
+    """
     windows = []
-    dt_windows = []
+    base_dates = []
     for i in range(0, len(data) - window_size + 1, stride):
         windows.append(data[i: i + window_size])
         if date_times is not None:
-            # Now taking the date of the first tick (base) in the window:
-            dt_windows.append(date_times[i])
+            # Use the date corresponding to the first element in the window (the current tick)
+            base_dates.append(date_times[i])
     if date_times is not None:
-        return np.array(windows), dt_windows
+        return np.array(windows), base_dates
     else:
         return np.array(windows)
+
 
 def create_multi_step(y_df, horizon, use_returns=False):
     """
