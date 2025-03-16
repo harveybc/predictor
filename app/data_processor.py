@@ -559,7 +559,7 @@ def run_prediction_pipeline(config, plugin):
                     uncertainty_daily_df = uncertainty_estimates
             else:
                 uncertainty_daily_df = uncertainty_estimates
-            uncertainty_df = pd.DataFrame(
+            uncertainty_daily_df = pd.DataFrame(
                 uncertainty_daily_df, columns=[f"Uncertainty_{i+1}" for i in range(uncertainty_daily_df.shape[1])]
             )    
             # Add DATE_TIME column to uncertainties if available                
