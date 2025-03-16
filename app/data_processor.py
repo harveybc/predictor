@@ -63,22 +63,22 @@ def create_multi_step(y_df, horizon, use_returns=False):
     """
     blocks = []
     baselines = []
-    for i in range(len(y_df) - horizon):
+    for i in range(len(y_df) - horizon + 1):
         base = y_df.iloc[i].values.flatten()
         if use_returns:
-            window = list(y_df.iloc[i+1: i+1+horizon].values.flatten() - base)
+            # Subtract base from each element in the slice starting at i (i.e. current tick)
+            window = list(y_df.iloc[i: i+horizon].values.flatten() - base)
         else:
-            window = list(y_df.iloc[i+1: i+1+horizon].values.flatten())
+            window = list(y_df.iloc[i: i+horizon].values.flatten())
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon])
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:len(baselines)])
         return df_targets, df_baselines
     else:
         return df_targets
-
 
 def create_multi_step_daily(y_df, horizon, use_returns=False):
     """
@@ -97,21 +97,22 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
     """
     blocks = []
     baselines = []
-    for i in range(len(y_df) - horizon * 24):
+    for i in range(len(y_df) - horizon * 24 + 1):
         base = y_df.iloc[i].values.flatten()
         window = []
-        for d in range(1, horizon + 1):
+        # Start at d=0 so that the first element is from the current tick
+        for d in range(0, horizon):
             val = y_df.iloc[i + d * 24].values.flatten()
             if use_returns:
-                window.extend(list(val - base))
+                window.append(val[0] - base[0])
             else:
-                window.extend(list(val))
+                window.append(val[0])
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:len(baselines)])
         return df_targets, df_baselines
     else:
         return df_targets
@@ -228,29 +229,22 @@ def process_data(config):
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
 
 
-    # --- CHUNK: Verify multi-step targets for current tick before sliding windows ---
+    # --- CHUNK: Verify multi-step targets before sliding windows ---
     print("[VERIFICATION] Verifying multi-step targets before applying sliding windows...")
     verif_index = 0
-    # Determine offset: daily mode uses an offset of 24; non-daily uses offset of 1.
     offset = 24 if config.get("use_daily", False) else 1
-
-    # Compute expected target values for the current tick.
-    # For each future step (from 1 to time_horizon), get the value at index = current index + (step * offset)
     expected_targets = []
-    for step in range(1, config["time_horizon"] + 1):
-        idx = verif_index + step * offset
+    for step in range(0, config["time_horizon"]):
+        idx = verif_index + step * (24 if config.get("use_daily", False) else 1)
         if idx >= len(y_train):
             print(f"[VERIFICATION] Warning: index {idx} out of bounds; skipping step {step}.")
             break
         value = y_train.iloc[idx].values[0]
         if config.get("use_returns", False):
-            # When using returns, the target is (future value - base value)
             expected_targets.append(value - y_train.iloc[verif_index].values[0])
         else:
             expected_targets.append(value)
     expected_targets = np.array(expected_targets)
-
-    # Retrieve computed multi-step target row (from y_train_multi) for the chosen base tick.
     if isinstance(y_train_multi, pd.DataFrame):
         computed_targets = y_train_multi.iloc[verif_index].values
     else:
@@ -259,12 +253,12 @@ def process_data(config):
     print("[VERIFICATION] Base value at index", verif_index, ":", y_train.iloc[verif_index].values[0])
     print("[VERIFICATION] Expected multi-step target row:", expected_targets)
     print("[VERIFICATION] Computed multi-step target row:", computed_targets)
-
     if not np.allclose(expected_targets, computed_targets, atol=1e-5):
         print("[VERIFICATION] ERROR: Multi-step target row does not match expected values.")
         sys.exit(1)
     else:
         print("[VERIFICATION] Multi-step target row verified successfully.")
+    # --- End of Verification Chunk ---
     # --- End of Verification Chunk ---
 
     # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
