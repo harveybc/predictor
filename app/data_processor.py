@@ -91,39 +91,37 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
     Creates multi-step targets for time-series prediction using daily data.
     If use_returns is True, targets are computed as the difference between each future value 
     and the current (baseline) value.
-
-    Args:
-        y_df (pd.DataFrame): Target data as a DataFrame.
-        horizon (int): Number of future days to predict.
-        use_returns (bool): If True, compute returns instead of absolute values.
-
-    Returns:
-        pd.DataFrame: Multi-step targets aligned with the input data, with the index remaining
-                      the same as the original while the target values are taken from rows at
-                      24-tick intervals (i.e. from t+24, t+48, ..., t+24*horizon).
-        (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
+    ...
     """
     blocks = []
     baselines = []
+    # For debugging, we assume a verification offset equals (window_size - 1)=31.
+    VERIFICATION_OFFSET = 31  
     for i in range(len(y_df) - horizon * 24):
         base = y_df.iloc[i].values.flatten()
         window = []
+        if i == VERIFICATION_OFFSET:
+            print(f"[DEBUG - create_multi_step_daily] At i={i}, base = {base}")
         for d in range(1, horizon + 1):
-            val = y_df.iloc[i + 24 * d].values.flatten()
-            if use_returns:
-                window.extend(list(val - base))
-            else:
-                window.extend(list(val))
+            idx = i + d * 24
+            # Ensure idx is within bounds.
+            if idx >= len(y_df):
+                print(f"[DEBUG - create_multi_step_daily] Day {d}: index {idx} out of bounds.")
+                continue
+            val = y_df.iloc[idx].values.flatten()
+            diff = val - base if use_returns else val
+            window.extend(list(diff))
+            if i == VERIFICATION_OFFSET:
+                print(f"[DEBUG - create_multi_step_daily] Day {d}: row index {idx}: future value = {val}, diff = {diff}")
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:len(baselines)])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24])
         return df_targets, df_baselines
     else:
         return df_targets
-
 
 def process_data(config):
     """
@@ -332,27 +330,24 @@ def run_prediction_pipeline(config, plugin):
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
 
-        # ---- Verification check before feeding data to the model ----
+    # ---- Verification check before feeding data to the model ----
     try:
         # Load the original y_train from file using the same max_rows as in process_data.
         original_y_train = load_csv(config["y_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
         original_y_train = original_y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
         
-        # Determine the offset: if sliding windows are used, offset = window_size - 1; otherwise, 0.
-        offset = config["window_size"] - 1 if config["plugin"] in ["lstm", "cnn", "transformer"] else 0
-
-        # Process y_train similarly as in process_data.
+        # For use_daily mode, process the targets with the rolling mean as in process_data.
         if config.get("use_daily", False):
             processed_y = original_y_train.rolling(window=3, center=True, min_periods=1).mean()
         else:
             processed_y = original_y_train
 
-        # Use the row at index 'offset' as the base.
+        # Determine verification offset: for sliding windows, offset = window_size - 1; else 0.
+        offset = config["window_size"] - 1 if config["plugin"] in ["lstm", "cnn", "transformer"] else 0
         base_value = processed_y.iloc[offset].values[0]
         expected_values = []
         debug_details = []
         if config.get("use_daily", False):
-            # For daily mode: use step = 24 rows.
             for d in range(1, config["time_horizon"] + 1):
                 idx = offset + 24 * d
                 if idx >= len(processed_y):
@@ -363,7 +358,6 @@ def run_prediction_pipeline(config, plugin):
                 expected_values.append(diff_value)
                 debug_details.append(f"[DEBUG] Day {d}: row index {idx}: future value = {future_value:.8f}, base = {base_value:.8f}, diff = {diff_value:.8f}")
         else:
-            # For non-daily mode: use step = 1 row.
             for d in range(1, config["time_horizon"] + 1):
                 idx = offset + d
                 if idx >= len(processed_y):
@@ -380,8 +374,7 @@ def run_prediction_pipeline(config, plugin):
         for detail in debug_details:
             print(detail)
         
-        # Retrieve the computed multi-step target row from the processed dataset.
-        # Use .iloc if available; otherwise, use standard NumPy indexing.
+        # Retrieve computed multi-step target row from processed y_train.
         if hasattr(datasets["y_train"], 'iloc'):
             computed_row = datasets["y_train"].iloc[offset].values
         else:
