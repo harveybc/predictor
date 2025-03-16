@@ -57,18 +57,19 @@ def create_multi_step(y_df, horizon, use_returns=False):
 
     Args:
         y_df (pd.DataFrame): Target data as a DataFrame.
-        horizon (int): Number of future steps to predict.
+        horizon (int): Number of future ticks (not counting the current tick) to predict.
         use_returns (bool): If True, compute returns instead of absolute values.
 
     Returns:
-        pd.DataFrame: Multi-step targets aligned with the input data, where the index 
-                      remains the same as the original (i.e. the date is not shifted)
-                      but the target values are taken from the future starting at row i+horizon.
+        pd.DataFrame: Multi-step targets where the row index remains the same as the original
+                      y_df (i.e. the date is not shifted) and each row i contains the target values
+                      from row i+horizon to row i+horizon+horizon-1.
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
     baselines = []
-    for i in range(len(y_df) - horizon):
+    # We want, for each row i, the target row to contain the values at rows i+horizon, i+horizon+1, ..., i+horizon+horizon-1.
+    for i in range(len(y_df) - 2 * horizon + 1):
         base = y_df.iloc[i].values.flatten()
         if use_returns:
             window = list(y_df.iloc[i + horizon : i + horizon + horizon].values.flatten() - base)
@@ -77,7 +78,53 @@ def create_multi_step(y_df, horizon, use_returns=False):
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    # Use the same dates as the original rows (up to the row before the last horizon rows)
+    # Use the original dates for the first len(blocks) rows
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
+    if use_returns:
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:len(baselines)])
+        return df_targets, df_baselines
+    else:
+        return df_targets
+
+def create_multi_step_daily(y_df, horizon, use_returns=False):
+    """
+    Creates multi-step targets for time-series prediction using daily data.
+    If use_returns is True, targets are computed as the difference between each future value 
+    and the current (baseline) value.
+
+    For each row i, the target row will contain the values at rows:
+        i + 24, i + 48, ..., i + 24 * horizon.
+    (That is, one value per day for the next horizon days.)
+    The index (i.e. the date) remains that of row i.
+
+    Args:
+        y_df (pd.DataFrame): Target data as a DataFrame.
+        horizon (int): Number of future days to predict.
+        use_returns (bool): If True, compute returns instead of absolute values.
+
+    Returns:
+        pd.DataFrame: Multi-step targets where the row index remains unchanged and each row i
+                      contains the target values from rows i+24, i+48, ..., i+24*horizon.
+        (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
+    """
+    blocks = []
+    baselines = []
+    for i in range(len(y_df) - horizon * 24):
+        base = y_df.iloc[i].values.flatten()
+        window = []
+        for d in range(1, horizon + 1):
+            idx = i + 24 * d
+            # Ensure index is in bounds.
+            if idx >= len(y_df):
+                break
+            value = y_df.iloc[idx].values.flatten()
+            diff = value - base if use_returns else value
+            # Append only the first element (assuming a single target column)
+            window.append(diff[0])
+        if len(window) == horizon:
+            blocks.append(window)
+            if use_returns:
+                baselines.append(base)
     df_targets = pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
     if use_returns:
         df_baselines = pd.DataFrame(baselines, index=y_df.index[:len(baselines)])
@@ -86,56 +133,7 @@ def create_multi_step(y_df, horizon, use_returns=False):
         return df_targets
 
 
-def create_multi_step_daily(y_df, horizon, use_returns=False):
-    """
-    Creates multi-step targets for time-series prediction using daily data.
-    If use_returns is True, targets are computed as the difference between each future value 
-    and the current (baseline) value.
-    ...
-    """
-    blocks = []
-    baselines = []
-    # For debugging, we assume a verification offset equals (window_size - 1)=31.
-    VERIFICATION_OFFSET = 31  
-    for i in range(len(y_df) - horizon * 24):
-        base = y_df.iloc[i].values.flatten()
-        window = []
-        if i == VERIFICATION_OFFSET:
-            print(f"[DEBUG - create_multi_step_daily] At i={i}, base = {base}")
-        for d in range(1, horizon + 1):
-            idx = i + d * 24
-            # Ensure idx is within bounds.
-            if idx >= len(y_df):
-                print(f"[DEBUG - create_multi_step_daily] Day {d}: index {idx} out of bounds.")
-                continue
-            val = y_df.iloc[idx].values.flatten()
-            diff = val - base if use_returns else val
-            window.extend(list(diff))
-            if i == VERIFICATION_OFFSET:
-                print(f"[DEBUG - create_multi_step_daily] Day {d}: row index {idx}: future value = {val}, diff = {diff}")
-        blocks.append(window)
-        if use_returns:
-            baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
-    if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24])
-        return df_targets, df_baselines
-    else:
-        return df_targets
-
 def process_data(config):
-    """
-    Processes data for different plugins, including ANN, CNN, LSTM, and Transformer.
-    Loads and processes training, validation, and test datasets; extracts DATE_TIME information,
-    and trims each pair (x and y) to their common date range so that they share the same number of rows.
-    The multi-step targets are now generated with their index shifted back so that each target corresponds
-    to the same date as the input data (or later trimmed to align with sliding window dates).
-
-    Returns:
-        dict: Processed datasets for training, validation, and test, along with corresponding
-              DATE_TIME arrays. Additionally, if config['use_returns'] is True, the corresponding 
-              baseline target values (the original CLOSE values) are also returned.
-    """
     import pandas as pd
     # 1) LOAD CSVs for train, validation, and test
     x_train = load_csv(config["x_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
@@ -210,6 +208,61 @@ def process_data(config):
             y_train_multi = create_multi_step(y_train, time_horizon, use_returns=False)
             y_val_multi = create_multi_step(y_val, time_horizon, use_returns=False)
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
+
+    # ---- Verification Check (BEFORE sliding window conversion) ----
+    # We verify that the multi-step target for the first sample is correct.
+    # In our design, we want the multi-step targets to use the same dates as the original y data
+    # while the target values come from the future starting at row i+horizon.
+    # For example, if use_daily is False and time_horizon is 3,
+    # for the first row (i=0) the expected target row should come from original y values at rows 1, 2, and 3.
+    # If use_daily is True, it should come from rows 24, 48, 72 (for time_horizon=3).
+    try:
+        # Use the original y_train (before any sliding windows)
+        verif_index = (config["window_size"] - 1) if config["plugin"] in ["lstm", "cnn", "transformer"] else 0
+        base_val = y_train.iloc[verif_index].values[0]
+        expected_values = []
+        debug_details = []
+        if config.get("use_daily", False):
+            for d in range(1, config["time_horizon"] + 1):
+                idx = verif_index + 24 * d
+                if idx >= len(y_train):
+                    debug_details.append(f"[DEBUG] Day {d}: index {idx} out of bounds (length {len(y_train)})")
+                    continue
+                future_val = y_train.iloc[idx].values[0]
+                diff_val = future_val - base_val if config.get("use_returns", False) else future_val
+                expected_values.append(diff_val)
+                debug_details.append(f"[DEBUG] Day {d}: index {idx}: future = {future_val:.8f}, base = {base_val:.8f}, diff = {diff_val:.8f}")
+        else:
+            for d in range(1, config["time_horizon"] + 1):
+                idx = verif_index + d
+                if idx >= len(y_train):
+                    debug_details.append(f"[DEBUG] Tick {d}: index {idx} out of bounds (length {len(y_train)})")
+                    continue
+                future_val = y_train.iloc[idx].values[0]
+                diff_val = future_val - base_val if config.get("use_returns", False) else future_val
+                expected_values.append(diff_val)
+                debug_details.append(f"[DEBUG] Tick {d}: index {idx}: future = {future_val:.8f}, base = {base_val:.8f}, diff = {diff_val:.8f}")
+        expected_row = np.array(expected_values)
+        # Get computed multi-step target row from the processed y_train_multi.
+        if isinstance(y_train_multi, pd.DataFrame):
+            computed_row = y_train_multi.iloc[0].values
+        else:
+            computed_row = y_train_multi[0, :]
+        print(f"[DEBUG] Verification index: {verif_index}")
+        print(f"[DEBUG] Base row at original index {verif_index}: {y_train.iloc[verif_index].values}")
+        for detail in debug_details:
+            print(detail)
+        print(f"[DEBUG] Expected multi-step target row: {expected_row}")
+        print(f"[DEBUG] Computed multi-step target row: {computed_row}")
+        if not np.allclose(expected_row, computed_row, atol=1e-5):
+            print("Verification check failed: multi-step target row does not match expected future values.")
+            sys.exit(1)
+        else:
+            print("Verification check passed: multi-step target values are correctly shifted without altering dates.")
+    except Exception as e:
+        print(f"Verification check error: {e}")
+        sys.exit(1)
+    # ---- End of Verification Check ----
 
     # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
     min_len_train = min(len(x_train), len(y_train_multi))
