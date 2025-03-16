@@ -227,6 +227,46 @@ def process_data(config):
             y_val_multi = create_multi_step(y_val, time_horizon, use_returns=False)
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
 
+
+    # --- CHUNK: Verify multi-step targets for current tick before sliding windows ---
+    print("[VERIFICATION] Verifying multi-step targets before applying sliding windows...")
+    verif_index = 0
+    # Determine offset: daily mode uses an offset of 24; non-daily uses offset of 1.
+    offset = 24 if config.get("use_daily", False) else 1
+
+    # Compute expected target values for the current tick.
+    # For each future step (from 1 to time_horizon), get the value at index = current index + (step * offset)
+    expected_targets = []
+    for step in range(1, config["time_horizon"] + 1):
+        idx = verif_index + step * offset
+        if idx >= len(y_train):
+            print(f"[VERIFICATION] Warning: index {idx} out of bounds; skipping step {step}.")
+            break
+        value = y_train.iloc[idx].values[0]
+        if config.get("use_returns", False):
+            # When using returns, the target is (future value - base value)
+            expected_targets.append(value - y_train.iloc[verif_index].values[0])
+        else:
+            expected_targets.append(value)
+    expected_targets = np.array(expected_targets)
+
+    # Retrieve computed multi-step target row (from y_train_multi) for the chosen base tick.
+    if isinstance(y_train_multi, pd.DataFrame):
+        computed_targets = y_train_multi.iloc[verif_index].values
+    else:
+        computed_targets = y_train_multi[verif_index, :]
+
+    print("[VERIFICATION] Base value at index", verif_index, ":", y_train.iloc[verif_index].values[0])
+    print("[VERIFICATION] Expected multi-step target row:", expected_targets)
+    print("[VERIFICATION] Computed multi-step target row:", computed_targets)
+
+    if not np.allclose(expected_targets, computed_targets, atol=1e-5):
+        print("[VERIFICATION] ERROR: Multi-step target row does not match expected values.")
+        sys.exit(1)
+    else:
+        print("[VERIFICATION] Multi-step target row verified successfully.")
+    # --- End of Verification Chunk ---
+
     # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
     min_len_train = min(len(x_train), len(y_train_multi))
     x_train = x_train.iloc[:min_len_train]
