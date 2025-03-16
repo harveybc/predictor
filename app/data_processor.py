@@ -62,27 +62,30 @@ def create_multi_step(y_df, horizon, use_returns=False):
 
     Returns:
         pd.DataFrame: Multi-step targets aligned with the input data, where the index 
-                      is shifted back so that each target is labeled with the same date as the input.
+                      remains the same as the original (i.e. the date is not shifted)
+                      but the values are taken from the future (starting at row i+horizon).
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
     baselines = []
-    for i in range(len(y_df) - horizon):
+    # We loop until len(y_df) - 2*horizon + 1 so that for each row i, we can take values from i+horizon to i+2*horizon-1.
+    for i in range(len(y_df) - 2 * horizon + 1):
         base = y_df.iloc[i].values.flatten()
         if use_returns:
-            window = list(y_df.iloc[i+1: i+1+horizon].values.flatten() - base)
+            window = list(y_df.iloc[i + horizon : i + horizon + horizon].values.flatten() - base)
         else:
-            window = list(y_df.iloc[i+1: i+1+horizon].values.flatten())
+            window = list(y_df.iloc[i + horizon : i + horizon + horizon].values.flatten())
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    # Use the same dates as the original rows (except for the last 'horizon' rows)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon])
+    # Preserve the original dates for rows 0 to len(blocks)-1.
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:len(baselines)])
         return df_targets, df_baselines
     else:
         return df_targets
+
 
 def create_multi_step_daily(y_df, horizon, use_returns=False):
     """
@@ -96,17 +99,19 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
         use_returns (bool): If True, compute returns instead of absolute values.
 
     Returns:
-        pd.DataFrame: Multi-step targets aligned with the input data, with the index shifted back so that 
-                      each target is labeled with the same date as the input.
+        pd.DataFrame: Multi-step targets aligned with the input data, with the index remaining
+                      the same as the original (i.e. the date is not shifted) while the values
+                      are taken from rows at 24-tick intervals (i.e. from t+24, t+48, ..., t+24*horizon).
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
     baselines = []
-    for i in range(len(y_df) - horizon * 24):
+    # Loop until len(y_df) - 24*horizon + 1 so that for each row i, we can take values from i+24, i+48, ..., i+24*horizon.
+    for i in range(len(y_df) - 24 * horizon + 1):
         base = y_df.iloc[i].values.flatten()
         window = []
         for d in range(1, horizon + 1):
-            val = y_df.iloc[i + d * 24].values.flatten()
+            val = y_df.iloc[i + 24 * d].values.flatten()
             if use_returns:
                 window.extend(list(val - base))
             else:
@@ -114,13 +119,13 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    # Use the same dates as the original rows (except for the last horizon*24 rows)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:len(baselines)])
         return df_targets, df_baselines
     else:
         return df_targets
+
 
 def process_data(config):
     """
@@ -336,11 +341,11 @@ def run_prediction_pipeline(config, plugin):
         original_y_train = load_csv(config["y_train_file"], headers=config["headers"])
         original_y_train = original_y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
         if config.get("use_daily", False):
-            # For daily mode, expected multi-step row should contain values at indices 24, 48, ... up to time_horizon*24
-            expected_row = np.array([original_y_train.iloc[d * 24].values[0] for d in range(1, config["time_horizon"] + 1)])
+            # For daily mode, expected multi-step target row should contain values at indices 24, 48, ..., 24*time_horizon
+            expected_row = np.array([original_y_train.iloc[24 * d].values[0] for d in range(1, config["time_horizon"] + 1)])
         else:
-            # For non-daily mode, expected row contains values at indices 1 ... time_horizon
-            expected_row = np.array([original_y_train.iloc[i].values[0] for i in range(1, config["time_horizon"] + 1)])
+            # For non-daily mode, expected row contains values at indices time_horizon, time_horizon+1, ..., time_horizon + (time_horizon-1)
+            expected_row = np.array([original_y_train.iloc[config["time_horizon"] + i].values[0] for i in range(config["time_horizon"])])
         # The processed multi-step target row from y_train should be computed already.
         if isinstance(datasets["y_train"], pd.DataFrame):
             computed_row = datasets["y_train"].iloc[0].values
@@ -720,7 +725,6 @@ def run_prediction_pipeline(config, plugin):
         print("*************************************************")
     
     print(f"\nTotal Execution Time: {time.time() - start_time:.2f} seconds")
-
 
 
 def load_and_evaluate_model(config, plugin):
