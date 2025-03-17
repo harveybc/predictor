@@ -161,8 +161,13 @@ class Plugin:
             print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
 
         # Global average pooling to collapse the sequence dimension
-        x = GlobalAveragePooling1D(name="global_avg_pool")(x)
-        print("DEBUG: After GlobalAveragePooling1D, x shape:", x.shape)
+        #x = GlobalAveragePooling1D(name="global_avg_pool")(x)
+        #print("DEBUG: After GlobalAveragePooling1D, x shape:", x.shape)
+
+        # Instead of using GlobalAveragePooling1D to collapse the sequence,
+        # take the representation from the last time step to preserve temporal information.
+        x = tf.keras.layers.Lambda(lambda t: t[:, -1, :], name="last_time_step")(x)
+        print("DEBUG: After taking last time step, x shape:", x.shape)
 
         x = BatchNormalization(name="batch_norm_final")(x)
         print("DEBUG: After final BatchNormalization, x shape:", x.shape)
