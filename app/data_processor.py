@@ -49,8 +49,8 @@ def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
 def create_multi_step(y_df, horizon, use_returns=False):
     """
     Creates multi-step targets for time-series prediction.
-    For each base tick at index i, the target is taken from the value at i+horizon.
-    (Thus, if use_returns is False, each row will have horizon columns corresponding to t+1, t+2, ..., t+horizon.)
+    For each base tick at index i, the target is taken from the next 'horizon' rows 
+    (i.e. corresponding to t+1, t+2, ..., t+horizon). Assumes that data is in ascending order.
     
     Args:
         y_df (pd.DataFrame): Target data as a DataFrame.
@@ -66,18 +66,17 @@ def create_multi_step(y_df, horizon, use_returns=False):
     L = len(y_df)
     for i in range(L - horizon):
         base = y_df.iloc[i].values.flatten()
-        # Get the next 'horizon' rows (each row is 1 value) and flatten into a 1-D array
         future_values = y_df.iloc[i+1: i+1+horizon].values.flatten()
         if use_returns:
-            target = future_values - base  # broadcast subtraction
+            target = future_values - base  # (t+1 to t+horizon) - base value at t
         else:
             target = future_values
         blocks.append(target)
         if use_returns:
             baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:L - horizon])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:len(baselines)])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:L - horizon])
         return df_targets, df_baselines
     else:
         return df_targets
@@ -86,15 +85,16 @@ def create_multi_step(y_df, horizon, use_returns=False):
 def create_multi_step_daily(y_df, horizon, use_returns=False):
     """
     Creates multi-step targets for daily time-series prediction.
-    For each base tick at index i, the target is taken from the value at i+(horizon*24).
+    For each base tick at index i, the target is taken from the value at i + (horizon*24).
+    Assumes that data is in ascending order.
     
     Args:
         y_df (pd.DataFrame): Target data as a DataFrame.
         horizon (int): Number of future days to predict.
-        use_returns (bool): If True, compute returns (future value - base).
+        use_returns (bool): If True, compute returns as (future - base).
     
     Returns:
-        pd.DataFrame: Multi-step targets with shape (L - horizon*24, horizon).
+        pd.DataFrame: Multi-step targets with shape (L - horizon*24, 1).
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
@@ -102,23 +102,21 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
     L = len(y_df)
     for i in range(L - horizon * 24):
         base = y_df.iloc[i].values.flatten()
-        # Get the value at i + horizon*24
         future_value = y_df.iloc[i + horizon * 24].values.flatten()
         if use_returns:
-            target = future_value - base
+            target = future_value - base  # (t+horizon_day) - base value at t
         else:
             target = future_value
-        # Wrap the target in a list so that each row has one column
-        # (Note: if you want multiple columns (one for each day), you could extend the loop to collect values for each day)
-        blocks.append([target[0]])
+        blocks.append([target[0]])  # create one column per row
         if use_returns:
             baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:len(blocks)])
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:L - horizon * 24])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:len(baselines)])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:L - horizon * 24])
         return df_targets, df_baselines
     else:
         return df_targets
+
 
 
 def process_data(config):
