@@ -325,16 +325,31 @@ def process_data(config):
             y_train_multi = y_train_multi.to_numpy().astype(np.float32)
             y_val_multi = y_val_multi.to_numpy().astype(np.float32)
             y_test_multi = y_test_multi.to_numpy().astype(np.float32)
-        # --- CHUNK: Trim the first window_size rows from the y target datasets if sliding window is to be used---
+        # --- CHUNK: Trim the first window_size rows from the x and y target datasets if sliding window is to be used---
         window_size = config.get("window_size")
         y_train_multi = y_train_multi[window_size:]
         y_val_multi = y_val_multi[window_size:]
         y_test_multi = y_test_multi[window_size:]
+        x_train = x_train[window_size:]
+        x_val = x_val[window_size:]
+        x_test = x_test[window_size:]   
         if config.get("use_returns", False):
             baseline_train = baseline_train[window_size:]
             baseline_val = baseline_val[window_size:]
             baseline_test = baseline_test[window_size:]
-        # Fix test_dates to match the length of y_test_multi:
+        # Fix dates toremove the first window_size dates:
+        if train_dates_orig is not None:
+            train_dates_orig = train_dates_orig[window_size:]
+            min_len = min(len(x_train), len(y_train_multi))
+            train_dates = train_dates_orig[:min_len]
+        else:
+            train_dates = None
+        if val_dates_orig is not None:
+            val_dates_orig = val_dates_orig[window_size:]
+            min_len = min(len(x_val), len(y_val_multi))
+            val_dates = val_dates_orig[:min_len]
+        else:
+            train_dates = None
         if test_dates_orig is not None:
             test_dates_orig = test_dates_orig[window_size:]
             min_len_test = min(len(x_test), len(y_test_multi))
