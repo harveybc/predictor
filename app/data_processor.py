@@ -1072,19 +1072,18 @@ def load_and_evaluate_model(config, plugin):
     try:
         datasets = process_data(config)
         x_val = datasets["x_val"]
-        y_val = datasets["y_val"]
         val_dates = datasets.get("dates_val")
         if config["plugin"] in ["lstm", "cnn", "transformer"]:
             print("Creating sliding windows for CNN...")
-            x_val, _, val_date_windows = create_sliding_windows(
-                x_val, y_val, config['window_size'], config['time_horizon'], stride=1, date_times=val_dates
+            x_val, val_date_windows = create_sliding_windows(
+                x_val, config['window_size'], stride=1, date_times=val_dates
             )
             val_dates = val_date_windows
-            print(f"Sliding windows created: x_val: {x_val.shape}, y_val: {y_val.shape}")
+            print(f"Sliding windows created: x_val: {x_val.shape}")
             if x_val.ndim != 3:
                 raise ValueError(f"For CNN and LSTM, x_val must be 3D. Found: {x_val.shape}.")
 
-        print(f"Processed validation data: X shape: {x_val.shape}, Y shape: {y_val.shape}")
+        print(f"Processed validation data: X shape: {x_val.shape}")
     except Exception as e:
         print(f"Failed to process validation data: {e}")
         sys.exit(1)
@@ -1153,7 +1152,7 @@ def load_and_evaluate_model(config, plugin):
 
 
 
-def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times=None):
+def create_sliding_windows(x, window_size, stride=1, date_times=None):
     """
     Creates sliding windows for input features and targets with a specified stride.
 
@@ -1180,15 +1179,13 @@ def create_sliding_windows(x, y, window_size, time_horizon, stride=1, date_times
     y_windowed = []
     date_time_windows = []
 
-    for i in range(0, len(x) - window_size - time_horizon + 1, stride):
+    for i in range(0, len(x) - window_size, stride):
         x_window = x[i:i + window_size]
-        y_window = y[i + window_size:i + window_size + time_horizon]
         x_windowed.append(x_window)
-        y_windowed.append(y_window)
         if date_times is not None:
-            date_time_windows.append(date_times[i + window_size + time_horizon - 1])
+            date_time_windows.append(date_times[i + window_size - 1])
 
-    return np.array(x_windowed), np.array(y_windowed), date_time_windows
+    return np.array(x_windowed), date_time_windows
 
 
 def generate_positional_encoding(num_features, pos_dim=16):
