@@ -280,6 +280,7 @@ def process_data(config):
             test_dates = None
         # --- End of Trim Chunk ---
         # calculate close prices as y_train
+        min_len_test = min(len(x_test), len(y_test_multi))
         test_close_prices = test_close_prices[window_size-1:min_len_test, -1]
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
@@ -294,6 +295,7 @@ def process_data(config):
             baseline_val = baseline_val.to_numpy().astype(np.float32)
             baseline_test = baseline_test.to_numpy().astype(np.float32)
         # calculate close prices as y_train
+        min_len_test = min(len(x_test), len(y_test_multi))
         test_close_prices = test_close_prices[:min_len_test, -1]
 
 
@@ -805,6 +807,15 @@ def run_prediction_pipeline(config, plugin):
         test_predictions_df['DATE_TIME'] = pd.NaT
     cols = ['DATE_TIME'] + [col for col in test_predictions_df.columns if col != 'DATE_TIME']
     test_predictions_df = test_predictions_df[cols]
+    # Add the denorm_y_test to the existing test_predictions_df dictionary as new columns, it names columsn as Target_1, Target_2, etc
+    denorm_y_test_df = pd.DataFrame(
+        denorm_y_test, columns=[f"Target_{i+1}" for i in range(denorm_y_test.shape[1])]
+    )
+    test_predictions_df = pd.concat([test_predictions_df, denorm_y_test_df], axis=1)
+    # Add the denorm_test_close_prices to the existing test_predictions_df dictionary as a new column
+    test_predictions_df['CLOSE'] = denorm_test_close_prices
+    # Save the final test predictions to a CSV file
+    
     write_csv(file_path=final_test_file, data=test_predictions_df, include_date=False, headers=config.get('headers', True))
     print(f"Final validation predictions saved to {final_test_file}")
 
