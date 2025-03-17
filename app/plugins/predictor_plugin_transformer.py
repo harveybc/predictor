@@ -349,19 +349,21 @@ class Plugin:
             return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
 
     def custom_loss(self, y_true, y_pred):
-        # Compute element-wise Huber loss (delta=1.0) for each horizon.
-        loss_elements = tf.keras.losses.huber(y_true, y_pred, delta=1.0)
-        # Create a weight vector that increases linearly (or any scheme you prefer).
-        # For example, for time_horizon=6, weights might range from 0.5 to 1.5.
+        # Instantiate Huber loss without reduction so that we get per-element loss.
+        huber_fn = Huber(delta=1.0, reduction=tf.keras.losses.Reduction.NONE)
+        # Compute element-wise Huber loss for each forecast horizon.
+        loss_elements = huber_fn(y_true, y_pred)  # Expected shape: (batch, time_horizon)
+        
+        # Create a weight vector that increases linearly. For example, for time_horizon=6, weights range from 0.5 to 1.5.
         horizon = self.params['time_horizon']
         weights = tf.linspace(0.5, 1.5, horizon)
-        weights = tf.reshape(weights, (1, horizon))  # shape: (1, time_horizon)
+        weights = tf.reshape(weights, (1, horizon))  # shape becomes (1, time_horizon)
+        
+        # Multiply the element-wise loss by these weights; this broadcasts to (batch, time_horizon)
         weighted_loss = loss_elements * weights
         huber_loss = tf.reduce_mean(weighted_loss)
         
         # Diversity term: encourage the differences between consecutive horizons to match
-        # the ground truth differences.
-        # Compute differences along the horizon axis.
         diff_pred = y_pred[:, 1:] - y_pred[:, :-1]
         diff_true = y_true[:, 1:] - y_true[:, :-1]
         diversity_loss = tf.reduce_mean(tf.abs(diff_pred - diff_true))
@@ -369,10 +371,9 @@ class Plugin:
         # Compute MMD loss as before.
         mmd_loss = self.compute_mmd(y_pred, y_true)
         
-        # Combine losses; you can adjust the weights (e.g., 0.1 for diversity) as needed.
+        # Combine losses; adjust the coefficients as needed.
         total_loss = huber_loss + (self.mmd_lambda * mmd_loss) + 0.1 * diversity_loss
         return total_loss
-
 
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
