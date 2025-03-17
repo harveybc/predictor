@@ -182,6 +182,7 @@ def process_data(config):
     val_dates_orig = x_val.index if isinstance(x_val.index, pd.DatetimeIndex) else None
     test_dates_orig = x_test.index if isinstance(x_test.index, pd.DatetimeIndex) else None
 
+
     # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
     def extract_target(df, col):
@@ -268,30 +269,7 @@ def process_data(config):
     # --- End of Verification Chunk ---
 
 
-        # --- CHUNK: Trim the first window_size rows from the y target datasets ---
-    window_size = config.get("window_size")
-    y_train_multi = y_train_multi.iloc[window_size:]
-    y_val_multi = y_val_multi.iloc[window_size:]
-    y_test_multi = y_test_multi.iloc[window_size:]
-    if config.get("use_returns", False):
-        baseline_train = baseline_train.iloc[window_size:]
-        baseline_val = baseline_val.iloc[window_size:]
-        baseline_test = baseline_test.iloc[window_size:]
-    # --- End of Trim Chunk ---
-
-
-    # --- CHUNK: Trim the first window_size rows from the y target datasets ---
-    window_size = config.get("window_size", 256)
-    y_train_multi = y_train_multi.iloc[window_size - 1:]
-    y_val_multi = y_val_multi.iloc[window_size - 1:]
-    y_test_multi = y_test_multi.iloc[window_size - 1:]
-    if config.get("use_returns", False):
-        baseline_train = baseline_train.iloc[window_size - 1:]
-        baseline_val = baseline_val.iloc[window_size - 1:]
-    # --- End of Trim Chunk ---
-
-
-        baseline_test = baseline_test.iloc[window_size - 1:]
+        
     # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
     min_len_train = min(len(x_train), len(y_train_multi))
     x_train = x_train.iloc[:min_len_train]
@@ -333,23 +311,28 @@ def process_data(config):
             baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
             baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
             baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
-        elif config["plugin"] in ["transformer", "transformer_mmd"]:
+        else:
             print("Processing data for Transformer plugin with sliding windows...")
             x_train = x_train.to_numpy().astype(np.float32)
             x_val = x_val.to_numpy().astype(np.float32)
             x_test = x_test.to_numpy().astype(np.float32)
-            # (Add sliding window logic here if needed)
-            # For now, we simply use the raw data.
             y_train_multi = y_train_multi.to_numpy().astype(np.float32)
             y_val_multi = y_val_multi.to_numpy().astype(np.float32)
             y_test_multi = y_test_multi.to_numpy().astype(np.float32)
-        else:
-            x_train = x_train.to_numpy().astype(np.float32)
-            x_val = x_val.to_numpy().astype(np.float32)
-            x_test = x_test.to_numpy().astype(np.float32)
-            y_train_multi = y_train_multi.to_numpy().astype(np.float32)
-            y_val_multi = y_val_multi.to_numpy().astype(np.float32)
-            y_test_multi = y_test_multi.to_numpy().astype(np.float32)
+        # --- CHUNK: Trim the first window_size rows from the y target datasets if sliding window is to be used---
+        if config["plugin"] in ["lstm", "cnn", "transformer"]:
+            window_size = config.get("window_size")
+            y_train_multi = y_train_multi.iloc[window_size:]
+            y_val_multi = y_val_multi.iloc[window_size:]
+            y_test_multi = y_test_multi.iloc[window_size:]
+            if config.get("use_returns", False):
+                baseline_train = baseline_train.iloc[window_size:]
+                baseline_val = baseline_val.iloc[window_size:]
+                baseline_test = baseline_test.iloc[window_size:]
+            # fix test_dates to match the length of y_test_multi
+            if test_dates_orig is not None:
+                test_dates_orig = test_dates_orig[window_size:]
+        # --- End of Trim Chunk ---
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
         x_train = x_train.to_numpy().astype(np.float32)
