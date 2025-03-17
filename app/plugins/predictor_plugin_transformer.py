@@ -11,6 +11,7 @@ from tensorflow.keras.regularizers import l2
 from sklearn.metrics import r2_score
 import tensorflow.keras.backend as K
 import gc
+from tensorflow.keras.layers import RepeatVector, TimeDistributed, Reshape
 
 # --- Custom Callbacks ---
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
@@ -105,81 +106,9 @@ class Plugin:
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
         print("DEBUG: numpy version:", np.__version__)
-
-        # Optionally log x_train info if provided
-        x_train = kwargs.get("x_train", None)
-        if x_train is not None:
-            x_train = np.array(x_train)
-            print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
-
-        self.params['input_shape'] = input_shape  # (window_size, num_features)
-        l2_reg = self.params.get('l2_reg', 1e-4)
-        num_heads = self.params['num_heads']
-        time_horizon = self.params['time_horizon']
-        embedding_dim = self.params.get('initial_layer_size', 32)
-
-        print("DEBUG: Input shape:", input_shape)
-        inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
-        print("DEBUG: Created input layer. Shape:", inputs.shape)
-        x = inputs
-
-        # Project input to fixed embedding dimension
-        x = Dense(embedding_dim, activation=self.params['activation'],
-                kernel_initializer=GlorotUniform(), name="input_projection")(x)
-        print("DEBUG: After input projection, x shape:", x.shape)
-        # Add positional encoding to capture temporal order
-        pos_enc = positional_encoding(input_shape[0], embedding_dim)
-        x = x + pos_enc
-        print("DEBUG: After adding positional encoding, x shape:", x.shape)
-        # Now x is (batch, window_size, embedding_dim)
-
-        # Build transformer blocks (same number as intermediate_layers)
-        for idx in range(self.params['intermediate_layers']):
-            print(f"DEBUG: Building Transformer block {idx+1} with embedding dim {embedding_dim}")
-            # Layer Normalization before attention
-            x_norm = LayerNormalization(name=f"layer_norm_{idx+1}")(x)
-            key_dim = max(1, embedding_dim // num_heads)
-            attn_output = MultiHeadAttention(
-                num_heads=num_heads,
-                key_dim=key_dim,
-                name=f"mha_layer_{idx+1}"
-            )(x_norm, x_norm)
-            print(f"DEBUG: After MultiHeadAttention in block {idx+1}, attn_output shape: {attn_output.shape}")
-            # Residual connection for attention sub-layer
-            x = Add(name=f"residual_add_attn_{idx+1}")([x, attn_output])
-            # Feedforward network
-            x_ff_norm = LayerNormalization(name=f"layer_norm_ff_{idx+1}")(x)
-            ff_output = Dense(
-                units=embedding_dim,
-                activation=self.params['activation'],
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
-                name=f"ff_dense_{idx+1}"
-            )(x_ff_norm)
-            print(f"DEBUG: After feedforward dense in block {idx+1}, ff_output shape: {ff_output.shape}")
-            x = Add(name=f"residual_add_ff_{idx+1}")([x, ff_output])
-            print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
-
-        # Global average pooling to collapse the sequence dimension
-        #x = GlobalAveragePooling1D(name="global_avg_pool")(x)
-        #print("DEBUG: After GlobalAveragePooling1D, x shape:", x.shape)
-
-        # Instead of using GlobalAveragePooling1D to collapse the sequence,
-        # take the representation from the last time step to preserve temporal information.
-        x = tf.keras.layers.Lambda(lambda t: t[:, -1, :], name="last_time_step")(x)
-        print("DEBUG: After taking last time step, x shape:", x.shape)
-
-        x = BatchNormalization(name="batch_norm_final")(x)
-        print("DEBUG: After final BatchNormalization, x shape:", x.shape)
-
-        # --- Bayesian Output Layer Implementation (copied from CNN/LSTM plugins) ---
+        
         def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
             return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
-        tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-
-        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
-        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
-
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
@@ -237,35 +166,102 @@ class Plugin:
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
         
-        KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-        DenseFlipout = tfp.layers.DenseFlipout
-        print("DEBUG: Creating DenseFlipout final layer with units:", self.params['time_horizon'])
-        flipout_layer = DenseFlipout(
-            units=self.params['time_horizon'],
+        # Optionally log x_train info if provided
+        x_train = kwargs.get("x_train", None)
+        if x_train is not None:
+            x_train = np.array(x_train)
+            print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
+
+        self.params['input_shape'] = input_shape  # (window_size, num_features)
+        l2_reg = self.params.get('l2_reg', 1e-4)
+        num_heads = self.params['num_heads']
+        time_horizon = self.params['time_horizon']
+        embedding_dim = self.params.get('initial_layer_size', 32)
+
+        print("DEBUG: Input shape:", input_shape)
+        inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
+        print("DEBUG: Created input layer. Shape:", inputs.shape)
+        x = inputs
+
+        # Project input to fixed embedding dimension
+        x = Dense(embedding_dim, activation=self.params['activation'],
+                kernel_initializer=GlorotUniform(), name="input_projection")(x)
+        print("DEBUG: After input projection, x shape:", x.shape)
+        # Add positional encoding to capture temporal order
+        pos_enc = positional_encoding(input_shape[0], embedding_dim)
+        x = x + pos_enc
+        print("DEBUG: After adding positional encoding, x shape:", x.shape)
+        # Now x is (batch, window_size, embedding_dim)
+
+        # Build transformer blocks (same number as intermediate_layers)
+        for idx in range(self.params['intermediate_layers']):
+            print(f"DEBUG: Building Transformer block {idx+1} with embedding dim {embedding_dim}")
+            # Layer Normalization before attention
+            x_norm = LayerNormalization(name=f"layer_norm_{idx+1}")(x)
+            key_dim = max(1, embedding_dim // num_heads)
+            attn_output = MultiHeadAttention(
+                num_heads=num_heads,
+                key_dim=key_dim,
+                name=f"mha_layer_{idx+1}"
+            )(x_norm, x_norm)
+            print(f"DEBUG: After MultiHeadAttention in block {idx+1}, attn_output shape: {attn_output.shape}")
+            # Residual connection for attention sub-layer
+            x = Add(name=f"residual_add_attn_{idx+1}")([x, attn_output])
+            # Feedforward network
+            x_ff_norm = LayerNormalization(name=f"layer_norm_ff_{idx+1}")(x)
+            ff_output = Dense(
+                units=embedding_dim,
+                activation=self.params['activation'],
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"ff_dense_{idx+1}"
+            )(x_ff_norm)
+            print(f"DEBUG: After feedforward dense in block {idx+1}, ff_output shape: {ff_output.shape}")
+            x = Add(name=f"residual_add_ff_{idx+1}")([x, ff_output])
+            print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
+
+        # --- Replace GlobalAveragePooling1D and subsequent dense layers with a time-distributed decoder ---
+        # Extract the last time step from the transformer output to preserve temporal context.
+        x_last = tf.keras.layers.Lambda(lambda t: t[:, -1, :], name="last_time_step")(x)
+        print("DEBUG: x_last shape (last time step):", x_last.shape)
+        # Optionally, apply BatchNormalization
+        x_last = BatchNormalization(name="batch_norm_final")(x_last)
+        print("DEBUG: After BatchNormalization, x_last shape:", x_last.shape)
+
+        # Repeat the last time step vector for each forecast horizon.
+        repeated = tf.keras.layers.RepeatVector(self.params['time_horizon'], name="repeat_vector")(x_last)
+        print("DEBUG: repeated shape (for each horizon):", repeated.shape)
+
+        # Define a TimeDistributed Bayesian output layer that predicts one value per horizon.
+        flipout_layer = tfp.layers.DenseFlipout(
+            units=1,
             activation='linear',
             kernel_posterior_fn=posterior_mean_field_custom,
             kernel_prior_fn=prior_fn,
-            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-            name="output_layer"
+            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.params.get('kl_weight', 1e-3),
+            name="output_layer_td"
         )
-        bayesian_output = tf.keras.layers.Lambda(
-            lambda t: flipout_layer(t),
-            output_shape=lambda s: (s[0], self.params['time_horizon']),
-            name="bayesian_dense_flipout"
-        )(x)
-        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
-        
-        bias_layer = Dense(
-            units=self.params['time_horizon'],
-            activation='linear',
-            kernel_initializer=random_normal_initializer_44,
-            name="deterministic_bias",
-            kernel_regularizer=l2(l2_reg)
-        )(x)
-        print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
-        
-        outputs = bayesian_output + bias_layer
+        bayesian_output = tf.keras.layers.TimeDistributed(flipout_layer, name="bayesian_dense_flipout_td")(repeated)
+        print("DEBUG: bayesian_output (raw) shape:", bayesian_output.shape)
+        bayesian_output = tf.keras.layers.Reshape((self.params['time_horizon'],))(bayesian_output)
+
+        # Similarly, define a TimeDistributed deterministic bias branch.
+        bias_layer = tf.keras.layers.TimeDistributed(
+            Dense(
+                units=1,
+                activation='linear',
+                kernel_initializer=random_normal_initializer_44,
+                kernel_regularizer=l2(l2_reg)
+            ),
+            name="deterministic_bias_td"
+        )(repeated)
+        print("DEBUG: bias_layer (raw) shape:", bias_layer.shape)
+        bias_layer = tf.keras.layers.Reshape((self.params['time_horizon'],))(bias_layer)
+
+        # Sum both branches to yield the final predictions for each forecast horizon.
+        outputs = tf.keras.layers.Add(name="output_add")([bayesian_output, bias_layer])
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+
         
         self.model = Model(inputs=inputs, outputs=outputs, name="predictor_model")
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
