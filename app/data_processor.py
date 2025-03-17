@@ -201,6 +201,7 @@ def process_data(config):
     y_train = extract_target(y_train, target_col)
     y_val = extract_target(y_val, target_col)
     y_test = extract_target(y_test, target_col)
+    test_close_prices = y_test.copy()  # Save for later use
 
     # 3) CONVERT EACH DF TO NUMERIC.
     x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
@@ -278,6 +279,8 @@ def process_data(config):
         else:
             test_dates = None
         # --- End of Trim Chunk ---
+        # calculate close prices as y_train
+        test_close_prices = test_close_prices[window_size-1:min_len_test, -1]
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
         x_train = x_train.to_numpy().astype(np.float32)
@@ -290,6 +293,9 @@ def process_data(config):
             baseline_train = baseline_train.to_numpy().astype(np.float32)
             baseline_val = baseline_val.to_numpy().astype(np.float32)
             baseline_test = baseline_test.to_numpy().astype(np.float32)
+        # calculate close prices as y_train
+        test_close_prices = test_close_prices[:min_len_test, -1]
+
 
 
     # 6) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
@@ -323,6 +329,8 @@ def process_data(config):
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
     print(" x_test: ", x_test.shape, " y_test: ", y_test_multi.shape)
     
+    
+
     ret = {
         "x_train": x_train,
         "y_train": y_train_multi,
@@ -333,6 +341,7 @@ def process_data(config):
         "dates_train": train_dates,
         "dates_val": val_dates,
         "dates_test": test_dates,
+        'test_close_prices': test_close_prices
     }
     if config.get("use_returns", False):
         ret["baseline_train"] = baseline_train
@@ -373,6 +382,7 @@ def run_prediction_pipeline(config, plugin):
     train_dates = datasets.get("dates_train")
     val_dates = datasets.get("dates_val")
     test_dates = datasets.get("dates_test")
+    test_close_prices = datasets.get("test_close_prices")
     # When using returns, process_data returns baseline values
     if config.get("use_returns", False):
         baseline_train = datasets.get("baseline_train")
@@ -759,8 +769,8 @@ def run_prediction_pipeline(config, plugin):
     results_file = config.get("results_file", "results.csv")
     pd.DataFrame(results).to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
-
     # --- Denormalize final test predictions (if normalization provided) ---
+    denorm_test_close_prices = test_close_prices
     if config.get("use_normalization_json") is not None:
         norm_json = config.get("use_normalization_json")
         if isinstance(norm_json, str):
@@ -773,6 +783,7 @@ def run_prediction_pipeline(config, plugin):
                 diff = close_max - close_min
                 # Final predicted close = (predicted_return + baseline)*diff + close_min
                 test_predictions = (test_predictions + baseline_test) * diff + close_min
+                denorm_y_test = (y_test + baseline_test) * diff + close_min
             else:
                 print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
         else:
@@ -780,7 +791,8 @@ def run_prediction_pipeline(config, plugin):
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
                 test_predictions = test_predictions * (close_max - close_min) + close_min
-
+                denorm_y_test = y_test * (close_max - close_min) + close_min
+        denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min 
     # Save final predictions CSV
     final_test_file = config.get("output_file", "test_predictions.csv")
     test_predictions_df = pd.DataFrame(
