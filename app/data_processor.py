@@ -266,6 +266,21 @@ def process_data(config):
         print("[VERIFICATION] Multi-step target value verified successfully.")
 
     # --- End of Verification Chunk ---
+
+
+        # --- CHUNK: Trim the first window_size rows from the y target datasets ---
+    window_size = config.get("window_size")
+    y_train_multi = y_train_multi.iloc[window_size:]
+    y_val_multi = y_val_multi.iloc[window_size:]
+    y_test_multi = y_test_multi.iloc[window_size:]
+    if config.get("use_returns", False):
+        baseline_train = baseline_train.iloc[window_size:]
+        baseline_val = baseline_val.iloc[window_size:]
+        baseline_test = baseline_test.iloc[window_size:]
+    # --- End of Trim Chunk ---
+
+
+    # --- CHUNK: Trim the first window_size rows from the y target datasets ---
     window_size = config.get("window_size", 256)
     y_train_multi = y_train_multi.iloc[window_size - 1:]
     y_val_multi = y_val_multi.iloc[window_size - 1:]
@@ -273,6 +288,9 @@ def process_data(config):
     if config.get("use_returns", False):
         baseline_train = baseline_train.iloc[window_size - 1:]
         baseline_val = baseline_val.iloc[window_size - 1:]
+    # --- End of Trim Chunk ---
+
+
         baseline_test = baseline_test.iloc[window_size - 1:]
     # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
     min_len_train = min(len(x_train), len(y_train_multi))
