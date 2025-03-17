@@ -40,11 +40,11 @@ def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
     """
     windows = []
     dt_windows = []
-    for i in range(0, len(data) - window_size + 1, stride):
-        windows.append(data[i: i + window_size])
+    for i in range(window_size, len(data), stride):
+        windows.append(data[i-(window_size): i])
         if date_times is not None:
-            # Use the date corresponding to the last element in the window
-            dt_windows.append(date_times[i + window_size - 1])
+            # Use the date corresponding to the lastest, most current element in the window
+            dt_windows.append(date_times[i])
     if date_times is not None:
         return np.array(windows), dt_windows
     else:
