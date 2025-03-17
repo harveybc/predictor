@@ -39,13 +39,13 @@ def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
             np.ndarray: Array of sliding windows.
     """
     windows = []
-    dt_windows = []
+    date_windows = []
     for i in range(window_size, len(data), stride):
         windows.append(data[i-window_size: i])
         if date_times is not None:
             # Use the date corresponding to the lastest, most current element in the window
-            dt_windows.append(date_times[i])
-    return np.array(windows), dt_windows
+            date_windows.append(date_times[i])
+    return np.array(windows), date_windows
 
 
 def create_multi_step(y_df, horizon, use_returns=False):
@@ -231,46 +231,6 @@ def process_data(config):
             y_train_multi = create_multi_step(y_train, time_horizon, use_returns=False)
             y_val_multi = create_multi_step(y_val, time_horizon, use_returns=False)
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
-
-
-
-    # --- CHUNK: Verify multi-step targets before sliding windows (UPDATED) ---
-    print("[VERIFICATION] Verifying multi-step targets before applying sliding windows...")
-    verif_index = 0
-    # Use offset=24 if daily mode is True, else offset=1 (for hourly data)
-    offset = 24 if config.get("use_daily", False) else 1
-
-    # Check that there is enough data for the verification.
-    if verif_index + config["time_horizon"] * offset >= len(y_train):
-        print("[VERIFICATION] ERROR: Not enough data to verify multi-step targets.")
-        sys.exit(1)
-
-    base_value = y_train.iloc[verif_index].values[0]
-    future_value = y_train.iloc[verif_index + config["time_horizon"] * offset].values[0]
-    if config.get("use_returns", False):
-        expected_target = future_value - base_value
-    else:
-        expected_target = future_value
-
-    # IMPORTANT: For multi-step targets with time_horizon columns, we now check the last column.
-    if isinstance(y_train_multi, pd.DataFrame):
-        computed_target = y_train_multi.iloc[verif_index].values[-1]
-    else:
-        computed_target = y_train_multi[verif_index, -1]
-
-    print("[VERIFICATION] Base value at index", verif_index, ":", base_value)
-    print("[VERIFICATION] Expected target value (from t+time_horizon):", expected_target)
-    print("[VERIFICATION] Computed target value (last column):", computed_target)
-
-    if not np.isclose(expected_target, computed_target, atol=1e-5):
-        print("[VERIFICATION] ERROR: Multi-step target value does not match expected value.")
-        sys.exit(1)
-    else:
-        print("[VERIFICATION] Multi-step target value verified successfully.")
-
-    # --- End of Verification Chunk ---
-
-
         
     # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
     min_len_train = min(len(x_train), len(y_train_multi))
@@ -301,7 +261,7 @@ def process_data(config):
         x_val = x_val.to_numpy().astype(np.float32)
         x_test = x_test.to_numpy().astype(np.float32)
         window_size = config["window_size"]
-        # Use the updated sliding windows function that returns base_dates
+        # Use the updated sliding windows function that returns base_dates already trimmed the first window of data
         x_train, train_dates = create_sliding_windows_x(x_train, window_size, stride=1, date_times=train_dates)
         x_val, val_dates = create_sliding_windows_x(x_val, window_size, stride=1, date_times=val_dates)
         x_test, test_dates = create_sliding_windows_x(x_test, window_size, stride=1, date_times=test_dates)
@@ -310,50 +270,33 @@ def process_data(config):
         y_val_multi = y_val_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
         y_test_multi = y_test_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
         if config.get("use_returns", False):
+            print("Processing data with sliding windows with returns...")
             baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
             baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
             baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
         else:
-            print("Processing data for Transformer plugin with sliding windows...")
+            print("Processing data with sliding windows without returns...")
             x_train = x_train.to_numpy().astype(np.float32)
             x_val = x_val.to_numpy().astype(np.float32)
             x_test = x_test.to_numpy().astype(np.float32)
             y_train_multi = y_train_multi.to_numpy().astype(np.float32)
             y_val_multi = y_val_multi.to_numpy().astype(np.float32)
             y_test_multi = y_test_multi.to_numpy().astype(np.float32)
-        # --- CHUNK: Trim the first window_size rows from the x and y target datasets if sliding window is to be used---
-        window_size = config.get("window_size")
-        y_train_multi = y_train_multi[window_size:]
-        y_val_multi = y_val_multi[window_size:]
-        y_test_multi = y_test_multi[window_size:]
-        x_train = x_train[window_size:]
-        x_val = x_val[window_size:]
-        x_test = x_test[window_size:]   
-        if config.get("use_returns", False):
-            baseline_train = baseline_train[window_size:]
-            baseline_val = baseline_val[window_size:]
-            baseline_test = baseline_test[window_size:]
+        # --- CHUNK: Trim the first window_size rows from the  y target datasets if sliding window is to be used---
         # Fix dates toremove the first window_size dates:
         if train_dates_orig is not None:
-            train_dates_orig = train_dates_orig[window_size:]
-            min_len = min(len(x_train), len(y_train_multi))
-            train_dates = train_dates_orig[:min_len]
+            train_dates_orig = train_dates_orig[window_size-1:]
         else:
             train_dates = None
         if val_dates_orig is not None:
-            val_dates_orig = val_dates_orig[window_size:]
-            min_len = min(len(x_val), len(y_val_multi))
-            val_dates = val_dates_orig[:min_len]
+            val_dates_orig = val_dates_orig[window_size-1:]
         else:
             train_dates = None
         if test_dates_orig is not None:
-            test_dates_orig = test_dates_orig[window_size:]
-            min_len_test = min(len(x_test), len(y_test_multi))
-            test_dates = test_dates_orig[:min_len_test]
+            test_dates_orig = test_dates_orig[window_size-1:]
         else:
             test_dates = None
         # --- End of Trim Chunk ---
-
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
         x_train = x_train.to_numpy().astype(np.float32)
@@ -459,8 +402,7 @@ def run_prediction_pipeline(config, plugin):
             raise ValueError(f"For CNN and LSTM, x_train must be 3D. Found: {x_train.shape}")
         print("Using pre-processed sliding windows for CNN and LSTM.")
     plugin.set_params(time_horizon=time_horizon)
-    tscv = TimeSeriesSplit(n_splits=5)
-
+    
     # Training iterations
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
