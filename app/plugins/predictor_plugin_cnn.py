@@ -11,6 +11,28 @@ from tensorflow.keras.regularizers import l2
 from sklearn.metrics import r2_score
 import tensorflow.keras.backend as K
 import gc
+
+class MyTimeDistributed(tf.keras.layers.Layer):
+    def __init__(self, layer, **kwargs):
+        super(MyTimeDistributed, self).__init__(**kwargs)
+        self.layer = layer
+
+    def call(self, inputs, **kwargs):
+        # inputs shape: (batch, time, ...). We'll apply self.layer to each time step.
+        # Using tf.map_fn to apply self.layer on axis=1.
+        # Note: We assume the wrapped layer returns a tensor with shape (...).
+        def apply_fn(x):
+            return self.layer(x)
+        outputs = tf.map_fn(apply_fn, inputs, dtype=inputs.dtype)
+        return outputs
+
+    def compute_output_shape(self, input_shape):
+        # Let child_shape be the output shape for one time step.
+        # We call the wrapped layer's compute_output_shape on the per-time-step input shape.
+        child_shape = self.layer.compute_output_shape(input_shape[2:])
+        return (input_shape[0], input_shape[1]) + child_shape[1:]
+
+
 class WrappedDenseFlipout(tf.keras.layers.Layer):
     def __init__(self, units, activation, kernel_posterior_fn, kernel_prior_fn, kernel_divergence_fn, **kwargs):
         super(WrappedDenseFlipout, self).__init__(**kwargs)
@@ -241,31 +263,28 @@ class Plugin:
         # --- Bayesian Output Layer Implementation (copied from ANN/LSTM plugin) ---
                 # --- Modified Bayesian Output Layer for Multi-Horizon CNN ---
 
+               # --- Modified Bayesian Output Layer for Multi-Horizon CNN using MyTimeDistributed ---
         # 'x' is the flattened feature vector from the convolutional layers.
-        # Instead of directly predicting with a DenseFlipout layer,
-        # we first repeat 'x' for each forecast horizon.
+        # We first repeat 'x' for each forecast horizon.
         repeated = tf.keras.layers.RepeatVector(self.params['time_horizon'], name="repeat_vector")(x)
         print("DEBUG: repeated shape (for each horizon):", repeated.shape)
         
-        # Define KL weight from parameters
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
         
-        # Use TimeDistributed with DenseFlipout to generate one output per horizon.
-        # We wrap DenseFlipout inline so that TimeDistributed gets a proper Keras layer.
-        bayesian_td = tf.keras.layers.TimeDistributed(
-            tfp.layers.DenseFlipout(
-                units=1,
-                activation='linear',
-                kernel_posterior_fn=posterior_mean_field_custom,
-                kernel_prior_fn=prior_fn,
-                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-                name="td_flipout"
-            ),
-            name="bayesian_td"
-        )(repeated)
+        # Create the Bayesian layer using DenseFlipout.
+        bayesian_layer = tfp.layers.DenseFlipout(
+            units=self.params['time_horizon'],
+            activation='linear',
+            kernel_posterior_fn=posterior_mean_field_custom,
+            kernel_prior_fn=prior_fn,
+            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+            name="td_flipout"
+        )
+        # Instead of using TimeDistributed, use our custom MyTimeDistributed wrapper.
+        bayesian_td = MyTimeDistributed(bayesian_layer, name="my_time_distributed")(repeated)
         print("DEBUG: bayesian_td raw shape:", bayesian_td.shape)
         
-        # Reshape to remove the singleton dimension: (batch, time_horizon, 1) -> (batch, time_horizon)
+        # Reshape to remove the extra singleton dimension: from (batch, time_horizon, 1) to (batch, time_horizon)
         bayesian_output = tf.keras.layers.Reshape((self.params['time_horizon'],), name="bayesian_output")(bayesian_td)
         print("DEBUG: bayesian_output reshaped to:", bayesian_output.shape)
         
@@ -279,9 +298,10 @@ class Plugin:
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
         
-        # Final outputs: Bayesian output plus bias.
+        # Final output: add Bayesian output and bias branch.
         outputs = tf.keras.layers.Add(name="output_add")([bayesian_output, bias_layer])
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+
 
         
         self.model = Model(inputs=inputs, outputs=outputs)
