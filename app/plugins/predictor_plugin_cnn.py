@@ -20,34 +20,27 @@ class MyTimeDistributed(tf.keras.layers.Layer):
     def call(self, inputs, **kwargs):
         # inputs shape: (batch, time, features)
         def apply_fn(x):
-            # x is a single time slice, expected shape: (features,)
-            # If x is rank 1, add a dummy last dimension.
-            if tf.rank(x) == 1:
-                x_expanded = tf.expand_dims(x, axis=-1)  # shape becomes (features, 1)
-                y = self.layer(x_expanded, **kwargs)
-                # If the output has a trailing dimension of 1, squeeze it.
-                y_shape = tf.shape(y)
-                if tf.equal(y_shape[-1], 1):
-                    y = tf.squeeze(y, axis=-1)
-                return y
-            else:
-                return self.layer(x, **kwargs)
+            # x is a single time slice; expected shape: (features,)
+            # We assume x is already rank 1.
+            y = self.layer(x, **kwargs)
+            # If the output is a vector with a trailing singleton dimension, squeeze it.
+            if tf.rank(y) > 0 and tf.shape(y)[-1] == 1:
+                y = tf.squeeze(y, axis=-1)
+            return y
+        # Apply the function over the time dimension using tf.map_fn.
         return tf.map_fn(apply_fn, inputs, dtype=tf.float32)
 
     def compute_output_shape(self, input_shape):
         # input_shape: (batch, time, features)
-        # Force each time slice to have shape (features, 1) for the child layer.
-        features = input_shape[2]
-        # Create a dummy shape for a single time step: (None, features, 1)
-        dummy_input_shape = (None, features, 1)
-        child_output_shape = self.layer.compute_output_shape(dummy_input_shape)
-        # Remove the batch dimension from the child's output shape.
-        # Assume child_output_shape is (None, out_dim) or (None, out_dim, 1)
-        if len(child_output_shape) > 2 and child_output_shape[-1] == 1:
-            out_dim = child_output_shape[1]
-        else:
-            out_dim = child_output_shape[1]
+        # We assume each time slice has shape: (features,)
+        child_input_shape = input_shape[2:]  # e.g., (8,)
+        # Compute output shape for one time slice (without batch dimension)
+        child_output_shape = self.layer.compute_output_shape(child_input_shape)
+        # child_output_shape is expected to be something like (None, 1); remove the None.
+        out_dim = child_output_shape[1]
         return (input_shape[0], input_shape[1], out_dim)
+
+
 
 
 
@@ -279,43 +272,52 @@ class Plugin:
         #flaten
         x = Flatten()(x)
         # --- Bayesian Output Layer Implementation (copied from ANN/LSTM plugin) ---
-        # --- Modified Bayesian Output Layer for Multi-Horizon CNN using Reshape ---
+        #        # --- Modified Bayesian Output Layer for Multi-Horizon CNN using MyTimeDistributed ---
         # 'x' is the flattened feature vector from the convolutional layers.
-        # First, repeat 'x' for each forecast horizon.
+        # Repeat 'x' for each forecast horizon.
         repeated = tf.keras.layers.RepeatVector(self.params['time_horizon'], name="repeat_vector")(x)
-        print("DEBUG: repeated shape (for each horizon):", repeated.shape)  # Expected: (batch, time_horizon, feature_dim)
-
-        # Merge the batch and time dimensions.
-        merged = tf.keras.layers.Lambda(lambda t: tf.reshape(t, (-1, t.shape[-1])), name="merge_time_batch")(repeated)
-        print("DEBUG: merged shape (batch*time_horizon, feature_dim):", merged.shape)
-
-        # Define KL weight.
+        print("DEBUG: repeated shape (for each horizon):", repeated.shape)
+        
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-
-        # Apply DenseFlipout to the merged tensor.
-        bayesian_output_flat = tfp.layers.DenseFlipout(
-            units=1,
-            activation='linear',
-            kernel_posterior_fn=posterior_mean_field_custom,
-            kernel_prior_fn=prior_fn,
-            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-            name="td_flipout"
-        )(merged)
-        print("DEBUG: bayesian_output_flat shape:", bayesian_output_flat.shape)  # Expected: (batch*time_horizon, 1)
-
-        # Restore the time dimension.
-        # Use a Lambda layer that reshapes the output back to (batch, time_horizon, 1).
-        bayesian_output_seq = tf.keras.layers.Lambda(
-            lambda t: tf.reshape(t, (-1, self.params['time_horizon'], 1)),
-            name="restore_time_dim"
-        )(bayesian_output_flat)
-        print("DEBUG: bayesian_output_seq shape:", bayesian_output_seq.shape)
-
-        # Squeeze the last dimension to obtain shape (batch, time_horizon).
-        bayesian_output = tf.keras.layers.Lambda(lambda t: tf.squeeze(t, axis=-1), name="bayesian_output")(bayesian_output_seq)
+        
+        # Optionally, add a horizon embedding (as before)
+        horizon_indices = tf.keras.layers.Lambda(
+            lambda r: tf.tile(tf.expand_dims(tf.range(self.params['time_horizon'], dtype=tf.int32), axis=0),
+                              [tf.shape(r)[0], 1])
+        )(repeated)
+        print("DEBUG: horizon_indices shape:", horizon_indices.shape)
+        
+        horizon_embedding_dim = x.shape[-1]  # Using the dimension of x (flattened features)
+        horizon_embedding_layer = tf.keras.layers.Embedding(
+            input_dim=self.params['time_horizon'],
+            output_dim=horizon_embedding_dim,
+            name="horizon_embedding"
+        )
+        horizon_embeddings = horizon_embedding_layer(horizon_indices)
+        print("DEBUG: horizon_embeddings shape:", horizon_embeddings.shape)
+        
+        repeated_with_horizon = tf.keras.layers.Add(name="add_horizon_embedding")([repeated, horizon_embeddings])
+        print("DEBUG: repeated_with_horizon shape:", repeated_with_horizon.shape)
+        
+        # Use MyTimeDistributed with WrappedDenseFlipout to produce separate outputs for each horizon.
+        bayesian_td = MyTimeDistributed(
+            WrappedDenseFlipout(
+                units=1,
+                activation='linear',
+                kernel_posterior_fn=posterior_mean_field_custom,
+                kernel_prior_fn=prior_fn,
+                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+                name="td_flipout"
+            ),
+            name="my_time_distributed"
+        )(repeated_with_horizon)
+        print("DEBUG: bayesian_td raw shape:", bayesian_td.shape)
+        
+        # Reshape to remove the trailing singleton dimension: from (batch, time_horizon, 1) to (batch, time_horizon)
+        bayesian_output = tf.keras.layers.Reshape((self.params['time_horizon'],), name="bayesian_output")(bayesian_td)
         print("DEBUG: bayesian_output reshaped to:", bayesian_output.shape)
-
-        # Deterministic bias branch: apply a Dense layer on the flattened features 'x'.
+        
+        # Deterministic bias branch from x (the flattened features)
         bias_layer = Dense(
             units=self.params['time_horizon'],
             activation='linear',
@@ -324,11 +326,10 @@ class Plugin:
             kernel_regularizer=l2(l2_reg)
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
-
-        # Final output is the sum of the Bayesian output and the bias.
+        
+        # Final outputs: add Bayesian output and bias.
         outputs = tf.keras.layers.Add(name="output_add")([bayesian_output, bias_layer])
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
-
 
 
 
