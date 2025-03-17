@@ -202,6 +202,9 @@ def process_data(config):
     y_val = extract_target(y_val, target_col)
     y_test = extract_target(y_test, target_col)
     test_close_prices = y_test.copy()  # Save for later use
+    if isinstance(test_close_prices, pd.DataFrame):
+        test_close_prices = test_close_prices.to_numpy()
+        
 
     # 3) CONVERT EACH DF TO NUMERIC.
     x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
@@ -279,7 +282,7 @@ def process_data(config):
         else:
             test_dates = None
         # --- End of Trim Chunk ---
-        # calculate close prices as y_train
+        # calculate close prices as y_train; ensure test_close_prices is a numpy array for slicing
         min_len_test = min(len(x_test), len(y_test_multi))
         test_close_prices = test_close_prices[window_size-1:min_len_test, -1]
     else:
