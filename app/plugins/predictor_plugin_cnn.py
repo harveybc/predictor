@@ -279,33 +279,43 @@ class Plugin:
         #flaten
         x = Flatten()(x)
         # --- Bayesian Output Layer Implementation (copied from ANN/LSTM plugin) ---
-        # --- Modified Bayesian Output Layer for Multi-Horizon CNN using MyTimeDistributed ---
+        # --- Modified Bayesian Output Layer for Multi-Horizon CNN using Reshape ---
         # 'x' is the flattened feature vector from the convolutional layers.
-        # Repeat 'x' for each forecast horizon.
+        # First, repeat 'x' for each forecast horizon.
         repeated = tf.keras.layers.RepeatVector(self.params['time_horizon'], name="repeat_vector")(x)
-        print("DEBUG: repeated shape (for each horizon):", repeated.shape)
-        
+        print("DEBUG: repeated shape (for each horizon):", repeated.shape)  # Expected: (batch, time_horizon, feature_dim)
+
+        # Merge the batch and time dimensions.
+        merged = tf.keras.layers.Lambda(lambda t: tf.reshape(t, (-1, t.shape[-1])), name="merge_time_batch")(repeated)
+        print("DEBUG: merged shape (batch*time_horizon, feature_dim):", merged.shape)
+
+        # Define KL weight.
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-        
-        # Use our custom MyTimeDistributed wrapper around DenseFlipout.
-        bayesian_td = MyTimeDistributed(
-            WrappedDenseFlipout(
-                units=1,
-                activation='linear',
-                kernel_posterior_fn=posterior_mean_field_custom,
-                kernel_prior_fn=prior_fn,
-                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-                name="td_flipout"
-            ),
-            name="my_time_distributed"
-        )(repeated)
-        print("DEBUG: bayesian_td raw shape:", bayesian_td.shape)
-        
-        # Reshape to remove the singleton dimension: from (batch, time_horizon, 1) to (batch, time_horizon)
-        bayesian_output = tf.keras.layers.Reshape((self.params['time_horizon'],), name="bayesian_output")(bayesian_td)
+
+        # Apply DenseFlipout to the merged tensor.
+        bayesian_output_flat = tfp.layers.DenseFlipout(
+            units=1,
+            activation='linear',
+            kernel_posterior_fn=posterior_mean_field_custom,
+            kernel_prior_fn=prior_fn,
+            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+            name="td_flipout"
+        )(merged)
+        print("DEBUG: bayesian_output_flat shape:", bayesian_output_flat.shape)  # Expected: (batch*time_horizon, 1)
+
+        # Restore the time dimension.
+        # Use a Lambda layer that reshapes the output back to (batch, time_horizon, 1).
+        bayesian_output_seq = tf.keras.layers.Lambda(
+            lambda t: tf.reshape(t, (-1, self.params['time_horizon'], 1)),
+            name="restore_time_dim"
+        )(bayesian_output_flat)
+        print("DEBUG: bayesian_output_seq shape:", bayesian_output_seq.shape)
+
+        # Squeeze the last dimension to obtain shape (batch, time_horizon).
+        bayesian_output = tf.keras.layers.Lambda(lambda t: tf.squeeze(t, axis=-1), name="bayesian_output")(bayesian_output_seq)
         print("DEBUG: bayesian_output reshaped to:", bayesian_output.shape)
-        
-        # Deterministic bias branch from x (the flattened features)
+
+        # Deterministic bias branch: apply a Dense layer on the flattened features 'x'.
         bias_layer = Dense(
             units=self.params['time_horizon'],
             activation='linear',
@@ -314,10 +324,11 @@ class Plugin:
             kernel_regularizer=l2(l2_reg)
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
-        
-        # Final outputs: add Bayesian output and bias.
+
+        # Final output is the sum of the Bayesian output and the bias.
         outputs = tf.keras.layers.Add(name="output_add")([bayesian_output, bias_layer])
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+
 
 
 
