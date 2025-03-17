@@ -22,25 +22,31 @@ from tensorflow.keras.losses import Huber
 # --- CHUNK: create_sliding_windows_x (Replace your old version with this one) ---
 def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
     """
-    Create sliding windows for input data.
-    
+    Create sliding windows for input data only.
+
+    Args:
+        data (np.ndarray or pd.DataFrame): Input data array of shape (n_samples, n_features).
+        window_size (int): The number of time steps in each window.
+        stride (int): The stride between successive windows.
+        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
+
     Returns:
         If date_times is provided:
-            tuple: (windows, base_dates) where windows is an array of shape 
-                   (n_windows, window_size, n_features) and base_dates is a list of 
-                   the DATE_TIME value corresponding to the first tick (base/current tick) in each window.
+            tuple: (windows, date_time_windows) where windows is an array of shape 
+                   (n_windows, window_size, n_features) and date_time_windows is a list of 
+                   the DATE_TIME value corresponding to the last time step of each window.
         Otherwise:
             np.ndarray: Array of sliding windows.
     """
     windows = []
-    base_dates = []
+    dt_windows = []
     for i in range(0, len(data) - window_size + 1, stride):
         windows.append(data[i: i + window_size])
         if date_times is not None:
-            # Use the date of the first element in the window (current tick)
-            base_dates.append(date_times[i])
+            # Use the date corresponding to the last element in the window
+            dt_windows.append(date_times[i + window_size - 1])
     if date_times is not None:
-        return np.array(windows), base_dates
+        return np.array(windows), dt_windows
     else:
         return np.array(windows)
 
@@ -231,7 +237,7 @@ def process_data(config):
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
 
 
-    # --- CHUNK: Verify multi-step targets before sliding windows (UPDATED) ---
+
     # --- CHUNK: Verify multi-step targets before sliding windows (UPDATED) ---
     print("[VERIFICATION] Verifying multi-step targets before applying sliding windows...")
     verif_index = 0
@@ -286,7 +292,7 @@ def process_data(config):
     y_test_multi = y_test_multi.iloc[:min_len_test]
     if config.get("use_returns", False):
         baseline_test = baseline_test.iloc[:min_len_test]
-    
+    # trim also the dates of the datasets
     train_dates = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
     val_dates = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
     test_dates = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
@@ -320,18 +326,17 @@ def process_data(config):
             y_val_multi = y_val_multi.to_numpy().astype(np.float32)
             y_test_multi = y_test_multi.to_numpy().astype(np.float32)
         # --- CHUNK: Trim the first window_size rows from the y target datasets if sliding window is to be used---
-        if config["plugin"] in ["lstm", "cnn", "transformer"]:
-            window_size = config.get("window_size")
-            y_train_multi = y_train_multi.iloc[window_size:]
-            y_val_multi = y_val_multi.iloc[window_size:]
-            y_test_multi = y_test_multi.iloc[window_size:]
-            if config.get("use_returns", False):
-                baseline_train = baseline_train.iloc[window_size:]
-                baseline_val = baseline_val.iloc[window_size:]
-                baseline_test = baseline_test.iloc[window_size:]
-            # fix test_dates to match the length of y_test_multi
-            if test_dates_orig is not None:
-                test_dates_orig = test_dates_orig[window_size:]
+        window_size = config.get("window_size")
+        y_train_multi = y_train_multi.iloc[window_size:]
+        y_val_multi = y_val_multi.iloc[window_size:]
+        y_test_multi = y_test_multi.iloc[window_size:]
+        if config.get("use_returns", False):
+            baseline_train = baseline_train.iloc[window_size:]
+            baseline_val = baseline_val.iloc[window_size:]
+            baseline_test = baseline_test.iloc[window_size:]
+        # fix test_dates to match the length of y_test_multi
+        test_dates_orig = test_dates_orig[window_size:] if test_dates_orig is not None else None
+        test_dates = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
         # --- End of Trim Chunk ---
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
