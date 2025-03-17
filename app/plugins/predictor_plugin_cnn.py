@@ -11,6 +11,25 @@ from tensorflow.keras.regularizers import l2
 from sklearn.metrics import r2_score
 import tensorflow.keras.backend as K
 import gc
+class WrappedDenseFlipout(tf.keras.layers.Layer):
+    def __init__(self, units, activation, kernel_posterior_fn, kernel_prior_fn, kernel_divergence_fn, **kwargs):
+        super(WrappedDenseFlipout, self).__init__(**kwargs)
+        self.units = units
+        self.activation = activation
+        self.kernel_posterior_fn = kernel_posterior_fn
+        self.kernel_prior_fn = kernel_prior_fn
+        self.kernel_divergence_fn = kernel_divergence_fn
+        self.dense_flipout = tfp.layers.DenseFlipout(
+            units=units,
+            activation=activation,
+            kernel_posterior_fn=kernel_posterior_fn,
+            kernel_prior_fn=kernel_prior_fn,
+            kernel_divergence_fn=kernel_divergence_fn
+        )
+    def call(self, inputs):
+        return self.dense_flipout(inputs)
+    def compute_output_shape(self, input_shape):
+        return self.dense_flipout.compute_output_shape(input_shape)
 
 # --- Custom Callbacks ---
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
