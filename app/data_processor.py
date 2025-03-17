@@ -327,17 +327,22 @@ def process_data(config):
             y_test_multi = y_test_multi.to_numpy().astype(np.float32)
         # --- CHUNK: Trim the first window_size rows from the y target datasets if sliding window is to be used---
         window_size = config.get("window_size")
-        y_train_multi = y_train_multi.iloc[window_size:]
-        y_val_multi = y_val_multi.iloc[window_size:]
-        y_test_multi = y_test_multi.iloc[window_size:]
+        y_train_multi = y_train_multi[window_size:]
+        y_val_multi = y_val_multi[window_size:]
+        y_test_multi = y_test_multi[window_size:]
         if config.get("use_returns", False):
-            baseline_train = baseline_train.iloc[window_size:]
-            baseline_val = baseline_val.iloc[window_size:]
-            baseline_test = baseline_test.iloc[window_size:]
-        # fix test_dates to match the length of y_test_multi
-        test_dates_orig = test_dates_orig[window_size:] if test_dates_orig is not None else None
-        test_dates = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
+            baseline_train = baseline_train[window_size:]
+            baseline_val = baseline_val[window_size:]
+            baseline_test = baseline_test[window_size:]
+        # Fix test_dates to match the length of y_test_multi:
+        if test_dates_orig is not None:
+            test_dates_orig = test_dates_orig[window_size:]
+            min_len_test = min(len(x_test), len(y_test_multi))
+            test_dates = test_dates_orig[:min_len_test]
+        else:
+            test_dates = None
         # --- End of Trim Chunk ---
+
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
         x_train = x_train.to_numpy().astype(np.float32)
