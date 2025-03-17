@@ -292,20 +292,20 @@ def process_data(config):
 
     # 6) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
     min_len_train = min(len(x_train), len(y_train_multi))
-    x_train = x_train.iloc[:min_len_train]
-    y_train_multi = y_train_multi.iloc[:min_len_train]
+    x_train = x_train[:min_len_train]
+    y_train_multi = y_train_multi[:min_len_train]
     if config.get("use_returns", False):
-        baseline_train = baseline_train.iloc[:min_len_train]
+        baseline_train = baseline_train[:min_len_train]
     min_len_val = min(len(x_val), len(y_val_multi))
-    x_val = x_val.iloc[:min_len_val]
-    y_val_multi = y_val_multi.iloc[:min_len_val]
+    x_val = x_val[:min_len_val]
+    y_val_multi = y_val_multi[:min_len_val]
     if config.get("use_returns", False):
-        baseline_val = baseline_val.iloc[:min_len_val]
+        baseline_val = baseline_val[:min_len_val]
     min_len_test = min(len(x_test), len(y_test_multi))
-    x_test = x_test.iloc[:min_len_test]
-    y_test_multi = y_test_multi.iloc[:min_len_test]
+    x_test = x_test[:min_len_test]
+    y_test_multi = y_test_multi[:min_len_test]
     if config.get("use_returns", False):
-        baseline_test = baseline_test.iloc[:min_len_test]
+        baseline_test = baseline_test[:min_len_test]
     # trim also the dates of the datasets
     train_dates_orig = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
     val_dates_orig = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
