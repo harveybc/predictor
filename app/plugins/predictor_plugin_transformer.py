@@ -349,20 +349,31 @@ class Plugin:
             return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
 
     def custom_loss(self, y_true, y_pred):
-        """
-        Custom loss function combining Huber loss and MMD loss.
-        """
-        huber_loss = Huber()(y_true, y_pred)
+        # Compute element-wise Huber loss (delta=1.0) for each horizon.
+        loss_elements = tf.keras.losses.huber(y_true, y_pred, delta=1.0)
+        # Create a weight vector that increases linearly (or any scheme you prefer).
+        # For example, for time_horizon=6, weights might range from 0.5 to 1.5.
+        horizon = self.params['time_horizon']
+        weights = tf.linspace(0.5, 1.5, horizon)
+        weights = tf.reshape(weights, (1, horizon))  # shape: (1, time_horizon)
+        weighted_loss = loss_elements * weights
+        huber_loss = tf.reduce_mean(weighted_loss)
+        
+        # Diversity term: encourage the differences between consecutive horizons to match
+        # the ground truth differences.
+        # Compute differences along the horizon axis.
+        diff_pred = y_pred[:, 1:] - y_pred[:, :-1]
+        diff_true = y_true[:, 1:] - y_true[:, :-1]
+        diversity_loss = tf.reduce_mean(tf.abs(diff_pred - diff_true))
+        
+        # Compute MMD loss as before.
         mmd_loss = self.compute_mmd(y_pred, y_true)
-        #error = tf.math.abs(tf.math.subtract(y_true, y_pred))
-        #mean_error = tf.math.reduce_mean(error)
-        #std_error = tf.math.reduce_std(error)
-        #epsilon = 1e-6
-        #cv = tf.math.divide(std_error, mean_error + epsilon)
-        #total_loss = huber_loss + (self.mmd_lambda * mmd_loss) + 0.1*cv
-        total_loss = huber_loss + (self.mmd_lambda * mmd_loss) 
+        
+        # Combine losses; you can adjust the weights (e.g., 0.1 for diversity) as needed.
+        total_loss = huber_loss + (self.mmd_lambda * mmd_loss) + 0.1 * diversity_loss
         return total_loss
-    
+
+
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
