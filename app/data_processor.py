@@ -101,7 +101,7 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
     """
     blocks = []
     baselines = []
-    for i in range(len(y_df) - horizon * 24 -1):
+    for i in range(len(y_df) - horizon * 24):
         base = y_df.iloc[i].values.flatten()
         window = []
         for d in range(1, horizon + 1):
@@ -113,9 +113,9 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24-1])
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24-1])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24])
         return df_targets, df_baselines
     else:
         return df_targets
@@ -232,28 +232,7 @@ def process_data(config):
             y_val_multi = create_multi_step(y_val, time_horizon, use_returns=False)
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
         
-    # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
-    min_len_train = min(len(x_train), len(y_train_multi))
-    x_train = x_train.iloc[:min_len_train]
-    y_train_multi = y_train_multi.iloc[:min_len_train]
-    if config.get("use_returns", False):
-        baseline_train = baseline_train.iloc[:min_len_train]
-    min_len_val = min(len(x_val), len(y_val_multi))
-    x_val = x_val.iloc[:min_len_val]
-    y_val_multi = y_val_multi.iloc[:min_len_val]
-    if config.get("use_returns", False):
-        baseline_val = baseline_val.iloc[:min_len_val]
-    min_len_test = min(len(x_test), len(y_test_multi))
-    x_test = x_test.iloc[:min_len_test]
-    y_test_multi = y_test_multi.iloc[:min_len_test]
-    if config.get("use_returns", False):
-        baseline_test = baseline_test.iloc[:min_len_test]
-    # trim also the dates of the datasets
-    train_dates = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
-    val_dates = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
-    test_dates = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
-
-    # 6) PER-PLUGIN PROCESSING
+    # 5) PER-PLUGIN PROCESSING
     # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
     if config["plugin"] in ["lstm", "cnn", "transformer"]:
         print("Processing data with sliding windows...")
@@ -309,6 +288,33 @@ def process_data(config):
             baseline_train = baseline_train.to_numpy().astype(np.float32)
             baseline_val = baseline_val.to_numpy().astype(np.float32)
             baseline_test = baseline_test.to_numpy().astype(np.float32)
+
+
+    # 6) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
+    min_len_train = min(len(x_train), len(y_train_multi))
+    x_train = x_train.iloc[:min_len_train]
+    y_train_multi = y_train_multi.iloc[:min_len_train]
+    if config.get("use_returns", False):
+        baseline_train = baseline_train.iloc[:min_len_train]
+    min_len_val = min(len(x_val), len(y_val_multi))
+    x_val = x_val.iloc[:min_len_val]
+    y_val_multi = y_val_multi.iloc[:min_len_val]
+    if config.get("use_returns", False):
+        baseline_val = baseline_val.iloc[:min_len_val]
+    min_len_test = min(len(x_test), len(y_test_multi))
+    x_test = x_test.iloc[:min_len_test]
+    y_test_multi = y_test_multi.iloc[:min_len_test]
+    if config.get("use_returns", False):
+        baseline_test = baseline_test.iloc[:min_len_test]
+    # trim also the dates of the datasets
+    train_dates_orig = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
+    val_dates_orig = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
+    test_dates_orig = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
+
+    train_dates = train_dates_orig if train_dates_orig is not None else None
+    val_dates = val_dates_orig if val_dates_orig is not None else None
+    test_dates = test_dates_orig if test_dates_orig is not None else None
+
 
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
