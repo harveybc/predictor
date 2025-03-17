@@ -272,50 +272,77 @@ class Plugin:
         #flaten
         x = Flatten()(x)
         # --- Bayesian Output Layer Implementation (copied from ANN/LSTM plugin) ---
-        #        # --- Modified Bayesian Output Layer for Multi-Horizon CNN using MyTimeDistributed ---
+                # --- Modified Bayesian Output Block for CNN to Produce Multi-Horizon Predictions ---
         # 'x' is the flattened feature vector from the convolutional layers.
-        # Repeat 'x' for each forecast horizon.
-        repeated = tf.keras.layers.RepeatVector(self.params['time_horizon'], name="repeat_vector")(x)
-        print("DEBUG: repeated shape (for each horizon):", repeated.shape)
+        # Expand dimensions to add a time axis:
+        x_expanded = tf.keras.layers.Lambda(lambda t: tf.expand_dims(t, axis=1), name="expand_dims")(x)
+        print("DEBUG: x_expanded shape:", x_expanded.shape)  # Expected: (batch, 1, features)
         
-        KL_WEIGHT = self.params.get('kl_weight', 1e-3)
+        # Tile the expanded tensor along the time axis for each forecast horizon:
+        x_repeated = tf.keras.layers.Lambda(
+            lambda t: tf.tile(t, [1, self.params['time_horizon'], 1]),
+            name="tile_time"
+        )(x_expanded)
+        print("DEBUG: x_repeated shape:", x_repeated.shape)  # Expected: (batch, time_horizon, features)
         
-        # Optionally, add a horizon embedding (as before)
+        # --- Optional: Add Horizon Embedding ---
+        # Build horizon indices (shape: (batch, time_horizon))
         horizon_indices = tf.keras.layers.Lambda(
             lambda r: tf.tile(tf.expand_dims(tf.range(self.params['time_horizon'], dtype=tf.int32), axis=0),
-                              [tf.shape(r)[0], 1])
-        )(repeated)
+                              [tf.shape(r)[0], 1]),
+            name="horizon_indices"
+        )(x_repeated)
         print("DEBUG: horizon_indices shape:", horizon_indices.shape)
         
-        horizon_embedding_dim = x.shape[-1]  # Using the dimension of x (flattened features)
+        # Create an embedding for each horizon (using the same dimension as the flattened features)
+        horizon_embedding_dim = tf.shape(x)[-1]  # dynamic dimension from x
         horizon_embedding_layer = tf.keras.layers.Embedding(
             input_dim=self.params['time_horizon'],
-            output_dim=horizon_embedding_dim,
+            output_dim=int(x.shape[-1]),  # cast to int if possible
             name="horizon_embedding"
         )
         horizon_embeddings = horizon_embedding_layer(horizon_indices)
         print("DEBUG: horizon_embeddings shape:", horizon_embeddings.shape)
         
-        repeated_with_horizon = tf.keras.layers.Add(name="add_horizon_embedding")([repeated, horizon_embeddings])
-        print("DEBUG: repeated_with_horizon shape:", repeated_with_horizon.shape)
+        # Combine the repeated features with the horizon embeddings via elementwise addition
+        x_repeated = tf.keras.layers.Add(name="add_horizon_embedding")([x_repeated, horizon_embeddings])
+        print("DEBUG: x_repeated with horizon embedding shape:", x_repeated.shape)
         
-        # Use MyTimeDistributed with WrappedDenseFlipout to produce separate outputs for each horizon.
-        bayesian_td = MyTimeDistributed(
+        # --- Apply Bayesian Layer on the Time Axis ---
+        # Use our WrappedDenseFlipout inside a TimeDistributed-like block.
+        # (We already have a proper 3D tensor now.)
+        bayesian_td = tf.keras.layers.TimeDistributed(
             WrappedDenseFlipout(
                 units=1,
                 activation='linear',
                 kernel_posterior_fn=posterior_mean_field_custom,
                 kernel_prior_fn=prior_fn,
-                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.params.get('kl_weight', 1e-3),
                 name="td_flipout"
             ),
-            name="my_time_distributed"
-        )(repeated_with_horizon)
-        print("DEBUG: bayesian_td raw shape:", bayesian_td.shape)
+            name="bayesian_td"
+        )(x_repeated)
+        print("DEBUG: bayesian_td shape:", bayesian_td.shape)  # Expected: (batch, time_horizon, 1)
         
-        # Reshape to remove the trailing singleton dimension: from (batch, time_horizon, 1) to (batch, time_horizon)
-        bayesian_output = tf.keras.layers.Reshape((self.params['time_horizon'],), name="bayesian_output")(bayesian_td)
-        print("DEBUG: bayesian_output reshaped to:", bayesian_output.shape)
+        # Squeeze the last dimension to get (batch, time_horizon)
+        bayesian_output = tf.keras.layers.Lambda(lambda t: tf.squeeze(t, axis=-1), name="squeeze")(bayesian_td)
+        print("DEBUG: bayesian_output shape:", bayesian_output.shape)
+        
+        # --- Deterministic Bias Branch ---
+        # Compute a bias from the flattened features 'x'
+        bias_layer = Dense(
+            units=self.params['time_horizon'],
+            activation='linear',
+            kernel_initializer=random_normal_initializer_44,
+            name="deterministic_bias",
+            kernel_regularizer=l2(l2_reg)
+        )(x)
+        print("DEBUG: bias_layer shape:", bias_layer.shape)
+        
+        # Final output: Bayesian output plus bias
+        outputs = tf.keras.layers.Add(name="output_add")([bayesian_output, bias_layer])
+        print("DEBUG: Final outputs shape:", outputs.shape)
+
         
         # Deterministic bias branch from x (the flattened features)
         bias_layer = Dense(
