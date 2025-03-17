@@ -105,7 +105,60 @@ class Plugin:
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
         print("DEBUG: numpy version:", np.__version__)
-
+        def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
+            print("DEBUG: In posterior_mean_field_custom:")
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
+            if not isinstance(name, str):
+                print("DEBUG: 'name' is not a string; setting to None")
+                name = None
+            bias_size = 0
+            n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: posterior: computed n =", n)
+            c = np.log(np.expm1(1.))
+            print("DEBUG: posterior: computed c =", c)
+            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
+            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
+            scale = 1e-3 + tf.nn.softplus(scale + c)
+            scale = tf.clip_by_value(scale, 1e-3, 1.0)
+            print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: posterior: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape in posterior:", e)
+                raise e
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
+            )
+        
+        def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
+            print("DEBUG: In prior_fn:")
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
+            if not isinstance(name, str):
+                print("DEBUG: 'name' is not a string in prior_fn; setting to None")
+                name = None
+            bias_size = 0
+            n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: prior_fn: computed n =", n)
+            loc = tf.zeros([n], dtype=dtype)
+            scale = tf.ones([n], dtype=dtype)
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: prior_fn: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape in prior_fn:", e)
+                raise e
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
+            )
         # Optionally convert x_train to numpy and print info if provided
         x_train = kwargs.get("x_train", None)
         if x_train is not None:
@@ -167,99 +220,50 @@ class Plugin:
         #flaten
         x = Flatten()(x)
         # --- Bayesian Output Layer Implementation (copied from ANN/LSTM plugin) ---
-        # Convert x to tensor if necessary
-        if not hasattr(x, '_keras_history'):
-            x = tf.convert_to_tensor(x)
-            print("DEBUG: Converted x to tensor. New type:", type(x))
+                # --- Modified Bayesian Output Layer for Multi-Horizon CNN ---
 
-        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
-        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
-
-        def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
-            print("DEBUG: In posterior_mean_field_custom:")
-            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
-            print("       Received bias_size =", bias_size, "; overriding to 0")
-            print("       trainable =", trainable, "name =", name)
-            if not isinstance(name, str):
-                print("DEBUG: 'name' is not a string; setting to None")
-                name = None
-            bias_size = 0
-            n = int(np.prod(kernel_shape)) + bias_size
-            print("DEBUG: posterior: computed n =", n)
-            c = np.log(np.expm1(1.))
-            print("DEBUG: posterior: computed c =", c)
-            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
-            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
-            scale = 1e-3 + tf.nn.softplus(scale + c)
-            scale = tf.clip_by_value(scale, 1e-3, 1.0)
-            print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
-            try:
-                loc_reshaped = tf.reshape(loc, kernel_shape)
-                scale_reshaped = tf.reshape(scale, kernel_shape)
-                print("DEBUG: posterior: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
-            except Exception as e:
-                print("DEBUG: Exception during reshape in posterior:", e)
-                raise e
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
-                reinterpreted_batch_ndims=len(kernel_shape)
-            )
+        # 'x' is the flattened feature vector from the convolutional layers.
+        # Instead of directly predicting with a DenseFlipout layer,
+        # we first repeat 'x' for each forecast horizon.
+        repeated = tf.keras.layers.RepeatVector(self.params['time_horizon'], name="repeat_vector")(x)
+        print("DEBUG: repeated shape (for each horizon):", repeated.shape)
         
-        def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
-            print("DEBUG: In prior_fn:")
-            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
-            print("       Received bias_size =", bias_size, "; overriding to 0")
-            print("       trainable =", trainable, "name =", name)
-            if not isinstance(name, str):
-                print("DEBUG: 'name' is not a string in prior_fn; setting to None")
-                name = None
-            bias_size = 0
-            n = int(np.prod(kernel_shape)) + bias_size
-            print("DEBUG: prior_fn: computed n =", n)
-            loc = tf.zeros([n], dtype=dtype)
-            scale = tf.ones([n], dtype=dtype)
-            try:
-                loc_reshaped = tf.reshape(loc, kernel_shape)
-                scale_reshaped = tf.reshape(scale, kernel_shape)
-                print("DEBUG: prior_fn: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
-            except Exception as e:
-                print("DEBUG: Exception during reshape in prior_fn:", e)
-                raise e
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
-                reinterpreted_batch_ndims=len(kernel_shape)
-            )
-        
+        # Define KL weight from parameters
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-        DenseFlipout = tfp.layers.DenseFlipout
-        print("DEBUG: Creating DenseFlipout final layer with units:", self.params['time_horizon'])
-        flipout_layer = DenseFlipout(
-            units=self.params['time_horizon'],
-            activation='linear',
-            kernel_posterior_fn=posterior_mean_field_custom,
-            kernel_prior_fn=prior_fn,
-            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-            name="output_layer"
-        )
-        bayesian_output = tf.keras.layers.Lambda(
-            lambda t: flipout_layer(t),
-            output_shape=lambda s: (s[0], self.params['time_horizon']),
-            name="bayesian_dense_flipout"
-        )(x)
-        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
         
+        # Use TimeDistributed with DenseFlipout to generate one output per horizon.
+        # We wrap DenseFlipout inline so that TimeDistributed gets a proper Keras layer.
+        bayesian_td = tf.keras.layers.TimeDistributed(
+            tfp.layers.DenseFlipout(
+                units=1,
+                activation='linear',
+                kernel_posterior_fn=posterior_mean_field_custom,
+                kernel_prior_fn=prior_fn,
+                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+                name="td_flipout"
+            ),
+            name="bayesian_td"
+        )(repeated)
+        print("DEBUG: bayesian_td raw shape:", bayesian_td.shape)
+        
+        # Reshape to remove the singleton dimension: (batch, time_horizon, 1) -> (batch, time_horizon)
+        bayesian_output = tf.keras.layers.Reshape((self.params['time_horizon'],), name="bayesian_output")(bayesian_td)
+        print("DEBUG: bayesian_output reshaped to:", bayesian_output.shape)
+        
+        # Create a separate deterministic bias branch from the flattened features 'x'
         bias_layer = Dense(
             units=self.params['time_horizon'],
             activation='linear',
             kernel_initializer=random_normal_initializer_44,
-            name="deterministic_bias", 
+            name="deterministic_bias",
             kernel_regularizer=l2(l2_reg)
-
         )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
         
-        outputs = bayesian_output + bias_layer
+        # Final outputs: Bayesian output plus bias.
+        outputs = tf.keras.layers.Add(name="output_add")([bayesian_output, bias_layer])
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+
         
         self.model = Model(inputs=inputs, outputs=outputs)
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
