@@ -113,9 +113,9 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
         blocks.append(window)
         if use_returns:
             baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24-1])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24-1])
         return df_targets, df_baselines
     else:
         return df_targets
