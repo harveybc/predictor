@@ -242,8 +242,9 @@ class Plugin:
 
         ## Bayesian layer for uncertainty estimation
         
-        # Instead of using GlobalAveragePooling1D to collapse the sequence,
-        # take the representation from the last time step to preserve temporal information.
+
+        
+        # Instead of using GlobalAveragePooling1D, take the representation from the last time step.
         x_last = tf.keras.layers.Lambda(lambda t: t[:, -1, :], name="last_time_step")(x)
         print("DEBUG: x_last shape (last time step):", x_last.shape)
         x_last = BatchNormalization(name="batch_norm_final")(x_last)
@@ -257,8 +258,29 @@ class Plugin:
         # Repeat the last time step vector for each forecast horizon.
         repeated = tf.keras.layers.RepeatVector(self.params['time_horizon'], name="repeat_vector")(x_last)
         print("DEBUG: repeated shape (for each horizon):", repeated.shape)
+        
+        # --- Add Horizon Embedding ---
+        # Create horizon indices: 0, 1, ..., time_horizon-1.
+        horizon_indices = tf.range(self.params['time_horizon'], dtype=tf.int32)
+        horizon_indices = tf.expand_dims(horizon_indices, 0)  # shape (1, time_horizon)
+        # Tile indices to match the batch size.
+        batch_size = tf.shape(repeated)[0]
+        horizon_indices = tf.tile(horizon_indices, [batch_size, 1])  # shape (batch, time_horizon)
+        # Create an embedding layer for the horizon indices.
+        horizon_embedding_dim = x_last.shape[-1]  # Use same dimension as x_last
+        horizon_embedding_layer = tf.keras.layers.Embedding(
+            input_dim=self.params['time_horizon'],
+            output_dim=horizon_embedding_dim,
+            name="horizon_embedding"
+        )
+        horizon_embeddings = horizon_embedding_layer(horizon_indices)
+        print("DEBUG: horizon_embeddings shape:", horizon_embeddings.shape)
+        # Combine the repeated vector with the horizon embeddings (by element-wise addition).
+        repeated_with_horizon = tf.keras.layers.Add(name="add_horizon_embedding")([repeated, horizon_embeddings])
+        print("DEBUG: repeated_with_horizon shape:", repeated_with_horizon.shape)
+        # --- End Horizon Embedding ---
 
-        # Use TimeDistributed with our WrappedDenseFlipout layer to get separate outputs per horizon.
+        # Use TimeDistributed with our WrappedDenseFlipout layer to produce separate outputs for each horizon.
         bayesian_output = tf.keras.layers.TimeDistributed(
             WrappedDenseFlipout(
                 units=1,
@@ -269,12 +291,12 @@ class Plugin:
                 name="wrapped_output_layer_td"
             ),
             name="bayesian_dense_flipout_td"
-        )(repeated)
+        )(repeated_with_horizon)
         print("DEBUG: bayesian_output (raw) shape:", bayesian_output.shape)
         bayesian_output = tf.keras.layers.Reshape((self.params['time_horizon'],))(bayesian_output)
         print("DEBUG: bayesian_output reshaped to:", bayesian_output.shape)
 
-        # Deterministic bias branch using x_last.
+        # Deterministic bias branch (using x_last) remains unchanged.
         bias_layer = Dense(
             units=self.params['time_horizon'],
             activation='linear',
@@ -286,6 +308,7 @@ class Plugin:
 
         outputs = tf.keras.layers.Add(name="output_add")([bayesian_output, bias_layer])
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+
 
 
         
