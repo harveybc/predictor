@@ -66,7 +66,7 @@ def create_multi_step(y_df, horizon, use_returns=False):
     blocks = []
     baselines = []
     L = len(y_df)
-    for i in range(L - horizon):
+    for i in range(L - horizon -1):
         base = y_df.iloc[i].values.flatten()
         future_values = y_df.iloc[i+1: i+1+horizon].values.flatten()
         if use_returns:
@@ -101,7 +101,7 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
     """
     blocks = []
     baselines = []
-    for i in range(len(y_df) - horizon * 24):
+    for i in range(len(y_df) - horizon * 24 -1):
         base = y_df.iloc[i].values.flatten()
         window = []
         for d in range(1, horizon + 1):
