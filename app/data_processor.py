@@ -105,11 +105,13 @@ def create_multi_step_daily(y_df, horizon, use_returns=False):
         base = y_df.iloc[i].values.flatten()
         window = []
         for d in range(1, horizon + 1):
-            val = y_df.iloc[i + d * 24].values.flatten()
+            future_values = y_df.iloc[i + d * 24].values.flatten()
             if use_returns:
-                window.extend(list(val - base))
+                #window.extend(list(val - base))
+                target = future_values - base  # (t+1 to t+horizon) - base value at t
             else:
-                window.extend(list(val))
+                target = future_values
+            window.append(target)    
         blocks.append(window)
         if use_returns:
             baselines.append(base)
