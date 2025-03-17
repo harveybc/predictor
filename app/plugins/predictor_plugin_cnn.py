@@ -12,7 +12,7 @@ from sklearn.metrics import r2_score
 import tensorflow.keras.backend as K
 import gc
 
-cclass MyTimeDistributed(tf.keras.layers.Layer):
+class MyTimeDistributed(tf.keras.layers.Layer):
     def __init__(self, layer, **kwargs):
         super(MyTimeDistributed, self).__init__(**kwargs)
         self.layer = layer
