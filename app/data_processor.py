@@ -241,9 +241,9 @@ def process_data(config):
         x_test = x_test.to_numpy().astype(np.float32)
         window_size = config["window_size"]
         # Use the updated sliding windows function that returns base_dates already trimmed the first window of data
-        x_train, train_dates = create_sliding_windows_x(x_train, window_size, stride=1, date_times=train_dates)
-        x_val, val_dates = create_sliding_windows_x(x_val, window_size, stride=1, date_times=val_dates)
-        x_test, test_dates = create_sliding_windows_x(x_test, window_size, stride=1, date_times=test_dates)
+        x_train, train_dates = create_sliding_windows_x(x_train, window_size, stride=1, date_times=train_dates_orig)
+        x_val, val_dates = create_sliding_windows_x(x_val, window_size, stride=1, date_times=val_dates_orig)
+        x_test, test_dates = create_sliding_windows_x(x_test, window_size, stride=1, date_times=test_dates_orig)
         # Adjust multi-step targets accordingly (unchanged from your original)
         y_train_multi = y_train_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
         y_val_multi = y_val_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
