@@ -84,39 +84,39 @@ def create_multi_step(y_df, horizon, use_returns=False):
 
 def create_multi_step_daily(y_df, horizon, use_returns=False):
     """
-    Creates multi-step targets for daily time-series prediction.
-    For each base tick at index i, the target is taken from the value at i + (horizon*24).
-    Assumes that data is in ascending order.
+    Creates multi-step targets for time-series prediction using daily data.
+    If use_returns is True, targets are computed as the difference between each future value 
+    and the current (baseline) value.
     
     Args:
         y_df (pd.DataFrame): Target data as a DataFrame.
         horizon (int): Number of future days to predict.
-        use_returns (bool): If True, compute returns as (future - base).
+        use_returns (bool): If True, compute returns instead of absolute values.
     
     Returns:
-        pd.DataFrame: Multi-step targets with shape (L - horizon*24, 1).
+        pd.DataFrame: Multi-step targets aligned with the input data.
         (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
     """
     blocks = []
     baselines = []
-    L = len(y_df)
-    for i in range(L - horizon * 24):
+    for i in range(len(y_df) - horizon * 24):
         base = y_df.iloc[i].values.flatten()
-        future_value = y_df.iloc[i + horizon * 24].values.flatten()
-        if use_returns:
-            target = future_value - base  # (t+horizon_day) - base value at t
-        else:
-            target = future_value
-        blocks.append([target[0]])  # create one column per row
+        window = []
+        for d in range(1, horizon + 1):
+            val = y_df.iloc[i + d * 24].values.flatten()
+            if use_returns:
+                window.extend(list(val - base))
+            else:
+                window.extend(list(val))
+        blocks.append(window)
         if use_returns:
             baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:L - horizon * 24])
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:L - horizon * 24])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24])
         return df_targets, df_baselines
     else:
         return df_targets
-
 
 
 def process_data(config):
