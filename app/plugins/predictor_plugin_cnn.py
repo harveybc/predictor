@@ -18,39 +18,23 @@ class MyTimeDistributed(tf.keras.layers.Layer):
         self.layer = layer
 
     def call(self, inputs, **kwargs):
-        # inputs shape: (batch, time, features)
+        # inputs is assumed to be of shape (batch, time, ...)
         def apply_fn(x):
-            # x is a single time slice, expected shape: (features,)
-            # If x is rank 1, expand dims to simulate a batch dimension.
-            if tf.rank(x) == 1:
-                x_expanded = tf.expand_dims(x, 0)  # shape becomes (1, features)
-                y = self.layer(x_expanded, **kwargs)
-                y = tf.squeeze(y, axis=0)  # back to (output_dim,)
-                return y
-            else:
-                return self.layer(x, **kwargs)
-        # Apply the function on the time axis.
-        return tf.map_fn(apply_fn, inputs, dtype=tf.float32)
+            return self.layer(x)
+        # Apply the wrapped layer to each time step via tf.map_fn.
+        return tf.map_fn(apply_fn, inputs, dtype=self.layer.dtype)
 
     def compute_output_shape(self, input_shape):
-        # input_shape: (batch, time, features)
-        child_input_shape = input_shape[2:]
-        if len(child_input_shape) == 1:
-            # If the time slice is rank 1, add a dummy batch dimension.
-            dummy_input_shape = (1,) + tuple(child_input_shape)
-            child_output_shape = self.layer.compute_output_shape(dummy_input_shape)
-            # Remove the dummy dimension.
-            child_output_shape = child_output_shape[1:]
-        else:
-            child_output_shape = self.layer.compute_output_shape(child_input_shape)
-        return (input_shape[0], input_shape[1]) + tuple(child_output_shape)
-
-
-    def compute_output_shape(self, input_shape):
-        # Let child_shape be the output shape for one time step.
-        # We call the wrapped layer's compute_output_shape on the per-time-step input shape.
-        child_shape = self.layer.compute_output_shape(input_shape[2:])
-        return (input_shape[0], input_shape[1]) + child_shape[1:]
+        # input_shape is expected as (batch, time, features...)
+        per_time_shape = input_shape[2:]  # e.g., (8,)
+        # If the per-time-step shape is rank 1, add a dummy batch dimension for the wrapped layer.
+        if len(per_time_shape) == 1:
+            per_time_shape = (None,) + per_time_shape  # becomes (None, 8)
+        child_shape = self.layer.compute_output_shape(per_time_shape)
+        # Remove the dummy batch dimension from the child's output shape.
+        child_shape = child_shape[1:]
+        # Final output shape: (batch, time) + child_shape
+        return (input_shape[0], input_shape[1]) + child_shape
 
 
 class WrappedDenseFlipout(tf.keras.layers.Layer):
