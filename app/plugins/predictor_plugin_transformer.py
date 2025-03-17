@@ -12,6 +12,18 @@ from sklearn.metrics import r2_score
 import tensorflow.keras.backend as K
 import gc
 
+class WrappedDenseFlipout(tf.keras.layers.Layer):
+    def __init__(self, units, activation, kernel_posterior_fn, kernel_prior_fn, kernel_divergence_fn, **kwargs):
+        super(WrappedDenseFlipout, self).__init__(**kwargs)
+        self.dense_flipout = tfp.layers.DenseFlipout(
+            units=units,
+            activation=activation,
+            kernel_posterior_fn=kernel_posterior_fn,
+            kernel_prior_fn=kernel_prior_fn,
+            kernel_divergence_fn=kernel_divergence_fn
+        )
+    def call(self, inputs):
+        return self.dense_flipout(inputs)
 # --- Custom Callbacks ---
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
     """
@@ -219,54 +231,46 @@ class Plugin:
             x = Add(name=f"residual_add_ff_{idx+1}")([x, ff_output])
             print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
 
-        # Global average pooling to collapse the sequence dimension
-        #x = GlobalAveragePooling1D(name="global_avg_pool")(x)
-        #print("DEBUG: After GlobalAveragePooling1D, x shape:", x.shape)
+        ## Bayesian layer for uncertainty estimation
+        # Take the last time step from the transformer output
+        x_last = tf.keras.layers.Lambda(lambda t: t[:, -1, :], name="last_time_step")(x)
+        print("DEBUG: x_last shape (last time step):", x_last.shape)
+        x_last = BatchNormalization(name="batch_norm_final")(x_last)
+        print("DEBUG: After BatchNormalization, x_last shape:", x_last.shape)
 
-        # Instead of using GlobalAveragePooling1D to collapse the sequence,
-        # take the representation from the last time step to preserve temporal information.
-        x = tf.keras.layers.Lambda(lambda t: t[:, -1, :], name="last_time_step")(x)
-        print("DEBUG: After taking last time step, x shape:", x.shape)
+        # Repeat the last time step vector for each forecast horizon.
+        repeated = tf.keras.layers.RepeatVector(self.params['time_horizon'], name="repeat_vector")(x_last)
+        print("DEBUG: repeated shape (for each horizon):", repeated.shape)
 
-        x = BatchNormalization(name="batch_norm_final")(x)
-        print("DEBUG: After final BatchNormalization, x shape:", x.shape)
+        # Use the WrappedDenseFlipout inside TimeDistributed to get separate outputs for each horizon.
+        bayesian_output = tf.keras.layers.TimeDistributed(
+            WrappedDenseFlipout(
+                units=1,
+                activation='linear',
+                kernel_posterior_fn=posterior_mean_field_custom,
+                kernel_prior_fn=prior_fn,
+                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.params.get('kl_weight', 1e-3),
+                name="wrapped_output_layer_td"
+            ),
+            name="bayesian_dense_flipout_td"
+        )(repeated)
+        print("DEBUG: bayesian_output (raw) shape:", bayesian_output.shape)
+        bayesian_output = tf.keras.layers.Reshape((self.params['time_horizon'],))(bayesian_output)
+        print("DEBUG: bayesian_output reshaped to:", bayesian_output.shape)
 
-        # --- Bayesian Output Layer Implementation (copied from CNN/LSTM plugins) ---
-        tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-
-        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
-        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
-
-        
-        KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-        DenseFlipout = tfp.layers.DenseFlipout
-        print("DEBUG: Creating DenseFlipout final layer with units:", self.params['time_horizon'])
-        flipout_layer = DenseFlipout(
-            units=self.params['time_horizon'],
-            activation='linear',
-            kernel_posterior_fn=posterior_mean_field_custom,
-            kernel_prior_fn=prior_fn,
-            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-            name="output_layer"
-        )
-        bayesian_output = tf.keras.layers.Lambda(
-            lambda t: flipout_layer(t),
-            output_shape=lambda s: (s[0], self.params['time_horizon']),
-            name="bayesian_dense_flipout"
-        )(x)
-        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
-        
+        # Deterministic bias branch remains as before.
         bias_layer = Dense(
             units=self.params['time_horizon'],
             activation='linear',
             kernel_initializer=random_normal_initializer_44,
             name="deterministic_bias",
             kernel_regularizer=l2(l2_reg)
-        )(x)
+        )(x_last)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
-        
-        outputs = bayesian_output + bias_layer
+
+        outputs = tf.keras.layers.Add(name="output_add")([bayesian_output, bias_layer])
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+
         
         self.model = Model(inputs=inputs, outputs=outputs, name="predictor_model")
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
