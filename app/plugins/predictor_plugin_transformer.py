@@ -228,22 +228,26 @@ class Plugin:
         x_last = BatchNormalization(name="batch_norm_final")(x_last)
         print("DEBUG: After BatchNormalization, x_last shape:", x_last.shape)
 
+        # --- Replace the previous TimeDistributed block with this inline version ---
         # Repeat the last time step vector for each forecast horizon.
         repeated = tf.keras.layers.RepeatVector(self.params['time_horizon'], name="repeat_vector")(x_last)
         print("DEBUG: repeated shape (for each horizon):", repeated.shape)
 
-        # Define a TimeDistributed Bayesian output layer that predicts one value per horizon.
-        flipout_layer = tfp.layers.DenseFlipout(
-            units=1,
-            activation='linear',
-            kernel_posterior_fn=posterior_mean_field_custom,
-            kernel_prior_fn=prior_fn,
-            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.params.get('kl_weight', 1e-3),
-            name="output_layer_td"
-        )
-        bayesian_output = tf.keras.layers.TimeDistributed(flipout_layer, name="bayesian_dense_flipout_td")(repeated)
+        # Create the Bayesian output layer inline within TimeDistributed.
+        bayesian_output = tf.keras.layers.TimeDistributed(
+            tfp.layers.DenseFlipout(
+                units=1,
+                activation='linear',
+                kernel_posterior_fn=posterior_mean_field_custom,
+                kernel_prior_fn=prior_fn,
+                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.params.get('kl_weight', 1e-3),
+                name="output_layer_td"
+            ),
+            name="bayesian_dense_flipout_td"
+        )(repeated)
         print("DEBUG: bayesian_output (raw) shape:", bayesian_output.shape)
         bayesian_output = tf.keras.layers.Reshape((self.params['time_horizon'],))(bayesian_output)
+
 
         # Similarly, define a TimeDistributed deterministic bias branch.
         bias_layer = tf.keras.layers.TimeDistributed(
