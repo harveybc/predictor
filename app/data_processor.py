@@ -284,7 +284,7 @@ def process_data(config):
         # --- End of Trim Chunk ---
         # calculate close prices as y_train; ensure test_close_prices is a numpy array for slicing
         min_len_test = min(len(x_test), len(y_test_multi))
-        test_close_prices = test_close_prices[window_size-1:min_len_test, -1]
+        test_close_prices = test_close_prices[window_size-1:, -1]
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
         x_train = x_train.to_numpy().astype(np.float32)
@@ -327,12 +327,14 @@ def process_data(config):
     train_dates = train_dates_orig if train_dates_orig is not None else None
     val_dates = val_dates_orig if val_dates_orig is not None else None
     test_dates = test_dates_orig if test_dates_orig is not None else None
+    test_close_prices = test_close_prices[:min_len_test]
 
 
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
     print(" x_test: ", x_test.shape, " y_test: ", y_test_multi.shape)
+    print(" test_close_prices: ", test_close_prices.shape)
     
     
 
