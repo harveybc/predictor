@@ -32,6 +32,7 @@ class WrappedDenseFlipout(tf.keras.layers.Layer):
     def compute_output_shape(self, input_shape):
         return self.dense_flipout.compute_output_shape(input_shape)
 
+
 # --- Custom Callbacks ---
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
     """
@@ -240,17 +241,24 @@ class Plugin:
             print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
 
         ## Bayesian layer for uncertainty estimation
-        # Take the last time step from the transformer output
+        
+        # Instead of using GlobalAveragePooling1D to collapse the sequence,
+        # take the representation from the last time step to preserve temporal information.
         x_last = tf.keras.layers.Lambda(lambda t: t[:, -1, :], name="last_time_step")(x)
         print("DEBUG: x_last shape (last time step):", x_last.shape)
         x_last = BatchNormalization(name="batch_norm_final")(x_last)
         print("DEBUG: After BatchNormalization, x_last shape:", x_last.shape)
 
+        # Preserve original functionality: reassign add_variable and initialize kl_weight_var.
+        tfp.layers.DenseFlipout.add_variable = _patched_add_variable
+        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
+        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
+
         # Repeat the last time step vector for each forecast horizon.
         repeated = tf.keras.layers.RepeatVector(self.params['time_horizon'], name="repeat_vector")(x_last)
         print("DEBUG: repeated shape (for each horizon):", repeated.shape)
 
-        # Use the WrappedDenseFlipout inside TimeDistributed to get separate outputs for each horizon.
+        # Use TimeDistributed with our WrappedDenseFlipout layer to get separate outputs per horizon.
         bayesian_output = tf.keras.layers.TimeDistributed(
             WrappedDenseFlipout(
                 units=1,
@@ -266,7 +274,7 @@ class Plugin:
         bayesian_output = tf.keras.layers.Reshape((self.params['time_horizon'],))(bayesian_output)
         print("DEBUG: bayesian_output reshaped to:", bayesian_output.shape)
 
-        # Deterministic bias branch remains as before.
+        # Deterministic bias branch using x_last.
         bias_layer = Dense(
             units=self.params['time_horizon'],
             activation='linear',
@@ -278,6 +286,7 @@ class Plugin:
 
         outputs = tf.keras.layers.Add(name="output_add")([bayesian_output, bias_layer])
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+
 
         
         self.model = Model(inputs=inputs, outputs=outputs, name="predictor_model")
