@@ -260,12 +260,14 @@ class Plugin:
         print("DEBUG: repeated shape (for each horizon):", repeated.shape)
         
         # --- Add Horizon Embedding ---
-        # Create horizon indices: 0, 1, ..., time_horizon-1.
-        horizon_indices = tf.range(self.params['time_horizon'], dtype=tf.int32)
-        horizon_indices = tf.expand_dims(horizon_indices, 0)  # shape (1, time_horizon)
-        # Tile indices to match the batch size.
-        batch_size = tf.shape(repeated)[0]
-        horizon_indices = tf.tile(horizon_indices, [batch_size, 1])  # shape (batch, time_horizon)
+        # --- Add Horizon Embedding ---
+        # Instead of computing batch_size outside, use a Lambda layer to build horizon indices.
+        horizon_indices = tf.keras.layers.Lambda(
+            lambda r: tf.tile(tf.expand_dims(tf.range(self.params['time_horizon'], dtype=tf.int32), axis=0),
+                              [tf.shape(r)[0], 1])
+        )(repeated)
+        print("DEBUG: horizon_indices shape:", horizon_indices.shape)
+        
         # Create an embedding layer for the horizon indices.
         horizon_embedding_dim = x_last.shape[-1]  # Use same dimension as x_last
         horizon_embedding_layer = tf.keras.layers.Embedding(
@@ -275,9 +277,11 @@ class Plugin:
         )
         horizon_embeddings = horizon_embedding_layer(horizon_indices)
         print("DEBUG: horizon_embeddings shape:", horizon_embeddings.shape)
+        
         # Combine the repeated vector with the horizon embeddings (by element-wise addition).
         repeated_with_horizon = tf.keras.layers.Add(name="add_horizon_embedding")([repeated, horizon_embeddings])
         print("DEBUG: repeated_with_horizon shape:", repeated_with_horizon.shape)
+
         # --- End Horizon Embedding ---
 
         # Use TimeDistributed with our WrappedDenseFlipout layer to produce separate outputs for each horizon.
