@@ -34,22 +34,18 @@ def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
         If date_times is provided:
             tuple: (windows, date_time_windows) where windows is an array of shape 
                    (n_windows, window_size, n_features) and date_time_windows is a list of 
-                   the DATE_TIME value corresponding to the last time step of each window.
+                   the DATE_TIME value corresponding to the last time step (most current) of each window.
         Otherwise:
             np.ndarray: Array of sliding windows.
     """
     windows = []
     dt_windows = []
     for i in range(window_size, len(data), stride):
-        windows.append(data[i-(window_size): i])
+        windows.append(data[i-window_size: i])
         if date_times is not None:
             # Use the date corresponding to the lastest, most current element in the window
             dt_windows.append(date_times[i])
-    if date_times is not None:
-        return np.array(windows), dt_windows
-    else:
-        return np.array(windows)
-
+    return np.array(windows), dt_windows
 
 
 def create_multi_step(y_df, horizon, use_returns=False):
