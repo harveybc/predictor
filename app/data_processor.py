@@ -76,9 +76,9 @@ def create_multi_step(y_df, horizon, use_returns=False):
         blocks.append(target)
         if use_returns:
             baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:L - horizon])
+    df_targets = pd.DataFrame(blocks, index=y_df.index[:L - horizon-1])
     if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:L - horizon])
+        df_baselines = pd.DataFrame(baselines, index=y_df.index[:L - horizon-1])
         return df_targets, df_baselines
     else:
         return df_targets
