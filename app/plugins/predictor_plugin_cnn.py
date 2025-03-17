@@ -12,19 +12,39 @@ from sklearn.metrics import r2_score
 import tensorflow.keras.backend as K
 import gc
 
-class MyTimeDistributed(tf.keras.layers.Layer):
+cclass MyTimeDistributed(tf.keras.layers.Layer):
     def __init__(self, layer, **kwargs):
         super(MyTimeDistributed, self).__init__(**kwargs)
         self.layer = layer
 
     def call(self, inputs, **kwargs):
-        # inputs shape: (batch, time, ...). We'll apply self.layer to each time step.
-        # Using tf.map_fn to apply self.layer on axis=1.
-        # Note: We assume the wrapped layer returns a tensor with shape (...).
+        # inputs shape: (batch, time, features)
         def apply_fn(x):
-            return self.layer(x)
-        outputs = tf.map_fn(apply_fn, inputs, dtype=inputs.dtype)
-        return outputs
+            # x is a single time slice, expected shape: (features,)
+            # If x is rank 1, expand dims to simulate a batch dimension.
+            if tf.rank(x) == 1:
+                x_expanded = tf.expand_dims(x, 0)  # shape becomes (1, features)
+                y = self.layer(x_expanded, **kwargs)
+                y = tf.squeeze(y, axis=0)  # back to (output_dim,)
+                return y
+            else:
+                return self.layer(x, **kwargs)
+        # Apply the function on the time axis.
+        return tf.map_fn(apply_fn, inputs, dtype=tf.float32)
+
+    def compute_output_shape(self, input_shape):
+        # input_shape: (batch, time, features)
+        child_input_shape = input_shape[2:]
+        if len(child_input_shape) == 1:
+            # If the time slice is rank 1, add a dummy batch dimension.
+            dummy_input_shape = (1,) + tuple(child_input_shape)
+            child_output_shape = self.layer.compute_output_shape(dummy_input_shape)
+            # Remove the dummy dimension.
+            child_output_shape = child_output_shape[1:]
+        else:
+            child_output_shape = self.layer.compute_output_shape(child_input_shape)
+        return (input_shape[0], input_shape[1]) + tuple(child_output_shape)
+
 
     def compute_output_shape(self, input_shape):
         # Let child_shape be the output shape for one time step.
