@@ -282,56 +282,12 @@ class Plugin:
         self.model = Model(inputs=inputs, outputs=outputs_list, name="predictor_model")
         # --- END NEW CODE ---
 
-        def multi_output_loss(y_true, y_pred):
-            """
-            Custom loss for multi-output training.
-            Both y_true and y_pred are lists of tensors.
-            This function squeezes each tensor to remove singleton dimensions,
-            stacks them into a tensor of shape (time_horizon, batch), transposes it to (batch, time_horizon),
-            and then computes the Huber and MMD losses.
-            """
-            # Ensure each tensor is rank 1
-            y_true_processed = [tf.squeeze(t, axis=-1) if len(t.shape) > 1 else t for t in y_true]
-            y_pred_processed = [tf.squeeze(t, axis=-1) if len(t.shape) > 1 else t for t in y_pred]
-            
-            # Stack along a new axis (axis=0) to get a tensor of shape (time_horizon, batch)
-            y_true_stacked = tf.stack(y_true_processed, axis=0)
-            y_pred_stacked = tf.stack(y_pred_processed, axis=0)
-            
-            # Transpose to get shape (batch, time_horizon)
-            y_true_stacked = tf.transpose(y_true_stacked, perm=[1, 0])
-            y_pred_stacked = tf.transpose(y_pred_stacked, perm=[1, 0])
-            
-            # Compute losses on the stacked tensors
-            huber_loss = Huber()(y_true_stacked, y_pred_stacked)
-            mmd_loss = self.compute_mmd(y_pred_stacked, y_true_stacked)
-            total_loss = huber_loss + (self.params['mmd_lambda'] * mmd_loss)
-            return total_loss
-
-
-        def multi_output_mae(y_true, y_pred):
-            """
-            Metric for multi-output training.
-            Squeezes each tensor, stacks them, transposes to (batch, time_horizon),
-            and computes the mean absolute error.
-            """
-            y_true_processed = [tf.squeeze(t, axis=-1) if len(t.shape) > 1 else t for t in y_true]
-            y_pred_processed = [tf.squeeze(t, axis=-1) if len(t.shape) > 1 else t for t in y_pred]
-            
-            y_true_stacked = tf.stack(y_true_processed, axis=0)
-            y_pred_stacked = tf.stack(y_pred_processed, axis=0)
-            
-            y_true_stacked = tf.transpose(y_true_stacked, perm=[1, 0])
-            y_pred_stacked = tf.transpose(y_pred_stacked, perm=[1, 0])
-            
-            return tf.reduce_mean(tf.abs(y_true_stacked - y_pred_stacked))
-
 
 
         self.model.compile(
             optimizer=Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
-            loss=multi_output_loss,
-            metrics=[multi_output_mae]
+            loss=[self.custom_loss for _ in range(self.params['time_horizon'])],
+            metrics=['mae']
         )
         # --- END NEW CODE ---
 
@@ -365,12 +321,6 @@ class Plugin:
         """
         huber_loss = Huber()(y_true, y_pred)
         mmd_loss = self.compute_mmd(y_pred, y_true)
-        #error = tf.math.abs(tf.math.subtract(y_true, y_pred))
-        #mean_error = tf.math.reduce_mean(error)
-        #std_error = tf.math.reduce_std(error)
-        #epsilon = 1e-6
-        #cv = tf.math.divide(std_error, mean_error + epsilon)
-        #total_loss = huber_loss + (self.mmd_lambda * mmd_loss) + 0.1*cv
         total_loss = huber_loss + (self.mmd_lambda * mmd_loss) 
         return total_loss
     
