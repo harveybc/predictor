@@ -185,13 +185,16 @@ class Plugin:
                 name=f"branch_{i+1}_dense"
             )(common)
 
-            # Second Dense layer in branch
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 4,
                 activation=self.params['activation'],
                 kernel_initializer=random_normal_initializer_42,
                 name=f"branch_{i+1}_hidden"
             )(branch)
+
+            # *** ADD THIS LINE ***
+            branch = tf.keras.layers.Lambda(lambda x: x, name=f"branch_{i+1}_ensure_tensor")(branch)
+
 
             # Call DenseFlipout directly (no outer Lambda)
             branch_output = tfp.layers.DenseFlipout(
