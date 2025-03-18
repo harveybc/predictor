@@ -193,7 +193,7 @@ class Plugin:
             # Ensure branch is a Tensor (in case it is a tuple)
             #branch = tf.convert_to_tensor(branch)
 
-            branch_output = tf.keras.layers.Lambda(
+            bbranch_output = tf.keras.layers.Lambda(
                 lambda z: tfp.layers.DenseFlipout(
                     units=1,
                     activation='linear',
@@ -207,6 +207,7 @@ class Plugin:
             
             branch_output = tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1,)), name=f"branch_{i+1}_output")(branch_output)
             outputs.append(branch_output)
+            print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
             print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
 
 
