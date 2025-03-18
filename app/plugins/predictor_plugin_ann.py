@@ -120,10 +120,8 @@ class Plugin:
         """
         from tensorflow.keras.losses import Huber
 
-        # --- New Initializers that guarantee a tensor is returned ---
+        # --- New initializers that guarantee a tensor is returned ---
         def my_random_normal_initializer_42(shape, dtype=None):
-            # Use tf.random.normal to generate a tensor with the specified shape.
-            # This function returns a tensor (not a tuple).
             return tf.random.normal(shape, stddev=0.05, seed=42, dtype=dtype)
 
         def my_random_normal_initializer_44(shape, dtype=None):
@@ -367,7 +365,7 @@ class Plugin:
             else:
                 print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
-            # Wrap the branch in a Lambda layer that performs an identity operation.
+            # Wrap the branch in a Lambda layer (identity op) so it remains a KerasTensor.
             branch_tensor = tf.keras.layers.Lambda(lambda x: tf.identity(x), name=f"branch_{i+1}_identity")(branch)
             print(f"DEBUG: After branch_{i+1}_identity; type: {type(branch_tensor)}, shape: {branch_tensor.shape}")
 
@@ -376,7 +374,7 @@ class Plugin:
                 activation='linear',
                 kernel_posterior_fn=make_posterior_fn(i+1),
                 kernel_prior_fn=make_prior_fn(i+1),
-                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+                kernel_divergence_fn=lambda q, p, _: tf.convert_to_tensor(tfp.distributions.kl_divergence(q, p)) * KL_WEIGHT,
                 name=f"branch_{i+1}_flipout"
             )(branch_tensor)
             print(f"DEBUG: After branch_{i+1}_flipout; shape:", branch_flipout.shape)
