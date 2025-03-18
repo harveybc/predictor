@@ -175,9 +175,6 @@ class Plugin:
         # --- End Corrected Bayesian Functions ---
 
         # --- Parallel Branches for Multi-Output ---
-                # --- Parallel Branches for Multi-Output ---
-        # --- Parallel Branches for Multi-Output ---
-        # --- Parallel Branches for Multi-Output ---
         outputs = []
         for i in range(self.params['time_horizon']):
             # First Dense layer in branch
@@ -196,10 +193,10 @@ class Plugin:
                 name=f"branch_{i+1}_hidden"
             )(branch)
             
-            # *** INSERT THIS SNIPPET HERE ***
+            # *** INSERTED SNIPPET: Ensure branch is a proper KerasTensor ***
             branch = tf.keras.layers.Lambda(lambda x: x, name=f"branch_{i+1}_ensure_tensor")(branch)
             
-            # Call DenseFlipout directly without an outer Lambda wrapper
+            # Call DenseFlipout directly (without an outer Lambda wrapper)
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -217,9 +214,6 @@ class Plugin:
             branch_output = tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1,)), name=f"branch_{i+1}_output")(branch_output)
             outputs.append(branch_output)
             print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
-
-
-
 
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="predictor_model")
         
