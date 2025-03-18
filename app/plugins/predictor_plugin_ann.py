@@ -175,6 +175,7 @@ class Plugin:
         # --- End Corrected Bayesian Functions ---
 
         # --- Parallel Branches for Multi-Output ---
+                # --- Parallel Branches for Multi-Output ---
         outputs = []
         for i in range(self.params['time_horizon']):
             # First Dense layer in branch
@@ -185,18 +186,18 @@ class Plugin:
                 name=f"branch_{i+1}_dense"
             )(common)
 
+            # Second Dense layer in branch
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 4,
                 activation=self.params['activation'],
                 kernel_initializer=random_normal_initializer_42,
                 name=f"branch_{i+1}_hidden"
             )(branch)
-
-            # *** ADD THIS LINE ***
+            
+            # *** INSERT THIS SNIPPET HERE ***
             branch = tf.keras.layers.Lambda(lambda x: x, name=f"branch_{i+1}_ensure_tensor")(branch)
-
-
-            # Call DenseFlipout directly (no outer Lambda)
+            
+            # Call DenseFlipout directly without an outer Lambda
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -210,10 +211,14 @@ class Plugin:
                 name=f"branch_{i+1}_flipout"
             )(branch)
             
-            # Use a Flatten layer to ensure the output is a rank-1 tensor (vector)
-            branch_output = tf.keras.layers.Flatten(name=f"branch_{i+1}_output")(branch_output)
+            # Reshape the branch output to a vector
+            branch_output = tf.keras.layers.Lambda(
+                lambda x: tf.reshape(x, (-1,)),
+                name=f"branch_{i+1}_output"
+            )(branch_output)
             outputs.append(branch_output)
             print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
+
 
 
 
