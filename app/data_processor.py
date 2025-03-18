@@ -345,11 +345,11 @@ def process_data(config):
     # Update the return dictionary to use the lists instead of the single 2D arrays:
     ret = {
         "x_train": x_train,
-        "y_train": y_train_multi_list,
+        "y_train": y_train_multi,
         "x_val": x_val,
-        "y_val": y_val_multi_list,
+        "y_val": y_val_multi,
         "x_test": x_test,
-        "y_test": y_test_multi_list,
+        "y_test": y_test_multi,
         "dates_train": train_dates,
         "dates_val": val_dates,
         "dates_test": test_dates,
