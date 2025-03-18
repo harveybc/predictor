@@ -251,7 +251,7 @@ class Plugin:
         print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
         
         bias_layer = Dense(
-            units=self.params['time_horizon'],
+            units=1,
             activation='linear',
             kernel_initializer=random_normal_initializer_44,
             name="deterministic_bias",
