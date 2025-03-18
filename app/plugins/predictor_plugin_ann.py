@@ -193,14 +193,17 @@ class Plugin:
             # Ensure branch is a Tensor (in case it is a tuple)
             #branch = tf.convert_to_tensor(branch)
 
-            branch_output = tfp.layers.DenseFlipout(
-                units=1,
-                activation='linear',
-                kernel_posterior_fn=lambda **kwargs: posterior_mean_field_custom(**kwargs, name=f"branch_{i+1}"),
-                kernel_prior_fn=lambda **kwargs: prior_fn(**kwargs, name=f"branch_{i+1}"),
-                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-                name=f"branch_{i+1}_flipout"
+            branch_output = tf.keras.layers.Lambda(
+                lambda z: tfp.layers.DenseFlipout(
+                    units=1,
+                    activation='linear',
+                    kernel_posterior_fn=lambda **kwargs: posterior_mean_field_custom(**kwargs, name=f"branch_{i+1}"),
+                    kernel_prior_fn=lambda **kwargs: prior_fn(**kwargs, name=f"branch_{i+1}"),
+                    kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+                    name=f"branch_{i+1}_flipout"
+                )(z)
             )(branch)
+
 
             # Reshape the output to ensure it is a rank-1 tensor (a vector)
             branch_output = tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1,)), name=f"branch_{i+1}_output")(branch_output)
