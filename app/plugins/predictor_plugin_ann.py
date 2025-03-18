@@ -336,7 +336,7 @@ class Plugin:
             )(x)
             print(f"DEBUG: After branch_{i+1}_dense; shape:", branch.shape)
             branch = tf.keras.layers.Dense(
-                units=self.params['initial_layer_size'] // 2 // 2,  # or self.params['initial_layer_size'] // 4
+                units=self.params['initial_layer_size'] // 4,
                 activation=self.params['activation'],
                 kernel_initializer=random_normal_initializer_42,
                 name=f"branch_{i+1}_hidden"
@@ -359,9 +359,9 @@ class Plugin:
             else:
                 print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
-            # Force conversion to a tensor with a proper TensorShape:
-            branch_tensor = tf.identity(branch)
-            print(f"DEBUG: After tf.identity, branch_tensor type: {type(branch_tensor)}, shape: {branch_tensor.shape}")
+            # Instead of using tf.identity directly, wrap the identity in a Lambda layer.
+            branch_tensor = tf.keras.layers.Lambda(lambda x: tf.identity(x), name=f"branch_{i+1}_identity")(branch)
+            print(f"DEBUG: After branch_{i+1}_identity; type: {type(branch_tensor)}, shape: {branch_tensor.shape}")
 
             branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
