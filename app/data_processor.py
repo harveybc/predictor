@@ -413,6 +413,15 @@ def run_prediction_pipeline(config, plugin):
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {[a.shape for a in y_train]}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {[a.shape for a in y_val]}")
     print(f"Test data shapes: x_test: {x_test.shape}, y_test: {[a.shape for a in y_test]}")
+    # --- NEW CODE: Stack multi-output target lists into 2D arrays ---
+    y_train_array = np.stack(y_train, axis=1)  # Shape: (n_samples, time_horizon)
+    y_val_array   = np.stack(y_val, axis=1)
+    y_test_array  = np.stack(y_test, axis=1)
+    print("DEBUG: Stacked y_train shape:", y_train_array.shape)
+    print("DEBUG: Stacked y_val shape:", y_val_array.shape)
+    print("DEBUG: Stacked y_test shape:", y_test_array.shape)
+    # --- END NEW CODE ---
+
     # --- NEW CODE: Stack multi-output target lists into arrays ---
     y_train_stacked = np.stack(y_train, axis=1)  # shape: (samples, time_horizon)
     y_val_stacked   = np.stack(y_val, axis=1)
