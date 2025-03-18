@@ -106,14 +106,17 @@ class Plugin:
 
     def build_model(self, input_shape, x_train, config=None):
         """
-        Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
+        1. Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
         This version creates time_horizon (e.g. 6) parallel branches—each branch
         produces a single scalar output.
         
-        :param input_shape: int, the expected number of features (must be int for ANN)
-        :param x_train: training data as a NumPy array
-        :param config: configuration dictionary (optional)
-        :raises ValueError: if input_shape is not an integer
+        2. Parameters:
+            - input_shape: int, the expected number of features (must be int for ANN)
+            - x_train: training data as a NumPy array
+            - config: configuration dictionary (optional)
+        
+        3. Raises:
+            - ValueError if input_shape is not an integer.
         """
         from tensorflow.keras.losses import Huber
 
@@ -182,23 +185,33 @@ class Plugin:
         # 4. Define Custom Posterior and Prior Functions for Bayesian Layers
         # -------------------------------------------------------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, name, trainable, add_variable_fn):
-            # DEBUG messages for posterior function initialization
+            # DEBUG: Print inputs to the posterior function
             print("DEBUG: In posterior_mean_field_custom:")
-            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
-            print("       Received bias_size =", bias_size, "; overriding to 0")
-            print("       trainable =", trainable, "name =", name)
-            if not isinstance(name, str):
-                print("DEBUG: 'name' is not a string; setting to None")
-                name = None
-            bias_size = 0
-            n = int(np.prod(kernel_shape)) + bias_size
+            print("       dtype =", dtype)
+            print("       kernel_shape =", kernel_shape)
+            print("       name =", name)
+            print("       trainable =", trainable)
+            print("       add_variable_fn =", add_variable_fn)
+            # Create variables using add_variable_fn if desired.
+            # Here we compute the number of parameters.
+            n = int(np.prod(kernel_shape))
             print("DEBUG: posterior: computed n =", n)
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior: computed c =", c)
-            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42),
-                            dtype=dtype, trainable=trainable, name=f"{name}_posterior_loc")
-            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43),
-                                dtype=dtype, trainable=trainable, name=f"{name}_posterior_scale")
+            loc = add_variable_fn(
+                name + "_posterior_loc",
+                shape=[n],
+                initializer=tf.random_normal_initializer(stddev=0.05, seed=42),
+                dtype=dtype,
+                trainable=trainable
+            )
+            scale = add_variable_fn(
+                name + "_posterior_scale",
+                shape=[n],
+                initializer=tf.random_normal_initializer(stddev=0.05, seed=43),
+                dtype=dtype,
+                trainable=trainable
+            )
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
             print("DEBUG: posterior: created loc shape:", loc.shape, "and scale shape:", scale.shape)
@@ -215,16 +228,14 @@ class Plugin:
             )
         
         def prior_fn(dtype, kernel_shape, name, trainable, add_variable_fn):
-            # DEBUG messages for prior function initialization
+            # DEBUG: Print inputs to the prior function
             print("DEBUG: In prior_fn:")
-            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
-            print("       Received bias_size =", bias_size, "; overriding to 0")
-            print("       trainable =", trainable, "name =", name)
-            if not isinstance(name, str):
-                print("DEBUG: 'name' is not a string in prior_fn; setting to None")
-                name = None
-            bias_size = 0
-            n = int(np.prod(kernel_shape)) + bias_size
+            print("       dtype =", dtype)
+            print("       kernel_shape =", kernel_shape)
+            print("       name =", name)
+            print("       trainable =", trainable)
+            print("       add_variable_fn =", add_variable_fn)
+            n = int(np.prod(kernel_shape))
             print("DEBUG: prior_fn: computed n =", n)
             loc = tf.zeros([n], dtype=dtype)
             scale = tf.ones([n], dtype=dtype)
@@ -239,9 +250,28 @@ class Plugin:
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-        
+
         # -------------------------------------------------------------------------
-        # 5. Build Parallel Output Branches with Additional Debugging
+        # 5. Debug Wrappers for Posterior and Prior Functions
+        # -------------------------------------------------------------------------
+        def debug_posterior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number):
+            print(f"DEBUG: In lambda for branch {branch_number} kernel_posterior_fn:")
+            print(f"       dtype: {dtype}, kernel_shape: {kernel_shape}, name: {name}, trainable: {trainable}")
+            print(f"       add_variable_fn: {add_variable_fn}")
+            distribution = posterior_mean_field_custom(dtype, kernel_shape, name, trainable, add_variable_fn)
+            print(f"DEBUG: Distribution returned by posterior_mean_field_custom for branch {branch_number}: {distribution}")
+            return distribution
+
+        def debug_prior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number):
+            print(f"DEBUG: In lambda for branch {branch_number} kernel_prior_fn:")
+            print(f"       dtype: {dtype}, kernel_shape: {kernel_shape}, name: {name}, trainable: {trainable}")
+            print(f"       add_variable_fn: {add_variable_fn}")
+            distribution = prior_fn(dtype, kernel_shape, name, trainable, add_variable_fn)
+            print(f"DEBUG: Distribution returned by prior_fn for branch {branch_number}: {distribution}")
+            return distribution
+
+        # -------------------------------------------------------------------------
+        # 6. Build Parallel Output Branches with Additional Debugging
         # -------------------------------------------------------------------------
         outputs = []
         for i in range(self.params['time_horizon']):
@@ -264,7 +294,6 @@ class Plugin:
             
             # --- Insert a custom debug Lambda to print runtime info ---
             def debug_print_tensor(tensor):
-                # Use tf.print for runtime evaluation of tensor properties
                 tf.print("DEBUG: Inside custom Lambda for branch", i+1, 
                         "type:", tf.shape(tensor), "and dynamic shape:", tf.shape(tensor))
                 return tensor
@@ -277,20 +306,19 @@ class Plugin:
                 print(f"DEBUG: WARNING: branch for branch {i+1} is a tuple/list. Contents:")
                 for idx, item in enumerate(branch):
                     print(f"DEBUG: branch[{idx}] type:", type(item), "shape:", getattr(item, 'shape', 'N/A'))
-                # If it is a tuple, take the first element (adjust if your architecture requires a different fix)
                 branch = branch[0]
-                print(f"DEBUG: Unpacked branch[{0}] to use as input for DenseFlipout; new shape:", branch.shape)
+                print(f"DEBUG: Unpacked branch[0] to use as input for DenseFlipout; new shape:", branch.shape)
             else:
                 print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
-            # Create branch-specific Bayesian DenseFlipout layer
+            # Create branch-specific Bayesian DenseFlipout layer with updated lambda functions
             branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
-                kernel_posterior_fn=lambda dtype, kernel_shape, bias_size, trainable, name=None: 
-                    posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name=f"branch_{i+1}"),
-                kernel_prior_fn=lambda dtype, kernel_shape, bias_size, trainable, name=None: 
-                    prior_fn(dtype, kernel_shape, bias_size, trainable, name=f"branch_{i+1}"),
+                kernel_posterior_fn=lambda dtype, kernel_shape, name, trainable, add_variable_fn, bn=i+1: 
+                    debug_posterior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=bn),
+                kernel_prior_fn=lambda dtype, kernel_shape, name, trainable, add_variable_fn, bn=i+1: 
+                    debug_prior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=bn),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=f"branch_{i+1}_flipout"
             )(branch)
@@ -318,7 +346,7 @@ class Plugin:
             outputs.append(branch_output)
 
         # -------------------------------------------------------------------------
-        # 6. Final Model Assembly, Compilation, and Summary
+        # 7. Final Model Assembly, Compilation, and Summary
         # -------------------------------------------------------------------------
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="predictor_model")
         print("DEBUG: Final model created. Input shape:", self.model.input_shape)
