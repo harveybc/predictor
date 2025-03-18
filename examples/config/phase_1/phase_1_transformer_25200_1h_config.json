@@ -23,7 +23,7 @@
     "activation": "tanh",
     "l2_reg": 1e-5,
     "kl_weight": 1e-5,
-    "kl_anneal_epochs": 20,
+    "kl_anneal_epochs": 50,
     "early_patience": 80,
     "start_from_epoch": 5,
     "use_returns": true,
