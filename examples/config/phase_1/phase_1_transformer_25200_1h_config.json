@@ -20,7 +20,7 @@
     "initial_layer_size": 32,
     "layer_size_divisor": 2,
     "learning_rate": 1e-3,
-    "activation": "tanh",
+    "activation": "relu",
     "l2_reg": 1e-5,
     "kl_weight": 1e-5,
     "kl_anneal_epochs": 50,

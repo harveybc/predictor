@@ -11,6 +11,8 @@ from tensorflow.keras.regularizers import l2
 from sklearn.metrics import r2_score
 import tensorflow.keras.backend as K
 import gc
+#LeakyReLU
+from tensorflow.keras.layers import LeakyReLU
 
 # --- Custom Callbacks ---
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
@@ -160,9 +162,11 @@ class Plugin:
             x = Add(name=f"residual_add_ff_{idx+1}")([x, ff_output])
             print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
 
-        # Global average pooling to collapse the sequence dimension
-        x = GlobalAveragePooling1D(name="global_avg_pool")(x)
-        print("DEBUG: After GlobalAveragePooling1D, x shape:", x.shape)
+        # Instead of GlobalAveragePooling1D:
+        # x = GlobalAveragePooling1D(name="global_avg_pool")(x)
+        # Try using Flatten:
+        x = tf.keras.layers.Flatten(name="flatten")(x)
+
 
         x = BatchNormalization(name="batch_norm_final")(x)
         print("DEBUG: After final BatchNormalization, x shape:", x.shape)
