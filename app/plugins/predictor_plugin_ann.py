@@ -328,6 +328,14 @@ class Plugin:
             return lambda dtype, kernel_shape, name, trainable, add_variable_fn: \
                 debug_prior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=branch_number)
 
+        # Define a custom kernel divergence function to ensure a tensor is returned.
+        def my_kernel_divergence(q, p, _):
+            kl = tfp.distributions.kl_divergence(q, p)
+            print("DEBUG: [KERNEL_DIVERGENCE] Raw KL divergence:", kl)
+            kl_tensor = tf.convert_to_tensor(kl)
+            print("DEBUG: [KERNEL_DIVERGENCE] KL divergence as tensor; type:", type(kl_tensor), ", shape:", kl_tensor.shape)
+            return kl_tensor * KL_WEIGHT
+
         # -------------------------------------------------------------------------
         # 7. Build Parallel Output Branches with Additional Debugging
         # -------------------------------------------------------------------------
@@ -365,7 +373,7 @@ class Plugin:
             else:
                 print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
-            # Wrap the branch in a Lambda layer (identity op) so it remains a KerasTensor.
+            # Wrap branch in an identity Lambda layer to preserve it as a KerasTensor.
             branch_tensor = tf.keras.layers.Lambda(lambda x: tf.identity(x), name=f"branch_{i+1}_identity")(branch)
             print(f"DEBUG: After branch_{i+1}_identity; type: {type(branch_tensor)}, shape: {branch_tensor.shape}")
 
@@ -374,7 +382,7 @@ class Plugin:
                 activation='linear',
                 kernel_posterior_fn=make_posterior_fn(i+1),
                 kernel_prior_fn=make_prior_fn(i+1),
-                kernel_divergence_fn=lambda q, p, _: tf.convert_to_tensor(tfp.distributions.kl_divergence(q, p)) * KL_WEIGHT,
+                kernel_divergence_fn=my_kernel_divergence,
                 name=f"branch_{i+1}_flipout"
             )(branch_tensor)
             print(f"DEBUG: After branch_{i+1}_flipout; shape:", branch_flipout.shape)
