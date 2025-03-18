@@ -316,8 +316,19 @@ class Plugin:
 
 
         
-        self.model = Model(inputs=inputs, outputs=outputs, name="predictor_model")
-        print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
+        # --- NEW CODE for Multi-Output ---
+        # Split the combined output tensor into a list of tensors, one per forecast horizon.
+        outputs_list = tf.split(outputs, num_or_size_splits=self.params['time_horizon'], axis=1)
+        # Remove the extra dimension from each output so that each becomes shape (batch, ) instead of (batch, 1)
+        outputs_list = [
+            tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1), name=f"output_{i+1}")(o)
+            for i, o in enumerate(outputs_list)
+        ]
+        print("DEBUG: Model will output a list of tensors (one per horizon).")
+        # Create the model with multi-output
+        self.model = Model(inputs=inputs, outputs=outputs_list, name="predictor_model")
+        # --- END NEW CODE ---
+
         
         self.model.compile(
             optimizer=Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
