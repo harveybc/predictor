@@ -115,6 +115,10 @@ class Plugin:
         print("DEBUG: x_train shape:", x_train.shape)
 
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
+
+        # Explicitly convert input data to TensorFlow tensor to avoid type issues
+        x_train = tf.convert_to_tensor(x_train, dtype=tf.float32)
+
         common = tf.keras.layers.Dense(
             units=self.params['initial_layer_size'],
             activation=self.params['activation'],
@@ -123,6 +127,7 @@ class Plugin:
         )(inputs)
         common = tf.keras.layers.BatchNormalization(name="common_bn")(common)
 
+        # --- Corrected Bayesian Functions ---
         # --- Corrected Bayesian Functions ---
         def posterior_mean_field(kernel_size, bias_size=0, dtype=None, name=None, trainable=True, add_variable_fn=None):
             n = kernel_size + bias_size
@@ -157,6 +162,7 @@ class Plugin:
                 reinterpreted_batch_ndims=1
             )
 
+
         outputs = []
         for i in range(self.params['time_horizon']):
             # Branch Dense Layers
@@ -174,6 +180,10 @@ class Plugin:
                 name=f"branch_{i+1}_hidden"
             )(branch)
 
+            # Ensure branch output is tensor-compatible explicitly
+            if isinstance(branch, tuple):
+                branch = branch[0]
+
             # Corrected DenseFlipout Layer without Lambda wrapper
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
@@ -188,8 +198,14 @@ class Plugin:
             print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
 
 
+        # Explicitly ensure outputs are tensors and correctly shaped
+        outputs = [tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1, 1)), name=f"reshaped_output_{i+1}")(out)
+                for i, out in enumerate(outputs)]
+
+
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="predictor_model")
         metrics = ['mae' for _ in range(self.params['time_horizon'])]
+
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(self.params.get('learning_rate', 1e-4)),
             loss=[self.custom_loss for _ in range(self.params['time_horizon'])],
