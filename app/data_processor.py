@@ -184,6 +184,7 @@ def process_data(config):
     val_dates_orig = x_val.index if isinstance(x_val.index, pd.DatetimeIndex) else None
     test_dates_orig = x_test.index if isinstance(x_test.index, pd.DatetimeIndex) else None
 
+
     # 2) EXTRACT THE TARGET COLUMN
     target_col = config["target_column"]
     def extract_target(df, col):
@@ -198,6 +199,10 @@ def process_data(config):
     y_train = extract_target(y_train, target_col)
     y_val = extract_target(y_val, target_col)
     y_test = extract_target(y_test, target_col)
+    test_close_prices = y_test.copy()  # Save for later use
+    if isinstance(test_close_prices, pd.DataFrame):
+        test_close_prices = test_close_prices.to_numpy()
+        
 
     # 3) CONVERT EACH DF TO NUMERIC.
     x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
@@ -230,72 +235,54 @@ def process_data(config):
             y_train_multi = create_multi_step(y_train, time_horizon, use_returns=False)
             y_val_multi = create_multi_step(y_val, time_horizon, use_returns=False)
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
-
-    # 5) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
-    min_len_train = min(len(x_train), len(y_train_multi))
-    x_train = x_train.iloc[:min_len_train]
-    y_train_multi = y_train_multi.iloc[:min_len_train]
-    if config.get("use_returns", False):
-        baseline_train = baseline_train.iloc[:min_len_train]
-    min_len_val = min(len(x_val), len(y_val_multi))
-    x_val = x_val.iloc[:min_len_val]
-    y_val_multi = y_val_multi.iloc[:min_len_val]
-    if config.get("use_returns", False):
-        baseline_val = baseline_val.iloc[:min_len_val]
-    min_len_test = min(len(x_test), len(y_test_multi))
-    x_test = x_test.iloc[:min_len_test]
-    y_test_multi = y_test_multi.iloc[:min_len_test]
-    if config.get("use_returns", False):
-        baseline_test = baseline_test.iloc[:min_len_test]
-    
-    train_dates = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
-    val_dates = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
-    test_dates = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
-
-    # 6) PER-PLUGIN PROCESSING
+        
+    # 5) PER-PLUGIN PROCESSING
     # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
     if config["plugin"] in ["lstm", "cnn", "transformer"]:
-        if config["plugin"] in ["lstm", "cnn", "transformer"]:
-            print("Processing data with sliding windows...")
-            x_train = x_train.to_numpy().astype(np.float32)
-            x_val = x_val.to_numpy().astype(np.float32)
-            x_test = x_test.to_numpy().astype(np.float32)
-            window_size = config["window_size"]
-            def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
-                windows = []
-                dt_windows = []
-                for i in range(0, len(data) - window_size + 1, stride):
-                    windows.append(data[i:i+window_size])
-                    if date_times is not None:
-                        dt_windows.append(date_times[i+window_size-1])
-                return np.array(windows), dt_windows if date_times is not None else np.array(windows)
-            x_train, train_dates = create_sliding_windows_x(x_train, window_size, stride=1, date_times=train_dates)
-            x_val, val_dates = create_sliding_windows_x(x_val, window_size, stride=1, date_times=val_dates)
-            x_test, test_dates = create_sliding_windows_x(x_test, window_size, stride=1, date_times=test_dates)
-            y_train_multi = y_train_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
-            y_val_multi = y_val_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
-            y_test_multi = y_test_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
-            if config.get("use_returns", False):
-                baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
-                baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
-                baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
-        elif config["plugin"] in ["transformer", "transformer_mmd"]:
-            print("Processing data for Transformer plugin with sliding windows...")
-            x_train = x_train.to_numpy().astype(np.float32)
-            x_val = x_val.to_numpy().astype(np.float32)
-            x_test = x_test.to_numpy().astype(np.float32)
-            # (Add sliding window logic here if needed)
-            # For now, we simply use the raw data.
-            y_train_multi = y_train_multi.to_numpy().astype(np.float32)
-            y_val_multi = y_val_multi.to_numpy().astype(np.float32)
-            y_test_multi = y_test_multi.to_numpy().astype(np.float32)
+        print("Processing data with sliding windows...")
+        x_train = x_train.to_numpy().astype(np.float32)
+        x_val = x_val.to_numpy().astype(np.float32)
+        x_test = x_test.to_numpy().astype(np.float32)
+        window_size = config["window_size"]
+        # Use the updated sliding windows function that returns base_dates already trimmed the first window of data
+        x_train, train_dates = create_sliding_windows_x(x_train, window_size, stride=1, date_times=train_dates_orig)
+        x_val, val_dates = create_sliding_windows_x(x_val, window_size, stride=1, date_times=val_dates_orig)
+        x_test, test_dates = create_sliding_windows_x(x_test, window_size, stride=1, date_times=test_dates_orig)
+        # Adjust multi-step targets accordingly (unchanged from your original)
+        y_train_multi = y_train_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
+        y_val_multi = y_val_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
+        y_test_multi = y_test_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
+        if config.get("use_returns", False):
+            print("Processing data with sliding windows with returns...")
+            baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
+            baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
+            baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
         else:
+            print("Processing data with sliding windows without returns...")
             x_train = x_train.to_numpy().astype(np.float32)
             x_val = x_val.to_numpy().astype(np.float32)
             x_test = x_test.to_numpy().astype(np.float32)
             y_train_multi = y_train_multi.to_numpy().astype(np.float32)
             y_val_multi = y_val_multi.to_numpy().astype(np.float32)
             y_test_multi = y_test_multi.to_numpy().astype(np.float32)
+        # --- CHUNK: Trim the first window_size rows from the  y target datasets if sliding window is to be used---
+        # Fix dates toremove the first window_size dates:
+        if train_dates_orig is not None:
+            train_dates_orig = train_dates_orig[window_size-1:]
+        else:
+            train_dates = None
+        if val_dates_orig is not None:
+            val_dates_orig = val_dates_orig[window_size-1:]
+        else:
+            train_dates = None
+        if test_dates_orig is not None:
+            test_dates_orig = test_dates_orig[window_size-1:]
+        else:
+            test_dates = None
+        # --- End of Trim Chunk ---
+        # calculate close prices as y_train; ensure test_close_prices is a numpy array for slicing
+        min_len_test = min(len(x_test), len(y_test_multi))
+        test_close_prices = test_close_prices[window_size-1:, -1]
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
         x_train = x_train.to_numpy().astype(np.float32)
@@ -308,12 +295,54 @@ def process_data(config):
             baseline_train = baseline_train.to_numpy().astype(np.float32)
             baseline_val = baseline_val.to_numpy().astype(np.float32)
             baseline_test = baseline_test.to_numpy().astype(np.float32)
+        # calculate close prices as y_train
+        min_len_test = min(len(x_test), len(y_test_multi))
+        test_close_prices = test_close_prices[:min_len_test, -1]
+
+
+
+    # 6) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
+    min_len_train = min(len(x_train), len(y_train_multi))
+    x_train = x_train[:min_len_train]
+    y_train_multi = y_train_multi[:min_len_train]
+    if config.get("use_returns", False):
+        baseline_train = baseline_train[:min_len_train]
+    min_len_val = min(len(x_val), len(y_val_multi))
+    x_val = x_val[:min_len_val]
+    y_val_multi = y_val_multi[:min_len_val]
+    if config.get("use_returns", False):
+        baseline_val = baseline_val[:min_len_val]
+    min_len_test = min(len(x_test), len(y_test_multi))
+    x_test = x_test[:min_len_test]
+    y_test_multi = y_test_multi[:min_len_test]
+    if config.get("use_returns", False):
+        baseline_test = baseline_test[:min_len_test]
+    # trim also the dates of the datasets
+    train_dates_orig = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
+    val_dates_orig = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
+    test_dates_orig = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
+
+    train_dates = train_dates_orig if train_dates_orig is not None else None
+    val_dates = val_dates_orig if val_dates_orig is not None else None
+    test_dates = test_dates_orig if test_dates_orig is not None else None
+    test_close_prices = test_close_prices[:min_len_test]
+
 
     print("Processed datasets:")
     print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
     print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
     print(" x_test: ", x_test.shape, " y_test: ", y_test_multi.shape)
+    print(" test_close_prices: ", test_close_prices.shape)
     
+    
+
+    # --- NEW CODE to convert targets to list of arrays ---
+    # Assuming y_train_multi, y_val_multi, y_test_multi have shape (samples, time_horizon)
+    y_train_multi_list = [y_train_multi[:, i] for i in range(y_train_multi.shape[1])]
+    y_val_multi_list   = [y_val_multi[:, i] for i in range(y_val_multi.shape[1])]
+    y_test_multi_list  = [y_test_multi[:, i] for i in range(y_test_multi.shape[1])]
+
+    # Update the return dictionary to use the lists instead of the single 2D arrays:
     ret = {
         "x_train": x_train,
         "y_train": y_train_multi,
@@ -324,12 +353,9 @@ def process_data(config):
         "dates_train": train_dates,
         "dates_val": val_dates,
         "dates_test": test_dates,
+        'test_close_prices': test_close_prices
     }
-    if config.get("use_returns", False):
-        ret["baseline_train"] = baseline_train
-        ret["baseline_val"] = baseline_val
-        ret["baseline_test"] = baseline_test
-    return ret
+    # --- END NEW CODE ---
 
 
 def run_prediction_pipeline(config, plugin):
