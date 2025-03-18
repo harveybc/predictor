@@ -114,7 +114,7 @@ class Plugin:
             - input_shape: int, the expected number of features (must be int for ANN)
             - x_train: training data as a NumPy array
             - config: configuration dictionary (optional)
-        
+            
         3. Raises:
             - ValueError if input_shape is not an integer.
         """
@@ -172,11 +172,11 @@ class Plugin:
 
         x = inputs
         x = tf.keras.layers.Dense(
-                units=self.params['initial_layer_size'],
-                activation=self.params['activation'],
-                kernel_initializer=random_normal_initializer_42,
-                name="common_dense"
-            )(x)
+            units=self.params['initial_layer_size'],
+            activation=self.params['activation'],
+            kernel_initializer=random_normal_initializer_42,
+            name="common_dense"
+        )(x)
         print("DEBUG: After common_dense layer; output shape:", x.shape)
         x = tf.keras.layers.BatchNormalization(name="common_bn")(x)
         print("DEBUG: After BatchNormalization on common branch; output shape:", x.shape)
@@ -185,7 +185,10 @@ class Plugin:
         # 4. Define Custom Posterior and Prior Functions for Bayesian Layers
         # -------------------------------------------------------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, name, trainable, add_variable_fn):
-            # DEBUG: Print inputs to the posterior function
+            # Ensure name is a string
+            if not isinstance(name, str):
+                print("DEBUG: Converting name to string in posterior_mean_field_custom")
+                name = str(name)
             print("DEBUG: In posterior_mean_field_custom:")
             print("       dtype =", dtype)
             print("       kernel_shape =", kernel_shape)
@@ -207,10 +210,10 @@ class Plugin:
                 dtype=dtype,
                 trainable=trainable
             )
-            # If add_variable_fn returns a tuple, unpack the variable.
             if isinstance(loc, tuple):
                 print("DEBUG: posterior: loc returned as tuple, unpacking")
                 loc = loc[0]
+            print("DEBUG: posterior: loc type:", type(loc), "shape:", loc.shape)
             
             # Create scale variable.
             scale = add_variable_fn(
@@ -223,11 +226,12 @@ class Plugin:
             if isinstance(scale, tuple):
                 print("DEBUG: posterior: scale returned as tuple, unpacking")
                 scale = scale[0]
+            print("DEBUG: posterior: scale type:", type(scale), "shape:", scale.shape)
             
             # Transform scale.
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
-            print("DEBUG: posterior: created loc shape:", loc.shape, "and scale shape:", scale.shape)
+            print("DEBUG: posterior: after softplus and clip, loc shape:", loc.shape, "scale shape:", scale.shape)
             
             try:
                 loc_reshaped = tf.reshape(loc, kernel_shape)
@@ -242,9 +246,11 @@ class Plugin:
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
 
-
         def prior_fn(dtype, kernel_shape, name, trainable, add_variable_fn):
-            # DEBUG: Print inputs to the prior function
+            # Ensure name is a string
+            if not isinstance(name, str):
+                print("DEBUG: Converting name to string in prior_fn")
+                name = str(name)
             print("DEBUG: In prior_fn:")
             print("       dtype =", dtype)
             print("       kernel_shape =", kernel_shape)
@@ -271,7 +277,6 @@ class Plugin:
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
 
-
         # -------------------------------------------------------------------------
         # 5. Debug Wrappers for Posterior and Prior Functions
         # -------------------------------------------------------------------------
@@ -292,25 +297,36 @@ class Plugin:
             return distribution
 
         # -------------------------------------------------------------------------
-        # 6. Build Parallel Output Branches with Additional Debugging
+        # 6. Helper Functions to Create Lambda Functions with Proper Signature
+        # -------------------------------------------------------------------------
+        def make_posterior_fn(branch_number):
+            return lambda dtype, kernel_shape, name, trainable, add_variable_fn: \
+                debug_posterior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=branch_number)
+
+        def make_prior_fn(branch_number):
+            return lambda dtype, kernel_shape, name, trainable, add_variable_fn: \
+                debug_prior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=branch_number)
+
+        # -------------------------------------------------------------------------
+        # 7. Build Parallel Output Branches with Additional Debugging
         # -------------------------------------------------------------------------
         outputs = []
         for i in range(self.params['time_horizon']):
             print(f"DEBUG: Building branch {i+1}")
             # Create branch via Dense layers from common branch 'x'
             branch = tf.keras.layers.Dense(
-                        units=self.params['initial_layer_size'] // 2,
-                        activation=self.params['activation'],
-                        kernel_initializer=random_normal_initializer_42,
-                        name=f"branch_{i+1}_dense"
-                    )(x)
+                units=self.params['initial_layer_size'] // 2,
+                activation=self.params['activation'],
+                kernel_initializer=random_normal_initializer_42,
+                name=f"branch_{i+1}_dense"
+            )(x)
             print(f"DEBUG: After branch_{i+1}_dense; shape:", branch.shape)
             branch = tf.keras.layers.Dense(
-                        units=self.params['initial_layer_size'] // 4,
-                        activation=self.params['activation'],
-                        kernel_initializer=random_normal_initializer_42,
-                        name=f"branch_{i+1}_hidden"
-                    )(branch)
+                units=self.params['initial_layer_size'] // 4,
+                activation=self.params['activation'],
+                kernel_initializer=random_normal_initializer_42,
+                name=f"branch_{i+1}_hidden"
+            )(branch)
             print(f"DEBUG: After branch_{i+1}_hidden; shape:", branch.shape)
             
             # --- Insert a custom debug Lambda to print runtime info ---
@@ -332,18 +348,7 @@ class Plugin:
             else:
                 print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
-            # Create branch-specific Bayesian DenseFlipout layer with updated lambda functions
-            # Define helper functions to capture the branch number without modifying the expected signature.
-            def make_posterior_fn(branch_number):
-                return lambda dtype, kernel_shape, name, trainable, add_variable_fn: \
-                    debug_posterior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=branch_number)
-
-            def make_prior_fn(branch_number):
-                return lambda dtype, kernel_shape, name, trainable, add_variable_fn: \
-                    debug_prior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=branch_number)
-
-
-            # Use these helper functions in your DenseFlipout layer call.
+            # Create branch-specific Bayesian DenseFlipout layer
             branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -352,7 +357,6 @@ class Plugin:
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=f"branch_{i+1}_flipout"
             )(branch)
-
             print(f"DEBUG: After branch_{i+1}_flipout; shape:", branch_flipout.shape)
             
             # Create a deterministic bias layer for this branch using the common branch x
@@ -377,7 +381,7 @@ class Plugin:
             outputs.append(branch_output)
 
         # -------------------------------------------------------------------------
-        # 7. Final Model Assembly, Compilation, and Summary
+        # 8. Final Model Assembly, Compilation, and Summary
         # -------------------------------------------------------------------------
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="predictor_model")
         print("DEBUG: Final model created. Input shape:", self.model.input_shape)
