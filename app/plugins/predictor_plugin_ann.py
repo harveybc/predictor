@@ -181,7 +181,7 @@ class Plugin:
         # -------------------------------------------------------------------------
         # 4. Define Custom Posterior and Prior Functions for Bayesian Layers
         # -------------------------------------------------------------------------
-        def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
+        def posterior_mean_field_custom(dtype, kernel_shape, name, trainable, add_variable_fn):
             # DEBUG messages for posterior function initialization
             print("DEBUG: In posterior_mean_field_custom:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
@@ -214,7 +214,7 @@ class Plugin:
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
         
-        def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
+        def prior_fn(dtype, kernel_shape, name, trainable, add_variable_fn):
             # DEBUG messages for prior function initialization
             print("DEBUG: In prior_fn:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
