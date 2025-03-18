@@ -109,11 +109,11 @@ class Plugin:
         """
         Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
         This version creates time_horizon (e.g. 6) parallel branches—each branch
-        produces a single scalar output. Each branch is independent (with its own DenseFlipout layer)
-        so that separate losses can be applied.
+        produces a single scalar output. Each branch is independent (with its own DenseFlipout
+        layer) so that separate losses can be applied.
         
         Parameters:
-        - input_shape: int, the expected number of features.
+        - input_shape: int, number of features.
         - x_train: training data as a NumPy array.
         - config: configuration dictionary (optional).
         
@@ -379,13 +379,16 @@ class Plugin:
             branch_tensor = tf.keras.layers.Lambda(lambda x: tf.identity(x), name=f"branch_{i+1}_identity")(branch)
             print(f"DEBUG: After branch_{i+1}_identity; type: {type(branch_tensor)}, shape: {branch_tensor.shape}")
 
-            # IMPORTANT: Disable DenseFlipout bias since we add our own deterministic bias later.
+            # IMPORTANT: Supply bias functions that return a deterministic zero.
             raw_branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
-                use_bias=False,
                 kernel_posterior_fn=make_posterior_fn(i+1),
                 kernel_prior_fn=make_prior_fn(i+1),
+                bias_posterior_fn=lambda dtype, shape, name, trainable, add_variable_fn: 
+                    tfp.distributions.Deterministic(loc=tf.zeros(shape, dtype=dtype)),
+                bias_prior_fn=lambda dtype, shape, name, trainable, add_variable_fn: 
+                    tfp.distributions.Deterministic(loc=tf.zeros(shape, dtype=dtype)),
                 kernel_divergence_fn=my_kernel_divergence,
                 name=f"branch_{i+1}_flipout"
             )(branch_tensor)
