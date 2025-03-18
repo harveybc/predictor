@@ -108,24 +108,32 @@ class Plugin:
         """
         Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
         This version creates time_horizon (e.g. 6) parallel branches—each branch
-        produces a single scalar output. The Bayesian DenseFlipout and bias layers
-        are exactly preserved from the working version.
+        produces a single scalar output.
+        
+        :param input_shape: int, the expected number of features (must be int for ANN)
+        :param x_train: training data as a NumPy array
+        :param config: configuration dictionary (optional)
+        :raises ValueError: if input_shape is not an integer
         """
         from tensorflow.keras.losses import Huber
 
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
         l2_reg = self.params.get('l2_reg', 1e-5)
 
+        # -------------------------------------------------------------------------
+        # 1. Initial Debug Prints: TensorFlow, TensorFlow Probability, and NumPy versions
+        # -------------------------------------------------------------------------
         print("DEBUG: Starting build_model")
         print("DEBUG: TensorFlow version:", tf.__version__)
         print("DEBUG: TensorFlow Probability version:", tfp.__version__)
         print("DEBUG: NumPy version:", np.__version__)
 
-        # x_train comes as a NumPy array – print its shape and type
+        # -------------------------------------------------------------------------
+        # 2. Validate and Debug x_train and input_shape
+        # -------------------------------------------------------------------------
         x_train = np.array(x_train)
         print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
 
-        # For the ANN plugin, input_shape must be an integer – print it
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
         print("DEBUG: input_shape is valid. Value:", input_shape)
@@ -149,17 +157,16 @@ class Plugin:
             print(f"DEBUG: Appended layer size at layer {i+1}: {current_size}")
             current_size = max(current_size // divisor, 1)
             print(f"DEBUG: Updated current_size after division at layer {i+1}: {current_size}")
-        # Append final layer size equal to time_horizon (only used in original single-output model)
         layer_sizes.append(time_horizon)
         print("DEBUG: Final layer sizes:", layer_sizes)
-
         print("DEBUG: Standard ANN input_shape (int):", input_shape)
-        
-        # Create Input layer (note: shape is a tuple of one integer)
+
+        # -------------------------------------------------------------------------
+        # 3. Build the Shared Base Network
+        # -------------------------------------------------------------------------
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         print("DEBUG: Created Input layer; shape:", inputs.shape)
-        
-        # Shared (common) branch: a Dense layer + BatchNorm
+
         x = inputs
         x = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'],
@@ -171,8 +178,11 @@ class Plugin:
         x = tf.keras.layers.BatchNormalization(name="common_bn")(x)
         print("DEBUG: After BatchNormalization on common branch; output shape:", x.shape)
 
-        # --- Define the Bayesian functions exactly as in the working version ---
+        # -------------------------------------------------------------------------
+        # 4. Define Custom Posterior and Prior Functions for Bayesian Layers
+        # -------------------------------------------------------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
+            # DEBUG messages for posterior function initialization
             print("DEBUG: In posterior_mean_field_custom:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
             print("       Received bias_size =", bias_size, "; overriding to 0")
@@ -205,6 +215,7 @@ class Plugin:
             )
         
         def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
+            # DEBUG messages for prior function initialization
             print("DEBUG: In prior_fn:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
             print("       Received bias_size =", bias_size, "; overriding to 0")
@@ -229,11 +240,13 @@ class Plugin:
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
         
-        # --- Build parallel output branches (one per prediction horizon) ---
+        # -------------------------------------------------------------------------
+        # 5. Build Parallel Output Branches with Additional Debugging
+        # -------------------------------------------------------------------------
         outputs = []
         for i in range(self.params['time_horizon']):
             print(f"DEBUG: Building branch {i+1}")
-            # For each branch, use the same common branch 'x'
+            # Create branch via Dense layers from common branch 'x'
             branch = tf.keras.layers.Dense(
                         units=self.params['initial_layer_size'] // 2,
                         activation=self.params['activation'],
@@ -248,32 +261,29 @@ class Plugin:
                         name=f"branch_{i+1}_hidden"
                     )(branch)
             print(f"DEBUG: After branch_{i+1}_hidden; shape:", branch.shape)
-            # Insert Lambda layer to ensure the branch output is a proper tensor
-            branch = tf.keras.layers.Lambda(lambda x: x, name=f"branch_{i+1}_ensure_tensor")(branch)
-            print(f"DEBUG: After branch_{i+1}_ensure_tensor; shape:", branch.shape)
             
-            # --- Debug Print Start: Print full info about branch (the object that becomes a tuple) ---
-            print(f"DEBUG: About to pass branch to DenseFlipout for branch {i+1}:")
-            print("DEBUG: type(branch):", type(branch))
-            try:
-                print("DEBUG: branch.shape:", branch.shape)
-            except Exception as e:
-                print("DEBUG: Cannot get branch.shape:", e)
+            # --- Insert a custom debug Lambda to print runtime info ---
+            def debug_print_tensor(tensor):
+                # Use tf.print for runtime evaluation of tensor properties
+                tf.print("DEBUG: Inside custom Lambda for branch", i+1, 
+                        "type:", tf.shape(tensor), "and dynamic shape:", tf.shape(tensor))
+                return tensor
+
+            branch = tf.keras.layers.Lambda(debug_print_tensor, name=f"branch_{i+1}_ensure_tensor")(branch)
+            print(f"DEBUG: After branch_{i+1}_ensure_tensor; static shape:", branch.shape)
+            
+            # --- Extra check: ensure branch is not a tuple ---
             if isinstance(branch, (tuple, list)):
-                print("DEBUG: branch is a tuple/list with length:", len(branch))
+                print(f"DEBUG: WARNING: branch for branch {i+1} is a tuple/list. Contents:")
                 for idx, item in enumerate(branch):
-                    print(f"DEBUG: branch[{idx}] type:", type(item))
-                    try:
-                        print(f"DEBUG: branch[{idx}].shape:", item.shape)
-                    except Exception as e:
-                        print(f"DEBUG: Cannot get branch[{idx}].shape:", e)
-                    print(f"DEBUG: branch[{idx}] repr:", repr(item))
+                    print(f"DEBUG: branch[{idx}] type:", type(item), "shape:", getattr(item, 'shape', 'N/A'))
+                # If it is a tuple, take the first element (adjust if your architecture requires a different fix)
+                branch = branch[0]
+                print(f"DEBUG: Unpacked branch[{0}] to use as input for DenseFlipout; new shape:", branch.shape)
             else:
-                print("DEBUG: branch is not a tuple or list; repr:", repr(branch))
-            # --- Debug Print End ---
+                print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
-
-            # Create branch-specific Bayesian DenseFlipout layer (produces a scalar output)
+            # Create branch-specific Bayesian DenseFlipout layer
             branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -286,7 +296,7 @@ class Plugin:
             )(branch)
             print(f"DEBUG: After branch_{i+1}_flipout; shape:", branch_flipout.shape)
             
-            # Create a deterministic bias layer for this branch
+            # Create a deterministic bias layer for this branch using the common branch x
             branch_bias = tf.keras.layers.Dense(
                 units=1,
                 activation='linear',
@@ -307,13 +317,13 @@ class Plugin:
             print(f"DEBUG: Final output for branch {i+1}; shape:", branch_output.shape)
             outputs.append(branch_output)
 
-        # Build the final model with one output per branch
+        # -------------------------------------------------------------------------
+        # 6. Final Model Assembly, Compilation, and Summary
+        # -------------------------------------------------------------------------
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="predictor_model")
         print("DEBUG: Final model created. Input shape:", self.model.input_shape)
         print("DEBUG: Final model output is a list with", len(self.model.outputs), "elements.")
         
-        # Compile the model – note: here each branch is treated as a separate output,
-        # so you must supply a list of loss functions (one per branch)
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(self.params.get('learning_rate', 0.0001)),
             loss=[self.custom_loss for _ in range(self.params['time_horizon'])],
