@@ -208,14 +208,6 @@ class Plugin:
             branch_output = tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1,)), name=f"branch_{i+1}_output")(branch_output)
             outputs.append(branch_output)
             print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
-            print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
-
-
-
-            # Reshape the output to ensure it is a rank-1 tensor (a vector)
-            branch_output = tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1,)), name=f"branch_{i+1}_output")(branch_output)
-            outputs.append(branch_output)
-            print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
 
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="predictor_model")
         
