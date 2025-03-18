@@ -282,12 +282,14 @@ class Plugin:
         self.model = Model(inputs=inputs, outputs=outputs_list, name="predictor_model")
         # --- END NEW CODE ---
 
-
+        time_horizon = self.params['time_horizon']
+        # add 'mae' time_horizon times to the metrics
+        metrics = ['mae' for _ in range(time_horizon)]
 
         self.model.compile(
             optimizer=Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
             loss=[self.custom_loss for _ in range(self.params['time_horizon'])],
-            metrics=['mae', 'mae', 'mae', 'mae', 'mae', 'mae']
+            metrics=metrics
         )
         # --- END NEW CODE ---
 
