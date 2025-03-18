@@ -312,13 +312,29 @@ class Plugin:
                 print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
             # Create branch-specific Bayesian DenseFlipout layer with updated lambda functions
+            # Define helper functions to capture the branch number without modifying the expected signature.
+            def make_posterior_fn(branch_number):
+                """
+                Returns a lambda function with the correct signature for kernel_posterior_fn,
+                capturing the branch number via closure.
+                """
+                return lambda dtype, kernel_shape, name, trainable, add_variable_fn: \
+                    debug_posterior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=branch_number)
+
+            def make_prior_fn(branch_number):
+                """
+                Returns a lambda function with the correct signature for kernel_prior_fn,
+                capturing the branch number via closure.
+                """
+                return lambda dtype, kernel_shape, name, trainable, add_variable_fn: \
+                    debug_prior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=branch_number)
+
+            # Use these helper functions in your DenseFlipout layer call.
             branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
-                kernel_posterior_fn=lambda dtype, kernel_shape, name, trainable, add_variable_fn, bn=i+1: 
-                    debug_posterior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=bn),
-                kernel_prior_fn=lambda dtype, kernel_shape, name, trainable, add_variable_fn, bn=i+1: 
-                    debug_prior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=bn),
+                kernel_posterior_fn=make_posterior_fn(i+1),
+                kernel_prior_fn=make_prior_fn(i+1),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=f"branch_{i+1}_flipout"
             )(branch)
