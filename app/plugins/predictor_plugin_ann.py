@@ -193,7 +193,7 @@ class Plugin:
                 name=f"branch_{i+1}_hidden"
             )(branch)
 
-            # Call DenseFlipout directly without an outer Lambda
+            # Call DenseFlipout directly (no outer Lambda)
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -207,13 +207,11 @@ class Plugin:
                 name=f"branch_{i+1}_flipout"
             )(branch)
             
-            # Reshape the branch output to a vector
-            branch_output = tf.keras.layers.Lambda(
-                lambda x: tf.reshape(x, (-1,)),
-                name=f"branch_{i+1}_output"
-            )(branch_output)
+            # Use a Flatten layer to ensure the output is a rank-1 tensor (vector)
+            branch_output = tf.keras.layers.Flatten(name=f"branch_{i+1}_output")(branch_output)
             outputs.append(branch_output)
             print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
+
 
 
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="predictor_model")
