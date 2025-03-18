@@ -193,7 +193,7 @@ class Plugin:
             # Ensure branch is a Tensor (in case it is a tuple)
             #branch = tf.convert_to_tensor(branch)
 
-            bbranch_output = tf.keras.layers.Lambda(
+            branch_output = tf.keras.layers.Lambda(
                 lambda z: tfp.layers.DenseFlipout(
                     units=1,
                     activation='linear',
