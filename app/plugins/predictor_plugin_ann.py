@@ -106,19 +106,22 @@ class Plugin:
 
     def build_model(self, input_shape, x_train, config=None):
         """
-        Builds a Bayesian ANN with parallel branches for multi-step forecasting.
-        The network processes the input through a common branch and then splits into
-        exactly `time_horizon` parallel branches. Each branch produces an individual output.
+        Builds a Bayesian ANN with early branching for multi-step forecasting.
+        The network processes the input through a common branch (one Dense layer with BatchNormalization)
+        and then splits into exactly `time_horizon` parallel branches. Each branch uses a corrected Bayesian
+        DenseFlipout layer (with deterministic bias added) to produce a single scalar output.
         """
         from tensorflow.keras.losses import Huber
 
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
         l2_reg = self.params.get('l2_reg', 1e-5)
+        time_horizon = self.params['time_horizon']
 
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
         print("DEBUG: numpy version:", np.__version__)
 
+        # Convert x_train to numpy for debugging (not used in model construction)
         x_train = np.array(x_train)
         print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
 
@@ -126,60 +129,72 @@ class Plugin:
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
         print("DEBUG: input_shape is valid. Value:", input_shape)
 
-        # Create the input layer.
+        # === Common Branch ===
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         print("DEBUG: Created input layer. Shape:", inputs.shape)
-        
-        # Build a common branch from the input.
-        x = inputs
+
+        # Build a short common branch.
         common = tf.keras.layers.Dense(
             units=self.params['initial_layer_size'],
-            activation=self.params['activation'],
+            activation=self.params.get('activation', 'tanh'),
             kernel_initializer=random_normal_initializer_42,
             name="common_dense"
-        )(x)
+        )(inputs)
         common = tf.keras.layers.BatchNormalization(name="common_bn")(common)
         print("DEBUG: Common branch output shape:", common.shape)
 
-        # Define inner functions for the Bayesian DenseFlipout layers.
+        # === Corrected Bayesian Layer Functions (copied from your last working version) ===
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
+            print("DEBUG: In posterior_mean_field_custom:")
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
             if not isinstance(name, str):
                 name = None
             bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: posterior: computed n =", n)
             c = np.log(np.expm1(1.))
+            print("DEBUG: posterior: computed c =", c)
             loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42),
                             dtype=dtype, trainable=trainable, name="posterior_loc")
             scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43),
                                 dtype=dtype, trainable=trainable, name="posterior_scale")
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
+            print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
             loc_reshaped = tf.reshape(loc, kernel_shape)
             scale_reshaped = tf.reshape(scale, kernel_shape)
+            print("DEBUG: posterior: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
 
         def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
+            print("DEBUG: In prior_fn:")
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
             if not isinstance(name, str):
                 name = None
             bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: prior_fn: computed n =", n)
             loc = tf.zeros([n], dtype=dtype)
             scale = tf.ones([n], dtype=dtype)
             loc_reshaped = tf.reshape(loc, kernel_shape)
             scale_reshaped = tf.reshape(scale, kernel_shape)
+            print("DEBUG: prior_fn: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
 
-        # Get the number of outputs (time horizon) from parameters.
-        time_horizon = self.params['time_horizon']
-        branches = []
-        # Create one parallel branch per time step.
+        # === Branching: Create One Parallel Bayesian Branch Per Time Step ===
+        branch_outputs = []
         for i in range(time_horizon):
+            # Each branch applies a corrected DenseFlipout layer on the common branch.
             branch = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -188,13 +203,16 @@ class Plugin:
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=f"branch_{i+1}_flipout"
             )(common)
-            branches.append(branch)
+            # Optionally add a deterministic bias (if needed, you can uncomment the following lines):
+            # bias = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44, name=f"branch_{i+1}_bias")(common)
+            # branch = branch + bias
+            branch_outputs.append(branch)
             print(f"DEBUG: Branch {i+1} output shape:", branch.shape)
 
-        # Build the final model with parallel outputs.
-        self.model = tf.keras.Model(inputs=inputs, outputs=branches, name="predictor_model")
-        
-        # Compile the model: assign one loss and metric per branch.
+        # === Final Model ===
+        self.model = tf.keras.Model(inputs=inputs, outputs=branch_outputs, name="predictor_model")
+
+        # Compile the model with one loss per branch.
         metrics = ['mae' for _ in range(time_horizon)]
         self.model.compile(
             optimizer=Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
@@ -203,7 +221,7 @@ class Plugin:
         )
         print("DEBUG: Model compiled with multi-output losses and metrics.")
         self.model.summary()
-        print("✅ Modified ANN model with parallel branches built successfully.")
+        print("✅ Modified ANN model with early parallel branches built successfully.")
 
 
     def compute_mmd(self, x, y, sigma=1.0, sample_size=256):
