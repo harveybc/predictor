@@ -413,7 +413,15 @@ def run_prediction_pipeline(config, plugin):
     print(f"Training data shapes: x_train: {x_train.shape}, y_train: {[a.shape for a in y_train]}")
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {[a.shape for a in y_val]}")
     print(f"Test data shapes: x_test: {x_test.shape}, y_test: {[a.shape for a in y_test]}")
-
+    # --- NEW CODE: Stack multi-output target lists into arrays ---
+    y_train_stacked = np.stack(y_train, axis=1)  # shape: (samples, time_horizon)
+    y_val_stacked   = np.stack(y_val, axis=1)
+    y_test_stacked  = np.stack(y_test, axis=1)
+    print("DEBUG: Stacked y_train shape:", y_train_stacked.shape)
+    print("DEBUG: Stacked y_val shape:", y_val_stacked.shape)
+    print("DEBUG: Stacked y_test shape:", y_test_stacked.shape)
+    # --- END NEW CODE ---
+    # --- CHUNK: Training iterations ---
     time_horizon = config.get("time_horizon")
     window_size = config.get("window_size")
     if time_horizon is None:
@@ -456,18 +464,22 @@ def run_prediction_pipeline(config, plugin):
         )
         # If using returns, recalc r2 based on baseline + predictions.
         if config.get("use_returns", False):
-            train_r2 = r2_score((baseline_train[ : , -1] + y_train[ : , -1]).flatten(), (baseline_train[ : , -1] + train_preds[ : , -1]).flatten())
-            val_r2 = r2_score((baseline_val[ : , -1] + y_val[ : , -1]).flatten(), (baseline_val[ : , -1] + val_preds[ : , -1]).flatten())
+            train_r2 = r2_score((baseline_train[:, -1] + y_train_stacked[:, -1]).flatten(),
+                                (baseline_train[:, -1] + train_preds[:, -1]).flatten())
+            val_r2 = r2_score((baseline_val[:, -1] + y_val_stacked[:, -1]).flatten(),
+                            (baseline_val[:, -1] + val_preds[:, -1]).flatten())
         else:
-            train_r2 = r2_score(y_train[ : , -1], train_preds[ : , -1])
-            val_r2 = r2_score(y_val[ : , -1], val_preds[ : , -1])
+            train_r2 = r2_score(y_train_stacked[:, -1], train_preds[:, -1])
+            val_r2 = r2_score(y_val_stacked[:, -1], val_preds[:, -1])
+
 
 
         # Calculate MAE  train_mae = np.mean(np.abs(train_predictions - y_train[:n_test]))
         n_train = train_preds.shape[0]
         n_val = val_preds.shape[0]
-        train_mae = np.mean(np.abs(train_preds[ : , -1] - y_train[:n_train,-1]))
-        val_mae = np.mean(np.abs(val_preds[ : , -1] - y_val[:n_val,-1]))    
+        train_mae = np.mean(np.abs(train_preds[:, -1] - y_train_stacked[:n_train, -1]))
+        val_mae = np.mean(np.abs(val_preds[:, -1] - y_val_stacked[:n_val, -1]))
+
 
         # Save loss plot
         plt.plot(history.history['loss'])
