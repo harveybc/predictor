@@ -283,18 +283,32 @@ class Plugin:
         # --- END NEW CODE ---
 
         def multi_output_loss(y_true, y_pred):
-            # Stack the list of outputs into a tensor of shape (batch, time_horizon)
-            y_true_stacked = tf.stack(y_true, axis=1)
-            y_pred_stacked = tf.stack(y_pred, axis=1)
+            """
+            Custom loss for multi-output training.
+            Both y_true and y_pred are lists of tensors (each of shape (batch,)).
+            We stack along axis=0 to form a tensor of shape (time_horizon, batch)
+            then transpose to (batch, time_horizon) before computing losses.
+            """
+            # Stack outputs along axis=0 and transpose to (batch, time_horizon)
+            y_true_stacked = tf.transpose(tf.stack(y_true, axis=0), perm=[1, 0])
+            y_pred_stacked = tf.transpose(tf.stack(y_pred, axis=0), perm=[1, 0])
+            
             huber_loss = Huber()(y_true_stacked, y_pred_stacked)
             mmd_loss = self.compute_mmd(y_pred_stacked, y_true_stacked)
             total_loss = huber_loss + (self.params['mmd_lambda'] * mmd_loss)
             return total_loss
 
+
         def multi_output_mae(y_true, y_pred):
-            y_true_stacked = tf.stack(y_true, axis=1)
-            y_pred_stacked = tf.stack(y_pred, axis=1)
+            """
+            Metric for multi-output training.
+            Stacks the list of tensors and transposes to obtain (batch, time_horizon) shape,
+            then computes the mean absolute error.
+            """
+            y_true_stacked = tf.transpose(tf.stack(y_true, axis=0), perm=[1, 0])
+            y_pred_stacked = tf.transpose(tf.stack(y_pred, axis=0), perm=[1, 0])
             return tf.reduce_mean(tf.abs(y_true_stacked - y_pred_stacked))
+
 
         self.model.compile(
             optimizer=Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
@@ -486,32 +500,6 @@ class Plugin:
         r2 = np.mean(r2_scores)
         print(f"Calculated R²: {r2}")
         return r2
-    
-    def multi_output_loss(self, y_true, y_pred):
-        """
-        Custom loss for multi-output training.
-        Both y_true and y_pred are lists of tensors (each of shape (batch,)).
-        This function stacks them along axis=1 to form tensors of shape (batch, time_horizon)
-        and then computes the Huber and MMD losses.
-        """
-        # Stack the list into a single tensor
-        y_true_stacked = tf.stack(y_true, axis=1)
-        y_pred_stacked = tf.stack(y_pred, axis=1)
-        # Compute Huber loss
-        huber_loss = Huber()(y_true_stacked, y_pred_stacked)
-        # Compute MMD loss using your existing compute_mmd method (assumed to work on 2D tensors)
-        #mmd_loss = tf.cast(tf.reduce_mean(y_pred_stacked - y_true_stacked), tf.float32)  # Temporary placeholder
-        mmd_loss = self.compute_mmd(y_pred_stacked, y_true_stacked)
-        # Replace the above line with your actual MMD computation:
-        # mmd_loss = self.compute_mmd(y_pred_stacked, y_true_stacked)
-        total_loss = huber_loss + (tf.cast(0.01, tf.float32) * mmd_loss)
-        return total_loss
-
-    def multi_output_mae(self, y_true, y_pred):
-        y_true_stacked = tf.stack(y_true, axis=1)
-        y_pred_stacked = tf.stack(y_pred, axis=1)
-        return tf.reduce_mean(tf.abs(y_true_stacked - y_pred_stacked))
-
 
 
 
