@@ -111,13 +111,15 @@ class Plugin:
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
         print("DEBUG: numpy version:", np.__version__)
 
-        x_train = np.array(x_train)
-        print("DEBUG: x_train shape:", x_train.shape)
+        # Ensure input_shape is a tuple for Keras Input layer
+        if isinstance(input_shape, int):
+            input_shape = (input_shape,)
 
-        inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
-
-        # Explicitly convert input data to TensorFlow tensor to avoid type issues
+        # Convert x_train explicitly to a TensorFlow tensor
         x_train = tf.convert_to_tensor(x_train, dtype=tf.float32)
+        print("DEBUG: x_train shape after conversion:", x_train.shape)
+
+        inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
 
         common = tf.keras.layers.Dense(
             units=self.params['initial_layer_size'],
@@ -128,54 +130,42 @@ class Plugin:
         common = tf.keras.layers.BatchNormalization(name="common_bn")(common)
 
         # --- Corrected Bayesian Functions ---
-        # --- Corrected Bayesian Functions (copied and adapted from your Transformer Plugin version) ---
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
-            if not isinstance(name, str):
-                name = None
             bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
             c = np.log(np.expm1(1.))
             loc = tf.Variable(
-                initial_value=tf.random.normal([n], stddev=0.05, seed=42),
-                dtype=dtype,
-                trainable=trainable,
-                name="posterior_loc"
+                tf.random.normal([n], stddev=0.05, seed=42),
+                dtype=dtype, trainable=trainable, name=f"{name}_posterior_loc"
             )
             scale = tf.Variable(
-                initial_value=tf.random.normal([n], stddev=0.05, seed=43),
-                dtype=dtype,
-                trainable=trainable,
-                name="posterior_scale"
+                tf.random.normal([n], stddev=0.05, seed=43),
+                dtype=dtype, trainable=trainable, name=f"{name}_posterior_scale"
             )
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
-            loc_reshaped = tf.reshape(loc, kernel_shape)
-            scale_reshaped = tf.reshape(scale, kernel_shape)
+            loc = tf.reshape(loc, kernel_shape)
+            scale = tf.reshape(scale, kernel_shape)
             return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                tfp.distributions.Normal(loc=loc, scale=scale),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
 
         def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
-            if not isinstance(name, str):
-                name = None
             bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
             loc = tf.zeros([n], dtype=dtype)
             scale = tf.ones([n], dtype=dtype)
-            loc_reshaped = tf.reshape(loc, kernel_shape)
-            scale_reshaped = tf.reshape(scale, kernel_shape)
+            loc = tf.reshape(loc, kernel_shape)
+            scale = tf.reshape(scale, kernel_shape)
             return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                tfp.distributions.Normal(loc=loc, scale=scale),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
         # --- END Corrected Bayesian Functions ---
 
-
-
         outputs = []
         for i in range(self.params['time_horizon']):
-            # Branch Dense Layers
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 2,
                 activation=self.params['activation'],
@@ -190,11 +180,6 @@ class Plugin:
                 name=f"branch_{i+1}_hidden"
             )(branch)
 
-            # Ensure branch output is tensor-compatible explicitly
-            if isinstance(branch, tuple):
-                branch = branch[0]
-
-            # Corrected DenseFlipout Layer without Lambda wrapper
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -204,19 +189,16 @@ class Plugin:
                 name=f"branch_{i+1}_flipout"
             )(branch)
 
+            outputs.append(tf.keras.layers.Lambda(
+                lambda x: tf.reshape(x, (-1,)),
+                name=f"branch_{i+1}_output"
+            )(branch_output))
 
-            outputs.append(branch_output)
             print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
 
-
-        # Explicitly ensure outputs are tensors and correctly shaped
-        outputs = [tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1, 1)), name=f"reshaped_output_{i+1}")(out)
-                for i, out in enumerate(outputs)]
-
-
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="predictor_model")
+        
         metrics = ['mae' for _ in range(self.params['time_horizon'])]
-
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(self.params.get('learning_rate', 1e-4)),
             loss=[self.custom_loss for _ in range(self.params['time_horizon'])],
@@ -225,6 +207,7 @@ class Plugin:
 
         print("✅ Model compiled successfully with corrected DenseFlipout layers.")
         self.model.summary()
+
 
 
     def compute_mmd(self, x, y, sigma=1.0, sample_size=256):
