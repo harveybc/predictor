@@ -410,9 +410,9 @@ def run_prediction_pipeline(config, plugin):
     if isinstance(x_val, tuple): x_val = x_val[0]
     if isinstance(x_test, tuple): x_test = x_test[0]
 
-    print(f"Training data shapes: x_train: {x_train.shape}, y_train: {y_train.shape}")
-    print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {y_val.shape}")
-    print(f"Test data shapes: x_test: {x_test.shape}, y_test: {y_test.shape}")
+    print(f"Training data shapes: x_train: {x_train.shape}, y_train: {[a.shape for a in y_train]}")
+    print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {[a.shape for a in y_val]}")
+    print(f"Test data shapes: x_test: {x_test.shape}, y_test: {[a.shape for a in y_test]}")
 
     time_horizon = config.get("time_horizon")
     window_size = config.get("window_size")
