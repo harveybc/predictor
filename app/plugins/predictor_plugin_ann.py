@@ -105,42 +105,49 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape, x_train, config=None):
-        KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
-        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
-        print("DEBUG: tensorflow version:", tf.__version__)
-        print("DEBUG: tensorflow_probability version:", tfp.__version__)
-        print("DEBUG: numpy version:", np.__version__)
-
-        # Ensure input_shape is a tuple for Keras Input
+        # --- Debug: Basic library versions ---
+        print("DEBUG: Starting build_model")
+        print("DEBUG: TensorFlow version:", tf.__version__)
+        print("DEBUG: TensorFlow Probability version:", tfp.__version__)
+        print("DEBUG: NumPy version:", np.__version__)
+        
+        # --- Ensure input_shape is a tuple ---
         if isinstance(input_shape, int):
             input_shape = (input_shape,)
+        print("DEBUG: Final input_shape (tuple):", input_shape)
         
-        # Convert x_train to a TensorFlow tensor if it's a NumPy array
+        # --- Convert x_train to tensor if needed ---
         if isinstance(x_train, np.ndarray):
+            print("DEBUG: x_train is a NumPy array with shape:", x_train.shape, "and dtype:", x_train.dtype)
             x_train = tf.convert_to_tensor(x_train, dtype=tf.float32)
-        print("DEBUG: x_train shape after conversion:", x_train.shape)
-
-        # Create input layer
+        else:
+            print("DEBUG: x_train is of type:", type(x_train))
+        print("DEBUG: x_train tensor shape after conversion:", x_train.shape)
+        
+        # --- Create Input layer ---
         inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
-        print("DEBUG: Created input layer. Shape:", inputs.shape)
-
-        # Common branch
+        print("DEBUG: Created Input layer; shape:", inputs.shape, "; type:", type(inputs))
+        
+        # --- Common branch ---
         common = tf.keras.layers.Dense(
             units=self.params['initial_layer_size'],
             activation=self.params['activation'],
             kernel_initializer=random_normal_initializer_42,
             name="common_dense"
         )(inputs)
+        print("DEBUG: After common_dense layer; output shape:", common.shape)
+        
         common = tf.keras.layers.BatchNormalization(name="common_bn")(common)
-        print("DEBUG: Common branch output shape:", common.shape)
-
+        print("DEBUG: After BatchNormalization on common branch; output shape:", common.shape)
+        
         # --- Corrected Bayesian Functions ---
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
+            print("DEBUG: In posterior_mean_field_custom with name:", name)
             if not isinstance(name, str):
                 name = None
             bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: posterior_mean_field_custom: computed total parameters (n):", n)
             c = np.log(np.expm1(1.))
             loc = tf.Variable(
                 tf.random.normal([n], stddev=0.05, seed=42),
@@ -154,20 +161,24 @@ class Plugin:
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
             loc = tf.reshape(loc, kernel_shape)
             scale = tf.reshape(scale, kernel_shape)
+            print("DEBUG: posterior_mean_field_custom: loc shape after reshape:", loc.shape, "; scale shape:", scale.shape)
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc, scale=scale),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
 
         def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
+            print("DEBUG: In prior_fn with name:", name)
             if not isinstance(name, str):
                 name = None
             bias_size = 0
             n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: prior_fn: computed total parameters (n):", n)
             loc = tf.zeros([n], dtype=dtype)
             scale = tf.ones([n], dtype=dtype)
             loc = tf.reshape(loc, kernel_shape)
             scale = tf.reshape(scale, kernel_shape)
+            print("DEBUG: prior_fn: loc shape after reshape:", loc.shape, "; scale shape:", scale.shape)
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc, scale=scale),
                 reinterpreted_batch_ndims=len(kernel_shape)
@@ -177,6 +188,7 @@ class Plugin:
         # --- Parallel Branches for Multi-Output ---
         outputs = []
         for i in range(self.params['time_horizon']):
+            print(f"DEBUG: Building branch {i+1}")
             # First Dense layer in branch
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 2,
@@ -184,7 +196,8 @@ class Plugin:
                 kernel_initializer=random_normal_initializer_42,
                 name=f"branch_{i+1}_dense"
             )(common)
-
+            print(f"DEBUG: After branch_{i+1}_dense; output shape:", branch.shape)
+            
             # Second Dense layer in branch
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 4,
@@ -192,11 +205,13 @@ class Plugin:
                 kernel_initializer=random_normal_initializer_42,
                 name=f"branch_{i+1}_hidden"
             )(branch)
+            print(f"DEBUG: After branch_{i+1}_hidden; output shape:", branch.shape)
             
-            # *** INSERTED SNIPPET: Ensure branch is a proper KerasTensor ***
+            # --- INSERTED SNIPPET ---
             branch = tf.keras.layers.Lambda(lambda x: x, name=f"branch_{i+1}_ensure_tensor")(branch)
+            print(f"DEBUG: After branch_{i+1}_ensure_tensor Lambda; output shape:", branch.shape)
             
-            # Call DenseFlipout directly (without an outer Lambda wrapper)
+            # Call DenseFlipout directly without an outer Lambda wrapper
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -209,13 +224,20 @@ class Plugin:
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=f"branch_{i+1}_flipout"
             )(branch)
+            print(f"DEBUG: After DenseFlipout on branch {i+1}; output shape:", branch_output.shape)
             
             # Reshape the branch output to a vector
-            branch_output = tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1,)), name=f"branch_{i+1}_output")(branch_output)
+            branch_output = tf.keras.layers.Lambda(
+                lambda x: tf.reshape(x, (-1,)),
+                name=f"branch_{i+1}_output"
+            )(branch_output)
+            print(f"DEBUG: After reshaping branch_{i+1}_output; output shape:", branch_output.shape)
             outputs.append(branch_output)
-            print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
-
-        self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="predictor_model")
+        
+        # --- Create and compile model ---
+        self.model = Model(inputs=inputs, outputs=outputs, name="predictor_model")
+        print("DEBUG: Final model inputs shape:", self.model.inputs[0].shape)
+        print("DEBUG: Final model outputs (list):", [str(o.shape) for o in self.model.outputs])
         
         metrics = ['mae' for _ in range(self.params['time_horizon'])]
         self.model.compile(
@@ -223,9 +245,11 @@ class Plugin:
             loss=[self.custom_loss for _ in range(self.params['time_horizon'])],
             metrics=metrics
         )
-
-        print("✅ Model compiled successfully with corrected DenseFlipout layers.")
+        
+        print("DEBUG: Model compiled with optimizer Adam (learning_rate=", self.params.get('learning_rate', 1e-4), ")")
+        print("DEBUG: Model summary:")
         self.model.summary()
+        print("✅ ANN Plugin build_model completed successfully.")
 
 
 
