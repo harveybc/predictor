@@ -355,8 +355,17 @@ class Plugin:
         if x_val is not None and isinstance(x_val, tuple):
             x_val = x_val[0]
 
-        print(f"Training with data => X: {x_train.shape}, Y: {[a.shape for a in y_train]}")
         exp_horizon = self.params['time_horizon']
+
+        # --- Transformer-style multi-output adjustment ---
+        if isinstance(y_train, np.ndarray):
+            y_train = [y_train[:, i] for i in range(exp_horizon)]
+        if y_val is not None and isinstance(y_val, np.ndarray):
+            y_val = [y_val[:, i] for i in range(exp_horizon)]
+
+        print(f"Training with data => X: {x_train.shape}, Y: {[yt.shape for yt in y_train]}")
+        # --- END adjustment ---
+
 
 
         # Initialize MMD lambda
