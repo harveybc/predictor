@@ -208,10 +208,9 @@ class Plugin:
                 dtype=dtype,
                 trainable=trainable
             )
-            if isinstance(loc, tuple):
-                print("DEBUG: posterior: loc returned as tuple, unpacking")
+            if isinstance(loc, (tuple, list)):
+                print("DEBUG: posterior: loc returned as tuple/list, unpacking")
                 loc = loc[0]
-            # Force conversion to tensor.
             loc = tf.convert_to_tensor(loc)
             print("DEBUG: posterior: loc type:", type(loc), "shape:", loc.shape)
             
@@ -222,8 +221,8 @@ class Plugin:
                 dtype=dtype,
                 trainable=trainable
             )
-            if isinstance(scale, tuple):
-                print("DEBUG: posterior: scale returned as tuple, unpacking")
+            if isinstance(scale, (tuple, list)):
+                print("DEBUG: posterior: scale returned as tuple/list, unpacking")
                 scale = scale[0]
             scale = tf.convert_to_tensor(scale)
             print("DEBUG: posterior: scale type:", type(scale), "shape:", scale.shape)
@@ -240,10 +239,14 @@ class Plugin:
                 print("DEBUG: Exception during reshape in posterior:", e)
                 raise e
 
-            return tfp.distributions.Independent(
+            dist = tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
+            # Force a sample to check that the distribution produces a tensor.
+            sample = dist.sample()
+            print("DEBUG: posterior: sample from distribution has shape:", sample.shape)
+            return dist
 
         def prior_fn(dtype, kernel_shape, name, trainable, add_variable_fn):
             if not isinstance(name, str):
