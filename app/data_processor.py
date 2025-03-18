@@ -338,18 +338,27 @@ def process_data(config):
     
     
 
+    # --- NEW CODE to convert targets to list of arrays ---
+    # Assuming y_train_multi, y_val_multi, y_test_multi have shape (samples, time_horizon)
+    y_train_multi_list = [y_train_multi[:, i] for i in range(y_train_multi.shape[1])]
+    y_val_multi_list   = [y_val_multi[:, i] for i in range(y_val_multi.shape[1])]
+    y_test_multi_list  = [y_test_multi[:, i] for i in range(y_test_multi.shape[1])]
+
+    # Update the return dictionary to use the lists instead of the single 2D arrays:
     ret = {
         "x_train": x_train,
-        "y_train": y_train_multi,
+        "y_train": y_train_multi_list,
         "x_val": x_val,
-        "y_val": y_val_multi,
+        "y_val": y_val_multi_list,
         "x_test": x_test,
-        "y_test": y_test_multi,
+        "y_test": y_test_multi_list,
         "dates_train": train_dates,
         "dates_val": val_dates,
         "dates_test": test_dates,
         'test_close_prices': test_close_prices
     }
+    # --- END NEW CODE ---
+
     if config.get("use_returns", False):
         ret["baseline_train"] = baseline_train
         ret["baseline_val"] = baseline_val
