@@ -469,12 +469,18 @@ class Plugin:
         print(f"MAE in Evaluation Mode: {mae_eval_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_eval_mode:.6f}")
         # --- END NEW CODE ---
 
+        # Evaluate returns a list of loss values and then metric values (one per output)
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-        train_loss, train_mae = train_eval_results
-        print(f"Restored Weights - Loss: {train_loss}, MAE: {train_mae}")
+        # Assuming that the losses are the first 'exp_horizon' elements and metrics the next 'exp_horizon'
+        train_loss = np.mean(train_eval_results[:exp_horizon])
+        train_mae = np.mean(train_eval_results[exp_horizon:])
+        print(f"Restored Weights - Avg Loss: {train_loss}, Avg MAE: {train_mae}")
 
         val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-        val_loss, val_mae = val_eval_results
+        val_loss = np.mean(val_eval_results[:exp_horizon])
+        val_mae = np.mean(val_eval_results[exp_horizon:])
+        print(f"Validation - Avg Loss: {val_loss}, Avg MAE: {val_mae}")
+
 
         #train_predictions = self.predict(x_train)
         mc_samples = config.get("mc_samples", 100)
@@ -485,26 +491,15 @@ class Plugin:
 
 
     def predict_with_uncertainty(self, data, mc_samples=100):
-        """
-        Perform multiple forward passes through the model to estimate prediction uncertainty.
-        
-        Args:
-            data (np.ndarray): Input data for prediction.
-            mc_samples (int): Number of Monte Carlo samples.
-        
-        Returns:
-            tuple: (mean_predictions, uncertainty_estimates) where both are np.ndarray with shape (n_samples, time_horizon)
-        """
         import numpy as np
-        print("DEBUG: Starting predict_with_uncertainty with mc_samples (expected):", mc_samples)
+        print("DEBUG: Starting predict_with_uncertainty with mc_samples:", mc_samples)
         predictions = []
         for i in range(mc_samples):
-            preds = self.model(data, training=True)
-            preds_np = preds.numpy()
-            print(f"DEBUG: Sample {i+1}/{mc_samples} prediction. Expected shape: (n_samples, time_horizon), Actual shape:", preds_np.shape)
-            predictions.append(preds_np)
-        predictions = np.array(predictions)
-        print("DEBUG: All predictions collected. Expected shape: (mc_samples, n_samples, time_horizon), Actual shape:", predictions.shape)
+            preds_list = self.model(data, training=True)
+            # Convert each output tensor in the list to numpy and stack along axis=1
+            preds_array = np.stack([p.numpy() for p in preds_list], axis=1)
+            predictions.append(preds_array)
+        predictions = np.array(predictions)  # shape: (mc_samples, n_samples, time_horizon)
         mean_predictions = np.mean(predictions, axis=0)
         uncertainty_estimates = np.std(predictions, axis=0)
         print("DEBUG: Mean predictions shape:", mean_predictions.shape)
@@ -512,15 +507,18 @@ class Plugin:
         return mean_predictions, uncertainty_estimates
 
 
+
     def predict(self, data):
-        import os
-        import logging
+        import os, logging
         logging.getLogger("tensorflow").setLevel(logging.ERROR)
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         if isinstance(data, tuple):
             data = data[0]
-        preds = self.model.predict(data)
-        return preds
+        # self.model.predict returns a list of arrays (one per output)
+        preds_list = self.model.predict(data)
+        preds_array = np.stack(preds_list, axis=1)  # shape: (n_samples, time_horizon)
+        return preds_array
+
 
 
     def calculate_mae(self, y_true, y_pred):
