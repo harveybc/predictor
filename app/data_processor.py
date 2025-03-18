@@ -359,6 +359,20 @@ def process_data(config):
     }
     # --- END NEW CODE ---
 
+
+    # --- NEW CODE: Also stack multi-output targets into 2D arrays for evaluation ---
+    y_train_array = np.stack(y_train_multi_list, axis=1)  # shape: (n_samples, time_horizon)
+    y_val_array   = np.stack(y_val_multi_list, axis=1)
+    y_test_array  = np.stack(y_test_multi_list, axis=1)
+    ret["y_train_array"] = y_train_array
+    ret["y_val_array"] = y_val_array
+    ret["y_test_array"] = y_test_array
+    print("DEBUG: Stacked y_train shape:", y_train_array.shape)
+    print("DEBUG: Stacked y_val shape:", y_val_array.shape)
+    print("DEBUG: Stacked y_test shape:", y_test_array.shape)
+    # --- END NEW CODE ---
+
+
     if config.get("use_returns", False):
         ret["baseline_train"] = baseline_train
         ret["baseline_val"] = baseline_val
@@ -395,6 +409,15 @@ def run_prediction_pipeline(config, plugin):
     x_train, y_train = datasets["x_train"], datasets["y_train"]
     x_val, y_val = datasets["x_val"], datasets["y_val"]
     x_test, y_test = datasets["x_test"], datasets["y_test"]
+    # --- NEW CODE: Retrieve stacked multi-output targets ---
+    y_train_array = datasets["y_train_array"]  # shape: (n_samples, time_horizon)
+    y_val_array   = datasets["y_val_array"]
+    y_test_array  = datasets["y_test_array"]
+    print("DEBUG: Retrieved stacked y_train shape:", y_train_array.shape)
+    print("DEBUG: Retrieved stacked y_val shape:", y_val_array.shape)
+    print("DEBUG: Retrieved stacked y_test shape:", y_test_array.shape)
+    # --- END NEW CODE ---
+
     train_dates = datasets.get("dates_train")
     val_dates = datasets.get("dates_val")
     test_dates = datasets.get("dates_test")
@@ -510,13 +533,12 @@ def run_prediction_pipeline(config, plugin):
         y_test_array = np.stack(y_test, axis=1)  # shape: (n_samples, time_horizon)
 
         if config.get("use_returns", False):
-            test_r2 = r2_score((baseline_test[:, -1] + y_test_array[:n_test, -1]).flatten(),
-                            (baseline_test[:, -1] + test_predictions[:, -1]).flatten())
+            test_r2 = r2_score((baseline_test[:, -1] + y_test_array[:n_test, -1]).flatten(), (baseline_test[:, -1] + test_predictions[:, -1]).flatten())
         else:
             test_r2 = r2_score(y_test_array[:n_test, -1], test_predictions[:, -1])
 
-        y_test_array = np.stack(y_test, axis=1)  # Convert list of arrays to a 2D array (samples, time_horizon)
         test_mae = np.mean(np.abs(test_predictions[:, -1] - y_test_array[:n_test, -1]))
+
 
         # calculate mmd for train, val and test
         #print("\nCalculating MMD for train, val and test datasets...")
