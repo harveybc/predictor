@@ -339,10 +339,9 @@ class Plugin:
         if x_val is not None and isinstance(x_val, tuple):
             x_val = x_val[0]
 
-        print(f"Training with data => X: {x_train.shape}, Y: {y_train.shape}")
+        print(f"Training with data => X: {x_train.shape}, Y: {[a.shape for a in y_train]}")
         exp_horizon = self.params['time_horizon']
-        if y_train.ndim != 2 or y_train.shape[1] != exp_horizon:
-            raise ValueError(f"y_train shape {y_train.shape}, expected (N,{exp_horizon}).")
+
 
         # Initialize MMD lambda
         mmd_lambda = self.params.get('mmd_lambda', 0.01)
