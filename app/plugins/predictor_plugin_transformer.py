@@ -285,14 +285,24 @@ class Plugin:
         def multi_output_loss(y_true, y_pred):
             """
             Custom loss for multi-output training.
-            Both y_true and y_pred are lists of tensors (each of shape (batch,)).
-            We stack along axis=0 to form a tensor of shape (time_horizon, batch)
-            then transpose to (batch, time_horizon) before computing losses.
+            Both y_true and y_pred are lists of tensors.
+            This function squeezes each tensor to remove singleton dimensions,
+            stacks them into a tensor of shape (time_horizon, batch), transposes it to (batch, time_horizon),
+            and then computes the Huber and MMD losses.
             """
-            # Stack outputs along axis=0 and transpose to (batch, time_horizon)
-            y_true_stacked = tf.transpose(tf.stack(y_true, axis=0), perm=[1, 0])
-            y_pred_stacked = tf.transpose(tf.stack(y_pred, axis=0), perm=[1, 0])
+            # Ensure each tensor is rank 1
+            y_true_processed = [tf.squeeze(t, axis=-1) if len(t.shape) > 1 else t for t in y_true]
+            y_pred_processed = [tf.squeeze(t, axis=-1) if len(t.shape) > 1 else t for t in y_pred]
             
+            # Stack along a new axis (axis=0) to get a tensor of shape (time_horizon, batch)
+            y_true_stacked = tf.stack(y_true_processed, axis=0)
+            y_pred_stacked = tf.stack(y_pred_processed, axis=0)
+            
+            # Transpose to get shape (batch, time_horizon)
+            y_true_stacked = tf.transpose(y_true_stacked, perm=[1, 0])
+            y_pred_stacked = tf.transpose(y_pred_stacked, perm=[1, 0])
+            
+            # Compute losses on the stacked tensors
             huber_loss = Huber()(y_true_stacked, y_pred_stacked)
             mmd_loss = self.compute_mmd(y_pred_stacked, y_true_stacked)
             total_loss = huber_loss + (self.params['mmd_lambda'] * mmd_loss)
@@ -302,12 +312,20 @@ class Plugin:
         def multi_output_mae(y_true, y_pred):
             """
             Metric for multi-output training.
-            Stacks the list of tensors and transposes to obtain (batch, time_horizon) shape,
-            then computes the mean absolute error.
+            Squeezes each tensor, stacks them, transposes to (batch, time_horizon),
+            and computes the mean absolute error.
             """
-            y_true_stacked = tf.transpose(tf.stack(y_true, axis=0), perm=[1, 0])
-            y_pred_stacked = tf.transpose(tf.stack(y_pred, axis=0), perm=[1, 0])
+            y_true_processed = [tf.squeeze(t, axis=-1) if len(t.shape) > 1 else t for t in y_true]
+            y_pred_processed = [tf.squeeze(t, axis=-1) if len(t.shape) > 1 else t for t in y_pred]
+            
+            y_true_stacked = tf.stack(y_true_processed, axis=0)
+            y_pred_stacked = tf.stack(y_pred_processed, axis=0)
+            
+            y_true_stacked = tf.transpose(y_true_stacked, perm=[1, 0])
+            y_pred_stacked = tf.transpose(y_pred_stacked, perm=[1, 0])
+            
             return tf.reduce_mean(tf.abs(y_true_stacked - y_pred_stacked))
+
 
 
         self.model.compile(
