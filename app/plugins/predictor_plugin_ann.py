@@ -192,12 +192,14 @@ class Plugin:
             print("       name =", name)
             print("       trainable =", trainable)
             print("       add_variable_fn =", add_variable_fn)
-            # Create variables using add_variable_fn if desired.
-            # Here we compute the number of parameters.
+            
+            # Compute the total number of parameters.
             n = int(np.prod(kernel_shape))
             print("DEBUG: posterior: computed n =", n)
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior: computed c =", c)
+            
+            # Create loc variable.
             loc = add_variable_fn(
                 name + "_posterior_loc",
                 shape=[n],
@@ -205,6 +207,12 @@ class Plugin:
                 dtype=dtype,
                 trainable=trainable
             )
+            # If add_variable_fn returns a tuple, unpack the variable.
+            if isinstance(loc, tuple):
+                print("DEBUG: posterior: loc returned as tuple, unpacking")
+                loc = loc[0]
+            
+            # Create scale variable.
             scale = add_variable_fn(
                 name + "_posterior_scale",
                 shape=[n],
@@ -212,9 +220,15 @@ class Plugin:
                 dtype=dtype,
                 trainable=trainable
             )
+            if isinstance(scale, tuple):
+                print("DEBUG: posterior: scale returned as tuple, unpacking")
+                scale = scale[0]
+            
+            # Transform scale.
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
             print("DEBUG: posterior: created loc shape:", loc.shape, "and scale shape:", scale.shape)
+            
             try:
                 loc_reshaped = tf.reshape(loc, kernel_shape)
                 scale_reshaped = tf.reshape(scale, kernel_shape)
@@ -222,11 +236,13 @@ class Plugin:
             except Exception as e:
                 print("DEBUG: Exception during reshape in posterior:", e)
                 raise e
+
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-        
+
+
         def prior_fn(dtype, kernel_shape, name, trainable, add_variable_fn):
             # DEBUG: Print inputs to the prior function
             print("DEBUG: In prior_fn:")
@@ -235,10 +251,13 @@ class Plugin:
             print("       name =", name)
             print("       trainable =", trainable)
             print("       add_variable_fn =", add_variable_fn)
+            
             n = int(np.prod(kernel_shape))
             print("DEBUG: prior_fn: computed n =", n)
+            
             loc = tf.zeros([n], dtype=dtype)
             scale = tf.ones([n], dtype=dtype)
+            
             try:
                 loc_reshaped = tf.reshape(loc, kernel_shape)
                 scale_reshaped = tf.reshape(scale, kernel_shape)
@@ -246,10 +265,12 @@ class Plugin:
             except Exception as e:
                 print("DEBUG: Exception during reshape in prior_fn:", e)
                 raise e
+
             return tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
+
 
         # -------------------------------------------------------------------------
         # 5. Debug Wrappers for Posterior and Prior Functions
@@ -314,20 +335,13 @@ class Plugin:
             # Create branch-specific Bayesian DenseFlipout layer with updated lambda functions
             # Define helper functions to capture the branch number without modifying the expected signature.
             def make_posterior_fn(branch_number):
-                """
-                Returns a lambda function with the correct signature for kernel_posterior_fn,
-                capturing the branch number via closure.
-                """
                 return lambda dtype, kernel_shape, name, trainable, add_variable_fn: \
                     debug_posterior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=branch_number)
 
             def make_prior_fn(branch_number):
-                """
-                Returns a lambda function with the correct signature for kernel_prior_fn,
-                capturing the branch number via closure.
-                """
                 return lambda dtype, kernel_shape, name, trainable, add_variable_fn: \
                     debug_prior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=branch_number)
+
 
             # Use these helper functions in your DenseFlipout layer call.
             branch_flipout = tfp.layers.DenseFlipout(
@@ -338,6 +352,7 @@ class Plugin:
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=f"branch_{i+1}_flipout"
             )(branch)
+
             print(f"DEBUG: After branch_{i+1}_flipout; shape:", branch_flipout.shape)
             
             # Create a deterministic bias layer for this branch using the common branch x
