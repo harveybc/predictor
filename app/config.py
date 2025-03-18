@@ -62,5 +62,12 @@ DEFAULT_VALUES = {
     "uncertainty_color_alpha": 0.01,
     "plot_points": 1575,
     "min_delta": 1e-5,
-    "plot_points": 1575
+    "plot_points": 1575,
+    "use_strategy": False,
+    "strategy_plugin_group": "heuristic_strategy.plugins",
+    "strategy_plugin_name": "ls_pred_strategy",
+    "strategy_1h_prediction": "examples/results/phase_1/phase_1_cnn_25200_1h_prediction.csv",
+    "strategy_1h_uncertainty": "examples/results/phase_1/phase_1_cnn_25200_1h_uncertanties.csv",
+    "strategy_base_dataset": "examples/data/phase_1/phase_1_base_d3.csv",
+    "strategy_load_parameters": "examples/data/phase_1/strategy_parameters.json"
 }
