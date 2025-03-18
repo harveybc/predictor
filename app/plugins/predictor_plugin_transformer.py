@@ -12,27 +12,6 @@ from sklearn.metrics import r2_score
 import tensorflow.keras.backend as K
 import gc
 
-class WrappedDenseFlipout(tf.keras.layers.Layer):
-    def __init__(self, units, activation, kernel_posterior_fn, kernel_prior_fn, kernel_divergence_fn, **kwargs):
-        super(WrappedDenseFlipout, self).__init__(**kwargs)
-        self.units = units
-        self.activation = activation
-        self.kernel_posterior_fn = kernel_posterior_fn
-        self.kernel_prior_fn = kernel_prior_fn
-        self.kernel_divergence_fn = kernel_divergence_fn
-        self.dense_flipout = tfp.layers.DenseFlipout(
-            units=units,
-            activation=activation,
-            kernel_posterior_fn=kernel_posterior_fn,
-            kernel_prior_fn=kernel_prior_fn,
-            kernel_divergence_fn=kernel_divergence_fn
-        )
-    def call(self, inputs):
-        return self.dense_flipout(inputs)
-    def compute_output_shape(self, input_shape):
-        return self.dense_flipout.compute_output_shape(input_shape)
-
-
 # --- Custom Callbacks ---
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
     """
@@ -126,9 +105,76 @@ class Plugin:
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
         print("DEBUG: numpy version:", np.__version__)
-        
+
+        # Optionally log x_train info if provided
+        x_train = kwargs.get("x_train", None)
+        if x_train is not None:
+            x_train = np.array(x_train)
+            print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
+
+        self.params['input_shape'] = input_shape  # (window_size, num_features)
+        l2_reg = self.params.get('l2_reg', 1e-4)
+        num_heads = self.params['num_heads']
+        time_horizon = self.params['time_horizon']
+        embedding_dim = self.params.get('initial_layer_size', 32)
+
+        print("DEBUG: Input shape:", input_shape)
+        inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
+        print("DEBUG: Created input layer. Shape:", inputs.shape)
+        x = inputs
+
+        # Project input to fixed embedding dimension
+        x = Dense(embedding_dim, activation=self.params['activation'],
+                kernel_initializer=GlorotUniform(), name="input_projection")(x)
+        print("DEBUG: After input projection, x shape:", x.shape)
+        # Add positional encoding to capture temporal order
+        pos_enc = positional_encoding(input_shape[0], embedding_dim)
+        x = x + pos_enc
+        print("DEBUG: After adding positional encoding, x shape:", x.shape)
+        # Now x is (batch, window_size, embedding_dim)
+
+        # Build transformer blocks (same number as intermediate_layers)
+        for idx in range(self.params['intermediate_layers']):
+            print(f"DEBUG: Building Transformer block {idx+1} with embedding dim {embedding_dim}")
+            # Layer Normalization before attention
+            x_norm = LayerNormalization(name=f"layer_norm_{idx+1}")(x)
+            key_dim = max(1, embedding_dim // num_heads)
+            attn_output = MultiHeadAttention(
+                num_heads=num_heads,
+                key_dim=key_dim,
+                name=f"mha_layer_{idx+1}"
+            )(x_norm, x_norm)
+            print(f"DEBUG: After MultiHeadAttention in block {idx+1}, attn_output shape: {attn_output.shape}")
+            # Residual connection for attention sub-layer
+            x = Add(name=f"residual_add_attn_{idx+1}")([x, attn_output])
+            # Feedforward network
+            x_ff_norm = LayerNormalization(name=f"layer_norm_ff_{idx+1}")(x)
+            ff_output = Dense(
+                units=embedding_dim,
+                activation=self.params['activation'],
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"ff_dense_{idx+1}"
+            )(x_ff_norm)
+            print(f"DEBUG: After feedforward dense in block {idx+1}, ff_output shape: {ff_output.shape}")
+            x = Add(name=f"residual_add_ff_{idx+1}")([x, ff_output])
+            print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
+
+        # Global average pooling to collapse the sequence dimension
+        x = GlobalAveragePooling1D(name="global_avg_pool")(x)
+        print("DEBUG: After GlobalAveragePooling1D, x shape:", x.shape)
+
+        x = BatchNormalization(name="batch_norm_final")(x)
+        print("DEBUG: After final BatchNormalization, x shape:", x.shape)
+
+        # --- Bayesian Output Layer Implementation (copied from CNN/LSTM plugins) ---
         def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
             return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
+        tfp.layers.DenseFlipout.add_variable = _patched_add_variable
+
+        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
+        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
+
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
             print("       dtype =", dtype, "kernel_shape =", kernel_shape)
@@ -186,149 +232,38 @@ class Plugin:
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
         
-        # Optionally log x_train info if provided
-        x_train = kwargs.get("x_train", None)
-        if x_train is not None:
-            x_train = np.array(x_train)
-            print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
-
-        self.params['input_shape'] = input_shape  # (window_size, num_features)
-        l2_reg = self.params.get('l2_reg', 1e-4)
-        num_heads = self.params['num_heads']
-        time_horizon = self.params['time_horizon']
-        embedding_dim = self.params.get('initial_layer_size', 32)
-
-        print("DEBUG: Input shape:", input_shape)
-        inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
-        print("DEBUG: Created input layer. Shape:", inputs.shape)
-        x = inputs
-
-        # Project input to fixed embedding dimension
-        x = Dense(embedding_dim, activation=self.params['activation'],
-                kernel_initializer=GlorotUniform(), name="input_projection")(x)
-        print("DEBUG: After input projection, x shape:", x.shape)
-        # Add positional encoding to capture temporal order
-        pos_enc = positional_encoding(input_shape[0], embedding_dim)
-        x = x + pos_enc
-        print("DEBUG: After adding positional encoding, x shape:", x.shape)
-        # Now x is (batch, window_size, embedding_dim)
-
-        # Build transformer blocks (same number as intermediate_layers)
-        for idx in range(self.params['intermediate_layers']):
-            print(f"DEBUG: Building Transformer block {idx+1} with embedding dim {embedding_dim}")
-            # Layer Normalization before attention
-            x_norm = LayerNormalization(name=f"layer_norm_{idx+1}")(x)
-            key_dim = max(1, embedding_dim // num_heads)
-            attn_output = MultiHeadAttention(
-                num_heads=num_heads,
-                key_dim=key_dim,
-                name=f"mha_layer_{idx+1}"
-            )(x_norm, x_norm)
-            print(f"DEBUG: After MultiHeadAttention in block {idx+1}, attn_output shape: {attn_output.shape}")
-            # Residual connection for attention sub-layer
-            x = Add(name=f"residual_add_attn_{idx+1}")([x, attn_output])
-            # Feedforward network
-            x_ff_norm = LayerNormalization(name=f"layer_norm_ff_{idx+1}")(x)
-            ff_output = Dense(
-                units=embedding_dim,
-                activation=self.params['activation'],
-                kernel_initializer=GlorotUniform(),
-                kernel_regularizer=l2(l2_reg),
-                name=f"ff_dense_{idx+1}"
-            )(x_ff_norm)
-            print(f"DEBUG: After feedforward dense in block {idx+1}, ff_output shape: {ff_output.shape}")
-            x = Add(name=f"residual_add_ff_{idx+1}")([x, ff_output])
-            print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
-
-        ## Bayesian layer for uncertainty estimation
-        
-
-        
-        # Instead of using GlobalAveragePooling1D, take the representation from the last time step.
-        x_last = tf.keras.layers.Lambda(lambda t: t[:, -1, :], name="last_time_step")(x)
-        print("DEBUG: x_last shape (last time step):", x_last.shape)
-        x_last = BatchNormalization(name="batch_norm_final")(x_last)
-        print("DEBUG: After BatchNormalization, x_last shape:", x_last.shape)
-
-        # Preserve original functionality: reassign add_variable and initialize kl_weight_var.
-        tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
-        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
-
-        # Repeat the last time step vector for each forecast horizon.
-        repeated = tf.keras.layers.RepeatVector(self.params['time_horizon'], name="repeat_vector")(x_last)
-        print("DEBUG: repeated shape (for each horizon):", repeated.shape)
-        
-        # --- Add Horizon Embedding ---
-        # --- Add Horizon Embedding ---
-        # Instead of computing batch_size outside, use a Lambda layer to build horizon indices.
-        horizon_indices = tf.keras.layers.Lambda(
-            lambda r: tf.tile(tf.expand_dims(tf.range(self.params['time_horizon'], dtype=tf.int32), axis=0),
-                              [tf.shape(r)[0], 1])
-        )(repeated)
-        print("DEBUG: horizon_indices shape:", horizon_indices.shape)
-        
-        # Create an embedding layer for the horizon indices.
-        horizon_embedding_dim = x_last.shape[-1]  # Use same dimension as x_last
-        horizon_embedding_layer = tf.keras.layers.Embedding(
-            input_dim=self.params['time_horizon'],
-            output_dim=horizon_embedding_dim,
-            name="horizon_embedding"
+        KL_WEIGHT = self.params.get('kl_weight', 1e-3)
+        DenseFlipout = tfp.layers.DenseFlipout
+        print("DEBUG: Creating DenseFlipout final layer with units:", self.params['time_horizon'])
+        flipout_layer = DenseFlipout(
+            units=self.params['time_horizon'],
+            activation='linear',
+            kernel_posterior_fn=posterior_mean_field_custom,
+            kernel_prior_fn=prior_fn,
+            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+            name="output_layer"
         )
-        horizon_embeddings = horizon_embedding_layer(horizon_indices)
-        print("DEBUG: horizon_embeddings shape:", horizon_embeddings.shape)
+        bayesian_output = tf.keras.layers.Lambda(
+            lambda t: flipout_layer(t),
+            output_shape=lambda s: (s[0], self.params['time_horizon']),
+            name="bayesian_dense_flipout"
+        )(x)
+        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
         
-        # Combine the repeated vector with the horizon embeddings (by element-wise addition).
-        repeated_with_horizon = tf.keras.layers.Add(name="add_horizon_embedding")([repeated, horizon_embeddings])
-        print("DEBUG: repeated_with_horizon shape:", repeated_with_horizon.shape)
-
-        # --- End Horizon Embedding ---
-
-        # Use TimeDistributed with our WrappedDenseFlipout layer to produce separate outputs for each horizon.
-        bayesian_output = tf.keras.layers.TimeDistributed(
-            WrappedDenseFlipout(
-                units=1,
-                activation='linear',
-                kernel_posterior_fn=posterior_mean_field_custom,
-                kernel_prior_fn=prior_fn,
-                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * self.params.get('kl_weight', 1e-3),
-                name="wrapped_output_layer_td"
-            ),
-            name="bayesian_dense_flipout_td"
-        )(repeated_with_horizon)
-        print("DEBUG: bayesian_output (raw) shape:", bayesian_output.shape)
-        bayesian_output = tf.keras.layers.Reshape((self.params['time_horizon'],))(bayesian_output)
-        print("DEBUG: bayesian_output reshaped to:", bayesian_output.shape)
-
-        # Deterministic bias branch (using x_last) remains unchanged.
         bias_layer = Dense(
             units=self.params['time_horizon'],
             activation='linear',
             kernel_initializer=random_normal_initializer_44,
             name="deterministic_bias",
             kernel_regularizer=l2(l2_reg)
-        )(x_last)
+        )(x)
         print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
-
-        outputs = tf.keras.layers.Add(name="output_add")([bayesian_output, bias_layer])
-        print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
-
-
-
         
-        # --- NEW CODE for Multi-Output ---
-        # Split the combined output tensor into a list of tensors, one per forecast horizon.
-        outputs_list = tf.split(outputs, num_or_size_splits=self.params['time_horizon'], axis=1)
-        # Remove the extra dimension from each output so that each becomes shape (batch, ) instead of (batch, 1)
-        outputs_list = [
-            tf.keras.layers.Lambda(lambda x: tf.squeeze(x, axis=1), name=f"output_{i+1}")(o)
-            for i, o in enumerate(outputs_list)
-        ]
-        print("DEBUG: Model will output a list of tensors (one per horizon).")
-        # Create the model with multi-output
-        self.model = Model(inputs=inputs, outputs=outputs_list, name="predictor_model")
-        # --- END NEW CODE ---
-
+        outputs = bayesian_output + bias_layer
+        print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+        
+        self.model = Model(inputs=inputs, outputs=outputs, name="predictor_model")
+        print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
         
         self.model.compile(
             optimizer=Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
@@ -360,35 +295,20 @@ class Plugin:
             return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
 
     def custom_loss(self, y_true, y_pred):
-        delta = 1.0
-        # Calcular la pérdida de Huber de forma elemento a elemento.
-        error = tf.abs(y_true - y_pred)
-        quadratic = tf.minimum(error, delta)
-        linear = error - quadratic
-        loss_elements = 0.5 * tf.square(quadratic) + delta * linear  # Resultado: (batch, time_horizon)
-        
-        # Crear un vector de pesos para cada horizonte.
-        horizon = self.params['time_horizon']
-        weights = tf.linspace(0.5, 1.5, horizon)
-        weights = tf.reshape(weights, (1, horizon))  # Forma: (1, time_horizon)
-        
-        # Multiplicar la pérdida elemento a elemento por los pesos (se transmite a (batch, time_horizon))
-        weighted_loss = loss_elements * weights
-        huber_loss = tf.reduce_mean(weighted_loss)
-        
-        # Término de diversidad: incentivar que las diferencias entre horizontes consecutivos sean similares a las verdaderas.
-        diff_pred = y_pred[:, 1:] - y_pred[:, :-1]
-        diff_true = y_true[:, 1:] - y_true[:, :-1]
-        diversity_loss = tf.reduce_mean(tf.abs(diff_pred - diff_true))
-        
-        # Calcular la pérdida MMD como antes.
+        """
+        Custom loss function combining Huber loss and MMD loss.
+        """
+        huber_loss = Huber()(y_true, y_pred)
         mmd_loss = self.compute_mmd(y_pred, y_true)
-        
-        # Combinar todas las pérdidas (puedes ajustar los coeficientes según sea necesario).
-        total_loss = huber_loss + (self.mmd_lambda * mmd_loss) + 0.1 * diversity_loss
+        #error = tf.math.abs(tf.math.subtract(y_true, y_pred))
+        #mean_error = tf.math.reduce_mean(error)
+        #std_error = tf.math.reduce_std(error)
+        #epsilon = 1e-6
+        #cv = tf.math.divide(std_error, mean_error + epsilon)
+        #total_loss = huber_loss + (self.mmd_lambda * mmd_loss) + 0.1*cv
+        total_loss = huber_loss + (self.mmd_lambda * mmd_loss) 
         return total_loss
-
-
+    
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
         """
