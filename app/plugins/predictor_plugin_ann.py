@@ -106,21 +106,22 @@ class Plugin:
 
     def build_model(self, input_shape, x_train, config=None):
         """
-        1. Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
-        This version creates time_horizon (e.g. 6) parallel branches—each branch
-        produces a single scalar output.
+        Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
+        This version creates `time_horizon` parallel branches – each branch produces a 
+        single scalar output. Each branch is independent (with its own DenseFlipout layer)
+        so that separate losses can be applied.
         
-        2. Parameters:
-            - input_shape: int, the expected number of features (must be int for ANN)
-            - x_train: training data as a NumPy array
-            - config: configuration dictionary (optional)
-            
-        3. Raises:
-            - ValueError if input_shape is not an integer.
+        Parameters:
+        - input_shape: int, number of features.
+        - x_train: training data as a NumPy array.
+        - config: configuration dictionary (optional)
+        
+        Raises:
+        - ValueError if input_shape is not an integer.
         """
         from tensorflow.keras.losses import Huber
 
-        # --- New initializers that guarantee a tensor is returned ---
+        # --- Custom initializers ensuring tensor outputs ---
         def my_random_normal_initializer_42(shape, dtype=None):
             return tf.random.normal(shape, stddev=0.05, seed=42, dtype=dtype)
 
@@ -131,7 +132,7 @@ class Plugin:
         l2_reg = self.params.get('l2_reg', 1e-5)
 
         # -------------------------------------------------------------------------
-        # 1. Initial Debug Prints: TensorFlow, TFP, and NumPy versions
+        # 1. Debug: Versions
         # -------------------------------------------------------------------------
         print("DEBUG: Starting build_model")
         print("DEBUG: TensorFlow version:", tf.__version__)
@@ -139,17 +140,16 @@ class Plugin:
         print("DEBUG: NumPy version:", np.__version__)
 
         # -------------------------------------------------------------------------
-        # 2. Validate and Debug x_train and input_shape
+        # 2. Validate x_train and input_shape
         # -------------------------------------------------------------------------
         x_train = np.array(x_train)
         print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
         print("DEBUG: input_shape is valid. Value:", input_shape)
-        train_size = x_train.shape[0]
-        print("DEBUG: Number of training samples:", train_size)
+        print("DEBUG: Number of training samples:", x_train.shape[0])
 
-        # Build layer sizes for the shared part
+        # Build layer sizes for the shared part.
         layer_sizes = []
         current_size = self.params['initial_layer_size']
         print("DEBUG: Initial layer size:", current_size)
@@ -169,7 +169,7 @@ class Plugin:
         print("DEBUG: Standard ANN input_shape (int):", input_shape)
 
         # -------------------------------------------------------------------------
-        # 3. Build the Shared Base Network
+        # 3. Build Shared Base Network
         # -------------------------------------------------------------------------
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         print("DEBUG: Created Input layer; shape:", inputs.shape)
@@ -185,7 +185,7 @@ class Plugin:
         print("DEBUG: After BatchNormalization on common branch; output shape:", x.shape)
 
         # -------------------------------------------------------------------------
-        # 4. Define Custom Posterior and Prior Functions for Bayesian Layers
+        # 4. Custom Posterior and Prior Functions for Bayesian Layers
         # -------------------------------------------------------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, name, trainable, add_variable_fn):
             if not isinstance(name, str):
@@ -379,7 +379,7 @@ class Plugin:
             branch_tensor = tf.keras.layers.Lambda(lambda x: tf.identity(x), name=f"branch_{i+1}_identity")(branch)
             print(f"DEBUG: After branch_{i+1}_identity; type: {type(branch_tensor)}, shape: {branch_tensor.shape}")
 
-            # Call DenseFlipout. If its output is a tuple, later layers will unwrap it.
+            # Call DenseFlipout.
             raw_branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -389,7 +389,6 @@ class Plugin:
                 name=f"branch_{i+1}_flipout"
             )(branch_tensor)
             print("DEBUG: [AFTER_DENSEFLIPOUT] raw_branch_flipout type:", type(raw_branch_flipout))
-            # If raw_branch_flipout is a tuple, extract the first element.
             if isinstance(raw_branch_flipout, (tuple, list)):
                 branch_flipout = raw_branch_flipout[0]
                 print(f"DEBUG: [AFTER_DENSEFLIPOUT] Unpacked branch_flipout from tuple; shape: {branch_flipout.shape}")
