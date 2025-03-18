@@ -215,6 +215,7 @@ class Plugin:
                 print("DEBUG: [POSTERIOR] loc is a tuple/list; unpacking first element")
                 loc = loc[0]
             loc = tf.convert_to_tensor(loc)
+            tf.debugging.assert_rank(loc, 1, message="Posterior loc must be rank 1")
             print("DEBUG: [POSTERIOR] loc after conversion; type:", type(loc), ", shape:", loc.shape)
             
             scale = add_variable_fn(
@@ -229,6 +230,7 @@ class Plugin:
                 print("DEBUG: [POSTERIOR] scale is a tuple/list; unpacking first element")
                 scale = scale[0]
             scale = tf.convert_to_tensor(scale)
+            tf.debugging.assert_rank(scale, 1, message="Posterior scale must be rank 1")
             print("DEBUG: [POSTERIOR] scale after conversion; type:", type(scale), ", shape:", scale.shape)
             
             scale = 1e-3 + tf.nn.softplus(scale + c)
@@ -377,6 +379,7 @@ class Plugin:
             branch_tensor = tf.keras.layers.Lambda(lambda x: tf.identity(x), name=f"branch_{i+1}_identity")(branch)
             print(f"DEBUG: After branch_{i+1}_identity; type: {type(branch_tensor)}, shape: {branch_tensor.shape}")
 
+            # Call DenseFlipout. If its output is a tuple, later layers will unwrap it.
             raw_branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -385,11 +388,15 @@ class Plugin:
                 kernel_divergence_fn=my_kernel_divergence,
                 name=f"branch_{i+1}_flipout"
             )(branch_tensor)
-            # Force extraction if DenseFlipout returns a tuple.
-            branch_flipout = tf.keras.layers.Lambda(lambda x: x[0] if isinstance(x, (list, tuple)) else x,
-                                                    name=f"branch_{i+1}_flipout_output")(raw_branch_flipout)
-            print(f"DEBUG: After branch_{i+1}_flipout_output; shape:", branch_flipout.shape)
-            
+            print("DEBUG: [AFTER_DENSEFLIPOUT] raw_branch_flipout type:", type(raw_branch_flipout))
+            # If raw_branch_flipout is a tuple, extract the first element.
+            if isinstance(raw_branch_flipout, (tuple, list)):
+                branch_flipout = raw_branch_flipout[0]
+                print(f"DEBUG: [AFTER_DENSEFLIPOUT] Unpacked branch_flipout from tuple; shape: {branch_flipout.shape}")
+            else:
+                branch_flipout = raw_branch_flipout
+                print(f"DEBUG: [AFTER_DENSEFLIPOUT] branch_flipout shape: {branch_flipout.shape}")
+
             branch_bias = tf.keras.layers.Dense(
                 units=1,
                 activation='linear',
