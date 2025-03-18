@@ -286,7 +286,7 @@ class Plugin:
         self.model.compile(
             optimizer=Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
             loss=self.custom_loss,
-            metrics=['mae']
+            metrics=['mae','mae','mae','mae','mae','mae']
         )
         print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
         print("DEBUG: Model compiled with loss=Huber, metrics=['mae']")
