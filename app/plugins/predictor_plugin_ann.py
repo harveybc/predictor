@@ -440,15 +440,34 @@ class Plugin:
         if final_loss > threshold_error:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
 
-        preds_training_mode = self.model(x_train, training=True)
-        mae_training_mode = np.mean(np.abs(preds_training_mode - y_train))
-        mmd_training_mode = self.compute_mmd(preds_training_mode, y_train)
+        # --- NEW CODE for computing MAE and MMD over multi-output predictions ---
+
+        # Get training predictions (list of tensors), stack them to shape (n_samples, time_horizon)
+        preds_training_mode_list = self.model(x_train, training=True)
+        preds_training_mode_array = np.stack([p.numpy() for p in preds_training_mode_list], axis=1)
+        # Also stack your targets (they should already be a list of arrays) to shape (n_samples, time_horizon)
+        y_train_array = np.stack(y_train, axis=1)
+
+        # Compute MAE over the entire horizon
+        mae_training_mode = np.mean(np.abs(preds_training_mode_array - y_train_array))
+
+        # For MMD, compute per-output and take the average
+        mmd_training_mode = np.mean([
+            self.compute_mmd(pred, tf.convert_to_tensor(true))
+            for pred, true in zip(preds_training_mode_list, y_train)
+        ])
         print(f"MAE in Training Mode: {mae_training_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_training_mode:.6f}")
 
-        preds_eval_mode = self.model(x_train, training=False)
-        mae_eval_mode = np.mean(np.abs(preds_eval_mode - y_train))
-        mmd_eval_mode = self.compute_mmd(preds_eval_mode, y_train)
+        # Repeat for evaluation predictions
+        preds_eval_mode_list = self.model(x_train, training=False)
+        preds_eval_mode_array = np.stack([p.numpy() for p in preds_eval_mode_list], axis=1)
+        mae_eval_mode = np.mean(np.abs(preds_eval_mode_array - y_train_array))
+        mmd_eval_mode = np.mean([
+            self.compute_mmd(pred, tf.convert_to_tensor(true))
+            for pred, true in zip(preds_eval_mode_list, y_train)
+        ])
         print(f"MAE in Evaluation Mode: {mae_eval_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_eval_mode:.6f}")
+        # --- END NEW CODE ---
 
         train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
         train_loss, train_mae = train_eval_results
