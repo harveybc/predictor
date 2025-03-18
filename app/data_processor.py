@@ -13,6 +13,7 @@ import contextlib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
 import json
+from app.plugin_loader import load_plugin
 
 # Updated import: use tensorflow.keras instead of keras.
 from tensorflow.keras.utils import plot_model
