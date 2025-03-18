@@ -56,10 +56,11 @@ class ClearMemoryCallback(tf.keras.callbacks.Callback):
         gc.collect()
 
 
-# --- Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable ---
-def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
-    return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
-tfp.layers.DenseFlipout.add_variable = _patched_add_variable
+# --- REMOVE THIS MONKEY-PATCH ---
+# def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
+#     return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
+# tfp.layers.DenseFlipout.add_variable = _patched_add_variable
+
 
 # --- Named initializers to avoid lambda serialization warnings ---
 def random_normal_initializer_42(shape, dtype=None):
@@ -107,21 +108,21 @@ class Plugin:
     def build_model(self, input_shape, x_train, config=None):
         """
         Builds a Bayesian ANN using DenseFlipout for uncertainty estimation.
-        This version creates `time_horizon` parallel branches – each branch produces a 
-        single scalar output. Each branch is independent (with its own DenseFlipout layer)
+        This version creates time_horizon (e.g. 6) parallel branches—each branch
+        produces a single scalar output. Each branch is independent (with its own DenseFlipout layer)
         so that separate losses can be applied.
         
         Parameters:
-        - input_shape: int, number of features.
+        - input_shape: int, the expected number of features.
         - x_train: training data as a NumPy array.
-        - config: configuration dictionary (optional)
+        - config: configuration dictionary (optional).
         
         Raises:
         - ValueError if input_shape is not an integer.
         """
         from tensorflow.keras.losses import Huber
 
-        # --- Custom initializers ensuring tensor outputs ---
+        # --- New initializers that guarantee a tensor is returned ---
         def my_random_normal_initializer_42(shape, dtype=None):
             return tf.random.normal(shape, stddev=0.05, seed=42, dtype=dtype)
 
@@ -330,7 +331,7 @@ class Plugin:
             return lambda dtype, kernel_shape, name, trainable, add_variable_fn: \
                 debug_prior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number=branch_number)
 
-        # Define a custom kernel divergence function to ensure a tensor is returned.
+        # Define a custom kernel divergence function.
         def my_kernel_divergence(q, p, _):
             kl = tfp.distributions.kl_divergence(q, p)
             print("DEBUG: [KERNEL_DIVERGENCE] Raw KL divergence:", kl)
@@ -339,7 +340,7 @@ class Plugin:
             return kl_tensor * KL_WEIGHT
 
         # -------------------------------------------------------------------------
-        # 7. Build Parallel Output Branches with Additional Debugging
+        # 7. Build Parallel Output Branches
         # -------------------------------------------------------------------------
         outputs = []
         for i in range(self.params['time_horizon']):
@@ -375,14 +376,14 @@ class Plugin:
             else:
                 print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
-            # Wrap branch in an identity Lambda layer to preserve it as a KerasTensor.
             branch_tensor = tf.keras.layers.Lambda(lambda x: tf.identity(x), name=f"branch_{i+1}_identity")(branch)
             print(f"DEBUG: After branch_{i+1}_identity; type: {type(branch_tensor)}, shape: {branch_tensor.shape}")
 
-            # Call DenseFlipout.
+            # IMPORTANT: Disable DenseFlipout bias since we add our own deterministic bias later.
             raw_branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
+                use_bias=False,
                 kernel_posterior_fn=make_posterior_fn(i+1),
                 kernel_prior_fn=make_prior_fn(i+1),
                 kernel_divergence_fn=my_kernel_divergence,
@@ -407,10 +408,7 @@ class Plugin:
             branch_output = tf.keras.layers.Add(name=f"branch_{i+1}_add")([branch_flipout, branch_bias])
             print(f"DEBUG: After adding flipout and bias in branch {i+1}; shape:", branch_output.shape)
             
-            branch_output = tf.keras.layers.Lambda(
-                lambda x: tf.reshape(x, (-1,)),
-                name=f"branch_{i+1}_output"
-            )(branch_output)
+            branch_output = tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1,)), name=f"branch_{i+1}_output")(branch_output)
             print(f"DEBUG: Final output for branch {i+1}; shape:", branch_output.shape)
             outputs.append(branch_output)
 
