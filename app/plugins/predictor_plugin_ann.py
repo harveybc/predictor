@@ -191,7 +191,7 @@ class Plugin:
             )(branch)
             
             # Ensure branch is a Tensor (in case it is a tuple)
-            branch = tf.convert_to_tensor(branch)
+            #branch = tf.convert_to_tensor(branch)
 
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
