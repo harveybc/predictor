@@ -506,7 +506,9 @@ def run_prediction_pipeline(config, plugin):
         else:
             test_r2 = r2_score(y_test_array[:n_test, -1], test_predictions[:, -1])
 
-        test_mae = np.mean(np.abs(test_predictions[ : , -1] - y_test[:n_test, -1]))
+        y_test_array = np.stack(y_test, axis=1)  # Convert list of arrays to a 2D array (samples, time_horizon)
+        test_mae = np.mean(np.abs(test_predictions[:, -1] - y_test_array[:n_test, -1]))
+
         # calculate mmd for train, val and test
         #print("\nCalculating MMD for train, val and test datasets...")
         #train_mmd = plugin.compute_mmd(train_preds.astype(np.float64) , y_train.astype(np.float64), sigma=1.0, sample_size=mc_samples)
