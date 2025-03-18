@@ -106,7 +106,8 @@ class Plugin:
 
     def build_model(self, input_shape, x_train, config=None):
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-
+        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
+        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
         print("DEBUG: tensorflow version:", tf.__version__)
         print("DEBUG: tensorflow_probability version:", tfp.__version__)
         print("DEBUG: numpy version:", np.__version__)
