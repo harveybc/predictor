@@ -159,6 +159,7 @@ class Plugin:
 
         outputs = []
         for i in range(self.params['time_horizon']):
+            # Branch Dense Layers
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 2,
                 activation=self.params['activation'],
@@ -173,6 +174,7 @@ class Plugin:
                 name=f"branch_{i+1}_hidden"
             )(branch)
 
+            # Corrected DenseFlipout Layer without Lambda wrapper
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -184,6 +186,7 @@ class Plugin:
 
             outputs.append(branch_output)
             print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
+
 
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="predictor_model")
         metrics = ['mae' for _ in range(self.params['time_horizon'])]
