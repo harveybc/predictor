@@ -124,7 +124,7 @@ class Plugin:
         l2_reg = self.params.get('l2_reg', 1e-5)
 
         # -------------------------------------------------------------------------
-        # 1. Initial Debug Prints: TensorFlow, TensorFlow Probability, and NumPy versions
+        # 1. Initial Debug Prints: TensorFlow, TFP, and NumPy versions
         # -------------------------------------------------------------------------
         print("DEBUG: Starting build_model")
         print("DEBUG: TensorFlow version:", tf.__version__)
@@ -136,11 +136,9 @@ class Plugin:
         # -------------------------------------------------------------------------
         x_train = np.array(x_train)
         print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
-
         if not isinstance(input_shape, int):
             raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
         print("DEBUG: input_shape is valid. Value:", input_shape)
-
         train_size = x_train.shape[0]
         print("DEBUG: Number of training samples:", train_size)
 
@@ -154,7 +152,6 @@ class Plugin:
         print("DEBUG: Number of intermediate layers:", int_layers)
         time_horizon = self.params['time_horizon']
         print("DEBUG: Time horizon (number of branches):", time_horizon)
-        
         for i in range(int_layers):
             layer_sizes.append(current_size)
             print(f"DEBUG: Appended layer size at layer {i+1}: {current_size}")
@@ -169,7 +166,6 @@ class Plugin:
         # -------------------------------------------------------------------------
         inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
         print("DEBUG: Created Input layer; shape:", inputs.shape)
-
         x = inputs
         x = tf.keras.layers.Dense(
             units=self.params['initial_layer_size'],
@@ -185,21 +181,21 @@ class Plugin:
         # 4. Define Custom Posterior and Prior Functions for Bayesian Layers
         # -------------------------------------------------------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, name, trainable, add_variable_fn):
-            # Ensure name is a string.
+            # Ensure name is a string
             if not isinstance(name, str):
                 print("DEBUG: Converting name to string in posterior_mean_field_custom")
                 name = str(name)
-            print("DEBUG: In posterior_mean_field_custom:")
+            print("DEBUG: [POSTERIOR] Received parameters:")
             print("       dtype =", dtype)
-            print("       kernel_shape =", kernel_shape)
-            print("       name =", name)
+            print("       kernel_shape =", kernel_shape, " (type:", type(kernel_shape),")")
+            print("       name =", name, " (type:", type(name),")")
             print("       trainable =", trainable)
-            print("       add_variable_fn =", add_variable_fn)
+            print("       add_variable_fn =", add_variable_fn, " (type:", type(add_variable_fn),")")
             
             n = int(np.prod(kernel_shape))
-            print("DEBUG: posterior: computed n =", n)
+            print("DEBUG: [POSTERIOR] Computed n =", n)
             c = np.log(np.expm1(1.))
-            print("DEBUG: posterior: computed c =", c)
+            print("DEBUG: [POSTERIOR] Computed c =", c)
             
             loc = add_variable_fn(
                 name + "_posterior_loc",
@@ -208,11 +204,12 @@ class Plugin:
                 dtype=dtype,
                 trainable=trainable
             )
+            print("DEBUG: [POSTERIOR] add_variable_fn output for loc:", loc, " (type:", type(loc),")")
             if isinstance(loc, (tuple, list)):
-                print("DEBUG: posterior: loc returned as tuple/list, unpacking")
+                print("DEBUG: [POSTERIOR] loc is a tuple/list; unpacking first element")
                 loc = loc[0]
             loc = tf.convert_to_tensor(loc)
-            print("DEBUG: posterior: loc type:", type(loc), "shape:", loc.shape)
+            print("DEBUG: [POSTERIOR] loc after conversion; type:", type(loc), ", shape:", loc.shape)
             
             scale = add_variable_fn(
                 name + "_posterior_scale",
@@ -221,80 +218,97 @@ class Plugin:
                 dtype=dtype,
                 trainable=trainable
             )
+            print("DEBUG: [POSTERIOR] add_variable_fn output for scale:", scale, " (type:", type(scale),")")
             if isinstance(scale, (tuple, list)):
-                print("DEBUG: posterior: scale returned as tuple/list, unpacking")
+                print("DEBUG: [POSTERIOR] scale is a tuple/list; unpacking first element")
                 scale = scale[0]
             scale = tf.convert_to_tensor(scale)
-            print("DEBUG: posterior: scale type:", type(scale), "shape:", scale.shape)
+            print("DEBUG: [POSTERIOR] scale after conversion; type:", type(scale), ", shape:", scale.shape)
             
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
-            print("DEBUG: posterior: after softplus and clip, loc shape:", loc.shape, "scale shape:", scale.shape)
+            print("DEBUG: [POSTERIOR] After softplus and clip, loc shape:", loc.shape, ", scale shape:", scale.shape)
             
             try:
                 loc_reshaped = tf.reshape(loc, kernel_shape)
                 scale_reshaped = tf.reshape(scale, kernel_shape)
-                print("DEBUG: posterior: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+                print("DEBUG: [POSTERIOR] Reshaped loc to", loc_reshaped.shape, ", scale to", scale_reshaped.shape)
             except Exception as e:
-                print("DEBUG: Exception during reshape in posterior:", e)
+                print("DEBUG: [POSTERIOR] Exception during reshape:", e)
                 raise e
 
             dist = tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
-            # Force a sample to check that the distribution produces a tensor.
-            sample = dist.sample()
-            print("DEBUG: posterior: sample from distribution has shape:", sample.shape)
+            try:
+                sample = dist.sample()
+                print("DEBUG: [POSTERIOR] Sampled from distribution; sample type:", type(sample), ", shape:", sample.shape)
+            except Exception as e:
+                print("DEBUG: [POSTERIOR] Exception during sample():", e)
+                raise e
+            print("DEBUG: [POSTERIOR] Returning distribution:", dist)
             return dist
 
         def prior_fn(dtype, kernel_shape, name, trainable, add_variable_fn):
             if not isinstance(name, str):
                 print("DEBUG: Converting name to string in prior_fn")
                 name = str(name)
-            print("DEBUG: In prior_fn:")
+            print("DEBUG: [PRIOR] Received parameters:")
             print("       dtype =", dtype)
-            print("       kernel_shape =", kernel_shape)
-            print("       name =", name)
+            print("       kernel_shape =", kernel_shape, " (type:", type(kernel_shape),")")
+            print("       name =", name, " (type:", type(name),")")
             print("       trainable =", trainable)
-            print("       add_variable_fn =", add_variable_fn)
+            print("       add_variable_fn =", add_variable_fn, " (type:", type(add_variable_fn),")")
             
             n = int(np.prod(kernel_shape))
-            print("DEBUG: prior_fn: computed n =", n)
-            
+            print("DEBUG: [PRIOR] Computed n =", n)
             loc = tf.zeros([n], dtype=dtype)
             scale = tf.ones([n], dtype=dtype)
-            
             try:
                 loc_reshaped = tf.reshape(loc, kernel_shape)
                 scale_reshaped = tf.reshape(scale, kernel_shape)
-                print("DEBUG: prior_fn: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+                print("DEBUG: [PRIOR] Reshaped loc to", loc_reshaped.shape, ", scale to", scale_reshaped.shape)
             except Exception as e:
-                print("DEBUG: Exception during reshape in prior_fn:", e)
+                print("DEBUG: [PRIOR] Exception during reshape:", e)
                 raise e
 
-            return tfp.distributions.Independent(
+            dist = tfp.distributions.Independent(
                 tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
+            try:
+                sample = dist.sample()
+                print("DEBUG: [PRIOR] Sampled from distribution; sample type:", type(sample), ", shape:", sample.shape)
+            except Exception as e:
+                print("DEBUG: [PRIOR] Exception during sample():", e)
+                raise e
+            print("DEBUG: [PRIOR] Returning distribution:", dist)
+            return dist
 
         # -------------------------------------------------------------------------
         # 5. Debug Wrappers for Posterior and Prior Functions
         # -------------------------------------------------------------------------
         def debug_posterior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number):
-            print(f"DEBUG: In lambda for branch {branch_number} kernel_posterior_fn:")
-            print(f"       dtype: {dtype}, kernel_shape: {kernel_shape}, name: {name}, trainable: {trainable}")
-            print(f"       add_variable_fn: {add_variable_fn}")
+            print(f"DEBUG: [DEBUG_POSTERIOR] In lambda for branch {branch_number}")
+            print("       Received dtype:", dtype)
+            print("       Received kernel_shape:", kernel_shape, " (type:", type(kernel_shape),")")
+            print("       Received name:", name, " (type:", type(name),")")
+            print("       Received trainable:", trainable)
+            print("       Received add_variable_fn:", add_variable_fn, " (type:", type(add_variable_fn),")")
             distribution = posterior_mean_field_custom(dtype, kernel_shape, name, trainable, add_variable_fn)
-            print(f"DEBUG: Distribution returned by posterior_mean_field_custom for branch {branch_number}: {distribution}")
+            print(f"DEBUG: [DEBUG_POSTERIOR] Distribution for branch {branch_number}: {distribution}")
             return distribution
 
         def debug_prior(dtype, kernel_shape, name, trainable, add_variable_fn, branch_number):
-            print(f"DEBUG: In lambda for branch {branch_number} kernel_prior_fn:")
-            print(f"       dtype: {dtype}, kernel_shape: {kernel_shape}, name: {name}, trainable: {trainable}")
-            print(f"       add_variable_fn: {add_variable_fn}")
+            print(f"DEBUG: [DEBUG_PRIOR] In lambda for branch {branch_number}")
+            print("       Received dtype:", dtype)
+            print("       Received kernel_shape:", kernel_shape, " (type:", type(kernel_shape),")")
+            print("       Received name:", name, " (type:", type(name),")")
+            print("       Received trainable:", trainable)
+            print("       Received add_variable_fn:", add_variable_fn, " (type:", type(add_variable_fn),")")
             distribution = prior_fn(dtype, kernel_shape, name, trainable, add_variable_fn)
-            print(f"DEBUG: Distribution returned by prior_fn for branch {branch_number}: {distribution}")
+            print(f"DEBUG: [DEBUG_PRIOR] Distribution for branch {branch_number}: {distribution}")
             return distribution
 
         # -------------------------------------------------------------------------
@@ -330,13 +344,12 @@ class Plugin:
             print(f"DEBUG: After branch_{i+1}_hidden; shape:", branch.shape)
             
             def debug_print_tensor(tensor):
-                tf.print("DEBUG: Inside custom Lambda for branch", i+1, 
+                tf.print("DEBUG: [DEBUG_LAMBDA] Inside custom Lambda for branch", i+1, 
                         "type:", tf.shape(tensor), "and dynamic shape:", tf.shape(tensor))
                 return tensor
 
             branch = tf.keras.layers.Lambda(debug_print_tensor, name=f"branch_{i+1}_ensure_tensor")(branch)
             print(f"DEBUG: After branch_{i+1}_ensure_tensor; static shape:", branch.shape)
-            
             if isinstance(branch, (tuple, list)):
                 print(f"DEBUG: WARNING: branch for branch {i+1} is a tuple/list. Contents:")
                 for idx, item in enumerate(branch):
@@ -346,6 +359,7 @@ class Plugin:
             else:
                 print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
+            # Create DenseFlipout with our custom functions.
             branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
