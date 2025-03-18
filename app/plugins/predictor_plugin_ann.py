@@ -194,17 +194,21 @@ class Plugin:
             # Ensure branch is a Tensor (in case it is a tuple)
             #branch = tf.convert_to_tensor(branch)
 
-            branch_output = tf.keras.layers.Lambda(
-                lambda z: tfp.layers.DenseFlipout(
-                    units=1,
-                    activation='linear',
-                    kernel_posterior_fn=lambda **kwargs: posterior_mean_field_custom(**kwargs, name=f"branch_{i+1}"),
-                    kernel_prior_fn=lambda **kwargs: prior_fn(**kwargs, name=f"branch_{i+1}"),
-                    kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-                    name=f"branch_{i+1}_flipout"
-                )(z),
-                output_shape=lambda input_shape: (input_shape[0], 1)
+            branch_output = tfp.layers.DenseFlipout(
+                units=1,
+                activation='linear',
+                kernel_posterior_fn=lambda dtype, kernel_shape, bias_size, trainable, name=None: posterior_mean_field_custom(
+                    dtype, kernel_shape, bias_size, trainable, name=f"branch_{i+1}"
+                ),
+                kernel_prior_fn=lambda dtype, kernel_shape, bias_size, trainable, name=None: prior_fn(
+                    dtype, kernel_shape, bias_size, trainable, name=f"branch_{i+1}"
+                ),
+                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+                name=f"branch_{i+1}_flipout"
             )(branch)
+            # Reshape output to a vector
+            branch_output = tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1,)), name=f"branch_{i+1}_output")(branch_output)
+
             
             branch_output = tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1,)), name=f"branch_{i+1}_output")(branch_output)
             outputs.append(branch_output)
