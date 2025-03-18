@@ -377,7 +377,7 @@ class Plugin:
             branch_tensor = tf.keras.layers.Lambda(lambda x: tf.identity(x), name=f"branch_{i+1}_identity")(branch)
             print(f"DEBUG: After branch_{i+1}_identity; type: {type(branch_tensor)}, shape: {branch_tensor.shape}")
 
-            branch_flipout = tfp.layers.DenseFlipout(
+            raw_branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
                 kernel_posterior_fn=make_posterior_fn(i+1),
@@ -385,7 +385,10 @@ class Plugin:
                 kernel_divergence_fn=my_kernel_divergence,
                 name=f"branch_{i+1}_flipout"
             )(branch_tensor)
-            print(f"DEBUG: After branch_{i+1}_flipout; shape:", branch_flipout.shape)
+            # Force extraction if DenseFlipout returns a tuple.
+            branch_flipout = tf.keras.layers.Lambda(lambda x: x[0] if isinstance(x, (list, tuple)) else x,
+                                                    name=f"branch_{i+1}_flipout_output")(raw_branch_flipout)
+            print(f"DEBUG: After branch_{i+1}_flipout_output; shape:", branch_flipout.shape)
             
             branch_bias = tf.keras.layers.Dense(
                 units=1,
