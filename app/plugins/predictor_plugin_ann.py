@@ -105,17 +105,17 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape, x_train, config=None):
-        # --- Debug: Basic library versions ---
+        # --- Debug: Print library versions ---
         print("DEBUG: Starting build_model")
         print("DEBUG: TensorFlow version:", tf.__version__)
         print("DEBUG: TensorFlow Probability version:", tfp.__version__)
         print("DEBUG: NumPy version:", np.__version__)
-        
+
         # --- Ensure input_shape is a tuple ---
         if isinstance(input_shape, int):
             input_shape = (input_shape,)
         print("DEBUG: Final input_shape (tuple):", input_shape)
-        
+
         # --- Convert x_train to tensor if needed ---
         if isinstance(x_train, np.ndarray):
             print("DEBUG: x_train is a NumPy array with shape:", x_train.shape, "and dtype:", x_train.dtype)
@@ -123,11 +123,11 @@ class Plugin:
         else:
             print("DEBUG: x_train is of type:", type(x_train))
         print("DEBUG: x_train tensor shape after conversion:", x_train.shape)
-        
+
         # --- Create Input layer ---
         inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
         print("DEBUG: Created Input layer; shape:", inputs.shape, "; type:", type(inputs))
-        
+
         # --- Common branch ---
         common = tf.keras.layers.Dense(
             units=self.params['initial_layer_size'],
@@ -136,10 +136,9 @@ class Plugin:
             name="common_dense"
         )(inputs)
         print("DEBUG: After common_dense layer; output shape:", common.shape)
-        
         common = tf.keras.layers.BatchNormalization(name="common_bn")(common)
         print("DEBUG: After BatchNormalization on common branch; output shape:", common.shape)
-        
+
         # --- Corrected Bayesian Functions ---
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom with name:", name)
@@ -185,6 +184,18 @@ class Plugin:
             )
         # --- End Corrected Bayesian Functions ---
 
+        # --- Helper functions to "freeze" the branch name ---
+        def make_posterior_fn(branch_name):
+            def posterior_fn_wrapper(dtype, kernel_shape, bias_size, trainable, name=None):
+                return posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name=branch_name)
+            return posterior_fn_wrapper
+
+        def make_prior_fn(branch_name):
+            def prior_fn_wrapper(dtype, kernel_shape, bias_size, trainable, name=None):
+                return prior_fn(dtype, kernel_shape, bias_size, trainable, name=branch_name)
+            return prior_fn_wrapper
+        # --- End helper functions ---
+
         # --- Parallel Branches for Multi-Output ---
         outputs = []
         for i in range(self.params['time_horizon']):
@@ -207,20 +218,16 @@ class Plugin:
             )(branch)
             print(f"DEBUG: After branch_{i+1}_hidden; output shape:", branch.shape)
             
-            # --- INSERTED SNIPPET ---
+            # --- Insert Lambda layer to ensure tensor ---
             branch = tf.keras.layers.Lambda(lambda x: x, name=f"branch_{i+1}_ensure_tensor")(branch)
             print(f"DEBUG: After branch_{i+1}_ensure_tensor Lambda; output shape:", branch.shape)
             
-            # Call DenseFlipout directly without an outer Lambda wrapper
+            # Call DenseFlipout directly on the branch tensor
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
-                kernel_posterior_fn=lambda dtype, kernel_shape, bias_size, trainable, name=None: posterior_mean_field_custom(
-                    dtype, kernel_shape, bias_size, trainable, name=f"branch_{i+1}"
-                ),
-                kernel_prior_fn=lambda dtype, kernel_shape, bias_size, trainable, name=None: prior_fn(
-                    dtype, kernel_shape, bias_size, trainable, name=f"branch_{i+1}"
-                ),
+                kernel_posterior_fn=make_posterior_fn(f"branch_{i+1}"),
+                kernel_prior_fn=make_prior_fn(f"branch_{i+1}"),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=f"branch_{i+1}_flipout"
             )(branch)
@@ -233,8 +240,8 @@ class Plugin:
             )(branch_output)
             print(f"DEBUG: After reshaping branch_{i+1}_output; output shape:", branch_output.shape)
             outputs.append(branch_output)
-        
-        # --- Create and compile model ---
+
+        # --- Create and compile the model ---
         self.model = Model(inputs=inputs, outputs=outputs, name="predictor_model")
         print("DEBUG: Final model inputs shape:", self.model.inputs[0].shape)
         print("DEBUG: Final model outputs (list):", [str(o.shape) for o in self.model.outputs])
@@ -245,7 +252,6 @@ class Plugin:
             loss=[self.custom_loss for _ in range(self.params['time_horizon'])],
             metrics=metrics
         )
-        
         print("DEBUG: Model compiled with optimizer Adam (learning_rate=", self.params.get('learning_rate', 1e-4), ")")
         print("DEBUG: Model summary:")
         self.model.summary()
