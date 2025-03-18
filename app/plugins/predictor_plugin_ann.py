@@ -176,6 +176,8 @@ class Plugin:
 
         # --- Parallel Branches for Multi-Output ---
                 # --- Parallel Branches for Multi-Output ---
+        # --- Parallel Branches for Multi-Output ---
+        # --- Parallel Branches for Multi-Output ---
         outputs = []
         for i in range(self.params['time_horizon']):
             # First Dense layer in branch
@@ -197,7 +199,7 @@ class Plugin:
             # *** INSERT THIS SNIPPET HERE ***
             branch = tf.keras.layers.Lambda(lambda x: x, name=f"branch_{i+1}_ensure_tensor")(branch)
             
-            # Call DenseFlipout directly without an outer Lambda
+            # Call DenseFlipout directly without an outer Lambda wrapper
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -212,10 +214,7 @@ class Plugin:
             )(branch)
             
             # Reshape the branch output to a vector
-            branch_output = tf.keras.layers.Lambda(
-                lambda x: tf.reshape(x, (-1,)),
-                name=f"branch_{i+1}_output"
-            )(branch_output)
+            branch_output = tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1,)), name=f"branch_{i+1}_output")(branch_output)
             outputs.append(branch_output)
             print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
 
