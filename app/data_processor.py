@@ -497,10 +497,15 @@ def run_prediction_pipeline(config, plugin):
         mc_samples = config.get("mc_samples", 100)
         test_predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
         n_test = test_predictions.shape[0]
+        # Convert y_test (which is a list of arrays) to a single NumPy array
+        y_test_array = np.stack(y_test, axis=1)  # shape: (n_samples, time_horizon)
+
         if config.get("use_returns", False):
-            test_r2 = r2_score((baseline_test[ : , -1] + y_test[:n_test, -1]).flatten(), (baseline_test[ : , -1] + test_predictions[ : , -1]).flatten())
+            test_r2 = r2_score((baseline_test[:, -1] + y_test_array[:n_test, -1]).flatten(),
+                            (baseline_test[:, -1] + test_predictions[:, -1]).flatten())
         else:
-            test_r2 = r2_score(y_test[:n_test, -1], test_predictions[ : , -1])
+            test_r2 = r2_score(y_test_array[:n_test, -1], test_predictions[:, -1])
+
         test_mae = np.mean(np.abs(test_predictions[ : , -1] - y_test[:n_test, -1]))
         # calculate mmd for train, val and test
         #print("\nCalculating MMD for train, val and test datasets...")
