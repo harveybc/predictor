@@ -827,7 +827,11 @@ def run_prediction_pipeline(config, plugin):
                 diff = close_max - close_min
                 # Final predicted close = (predicted_return + baseline)*diff + close_min
                 test_predictions = (test_predictions + baseline_test) * diff + close_min
-                denorm_y_test = (y_test + baseline_test) * diff + close_min
+                # --- NEW CODE: Correctly stack y_test into a (n_samples, time_horizon) array ---
+                y_test_array = np.stack(y_test, axis=1)  # Ensure y_test is now (n_samples, time_horizon)
+                denorm_y_test = (y_test_array + baseline_test) * diff + close_min
+                # --- END NEW CODE ---
+
             else:
                 print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
         else:
