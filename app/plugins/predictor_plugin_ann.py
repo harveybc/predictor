@@ -15,6 +15,9 @@ import logging
 import os
 import gc
 import tensorflow.keras.backend as K
+#tensor flow probability densrflipout
+tfp_layers = tfp.layers
+
 
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
     """
@@ -111,6 +114,8 @@ class Plugin:
     from tensorflow.keras.models import Model
     from tensorflow.keras.layers import Dense, Input, BatchNormalization
     from tensorflow.keras.initializers import RandomNormal
+    #tfp_layers
+
 
     tfp_layers = tfp.layers
 
