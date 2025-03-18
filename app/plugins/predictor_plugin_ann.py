@@ -181,7 +181,7 @@ class Plugin:
         # 4. Define Custom Posterior and Prior Functions for Bayesian Layers
         # -------------------------------------------------------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, name, trainable, add_variable_fn):
-            # Ensure name is a string
+            # Ensure name is a string.
             if not isinstance(name, str):
                 print("DEBUG: Converting name to string in posterior_mean_field_custom")
                 name = str(name)
@@ -336,7 +336,7 @@ class Plugin:
             )(x)
             print(f"DEBUG: After branch_{i+1}_dense; shape:", branch.shape)
             branch = tf.keras.layers.Dense(
-                units=self.params['initial_layer_size'] // 4,
+                units=self.params['initial_layer_size'] // 2 // 2,  # or self.params['initial_layer_size'] // 4
                 activation=self.params['activation'],
                 kernel_initializer=random_normal_initializer_42,
                 name=f"branch_{i+1}_hidden"
@@ -359,7 +359,10 @@ class Plugin:
             else:
                 print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
-            # Create DenseFlipout with our custom functions.
+            # Force conversion to a tensor with a proper TensorShape:
+            branch_tensor = tf.identity(branch)
+            print(f"DEBUG: After tf.identity, branch_tensor type: {type(branch_tensor)}, shape: {branch_tensor.shape}")
+
             branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -367,7 +370,7 @@ class Plugin:
                 kernel_prior_fn=make_prior_fn(i+1),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=f"branch_{i+1}_flipout"
-            )(branch)
+            )(branch_tensor)
             print(f"DEBUG: After branch_{i+1}_flipout; shape:", branch_flipout.shape)
             
             branch_bias = tf.keras.layers.Dense(
