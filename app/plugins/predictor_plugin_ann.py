@@ -252,6 +252,27 @@ class Plugin:
             branch = tf.keras.layers.Lambda(lambda x: x, name=f"branch_{i+1}_ensure_tensor")(branch)
             print(f"DEBUG: After branch_{i+1}_ensure_tensor; shape:", branch.shape)
             
+            # --- Debug Print Start: Print full info about branch (the object that becomes a tuple) ---
+            print(f"DEBUG: About to pass branch to DenseFlipout for branch {i+1}:")
+            print("DEBUG: type(branch):", type(branch))
+            try:
+                print("DEBUG: branch.shape:", branch.shape)
+            except Exception as e:
+                print("DEBUG: Cannot get branch.shape:", e)
+            if isinstance(branch, (tuple, list)):
+                print("DEBUG: branch is a tuple/list with length:", len(branch))
+                for idx, item in enumerate(branch):
+                    print(f"DEBUG: branch[{idx}] type:", type(item))
+                    try:
+                        print(f"DEBUG: branch[{idx}].shape:", item.shape)
+                    except Exception as e:
+                        print(f"DEBUG: Cannot get branch[{idx}].shape:", e)
+                    print(f"DEBUG: branch[{idx}] repr:", repr(item))
+            else:
+                print("DEBUG: branch is not a tuple or list; repr:", repr(branch))
+            # --- Debug Print End ---
+
+
             # Create branch-specific Bayesian DenseFlipout layer (produces a scalar output)
             branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
