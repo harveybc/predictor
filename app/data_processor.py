@@ -381,9 +381,10 @@ def run_prediction_pipeline(config, plugin):
     print(f"Number of iterations: {iterations}")
 
     # Lists for metrics
-    training_mae_list, training_r2_list, training_unc_list, training_snr_list = [], [], [], []
-    validation_mae_list, validation_r2_list, validation_unc_list, validation_snr_list = [], [], [], []
-    test_mae_list, test_r2_list, test_unc_list, test_snr_list = [], [], [], []
+    training_mae_list, training_r2_list, training_unc_list, training_snr_list, training_profit_list, training_risk_list = [], [], [], [], [], []
+    validation_mae_list, validation_r2_list, validation_unc_list, validation_snr_list, validation_profit_list, validation_risk_list = [], [], [], [], [], []
+    test_mae_list, test_r2_list, test_unc_list, test_snr_list, test_profit_list, test_risk_list = [], [], [], [], [], []
+
 
 
     print("Loading and processing datasets...")
@@ -394,6 +395,7 @@ def run_prediction_pipeline(config, plugin):
     train_dates = datasets.get("dates_train")
     val_dates = datasets.get("dates_val")
     test_dates = datasets.get("dates_test")
+    test_close_prices = datasets.get("test_close_prices")
     # When using returns, process_data returns baseline values
     if config.get("use_returns", False):
         baseline_train = datasets.get("baseline_train")
@@ -431,8 +433,7 @@ def run_prediction_pipeline(config, plugin):
             raise ValueError(f"For CNN and LSTM, x_train must be 3D. Found: {x_train.shape}")
         print("Using pre-processed sliding windows for CNN and LSTM.")
     plugin.set_params(time_horizon=time_horizon)
-    tscv = TimeSeriesSplit(n_splits=5)
-
+    
     # Training iterations
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
@@ -464,11 +465,6 @@ def run_prediction_pipeline(config, plugin):
         n_val = val_preds.shape[0]
         train_mae = np.mean(np.abs(train_preds[ : , -1] - y_train[:n_train,-1]))
         val_mae = np.mean(np.abs(val_preds[ : , -1] - y_val[:n_val,-1]))    
-        # Append the recalculated values
-        training_mae_list.append(train_mae)
-        training_r2_list.append(train_r2)
-        validation_mae_list.append(val_mae)
-        validation_r2_list.append(val_r2)
 
         # Save loss plot
         plt.plot(history.history['loss'])
@@ -501,11 +497,7 @@ def run_prediction_pipeline(config, plugin):
         train_unc_last = np.mean(train_unc[ : , -1])
         val_unc_last = np.mean(val_unc[ : , -1])
         test_unc_last = np.mean(uncertainty_estimates[ : , -1])
-        # add to the lists of Uncertanties
-        training_unc_list.append(train_unc_last)
-        validation_unc_list.append(val_unc_last)
-        test_unc_list.append(test_unc_last)
-
+        
         # calcula los promedios de la señal para calcular SNR (la desviación es el uncertainty)
         train_mean = np.mean(baseline_train[ : , -1] + train_preds[ : , -1])
         val_mean = np.mean(baseline_val[ : , -1] + val_preds[ : , -1])
@@ -515,44 +507,283 @@ def run_prediction_pipeline(config, plugin):
         train_snr = 1/(train_unc_last/train_mean)
         val_snr = 1/(val_unc_last/val_mean)
         test_snr = 1/(test_unc_last/test_mean)
-        # add to the lists of SNR
-        training_snr_list.append(train_snr)
-        validation_snr_list.append(val_snr)
-        test_snr_list.append(test_snr)
+        
+        # calcula el profit y el risk si se está usando una estrategia de trading
+        test_profit = 0.0
+        test_risk = 0.0
+        if (config.get("use_strategy", False) and config.get("use_daily"), True):
+            candidate = None
+            # carga el plugin usando strategy_plugin_group y strategy_plugin_name
+            strategy_plugin_group = config.get("strategy_plugin_group", None)
+            strategy_plugin_name = config.get("strategy_plugin_name", None)
+            if strategy_plugin_group is None or strategy_plugin_name is None:
+                raise ValueError("strategy_plugin_group and strategy_plugin_name must be defined in the configuration.")
+            plugin_class, _ = load_plugin(strategy_plugin_group, strategy_plugin_name)
+            strategy_plugin=plugin_class()
+            # load simulation parameters (mandatory)
+            if config.get("strategy_load_parameters") is not None:
+                try:
+                    with open(config["strategy_load_parameters"], "r") as f:
+                        loaded_params = json.load(f)
+                    print(f"Loaded evaluation parameters from {config['strategy_load_parameters']}: {loaded_params}")
+                    # load the parameters from the loaded file
+                    candidate = [
+                        loaded_params.get("profit_threshold"),
+                        loaded_params.get("tp_multiplier"),
+                        loaded_params.get("sl_multiplier"),
+                        loaded_params.get("lower_rr_threshold"),
+                        loaded_params.get("upper_rr_threshold"),
+                        int(loaded_params.get("time_horizon", 3))
+                    ]
+                except Exception as e:
+                    raise ValueError(f"Failed to load parameters from {config['strategy_load_parameters']}: {e}")
+            else:   
+                raise ValueError("Parameters json file for strategy are required.")
+            def load_csv_d(file_path, headers=True, **kwargs):
+                # Read CSV with header if specified
+                df = pd.read_csv(file_path, header=0 if headers else None, **kwargs)
+                # If headers are enabled and the first column is 'DATE_TIME', use it as the index
+                if headers and df.columns[0].strip().upper() == "DATE_TIME":
+                    df.index = pd.to_datetime(df.iloc[:, 0], errors='raise')
+                    df.drop(df.columns[0], axis=1, inplace=True)
+                return df
+            # load the denormalized hourly predictions from the strategy_1h_prediction file
+            hourly_df = load_csv_d(config["strategy_1h_prediction"], headers=config["headers"])
+            # load the denormalized predictions uncertainty from the strategy_1h_uncertainty file
+            uncertainty_hourly_df = load_csv_d(config["strategy_1h_uncertainty"], headers=config["headers"])
+            # use the current iteration normalized daily predictions
+            daily_df = None
+            uncertainty_daily_df = None
+            # denormalize the hourly predictions 
+            if config.get("use_normalization_json") is not None:
+                norm_json = config.get("use_normalization_json")
+                if isinstance(norm_json, str):
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                if config.get("use_returns", False):
+                    if "CLOSE" in norm_json:
+                        close_min = norm_json["CLOSE"]["min"]
+                        close_max = norm_json["CLOSE"]["max"]
+                        diff = close_max - close_min
+                        # Final predicted close = (predicted_return + baseline)*diff + close_min
+                        daily_df = (test_predictions + baseline_test) * diff + close_min
+                    else:
+                        print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
+                else:
+                    if "CLOSE" in norm_json:
+                        close_min = norm_json["CLOSE"]["min"]
+                        close_max = norm_json["CLOSE"]["max"]
+                        daily_df = test_predictions * (close_max - close_min) + close_min
+            # Rename columns and add DATE_TIME column if required
+            daily_df = pd.DataFrame(
+                daily_df, columns=[f"Prediction_{i+1}" for i in range(daily_df.shape[1])]
+            )
+            if test_dates is not None:
+                daily_df['DATE_TIME'] = pd.Series(test_dates[:len(daily_df)])
+            else:
+                daily_df['DATE_TIME'] = pd.NaT
+            cols = ['DATE_TIME'] + [col for col in daily_df.columns if col != 'DATE_TIME']
+            daily_df = daily_df[cols]
+            
+            # Denormalize uncertainties using CLOSE range only 
+            if config.get("use_normalization_json") is not None:
+                norm_json = config.get("use_normalization_json")
+                if isinstance(norm_json, str):
+                    with open(norm_json, 'r') as f:
+                        norm_json = json.load(f)
+                if "CLOSE" in norm_json:
+                    diff = norm_json["CLOSE"]["max"] - norm_json["CLOSE"]["min"]
+                    uncertainty_daily_df = uncertainty_estimates * diff
+                else:
+                    print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
+                    uncertainty_daily_df = uncertainty_estimates
+            else:
+                uncertainty_daily_df = uncertainty_estimates
+            uncertainty_daily_df = pd.DataFrame(
+                uncertainty_daily_df, columns=[f"Uncertainty_{i+1}" for i in range(uncertainty_daily_df.shape[1])]
+            )    
+            # Add DATE_TIME column to uncertainties if available                
+            if test_dates is not None:  
+                uncertainty_daily_df['DATE_TIME'] = pd.Series(test_dates[:len(uncertainty_daily_df)])
+            else:
+                uncertainty_daily_df['DATE_TIME'] = pd.NaT
+            cols = ['DATE_TIME'] + [col for col in uncertainty_daily_df.columns if col != 'DATE_TIME']
+            uncertainty_daily_df = uncertainty_daily_df[cols]
+            
+            # load the strategy base (unnormalized) hourly data
+            base_df = load_csv_d(config["strategy_base_dataset"], headers=config["headers"])
 
+            # Ensure all datasets have a datetime index based on DATE_TIME column.
+            def ensure_datetime(df, name):
+                if not isinstance(df.index, pd.DatetimeIndex):
+                    # Try to find a column named "DATE_TIME" (case-insensitive)
+                    dt_col = None
+                    for col in df.columns:
+                        if col.strip().upper() == "DATE_TIME":
+                            dt_col = col
+                            break
+                    if dt_col is not None:
+                        df.index = pd.to_datetime(df[dt_col])
+                    elif len(df.columns) > 0:
+                        # Fallback: attempt to convert the first column to datetime
+                        try:
+                            df.index = pd.to_datetime(df.iloc[:, 0])
+                        except Exception as e:
+                            raise ValueError(f"{name} does not have a valid DATE_TIME column: {e}")
+                    else:
+                        raise ValueError(f"{name} does not have a DATE_TIME column.")
+                return df
+
+
+            base_df = ensure_datetime(base_df, "base_df")
+            hourly_df = ensure_datetime(hourly_df, "hourly_df")
+            daily_df = ensure_datetime(daily_df, "daily_df")
+            if uncertainty_hourly_df is not None:
+                uncertainty_hourly_df = ensure_datetime(uncertainty_hourly_df, "uncertainty_hourly_df")
+            if uncertainty_daily_df is not None:
+                uncertainty_daily_df = ensure_datetime(uncertainty_daily_df, "uncertainty_daily_df")
+
+            # Compute common index across all datasets (only include uncertainties if available)
+            common_index = base_df.index.intersection(hourly_df.index).intersection(daily_df.index)
+            if uncertainty_hourly_df is not None:
+                common_index = common_index.intersection(uncertainty_hourly_df.index)
+            if uncertainty_daily_df is not None:
+                common_index = common_index.intersection(uncertainty_daily_df.index)
+            
+            # Print date ranges for debugging
+            print("Base dataset date range:", base_df.index.min(), "to", base_df.index.max())
+            print("Hourly predictions date range:", hourly_df.index.min(), "to", hourly_df.index.max())
+            print("Daily predictions date range:", daily_df.index.min(), "to", daily_df.index.max())
+            if uncertainty_hourly_df is not None:
+                print("Hourly uncertainties date range:", uncertainty_hourly_df.index.min(), "to", uncertainty_hourly_df.index.max())
+            if uncertainty_daily_df is not None:
+                print("Daily uncertainties date range:", uncertainty_daily_df.index.min(), "to", uncertainty_daily_df.index.max())
+            
+            if common_index.empty:
+                raise ValueError("No common date range found among base, predictions, and uncertainties.")
+
+
+            # Trim all datasets to the common date range
+            base_df = base_df.loc[common_index]
+            hourly_df = hourly_df.loc[common_index]
+            daily_df = daily_df.loc[common_index]
+            if uncertainty_hourly_df is not None:
+                uncertainty_hourly_df = uncertainty_hourly_df.loc[common_index]
+            if uncertainty_daily_df is not None:
+                uncertainty_daily_df = uncertainty_daily_df.loc[common_index]
+
+            # Apply max_steps if provided: truncate all datasets to the same number of rows.
+            if "max_steps" in config:
+                max_steps = config["max_steps"]
+                base_df = base_df.iloc[:max_steps]
+                hourly_df = hourly_df.iloc[:max_steps]
+                daily_df = daily_df.iloc[:max_steps]
+                if uncertainty_hourly_df is not None:
+                    uncertainty_hourly_df = uncertainty_hourly_df.iloc[:max_steps]
+                if uncertainty_daily_df is not None:
+                    uncertainty_daily_df = uncertainty_daily_df.iloc[:max_steps]
+
+            # Print aligned date ranges and shapes.
+            print(f"Aligned Base dataset range: {base_df.index.min()} to {base_df.index.max()}")
+            print(f"Aligned Hourly predictions range: {hourly_df.index.min()} to {hourly_df.index.max()}")
+            print(f"Aligned Daily predictions range: {daily_df.index.min()} to {daily_df.index.max()}")
+            if uncertainty_hourly_df is not None:
+                print(f"Aligned Hourly uncertainties range: {uncertainty_hourly_df.index.min()} to {uncertainty_hourly_df.index.max()}")
+            if uncertainty_daily_df is not None:
+                print(f"Aligned Daily uncertainties range: {uncertainty_daily_df.index.min()} to {uncertainty_daily_df.index.max()}")
+
+            # Print the candidate.
+            individual = candidate
+            print(f"[EVALUATE] Evaluating candidate (genome): {individual}")
+            
+            result = strategy_plugin.evaluate_candidate(individual, base_df, hourly_df, daily_df, config)
+            
+            # If the result returns both profit and stats, extract and print them.
+            test_profit, stats = result
+            test_risk = stats.get('risk', 0)
+            print(f"[EVALUATE] Strategy result on Test Data => Profit: {test_profit:.2f}, Risk: {test_risk:.2f}",
+                f"Trades: {stats.get('num_trades', 0)}, "
+                f"Win%: {stats.get('win_pct', 0):.1f}, "
+                f"MaxDD: {stats.get('max_dd', 0):.2f}, "
+                f"Sharpe: {stats.get('sharpe', 0):.2f}")
+
+        else: #end use strategy
+            # trow error on no parameters loaded, and exit execution
+            raise ValueError("Both strategy_plugin_group and strategy_plugin_name must be True.")            
+            
+        
+        # Append the calculated train values
+        training_mae_list.append(train_mae)
+        training_r2_list.append(train_r2)
+        training_unc_list.append(train_unc_last)
+        training_snr_list.append(train_snr)
+        training_profit_list.append(0)
+        training_risk_list.append(0)
+        # Append the calculated validation values
+        validation_mae_list.append(val_mae)
+        validation_r2_list.append(val_r2)
+        validation_unc_list.append(val_unc_last)
+        validation_snr_list.append(val_snr)
+        validation_profit_list.append(0)
+        validation_risk_list.append(0)
+        # Append the calculated test values
+        test_mae_list.append(test_mae)
+        test_r2_list.append(test_r2)
+        test_unc_list.append(test_unc_last)
+        test_snr_list.append(test_snr)
+        test_profit_list.append(test_profit)
+        test_risk_list.append(test_risk)
+        # print iteration results
         print("************************************************************************")
         print(f"Iteration {iteration} completed.")
         print(f"Training MAE: {train_mae}, Training R²: {train_r2}, Training Uncertainty: {train_unc_last}, Trainign SNR: {train_snr}")
         print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation Uncertainty: {val_unc_last}, Validation SNR: {val_snr}")
-        print(f"Test MAE: {test_mae}, Test R²: {test_r2}, Test Uncertainty: {test_unc_last}, Test SNR: {test_snr}")
+        print(f"Test MAE: {test_mae}, Test R²: {test_r2}, Test Uncertainty: {test_unc_last}, Test SNR: {test_snr}, Test Profit: {test_profit}, Test Risk: {test_risk}")
         print("************************************************************************")
-        test_mae_list.append(test_mae)
-        test_r2_list.append(test_r2)
         print(f"Iteration {iteration} completed in {time.time()-iter_start:.2f} seconds")
-
-    # Save aggregate results
-    results = {
-        "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", 
-                    "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR",
-                    "Test MAE", "Test R²", "Test Uncertainty", "Test SNR"],
-        "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_unc_list), np.mean(training_snr_list),
-                    np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_unc_list), np.mean(validation_snr_list),
-                    np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_unc_list), np.mean(test_snr_list)],
-        "Std Dev": [np.std(training_mae_list), np.std(training_r2_list), np.std(training_unc_list), np.std(training_snr_list),
-                    np.std(validation_mae_list), np.std(validation_r2_list), np.std(validation_unc_list), np.std(validation_snr_list),
-                    np.std(test_mae_list), np.std(test_r2_list), np.std(test_unc_list), np.std(test_snr_list)],
-        "Max": [np.max(training_mae_list), np.max(training_r2_list), np.max(training_unc_list), np.max(training_snr_list),
-                np.max(validation_mae_list), np.max(validation_r2_list), np.max(validation_unc_list), np.max(validation_snr_list),
-                np.max(test_mae_list), np.max(test_r2_list), np.max(test_unc_list), np.max(test_snr_list)],
-        "Min": [np.min(training_mae_list), np.min(training_r2_list), np.min(training_unc_list), np.min(training_snr_list),
-                np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_unc_list), np.min(validation_snr_list),
-                np.min(test_mae_list), np.min(test_r2_list), np.min(test_unc_list), np.min(test_snr_list)],
-    }
+    # Save consolidated results
+    if config.get("use_strategy", False): 
+        results = {
+            "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", "Train Profit", "Train Risk", 
+                        "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR", "Validation Profit", "Validation Risk",
+                        "Test MAE", "Test R²", "Test Uncertainty", "Test SNR", "Test Profit", "Test Risk"],
+            "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_unc_list), np.mean(training_snr_list), np.mean(training_profit_list), np.mean(training_risk_list),
+                        np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_unc_list), np.mean(validation_snr_list), np.mean(validation_profit_list), np.mean(validation_risk_list),
+                        np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_unc_list), np.mean(test_snr_list), np.mean(test_profit_list), np.mean(test_risk_list)],
+            "Std Dev": [np.std(training_mae_list), np.std(training_r2_list), np.std(training_unc_list), np.std(training_snr_list), np.std(training_profit_list), np.std(training_risk_list),
+                        np.std(validation_mae_list), np.std(validation_r2_list), np.std(validation_unc_list), np.std(validation_snr_list), np.std(validation_profit_list), np.std(validation_risk_list),
+                        np.std(test_mae_list), np.std(test_r2_list), np.std(test_unc_list), np.std(test_snr_list), np.std(test_profit_list), np.std(test_risk_list)],
+            "Max": [np.max(training_mae_list), np.max(training_r2_list), np.max(training_unc_list), np.max(training_snr_list), np.max(training_profit_list), np.max(training_risk_list),
+                    np.max(validation_mae_list), np.max(validation_r2_list), np.max(validation_unc_list), np.max(validation_snr_list), np.max(validation_profit_list), np.max(validation_risk_list),
+                    np.max(test_mae_list), np.max(test_r2_list), np.max(test_unc_list), np.max(test_snr_list), np.max(test_profit_list), np.max(test_risk_list)],
+            "Min": [np.min(training_mae_list), np.min(training_r2_list), np.min(training_unc_list), np.min(training_snr_list), np.min(training_profit_list), np.min(training_risk_list),
+                    np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_unc_list), np.min(validation_snr_list), np.min(validation_profit_list), np.min(validation_risk_list),
+                    np.min(test_mae_list), np.min(test_r2_list), np.min(test_unc_list), np.min(test_snr_list), np.min(test_profit_list), np.min(test_risk_list)]
+            }
+    else:
+        results = {
+            "Metric": ["Training MAE", "Training R²", "Training Uncertainty", "Training SNR", 
+                        "Validation MAE", "Validation R²", "Validation Uncertainty", "Validation SNR",
+                        "Test MAE", "Test R²", "Test Uncertainty", "Test SNR"],
+            "Average": [np.mean(training_mae_list), np.mean(training_r2_list), np.mean(training_unc_list), np.mean(training_snr_list),
+                        np.mean(validation_mae_list), np.mean(validation_r2_list), np.mean(validation_unc_list), np.mean(validation_snr_list),
+                        np.mean(test_mae_list), np.mean(test_r2_list), np.mean(test_unc_list), np.mean(test_snr_list)],
+            "Std Dev": [np.std(training_mae_list), np.std(training_r2_list), np.std(training_unc_list), np.std(training_snr_list),
+                        np.std(validation_mae_list), np.std(validation_r2_list), np.std(validation_unc_list), np.std(validation_snr_list),
+                        np.std(test_mae_list), np.std(test_r2_list), np.std(test_unc_list), np.std(test_snr_list)],
+            "Max": [np.max(training_mae_list), np.max(training_r2_list), np.max(training_unc_list), np.max(training_snr_list),
+                    np.max(validation_mae_list), np.max(validation_r2_list), np.max(validation_unc_list), np.max(validation_snr_list),
+                    np.max(test_mae_list), np.max(test_r2_list), np.max(test_unc_list), np.max(test_snr_list)],
+            "Min": [np.min(training_mae_list), np.min(training_r2_list), np.min(training_unc_list), np.min(training_snr_list),
+                    np.min(validation_mae_list), np.min(validation_r2_list), np.min(validation_unc_list), np.min(validation_snr_list),
+                    np.min(test_mae_list), np.min(test_r2_list), np.min(test_unc_list), np.min(test_snr_list)],
+            }
+    # Save consolidated results to CSV
     results_file = config.get("results_file", "results.csv")
     pd.DataFrame(results).to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
-
     # --- Denormalize final test predictions (if normalization provided) ---
+    denorm_test_close_prices = test_close_prices
     if config.get("use_normalization_json") is not None:
         norm_json = config.get("use_normalization_json")
         if isinstance(norm_json, str):
@@ -565,6 +796,7 @@ def run_prediction_pipeline(config, plugin):
                 diff = close_max - close_min
                 # Final predicted close = (predicted_return + baseline)*diff + close_min
                 test_predictions = (test_predictions + baseline_test) * diff + close_min
+                denorm_y_test = (y_test + baseline_test) * diff + close_min
             else:
                 print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
         else:
@@ -572,18 +804,29 @@ def run_prediction_pipeline(config, plugin):
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
                 test_predictions = test_predictions * (close_max - close_min) + close_min
-
+                denorm_y_test = y_test * (close_max - close_min) + close_min
+        denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min 
     # Save final predictions CSV
     final_test_file = config.get("output_file", "test_predictions.csv")
     test_predictions_df = pd.DataFrame(
         test_predictions, columns=[f"Prediction_{i+1}" for i in range(test_predictions.shape[1])]
     )
+    # Use test_dates (which now hold the base dates for each window)
     if test_dates is not None:
         test_predictions_df['DATE_TIME'] = pd.Series(test_dates[:len(test_predictions_df)])
     else:
         test_predictions_df['DATE_TIME'] = pd.NaT
     cols = ['DATE_TIME'] + [col for col in test_predictions_df.columns if col != 'DATE_TIME']
     test_predictions_df = test_predictions_df[cols]
+    # Add the denorm_y_test to the existing test_predictions_df dictionary as new columns, it names columsn as Target_1, Target_2, etc
+    denorm_y_test_df = pd.DataFrame(
+        denorm_y_test, columns=[f"Target_{i+1}" for i in range(denorm_y_test.shape[1])]
+    )
+    test_predictions_df = pd.concat([test_predictions_df, denorm_y_test_df], axis=1)
+    # Add the denorm_test_close_prices to the existing test_predictions_df dictionary as a new column
+    test_predictions_df['CLOSE'] = denorm_test_close_prices
+    # Save the final test predictions to a CSV file
+    
     write_csv(file_path=final_test_file, data=test_predictions_df, include_date=False, headers=config.get('headers', True))
     print(f"Final validation predictions saved to {final_test_file}")
 
@@ -623,7 +866,7 @@ def run_prediction_pipeline(config, plugin):
 
     # --- Plot predictions (only the prediction at the selected horizon) ---
     # Define the plotted horizon (zero-indexed)
-    plotted_horizon = config.get("plotted_horizon", 1)
+    plotted_horizon = config.get("plotted_horizon", 6)
     plotted_idx = plotted_horizon - 1  # Zero-based index for the chosen horizon
 
     # Ensure indices are valid
@@ -736,25 +979,53 @@ def run_prediction_pipeline(config, plugin):
     except Exception as e:
         print(f"Failed to save model to {save_model_file}: {e}")
     
-    print("*************************************************")
-    print("Training Statistics:")
-    print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
-    print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
-    print(f"Uncertainty - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
-    print(f"SNR - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
-    print("*************************************************")
-    print("Validation Statistics:")
-    print(f"MAE - Avg: {results['Average'][4]:.4f}, Std: {results['Std Dev'][4]:.4f}, Max: {results['Max'][4]:.4f}, Min: {results['Min'][4]:.4f}")
-    print(f"R²  - Avg: {results['Average'][5]:.4f}, Std: {results['Std Dev'][5]:.4f}, Max: {results['Max'][5]:.4f}, Min: {results['Min'][5]:.4f}")
-    print(f"Uncertainty - Avg: {results['Average'][6]:.4f}, Std: {results['Std Dev'][6]:.4f}, Max: {results['Max'][6]:.4f}, Min: {results['Min'][6]:.4f}")
-    print(f"SNR - Avg: {results['Average'][7]:.4f}, Std: {results['Std Dev'][7]:.4f}, Max: {results['Max'][7]:.4f}, Min: {results['Min'][7]:.4f}") 
-    print("*************************************************")
-    print("Test Statistics:")
-    print(f"MAE - Avg: {results['Average'][8]:.4f}, Std: {results['Std Dev'][8]:.4f}, Max: {results['Max'][8]:.4f}, Min: {results['Min'][8]:.4f}")
-    print(f"R²  - Avg: {results['Average'][9]:.4f}, Std: {results['Std Dev'][9]:.4f}, Max: {results['Max'][9]:.4f}, Min: {results['Min'][9]:.4f}")
-    print(f"Uncertainty - Avg: {results['Average'][10]:.4f}, Std: {results['Std Dev'][10]:.4f}, Max: {results['Max'][10]:.4f}, Min: {results['Min'][10]:.4f}")
-    print(f"SNR - Avg: {results['Average'][11]:.4f}, Std: {results['Std Dev'][11]:.4f}, Max: {results['Max'][11]:.4f}, Min: {results['Min'][11]:.4f}")
-    print("*************************************************")
+    if config.get("use_strategy", False):
+        print("*************************************************")
+        print("Training Statistics:")
+        print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
+        print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
+        print(f"Uncertainty - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
+        print(f"SNR - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
+        print(f"Profit - Avg: {results['Average'][4]:.4f}, Std: {results['Std Dev'][4]:.4f}, Max: {results['Max'][4]:.4f}, Min: {results['Min'][4]:.4f}")
+        print(f"Risk - Avg: {results['Average'][5]:.4f}, Std: {results['Std Dev'][5]:.4f}, Max: {results['Max'][5]:.4f}, Min: {results['Min'][5]:.4f}")
+        print("*************************************************")
+        print("Validation Statistics:")
+        print(f"MAE - Avg: {results['Average'][6]:.4f}, Std: {results['Std Dev'][6]:.4f}, Max: {results['Max'][6]:.4f}, Min: {results['Min'][6]:.4f}")
+        print(f"R²  - Avg: {results['Average'][7]:.4f}, Std: {results['Std Dev'][7]:.4f}, Max: {results['Max'][7]:.4f}, Min: {results['Min'][7]:.4f}")
+        print(f"Uncertainty - Avg: {results['Average'][8]:.4f}, Std: {results['Std Dev'][8]:.4f}, Max: {results['Max'][8]:.4f}, Min: {results['Min'][8]:.4f}")
+        print(f"SNR - Avg: {results['Average'][9]:.4f}, Std: {results['Std Dev'][9]:.4f}, Max: {results['Max'][9]:.4f}, Min: {results['Min'][9]:.4f}")
+        print(f"Profit - Avg: {results['Average'][10]:.4f}, Std: {results['Std Dev'][10]:.4f}, Max: {results['Max'][10]:.4f}, Min: {results['Min'][10]:.4f}")
+        print(f"Risk - Avg: {results['Average'][11]:.4f}, Std: {results['Std Dev'][11]:.4f}, Max: {results['Max'][11]:.4f}, Min: {results['Min'][11]:.4f}")
+        print("*************************************************")
+        print("Test Statistics:")
+        print(f"MAE - Avg: {results['Average'][12]:.4f}, Std: {results['Std Dev'][12]:.4f}, Max: {results['Max'][12]:.4f}, Min: {results['Min'][12]:.4f}")
+        print(f"R²  - Avg: {results['Average'][13]:.4f}, Std: {results['Std Dev'][13]:.4f}, Max: {results['Max'][13]:.4f}, Min: {results['Min'][13]:.4f}")
+        print(f"Uncertainty - Avg: {results['Average'][14]:.4f}, Std: {results['Std Dev'][14]:.4f}, Max: {results['Max'][14]:.4f}, Min: {results['Min'][14]:.4f}")
+        print(f"SNR - Avg: {results['Average'][15]:.4f}, Std: {results['Std Dev'][15]:.4f}, Max: {results['Max'][15]:.4f}, Min: {results['Min'][15]:.4f}")
+        print(f"Profit - Avg: {results['Average'][16]:.4f}, Std: {results['Std Dev'][16]:.4f}, Max: {results['Max'][16]:.4f}, Min: {results['Min'][16]:.4f}")
+        print(f"Risk - Avg: {results['Average'][17]:.4f}, Std: {results['Std Dev'][17]:.4f}, Max: {results['Max'][17]:.4f}, Min: {results['Min'][17]:.4f}")
+        print("*************************************************")
+    else:
+        print("*************************************************")
+        print("Training Statistics:")
+        print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
+        print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
+        print(f"Uncertainty - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
+        print(f"SNR - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
+        print("*************************************************")
+        print("Validation Statistics:")
+        print(f"MAE - Avg: {results['Average'][4]:.4f}, Std: {results['Std Dev'][4]:.4f}, Max: {results['Max'][4]:.4f}, Min: {results['Min'][4]:.4f}")
+        print(f"R²  - Avg: {results['Average'][5]:.4f}, Std: {results['Std Dev'][5]:.4f}, Max: {results['Max'][5]:.4f}, Min: {results['Min'][5]:.4f}")
+        print(f"Uncertainty - Avg: {results['Average'][6]:.4f}, Std: {results['Std Dev'][6]:.4f}, Max: {results['Max'][6]:.4f}, Min: {results['Min'][6]:.4f}")
+        print(f"SNR - Avg: {results['Average'][7]:.4f}, Std: {results['Std Dev'][7]:.4f}, Max: {results['Max'][7]:.4f}, Min: {results['Min'][7]:.4f}") 
+        print("*************************************************")
+        print("Test Statistics:")
+        print(f"MAE - Avg: {results['Average'][8]:.4f}, Std: {results['Std Dev'][8]:.4f}, Max: {results['Max'][8]:.4f}, Min: {results['Min'][8]:.4f}")
+        print(f"R²  - Avg: {results['Average'][9]:.4f}, Std: {results['Std Dev'][9]:.4f}, Max: {results['Max'][9]:.4f}, Min: {results['Min'][9]:.4f}")
+        print(f"Uncertainty - Avg: {results['Average'][10]:.4f}, Std: {results['Std Dev'][10]:.4f}, Max: {results['Max'][10]:.4f}, Min: {results['Min'][10]:.4f}")
+        print(f"SNR - Avg: {results['Average'][11]:.4f}, Std: {results['Std Dev'][11]:.4f}, Max: {results['Max'][11]:.4f}, Min: {results['Min'][11]:.4f}")
+        print("*************************************************")
+    
     print(f"\nTotal Execution Time: {time.time() - start_time:.2f} seconds")
 
 
