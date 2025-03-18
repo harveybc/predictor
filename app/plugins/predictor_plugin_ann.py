@@ -185,7 +185,7 @@ class Plugin:
         # 4. Define Custom Posterior and Prior Functions for Bayesian Layers
         # -------------------------------------------------------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, name, trainable, add_variable_fn):
-            # Ensure name is a string
+            # Ensure name is a string.
             if not isinstance(name, str):
                 print("DEBUG: Converting name to string in posterior_mean_field_custom")
                 name = str(name)
@@ -196,13 +196,11 @@ class Plugin:
             print("       trainable =", trainable)
             print("       add_variable_fn =", add_variable_fn)
             
-            # Compute the total number of parameters.
             n = int(np.prod(kernel_shape))
             print("DEBUG: posterior: computed n =", n)
             c = np.log(np.expm1(1.))
             print("DEBUG: posterior: computed c =", c)
             
-            # Create loc variable.
             loc = add_variable_fn(
                 name + "_posterior_loc",
                 shape=[n],
@@ -213,9 +211,10 @@ class Plugin:
             if isinstance(loc, tuple):
                 print("DEBUG: posterior: loc returned as tuple, unpacking")
                 loc = loc[0]
+            # Force conversion to tensor.
+            loc = tf.convert_to_tensor(loc)
             print("DEBUG: posterior: loc type:", type(loc), "shape:", loc.shape)
             
-            # Create scale variable.
             scale = add_variable_fn(
                 name + "_posterior_scale",
                 shape=[n],
@@ -226,9 +225,9 @@ class Plugin:
             if isinstance(scale, tuple):
                 print("DEBUG: posterior: scale returned as tuple, unpacking")
                 scale = scale[0]
+            scale = tf.convert_to_tensor(scale)
             print("DEBUG: posterior: scale type:", type(scale), "shape:", scale.shape)
             
-            # Transform scale.
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
             print("DEBUG: posterior: after softplus and clip, loc shape:", loc.shape, "scale shape:", scale.shape)
@@ -247,7 +246,6 @@ class Plugin:
             )
 
         def prior_fn(dtype, kernel_shape, name, trainable, add_variable_fn):
-            # Ensure name is a string
             if not isinstance(name, str):
                 print("DEBUG: Converting name to string in prior_fn")
                 name = str(name)
@@ -313,7 +311,6 @@ class Plugin:
         outputs = []
         for i in range(self.params['time_horizon']):
             print(f"DEBUG: Building branch {i+1}")
-            # Create branch via Dense layers from common branch 'x'
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 2,
                 activation=self.params['activation'],
@@ -329,7 +326,6 @@ class Plugin:
             )(branch)
             print(f"DEBUG: After branch_{i+1}_hidden; shape:", branch.shape)
             
-            # --- Insert a custom debug Lambda to print runtime info ---
             def debug_print_tensor(tensor):
                 tf.print("DEBUG: Inside custom Lambda for branch", i+1, 
                         "type:", tf.shape(tensor), "and dynamic shape:", tf.shape(tensor))
@@ -338,7 +334,6 @@ class Plugin:
             branch = tf.keras.layers.Lambda(debug_print_tensor, name=f"branch_{i+1}_ensure_tensor")(branch)
             print(f"DEBUG: After branch_{i+1}_ensure_tensor; static shape:", branch.shape)
             
-            # --- Extra check: ensure branch is not a tuple ---
             if isinstance(branch, (tuple, list)):
                 print(f"DEBUG: WARNING: branch for branch {i+1} is a tuple/list. Contents:")
                 for idx, item in enumerate(branch):
@@ -348,7 +343,6 @@ class Plugin:
             else:
                 print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
-            # Create branch-specific Bayesian DenseFlipout layer
             branch_flipout = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -359,7 +353,6 @@ class Plugin:
             )(branch)
             print(f"DEBUG: After branch_{i+1}_flipout; shape:", branch_flipout.shape)
             
-            # Create a deterministic bias layer for this branch using the common branch x
             branch_bias = tf.keras.layers.Dense(
                 units=1,
                 activation='linear',
@@ -368,11 +361,9 @@ class Plugin:
             )(x)
             print(f"DEBUG: After branch_{i+1}_bias; shape:", branch_bias.shape)
             
-            # Sum the Bayesian output and bias
             branch_output = tf.keras.layers.Add(name=f"branch_{i+1}_add")([branch_flipout, branch_bias])
             print(f"DEBUG: After adding flipout and bias in branch {i+1}; shape:", branch_output.shape)
             
-            # Reshape branch output to a vector (i.e. remove last dimension)
             branch_output = tf.keras.layers.Lambda(
                 lambda x: tf.reshape(x, (-1,)),
                 name=f"branch_{i+1}_output"
