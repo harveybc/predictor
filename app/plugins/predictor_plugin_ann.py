@@ -177,6 +177,7 @@ class Plugin:
         # --- Parallel Branches for Multi-Output ---
         outputs = []
         for i in range(self.params['time_horizon']):
+            # First Dense layer in branch
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 2,
                 activation=self.params['activation'],
@@ -184,16 +185,15 @@ class Plugin:
                 name=f"branch_{i+1}_dense"
             )(common)
 
+            # Second Dense layer in branch
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 4,
                 activation=self.params['activation'],
                 kernel_initializer=random_normal_initializer_42,
                 name=f"branch_{i+1}_hidden"
             )(branch)
-            
-            # Ensure branch is a Tensor (in case it is a tuple)
-            #branch = tf.convert_to_tensor(branch)
 
+            # Call DenseFlipout directly without an outer Lambda
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
@@ -206,10 +206,15 @@ class Plugin:
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=f"branch_{i+1}_flipout"
             )(branch)
-            # Reshape the output to a vector.
-            branch_output = tf.keras.layers.Lambda(lambda x: tf.reshape(x, (-1,)), name=f"branch_{i+1}_output")(branch_output)
+            
+            # Reshape the branch output to a vector
+            branch_output = tf.keras.layers.Lambda(
+                lambda x: tf.reshape(x, (-1,)),
+                name=f"branch_{i+1}_output"
+            )(branch_output)
             outputs.append(branch_output)
             print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
+
 
         self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="predictor_model")
         
