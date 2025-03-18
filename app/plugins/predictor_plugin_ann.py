@@ -128,39 +128,49 @@ class Plugin:
         common = tf.keras.layers.BatchNormalization(name="common_bn")(common)
 
         # --- Corrected Bayesian Functions ---
-        # --- Corrected Bayesian Functions ---
-        def posterior_mean_field(kernel_size, bias_size=0, dtype=None, name=None, trainable=True, add_variable_fn=None):
-            n = kernel_size + bias_size
+        # --- Corrected Bayesian Functions (copied and adapted from your Transformer Plugin version) ---
+        def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
+            if not isinstance(name, str):
+                name = None
+            bias_size = 0
+            n = int(np.prod(kernel_shape)) + bias_size
             c = np.log(np.expm1(1.))
-            loc = add_variable_fn(
-                name=name + '_loc',
-                shape=[n],
-                initializer=tf.keras.initializers.RandomNormal(mean=0., stddev=0.05, seed=42),
+            loc = tf.Variable(
+                initial_value=tf.random.normal([n], stddev=0.05, seed=42),
                 dtype=dtype,
-                trainable=trainable
+                trainable=trainable,
+                name="posterior_loc"
             )
-            scale = add_variable_fn(
-                name=name + '_scale',
-                shape=[n],
-                initializer=tf.keras.initializers.RandomNormal(mean=-3., stddev=0.05, seed=43),
+            scale = tf.Variable(
+                initial_value=tf.random.normal([n], stddev=0.05, seed=43),
                 dtype=dtype,
-                trainable=trainable
+                trainable=trainable,
+                name="posterior_scale"
             )
             scale = 1e-3 + tf.nn.softplus(scale + c)
             scale = tf.clip_by_value(scale, 1e-3, 1.0)
+            loc_reshaped = tf.reshape(loc, kernel_shape)
+            scale_reshaped = tf.reshape(scale, kernel_shape)
             return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc, scale=scale),
-                reinterpreted_batch_ndims=1
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
             )
 
-        def prior_standard_normal(kernel_size, bias_size=0, dtype=None, name=None, trainable=True, add_variable_fn=None):
-            n = kernel_size + bias_size
+        def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
+            if not isinstance(name, str):
+                name = None
+            bias_size = 0
+            n = int(np.prod(kernel_shape)) + bias_size
             loc = tf.zeros([n], dtype=dtype)
             scale = tf.ones([n], dtype=dtype)
+            loc_reshaped = tf.reshape(loc, kernel_shape)
+            scale_reshaped = tf.reshape(scale, kernel_shape)
             return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc, scale=scale),
-                reinterpreted_batch_ndims=1
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
             )
+        # --- END Corrected Bayesian Functions ---
+
 
 
         outputs = []
@@ -188,11 +198,12 @@ class Plugin:
             branch_output = tfp.layers.DenseFlipout(
                 units=1,
                 activation='linear',
-                kernel_posterior_fn=posterior_mean_field,
-                kernel_prior_fn=prior_standard_normal,
+                kernel_posterior_fn=posterior_mean_field_custom,
+                kernel_prior_fn=prior_fn,
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=f"branch_{i+1}_flipout"
             )(branch)
+
 
             outputs.append(branch_output)
             print(f"DEBUG: Branch {i+1} output shape:", branch_output.shape)
