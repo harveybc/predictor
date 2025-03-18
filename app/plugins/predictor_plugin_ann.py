@@ -276,17 +276,33 @@ class Plugin:
         outputs = bayesian_output + bias_layer
         
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+
         
-        self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
-        print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
-        
-        
-        # Compile the model with the custom loss function
+        outputs = bayesian_output + bias_layer
+        print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+
+        # --- NEW CODE for Multi-Output adaptation ---
+        split_layer = tf.keras.layers.Lambda(
+            lambda x: tf.split(x, num_or_size_splits=self.params['time_horizon'], axis=1),
+            name="split_layer"
+        )
+        outputs_list = split_layer(outputs)
+        outputs_list = [
+            tf.keras.layers.Lambda(lambda t: tf.squeeze(t, axis=1), name=f"output_{i+1}")(o)
+            for i, o in enumerate(outputs_list)
+        ]
+        print("DEBUG: Final model will output a list of tensors (one per horizon).")
+        self.model = tf.keras.Model(inputs=inputs, outputs=outputs_list, name="predictor_model")
+
+        # Compile model with multi-output loss
+        metrics = ['mae' for _ in range(self.params['time_horizon'])]
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
-            loss=self.custom_loss,
-            metrics=['mae']
+            loss=[self.custom_loss for _ in range(self.params['time_horizon'])],
+            metrics=metrics
         )
+        # --- END NEW CODE ---
+
         print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
         
 
