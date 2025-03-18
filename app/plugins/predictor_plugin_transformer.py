@@ -287,7 +287,7 @@ class Plugin:
         self.model.compile(
             optimizer=Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
             loss=[self.custom_loss for _ in range(self.params['time_horizon'])],
-            metrics=['mae']
+            metrics=['mae', 'mae', 'mae', 'mae', 'mae', 'mae']
         )
         # --- END NEW CODE ---
 
