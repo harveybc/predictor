@@ -120,6 +120,15 @@ class Plugin:
         """
         from tensorflow.keras.losses import Huber
 
+        # --- New Initializers that guarantee a tensor is returned ---
+        def my_random_normal_initializer_42(shape, dtype=None):
+            # Use tf.random.normal to generate a tensor with the specified shape.
+            # This function returns a tensor (not a tuple).
+            return tf.random.normal(shape, stddev=0.05, seed=42, dtype=dtype)
+
+        def my_random_normal_initializer_44(shape, dtype=None):
+            return tf.random.normal(shape, stddev=0.05, seed=44, dtype=dtype)
+
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
         l2_reg = self.params.get('l2_reg', 1e-5)
 
@@ -170,7 +179,7 @@ class Plugin:
         x = tf.keras.layers.Dense(
             units=self.params['initial_layer_size'],
             activation=self.params['activation'],
-            kernel_initializer=random_normal_initializer_42,
+            kernel_initializer=my_random_normal_initializer_42,
             name="common_dense"
         )(x)
         print("DEBUG: After common_dense layer; output shape:", x.shape)
@@ -181,7 +190,6 @@ class Plugin:
         # 4. Define Custom Posterior and Prior Functions for Bayesian Layers
         # -------------------------------------------------------------------------
         def posterior_mean_field_custom(dtype, kernel_shape, name, trainable, add_variable_fn):
-            # Ensure name is a string.
             if not isinstance(name, str):
                 print("DEBUG: Converting name to string in posterior_mean_field_custom")
                 name = str(name)
@@ -331,14 +339,14 @@ class Plugin:
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 2,
                 activation=self.params['activation'],
-                kernel_initializer=random_normal_initializer_42,
+                kernel_initializer=my_random_normal_initializer_42,
                 name=f"branch_{i+1}_dense"
             )(x)
             print(f"DEBUG: After branch_{i+1}_dense; shape:", branch.shape)
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 4,
                 activation=self.params['activation'],
-                kernel_initializer=random_normal_initializer_42,
+                kernel_initializer=my_random_normal_initializer_42,
                 name=f"branch_{i+1}_hidden"
             )(branch)
             print(f"DEBUG: After branch_{i+1}_hidden; shape:", branch.shape)
@@ -359,7 +367,7 @@ class Plugin:
             else:
                 print(f"DEBUG: branch for branch {i+1} confirmed as non-tuple; type:", type(branch), "shape:", branch.shape)
 
-            # Instead of using tf.identity directly, wrap the identity in a Lambda layer.
+            # Wrap the branch in a Lambda layer that performs an identity operation.
             branch_tensor = tf.keras.layers.Lambda(lambda x: tf.identity(x), name=f"branch_{i+1}_identity")(branch)
             print(f"DEBUG: After branch_{i+1}_identity; type: {type(branch_tensor)}, shape: {branch_tensor.shape}")
 
@@ -376,7 +384,7 @@ class Plugin:
             branch_bias = tf.keras.layers.Dense(
                 units=1,
                 activation='linear',
-                kernel_initializer=random_normal_initializer_44,
+                kernel_initializer=my_random_normal_initializer_44,
                 name=f"branch_{i+1}_bias"
             )(x)
             print(f"DEBUG: After branch_{i+1}_bias; shape:", branch_bias.shape)
