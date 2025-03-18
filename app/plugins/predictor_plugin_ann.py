@@ -105,6 +105,7 @@ class Plugin:
         debug_info.update(plugin_debug_info)
 
     def build_model(self, input_shape, x_train, config=None):
+        print("DEBUG: Starting build_model")
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
@@ -112,12 +113,12 @@ class Plugin:
         print("DEBUG: TensorFlow Probability version:", tfp.__version__)
         print("DEBUG: NumPy version:", np.__version__)
 
-        # Ensure input_shape is a tuple for Keras Input
+        # Ensure input_shape is a tuple
         if isinstance(input_shape, int):
             input_shape = (input_shape,)
         print("DEBUG: Final input_shape (tuple):", input_shape)
 
-        # Convert x_train to tensor if needed
+        # Convert x_train to a tensor if needed
         if isinstance(x_train, np.ndarray):
             print("DEBUG: x_train is a NumPy array with shape:", x_train.shape, "and dtype:", x_train.dtype)
             x_train = tf.convert_to_tensor(x_train, dtype=tf.float32)
@@ -177,7 +178,7 @@ class Plugin:
             )
         # --- End Corrected Bayesian Functions ---
 
-        # --- Helper functions to freeze branch name ---
+        # --- Helper functions to fix the branch names for posterior/prior ---
         def make_posterior_fn(branch_name):
             def posterior_fn_wrapper(dtype, kernel_shape, bias_size, trainable, name=None):
                 return posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name=branch_name)
@@ -201,7 +202,7 @@ class Plugin:
                 name=f"branch_{i+1}_dense"
             )(common)
             print(f"DEBUG: After branch_{i+1}_dense; output shape:", branch.shape)
-            
+
             # Second Dense layer in branch
             branch = tf.keras.layers.Dense(
                 units=self.params['initial_layer_size'] // 4,
@@ -211,9 +212,10 @@ class Plugin:
             )(branch)
             print(f"DEBUG: After branch_{i+1}_hidden; output shape:", branch.shape)
             
-            # --- INSERT DEBUG LAMBDA to print branch details ---
+            # --- INSERTED DEBUG LAMBDA with output_shape ---
             branch = tf.keras.layers.Lambda(
                 lambda x: tf.print("DEBUG: Branch", i+1, "input to DenseFlipout; shape:", tf.shape(x), "; type:", type(x)) or x,
+                output_shape=lambda s: s,
                 name=f"branch_{i+1}_ensure_tensor"
             )(branch)
             print(f"DEBUG: After branch_{i+1}_ensure_tensor Lambda; output shape:", branch.shape)
@@ -232,15 +234,16 @@ class Plugin:
             # Reshape the branch output to a vector
             branch_output = tf.keras.layers.Lambda(
                 lambda x: tf.reshape(x, (-1,)),
+                output_shape=lambda s: (s[0],),
                 name=f"branch_{i+1}_output"
             )(branch_output)
             print(f"DEBUG: After reshaping branch_{i+1}_output; output shape:", branch_output.shape)
             outputs.append(branch_output)
 
-        # --- Create the final model ---
+        # --- Create final model ---
         self.model = Model(inputs=inputs, outputs=outputs, name="predictor_model")
-        print("DEBUG: Final model inputs shape:", self.model.inputs[0].shape)
-        print("DEBUG: Final model outputs (list):", [str(o.shape) for o in self.model.outputs])
+        print("DEBUG: Final model input shape:", self.model.inputs[0].shape)
+        print("DEBUG: Final model outputs (list of shapes):", [str(o.shape) for o in self.model.outputs])
 
         metrics = ['mae' for _ in range(self.params['time_horizon'])]
         self.model.compile(
@@ -248,7 +251,8 @@ class Plugin:
             loss=[self.custom_loss for _ in range(self.params['time_horizon'])],
             metrics=metrics
         )
-        print("DEBUG: Model compiled with optimizer Adam (learning_rate =", self.params.get('learning_rate', 1e-4), ")")
+        print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 1e-4))
+        print("DEBUG: Model compiled with loss and metrics.")
         print("DEBUG: Model summary:")
         self.model.summary()
         print("✅ ANN Plugin build_model completed successfully.")
