@@ -592,7 +592,7 @@ def run_prediction_pipeline(config, plugin):
 
     # --- Plot predictions (only the prediction at the selected horizon) ---
     # Define the plotted horizon (zero-indexed)
-    plotted_horizon = config.get("plotted_horizon", 6)
+    plotted_horizon = config.get("plotted_horizon", 1)
     plotted_idx = plotted_horizon - 1  # Zero-based index for the chosen horizon
 
     # Ensure indices are valid
