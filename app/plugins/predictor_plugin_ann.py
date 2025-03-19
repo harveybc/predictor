@@ -374,18 +374,19 @@ class Plugin:
         # Repeat for evaluation predictions
         preds_eval_mode = self.model(x_train, training=False)
 
-        # Correct conversion from list of outputs to (samples, time_horizon)
-        preds_eval_mode_array = np.stack([np.squeeze(pred, axis=-1) for pred in preds_eval_mode], axis=-1)
+        # Correct conversion from list of (samples, 1) to (samples, horizons)
+        preds_eval_mode_array = np.concatenate([pred.numpy() for pred in preds_eval_mode], axis=1)
 
-        # Verify shapes
-        print(f"DEBUG: preds_eval_mode_array.shape = {preds_eval_mode_array.shape}")
-        print(f"DEBUG: y_train_array.shape = {y_train_array.shape}")
+        # Verify the shapes explicitly
+        print(f"DEBUG: preds_eval_mode_array.shape = {preds_eval_mode_array.shape}")  # (25193, 6)
+        print(f"DEBUG: y_train_array.shape = {y_train_array.shape}")                  # (25193, 6)
 
-        # Now calculate MAE correctly
+        # Now safely compute MAE
         mae_eval_mode = np.mean(np.abs(preds_eval_mode_array - y_train_array))
         mmd_eval_mode = self.compute_mmd(preds_eval_mode_array, y_train_array)
 
         print(f"MAE in Evaluation Mode: {mae_eval_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_eval_mode:.6f}")
+
 
 
         # --- END NEW CODE ---
