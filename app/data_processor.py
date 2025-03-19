@@ -701,9 +701,18 @@ def run_prediction_pipeline(config, plugin):
                     uncertainty_daily_df = uncertainty_estimates
             else:
                 uncertainty_daily_df = uncertainty_estimates
+            # Ensure uncertainty_daily_df has the correct 2D shape before DataFrame creation
+            uncertainty_daily_df_squeezed = np.squeeze(uncertainty_daily_df, axis=-1)  # shape: (6293, 6)
+
+            # Verify shape after squeeze operation (debugging)
+            print("DEBUG: uncertainty_daily_df_squeezed shape:", uncertainty_daily_df_squeezed.shape)
+
+            # Create DataFrame with properly formatted uncertainty data
             uncertainty_daily_df = pd.DataFrame(
-                uncertainty_daily_df, columns=[f"Uncertainty_{i+1}" for i in range(uncertainty_daily_df.shape[1])]
-            )    
+                uncertainty_daily_df_squeezed,
+                columns=[f"Uncertainty_{i+1}" for i in range(uncertainty_daily_df_squeezed.shape[1])]
+            )
+    
             # Add DATE_TIME column to uncertainties if available                
             if test_dates is not None:  
                 uncertainty_daily_df['DATE_TIME'] = pd.Series(test_dates[:len(uncertainty_daily_df)])
