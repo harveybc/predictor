@@ -496,14 +496,35 @@ def run_prediction_pipeline(config, plugin):
         )
         
         # If using returns, recalc r2 based on baseline + predictions.
+        # Ensure predictions arrays are correctly squeezed to match the shape of stacked ground truth
+        train_preds_squeezed = np.squeeze(train_preds, axis=-1)  # from (samples, horizons, 1) to (samples, horizons)
+        val_preds_squeezed = np.squeeze(val_preds, axis=-1)
+
         if config.get("use_returns", False):
-            train_r2 = r2_score((baseline_train[:, -1] + y_train_stacked[:, -1]).flatten(),
-                                (baseline_train[:, -1] + train_preds[:, -1]).flatten())
-            val_r2 = r2_score((baseline_val[:, -1] + y_val_stacked[:, -1]).flatten(),
-                            (baseline_val[:, -1] + val_preds[:, -1]).flatten())
+            train_r2 = r2_score(
+                (baseline_train[:, -1] + y_train_stacked[:, -1]).flatten(),
+                (baseline_train[:, -1] + train_preds_squeezed[:, -1]).flatten()
+            )
+            val_r2 = r2_score(
+                (baseline_val[:, -1] + y_val_stacked[:, -1]).flatten(),
+                (baseline_val[:, -1] + val_preds_squeezed[:, -1]).flatten()
+            )
         else:
-            train_r2 = r2_score(y_train_stacked[:, -1], train_preds[:, -1])
-            val_r2 = r2_score(y_val_stacked[:, -1], val_preds[:, -1])
+            train_r2 = r2_score(
+                y_train_stacked[:, -1].flatten(), 
+                train_preds_squeezed[:, -1].flatten()
+            )
+            val_r2 = r2_score(
+                y_val_stacked[:, -1].flatten(), 
+                val_preds_squeezed[:, -1].flatten()
+            )
+
+        # Debugging statements for verification
+        print("DEBUG: train_preds_squeezed shape:", train_preds_squeezed.shape)
+        print("DEBUG: val_preds_squeezed shape:", val_preds_squeezed.shape)
+        print("DEBUG: baseline_train shape:", baseline_train.shape if config.get("use_returns", False) else "Not using returns")
+        print("DEBUG: y_train_stacked shape:", y_train_stacked.shape)
+
 
 
 
