@@ -307,7 +307,7 @@ def process_data(config):
         
     # 5) PER-PLUGIN PROCESSING
     # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
-    if config["plugin"] in ["lstm", "cnn", "transformer"]:
+    if config["plugin"] in ["lstm", "cnn", "transformer","ann"]:
         print("Processing data with sliding windows...")
 
         window_size = config["window_size"]
@@ -552,7 +552,7 @@ def run_prediction_pipeline(config, plugin):
     window_size = config.get("window_size")
     if time_horizon is None:
         raise ValueError("`time_horizon` is not defined in the configuration.")
-    if config["plugin"] in ["lstm", "cnn", "transformer"] and window_size is None:
+    if config["plugin"] in ["lstm", "cnn", "transformer","ann"] and window_size is None:
         raise ValueError("`window_size` must be defined for CNN, Transformer and LSTM plugins.")
     print(f"Time Horizon: {time_horizon}")
     batch_size = config["batch_size"]
@@ -565,7 +565,7 @@ def run_prediction_pipeline(config, plugin):
         if isinstance(arr, pd.DataFrame):
             locals()[var] = arr.to_numpy().astype(np.float32)
 
-    if config["plugin"] in ["lstm", "cnn", "transformer"]:
+    if config["plugin"] in ["lstm", "cnn", "transformer","ann"]:
         if x_train.ndim != 3:
             raise ValueError(f"For CNN and LSTM, x_train must be 3D. Found: {x_train.shape}")
         print("Using pre-processed sliding windows for CNN and LSTM.")
@@ -575,7 +575,7 @@ def run_prediction_pipeline(config, plugin):
     for iteration in range(1, iterations + 1):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iter_start = time.time()
-        if config["plugin"] in ["lstm", "cnn", "transformer"]:
+        if config["plugin"] in ["lstm", "cnn", "transformer","ann"]:
             plugin.build_model(input_shape=(window_size, x_train.shape[2]), x_train=x_train)
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
             plugin.build_model(input_shape=x_train.shape[1], x_train=x_train)
@@ -1296,7 +1296,7 @@ def load_and_evaluate_model(config, plugin):
         datasets = process_data(config)
         x_val = datasets["x_val"]
         val_dates = datasets.get("dates_val")
-        if config["plugin"] in ["lstm", "cnn", "transformer"]:
+        if config["plugin"] in ["lstm", "cnn", "transformer","ann"]:
             print("Creating sliding windows for CNN...")
             x_val, val_date_windows = create_sliding_windows(
                 x_val, config['window_size'], stride=1, date_times=val_dates
