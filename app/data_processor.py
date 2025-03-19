@@ -494,6 +494,7 @@ def run_prediction_pipeline(config, plugin):
             x_train, y_train, epochs=epochs, batch_size=batch_size,
             threshold_error=threshold_error, x_val=x_val, y_val=y_val, config=config
         )
+        
         # If using returns, recalc r2 based on baseline + predictions.
         if config.get("use_returns", False):
             train_r2 = r2_score((baseline_train[:, -1] + y_train_stacked[:, -1]).flatten(),

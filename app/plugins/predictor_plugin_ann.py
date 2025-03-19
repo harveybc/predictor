@@ -277,8 +277,22 @@ class Plugin:
 
             def on_epoch_end(self, epoch, logs=None):
                 preds = self.plugin.model(self.x_train, training=True)
-                mmd_value = self.plugin.compute_mmd(preds, self.y_train)
-                print(f"                                        MMD Lambda = {self.plugin.mmd_lambda.numpy():.6f}, MMD Loss = {mmd_value.numpy():.6f}")
+                mmd_values = []
+                
+                # Iterar sobre cada salida individualmente
+                for i, (pred, y_true_single) in enumerate(zip(preds, self.y_train)):
+                    pred_flat = tf.reshape(pred, [-1, 1])
+                    y_true_flat = tf.reshape(y_true_single, [-1, 1])
+
+                    # Calcular MMD para cada salida individualmente
+                    mmd_value = self.plugin.compute_mmd(pred_flat, y_true_flat)
+                    mmd_values.append(mmd_value.numpy())
+
+                    print(f"DEBUG: Epoch {epoch+1}, salida {i+1}, MMD Loss = {mmd_value.numpy():.6f}")
+
+                # Promedio de los valores de MMD para log global
+                avg_mmd = np.mean(mmd_values)
+                print(f"DEBUG: Epoch {epoch+1}, Promedio MMD Loss: {avg_mmd:.6f}")
 
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
         target_kl = self.params.get('kl_weight', 1e-3)
