@@ -43,6 +43,7 @@ DEFAULT_VALUES = {
     'max_steps_train': 6300,
     'max_steps_test': 6300,
     'iterations': 3,
-    'epochs': 1000
+    'epochs': 1000,
+    "patience": 60
     
 }
