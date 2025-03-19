@@ -206,7 +206,7 @@ def process_data(config):
         test_close_prices = test_close_prices.to_numpy()
         
 
-    # 3) CONVERT EACH DF TO NUMERIC.
+    # === STEP 3: CONVERT EACH DF TO NUMERIC (keep DataFrames) ===
     x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_train = y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     x_val = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
@@ -214,7 +214,7 @@ def process_data(config):
     x_test = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_test = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-    # === DERIVE CLEAN, LEAKAGE-FREE FEATURES === #
+    # === DERIVE CLEAN, LEAKAGE-FREE FEATURES (KEEP DATAFRAMES) ===
 
     # Derive previous CLOSE for overnight gap calculation
     x_train['Prev_CLOSE'] = x_train['CLOSE'].shift(1)
@@ -236,12 +236,19 @@ def process_data(config):
     x_val.fillna(0, inplace=True)
     x_test.fillna(0, inplace=True)
 
-    # Drop all absolute price columns, BC-BO, and VOLUME to eliminate leakage completely
-    x_train.drop(columns=['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO'], inplace=True, errors='ignore')
-    x_val.drop(columns=['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO'], inplace=True, errors='ignore')
-    x_test.drop(columns=['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO'], inplace=True, errors='ignore')
+    # Drop all absolute price columns, BC-BO, VOLUME, and intermediate Prev_CLOSE
+    cols_to_drop = ['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO']
+    x_train.drop(columns=cols_to_drop, inplace=True, errors='ignore')
+    x_val.drop(columns=cols_to_drop, inplace=True, errors='ignore')
+    x_test.drop(columns=cols_to_drop, inplace=True, errors='ignore')
 
     print("Clean leakage-free features created. Absolute prices and leakage columns removed.")
+
+    # === NOW (AFTER FEATURE ENGINEERING) CONVERT TO NUMPY ===
+    x_train = x_train.to_numpy().astype(np.float32)
+    x_val = x_val.to_numpy().astype(np.float32)
+    x_test = x_test.to_numpy().astype(np.float32)
+
 
 
     # 4) MULTI-STEP TARGETS
