@@ -119,7 +119,7 @@ class Plugin:
 
     tfp_layers = tfp.layers
 
-    def build_model(input_shape, x_train, config):
+    def build_model(self, *, input_shape, x_train, config=None):
         """
         Construcción del modelo ANN Bayesian con `DenseFlipout` en una implementación multi-output.
         """
