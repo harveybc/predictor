@@ -372,14 +372,20 @@ class Plugin:
         print(f"MAE in Training Mode: {mae_training_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_training_mode:.6f}")
 
         # Repeat for evaluation predictions
-        preds_eval_mode_list = self.model(x_train, training=False)
-        preds_eval_mode_array = np.stack([p.numpy() for p in preds_eval_mode_list], axis=1)
+        preds_eval_mode = self.model(x_train, training=False)
+
+        # Convert predictions to NumPy array
+        preds_eval_mode_array = np.array(preds_eval_mode)
+
+        # Remove extra dimension
+        preds_eval_mode_array = np.squeeze(preds_eval_mode_array, axis=-1)
+
+        # Calculate MAE correctly
         mae_eval_mode = np.mean(np.abs(preds_eval_mode_array - y_train_array))
-        mmd_eval_mode = np.mean([
-            self.compute_mmd(pred, tf.convert_to_tensor(true))
-            for pred, true in zip(preds_eval_mode_list, y_train)
-        ])
+        mmd_eval_mode = self.compute_mmd(preds_eval_mode_array, y_train_array)
+
         print(f"MAE in Evaluation Mode: {mae_eval_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_eval_mode:.6f}")
+
         # --- END NEW CODE ---
 
         # Evaluate returns a list of loss values and then metric values (one per output)
