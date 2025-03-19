@@ -262,8 +262,9 @@ class Plugin:
                 self.anneal_epochs = anneal_epochs
 
             def on_epoch_begin(self, epoch, logs=None):
-                new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
-                self.plugin.kl_weight_var.assign(new_kl)
+                #new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
+                new_kl = 0
+                #self.plugin.kl_weight_var.assign(new_kl)
                 print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
 
         class MMDLoggingCallback(tf.keras.callbacks.Callback):
