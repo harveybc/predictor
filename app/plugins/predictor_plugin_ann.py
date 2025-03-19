@@ -353,10 +353,13 @@ class Plugin:
         # --- NEW CODE for computing MAE and MMD over multi-output predictions ---
 
         # Get training predictions (list of tensors), stack them to shape (n_samples, time_horizon)
+        # Corregido: remover dimensión extra con np.squeeze
         preds_training_mode_list = self.model(x_train, training=True)
-        preds_training_mode_array = np.stack([p.numpy() for p in preds_training_mode_list], axis=1)
-        # Also stack your targets (they should already be a list of arrays) to shape (n_samples, time_horizon)
-        y_train_array = np.stack(y_train, axis=1)
+        preds_training_mode_array = np.stack([np.squeeze(p.numpy(), axis=-1) for p in preds_training_mode_list], axis=1)
+
+        # Asegúrate que y_train también tenga dimensiones compatibles
+        y_train_array = np.stack([np.squeeze(y) for y in y_train], axis=1)
+
 
         # Compute MAE over the entire horizon
         mae_training_mode = np.mean(np.abs(preds_training_mode_array - y_train_array))
