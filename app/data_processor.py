@@ -576,13 +576,13 @@ def run_prediction_pipeline(config, plugin):
         print(f"\n=== Iteration {iteration}/{iterations} ===")
         iter_start = time.time()
         if config["plugin"] in ["lstm", "cnn", "transformer","ann"]:
-            plugin.build_model(input_shape=(window_size, x_train.shape[2]), x_train=x_train)
+            plugin.build_model(input_shape=(window_size, x_train.shape[2]), x_train=x_train, config=config)
         elif config["plugin"] in ["transformer", "transformer_mmd"]:
-            plugin.build_model(input_shape=x_train.shape[1], x_train=x_train)
+            plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=config)
         else:
             if len(x_train.shape) != 2:
                 raise ValueError(f"Expected 2D x_train for {config['plugin']}; got {x_train.shape}")
-            plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=config)
+            plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=config, config=config)
 
         history,  train_preds, train_unc, val_preds, val_unc = plugin.train(
             x_train, y_train, epochs=epochs, batch_size=batch_size,
