@@ -321,14 +321,17 @@ class Plugin:
 
         callbacks = [kl_callback, mmd_logging_callback, early_stopping_monitor, reduce_lr_monitor, ClearMemoryCallback()]
 
+        y_train_list = [y_train[:, i] for i in range(y_train.shape[1])]
+        y_val_list = [y_val[:, i] for i in range(y_val.shape[1])]
+
         history = self.model.fit(
-            x_train, y_train,
+            x_train, y_train_list,  # <--- ahora una lista
             epochs=epochs,
             batch_size=batch_size,
             verbose=1,
             shuffle=True,
             callbacks=callbacks,
-            validation_data=(x_val, y_val)
+            validation_data=(x_val, y_val_list)  # <--- también lista aquí
         )
 
         print("Training completed.")
