@@ -214,6 +214,36 @@ def process_data(config):
     x_test = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_test = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
 
+    # === DERIVE CLEAN, LEAKAGE-FREE FEATURES === #
+
+    # Derive previous CLOSE for overnight gap calculation
+    x_train['Prev_CLOSE'] = x_train['CLOSE'].shift(1)
+    x_val['Prev_CLOSE'] = x_val['CLOSE'].shift(1)
+    x_test['Prev_CLOSE'] = x_test['CLOSE'].shift(1)
+
+    # Calculate Overnight Gap
+    x_train['Overnight_Gap'] = (x_train['OPEN'] - x_train['Prev_CLOSE']) / x_train['Prev_CLOSE']
+    x_val['Overnight_Gap'] = (x_val['OPEN'] - x_val['Prev_CLOSE']) / x_val['Prev_CLOSE']
+    x_test['Overnight_Gap'] = (x_test['OPEN'] - x_test['Prev_CLOSE']) / x_test['Prev_CLOSE']
+
+    # Calculate High-Low Range normalized by OPEN
+    x_train['HL_Range'] = (x_train['HIGH'] - x_train['LOW']) / x_train['OPEN']
+    x_val['HL_Range'] = (x_val['HIGH'] - x_val['LOW']) / x_val['OPEN']
+    x_test['HL_Range'] = (x_test['HIGH'] - x_test['LOW']) / x_test['OPEN']
+
+    # Fill NaNs resulting from the shift operation
+    x_train.fillna(0, inplace=True)
+    x_val.fillna(0, inplace=True)
+    x_test.fillna(0, inplace=True)
+
+    # Drop all absolute price columns, BC-BO, and VOLUME to eliminate leakage completely
+    x_train.drop(columns=['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO'], inplace=True, errors='ignore')
+    x_val.drop(columns=['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO'], inplace=True, errors='ignore')
+    x_test.drop(columns=['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO'], inplace=True, errors='ignore')
+
+    print("Clean leakage-free features created. Absolute prices and leakage columns removed.")
+
+
     # 4) MULTI-STEP TARGETS
     time_horizon = config["time_horizon"]
     if config.get("use_daily", False):
