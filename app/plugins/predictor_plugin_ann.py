@@ -317,8 +317,21 @@ class Plugin:
 
         callbacks = [kl_callback, mmd_logging_callback, early_stopping_monitor, reduce_lr_monitor, ClearMemoryCallback()]
 
-        y_train_list = [y_train[:, i] for i in range(y_train.shape[1])]
-        y_val_list = [y_val[:, i] for i in range(y_val.shape[1])]
+        # Verifica si y_train ya es lista para evitar conversión repetida
+        if isinstance(y_train, list):
+            y_train_list = y_train
+        else:
+            y_train_list = [y_train[:, i].reshape(-1, 1) for i in range(y_train.shape[1])]
+
+        # Aplica lo mismo para y_val (si tienes conjunto de validación)
+        if y_val is not None:
+            if isinstance(y_val, list):
+                y_val_list = y_val
+            else:
+                y_val_list = [y_val[:, i].reshape(-1, 1) for i in range(y_val.shape[1])]
+        else:
+            y_val_list = None
+
 
         history = self.model.fit(
             x_train, y_train_list,  # <--- ahora una lista
