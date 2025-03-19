@@ -250,25 +250,14 @@ def process_data(config):
 
 
     # === STEP 4.1: Normalize multi-step targets using BC-BO parameters (if using returns) ===
+    # === STEP 4.2: Scale multi-step targets if desired ===
     if config.get("use_returns", False):
-        # Load the normalization parameters from the JSON file.
-        norm_json = config.get("use_normalization_json")
-        if isinstance(norm_json, str):
-            with open(norm_json, 'r') as f:
-                norm_json = json.load(f)
-        if "BC-BO" in norm_json:
-            bcbo_min = norm_json["BC-BO"]["min"]
-            bcbo_max = norm_json["BC-BO"]["max"]
-            # Normalize targets to [-1, 1] using the formula:
-            # norm_value = 2 * (value - bcbo_min) / (bcbo_max - bcbo_min) - 1
-            y_train_multi = y_train_multi.applymap(lambda v: 2 * (v - bcbo_min) / (bcbo_max - bcbo_min) - 1)
-            y_val_multi = y_val_multi.applymap(lambda v: 2 * (v - bcbo_min) / (bcbo_max - bcbo_min) - 1)
-            y_test_multi = y_test_multi.applymap(lambda v: 2 * (v - bcbo_min) / (bcbo_max - bcbo_min) - 1)
-            print("DEBUG: Multi-step targets normalized to [-1, 1] using BC-BO parameters.")
-        else:
-            print("Warning: 'BC-BO' parameters not found in normalization JSON; targets remain unnormalized.")
-
-
+        scaling_factor = config.get("target_scaling_factor", 100)
+        # Assuming y_train_multi, y_val_multi, y_test_multi are pandas DataFrames at this point.
+        y_train_multi = y_train_multi * scaling_factor
+        y_val_multi = y_val_multi * scaling_factor
+        y_test_multi = y_test_multi * scaling_factor
+        print(f"DEBUG: Multi-step targets scaled by factor {scaling_factor}.")
 
 
         
@@ -555,7 +544,13 @@ def run_prediction_pipeline(config, plugin):
             x_train, y_train, epochs=epochs, batch_size=batch_size,
             threshold_error=threshold_error, x_val=x_val, y_val=y_val, config=config
         )
-        
+
+        if config.get("use_returns", False):
+            scaling_factor = 1/config.get("target_scaling_factor", 100)
+            # Assuming y_train_multi, y_val_multi, y_test_multi are pandas DataFrames at this point.
+            train_preds = train_preds * scaling_factor
+            val_preds = val_preds * scaling_factor
+            print(f"DEBUG: Multi-step targets scaled by factor {scaling_factor}.") 
 
         # --- Denormalize outputs using BC-BO normalization parameters ---
         import json
