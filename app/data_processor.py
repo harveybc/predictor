@@ -1055,8 +1055,24 @@ def run_prediction_pipeline(config, plugin):
     plt.figure(figsize=(12, 6))
     plt.plot(test_dates_plot, pred_plot, label="Predicted Price", color=plot_color_predicted, linewidth=2)
     plt.plot(test_dates_plot, true_plot, label="True Price", color=plot_color_true, linewidth=2)
-    plt.fill_between(test_dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
-                    color=plot_color_uncertainty, alpha=0.15, label="Uncertainty")
+    # Ensure pred_plot and uncertainty_plot are explicitly squeezed to be 1-dimensional.
+    pred_plot = np.squeeze(pred_plot)
+    uncertainty_plot = np.squeeze(uncertainty_plot)
+
+    # Check final dimensions to ensure correctness:
+    assert pred_plot.ndim == 1, f"pred_plot must be 1-dimensional, got shape {pred_plot.shape}"
+    assert uncertainty_plot.ndim == 1, f"uncertainty_plot must be 1-dimensional, got shape {uncertainty_plot.shape}"
+
+    # Now safely plot uncertainty
+    plt.fill_between(
+        test_dates_plot,
+        pred_plot - uncertainty_plot,
+        pred_plot + uncertainty_plot,
+        color=plot_color_uncertainty,
+        alpha=0.15,
+        label="Uncertainty"
+    )
+
     if config.get("use_daily", False):    
         plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon} days)")
     else:
