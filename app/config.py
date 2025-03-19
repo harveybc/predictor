@@ -70,7 +70,7 @@ DEFAULT_VALUES = {
     "strategy_1h_uncertainty": "examples/results/phase_1/phase_1_cnn_25200_1h_uncertanties.csv",
     "strategy_base_dataset": "examples/data/phase_1/phase_1_base_d3.csv",
     "strategy_load_parameters": "examples/data/phase_1/strategy_parameters.json",
-    "target_scaling_factor":100
+    "target_scaling_factor":1000
 
 
 }
