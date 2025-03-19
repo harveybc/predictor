@@ -196,21 +196,33 @@ class Plugin:
 
 
     def compute_mmd(self, x, y, sigma=1.0, sample_size=256):
+        """
+        Compute Maximum Mean Discrepancy (MMD) using a Gaussian Kernel
+        with a reduced sample size to avoid memory issues.
+        """
         with tf.device('/CPU:0'):
-            idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:sample_size]
-            x_sample = tf.reshape(tf.gather(x, idx), (sample_size, 1))
-            y_sample = tf.reshape(tf.gather(y, idx), (sample_size, 1))
+            num_samples = tf.shape(x)[0]
+            sample_size = tf.minimum(sample_size, num_samples)
 
-            def gaussian_kernel(a, b, sigma):
-                a_exp = tf.expand_dims(a, axis=1)
-                b_exp = tf.expand_dims(b, axis=0)
-                dist = tf.reduce_sum(tf.square(a_exp - b_exp), axis=-1)
+            idx = tf.random.shuffle(tf.range(num_samples))[:sample_size]
+
+            # Correctly gather samples without reshaping incorrectly
+            x_sample = tf.gather(x, idx)  # Shape: (sample_size, horizons)
+            y_sample = tf.gather(y, idx)  # Shape: (sample_size, horizons)
+
+            def gaussian_kernel(x, y, sigma):
+                # Adjust dimensions for broadcasting
+                x_exp = tf.expand_dims(x, axis=1)  # Shape: (sample_size, 1, horizons)
+                y_exp = tf.expand_dims(y, axis=0)  # Shape: (1, sample_size, horizons)
+                dist = tf.reduce_sum(tf.square(x_exp - y_exp), axis=-1)  # Shape: (sample_size, sample_size)
                 return tf.exp(-dist / (2.0 * sigma ** 2))
 
             K_xx = gaussian_kernel(x_sample, x_sample, sigma)
             K_yy = gaussian_kernel(y_sample, y_sample, sigma)
             K_xy = gaussian_kernel(x_sample, y_sample, sigma)
+
             return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
+
 
 
 
