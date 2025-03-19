@@ -207,42 +207,55 @@ def process_data(config):
         
 
     # === STEP 3: CONVERT EACH DF TO NUMERIC (keep DataFrames) ===
+    # === STEP 3: CONVERT EACH DF TO NUMERIC (keep DataFrames) ===
     x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_train = y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
-    x_val = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
-    y_val = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
-    x_test = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
-    y_test = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
+    x_val   = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_val   = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
+    x_test  = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
+    y_test  = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
 
     # === DERIVE CLEAN, LEAKAGE-FREE FEATURES (KEEP DATAFRAMES) ===
-
-    # Derive previous CLOSE for overnight gap calculation
+    # Compute previous CLOSE for overnight gap calculation
     x_train['Prev_CLOSE'] = x_train['CLOSE'].shift(1)
-    x_val['Prev_CLOSE'] = x_val['CLOSE'].shift(1)
-    x_test['Prev_CLOSE'] = x_test['CLOSE'].shift(1)
+    x_val['Prev_CLOSE']   = x_val['CLOSE'].shift(1)
+    x_test['Prev_CLOSE']  = x_test['CLOSE'].shift(1)
 
-    # Calculate Overnight Gap
+    # Calculate Overnight Gap and High-Low Range normalized by OPEN
     x_train['Overnight_Gap'] = (x_train['OPEN'] - x_train['Prev_CLOSE']) / x_train['Prev_CLOSE']
-    x_val['Overnight_Gap'] = (x_val['OPEN'] - x_val['Prev_CLOSE']) / x_val['Prev_CLOSE']
-    x_test['Overnight_Gap'] = (x_test['OPEN'] - x_test['Prev_CLOSE']) / x_test['Prev_CLOSE']
+    x_val['Overnight_Gap']   = (x_val['OPEN'] - x_val['Prev_CLOSE']) / x_val['Prev_CLOSE']
+    x_test['Overnight_Gap']  = (x_test['OPEN'] - x_test['Prev_CLOSE']) / x_test['Prev_CLOSE']
 
-    # Calculate High-Low Range normalized by OPEN
     x_train['HL_Range'] = (x_train['HIGH'] - x_train['LOW']) / x_train['OPEN']
-    x_val['HL_Range'] = (x_val['HIGH'] - x_val['LOW']) / x_val['OPEN']
-    x_test['HL_Range'] = (x_test['HIGH'] - x_test['LOW']) / x_test['OPEN']
+    x_val['HL_Range']   = (x_val['HIGH'] - x_val['LOW']) / x_val['OPEN']
+    x_test['HL_Range']  = (x_test['HIGH'] - x_test['LOW']) / x_test['OPEN']
 
-    # Fill NaNs resulting from the shift operation
+    # Fill NaNs that may result from shifting operations
     x_train.fillna(0, inplace=True)
     x_val.fillna(0, inplace=True)
     x_test.fillna(0, inplace=True)
 
-    # Drop all absolute price columns, BC-BO, VOLUME, and intermediate Prev_CLOSE
+    # --- NEW: Add normalized BC-BO feature ---
+    norm_json = config.get("use_normalization_json")
+    if isinstance(norm_json, str):
+        with open(norm_json, 'r') as f:
+            norm_json = json.load(f)
+    if "BC-BO" in norm_json:
+        bcbo_min = norm_json["BC-BO"]["min"]
+        bcbo_max = norm_json["BC-BO"]["max"]
+        x_train['Norm_BC_BO'] = 2 * (x_train['BC-BO'] - bcbo_min) / (bcbo_max - bcbo_min) - 1
+        x_val['Norm_BC_BO'] = 2 * (x_val['BC-BO'] - bcbo_min) / (bcbo_max - bcbo_min) - 1
+        x_test['Norm_BC_BO'] = 2 * (x_test['BC-BO'] - bcbo_min) / (bcbo_max - bcbo_min) - 1
+        print("DEBUG: Normalized BC-BO feature added as 'Norm_BC_BO'.")
+    else:
+        print("Warning: 'BC-BO' normalization parameters not found; BC-BO feature will not be normalized.")
+
+    # Drop raw absolute price columns and leakage columns, but keep the new normalized BC-BO
     cols_to_drop = ['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO']
     x_train.drop(columns=cols_to_drop, inplace=True, errors='ignore')
     x_val.drop(columns=cols_to_drop, inplace=True, errors='ignore')
     x_test.drop(columns=cols_to_drop, inplace=True, errors='ignore')
-
-    print("Clean leakage-free features created. Absolute prices and leakage columns removed.")
+    print("DEBUG: Dropped raw price columns and leakage columns; normalized BC-BO is preserved.")
 
     # === NOW (AFTER FEATURE ENGINEERING) CONVERT TO NUMPY ===
     x_train = x_train.to_numpy().astype(np.float32)
@@ -274,6 +287,30 @@ def process_data(config):
             y_train_multi = create_multi_step(y_train, time_horizon, use_returns=False)
             y_val_multi = create_multi_step(y_val, time_horizon, use_returns=False)
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
+
+
+    # === STEP 4.1: Normalize multi-step targets using BC-BO parameters (if using returns) ===
+    if config.get("use_returns", False):
+        # Load the normalization parameters from the JSON file.
+        norm_json = config.get("use_normalization_json")
+        if isinstance(norm_json, str):
+            with open(norm_json, 'r') as f:
+                norm_json = json.load(f)
+        if "BC-BO" in norm_json:
+            bcbo_min = norm_json["BC-BO"]["min"]
+            bcbo_max = norm_json["BC-BO"]["max"]
+            # Normalize targets to [-1, 1] using the formula:
+            # norm_value = 2 * (value - bcbo_min) / (bcbo_max - bcbo_min) - 1
+            y_train_multi = y_train_multi.applymap(lambda v: 2 * (v - bcbo_min) / (bcbo_max - bcbo_min) - 1)
+            y_val_multi = y_val_multi.applymap(lambda v: 2 * (v - bcbo_min) / (bcbo_max - bcbo_min) - 1)
+            y_test_multi = y_test_multi.applymap(lambda v: 2 * (v - bcbo_min) / (bcbo_max - bcbo_min) - 1)
+            print("DEBUG: Multi-step targets normalized to [-1, 1] using BC-BO parameters.")
+        else:
+            print("Warning: 'BC-BO' parameters not found in normalization JSON; targets remain unnormalized.")
+
+
+
+
         
     # 5) PER-PLUGIN PROCESSING
     # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
