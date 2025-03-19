@@ -279,64 +279,64 @@ def process_data(config):
     # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
     if config["plugin"] in ["lstm", "cnn", "transformer"]:
         print("Processing data with sliding windows...")
-        x_train = x_train.to_numpy().astype(np.float32)
-        x_val = x_val.to_numpy().astype(np.float32)
-        x_test = x_test.to_numpy().astype(np.float32)
+        
         window_size = config["window_size"]
-        # Use the updated sliding windows function that returns base_dates already trimmed the first window of data
-        x_train, train_dates = create_sliding_windows_x(x_train, window_size, stride=1, date_times=train_dates_orig)
-        x_val, val_dates = create_sliding_windows_x(x_val, window_size, stride=1, date_times=val_dates_orig)
-        x_test, test_dates = create_sliding_windows_x(x_test, window_size, stride=1, date_times=test_dates_orig)
-        # Adjust multi-step targets accordingly (unchanged from your original)
+
+        # Convert to numpy arrays explicitly here
+        x_train_np = x_train.to_numpy().astype(np.float32)
+        x_val_np = x_val.to_numpy().astype(np.float32)
+        x_test_np = x_test.to_numpy().astype(np.float32)
+
+        # Create sliding windows and get aligned dates
+        x_train, train_dates = create_sliding_windows_x(x_train_np, window_size, stride=1, date_times=train_dates_orig)
+        x_val, val_dates = create_sliding_windows_x(x_val_np, window_size, stride=1, date_times=val_dates_orig)
+        x_test, test_dates = create_sliding_windows_x(x_test_np, window_size, stride=1, date_times=test_dates_orig)
+
+        # Adjust multi-step targets accordingly
         y_train_multi = y_train_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
         y_val_multi = y_val_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
         y_test_multi = y_test_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
+
         if config.get("use_returns", False):
             print("Processing data with sliding windows with returns...")
             baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
             baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
             baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
-        else:
-            print("Processing data with sliding windows without returns...")
-            x_train = x_train.to_numpy().astype(np.float32)
-            x_val = x_val.to_numpy().astype(np.float32)
-            x_test = x_test.to_numpy().astype(np.float32)
-            y_train_multi = y_train_multi.to_numpy().astype(np.float32)
-            y_val_multi = y_val_multi.to_numpy().astype(np.float32)
-            y_test_multi = y_test_multi.to_numpy().astype(np.float32)
-        # --- CHUNK: Trim the first window_size rows from the  y target datasets if sliding window is to be used---
-        # Fix dates toremove the first window_size dates:
-        if train_dates_orig is not None:
-            train_dates_orig = train_dates_orig[window_size-1:]
-        else:
-            train_dates = None
-        if val_dates_orig is not None:
-            val_dates_orig = val_dates_orig[window_size-1:]
-        else:
-            train_dates = None
-        if test_dates_orig is not None:
-            test_dates_orig = test_dates_orig[window_size-1:]
-        else:
-            test_dates = None
-        # --- End of Trim Chunk ---
-        # calculate close prices as y_train; ensure test_close_prices is a numpy array for slicing
+
+        # Trim original date indices to match sliding windows
+        train_dates_orig = train_dates_orig[window_size - 1:] if train_dates_orig is not None else None
+        val_dates_orig = val_dates_orig[window_size - 1:] if val_dates_orig is not None else None
+        test_dates_orig = test_dates_orig[window_size - 1:] if test_dates_orig is not None else None
+
+        # Ensure test_close_prices array alignment
         min_len_test = min(len(x_test), len(y_test_multi))
-        test_close_prices = test_close_prices[window_size-1:, -1]
+        test_close_prices = test_close_prices[window_size - 1 : window_size - 1 + min_len_test, -1]
+
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
+
         x_train = x_train.to_numpy().astype(np.float32)
         x_val = x_val.to_numpy().astype(np.float32)
         x_test = x_test.to_numpy().astype(np.float32)
+
         y_train_multi = y_train_multi.to_numpy().astype(np.float32)
         y_val_multi = y_val_multi.to_numpy().astype(np.float32)
         y_test_multi = y_test_multi.to_numpy().astype(np.float32)
+
         if config.get("use_returns", False):
             baseline_train = baseline_train.to_numpy().astype(np.float32)
             baseline_val = baseline_val.to_numpy().astype(np.float32)
             baseline_test = baseline_test.to_numpy().astype(np.float32)
-        # calculate close prices as y_train
+
+        # Keep date alignment without sliding windows
+        train_dates = train_dates_orig
+        val_dates = val_dates_orig
+        test_dates = test_dates_orig
+
+        # Adjust test_close_prices length
         min_len_test = min(len(x_test), len(y_test_multi))
         test_close_prices = test_close_prices[:min_len_test, -1]
+
 
 
 
