@@ -137,7 +137,7 @@ class Plugin:
         print(f"DEBUG: initial_layer_size={initial_layer_size}, intermediate_layers={intermediate_layers}, time_horizon={time_horizon}")
 
         # Entrada común para todos los modelos paralelos
-        inputs = Input(shape=(input_shape,), name="common_input")
+        inputs = Input(shape=input_shape, name="common_input")
         print(f"DEBUG: Creada capa Input común, shape={inputs.shape}")
 
         outputs = []
