@@ -184,7 +184,8 @@ class Plugin:
         model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
             loss=[tf.keras.losses.Huber() for _ in range(time_horizon)],
-            metrics=['mae']
+
+            metrics=['mae' for _ in range(time_horizon)],
         )
 
         print("DEBUG: Modelo multi-output paralelo compilado exitosamente.")
