@@ -656,7 +656,19 @@ def run_prediction_pipeline(config, plugin):
                         close_max = norm_json["CLOSE"]["max"]
                         diff = close_max - close_min
                         # Final predicted close = (predicted_return + baseline)*diff + close_min
-                        daily_df = (test_predictions + baseline_test) * diff + close_min
+                        # Ensure compatible shapes by squeezing test_predictions and properly broadcasting baseline_test
+                        test_predictions_squeezed = np.squeeze(test_predictions, axis=-1)  # shape: (6293, 6)
+
+                        # Expand baseline_test along the horizon dimension to match predictions shape
+                        baseline_test_expanded = np.repeat(baseline_test, test_predictions_squeezed.shape[1], axis=1)  # (6293, 6)
+
+                        # Correct broadcasting
+                        daily_df = (test_predictions_squeezed + baseline_test_expanded) * diff + close_min
+
+                        # Debugging shapes for verification
+                        print("DEBUG: test_predictions_squeezed shape:", test_predictions_squeezed.shape)
+                        print("DEBUG: baseline_test_expanded shape:", baseline_test_expanded.shape)
+
                     else:
                         print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
                 else:
