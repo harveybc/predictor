@@ -119,59 +119,79 @@ class Plugin:
 
     tfp_layers = tfp.layers
 
-    def build_model(self, *, input_shape, x_train, config=None):
-        """
-        Construcción del modelo ANN Bayesian con `DenseFlipout` en una implementación multi-output.
-        """
-        KL_WEIGHT = config.get('kl_weight', 1e-3)
-        time_horizon = config['time_horizon']
+    # Construcción explícita del modelo con depuración detallada
+    def build_model(self, input_shape, x_train, config=None):
+        from tensorflow.keras.layers import Input, Dense, BatchNormalization
+        from tensorflow.keras.models import Model
+        from tensorflow.keras.initializers import RandomNormal
+
+        # Parámetros del modelo
         initial_layer_size = config['initial_layer_size']
-        layer_size_divisor = config['layer_size_divisor']
         intermediate_layers = config['intermediate_layers']
+        layer_size_divisor = config['layer_size_divisor']
         activation = config['activation']
-        
-        # Entrada del modelo
-        inputs = Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
-        x = inputs
-        
-        # Construcción de capas intermedias
-        current_size = initial_layer_size
-        for i in range(intermediate_layers):
-            x = Dense(
-                units=current_size,
-                activation=activation,
-                kernel_initializer=RandomNormal(mean=0.0, stddev=0.05),
-                name=f"dense_layer_{i+1}"
-            )(x)
-        x = BatchNormalization()(x)
-        current_size = max(current_size // layer_size_divisor, 1)
-        
-        # Crear múltiples salidas para cada horizonte de predicción
+        learning_rate = config['learning_rate']
+        time_horizon = config['time_horizon']
+
+        print(f"DEBUG: Iniciando build_model con input_shape={input_shape}")
+        print(f"DEBUG: initial_layer_size={initial_layer_size}, intermediate_layers={intermediate_layers}, time_horizon={time_horizon}")
+
+        # Entrada común para todos los modelos paralelos
+        inputs = Input(shape=(input_shape,), name="common_input")
+        print(f"DEBUG: Creada capa Input común, shape={inputs.shape}")
+
         outputs = []
+
+        # Crear ramas independientes para cada horizonte
         for t in range(time_horizon):
-            # Bayesian DenseFlipout layer (sin `use_bias` para evitar errores)
-            output_layer = tfp_layers.DenseFlipout(
-                units=1,  # Salida escalar por horizonte de predicción
+            print(f"DEBUG: Construyendo rama independiente para horizonte={t+1}")
+
+            # Inicializar rama independiente desde la entrada común
+            x = inputs
+            current_size = initial_layer_size
+
+            # Capas intermedias independientes para esta rama
+            for i in range(intermediate_layers):
+                x = Dense(
+                    units=current_size,
+                    activation=activation,
+                    kernel_initializer=RandomNormal(mean=0.0, stddev=0.05),
+                    name=f"horizon_{t+1}_dense_{i+1}"
+                )(x)
+                print(f"DEBUG: horizonte={t+1}, capa_intermedia={i+1}, shape={x.shape}")
+
+                current_size = max(current_size // layer_size_divisor, 1)
+
+            # Normalización por lote independiente (opcional pero recomendado)
+            x = BatchNormalization(name=f"horizon_{t+1}_batchnorm")(x)
+            print(f"DEBUG: horizonte={t+1}, tras BatchNormalization, shape={x.shape}")
+
+            # Capa final (Dense estándar para este ejemplo)
+            output = Dense(
+                units=1,
                 activation='linear',
-                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+                kernel_initializer=RandomNormal(mean=0.0, stddev=0.05),
                 name=f"output_horizon_{t+1}"
             )(x)
-            outputs.append(output_layer)
-        
-        # Creación del modelo con múltiples salidas
-        model = Model(inputs=inputs, outputs=outputs, name="bayesian_ann_multi_output")
-        
-        # Compilación con pérdida independiente por salida
+            print(f"DEBUG: horizonte={t+1}, salida final shape={output.shape}")
+
+            outputs.append(output)
+
+        # Modelo con múltiples salidas independientes
+        model = Model(inputs=inputs, outputs=outputs, name="multi_output_parallel_ann")
+
+        # Compilación del modelo con pérdidas independientes (Huber por salida)
         model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=config['learning_rate']),
+            optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
             loss=[tf.keras.losses.Huber() for _ in range(time_horizon)],
             metrics=['mae']
         )
-        
+
+        print("DEBUG: Modelo multi-output paralelo compilado exitosamente.")
         model.summary()
-        print("✅ Modelo Bayesian ANN multi-output construido exitosamente.")
-        
-        return model
+
+        # Asignación del modelo al atributo interno del plugin
+        self.model = model
 
 
     def compute_mmd(self, x, y, sigma=1.0, sample_size=256):
