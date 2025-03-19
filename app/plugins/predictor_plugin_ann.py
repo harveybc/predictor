@@ -206,20 +206,22 @@ class Plugin:
         with a reduced sample size to avoid memory issues.
         """
         with tf.device('/CPU:0'):
-            num_samples = tf.shape(x)[0]
+            # Use the minimum of the sample sizes from x and y
+            num_samples = tf.minimum(tf.shape(x)[0], tf.shape(y)[0])
             sample_size = tf.minimum(sample_size, num_samples)
 
             idx = tf.random.shuffle(tf.range(num_samples))[:sample_size]
 
-            # Correctly gather samples without reshaping incorrectly
-            x_sample = tf.gather(x, idx)  # Shape: (sample_size, horizons)
-            y_sample = tf.gather(y, idx)  # Shape: (sample_size, horizons)
+            # Gather samples from both x and y using the same indices
+            x_sample = tf.gather(x, idx)  # Shape: (sample_size, ...)
+            y_sample = tf.gather(y, idx)  # Shape: (sample_size, ...)
 
-            def gaussian_kernel(x, y, sigma):
-                # Adjust dimensions for broadcasting
-                x_exp = tf.expand_dims(x, axis=1)  # Shape: (sample_size, 1, horizons)
-                y_exp = tf.expand_dims(y, axis=0)  # Shape: (1, sample_size, horizons)
-                dist = tf.reduce_sum(tf.square(x_exp - y_exp), axis=-1)  # Shape: (sample_size, sample_size)
+            def gaussian_kernel(a, b, sigma):
+                # Expand dims for broadcasting: (sample_size, 1, ...) and (1, sample_size, ...)
+                a_exp = tf.expand_dims(a, axis=1)
+                b_exp = tf.expand_dims(b, axis=0)
+                # Compute squared Euclidean distance
+                dist = tf.reduce_sum(tf.square(a_exp - b_exp), axis=-1)
                 return tf.exp(-dist / (2.0 * sigma ** 2))
 
             K_xx = gaussian_kernel(x_sample, x_sample, sigma)
@@ -227,6 +229,7 @@ class Plugin:
             K_xy = gaussian_kernel(x_sample, y_sample, sigma)
 
             return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
+
 
 
 
