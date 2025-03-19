@@ -316,13 +316,24 @@ def process_data(config):
     # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
     if config["plugin"] in ["lstm", "cnn", "transformer"]:
         print("Processing data with sliding windows...")
-        
+
         window_size = config["window_size"]
 
-        # Convert to numpy arrays explicitly here
-        x_train_np = x_train.to_numpy().astype(np.float32)
-        x_val_np = x_val.to_numpy().astype(np.float32)
-        x_test_np = x_test.to_numpy().astype(np.float32)
+        # Convert x_* to numpy arrays only if they are not already
+        if not isinstance(x_train, np.ndarray):
+            x_train_np = x_train.to_numpy().astype(np.float32)
+        else:
+            x_train_np = x_train.astype(np.float32)
+
+        if not isinstance(x_val, np.ndarray):
+            x_val_np = x_val.to_numpy().astype(np.float32)
+        else:
+            x_val_np = x_val.astype(np.float32)
+
+        if not isinstance(x_test, np.ndarray):
+            x_test_np = x_test.to_numpy().astype(np.float32)
+        else:
+            x_test_np = x_test.astype(np.float32)
 
         # Create sliding windows and get aligned dates
         x_train, train_dates = create_sliding_windows_x(x_train_np, window_size, stride=1, date_times=train_dates_orig)
@@ -339,20 +350,26 @@ def process_data(config):
             baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
             baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
             baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
-
-        # Trim original date indices to match sliding windows
-        train_dates_orig = train_dates_orig[window_size - 1:] if train_dates_orig is not None else None
-        val_dates_orig = val_dates_orig[window_size - 1:] if val_dates_orig is not None else None
-        test_dates_orig = test_dates_orig[window_size - 1:] if test_dates_orig is not None else None
+        # Trim the original date indices to match sliding windows
+        if train_dates_orig is not None:
+            train_dates_orig = train_dates_orig[window_size - 1:]
+        else:
+            train_dates = None
+        if val_dates_orig is not None:
+            val_dates_orig = val_dates_orig[window_size - 1:]
+        else:
+            val_dates = None
+        if test_dates_orig is not None:
+            test_dates_orig = test_dates_orig[window_size - 1:]
+        else:
+            test_dates = None
 
         # Ensure test_close_prices array alignment
         min_len_test = min(len(x_test), len(y_test_multi))
         test_close_prices = test_close_prices[window_size - 1 : window_size - 1 + min_len_test, -1]
-
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
-
-        # Convert x_train, x_val, x_test to NumPy arrays if they aren't already, then cast to float32
+        # Convert x_train, x_val, x_test to numpy arrays if they are not already
         if not isinstance(x_train, np.ndarray):
             x_train = x_train.to_numpy().astype(np.float32)
         else:
@@ -368,24 +385,19 @@ def process_data(config):
         else:
             x_test = x_test.astype(np.float32)
 
-
         y_train_multi = y_train_multi.to_numpy().astype(np.float32)
         y_val_multi = y_val_multi.to_numpy().astype(np.float32)
         y_test_multi = y_test_multi.to_numpy().astype(np.float32)
-
         if config.get("use_returns", False):
             baseline_train = baseline_train.to_numpy().astype(np.float32)
             baseline_val = baseline_val.to_numpy().astype(np.float32)
             baseline_test = baseline_test.to_numpy().astype(np.float32)
-
-        # Keep date alignment without sliding windows
         train_dates = train_dates_orig
         val_dates = val_dates_orig
         test_dates = test_dates_orig
-
-        # Adjust test_close_prices length
         min_len_test = min(len(x_test), len(y_test_multi))
         test_close_prices = test_close_prices[:min_len_test, -1]
+
 
 
 
