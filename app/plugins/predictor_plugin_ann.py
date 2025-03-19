@@ -151,7 +151,7 @@ class Plugin:
             current_size = initial_layer_size
 
             x = Dense(
-                units=input_shape,
+                units=current_size,
                 activation='linear',
                 kernel_initializer=RandomNormal(mean=0.0, stddev=0.05)
             )(x)
