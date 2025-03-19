@@ -215,47 +215,7 @@ def process_data(config):
     x_test  = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
     y_test  = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-    # === DERIVE CLEAN, LEAKAGE-FREE FEATURES (KEEP DATAFRAMES) ===
-    # Compute previous CLOSE for overnight gap calculation
-    x_train['Prev_CLOSE'] = x_train['CLOSE'].shift(1)
-    x_val['Prev_CLOSE']   = x_val['CLOSE'].shift(1)
-    x_test['Prev_CLOSE']  = x_test['CLOSE'].shift(1)
-
-    # Calculate Overnight Gap and High-Low Range normalized by OPEN
-    x_train['Overnight_Gap'] = (x_train['OPEN'] - x_train['Prev_CLOSE']) / x_train['Prev_CLOSE']
-    x_val['Overnight_Gap']   = (x_val['OPEN'] - x_val['Prev_CLOSE']) / x_val['Prev_CLOSE']
-    x_test['Overnight_Gap']  = (x_test['OPEN'] - x_test['Prev_CLOSE']) / x_test['Prev_CLOSE']
-
-    x_train['HL_Range'] = (x_train['HIGH'] - x_train['LOW']) / x_train['OPEN']
-    x_val['HL_Range']   = (x_val['HIGH'] - x_val['LOW']) / x_val['OPEN']
-    x_test['HL_Range']  = (x_test['HIGH'] - x_test['LOW']) / x_test['OPEN']
-
-    # Fill NaNs that may result from shifting operations
-    x_train.fillna(0, inplace=True)
-    x_val.fillna(0, inplace=True)
-    x_test.fillna(0, inplace=True)
-
-    # --- NEW: Add normalized BC-BO feature ---
-    norm_json = config.get("use_normalization_json")
-    if isinstance(norm_json, str):
-        with open(norm_json, 'r') as f:
-            norm_json = json.load(f)
-    if "BC-BO" in norm_json:
-        bcbo_min = norm_json["BC-BO"]["min"]
-        bcbo_max = norm_json["BC-BO"]["max"]
-        x_train['Norm_BC_BO'] = 2 * (x_train['BC-BO'] - bcbo_min) / (bcbo_max - bcbo_min) - 1
-        x_val['Norm_BC_BO'] = 2 * (x_val['BC-BO'] - bcbo_min) / (bcbo_max - bcbo_min) - 1
-        x_test['Norm_BC_BO'] = 2 * (x_test['BC-BO'] - bcbo_min) / (bcbo_max - bcbo_min) - 1
-        print("DEBUG: Normalized BC-BO feature added as 'Norm_BC_BO'.")
-    else:
-        print("Warning: 'BC-BO' normalization parameters not found; BC-BO feature will not be normalized.")
-
-    # Drop raw absolute price columns and leakage columns, but keep the new normalized BC-BO
-    cols_to_drop = ['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO']
-    x_train.drop(columns=cols_to_drop, inplace=True, errors='ignore')
-    x_val.drop(columns=cols_to_drop, inplace=True, errors='ignore')
-    x_test.drop(columns=cols_to_drop, inplace=True, errors='ignore')
-    print("DEBUG: Dropped raw price columns and leakage columns; normalized BC-BO is preserved.")
+    
 
     # === NOW (AFTER FEATURE ENGINEERING) CONVERT TO NUMPY ===
     x_train = x_train.to_numpy().astype(np.float32)
