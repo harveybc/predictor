@@ -150,6 +150,11 @@ class Plugin:
             x = inputs
             current_size = initial_layer_size
 
+            x = Dense(
+                units=1,
+                activation='linear',
+                kernel_initializer=RandomNormal(mean=0.0, stddev=0.05)
+            )(x)
             # Capas intermedias independientes para esta rama
             for i in range(intermediate_layers):
                 x = Dense(
