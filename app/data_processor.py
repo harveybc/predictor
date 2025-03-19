@@ -554,10 +554,25 @@ def run_prediction_pipeline(config, plugin):
         # Convert y_test (which is a list of arrays) to a single NumPy array
         y_test_array = np.stack(y_test, axis=1)  # shape: (n_samples, time_horizon)
 
+        # Squeeze predictions to match shapes properly
+        test_predictions_squeezed = np.squeeze(test_predictions, axis=-1)  # shape: (samples, horizons)
+
         if config.get("use_returns", False):
-            test_r2 = r2_score((baseline_test[:, -1] + y_test_array[:n_test, -1]).flatten(), (baseline_test[:, -1] + test_predictions[:, -1]).flatten())
+            test_r2 = r2_score(
+                (baseline_test[:, -1] + y_test_array[:n_test, -1]).flatten(),
+                (baseline_test[:, -1] + test_predictions_squeezed[:n_test, -1]).flatten()
+            )
         else:
-            test_r2 = r2_score(y_test_array[:n_test, -1], test_predictions[:, -1])
+            test_r2 = r2_score(
+                y_test_array[:n_test, -1].flatten(),
+                test_predictions_squeezed[:n_test, -1].flatten()
+            )
+
+        # Debugging shapes for verification
+        print("DEBUG: test_predictions_squeezed shape:", test_predictions_squeezed.shape)
+        print("DEBUG: baseline_test shape:", baseline_test.shape if config.get("use_returns", False) else "Not using returns")
+        print("DEBUG: y_test_array shape:", y_test_array.shape)
+
 
         test_mae = np.mean(np.abs(test_predictions[:, -1] - y_test_array[:n_test, -1]))
 
