@@ -253,11 +253,11 @@ def process_data(config):
         print("Warning: 'BC-BO' normalization parameters not found; BC-BO feature will not be normalized.")
 
     # Drop raw absolute price columns and leakage columns, but keep the new normalized BC-BO
-    cols_to_drop = ['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO']
-    x_train.drop(columns=cols_to_drop, inplace=True, errors='ignore')
-    x_val.drop(columns=cols_to_drop, inplace=True, errors='ignore')
-    x_test.drop(columns=cols_to_drop, inplace=True, errors='ignore')
-    print("DEBUG: Dropped raw price columns and leakage columns; normalized BC-BO is preserved.")
+    #cols_to_drop = ['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO']
+    #x_train.drop(columns=cols_to_drop, inplace=True, errors='ignore')
+    #x_val.drop(columns=cols_to_drop, inplace=True, errors='ignore')
+    #x_test.drop(columns=cols_to_drop, inplace=True, errors='ignore')
+    #print("DEBUG: Dropped raw price columns and leakage columns; normalized BC-BO is preserved.")
 
 
 
