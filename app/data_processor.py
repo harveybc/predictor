@@ -552,44 +552,6 @@ def run_prediction_pipeline(config, plugin):
             val_preds = val_preds * scaling_factor
             print(f"DEBUG: Multi-step targets scaled by factor {scaling_factor}.") 
 
-        # --- Denormalize outputs using BC-BO normalization parameters ---
-        import json
-        if config.get("use_normalization_json") is not None:
-            with open(config["use_normalization_json"], 'r') as f:
-                norm_data = json.load(f)
-            # Check for the BC-BO normalization values in the JSON
-            if "BC-BO" in norm_data:
-                bcbo_min = norm_data["BC-BO"]["min"]
-                bcbo_max = norm_data["BC-BO"]["max"]
-                diff = bcbo_max - bcbo_min
-                print("DEBUG: BC-BO normalization parameters loaded:")
-                print("       bcbo_min =", bcbo_min, "bcbo_max =", bcbo_max, "diff =", diff)
-                # Squeeze predictions to remove the trailing dimension
-                train_preds_squeezed = np.squeeze(train_preds, axis=-1)  # Shape becomes (n_samples, horizons)
-                val_preds_squeezed = np.squeeze(val_preds, axis=-1)
-
-                # Expand the baseline values along the horizon dimension
-                # Assume baseline_train has shape (n_samples, 1)
-                baseline_train_expanded = np.repeat(baseline_train, train_preds_squeezed.shape[1], axis=1)
-                baseline_val_expanded = np.repeat(baseline_val, val_preds_squeezed.shape[1], axis=1)
-
-                # Denormalize predictions: add baseline + scaled predicted return
-                train_preds_denorm = baseline_train_expanded + (train_preds_squeezed * diff) + bcbo_min
-                val_preds_denorm = baseline_val_expanded + (val_preds_squeezed * diff) + bcbo_min
-
-                # Overwrite the predictions with the denormalized versions
-                train_preds = train_preds_denorm
-                val_preds = val_preds_denorm
-                print("DEBUG: Training and validation predictions denormalized using BC-BO normalization.")
-                print("DEBUG: train_preds_denorm shape:", train_preds.shape)
-                print("DEBUG: val_preds_denorm shape:", val_preds.shape)
-            else:
-                print("DEBUG: 'BC-BO' key not found in normalization JSON. Skipping BC-BO denormalization.")
-        else:
-            print("DEBUG: No normalization JSON provided; outputs remain in normalized scale.")
-
-
-
         # If using returns, recalc r2 based on baseline + predictions.
         # Ensure predictions arrays are correctly squeezed to match the shape of stacked ground truth
         train_preds_squeezed = np.squeeze(train_preds, axis=-1)  # from (samples, horizons, 1) to (samples, horizons)
