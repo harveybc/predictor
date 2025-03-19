@@ -315,9 +315,22 @@ def process_data(config):
     else:
         print("Not using sliding windows; converting data to NumPy arrays without windowing.")
 
-        x_train = x_train.to_numpy().astype(np.float32)
-        x_val = x_val.to_numpy().astype(np.float32)
-        x_test = x_test.to_numpy().astype(np.float32)
+        # Convert x_train, x_val, x_test to NumPy arrays if they aren't already, then cast to float32
+        if not isinstance(x_train, np.ndarray):
+            x_train = x_train.to_numpy().astype(np.float32)
+        else:
+            x_train = x_train.astype(np.float32)
+
+        if not isinstance(x_val, np.ndarray):
+            x_val = x_val.to_numpy().astype(np.float32)
+        else:
+            x_val = x_val.astype(np.float32)
+
+        if not isinstance(x_test, np.ndarray):
+            x_test = x_test.to_numpy().astype(np.float32)
+        else:
+            x_test = x_test.astype(np.float32)
+
 
         y_train_multi = y_train_multi.to_numpy().astype(np.float32)
         y_val_multi = y_val_multi.to_numpy().astype(np.float32)
