@@ -254,7 +254,7 @@ def process_data(config):
 
     # Drop raw absolute price columns and leakage columns, but keep the new normalized BC-BO
     #cols_to_drop = ['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO']
-    cols_to_drop = ['BC-BO']
+    #cols_to_drop = ['BC-BO']
     #x_train.drop(columns=cols_to_drop, inplace=True, errors='ignore')
     #x_val.drop(columns=cols_to_drop, inplace=True, errors='ignore')
     #x_test.drop(columns=cols_to_drop, inplace=True, errors='ignore')
@@ -294,15 +294,14 @@ def process_data(config):
             y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
 
 
-    # === STEP 4.1: Normalize multi-step targets using BC-BO parameters (if using returns) ===
-    # === STEP 4.2: Scale multi-step targets if desired ===
+    # === STEP 4.1: Scale multi-step target returns (if using returns) ===
     if config.get("use_returns", False):
-        scaling_factor = config.get("target_scaling_factor", 100)
-        # Assuming y_train_multi, y_val_multi, y_test_multi are pandas DataFrames at this point.
-        y_train_multi = y_train_multi * scaling_factor
-        y_val_multi = y_val_multi * scaling_factor
-        y_test_multi = y_test_multi * scaling_factor
-        print(f"DEBUG: Multi-step targets scaled by factor {scaling_factor}.")
+        scale_factor = config.get("target_scaling_factor", 100.0)  # default scaling factor of 100
+        print(f"DEBUG: Scaling multi-step target returns by factor {scale_factor}.")
+        # Multiply every element in the target DataFrames by the scaling factor.
+        y_train_multi = y_train_multi.applymap(lambda v: v * scale_factor)
+        y_val_multi = y_val_multi.applymap(lambda v: v * scale_factor)
+        y_test_multi = y_test_multi.applymap(lambda v: v * scale_factor)
 
 
         
@@ -590,12 +589,15 @@ def run_prediction_pipeline(config, plugin):
             threshold_error=threshold_error, x_val=x_val, y_val=y_val, config=config
         )
 
+        # === STEP 7: Inverse-scale the predictions if using returns ===
         if config.get("use_returns", False):
-            scaling_factor = 1/config.get("target_scaling_factor", 100)
-            # Assuming y_train_multi, y_val_multi, y_test_multi are pandas DataFrames at this point.
-            train_preds = train_preds * scaling_factor
-            val_preds = val_preds * scaling_factor
-            print(f"DEBUG: Multi-step targets scaled by factor {scaling_factor}.") 
+            inv_scale_factor = 1.0 / config.get("target_scaling_factor", 100.0)
+            print(f"DEBUG: Inversely scaling predictions by factor {inv_scale_factor}.")
+            # Multiply the prediction arrays by the inverse scaling factor.
+            train_preds = train_preds * inv_scale_factor
+            val_preds = val_preds * inv_scale_factor
+            test_predictions = test_predictions * inv_scale_factor
+
 
         # If using returns, recalc r2 based on baseline + predictions.
         # Ensure predictions arrays are correctly squeezed to match the shape of stacked ground truth
