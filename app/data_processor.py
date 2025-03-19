@@ -906,7 +906,15 @@ def run_prediction_pipeline(config, plugin):
                 close_max = norm_json["CLOSE"]["max"]
                 diff = close_max - close_min
                 # Final predicted close = (predicted_return + baseline)*diff + close_min
-                test_predictions = (test_predictions + baseline_test) * diff + close_min
+                # Squeeze the predictions array to remove extra dimensions (6293, 6, 1) → (6293, 6)
+                test_predictions_squeezed = np.squeeze(test_predictions, axis=-1)
+
+                # Expand baseline_test dimensions explicitly to match test_predictions
+                baseline_test_expanded = np.expand_dims(baseline_test, axis=-1)  # (6293, 1) → (6293, 1, 1)
+
+                # Perform broadcasting explicitly and safely
+                test_predictions = (test_predictions_squeezed + baseline_test_expanded.squeeze(-1)) * diff + close_min
+
                 # --- NEW CODE: Correctly stack y_test into a (n_samples, time_horizon) array ---
                 y_test_array = np.stack(y_test, axis=1)  # Ensure y_test is now (n_samples, time_horizon)
                 denorm_y_test = (y_test_array + baseline_test) * diff + close_min
