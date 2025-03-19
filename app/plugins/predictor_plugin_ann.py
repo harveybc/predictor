@@ -143,8 +143,8 @@ class Plugin:
                 kernel_initializer=RandomNormal(mean=0.0, stddev=0.05),
                 name=f"dense_layer_{i+1}"
             )(x)
-            x = BatchNormalization()(x)
-            current_size = max(current_size // layer_size_divisor, 1)
+        x = BatchNormalization()(x)
+        current_size = max(current_size // layer_size_divisor, 1)
         
         # Crear múltiples salidas para cada horizonte de predicción
         outputs = []
