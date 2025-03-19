@@ -344,6 +344,11 @@ def process_data(config):
     y_val_multi_list   = [y_val_multi[:, i] for i in range(y_val_multi.shape[1])]
     y_test_multi_list  = [y_test_multi[:, i] for i in range(y_test_multi.shape[1])]
 
+
+    x_train.drop(columns=['CLOSE'], inplace=True)
+    x_val.drop(columns=['CLOSE'], inplace=True)
+    x_test.drop(columns=['CLOSE'], inplace=True)
+
     # Update the return dictionary to use the lists instead of the single 2D arrays:
     ret = {
         "x_train": x_train,
