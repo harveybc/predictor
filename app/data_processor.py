@@ -493,9 +493,10 @@ def run_prediction_pipeline(config, plugin):
         test_unc_last = np.mean(uncertainty_estimates[ : , -1])
         
         # calcula los promedios de la señal para calcular SNR (la desviación es el uncertainty)
-        train_mean = np.mean(baseline_train[ : , -1] + train_preds[ : , -1])
-        val_mean = np.mean(baseline_val[ : , -1] + val_preds[ : , -1])
-        test_mean = np.mean(baseline_test[ : , -1] + test_predictions[ : , -1])
+        if config.get("use_returns", False):
+            train_mean = np.mean(baseline_train[ : , -1] + train_preds[ : , -1])
+            val_mean = np.mean(baseline_val[ : , -1] + val_preds[ : , -1])
+            test_mean = np.mean(baseline_test[ : , -1] + test_predictions[ : , -1])
         
         # calcula the the SNR as the 1/(uncertainty/mae)^2
         train_snr = 1/(train_unc_last/train_mean)
@@ -878,16 +879,16 @@ def run_prediction_pipeline(config, plugin):
         test_dates_plot = test_dates[-n_plot:] if test_dates is not None else np.arange(len(pred_plot))
     else:
         test_dates_plot = test_dates if test_dates is not None else np.arange(len(pred_plot))
+    if config.get("use_returns", False):
+        # Extract and correctly denormalize the baseline close value (current tick's true value)
+        if "baseline_test" in datasets:
+            baseline_plot = datasets["baseline_test"][:, 0]  # Use first column if multi-step
 
-    # Extract and correctly denormalize the baseline close value (current tick's true value)
-    if "baseline_test" in datasets:
-        baseline_plot = datasets["baseline_test"][:, 0]  # Use first column if multi-step
-
-        # Keep only last n_plot values if necessary
-        if len(baseline_plot) > n_plot:
-            baseline_plot = baseline_plot[-n_plot:]
-    else:
-        raise ValueError("Baseline test values not found; unable to reconstruct actual predictions.")
+            # Keep only last n_plot values if necessary
+            if len(baseline_plot) > n_plot:
+                baseline_plot = baseline_plot[-n_plot:]
+        else:
+            raise ValueError("Baseline test values not found; unable to reconstruct actual predictions.")
 
     # --- Correcting Denormalization ---
     if config.get("use_normalization_json") is not None:
