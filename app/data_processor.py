@@ -19,458 +19,178 @@ from plugin_loader import load_plugin
 from tensorflow.keras.utils import plot_model
 from tensorflow.keras.losses import Huber
 
-# --- CHUNK: create_sliding_windows_x (Replace your old version with this one) ---
-def create_sliding_windows_x(data, window_size, stride=1, date_times=None):
+#!/usr/bin/env python
+"""
+data_processor_nbeats.py
+
+This module implements a revised data processor for a single-step forecast.
+It loads the CSV files, extracts the 'CLOSE' column as the univariate series,
+and creates sliding-window samples such that each sample's target is a single value:
+the future value at (window_size + time_horizon – 1).
+
+Optionally, if config["use_returns"] is True, the target is computed as the difference
+between the future value and the last value of the input window.
+
+The output dictionary is structured to be compatible with the existing predictor pipeline.
+"""
+
+import pandas as pd
+import numpy as np
+from app.data_handler import load_csv, write_csv
+import json
+
+def create_sliding_windows_single(data, window_size, time_horizon, date_times=None):
     """
-    Create sliding windows for input data only.
-
+    Creates sliding windows for a univariate series with a single-step target.
+    
+    For each index i, an input window is taken from data[i : i + window_size]
+    and the target is the value at index i + window_size + time_horizon - 1.
+    
     Args:
-        data (np.ndarray or pd.DataFrame): Input data array of shape (n_samples, n_features).
-        window_size (int): The number of time steps in each window.
-        stride (int): The stride between successive windows.
-        date_times (pd.DatetimeIndex, optional): Corresponding date times for each sample.
-
+        data (np.ndarray): 1D array of data values.
+        window_size (int): Number of past time steps used as input.
+        time_horizon (int): How many steps ahead to forecast (target = data[i+window_size+time_horizon-1]).
+        date_times (pd.DatetimeIndex, optional): Date indices corresponding to the data.
+        
     Returns:
-        If date_times is provided:
-            tuple: (windows, date_time_windows) where windows is an array of shape 
-                   (n_windows, window_size, n_features) and date_time_windows is a list of 
-                   the DATE_TIME value corresponding to the last time step (most current) of each window.
-        Otherwise:
-            np.ndarray: Array of sliding windows.
+        tuple: (windows, targets, date_windows)
+          - windows: np.ndarray of shape (n_samples, window_size)
+          - targets: np.ndarray of shape (n_samples,) containing single forecast values.
+          - date_windows: list of dates corresponding to each input window (if provided).
     """
     windows = []
+    targets = []
     date_windows = []
-    for i in range(window_size, len(data), stride):
-        windows.append(data[i-window_size: i])
+    n = len(data)
+    # Ensure that we have enough data points for at least one window and target.
+    for i in range(0, n - window_size - time_horizon + 1):
+        window = data[i : i + window_size]
+        target = data[i + window_size + time_horizon - 1]
+        windows.append(window)
+        targets.append(target)
         if date_times is not None:
-            # Use the date corresponding to the lastest, most current element in the window
-            date_windows.append(date_times[i])
-    return np.array(windows), date_windows
-
-
-def create_multi_step(y_df, horizon, use_returns=False):
-    """
-    Creates multi-step targets for time-series prediction.
-    For each base tick at index i, the target is taken from the next 'horizon' rows 
-    (i.e. corresponding to t+1, t+2, ..., t+horizon). Assumes that data is in ascending order.
-    
-    Args:
-        y_df (pd.DataFrame): Target data as a DataFrame.
-        horizon (int): Number of future steps to predict.
-        use_returns (bool): If True, returns are computed as (future – base).
-    
-    Returns:
-        pd.DataFrame: Multi-step targets with shape (L-horizon, horizon).
-        (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
-    """
-    blocks = []
-    baselines = []
-    L = len(y_df)
-    for i in range(L - horizon -1):
-        base = y_df.iloc[i].values.flatten()
-        future_values = y_df.iloc[i+1: i+1+horizon].values.flatten()
-        if use_returns:
-            target = future_values - base  # (t+1 to t+horizon) - base value at t
-        else:
-            target = future_values
-        blocks.append(target)
-        if use_returns:
-            baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:L - horizon-1])
-    if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:L - horizon-1])
-        return df_targets, df_baselines
-    else:
-        return df_targets
-
-
-def create_multi_step_daily(y_df, horizon, use_returns=False):
-    """
-    Creates multi-step targets for time-series prediction using daily data.
-    If use_returns is True, targets are computed as the difference between each future value 
-    and the current (baseline) value.
-    
-    Args:
-        y_df (pd.DataFrame): Target data as a DataFrame.
-        horizon (int): Number of future days to predict.
-        use_returns (bool): If True, compute returns instead of absolute values.
-    
-    Returns:
-        pd.DataFrame: Multi-step targets aligned with the input data.
-        (if use_returns is True) pd.DataFrame: Baseline values corresponding to each target row.
-    """
-    blocks = []
-    baselines = []
-    for i in range(len(y_df) - horizon * 24):
-        base = y_df.iloc[i].values.flatten()
-        window = []
-        for d in range(1, horizon + 1):
-            future_values = y_df.iloc[i + d * 24].values.flatten()
-            if use_returns:
-                #window.extend(list(val - base))
-                target = future_values - base  # (t+1 to t+horizon) - base value at t
-            else:
-                target = future_values
-            window.append(target)    
-        blocks.append(window)
-        if use_returns:
-            baselines.append(base)
-    df_targets = pd.DataFrame(blocks, index=y_df.index[:-horizon * 24])
-    if use_returns:
-        df_baselines = pd.DataFrame(baselines, index=y_df.index[:-horizon * 24])
-        return df_targets, df_baselines
-    else:
-        return df_targets
-
+            # Option: Use the date at the last step of the input window
+            date_windows.append(date_times[i + window_size - 1])
+    return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), date_windows
 
 def process_data(config):
     """
-    Processes data for different plugins, including ANN, CNN, LSTM, and Transformer.
-    Loads and processes training, validation, and test datasets; extracts DATE_TIME information,
-    and trims each pair (x and y) to their common date range so that they share the same number of rows.
+    Processes data for the N-BEATS plugin using a single-step forecast.
+    
+    Steps:
+      1. Loads CSV files from paths defined in config.
+      2. Extracts the 'CLOSE' column as the univariate input.
+      3. Converts the series to NumPy arrays (float32).
+      4. Creates sliding-window samples with a single forecast target.
+         - If config["use_returns"] is True, computes target as (future_value - last_value_of_window).
+      5. Reshapes the input windows to (samples, window_size, 1).
+      6. Returns a dictionary containing training, validation, and test datasets along with dates.
+    
+    Args:
+        config (dict): Configuration dictionary including:
+            - "x_train_file", "x_validation_file", "x_test_file"
+            - "headers": boolean for CSV headers.
+            - "max_steps_train", "max_steps_val", "max_steps_test": maximum rows to load.
+            - "window_size": integer for the sliding window length.
+            - "time_horizon": forecast horizon (integer).
+            - "use_returns": boolean flag for forecasting returns.
     
     Returns:
-        dict: Processed datasets for training, validation, and test, along with corresponding
-              DATE_TIME arrays. Additionally, if config['use_returns'] is True, the corresponding 
-              baseline target values (the original CLOSE values) are also returned.
+        dict: Processed datasets and additional arrays, including:
+            "x_train", "y_train", "x_val", "y_val", "x_test", "y_test",
+            "dates_train", "dates_val", "dates_test",
+            "y_train_array", "y_val_array", "y_test_array",
+            "test_close_prices"
     """
-    import pandas as pd
-    # 1) LOAD CSVs for train, validation, and test
-    x_train = load_csv(
-        config["x_train_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_train")
-    )
-    y_train = load_csv(
-        config["y_train_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_train")
-    )
-    x_val = load_csv(
-        config["x_validation_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_val")
-    )
-    y_val = load_csv(
-        config["y_validation_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_val")
-    )
-    x_test = load_csv(
-        config["x_test_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_test")
-    )
-    y_test = load_csv(
-        config["y_test_file"],
-        headers=config["headers"],
-        max_rows=config.get("max_steps_test")
-    )
+    # 1. Load CSV files.
+    x_train_df = load_csv(config["x_train_file"], headers=config["headers"], max_rows=config.get("max_steps_train"))
+    x_val_df   = load_csv(config["x_validation_file"], headers=config["headers"], max_rows=config.get("max_steps_val"))
+    x_test_df  = load_csv(config["x_test_file"], headers=config["headers"], max_rows=config.get("max_steps_test"))
     
-    # 1a) Trim to common date range if possible.
-    if isinstance(x_train.index, pd.DatetimeIndex) and isinstance(y_train.index, pd.DatetimeIndex):
-        common_train_index = x_train.index.intersection(y_train.index)
-        x_train = x_train.loc[common_train_index]
-        y_train = y_train.loc[common_train_index]
-    if isinstance(x_val.index, pd.DatetimeIndex) and isinstance(y_val.index, pd.DatetimeIndex):
-        common_val_index = x_val.index.intersection(y_val.index)
-        x_val = x_val.loc[common_val_index]
-        y_val = y_val.loc[common_val_index]
-    if isinstance(x_test.index, pd.DatetimeIndex) and isinstance(y_test.index, pd.DatetimeIndex):
-        common_test_index = x_test.index.intersection(y_test.index)
-        x_test = x_test.loc[common_test_index]
-        y_test = y_test.loc[common_test_index]
+    # 2. If possible, set the index as datetime.
+    for df in (x_train_df, x_val_df, x_test_df):
+        if not isinstance(df.index, pd.DatetimeIndex):
+            try:
+                df.index = pd.to_datetime(df.index)
+            except Exception:
+                df.index = None
     
-    # Save original DATE_TIME indices AFTER trimming.
-    train_dates_orig = x_train.index if isinstance(x_train.index, pd.DatetimeIndex) else None
-    val_dates_orig = x_val.index if isinstance(x_val.index, pd.DatetimeIndex) else None
-    test_dates_orig = x_test.index if isinstance(x_test.index, pd.DatetimeIndex) else None
-
-
-    # 2) EXTRACT THE TARGET COLUMN
-    target_col = config["target_column"]
-    def extract_target(df, col):
-        if isinstance(col, str):
-            if col not in df.columns:
-                raise ValueError(f"Target column '{col}' not found.")
-            return df[[col]]
-        elif isinstance(col, int):
-            return df.iloc[:, [col]]
-        else:
-            raise ValueError("`target_column` must be str or int.")
-    y_train = extract_target(y_train, target_col)
-    y_val = extract_target(y_val, target_col)
-    y_test = extract_target(y_test, target_col)
-    test_close_prices = y_test.copy()  # Save for later use
-    if isinstance(test_close_prices, pd.DataFrame):
-        test_close_prices = test_close_prices.to_numpy()
-        
-
-    # === STEP 3: CONVERT EACH DF TO NUMERIC (keep DataFrames) ===
-    # === STEP 3: CONVERT EACH DF TO NUMERIC (keep DataFrames) ===
-    x_train = x_train.apply(pd.to_numeric, errors="coerce").fillna(0)
-    y_train = y_train.apply(pd.to_numeric, errors="coerce").fillna(0)
-    x_val   = x_val.apply(pd.to_numeric, errors="coerce").fillna(0)
-    y_val   = y_val.apply(pd.to_numeric, errors="coerce").fillna(0)
-    x_test  = x_test.apply(pd.to_numeric, errors="coerce").fillna(0)
-    y_test  = y_test.apply(pd.to_numeric, errors="coerce").fillna(0)
-
+    # 3. Extract the 'CLOSE' column.
+    if "CLOSE" not in x_train_df.columns:
+        raise ValueError("Column 'CLOSE' not found in training data.")
+    close_train = x_train_df["CLOSE"].astype(np.float32).values  # shape (n_samples,)
+    close_val   = x_val_df["CLOSE"].astype(np.float32).values
+    close_test  = x_test_df["CLOSE"].astype(np.float32).values
     
-
-    # === DERIVE CLEAN, LEAKAGE-FREE FEATURES (KEEP DATAFRAMES) ===
-    # Compute previous CLOSE for overnight gap calculation
-    x_train['Prev_CLOSE'] = x_train['CLOSE'].shift(1)
-    x_val['Prev_CLOSE']   = x_val['CLOSE'].shift(1)
-    x_test['Prev_CLOSE']  = x_test['CLOSE'].shift(1)
-
-    # Calculate Overnight Gap and High-Low Range normalized by OPEN
-    x_train['Overnight_Gap'] = (x_train['OPEN'] - x_train['Prev_CLOSE']) / x_train['Prev_CLOSE']
-    x_val['Overnight_Gap']   = (x_val['OPEN'] - x_val['Prev_CLOSE']) / x_val['Prev_CLOSE']
-    x_test['Overnight_Gap']  = (x_test['OPEN'] - x_test['Prev_CLOSE']) / x_test['Prev_CLOSE']
-
-    x_train['HL_Range'] = (x_train['HIGH'] - x_train['LOW']) / x_train['OPEN']
-    x_val['HL_Range']   = (x_val['HIGH'] - x_val['LOW']) / x_val['OPEN']
-    x_test['HL_Range']  = (x_test['HIGH'] - x_test['LOW']) / x_test['OPEN']
-
-    # Fill NaNs that may result from shifting operations
-    x_train.fillna(0, inplace=True)
-    x_val.fillna(0, inplace=True)
-    x_test.fillna(0, inplace=True)
-
-    # --- NEW: Add normalized BC-BO feature ---
-    norm_json = config.get("use_normalization_json")
-    if isinstance(norm_json, str):
-        with open(norm_json, 'r') as f:
-            norm_json = json.load(f)
-    if "BC-BO" in norm_json:
-        bcbo_min = norm_json["BC-BO"]["min"]
-        bcbo_max = norm_json["BC-BO"]["max"]
-        x_train['Norm_BC_BO'] = 2 * (x_train['BC-BO'] - bcbo_min) / (bcbo_max - bcbo_min) - 1
-        x_val['Norm_BC_BO'] = 2 * (x_val['BC-BO'] - bcbo_min) / (bcbo_max - bcbo_min) - 1
-        x_test['Norm_BC_BO'] = 2 * (x_test['BC-BO'] - bcbo_min) / (bcbo_max - bcbo_min) - 1
-        print("DEBUG: Normalized BC-BO feature added as 'Norm_BC_BO'.")
-    else:
-        print("Warning: 'BC-BO' normalization parameters not found; BC-BO feature will not be normalized.")
-
-    # Drop raw absolute price columns and leakage columns, but keep the new normalized BC-BO
-    cols_to_drop = ['OPEN', 'HIGH', 'LOW', 'CLOSE', 'Prev_CLOSE', 'VOLUME', 'BC-BO']
-    x_train.drop(columns=cols_to_drop, inplace=True, errors='ignore')
-    x_val.drop(columns=cols_to_drop, inplace=True, errors='ignore')
-    x_test.drop(columns=cols_to_drop, inplace=True, errors='ignore')
-    print("DEBUG: Dropped raw price columns and leakage columns; normalized BC-BO is preserved.")
-
-
-
-    # === NOW (AFTER FEATURE ENGINEERING) CONVERT TO NUMPY ===
-    x_train = x_train.to_numpy().astype(np.float32)
-    x_val = x_val.to_numpy().astype(np.float32)
-    x_test = x_test.to_numpy().astype(np.float32)
-
-
-
-    # 4) MULTI-STEP TARGETS
+    # Retrieve date indices.
+    train_dates = x_train_df.index if x_train_df.index is not None else None
+    val_dates   = x_val_df.index   if x_val_df.index is not None else None
+    test_dates  = x_test_df.index  if x_test_df.index is not None else None
+    
+    # 4. Create sliding windows for a single-step forecast.
+    window_size = config["window_size"]
     time_horizon = config["time_horizon"]
-    if config.get("use_daily", False):
-        y_train_ma = y_train.rolling(window=3, center=True, min_periods=1).mean()
-        y_val_ma = y_val.rolling(window=3, center=True, min_periods=1).mean()
-        y_test_ma = y_test.rolling(window=3, center=True, min_periods=1).mean() 
-        if config.get("use_returns", False):
-            y_train_multi, baseline_train = create_multi_step_daily(y_train_ma, time_horizon, use_returns=True)
-            y_val_multi, baseline_val = create_multi_step_daily(y_val_ma, time_horizon, use_returns=True)
-            y_test_multi, baseline_test = create_multi_step_daily(y_test_ma, time_horizon, use_returns=True)
-        else:
-            y_train_multi = create_multi_step_daily(y_train_ma, time_horizon, use_returns=False)
-            y_val_multi = create_multi_step_daily(y_val_ma, time_horizon, use_returns=False)
-            y_test_multi = create_multi_step_daily(y_test_ma, time_horizon, use_returns=False)
-    else:
-        if config.get("use_returns", False):
-            y_train_multi, baseline_train = create_multi_step(y_train, time_horizon, use_returns=True)
-            y_val_multi, baseline_val = create_multi_step(y_val, time_horizon, use_returns=True)
-            y_test_multi, baseline_test = create_multi_step(y_test, time_horizon, use_returns=True)
-        else:
-            y_train_multi = create_multi_step(y_train, time_horizon, use_returns=False)
-            y_val_multi = create_multi_step(y_val, time_horizon, use_returns=False)
-            y_test_multi = create_multi_step(y_test, time_horizon, use_returns=False)
-
-
-    # === STEP 4.1: Scale multi-step target returns (if using returns) ===
-    if config.get("use_returns", False):
-        scale_factor = config.get("target_scaling_factor", 100.0)  # default scaling factor of 100
-        print(f"DEBUG: Scaling multi-step target returns by factor {scale_factor}.")
-        # Multiply every element in the target DataFrames by the scaling factor.
-        y_train_multi = y_train_multi.applymap(lambda v: v * scale_factor)
-        y_val_multi = y_val_multi.applymap(lambda v: v * scale_factor)
-        y_test_multi = y_test_multi.applymap(lambda v: v * scale_factor)
-
-
-        
-    # 5) PER-PLUGIN PROCESSING
-    # Use sliding windows only if explicitly enabled by config['use_sliding_windows'] or if the plugin is "lstm".
-    if config["plugin"] in ["lstm", "cnn", "transformer","ann"]:
-        print("Processing data with sliding windows...")
-
-        window_size = config["window_size"]
-
-        # Convert x_* to numpy arrays only if they are not already
-        if not isinstance(x_train, np.ndarray):
-            x_train_np = x_train.to_numpy().astype(np.float32)
-        else:
-            x_train_np = x_train.astype(np.float32)
-
-        if not isinstance(x_val, np.ndarray):
-            x_val_np = x_val.to_numpy().astype(np.float32)
-        else:
-            x_val_np = x_val.astype(np.float32)
-
-        if not isinstance(x_test, np.ndarray):
-            x_test_np = x_test.to_numpy().astype(np.float32)
-        else:
-            x_test_np = x_test.astype(np.float32)
-
-        # Create sliding windows and get aligned dates
-        x_train, train_dates = create_sliding_windows_x(x_train_np, window_size, stride=1, date_times=train_dates_orig)
-        x_val, val_dates = create_sliding_windows_x(x_val_np, window_size, stride=1, date_times=val_dates_orig)
-        x_test, test_dates = create_sliding_windows_x(x_test_np, window_size, stride=1, date_times=test_dates_orig)
-
-        # Adjust multi-step targets accordingly
-        y_train_multi = y_train_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
-        y_val_multi = y_val_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
-        y_test_multi = y_test_multi.iloc[window_size - 1:].to_numpy().astype(np.float32)
-
-        if config.get("use_returns", False):
-            print("Processing data with sliding windows with returns...")
-            baseline_train = baseline_train.iloc[window_size - 1:].to_numpy().astype(np.float32)
-            baseline_val = baseline_val.iloc[window_size - 1:].to_numpy().astype(np.float32)
-            baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
-        # Trim the original date indices to match sliding windows
-        if train_dates_orig is not None:
-            train_dates_orig = train_dates_orig[window_size - 1:]
-        else:
-            train_dates = None
-        if val_dates_orig is not None:
-            val_dates_orig = val_dates_orig[window_size - 1:]
-        else:
-            val_dates = None
-        if test_dates_orig is not None:
-            test_dates_orig = test_dates_orig[window_size - 1:]
-        else:
-            test_dates = None
-
-        # Ensure test_close_prices array alignment
-        min_len_test = min(len(x_test), len(y_test_multi))
-        test_close_prices = test_close_prices[window_size - 1 : window_size - 1 + min_len_test, -1]
-    else:
-        print("Not using sliding windows; converting data to NumPy arrays without windowing.")
-        # Convert x_train, x_val, x_test to numpy arrays if they are not already
-        if not isinstance(x_train, np.ndarray):
-            x_train = x_train.to_numpy().astype(np.float32)
-        else:
-            x_train = x_train.astype(np.float32)
-
-        if not isinstance(x_val, np.ndarray):
-            x_val = x_val.to_numpy().astype(np.float32)
-        else:
-            x_val = x_val.astype(np.float32)
-
-        if not isinstance(x_test, np.ndarray):
-            x_test = x_test.to_numpy().astype(np.float32)
-        else:
-            x_test = x_test.astype(np.float32)
-
-        y_train_multi = y_train_multi.to_numpy().astype(np.float32)
-        y_val_multi = y_val_multi.to_numpy().astype(np.float32)
-        y_test_multi = y_test_multi.to_numpy().astype(np.float32)
-        if config.get("use_returns", False):
-            baseline_train = baseline_train.to_numpy().astype(np.float32)
-            baseline_val = baseline_val.to_numpy().astype(np.float32)
-            baseline_test = baseline_test.to_numpy().astype(np.float32)
-        train_dates = train_dates_orig
-        val_dates = val_dates_orig
-        test_dates = test_dates_orig
-        min_len_test = min(len(x_test), len(y_test_multi))
-        test_close_prices = test_close_prices[:min_len_test, -1]
-
-
-
-
-
-    # 6) TRIM x TO MATCH THE LENGTH OF y (for each dataset)
-    min_len_train = min(len(x_train), len(y_train_multi))
-    x_train = x_train[:min_len_train]
-    y_train_multi = y_train_multi[:min_len_train]
-    if config.get("use_returns", False):
-        baseline_train = baseline_train[:min_len_train]
-    min_len_val = min(len(x_val), len(y_val_multi))
-    x_val = x_val[:min_len_val]
-    y_val_multi = y_val_multi[:min_len_val]
-    if config.get("use_returns", False):
-        baseline_val = baseline_val[:min_len_val]
-    min_len_test = min(len(x_test), len(y_test_multi))
-    x_test = x_test[:min_len_test]
-    y_test_multi = y_test_multi[:min_len_test]
-    if config.get("use_returns", False):
-        baseline_test = baseline_test[:min_len_test]
-    # trim also the dates of the datasets
-    train_dates_orig = train_dates_orig[:min_len_train] if train_dates_orig is not None else None
-    val_dates_orig = val_dates_orig[:min_len_val] if val_dates_orig is not None else None
-    test_dates_orig = test_dates_orig[:min_len_test] if test_dates_orig is not None else None
-
-    train_dates = train_dates_orig if train_dates_orig is not None else None
-    val_dates = val_dates_orig if val_dates_orig is not None else None
-    test_dates = test_dates_orig if test_dates_orig is not None else None
-    test_close_prices = test_close_prices[:min_len_test]
-
-
+    use_returns = config.get("use_returns", False)
+    
+    X_train, y_train, dates_train = create_sliding_windows_single(close_train, window_size, time_horizon, train_dates)
+    X_val, y_val, dates_val       = create_sliding_windows_single(close_val, window_size, time_horizon, val_dates)
+    X_test, y_test, dates_test    = create_sliding_windows_single(close_test, window_size, time_horizon, test_dates)
+    
+    # 5. If use_returns is True, compute returns (difference between future and last value of window).
+    if use_returns:
+        # The baseline is the last value in each window.
+        baseline_train = X_train[:, -1]
+        baseline_val   = X_val[:, -1]
+        baseline_test  = X_test[:, -1]
+        y_train = y_train - baseline_train
+        y_val   = y_val - baseline_val
+        y_test  = y_test - baseline_test
+    # 6. Reshape X arrays to (samples, window_size, 1) to denote univariate input.
+    X_train = X_train.reshape(-1, window_size, 1)
+    X_val   = X_val.reshape(-1, window_size, 1)
+    X_test  = X_test.reshape(-1, window_size, 1)
+    
+    # 7. For compatibility, create y arrays as lists of 1D arrays (each forecast is a scalar).
+    y_train_list = [y_train]  # single output per sample
+    y_val_list   = [y_val]
+    y_test_list  = [y_test]
+    
+    # Also keep stacked target arrays (with shape (samples, 1)).
+    y_train_array = y_train.reshape(-1, 1)
+    y_val_array   = y_val.reshape(-1, 1)
+    y_test_array  = y_test.reshape(-1, 1)
+    
+    # 8. For test close prices, use the last value of each input window.
+    test_close_prices = close_test[window_size - 1 : len(close_test) - time_horizon + 1]
+    
+    # Debug messages
     print("Processed datasets:")
-    print(" x_train:", x_train.shape, " y_train:", y_train_multi.shape)
-    print(" x_val:  ", x_val.shape, " y_val:  ", y_val_multi.shape)
-    print(" x_test: ", x_test.shape, " y_test: ", y_test_multi.shape)
-    print(" test_close_prices: ", test_close_prices.shape)
+    print(" X_train shape:", X_train.shape, " y_train shape:", y_train_array.shape)
+    print(" X_val shape:  ", X_val.shape,   " y_val shape:  ", y_val_array.shape)
+    print(" X_test shape: ", X_test.shape,  " y_test shape: ", y_test_array.shape)
+    print(" Test close prices shape:", test_close_prices.shape)
     
-    
-
-    # --- NEW CODE to convert targets to list of arrays ---
-    # Assuming y_train_multi, y_val_multi, y_test_multi have shape (samples, time_horizon)
-    y_train_multi_list = [y_train_multi[:, i] for i in range(y_train_multi.shape[1])]
-    y_val_multi_list   = [y_val_multi[:, i] for i in range(y_val_multi.shape[1])]
-    y_test_multi_list  = [y_test_multi[:, i] for i in range(y_test_multi.shape[1])]
-
-
-    
-    # Update the return dictionary to use the lists instead of the single 2D arrays:
     ret = {
-        "x_train": x_train,
-        "y_train": y_train_multi_list,
-        "x_val": x_val,
-        "y_val": y_val_multi_list,
-        "x_test": x_test,
-        "y_test": y_test_multi_list,
-        "dates_train": train_dates,
-        "dates_val": val_dates,
-        "dates_test": test_dates,
-        'test_close_prices': test_close_prices
+        "x_train": X_train,
+        "y_train": y_train_list,
+        "x_val": X_val,
+        "y_val": y_val_list,
+        "x_test": X_test,
+        "y_test": y_test_list,
+        "dates_train": dates_train,
+        "dates_val": dates_val,
+        "dates_test": dates_test,
+        "y_train_array": y_train_array,
+        "y_val_array": y_val_array,
+        "y_test_array": y_test_array,
+        "test_close_prices": test_close_prices
     }
-    # --- END NEW CODE ---
-
-
-    # --- NEW CODE: Also stack multi-output targets into 2D arrays for evaluation ---
-    y_train_array = np.stack(y_train_multi_list, axis=1)  # shape: (n_samples, time_horizon)
-    y_val_array   = np.stack(y_val_multi_list, axis=1)
-    y_test_array  = np.stack(y_test_multi_list, axis=1)
-    ret["y_train_array"] = y_train_array
-    ret["y_val_array"] = y_val_array
-    ret["y_test_array"] = y_test_array
-    print("DEBUG: Stacked y_train shape:", y_train_array.shape)
-    print("DEBUG: Stacked y_val shape:", y_val_array.shape)
-    print("DEBUG: Stacked y_test shape:", y_test_array.shape)
-    # --- END NEW CODE ---
-
-
-    if config.get("use_returns", False):
-        ret["baseline_train"] = baseline_train
-        ret["baseline_val"] = baseline_val
-        ret["baseline_test"] = baseline_test
+    if use_returns:
+        ret["baseline_train"] = X_train[:, -1].squeeze()
+        ret["baseline_val"]   = X_val[:, -1].squeeze()
+        ret["baseline_test"]  = X_test[:, -1].squeeze()
     return ret
+
 
 
 def run_prediction_pipeline(config, plugin):

@@ -15,6 +15,18 @@ import logging
 import os
 import gc
 import tensorflow.keras.backend as K
+
+import numpy as np
+import tensorflow as tf
+import tensorflow_probability as tfp
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Input, BatchNormalization
+from tensorflow.keras.initializers import RandomNormal
+#Flatten
+from tensorflow.keras.layers import Flatten
+#Add
+from tensorflow.keras.layers import Add
+#tfp_layers
 #tensor flow probability densrflipout
 tfp_layers = tfp.layers
 
@@ -108,374 +120,129 @@ class Plugin:
         plugin_debug_info = self.get_debug_info()
         debug_info.update(plugin_debug_info)
 
-    import numpy as np
-    import tensorflow as tf
-    import tensorflow_probability as tfp
-    from tensorflow.keras.models import Model
-    from tensorflow.keras.layers import Dense, Input, BatchNormalization
-    from tensorflow.keras.initializers import RandomNormal
-    #tfp_layers
 
 
     tfp_layers = tfp.layers
 
     # Construcción explícita del modelo con depuración detallada
-    def build_model(self, input_shape, x_train, config=None):
-        from tensorflow.keras.layers import Input, Dense, BatchNormalization
-        from tensorflow.keras.models import Model
-        from tensorflow.keras.initializers import RandomNormal
-
-        # Parámetros del modelo
-        initial_layer_size = config['initial_layer_size']
-        intermediate_layers = config['intermediate_layers']
-        layer_size_divisor = config['layer_size_divisor']
-        activation = config['activation']
-        learning_rate = config['learning_rate']
-        time_horizon = config['time_horizon']
-
-        print(f"DEBUG: Iniciando build_model con input_shape={input_shape}")
-        print(f"DEBUG: initial_layer_size={initial_layer_size}, intermediate_layers={intermediate_layers}, time_horizon={time_horizon}")
-
-        # Entrada común para todos los modelos paralelos
-        inputs = Input(shape=input_shape, name="common_input")
-        print(f"DEBUG: Creada capa Input común, shape={inputs.shape}")
-
-        outputs = []
-
-        # Crear ramas independientes para cada horizonte
-        for t in range(time_horizon):
-            print(f"DEBUG: Construyendo rama independiente para horizonte={t+1}")
-
-            # Inicializar rama independiente desde la entrada común
-            x = inputs
-            current_size = initial_layer_size
-
-            x = Dense(
-                units=current_size,
-                activation='linear',
-                kernel_initializer=RandomNormal(mean=0.0, stddev=0.05)
-            )(x)
-            # Capas intermedias independientes para esta rama
-            for i in range(intermediate_layers):
-                x = Dense(
-                    units=current_size,
-                    activation=activation,
-                    kernel_initializer=RandomNormal(mean=0.0, stddev=0.05),
-                    name=f"horizon_{t+1}_dense_{i+1}"
-                )(x)
-                print(f"DEBUG: horizonte={t+1}, capa_intermedia={i+1}, shape={x.shape}")
-
-                current_size = max(current_size // layer_size_divisor, 1)
-
-            # Normalización por lote independiente (opcional pero recomendado)
-            x = BatchNormalization(name=f"horizon_{t+1}_batchnorm")(x)
-            print(f"DEBUG: horizonte={t+1}, tras BatchNormalization, shape={x.shape}")
-
-            # Capa final (Dense estándar para este ejemplo)
-            output = Dense(
-                units=1,
-                activation='linear',
-                kernel_initializer=RandomNormal(mean=0.0, stddev=0.05),
-                name=f"output_horizon_{t+1}"
-            )(x)
-            print(f"DEBUG: horizonte={t+1}, salida final shape={output.shape}")
-
-            outputs.append(output)
-
-        # Modelo con múltiples salidas independientes
-        model = Model(inputs=inputs, outputs=outputs, name="multi_output_parallel_ann")
-
-        # Compilación del modelo con pérdidas independientes (Huber por salida)
-        model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
-            loss=[tf.keras.losses.Huber() for _ in range(time_horizon)],
-
-            metrics=['mae' for _ in range(time_horizon)],
-        )
-
-        print("DEBUG: Modelo multi-output paralelo compilado exitosamente.")
-        model.summary()
-
-        # Asignación del modelo al atributo interno del plugin
-        self.model = model
-
-
-    def compute_mmd(self, x, y, sigma=1.0, sample_size=256):
+    def build_model(self, input_shape, x_train, config):
         """
-        Compute Maximum Mean Discrepancy (MMD) using a Gaussian Kernel
-        with a reduced sample size to avoid memory issues.
-        """
-        with tf.device('/CPU:0'):
-            # Use the minimum of the sample sizes from x and y
-            num_samples = tf.minimum(tf.shape(x)[0], tf.shape(y)[0])
-            sample_size = tf.minimum(sample_size, num_samples)
-
-            idx = tf.random.shuffle(tf.range(num_samples))[:sample_size]
-
-            # Gather samples from both x and y using the same indices
-            x_sample = tf.gather(x, idx)  # Shape: (sample_size, ...)
-            y_sample = tf.gather(y, idx)  # Shape: (sample_size, ...)
-
-            def gaussian_kernel(a, b, sigma):
-                # Expand dims for broadcasting: (sample_size, 1, ...) and (1, sample_size, ...)
-                a_exp = tf.expand_dims(a, axis=1)
-                b_exp = tf.expand_dims(b, axis=0)
-                # Compute squared Euclidean distance
-                dist = tf.reduce_sum(tf.square(a_exp - b_exp), axis=-1)
-                return tf.exp(-dist / (2.0 * sigma ** 2))
-
-            K_xx = gaussian_kernel(x_sample, x_sample, sigma)
-            K_yy = gaussian_kernel(y_sample, y_sample, sigma)
-            K_xy = gaussian_kernel(x_sample, y_sample, sigma)
-
-            return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
-
-
-
-
-
-    def custom_loss(self, y_true, y_pred):
-        """
-        Custom loss function combining Huber loss and MMD loss.
-        """
-        huber_loss = tf.keras.losses.Huber()(y_true, y_pred)
-        mmd_loss = self.compute_mmd(y_pred, y_true)
-        total_loss = huber_loss + self.mmd_lambda * mmd_loss
-        return total_loss
-
-    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
-        """
-        Train the model with MMD loss incorporated and logged at every epoch.
-        """
-        import tensorflow as tf
-
-        if isinstance(x_train, tuple):
-            x_train = x_train[0]
-        if x_val is not None and isinstance(x_val, tuple):
-            x_val = x_val[0]
-
-        exp_horizon = self.params['time_horizon']
-
-        # --- Transformer-style multi-output adjustment ---
-        if isinstance(y_train, np.ndarray):
-            y_train = [y_train[:, i] for i in range(exp_horizon)]
-        if y_val is not None and isinstance(y_val, np.ndarray):
-            y_val = [y_val[:, i] for i in range(exp_horizon)]
-
-        print(f"Training with data => X: {x_train.shape}, Y: {[yt.shape for yt in y_train]}")
-        # --- END adjustment ---
-
-
-
-        # Initialize MMD lambda
-        mmd_lambda = self.params.get('mmd_lambda', 0.01)
-        self.mmd_lambda = tf.Variable(mmd_lambda, trainable=False, dtype=tf.float32, name='mmd_lambda')
-
-        class KLAnnealingCallback(tf.keras.callbacks.Callback):
-            def __init__(self, plugin, target_kl, anneal_epochs):
-                super().__init__()
-                self.plugin = plugin
-                self.target_kl = target_kl
-                self.anneal_epochs = anneal_epochs
-
-            def on_epoch_begin(self, epoch, logs=None):
-                #new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
-                new_kl = 0
-                #self.plugin.kl_weight_var.assign(new_kl)
-                print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
-
-        class MMDLoggingCallback(tf.keras.callbacks.Callback):
-            def __init__(self, plugin, x_train, y_train):
-                super().__init__()
-                self.plugin = plugin
-                self.x_train = x_train
-                self.y_train = y_train
-
-            def on_epoch_end(self, epoch, logs=None):
-                preds = self.plugin.model(self.x_train, training=True)
-                mmd_values = []
-                
-                # Iterar sobre cada salida individualmente
-                for i, (pred, y_true_single) in enumerate(zip(preds, self.y_train)):
-                    pred_flat = tf.reshape(pred, [-1, 1])
-                    y_true_flat = tf.reshape(y_true_single, [-1, 1])
-
-                    # Calcular MMD para cada salida individualmente
-                    mmd_value = self.plugin.compute_mmd(pred_flat, y_true_flat)
-                    mmd_values.append(mmd_value.numpy())
-
-                    print(f"DEBUG: Epoch {epoch+1}, salida {i+1}, MMD Loss = {mmd_value.numpy():.6f}")
-
-                # Promedio de los valores de MMD para log global
-                avg_mmd = np.mean(mmd_values)
-                print(f"DEBUG: Epoch {epoch+1}, Promedio MMD Loss: {avg_mmd:.6f}")
-
-        anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
-        target_kl = self.params.get('kl_weight', 1e-3)
-        kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        mmd_logging_callback = MMDLoggingCallback(self, x_train, y_train)
+        Builds a simplified N-BEATS model.
         
-        min_delta=config.get("min_delta", 1e-4) if config is not None else 1e-4
-        early_stopping_monitor = EarlyStoppingWithPatienceCounter(
-            monitor='val_loss',
-            patience=self.params.get('early_patience', 10),
-            restore_best_weights=True,
-            verbose=1,
-            start_from_epoch=10,
-            min_delta=min_delta
-        )
-
-        # ReduceLROnPlateau with patience = 1/3 of early stopping patience
-        reduce_lr_patience = max(1, self.params.get('early_patience', 10) // 3)  # Ensure at least 1 patience
-        reduce_lr_monitor = ReduceLROnPlateauWithCounter(
-            monitor='val_loss',
-            factor=0.1,
-            patience=reduce_lr_patience,
-            min_lr=1e-6,
-            verbose=1
-        )
-
-        callbacks = [kl_callback, mmd_logging_callback, early_stopping_monitor, reduce_lr_monitor, ClearMemoryCallback()]
-
-        # Verifica si y_train ya es lista para evitar conversión repetida
-        if isinstance(y_train, list):
-            y_train_list = y_train
+        Args:
+            input_shape (tuple): Expected shape (window_size, 1).
+            x_train (np.ndarray): Training data (for shape inference if needed).
+            config (dict): Configuration parameters which may include:
+                - "nbeats_num_blocks": number of blocks (default=3)
+                - "nbeats_units": number of neurons per dense layer (default=64)
+                - "nbeats_layers": number of layers per block (default=3)
+        
+        The model flattens the input and passes it through several blocks.
+        Each block outputs a forecast which is summed to produce the final prediction.
+        """
+        window_size = input_shape[0]
+        num_blocks = config.get("nbeats_num_blocks", 3)
+        block_units = config.get("nbeats_units", 64)
+        block_layers = config.get("nbeats_layers", 3)
+        
+        # Input layer accepts shape (window_size, 1)
+        inputs = Input(shape=input_shape, name='input_layer')
+        x = Flatten(name='flatten_layer')(inputs)  # shape: (window_size,)
+        
+        # Initialize residual as the flattened input.
+        residual = x
+        forecasts = []
+        
+        # Define a helper function to build a single block.
+        def nbeats_block(res, block_id):
+            r = res
+            for i in range(block_layers):
+                r = Dense(block_units, activation='relu', name=f'block{block_id}_dense_{i+1}')(r)
+            # Forecast branch outputs a single value.
+            forecast = Dense(1, activation='linear', name=f'block{block_id}_forecast')(r)
+            # Backcast branch estimates the part of the input explained by this block.
+            backcast = Dense(tf.shape(res)[-1], activation='linear', name=f'block{block_id}_backcast')(r)
+            # Update residual: subtract the backcast.
+            updated_res = Add(name=f'block{block_id}_residual')([res, -backcast])
+            return updated_res, forecast
+        
+        # Build blocks sequentially.
+        for b in range(1, num_blocks + 1):
+            residual, forecast = nbeats_block(residual, b)
+            forecasts.append(forecast)
+        
+        # Sum forecasts from all blocks.
+        if len(forecasts) > 1:
+            final_forecast = Add(name='forecast_sum')(forecasts)
         else:
-            y_train_list = [y_train[:, i].reshape(-1, 1) for i in range(y_train.shape[1])]
+            final_forecast = forecasts[0]
+        
+        # Define and compile the model.
+        self.model = Model(inputs=inputs, outputs=final_forecast, name='NBeatsModel')
+        optimizer = tf.keras.optimizers.Adam(learning_rate=config.get("learning_rate", 0.001))
+        self.model.compile(optimizer=optimizer, loss='mse')
+        print("N-BEATS model built successfully.")
+        self.model.summary()
 
-        # Aplica lo mismo para y_val (si tienes conjunto de validación)
-        if y_val is not None:
-            if isinstance(y_val, list):
-                y_val_list = y_val
-            else:
-                y_val_list = [y_val[:, i].reshape(-1, 1) for i in range(y_val.shape[1])]
-        else:
-            y_val_list = None
+    def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
+        """
+        Trains the N-BEATS model.
+        
+        Args:
+            x_train (np.ndarray): Training input with shape (samples, window_size, 1).
+            y_train (list): List containing a single array of targets (shape (samples,)).
+            epochs (int): Maximum number of epochs.
+            batch_size (int): Batch size.
+            threshold_error (float): Not used here (for compatibility).
+            x_val (np.ndarray): Validation input.
+            y_val (list): List containing a single array of validation targets.
+            config (dict): Additional configuration if needed.
+        
+        Returns:
+            history: Training history.
+            train_preds: Predictions on training data.
+            train_unc: Uncertainty estimates (zeros array).
+            val_preds: Predictions on validation data.
+            val_unc: Uncertainty estimates (zeros array).
+        """
+        history = self.model.fit(x_train, y_train[0],
+                                 epochs=epochs,
+                                 batch_size=batch_size,
+                                 validation_data=(x_val, y_val[0]),
+                                 verbose=1)
+        # Obtain predictions.
+        train_preds = self.model.predict(x_train, batch_size=batch_size)
+        val_preds = self.model.predict(x_val, batch_size=batch_size)
+        # Set uncertainties to zero (as per instruction).
+        train_unc = np.zeros_like(train_preds)
+        val_unc = np.zeros_like(val_preds)
+        return history, train_preds, train_unc, val_preds, val_unc
 
-
-        history = self.model.fit(
-            x_train, y_train_list,  # <--- ahora una lista
-            epochs=epochs,
-            batch_size=batch_size,
-            verbose=1,
-            shuffle=True,
-            callbacks=callbacks,
-            validation_data=(x_val, y_val_list)  # <--- también lista aquí
-        )
-
-        print("Training completed.")
-        final_loss = history.history['loss'][-1]
-        print(f"Final training loss: {final_loss}")
-
-        if final_loss > threshold_error:
-            print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
-
-        # --- NEW CODE for computing MAE and MMD over multi-output predictions ---
-
-        # Get training predictions (list of tensors), stack them to shape (n_samples, time_horizon)
-        # Corregido: remover dimensión extra con np.squeeze
-        preds_training_mode_list = self.model(x_train, training=True)
-        preds_training_mode_array = np.stack([np.squeeze(p.numpy(), axis=-1) for p in preds_training_mode_list], axis=1)
-
-        # Asegúrate que y_train también tenga dimensiones compatibles
-        y_train_array = np.stack([np.squeeze(y) for y in y_train], axis=1)
-
-
-        # Compute MAE over the entire horizon
-        mae_training_mode = np.mean(np.abs(preds_training_mode_array - y_train_array))
-
-        # For MMD, compute per-output and take the average
-        mmd_training_mode = np.mean([
-            self.compute_mmd(pred, tf.convert_to_tensor(true))
-            for pred, true in zip(preds_training_mode_list, y_train)
-        ])
-        print(f"MAE in Training Mode: {mae_training_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_training_mode:.6f}")
-
-        # Repeat for evaluation predictions
-        preds_eval_mode = self.model(x_train, training=False)
-
-        # Correct conversion from list of (samples, 1) to (samples, horizons)
-        preds_eval_mode_array = np.concatenate([pred.numpy() for pred in preds_eval_mode], axis=1)
-
-        # Verify the shapes explicitly
-        print(f"DEBUG: preds_eval_mode_array.shape = {preds_eval_mode_array.shape}")  # (25193, 6)
-        print(f"DEBUG: y_train_array.shape = {y_train_array.shape}")                  # (25193, 6)
-
-        # Now safely compute MAE
-        mae_eval_mode = np.mean(np.abs(preds_eval_mode_array - y_train_array))
-        mmd_eval_mode = self.compute_mmd(preds_eval_mode_array, y_train_array)
-
-        print(f"MAE in Evaluation Mode: {mae_eval_mode:.6f}, MMD Lambda: {self.mmd_lambda.numpy():.6f}, MMD Loss: {mmd_eval_mode:.6f}")
-
-
-
-        # --- END NEW CODE ---
-
-        # Evaluate returns a list of loss values and then metric values (one per output)
-        train_eval_results = self.model.evaluate(x_train, y_train, batch_size=batch_size, verbose=0)
-        # Assuming that the losses are the first 'exp_horizon' elements and metrics the next 'exp_horizon'
-        train_loss = np.mean(train_eval_results[:exp_horizon])
-        train_mae = np.mean(train_eval_results[exp_horizon:])
-        print(f"Restored Weights - Avg Loss: {train_loss}, Avg MAE: {train_mae}")
-
-        val_eval_results = self.model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
-        val_loss = np.mean(val_eval_results[:exp_horizon])
-        val_mae = np.mean(val_eval_results[exp_horizon:])
-        print(f"Validation - Avg Loss: {val_loss}, Avg MAE: {val_mae}")
-
-
-        #train_predictions = self.predict(x_train)
-        mc_samples = config.get("mc_samples", 100)
-        train_predictions, train_unc = self.predict_with_uncertainty(x_train, mc_samples=mc_samples)
-        #val_predictions = self.predict(x_val)
-        val_predictions, val_unc =  self.predict_with_uncertainty(x_val, mc_samples=mc_samples)
-        return history, train_predictions, train_unc, val_predictions, val_unc
-
-
-    def predict_with_uncertainty(self, data, mc_samples=100):
-        import numpy as np
-        print("DEBUG: Starting predict_with_uncertainty with mc_samples:", mc_samples)
-        predictions = []
-        for i in range(mc_samples):
-            preds_list = self.model(data, training=True)
-            # Convert each output tensor in the list to numpy and stack along axis=1
-            preds_array = np.stack([p.numpy() for p in preds_list], axis=1)
-            predictions.append(preds_array)
-        predictions = np.array(predictions)  # shape: (mc_samples, n_samples, time_horizon)
-        mean_predictions = np.mean(predictions, axis=0)
-        uncertainty_estimates = np.std(predictions, axis=0)
-        print("DEBUG: Mean predictions shape:", mean_predictions.shape)
-        print("DEBUG: Uncertainty estimates shape:", uncertainty_estimates.shape)
-        return mean_predictions, uncertainty_estimates
-
-
-
-    def predict(self, data):
-        import os, logging
-        logging.getLogger("tensorflow").setLevel(logging.ERROR)
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-        if isinstance(data, tuple):
-            data = data[0]
-        # self.model.predict returns a list of arrays (one per output)
-        preds_list = self.model.predict(data)
-        preds_array = np.stack(preds_list, axis=1)  # shape: (n_samples, time_horizon)
-        return preds_array
-
-
-
-    def calculate_mae(self, y_true, y_pred):
-        print(f"y_true (sample): {y_true.flatten()[:5]}")
-        print(f"y_pred (sample): {y_pred.flatten()[:5]}")
-        mae = np.mean(np.abs(y_true.flatten() - y_pred.flatten()))
-        print(f"Calculated MAE: {mae}")
-        return mae
-
+    def predict_with_uncertainty(self, x_test, mc_samples=100):
+        """
+        Generates predictions with uncertainty estimates.
+        For N-BEATS, we simply return the predictions and zeros as uncertainty.
+        
+        Args:
+            x_test (np.ndarray): Test input data.
+            mc_samples (int): Number of Monte Carlo samples (unused here).
+        
+        Returns:
+            tuple: (predictions, uncertainty_estimates)
+        """
+        predictions = self.model.predict(x_test)
+        uncertainty_estimates = np.zeros_like(predictions)
+        return predictions, uncertainty_estimates
 
     def save(self, file_path):
-        from tensorflow.keras.models import save_model
-        save_model(self.model, file_path)
-        print(f"Predictor model saved to {file_path}")
-
+        """
+        Saves the current model to the specified file.
+        
+        Args:
+            file_path (str): Path to save the model.
+        """
+        self.model.save(file_path)
+        print(f"Model saved to {file_path}")
 
     def load(self, file_path):
         from tensorflow.keras.models import load_model
