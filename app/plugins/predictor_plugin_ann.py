@@ -123,12 +123,6 @@ class Plugin:
         x_train = np.array(x_train)
         print("DEBUG: x_train converted to numpy array. Type:", type(x_train), "Shape:", x_train.shape)
         
-        if not isinstance(input_shape, int):
-            raise ValueError(f"Invalid input_shape type: {type(input_shape)}; must be int for ANN.")
-        print("DEBUG: input_shape is valid. Value:", input_shape)
-        
-        train_size = x_train.shape[0]
-        print("DEBUG: Number of training samples:", train_size)
         
         layer_sizes = []
         current_size = self.params['initial_layer_size']
