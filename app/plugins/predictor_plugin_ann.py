@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from tensorflow.keras.models import Model, load_model, save_model
-from tensorflow.keras.layers import Dense, Input, Dropout, BatchNormalization, Flatten, Add
+from tensorflow.keras.layers import Dense, Input, BatchNormalization, Flatten, Add
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.initializers import RandomNormal, GlorotUniform, HeNormal
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback
@@ -10,16 +10,15 @@ from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from keras import backend as K
 from sklearn.metrics import r2_score
-import logging
-import os
 import gc
+import os
 import tensorflow.keras.backend as K
 
-# Shortcut for TFP layers.
+# Shortcut for tfp layers
 tfp_layers = tfp.layers
 
 # ---------------------------
-# Custom Callbacks (copied exactly)
+# Custom Callbacks (copied exactly from transformer plugin)
 # ---------------------------
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
     """
@@ -128,7 +127,7 @@ def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
     )
 
 # ---------------------------
-# MMD and custom loss (copied exactly)
+# MMD loss and custom loss (copied exactly)
 # ---------------------------
 def compute_mmd(x, y, sigma=1.0, sample_size=256):
     with tf.device('/CPU:0'):
@@ -152,18 +151,17 @@ def custom_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     return total_loss
 
 # ---------------------------
-# Enhanced N-BEATS Plugin Definition (with one output)
+# Enhanced N-BEATS Plugin Definition (single-step output)
 # ---------------------------
 class Plugin:
     """
     Enhanced N-BEATS Predictor Plugin using Keras for single-step forecasting.
     Enhancements include:
-      - A Bayesian output layer (using tfp.layers.DenseFlipout and deterministic bias) exactly as in the transformer plugin.
-      - Custom loss function combining Huber loss and MMD loss.
-      - Callbacks for KL annealing, ReduceLROnPlateau, EarlyStopping, MMD logging, and ClearMemory.
+      - A Bayesian output layer (using DenseFlipout exactly as in the transformer plugin)
+      - Custom loss: Huber loss + MMD loss.
+      - Callbacks: EarlyStoppingWithPatienceCounter, ReduceLROnPlateauWithCounter, KL annealing, MMD logging, and ClearMemoryCallback.
     
-    This plugin preserves the original N-BEATS block architecture but replaces the deterministic final_forecast with a Bayesian branch.
-    The final output remains a single value.
+    This version produces a single output.
     """
     plugin_params = {
         'batch_size': 32,
@@ -173,7 +171,7 @@ class Plugin:
         'activation': 'tanh',
         'l2_reg': 1e-5,
         'kl_weight': 1e-3,
-        # N-BEATS specific:
+        # N-BEATS parameters
         'nbeats_num_blocks': 3,
         'nbeats_units': 64,
         'nbeats_layers': 3,
@@ -196,27 +194,25 @@ class Plugin:
     def add_debug_info(self, debug_info):
         debug_info.update(self.get_debug_info())
 
-    # ---------------------------
-    # Build Model with Enhanced Bayesian Output Layer
-    # ---------------------------
     def build_model(self, input_shape, x_train, config):
         """
         Builds the N-BEATS model.
-        The model uses the original block architecture to process the input,
-        then applies a projection and batch normalization to the final residual.
-        Finally, a Bayesian DenseFlipout layer (with the exact functions from the transformer plugin)
-        plus a deterministic bias layer produces the final single-step forecast.
+        Input shape is expected as (window_size, 1).
+        The model constructs several N-BEATS blocks (deterministic part),
+        projects the final residual with a Dense layer and BatchNormalization,
+        then applies a Bayesian DenseFlipout layer (wrapped in a Lambda) plus a deterministic bias.
+        This Bayesian branch replaces the original final_forecast.
         """
         window_size = input_shape[0]
         num_blocks = config.get("nbeats_num_blocks", self.params['nbeats_num_blocks'])
         block_units = config.get("nbeats_units", self.params['nbeats_units'])
         block_layers = config.get("nbeats_layers", self.params['nbeats_layers'])
         
-        # Input layer
+        # Input layer and flattening
         inputs = Input(shape=input_shape, name='input_layer')
         x = Flatten(name='flatten_layer')(inputs)  # shape: (window_size,)
         
-        # Original N-BEATS blocks (deterministic branch)
+        # Build N-BEATS blocks
         residual = x
         forecasts = []
         def nbeats_block(res, block_id):
@@ -234,20 +230,18 @@ class Plugin:
             final_forecast = Add(name='forecast_sum')(forecasts)
         else:
             final_forecast = forecasts[0]
-        # We do not use final_forecast in the enhanced branch.
+        # Note: final_forecast is computed but not used.
         
-        # Projection and BatchNormalization of the final residual.
+        # Projection and normalization of final residual
         proj = Dense(self.params['initial_layer_size'], activation=self.params['activation'],
                      kernel_initializer=GlorotUniform(), name="projection_layer")(residual)
         bn = BatchNormalization(name="batch_norm_final")(proj)
         
-        # ---------------------------
-        # Bayesian Output Layer (exact copy from transformer plugin)
-        # ---------------------------
+        # --- Bayesian Output Layer Implementation (copied exactly) ---
         def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
             return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
         tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-
+        
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
@@ -262,9 +256,12 @@ class Plugin:
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
             name="output_layer"
         )
-        # Directly call the flipout_layer on bn (no Lambda wrapper needed for a single output)
-        bayesian_output = flipout_layer(bn)
-        print("DEBUG: After DenseFlipout, bayesian_output shape:", bayesian_output.shape)
+        bayesian_output = tf.keras.layers.Lambda(
+            lambda t: flipout_layer(t),
+            output_shape=lambda s: (s[0], self.params['time_horizon']),
+            name="bayesian_dense_flipout"
+        )(bn)
+        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
         
         bias_layer = Dense(
             units=self.params['time_horizon'],
@@ -281,7 +278,6 @@ class Plugin:
         self.model = Model(inputs=inputs, outputs=outputs, name="predictor_model")
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
         
-        # Compile the model with a custom loss (Huber + MMD)
         self.model.compile(
             optimizer=Adam(learning_rate=self.params.get("learning_rate", 0.0001)),
             loss=lambda y_true, y_pred: custom_loss(y_true, y_pred, mmd_lambda=KL_WEIGHT),
@@ -292,13 +288,9 @@ class Plugin:
         self.model.summary()
         print("✅ Enhanced N-BEATS model built successfully.")
 
-    # ---------------------------
-    # Training Function with Enhanced Callbacks
-    # ---------------------------
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
         """
-        Trains the enhanced N-BEATS model using KL annealing, MMD logging, early stopping,
-        and ReduceLROnPlateau.
+        Trains the model with KL annealing, MMD logging, early stopping, and ReduceLROnPlateau.
         """
         if isinstance(x_train, tuple): x_train = x_train[0]
         if isinstance(x_val, tuple): x_val = x_val[0]
@@ -306,7 +298,6 @@ class Plugin:
         mmd_lambda = self.params.get('kl_weight', 1e-3)
         self.mmd_lambda = tf.Variable(mmd_lambda, trainable=False, dtype=tf.float32, name='mmd_lambda')
 
-        # --- KL Annealing Callback ---
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
@@ -318,7 +309,6 @@ class Plugin:
                 self.plugin.kl_weight_var.assign(new_kl)
                 print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
 
-        # --- MMD Logging Callback ---
         class MMDLoggingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, x_train, y_train):
                 super().__init__()
@@ -369,12 +359,9 @@ class Plugin:
             print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
         return history, self.model.predict(x_train, batch_size=batch_size), np.zeros_like(self.model.predict(x_train, batch_size=batch_size)), self.model.predict(x_val, batch_size=batch_size), np.zeros_like(self.model.predict(x_val, batch_size=batch_size))
 
-    # ---------------------------
-    # Prediction Functions
-    # ---------------------------
     def predict_with_uncertainty(self, x_test, mc_samples=100):
         """
-        Generates predictions with uncertainty estimates using Monte Carlo sampling.
+        Generates predictions with uncertainty estimates via Monte Carlo sampling.
         """
         predictions = np.array([self.model(x_test, training=True).numpy() for _ in range(mc_samples)])
         mean_predictions = np.mean(predictions, axis=0)
@@ -432,7 +419,7 @@ def positional_encoding(position, d_model):
 # ---------------------------
 if __name__ == "__main__":
     plugin = Plugin()
-    # Example: window_size=24, single feature input (1)
+    # Example: window_size=24, input has 1 feature
     plugin.build_model(input_shape=(24, 1), x_train=None, config={})
     debug_info = plugin.get_debug_info()
     print(f"Debug Info: {debug_info}")
