@@ -292,21 +292,17 @@ class Plugin:
 
     def compute_mmd(self, x, y, sigma=1.0, sample_size=256):
         """
-        Compute Maximum Mean Discrepancy (MMD) using a Gaussian Kernel
-        with a reduced sample size to avoid memory issues.
+        Compute Maximum Mean Discrepancy (MMD) using a Gaussian Kernel with a reduced sample size.
         """
-        with tf.device('/CPU:0'):  # Move computation to CPU
-            # Randomly sample from x and y to reduce memory usage
+        with tf.device('/CPU:0'):
             idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:sample_size]
             x_sample = tf.gather(x, idx)
             y_sample = tf.gather(y, idx)
-
             def gaussian_kernel(x, y, sigma):
                 x = tf.expand_dims(x, 1)
                 y = tf.expand_dims(y, 0)
                 dist = tf.reduce_sum(tf.square(x - y), axis=-1)
                 return tf.exp(-dist / (2.0 * sigma ** 2))
-
             K_xx = gaussian_kernel(x_sample, x_sample, sigma)
             K_yy = gaussian_kernel(y_sample, y_sample, sigma)
             K_xy = gaussian_kernel(x_sample, y_sample, sigma)
@@ -317,9 +313,9 @@ class Plugin:
         """
         Custom loss function combining Huber loss and MMD loss.
         """
-        huber_loss = tf.keras.losses.Huber()(y_true, y_pred)
+        huber_loss = Huber()(y_true, y_pred)
         mmd_loss = self.compute_mmd(y_pred, y_true)
-        total_loss = huber_loss + self.mmd_lambda * mmd_loss
+        total_loss = huber_loss + (self.mmd_lambda * mmd_loss) 
         return total_loss
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val=None, y_val=None, config=None):
