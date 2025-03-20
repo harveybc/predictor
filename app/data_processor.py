@@ -558,7 +558,7 @@ def run_prediction_pipeline(config, plugin):
     )
     test_predictions_df = pd.concat([test_predictions_df, denorm_y_test_df], axis=1)
     # Add the denorm_test_close_prices to the existing test_predictions_df dictionary as a new column
-    test_predictions_df['test CLOSE'] = denorm_test_close_prices
+    test_predictions_df['test_CLOSE'] = denorm_test_close_prices
     # Save the final test predictions to a CSV file
     
     write_csv(file_path=final_test_file, data=test_predictions_df, include_date=False, headers=config.get('headers', True))
@@ -655,7 +655,7 @@ def run_prediction_pipeline(config, plugin):
             true_plot = baseline_plot
             pred_plot = baseline_plot + pred_plot
     else:
-        true_plot = test_close_prices
+        true_plot = denorm_test_close_prices
         # Ensure true_plot is trimmed to match the number of test dates for plotting
         if len(true_plot) > len(test_dates_plot):
             true_plot = true_plot[-len(test_dates_plot):]
