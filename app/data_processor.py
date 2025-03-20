@@ -186,9 +186,9 @@ def process_data(config):
         "test_close_prices": test_close_prices
     }
     if use_returns:
-        ret["baseline_train"] = X_train[:, -1].squeeze()
-        ret["baseline_val"]   = X_val[:, -1].squeeze()
-        ret["baseline_test"]  = X_test[:, -1].squeeze()
+        ret["baseline_train"] = X_train[:, -1]
+        ret["baseline_val"]   = X_val[:, -1]
+        ret["baseline_test"]  = X_test[:, -1]
     return ret
 
 
@@ -319,32 +319,29 @@ def run_prediction_pipeline(config, plugin):
 
 
         # If using returns, recalc r2 based on baseline + predictions.
-        # Ensure predictions arrays are correctly squeezed to match the shape of stacked ground truth
-        train_preds_squeezed = np.squeeze(train_preds, axis=-1)  # from (samples, horizons, 1) to (samples, horizons)
-        val_preds_squeezed = np.squeeze(val_preds, axis=-1)
+
 
         if config.get("use_returns", False):
             train_r2 = r2_score(
                 (baseline_train[:, -1] + y_train_stacked[:, -1]).flatten(),
-                (baseline_train[:, -1] + train_preds_squeezed[:, -1]).flatten()
+                (baseline_train[:, -1] + train_preds[:, -1]).flatten()
             )
             val_r2 = r2_score(
                 (baseline_val[:, -1] + y_val_stacked[:, -1]).flatten(),
-                (baseline_val[:, -1] + val_preds_squeezed[:, -1]).flatten()
+                (baseline_val[:, -1] + val_preds[:, -1]).flatten()
             )
         else:
             train_r2 = r2_score(
                 y_train_stacked[:, -1].flatten(), 
-                train_preds_squeezed[:].flatten()
+                train_preds[:].flatten()
             )
             val_r2 = r2_score(
                 y_val_stacked[:, -1].flatten(), 
-                val_preds_squeezed[:].flatten()
+                val_preds[:].flatten()
             )
 
         # Debugging statements for verification
-        print("DEBUG: train_preds_squeezed shape:", train_preds_squeezed.shape)
-        print("DEBUG: val_preds_squeezed shape:", val_preds_squeezed.shape)
+
         print("DEBUG: baseline_train shape:", baseline_train.shape if config.get("use_returns", False) else "Not using returns")
         print("DEBUG: y_train_stacked shape:", y_train_stacked.shape)
 
@@ -377,22 +374,8 @@ def run_prediction_pipeline(config, plugin):
         # Convert y_test (which is a list of arrays) to a single NumPy array
         y_test_array = np.stack(y_test, axis=1)  # shape: (n_samples, time_horizon)
 
-        # Squeeze predictions to match shapes properly
-        test_predictions_squeezed = np.squeeze(test_predictions, axis=-1)  # shape: (samples, horizons)
-
-        if config.get("use_returns", False):
-            test_r2 = r2_score(
-                (baseline_test[:, -1] + y_test_array[:n_test, -1]).flatten(),
-                (baseline_test[:, -1] + test_predictions_squeezed[:n_test, -1]).flatten()
-            )
-        else:
-            test_r2 = r2_score(
-                y_test_array[:n_test, -1].flatten(),
-                test_predictions_squeezed[:n_test].flatten()
-            )
-
         # Debugging shapes for verification
-        print("DEBUG: test_predictions_squeezed shape:", test_predictions_squeezed.shape)
+
         print("DEBUG: baseline_test shape:", baseline_test.shape if config.get("use_returns", False) else "Not using returns")
         print("DEBUG: y_test_array shape:", y_test_array.shape)
 
@@ -516,14 +499,14 @@ def run_prediction_pipeline(config, plugin):
                 close_max = norm_json["CLOSE"]["max"]
                 diff = close_max - close_min
                 # Final predicted close = (predicted_return + baseline)*diff + close_min
-                # Squeeze the predictions array to remove extra dimensions (6293, 6, 1) → (6293, 6)
-                test_predictions_squeezed = np.squeeze(test_predictions, axis=-1)
+
+    
 
                 # Expand baseline_test dimensions explicitly to match test_predictions
                 baseline_test_expanded = np.expand_dims(baseline_test, axis=-1)  # (6293, 1) → (6293, 1, 1)
 
                 # Perform broadcasting explicitly and safely
-                test_predictions = (test_predictions_squeezed + baseline_test_expanded.squeeze(-1)) * diff + close_min
+                test_predictions = (test_predictions + baseline_test_expanded) * diff + close_min
 
                 # --- NEW CODE: Correctly stack y_test into a (n_samples, time_horizon) array ---
                 y_test_array = np.stack(y_test, axis=1)  # Ensure y_test is now (n_samples, time_horizon)
@@ -537,7 +520,7 @@ def run_prediction_pipeline(config, plugin):
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
                 # Denormalize the predictions only once
-                #test_predictions = test_predictions * (close_max - close_min) + close_min
+                test_predictions = test_predictions * (close_max - close_min) + close_min
                 # For targets, use the already stacked y_test_array
                 denorm_y_test = y_test_array * (close_max - close_min) + close_min
             else:
@@ -643,9 +626,6 @@ def run_prediction_pipeline(config, plugin):
     plt.figure(figsize=(12, 6))
     plt.plot(test_dates_plot, pred_plot, label="Predicted Price", color=plot_color_predicted, linewidth=2)
     plt.plot(test_dates_plot, true_plot, label="True Price", color=plot_color_true, linewidth=2)
-    # Ensure pred_plot and uncertainty_plot are explicitly squeezed to be 1-dimensional.
-    pred_plot = np.squeeze(pred_plot)
-    uncertainty_plot = np.squeeze(uncertainty_plot)
 
     # Check final dimensions to ensure correctness:
     assert pred_plot.ndim == 1, f"pred_plot must be 1-dimensional, got shape {pred_plot.shape}"
