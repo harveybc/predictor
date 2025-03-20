@@ -315,7 +315,7 @@ def run_prediction_pipeline(config, plugin):
             # Multiply the prediction arrays by the inverse scaling factor.
             train_preds = train_preds * inv_scale_factor
             val_preds = val_preds * inv_scale_factor
-            test_predictions = test_predictions * inv_scale_factor
+
 
 
         # If using returns, recalc r2 based on baseline + predictions.
