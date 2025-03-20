@@ -161,7 +161,7 @@ def process_data(config):
     y_test_array  = y_test.reshape(-1, 1)
     
     # 8. For test close prices, use the last value of each input window.
-    test_close_prices = close_test[window_size - 1 : len(close_test) - time_horizon + 1]
+    test_close_prices = close_test[window_size - 1 : len(close_test) - time_horizon]
     
     # Debug messages
     print("Processed datasets:")
@@ -558,7 +558,7 @@ def run_prediction_pipeline(config, plugin):
     )
     test_predictions_df = pd.concat([test_predictions_df, denorm_y_test_df], axis=1)
     # Add the denorm_test_close_prices to the existing test_predictions_df dictionary as a new column
-    test_predictions_df['CLOSE'] = denorm_test_close_prices
+    test_predictions_df['test CLOSE'] = denorm_test_close_prices
     # Save the final test predictions to a CSV file
     
     write_csv(file_path=final_test_file, data=test_predictions_df, include_date=False, headers=config.get('headers', True))
