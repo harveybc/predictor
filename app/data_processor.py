@@ -545,7 +545,7 @@ def run_prediction_pipeline(config, plugin):
                 )
             else:
                 uncertainty_daily_df = pd.DataFrame(
-                    uncertainty_daily_df_squeezed,
+                    uncertainty_daily_df,
                     columns=[f"Uncertainty_{i+1}" for i in range(uncertainty_daily_df_squeezed.shape[0])]
                 )
     
