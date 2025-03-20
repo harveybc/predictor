@@ -382,7 +382,12 @@ def run_prediction_pipeline(config, plugin):
 
         test_mae = np.mean(np.abs(test_predictions[:, -1] - y_test_array[:n_test, -1]))
 
-
+        #calculte test_r2
+        test_r2 = r2_score(
+                y_test_stacked[:, -1].flatten(), 
+                test_predictions[:].flatten()
+            )
+        
         # calculate mmd for train, val and test
         #print("\nCalculating MMD for train, val and test datasets...")
         #train_mmd = plugin.compute_mmd(train_preds.astype(np.float64) , y_train.astype(np.float64), sigma=1.0, sample_size=mc_samples)
