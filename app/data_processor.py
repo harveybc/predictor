@@ -656,34 +656,7 @@ def run_prediction_pipeline(config, plugin):
             pred_plot = baseline_plot + pred_plot
     else:
         true_plot = test_close_prices
-        # Ensure true_plot is trimmed to match the number of test dates for plotting
-        if len(true_plot) > len(test_dates_plot):
-            true_plot = true_plot[-len(test_dates_plot):]
-        # --- Correcting Denormalization ---
-        if config.get("use_normalization_json") is not None:
-            norm_json = config.get("use_normalization_json")
-            if isinstance(norm_json, str):
-                with open(norm_json, 'r') as f:
-                    norm_json = json.load(f)
-            if "CLOSE" in norm_json:
-                close_min = norm_json["CLOSE"]["min"]
-                close_max = norm_json["CLOSE"]["max"]
-                diff = close_max - close_min
-
-                # ✅ Correct Denormalization
-                # True values (Baseline Close)
-                true_plot = true_plot * diff + close_min  # ✅ Correct
-                # Predictions (Adding Correctly Denormalized Returns)
-                #pred_plot = true_plot + (pred_plot * diff)  # ✅ Fixing double denormalization
-            else:
-                print("Warning: 'CLOSE' not found; skipping denormalization for predictions.")
-                true_plot = true_plot
-                pred_plot = pred_plot
-        else:
-            print("Warning: Normalization JSON not provided; assuming raw values.")
-            true_plot = true_plot
-            pred_plot = pred_plot
-
+        
     # Extract uncertainty for the plotted horizon
     uncertainty_plot = denorm_uncertainty[:, plotted_idx]
     if len(uncertainty_plot) > n_plot:
