@@ -335,11 +335,11 @@ def run_prediction_pipeline(config, plugin):
         else:
             train_r2 = r2_score(
                 y_train_stacked[:, -1].flatten(), 
-                train_preds_squeezed[:, -1].flatten()
+                train_preds_squeezed[:].flatten()
             )
             val_r2 = r2_score(
                 y_val_stacked[:, -1].flatten(), 
-                val_preds_squeezed[:, -1].flatten()
+                val_preds_squeezed[:].flatten()
             )
 
         # Debugging statements for verification
