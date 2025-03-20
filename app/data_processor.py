@@ -620,39 +620,44 @@ def run_prediction_pipeline(config, plugin):
         test_dates_plot = test_dates if test_dates is not None else np.arange(len(pred_plot))
 
     # Extract and correctly denormalize the baseline close value (current tick's true value)
-    if "baseline_test" in datasets:
-        baseline_plot = datasets["baseline_test"][:, 0]  # Use first column if multi-step
+    if config["use_returns"]:
+        if "baseline_test" in datasets:
+            baseline_plot = datasets["baseline_test"][:, 0]  # Use first column if multi-step
 
-        # Keep only last n_plot values if necessary
-        if len(baseline_plot) > n_plot:
-            baseline_plot = baseline_plot[-n_plot:]
-    else:
-        raise ValueError("Baseline test values not found; unable to reconstruct actual predictions.")
-
-    # --- Correcting Denormalization ---
-    if config.get("use_normalization_json") is not None:
-        norm_json = config.get("use_normalization_json")
-        if isinstance(norm_json, str):
-            with open(norm_json, 'r') as f:
-                norm_json = json.load(f)
-        if "CLOSE" in norm_json:
-            close_min = norm_json["CLOSE"]["min"]
-            close_max = norm_json["CLOSE"]["max"]
-            diff = close_max - close_min
-
-            # ✅ Correct Denormalization
-            # True values (Baseline Close)
-            true_plot = baseline_plot * diff + close_min  # ✅ Correct
-            # Predictions (Adding Correctly Denormalized Returns)
-            #pred_plot = true_plot + (pred_plot * diff)  # ✅ Fixing double denormalization
+            # Keep only last n_plot values if necessary
+            if len(baseline_plot) > n_plot:
+                baseline_plot = baseline_plot[-n_plot:]
         else:
-            print("Warning: 'CLOSE' not found; skipping denormalization for predictions.")
+            raise ValueError("Baseline test values not found; unable to reconstruct actual predictions.")
+
+        # --- Correcting Denormalization ---
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                with open(norm_json, 'r') as f:
+                    norm_json = json.load(f)
+            if "CLOSE" in norm_json:
+                close_min = norm_json["CLOSE"]["min"]
+                close_max = norm_json["CLOSE"]["max"]
+                diff = close_max - close_min
+
+                # ✅ Correct Denormalization
+                # True values (Baseline Close)
+                true_plot = baseline_plot * diff + close_min  # ✅ Correct
+                # Predictions (Adding Correctly Denormalized Returns)
+                #pred_plot = true_plot + (pred_plot * diff)  # ✅ Fixing double denormalization
+            else:
+                print("Warning: 'CLOSE' not found; skipping denormalization for predictions.")
+                true_plot = baseline_plot
+                pred_plot = baseline_plot + pred_plot
+        else:
+            print("Warning: Normalization JSON not provided; assuming raw values.")
             true_plot = baseline_plot
             pred_plot = baseline_plot + pred_plot
     else:
-        print("Warning: Normalization JSON not provided; assuming raw values.")
-        true_plot = baseline_plot
-        pred_plot = baseline_plot + pred_plot
+        true_plot = test_close_prices
+        #if len(true_plot) > n_plot:
+        #    true_plot = true_plot[-n_plot:]
 
     # Extract uncertainty for the plotted horizon
     uncertainty_plot = denorm_uncertainty[:, plotted_idx]
