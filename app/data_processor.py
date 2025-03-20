@@ -497,6 +497,11 @@ def run_prediction_pipeline(config, plugin):
             train_mean = np.mean(baseline_train[ : , -1] + train_preds[ : , -1])
             val_mean = np.mean(baseline_val[ : , -1] + val_preds[ : , -1])
             test_mean = np.mean(baseline_test[ : , -1] + test_predictions[ : , -1])
+        else:
+            train_mean = np.mean(train_preds[ : , -1])
+            val_mean = np.mean(val_preds[ : , -1])
+            test_mean = np.mean(test_predictions[ : , -1])
+
         
         # calcula the the SNR as the 1/(uncertainty/mae)^2
         train_snr = 1/(train_unc_last/train_mean)
@@ -890,30 +895,52 @@ def run_prediction_pipeline(config, plugin):
         else:
             raise ValueError("Baseline test values not found; unable to reconstruct actual predictions.")
 
-    # --- Correcting Denormalization ---
-    if config.get("use_normalization_json") is not None:
-        norm_json = config.get("use_normalization_json")
-        if isinstance(norm_json, str):
-            with open(norm_json, 'r') as f:
-                norm_json = json.load(f)
-        if "CLOSE" in norm_json:
-            close_min = norm_json["CLOSE"]["min"]
-            close_max = norm_json["CLOSE"]["max"]
-            diff = close_max - close_min
+        # --- Correcting Denormalization ---
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                with open(norm_json, 'r') as f:
+                    norm_json = json.load(f)
+            if "CLOSE" in norm_json:
+                close_min = norm_json["CLOSE"]["min"]
+                close_max = norm_json["CLOSE"]["max"]
+                diff = close_max - close_min
 
-            # ✅ Correct Denormalization
-            # True values (Baseline Close)
-            true_plot = baseline_plot * diff + close_min  # ✅ Correct
-            # Predictions (Adding Correctly Denormalized Returns)
-            #pred_plot = true_plot + (pred_plot * diff)  # ✅ Fixing double denormalization
+                # ✅ Correct Denormalization
+                # True values (Baseline Close)
+                true_plot = baseline_plot * diff + close_min  # ✅ Correct
+                # Predictions (Adding Correctly Denormalized Returns)
+                #pred_plot = true_plot + (pred_plot * diff)  # ✅ Fixing double denormalization
+            else:
+                print("Warning: 'CLOSE' not found; skipping denormalization for predictions.")
+                true_plot = baseline_plot
+                pred_plot = baseline_plot + pred_plot
         else:
-            print("Warning: 'CLOSE' not found; skipping denormalization for predictions.")
+            print("Warning: Normalization JSON not provided; assuming raw values.")
             true_plot = baseline_plot
             pred_plot = baseline_plot + pred_plot
     else:
-        print("Warning: Normalization JSON not provided; assuming raw values.")
-        true_plot = baseline_plot
-        pred_plot = baseline_plot + pred_plot
+        # Extract true values for the plotted horizon
+        true_plot = y_test[:n_plot, plotted_idx]
+         # --- Correcting Denormalization ---
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                with open(norm_json, 'r') as f:
+                    norm_json = json.load(f)
+            if "CLOSE" in norm_json:
+                close_min = norm_json["CLOSE"]["min"]
+                close_max = norm_json["CLOSE"]["max"]
+                diff = close_max - close_min
+
+                # ✅ Correct Denormalization
+                true_plot = true_plot * diff + close_min  # ✅ Correct
+                pred_plot = pred_plot * diff + close_min  # ✅ Correct
+            else:
+                print("Warning: 'CLOSE' not found; skipping denormalization for predictions.")
+        else:
+            print("Warning: Normalization JSON not provided; assuming raw values.")
+    
 
     # Extract uncertainty for the plotted horizon
     uncertainty_plot = denorm_uncertainty[:, plotted_idx]
