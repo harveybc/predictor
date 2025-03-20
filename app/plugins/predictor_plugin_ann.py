@@ -161,7 +161,7 @@ class Plugin:
             # Forecast branch outputs a single value.
             forecast = Dense(1, activation='linear', name=f'block{block_id}_forecast')(r)
             # Backcast branch estimates the part of the input explained by this block.
-            backcast = Dense(tf.shape(res)[-1], activation='linear', name=f'block{block_id}_backcast')(r)
+            backcast = Dense(int(res.shape[-1]), activation='linear', name=f'block{block_id}_backcast')(r)
             # Update residual: subtract the backcast.
             updated_res = Add(name=f'block{block_id}_residual')([res, -backcast])
             return updated_res, forecast
