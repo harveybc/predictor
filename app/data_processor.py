@@ -537,7 +537,7 @@ def run_prediction_pipeline(config, plugin):
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
                 # Denormalize the predictions only once
-                test_predictions = test_predictions * (close_max - close_min) + close_min
+                #test_predictions = test_predictions * (close_max - close_min) + close_min
                 # For targets, use the already stacked y_test_array
                 denorm_y_test = y_test_array * (close_max - close_min) + close_min
             else:
