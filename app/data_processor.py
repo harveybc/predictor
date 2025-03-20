@@ -656,7 +656,11 @@ def run_prediction_pipeline(config, plugin):
             pred_plot = baseline_plot + pred_plot
     else:
         true_plot = test_close_prices
-        
+        # Ensure true_plot is trimmed to match the number of test dates for plotting
+        if len(true_plot) > len(test_dates_plot):
+            true_plot = true_plot[-len(test_dates_plot):]
+       
+
     # Extract uncertainty for the plotted horizon
     uncertainty_plot = denorm_uncertainty[:, plotted_idx]
     if len(uncertainty_plot) > n_plot:
