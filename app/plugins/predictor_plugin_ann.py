@@ -144,7 +144,7 @@ class Plugin:
         
         print("DEBUG: Standard ANN input_shape:", input_shape)
         
-        inputs = tf.keras.Input(shape=(input_shape,), name="model_input", dtype=tf.float32)
+        inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
         print("DEBUG: Created input layer. Shape:", inputs.shape)
         x = inputs
         print("DEBUG: x tensor from inputs. Shape:", x.shape, "Type:", type(x))
