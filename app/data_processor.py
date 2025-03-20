@@ -529,7 +529,7 @@ def run_prediction_pipeline(config, plugin):
                 y_test_array = np.stack(y_test, axis=1)  # Ensure y_test is now (n_samples, time_horizon)
                 denorm_y_test = (y_test_array + baseline_test) * diff + close_min
                 # --- END NEW CODE ---
-
+                
             else:
                 print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
         else:
@@ -539,6 +539,7 @@ def run_prediction_pipeline(config, plugin):
                 test_predictions = test_predictions * (close_max - close_min) + close_min
                 # Use the already stacked y_test_array (created earlier) instead of the list y_test
                 denorm_y_test = y_test_array * (close_max - close_min) + close_min
+                denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
 
     # Save final predictions CSV
     final_test_file = config.get("output_file", "test_predictions.csv")
