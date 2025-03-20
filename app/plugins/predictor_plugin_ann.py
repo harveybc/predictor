@@ -238,10 +238,12 @@ class Plugin:
         bn = BatchNormalization(name="batch_norm_final")(proj)
         
         # --- Bayesian Output Layer Implementation (copied exactly) ---
+        # --- Bayesian Output Layer Implementation (copied exactly) ---
         def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
-            return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
+            return self.add_weight(name=name, shape=shape, dtype=dtype,
+                                    initializer=initializer, trainable=trainable, **kwargs)
         tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-        
+
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
         print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
@@ -256,12 +258,10 @@ class Plugin:
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
             name="output_layer"
         )
-        bayesian_output = tf.keras.layers.Lambda(
-            lambda t: flipout_layer(t),
-            output_shape=lambda s: (s[0], self.params['time_horizon']),
-            name="bayesian_dense_flipout"
-        )(bn)
-        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
+        # Instead of wrapping flipout_layer in a Lambda (which adds an extra dimension),
+        # we call it directly.
+        bayesian_output = flipout_layer(bn)
+        print("DEBUG: After DenseFlipout, bayesian_output shape:", bayesian_output.shape)
         
         bias_layer = Dense(
             units=self.params['time_horizon'],
@@ -274,6 +274,7 @@ class Plugin:
         
         outputs = Add(name="final_output")([bayesian_output, bias_layer])
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
+
         
         self.model = Model(inputs=inputs, outputs=outputs, name="predictor_model")
         print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
