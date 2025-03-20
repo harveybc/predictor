@@ -537,7 +537,7 @@ def run_prediction_pipeline(config, plugin):
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
                 # Denormalize the predictions only once
-                #test_predictions = test_predictions * (close_max - close_min) + close_min
+                test_predictions = test_predictions * (close_max - close_min) + close_min
                 # For targets, use the already stacked y_test_array
                 denorm_y_test = y_test_array * (close_max - close_min) + close_min
             else:
@@ -605,7 +605,7 @@ def run_prediction_pipeline(config, plugin):
 
     # --- Plot predictions (only the prediction at the selected horizon) ---
     # Define the plotted horizon (zero-indexed)
-    plotted_horizon = config.get("plotted_horizon", 1)
+    plotted_horizon = config.get("plotted_horizon", 6)
     plotted_idx = plotted_horizon - 1  # Zero-based index for the chosen horizon
 
     # Ensure indices are valid
@@ -624,7 +624,9 @@ def run_prediction_pipeline(config, plugin):
     else:
         test_dates_plot = test_dates if test_dates is not None else np.arange(len(pred_plot))
 
-
+    # Extract and correctly denormalize the baseline close value (current tick's true value)
+    true_plot = denorm_test_close_prices
+    # Ensure true_plot is trimmed to match the number of test dates for plotting
     if len(true_plot) > len(test_dates_plot):
         true_plot = true_plot[-len(test_dates_plot):]
        
