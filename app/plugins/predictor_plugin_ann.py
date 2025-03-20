@@ -284,7 +284,7 @@ class Plugin:
         # Compile the model with the custom loss function
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=self.params.get('learning_rate', 0.0001)),
-            loss=self.custom_loss,
+            loss=Huber(),
             metrics=['mae']
         )
         print("DEBUG: Adam optimizer created with learning_rate:", self.params.get('learning_rate', 0.0001))
