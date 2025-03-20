@@ -412,10 +412,17 @@ def run_prediction_pipeline(config, plugin):
         test_unc_last = np.mean(uncertainty_estimates[ : , -1])
         
         # calcula los promedios de la señal para calcular SNR (la desviación es el uncertainty)
-        train_mean = np.mean(baseline_train[ : , -1] + train_preds[ : , -1])
-        val_mean = np.mean(baseline_val[ : , -1] + val_preds[ : , -1])
-        test_mean = np.mean(baseline_test[ : , -1] + test_predictions[ : , -1])
+        if config.get("use_returns", False):
+            train_mean = np.mean(baseline_train[ : , -1] + train_preds[ : , -1])
+            val_mean = np.mean(baseline_val[ : , -1] + val_preds[ : , -1])
+            test_mean = np.mean(baseline_test[ : , -1] + test_predictions[ : , -1])
+        else: 
+            train_mean = np.mean(train_preds[ : , -1])
+            val_mean = np.mean(val_preds[ : , -1])
+            test_mean = np.mean(test_predictions[ : , -1])
         
+            
+
         # calcula the the SNR as the 1/(uncertainty/mae)^2
         train_snr = 1/(train_unc_last/train_mean)
         val_snr = 1/(val_unc_last/val_mean)
