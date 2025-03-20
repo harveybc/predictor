@@ -537,8 +537,9 @@ def run_prediction_pipeline(config, plugin):
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
                 test_predictions = test_predictions * (close_max - close_min) + close_min
-                denorm_y_test = y_test * (close_max - close_min) + close_min
-        denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min 
+                # Use the already stacked y_test_array (created earlier) instead of the list y_test
+                denorm_y_test = y_test_array * (close_max - close_min) + close_min
+
     # Save final predictions CSV
     final_test_file = config.get("output_file", "test_predictions.csv")
     test_predictions_df = pd.DataFrame(
