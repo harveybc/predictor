@@ -261,12 +261,7 @@ def process_data(config):
             baseline_test = baseline_test.iloc[window_size - 1:].to_numpy().astype(np.float32)
         else:
             print("Processing data with sliding windows without returns...")
-            x_train = x_train.to_numpy().astype(np.float32)
-            x_val = x_val.to_numpy().astype(np.float32)
-            x_test = x_test.to_numpy().astype(np.float32)
-            y_train_multi = y_train_multi.to_numpy().astype(np.float32)
-            y_val_multi = y_val_multi.to_numpy().astype(np.float32)
-            y_test_multi = y_test_multi.to_numpy().astype(np.float32)
+
         # --- CHUNK: Trim the first window_size rows from the  y target datasets if sliding window is to be used---
         # Fix dates toremove the first window_size dates:
         if train_dates_orig is not None:
