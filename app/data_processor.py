@@ -388,7 +388,7 @@ def run_prediction_pipeline(config, plugin):
         else:
             test_r2 = r2_score(
                 y_test_array[:n_test, -1].flatten(),
-                test_predictions_squeezed[:n_test, -1].flatten()
+                test_predictions_squeezed[:n_test].flatten()
             )
 
         # Debugging shapes for verification
