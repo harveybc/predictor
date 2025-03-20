@@ -180,7 +180,7 @@ class Plugin:
         # Define and compile the model.
         self.model = Model(inputs=inputs, outputs=final_forecast, name='NBeatsModel')
         optimizer = tf.keras.optimizers.Adam(learning_rate=config.get("learning_rate", 0.001))
-        self.model.compile(optimizer=optimizer, loss='mse')
+        self.model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
         print("N-BEATS model built successfully.")
         self.model.summary()
 

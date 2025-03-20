@@ -536,10 +536,14 @@ def run_prediction_pipeline(config, plugin):
             if "CLOSE" in norm_json:
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
+                # Denormalize the predictions only once
                 test_predictions = test_predictions * (close_max - close_min) + close_min
-                # Use the already stacked y_test_array (created earlier) instead of the list y_test
+                # For targets, use the already stacked y_test_array
                 denorm_y_test = y_test_array * (close_max - close_min) + close_min
-                denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
+            else:
+                print("Warning: 'CLOSE' not found; skipping denormalization for non-returns mode.")
+    # Denormalize the test close prices once
+    denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
 
     # Save final predictions CSV
     final_test_file = config.get("output_file", "test_predictions.csv")
