@@ -1,32 +1,33 @@
 #!/usr/bin/env python
 """
-Enhanced N-BEATS Predictor Plugin (Single-Step Forecast with Bayesian Output and Phase Loss)
+Enhanced N-BEATS Predictor Plugin (Forecasting Seasonal Component without Bayesian Output)
 
-This module implements an enhanced version of an N-BEATS forecasting plugin.
-It includes:
-  - A Bayesian output layer (via tfp.layers.DenseFlipout) that predicts the magnitude.
-  - A parallel branch that predicts the phase.
-  - A composite loss function combining:
-       • Huber loss (for magnitude)
-       • MMD loss (for magnitude) weighted by mmd_lambda
-       • Phase loss (1 - cos(predicted_phase - true_phase)) weighted by lambda_phase
-  - Custom metrics: MAE and a custom R² metric computed on the magnitude only.
-  - Callbacks that print key training statistics:
-      • Current learning rate at each epoch end.
-      • EarlyStopping and ReduceLROnPlateau patience counters.
-      • MMD lambda value is printed before training.
-      
-Note: The model now outputs a 2-dimensional vector per sample. At inference time,
-you can use only the magnitude forecast if desired.
+This module implements an enhanced version of an N-BEATS forecasting plugin without using a Bayesian output layer.
+It is designed to predict the seasonal component (or its returns) extracted via STL decomposition.
+The target data is assumed to be a 2‑column array where:
+  - Column 0 is the target seasonal magnitude (normalized).
+  - Column 1 is the target phase (extracted via a Hilbert transform).
 
-References:
-- Bayesian layers in TensorFlow Probability: :contentReference[oaicite:0]{index=0}
-- N-BEATS architecture (simplified): :contentReference[oaicite:1]{index=1}
+The model architecture uses an N‑BEATS–style backbone and then splits into two branches:
+  - A deterministic branch (using a standard Dense layer) for predicting the magnitude.
+  - A deterministic branch for predicting the phase.
+Their outputs are concatenated to form a final 2‑D output.
+
+The composite loss function combines:
+  - Huber loss on the magnitude.
+  - MMD loss on the magnitude (weighted by mmd_lambda).
+  - Phase loss computed as 1 - cos(predicted_phase - true_phase) (weighted by lambda_phase).
+
+Custom metrics (MAE and R²) are computed on the magnitude only.
+Additional callbacks print key training statistics (learning rate, patience counters, etc.).
+
+Note: The input x (and target y) are assumed to be the seasonal component (or its returns) extracted from the close prices,
+shifted by a given forecast horizon.
 """
 
 import numpy as np
 import tensorflow as tf
-import tensorflow_probability as tfp
+import tensorflow_probability as tfp  # still imported if needed for loss functions, etc.
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Dense, Input, Flatten, Add, Concatenate
 from tensorflow.keras.optimizers import Adam
@@ -36,9 +37,6 @@ import gc
 import os
 import tensorflow.keras.backend as K
 from sklearn.metrics import r2_score
-
-# Shortcut for TFP layers.
-tfp_layers = tfp.layers
 
 # ---------------------------
 # Custom Callbacks (copied exactly from transformer plugin)
@@ -85,7 +83,7 @@ class ClearMemoryCallback(Callback):
 # ---------------------------
 def mae_magnitude(y_true, y_pred):
     """
-    Computes MAE on the magnitude component (first column).
+    Computes Mean Absolute Error on the magnitude (first column) only.
     """
     mag_true = y_true[:, 0:1]
     mag_pred = y_pred[:, 0:1]
@@ -93,7 +91,7 @@ def mae_magnitude(y_true, y_pred):
 
 def r2_metric(y_true, y_pred):
     """
-    Custom R² metric computed on the magnitude component.
+    Custom R² metric computed on the magnitude component only.
     """
     mag_true = y_true[:, 0:1]
     mag_pred = y_pred[:, 0:1]
@@ -120,19 +118,19 @@ def compute_mmd(x, y, sigma=1.0, sample_size=256):
 
 def composite_loss(y_true, y_pred, mmd_lambda, lambda_phase, sigma=1.0):
     """
-    Composite loss combining:
-      - Huber loss on magnitude (first column)
-      - MMD loss on magnitude (first column)
-      - Phase loss computed as 1 - cos(predicted_phase - true_phase)
+    Composite loss that combines:
+      - Huber loss on the magnitude (first column) between prediction and target.
+      - MMD loss on the magnitude (first column).
+      - Phase loss computed as 1 - cos(predicted_phase - true_phase).
     
     Args:
-        y_true: Tensor with shape (batch_size, 2). Column 0 is magnitude target,
-                column 1 is phase target.
-        y_pred: Tensor with shape (batch_size, 2). Column 0 is predicted magnitude,
+        y_true: Tensor of shape (batch_size, 2). Column 0 is target magnitude,
+                column 1 is target phase.
+        y_pred: Tensor of shape (batch_size, 2). Column 0 is predicted magnitude,
                 column 1 is predicted phase.
-        mmd_lambda: Weight for MMD loss.
-        lambda_phase: Weight for phase loss.
-        sigma: Standard deviation for MMD loss.
+        mmd_lambda: Weight for the MMD loss.
+        lambda_phase: Weight for the phase loss.
+        sigma: Parameter for the MMD loss.
     
     Returns:
         Total loss value.
@@ -149,75 +147,29 @@ def composite_loss(y_true, y_pred, mmd_lambda, lambda_phase, sigma=1.0):
     return total_loss
 
 # ---------------------------
-# Bayesian Layer Functions (copied exactly from transformer plugin)
-# ---------------------------
-def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
-    print("DEBUG: In posterior_mean_field_custom:")
-    print("       dtype =", dtype, "kernel_shape =", kernel_shape)
-    print("       Received bias_size =", bias_size, "; overriding to 0")
-    print("DEBUG: trainable =", trainable, "name =", name)
-    if not isinstance(name, str):
-        print("DEBUG: 'name' is not a string; setting to None")
-        name = None
-    bias_size = 0
-    n = int(np.prod(kernel_shape)) + bias_size
-    c = np.log(np.expm1(1.))
-    loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42),
-                      dtype=dtype, trainable=trainable, name="posterior_loc")
-    scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43),
-                        dtype=dtype, trainable=trainable, name="posterior_scale")
-    scale = 1e-3 + tf.nn.softplus(scale + c)
-    scale = tf.clip_by_value(scale, 1e-3, 1.0)
-    try:
-        loc_reshaped = tf.reshape(loc, kernel_shape)
-        scale_reshaped = tf.reshape(scale, kernel_shape)
-    except Exception as e:
-        print("DEBUG: Exception during reshape in posterior:", e)
-        raise e
-    return tfp.distributions.Independent(
-        tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
-        reinterpreted_batch_ndims=len(kernel_shape)
-    )
-
-def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
-    print("DEBUG: In prior_fn:")
-    print("       dtype =", dtype, "kernel_shape =", kernel_shape)
-    print("       Received bias_size =", bias_size, "; overriding to 0")
-    print("DEBUG: trainable =", trainable, "name =", name)
-    if not isinstance(name, str):
-        print("DEBUG: 'name' is not a string in prior_fn; setting to None")
-        name = None
-    bias_size = 0
-    n = int(np.prod(kernel_shape)) + bias_size
-    loc = tf.zeros([n], dtype=dtype)
-    scale = tf.ones([n], dtype=dtype)
-    try:
-        loc_reshaped = tf.reshape(loc, kernel_shape)
-        scale_reshaped = tf.reshape(scale, kernel_shape)
-    except Exception as e:
-        print("DEBUG: Exception during reshape in prior_fn:", e)
-        raise e
-    return tfp.distributions.Independent(
-        tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
-        reinterpreted_batch_ndims=len(kernel_shape)
-    )
-
-# ---------------------------
-# Enhanced N-BEATS Plugin Definition (Single-Step Output with Bayesian Output and Phase Loss)
+# Enhanced N-BEATS Plugin Definition (Deterministic Version Without Bayesian Output)
 # ---------------------------
 class Plugin:
     """
-    Enhanced N-BEATS Predictor Plugin using Keras for single-step forecasting.
+    Enhanced N-BEATS Predictor Plugin using Keras for forecasting the seasonal component
+    (or its returns) extracted via STL decomposition.
     
-    Enhancements include:
-      - A Bayesian output branch (via tfp.layers.DenseFlipout) predicting magnitude.
-      - A parallel branch predicting phase.
-      - Composite loss: Huber + MMD (on magnitude) and phase loss (1 - cos(diff)).
-      - Custom metrics: MAE and R² (computed on magnitude).
-      - Callbacks: EarlyStoppingWithPatienceCounter, ReduceLROnPlateauWithCounter,
-                   LambdaCallback (printing learning rate), and ClearMemoryCallback.
+    The model is designed to learn both the magnitude and the phase of the seasonal pattern.
+    It outputs a 2-dimensional vector per sample:
+      - Column 0: Predicted magnitude (e.g. normalized seasonal value).
+      - Column 1: Predicted phase.
     
-    This version produces a 2-dimensional output per sample.
+    The composite loss function includes:
+      - Huber loss on the magnitude.
+      - MMD loss on the magnitude (weighted by mmd_lambda).
+      - Phase loss computed as 1 - cos(predicted_phase - true_phase) (weighted by lambda_phase).
+    
+    Custom metrics (MAE and R²) are computed on the magnitude only.
+    
+    Additional callbacks print training statistics (learning rate, patience counters, etc.).
+    
+    It is assumed that the input x (and corresponding target y) are the seasonal component
+    (or its returns) extracted from the close prices, shifted by a given forecast horizon.
     """
     plugin_params = {
         'batch_size': 32,
@@ -226,14 +178,15 @@ class Plugin:
         'learning_rate': 0.0001,
         'activation': 'tanh',
         'l2_reg': 1e-5,
-        'kl_weight': 1e-3,
-        'mmd_lambda': 1e-3,       # Weight for MMD loss
-        'lambda_phase': 1e-3,     # Weight for phase loss
-        # N-BEATS parameters
+        'kl_weight': 1e-3,        # Not used in this deterministic version.
+        'mmd_lambda': 1e-3,       # Weight for MMD loss.
+        'lambda_phase': 1e-3,     # Weight for phase loss.
+        # N-BEATS parameters (the model always produces one forecast per window,
+        # regardless of how many steps ahead the target is shifted).
         'nbeats_num_blocks': 3,
         'nbeats_units': 64,
         'nbeats_layers': 3,
-        'time_horizon': 1  # single-step forecasting
+        'time_horizon': 1  
     }
     plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size', 'time_horizon']
 
@@ -253,7 +206,7 @@ class Plugin:
 
     def build_model(self, input_shape, x_train, config):
         """
-        Builds an enhanced N-BEATS model with Bayesian output for magnitude and a branch for phase.
+        Builds an enhanced N-BEATS model for forecasting the seasonal component.
         
         Args:
             input_shape (tuple): Expected shape (window_size, 1).
@@ -265,9 +218,12 @@ class Plugin:
           - Passes data through several blocks; each block produces a forecast.
           - Aggregates forecasts by summing them.
           - Splits into two branches:
-              • Bayesian branch for magnitude (using DenseFlipout).
-              • Deterministic branch for phase.
-          - Concatenates the two outputs into a final 2D output.
+              • A deterministic branch for predicting the magnitude.
+              • A deterministic branch for predicting the phase.
+          - Concatenates the two outputs to yield a final 2D output.
+        
+        Note: The target y is assumed to be a 2-column array where column 0 is the
+              target seasonal magnitude (normalized) and column 1 is the target phase.
         """
         window_size = input_shape[0]
         num_blocks = config.get("nbeats_num_blocks", 3)
@@ -315,27 +271,21 @@ class Plugin:
         else:
             final_forecast = forecasts[0]
         
-        # Branch 1: Bayesian output for magnitude.
-        bayesian_mag_output = tfp_layers.DenseFlipout(
-            1,
-            activation='linear',
-            kernel_posterior_fn=posterior_mean_field_custom,
-            kernel_prior_fn=prior_fn,
-            name='bayesian_mag_output'
-        )(final_forecast)
+        # Branch 1: Deterministic output for magnitude.
+        deterministic_mag_output = Dense(1, activation='linear', name='deterministic_mag_output')(final_forecast)
         
         # Branch 2: Deterministic output for phase.
         phase_output = Dense(1, activation='linear', name='phase_output')(final_forecast)
         
-        # Concatenate outputs to form final output (shape: (batch_size, 2))
-        final_output = Concatenate(name='final_output')([bayesian_mag_output, phase_output])
+        # Concatenate outputs to form final output (shape: (batch_size, 2)).
+        final_output = Concatenate(name='final_output')([deterministic_mag_output, phase_output])
         
         self.model = Model(inputs=inputs, outputs=final_output, name='NBeatsModel')
         
         optimizer = Adam(learning_rate=config.get("learning_rate", 0.0001))
         mmd_lambda = config.get("mmd_lambda", 1e-3)
         lambda_phase = config.get("lambda_phase", 1e-3)
-        # Compile with composite loss and custom metrics (MAE and R² on magnitude).
+        # Compile with composite loss and custom metrics (computed on magnitude only).
         self.model.compile(optimizer=optimizer,
                            loss=lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, lambda_phase, sigma=1.0),
                            metrics=[mae_magnitude, r2_metric])
@@ -348,15 +298,14 @@ class Plugin:
         Trains the N-BEATS model with enhanced callbacks.
         
         Prints training statistics for:
-          - MAE (magnitude)
-          - Learning rate (at each epoch)
-          - EarlyStopping patience counter
-          - ReduceLROnPlateau patience counter
+          - MAE on the magnitude.
+          - Learning rate (at each epoch).
+          - EarlyStopping and ReduceLROnPlateau patience counters.
         
         Args:
             x_train (np.ndarray): Training input with shape (samples, window_size, 1).
             y_train (list): List containing a single array of targets (shape (samples, 2)),
-                             where column 0 is magnitude and column 1 is phase.
+                             where column 0 is the seasonal magnitude target and column 1 is the phase target.
             epochs (int): Maximum number of epochs.
             batch_size (int): Batch size.
             threshold_error (float): (Unused, for compatibility).
@@ -390,7 +339,7 @@ class Plugin:
                                  verbose=1)
         train_preds = self.model.predict(x_train, batch_size=batch_size)
         val_preds = self.model.predict(x_val, batch_size=batch_size)
-        # Uncertainty estimates set to zero for compatibility.
+        # For compatibility, set uncertainty estimates (for magnitude) as zeros.
         train_unc = np.zeros_like(train_preds[:, 0:1])
         val_unc = np.zeros_like(val_preds[:, 0:1])
         # Calculate and print MAE and R² on training data (using magnitude only).
@@ -401,7 +350,7 @@ class Plugin:
     def predict_with_uncertainty(self, x_test, mc_samples=100):
         """
         Generates predictions with uncertainty estimates.
-        For N-BEATS, predictions are returned with zero uncertainty.
+        For this model, predictions are returned with zero uncertainty.
         
         Args:
             x_test (np.ndarray): Test input data.
@@ -411,7 +360,6 @@ class Plugin:
             tuple: (predictions, uncertainty_estimates)
         """
         predictions = self.model.predict(x_test)
-        # Return only magnitude uncertainty as zeros.
         uncertainty_estimates = np.zeros_like(predictions[:, 0:1])
         return predictions, uncertainty_estimates
 
@@ -440,7 +388,7 @@ class Plugin:
 
     def calculate_mae(self, y_true, y_pred):
         """
-        Calculates and prints the Mean Absolute Error for magnitude.
+        Calculates and prints the Mean Absolute Error for the magnitude component.
         """
         mag_true = y_true[:, 0:1]
         mag_pred = y_pred[:, 0:1]
@@ -452,7 +400,7 @@ class Plugin:
 
     def calculate_r2(self, y_true, y_pred):
         """
-        Calculates and prints the R² score for magnitude.
+        Calculates and prints the R² score for the magnitude component.
         """
         mag_true = y_true[:, 0:1]
         mag_pred = y_pred[:, 0:1]
@@ -469,7 +417,7 @@ class Plugin:
 # ---------------------------
 if __name__ == "__main__":
     plugin = Plugin()
-    # Example: window_size=24, input shape (24,1)
+    # For example: window_size=24, input shape (24,1)
     plugin.build_model(input_shape=(24, 1), x_train=None, config={})
     debug_info = plugin.get_debug_info()
     print(f"Debug Info: {debug_info}")
