@@ -390,9 +390,9 @@ def run_prediction_pipeline(config, plugin):
 
         #calculte test_r2
         test_r2 = r2_score(
-                y_test_stacked[:, -1].flatten(), 
-                test_predictions[:].flatten()
-            )
+            y_test_stacked[:, -1].flatten(), 
+            test_predictions[:, 0].flatten()
+        )
         
         # calculate mmd for train, val and test
         #print("\nCalculating MMD for train, val and test datasets...")
