@@ -1,33 +1,31 @@
 #!/usr/bin/env python
 """
-Enhanced N-BEATS Predictor Plugin (Forecasting Seasonal Component without Bayesian Output)
+Enhanced N-BEATS Predictor Plugin (Forecasting Seasonal Component with Composite Loss without Bayesian Output)
 
-This module implements an enhanced version of an N-BEATS forecasting plugin without using a Bayesian output layer.
-It is designed to predict the seasonal component (or its returns) extracted via STL decomposition.
-The target data is assumed to be a 2‑column array where:
-  - Column 0 is the target seasonal magnitude (normalized).
-  - Column 1 is the target phase (extracted via a Hilbert transform).
+This module implements an enhanced version of an N-BEATS forecasting plugin without using a Bayesian layer.
+It is designed to forecast the seasonal component (or its returns) extracted via STL decomposition.
+The model is meant to learn both the magnitude and phase of the seasonal pattern.
 
-The model architecture uses an N‑BEATS–style backbone and then splits into two branches:
-  - A deterministic branch (using a standard Dense layer) for predicting the magnitude.
-  - A deterministic branch for predicting the phase.
-Their outputs are concatenated to form a final 2‑D output.
+The target y is expected to be a two-column array:
+  - Column 0: Target seasonal magnitude (normalized).
+  - Column 1: Target phase (obtained via a Hilbert transform on the seasonal component).
 
-The composite loss function combines:
+If y is provided as a one-dimensional tensor, the composite loss will automatically expand it by
+assigning a zero phase target. The composite loss function then combines:
   - Huber loss on the magnitude.
   - MMD loss on the magnitude (weighted by mmd_lambda).
-  - Phase loss computed as 1 - cos(predicted_phase - true_phase) (weighted by lambda_phase).
+  - Phase loss computed as 1 - cos(predicted_phase - target_phase) (weighted by lambda_phase).
 
 Custom metrics (MAE and R²) are computed on the magnitude only.
-Additional callbacks print key training statistics (learning rate, patience counters, etc.).
+Additional callbacks print training statistics (learning rate, patience counters, etc.).
 
-Note: The input x (and target y) are assumed to be the seasonal component (or its returns) extracted from the close prices,
-shifted by a given forecast horizon.
+Note: The input x (and corresponding target y) are assumed to be the seasonal component (or its returns)
+extracted from the close prices, shifted by a given forecast horizon.
 """
 
 import numpy as np
 import tensorflow as tf
-import tensorflow_probability as tfp  # still imported if needed for loss functions, etc.
+import tensorflow_probability as tfp  # Imported for loss functions if needed.
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Dense, Input, Flatten, Add, Concatenate
 from tensorflow.keras.optimizers import Adam
@@ -42,35 +40,25 @@ from sklearn.metrics import r2_score
 # Custom Callbacks (copied exactly from transformer plugin)
 # ---------------------------
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
-    """
-    Custom ReduceLROnPlateau callback that prints the patience counter.
-    """
+    """Custom ReduceLROnPlateau callback that prints the patience counter."""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.patience_counter = 0
 
     def on_epoch_end(self, epoch, logs=None):
         super().on_epoch_end(epoch, logs)
-        if self.wait > 0:
-            self.patience_counter = self.wait
-        else:
-            self.patience_counter = 0
+        self.patience_counter = self.wait if self.wait > 0 else 0
         print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}")
 
 class EarlyStoppingWithPatienceCounter(EarlyStopping):
-    """
-    Custom EarlyStopping callback that prints the patience counter.
-    """
+    """Custom EarlyStopping callback that prints the patience counter."""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.patience_counter = 0
 
     def on_epoch_end(self, epoch, logs=None):
         super().on_epoch_end(epoch, logs)
-        if self.wait > 0:
-            self.patience_counter = self.wait
-        else:
-            self.patience_counter = 0
+        self.patience_counter = self.wait if self.wait > 0 else 0
         print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}")
 
 class ClearMemoryCallback(Callback):
@@ -118,23 +106,31 @@ def compute_mmd(x, y, sigma=1.0, sample_size=256):
 
 def composite_loss(y_true, y_pred, mmd_lambda, lambda_phase, sigma=1.0):
     """
-    Composite loss that combines:
-      - Huber loss on the magnitude (first column) between prediction and target.
-      - MMD loss on the magnitude (first column).
-      - Phase loss computed as 1 - cos(predicted_phase - true_phase).
+    Composite loss combining:
+      - Huber loss on the magnitude between prediction and target.
+      - MMD loss on the magnitude.
+      - Phase loss computed as 1 - cos(predicted_phase - target_phase).
+    
+    If y_true is provided as a one-dimensional tensor, it is expanded to two columns,
+    where the second column (phase) is filled with zeros.
     
     Args:
-        y_true: Tensor of shape (batch_size, 2). Column 0 is target magnitude,
-                column 1 is target phase.
+        y_true: Tensor of shape (batch_size, 2) (or (batch_size,) which will be expanded).
+                Column 0 is target magnitude, column 1 is target phase.
         y_pred: Tensor of shape (batch_size, 2). Column 0 is predicted magnitude,
                 column 1 is predicted phase.
-        mmd_lambda: Weight for the MMD loss.
-        lambda_phase: Weight for the phase loss.
-        sigma: Parameter for the MMD loss.
+        mmd_lambda: Weight for MMD loss.
+        lambda_phase: Weight for phase loss.
+        sigma: Parameter for MMD loss.
     
     Returns:
         Total loss value.
     """
+    # If y_true is 1D or has only one column, expand it to 2D by concatenating zeros as phase.
+    if y_true.shape.ndims == 1 or (y_true.shape.ndims == 2 and y_true.shape[1] == 1):
+        y_true = tf.reshape(y_true, [-1, 1])
+        y_true = tf.concat([y_true, tf.zeros_like(y_true)], axis=1)
+    
     mag_true = y_true[:, 0:1]
     phase_true = y_true[:, 1:2]
     mag_pred = y_pred[:, 0:1]
@@ -162,7 +158,7 @@ class Plugin:
     The composite loss function includes:
       - Huber loss on the magnitude.
       - MMD loss on the magnitude (weighted by mmd_lambda).
-      - Phase loss computed as 1 - cos(predicted_phase - true_phase) (weighted by lambda_phase).
+      - Phase loss computed as 1 - cos(predicted_phase - target_phase) (weighted by lambda_phase).
     
     Custom metrics (MAE and R²) are computed on the magnitude only.
     
@@ -181,8 +177,7 @@ class Plugin:
         'kl_weight': 1e-3,        # Not used in this deterministic version.
         'mmd_lambda': 1e-3,       # Weight for MMD loss.
         'lambda_phase': 1e-3,     # Weight for phase loss.
-        # N-BEATS parameters (the model always produces one forecast per window,
-        # regardless of how many steps ahead the target is shifted).
+        # N-BEATS parameters (model produces one forecast per window, independent of forecast horizon).
         'nbeats_num_blocks': 3,
         'nbeats_units': 64,
         'nbeats_layers': 3,
@@ -223,7 +218,7 @@ class Plugin:
           - Concatenates the two outputs to yield a final 2D output.
         
         Note: The target y is assumed to be a 2-column array where column 0 is the
-              target seasonal magnitude (normalized) and column 1 is the target phase.
+              target seasonal magnitude and column 1 is the target phase.
         """
         window_size = input_shape[0]
         num_blocks = config.get("nbeats_num_blocks", 3)
@@ -252,32 +247,23 @@ class Plugin:
             r = res
             for i in range(block_layers):
                 r = Dense(block_units, activation='relu', name=f'block{block_id}_dense_{i+1}')(r)
-            # Forecast branch outputs a single value.
             forecast = Dense(1, activation='linear', name=f'block{block_id}_forecast')(r)
-            # Use static shape for units.
             units = int(res.shape[-1])
             backcast = Dense(units, activation='linear', name=f'block{block_id}_backcast')(r)
             updated_res = Add(name=f'block{block_id}_residual')([res, -backcast])
             return updated_res, forecast
         
-        # Build blocks sequentially.
         for b in range(1, num_blocks + 1):
             residual, forecast = nbeats_block(residual, b)
             forecasts.append(forecast)
         
-        # Sum forecasts from all blocks.
-        if len(forecasts) > 1:
-            final_forecast = Add(name='forecast_sum')(forecasts)
-        else:
-            final_forecast = forecasts[0]
+        final_forecast = Add(name='forecast_sum')(forecasts) if len(forecasts) > 1 else forecasts[0]
         
-        # Branch 1: Deterministic output for magnitude.
+        # Branch for magnitude.
         deterministic_mag_output = Dense(1, activation='linear', name='deterministic_mag_output')(final_forecast)
-        
-        # Branch 2: Deterministic output for phase.
+        # Branch for phase.
         phase_output = Dense(1, activation='linear', name='phase_output')(final_forecast)
-        
-        # Concatenate outputs to form final output (shape: (batch_size, 2)).
+        # Concatenate to get final output: shape (batch_size, 2)
         final_output = Concatenate(name='final_output')([deterministic_mag_output, phase_output])
         
         self.model = Model(inputs=inputs, outputs=final_output, name='NBeatsModel')
@@ -285,7 +271,6 @@ class Plugin:
         optimizer = Adam(learning_rate=config.get("learning_rate", 0.0001))
         mmd_lambda = config.get("mmd_lambda", 1e-3)
         lambda_phase = config.get("lambda_phase", 1e-3)
-        # Compile with composite loss and custom metrics (computed on magnitude only).
         self.model.compile(optimizer=optimizer,
                            loss=lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, lambda_phase, sigma=1.0),
                            metrics=[mae_magnitude, r2_metric])
@@ -316,7 +301,6 @@ class Plugin:
         Returns:
             tuple: (history, train_preds, train_unc, val_preds, val_unc)
         """
-        # Define callbacks.
         callbacks = [
             EarlyStoppingWithPatienceCounter(monitor='val_loss',
                                              patience=config.get("early_stopping_patience", 10),
@@ -339,10 +323,8 @@ class Plugin:
                                  verbose=1)
         train_preds = self.model.predict(x_train, batch_size=batch_size)
         val_preds = self.model.predict(x_val, batch_size=batch_size)
-        # For compatibility, set uncertainty estimates (for magnitude) as zeros.
         train_unc = np.zeros_like(train_preds[:, 0:1])
         val_unc = np.zeros_like(val_preds[:, 0:1])
-        # Calculate and print MAE and R² on training data (using magnitude only).
         self.calculate_mae(y_train[0], train_preds)
         self.calculate_r2(y_train[0], train_preds)
         return history, train_preds, train_unc, val_preds, val_unc
@@ -366,9 +348,6 @@ class Plugin:
     def save(self, file_path):
         """
         Saves the current model to the specified file.
-        
-        Args:
-            file_path (str): Path to save the model.
         """
         self.model.save(file_path)
         print(f"Model saved to {file_path}")
@@ -376,9 +355,6 @@ class Plugin:
     def load(self, file_path):
         """
         Loads a model from the specified file.
-        
-        Args:
-            file_path (str): Path from which to load the model.
         """
         self.model = load_model(file_path, custom_objects={'composite_loss': composite_loss, 
                                                              'compute_mmd': compute_mmd, 
@@ -417,7 +393,7 @@ class Plugin:
 # ---------------------------
 if __name__ == "__main__":
     plugin = Plugin()
-    # For example: window_size=24, input shape (24,1)
+    # Example: window_size=24, input shape (24,1)
     plugin.build_model(input_shape=(24, 1), x_train=None, config={})
     debug_info = plugin.get_debug_info()
     print(f"Debug Info: {debug_info}")
