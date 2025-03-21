@@ -275,11 +275,12 @@ class Plugin:
             final_forecast = forecasts[0]
         
         # Apply Bayesian output layer:
+        # Apply Bayesian output layer:
         bayesian_output = tfp_layers.DenseFlipout(
             1,
             activation='linear',
-            posterior_fn=posterior_mean_field_custom,
-            prior_fn=prior_fn,
+            kernel_posterior_fn=posterior_mean_field_custom,
+            kernel_prior_fn=prior_fn,
             name='bayesian_output'
         )(final_forecast)
         
