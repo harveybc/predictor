@@ -145,7 +145,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, lambda_phase, sigma=1.0):
     huber_loss_val = Huber()(mag_true, mag_pred)
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
     phase_loss = 1 - tf.cos(phase_pred - phase_true)
-    total_loss = huber_loss_val + (mmd_lambda * mmd_loss_val) + (lambda_phase * phase_loss)
+    total_loss = huber_loss_val + (mmd_lambda * mmd_loss_val)
     return total_loss
 
 # ---------------------------
