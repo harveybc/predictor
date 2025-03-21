@@ -400,7 +400,7 @@ def run_prediction_pipeline(config, plugin):
 
         #calculte test_r2
         test_r2 = r2_score(
-            y_test_stacked[:, -1].flatten(), 
+            y_test_array.flatten(),
             test_predictions[:, 0].flatten()
         )
         
