@@ -3,19 +3,18 @@
 Enhanced N-BEATS Predictor Plugin using Keras for forecasting the seasonal component
 (without Bayesian output).
 
-This plugin is designed to learn both the magnitude and the phase of the seasonal pattern.
+This plugin is designed to learn both the magnitude of the seasonal pattern.
 It outputs a 2-dimensional vector per sample:
   - Column 0: Predicted magnitude (e.g. normalized seasonal value).
-  - Column 1: Predicted phase.
 
 The composite loss function combines:
   - Huber loss on the magnitude.
   - MMD loss on the magnitude (weighted by mmd_lambda).
-  - Phase loss computed as 1 - cos(predicted_phase - target_phase) (weighted by lambda_phase).
+
 
 Custom metrics (MAE and R²) are computed on the magnitude only.
 If the target y is provided as a one-dimensional tensor, it is automatically expanded
-to two columns (with the phase component set to 0).
+
 
 It is assumed that the input x (and corresponding target y) are the seasonal component
 (or its returns) extracted from the close prices, shifted by a given forecast horizon.
@@ -73,7 +72,7 @@ def mae_magnitude(y_true, y_pred):
     """
     Computes Mean Absolute Error on the magnitude (first column) only.
     If y_true is one-dimensional or has only one column, it is expanded to 2 columns
-    with the second (phase) set to zero.
+
     """
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
         y_true = tf.reshape(y_true, [-1, 1])
@@ -85,8 +84,7 @@ def mae_magnitude(y_true, y_pred):
 def r2_metric(y_true, y_pred):
     """
     Computes the R² metric on the magnitude (first column) only.
-    If y_true is one-dimensional or has only one column, it is expanded to 2 columns
-    with the phase set to zero.
+    If y_true is one-dimensional or has only one column
     """
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
         y_true = tf.reshape(y_true, [-1, 1])
@@ -114,41 +112,21 @@ def compute_mmd(x, y, sigma=1.0, sample_size=256):
     K_xy = gaussian_kernel(x_sample, y_sample, sigma)
     return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
 
-def composite_loss(y_true, y_pred, mmd_lambda, lambda_phase, sigma=1.0):
+def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     """
-    Composite loss combining:
-      - Huber loss on the magnitude between prediction and target.
-      - MMD loss on the magnitude.
-      - Phase loss computed as 1 - cos(predicted_phase - target_phase).
-
-    If y_true is provided as a 1-dimensional tensor, it is expanded to 2 columns with
-    the phase set to zero.
-    
-    Args:
-        y_true: Tensor of shape (batch_size, 2) (or (batch_size,) which will be expanded).
-                Column 0 is target magnitude, column 1 is target phase.
-        y_pred: Tensor of shape (batch_size, 2). Column 0 is predicted magnitude,
-                column 1 is predicted phase.
-        mmd_lambda: Weight for the MMD loss.
-        lambda_phase: Weight for the phase loss.
-        sigma: Parameter for the MMD loss.
-    
-    Returns:
-        Total loss value.
+    Composite loss combining Huber loss on the magnitude and MMD loss on the magnitude.
+    Assumes y_true and y_pred are either 1D tensors or 2D with a single column.
     """
     if y_true.shape.ndims == 1 or (y_true.shape.ndims == 2 and y_true.shape[1] == 1):
         y_true = tf.reshape(y_true, [-1, 1])
-        y_true = tf.concat([y_true, tf.zeros_like(y_true)], axis=1)
     mag_true = y_true[:, 0:1]
-    phase_true = y_true[:, 1:2]
     mag_pred = y_pred[:, 0:1]
-    phase_pred = y_pred[:, 1:2]
     
     huber_loss_val = Huber()(mag_true, mag_pred)
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
-    phase_loss = 1 - tf.cos(phase_pred - phase_true)
     total_loss = huber_loss_val + (mmd_lambda * mmd_loss_val)
     return total_loss
+
 
 # ---------------------------
 # Enhanced N-BEATS Plugin Definition (Deterministic Version Without Bayesian Output)
@@ -158,15 +136,12 @@ class Plugin:
     Enhanced N-BEATS Predictor Plugin using Keras for forecasting the seasonal component
     (or its returns) extracted via STL decomposition.
 
-    The model learns both the magnitude and the phase of the seasonal pattern.
-    It outputs a 2-dimensional vector per sample:
-      - Column 0: Predicted magnitude.
-      - Column 1: Predicted phase.
+    
 
     The composite loss function includes:
       - Huber loss on the magnitude.
       - MMD loss on the magnitude (weighted by mmd_lambda).
-      - Phase loss computed as 1 - cos(predicted_phase - target_phase) (weighted by lambda_phase).
+
 
     Custom metrics (MAE and R²) are computed on the magnitude only.
     Additional callbacks print training statistics (learning rate, patience counters, etc.).
@@ -183,7 +158,6 @@ class Plugin:
         'l2_reg': 1e-5,
         'kl_weight': 1e-3,        # Not used in this deterministic version.
         'mmd_lambda': 1e-3,       # Weight for MMD loss.
-        'lambda_phase': 1e-3,     # Weight for phase loss.
         # N-BEATS parameters.
         'nbeats_num_blocks': 3,
         'nbeats_units': 64,
@@ -221,11 +195,9 @@ class Plugin:
           - Aggregates forecasts by summing them.
           - Splits into two branches:
               • A deterministic branch for predicting the magnitude.
-              • A deterministic branch for predicting the phase.
+
           - Concatenates the two outputs to yield a final 2D output.
 
-        Note: The target y is assumed to be a 2-column array where column 0 is the
-              target seasonal magnitude and column 1 is the target phase.
         """
         window_size = input_shape[0]
         num_blocks = config.get("nbeats_num_blocks", 3)
@@ -267,11 +239,10 @@ class Plugin:
         
         optimizer = Adam(learning_rate=config.get("learning_rate", 0.0001))
         mmd_lambda = config.get("mmd_lambda", 1e-3)
-        lambda_phase = config.get("lambda_phase", 1e-3)
         self.model.compile(optimizer=optimizer,
                    loss=lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0),
                    metrics=[mae_magnitude, r2_metric])
-        print("DEBUG: MMD lambda =", mmd_lambda, "and lambda_phase =", lambda_phase)
+        print("DEBUG: MMD lambda =", mmd_lambda)
         print("N-BEATS model built successfully.")
         self.model.summary()
 
@@ -322,7 +293,6 @@ class Plugin:
         print(f"Predictor model loaded from {file_path}")
 
     def calculate_mae(self, y_true, y_pred):
-        # If y_true is 1D or has only one column, expand it to two columns (phase=0).
         if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
             y_true = np.reshape(y_true, (-1, 1))
             y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
@@ -336,7 +306,7 @@ class Plugin:
 
 
     def calculate_r2(self, y_true, y_pred):
-        # If y_true is 1D or has only one column, expand it to two columns (phase=0).
+        
         if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
             y_true = np.reshape(y_true, (-1, 1))
             y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
