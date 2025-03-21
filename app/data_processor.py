@@ -549,8 +549,8 @@ def run_prediction_pipeline(config, plugin):
                 close_max = norm_json["CLOSE"]["max"]
                 diff = close_max - close_min
                 if baseline_test is not None:
-                    baseline_test_expanded = np.expand_dims(baseline_test, axis=-1)
-                    test_predictions = (test_predictions + baseline_test_expanded) * diff + close_min
+                    #baseline_test_expanded = np.expand_dims(baseline_test, axis=-1)
+                    test_predictions = (test_predictions + baseline_test) * diff + close_min
                     y_test_array = np.stack(y_test, axis=1)
                     denorm_y_test = (y_test_array + baseline_test) * diff + close_min
                 else:
