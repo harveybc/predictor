@@ -260,12 +260,24 @@ def run_prediction_pipeline(config, plugin):
     print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {[a.shape for a in y_val]}")
     print(f"Test data shapes: x_test: {x_test.shape}, y_test: {[a.shape for a in y_test]}")
     # --- NEW CODE: Stack multi-output target lists into 2D arrays ---
-    y_train_array = np.stack(y_train, axis=1)  # Shape: (n_samples, time_horizon)
-    y_val_array   = np.stack(y_val, axis=1)
-    y_test_array  = np.stack(y_test, axis=1)
-    print("DEBUG: Stacked y_train shape:", y_train_array.shape)
-    print("DEBUG: Stacked y_val shape:", y_val_array.shape)
-    print("DEBUG: Stacked y_test shape:", y_test_array.shape)
+    # --- NEW CODE: Ensure targets are 2D arrays with a single column if only one output is provided ---
+    if isinstance(y_train, list) and len(y_train) == 1:
+        y_train_array = y_train[0]
+    else:
+        y_train_array = np.stack(y_train, axis=1)
+    if isinstance(y_val, list) and len(y_val) == 1:
+        y_val_array = y_val[0]
+    else:
+        y_val_array = np.stack(y_val, axis=1)
+    if isinstance(y_test, list) and len(y_test) == 1:
+        y_test_array = y_test[0]
+    else:
+        y_test_array = np.stack(y_test, axis=1)
+    print("DEBUG: y_train_array shape:", y_train_array.shape)
+    print("DEBUG: y_val_array shape:", y_val_array.shape)
+    print("DEBUG: y_test_array shape:", y_test_array.shape)
+    # --- END NEW CODE ---
+
     # --- END NEW CODE ---
 
     # --- NEW CODE: Stack multi-output target lists into arrays ---
