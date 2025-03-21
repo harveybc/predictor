@@ -196,193 +196,132 @@ class Plugin:
 
     def build_model(self, input_shape, x_train, config):
         """
-        Builds the N-BEATS model.
-        Input shape is expected as (window_size, 1).
-        The model constructs several N-BEATS blocks (deterministic part),
-        projects the final residual with a Dense layer and BatchNormalization,
-        then applies a Bayesian DenseFlipout layer (wrapped in a Lambda) plus a deterministic bias.
-        This Bayesian branch replaces the original final_forecast.
+        Builds a simplified N-BEATS model.
+        
+        Args:
+            input_shape (tuple): Expected shape (window_size, 1).
+            x_train (np.ndarray): Training data (for shape inference if needed).
+            config (dict): Configuration parameters which may include:
+                - "nbeats_num_blocks": number of blocks (default=3)
+                - "nbeats_units": number of neurons per dense layer (default=64)
+                - "nbeats_layers": number of layers per block (default=3)
+                - "learning_rate": learning rate for the Adam optimizer (default=0.001)
+        
+        The model flattens the input and passes it through several blocks.
+        Each block outputs a forecast which is summed to produce the final prediction.
         """
         window_size = input_shape[0]
-        num_blocks = config.get("nbeats_num_blocks", self.params['nbeats_num_blocks'])
-        block_units = config.get("nbeats_units", self.params['nbeats_units'])
-        block_layers = config.get("nbeats_layers", self.params['nbeats_layers'])
+        num_blocks = config.get("nbeats_num_blocks", 3)
+        block_units = config.get("nbeats_units", 64)
+        block_layers = config.get("nbeats_layers", 3)
         
-        # Input layer and flattening
+        # Input layer accepts shape (window_size, 1)
         inputs = Input(shape=input_shape, name='input_layer')
         x = Flatten(name='flatten_layer')(inputs)  # shape: (window_size,)
         
-        # Build N-BEATS blocks
+        # Initialize residual as the flattened input.
         residual = x
         forecasts = []
+        
         def nbeats_block(res, block_id):
+            """
+            Constructs a single N-BEATS block.
+            
+            Args:
+                res: Input tensor from the previous block.
+                block_id (int): Identifier for naming.
+            
+            Returns:
+                tuple: (updated_residual, forecast)
+            """
             r = res
             for i in range(block_layers):
                 r = Dense(block_units, activation='relu', name=f'block{block_id}_dense_{i+1}')(r)
+            # Forecast branch outputs a single value.
             forecast = Dense(1, activation='linear', name=f'block{block_id}_forecast')(r)
-            backcast = Dense(int(res.shape[-1]), activation='linear', name=f'block{block_id}_backcast')(r)
+            # Use the static shape attribute for units instead of tf.shape.
+            units = int(res.shape[-1])
+            backcast = Dense(units, activation='linear', name=f'block{block_id}_backcast')(r)
+            # Update residual: subtract the backcast from the input residual.
             updated_res = Add(name=f'block{block_id}_residual')([res, -backcast])
             return updated_res, forecast
+        
+        # Build blocks sequentially.
         for b in range(1, num_blocks + 1):
             residual, forecast = nbeats_block(residual, b)
             forecasts.append(forecast)
+        
+        # Sum forecasts from all blocks.
         if len(forecasts) > 1:
             final_forecast = Add(name='forecast_sum')(forecasts)
         else:
             final_forecast = forecasts[0]
-        # Note: final_forecast is computed but not used.
         
-        # Projection and normalization of final residual
-        proj = Dense(self.params['initial_layer_size'], activation=self.params['activation'],
-                     kernel_initializer=GlorotUniform(), name="projection_layer")(residual)
-        bn = BatchNormalization(name="batch_norm_final")(proj)
-        
-        # --- Bayesian Output Layer Implementation (copied exactly) ---
-        # --- Bayesian Output Layer Implementation (copied exactly) ---
-
-        def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
-            return self.add_weight(name=name, shape=shape, dtype=dtype,
-                                    initializer=initializer, trainable=trainable, **kwargs)
-        tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-
-        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
-        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", self.params.get('kl_weight', 1e-3))
-        KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-        l2_reg = self.params.get('l2_reg', 1e-5)
-        DenseFlipout = tfp.layers.DenseFlipout
-        print("DEBUG: Creating DenseFlipout final layer with units:", self.params['time_horizon'])
-        flipout_layer = DenseFlipout(
-            units=self.params['time_horizon'],
-            activation='linear',
-            kernel_posterior_fn=posterior_mean_field_custom,
-            kernel_prior_fn=prior_fn,
-            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-            name="output_layer"
-        )
-        # Ensure bn is a tensor (avoid receiving a tuple)
-        bn_tensor = tf.convert_to_tensor(bn)
-        bayesian_output = tf.keras.layers.Lambda(
-            lambda t: flipout_layer(t),
-            output_shape=lambda s: (s[0], self.params['time_horizon']),
-            name="bayesian_dense_flipout"
-        )(bn_tensor)
-        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
-
-        
-        bias_layer = Dense(
-            units=self.params['time_horizon'],
-            activation='linear',
-            kernel_initializer=random_normal_initializer_44,
-            name="deterministic_bias",
-            kernel_regularizer=l2(l2_reg)
-        )(bn)
-        print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
-        
-        outputs = Add(name="final_output")([bayesian_output, bias_layer])
-        print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
-
-        
-        self.model = Model(inputs=inputs, outputs=outputs, name="predictor_model")
-        print("DEBUG: Model created. Input shape:", self.model.input_shape, "Output shape:", self.model.output_shape)
-        
-        self.model.compile(
-            optimizer=Adam(learning_rate=self.params.get("learning_rate", 0.0001)),
-            loss=lambda y_true, y_pred: custom_loss(y_true, y_pred, mmd_lambda=KL_WEIGHT),
-            metrics=['mae']
-        )
-        print("DEBUG: Adam optimizer created with learning_rate:", self.params.get("learning_rate", 0.0001))
-        print("DEBUG: Model compiled with custom loss (Huber + MMD) and metrics=['mae']")
+        # Define and compile the model.
+        self.model = Model(inputs=inputs, outputs=final_forecast, name='NBeatsModel')
+        optimizer = tf.keras.optimizers.Adam(learning_rate=config.get("learning_rate", 0.001))
+        self.model.compile(optimizer=optimizer, loss='mse')
+        print("N-BEATS model built successfully.")
         self.model.summary()
-        print("✅ Enhanced N-BEATS model built successfully.")
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
         """
-        Trains the model with KL annealing, MMD logging, early stopping, and ReduceLROnPlateau.
-        """
-        if isinstance(x_train, tuple): x_train = x_train[0]
-        if isinstance(x_val, tuple): x_val = x_val[0]
+        Trains the N-BEATS model.
         
-        mmd_lambda = self.params.get('kl_weight', 1e-3)
-        self.mmd_lambda = tf.Variable(mmd_lambda, trainable=False, dtype=tf.float32, name='mmd_lambda')
-
-        class KLAnnealingCallback(tf.keras.callbacks.Callback):
-            def __init__(self, plugin, target_kl, anneal_epochs):
-                super().__init__()
-                self.plugin = plugin
-                self.target_kl = target_kl
-                self.anneal_epochs = anneal_epochs
-            def on_epoch_begin(self, epoch, logs=None):
-                new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
-                self.plugin.kl_weight_var.assign(new_kl)
-                print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
-
-        class MMDLoggingCallback(tf.keras.callbacks.Callback):
-            def __init__(self, plugin, x_train, y_train):
-                super().__init__()
-                self.plugin = plugin
-                self.x_train = x_train
-                self.y_train = y_train
-            def on_epoch_end(self, epoch, logs=None):
-                preds = self.plugin.model(self.x_train, training=True)
-                mmd_value = compute_mmd(preds, self.y_train)
-                print(f"                                        MMD Lambda = {self.plugin.kl_weight.numpy():.6f}, MMD Loss = {mmd_value.numpy():.6f}")
-
-        anneal_epochs = config.get("kl_anneal_epochs", 10)
-        target_kl = self.params.get('kl_weight', 1e-3)
-        kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        mmd_logging_callback = MMDLoggingCallback(self, x_train, y_train)
-
-        min_delta = config.get("min_delta", 1e-4)
-        early_stopping_monitor = EarlyStoppingWithPatienceCounter(
-            monitor='val_loss',
-            patience=config.get('early_patience', 10),
-            restore_best_weights=True,
-            verbose=2,
-            min_delta=min_delta
-        )
-        reduce_lr_patience = max(1, config.get('early_patience', 10) // 3)
-        reduce_lr_monitor = ReduceLROnPlateauWithCounter(
-            monitor='val_loss',
-            factor=0.1,
-            patience=reduce_lr_patience,
-            min_lr=1e-6,
-            verbose=1
-        )
-        callbacks = [kl_callback, mmd_logging_callback, early_stopping_monitor, reduce_lr_monitor, ClearMemoryCallback()]
-
-        history = self.model.fit(
-            x_train, y_train[0],
-            epochs=epochs,
-            batch_size=batch_size,
-            validation_data=(x_val, y_val[0]),
-            shuffle=True,
-            callbacks=callbacks,
-            verbose=1
-        )
-        print("Training completed.")
-        final_loss = history.history['loss'][-1]
-        print(f"Final training loss: {final_loss}")
-        if final_loss > threshold_error:
-            print(f"Warning: final_loss={final_loss} > threshold_error={threshold_error}.")
-        return history, self.model.predict(x_train, batch_size=batch_size), np.zeros_like(self.model.predict(x_train, batch_size=batch_size)), self.model.predict(x_val, batch_size=batch_size), np.zeros_like(self.model.predict(x_val, batch_size=batch_size))
+        Args:
+            x_train (np.ndarray): Training input with shape (samples, window_size, 1).
+            y_train (list): List containing a single array of targets (shape (samples,)).
+            epochs (int): Maximum number of epochs.
+            batch_size (int): Batch size.
+            threshold_error (float): Not used here (for compatibility).
+            x_val (np.ndarray): Validation input.
+            y_val (list): List containing a single array of validation targets.
+            config (dict): Additional configuration if needed.
+        
+        Returns:
+            history: Training history.
+            train_preds: Predictions on training data.
+            train_unc: Uncertainty estimates (zeros array).
+            val_preds: Predictions on validation data.
+            val_unc: Uncertainty estimates (zeros array).
+        """
+        history = self.model.fit(x_train, y_train[0],
+                                 epochs=epochs,
+                                 batch_size=batch_size,
+                                 validation_data=(x_val, y_val[0]),
+                                 verbose=1)
+        train_preds = self.model.predict(x_train, batch_size=batch_size)
+        val_preds = self.model.predict(x_val, batch_size=batch_size)
+        # Uncertainty is set to zero for compatibility.
+        train_unc = np.zeros_like(train_preds)
+        val_unc = np.zeros_like(val_preds)
+        return history, train_preds, train_unc, val_preds, val_unc
 
     def predict_with_uncertainty(self, x_test, mc_samples=100):
         """
-        Generates predictions with uncertainty estimates via Monte Carlo sampling.
+        Generates predictions with uncertainty estimates.
+        For N-BEATS, predictions are returned with zero uncertainty.
+        
+        Args:
+            x_test (np.ndarray): Test input data.
+            mc_samples (int): Number of Monte Carlo samples (unused here).
+        
+        Returns:
+            tuple: (predictions, uncertainty_estimates)
         """
-        predictions = np.array([self.model(x_test, training=True).numpy() for _ in range(mc_samples)])
-        mean_predictions = np.mean(predictions, axis=0)
-        uncertainty_estimates = np.std(predictions, axis=0)
-        print("DEBUG: Mean predictions shape:", mean_predictions.shape)
-        print("DEBUG: Uncertainty estimates shape:", uncertainty_estimates.shape)
-        return mean_predictions, uncertainty_estimates
-
-    def predict(self, x):
-        return self.model.predict(x)
+        predictions = self.model.predict(x_test)
+        uncertainty_estimates = np.zeros_like(predictions)
+        return predictions, uncertainty_estimates
 
     def save(self, file_path):
+        """
+        Saves the current model to the specified file.
+        
+        Args:
+            file_path (str): Path to save the model.
+        """
         self.model.save(file_path)
-        print(f"Predictor model saved to {file_path}")
+        print(f"Model saved to {file_path}")
 
     def load(self, file_path):
         self.model = load_model(file_path, custom_objects={'custom_loss': custom_loss, 'compute_mmd': compute_mmd})
