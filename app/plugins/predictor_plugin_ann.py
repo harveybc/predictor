@@ -215,10 +215,13 @@ class Plugin:
             for i in range(block_layers):
                 r = Dense(block_units, activation='relu', name=f'block{block_id}_dense_{i+1}')(r)
             forecast = Dense(1, activation='linear', name=f'block{block_id}_forecast')(r)
+            # Explicitly reshape forecast to ensure shape (batch_size, 1)
+            forecast = tf.reshape(forecast, (-1, 1))
             units = int(res.shape[-1])
             backcast = Dense(units, activation='linear', name=f'block{block_id}_backcast')(r)
             updated_res = Add(name=f'block{block_id}_residual')([res, -backcast])
             return updated_res, forecast
+
         
         for b in range(1, num_blocks + 1):
             residual, forecast = nbeats_block(residual, b)
