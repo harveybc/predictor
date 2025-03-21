@@ -223,12 +223,22 @@ def run_prediction_pipeline(config, plugin):
     x_val, y_val = datasets["x_val"], datasets["y_val"]
     x_test, y_test = datasets["x_test"], datasets["y_test"]
     # --- NEW CODE: Retrieve stacked multi-output targets ---
-    y_train_array = datasets["y_train_array"]  # shape: (n_samples, time_horizon)
-    y_val_array   = datasets["y_val_array"]
-    y_test_array  = datasets["y_test_array"]
-    print("DEBUG: Retrieved stacked y_train shape:", y_train_array.shape)
-    print("DEBUG: Retrieved stacked y_val shape:", y_val_array.shape)
-    print("DEBUG: Retrieved stacked y_test shape:", y_test_array.shape)
+    # Replace stacking code for y_train, y_val, and y_test.
+    if len(y_train) == 1:
+        y_train_array = y_train[0]  # shape: (n_samples, 1)
+    else:
+        y_train_array = np.stack(y_train, axis=1)
+
+    if len(y_val) == 1:
+        y_val_array = y_val[0]
+    else:
+        y_val_array = np.stack(y_val, axis=1)
+
+    if len(y_test) == 1:
+        y_test_array = y_test[0]
+    else:
+        y_test_array = np.stack(y_test, axis=1)
+
     # --- END NEW CODE ---
 
     train_dates = datasets.get("dates_train")
