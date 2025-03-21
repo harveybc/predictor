@@ -1,18 +1,23 @@
 #!/usr/bin/env python
 """
-data_processor_nbeats.py
+Enhanced N-BEATS Predictor Plugin using Keras for forecasting the seasonal component
+(without Bayesian output).
 
-This module implements a revised data processor for a single-step forecast.
-It loads the CSV files, extracts the 'CLOSE' column as the univariate series,
-and creates sliding-window samples such that each sample's target is a single value:
-the future value at (window_size + time_horizon – 1).
+This plugin is designed to learn both the magnitude of the seasonal pattern.
+It outputs a 2-dimensional vector per sample:
+  - Column 0: Predicted magnitude (e.g. normalized seasonal value).
 
-Optionally, if config["use_returns"] is True, the target is computed as the difference
-between the future value and the last value of the input window.
+The composite loss function combines:
+  - Huber loss on the magnitude.
+  - MMD loss on the magnitude (weighted by mmd_lambda).
 
-The output dictionary is structured to be compatible with the existing predictor pipeline,
-with targets being one-dimensional.
 
+Custom metrics (MAE and R²) are computed on the magnitude only.
+If the target y is provided as a one-dimensional tensor, it is automatically expanded
+
+
+It is assumed that the input x (and corresponding target y) are the seasonal component
+(or its returns) extracted from the close prices, shifted by a given forecast horizon.
 """
 
 import numpy as np
@@ -273,8 +278,11 @@ class Plugin:
 
     def predict_with_uncertainty(self, x_test, mc_samples=100):
         predictions = self.model.predict(x_test)
-        uncertainty_estimates = np.zeros_like(predictions[:, 0:1])
+        # Force the predictions to be a 2D array with shape (n_samples, 1)
+        predictions = np.reshape(predictions, (-1, 1))
+        uncertainty_estimates = np.zeros_like(predictions)
         return predictions, uncertainty_estimates
+
 
     def save(self, file_path):
         self.model.save(file_path)
