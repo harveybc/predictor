@@ -372,11 +372,16 @@ def run_prediction_pipeline(config, plugin):
         test_predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
         n_test = test_predictions.shape[0]
         # Convert y_test (which is a list of arrays) to a single NumPy array
-        y_test_array = np.stack(y_test, axis=1)  # shape: (n_samples, time_horizon)
+        y_test_array = np.stack(y_test, axis=1)
+
 
         # Debugging shapes for verification
 
-        print("DEBUG: baseline_test shape:", baseline_test.shape if config.get("use_returns", False) else "Not using returns")
+        if config.get("use_returns", False) and "baseline_test" in datasets:
+            print("DEBUG: baseline_test shape:", datasets["baseline_test"].shape)
+        else:
+            print("DEBUG: Not using returns or baseline_test not available")
+
         print("DEBUG: y_test_array shape:", y_test_array.shape)
 
 
@@ -492,7 +497,11 @@ def run_prediction_pipeline(config, plugin):
     pd.DataFrame(results).to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
     # --- Denormalize final test predictions (if normalization provided) ---
-    denorm_test_close_prices = test_close_prices
+    if "CLOSE" in norm_json:
+        denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
+    else:
+        denorm_test_close_prices = test_close_prices
+
     if config.get("use_normalization_json") is not None:
         norm_json = config.get("use_normalization_json")
         if isinstance(norm_json, str):
@@ -503,33 +512,27 @@ def run_prediction_pipeline(config, plugin):
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
                 diff = close_max - close_min
-                # Final predicted close = (predicted_return + baseline)*diff + close_min
-
-    
-
-                # Expand baseline_test dimensions explicitly to match test_predictions
-                baseline_test_expanded = np.expand_dims(baseline_test, axis=-1)  # (6293, 1) → (6293, 1, 1)
-
-                # Perform broadcasting explicitly and safely
-                test_predictions = (test_predictions + baseline_test_expanded) * diff + close_min
-
-                # --- NEW CODE: Correctly stack y_test into a (n_samples, time_horizon) array ---
-                y_test_array = np.stack(y_test, axis=1)  # Ensure y_test is now (n_samples, time_horizon)
-                denorm_y_test = (y_test_array + baseline_test) * diff + close_min
-                # --- END NEW CODE ---
-                
+                if baseline_test is not None:
+                    baseline_test_expanded = np.expand_dims(baseline_test, axis=-1)
+                    test_predictions = (test_predictions + baseline_test_expanded) * diff + close_min
+                    y_test_array = np.stack(y_test, axis=1)
+                    denorm_y_test = (y_test_array + baseline_test) * diff + close_min
+                else:
+                    print("Warning: Baseline test values not found; skipping returns denormalization.")
+                    denorm_y_test = np.stack(y_test, axis=1)
             else:
                 print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
+                denorm_y_test = np.stack(y_test, axis=1)
         else:
             if "CLOSE" in norm_json:
                 close_min = norm_json["CLOSE"]["min"]
                 close_max = norm_json["CLOSE"]["max"]
-                # Denormalize the predictions only once
                 test_predictions = test_predictions * (close_max - close_min) + close_min
-                # For targets, use the already stacked y_test_array
-                denorm_y_test = y_test_array * (close_max - close_min) + close_min
+                denorm_y_test = np.stack(y_test, axis=1) * (close_max - close_min) + close_min
             else:
                 print("Warning: 'CLOSE' not found; skipping denormalization for non-returns mode.")
+                denorm_y_test = np.stack(y_test, axis=1)
+
     # Denormalize the test close prices once
     denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
 
