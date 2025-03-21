@@ -271,11 +271,11 @@ class Plugin:
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
         callbacks = [
             EarlyStoppingWithPatienceCounter(monitor='val_loss',
-                                             patience=config.get("early_stopping_patience", 10),
+                                             patience=config.get("early_patience", 60),
                                              verbose=1),
             ReduceLROnPlateauWithCounter(monitor='val_loss',
                                          factor=0.5,
-                                         patience=config.get("reduce_lr_patience", 3),
+                                         patience=config.get("early_patience", 20)/3,
                                          verbose=1),
             LambdaCallback(on_epoch_end=lambda epoch, logs: 
                print(f"DEBUG: Learning Rate at epoch {epoch+1}: {K.get_value(self.model.optimizer.learning_rate)}")),
