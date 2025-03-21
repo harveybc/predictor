@@ -227,8 +227,10 @@ class Plugin:
             forecasts.append(forecast)
         
         if len(forecasts) > 1:
-    # Explicitly add the forecasts elementwise to avoid broadcasting issues.
-            final_forecast = forecasts[0] + forecasts[1] + forecasts[2]
+            final_forecast = tf.keras.layers.Lambda(
+                lambda t: tf.reduce_sum(tf.stack(t, axis=0), axis=0),
+                name='forecast_sum'
+            )(forecasts)
         else:
             final_forecast = forecasts[0]
 
