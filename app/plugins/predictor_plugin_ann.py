@@ -278,7 +278,8 @@ class Plugin:
                                          patience=config.get("reduce_lr_patience", 3),
                                          verbose=1),
             LambdaCallback(on_epoch_end=lambda epoch, logs: 
-                           print(f"DEBUG: Learning Rate at epoch {epoch+1}: {K.get_value(self.model.optimizer.lr)}")),
+               print(f"DEBUG: Learning Rate at epoch {epoch+1}: {K.get_value(self.model.optimizer.learning_rate)}")),
+
             ClearMemoryCallback()
         ]
         
