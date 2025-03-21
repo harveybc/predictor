@@ -225,9 +225,11 @@ class Plugin:
             forecasts.append(forecast)
         
         if len(forecasts) > 1:
-            final_forecast = tf.keras.layers.add(forecasts, name='forecast_sum')
+    # Explicitly add the forecasts elementwise to avoid broadcasting issues.
+            final_forecast = forecasts[0] + forecasts[1] + forecasts[2]
         else:
             final_forecast = forecasts[0]
+
         
         # Single branch: Deterministic output for magnitude.
         final_output = Dense(1, 
