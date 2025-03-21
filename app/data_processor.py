@@ -497,6 +497,17 @@ def run_prediction_pipeline(config, plugin):
     results_file = config.get("results_file", "results.csv")
     pd.DataFrame(results).to_csv(results_file, index=False)
     print(f"Results saved to {results_file}")
+
+
+    norm_json = config.get("use_normalization_json")
+    if norm_json is None:
+        norm_json = {}
+    elif isinstance(norm_json, str):
+        with open(norm_json, 'r') as f:
+            norm_json = json.load(f)
+
+
+
     # --- Denormalize final test predictions (if normalization provided) ---
     if "CLOSE" in norm_json:
         denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
