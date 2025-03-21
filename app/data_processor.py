@@ -324,21 +324,22 @@ def run_prediction_pipeline(config, plugin):
         if config.get("use_returns", False):
             train_r2 = r2_score(
                 (baseline_train[:, -1] + y_train_stacked[:, -1]).flatten(),
-                (baseline_train[:, -1] + train_preds[:, -1]).flatten()
+                (baseline_train[:, -1] + train_preds[:, 0]).flatten()
             )
             val_r2 = r2_score(
                 (baseline_val[:, -1] + y_val_stacked[:, -1]).flatten(),
-                (baseline_val[:, -1] + val_preds[:, -1]).flatten()
+                (baseline_val[:, -1] + val_preds[:, 0]).flatten()
             )
         else:
             train_r2 = r2_score(
                 y_train_stacked[:, -1].flatten(), 
-                train_preds[:].flatten()
+                train_preds[:, 0].flatten()
             )
             val_r2 = r2_score(
                 y_val_stacked[:, -1].flatten(), 
-                val_preds[:].flatten()
+                val_preds[:, 0].flatten()
             )
+
 
         # Debugging statements for verification
 
