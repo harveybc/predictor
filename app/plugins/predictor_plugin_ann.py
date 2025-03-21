@@ -214,9 +214,8 @@ class Plugin:
             r = res
             for i in range(block_layers):
                 r = Dense(block_units, activation='relu', name=f'block{block_id}_dense_{i+1}')(r)
+            # Dense(1) already produces shape (batch_size, 1)
             forecast = Dense(1, activation='linear', name=f'block{block_id}_forecast')(r)
-            # Explicitly reshape forecast to ensure shape (batch_size, 1)
-            forecast = tf.reshape(forecast, (-1, 1))
             units = int(res.shape[-1])
             backcast = Dense(units, activation='linear', name=f'block{block_id}_backcast')(r)
             updated_res = Add(name=f'block{block_id}_residual')([res, -backcast])
