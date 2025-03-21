@@ -224,7 +224,10 @@ class Plugin:
             residual, forecast = nbeats_block(residual, b)
             forecasts.append(forecast)
         
-        final_forecast = Add(name='forecast_sum')(forecasts) if len(forecasts) > 1 else forecasts[0]
+        if len(forecasts) > 1:
+            final_forecast = tf.keras.layers.add(forecasts, name='forecast_sum')
+        else:
+            final_forecast = forecasts[0]
         
         # Single branch: Deterministic output for magnitude.
         final_output = Dense(1, 
