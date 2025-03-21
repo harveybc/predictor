@@ -33,6 +33,8 @@ import gc
 import os
 import tensorflow.keras.backend as K
 from sklearn.metrics import r2_score
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.initializers import GlorotUniform
 
 # ---------------------------
 # Custom Callbacks (copied exactly from transformer plugin)
@@ -229,7 +231,7 @@ class Plugin:
         num_blocks = config.get("nbeats_num_blocks", 3)
         block_units = config.get("nbeats_units", 64)
         block_layers = config.get("nbeats_layers", 3)
-        
+        l2_reg = config.get("l2_reg", 1e-5)
         inputs = Input(shape=input_shape, name='input_layer')
         x = Flatten(name='flatten_layer')(inputs)
         
@@ -252,9 +254,14 @@ class Plugin:
         
         final_forecast = Add(name='forecast_sum')(forecasts) if len(forecasts) > 1 else forecasts[0]
         
-        deterministic_mag_output = Dense(1, activation='linear', name='deterministic_mag_output')(final_forecast)
-        phase_output = Dense(1, activation='linear', name='phase_output')(final_forecast)
-        final_output = Concatenate(name='final_output')([deterministic_mag_output, phase_output])
+        # Single branch: Deterministic output for magnitude.
+        final_output = Dense(1, 
+                            activation='linear', 
+                            name='final_output',
+                            kernel_initializer=GlorotUniform(),
+                            kernel_regularizer=l2(l2_reg),
+                        )(final_forecast)
+
         
         self.model = Model(inputs=inputs, outputs=final_output, name='NBeatsModel')
         
@@ -262,8 +269,8 @@ class Plugin:
         mmd_lambda = config.get("mmd_lambda", 1e-3)
         lambda_phase = config.get("lambda_phase", 1e-3)
         self.model.compile(optimizer=optimizer,
-                           loss=lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, lambda_phase, sigma=1.0),
-                           metrics=[mae_magnitude, r2_metric])
+                   loss=lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0),
+                   metrics=[mae_magnitude, r2_metric])
         print("DEBUG: MMD lambda =", mmd_lambda, "and lambda_phase =", lambda_phase)
         print("N-BEATS model built successfully.")
         self.model.summary()
