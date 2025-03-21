@@ -278,10 +278,10 @@ class Plugin:
 
     def predict_with_uncertainty(self, x_test, mc_samples=100):
         predictions = self.model.predict(x_test)
-        # Force the predictions to be a 2D array with shape (n_samples, 1)
-        predictions = np.reshape(predictions, (-1, 1))
+        # Do not reshape; assume predictions are already of correct shape (n_samples, 1)
         uncertainty_estimates = np.zeros_like(predictions)
         return predictions, uncertainty_estimates
+
 
 
     def save(self, file_path):
