@@ -315,30 +315,35 @@ class Plugin:
         print(f"Predictor model loaded from {file_path}")
 
     def calculate_mae(self, y_true, y_pred):
+        # If y_true is 1D or has only one column, expand it to two columns (phase=0).
         if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
-            y_true = tf.reshape(y_true, [-1, 1])
-            y_true = tf.concat([y_true, tf.zeros_like(y_true)], axis=1)
+            y_true = np.reshape(y_true, (-1, 1))
+            y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
         mag_true = y_true[:, 0:1]
         mag_pred = y_pred[:, 0:1]
-        print(f"DEBUG: y_true (magnitude sample): {mag_true.numpy().flatten()[:5]}")
-        print(f"DEBUG: y_pred (magnitude sample): {mag_pred.numpy().flatten()[:5]}")
-        mae = np.mean(np.abs(mag_true.numpy().flatten() - mag_pred.numpy().flatten()))
+        print(f"DEBUG: y_true (magnitude sample): {mag_true.flatten()[:5]}")
+        print(f"DEBUG: y_pred (magnitude sample): {mag_pred.flatten()[:5]}")
+        mae = np.mean(np.abs(mag_true.flatten() - mag_pred.flatten()))
         print(f"Calculated MAE (magnitude): {mae}")
         return mae
 
+
     def calculate_r2(self, y_true, y_pred):
+        # If y_true is 1D or has only one column, expand it to two columns (phase=0).
         if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
-            y_true = tf.reshape(y_true, [-1, 1])
-            y_true = tf.concat([y_true, tf.zeros_like(y_true)], axis=1)
+            y_true = np.reshape(y_true, (-1, 1))
+            y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
         mag_true = y_true[:, 0:1]
         mag_pred = y_pred[:, 0:1]
         print(f"Calculating R² for magnitude: y_true shape={mag_true.shape}, y_pred shape={mag_pred.shape}")
-        SS_res = np.sum((mag_true.numpy() - mag_pred.numpy()) ** 2, axis=0)
-        SS_tot = np.sum((mag_true.numpy() - np.mean(mag_true.numpy(), axis=0)) ** 2, axis=0)
+        SS_res = np.sum((mag_true - mag_pred) ** 2, axis=0)
+        SS_tot = np.sum((mag_true - np.mean(mag_true, axis=0)) ** 2, axis=0)
         r2_scores = 1 - (SS_res / (SS_tot + np.finfo(float).eps))
         r2 = np.mean(r2_scores)
         print(f"Calculated R² (magnitude): {r2}")
         return r2
+
+
 
 # ---------------------------
 # Debugging usage example (if run as main)
