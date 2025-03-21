@@ -510,6 +510,8 @@ def run_prediction_pipeline(config, plugin):
 
     # --- Denormalize final test predictions (if normalization provided) ---
     if "CLOSE" in norm_json:
+        close_min = norm_json["CLOSE"]["min"]
+        close_max = norm_json["CLOSE"]["max"]
         denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
     else:
         denorm_test_close_prices = test_close_prices
