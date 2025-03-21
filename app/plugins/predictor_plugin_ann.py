@@ -239,6 +239,7 @@ class Plugin:
         
         # --- Bayesian Output Layer Implementation (copied exactly) ---
         # --- Bayesian Output Layer Implementation (copied exactly) ---
+
         def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
             return self.add_weight(name=name, shape=shape, dtype=dtype,
                                     initializer=initializer, trainable=trainable, **kwargs)
@@ -258,10 +259,15 @@ class Plugin:
             kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
             name="output_layer"
         )
-        # Instead of wrapping flipout_layer in a Lambda (which adds an extra dimension),
-        # we call it directly.
-        bayesian_output = flipout_layer(bn)
-        print("DEBUG: After DenseFlipout, bayesian_output shape:", bayesian_output.shape)
+        # Ensure bn is a tensor (avoid receiving a tuple)
+        bn_tensor = tf.convert_to_tensor(bn)
+        bayesian_output = tf.keras.layers.Lambda(
+            lambda t: flipout_layer(t),
+            output_shape=lambda s: (s[0], self.params['time_horizon']),
+            name="bayesian_dense_flipout"
+        )(bn_tensor)
+        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
+
         
         bias_layer = Dense(
             units=self.params['time_horizon'],
