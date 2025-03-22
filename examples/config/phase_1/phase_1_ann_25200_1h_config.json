@@ -13,7 +13,7 @@
     "uncertainties_file": "examples/results/phase_1/phase_1_ann_25200_1h_uncertanties.csv",
     "predictions_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_predictions_plot.png",
     "plugin": "ann",
-    "use_daily": false,
+    "use_daily": true,
     "max_steps_train": 25200,
     "max_steps_test": 6300,
     "intermediate_layers": 2,
