@@ -11,12 +11,12 @@ setup(
         # Plugins para el Predictor
         'predictor.plugins': [
             'default_predictor=predictor_plugins.predictor_plugin_ann:Plugin',
-            'ann=predictor_plugins.plugins.predictor_plugin_ann:Plugin',
-            'n_beats=predictor_plugins.plugins.predictor_plugin_n_beats:Plugin',
-            'cnn=predictor_plugins.plugins.predictor_plugin_cnn:Plugin',
-            'lstm=predictor_plugins.plugins.predictor_plugin_lstm:Plugin',
-            'transformer=predictor_plugins.plugins.predictor_plugin_transformer:Plugin',
-            'base=predictor_plugins.plugins.predictor_plugin_base:Plugin'
+            'ann=predictor_plugins.predictor_plugin_ann:Plugin',
+            'n_beats=predictor_plugins.predictor_plugin_n_beats:Plugin',
+            'cnn=predictor_plugins.predictor_plugin_cnn:Plugin',
+            'lstm=predictor_plugins.predictor_plugin_lstm:Plugin',
+            'transformer=predictor_plugins.predictor_plugin_transformer:Plugin',
+            'base=predictor_plugin.predictor_plugin_base:Plugin'
         ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
         'optimizer.plugins': [
