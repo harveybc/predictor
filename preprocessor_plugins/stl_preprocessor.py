@@ -37,8 +37,8 @@ class PreprocessorPlugin:
         "window_size": 24,         # Window size for sliding windows (in hours)
         "time_horizon": 6,         # Forecast horizon (e.g., 6 hours ahead)
         "use_returns": False,      # Whether to compute returns for target adjustment
-        "stl_period": 24,          # Seasonal period for STL (e.g., 24 for hourly data with daily seasonality)
-        "stl_window": 24,          # Rolling window length for causal STL (can be set equal to window_size or longer)
+        "stl_period": 480,          # Seasonal period for STL (e.g., 24 for hourly data with daily seasonality)
+        "stl_window": 120,          # Rolling window length for causal STL (can be set equal to window_size or longer)
         "stl_plot_file": "stl_plot.png",
         "pos_encoding_dim": 16     # For positional encoding if needed
     }
