@@ -9,7 +9,7 @@ This plugin processes input data for EUR/USD forecasting by:
      using a rolling window defined by 'stl_window' and a seasonal period 'stl_period'.
   4. Plotting the decomposition (trend, seasonal, residual) for the training series to 'stl_plot_file'.
   5. Creating sliding windows for the original log-series and each decomposed channel.
-  6. Processing targets from the Y files (assumed in column "TARGET") via sliding windows.
+  6. Processing targets from the Y files (assumed in column config['target_column']) via sliding windows.
   
 The processed outputs (raw, trend, seasonal, and noise channels) are returned as a dictionary.
 """
@@ -259,12 +259,13 @@ class PreprocessorPlugin:
         X_test_seasonal = X_test_seasonal.reshape(-1, window_size, 1)
         X_test_noise = X_test_noise.reshape(-1, window_size, 1)
 
-        # Process targets from Y files: assume target column "TARGET"
-        if "TARGET" not in y_train_df.columns:
-            raise ValueError("Column 'TARGET' not found in training Y data.")
-        target_train = y_train_df["TARGET"].astype(np.float32).values
-        target_val = y_val_df["TARGET"].astype(np.float32).values
-        target_test = y_test_df["TARGET"].astype(np.float32).values
+        # Process targets from Y files: assume target column from config["target_column"]
+        target_column = config["target_column"]
+        if target_column not in y_train_df.columns:
+            raise ValueError(f"Column '{target_column}' not found in training Y data.")
+        target_train = y_train_df[target_column].astype(np.float32).values
+        target_val = y_val_df[target_column].astype(np.float32).values
+        target_test = y_test_df[target_column].astype(np.float32).values
 
         # Create sliding windows for targets.
         _, y_train_sw, _ = self.create_sliding_windows(target_train, window_size, time_horizon, train_dates)
