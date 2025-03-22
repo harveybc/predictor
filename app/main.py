@@ -68,13 +68,14 @@ def main():
     unknown_args_dict = process_unknown_args(unknown_args)
     config = merge_config(config, {}, {}, file_config, cli_args, unknown_args_dict)
 
-    # Selección del plugin principal si no se especifica
-    if not cli_args.get('plugin'):
-        cli_args['plugin'] = config.get('plugin', 'default_predictor')
-
+    # Selección del plugins
+    if not cli_args.get('predictor_plugin'):
+        cli_args['predictor_plugin'] = config.get('predictor_plugin', 'default_predictor')
+    plugin_name = config.get('predictor_plugin', 'default_predictor')
+    
+    
     # --- CARGA DE PLUGINS ---
     # Carga del Predictor Plugin
-    plugin_name = cli_args['plugin']
     print(f"Loading Predictor Plugin: {plugin_name}")
     try:
         predictor_class, _ = load_plugin('predictor.plugins', plugin_name)
@@ -85,9 +86,12 @@ def main():
         sys.exit(1)
 
     # Carga del Optimizer Plugin (por defecto, se usa el de DEAP)
-    print("Loading Optimizer Plugin (default)...")
+    # Selección del plugin si no se especifica
+    plugin_name = config.get('optimizer_plugin', 'default_optimizer')
+    print(f"Loading Plugin ..{plugin_name}")
+
     try:
-        optimizer_class, _ = load_plugin('optimizer.plugins', 'default_optimizer')
+        optimizer_class, _ = load_plugin('optimizer.plugins', plugin_name)
         optimizer_plugin = optimizer_class()
         optimizer_plugin.set_params(**config)
     except Exception as e:
@@ -95,9 +99,10 @@ def main():
         sys.exit(1)
 
     # Carga del Pipeline Plugin (orquestador del flujo de entrenamiento y evaluación)
-    print("Loading Pipeline Plugin (default)...")
+    plugin_name = config.get('pipeline_plugin', 'default_pipeline')
+    print(f"Loading Plugin ..{plugin_name}")
     try:
-        pipeline_class, _ = load_plugin('pipeline.plugins', 'default_pipeline')
+        pipeline_class, _ = load_plugin('pipeline.plugins', plugin_name)
         pipeline_plugin = pipeline_class()
         pipeline_plugin.set_params(**config)
     except Exception as e:
@@ -105,9 +110,10 @@ def main():
         sys.exit(1)
 
     # Carga del Preprocessor Plugin (para process_data, ventanas deslizantes y STL)
-    print("Loading Preprocessor Plugin (default)...")
+    plugin_name = config.get('preprocessor_plugin', 'default_preprocessor')
+    print(f"Loading Plugin ..{plugin_name}")
     try:
-        preprocessor_class, _ = load_plugin('preprocessor.plugins', 'default_preprocessor')
+        preprocessor_class, _ = load_plugin('preprocessor.plugins', plugin_name)
         preprocessor_plugin = preprocessor_class()
         preprocessor_plugin.set_params(**config)
     except Exception as e:
