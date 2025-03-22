@@ -12,7 +12,7 @@
     "model_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_model_plot.png",
     "uncertainties_file": "examples/results/phase_1/phase_1_ann_25200_1h_uncertanties.csv",
     "predictions_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_predictions_plot.png",
-    "stl_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_predictions_plot.png",
+    "stl_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_stl_decomposition_plot.png",
     "predictor_plugin": "ann",
     "optimizer_plugin": "default_optimizer",
     "pipeline_plugin": "stl_pipeline",
