@@ -263,13 +263,13 @@ class PreprocessorPlugin:
         X_test_trend = X_test_trend.reshape(-1, window_size, 1)
         X_test_seasonal = X_test_seasonal.reshape(-1, window_size, 1)
         X_test_noise = X_test_noise.reshape(-1, window_size, 1)
-
-        # Process targets from Y data; assume the target is in the "TARGET" column.
-        if "TARGET" not in y_train_df.columns:
-            raise ValueError("Column 'TARGET' not found in training Y data.")
-        target_train = y_train_df["TARGET"].astype(np.float32).values
-        target_val = y_val_df["TARGET"].astype(np.float32).values
-        target_test = y_test_df["TARGET"].astype(np.float32).values
+        # Process targets from Y data; assume the target is in the column specified by config["target_column"].
+        target_column = config["target_column"]
+        if target_column not in y_train_df.columns:
+            raise ValueError(f"Column '{target_column}' not found in training Y data.")
+        target_train = y_train_df[target_column].astype(np.float32).values
+        target_val = y_val_df[target_column].astype(np.float32).values
+        target_test = y_test_df[target_column].astype(np.float32).values
 
         # Create sliding windows for targets.
         _, y_train_sw, _ = self.create_sliding_windows(target_train, window_size, time_horizon, train_dates)
