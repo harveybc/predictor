@@ -105,7 +105,7 @@ class PreprocessorPlugin:
         resid = np.zeros(num_points)
         for i in tqdm(range(stl_window, n + 1), desc="STL Decomposition", unit="window"):
             window = series[i - stl_window: i]
-            stl = STL(window, period=period, robust=True)
+            stl = STL(window, period=period, robust=False)
             result = stl.fit()
             trend[i - stl_window] = result.trend[-1]
             seasonal[i - stl_window] = result.seasonal[-1]
