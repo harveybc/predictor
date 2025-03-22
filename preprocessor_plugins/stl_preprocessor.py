@@ -49,7 +49,7 @@ class PreprocessorPlugin:
         "window_size": 24,
         "time_horizon": 6,
         "use_returns": True,
-        "stl_period": 22,
+        "stl_period": 26,
         "stl_window": 72,
         "stl_plot_file": "stl_plot.png",
         "pos_encoding_dim": 16
