@@ -1,42 +1,36 @@
 #!/usr/bin/env python
 """
-Enhanced N-BEATS Predictor Plugin using Keras for forecasting the seasonal component
-(without Bayesian output).
+Enhanced Multi-Branch Predictor Plugin using Keras for forecasting EUR/USD returns.
 
-This plugin is designed to learn both the magnitude of the seasonal pattern.
-It outputs a 2-dimensional vector per sample:
-  - Column 0: Predicted magnitude (e.g. normalized seasonal value).
+This plugin is designed to use the decomposed signals produced by the STL Preprocessor Plugin.
+It assumes the input is a multi-channel time window where each channel corresponds to a decomposed component:
+  - Trend component
+  - Seasonal component
+  - Noise (residual) component
 
-The composite loss function combines:
-  - Huber loss on the magnitude.
-  - MMD loss on the magnitude (weighted by mmd_lambda).
-
-
-Custom metrics (MAE and R²) are computed on the magnitude only.
-If the target y is provided as a one-dimensional tensor, it is automatically expanded
-
-
-It is assumed that the input x (and corresponding target y) are the seasonal component
-(or its returns) extracted from the close prices, shifted by a given forecast horizon.
+The architecture is composed of three branches—each processing one channel through its own Dense sub-network.
+The outputs of these branches are concatenated and fed to a final set of layers to produce the predicted return.
+The loss is computed using a composite loss (Huber + MMD), and custom metrics (MAE and R²) are calculated
+on the predicted return. This implementation is intended for the case when use_returns is True.
 """
 
 import numpy as np
 import tensorflow as tf
-import tensorflow_probability as tfp  # Imported for loss functions if needed.
+import tensorflow_probability as tfp
 from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Dense, Input, Flatten, Add, Concatenate
+from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback, LambdaCallback
 from tensorflow.keras.losses import Huber
+import tensorflow.keras.backend as K
 import gc
 import os
-import tensorflow.keras.backend as K
 from sklearn.metrics import r2_score
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.initializers import GlorotUniform
 
 # ---------------------------
-# Custom Callbacks (copied exactly from transformer plugin)
+# Custom Callbacks (same as before)
 # ---------------------------
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
     """Custom ReduceLROnPlateau callback that prints the patience counter."""
@@ -69,11 +63,7 @@ class ClearMemoryCallback(Callback):
 # Custom Metrics and Loss Functions
 # ---------------------------
 def mae_magnitude(y_true, y_pred):
-    """
-    Computes Mean Absolute Error on the magnitude (first column) only.
-    If y_true is one-dimensional or has only one column, it is expanded to 2 columns
-
-    """
+    """Compute MAE on the first column (magnitude)."""
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
         y_true = tf.reshape(y_true, [-1, 1])
         y_true = tf.concat([y_true, tf.zeros_like(y_true)], axis=1)
@@ -82,10 +72,7 @@ def mae_magnitude(y_true, y_pred):
     return tf.reduce_mean(tf.abs(mag_true - mag_pred))
 
 def r2_metric(y_true, y_pred):
-    """
-    Computes the R² metric on the magnitude (first column) only.
-    If y_true is one-dimensional or has only one column
-    """
+    """Compute R² metric on the first column (magnitude)."""
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
         y_true = tf.reshape(y_true, [-1, 1])
         y_true = tf.concat([y_true, tf.zeros_like(y_true)], axis=1)
@@ -96,9 +83,7 @@ def r2_metric(y_true, y_pred):
     return 1 - SS_res/(SS_tot + tf.keras.backend.epsilon())
 
 def compute_mmd(x, y, sigma=1.0, sample_size=256):
-    """
-    Computes the Maximum Mean Discrepancy (MMD) between two samples.
-    """
+    """Compute the Maximum Mean Discrepancy (MMD) between two samples."""
     idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:sample_size]
     x_sample = tf.gather(x, idx)
     y_sample = tf.gather(y, idx)
@@ -114,162 +99,157 @@ def compute_mmd(x, y, sigma=1.0, sample_size=256):
 
 def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     """
-    Composite loss combining Huber loss on the magnitude and MMD loss on the magnitude.
-    Assumes y_true and y_pred are either 1D tensors or 2D with a single column.
+    Composite loss: Huber loss on the magnitude + weighted MMD loss.
+    Assumes y_true and y_pred have at least one column (the magnitude).
     """
     if y_true.shape.ndims == 1 or (y_true.shape.ndims == 2 and y_true.shape[1] == 1):
         y_true = tf.reshape(y_true, [-1, 1])
     mag_true = y_true[:, 0:1]
     mag_pred = y_pred[:, 0:1]
-    
     huber_loss_val = Huber()(mag_true, mag_pred)
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
     total_loss = huber_loss_val + (mmd_lambda * mmd_loss_val)
     return total_loss
 
-
 # ---------------------------
-# Enhanced N-BEATS Plugin Definition (Deterministic Version Without Bayesian Output)
+# Multi-Branch Predictor Plugin Definition
 # ---------------------------
 class Plugin:
     """
-    Enhanced N-BEATS Predictor Plugin using Keras for forecasting the seasonal component
-    (or its returns) extracted via STL decomposition.
+    Enhanced Multi-Branch Predictor Plugin.
 
-    
+    This plugin builds a multi-branch model to process STL-decomposed input channels:
+      - One branch processes the trend channel.
+      - One branch processes the seasonal channel.
+      - One branch processes the noise (residual) channel.
 
-    The composite loss function includes:
-      - Huber loss on the magnitude.
-      - MMD loss on the magnitude (weighted by mmd_lambda).
+    Each branch passes its input through dedicated Dense layers.
+    Their outputs are concatenated and passed to further Dense layers to produce the final prediction,
+    which represents the return (price variation) for the forecast horizon.
 
-
-    Custom metrics (MAE and R²) are computed on the magnitude only.
-    Additional callbacks print training statistics (learning rate, patience counters, etc.).
-
-    It is assumed that the input x (and target y) are the seasonal component (or returns)
-    extracted from the close prices, shifted by a given forecast horizon.
+    The loss is computed as a composite of Huber and MMD losses.
+    Custom metrics (MAE and R²) are computed on the predicted return.
     """
     plugin_params = {
         'batch_size': 32,
-        'intermediate_layers': 3,
-        'initial_layer_size': 64,
+        'num_branch_layers': 2,      # Number of Dense layers in each branch
+        'branch_units': 32,          # Units in each branch layer
+        'merged_units': 64,          # Units in the merged network
         'learning_rate': 0.0001,
-        'activation': 'tanh',
+        'activation': 'relu',
         'l2_reg': 1e-5,
-        'kl_weight': 1e-3,        # Not used in this deterministic version.
-        'mmd_lambda': 1e-3,       # Weight for MMD loss.
-        # N-BEATS parameters.
-        'nbeats_num_blocks': 3,
-        'nbeats_units': 64,
-        'nbeats_layers': 3,
-        'time_horizon': 1  
+        'mmd_lambda': 1e-3,
+        'time_horizon': 6           # Forecast horizon (in hours)
     }
-    plugin_debug_vars = ['epochs', 'batch_size', 'input_dim', 'intermediate_layers', 'initial_layer_size', 'time_horizon']
+    plugin_debug_vars = ['batch_size', 'num_branch_layers', 'branch_units', 'merged_units', 'learning_rate', 'l2_reg', 'time_horizon']
 
     def __init__(self):
         self.params = self.plugin_params.copy()
         self.model = None
 
     def set_params(self, **kwargs):
+        """Update predictor plugin parameters with provided configuration."""
         for key, value in kwargs.items():
             self.params[key] = value
 
     def get_debug_info(self):
+        """Return debug information for the predictor plugin."""
         return {var: self.params[var] for var in self.plugin_debug_vars}
 
     def add_debug_info(self, debug_info):
+        """Add predictor plugin debug information to the given dictionary."""
         debug_info.update(self.get_debug_info())
 
     def build_model(self, input_shape, x_train, config):
         """
-        Builds an enhanced N-BEATS model for forecasting the seasonal component.
+        Build a multi-branch model for forecasting returns using STL-decomposed data.
 
         Args:
-            input_shape (tuple): Expected shape (window_size, 1).
-            x_train (np.ndarray): Training data (for shape inference if needed).
+            input_shape (tuple): Expected input shape (window_size, num_channels).
+            x_train (np.ndarray): Training data (for shape inference).
             config (dict): Configuration parameters.
-
-        The model:
-          - Flattens the input.
-          - Passes data through several blocks; each block produces a forecast.
-          - Aggregates forecasts by summing them.
-          - Splits into two branches:
-              • A deterministic branch for predicting the magnitude.
-
-          - Concatenates the two outputs to yield a final 2D output.
-
         """
-        window_size = input_shape[0]
-        num_blocks = config.get("nbeats_num_blocks", 3)
-        block_units = config.get("nbeats_units", 64)
-        block_layers = config.get("nbeats_layers", 3)
-        l2_reg = config.get("l2_reg", 1e-5)
-        inputs = Input(shape=input_shape, name='input_layer')
-        x = Flatten(name='flatten_layer')(inputs)
-        
-        residual = x
-        forecasts = []
-        
-        def nbeats_block(res, block_id):
-            r = res
-            for i in range(block_layers):
-                r = Dense(block_units, activation='relu', name=f'block{block_id}_dense_{i+1}')(r)
-            # Dense(1) already produces shape (batch_size, 1)
-            forecast = Dense(1, activation='linear', name=f'block{block_id}_forecast')(r)
-            units = int(res.shape[-1])
-            backcast = Dense(units, activation='linear', name=f'block{block_id}_backcast')(r)
-            updated_res = Add(name=f'block{block_id}_residual')([res, -backcast])
-            return updated_res, forecast
+        window_size, num_channels = input_shape  # Expecting num_channels=3 (trend, seasonal, noise)
+        l2_reg = config.get("l2_reg", self.params["l2_reg"])
+        activation = config.get("activation", self.params["activation"])
+        num_branch_layers = config.get("num_branch_layers", self.params["num_branch_layers"])
+        branch_units = config.get("branch_units", self.params["branch_units"])
+        merged_units = config.get("merged_units", self.params["merged_units"])
+        time_horizon = config.get("time_horizon", self.params["time_horizon"])
 
-        
-        for b in range(1, num_blocks + 1):
-            residual, forecast = nbeats_block(residual, b)
-            forecasts.append(forecast)
-        
-        if len(forecasts) > 1:
-            final_forecast = tf.keras.layers.Lambda(
-                lambda t: tf.reduce_sum(tf.stack(t, axis=0), axis=0),
-                name='forecast_sum'
-            )(forecasts)
-        else:
-            final_forecast = forecasts[0]
+        # Define input layer.
+        inputs = Input(shape=input_shape, name="input_layer")
 
-        
-        # Single branch: Deterministic output for magnitude.
-        final_output = Dense(1, 
-                            activation='linear', 
-                            name='final_output',
-                            kernel_initializer=GlorotUniform(),
-                            kernel_regularizer=l2(l2_reg),
-                        )(final_forecast)
+        # Split the multi-channel input into separate channels.
+        # Each channel will be of shape (window_size, 1).
+        trend_input = Lambda(lambda x: x[:, :, 0:1], name="trend_input")(inputs)
+        seasonal_input = Lambda(lambda x: x[:, :, 1:2], name="seasonal_input")(inputs)
+        noise_input = Lambda(lambda x: x[:, :, 2:3], name="noise_input")(inputs)
 
-        
-        self.model = Model(inputs=inputs, outputs=final_output, name='NBeatsModel')
-        
-        optimizer = Adam(learning_rate=config.get("learning_rate", 0.0001))
-        mmd_lambda = config.get("mmd_lambda", 1e-3)
+        # Define a function to build a branch for a given input.
+        def build_branch(branch_input, branch_name):
+            x = Flatten(name=f"{branch_name}_flatten")(branch_input)
+            for i in range(num_branch_layers):
+                x = Dense(branch_units, activation=activation,
+                          kernel_regularizer=l2(l2_reg),
+                          name=f"{branch_name}_dense_{i+1}")(x)
+            return x
+
+        # Build each branch.
+        trend_branch = build_branch(trend_input, "trend")
+        seasonal_branch = build_branch(seasonal_input, "seasonal")
+        noise_branch = build_branch(noise_input, "noise")
+
+        # Concatenate branch outputs.
+        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch])
+        # Further process merged features.
+        merged_dense = Dense(merged_units, activation=activation,
+                             kernel_regularizer=l2(l2_reg),
+                             name="merged_dense")(merged)
+        # Final prediction layer (output is a single value: the predicted return).
+        final_output = Dense(1, activation="linear", name="final_output")(merged_dense)
+
+        self.model = Model(inputs=inputs, outputs=final_output, name="MultiBranchPredictor")
+        optimizer = Adam(learning_rate=config.get("learning_rate", self.params["learning_rate"]))
+        mmd_lambda = config.get("mmd_lambda", self.params["mmd_lambda"])
+
         self.model.compile(optimizer=optimizer,
-                   loss=lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0),
-                   metrics=[mae_magnitude, r2_metric])
+                           loss=lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0),
+                           metrics=[mae_magnitude, r2_metric])
         print("DEBUG: MMD lambda =", mmd_lambda)
-        print("N-BEATS model built successfully.")
+        print("Multi-Branch Predictor model built successfully.")
         self.model.summary()
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
+        """
+        Train the model using the provided training and validation datasets.
+        Uses early stopping, learning rate reduction, and memory cleanup callbacks.
+
+        Args:
+            x_train (np.ndarray): Training inputs.
+            y_train (list): List containing target arrays.
+            epochs (int): Number of training epochs.
+            batch_size (int): Training batch size.
+            threshold_error (float): Threshold error for early stopping (unused here, but kept for interface consistency).
+            x_val (np.ndarray): Validation inputs.
+            y_val (list): List containing validation target arrays.
+            config (dict): Configuration parameters.
+
+        Returns:
+            tuple: (history, train_predictions, train_uncertainty, val_predictions, val_uncertainty)
+        """
         callbacks = [
-            EarlyStoppingWithPatienceCounter(monitor='val_loss',
+            EarlyStoppingWithPatienceCounter(monitor="val_loss",
                                              patience=config.get("early_patience", 60),
                                              verbose=1),
-            ReduceLROnPlateauWithCounter(monitor='val_loss',
+            ReduceLROnPlateauWithCounter(monitor="val_loss",
                                          factor=0.5,
-                                         patience=config.get("early_patience", 20)/3,
+                                         patience=config.get("early_patience", 20) / 3,
                                          verbose=1),
             LambdaCallback(on_epoch_end=lambda epoch, logs: 
-               print(f"DEBUG: Learning Rate at epoch {epoch+1}: {K.get_value(self.model.optimizer.learning_rate)}")),
-
+                           print(f"DEBUG: Learning Rate at epoch {epoch+1}: {K.get_value(self.model.optimizer.learning_rate)}")),
             ClearMemoryCallback()
         ]
-        
         print(f"DEBUG: Starting training for {epochs} epochs with batch size {batch_size}")
         history = self.model.fit(x_train, y_train[0],
                                  epochs=epochs,
@@ -279,52 +259,65 @@ class Plugin:
                                  verbose=1)
         train_preds = self.model.predict(x_train, batch_size=batch_size)
         val_preds = self.model.predict(x_val, batch_size=batch_size)
-        train_unc = np.zeros_like(train_preds[:, 0:1])
-        val_unc = np.zeros_like(val_preds[:, 0:1])
+        # For now, uncertainty estimation is not implemented (set to zeros).
+        train_uncertainty = np.zeros_like(train_preds)
+        val_uncertainty = np.zeros_like(val_preds)
         self.calculate_mae(y_train[0], train_preds)
         self.calculate_r2(y_train[0], train_preds)
-        return history, train_preds, train_unc, val_preds, val_unc
+        return history, train_preds, train_uncertainty, val_preds, val_uncertainty
 
     def predict_with_uncertainty(self, x_test, mc_samples=100):
+        """
+        Predicts on the test data.
+        Currently, returns zeros for uncertainty estimates.
+        
+        Args:
+            x_test (np.ndarray): Test inputs.
+            mc_samples (int): Number of Monte Carlo samples (unused here).
+
+        Returns:
+            tuple: (predictions, uncertainty_estimates)
+        """
         predictions = self.model.predict(x_test)
-        # Do not reshape; assume predictions are already of correct shape (n_samples, 1)
         uncertainty_estimates = np.zeros_like(predictions)
         return predictions, uncertainty_estimates
 
-
-
     def save(self, file_path):
+        """Saves the trained model to the specified file path."""
         self.model.save(file_path)
         print(f"Model saved to {file_path}")
 
     def load(self, file_path):
-        self.model = load_model(file_path, custom_objects={'composite_loss': composite_loss, 
-                                                             'compute_mmd': compute_mmd, 
-                                                             'r2_metric': r2_metric,
-                                                             'mae_magnitude': mae_magnitude})
+        """Loads a model from the specified file path."""
+        self.model = load_model(file_path, custom_objects={
+            "composite_loss": composite_loss,
+            "compute_mmd": compute_mmd,
+            "r2_metric": r2_metric,
+            "mae_magnitude": mae_magnitude
+        })
         print(f"Predictor model loaded from {file_path}")
 
     def calculate_mae(self, y_true, y_pred):
+        """Calculates and prints the Mean Absolute Error (MAE) for the first column."""
         if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
             y_true = np.reshape(y_true, (-1, 1))
             y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
         mag_true = y_true[:, 0:1]
         mag_pred = y_pred[:, 0:1]
-        print(f"DEBUG: y_true (magnitude sample): {mag_true.flatten()[:5]}")
-        print(f"DEBUG: y_pred (magnitude sample): {mag_pred.flatten()[:5]}")
+        print(f"DEBUG: y_true (sample): {mag_true.flatten()[:5]}")
+        print(f"DEBUG: y_pred (sample): {mag_pred.flatten()[:5]}")
         mae = np.mean(np.abs(mag_true.flatten() - mag_pred.flatten()))
         print(f"Calculated MAE (magnitude): {mae}")
         return mae
 
-
     def calculate_r2(self, y_true, y_pred):
-        
+        """Calculates and prints the R² metric for the first column."""
         if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
             y_true = np.reshape(y_true, (-1, 1))
             y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
         mag_true = y_true[:, 0:1]
         mag_pred = y_pred[:, 0:1]
-        print(f"Calculating R² for magnitude: y_true shape={mag_true.shape}, y_pred shape={mag_pred.shape}")
+        print(f"Calculating R²: y_true shape={mag_true.shape}, y_pred shape={mag_pred.shape}")
         SS_res = np.sum((mag_true - mag_pred) ** 2, axis=0)
         SS_tot = np.sum((mag_true - np.mean(mag_true, axis=0)) ** 2, axis=0)
         r2_scores = 1 - (SS_res / (SS_tot + np.finfo(float).eps))
@@ -333,12 +326,13 @@ class Plugin:
         return r2
 
 
-
 # ---------------------------
 # Debugging usage example (if run as main)
 # ---------------------------
 if __name__ == "__main__":
     plugin = Plugin()
-    plugin.build_model(input_shape=(24, 1), x_train=None, config={})
+    # For debugging, assume input shape (window_size, num_channels) where num_channels=3.
+    # Example: window_size=24, 3 channels (trend, seasonal, noise).
+    plugin.build_model(input_shape=(24, 3), x_train=None, config={})
     debug_info = plugin.get_debug_info()
     print(f"Debug Info: {debug_info}")
