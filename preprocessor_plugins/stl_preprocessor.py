@@ -1,25 +1,27 @@
 #!/usr/bin/env python
 """
-Enhanced Preprocessor Plugin with Log Transform and Causal Rolling STL Decomposition
+Enhanced Preprocessor Plugin with Log Transform, Causal Rolling STL Decomposition,
+and Progress Bar.
 
 This plugin processes input data for EUR/USD forecasting by:
   1. Loading separate CSV files for X and Y (train, validation, test).
   2. Extracting the 'CLOSE' column from the X files and applying a log transform.
-  3. Performing a causal (rolling) STL decomposition on the log-transformed series,
-     using a rolling window defined by 'stl_window' and a seasonal period 'stl_period'.
-  4. Plotting the decomposition (trend, seasonal, residual) for the training series to 'stl_plot_file'.
-  5. Creating sliding windows for the original log-series and each decomposed channel.
-  6. Processing targets from the Y files (assumed in column config['target_column']) via sliding windows.
+  3. Performing a causal (rolling) STL decomposition on the log-transformed series using a rolling window.
+  4. Plotting the decomposition of the training series to a file defined by 'stl_plot_file'.
+  5. Creating sliding windows for the raw log series and for each decomposed channel.
+  6. Processing target values from the Y files (assumed to be in the "TARGET" column).
   
-The processed outputs (raw, trend, seasonal, and noise channels) are returned as a dictionary.
+The plugin adheres to the standard plugin interface with methods such as set_params, get_debug_info, and add_debug_info.
+A tqdm progress bar is added to the STL decomposition to indicate progress.
 """
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from statsmodels.tsa.seasonal import STL
+from tqdm import tqdm
 import json
-from app.data_handler import load_csv, write_csv  # Ensure these functions are implemented
+from app.data_handler import load_csv, write_csv  # Ensure these functions are implemented in your project
 
 class PreprocessorPlugin:
     # Default plugin parameters
@@ -34,13 +36,13 @@ class PreprocessorPlugin:
         "max_steps_train": None,
         "max_steps_val": None,
         "max_steps_test": None,
-        "window_size": 24,         # Window size for sliding windows (in hours)
-        "time_horizon": 6,         # Forecast horizon (e.g., 6 hours ahead)
-        "use_returns": False,      # Whether to compute returns for target adjustment
-        "stl_period": 120,          # Seasonal period for STL (e.g., 24 for hourly data with daily seasonality)
-        "stl_window": 24,          # Rolling window length for causal STL (can be set equal to window_size or longer)
+        "window_size": 24,
+        "time_horizon": 6,
+        "use_returns": True,
+        "stl_period": 24,
+        "stl_window": 24,
         "stl_plot_file": "stl_plot.png",
-        "pos_encoding_dim": 16     # For positional encoding if needed
+        "pos_encoding_dim": 16
     }
     plugin_debug_vars = ["window_size", "time_horizon", "use_returns", "stl_period", "stl_window", "stl_plot_file"]
 
@@ -48,30 +50,24 @@ class PreprocessorPlugin:
         self.params = self.plugin_params.copy()
 
     def set_params(self, **kwargs):
-        """
-        Update plugin parameters with global configuration.
-        """
+        """Update plugin parameters with global configuration."""
         for key, value in kwargs.items():
             self.params[key] = value
 
     def get_debug_info(self):
-        """
-        Returns debug info for the plugin.
-        """
+        """Return debug information for the plugin."""
         return {var: self.params.get(var) for var in self.plugin_debug_vars}
 
     def add_debug_info(self, debug_info):
-        """
-        Add plugin debug info to the provided dictionary.
-        """
+        """Add plugin debug info to the provided dictionary."""
         debug_info.update(self.get_debug_info())
 
     def _load_data(self, file_path, max_rows, headers):
         """
-        Helper to load CSV data.
+        Helper function to load CSV data.
         """
         df = load_csv(file_path, headers=headers, max_rows=max_rows)
-        # Try converting index to datetime
+        # Try converting the index to datetime
         if not isinstance(df.index, pd.DatetimeIndex):
             try:
                 df.index = pd.to_datetime(df.index)
@@ -81,12 +77,12 @@ class PreprocessorPlugin:
 
     def _rolling_stl(self, series, stl_window, period):
         """
-        Computes a causal, rolling STL decomposition over the provided series.
-        For each rolling window, computes the STL decomposition and returns the last values.
+        Computes a causal, rolling STL decomposition on the log-transformed series.
+        Uses a rolling window of length 'stl_window', processing only past data.
 
         Args:
-            series (np.ndarray): 1D array (log-transformed series).
-            stl_window (int): Length of rolling window for decomposition.
+            series (np.ndarray): 1D array of log-transformed data.
+            stl_window (int): Length of the rolling window.
             period (int): Seasonal period for STL.
 
         Returns:
@@ -97,11 +93,12 @@ class PreprocessorPlugin:
         trend = np.zeros(num_points)
         seasonal = np.zeros(num_points)
         resid = np.zeros(num_points)
-        for i in range(stl_window, n + 1):
+        # Use tqdm for progress indication
+        for i in tqdm(range(stl_window, n + 1), desc="STL Decomposition", unit="window"):
             window = series[i - stl_window: i]
             stl = STL(window, period=period, robust=True)
             result = stl.fit()
-            # Only use the last value of the rolling window (causal)
+            # Use the last value of the window (causal)
             trend[i - stl_window] = result.trend[-1]
             seasonal[i - stl_window] = result.seasonal[-1]
             resid[i - stl_window] = result.resid[-1]
@@ -133,6 +130,12 @@ class PreprocessorPlugin:
         """
         Creates sliding windows for a univariate series.
 
+        Args:
+            data (np.ndarray): 1D array of values.
+            window_size (int): Length of each window.
+            time_horizon (int): Forecast horizon (target index = window_size + time_horizon - 1).
+            date_times (pd.DatetimeIndex, optional): Dates corresponding to the data.
+
         Returns:
             tuple: (windows, targets, date_windows)
         """
@@ -141,7 +144,7 @@ class PreprocessorPlugin:
         date_windows = []
         n = len(data)
         for i in range(0, n - window_size - time_horizon + 1):
-            window = data[i : i + window_size]
+            window = data[i: i + window_size]
             target = data[i + window_size + time_horizon - 1]
             windows.append(window)
             targets.append(target)
@@ -151,60 +154,62 @@ class PreprocessorPlugin:
 
     def process_data(self, config):
         """
-        Processes data for EUR/USD forecasting by applying:
-          - Log transformation to the "CLOSE" prices.
-          - Causal, rolling STL decomposition on the log-transformed series.
-          - Generation of sliding windows for the raw log-series and for each decomposed channel.
-          - Loading and processing of target values from Y files.
+        Processes data for EUR/USD forecasting with STL decomposition.
 
-        Args:
-            config (dict): Must include keys:
-              - x_train_file, y_train_file, x_validation_file, y_validation_file, x_test_file, y_test_file
-              - headers, max_steps_*, window_size, time_horizon, use_returns, stl_period, stl_window, stl_plot_file
-
+        Steps:
+          1. Loads X and Y CSV files for train, validation, and test.
+          2. Extracts the 'CLOSE' column from X files and applies a log transform.
+          3. Applies a causal, rolling STL decomposition on the log-transformed series.
+          4. Plots the decomposition for training data to the file specified by stl_plot_file.
+          5. Creates sliding windows for:
+             - The raw log-transformed series.
+             - Each decomposed channel (trend, seasonal, residual).
+          6. Processes targets from Y files (assumed to be in the 'TARGET' column) with sliding windows.
+          7. Optionally adjusts targets if use_returns is True.
+        
         Returns:
             dict: Processed datasets including:
               - "x_train", "x_train_trend", "x_train_seasonal", "x_train_noise"
-              - "y_train" (as list and array) and similar for validation and test.
+              - "y_train" (as list and array), and similar for validation and test.
               - "dates_train", "dates_val", "dates_test", "test_close_prices"
         """
         headers = config.get("headers", self.params["headers"])
 
-        # Load X data (train, validation, test)
+        # Load X data for train, validation, and test.
         x_train_df = self._load_data(config["x_train_file"], config.get("max_steps_train"), headers)
         x_val_df = self._load_data(config["x_validation_file"], config.get("max_steps_val"), headers)
         x_test_df = self._load_data(config["x_test_file"], config.get("max_steps_test"), headers)
 
-        # Load Y data (train, validation, test)
+        # Load Y data for train, validation, and test.
         y_train_df = self._load_data(config["y_train_file"], config.get("max_steps_train"), headers)
         y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), headers)
         y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), headers)
 
-        # Extract "CLOSE" from X data and apply log transform
+        # Extract 'CLOSE' from X data and apply log transformation.
         if "CLOSE" not in x_train_df.columns:
             raise ValueError("Column 'CLOSE' not found in training X data.")
         close_train = x_train_df["CLOSE"].astype(np.float32).values
         close_val = x_val_df["CLOSE"].astype(np.float32).values
         close_test = x_test_df["CLOSE"].astype(np.float32).values
 
-        # Apply log transformation
+        # Apply log transform to stabilize variance.
         log_train = np.log(close_train)
         log_val = np.log(close_val)
         log_test = np.log(close_test)
 
-        # Retrieve date indices
+        # Get date indices.
         train_dates = x_train_df.index if x_train_df.index is not None else None
         val_dates = x_val_df.index if x_val_df.index is not None else None
         test_dates = x_test_df.index if x_test_df.index is not None else None
 
-        # Get STL parameters
+        # Get STL parameters.
         stl_period = config.get("stl_period", self.params["stl_period"])
         stl_window = config.get("stl_window", config.get("window_size", self.params["window_size"]))
         stl_plot_file = config.get("stl_plot_file", self.params["stl_plot_file"])
 
-        # Compute causal, rolling STL decomposition on the log-transformed training series.
+        # Compute causal, rolling STL decomposition on the training series.
         trend_train, seasonal_train, resid_train = self._rolling_stl(log_train, stl_window, stl_period)
-        # Plot the decomposition (for training only)
+        # Plot the decomposition for training data.
         self._plot_decomposition(log_train[stl_window - 1:], trend_train, seasonal_train, resid_train, stl_plot_file)
 
         # Compute rolling STL for validation and test series.
@@ -233,7 +238,7 @@ class PreprocessorPlugin:
         X_test_seasonal, _, _ = self.create_sliding_windows(seasonal_test, window_size, time_horizon, test_dates)
         X_test_noise, _, _ = self.create_sliding_windows(resid_test, window_size, time_horizon, test_dates)
 
-        # Adjust targets if using returns (target adjustment on original raw sliding windows)
+        # If use_returns is True, adjust targets based on the last value of the raw input window.
         if use_returns:
             baseline_train = X_train[:, -1]
             baseline_val = X_val[:, -1]
@@ -242,7 +247,7 @@ class PreprocessorPlugin:
             y_val_sw = y_val_sw - baseline_val
             y_test_sw = y_test_sw - baseline_test
 
-        # Reshape inputs for model compatibility: (samples, window_size, 1)
+        # Reshape inputs to (samples, window_size, 1) for compatibility.
         X_train = X_train.reshape(-1, window_size, 1)
         X_val = X_val.reshape(-1, window_size, 1)
         X_test = X_test.reshape(-1, window_size, 1)
@@ -259,13 +264,12 @@ class PreprocessorPlugin:
         X_test_seasonal = X_test_seasonal.reshape(-1, window_size, 1)
         X_test_noise = X_test_noise.reshape(-1, window_size, 1)
 
-        # Process targets from Y files: assume target column from config["target_column"]
-        target_column = config["target_column"]
-        if target_column not in y_train_df.columns:
-            raise ValueError(f"Column '{target_column}' not found in training Y data.")
-        target_train = y_train_df[target_column].astype(np.float32).values
-        target_val = y_val_df[target_column].astype(np.float32).values
-        target_test = y_test_df[target_column].astype(np.float32).values
+        # Process targets from Y data; assume the target is in the "TARGET" column.
+        if "TARGET" not in y_train_df.columns:
+            raise ValueError("Column 'TARGET' not found in training Y data.")
+        target_train = y_train_df["TARGET"].astype(np.float32).values
+        target_val = y_val_df["TARGET"].astype(np.float32).values
+        target_test = y_test_df["TARGET"].astype(np.float32).values
 
         # Create sliding windows for targets.
         _, y_train_sw, _ = self.create_sliding_windows(target_train, window_size, time_horizon, train_dates)
@@ -276,12 +280,12 @@ class PreprocessorPlugin:
         y_val_array = y_val_sw.reshape(-1, 1)
         y_test_array = y_test_sw.reshape(-1, 1)
 
-        # For test close prices, use the last value from the original X series (before log transform) 
+        # For test close prices, use the last value from the original CLOSE series (before log transform).
         test_close_prices = close_test[stl_window + window_size - 2 : len(close_test) - time_horizon]
 
         # Consolidate all processed data into a dictionary.
         ret = {
-            "x_train": X_train,  # Log-transformed input windows
+            "x_train": X_train,  # Raw log-series windows.
             "x_train_trend": X_train_trend,
             "x_train_seasonal": X_train_seasonal,
             "x_train_noise": X_train_noise,
@@ -311,9 +315,7 @@ class PreprocessorPlugin:
         return ret
 
     def run_preprocessing(self, config):
-        """
-        Convenience method to execute data processing.
-        """
+        """Convenience method to execute data processing."""
         return self.process_data(config)
 
 
@@ -333,7 +335,7 @@ if __name__ == "__main__":
         "max_steps_test": 500,
         "window_size": 24,
         "time_horizon": 6,
-        "use_returns": False,
+        "use_returns": True,
         "stl_period": 24,
         "stl_window": 24,
         "stl_plot_file": "stl_plot.png"
