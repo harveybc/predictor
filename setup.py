@@ -29,7 +29,7 @@ setup(
         ],
         # Plugins para el Preprocesamiento (incluye process_data, ventanas deslizantes y STL)
         'preprocessor.plugins': [
-            'default_preprocessor=preprocessor_plugins.default_preprocessor:PreprocessorPlugin'
+            'default_preprocessor=preprocessor_plugins.default_preprocessor:PreprocessorPlugin',
             'stl_preprocessor=preprocessor_plugins.stl:PreprocessorPlugin'
         ]
     },
