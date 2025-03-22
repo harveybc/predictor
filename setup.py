@@ -12,6 +12,7 @@ setup(
         'predictor.plugins': [
             'default_predictor=predictor_plugins.predictor_plugin_ann:Plugin',
             'ann=predictor_plugins.plugins.predictor_plugin_ann:Plugin',
+            'n_beats=predictor_plugins.plugins.predictor_plugin_n_beats:Plugin',
             'cnn=predictor_plugins.plugins.predictor_plugin_cnn:Plugin',
             'lstm=predictor_plugins.plugins.predictor_plugin_lstm:Plugin',
             'transformer=predictor_plugins.plugins.predictor_plugin_transformer:Plugin',
@@ -23,12 +24,13 @@ setup(
         ],
         # Plugins para el Pipeline (orquestación del flujo completo)
         'pipeline.plugins': [
-            'default_pipeline=pipeline_plugins.default_pipeline:PipelinePlugin'
+            'default_pipeline=pipeline_plugins.default_pipeline:PipelinePlugin',
+            'stl_pipeline=pipeline_plugins.stl_pipeline:PipelinePlugin'
         ],
         # Plugins para el Preprocesamiento (incluye process_data, ventanas deslizantes y STL)
         'preprocessor.plugins': [
             'default_preprocessor=preprocessor_plugins.default_preprocessor:PreprocessorPlugin'
-            'stl=preprocessor_plugins.stl:PreprocessorPlugin'
+            'stl_preprocessor=preprocessor_plugins.stl:PreprocessorPlugin'
         ]
     },
     install_requires=[
