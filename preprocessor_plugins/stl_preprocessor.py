@@ -51,7 +51,7 @@ class PreprocessorPlugin:
         "time_horizon": 6,
         "use_returns": True,
         "stl_period": 24,# best 24
-        "stl_window": 54,#best 44
+        "stl_window": 48,#best 44
         "stl_trend": 145, #best 121
         "stl_plot_file": "stl_plot.png",
         "pos_encoding_dim": 16
