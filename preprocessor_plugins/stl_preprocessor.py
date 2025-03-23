@@ -52,7 +52,7 @@ class PreprocessorPlugin:
         "use_returns": True,
         "stl_period": 24,# best 24
         "stl_window": 46,#best 46
-        "stl_trend": 51, #best 49
+        "stl_trend": 47, #best 49
         "stl_plot_file": "stl_plot.png",
         "pos_encoding_dim": 16
     }
