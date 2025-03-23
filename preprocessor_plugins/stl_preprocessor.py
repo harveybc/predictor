@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Enhanced Preprocessor Plugin with Log Transform, Causal Rolling STL Decomposition,
-Progress Bar, and Detailed Statistics with Configurable Trend Smoother and Date Verification.
+Progress Bar, Detailed Statistics, Configurable Trend Smoother, and Date Verification.
 
 This plugin processes input data for EUR/USD forecasting by:
   1. Loading separate CSV files for X and Y (train, validation, test).
@@ -19,12 +19,12 @@ This plugin processes input data for EUR/USD forecasting by:
        - Hilbert phase statistics (circular mean and std) for seasonal (desired: low dispersion).
   6. Creating sliding windows for the raw log series and for each decomposed channel.
   7. Processing target values from the Y files (assumed to be in the "TARGET" column).
-      - If use_returns is True, the targets are adjusted by subtracting the baseline.
-  8. Computing a baseline dataset (from the original CLOSE values) that always holds the current tick's CLOSE.
-  9. Verifying that the date arrays for x, y, and baseline for train, validation, and test have identical start and end dates.
+      - If use_returns is True, targets are adjusted by subtracting the baseline.
+  8. Computing a baseline dataset from the original CLOSE values (always holding the current tick's CLOSE).
+  9. Verifying that the date arrays for X, Y, and baseline in train, validation, and test sets are identical.
 
 The plugin adheres to the standard plugin interface with methods such as set_params, get_debug_info, and add_debug_info.
-A tqdm progress bar is added to the STL decomposition to indicate progress.
+A tqdm progress bar is used during STL decomposition.
 """
 
 import numpy as np
@@ -37,16 +37,16 @@ from app.data_handler import load_csv, write_csv  # Ensure these functions are i
 from scipy.signal import hilbert
 from scipy.stats import shapiro
 
-def verify_date_consistency(date_list, dataset_name):
+def verify_date_consistency(date_lists, dataset_name):
     """
-    Verify that all date arrays in date_list have the same first and last elements.
-    If not, print a warning.
+    Verifies that all date arrays in date_lists have the same first and last elements.
+    Prints a warning if any array does not match.
     """
-    if not date_list:
+    if not date_lists:
         return
-    first = date_list[0][0] if len(date_list[0]) > 0 else None
-    last = date_list[0][-1] if len(date_list[0]) > 0 else None
-    for i, d in enumerate(date_list):
+    first = date_lists[0][0] if len(date_lists[0]) > 0 else None
+    last = date_lists[0][-1] if len(date_lists[0]) > 0 else None
+    for i, d in enumerate(date_lists):
         if len(d) == 0:
             print(f"Warning: {dataset_name} date array {i} is empty.")
             continue
@@ -137,7 +137,6 @@ class PreprocessorPlugin:
         """
         Plots the STL decomposition and saves the figure.
         """
-        # Limit plotted ticks (last 480 values)
         if len(series) > 480:
             series = series[-480:]
             trend = trend[-480:]
@@ -169,7 +168,7 @@ class PreprocessorPlugin:
             data (np.ndarray): 1D array of values.
             window_size (int): Length of each window.
             time_horizon (int): Forecast horizon (target index = window_size + time_horizon - 1).
-            date_times (pd.DatetimeIndex, optional): Dates corresponding to the data.
+            date_times (iterable, optional): Dates corresponding to the data.
 
         Returns:
             tuple: (windows, targets, date_windows)
@@ -192,24 +191,24 @@ class PreprocessorPlugin:
         Processes data for EUR/USD forecasting with STL decomposition.
         
         Steps:
-          1. Loads X and Y CSV files for train, validation, and test.
-          2. Extracts the 'CLOSE' column from X files and applies a log transform.
-          3. Applies a causal, rolling STL decomposition on the log-transformed series.
-          4. Plots the decomposition for training data and prints detailed numerical statistics.
-          5. Creates sliding windows for:
+          1. Load X and Y CSV files for train, validation, and test.
+          2. Extract the 'CLOSE' column from X files and apply a log transform.
+          3. Compute a causal, rolling STL decomposition on the log-transformed series.
+          4. Plot the decomposition for training data and print detailed numerical statistics.
+          5. Create sliding windows for:
              - The raw log-transformed series.
              - Each decomposed channel (trend, seasonal, residual).
-          6. Processes targets from Y files (assumed to be in the 'TARGET' column).
-             - If use_returns is True, adjusts target windows by subtracting baseline.
-          7. Computes a baseline dataset from the original CLOSE values (using the same offset).
-          8. Verifies that the sliding window date arrays for x, y, and baseline match for train, validation, and test.
+          6. Process targets from Y files (assumed to be in the "TARGET" column).
+             - If use_returns is True, adjust targets by subtracting the baseline.
+          7. Compute a baseline dataset from the original CLOSE values (always using the current tick's CLOSE).
+          8. Verify that the sliding window date arrays for X, Y, and baseline for train, validation, and test sets match.
         
         Returns:
-            dict: Processed datasets including:
+            dict: Processed datasets, including:
               - "x_train", "x_train_trend", "x_train_seasonal", "x_train_noise"
-              - "y_train" (as list and array), and similar for validation and test.
+              - "y_train" (list and array), and similar for validation and test.
               - "baseline_train", "baseline_val", "baseline_test"
-              - "dates_train", "dates_val", "dates_test", "y_dates_train", etc.
+              - Date arrays for X, Y, and baseline for each split.
               - "test_close_prices"
         """
         headers = config.get("headers", self.params["headers"])
@@ -246,7 +245,7 @@ class PreprocessorPlugin:
         stl_plot_file = config.get("stl_plot_file", self.params["stl_plot_file"])
         stl_trend = config.get("stl_trend", self.params["stl_trend"])
         
-        # Compute STL decomposition on training log series.
+        # Compute STL decomposition on the training log series.
         trend_train, seasonal_train, resid_train = self._rolling_stl(log_train, stl_window, stl_period)
         self._plot_decomposition(log_train[stl_window - 1:], trend_train, seasonal_train, resid_train, stl_plot_file)
         
@@ -297,7 +296,7 @@ class PreprocessorPlugin:
         print(f"Hilbert Phase of Seasonal - Circular Mean: {circ_mean:.4f}, Circular Std: {circ_std:.4f} (desired: low dispersion)")
         print("=============================================================")
         
-        # Compute STL decomposition for validation and test.
+        # Compute STL decomposition for validation and test series.
         trend_val, seasonal_val, resid_val = self._rolling_stl(log_val, stl_window, stl_period)
         trend_test, seasonal_test, resid_test = self._rolling_stl(log_test, stl_window, stl_period)
         
@@ -305,24 +304,24 @@ class PreprocessorPlugin:
         window_size = config["window_size"]
         time_horizon = config["time_horizon"]
         use_returns = config.get("use_returns", False)
-        X_train, y_train_sw, dates_train_sw = self.create_sliding_windows(log_train[stl_window - 1:], window_size, time_horizon, train_dates)
-        X_val, y_val_sw, dates_val_sw = self.create_sliding_windows(log_val[stl_window - 1:], window_size, time_horizon, val_dates)
-        X_test, y_test_sw, dates_test_sw = self.create_sliding_windows(log_test[stl_window - 1:], window_size, time_horizon, test_dates)
+        X_train, x_dates_train, _ = self.create_sliding_windows(log_train[stl_window - 1:], window_size, time_horizon, dates_train)
+        X_val, x_dates_val, _ = self.create_sliding_windows(log_val[stl_window - 1:], window_size, time_horizon, dates_val)
+        X_test, x_dates_test, _ = self.create_sliding_windows(log_test[stl_window - 1:], window_size, time_horizon, dates_test)
         
         # Create sliding windows for decomposed channels.
-        X_train_trend, _, _ = self.create_sliding_windows(trend_train, window_size, time_horizon, train_dates)
-        X_train_seasonal, _, _ = self.create_sliding_windows(seasonal_train, window_size, time_horizon, train_dates)
-        X_train_noise, _, _ = self.create_sliding_windows(resid_train, window_size, time_horizon, train_dates)
+        X_train_trend, _, _ = self.create_sliding_windows(trend_train, window_size, time_horizon, dates_train)
+        X_train_seasonal, _, _ = self.create_sliding_windows(seasonal_train, window_size, time_horizon, dates_train)
+        X_train_noise, _, _ = self.create_sliding_windows(resid_train, window_size, time_horizon, dates_train)
         
-        X_val_trend, _, _ = self.create_sliding_windows(trend_val, window_size, time_horizon, val_dates)
-        X_val_seasonal, _, _ = self.create_sliding_windows(seasonal_val, window_size, time_horizon, val_dates)
-        X_val_noise, _, _ = self.create_sliding_windows(resid_val, window_size, time_horizon, val_dates)
+        X_val_trend, _, _ = self.create_sliding_windows(trend_val, window_size, time_horizon, dates_val)
+        X_val_seasonal, _, _ = self.create_sliding_windows(seasonal_val, window_size, time_horizon, dates_val)
+        X_val_noise, _, _ = self.create_sliding_windows(resid_val, window_size, time_horizon, dates_val)
         
-        X_test_trend, _, _ = self.create_sliding_windows(trend_test, window_size, time_horizon, test_dates)
-        X_test_seasonal, _, _ = self.create_sliding_windows(seasonal_test, window_size, time_horizon, test_dates)
-        X_test_noise, _, _ = self.create_sliding_windows(resid_test, window_size, time_horizon, test_dates)
+        X_test_trend, _, _ = self.create_sliding_windows(trend_test, window_size, time_horizon, dates_test)
+        X_test_seasonal, _, _ = self.create_sliding_windows(seasonal_test, window_size, time_horizon, dates_test)
+        X_test_noise, _, _ = self.create_sliding_windows(resid_test, window_size, time_horizon, dates_test)
         
-        # Compute baseline datasets from the original CLOSE series (using same offset as x windows).
+        # Compute baseline datasets from original CLOSE values (using same offset as X windows).
         baseline_train = close_train[stl_window - 1 : len(close_train) - time_horizon]
         baseline_val = close_val[stl_window - 1 : len(close_val) - time_horizon]
         baseline_test = close_test[stl_window - 1 : len(close_test) - time_horizon]
@@ -337,9 +336,14 @@ class PreprocessorPlugin:
         
         # Apply same offset to targets.
         offset = stl_window - 1
-        _, y_train_sw, y_dates_train = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
-        _, y_val_sw, y_dates_val = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
-        _, y_test_sw, y_dates_test = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
+        _, y_dates_train, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
+        _, y_dates_val, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
+        _, y_dates_test, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
+        
+        # For target sliding windows, also get the targets.
+        _, y_train_sw, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
+        _, y_val_sw, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
+        _, y_test_sw, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
         
         y_train_array = y_train_sw.reshape(-1, 1)
         y_val_array = y_val_sw.reshape(-1, 1)
@@ -354,7 +358,7 @@ class PreprocessorPlugin:
             y_val_sw = y_val_sw - baseline_val
             y_test_sw = y_test_sw - baseline_test
         
-        # Reshape x datasets.
+        # Reshape X datasets.
         X_train = X_train.reshape(-1, window_size, 1)
         X_val = X_val.reshape(-1, window_size, 1)
         X_test = X_test.reshape(-1, window_size, 1)
@@ -371,35 +375,14 @@ class PreprocessorPlugin:
         X_test_seasonal = X_test_seasonal.reshape(-1, window_size, 1)
         X_test_noise = X_test_noise.reshape(-1, window_size, 1)
         
-        # Verify date consistency between x, y, and baseline datasets.
-        # Extract date arrays from sliding windows.
-        x_dates_train = dates_train_sw
-        x_dates_val = dates_val_sw
-        x_dates_test = dates_test_sw
-        
-        # For baseline, we assume dates from the original X data offset accordingly.
-        if train_dates is not None:
-            baseline_dates_train = train_dates[stl_window - 1 : len(train_dates) - time_horizon]
-        else:
-            baseline_dates_train = None
-        if val_dates is not None:
-            baseline_dates_val = val_dates[stl_window - 1 : len(val_dates) - time_horizon]
-        else:
-            baseline_dates_val = None
-        if test_dates is not None:
-            baseline_dates_test = test_dates[stl_window - 1 : len(test_dates) - time_horizon]
-        else:
-            baseline_dates_test = None
-        
-        # Verify that x dates, y dates, and baseline dates match.
+        # Verify date consistency for train, val, and test splits.
         print("Verifying date consistency for training data:")
-        verify_date_consistency([list(x_dates_train), list(y_dates_train), list(baseline_dates_train)], "Training")
+        verify_date_consistency([list(x_dates_train), list(y_dates_train), list(baseline_train)], "Training")
         print("Verifying date consistency for validation data:")
-        verify_date_consistency([list(x_dates_val), list(y_dates_val), list(baseline_dates_val)], "Validation")
+        verify_date_consistency([list(x_dates_val), list(y_dates_val), list(baseline_val)], "Validation")
         print("Verifying date consistency for test data:")
-        verify_date_consistency([list(x_dates_test), list(y_dates_test), list(baseline_dates_test)], "Test")
+        verify_date_consistency([list(x_dates_test), list(y_dates_test), list(baseline_test)], "Test")
         
-        # Consolidate all processed data into a dictionary.
         ret = {
             "x_train": X_train,
             "x_train_trend": X_train_trend,
@@ -410,7 +393,7 @@ class PreprocessorPlugin:
             "x_train_dates": x_dates_train,
             "y_train_dates": y_dates_train,
             "baseline_train": baseline_train,
-            "baseline_train_dates": baseline_dates_train,
+            "baseline_train_dates": dates_train[stl_window - 1 : len(dates_train) - time_horizon] if dates_train is not None else None,
             "x_val": X_val,
             "x_val_trend": X_val_trend,
             "x_val_seasonal": X_val_seasonal,
@@ -420,7 +403,7 @@ class PreprocessorPlugin:
             "x_val_dates": x_dates_val,
             "y_val_dates": y_dates_val,
             "baseline_val": baseline_val,
-            "baseline_val_dates": baseline_dates_val,
+            "baseline_val_dates": dates_val[stl_window - 1 : len(dates_val) - time_horizon] if dates_val is not None else None,
             "x_test": X_test,
             "x_test_trend": X_test_trend,
             "x_test_seasonal": X_test_seasonal,
@@ -430,7 +413,7 @@ class PreprocessorPlugin:
             "x_test_dates": x_dates_test,
             "y_test_dates": y_dates_test,
             "baseline_test": baseline_test,
-            "baseline_test_dates": baseline_dates_test,
+            "baseline_test_dates": dates_test[stl_window - 1 : len(dates_test) - time_horizon] if dates_test is not None else None,
             "test_close_prices": test_close_prices
         }
         return ret
@@ -438,7 +421,6 @@ class PreprocessorPlugin:
     def run_preprocessing(self, config):
         """Convenience method to execute data processing."""
         return self.process_data(config)
-
 
 # Debugging usage example (run directly)
 if __name__ == "__main__":
