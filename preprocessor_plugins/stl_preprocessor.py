@@ -136,7 +136,12 @@ class PreprocessorPlugin:
         plt.plot(resid, label="Residual", color="red")
         plt.legend(loc="upper left")
         plt.tight_layout()
-        plt.savefig(file_path, dpi=300)
+        # save the last 120 ticks as a figure
+        #limit plotted ticks to 120
+        plt.xticks(np.arange(0, 120, step=1))
+        plt.savefig(file_path, dpi=300) 
+
+        #plt.savefig(file_path, dpi=300)
         plt.close()
         print(f"STL decomposition plot saved to {file_path}")
 
