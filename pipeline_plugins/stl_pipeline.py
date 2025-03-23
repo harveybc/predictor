@@ -172,12 +172,12 @@ class STLPipelinePlugin:
             # Calculate R² for training and validation.
             if config.get("use_returns", False):
                 train_r2 = r2_score(
-                    (baseline_train[:, -1] + np.stack(y_train, axis=1)[:, -1]).flatten(),
-                    (baseline_train[:, -1] + train_preds[:, 0]).flatten()
+                    (baseline_train + np.stack(y_train, axis=1)[:, -1]).flatten(),
+                    (baseline_train + train_preds[:, 0]).flatten()
                 )
                 val_r2 = r2_score(
-                    (baseline_val[:, -1] + np.stack(y_val, axis=1)[:, -1]).flatten(),
-                    (baseline_val[:, -1] + val_preds[:, 0]).flatten()
+                    (baseline_val+ np.stack(y_val, axis=1)[:, -1]).flatten(),
+                    (baseline_val+ val_preds[:, 0]).flatten()
                 )
             else:
                 train_r2 = r2_score(np.stack(y_train, axis=1)[:, -1].flatten(), train_preds[:, 0].flatten())
@@ -223,9 +223,9 @@ class STLPipelinePlugin:
 
             # Calculate SNR (signal-to-noise ratio).
             if config.get("use_returns", False):
-                train_mean = np.mean(baseline_train[:, -1] + train_preds[:, -1])
-                val_mean = np.mean(baseline_val[:, -1] + val_preds[:, -1])
-                test_mean = np.mean(baseline_test[:, -1] + test_predictions[:, -1])
+                train_mean = np.mean(baseline_train + train_preds[:, -1])
+                val_mean = np.mean(baseline_val+ val_preds[:, -1])
+                test_mean = np.mean(baseline_test+ test_predictions[:, -1])
             else:
                 train_mean = np.mean(train_preds[:, -1])
                 val_mean = np.mean(val_preds[:, -1])
