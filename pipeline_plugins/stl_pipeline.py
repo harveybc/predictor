@@ -303,12 +303,6 @@ class STLPipelinePlugin:
         elif isinstance(norm_json, str):
             with open(norm_json, 'r') as f:
                 norm_json = json.load(f)
-        if "CLOSE" in norm_json:
-            close_min = norm_json["CLOSE"]["min"]
-            close_max = norm_json["CLOSE"]["max"]
-            denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
-        else:
-            denorm_test_close_prices = test_close_prices
 
         if config.get("use_normalization_json") is not None:
             norm_json = config.get("use_normalization_json")
@@ -324,6 +318,7 @@ class STLPipelinePlugin:
                         test_predictions = (test_predictions + baseline_test) * diff + close_min
                         y_test_array = np.stack(y_test, axis=1)
                         denorm_y_test = (y_test_array + baseline_test) * diff + close_min
+                        denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
                     else:
                         print("Warning: Baseline test values not found; skipping returns denormalization.")
                         denorm_y_test = np.stack(y_test, axis=1)
@@ -336,13 +331,13 @@ class STLPipelinePlugin:
                     close_max = norm_json["CLOSE"]["max"]
                     test_predictions = test_predictions * (close_max - close_min) + close_min
                     denorm_y_test = np.stack(y_test, axis=1) * (close_max - close_min) + close_min
+                    denorm_test_close_prices = test_close_prices
                 else:
                     print("Warning: 'CLOSE' not found; skipping denormalization for non-returns mode.")
                     denorm_y_test = np.stack(y_test, axis=1)
         else:
             denorm_y_test = np.stack(y_test, axis=1)
 
-        denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
 
         # Save final test predictions to CSV.
         final_test_file = config.get("output_file", "test_predictions.csv")
