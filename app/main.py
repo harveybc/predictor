@@ -160,19 +160,15 @@ def main():
         else:
             print("Skipping hyperparameter optimization.")
             print("Running prediction pipeline...")
-            try:
-                # El Pipeline Plugin orquesta:
-                # 1. Preprocesamiento (process_data, descomposición STL, ventanas deslizantes)
-                # 2. Entrenamiento y evaluación usando el Predictor Plugin
-                pipeline_plugin.run_prediction_pipeline(
-                    config,
-                    predictor_plugin,
-                    preprocessor_plugin
-                )
-            except Exception as e:
-                print(f"Prediction pipeline execution failed: {e}")
-                sys.exit(1)
-
+            # El Pipeline Plugin orquesta:
+            # 1. Preprocesamiento (process_data, descomposición STL, ventanas deslizantes)
+            # 2. Entrenamiento y evaluación usando el Predictor Plugin
+            pipeline_plugin.run_prediction_pipeline(
+                config,
+                predictor_plugin,
+                preprocessor_plugin
+            )
+        
     # Guardado de la configuración local y remota
     if config.get('save_config'):
         try:
