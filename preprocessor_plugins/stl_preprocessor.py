@@ -19,10 +19,10 @@ This plugin processes input data for EUR/USD forecasting by:
        - Hilbert phase statistics (circular mean and std) for seasonal (desired: low dispersion).
   6. Creating sliding windows for the raw log series and for each decomposed channel.
   7. Processing target values from the Y files (assumed to be in the "TARGET" column).
-      - If use_returns is True, targets are adjusted by subtracting the baseline.
-  8. Computing a baseline dataset from the original CLOSE values (always holding the current tick's CLOSE).
-  9. Verifying that the date arrays for X, Y, and baseline in train, validation, and test sets are identical.
-
+      - If use_returns is True, target windows are adjusted by subtracting the baseline.
+  8. Computing a baseline dataset from the original CLOSE values that always contains the current tick's CLOSE.
+  9. Verifying that the sliding window date arrays for features (X), targets (Y), and baseline are consistent.
+  
 The plugin adheres to the standard plugin interface with methods such as set_params, get_debug_info, and add_debug_info.
 A tqdm progress bar is used during STL decomposition.
 """
@@ -199,9 +199,9 @@ class PreprocessorPlugin:
              - The raw log-transformed series.
              - Each decomposed channel (trend, seasonal, residual).
           6. Process targets from Y files (assumed to be in the "TARGET" column).
-             - If use_returns is True, adjust targets by subtracting the baseline.
-          7. Compute a baseline dataset from the original CLOSE values (always using the current tick's CLOSE).
-          8. Verify that the sliding window date arrays for X, Y, and baseline for train, validation, and test sets match.
+             - If use_returns is True, adjust target windows by subtracting the baseline.
+          7. Compute a baseline dataset from the original CLOSE values that always holds the current tick's CLOSE.
+          8. Verify that the sliding window date arrays for features (X), targets (Y), and baseline are consistent.
         
         Returns:
             dict: Processed datasets, including:
@@ -212,7 +212,7 @@ class PreprocessorPlugin:
               - "test_close_prices"
         """
         headers = config.get("headers", self.params["headers"])
-
+        
         # Load X data.
         x_train_df = self._load_data(config["x_train_file"], config.get("max_steps_train"), headers)
         x_val_df = self._load_data(config["x_validation_file"], config.get("max_steps_val"), headers)
@@ -321,10 +321,12 @@ class PreprocessorPlugin:
         X_test_seasonal, _, _ = self.create_sliding_windows(seasonal_test, window_size, time_horizon, dates_test)
         X_test_noise, _, _ = self.create_sliding_windows(resid_test, window_size, time_horizon, dates_test)
         
-        # Compute baseline datasets from original CLOSE values (using same offset as X windows).
-        baseline_train = close_train[stl_window - 1 : len(close_train) - time_horizon]
-        baseline_val = close_val[stl_window - 1 : len(close_val) - time_horizon]
-        baseline_test = close_test[stl_window - 1 : len(close_test) - time_horizon]
+        # Compute baseline datasets from original CLOSE values.
+        # Since the sliding windows for X start at log_train[stl_window - 1:], then further are created with window_size,
+        # the effective offset is (stl_window - 1) + (window_size - 1) = stl_window + window_size - 2.
+        baseline_train = close_train[stl_window + window_size - 2 : len(close_train) - time_horizon]
+        baseline_val = close_val[stl_window + window_size - 2 : len(close_val) - time_horizon]
+        baseline_test = close_test[stl_window + window_size - 2 : len(close_test) - time_horizon]
         
         # Process targets from Y data.
         target_column = config["target_column"]
@@ -334,13 +336,11 @@ class PreprocessorPlugin:
         target_val = y_val_df[target_column].astype(np.float32).values
         target_test = y_test_df[target_column].astype(np.float32).values
         
-        # Apply same offset to targets.
+        # Apply the same offset to targets.
         offset = stl_window - 1
         _, y_dates_train, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
         _, y_dates_val, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
         _, y_dates_test, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
-        
-        # For target sliding windows, also get the targets.
         _, y_train_sw, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
         _, y_val_sw, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
         _, y_test_sw, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
@@ -349,7 +349,7 @@ class PreprocessorPlugin:
         y_val_array = y_val_sw.reshape(-1, 1)
         y_test_array = y_test_sw.reshape(-1, 1)
         
-        # For test close prices, use the last value from original CLOSE series.
+        # For test close prices, use the last value from the original CLOSE series.
         test_close_prices = close_test[stl_window + window_size - 2 : len(close_test) - time_horizon]
         
         # If use_returns is True, adjust target windows by subtracting baseline.
@@ -375,7 +375,7 @@ class PreprocessorPlugin:
         X_test_seasonal = X_test_seasonal.reshape(-1, window_size, 1)
         X_test_noise = X_test_noise.reshape(-1, window_size, 1)
         
-        # Verify date consistency for train, val, and test splits.
+        # Verify date consistency for train, validation, and test.
         print("Verifying date consistency for training data:")
         verify_date_consistency([list(x_dates_train), list(y_dates_train), list(baseline_train)], "Training")
         print("Verifying date consistency for validation data:")
@@ -393,7 +393,7 @@ class PreprocessorPlugin:
             "x_train_dates": x_dates_train,
             "y_train_dates": y_dates_train,
             "baseline_train": baseline_train,
-            "baseline_train_dates": dates_train[stl_window - 1 : len(dates_train) - time_horizon] if dates_train is not None else None,
+            "baseline_train_dates": dates_train[stl_window + config["window_size"] - 2 : len(dates_train) - time_horizon] if dates_train is not None else None,
             "x_val": X_val,
             "x_val_trend": X_val_trend,
             "x_val_seasonal": X_val_seasonal,
@@ -403,7 +403,7 @@ class PreprocessorPlugin:
             "x_val_dates": x_dates_val,
             "y_val_dates": y_dates_val,
             "baseline_val": baseline_val,
-            "baseline_val_dates": dates_val[stl_window - 1 : len(dates_val) - time_horizon] if dates_val is not None else None,
+            "baseline_val_dates": dates_val[stl_window + config["window_size"] - 2 : len(dates_val) - time_horizon] if dates_val is not None else None,
             "x_test": X_test,
             "x_test_trend": X_test_trend,
             "x_test_seasonal": X_test_seasonal,
@@ -413,7 +413,7 @@ class PreprocessorPlugin:
             "x_test_dates": x_dates_test,
             "y_test_dates": y_dates_test,
             "baseline_test": baseline_test,
-            "baseline_test_dates": dates_test[stl_window - 1 : len(dates_test) - time_horizon] if dates_test is not None else None,
+            "baseline_test_dates": dates_test[stl_window + config["window_size"] - 2 : len(dates_test) - time_horizon] if dates_test is not None else None,
             "test_close_prices": test_close_prices
         }
         return ret
