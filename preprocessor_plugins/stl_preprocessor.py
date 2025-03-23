@@ -122,6 +122,14 @@ class PreprocessorPlugin:
         """
         Plots the STL decomposition and saves the figure.
         """
+        # save the last 120 ticks as a figure
+        #limit plotted ticks to 120
+        if len(series) > 120:
+            series = series[-120:]
+            trend = trend[-120:]
+            seasonal = seasonal[-120:]
+            resid = resid[-120:]
+            
         plt.figure(figsize=(12, 9))
         plt.subplot(411)
         plt.plot(series, label="Log-Transformed Series")
@@ -136,12 +144,8 @@ class PreprocessorPlugin:
         plt.plot(resid, label="Residual", color="red")
         plt.legend(loc="upper left")
         plt.tight_layout()
-        # save the last 120 ticks as a figure
-        #limit plotted ticks to 120
-        plt.xticks(np.arange(0, 120, step=1))
         plt.savefig(file_path, dpi=300) 
 
-        #plt.savefig(file_path, dpi=300)
         plt.close()
         print(f"STL decomposition plot saved to {file_path}")
 
