@@ -47,12 +47,12 @@ class PreprocessorPlugin:
         "max_steps_train": None,
         "max_steps_val": None,
         "max_steps_test": None,
-        "window_size": 24,
+        "window_size": 48,
         "time_horizon": 6,
         "use_returns": True,
         "stl_period": 24,# best 24
-        "stl_window": 46,#best 46
-        "stl_trend": 49, #best 49
+        "stl_window": 94,#best 46
+        "stl_trend": 97, #best 49
         "stl_plot_file": "stl_plot.png",
         "pos_encoding_dim": 16
     }
