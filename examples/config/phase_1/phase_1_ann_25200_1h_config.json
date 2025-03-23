@@ -31,7 +31,7 @@
     "kl_anneal_epochs": 50,
     "early_patience": 60,
     "start_from_epoch": 10,
-    "use_returns": true,
+    "use_returns": false,
     "mc_samples":100,
     "plotted_horizon": 1,
     "mmd_lambda": 1e-2,
