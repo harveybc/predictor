@@ -416,9 +416,9 @@ class PreprocessorPlugin:
             "test_close_prices": test_close_prices
         }
         if use_returns:
-            ret["baseline_train"] = X_train[:, -1]
-            ret["baseline_val"] = X_val[:, -1]
-            ret["baseline_test"] = X_test[:, -1]
+            ret["baseline_train"] = baseline_train
+            ret["baseline_val"] = baseline_val
+            ret["baseline_test"] = baseline_test
         return ret
 
     def run_preprocessing(self, config):
