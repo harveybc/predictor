@@ -214,8 +214,9 @@ class STLPipelinePlugin:
                 print("DEBUG: Not using returns or baseline_test not available")
             print("DEBUG: y_test_array shape:", y_test_array.shape)
 
-            test_mae = np.mean(np.abs(test_predictions[:, -1] - y_test_array[:n_test, -1]))
-            test_r2 = r2_score(y_test_array.flatten(), test_predictions[:, 0].flatten())
+            test_mae = np.mean(np.abs(test_predictions[:, -1] - y_test_array[:, 0]))
+            test_r2 = r2_score(y_test_array[:, 0], test_predictions[:, 0])
+
 
             # Calculate uncertainty (mean of the last column).
             train_unc_last = np.mean(train_unc[:, -1])
@@ -224,7 +225,7 @@ class STLPipelinePlugin:
 
             # Calculate SNR (signal-to-noise ratio).
             if config.get("use_returns", False):
-                train_mean = np.mean(baseline_train[:, -1] + train_preds[:, -1])
+                train_mean = np.mean(baseline_train + train_preds[:, -1])
                 val_mean = np.mean(baseline_val[:, -1] + val_preds[:, -1])
                 test_mean = np.mean(baseline_test[:, -1] + test_predictions[:, -1])
             else:
