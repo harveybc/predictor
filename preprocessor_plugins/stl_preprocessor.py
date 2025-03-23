@@ -47,7 +47,7 @@ class PreprocessorPlugin:
         "max_steps_train": None,
         "max_steps_val": None,
         "max_steps_test": None,
-        "window_size": 48,
+        "window_size": 24, #best 48
         "time_horizon": 6,
         "use_returns": True,
         "stl_period": 24,# best 24 -> 48
