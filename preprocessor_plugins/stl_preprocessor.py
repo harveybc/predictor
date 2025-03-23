@@ -52,7 +52,7 @@ class PreprocessorPlugin:
         "use_returns": True,
         "stl_period": 24,# best 72
         "stl_window": 72,#best 96
-        "stl_trend": 73, #best 121
+        "stl_trend": 144, #best 121
         "stl_plot_file": "stl_plot.png",
         "pos_encoding_dim": 16
     }
@@ -124,11 +124,11 @@ class PreprocessorPlugin:
         """
         # save the last 120 ticks as a figure
         #limit plotted ticks to 120
-        if len(series) > 120:
-            series = series[-120:]
-            trend = trend[-120:]
-            seasonal = seasonal[-120:]
-            resid = resid[-120:]
+        if len(series) > 480:
+            series = series[-480:]
+            trend = trend[-480:]
+            seasonal = seasonal[-480:]
+            resid = resid[-480:]
 
         plt.figure(figsize=(12, 9))
         plt.subplot(411)
