@@ -47,7 +47,7 @@ class PreprocessorPlugin:
         "max_steps_train": None,
         "max_steps_val": None,
         "max_steps_test": None,
-        "window_size": 24, #best 48
+        "window_size": 48,
         "time_horizon": 6,
         "use_returns": True,
         "stl_period": 12,# best 24 -> 48
@@ -335,20 +335,13 @@ class PreprocessorPlugin:
         X_test_noise, _, _ = self.create_sliding_windows(resid_test, window_size, time_horizon, test_dates)
 
         # If use_returns is True, adjust targets based on the last value of the raw input window.
-        #baseline values are the x_train, x_val, x_test values at the config["target_column"] index
-        baseline_train = x_train_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_train_df) - time_horizon +1]
-        baseline_val = x_val_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_val_df) - time_horizon +1]
-        baseline_test = x_test_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_test_df) - time_horizon+1]
-       
         if use_returns:
+            baseline_train = X_train[:, -1]
+            baseline_val = X_val[:, -1]
+            baseline_test = X_test[:, -1]
             y_train_sw = y_train_sw - baseline_train
             y_val_sw = y_val_sw - baseline_val
             y_test_sw = y_test_sw - baseline_test
-         
-        #baseline_train = X_train[:, -1]
-        #baseline_val = X_val[:, -1]
-        #baseline_test = X_test[:, -1]
-            
 
         # Reshape inputs to (samples, window_size, 1) for compatibility.
         X_train = X_train.reshape(-1, window_size, 1)
@@ -417,9 +410,9 @@ class PreprocessorPlugin:
             "test_close_prices": test_close_prices
         }
         if use_returns:
-            ret["baseline_train"] = baseline_train
-            ret["baseline_val"] = baseline_val
-            ret["baseline_test"] = baseline_test
+            ret["baseline_train"] = X_train[:, -1]
+            ret["baseline_val"] = X_val[:, -1]
+            ret["baseline_test"] = X_test[:, -1]
         return ret
 
     def run_preprocessing(self, config):
