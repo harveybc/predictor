@@ -226,8 +226,8 @@ class STLPipelinePlugin:
             # Calculate SNR (signal-to-noise ratio).
             if config.get("use_returns", False):
                 train_mean = np.mean(baseline_train + train_preds[:, -1])
-                val_mean = np.mean(baseline_val[:, -1] + val_preds[:, -1])
-                test_mean = np.mean(baseline_test[:, -1] + test_predictions[:, -1])
+                val_mean = np.mean(baseline_val+ val_preds[:, -1])
+                test_mean = np.mean(baseline_test + test_predictions[:, -1])
             else:
                 train_mean = np.mean(train_preds[:, -1])
                 val_mean = np.mean(val_preds[:, -1])
