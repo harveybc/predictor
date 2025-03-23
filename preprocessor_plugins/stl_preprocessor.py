@@ -47,7 +47,7 @@ class PreprocessorPlugin:
         "max_steps_train": None,
         "max_steps_val": None,
         "max_steps_test": None,
-        "window_size": 48, #best 48
+        "window_size": 24, #best 48
         "time_horizon": 6,
         "use_returns": True,
         "stl_period": 24,# best 24 -> 48
@@ -336,9 +336,9 @@ class PreprocessorPlugin:
 
         # If use_returns is True, adjust targets based on the last value of the raw input window.
         #baseline values are the x_train, x_val, x_test values at the config["target_column"] index
-        baseline_train = x_train_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_train_df) - time_horizon]
-        baseline_val = x_val_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_val_df) - time_horizon]
-        baseline_test = x_test_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_test_df) - time_horizon]
+        baseline_train = x_train_df[config["target_column"]].values[stl_window + window_size : len(x_train_df) - time_horizon]
+        baseline_val = x_val_df[config["target_column"]].values[stl_window + window_size : len(x_val_df) - time_horizon]
+        baseline_test = x_test_df[config["target_column"]].values[stl_window + window_size : len(x_test_df) - time_horizon]
        
         if use_returns:
             y_train_sw = y_train_sw - baseline_train
