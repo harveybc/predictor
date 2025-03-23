@@ -343,22 +343,70 @@ class STLPipelinePlugin:
 
 
         # Save final test predictions to CSV.
-        final_test_file = config.get("output_file", "test_predictions.csv")
-        num_pred_steps = test_predictions.shape[1]
-        pred_cols = [f"Prediction_{i+1}" for i in range(num_pred_steps)]
-        test_predictions_df = pd.DataFrame(test_predictions, columns=pred_cols)
+        # --- Final Prediction Post-Processing ---
+        # Collapse the windowed predictions into a single time series by taking the first element of each window.
+        final_predictions = test_predictions[:, 0]  # one prediction per window
+        final_targets = y_test_array[:, 0]            # corresponding targets
+
+        # Use the test dates (as provided by the preprocessor) for the final predictions.
+        # Ensure that the dates are trimmed to match the number of predictions.
         if test_dates is not None:
-            test_predictions_df['DATE_TIME'] = pd.Series(test_dates[:len(test_predictions_df)])
+            # Convert test_dates to a list if it's a pandas Index.
+            if not isinstance(test_dates, list):
+                final_dates = list(test_dates)
+            else:
+                final_dates = test_dates
+            final_dates = final_dates[:len(final_predictions)]
         else:
-            test_predictions_df['DATE_TIME'] = pd.NaT
-        cols = ['DATE_TIME'] + [col for col in test_predictions_df.columns if col != 'DATE_TIME']
-        test_predictions_df = test_predictions_df[cols]
-        denorm_y_test_df = pd.DataFrame(denorm_y_test, columns=[f"Target_{i+1}" for i in range(denorm_y_test.shape[1])])
-        test_predictions_df = pd.concat([test_predictions_df, denorm_y_test_df], axis=1)
-        test_predictions_df['test_CLOSE'] = denorm_test_close_prices
+            final_dates = np.arange(len(final_predictions))
+
+        # Use the test_close_prices (current tick's CLOSE) trimmed to match the final predictions.
+        if test_close_prices is not None and len(test_close_prices) >= len(final_predictions):
+            final_close = test_close_prices[:len(final_predictions)]
+        else:
+            final_close = np.full(len(final_predictions), np.nan)
+
+        # Denormalize final predictions if normalization is configured.
+        if config.get("use_normalization_json") is not None:
+            norm_json = config.get("use_normalization_json")
+            if isinstance(norm_json, str):
+                with open(norm_json, 'r') as f:
+                    norm_json = json.load(f)
+            if config.get("use_returns", False):
+                if "CLOSE" in norm_json and baseline_test is not None:
+                    close_min = norm_json["CLOSE"]["min"]
+                    close_max = norm_json["CLOSE"]["max"]
+                    diff = close_max - close_min
+                    # Make sure baseline_test is 1D and trim it.
+                    baseline_trimmed = baseline_test[:len(final_predictions)]
+                    final_denorm_predictions = (final_predictions + baseline_trimmed) * diff + close_min
+                else:
+                    final_denorm_predictions = final_predictions
+            else:
+                if "CLOSE" in norm_json:
+                    close_min = norm_json["CLOSE"]["min"]
+                    close_max = norm_json["CLOSE"]["max"]
+                    final_denorm_predictions = final_predictions * (close_max - close_min) + close_min
+                else:
+                    final_denorm_predictions = final_predictions
+        else:
+            final_denorm_predictions = final_predictions
+
+        # Create a DataFrame with one prediction per time step.
+        final_predictions_df = pd.DataFrame({
+            "DATE_TIME": final_dates,
+            "Prediction": final_predictions,
+            "Target": final_targets,
+            "test_CLOSE": final_close,
+            "Denorm_Prediction": final_denorm_predictions
+        })
+
+        # Save the final predictions DataFrame.
+        final_test_file = config.get("output_file", "test_predictions.csv")
         from app.data_handler import write_csv
-        write_csv(file_path=final_test_file, data=test_predictions_df, include_date=False, headers=config.get('headers', True))
+        write_csv(file_path=final_test_file, data=final_predictions_df, include_date=False, headers=config.get('headers', True))
         print(f"Final validation predictions saved to {final_test_file}")
+
 
         # Compute and save uncertainty estimates (denormalized).
         print("Computing uncertainty estimates using MC sampling...")
