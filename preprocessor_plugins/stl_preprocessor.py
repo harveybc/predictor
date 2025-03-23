@@ -52,7 +52,7 @@ class PreprocessorPlugin:
         "use_returns": True,
         "stl_period": 24,
         "stl_window": 72,
-        "stl_trend": 120,           # New parameter for the trend smoother length
+        "stl_trend": 121,           # New parameter for the trend smoother length
         "stl_plot_file": "stl_plot.png",
         "pos_encoding_dim": 16
     }
