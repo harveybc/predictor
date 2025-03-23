@@ -335,15 +335,16 @@ class PreprocessorPlugin:
         X_test_noise, _, _ = self.create_sliding_windows(resid_test, window_size, time_horizon, test_dates)
 
         # If use_returns is True, adjust targets based on the last value of the raw input window.
-        if use_returns:
-            y_train_sw = y_train_sw - baseline_train
-            y_val_sw = y_val_sw - baseline_val
-            y_test_sw = y_test_sw - baseline_test
         #baseline values are the x_train, x_val, x_test values at the config["target_column"] index
         baseline_train = x_train_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_train_df) - time_horizon]
         baseline_val = x_val_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_val_df) - time_horizon]
         baseline_test = x_test_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_test_df) - time_horizon]
-        
+       
+        if use_returns:
+            y_train_sw = y_train_sw - baseline_train
+            y_val_sw = y_val_sw - baseline_val
+            y_test_sw = y_test_sw - baseline_test
+         
         #baseline_train = X_train[:, -1]
         #baseline_val = X_val[:, -1]
         #baseline_test = X_test[:, -1]
