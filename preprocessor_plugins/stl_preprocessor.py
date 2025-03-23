@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Enhanced Preprocessor Plugin with Log Transform, Causal Rolling STL Decomposition,
-Progress Bar, and Detailed Statistics with Configurable Trend Smoother.
+Progress Bar, and Detailed Statistics with Configurable Trend Smoother and Date Verification.
 
 This plugin processes input data for EUR/USD forecasting by:
   1. Loading separate CSV files for X and Y (train, validation, test).
@@ -10,15 +10,18 @@ This plugin processes input data for EUR/USD forecasting by:
      The trend smoother length is configurable via 'stl_trend'.
   4. Plotting the decomposition of the training series to a file defined by 'stl_plot_file'.
   5. Printing detailed numerical statistics for the decomposition:
-       - Mean, std, and variance for trend, seasonal, and residual components.
+       - Mean, std, and variance for trend, seasonal, and residual.
        - Signal-to-Noise Ratio (SNR) = (Var(trend)+Var(seasonal))/Var(residual) (desired: high).
-       - Autocorrelation of seasonal component at lag=stl_period (desired: close to 1).
+       - Autocorrelation of seasonal component at lag = stl_period (desired: close to 1).
        - Dominant frequency from spectral analysis of seasonal (expected: ~1/stl_period).
        - Variance of first differences of trend (desired: low).
        - Residual autocorrelation (lag 1, desired: near 0) and Shapiro–Wilk p-value (desired: > 0.05).
-       - Hilbert phase statistics (circular mean and std) for seasonal (desired: stable phase, low dispersion).
+       - Hilbert phase statistics (circular mean and std) for seasonal (desired: low dispersion).
   6. Creating sliding windows for the raw log series and for each decomposed channel.
   7. Processing target values from the Y files (assumed to be in the "TARGET" column).
+      - If use_returns is True, the targets are adjusted by subtracting the baseline.
+  8. Computing a baseline dataset (from the original CLOSE values) that always holds the current tick's CLOSE.
+  9. Verifying that the date arrays for x, y, and baseline for train, validation, and test have identical start and end dates.
 
 The plugin adheres to the standard plugin interface with methods such as set_params, get_debug_info, and add_debug_info.
 A tqdm progress bar is added to the STL decomposition to indicate progress.
@@ -34,8 +37,24 @@ from app.data_handler import load_csv, write_csv  # Ensure these functions are i
 from scipy.signal import hilbert
 from scipy.stats import shapiro
 
+def verify_date_consistency(date_list, dataset_name):
+    """
+    Verify that all date arrays in date_list have the same first and last elements.
+    If not, print a warning.
+    """
+    if not date_list:
+        return
+    first = date_list[0][0] if len(date_list[0]) > 0 else None
+    last = date_list[0][-1] if len(date_list[0]) > 0 else None
+    for i, d in enumerate(date_list):
+        if len(d) == 0:
+            print(f"Warning: {dataset_name} date array {i} is empty.")
+            continue
+        if d[0] != first or d[-1] != last:
+            print(f"Warning: Date array {i} in {dataset_name} does not match the others. First: {d[0]}, Last: {d[-1]}; expected First: {first}, Last: {last}.")
+
 class PreprocessorPlugin:
-    # Default plugin parameters, now including 'stl_trend'
+    # Default plugin parameters, including stl_trend.
     plugin_params = {
         "x_train_file": "data/x_train.csv",
         "y_train_file": "data/y_train.csv",
@@ -50,13 +69,12 @@ class PreprocessorPlugin:
         "window_size": 48,
         "time_horizon": 6,
         "use_returns": True,
-        "stl_period": 24,# best 24 -> 48
-        "stl_window": 46,#best 46 -> 94
-        "stl_trend": 49, #best 49 -> 97
+        "stl_period": 24,    # For daily seasonality.
+        "stl_window": 46,    # Adjusted window.
+        "stl_trend": 49,     # Trend smoother length.
         "stl_plot_file": "stl_plot.png",
         "pos_encoding_dim": 16
     }
-    # Include the new parameter in the debug variables.
     plugin_debug_vars = ["window_size", "time_horizon", "use_returns", "stl_period", "stl_window", "stl_trend", "stl_plot_file"]
 
     def __init__(self):
@@ -80,7 +98,6 @@ class PreprocessorPlugin:
         Helper function to load CSV data.
         """
         df = load_csv(file_path, headers=headers, max_rows=max_rows)
-        # Try converting the index to datetime.
         if not isinstance(df.index, pd.DatetimeIndex):
             try:
                 df.index = pd.to_datetime(df.index)
@@ -106,13 +123,11 @@ class PreprocessorPlugin:
         trend = np.zeros(num_points)
         seasonal = np.zeros(num_points)
         resid = np.zeros(num_points)
-        # Get the trend smoother length from configuration.
         stl_trend = self.params.get("stl_trend", 11)
         for i in tqdm(range(stl_window, n + 1), desc="STL Decomposition", unit="window"):
             window = series[i - stl_window: i]
             stl = STL(window, period=period, trend=stl_trend, robust=True)
             result = stl.fit()
-            # Use the last value of the window (causal)
             trend[i - stl_window] = result.trend[-1]
             seasonal[i - stl_window] = result.seasonal[-1]
             resid[i - stl_window] = result.resid[-1]
@@ -122,14 +137,12 @@ class PreprocessorPlugin:
         """
         Plots the STL decomposition and saves the figure.
         """
-        # save the last 120 ticks as a figure
-        #limit plotted ticks to 120
+        # Limit plotted ticks (last 480 values)
         if len(series) > 480:
             series = series[-480:]
             trend = trend[-480:]
             seasonal = seasonal[-480:]
             resid = resid[-480:]
-
         plt.figure(figsize=(12, 9))
         plt.subplot(411)
         plt.plot(series, label="Log-Transformed Series")
@@ -144,8 +157,7 @@ class PreprocessorPlugin:
         plt.plot(resid, label="Residual", color="red")
         plt.legend(loc="upper left")
         plt.tight_layout()
-        plt.savefig(file_path, dpi=300) 
-
+        plt.savefig(file_path, dpi=300)
         plt.close()
         print(f"STL decomposition plot saved to {file_path}")
 
@@ -178,123 +190,100 @@ class PreprocessorPlugin:
     def process_data(self, config):
         """
         Processes data for EUR/USD forecasting with STL decomposition.
-
+        
         Steps:
           1. Loads X and Y CSV files for train, validation, and test.
           2. Extracts the 'CLOSE' column from X files and applies a log transform.
           3. Applies a causal, rolling STL decomposition on the log-transformed series.
-          4. Plots the decomposition for training data to the file specified by stl_plot_file.
-             Then, prints detailed numerical statistics:
-                - Mean, std, and variance for trend, seasonal, and residual.
-                - Signal-to-Noise Ratio (SNR) = (Var(trend)+Var(seasonal))/Var(residual) (desired: high).
-                - Autocorrelation of seasonal component at lag = stl_period (desired: close to 1).
-                - Dominant frequency from spectral analysis of seasonal (expected: ~1/stl_period).
-                - Variance of first differences of trend (desired: low).
-                - Residual autocorrelation (lag 1, desired: near 0) and Shapiro–Wilk p-value (desired: > 0.05).
-                - Hilbert phase statistics (circular mean and std) for seasonal (desired: low dispersion).
+          4. Plots the decomposition for training data and prints detailed numerical statistics.
           5. Creates sliding windows for:
              - The raw log-transformed series.
              - Each decomposed channel (trend, seasonal, residual).
-          6. Processes targets from Y files (assumed to be in the 'TARGET' column) with sliding windows.
-          7. Optionally adjusts targets if use_returns is True.
+          6. Processes targets from Y files (assumed to be in the 'TARGET' column).
+             - If use_returns is True, adjusts target windows by subtracting baseline.
+          7. Computes a baseline dataset from the original CLOSE values (using the same offset).
+          8. Verifies that the sliding window date arrays for x, y, and baseline match for train, validation, and test.
         
         Returns:
             dict: Processed datasets including:
               - "x_train", "x_train_trend", "x_train_seasonal", "x_train_noise"
               - "y_train" (as list and array), and similar for validation and test.
-              - "dates_train", "dates_val", "dates_test", "test_close_prices"
+              - "baseline_train", "baseline_val", "baseline_test"
+              - "dates_train", "dates_val", "dates_test", "y_dates_train", etc.
+              - "test_close_prices"
         """
         headers = config.get("headers", self.params["headers"])
 
-        # Load X data for train, validation, and test.
+        # Load X data.
         x_train_df = self._load_data(config["x_train_file"], config.get("max_steps_train"), headers)
         x_val_df = self._load_data(config["x_validation_file"], config.get("max_steps_val"), headers)
         x_test_df = self._load_data(config["x_test_file"], config.get("max_steps_test"), headers)
-
-        # Load Y data for train, validation, and test.
+        
+        # Load Y data.
         y_train_df = self._load_data(config["y_train_file"], config.get("max_steps_train"), headers)
         y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), headers)
         y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), headers)
-
-        # Extract 'CLOSE' from X data and apply log transformation.
+        
+        # Extract 'CLOSE' and apply log transform.
         if "CLOSE" not in x_train_df.columns:
             raise ValueError("Column 'CLOSE' not found in training X data.")
         close_train = x_train_df["CLOSE"].astype(np.float32).values
         close_val = x_val_df["CLOSE"].astype(np.float32).values
         close_test = x_test_df["CLOSE"].astype(np.float32).values
-
-        # Apply log transform to stabilize variance.
+        
         log_train = np.log(close_train)
         log_val = np.log(close_val)
         log_test = np.log(close_test)
-
-        # Get date indices.
-        train_dates = x_train_df.index if x_train_df.index is not None else None
-        val_dates = x_val_df.index if x_val_df.index is not None else None
-        test_dates = x_test_df.index if x_test_df.index is not None else None
-
+        
+        # Get date indices from X data.
+        dates_train = x_train_df.index if x_train_df.index is not None else None
+        dates_val = x_val_df.index if x_val_df.index is not None else None
+        dates_test = x_test_df.index if x_test_df.index is not None else None
+        
         # Get STL parameters.
         stl_period = config.get("stl_period", self.params["stl_period"])
         stl_window = config.get("stl_window", config.get("window_size", self.params["window_size"]))
         stl_plot_file = config.get("stl_plot_file", self.params["stl_plot_file"])
         stl_trend = config.get("stl_trend", self.params["stl_trend"])
-
-        # Compute causal, rolling STL decomposition on the training series.
+        
+        # Compute STL decomposition on training log series.
         trend_train, seasonal_train, resid_train = self._rolling_stl(log_train, stl_window, stl_period)
-        # Plot the decomposition for training data.
         self._plot_decomposition(log_train[stl_window - 1:], trend_train, seasonal_train, resid_train, stl_plot_file)
         
-        # Compute and print detailed STL statistics for training data.
-        # Trend statistics.
+        # Detailed STL statistics.
         trend_mean = np.mean(trend_train)
         trend_std = np.std(trend_train)
         trend_var = np.var(trend_train)
-        # Seasonal statistics.
         seasonal_mean = np.mean(seasonal_train)
         seasonal_std = np.std(seasonal_train)
         seasonal_var = np.var(seasonal_train)
-        # Residual statistics.
         resid_mean = np.mean(resid_train)
         resid_std = np.std(resid_train)
         resid_var = np.var(resid_train)
-        # Signal-to-Noise Ratio (desired: high)
         snr = (trend_var + seasonal_var) / resid_var if resid_var != 0 else np.inf
-
-        # Autocorrelation of seasonal component at lag = stl_period (desired: close to 1)
         if len(seasonal_train) > stl_period:
             seasonal_ac = np.corrcoef(seasonal_train[:-stl_period], seasonal_train[stl_period:])[0,1]
         else:
             seasonal_ac = np.nan
-
-        # Dominant frequency from spectral analysis of seasonal (expected: ~1/stl_period)
         seasonal_fft = np.fft.rfft(seasonal_train)
         power = np.abs(seasonal_fft)**2
         freqs = np.fft.rfftfreq(len(seasonal_train))
         dominant_freq = freqs[np.argmax(power)]
         expected_freq = 1.0 / stl_period
-
-        # Trend smoothness: variance of first differences (desired: low)
-        trend_diff = np.diff(trend_train)
-        trend_diff_var = np.var(trend_diff)
-
-        # Residual autocorrelation (lag 1, desired: near 0)
+        trend_diff_var = np.var(np.diff(trend_train))
         if len(resid_train) > 1:
             resid_ac = np.corrcoef(resid_train[:-1], resid_train[1:])[0,1]
         else:
             resid_ac = np.nan
-
-        # Residual normality test (Shapiro–Wilk; desired: p-value > 0.05)
         try:
             stat, resid_pvalue = shapiro(resid_train)
         except Exception:
             resid_pvalue = np.nan
-
-        # Hilbert phase of seasonal component.
         analytic_signal = hilbert(seasonal_train)
         phase = np.angle(analytic_signal)
         circ_mean = np.angle(np.mean(np.exp(1j * phase)))
         circ_std = np.sqrt(-2 * np.log(np.abs(np.mean(np.exp(1j * phase)))))
-
+        
         print("=== STL Decomposition Detailed Statistics (Training Data) ===")
         print(f"Trend     - Mean: {trend_mean:.4f} (desired: stable), Std: {trend_std:.4f}, Variance: {trend_var:.4f}")
         print(f"Seasonal  - Mean: {seasonal_mean:.4f}, Std: {seasonal_std:.4f}, Variance: {seasonal_var:.4f}")
@@ -307,112 +296,143 @@ class PreprocessorPlugin:
         print(f"Residual Normality Test p-value: {resid_pvalue:.4f} (desired: > 0.05)")
         print(f"Hilbert Phase of Seasonal - Circular Mean: {circ_mean:.4f}, Circular Std: {circ_std:.4f} (desired: low dispersion)")
         print("=============================================================")
-
-        # Compute rolling STL for validation and test series.
+        
+        # Compute STL decomposition for validation and test.
         trend_val, seasonal_val, resid_val = self._rolling_stl(log_val, stl_window, stl_period)
         trend_test, seasonal_test, resid_test = self._rolling_stl(log_test, stl_window, stl_period)
-
-        # Create sliding windows on the raw log series.
+        
+        # Create sliding windows on raw log series.
         window_size = config["window_size"]
         time_horizon = config["time_horizon"]
         use_returns = config.get("use_returns", False)
-
         X_train, y_train_sw, dates_train_sw = self.create_sliding_windows(log_train[stl_window - 1:], window_size, time_horizon, train_dates)
         X_val, y_val_sw, dates_val_sw = self.create_sliding_windows(log_val[stl_window - 1:], window_size, time_horizon, val_dates)
         X_test, y_test_sw, dates_test_sw = self.create_sliding_windows(log_test[stl_window - 1:], window_size, time_horizon, test_dates)
-
-        # Create sliding windows for each decomposed channel.
+        
+        # Create sliding windows for decomposed channels.
         X_train_trend, _, _ = self.create_sliding_windows(trend_train, window_size, time_horizon, train_dates)
         X_train_seasonal, _, _ = self.create_sliding_windows(seasonal_train, window_size, time_horizon, train_dates)
         X_train_noise, _, _ = self.create_sliding_windows(resid_train, window_size, time_horizon, train_dates)
-
+        
         X_val_trend, _, _ = self.create_sliding_windows(trend_val, window_size, time_horizon, val_dates)
         X_val_seasonal, _, _ = self.create_sliding_windows(seasonal_val, window_size, time_horizon, val_dates)
         X_val_noise, _, _ = self.create_sliding_windows(resid_val, window_size, time_horizon, val_dates)
-
+        
         X_test_trend, _, _ = self.create_sliding_windows(trend_test, window_size, time_horizon, test_dates)
         X_test_seasonal, _, _ = self.create_sliding_windows(seasonal_test, window_size, time_horizon, test_dates)
         X_test_noise, _, _ = self.create_sliding_windows(resid_test, window_size, time_horizon, test_dates)
-
-        # If use_returns is True, adjust targets based on the last value of the raw input window.
-        if use_returns:
-            baseline_train = X_train[:, -1]
-            baseline_val = X_val[:, -1]
-            baseline_test = X_test[:, -1]
-            y_train_sw = y_train_sw - baseline_train
-            y_val_sw = y_val_sw - baseline_val
-            y_test_sw = y_test_sw - baseline_test
-
-        # Reshape inputs to (samples, window_size, 1) for compatibility.
-        X_train = X_train.reshape(-1, window_size, 1)
-        X_val = X_val.reshape(-1, window_size, 1)
-        X_test = X_test.reshape(-1, window_size, 1)
-
-        X_train_trend = X_train_trend.reshape(-1, window_size, 1)
-        X_train_seasonal = X_train_seasonal.reshape(-1, window_size, 1)
-        X_train_noise = X_train_noise.reshape(-1, window_size, 1)
-
-        X_val_trend = X_val_trend.reshape(-1, window_size, 1)
-        X_val_seasonal = X_val_seasonal.reshape(-1, window_size, 1)
-        X_val_noise = X_val_noise.reshape(-1, window_size, 1)
-
-        X_test_trend = X_test_trend.reshape(-1, window_size, 1)
-        X_test_seasonal = X_test_seasonal.reshape(-1, window_size, 1)
-        X_test_noise = X_test_noise.reshape(-1, window_size, 1)
-
-        # Process targets from Y data; assume target column specified by config["target_column"].
         
+        # Compute baseline datasets from the original CLOSE series (using same offset as x windows).
+        baseline_train = close_train[stl_window - 1 : len(close_train) - time_horizon]
+        baseline_val = close_val[stl_window - 1 : len(close_val) - time_horizon]
+        baseline_test = close_test[stl_window - 1 : len(close_test) - time_horizon]
+        
+        # Process targets from Y data.
         target_column = config["target_column"]
         if target_column not in y_train_df.columns:
             raise ValueError(f"Column '{target_column}' not found in training Y data.")
         target_train = y_train_df[target_column].astype(np.float32).values
         target_val = y_val_df[target_column].astype(np.float32).values
         target_test = y_test_df[target_column].astype(np.float32).values
-
-        # Create sliding windows for targets.
-        # FIX: Apply the same offset to target series as used for x (i.e., [stl_window - 1:])
+        
+        # Apply same offset to targets.
         offset = stl_window - 1
-        _, y_train_sw, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, train_dates)
-        _, y_val_sw, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, val_dates)
-        _, y_test_sw, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, test_dates)
-
+        _, y_train_sw, y_dates_train = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
+        _, y_val_sw, y_dates_val = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
+        _, y_test_sw, y_dates_test = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
+        
         y_train_array = y_train_sw.reshape(-1, 1)
         y_val_array = y_val_sw.reshape(-1, 1)
         y_test_array = y_test_sw.reshape(-1, 1)
-
-
-        # For test close prices, use the last value from the original CLOSE series (before log transform).
+        
+        # For test close prices, use the last value from original CLOSE series.
         test_close_prices = close_test[stl_window + window_size - 2 : len(close_test) - time_horizon]
-
+        
+        # If use_returns is True, adjust target windows by subtracting baseline.
+        if use_returns:
+            y_train_sw = y_train_sw - baseline_train
+            y_val_sw = y_val_sw - baseline_val
+            y_test_sw = y_test_sw - baseline_test
+        
+        # Reshape x datasets.
+        X_train = X_train.reshape(-1, window_size, 1)
+        X_val = X_val.reshape(-1, window_size, 1)
+        X_test = X_test.reshape(-1, window_size, 1)
+        
+        X_train_trend = X_train_trend.reshape(-1, window_size, 1)
+        X_train_seasonal = X_train_seasonal.reshape(-1, window_size, 1)
+        X_train_noise = X_train_noise.reshape(-1, window_size, 1)
+        
+        X_val_trend = X_val_trend.reshape(-1, window_size, 1)
+        X_val_seasonal = X_val_seasonal.reshape(-1, window_size, 1)
+        X_val_noise = X_val_noise.reshape(-1, window_size, 1)
+        
+        X_test_trend = X_test_trend.reshape(-1, window_size, 1)
+        X_test_seasonal = X_test_seasonal.reshape(-1, window_size, 1)
+        X_test_noise = X_test_noise.reshape(-1, window_size, 1)
+        
+        # Verify date consistency between x, y, and baseline datasets.
+        # Extract date arrays from sliding windows.
+        x_dates_train = dates_train_sw
+        x_dates_val = dates_val_sw
+        x_dates_test = dates_test_sw
+        
+        # For baseline, we assume dates from the original X data offset accordingly.
+        if train_dates is not None:
+            baseline_dates_train = train_dates[stl_window - 1 : len(train_dates) - time_horizon]
+        else:
+            baseline_dates_train = None
+        if val_dates is not None:
+            baseline_dates_val = val_dates[stl_window - 1 : len(val_dates) - time_horizon]
+        else:
+            baseline_dates_val = None
+        if test_dates is not None:
+            baseline_dates_test = test_dates[stl_window - 1 : len(test_dates) - time_horizon]
+        else:
+            baseline_dates_test = None
+        
+        # Verify that x dates, y dates, and baseline dates match.
+        print("Verifying date consistency for training data:")
+        verify_date_consistency([list(x_dates_train), list(y_dates_train), list(baseline_dates_train)], "Training")
+        print("Verifying date consistency for validation data:")
+        verify_date_consistency([list(x_dates_val), list(y_dates_val), list(baseline_dates_val)], "Validation")
+        print("Verifying date consistency for test data:")
+        verify_date_consistency([list(x_dates_test), list(y_dates_test), list(baseline_dates_test)], "Test")
+        
         # Consolidate all processed data into a dictionary.
         ret = {
-            "x_train": X_train,  # Raw log-series windows.
+            "x_train": X_train,
             "x_train_trend": X_train_trend,
             "x_train_seasonal": X_train_seasonal,
             "x_train_noise": X_train_noise,
             "y_train": [y_train_sw],
             "y_train_array": y_train_array,
-            "dates_train": train_dates,
+            "x_train_dates": x_dates_train,
+            "y_train_dates": y_dates_train,
+            "baseline_train": baseline_train,
+            "baseline_train_dates": baseline_dates_train,
             "x_val": X_val,
             "x_val_trend": X_val_trend,
             "x_val_seasonal": X_val_seasonal,
             "x_val_noise": X_val_noise,
             "y_val": [y_val_sw],
             "y_val_array": y_val_array,
-            "dates_val": val_dates,
+            "x_val_dates": x_dates_val,
+            "y_val_dates": y_dates_val,
+            "baseline_val": baseline_val,
+            "baseline_val_dates": baseline_dates_val,
             "x_test": X_test,
             "x_test_trend": X_test_trend,
             "x_test_seasonal": X_test_seasonal,
             "x_test_noise": X_test_noise,
             "y_test": [y_test_sw],
             "y_test_array": y_test_array,
-            "dates_test": test_dates,
+            "x_test_dates": x_dates_test,
+            "y_test_dates": y_dates_test,
+            "baseline_test": baseline_test,
+            "baseline_test_dates": baseline_dates_test,
             "test_close_prices": test_close_prices
         }
-        if use_returns:
-            ret["baseline_train"] = X_train[:, -1]
-            ret["baseline_val"] = X_val[:, -1]
-            ret["baseline_test"] = X_test[:, -1]
         return ret
 
     def run_preprocessing(self, config):
@@ -439,6 +459,7 @@ if __name__ == "__main__":
         "use_returns": True,
         "stl_period": 24,
         "stl_window": 24,
+        "stl_trend": 49,
         "stl_plot_file": "stl_plot.png",
         "target_column": "TARGET"
     }
