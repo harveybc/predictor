@@ -1,21 +1,22 @@
 #!/usr/bin/env python
 """
 Enhanced Preprocessor Plugin with Log Transform, Causal Rolling STL Decomposition,
-Progress Bar, and Detailed Statistics.
+Progress Bar, and Detailed Statistics with Configurable Trend Smoother.
 
 This plugin processes input data for EUR/USD forecasting by:
   1. Loading separate CSV files for X and Y (train, validation, test).
   2. Extracting the 'CLOSE' column from the X files and applying a log transform.
   3. Performing a causal (rolling) STL decomposition on the log-transformed series using a rolling window.
+     The trend smoother length is configurable via 'stl_trend'.
   4. Plotting the decomposition of the training series to a file defined by 'stl_plot_file'.
   5. Printing detailed numerical statistics for the decomposition:
-       - Mean, Std, and Variance for trend, seasonal, and residual components.
+       - Mean, std, and variance for trend, seasonal, and residual components.
        - Signal-to-Noise Ratio (SNR) = (Var(trend)+Var(seasonal))/Var(residual) (desired: high).
-       - Autocorrelation of the seasonal component at lag = stl_period (desired: close to 1).
-       - Spectral analysis: dominant frequency of the seasonal component (desired: matching 1/stl_period).
-       - Smoothness of trend via variance of first differences (desired: low).
-       - Residual autocorrelation (lag-1) and Shapiro-Wilk normality test (desired: near 0 autocorr and p>0.05).
-       - Hilbert phase statistics for the seasonal component (desired: low circular variance).
+       - Autocorrelation of seasonal component at lag=stl_period (desired: close to 1).
+       - Dominant frequency from spectral analysis of seasonal (expected: ~1/stl_period).
+       - Variance of first differences of trend (desired: low).
+       - Residual autocorrelation (lag 1, desired: near 0) and Shapiro–Wilk p-value (desired: > 0.05).
+       - Hilbert phase statistics (circular mean and std) for seasonal (desired: stable phase, low dispersion).
   6. Creating sliding windows for the raw log series and for each decomposed channel.
   7. Processing target values from the Y files (assumed to be in the "TARGET" column).
 
@@ -34,7 +35,7 @@ from scipy.signal import hilbert
 from scipy.stats import shapiro
 
 class PreprocessorPlugin:
-    # Default plugin parameters
+    # Default plugin parameters, now including 'stl_trend'
     plugin_params = {
         "x_train_file": "data/x_train.csv",
         "y_train_file": "data/y_train.csv",
@@ -46,15 +47,17 @@ class PreprocessorPlugin:
         "max_steps_train": None,
         "max_steps_val": None,
         "max_steps_test": None,
-        "window_size": 48,
+        "window_size": 24,
         "time_horizon": 6,
         "use_returns": True,
-        "stl_period": 24,
-        "stl_window": 48,
+        "stl_period": 120,
+        "stl_window": 72,
+        "stl_trend": 11,           # New parameter for the trend smoother length
         "stl_plot_file": "stl_plot.png",
         "pos_encoding_dim": 16
     }
-    plugin_debug_vars = ["window_size", "time_horizon", "use_returns", "stl_period", "stl_window", "stl_plot_file"]
+    # Include the new parameter in the debug variables.
+    plugin_debug_vars = ["window_size", "time_horizon", "use_returns", "stl_period", "stl_window", "stl_trend", "stl_plot_file"]
 
     def __init__(self):
         self.params = self.plugin_params.copy()
@@ -77,7 +80,7 @@ class PreprocessorPlugin:
         Helper function to load CSV data.
         """
         df = load_csv(file_path, headers=headers, max_rows=max_rows)
-        # Try converting the index to datetime
+        # Try converting the index to datetime.
         if not isinstance(df.index, pd.DatetimeIndex):
             try:
                 df.index = pd.to_datetime(df.index)
@@ -103,10 +106,13 @@ class PreprocessorPlugin:
         trend = np.zeros(num_points)
         seasonal = np.zeros(num_points)
         resid = np.zeros(num_points)
+        # Get the trend smoother length from configuration.
+        stl_trend = self.params.get("stl_trend", 11)
         for i in tqdm(range(stl_window, n + 1), desc="STL Decomposition", unit="window"):
             window = series[i - stl_window: i]
-            stl = STL(window, period=period, robust=False)
+            stl = STL(window, period=period, trend=stl_trend, robust=True)
             result = stl.fit()
+            # Use the last value of the window (causal)
             trend[i - stl_window] = result.trend[-1]
             seasonal[i - stl_window] = result.seasonal[-1]
             resid[i - stl_window] = result.resid[-1]
@@ -172,11 +178,11 @@ class PreprocessorPlugin:
              Then, prints detailed numerical statistics:
                 - Mean, std, and variance for trend, seasonal, and residual.
                 - Signal-to-Noise Ratio (SNR) = (Var(trend)+Var(seasonal))/Var(residual) (desired: high).
-                - Autocorrelation of seasonal component at lag=stl_period (desired: close to 1).
-                - Dominant frequency from spectral analysis of seasonal (desired: ~1/stl_period).
+                - Autocorrelation of seasonal component at lag = stl_period (desired: close to 1).
+                - Dominant frequency from spectral analysis of seasonal (expected: ~1/stl_period).
                 - Variance of first differences of trend (desired: low).
-                - Residual autocorrelation (lag 1, desired: near 0) and Shapiro–Wilk p-value (desired: >0.05).
-                - Hilbert phase statistics (circular mean and std) for seasonal (desired: stable phase, low dispersion).
+                - Residual autocorrelation (lag 1, desired: near 0) and Shapiro–Wilk p-value (desired: > 0.05).
+                - Hilbert phase statistics (circular mean and std) for seasonal (desired: low dispersion).
           5. Creates sliding windows for:
              - The raw log-transformed series.
              - Each decomposed channel (trend, seasonal, residual).
@@ -222,13 +228,14 @@ class PreprocessorPlugin:
         stl_period = config.get("stl_period", self.params["stl_period"])
         stl_window = config.get("stl_window", config.get("window_size", self.params["window_size"]))
         stl_plot_file = config.get("stl_plot_file", self.params["stl_plot_file"])
+        stl_trend = config.get("stl_trend", self.params["stl_trend"])
 
         # Compute causal, rolling STL decomposition on the training series.
         trend_train, seasonal_train, resid_train = self._rolling_stl(log_train, stl_window, stl_period)
         # Plot the decomposition for training data.
         self._plot_decomposition(log_train[stl_window - 1:], trend_train, seasonal_train, resid_train, stl_plot_file)
         
-        # Compute and print detailed STL statistics.
+        # Compute and print detailed STL statistics for training data.
         # Trend statistics.
         trend_mean = np.mean(trend_train)
         trend_std = np.std(trend_train)
@@ -250,43 +257,40 @@ class PreprocessorPlugin:
         else:
             seasonal_ac = np.nan
 
-        # Spectral analysis of seasonal: dominant frequency (desired: ~1/stl_period)
+        # Dominant frequency from spectral analysis of seasonal (expected: ~1/stl_period)
         seasonal_fft = np.fft.rfft(seasonal_train)
         power = np.abs(seasonal_fft)**2
         freqs = np.fft.rfftfreq(len(seasonal_train))
         dominant_freq = freqs[np.argmax(power)]
         expected_freq = 1.0 / stl_period
 
-        # Smoothness of trend: variance of first differences (desired: low)
+        # Trend smoothness: variance of first differences (desired: low)
         trend_diff = np.diff(trend_train)
         trend_diff_var = np.var(trend_diff)
 
-        # Residual autocorrelation (lag 1) (desired: near 0)
+        # Residual autocorrelation (lag 1, desired: near 0)
         if len(resid_train) > 1:
             resid_ac = np.corrcoef(resid_train[:-1], resid_train[1:])[0,1]
         else:
             resid_ac = np.nan
 
-        # Residual normality test (Shapiro-Wilk; desired: p-value > 0.05)
+        # Residual normality test (Shapiro–Wilk; desired: p-value > 0.05)
         try:
-            from scipy.stats import shapiro
             stat, resid_pvalue = shapiro(resid_train)
         except Exception:
             resid_pvalue = np.nan
 
         # Hilbert phase of seasonal component.
-        from scipy.signal import hilbert
         analytic_signal = hilbert(seasonal_train)
         phase = np.angle(analytic_signal)
-        # Compute circular mean and circular standard deviation.
         circ_mean = np.angle(np.mean(np.exp(1j * phase)))
         circ_std = np.sqrt(-2 * np.log(np.abs(np.mean(np.exp(1j * phase)))))
-        
+
         print("=== STL Decomposition Detailed Statistics (Training Data) ===")
         print(f"Trend     - Mean: {trend_mean:.4f} (desired: stable), Std: {trend_std:.4f}, Variance: {trend_var:.4f}")
         print(f"Seasonal  - Mean: {seasonal_mean:.4f}, Std: {seasonal_std:.4f}, Variance: {seasonal_var:.4f}")
         print(f"Residual  - Mean: {resid_mean:.4f}, Std: {resid_std:.4f}, Variance: {resid_var:.4f} (desired: low)")
-        print(f"Signal-to-Noise Ratio (SNR): {(snr):.4f} (desired: high)")
+        print(f"Signal-to-Noise Ratio (SNR): {snr:.4f} (desired: high)")
         print(f"Seasonal Autocorrelation at lag {stl_period}: {seasonal_ac:.4f} (desired: close to 1)")
         print(f"Dominant Frequency (spectral): {dominant_freq:.4f} (expected: ~{expected_freq:.4f})")
         print(f"Trend Smoothness (variance of first differences): {trend_diff_var:.4f} (desired: low)")
@@ -347,7 +351,7 @@ class PreprocessorPlugin:
         X_test_seasonal = X_test_seasonal.reshape(-1, window_size, 1)
         X_test_noise = X_test_noise.reshape(-1, window_size, 1)
 
-        # Process targets from Y data; assume the target is in the column specified by config["target_column"].
+        # Process targets from Y data; assume target column specified by config["target_column"].
         target_column = config["target_column"]
         if target_column not in y_train_df.columns:
             raise ValueError(f"Column '{target_column}' not found in training Y data.")
