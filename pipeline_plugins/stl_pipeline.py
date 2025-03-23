@@ -169,13 +169,6 @@ class STLPipelinePlugin:
                 threshold_error=threshold_error, x_val=X_val, y_val=y_val, config=config
             )
 
-            # If using returns, perform inverse scaling.
-            if config.get("use_returns", False):
-                inv_scale_factor = 1.0 / config.get("target_scaling_factor", 100.0)
-                print(f"DEBUG: Inversely scaling predictions by factor {inv_scale_factor}.")
-                train_preds = train_preds * inv_scale_factor
-                val_preds = val_preds * inv_scale_factor
-
             # Calculate R² for training and validation.
             if config.get("use_returns", False):
                 train_r2 = r2_score(
