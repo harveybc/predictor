@@ -343,69 +343,100 @@ class STLPipelinePlugin:
 
 
         # Save final test predictions to CSV.
-        # --- Final Prediction Post-Processing ---
-        # Collapse the windowed predictions into a single time series by taking the first element of each window.
-        final_predictions = test_predictions[:, 0]  # one prediction per window
-        final_targets = y_test_array[:, 0]            # corresponding targets
+                # -------------------------------------------------------------------
+        # Save final test predictions to CSV (single-step time series)
+        # -------------------------------------------------------------------
+        # 1) Collapse windowed predictions to a single time series
+        #    by taking only the first prediction from each window (index 0).
+        final_predictions = test_predictions[:, 0]
+        final_targets = y_test_array[:, 0]  # same shape as final_predictions
 
-        # Use the test dates (as provided by the preprocessor) for the final predictions.
-        # Ensure that the dates are trimmed to match the number of predictions.
+        # 2) Trim the test_dates array to match final_predictions length
         if test_dates is not None:
-            # Convert test_dates to a list if it's a pandas Index.
-            if not isinstance(test_dates, list):
-                final_dates = list(test_dates)
-            else:
-                final_dates = test_dates
-            final_dates = final_dates[:len(final_predictions)]
+            final_dates = list(test_dates) if not isinstance(test_dates, list) else test_dates
+            final_dates = final_dates[: len(final_predictions)]
         else:
+            # Fallback if no dates available
             final_dates = np.arange(len(final_predictions))
 
-        # Use the test_close_prices (current tick's CLOSE) trimmed to match the final predictions.
-        if test_close_prices is not None and len(test_close_prices) >= len(final_predictions):
-            final_close = test_close_prices[:len(final_predictions)]
-        else:
-            final_close = np.full(len(final_predictions), np.nan)
+        # 3) Trim the test_close_prices if needed (convert to real scale if needed)
+        #    The preprocessor might have returned normalized test_close_prices.
+        #    We'll denormalize below if use_returns=False or do the sum with baseline if use_returns=True
+        final_close = test_close_prices[: len(final_predictions)] if test_close_prices is not None else np.full(len(final_predictions), np.nan)
 
-        # Denormalize final predictions if normalization is configured.
-        if config.get("use_normalization_json") is not None:
-            norm_json = config.get("use_normalization_json")
+        # 4) If use_returns is True, we also need the baseline trimmed
+        if config.get("use_returns", False) and baseline_test is not None:
+            final_baseline = baseline_test[: len(final_predictions)]
+        else:
+            final_baseline = np.zeros(len(final_predictions))
+
+        # 5) Denormalize logic. We produce:
+        #    - Denorm_Prediction: real scale
+        #    - Denorm_Target: real scale
+        #    - test_CLOSE: real scale if it was normalized
+        #    If we have a normalization JSON, we apply the appropriate transform.
+        denorm_final_predictions = None
+        denorm_final_targets = None
+        denorm_test_close_prices = None
+
+        # By default, assume test_close_prices is already real scale.
+        # If we detect "CLOSE" in norm_json, we do the denormalization.
+        norm_json = config.get("use_normalization_json")
+        if norm_json is not None:
             if isinstance(norm_json, str):
                 with open(norm_json, 'r') as f:
                     norm_json = json.load(f)
-            if config.get("use_returns", False):
-                if "CLOSE" in norm_json and baseline_test is not None:
-                    close_min = norm_json["CLOSE"]["min"]
-                    close_max = norm_json["CLOSE"]["max"]
-                    diff = close_max - close_min
-                    # Make sure baseline_test is 1D and trim it.
-                    baseline_trimmed = baseline_test[:len(final_predictions)]
-                    final_denorm_predictions = (final_predictions + baseline_trimmed) * diff + close_min
-                else:
-                    final_denorm_predictions = final_predictions
-            else:
-                if "CLOSE" in norm_json:
-                    close_min = norm_json["CLOSE"]["min"]
-                    close_max = norm_json["CLOSE"]["max"]
-                    final_denorm_predictions = final_predictions * (close_max - close_min) + close_min
-                else:
-                    final_denorm_predictions = final_predictions
-        else:
-            final_denorm_predictions = final_predictions
 
-        # Create a DataFrame with one prediction per time step.
+            if "CLOSE" in norm_json:
+                close_min = norm_json["CLOSE"]["min"]
+                close_max = norm_json["CLOSE"]["max"]
+                diff = close_max - close_min
+
+                # Denormalize the test close prices
+                denorm_test_close_prices = final_close * diff + close_min
+
+                if config.get("use_returns", False):
+                    # If returns, final_predictions and final_targets are normalized returns.
+                    # Real price = (baseline + returns) * diff + close_min
+                    denorm_final_predictions = (final_baseline + final_predictions) * diff + close_min
+                    denorm_final_targets = (final_baseline + final_targets) * diff + close_min
+                else:
+                    # If not returns, final_predictions and final_targets are normalized prices.
+                    # Real price = predictions * diff + close_min
+                    denorm_final_predictions = final_predictions * diff + close_min
+                    denorm_final_targets = final_targets * diff + close_min
+
+            else:
+                # 'CLOSE' not in norm_json, so we assume final_close, final_predictions, final_targets are real scale
+                denorm_test_close_prices = final_close
+                denorm_final_predictions = final_baseline + final_predictions if config.get("use_returns", False) else final_predictions
+                denorm_final_targets = final_baseline + final_targets if config.get("use_returns", False) else final_targets
+        else:
+            # No normalization JSON, so assume everything is already real scale
+            denorm_test_close_prices = final_close
+            if config.get("use_returns", False):
+                denorm_final_predictions = final_baseline + final_predictions
+                denorm_final_targets = final_baseline + final_targets
+            else:
+                denorm_final_predictions = final_predictions
+                denorm_final_targets = final_targets
+
+        # 6) Construct final DataFrame
         final_predictions_df = pd.DataFrame({
             "DATE_TIME": final_dates,
-            "Prediction": final_predictions,
-            "Target": final_targets,
-            "test_CLOSE": final_close,
-            "Denorm_Prediction": final_denorm_predictions
+            "Prediction": final_predictions,        # normalized or returns
+            "Target": final_targets,                # normalized or returns
+            "test_CLOSE": denorm_test_close_prices, # real scale close price
+            "Denorm_Prediction": denorm_final_predictions, # real scale predicted price
+            "Denorm_Target": denorm_final_targets   # real scale target price
         })
 
-        # Save the final predictions DataFrame.
+        # 7) Save the final predictions DataFrame to CSV
         final_test_file = config.get("output_file", "test_predictions.csv")
         from app.data_handler import write_csv
         write_csv(file_path=final_test_file, data=final_predictions_df, include_date=False, headers=config.get('headers', True))
         print(f"Final validation predictions saved to {final_test_file}")
+
 
 
         # Compute and save uncertainty estimates (denormalized).
