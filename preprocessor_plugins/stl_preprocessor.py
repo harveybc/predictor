@@ -336,9 +336,9 @@ class PreprocessorPlugin:
 
         # If use_returns is True, adjust targets based on the last value of the raw input window.
         #baseline values are the x_train, x_val, x_test values at the config["target_column"] index
-        baseline_train = x_train_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_train_df) - time_horizon -1]
-        baseline_val = x_val_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_val_df) - time_horizon -1]
-        baseline_test = x_test_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_test_df) - time_horizon-1]
+        baseline_train = x_train_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_train_df) - time_horizon +1]
+        baseline_val = x_val_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_val_df) - time_horizon +1]
+        baseline_test = x_test_df[config["target_column"]].values[stl_window + window_size - 1 : len(x_test_df) - time_horizon+1]
        
         if use_returns:
             y_train_sw = y_train_sw - baseline_train
