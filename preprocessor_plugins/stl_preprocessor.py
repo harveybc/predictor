@@ -361,6 +361,7 @@ class PreprocessorPlugin:
         X_test_noise = X_test_noise.reshape(-1, window_size, 1)
 
         # Process targets from Y data; assume target column specified by config["target_column"].
+        
         target_column = config["target_column"]
         if target_column not in y_train_df.columns:
             raise ValueError(f"Column '{target_column}' not found in training Y data.")
@@ -369,13 +370,16 @@ class PreprocessorPlugin:
         target_test = y_test_df[target_column].astype(np.float32).values
 
         # Create sliding windows for targets.
-        _, y_train_sw, _ = self.create_sliding_windows(target_train, window_size, time_horizon, train_dates)
-        _, y_val_sw, _ = self.create_sliding_windows(target_val, window_size, time_horizon, val_dates)
-        _, y_test_sw, _ = self.create_sliding_windows(target_test, window_size, time_horizon, test_dates)
+        # FIX: Apply the same offset to target series as used for x (i.e., [stl_window - 1:])
+        offset = stl_window - 1
+        _, y_train_sw, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, train_dates)
+        _, y_val_sw, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, val_dates)
+        _, y_test_sw, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, test_dates)
 
         y_train_array = y_train_sw.reshape(-1, 1)
         y_val_array = y_val_sw.reshape(-1, 1)
         y_test_array = y_test_sw.reshape(-1, 1)
+
 
         # For test close prices, use the last value from the original CLOSE series (before log transform).
         test_close_prices = close_test[stl_window + window_size - 2 : len(close_test) - time_horizon]
