@@ -50,8 +50,8 @@ class PreprocessorPlugin:
         "window_size": 24,
         "time_horizon": 6,
         "use_returns": True,
-        "stl_period": 48,
-        "stl_window": 72,
+        "stl_period": 72,
+        "stl_window": 96,
         "stl_trend": 121,           # New parameter for the trend smoother length
         "stl_plot_file": "stl_plot.png",
         "pos_encoding_dim": 16
