@@ -112,7 +112,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     penalty = (1/0.0009) * tf.maximum(penalty, 0.0)
 
     # ---- ADD THESE LINES: compute the batch MAE and store it in last_mae ----
-    batch_mae = tf.reduce_mean(tf.abs(mag_true - mag_pred))
+    batch_mae = tf.reduce_mean(mag_true - mag_pred)
     
     def update_python_mae(val):
         global last_mae
