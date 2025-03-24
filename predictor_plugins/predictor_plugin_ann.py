@@ -237,7 +237,7 @@ class Plugin:
             x = Flatten(name=f"{branch_name}_flatten")(branch_input)
             for i in range(num_branch_layers):
                 x = Dense(branch_units, activation=activation,
-                          kernel_regularizer=l2(l2_reg),
+                          #kernel_regularizer=l2(l2_reg),
                           name=f"{branch_name}_dense_{i+1}")(x)
             return x
 
