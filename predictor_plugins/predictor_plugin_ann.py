@@ -116,7 +116,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     def update_python_mae(val):
         global last_mae
-        last_mae = float(val)  # store the float value in Python
+        last_mae = 100.0 * float(val)  # store the float value in Python
         return np.float32(0.0) # return dummy 0
 
     side_effect = tf.py_function(update_python_mae, [batch_mae], tf.float32)
