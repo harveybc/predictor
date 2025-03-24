@@ -18,3 +18,4 @@ matplotlib
 tensorflow-probability
 keras.utils
 tf-keras
+tqdm
