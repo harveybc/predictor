@@ -338,13 +338,19 @@ class PreprocessorPlugin:
         
         # Apply the same offset to targets.
         offset = stl_window - 1
-        _, y_dates_train, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
-        _, y_dates_val, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
-        _, y_dates_test, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
-        _, y_train_sw, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
-        _, y_val_sw, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
-        _, y_test_sw, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
-        
+        #_, y_dates_train, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
+        #_, y_dates_val, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
+        #_, y_dates_test, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
+        #_, y_train_sw, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
+        #_, y_val_sw, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
+        #_, y_test_sw, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
+        y_dates_train = y_dates_train[offset:]
+        y_dates_val = y_dates_val[offset:]
+        y_dates_test = y_dates_test[offset:]
+        y_train_sw = target_train[offset:]
+        y_val_sw = target_val[offset:]
+        y_test_sw = target_test[offset:]
+
         y_train_array = y_train_sw.reshape(-1, 1)
         y_val_array = y_val_sw.reshape(-1, 1)
         y_test_array = y_test_sw.reshape(-1, 1)
