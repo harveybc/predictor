@@ -45,5 +45,7 @@
     "plot_points": 48,
     "min_delta": 1e-5,
     "epochs": 2000,
-    "use_strategy": false
+    "use_strategy": false,
+    "stl_period":6
+
 }
