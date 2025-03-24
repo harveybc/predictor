@@ -28,7 +28,7 @@ import os
 from sklearn.metrics import r2_score
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.initializers import GlorotUniform
-
+last_mae = 0.0  # Global variable storing the last batch's MAE
 # ---------------------------
 # Custom Callbacks (same as before)
 # ---------------------------
@@ -98,27 +98,34 @@ def compute_mmd(x, y, sigma=1.0, sample_size=256):
     return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
 
 def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
-    """
-    Composite loss: Huber loss on the magnitude + weighted MMD loss.
-    Assumes y_true and y_pred have at least one column (the magnitude).
-    """
     if y_true.shape.ndims == 1 or (y_true.shape.ndims == 2 and y_true.shape[1] == 1):
         y_true = tf.reshape(y_true, [-1, 1])
     mag_true = y_true[:, 0:1]
     mag_pred = y_pred[:, 0:1]
+    
     huber_loss_val = Huber()(mag_true, mag_pred)
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
-    # penalize if the average y_pred values near zero, since the desired prediction is aproximately 2e-3 on average
+
+    # Example penalty usage from your code (unchanged):
     average = tf.reduce_mean(tf.abs(mag_pred))
-    # calculate the additive penalty to be maximum on average==0 and decreases linearly to zero as average approaches 1e-3
     penalty = 0.0009 - average
-    # makes penalty in the 0,1 range
-    penalty = (1/0.0009)*tf.maximum(penalty, 0) 
+    penalty = (1/0.0009) * tf.maximum(penalty, 0.0)
 
-    # Remember we try to minimize the loss, so the penalty actually must be additive or multiplicative
+    # ---- ADD THESE LINES: compute the batch MAE and store it in last_mae ----
+    batch_mae = tf.reduce_mean(tf.abs(mag_true - mag_pred))
+    
+    def update_python_mae(val):
+        global last_mae
+        last_mae = float(val)  # store the float value in Python
+        return np.float32(0.0) # return dummy 0
 
-    total_loss = (penalty+1)*(huber_loss_val + (mmd_lambda * mmd_loss_val))
+    side_effect = tf.py_function(update_python_mae, [batch_mae], tf.float32)
+    # Force side_effect to run before we return total_loss
+    with tf.control_dependencies([side_effect]):
+        total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
+    
     return total_loss
+
 
 # ---------------------------
 # Multi-Branch Predictor Plugin Definition
@@ -172,13 +179,17 @@ class Plugin:
     def build_model(self, input_shape, x_train, config):
         """
         Build a multi-branch model for forecasting returns using STL-decomposed data.
-
+        An extra branch is added to process the error channel.
+        
         Args:
             input_shape (tuple): Expected input shape (window_size, num_channels).
+                                  Originally, num_channels is 3 (trend, seasonal, noise).
+                                  With the error channel, the raw input will be augmented to shape (window_size, 3),
+                                  then an extra error channel is added via a Lambda layer, making it (window_size, 4).
             x_train (np.ndarray): Training data (for shape inference).
             config (dict): Configuration parameters.
         """
-        window_size, num_channels = input_shape  # Expecting num_channels=3 (trend, seasonal, noise)
+        window_size, num_channels = input_shape  # Expecting num_channels=3
         l2_reg = config.get("l2_reg", self.params["l2_reg"])
         activation = config.get("activation", self.params["activation"])
         num_branch_layers = config.get("num_branch_layers", self.params["num_branch_layers"])
@@ -186,14 +197,29 @@ class Plugin:
         merged_units = config.get("merged_units", self.params["merged_units"])
         time_horizon = config.get("time_horizon", self.params["time_horizon"])
 
-        # Define input layer.
-        inputs = Input(shape=input_shape, name="input_layer")
-
-        # Split the multi-channel input into separate channels.
-        # Each channel will be of shape (window_size, 1).
-        trend_input = Lambda(lambda x: x[:, :, 0:1], name="trend_input")(inputs)
-        seasonal_input = Lambda(lambda x: x[:, :, 1:2], name="seasonal_input")(inputs)
-        noise_input = Lambda(lambda x: x[:, :, 2:3], name="noise_input")(inputs)
+        # Define input layer with original 3 channels.
+        inputs = Input(shape=(window_size, num_channels), name="input_layer")
+        
+        # Add an error channel by using a Lambda layer that outputs a tensor of shape (batch_size, window_size, 1)
+        # filled with the current value of the global variable 'last_mae'.
+        def get_error_channel(x):
+            # x is a dummy input to retrieve batch size and window size.
+            batch_size = tf.shape(x)[0]
+            win = tf.shape(x)[1]
+            return tf.fill([batch_size, win, 1], last_mae)
+        
+        error_channel = Lambda(get_error_channel, name="error_channel")(inputs)
+        
+        # Concatenate the original input with the error channel to form the augmented input.
+        # The augmented input now has shape (window_size, 3+1=4)
+        augmented_input = Concatenate(axis=2, name="augmented_input")([inputs, error_channel])
+        
+        # Now, split the augmented input into four channels:
+        # Channel 0: Trend, Channel 1: Seasonal, Channel 2: Noise, Channel 3: Error.
+        trend_input = Lambda(lambda x: x[:, :, 0:1], name="trend_input")(augmented_input)
+        seasonal_input = Lambda(lambda x: x[:, :, 1:2], name="seasonal_input")(augmented_input)
+        noise_input = Lambda(lambda x: x[:, :, 2:3], name="noise_input")(augmented_input)
+        error_input = Lambda(lambda x: x[:, :, 3:4], name="error_input")(augmented_input)
 
         # Define a function to build a branch for a given input.
         def build_branch(branch_input, branch_name):
@@ -208,9 +234,10 @@ class Plugin:
         trend_branch = build_branch(trend_input, "trend")
         seasonal_branch = build_branch(seasonal_input, "seasonal")
         noise_branch = build_branch(noise_input, "noise")
+        error_branch = build_branch(error_input, "error")  # New branch for error channel
 
         # Concatenate branch outputs.
-        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch])
+        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch, error_branch])
         # Further process merged features.
         merged_dense = Dense(merged_units, activation=activation,
                              kernel_regularizer=l2(l2_reg),
@@ -223,7 +250,7 @@ class Plugin:
         mmd_lambda = config.get("mmd_lambda", self.params["mmd_lambda"])
 
         self.model.compile(optimizer=optimizer,
-                           loss=lambda y_true, y_pred: composite_loss(y_true, y_pred,mmd_lambda, sigma=1.0),
+                           loss=lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0),
                            metrics=[mae_magnitude, r2_metric])
         print("DEBUG: MMD lambda =", mmd_lambda)
         print("Multi-Branch Predictor model built successfully.")
