@@ -208,21 +208,21 @@ class Plugin:
             # x is a dummy input to retrieve batch size and window size.
             batch_size = tf.shape(x)[0]
             win = tf.shape(x)[1]
-            return tf.fill([batch_size, win, 1], last_mae)
+            return tf.fill([batch_size, batch_size], last_mae)
         # Add an std dev feedback channel by using a Lambda layer that outputs a tensor of shape (batch_size, window_size, 1)
         # filled with the current value of the global variable 'last_mae'.
         def get_std_channel(x):
             # x is a dummy input to retrieve batch size and window size.
             batch_size = tf.shape(x)[0]
             win = tf.shape(x)[1]
-            return tf.fill([batch_size, win, 1], last_std)
+            return tf.fill([batch_size, batch_size], last_std)
         
         error_channel = Lambda(get_error_channel, name="error_channel")(inputs)
         std_channel = Lambda(get_std_channel, name="std_channel")(inputs)
 
         # Concatenate the original input with the error channel to form the augmented input.
         # The augmented input now has shape (window_size, 3+1=4)
-        augmented_input = Concatenate(axis=2, name="augmented_input")([inputs, error_channel])
+        augmented_input = Concatenate(axis=2, name="augmented_input")([inputs, error_channel, std_channel])
         
         # Now, split the augmented input into four channels:
         # Channel 0: Trend, Channel 1: Seasonal, Channel 2: Noise, Channel 3: Error.
