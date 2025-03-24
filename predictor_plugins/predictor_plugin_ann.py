@@ -162,11 +162,10 @@ class Plugin:
       - One branch processes the noise (residual) channel.
 
     Each branch passes its input through dedicated Dense layers.
-    Their outputs are concatenated and passed to further Dense layers to produce the final prediction,
-    which represents the return (price variation) for the forecast horizon.
-
-    The loss is computed as a composite of Huber and MMD losses.
-    Custom metrics (MAE and R²) are computed on the predicted return.
+    Their outputs are concatenated and then combined with the flattened error and std feedback channels
+    (which bypass further Dense processing) and passed to a merged Dense layer.
+    The final output is produced by a Bayesian layer (tfp.layers.DenseFlipout) plus a deterministic bias layer,
+    so that uncertainty estimates can be derived.
     """
     plugin_params = {
         'batch_size': 32,
@@ -201,14 +200,15 @@ class Plugin:
     def build_model(self, input_shape, x_train, config):
         """
         Build a multi-branch model for forecasting returns using STL-decomposed data.
-        An extra error and std feedback channels are added and fed directly (without additional Dense processing)
-        into the merged dense layer.
+        The architecture processes the trend, seasonal, and noise channels via Dense branches,
+        while the error and std feedback channels are simply flattened and then concatenated with the branch outputs.
+        The merged features are passed to a Dense layer, and finally to a Bayesian output layer (DenseFlipout)
+        plus a deterministic bias layer.
         
         Args:
             input_shape (tuple): Expected input shape (window_size, num_channels).
                                   Originally, num_channels is 3 (trend, seasonal, noise).
-                                  With the error and std channels, the raw input is augmented to shape
-                                  (window_size, 3) then two extra channels are added via Lambda layers, resulting in shape (window_size, 5).
+                                  With error and std channels added, the raw input is augmented to shape (window_size, 5).
             x_train (np.ndarray): Training data (for shape inference).
             config (dict): Configuration parameters.
         """
@@ -223,49 +223,44 @@ class Plugin:
         # Define input layer with original 3 channels.
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         
-        # Add an error feedback channel by using a Lambda layer that outputs a tensor of shape (batch_size, window_size, 1)
-        # filled with the current value of the global variable 'last_mae'.
+        # Add error and std feedback channels.
         def get_error_channel(x):
             batch_size = tf.shape(x)[0]
             win = tf.shape(x)[1]
             return tf.fill([batch_size, win, 1], last_mae)
-        error_channel = Lambda(get_error_channel, output_shape=lambda input_shape: (input_shape[0], input_shape[1], 1), name="error_channel")(inputs)
+        error_channel = Lambda(get_error_channel, output_shape=lambda inp: (inp[0], inp[1], 1), name="error_channel")(inputs)
         
-        # Add a standard deviation feedback channel by using a Lambda layer that outputs a tensor of shape (batch_size, window_size, 1)
-        # filled with the current value of the global variable 'last_std'.
         def get_std_channel(x):
             batch_size = tf.shape(x)[0]
             win = tf.shape(x)[1]
             return tf.fill([batch_size, win, 1], last_std)
-        std_channel = Lambda(get_std_channel, output_shape=lambda input_shape: (input_shape[0], input_shape[1], 1), name="std_channel")(inputs)
+        std_channel = Lambda(get_std_channel, output_shape=lambda inp: (inp[0], inp[1], 1), name="std_channel")(inputs)
         
-        # Concatenate the original input with the error and std channels.
-        # The augmented input now has shape (window_size, 3+2=5).
+        # Concatenate the original input with error and std channels.
         augmented_input = Concatenate(axis=2, name="augmented_input")([inputs, error_channel, std_channel])
+        # Now the augmented input has shape (window_size, 3+2=5).
         
         # Split the augmented input into separate channels.
-        # Channel 0: Trend, Channel 1: Seasonal, Channel 2: Noise, Channel 3: Error, Channel 4: Std.
         trend_input = Lambda(lambda x: x[:, :, 0:1], name="trend_input")(augmented_input)
         seasonal_input = Lambda(lambda x: x[:, :, 1:2], name="seasonal_input")(augmented_input)
         noise_input = Lambda(lambda x: x[:, :, 2:3], name="noise_input")(augmented_input)
         error_input = Lambda(lambda x: x[:, :, 3:4], name="error_input")(augmented_input)
         std_input = Lambda(lambda x: x[:, :, 4:5], name="std_input")(augmented_input)
         
-        # Define a function to build a branch for a given channel.
+        # Build Dense branches for trend, seasonal, and noise channels.
         def build_branch(branch_input, branch_name):
             x = Flatten(name=f"{branch_name}_flatten")(branch_input)
             for i in range(num_branch_layers):
                 x = Dense(branch_units, activation=activation,
-                          #kernel_regularizer=l2(l2_reg),
+                          kernel_regularizer=l2(l2_reg),
                           name=f"{branch_name}_dense_{i+1}")(x)
             return x
         
-        # Build branches for trend, seasonal, and noise channels.
         trend_branch = build_branch(trend_input, "trend")
         seasonal_branch = build_branch(seasonal_input, "seasonal")
         noise_branch = build_branch(noise_input, "noise")
         
-        # For error and std channels, simply flatten them (no Dense processing).
+        # For error and std channels, simply flatten them (no extra Dense layers).
         error_flat = Flatten(name="error_flatten")(error_input)
         std_flat = Flatten(name="std_flatten")(std_input)
         
@@ -274,10 +269,23 @@ class Plugin:
         
         # Further process merged features.
         merged_dense = Dense(merged_units, activation=activation,
-                             #kernel_regularizer=l2(l2_reg),
+                             kernel_regularizer=l2(l2_reg),
                              name="merged_dense")(merged)
-        # Final prediction layer.
-        final_output = Dense(1, activation="linear", name="final_output")(merged_dense)
+        
+        # Bayesian output layer: use tfp.layers.DenseFlipout plus a deterministic bias.
+        DenseFlipout = tfp.layers.DenseFlipout
+        bayesian_output = DenseFlipout(
+            units=1,
+            activation="linear",
+            name="bayesian_output"
+        )(merged_dense)
+        bias_layer = Dense(
+            units=1,
+            activation="linear",
+            kernel_initializer=GlorotUniform(),
+            name="deterministic_bias"
+        )(merged_dense)
+        final_output = bayesian_output + bias_layer
         
         self.model = Model(inputs=inputs, outputs=final_output, name="MultiBranchPredictor")
         optimizer = Adam(learning_rate=config.get("learning_rate", self.params["learning_rate"]))
@@ -291,23 +299,6 @@ class Plugin:
         self.model.summary()
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
-        """
-        Train the model using the provided training and validation datasets.
-        Uses early stopping, learning rate reduction, and memory cleanup callbacks.
-
-        Args:
-            x_train (np.ndarray): Training inputs.
-            y_train (list): List containing target arrays.
-            epochs (int): Number of training epochs.
-            batch_size (int): Training batch size.
-            threshold_error (float): Threshold error for early stopping (unused here, but kept for interface consistency).
-            x_val (np.ndarray): Validation inputs.
-            y_val (list): List containing validation target arrays.
-            config (dict): Configuration parameters.
-
-        Returns:
-            tuple: (history, train_predictions, train_uncertainty, val_predictions, val_uncertainty)
-        """
         callbacks = [
             EarlyStoppingWithPatienceCounter(monitor="val_loss",
                                              patience=config.get("early_patience", 60),
@@ -329,7 +320,6 @@ class Plugin:
                                  verbose=1)
         train_preds = self.model.predict(x_train, batch_size=batch_size)
         val_preds = self.model.predict(x_val, batch_size=batch_size)
-        # For now, uncertainty estimation is not implemented (set to zeros).
         train_uncertainty = np.zeros_like(train_preds)
         val_uncertainty = np.zeros_like(val_preds)
         self.calculate_mae(y_train[0], train_preds)
@@ -337,28 +327,16 @@ class Plugin:
         return history, train_preds, train_uncertainty, val_preds, val_uncertainty
 
     def predict_with_uncertainty(self, x_test, mc_samples=100):
-        """
-        Predicts on the test data.
-        Currently, returns zeros for uncertainty estimates.
-        
-        Args:
-            x_test (np.ndarray): Test inputs.
-            mc_samples (int): Number of Monte Carlo samples (unused here).
-
-        Returns:
-            tuple: (predictions, uncertainty_estimates)
-        """
-        predictions = self.model.predict(x_test)
-        uncertainty_estimates = np.zeros_like(predictions)
-        return predictions, uncertainty_estimates
+        predictions = np.array([self.model(x_test, training=True).numpy() for _ in range(mc_samples)])
+        mean_predictions = np.mean(predictions, axis=0)
+        uncertainty_estimates = np.std(predictions, axis=0)
+        return mean_predictions, uncertainty_estimates
 
     def save(self, file_path):
-        """Saves the trained model to the specified file path."""
         self.model.save(file_path)
         print(f"Model saved to {file_path}")
 
     def load(self, file_path):
-        """Loads a model from the specified file path."""
         self.model = load_model(file_path, custom_objects={
             "composite_loss": composite_loss,
             "compute_mmd": compute_mmd,
@@ -368,7 +346,6 @@ class Plugin:
         print(f"Predictor model loaded from {file_path}")
 
     def calculate_mae(self, y_true, y_pred):
-        """Calculates and prints the Mean Absolute Error (MAE) for the first column."""
         if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
             y_true = np.reshape(y_true, (-1, 1))
             y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
@@ -381,7 +358,6 @@ class Plugin:
         return mae
 
     def calculate_r2(self, y_true, y_pred):
-        """Calculates and prints the R² metric for the first column."""
         if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
             y_true = np.reshape(y_true, (-1, 1))
             y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
@@ -394,7 +370,6 @@ class Plugin:
         r2 = np.mean(r2_scores)
         print(f"Calculated R² (magnitude): {r2}")
         return r2
-
 
 # ---------------------------
 # Debugging usage example (if run as main)
