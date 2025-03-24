@@ -128,11 +128,11 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
 
 
     # penalize a quantity proportional to the sum of the abs(signed_error) and the abs of (difference between the true value and the prediction)
-    penalty = 0.00001*tf.abs(penalty) #best 0.0001
+    penalty = 0.0001*tf.abs(penalty) #best 0.0001
     
 
     # Compute the batch signed error to use as feedback
-    batch_signed_error =100*return_error # best 10
+    batch_signed_error =1*return_error # best 10
     batch_std = tf.math.reduce_std(mag_true - mag_pred)
     #print(f"DEBUG: Batch signed error: {batch_signed_error}, Batch std: {batch_std}")
 
