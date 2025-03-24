@@ -147,7 +147,9 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
 
     return total_loss
 
-
+# --- Named initializer to avoid lambda serialization warnings ---
+def random_normal_initializer_44(shape, dtype=None):
+    return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
 
 # ---------------------------
 # Multi-Branch Predictor Plugin Definition
