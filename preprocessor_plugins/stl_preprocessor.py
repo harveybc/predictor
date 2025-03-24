@@ -336,15 +336,17 @@ class PreprocessorPlugin:
         target_val = y_val_df[target_column].astype(np.float32).values
         target_test = y_test_df[target_column].astype(np.float32).values
         #offset = stl_window + window_size - 2
-        target_train = target_train[stl_window + window_size - 2: len(target_train) - time_horizon]
-        target_val = target_val[stl_window + window_size - 2: len(target_val) - time_horizon]
-        target_test = target_test[stl_window + window_size - 2: len(target_test) - time_horizon]
+        target_train = target_train[stl_window + window_size - 2: ]
+        target_val = target_val[stl_window + window_size - 2: ]
+        target_test = target_test[stl_window + window_size - 2: ]
         y_dates_train = dates_train[stl_window + window_size - 2 : len(dates_train) - time_horizon] if dates_train is not None else None
         y_dates_val = dates_val[stl_window + window_size - 2 : len(dates_val) - time_horizon] if dates_val is not None else None
         y_dates_test = dates_test[stl_window + window_size - 2 : len(dates_test) - time_horizon] if dates_test is not None else None
-        y_train_sw = target_train
-        y_val_sw = target_val
-        y_test_sw = target_test
+        #shift the target values but not the dates config['time_horizon'] steps forward
+        y_train_sw = target_train[time_horizon:]
+        y_val_sw = target_val[time_horizon:]
+        y_test_sw = target_test[time_horizon:]
+
 
         y_train_array = y_train_sw.reshape(-1, 1)
         y_val_array = y_val_sw.reshape(-1, 1)
