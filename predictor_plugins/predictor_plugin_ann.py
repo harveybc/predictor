@@ -110,8 +110,8 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
 
     # Example penalty usage (unchanged)
     average = tf.reduce_mean(tf.abs(mag_pred))
-    penalty = 0.0018 - average
-    penalty = (1 / 0.0018) * tf.maximum(penalty, 0.0)
+    penalty = 0.001 - average
+    penalty = (1 / 0.001) * tf.maximum(penalty, 0.0)
 
     # Compute the batch signed error to use as feedback
     batch_signed_error = -1000*tf.reduce_mean(mag_true - mag_pred)
@@ -123,7 +123,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
     # Update the global tf.Variable 'last_std' using assign.
     with tf.control_dependencies([last_std.assign(batch_std)]):
-        total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
+        total_loss = (penalty + 0.1) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
     
     return total_loss
 
