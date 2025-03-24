@@ -181,13 +181,14 @@ class Plugin:
     def build_model(self, input_shape, x_train, config):
         """
         Build a multi-branch model for forecasting returns using STL-decomposed data.
-        An extra branch is added to process the error channel.
+        An extra error and std feedback channels are added and fed directly (without additional Dense processing)
+        into the merged dense layer.
         
         Args:
             input_shape (tuple): Expected input shape (window_size, num_channels).
                                   Originally, num_channels is 3 (trend, seasonal, noise).
-                                  With the error channel, the raw input will be augmented to shape (window_size, 3),
-                                  then an extra error channel is added via a Lambda layer, making it (window_size, 4).
+                                  With the error and std channels, the raw input is augmented to shape
+                                  (window_size, 3) then two extra channels are added via Lambda layers, resulting in shape (window_size, 5).
             x_train (np.ndarray): Training data (for shape inference).
             config (dict): Configuration parameters.
         """
@@ -205,68 +206,63 @@ class Plugin:
         # Add an error feedback channel by using a Lambda layer that outputs a tensor of shape (batch_size, window_size, 1)
         # filled with the current value of the global variable 'last_mae'.
         def get_error_channel(x):
-            # x is a dummy input to retrieve batch size and window size.
             batch_size = tf.shape(x)[0]
             win = tf.shape(x)[1]
             return tf.fill([batch_size, win, 1], last_mae)
-        # Add an std dev feedback channel by using a Lambda layer that outputs a tensor of shape (batch_size, window_size, 1)
-        # filled with the current value of the global variable 'last_mae'.
+        error_channel = Lambda(get_error_channel, output_shape=lambda input_shape: (input_shape[0], input_shape[1], 1), name="error_channel")(inputs)
+        
+        # Add a standard deviation feedback channel by using a Lambda layer that outputs a tensor of shape (batch_size, window_size, 1)
+        # filled with the current value of the global variable 'last_std'.
         def get_std_channel(x):
-            # x is a dummy input to retrieve batch size and window size.
             batch_size = tf.shape(x)[0]
             win = tf.shape(x)[1]
             return tf.fill([batch_size, win, 1], last_std)
-        
-        error_channel = Lambda(get_error_channel, output_shape=lambda input_shape: (input_shape[0], input_shape[1], 1), name="error_channel")(inputs)
         std_channel = Lambda(get_std_channel, output_shape=lambda input_shape: (input_shape[0], input_shape[1], 1), name="std_channel")(inputs)
-
-        # Concatenate the original input with the error channel to form the augmented input.
-        # The augmented input now has shape (window_size, 3+2=5)
+        
+        # Concatenate the original input with the error and std channels.
+        # The augmented input now has shape (window_size, 3+2=5).
         augmented_input = Concatenate(axis=2, name="augmented_input")([inputs, error_channel, std_channel])
         
-        # Now, split the augmented input into four channels:
-        # Channel 0: Trend, Channel 1: Seasonal, Channel 2: Noise, Channel 3: Error.
+        # Split the augmented input into separate channels.
+        # Channel 0: Trend, Channel 1: Seasonal, Channel 2: Noise, Channel 3: Error, Channel 4: Std.
         trend_input = Lambda(lambda x: x[:, :, 0:1], name="trend_input")(augmented_input)
         seasonal_input = Lambda(lambda x: x[:, :, 1:2], name="seasonal_input")(augmented_input)
         noise_input = Lambda(lambda x: x[:, :, 2:3], name="noise_input")(augmented_input)
         error_input = Lambda(lambda x: x[:, :, 3:4], name="error_input")(augmented_input)
         std_input = Lambda(lambda x: x[:, :, 4:5], name="std_input")(augmented_input)
-
-        # Define a function to build a branch for a given input.
+        
+        # Define a function to build a branch for a given channel.
         def build_branch(branch_input, branch_name):
             x = Flatten(name=f"{branch_name}_flatten")(branch_input)
             for i in range(num_branch_layers):
                 x = Dense(branch_units, activation=activation,
-                          #kernel_regularizer=l2(l2_reg),
+                          kernel_regularizer=l2(l2_reg),
                           name=f"{branch_name}_dense_{i+1}")(x)
             return x
-
-        def build_linear_branch(branch_input, branch_name):
-            x = Flatten(name=f"{branch_name}_flatten")(branch_input)
-            x = Dense(branch_units, activation='linear')(x)
-            return x
-
-        # Build each branch.
+        
+        # Build branches for trend, seasonal, and noise channels.
         trend_branch = build_branch(trend_input, "trend")
         seasonal_branch = build_branch(seasonal_input, "seasonal")
         noise_branch = build_branch(noise_input, "noise")
-        error_branch =  build_linear_branch(error_input, "error")  # New branch for error channel
-        std_branch =  build_linear_branch(std_input, "std")  # New branch for std dev channel
-
-        # Concatenate branch outputs.
-        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch, error_branch, std_branch])
-
+        
+        # For error and std channels, simply flatten them (no Dense processing).
+        error_flat = Flatten(name="error_flatten")(error_input)
+        std_flat = Flatten(name="std_flatten")(std_input)
+        
+        # Concatenate all branch outputs.
+        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch, error_flat, std_flat])
+        
         # Further process merged features.
         merged_dense = Dense(merged_units, activation=activation,
                              kernel_regularizer=l2(l2_reg),
                              name="merged_dense")(merged)
-        # Final prediction layer (output is a single value: the predicted return).
+        # Final prediction layer.
         final_output = Dense(1, activation="linear", name="final_output")(merged_dense)
-
+        
         self.model = Model(inputs=inputs, outputs=final_output, name="MultiBranchPredictor")
         optimizer = Adam(learning_rate=config.get("learning_rate", self.params["learning_rate"]))
         mmd_lambda = config.get("mmd_lambda", self.params["mmd_lambda"])
-
+        
         self.model.compile(optimizer=optimizer,
                            loss=lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0),
                            metrics=[mae_magnitude, r2_metric])
