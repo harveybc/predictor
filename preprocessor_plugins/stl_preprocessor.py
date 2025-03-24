@@ -342,7 +342,7 @@ class PreprocessorPlugin:
         y_dates_train = dates_train[stl_window + window_size - 2 : len(dates_train) - time_horizon] if dates_train is not None else None
         y_dates_val = dates_val[stl_window + window_size - 2 : len(dates_val) - time_horizon] if dates_val is not None else None
         y_dates_test = dates_test[stl_window + window_size - 2 : len(dates_test) - time_horizon] if dates_test is not None else None
-        #shift the target values but not the dates config['time_horizon'] steps forward
+        #shift the target values but not the dates config['time_horizon'] steps forward in the future
         y_train_sw = target_train[time_horizon:]
         y_val_sw = target_val[time_horizon:]
         y_test_sw = target_test[time_horizon:]
