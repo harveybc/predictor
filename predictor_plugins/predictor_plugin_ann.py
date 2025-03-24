@@ -132,7 +132,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
 
     # Compute the batch signed error to use as feedback
-    batch_signed_error = return_error
+    batch_signed_error =10*return_error
     batch_std = tf.math.reduce_std(mag_true - mag_pred)
     #print(f"DEBUG: Batch signed error: {batch_signed_error}, Batch std: {batch_std}")
 
