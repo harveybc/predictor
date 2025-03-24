@@ -27,7 +27,7 @@
     "learning_rate": 1e-4,
     "activation": "tanh",
     "l2_reg": 1e-5,
-    "kl_weight": 1e-4,
+    "kl_weight": 1e-6,
     "kl_anneal_epochs": 50,
     "early_patience": 45,
     "start_from_epoch": 10,
