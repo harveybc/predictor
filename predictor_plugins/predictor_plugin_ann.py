@@ -108,7 +108,15 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     mag_pred = y_pred[:, 0:1]
     huber_loss_val = Huber()(mag_true, mag_pred)
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
-    total_loss = huber_loss_val + (mmd_lambda * mmd_loss_val)
+    # penalize if the average y_pred values near zero, since the desired prediction is aproximately 2e-3 on average
+    average = tf.reduce_mean(tf.abs(mag_pred))
+    # calculate the additive penalty to be maximum on average==0 and decreases linearly to zero as average approaches 1e-3
+    penalty = 1e-3 - average
+    penalty = 1e3*tf.maximum(penalty, 0) 
+
+    # Remember we try to minimize the loss, so the penalty actually must be additive or multiplicative
+
+    total_loss = (1e-3/(penalty+1e-3))*(huber_loss_val + (mmd_lambda * mmd_loss_val))
     return total_loss
 
 # ---------------------------
@@ -214,7 +222,7 @@ class Plugin:
         mmd_lambda = config.get("mmd_lambda", self.params["mmd_lambda"])
 
         self.model.compile(optimizer=optimizer,
-                           loss=lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0),
+                           loss=lambda y_true, y_pred: composite_loss(y_true, y_pred,mmd_lambda, sigma=1.0),
                            metrics=[mae_magnitude, r2_metric])
         print("DEBUG: MMD lambda =", mmd_lambda)
         print("Multi-Branch Predictor model built successfully.")
