@@ -30,7 +30,7 @@ from tensorflow.keras.regularizers import l2
 from tensorflow.keras.initializers import GlorotUniform
 # Replace your previous Python global with a TensorFlow variable:
 last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
-
+last_std = tf.Variable(0.0, trainable=False, dtype=tf.float32)
 # ---------------------------
 # Custom Callbacks (same as before)
 # ---------------------------
@@ -115,9 +115,14 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
 
     # Compute the batch signed error to use as feedback
     batch_signed_error = 100*tf.reduce_mean(mag_true - mag_pred)
-    
+    batch_std = 100*tf.math.reduce_std(mag_true - mag_pred)
+    print(f"DEBUG: Batch signed error: {batch_signed_error}, Batch std: {batch_std}")
+
     # Update the global tf.Variable 'last_mae' using assign.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
+        total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
+    # Update the global tf.Variable 'last_std' using assign.
+    with tf.control_dependencies([last_std.assign(batch_std)]):
         total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
     
     return total_loss
@@ -197,16 +202,24 @@ class Plugin:
         # Define input layer with original 3 channels.
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         
-        # Add an error channel by using a Lambda layer that outputs a tensor of shape (batch_size, window_size, 1)
+        # Add an error feedback channel by using a Lambda layer that outputs a tensor of shape (batch_size, window_size, 1)
         # filled with the current value of the global variable 'last_mae'.
         def get_error_channel(x):
             # x is a dummy input to retrieve batch size and window size.
             batch_size = tf.shape(x)[0]
             win = tf.shape(x)[1]
             return tf.fill([batch_size, win, 1], last_mae)
+        # Add an std dev feedback channel by using a Lambda layer that outputs a tensor of shape (batch_size, window_size, 1)
+        # filled with the current value of the global variable 'last_mae'.
+        def get_std_channel(x):
+            # x is a dummy input to retrieve batch size and window size.
+            batch_size = tf.shape(x)[0]
+            win = tf.shape(x)[1]
+            return tf.fill([batch_size, win, 1], last_std)
         
         error_channel = Lambda(get_error_channel, name="error_channel")(inputs)
-        
+        std_channel = Lambda(get_std_channel, name="std_channel")(inputs)
+
         # Concatenate the original input with the error channel to form the augmented input.
         # The augmented input now has shape (window_size, 3+1=4)
         augmented_input = Concatenate(axis=2, name="augmented_input")([inputs, error_channel])
@@ -217,6 +230,7 @@ class Plugin:
         seasonal_input = Lambda(lambda x: x[:, :, 1:2], name="seasonal_input")(augmented_input)
         noise_input = Lambda(lambda x: x[:, :, 2:3], name="noise_input")(augmented_input)
         error_input = Lambda(lambda x: x[:, :, 3:4], name="error_input")(augmented_input)
+        std_input = Lambda(lambda x: x[:, :, 4:5], name="std_input")(augmented_input)
 
         # Define a function to build a branch for a given input.
         def build_branch(branch_input, branch_name):
@@ -231,10 +245,10 @@ class Plugin:
         trend_branch = build_branch(trend_input, "trend")
         seasonal_branch = build_branch(seasonal_input, "seasonal")
         noise_branch = build_branch(noise_input, "noise")
-        error_branch = build_branch(error_input, "error")  # New branch for error channel
+        #error_branch = build_branch(error_input, "error")  # New branch for error channel
 
         # Concatenate branch outputs.
-        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch, error_branch])
+        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch, error_input, std_input])
         # Further process merged features.
         merged_dense = Dense(merged_units, activation=activation,
                              kernel_regularizer=l2(l2_reg),
