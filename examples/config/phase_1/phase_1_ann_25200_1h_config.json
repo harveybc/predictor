@@ -46,6 +46,6 @@
     "min_delta": 1e-5,
     "epochs": 2000,
     "use_strategy": false,
-    "stl_period":6
+    "stl_period":24
 
 }
