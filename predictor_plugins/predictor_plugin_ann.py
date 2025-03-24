@@ -109,12 +109,21 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
 
     # Example penalty usage (unchanged)
-    average = tf.reduce_mean(tf.abs(mag_pred))
-    penalty = 0.001 - average
-    penalty = (1 / 0.001) * tf.maximum(penalty, 0.0)
+    #average = tf.reduce_mean(tf.abs(mag_pred))
+    #penalty = 0.001 - average
+    #penalty = (1 / 0.001) * tf.maximum(penalty, 0.0)
+
+    #calcualte the level correction, if the signed average is positive and the true value is less than the prediction, penalize
+    # if the signed average is negative and the true value is greater than the prediction, penalize 
+    signed_average_pred = tf.reduce_mean(mag_pred)
+    signed_avg_error = tf.reduce_mean(mag_true - mag_pred)
+    return_error = tf.abs(signed_avg_error - signed_average_pred)
+    # penalize a quantity proportional to the sum of the abs(signed_error) and the abs of (difference between the true value and the prediction)
+    penalty = 1000*return_error
+    
 
     # Compute the batch signed error to use as feedback
-    batch_signed_error = -1000*tf.reduce_mean(mag_true - mag_pred)
+    batch_signed_error = -1.0*penalty
     batch_std = 1000*tf.math.reduce_std(mag_true - mag_pred)
     print(f"DEBUG: Batch signed error: {batch_signed_error}, Batch std: {batch_std}")
 
