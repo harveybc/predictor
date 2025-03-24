@@ -208,14 +208,14 @@ class Plugin:
             # x is a dummy input to retrieve batch size and window size.
             batch_size = tf.shape(x)[0]
             win = tf.shape(x)[1]
-            return tf.fill([batch_size, batch_size], last_mae)
+            return tf.fill([batch_size, win, 1], last_mae)
         # Add an std dev feedback channel by using a Lambda layer that outputs a tensor of shape (batch_size, window_size, 1)
         # filled with the current value of the global variable 'last_mae'.
         def get_std_channel(x):
             # x is a dummy input to retrieve batch size and window size.
             batch_size = tf.shape(x)[0]
             win = tf.shape(x)[1]
-            return tf.fill([batch_size, batch_size], last_std)
+            return tf.fill([batch_size, win, 1], last_std)
         
         error_channel = Lambda(get_error_channel, name="error_channel")(inputs)
         std_channel = Lambda(get_std_channel, name="std_channel")(inputs)
@@ -241,14 +241,21 @@ class Plugin:
                           name=f"{branch_name}_dense_{i+1}")(x)
             return x
 
+        def build_linear_branch(branch_input, branch_name):
+            x = Flatten(name=f"{branch_name}_flatten")(branch_input)
+            x = Dense(branch_units, activation='linear')(x)
+            return x
+
         # Build each branch.
         trend_branch = build_branch(trend_input, "trend")
         seasonal_branch = build_branch(seasonal_input, "seasonal")
         noise_branch = build_branch(noise_input, "noise")
-        #error_branch = build_branch(error_input, "error")  # New branch for error channel
+        error_branch =  build_linear_branch(error_input, "error")  # New branch for error channel
+        std_branch =  build_linear_branch(std_input, "std")  # New branch for std dev channel
 
         # Concatenate branch outputs.
-        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch, error_input, std_input])
+        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch, error_branch, std_branch])
+
         # Further process merged features.
         merged_dense = Dense(merged_units, activation=activation,
                              kernel_regularizer=l2(l2_reg),
