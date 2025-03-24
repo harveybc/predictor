@@ -468,9 +468,9 @@ class STLPipelinePlugin:
         #uncertainty_plot = denorm_uncertainty[:, plotted_idx]
         #if len(uncertainty_plot) > n_plot:
         #    uncertainty_plot = uncertainty_plot[-n_plot:]
-        plot_color_predicted = config.get("plot_color_predicted", "orange")
+        plot_color_predicted = config.get("plot_color_predicted", "red")
         plot_color_true = config.get("plot_color_true", "blue")
-        plot_color_target = config.get("plot_color_target", "red")
+        plot_color_target = config.get("plot_color_target", "orange")
         #plot_color_uncertainty = config.get("plot_color_uncertainty", "green")
         plt.figure(figsize=(12, 6))
         plt.plot(test_dates_plot, pred_plot, label="Predicted Price", color=plot_color_predicted, linewidth=2)
