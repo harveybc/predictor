@@ -21,6 +21,38 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 from tensorflow.keras.utils import plot_model
 
+def denormalize(data, config):
+    """
+    Denormalizes the data using the provided configuration.
+    """
+    if "use_normalization_json" in config:
+        norm_json = config["use_normalization_json"]
+        if isinstance(norm_json, str):
+            with open(norm_json, 'r') as f:
+                norm_json = json.load(f)
+        if "CLOSE" in norm_json:
+            close_min = norm_json["CLOSE"]["min"]
+            close_max = norm_json["CLOSE"]["max"]
+            diff = close_max - close_min
+            return data * diff + close_min
+    return data
+
+def denormalize_returns(data, config):
+    """
+    Denormalizes the data using the provided configuration.
+    """
+    if "use_normalization_json" in config:
+        norm_json = config["use_normalization_json"]
+        if isinstance(norm_json, str):
+            with open(norm_json, 'r') as f:
+                norm_json = json.load(f)
+        if "CLOSE" in norm_json:
+            close_min = norm_json["CLOSE"]["min"]
+            close_max = norm_json["CLOSE"]["max"]
+            diff = close_max - close_min
+            return data * diff
+    return data
+
 class STLPipelinePlugin:
     # Default pipeline parameters
     plugin_params = {
@@ -172,23 +204,23 @@ class STLPipelinePlugin:
             # Calculate R² for training and validation.
             if config.get("use_returns", False):
                 train_r2 = r2_score(
-                    (baseline_train + np.stack(y_train, axis=1)[:, -1]).flatten(),
-                    (baseline_train + train_preds[:, 0]).flatten()
+                    denormalize((baseline_train + np.stack(y_train, axis=1)[:, -1]).flatten(),config),
+                    denormalize((baseline_train + train_preds[:, 0]).flatten(),config)
                 )
                 val_r2 = r2_score(
-                    (baseline_val + np.stack(y_val, axis=1)[:, -1]).flatten(),
-                    (baseline_val + val_preds[:, 0]).flatten()
+                    denormalize((baseline_val + np.stack(y_val, axis=1)[:, -1]).flatten(),config),
+                    denormalize((baseline_val + val_preds[:, 0]).flatten(),config)
                 )
             else:
-                train_r2 = r2_score(np.stack(y_train, axis=1)[:, -1].flatten(), train_preds[:, 0].flatten())
-                val_r2 = r2_score(np.stack(y_val, axis=1)[:, -1].flatten(), val_preds[:, 0].flatten())
+                train_r2 = r2_score(denormalize(np.stack(y_train, axis=1)[:, -1].flatten(),config), denormalize(train_preds[:, 0].flatten(),config))
+                val_r2 = r2_score(denormalize(np.stack(y_val, axis=1)[:, -1].flatten(),config), denormalize(val_preds[:, 0].flatten(),config))
 
 
             # Calculate MAE.
             n_train = train_preds.shape[0]
             n_val = val_preds.shape[0]
-            train_mae = np.mean(np.abs(train_preds[:, -1] - np.stack(y_train, axis=1)[:n_train, -1]))
-            val_mae = np.mean(np.abs(val_preds[:, -1] - np.stack(y_val, axis=1)[:n_val, -1]))
+            train_mae = np.mean(np.abs(denormalize_returns(train_preds[:, -1] - np.stack(y_train, axis=1)[:n_train, -1],config)))
+            val_mae = np.mean(np.abs(denormalize_returns(val_preds[:, -1] - np.stack(y_val, axis=1)[:n_val, -1],config))) 
 
             # Save loss plot.
             plt.plot(history.history['loss'])
@@ -214,9 +246,20 @@ class STLPipelinePlugin:
                 print("DEBUG: Not using returns or baseline_test not available")
             print("DEBUG: y_test_array shape:", y_test_array.shape)
 
-            test_mae = np.mean(np.abs(test_predictions[:, -1] - y_test_array[:, 0]))
-            test_r2 = r2_score(y_test_array[:, 0], test_predictions[:, 0])
+            #test_mae = np.mean(np.abs(test_predictions[:, -1] - y_test_array[:, 0]))
+            #test_r2 = r2_score(y_test_array[:, 0], test_predictions[:, 0])
+            if config.get("use_returns", False):
+                test_r2 = r2_score(
+                    denormalize((baseline_test + np.stack(y_test, axis=1)[:, -1]).flatten(),config),
+                    denormalize((baseline_test + test_predictions[:, 0]).flatten(),config)
+                )
+            else:
+                test_r2 = r2_score(denormalize(np.stack(y_test, axis=1)[:, -1].flatten(),config), denormalize(test_predictions[:, 0].flatten(),config))
 
+            # Calculate MAE.
+            n_test = test_predictions.shape[0]
+            test_mae = np.mean(np.abs(denormalize_returns(test_predictions[:, -1] - np.stack(y_test, axis=1)[:n_test, -1],config)))
+            
 
             # Calculate uncertainty (mean of the last column).
             train_unc_last = np.mean(train_unc[:, -1])
@@ -298,47 +341,7 @@ class STLPipelinePlugin:
         pd.DataFrame(results).to_csv(results_file, index=False)
         print(f"Results saved to {results_file}")
 
-        # Denormalize final test predictions if normalization configuration is provided.
-        norm_json = config.get("use_normalization_json")
-        if norm_json is None:
-            norm_json = {}
-        elif isinstance(norm_json, str):
-            with open(norm_json, 'r') as f:
-                norm_json = json.load(f)
-
-        if config.get("use_normalization_json") is not None:
-            norm_json = config.get("use_normalization_json")
-            if isinstance(norm_json, str):
-                with open(norm_json, 'r') as f:
-                    norm_json = json.load(f)
-            if config.get("use_returns", False):
-                if "CLOSE" in norm_json:
-                    close_min = norm_json["CLOSE"]["min"]
-                    close_max = norm_json["CLOSE"]["max"]
-                    diff = close_max - close_min
-                    if baseline_test is not None:
-                        test_predictions = (test_predictions + baseline_test) * diff + close_min
-                        y_test_array = np.stack(y_test, axis=1)
-                        denorm_y_test = (y_test_array + baseline_test) * diff + close_min
-                        denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
-                    else:
-                        print("Warning: Baseline test values not found; skipping returns denormalization.")
-                        denorm_y_test = np.stack(y_test, axis=1)
-                else:
-                    print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
-                    denorm_y_test = np.stack(y_test, axis=1)
-            else:
-                if "CLOSE" in norm_json:
-                    close_min = norm_json["CLOSE"]["min"]
-                    close_max = norm_json["CLOSE"]["max"]
-                    test_predictions = test_predictions * (close_max - close_min) + close_min
-                    denorm_y_test = np.stack(y_test, axis=1) * (close_max - close_min) + close_min
-                    denorm_test_close_prices = test_close_prices
-                else:
-                    print("Warning: 'CLOSE' not found; skipping denormalization for non-returns mode.")
-                    denorm_y_test = np.stack(y_test, axis=1)
-        else:
-            denorm_y_test = np.stack(y_test, axis=1)
+       
 
 
 
@@ -383,34 +386,19 @@ class STLPipelinePlugin:
         # If we detect "CLOSE" in norm_json, we do the denormalization.
         norm_json = config.get("use_normalization_json")
         if norm_json is not None:
-            if isinstance(norm_json, str):
-                with open(norm_json, 'r') as f:
-                    norm_json = json.load(f)
-
-            if "CLOSE" in norm_json:
-                close_min = norm_json["CLOSE"]["min"]
-                close_max = norm_json["CLOSE"]["max"]
-                diff = close_max - close_min
-
                 # Denormalize the test close prices
-                denorm_test_close_prices = final_close * diff + close_min
+                denorm_test_close_prices = denormalize(final_close, config)
 
                 if config.get("use_returns", False):
                     # If returns, final_predictions and final_targets are normalized returns.
                     # Real price = (baseline + returns) * diff + close_min
-                    denorm_final_predictions = (final_baseline + final_predictions) * diff + close_min
-                    denorm_final_targets = (final_baseline + final_targets) * diff + close_min
+                    denorm_final_predictions = denormalize((final_baseline + final_predictions),config)
+                    denorm_final_targets = denormalize((final_baseline + final_targets), config)
                 else:
                     # If not returns, final_predictions and final_targets are normalized prices.
                     # Real price = predictions * diff + close_min
-                    denorm_final_predictions = final_predictions * diff + close_min
-                    denorm_final_targets = final_targets * diff + close_min
-
-            else:
-                # 'CLOSE' not in norm_json, so we assume final_close, final_predictions, final_targets are real scale
-                denorm_test_close_prices = final_close
-                denorm_final_predictions = final_baseline + final_predictions if config.get("use_returns", False) else final_predictions
-                denorm_final_targets = final_baseline + final_targets if config.get("use_returns", False) else final_targets
+                    denorm_final_predictions = denormalize(final_predictions, config)
+                    denorm_final_targets = denormalize(final_targets, config)
         else:
             # No normalization JSON, so assume everything is already real scale
             denorm_test_close_prices = final_close
@@ -424,11 +412,10 @@ class STLPipelinePlugin:
         # 6) Construct final DataFrame
         final_predictions_df = pd.DataFrame({
             "DATE_TIME": final_dates,
-            "Prediction": final_predictions,        # normalized or returns
-            "Target": final_targets,                # normalized or returns
-            "test_CLOSE": denorm_test_close_prices, # real scale close price
-            "Denorm_Prediction": denorm_final_predictions, # real scale predicted price
-            "Denorm_Target": denorm_final_targets   # real scale target price
+            "Prediction": denorm_final_predictions, # real scale predicted price
+            "Target": denorm_final_targets,   # real scale target price
+            "test_CLOSE": denorm_test_close_prices # real scale close price"
+            
         })
 
         # 7) Save the final predictions DataFrame to CSV
@@ -442,19 +429,8 @@ class STLPipelinePlugin:
         # Compute and save uncertainty estimates (denormalized).
         print("Computing uncertainty estimates using MC sampling...")
         try:
-            mc_samples = config.get("mc_samples", 100)
-            _, uncertainty_estimates = predictor_plugin.predict_with_uncertainty(X_test, mc_samples=mc_samples)
             if config.get("use_normalization_json") is not None:
-                norm_json = config.get("use_normalization_json")
-                if isinstance(norm_json, str):
-                    with open(norm_json, 'r') as f:
-                        norm_json = json.load(f)
-                if "CLOSE" in norm_json:
-                    diff = norm_json["CLOSE"]["max"] - norm_json["CLOSE"]["min"]
-                    denorm_uncertainty = uncertainty_estimates * diff
-                else:
-                    print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
-                    denorm_uncertainty = uncertainty_estimates
+                denorm_uncertainty = denormalize_returns(uncertainty_estimates, config)
             else:
                 denorm_uncertainty = uncertainty_estimates
             uncertainty_df = pd.DataFrame(denorm_uncertainty, columns=[f"Uncertainty_{i+1}" for i in range(denorm_uncertainty.shape[1])])
