@@ -272,22 +272,101 @@ class Plugin:
                              kernel_regularizer=l2(l2_reg),
                              name="merged_dense")(merged)
         
-        # Bayesian output layer: use tfp.layers.DenseFlipout plus a deterministic bias.
+        # --- Bayesian Output Layer Implementation (copied from ANN plugin) ---
+        KL_WEIGHT = self.params.get('kl_weight', 1e-3)
+
+        # Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable
+        def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
+            return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
+        tfp.layers.DenseFlipout.add_variable = _patched_add_variable
+
+        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
+        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", KL_WEIGHT)
+
+        def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
+            print("DEBUG: In posterior_mean_field_custom:")
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
+            if not isinstance(name, str):
+                print("DEBUG: 'name' is not a string; setting to None")
+                name = None
+            bias_size = 0
+            n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: posterior: computed n =", n)
+            c = np.log(np.expm1(1.))
+            print("DEBUG: posterior: computed c =", c)
+            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
+            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
+            scale = 1e-3 + tf.nn.softplus(scale + c)
+            scale = tf.clip_by_value(scale, 1e-3, 1.0)
+            print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: posterior: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape in posterior:", e)
+                raise e
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
+            )
+
+        def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
+            print("DEBUG: In prior_fn:")
+            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
+            print("       Received bias_size =", bias_size, "; overriding to 0")
+            print("       trainable =", trainable, "name =", name)
+            if not isinstance(name, str):
+                print("DEBUG: 'name' is not a string in prior_fn; setting to None")
+                name = None
+            bias_size = 0
+            n = int(np.prod(kernel_shape)) + bias_size
+            print("DEBUG: prior_fn: computed n =", n)
+            loc = tf.zeros([n], dtype=dtype)
+            scale = tf.ones([n], dtype=dtype)
+            try:
+                loc_reshaped = tf.reshape(loc, kernel_shape)
+                scale_reshaped = tf.reshape(scale, kernel_shape)
+                print("DEBUG: prior_fn: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
+            except Exception as e:
+                print("DEBUG: Exception during reshape in prior_fn:", e)
+                raise e
+            return tfp.distributions.Independent(
+                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+                reinterpreted_batch_ndims=len(kernel_shape)
+            )
+
         DenseFlipout = tfp.layers.DenseFlipout
-        bayesian_output = DenseFlipout(
+        print("DEBUG: Creating DenseFlipout final layer with units:", 1)
+        flipout_layer = DenseFlipout(
             units=1,
-            activation="linear",
-            name="bayesian_output"
+            activation='linear',
+            kernel_posterior_fn=posterior_mean_field_custom,
+            kernel_prior_fn=prior_fn,
+            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+            name="output_layer"
+        )
+        bayesian_output = tf.keras.layers.Lambda(
+            lambda t: flipout_layer(t),
+            output_shape=lambda s: (s[0], 1),
+            name="bayesian_dense_flipout"
         )(merged_dense)
-        bias_layer = Dense(
+        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
+
+        bias_layer = tf.keras.layers.Dense(
             units=1,
-            activation="linear",
-            kernel_initializer=GlorotUniform(),
+            activation='linear',
+            kernel_initializer=random_normal_initializer_44,
             name="deterministic_bias"
         )(merged_dense)
-        final_output = bayesian_output + bias_layer
+        print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
+
+        outputs = bayesian_output + bias_layer
+        print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
         
-        self.model = Model(inputs=inputs, outputs=final_output, name="MultiBranchPredictor")
+        self.model = Model(inputs=inputs, outputs=outputs, name="MultiBranchPredictor")
         optimizer = Adam(learning_rate=config.get("learning_rate", self.params["learning_rate"]))
         mmd_lambda = config.get("mmd_lambda", self.params["mmd_lambda"])
         
