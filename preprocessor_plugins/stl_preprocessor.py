@@ -335,21 +335,16 @@ class PreprocessorPlugin:
         target_train = y_train_df[target_column].astype(np.float32).values
         target_val = y_val_df[target_column].astype(np.float32).values
         target_test = y_test_df[target_column].astype(np.float32).values
-        
-        # Apply the same offset to targets.
-        offset = stl_window - 1
-        #_, y_dates_train, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
-        #_, y_dates_val, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
-        #_, y_dates_test, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
-        #_, y_train_sw, _ = self.create_sliding_windows(target_train[offset:], window_size, time_horizon, y_train_df.index)
-        #_, y_val_sw, _ = self.create_sliding_windows(target_val[offset:], window_size, time_horizon, y_val_df.index)
-        #_, y_test_sw, _ = self.create_sliding_windows(target_test[offset:], window_size, time_horizon, y_test_df.index)
-        y_dates_train = y_dates_train[offset:]
-        y_dates_val = y_dates_val[offset:]
-        y_dates_test = y_dates_test[offset:]
-        y_train_sw = target_train[offset:]
-        y_val_sw = target_val[offset:]
-        y_test_sw = target_test[offset:]
+        #offset = stl_window + window_size - 2
+        target_train = target_train[stl_window + window_size - 2: len(target_train) - time_horizon]
+        target_val = target_val[stl_window + window_size - 2: len(target_val) - time_horizon]
+        target_test = target_test[stl_window + window_size - 2: len(target_test) - time_horizon]
+        y_dates_train = dates_train[stl_window + window_size - 2 : len(dates_train) - time_horizon] if dates_train is not None else None
+        y_dates_val = dates_val[stl_window + window_size - 2 : len(dates_val) - time_horizon] if dates_val is not None else None
+        y_dates_test = dates_test[stl_window + window_size - 2 : len(dates_test) - time_horizon] if dates_test is not None else None
+        y_train_sw = target_train
+        y_val_sw = target_val
+        y_test_sw = target_test
 
         y_train_array = y_train_sw.reshape(-1, 1)
         y_val_array = y_val_sw.reshape(-1, 1)
