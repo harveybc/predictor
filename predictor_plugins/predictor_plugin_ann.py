@@ -121,8 +121,14 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     return_error = tf.cond(tf.greater(abs_avg_pred, 1e-8),
                            lambda: (signed_avg_error - signed_average_pred) / abs_avg_pred,
                            lambda: (signed_avg_error - signed_average_pred) / (abs_avg_pred + 1e-8))
+    
+    penalty = tf.cond(tf.greater(abs_avg_pred, 1e-8),
+                           lambda: (signed_avg_error/signed_average_pred),
+                           lambda: (signed_avg_error/1e-8))
+
+
     # penalize a quantity proportional to the sum of the abs(signed_error) and the abs of (difference between the true value and the prediction)
-    penalty = 0.01*tf.abs(return_error)
+    penalty = 0.1*tf.abs(penalty)
     
 
     # Compute the batch signed error to use as feedback
