@@ -116,7 +116,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
 
     # Remember we try to minimize the loss, so the penalty actually must be additive or multiplicative
 
-    total_loss = (1e-3/(penalty+1e-3))*(huber_loss_val + (mmd_lambda * mmd_loss_val))
+    total_loss = (penalty+1)*(huber_loss_val + (mmd_lambda * mmd_loss_val))
     return total_loss
 
 # ---------------------------
