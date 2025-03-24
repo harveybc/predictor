@@ -110,12 +110,12 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
 
     # Example penalty usage (unchanged)
     average = tf.reduce_mean(tf.abs(mag_pred))
-    penalty = 0.0009 - average
-    penalty = (1 / 0.0009) * tf.maximum(penalty, 0.0)
+    penalty = 0.0018 - average
+    penalty = (1 / 0.0018) * tf.maximum(penalty, 0.0)
 
     # Compute the batch signed error to use as feedback
-    batch_signed_error = 100*tf.reduce_mean(mag_true - mag_pred)
-    batch_std = 100*tf.math.reduce_std(mag_true - mag_pred)
+    batch_signed_error = -1000*tf.reduce_mean(mag_true - mag_pred)
+    batch_std = 1000*tf.math.reduce_std(mag_true - mag_pred)
     print(f"DEBUG: Batch signed error: {batch_signed_error}, Batch std: {batch_std}")
 
     # Update the global tf.Variable 'last_mae' using assign.
@@ -217,11 +217,11 @@ class Plugin:
             win = tf.shape(x)[1]
             return tf.fill([batch_size, win, 1], last_std)
         
-        error_channel = Lambda(get_error_channel, name="error_channel")(inputs)
-        std_channel = Lambda(get_std_channel, name="std_channel")(inputs)
+        error_channel = Lambda(get_error_channel, output_shape=lambda input_shape: (input_shape[0], input_shape[1], 1), name="error_channel")(inputs)
+        std_channel = Lambda(get_std_channel, output_shape=lambda input_shape: (input_shape[0], input_shape[1], 1), name="std_channel")(inputs)
 
         # Concatenate the original input with the error channel to form the augmented input.
-        # The augmented input now has shape (window_size, 3+1=4)
+        # The augmented input now has shape (window_size, 3+2=5)
         augmented_input = Concatenate(axis=2, name="augmented_input")([inputs, error_channel, std_channel])
         
         # Now, split the augmented input into four channels:
