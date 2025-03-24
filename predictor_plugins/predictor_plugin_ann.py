@@ -112,6 +112,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     average = tf.reduce_mean(tf.abs(mag_pred))
     # calculate the additive penalty to be maximum on average==0 and decreases linearly to zero as average approaches 1e-3
     penalty = 1e-3 - average
+    # makes penalty in the 0,1 range
     penalty = 1e3*tf.maximum(penalty, 0) 
 
     # Remember we try to minimize the loss, so the penalty actually must be additive or multiplicative
