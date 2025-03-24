@@ -28,7 +28,9 @@ import os
 from sklearn.metrics import r2_score
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.initializers import GlorotUniform
-last_mae = 0.0  # Global variable storing the last batch's MAE
+# Replace your previous Python global with a TensorFlow variable:
+last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
+
 # ---------------------------
 # Custom Callbacks (same as before)
 # ---------------------------
@@ -106,25 +108,20 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     huber_loss_val = Huber()(mag_true, mag_pred)
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
 
-    # Example penalty usage from your code (unchanged):
+    # Example penalty usage (unchanged)
     average = tf.reduce_mean(tf.abs(mag_pred))
     penalty = 0.0009 - average
-    penalty = (1/0.0009) * tf.maximum(penalty, 0.0)
+    penalty = (1 / 0.0009) * tf.maximum(penalty, 0.0)
 
-    # ---- ADD THESE LINES: compute the batch MAE and store it in last_mae ----
-    batch_mae = tf.reduce_mean(mag_true - mag_pred)
+    # Compute the batch signed error to use as feedback
+    batch_signed_error = 100*tf.reduce_mean(mag_true - mag_pred)
     
-    def update_python_mae(val):
-        global last_mae
-        last_mae = 100.0 * float(val)  # store the float value in Python
-        return np.float32(0.0) # return dummy 0
-
-    side_effect = tf.py_function(update_python_mae, [batch_mae], tf.float32)
-    # Force side_effect to run before we return total_loss
-    with tf.control_dependencies([side_effect]):
+    # Update the global tf.Variable 'last_mae' using assign.
+    with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
         total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
     
     return total_loss
+
 
 
 # ---------------------------
