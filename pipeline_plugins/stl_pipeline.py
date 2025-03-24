@@ -447,11 +447,11 @@ class STLPipelinePlugin:
             print(f"Failed to compute or save uncertainty predictions: {e}")
 
         # Plot predictions for the configured horizon.
-        plotted_horizon = config.get("plotted_horizon", 6)
-        plotted_idx = plotted_horizon - 1
-        if plotted_idx >= test_predictions.shape[1]:
-            raise ValueError(f"Plotted horizon index {plotted_idx} is out of bounds for predictions shape {test_predictions.shape}")
-        pred_plot = denorm_final_predictions[:, plotted_idx]
+        #plotted_horizon = config.get("plotted_horizon", 6)
+        #plotted_idx = plotted_horizon - 1
+        #if plotted_idx >= test_predictions.shape[1]:
+        #    raise ValueError(f"Plotted horizon index {plotted_idx} is out of bounds for predictions shape {test_predictions.shape}")
+        pred_plot = denorm_final_predictions
         n_plot = config.get("plot_points", 1575)
         if len(pred_plot) > n_plot:
             pred_plot = pred_plot[-n_plot:]
@@ -465,24 +465,24 @@ class STLPipelinePlugin:
         true_plot = denorm_test_close_prices
         if len(true_plot) > len(test_dates_plot):
             true_plot = true_plot[-len(test_dates_plot):]
-        uncertainty_plot = denorm_uncertainty[:, plotted_idx]
-        if len(uncertainty_plot) > n_plot:
-            uncertainty_plot = uncertainty_plot[-n_plot:]
+        #uncertainty_plot = denorm_uncertainty[:, plotted_idx]
+        #if len(uncertainty_plot) > n_plot:
+        #    uncertainty_plot = uncertainty_plot[-n_plot:]
         plot_color_predicted = config.get("plot_color_predicted", "blue")
         plot_color_true = config.get("plot_color_true", "red")
         plot_color_target = config.get("plot_color_target", "orange")
-        plot_color_uncertainty = config.get("plot_color_uncertainty", "green")
+        #plot_color_uncertainty = config.get("plot_color_uncertainty", "green")
         plt.figure(figsize=(12, 6))
         plt.plot(test_dates_plot, pred_plot, label="Predicted Price", color=plot_color_predicted, linewidth=2)
         plt.plot(test_dates_plot, target_plot, label="Target Price", color=plot_color_target, linewidth=2)
         #dotted true line
         plt.plot(test_dates_plot, true_plot, label="True Price", color=plot_color_true, linewidth=2, linestyle='dotted')
-        plt.fill_between(test_dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
-                         color=plot_color_uncertainty, alpha=0.15, label="Uncertainty")
+        #plt.fill_between(test_dates_plot, pred_plot - uncertainty_plot, pred_plot + uncertainty_plot,
+        #                 color=plot_color_uncertainty, alpha=0.15, label="Uncertainty")
         if config.get("use_daily", False):
-            plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon} days)")
+            plt.title(f"Predictions vs True Values (Horizon: {config["time_horizon"]} days)")
         else:
-            plt.title(f"Predictions vs True Values (Horizon: {plotted_horizon} hours)")
+            plt.title(f"Predictions vs True Values (Horizon: {config["time_horizon"]} hours)")
         plt.xlabel("Close Time")
         plt.ylabel("EUR Price [USD]")
         plt.legend()
