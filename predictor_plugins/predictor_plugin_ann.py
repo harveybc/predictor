@@ -36,7 +36,8 @@ intercept=tf.Variable(1e-8, trainable=False, dtype=tf.float32)# best 1e-8
 p_control=tf.Variable(1, trainable=False, dtype=tf.float32) #best 0.1
 d_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 i_control=tf.Variable(1, trainable=False, dtype=tf.float32)
-peak = tf.constant(10, dtype=tf.float32)             # Peak value (can be negative)
+peak_reward = tf.constant(-10, dtype=tf.float32)             # Peak value (can be negative)
+peak_penalty = tf.constant(10, dtype=tf.float32)             # Peak value (can be negative)
 
 
 # ---------------------------
@@ -171,12 +172,18 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         # k=4332169.878499658
     
     # --- Compute custom reward and penalty using the Gaussian-like function ---
+    #verify that the abs_avg_true is not zero
+    abs_avg_true = tf.cond(
+        tf.greater(abs_avg_true, 1e-8),
+        lambda: abs_avg_true,
+        lambda: 1e-8
+    )   
     # Reward: Peak of -1, width 8e-4, centered on abs_avg_true.
     # Here, the arbitrary value is abs_avg_error.
     reward = gaussian_like(
         value=signed_avg_pred,
         center=abs_avg_true,
-        peak=tf.constant(-1.0, dtype=tf.float32),
+        peak=peak_reward,
         width=abs_avg_true/2
     )
     
@@ -184,8 +191,8 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     # Here, the arbitrary value is signed_avg_error.
     penalty = gaussian_like(
         value=signed_avg_pred,
-        center=tf.constant(0.0, dtype=tf.float32),
-        peak=tf.constant(1.0, dtype=tf.float32),
+        center=0.0,
+        peak=peak_penalty,
         width=abs_avg_true/2
     )
     
@@ -203,7 +210,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     # Update global variables last_mae and last_std with control dependencies.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
-        total_loss = reward + penalty + mse_loss_val + mmd_lambda * mmd_loss_val
+        total_loss = reward + penalty + 1e5*mse_loss_val + mmd_lambda * mmd_loss_val
     with tf.control_dependencies([last_std.assign(batch_std)]):
         total_loss = reward + penalty + 1e5*mse_loss_val + mmd_lambda * mmd_loss_val
     
