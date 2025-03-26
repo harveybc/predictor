@@ -465,7 +465,7 @@ class STLPipelinePlugin:
         true_plot = denorm_test_close_prices
         if len(true_plot) > len(test_dates_plot):
             true_plot = true_plot[-len(test_dates_plot):]
-        uncertainty_plot = denorm_uncertainty
+        uncertainty_plot = denorm_uncertainty.flatten()  # Ensure 1-dimensional
         if len(uncertainty_plot) > n_plot:
             uncertainty_plot = uncertainty_plot[-n_plot:]
         plot_color_predicted = config.get("plot_color_predicted", "red")
