@@ -130,7 +130,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     
     # prize near target prediction
-    reward = tf.cond(tf.greater(abs_avg_error, 1e-8),
+    reward = 1e-7*tf.cond(tf.greater(abs_avg_error, 1e-8),
                            lambda: (-abs_avg_true/abs_avg_error),
                            lambda: (-abs_avg_true/1e-8)) 
 
@@ -175,11 +175,11 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     # Update the global tf.Variable 'last_mae' using assign.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
         #total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
-        total_loss = reward*(penalty_close+penalty + huber_loss_val + mmd_lambda * mmd_loss_val)
+        total_loss = (reward+penalty_close+penalty + huber_loss_val + mmd_lambda * mmd_loss_val)
     # Update the global tf.Variable 'last_std' using assign.
     with tf.control_dependencies([last_std.assign(batch_std)]):
         #total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
-        total_loss = reward*(penalty_close+penalty + huber_loss_val + mmd_lambda * mmd_loss_val)
+        total_loss = (reward+penalty_close+penalty + huber_loss_val + mmd_lambda * mmd_loss_val)
 
     return total_loss
 
