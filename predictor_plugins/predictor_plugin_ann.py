@@ -32,7 +32,6 @@ from tensorflow.keras.initializers import GlorotUniform
 # Denine TensorFlow global variables(used from the composite loss function):
 last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
 last_std = tf.Variable(0.0, trainable=False, dtype=tf.float32)
-penalty_lambda=tf.Variable(0.0001, trainable=False, dtype=tf.float32)
 intercept=tf.Variable(0.0001, trainable=False, dtype=tf.float32)
 
 # ---------------------------
@@ -128,8 +127,8 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     # penalty in the loss function for the predicted value as a parabolic function of the signed average error
     penalty = tf.cond(tf.greater(signed_avg_true*signed_avg_true, 1e-8),
-                lambda: penalty_lambda * intercept * (signed_avg_error*signed_avg_error)/(signed_avg_true*signed_avg_true),  
-                lambda: penalty_lambda * intercept * (signed_avg_error*signed_avg_error)/(1e-8))
+                lambda:  intercept * (signed_avg_error*signed_avg_error)/(signed_avg_true*signed_avg_true),  
+                lambda:  intercept * (signed_avg_error*signed_avg_error)/(1e-8))
 
     #doubles the penalty if the prediction is in the opposite direction of the true value
     penalty = tf.cond(tf.less(signed_avg_pred*signed_avg_true, 0.0),
