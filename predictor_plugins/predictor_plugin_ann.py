@@ -174,9 +174,9 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     # --- Compute custom reward and penalty using the Gaussian-like function ---
     #verify that the abs_avg_true is not zero
     abs_avg_true = tf.cond(
-        tf.greater(abs_avg_true, 1e-8),
+        tf.greater(abs_avg_true, 1e-10),
         lambda: abs_avg_true,
-        lambda: 1e-8
+        lambda: 1e-10
     )   
     # Reward: Peak of -1, width 8e-4, centered on abs_avg_true.
     # Here, the arbitrary value is abs_avg_error.
@@ -199,9 +199,9 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     # --- Additional feedback values ---
     # Compute a divisor to avoid division by very small numbers.
     divisor = tf.cond(
-        tf.greater(abs_avg_true, tf.constant(1e-8, dtype=tf.float32)),
+        tf.greater(abs_avg_true, tf.constant(1e-10, dtype=tf.float32)),
         lambda: abs_avg_true,
-        lambda: tf.constant(1e-8, dtype=tf.float32)
+        lambda: tf.constant(1e-10, dtype=tf.float32)
     )
     
     # Calculate batch-level feedback values.
@@ -210,9 +210,9 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     # Update global variables last_mae and last_std with control dependencies.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
-        total_loss = reward + penalty + 1e5*mae_loss_val + mmd_lambda * mmd_loss_val
+        total_loss = reward + penalty + 1e2*mae_loss_val + mmd_lambda * mmd_loss_val
     with tf.control_dependencies([last_std.assign(batch_std)]):
-        total_loss = reward + penalty + 3e2*mae_loss_val + mmd_lambda * mmd_loss_val
+        total_loss = reward + penalty + 1e2*mae_loss_val + mmd_lambda * mmd_loss_val
     
     return total_loss
 
