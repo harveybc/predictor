@@ -131,8 +131,8 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     # prize near target prediction
     reward = tf.cond(tf.greater(abs_avg_error, 1e-8),
-                           lambda: (-1/abs_avg_error),
-                           lambda: (-1/1e-8)) 
+                           lambda: (-abs_avg_true/abs_avg_error),
+                           lambda: (-abs_avg_true/1e-8)) 
 
 
     # penalty in the loss function for the predicted value as a parabolic function of the signed average error
