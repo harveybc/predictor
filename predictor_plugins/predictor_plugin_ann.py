@@ -33,7 +33,7 @@ from tensorflow.keras.initializers import GlorotUniform
 last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
 last_std = tf.Variable(0.0, trainable=False, dtype=tf.float32)
 intercept=tf.Variable(1e-8, trainable=False, dtype=tf.float32)# best 1e-8
-p_control=tf.Variable(0.1, trainable=False, dtype=tf.float32) #best 0.1
+p_control=tf.Variable(1, trainable=False, dtype=tf.float32) #best 0.1
 d_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 i_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 
@@ -130,7 +130,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     
     # prize near target prediction
-    reward = 1e-7*tf.cond(tf.greater(abs_avg_error, 1e-8),
+    reward = 1e-6*tf.cond(tf.greater(abs_avg_error, 1e-8),
                            lambda: (-abs_avg_true/abs_avg_error),
                            lambda: (-abs_avg_true/1e-8)) 
 
