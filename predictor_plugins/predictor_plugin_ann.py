@@ -36,6 +36,34 @@ intercept=tf.Variable(1e-8, trainable=False, dtype=tf.float32)# best 1e-8
 p_control=tf.Variable(1, trainable=False, dtype=tf.float32) #best 0.1
 d_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 i_control=tf.Variable(1, trainable=False, dtype=tf.float32)
+peak = tf.constant(1.0, dtype=tf.float32)             # Peak value (can be negative)
+width_at_half = tf.constant(1.0, dtype=tf.float32)    # Width at 50% of peak (must be positive)
+
+@tf.function
+def gaussian_like_loss(y_true, y_pred):
+    """
+    Smooth, Gaussian-like custom loss function with configurable peak and width.
+    Uses only TensorFlow operations.
+    """
+    # Ensure float tensors
+    y_true = tf.cast(y_true, tf.float32)
+    y_pred = tf.cast(y_pred, tf.float32)
+
+    # Compute difference
+    diff = y_pred - y_true
+
+    # Compute coefficient k = 4 * ln(2) / width^2
+    k = tf.math.divide(
+        tf.constant(4.0, dtype=tf.float32) * tf.math.log(tf.constant(2.0, dtype=tf.float32)),
+        tf.math.square(width_at_half)
+    )
+
+    # Compute loss: peak * exp(-k * (x - y)^2)
+    loss = peak * tf.math.exp(-k * tf.math.square(diff))
+
+    # Return the mean loss over the batch
+    return tf.reduce_mean(loss)
+
 
 # ---------------------------
 # Custom Callbacks (same as before)
@@ -105,83 +133,109 @@ def compute_mmd(x, y, sigma=1.0, sample_size=256):
     K_xy = gaussian_kernel(x_sample, y_sample, sigma)
     return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
 
+
 def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
+    """
+    Composite loss function that computes a Mean Squared Error (MSE) loss and an MMD loss along with
+    custom reward and penalty components based on a Gaussian-like profile.
+    
+    The reward and penalty are computed as follows:
+      - Reward: Uses a Gaussian-like function with a peak of -1 and width of 8e-4,
+                centered on abs_avg_true, evaluated at abs_avg_error.
+      - Penalty: Uses a Gaussian-like function with a peak of 1 and width of 8e-4,
+                centered on 0, evaluated at signed_avg_error.
+    
+    Parameters:
+      y_true   : Ground truth tensor.
+      y_pred   : Predicted values tensor.
+      mmd_lambda: Weight for the MMD loss.
+      sigma    : Sigma parameter for compute_mmd.
+      
+    Returns:
+      total_loss: The aggregated loss value.
+    """
+    # Ensure y_true has shape [batch_size, 1]
     if y_true.shape.ndims == 1 or (y_true.shape.ndims == 2 and y_true.shape[1] == 1):
         y_true = tf.reshape(y_true, [-1, 1])
+    
+    # Extract magnitude components (first column)
     mag_true = y_true[:, 0:1]
     mag_pred = y_pred[:, 0:1]
     
-    huber_loss_val = Huber()(mag_true, mag_pred)
+    # Compute primary losses:
+    # Replace Huber loss with Mean Squared Error (MSE) loss.
+    mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
-
-    # Example penalty usage (unchanged)
-    #average = tf.reduce_mean(tf.abs(mag_pred))
-    #penalty = 0.001 - average
-    #penalty = (1 / 0.001) * tf.maximum(penalty, 0.0)
-
-    #calcualte the level correction, if the signed average is positive and the true value is less than the prediction, penalize
-    # if the signed average is negative and the true value is greater than the prediction, penalize 
-    signed_avg_pred = tf.reduce_mean(mag_pred)
-    signed_avg_error = tf.reduce_mean(mag_true - mag_pred)
-    signed_avg_true = tf.reduce_mean(mag_true)
-    abs_avg_pred = tf.abs(signed_avg_pred)
-    abs_avg_true = tf.abs(signed_avg_true)
-    abs_avg_error = tf.abs(signed_avg_error-signed_avg_true)
     
+    # Calculate summary statistics for use in reward and penalty.
+    signed_avg_pred  = tf.reduce_mean(mag_pred)             # Average predicted value
+    signed_avg_true  = tf.reduce_mean(mag_true)               # Average true value
+    signed_avg_error = tf.reduce_mean(mag_true - mag_pred)    # Average error (true minus predicted)
+    abs_avg_pred     = tf.abs(signed_avg_pred)               # Absolute average of prediction
+    abs_avg_true     = tf.abs(signed_avg_true)               # Absolute average of true values
+    abs_avg_error    = tf.abs(signed_avg_error - signed_avg_true)  # Absolute difference from signed average true
     
-    # prize near target prediction
-    reward = 1e-8*tf.cond(tf.greater(abs_avg_error, 1e-8),
-                           lambda: (-abs_avg_true/abs_avg_error),
-                           lambda: (-abs_avg_true/1e-8)) 
-
-
-    # penalty in the loss function for the predicted value as a parabolic function of the signed average error
-    penalty = 0* tf.cond(tf.greater(signed_avg_true*signed_avg_true, 1e-8),
-                lambda:  intercept * (signed_avg_error*signed_avg_error)/(signed_avg_true*signed_avg_true),  
-                lambda:  intercept * (signed_avg_error*signed_avg_error)/(1e-8))
-
-
-    #doubles the penalty if the prediction is in the opposite direction of the true value
-    #penalty = tf.cond(tf.less(signed_avg_pred*signed_avg_true, 0.0),
-    #            lambda: penalty*10,
-    #            lambda: penalty)
-    #doubles the penalty if the prediction is in the same direction of the error and abs(pred) is less than abs(true)
-    #penalty = tf.cond(tf.logical_and(tf.greater_equal(signed_avg_pred*signed_avg_true, 0.0), tf.less(abs_avg_pred, abs_avg_true)),
-    #            lambda: penalty*10,
-    #            lambda: penalty)
-
-    penalty_close = tf.cond(tf.greater(abs_avg_pred, 1e-8),
-                           lambda: (signed_avg_error/signed_avg_pred),
-                           lambda: (signed_avg_error/1e-8))
-
-
-    # penalize a quantity proportional to the sum of the abs(signed_error) and the abs of (difference between the true value and the prediction)
-    penalty_close =  0*tf.abs(penalty_close) #best 1e-8.001
-
-
+    # Define the Gaussian-like function.
+    def gaussian_like(value, center, peak, width):
+        """
+        Gaussian-like function: Computes peak * exp(-k * (value - center)^2),
+        where k = 4 * ln(2) / (width^2).
+        
+        Parameters:
+          value : The arbitrary input value.
+          center: The center (optimal value) for the function.
+          peak  : The function's peak value (can be negative).
+          width : The width at half the peak value.
+          
+        Returns:
+          A Tensor representing the Gaussian-like output.
+        """
+        # Compute k = 4*ln(2)/(width^2)
+        k = (4.0 * tf.math.log(tf.constant(2.0, dtype=tf.float32))) / (tf.math.square(width))
+        # Compute and return the Gaussian-like value.
+        return peak * tf.math.exp(-k * tf.math.square(value - center))
+        # k=4332169.878499658
     
-
-
-    # feedback values
-    divisor = tf.cond(tf.greater(abs_avg_true, 1e-8),
-                            lambda: (abs_avg_true),
-                            lambda: (1e-8))
-                       
-
-    batch_signed_error = p_control*signed_avg_error/divisor # best 1
-    batch_std =p_control*tf.math.reduce_mean(tf.abs(mag_true - mag_pred))/divisor # best 100,
-    #print(f"DEBUG: Batch signed error: {batch_signed_error}, Batch std: {batch_std}")
-
-    # Update the global tf.Variable 'last_mae' using assign.
+    # --- Compute custom reward and penalty using the Gaussian-like function ---
+    # Reward: Peak of -1, width 8e-4, centered on abs_avg_true.
+    # Here, the arbitrary value is abs_avg_error.
+    reward = gaussian_like(
+        value=signed_avg_pred,
+        center=abs_avg_true,
+        peak=tf.constant(-1.0, dtype=tf.float32),
+        width=tf.constant(abs_avg_true/2, dtype=tf.float32)
+    )
+    
+    # Penalty: Peak of 1, width 8e-4, centered on 0.
+    # Here, the arbitrary value is signed_avg_error.
+    penalty = gaussian_like(
+        value=signed_avg_pred,
+        center=tf.constant(0.0, dtype=tf.float32),
+        peak=tf.constant(1.0, dtype=tf.float32),
+        width=tf.constant(abs_avg_true/2, dtype=tf.float32)
+    )
+    
+    # --- Additional feedback values ---
+    # Compute a divisor to avoid division by very small numbers.
+    divisor = tf.cond(
+        tf.greater(abs_avg_true, tf.constant(1e-8, dtype=tf.float32)),
+        lambda: abs_avg_true,
+        lambda: tf.constant(1e-8, dtype=tf.float32)
+    )
+    
+    # Calculate batch-level feedback values.
+    batch_signed_error = p_control * signed_avg_error / divisor
+    batch_std = p_control * tf.math.reduce_mean(tf.abs(mag_true - mag_pred)) / divisor
+    
+    # Update global variables last_mae and last_std with control dependencies.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
-        #total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
-        total_loss = (reward+penalty_close+penalty + huber_loss_val + mmd_lambda * mmd_loss_val)
-    # Update the global tf.Variable 'last_std' using assign.
+        total_loss = reward + penalty + mse_loss_val + mmd_lambda * mmd_loss_val
     with tf.control_dependencies([last_std.assign(batch_std)]):
-        #total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
-        total_loss = (reward+penalty_close+penalty + huber_loss_val + mmd_lambda * mmd_loss_val)
-
+        total_loss = reward + penalty + 1e5*mse_loss_val + mmd_lambda * mmd_loss_val
+    
     return total_loss
+
+
 
 # --- Named initializer to avoid lambda serialization warnings ---
 def random_normal_initializer_44(shape, dtype=None):
