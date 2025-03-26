@@ -299,6 +299,11 @@ class Plugin:
                              kernel_regularizer=l2(l2_reg),
                              name="merged_dense")(merged)
         
+        # Further process merged features.
+        merged_dense = Dense(merged_units, activation=activation,
+                             kernel_regularizer=l2(l2_reg),
+                             name="merged_dense_last")(merged_dense)
+        
         # --- Bayesian Output Layer Implementation (copied from ANN plugin) ---
         KL_WEIGHT = self.params.get('kl_weight', 1e-3)
 
