@@ -126,12 +126,20 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     signed_avg_true = tf.reduce_mean(mag_true)
     abs_avg_pred = tf.abs(signed_avg_pred)
     abs_avg_true = tf.abs(signed_avg_true)
+    abs_avg_error = tf.abs(signed_avg_error-signed_avg_true)
     
     
+    # prize near target prediction
+    reward = tf.cond(tf.greater(abs_avg_error, 1e-8),
+                           lambda: (-1/signed_avg_pred),
+                           lambda: (-1/1e-8)) 
+
+
     # penalty in the loss function for the predicted value as a parabolic function of the signed average error
     penalty = tf.cond(tf.greater(signed_avg_true*signed_avg_true, 1e-8),
                 lambda:  intercept * (signed_avg_error*signed_avg_error)/(signed_avg_true*signed_avg_true),  
                 lambda:  intercept * (signed_avg_error*signed_avg_error)/(1e-8))
+
 
     #doubles the penalty if the prediction is in the opposite direction of the true value
     #penalty = tf.cond(tf.less(signed_avg_pred*signed_avg_true, 0.0),
@@ -151,24 +159,27 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     penalty_close =  1e-7*tf.abs(penalty_close) #best 1e-8.001
 
 
+    
+
+
     # feedback values
-    dividend = tf.cond(tf.greater(abs_avg_true, 1e-8),
+    divisor = tf.cond(tf.greater(abs_avg_true, 1e-8),
                             lambda: (abs_avg_true),
                             lambda: (1e-8))
                        
 
-    batch_signed_error = p_control*signed_avg_error/dividend # best 1
-    batch_std =p_control*tf.math.reduce_mean(tf.abs(mag_true - mag_pred))/dividend # best 100,
+    batch_signed_error = p_control*signed_avg_error/divisor # best 1
+    batch_std =p_control*tf.math.reduce_mean(tf.abs(mag_true - mag_pred))/divisor # best 100,
     #print(f"DEBUG: Batch signed error: {batch_signed_error}, Batch std: {batch_std}")
 
     # Update the global tf.Variable 'last_mae' using assign.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
         #total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
-        total_loss = (penalty_close+penalty + huber_loss_val + mmd_lambda * mmd_loss_val)
+        total_loss = reward*(penalty_close+penalty + huber_loss_val + mmd_lambda * mmd_loss_val)
     # Update the global tf.Variable 'last_std' using assign.
     with tf.control_dependencies([last_std.assign(batch_std)]):
         #total_loss = (penalty + 1.0) * (huber_loss_val + (mmd_lambda * mmd_loss_val))
-        total_loss = (penalty_close+penalty + huber_loss_val + mmd_lambda * mmd_loss_val)
+        total_loss = reward*(penalty_close+penalty + huber_loss_val + mmd_lambda * mmd_loss_val)
 
     return total_loss
 
