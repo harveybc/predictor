@@ -130,7 +130,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     
     # prize near target prediction
-    reward = 1e-8*tf.cond(tf.greater(abs_avg_error, 1e-8),
+    reward = 1e-7*tf.cond(tf.greater(abs_avg_error, 1e-8),
                            lambda: (-abs_avg_true/abs_avg_error),
                            lambda: (-abs_avg_true/1e-8)) 
 
