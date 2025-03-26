@@ -33,7 +33,7 @@ from tensorflow.keras.initializers import GlorotUniform
 last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
 last_std = tf.Variable(0.0, trainable=False, dtype=tf.float32)
 penalty_lambda=tf.Variable(0.00001, trainable=False, dtype=tf.float32)
-intercept=tf.Variable(0.1, trainable=False, dtype=tf.float32)
+intercept=tf.Variable(0.01, trainable=False, dtype=tf.float32)
 
 # ---------------------------
 # Custom Callbacks (same as before)
