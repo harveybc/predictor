@@ -136,7 +136,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
 
 
     # penalty in the loss function for the predicted value as a parabolic function of the signed average error
-    penalty = tf.cond(tf.greater(signed_avg_true*signed_avg_true, 1e-8),
+    penalty = 0* tf.cond(tf.greater(signed_avg_true*signed_avg_true, 1e-8),
                 lambda:  intercept * (signed_avg_error*signed_avg_error)/(signed_avg_true*signed_avg_true),  
                 lambda:  intercept * (signed_avg_error*signed_avg_error)/(1e-8))
 
