@@ -36,33 +36,7 @@ intercept=tf.Variable(1e-8, trainable=False, dtype=tf.float32)# best 1e-8
 p_control=tf.Variable(1, trainable=False, dtype=tf.float32) #best 0.1
 d_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 i_control=tf.Variable(1, trainable=False, dtype=tf.float32)
-peak = tf.constant(1.0, dtype=tf.float32)             # Peak value (can be negative)
-width_at_half = tf.constant(1.0, dtype=tf.float32)    # Width at 50% of peak (must be positive)
-
-@tf.function
-def gaussian_like_loss(y_true, y_pred):
-    """
-    Smooth, Gaussian-like custom loss function with configurable peak and width.
-    Uses only TensorFlow operations.
-    """
-    # Ensure float tensors
-    y_true = tf.cast(y_true, tf.float32)
-    y_pred = tf.cast(y_pred, tf.float32)
-
-    # Compute difference
-    diff = y_pred - y_true
-
-    # Compute coefficient k = 4 * ln(2) / width^2
-    k = tf.math.divide(
-        tf.constant(4.0, dtype=tf.float32) * tf.math.log(tf.constant(2.0, dtype=tf.float32)),
-        tf.math.square(width_at_half)
-    )
-
-    # Compute loss: peak * exp(-k * (x - y)^2)
-    loss = peak * tf.math.exp(-k * tf.math.square(diff))
-
-    # Return the mean loss over the batch
-    return tf.reduce_mean(loss)
+peak = tf.constant(10, dtype=tf.float32)             # Peak value (can be negative)
 
 
 # ---------------------------
