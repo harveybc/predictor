@@ -33,6 +33,9 @@ from tensorflow.keras.initializers import GlorotUniform
 last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
 last_std = tf.Variable(0.0, trainable=False, dtype=tf.float32)
 intercept=tf.Variable(1e-8, trainable=False, dtype=tf.float32)
+p_control=tf.Variable(1, trainable=False, dtype=tf.float32)
+d_control=tf.Variable(1, trainable=False, dtype=tf.float32)
+i_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 
 # ---------------------------
 # Custom Callbacks (same as before)
@@ -148,8 +151,14 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     penalty_close =  1e-8*tf.abs(penalty_close) #best 0.001
 
 
-    batch_signed_error = 1*signed_avg_error/abs_avg_true # best 1
-    batch_std =1*tf.math.reduce_mean(tf.abs(mag_true - mag_pred))/abs_avg_true # best 100,
+    # feedback values
+    dividend = tf.cond(tf.greater(abs_avg_true, 1e-8),
+                            lambda: (abs_avg_true),
+                            lambda: (1e-8))
+                       
+
+    batch_signed_error = 1*signed_avg_error/dividend # best 1
+    batch_std =1*tf.math.reduce_mean(tf.abs(mag_true - mag_pred))/dividend # best 100,
     #print(f"DEBUG: Batch signed error: {batch_signed_error}, Batch std: {batch_std}")
 
     # Update the global tf.Variable 'last_mae' using assign.
