@@ -19,7 +19,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback, LambdaCallback
 from tensorflow.keras.losses import Huber
 import tensorflow.keras.backend as K
@@ -445,7 +445,7 @@ class Plugin:
         print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
         
         self.model = Model(inputs=inputs, outputs=outputs, name="MultiBranchPredictor")
-        optimizer = Adam(learning_rate=config.get("learning_rate", self.params["learning_rate"]))
+        optimizer = AdamW(learning_rate=config.get("learning_rate", self.params["learning_rate"]))
         mmd_lambda = config.get("mmd_lambda", self.params["mmd_lambda"])
         
         self.model.compile(optimizer=optimizer,
