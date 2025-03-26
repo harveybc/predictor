@@ -32,7 +32,7 @@ from tensorflow.keras.initializers import GlorotUniform
 # Denine TensorFlow global variables(used from the composite loss function):
 last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
 last_std = tf.Variable(0.0, trainable=False, dtype=tf.float32)
-penalty_lambda=tf.Variable(0.0001, trainable=False, dtype=tf.float32)
+penalty_lambda=tf.Variable(0.01, trainable=False, dtype=tf.float32)
 intercept=tf.Variable(0.0001, trainable=False, dtype=tf.float32)
 
 # ---------------------------
@@ -140,7 +140,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
                 lambda: penalty*10,
                 lambda: penalty)
 
-    batch_signed_error =10*return_error # best 1
+    batch_signed_error =1*return_error # best 1
     batch_std = 100*tf.math.reduce_mean(mag_true - mag_pred) # best 100,
     #print(f"DEBUG: Batch signed error: {batch_signed_error}, Batch std: {batch_std}")
 
