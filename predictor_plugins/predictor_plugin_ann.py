@@ -32,7 +32,7 @@ from tensorflow.keras.initializers import GlorotUniform
 # Denine TensorFlow global variables(used from the composite loss function):
 last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
 last_std = tf.Variable(0.0, trainable=False, dtype=tf.float32)
-intercept=tf.Variable(1e-7, trainable=False, dtype=tf.float32)# best 1e-8
+intercept=tf.Variable(1e-8, trainable=False, dtype=tf.float32)# best 1e-8
 p_control=tf.Variable(1, trainable=False, dtype=tf.float32) #best 0.1
 d_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 i_control=tf.Variable(1, trainable=False, dtype=tf.float32)
@@ -130,7 +130,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     
     # prize near target prediction
-    reward = 1e-7*tf.cond(tf.greater(abs_avg_error, 1e-8),
+    reward = 1e-8*tf.cond(tf.greater(abs_avg_error, 1e-8),
                            lambda: (-abs_avg_true/abs_avg_error),
                            lambda: (-abs_avg_true/1e-8)) 
 
@@ -156,7 +156,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
 
 
     # penalize a quantity proportional to the sum of the abs(signed_error) and the abs of (difference between the true value and the prediction)
-    penalty_close =  1e-7*tf.abs(penalty_close) #best 1e-8.001
+    penalty_close =  1e-8*tf.abs(penalty_close) #best 1e-8.001
 
 
     
