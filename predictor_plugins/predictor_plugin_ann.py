@@ -36,8 +36,8 @@ intercept=tf.Variable(1e-8, trainable=False, dtype=tf.float32)# best 1e-8
 p_control=tf.Variable(1, trainable=False, dtype=tf.float32) #best 0.1
 d_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 i_control=tf.Variable(1, trainable=False, dtype=tf.float32)
-peak_reward = tf.constant(-40, dtype=tf.float32)             # Peak value (can be negative)
-peak_penalty = tf.constant(15, dtype=tf.float32)             # Peak value (can be negative)
+peak_reward = tf.constant(-150, dtype=tf.float32)             # Peak value (can be negative)
+peak_penalty = tf.constant(150, dtype=tf.float32)             # Peak value (can be negative)
 
 
 # ---------------------------
@@ -210,9 +210,9 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     # Update global variables last_mae and last_std with control dependencies.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
-        total_loss = reward + penalty + 4e3*mse_loss_val + mmd_lambda * mmd_loss_val
+        total_loss = reward + penalty + 1e6*mse_loss_val + mmd_lambda * mmd_loss_val
     with tf.control_dependencies([last_std.assign(batch_std)]):
-        total_loss = reward + penalty + 4e3*mse_loss_val + mmd_lambda * mmd_loss_val
+        total_loss = reward + penalty + 1e6*mse_loss_val + mmd_lambda * mmd_loss_val
     
     return total_loss
 
