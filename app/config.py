@@ -71,7 +71,8 @@ DEFAULT_VALUES = {
     "strategy_base_dataset": "examples/data/phase_1/phase_1_base_d3.csv",
     "strategy_load_parameters": "examples/data/phase_1/strategy_parameters.json",
     "target_scaling_factor":1000,
-    "optimizer_output_file": "optimizer_output.json"
-
+    "optimizer_output_file": "optimizer_output.json",
+    "penalty_close_lambda":0.0001, # penalty in thel loss function for the predicted value being 0 (Naive)
+    "penalty_far_lambda":0.0001    # penalty in thel loss function for the predicted value being far from the target value in the opposite dicection of the 0 (Naive)
 
 }

@@ -28,9 +28,13 @@ import os
 from sklearn.metrics import r2_score
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.initializers import GlorotUniform
-# Replace your previous Python global with a TensorFlow variable:
+
+# Denine TensorFlow global variables(used from the composite loss function):
 last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
 last_std = tf.Variable(0.0, trainable=False, dtype=tf.float32)
+penalty_lambda=tf.Variable(0.0001, trainable=False, dtype=tf.float32)
+intercept=tf.Variable(1.0, trainable=False, dtype=tf.float32)
+
 # ---------------------------
 # Custom Callbacks (same as before)
 # ---------------------------
@@ -115,23 +119,25 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
 
     #calcualte the level correction, if the signed average is positive and the true value is less than the prediction, penalize
     # if the signed average is negative and the true value is greater than the prediction, penalize 
-    signed_average_pred = tf.reduce_mean(mag_pred)
+    signed_avg_pred = tf.reduce_mean(mag_pred)
     signed_avg_error = tf.reduce_mean(mag_true - mag_pred)
-    abs_avg_pred = tf.abs(signed_average_pred)
-    return_error = tf.cond(tf.greater(abs_avg_pred, 1e-8),
-                           lambda: (signed_avg_error - signed_average_pred) / abs_avg_pred,
-                           lambda: (signed_avg_error - signed_average_pred) / (abs_avg_pred + 1e-8))
+    signed_avg_true = tf.reduce_mean(mag_true)
+    abs_avg_pred = tf.abs(signed_avg_pred)
+    abs_avg_true = tf.abs(signed_avg_true)
+    return_error = signed_avg_error
     
-    penalty = tf.cond(tf.greater(abs_avg_pred, 1e-8),
-                           lambda: (signed_avg_error/signed_average_pred),
-                           lambda: (signed_avg_error/1e-8))
+    # penalty in the loss function for the predicted value as a parabolic function of the signed average error
+    penalty = penalty_lambda * intercept * (signed_avg_error*signed_avg_error)/(signed_avg_true*signed_avg_true)
 
+    #doubles the penalty if the prediction is in the opposite direction of the true value
+    penalty = tf.cond(tf.less(signed_avg_pred*signed_avg_true, 0.0),
+                lambda: penalty*2,
+                lambda: penalty)
+    #doubles the penalty if the prediction is in the same direction of the error and abs(pred) is less than abs(true)
+    penalty = tf.cond(tf.logical_and(tf.greater_equal(signed_avg_pred*signed_avg_true, 0.0), tf.less(abs_avg_pred, abs_avg_true)),
+                lambda: penalty*2,
+                lambda: penalty)
 
-    # penalize a quantity proportional to the sum of the abs(signed_error) and the abs of (difference between the true value and the prediction)
-    penalty =  0.0001*tf.abs(penalty) #best 0.001
-    
-
-    # Compute the batch signed error to use as feedback
     batch_signed_error =1*return_error # best 1
     batch_std = 100*tf.math.reduce_mean(mag_true - mag_pred) # best 100,
     #print(f"DEBUG: Batch signed error: {batch_signed_error}, Batch std: {batch_std}")
