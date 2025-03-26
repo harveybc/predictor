@@ -139,7 +139,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     # Compute primary losses:
     # Replace Huber loss with Mean Squared Error (MSE) loss.
-    mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
+    mae_loss_val = tf.keras.losses.MeanAbsoluteError()(mag_true, mag_pred)
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
     
     # Calculate summary statistics for use in reward and penalty.
@@ -210,9 +210,9 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     # Update global variables last_mae and last_std with control dependencies.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
-        total_loss = reward + penalty + 1e5*mse_loss_val + mmd_lambda * mmd_loss_val
+        total_loss = reward + penalty + 1e5*mae_loss_val + mmd_lambda * mmd_loss_val
     with tf.control_dependencies([last_std.assign(batch_std)]):
-        total_loss = reward + penalty + 1e5*mse_loss_val + mmd_lambda * mmd_loss_val
+        total_loss = reward + penalty + 3e2*mae_loss_val + mmd_lambda * mmd_loss_val
     
     return total_loss
 
