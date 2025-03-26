@@ -156,7 +156,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
 
 
     # penalize a quantity proportional to the sum of the abs(signed_error) and the abs of (difference between the true value and the prediction)
-    penalty_close =  2e-8*tf.abs(penalty_close) #best 1e-8.001
+    penalty_close =  0*tf.abs(penalty_close) #best 1e-8.001
 
 
     
