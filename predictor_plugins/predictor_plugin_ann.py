@@ -171,9 +171,9 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     signed_avg_pred  = tf.reduce_mean(mag_pred)             # Average predicted value
     signed_avg_true  = tf.reduce_mean(mag_true)               # Average true value
     signed_avg_error = tf.reduce_mean(mag_true - mag_pred)    # Average error (true minus predicted)
-    abs_avg_pred     = tf.abs(signed_avg_pred)               # Absolute average of prediction
+    #abs_avg_pred     = tf.abs(signed_avg_pred)               # Absolute average of prediction
     abs_avg_true     = tf.abs(signed_avg_true)               # Absolute average of true values
-    abs_avg_error    = tf.abs(signed_avg_error - signed_avg_true)  # Absolute difference from signed average true
+    #abs_avg_error    = tf.abs(signed_avg_error - signed_avg_true)  # Absolute difference from signed average true
     
     # Define the Gaussian-like function.
     def gaussian_like(value, center, peak, width):
@@ -203,7 +203,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         value=signed_avg_pred,
         center=abs_avg_true,
         peak=tf.constant(-1.0, dtype=tf.float32),
-        width=tf.constant(abs_avg_true/2, dtype=tf.float32)
+        width=abs_avg_true/2
     )
     
     # Penalty: Peak of 1, width 8e-4, centered on 0.
@@ -212,7 +212,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         value=signed_avg_pred,
         center=tf.constant(0.0, dtype=tf.float32),
         peak=tf.constant(1.0, dtype=tf.float32),
-        width=tf.constant(abs_avg_true/2, dtype=tf.float32)
+        width=abs_avg_true/2
     )
     
     # --- Additional feedback values ---
