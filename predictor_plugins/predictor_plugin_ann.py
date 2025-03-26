@@ -36,8 +36,8 @@ intercept=tf.Variable(1e-8, trainable=False, dtype=tf.float32)# best 1e-8
 p_control=tf.Variable(1, trainable=False, dtype=tf.float32) #best 0.1
 d_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 i_control=tf.Variable(1, trainable=False, dtype=tf.float32)
-peak_reward = tf.constant(-10, dtype=tf.float32)             # Peak value (can be negative)
-peak_penalty = tf.constant(10, dtype=tf.float32)             # Peak value (can be negative)
+peak_reward = tf.constant(-0.4, dtype=tf.float32)             # Peak value (can be negative)
+peak_penalty = tf.constant(0.15, dtype=tf.float32)             # Peak value (can be negative)
 
 
 # ---------------------------
