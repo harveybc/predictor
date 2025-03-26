@@ -131,13 +131,13 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
                 lambda:  intercept * (signed_avg_error*signed_avg_error)/(1e-8))
 
     #doubles the penalty if the prediction is in the opposite direction of the true value
-    penalty = tf.cond(tf.less(signed_avg_pred*signed_avg_true, 0.0),
-                lambda: penalty*10,
-                lambda: penalty)
+    #penalty = tf.cond(tf.less(signed_avg_pred*signed_avg_true, 0.0),
+    #            lambda: penalty*10,
+    #            lambda: penalty)
     #doubles the penalty if the prediction is in the same direction of the error and abs(pred) is less than abs(true)
-    penalty = tf.cond(tf.logical_and(tf.greater_equal(signed_avg_pred*signed_avg_true, 0.0), tf.less(abs_avg_pred, abs_avg_true)),
-                lambda: penalty*10,
-                lambda: penalty)
+    #penalty = tf.cond(tf.logical_and(tf.greater_equal(signed_avg_pred*signed_avg_true, 0.0), tf.less(abs_avg_pred, abs_avg_true)),
+    #            lambda: penalty*10,
+    #            lambda: penalty)
 
     batch_signed_error =1*return_error # best 1
     batch_std = 100*tf.math.reduce_mean(mag_true - mag_pred) # best 100,
