@@ -172,6 +172,12 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         return peak * tf.math.exp(-k * tf.math.square(value - center))
         # k=4332169.878499658
     
+    def vertical_left_asymptote(value, center):
+        if value >= center:
+            0
+        else:
+            return tf.math.log(tf.abs(value - center))+10
+
     # --- Compute custom reward and penalty using the Gaussian-like function ---
     #verify that the abs_avg_true is not zero
     abs_avg_true = tf.cond(
@@ -209,13 +215,17 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     batch_signed_error = p_control * signed_avg_error / divisor
     batch_std = p_control * tf.math.reduce_mean(tf.abs(mag_true - mag_pred)) / divisor
     
+    #calcualte the vertical left asymptote
+    asymptote = vertical_left_asymptote(signed_avg_true, signed_avg_pred)
+
+
     # Update global variables last_mae and last_std with control dependencies.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
         #total_loss = reward + penalty + 3e6*mae_loss_val+ 3e8*mse_loss_val + mmd_lambda * mmd_loss_val
-        total_loss = mse_loss_val
+        total_loss = mse_loss_val + asymptote
     with tf.control_dependencies([last_std.assign(batch_std)]):
         #total_loss = reward + penalty + 3e6*mae_loss_val+ 3e8*mse_loss_val + mmd_lambda * mmd_loss_val
-        total_loss = mse_loss_val
+        total_loss = mse_loss_val + asymptote
     return total_loss
 
 
