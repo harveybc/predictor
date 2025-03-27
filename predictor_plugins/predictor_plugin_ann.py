@@ -36,8 +36,8 @@ intercept=tf.Variable(1e-8, trainable=False, dtype=tf.float32)# best 1e-8
 p_control=tf.Variable(1, trainable=False, dtype=tf.float32) #best 0.1
 d_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 i_control=tf.Variable(1, trainable=False, dtype=tf.float32)
-peak_reward = tf.constant(-150, dtype=tf.float32)             # Peak value (can be negative)
-peak_penalty = tf.constant(150, dtype=tf.float32)             # Peak value (can be negative)
+peak_reward = tf.constant(-1500, dtype=tf.float32)             # Peak value (can be negative)
+peak_penalty = tf.constant(1500, dtype=tf.float32)             # Peak value (can be negative)
 
 
 # ---------------------------
@@ -139,7 +139,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     # Compute primary losses:
     # Replace Huber loss with Mean Squared Error (MSE) loss.
-    #mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
+    mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
     mae_loss_val = tf.keras.losses.MeanAbsoluteError()(mag_true, mag_pred)
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
     
@@ -211,9 +211,9 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     # Update global variables last_mae and last_std with control dependencies.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
-        total_loss = reward + penalty + 3e5*mae_loss_val + mmd_lambda * mmd_loss_val
+        total_loss = reward + penalty + 3e6*mae_loss_val+ 3e6*mse_loss_val + mmd_lambda * mmd_loss_val
     with tf.control_dependencies([last_std.assign(batch_std)]):
-        total_loss = reward + penalty + 3e5*mae_loss_val + mmd_lambda * mmd_loss_val
+        total_loss = reward + penalty + 3e6*mae_loss_val+ 3e6*mse_loss_val + mmd_lambda * mmd_loss_val
     
     return total_loss
 
