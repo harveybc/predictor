@@ -173,10 +173,12 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         # k=4332169.878499658
     
     def vertical_left_asymptote(value, center):
-        if value >= center:
-            0
-        else:
-            return 1e3*tf.math.log(tf.abs(value - center))+7e-4
+        res = tf.cond(tf.greater_equal(value, center),
+            lambda: 0,
+            lambda: 1e3*tf.math.log(tf.abs(value - center))+7e-4
+        )   
+        return res
+
 
     # --- Compute custom reward and penalty using the Gaussian-like function ---
     #verify that the abs_avg_true is not zero
