@@ -476,7 +476,7 @@ class Plugin:
                                              verbose=1),
             ReduceLROnPlateauWithCounter(monitor="val_loss",
                                          factor=0.5,
-                                         patience=config.get("early_patience", 20) / 3,
+                                         patience=config.get("early_patience", 20) / 4,
                                          verbose=1),
             LambdaCallback(on_epoch_end=lambda epoch, logs: 
                            print(f"DEBUG: Learning Rate at epoch {epoch+1}: {K.get_value(self.model.optimizer.learning_rate)}")),
