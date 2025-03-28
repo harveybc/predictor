@@ -33,7 +33,6 @@ from tensorflow.keras.initializers import GlorotUniform
 last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
 last_std = tf.Variable(0.0, trainable=False, dtype=tf.float32)
 intercept=tf.Variable(1e-8, trainable=False, dtype=tf.float32)# best 1e-8
-p_control=tf.Variable(0.1, trainable=False, dtype=tf.float32) #best 0.1
 d_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 i_control=tf.Variable(1, trainable=False, dtype=tf.float32)
 peak_reward = tf.constant(-1500, dtype=tf.float32)             # Peak value (can be negative)
@@ -236,7 +235,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     )
     
     # Calculate batch-level feedback values.
-    batch_signed_error = p_control * signed_avg_error / divisor
+    batch_signed_error = 0.0 * signed_avg_error / divisor
     batch_std = 0.0 * tf.math.reduce_mean(tf.abs(mag_true - mag_pred)) / divisor
     
     #calcualte the vertical left asymptote
@@ -358,8 +357,7 @@ class Plugin:
         trend_input = Lambda(lambda x: x[:, :, 0:1], name="trend_input")(augmented_input)
         seasonal_input = Lambda(lambda x: x[:, :, 1:2], name="seasonal_input")(augmented_input)
         noise_input = Lambda(lambda x: x[:, :, 2:3], name="noise_input")(augmented_input)
-        error_input = Lambda(lambda x: x[:, :, 3:4], name="error_input")(augmented_input)
-        std_input = Lambda(lambda x: x[:, :, 4:5], name="std_input")(augmented_input)
+    
         
         # Build Dense branches for trend, seasonal, and noise channels.
         def build_branch(branch_input, branch_name):
@@ -374,12 +372,9 @@ class Plugin:
         seasonal_branch = build_branch(seasonal_input, "seasonal")
         noise_branch = build_branch(noise_input, "noise")
         
-        # For error and std channels, simply flatten them (no extra Dense layers).
-        error_flat = Flatten(name="error_flatten")(error_input)
-        std_flat = Flatten(name="std_flatten")(std_input)
         
         # Concatenate all branch outputs.
-        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch, error_flat, std_flat])
+        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch])
         
         # Further process merged features.
         merged_dense = Dense(merged_units, activation=activation,
