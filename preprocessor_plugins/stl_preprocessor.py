@@ -70,8 +70,8 @@ class PreprocessorPlugin:
         "time_horizon": 6,
         "use_returns": True,
         "stl_period": 24,    # For daily seasonality.best:24
-        "stl_window": 24,    # Adjusted window. best: 46
-        "stl_trend": 25,     # Trend smoother length.best: 49
+        "stl_window": 48,    # Adjusted window. best: 46
+        "stl_trend": 49,     # Trend smoother length.best: 49
         "stl_plot_file": "stl_plot.png",
         "pos_encoding_dim": 16
     }
