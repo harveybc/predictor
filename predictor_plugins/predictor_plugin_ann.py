@@ -183,6 +183,14 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
             lambda: tf.math.log(mse_min)+17
         )   
         return res
+    
+    def right_slope(value, center):
+        res = tf.cond(tf.greater_equal(value, center),
+            lambda: 0,
+            lambda: mse_loss_val*1e4
+            #lambda: tf.math.log(mse_min)+17
+        )   
+        return res
 
 
     # --- Compute custom reward and penalty using the Gaussian-like function ---
