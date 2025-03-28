@@ -237,7 +237,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     # Calculate batch-level feedback values.
     batch_signed_error = p_control * signed_avg_error / divisor
-    batch_std = p_control * tf.math.reduce_mean(tf.abs(mag_true - mag_pred)) / divisor
+    batch_std = 0.0 * tf.math.reduce_mean(tf.abs(mag_true - mag_pred)) / divisor
     
     #calcualte the vertical left asymptote
     asymptote = vertical_right_asymptote(signed_avg_pred, signed_avg_true)
