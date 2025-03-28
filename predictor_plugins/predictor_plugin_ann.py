@@ -238,12 +238,12 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     # Update global variables last_mae and last_std with control dependencies.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
         #total_loss = reward + penalty + 3e6*mae_loss_val+ 3e8*mse_loss_val + mmd_lambda * mmd_loss_val
-        #total_loss = 1e3*mse_min + asymptote
-        total_loss = 1e2*mse_loss_val + slope
+        total_loss = 1e3*mse_min + asymptote
+        #total_loss = 1e2*mse_loss_val + slope
     with tf.control_dependencies([last_std.assign(batch_std)]):
         #total_loss = reward + penalty + 3e6*mae_loss_val+ 3e8*mse_loss_val + mmd_lambda * mmd_loss_val
-        total_loss = 1e2*mse_loss_val + slope
-        1e2*mse_loss_val + slope
+        total_loss = 1e3*mse_min + asymptote
+        #total_loss = 1e2*mse_loss_val + slope
     return total_loss
 
 
