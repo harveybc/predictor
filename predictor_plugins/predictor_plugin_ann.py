@@ -184,9 +184,9 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         )   
         return res
     
-    def right_slope(value, center):
+    def left_slope(value, center):
         res = tf.cond(tf.greater_equal(value, center),
-            lambda: 0,
+            lambda: tf.constant(0.0, dtype=tf.float32),
             lambda: mse_loss_val*1e4
             #lambda: tf.math.log(mse_min)+17
         )   
@@ -231,8 +231,8 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     batch_std = p_control * tf.math.reduce_mean(tf.abs(mag_true - mag_pred)) / divisor
     
     #calcualte the vertical left asymptote
-    asymptote = vertical_left_asymptote(signed_avg_true, signed_avg_pred)
-    slope = right_slope(signed_avg_true, signed_avg_pred)
+    asymptote = vertical_left_asymptote(signed_avg_pred, signed_avg_true)
+    slope = left_slope(signed_avg_pred, signed_avg_true)
 
 
     # Update global variables last_mae and last_std with control dependencies.
