@@ -43,6 +43,8 @@ peak_penalty = tf.constant(1500, dtype=tf.float32)             # Peak value (can
 # ---------------------------
 # Custom Callbacks (same as before)
 # ---------------------------
+
+
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
     """Custom ReduceLROnPlateau callback that prints the patience counter."""
     def __init__(self, **kwargs):
@@ -69,6 +71,7 @@ class ClearMemoryCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
         K.clear_session()
         gc.collect()
+
 
 # ---------------------------
 # Custom Metrics and Loss Functions
@@ -292,6 +295,8 @@ class Plugin:
     def __init__(self):
         self.params = self.plugin_params.copy()
         self.model = None
+        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
+        print("DEBUG: Initialized kl_weight_var with 0.0")
 
     def set_params(self, **kwargs):
         """Update predictor plugin parameters with provided configuration."""
@@ -386,16 +391,13 @@ class Plugin:
                              kernel_regularizer=l2(l2_reg),
                              name="merged_dense_last")(merged_dense)
         
-        # --- Bayesian Output Layer Implementation (copied from ANN plugin) ---
-        KL_WEIGHT = self.params.get('kl_weight', 1e-3)
-
+        
         # Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable
         def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
             return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
         tfp.layers.DenseFlipout.add_variable = _patched_add_variable
 
-        self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
-        print("DEBUG: Initialized kl_weight_var with 0.0; target kl_weight:", KL_WEIGHT)
+        
 
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
@@ -454,6 +456,8 @@ class Plugin:
 
         DenseFlipout = tfp.layers.DenseFlipout
         print("DEBUG: Creating DenseFlipout final layer with units:", 1)
+        # --- Bayesian Output Layer Implementation (copied from ANN plugin) ---
+        KL_WEIGHT = self.kl_weight_var
         flipout_layer = DenseFlipout(
             units=1,
             activation='linear',
@@ -492,18 +496,52 @@ class Plugin:
         self.model.summary()
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
+        class KLAnnealingCallback(tf.keras.callbacks.Callback):
+            def __init__(self, plugin, target_kl, anneal_epochs):
+                super().__init__()
+                self.plugin = plugin
+                self.target_kl = target_kl
+                self.anneal_epochs = anneal_epochs
+            def on_epoch_begin(self, epoch, logs=None):
+                new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
+                self.plugin.kl_weight_var.assign(new_kl)
+                print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
+
+        class MMDLoggingCallback(tf.keras.callbacks.Callback):
+                    def __init__(self, plugin, x_train, y_train):
+                        super().__init__()
+                        self.plugin = plugin
+                        self.x_train = x_train
+                        self.y_train = y_train
+                    def on_epoch_end(self, epoch, logs=None):
+                        preds = self.plugin.model(self.x_train, training=True)
+                        mmd_value = self.plugin.compute_mmd(preds, self.y_train)
+                        print(f"MMD Lambda = {self.plugin.mmd_lambda.numpy():.6f}, MMD Loss = {mmd_value.numpy():.6f}")
+        anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
+        target_kl = self.params.get('kl_weight', 1e-3)
+        kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
+        mmd_logging_callback = MMDLoggingCallback(self, x_train, y_train)
+        min_delta = config.get("min_delta", 1e-4) if config is not None else 1e-4
+        
         callbacks = [
-            EarlyStoppingWithPatienceCounter(monitor="val_loss",
-                                             patience=config.get("early_patience", 60),
-                                             verbose=1),
+            EarlyStoppingWithPatienceCounter(   monitor='val_loss',
+                                                patience=self.params.get('early_patience', 10),
+                                                restore_best_weights=True,
+                                                verbose=1,
+                                                start_from_epoch=self.params.get('start_from_epoch', 10),
+                                                min_delta=min_delta),
             ReduceLROnPlateauWithCounter(monitor="val_loss",
                                          factor=0.5,
                                          patience=config.get("early_patience", 20) / 4,
                                          verbose=1),
             LambdaCallback(on_epoch_end=lambda epoch, logs: 
                            print(f"DEBUG: Learning Rate at epoch {epoch+1}: {K.get_value(self.model.optimizer.learning_rate)}")),
-            ClearMemoryCallback()
+            ClearMemoryCallback(),
+            kl_callback,
+            mmd_logging_callback
         ]
+
+
         print(f"DEBUG: Starting training for {epochs} epochs with batch size {batch_size}")
         history = self.model.fit(x_train, y_train[0],
                                  epochs=epochs,
