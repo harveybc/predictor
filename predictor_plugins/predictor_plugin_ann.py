@@ -177,7 +177,6 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         return peak * tf.math.exp(-k * tf.math.square(value - center))
         # k=4332169.878499658
     
-
     def vertical_left_asymptote(value, center):
         min_diff = tf.cond(tf.greater(tf.abs(center-value), 1e-10),
             lambda: tf.abs(center-value),
