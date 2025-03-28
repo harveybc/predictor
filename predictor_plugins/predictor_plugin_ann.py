@@ -391,13 +391,13 @@ class Plugin:
                              kernel_regularizer=l2(l2_reg),
                              name="merged_dense_last")(merged_dense)
         
-        
+        # --- Bayesian Output Layer Implementation (copied from ANN plugin) ---
+        KL_WEIGHT = self.kl_weight_var
+
         # Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable
         def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
             return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
         tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-
-        
 
         def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
             print("DEBUG: In posterior_mean_field_custom:")
@@ -456,8 +456,6 @@ class Plugin:
 
         DenseFlipout = tfp.layers.DenseFlipout
         print("DEBUG: Creating DenseFlipout final layer with units:", 1)
-        # --- Bayesian Output Layer Implementation (copied from ANN plugin) ---
-        KL_WEIGHT = self.kl_weight_var
         flipout_layer = DenseFlipout(
             units=1,
             activation='linear',
