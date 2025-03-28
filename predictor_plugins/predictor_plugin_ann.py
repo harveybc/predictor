@@ -142,7 +142,12 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
     mae_loss_val = tf.keras.losses.MeanAbsoluteError()(mag_true, mag_pred)
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
-    
+    mse_min = tf.cond(tf.greater(mse_loss_val,1e-10),
+            lambda: mse_loss_val,
+            lambda: 1e-10)
+        
+
+
     # Calculate summary statistics for use in reward and penalty.
     signed_avg_pred  = tf.reduce_mean(mag_pred)             # Average predicted value
     signed_avg_true  = tf.reduce_mean(mag_true)               # Average true value
@@ -173,15 +178,9 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         # k=4332169.878499658
     
     def vertical_left_asymptote(value, center):
-        mse_min = tf.cond(tf.greater(mse_loss_val,1e-10),
-            lambda: mse_loss_val,
-            lambda: 1e-10)
-        
-        
-        
         res = tf.cond(tf.greater_equal(value, center),
             lambda: mse_loss_val*1e4 - 5,
-            lambda: tf.math.log(mse_loss_val)+17
+            lambda: tf.math.log(mse_min)+17
         )   
         return res
 
@@ -230,10 +229,10 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     # Update global variables last_mae and last_std with control dependencies.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
         #total_loss = reward + penalty + 3e6*mae_loss_val+ 3e8*mse_loss_val + mmd_lambda * mmd_loss_val
-        total_loss = 1e3*mse_loss_val + asymptote
+        total_loss = 1e3*mse_min + asymptote
     with tf.control_dependencies([last_std.assign(batch_std)]):
         #total_loss = reward + penalty + 3e6*mae_loss_val+ 3e8*mse_loss_val + mmd_lambda * mmd_loss_val
-        total_loss = 1e3*mse_loss_val + asymptote
+        total_loss = 1e3*mse_min + asymptote
     return total_loss
 
 
