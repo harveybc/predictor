@@ -391,8 +391,6 @@ class Plugin:
                              kernel_regularizer=l2(l2_reg),
                              name="merged_dense_last")(merged_dense)
         
-        # --- Bayesian Output Layer Implementation (copied from ANN plugin) ---
-        KL_WEIGHT = self.kl_weight_var
 
         # Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable
         def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
@@ -454,6 +452,8 @@ class Plugin:
                 reinterpreted_batch_ndims=len(kernel_shape)
             )
 
+        # --- Bayesian Output Layer Implementation  ---
+        KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
         print("DEBUG: Creating DenseFlipout final layer with units:", 1)
         flipout_layer = DenseFlipout(
@@ -505,20 +505,9 @@ class Plugin:
                 self.plugin.kl_weight_var.assign(new_kl)
                 print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
 
-        class MMDLoggingCallback(tf.keras.callbacks.Callback):
-                    def __init__(self, plugin, x_train, y_train):
-                        super().__init__()
-                        self.plugin = plugin
-                        self.x_train = x_train
-                        self.y_train = y_train
-                    def on_epoch_end(self, epoch, logs=None):
-                        preds = self.plugin.model(self.x_train, training=True)
-                        mmd_value = self.plugin.compute_mmd(preds, self.y_train)
-                        print(f"MMD Lambda = {self.plugin.mmd_lambda.numpy():.6f}, MMD Loss = {mmd_value.numpy():.6f}")
         anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        mmd_logging_callback = MMDLoggingCallback(self, x_train, y_train)
         min_delta = config.get("min_delta", 1e-4) if config is not None else 1e-4
         
         callbacks = [
@@ -535,8 +524,7 @@ class Plugin:
             LambdaCallback(on_epoch_end=lambda epoch, logs: 
                            print(f"DEBUG: Learning Rate at epoch {epoch+1}: {K.get_value(self.model.optimizer.learning_rate)}")),
             ClearMemoryCallback(),
-            kl_callback,
-            mmd_logging_callback
+            kl_callback
         ]
 
 
