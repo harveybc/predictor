@@ -179,8 +179,8 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     def vertical_left_asymptote(value, center):
         res = tf.cond(tf.greater_equal(value, center),
-            lambda: 1e1*tf.math.log(tf.abs(value - center))+7,
-            lambda: mse_loss_val*1e7 - 1 # best 1e6
+            lambda: tf.math.log(tf.abs(value - center))+7,
+            lambda: mse_loss_val*1e6 - 1 # best 1e6
         )   
         return res
     
