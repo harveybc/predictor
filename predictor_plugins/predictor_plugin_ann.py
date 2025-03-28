@@ -177,11 +177,10 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         return peak * tf.math.exp(-k * tf.math.square(value - center))
         # k=4332169.878499658
     
-    def vertical_left_asymptote(value, center):
+    def vertical_right_asymptote(value, center):
         res = tf.cond(tf.greater_equal(value, center),
-            lambda: mse_loss_val*1e5 - 1, # best 1e6
-            lambda: tf.math.log(tf.abs(value - center))+7
-            
+            lambda: 3*tf.math.log(tf.abs(value - center))+20,
+            lambda: mse_loss_val*1e5 - 1 # best 1e6
         )   
         return res
     
@@ -232,18 +231,18 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     batch_std = p_control * tf.math.reduce_mean(tf.abs(mag_true - mag_pred)) / divisor
     
     #calcualte the vertical left asymptote
-    asymptote = vertical_left_asymptote(signed_avg_pred, signed_avg_true)
+    asymptote = vertical_right_asymptote(signed_avg_pred, signed_avg_true)
     slope = left_slope(signed_avg_pred, signed_avg_true)
 
 
     # Update global variables last_mae and last_std with control dependencies.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
         #total_loss = reward + penalty + 3e6*mae_loss_val+ 3e8*mse_loss_val + mmd_lambda * mmd_loss_val
-        total_loss = 1e3*mse_min + asymptote
+        total_loss = 143*mse_min + asymptote
         #total_loss = 1e2*mse_loss_val + slope
     with tf.control_dependencies([last_std.assign(batch_std)]):
         #total_loss = reward + penalty + 3e6*mae_loss_val+ 3e8*mse_loss_val + mmd_lambda * mmd_loss_val
-        total_loss = 1e3*mse_min + asymptote #best 1e3
+        total_loss = 1e4*mse_min + asymptote #best 1e3
         #total_loss = 1e2*mse_loss_val + slope
     return total_loss
 
