@@ -159,133 +159,86 @@ predictor/
 ## Example of plugin model:
 ```mermaid
 graph TD
-%% Top Down layout
 
-    %% Input Processing Subgraph
     subgraph SP_Input ["Input Processing (Features Only)"]
-    %% Changed syntax ID ["Title"]
-        %% direction removed
         I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
 
         subgraph SP_Branches ["Feature Branches (Parallel)"]
-        %% Changed syntax ID ["Title"]
-             %% direction removed
-             %% Layout branches Top-Down
              FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
              FS -- ... --> F_DOTS["..."];
              FS -- Feature n --> Fn_FLAT["Flatten"] --> Fn_DENSE["Dense x M"];
-        end %% Added end for SP_Branches
+        end
 
-        %% Merging point
         F1_DENSE --> M{"Merge Concat Features"};
         F_DOTS --> M;
         Fn_DENSE --> M;
-    end %% Added end for SP_Input
+    end
 
-    %% Output Heads Subgraph (Vertical Layout)
     subgraph SP_Heads ["Output Heads (Parallel)"]
-    %% Changed syntax ID ["Title"]
-         %% direction removed
-         %% Layout heads Top-Down
 
-        %% Conceptual Link from Merged Features to all Heads
         M -- To Each Head --> HeadInput{Input to Heads};
         HeadInput -.-> CONCAT1;
-        %% CORRECTED: Link to first node inside Head 1
         HeadInput -.-> CONCATN;
-        %% CORRECTED: Link to first node inside Head N
-        %% Dashed lines for clarity
-
 
         subgraph Head1 ["Head for Horizon 1"]
-        %% Changed syntax ID ["Title"]
-            %% Control Action Feedback Path (from previous step's control output)
             LF1[/"self.local_feedback[0]"/] --> LF1_TILEFLAT["Tile/Flatten (Batch)"];
-
-            %% Combine Merged Features (M) with Control Action Feedback via Concatenate
             M --> CONCAT1["Concatenate"];
             LF1_TILEFLAT --> CONCAT1;
-            %% Concatenate control action feedback
-
-            %% Head Processing Layers
             CONCAT1 --> H1_DENSE["Dense x K"];
             H1_DENSE --> H1_BAYES{"DenseFlipout (Bayesian)"};
             H1_DENSE --> H1_BIAS["Dense (Bias)"];
             H1_BAYES --> H1_ADD{"Add"};
             H1_BIAS --> H1_ADD;
             H1_ADD --> O1["Output H1"];
-        end %% Added end for Head1
+        end
 
-        %% --- Other heads similar (...) ---
-
-         subgraph HeadN ["Head for Horizon N"]
-         %% Changed syntax ID ["Title"]
-             %% Control Action Feedback Path (from previous step's control output)
+        subgraph HeadN ["Head for Horizon N"]
             LFN[/"self.local_feedback[N-1]"/] --> LFN_TILEFLAT["Tile/Flatten (Batch)"];
-
-            %% Combine Merged Features (M) with Control Action Feedback via Concatenate
             M --> CONCATN["Concatenate"];
             LFN_TILEFLAT --> CONCATN;
-            %% Concatenate control action feedback
-
-             %% Head Processing Layers
             CONCATN --> HN_DENSE["Dense x K"];
             HN_DENSE --> HN_BAYES{"DenseFlipout (Bayesian)"};
             HN_DENSE --> HN_BIAS["Dense (Bias)"];
             HN_BAYES --> HN_ADD{"Add"};
             HN_BIAS --> HN_ADD;
             HN_ADD --> ON["Output HN"];
-        end %% Added end for HeadN
+        end
 
-    end %% Added end for SP_Heads
+    end
 
-    %% Loss Calculation Subgraph (Conceptual side process)
     subgraph SP_Loss ["Loss Calculation per Head (Updates Feedback & Control Action Lists)"]
-    %% Changed syntax ID ["Title"]
-       %% direction removed
-       %% Show loss as a separate flow
-        subgraph LossHead1 %% Simple ID ok if not linking to it
+        subgraph LossHead1
              O1 --> Loss1["Global::composite_loss(...)"];
              Loss1 -- Updates --> LSE1[/"self.last_signed_error[0]"/];
              Loss1 -- Updates --> LSD1[/"self.last_stddev[0]"/];
              Loss1 -- Updates --> LMMD1[/"self.last_mmd[0]"/];
              Loss1 -- Updates --> LF1[/"self.local_feedback[0]"/];
-             %% Updated with ControlAction
-        end %% Added end for LossHead1
-        subgraph LossHeadN %% Simple ID ok if not linking to it
+        end
+        subgraph LossHeadN
              ON --> LossN["Global::composite_loss(...)"];
              LossN -- Updates --> LSEN[/"self.last_signed_error[N-1]"/];
              LossN -- Updates --> LSDN[/"self.last_stddev[N-1]"/];
              LossN -- Updates --> LMMDN[/"self.last_mmd[N-1]"/];
              LossN -- Updates --> LFN[/"self.local_feedback[N-1]"/];
-             %% Updated with ControlAction
-        end %% Added end for LossHeadN
-    end %% Added end for SP_Loss
+        end
+    end
 
-
-    %% Final outputs list (still conceptually gathered)
     O1 --> Z((Final Output List));
-    %% Circle for final output aggregation
     ON --> Z;
 
-
-    %% Legend Subgraph
-    subgraph Legend %% Simple ID ok if not linking to it
+    subgraph Legend
          NoteM["M = config['intermediate_layers']"];
          NoteK["K = config['intermediate']"];
          NoteListUpdate["Loss Updates: self.last_xxx (metrics) & self.local_feedback (control action)"];
          NoteInputFB["Head Input = Concat(Merged Features, Control Action Feedback)"];
-    end %% Added end for Legend
+    end
 
-    %% Styling (Earth Tones)
     style H1_BAYES,HN_BAYES fill:#556B2F,stroke:#333,color:#fff;
     style H1_BIAS,HN_BIAS fill:#4682B4,stroke:#333,color:#fff;
     style LSE1,LSD1,LMMD1,LSEN,LSDN,LMMDN fill:#696969,stroke:#333,color:#fff;
     style LF1,LFN fill:#B8860B,stroke:#333,color:#fff;
-    %% Style local_feedback nodes (DarkGoldenrod)
     style Loss1,LossN fill:#708090,stroke:#f00,stroke-dasharray:5 5,color:#fff;
     style NoteM,NoteK,NoteListUpdate,NoteInputFB fill:#8B4513,stroke:#333,stroke-dasharray:5 5,color:#fff;
     style CONCAT1,CONCATN fill:#D2B48C;
-    %% Style concat node - Tan color
 
 ```
