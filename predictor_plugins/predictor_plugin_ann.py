@@ -186,8 +186,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         )
         res = tf.cond(tf.greater_equal(center, value),
             lambda: mse_loss_val*1e3 - 1, # best 1e6,
-            lambda: 3*tf.math.log(tf.abs(value - center))+20
-            
+            lambda: 3*tf.math.log(tf.abs(value - center))+20        
         )   
            
         return res
