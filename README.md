@@ -158,7 +158,8 @@ predictor/
 
 ## Example of plugin model:
 ```mermaid
-graph TD %% Top Down layout
+graph TD
+%% Top Down layout
 
     %% Input Processing Subgraph
     subgraph "Input Processing (Features Only)"
@@ -227,24 +228,21 @@ graph TD %% Top Down layout
 
     %% Loss Calculation Subgraph (Conceptual side process)
     subgraph "Loss Calculation per Head (Updates Feedback & Control Action Lists)"
-        direction LR
-        %% Inputs to Loss conceptually include Head Output (Oi) and Ground Truth (y_true_i)
-        O1 --> Loss1["Global::composite_loss(..., head_index=0)"];
-        %% Loss Function Internal Logic:
-        %%   1. Calculates Metrics (LSE, LSD, LMMD)
-        %%   2. Calls dummy_feedback_control(Metrics, PID) -> ControlAction
-        %%   3. Updates lists:
-        Loss1 -- Updates --> LSE1[/"self.last_signed_error[0]"/];
-        Loss1 -- Updates --> LSD1[/"self.last_stddev[0]"/];
-        Loss1 -- Updates --> LMMD1[/"self.last_mmd[0]"/];
-        Loss1 -- Updates --> LF1[/"self.local_feedback[0]"/]; %% Updated with ControlAction
-
-        %% Similar flow for Head N
-        ON --> LossN["Global::composite_loss(..., head_index=N-1)"];
-        LossN -- Updates --> LSEN[/"self.last_signed_error[N-1]"/];
-        LossN -- Updates --> LSDN[/"self.last_stddev[N-1]"/];
-        LossN -- Updates --> LMMDN[/"self.last_mmd[N-1]"/];
-        LossN -- Updates --> LFN[/"self.local_feedback[N-1]"/]; %% Updated with ControlAction
+        direction LR %% Show loss as a separate flow
+        subgraph LossHead1
+             O1 --> Loss1["Global::composite_loss(...)"];
+             Loss1 -- Updates --> LSE1[/"self.last_signed_error[0]"/];
+             Loss1 -- Updates --> LSD1[/"self.last_stddev[0]"/];
+             Loss1 -- Updates --> LMMD1[/"self.last_mmd[0]"/];
+             Loss1 -- Updates --> LF1[/"self.local_feedback[0]"/]; %% Updated with ControlAction
+        end
+        subgraph LossHeadN
+             ON --> LossN["Global::composite_loss(...)"];
+             LossN -- Updates --> LSEN[/"self.last_signed_error[N-1]"/];
+             LossN -- Updates --> LSDN[/"self.last_stddev[N-1]"/];
+             LossN -- Updates --> LMMDN[/"self.last_mmd[N-1]"/];
+             LossN -- Updates --> LFN[/"self.local_feedback[N-1]"/]; %% Updated with ControlAction
+        end
     end
 
 
@@ -258,7 +256,7 @@ graph TD %% Top Down layout
          NoteM["M = config['intermediate_layers']"];
          NoteK["K = config['intermediate']"];
          NoteListUpdate["Loss Updates: self.last_xxx (metrics) & self.local_feedback (control action)"];
-         NoteInputFB["Head Input = Concat(Merged Features, Control Action Feedback)"]; %% Updated Note
+         NoteInputFB["Head Input = Concat(Merged Features, Control Action Feedback)"];
     end
 
     %% Styling (Earth Tones)
