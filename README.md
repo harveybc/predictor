@@ -160,55 +160,58 @@ predictor/
 ```mermaid
 graph TD
     subgraph Input Processing
-        A[Input (ws, 3)] --> B(Add Feedback Ch.);
-        B --> C{Concat (ws, 5)};
-        C --> D{Split};
-        D -- Trend --> E[Flatten -> Dense x N];
-        D -- Seasonal --> F[Flatten -> Dense x N];
-        D -- Noise --> G[Flatten -> Dense x N];
-        E --> H{Merge Concat};
+        A["Input (ws, 3)"] --> B("Add Feedback Ch.");
+        B --> C{"Concat (ws, 5)"};
+        C --> D{"Split"};
+        D -- Trend --> E["Flatten -> Dense x N"];
+        D -- Seasonal --> F["Flatten -> Dense x N"];
+        D -- Noise --> G["Flatten -> Dense x N"];
+        E --> H{"Merge Concat"};
         F --> H;
         G --> H;
     end
 
     subgraph Output Heads (Parallel)
-        H -- To Each Head --> I(Start Head);
+        %% Link from merged features H directly to the start of each head
 
-        subgraph Head for Horizon 1
-            I1[merged] --> J1[Dense];
-            J1 --> K1[Dense];
-            K1 --> L1{DenseFlipout (Bayesian)};
-            K1 --> M1[Dense (Bias)];
-            L1 --> N1{Add};
+        subgraph "Head for Horizon 1"
+            %% Use unique IDs like J1, K1 etc. even if text is similar across heads
+            H --> J1["Dense"];
+            J1 --> K1["Dense"];
+            K1 --> L1{"DenseFlipout (Bayesian)"};
+            K1 --> M1["Dense (Bias)"];
+            L1 --> N1{"Add"};
             M1 --> N1;
-            N1 --> O1[Output H1];
+            N1 --> O1["Output H1"];
         end
 
-        subgraph Head for Horizon ...
-            I_ [...] --> J_[Dense];
-            J_ --> K_[Dense];
-            K_ --> L_{DenseFlipout (Bayesian)};
-            K_ --> M_[Dense (Bias)];
-            L_ --> N_{Add};
+        subgraph "Head for Horizon ..."
+            H --> J_["Dense"];
+            J_ --> K_["Dense"];
+            K_ --> L_{"DenseFlipout (Bayesian)"};
+            K_ --> M_["Dense (Bias)"];
+            L_ --> N_{"Add"};
             M_ --> N_;
-            N_ --> O_[Output H...];
+            N_ --> O_["Output H..."];
         end
 
-         subgraph Head for Horizon N
-            IN[merged] --> JN[Dense];
-            JN --> KN[Dense];
-            KN --> LN{DenseFlipout (Bayesian)};
-            KN --> MN[Dense (Bias)];
-            LN --> NN{Add};
+         subgraph "Head for Horizon N"
+            H --> JN["Dense"];
+            JN --> KN["Dense"];
+            KN --> LN{"DenseFlipout (Bayesian)"};
+            KN --> MN["Dense (Bias)"];
+            LN --> NN{"Add"};
             MN --> NN;
-            NN --> ON[Output HN];
+            NN --> ON["Output HN"];
         end
     end
 
-    O1 --> Z[Final Output List];
+    %% Final outputs gather conceptually
+    O1 --> Z["Final Output List"];
     O_ --> Z;
     ON --> Z;
 
+    %% Styling (Optional)
     style L1 fill:#f9d,stroke:#333,stroke-width:2px;
     style L_ fill:#f9d,stroke:#333,stroke-width:2px;
     style LN fill:#f9d,stroke:#333,stroke-width:2px;
