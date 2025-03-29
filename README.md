@@ -159,35 +159,33 @@ predictor/
 ## Example of plugin model:
 ```mermaid
 graph TD
-    subgraph "Input Processing"
-        %% Inputs
+    subgraph "Input Processing (Features Only)"
         I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
-        GF_IN[/"Global Feedback (tf.Variable)"/] --> GF_FLAT["Flatten"];
 
-        %% Feature Branches (Parallel)
         FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
         FS -- ... --> F_DOTS["..."];
         FS -- Feature n --> Fn_FLAT["Flatten"] --> Fn_DENSE["Dense x M"];
 
-        %% Global Feedback Branch
-        GF_FLAT --> GF_DENSE["Dense x M"];
-
-        %% Merging Input Branches
-        F1_DENSE --> M{"Merge Concat"};
+        F1_DENSE --> M{"Merge Concat Features"};
         F_DOTS --> M;
         Fn_DENSE --> M;
-        GF_DENSE --> M;
     end
 
     subgraph "Output Heads (Parallel)"
-        %% M is the Merged Input Tensor feeding all heads
+        %% M is the Merged Feature Tensor feeding all heads
 
         subgraph "Head for Horizon 1"
-            %% Local Feedback for Head 1
-            LF1_IN[/"Local Feedback 1 (tf.Variable)"/] --> LF1_FLAT["Flatten"];
-            %% Combine Merged Input (M) with Local Feedback
+            %% Loss-Generated Feedback for Head 1 (from previous step)
+            LSE1[/"self.last_signed_error[0]"/] --> LF1_COMBINE{"Combine/Stack (Feedback Vals)"};
+            LSD1[/"self.last_stddev[0]"/] --> LF1_COMBINE;
+            LMMD1[/"self.last_mmd[0]"/] --> LF1_COMBINE;
+            LF1_COMBINE --> LF1_TILEFLAT["Tile/Flatten (Batch)"];
+            LF1_TILEFLAT --> LF1_PROJ["Dense (Project Feedback)"]; %% Projection Layer
+
+            %% Combine Merged Features (M) with Projected Loss Feedback
             M --> ADD1{"Add"};
-            LF1_FLAT --> ADD1;
+            LF1_PROJ --> ADD1;
+
             %% Head Intermediate Layers
             ADD1 --> H1_DENSE["Dense x K"];
             %% Bayesian/Bias Layers
@@ -199,29 +197,20 @@ graph TD
             H1_ADD --> O1["Output H1"];
         end
 
-        subgraph "Head for Horizon ..."
-            %% Local Feedback for Head ...
-            LF__IN[/"Local Feedback ..."/] --> LF__FLAT["Flatten"];
-            %% Combine Merged Input (M) with Local Feedback
-            M --> ADD_{"Add"};
-            LF__FLAT --> ADD_;
-            %% Head Intermediate Layers
-            ADD_ --> H__DENSE["Dense x K"];
-            %% Bayesian/Bias Layers
-            H__DENSE --> H__BAYES{"DenseFlipout (Bayesian)"};
-            H__DENSE --> H__BIAS["Dense (Bias)"];
-             %% Head Output
-            H__BAYES --> H__ADD{"Add"};
-            H__BIAS --> H__ADD;
-            H__ADD --> O_["Output H..."];
-        end
+        %% --- Other heads similar ---
 
          subgraph "Head for Horizon N"
-            %% Local Feedback for Head N
-            LFN_IN[/"Local Feedback N (tf.Variable)"/] --> LFN_FLAT["Flatten"];
-            %% Combine Merged Input (M) with Local Feedback
+            %% Loss-Generated Feedback for Head N (from previous step)
+            LSEN[/"self.last_signed_error[N-1]"/] --> LFN_COMBINE{"Combine/Stack (Feedback Vals)"};
+            LSDN[/"self.last_stddev[N-1]"/] --> LFN_COMBINE;
+            LMMDN[/"self.last_mmd[N-1]"/] --> LFN_COMBINE;
+            LFN_COMBINE --> LFN_TILEFLAT["Tile/Flatten (Batch)"];
+            LFN_TILEFLAT --> LFN_PROJ["Dense (Project Feedback)"]; %% Projection Layer
+
+            %% Combine Merged Features (M) with Projected Loss Feedback
             M --> ADDN{"Add"};
-            LFN_FLAT --> ADDN;
+            LFN_PROJ --> ADDN;
+
              %% Head Intermediate Layers
             ADDN --> HN_DENSE["Dense x K"];
             %% Bayesian/Bias Layers
@@ -234,30 +223,42 @@ graph TD
         end
     end
 
-    %% Final outputs gather conceptually
+    %% Loss Calculation (Conceptual - Updates Feedback Vars in self)
+    subgraph "Loss Calculation per Head (Updates self.last_... lists)"
+        direction LR
+        O1 --> Loss1["Global::composite_loss(..., head_index=0, lists=self.last_..., params=self.local_...)"];
+        %% Loss1 -- Contains call --> DFC1["Global::dummy_feedback_control(...)"];
+        Loss1 -- Updates --> LSE1;
+        Loss1 -- Updates --> LSD1;
+        Loss1 -- Updates --> LMMD1;
+
+        ON --> LossN["Global::composite_loss(..., head_index=N-1, lists=self.last_..., params=self.local_...)"];
+        %% LossN -- Contains call --> DFCN["Global::dummy_feedback_control(...)"];
+        LossN -- Updates --> LSEN;
+        LossN -- Updates --> LSDN;
+        LossN -- Updates --> LMMDN;
+    end
+
+
+    %% Final outputs list (still conceptually gathered)
     O1 --> Z["Final Output List"];
-    O_ --> Z;
     ON --> Z;
 
-    %% Legend Subgraph (Replaces 'note')
+
+    %% Legend Subgraph
     subgraph Legend
-         Note1["M = config['intermediate_layers'] (Input/Global Feedback Branch Layers)"];
-         Note2["K = config['intermediate'] (Output Head Branch Layers)"];
+         NoteM["M = config['intermediate_layers'] (Feature Branch Layers)"];
+         NoteK["K = config['intermediate'] (Head Branch Layers)"];
+         NoteFB["Feedback Vars (self.last_... lists) updated by Global Loss (previous step)"];
+         NoteProj["Feedback projected via Dense layer before Add"];
     end
 
     %% Styling (Optional)
-    style H1_BAYES fill:#f9d,stroke:#333,stroke-width:2px;
-    style H__BAYES fill:#f9d,stroke:#333,stroke-width:2px;
-    style HN_BAYES fill:#f9d,stroke:#333,stroke-width:2px;
-    style H1_BIAS fill:#ccf,stroke:#333,stroke-width:2px;
-    style H__BIAS fill:#ccf,stroke:#333,stroke-width:2px;
-    style HN_BIAS fill:#ccf,stroke:#333,stroke-width:2px;
-    style GF_IN fill:#ffe,stroke:#333;
-    style LF1_IN fill:#eff,stroke:#333;
-    style LF__IN fill:#eff,stroke:#333;
-    style LFN_IN fill:#eff,stroke:#333;
-    %% Style legend nodes slightly differently
-    style Note1 fill:#eee,stroke:#333,stroke-dasharray: 5 5;
-    style Note2 fill:#eee,stroke:#333,stroke-dasharray: 5 5;
+    style H1_BAYES,HN_BAYES fill:#f9d,stroke:#333,stroke-width:2px;
+    style H1_BIAS,HN_BIAS fill:#ccf,stroke:#333,stroke-width:2px;
+    style LSE1,LSD1,LMMD1,LSEN,LSDN,LMMDN fill:#eff,stroke:#333;
+    style Loss1,LossN fill:#eee,stroke:#f00,stroke-dasharray: 5 5;
+    style NoteM,NoteK,NoteFB,NoteProj fill:#eee,stroke:#333,stroke-dasharray: 5 5;
+    style LF1_PROJ,LFN_PROJ fill:#ddd,stroke:#333;
 
 ```
