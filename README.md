@@ -162,11 +162,13 @@ graph TD
 %% Top Down layout
 
     %% Input Processing Subgraph
-    subgraph SP_Input ["Input Processing (Features Only)"] %% Changed syntax ID ["Title"]
+    subgraph SP_Input ["Input Processing (Features Only)"]
+    %% Changed syntax ID ["Title"]
         %% direction removed
         I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
 
-        subgraph SP_Branches ["Feature Branches (Parallel)"] %% Changed syntax ID ["Title"]
+        subgraph SP_Branches ["Feature Branches (Parallel)"]
+        %% Changed syntax ID ["Title"]
              %% direction removed
              %% Layout branches Top-Down
              FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
@@ -181,7 +183,8 @@ graph TD
     end %% Added end for SP_Input
 
     %% Output Heads Subgraph (Vertical Layout)
-    subgraph SP_Heads ["Output Heads (Parallel)"] %% Changed syntax ID ["Title"]
+    subgraph SP_Heads ["Output Heads (Parallel)"]
+    %% Changed syntax ID ["Title"]
          %% direction removed
          %% Layout heads Top-Down
 
@@ -194,7 +197,8 @@ graph TD
         %% Dashed lines for clarity
 
 
-        subgraph Head1 ["Head for Horizon 1"] %% Changed syntax ID ["Title"]
+        subgraph Head1 ["Head for Horizon 1"]
+        %% Changed syntax ID ["Title"]
             %% Control Action Feedback Path (from previous step's control output)
             LF1[/"self.local_feedback[0]"/] --> LF1_TILEFLAT["Tile/Flatten (Batch)"];
 
@@ -214,7 +218,8 @@ graph TD
 
         %% --- Other heads similar (...) ---
 
-         subgraph HeadN ["Head for Horizon N"] %% Changed syntax ID ["Title"]
+         subgraph HeadN ["Head for Horizon N"]
+         %% Changed syntax ID ["Title"]
              %% Control Action Feedback Path (from previous step's control output)
             LFN[/"self.local_feedback[N-1]"/] --> LFN_TILEFLAT["Tile/Flatten (Batch)"];
 
@@ -235,7 +240,8 @@ graph TD
     end %% Added end for SP_Heads
 
     %% Loss Calculation Subgraph (Conceptual side process)
-    subgraph SP_Loss ["Loss Calculation per Head (Updates Feedback & Control Action Lists)"] %% Changed syntax ID ["Title"]
+    subgraph SP_Loss ["Loss Calculation per Head (Updates Feedback & Control Action Lists)"]
+    %% Changed syntax ID ["Title"]
        %% direction removed
        %% Show loss as a separate flow
         subgraph LossHead1 %% Simple ID ok if not linking to it
