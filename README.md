@@ -180,13 +180,13 @@ graph TD
             LSD1[/"self.last_stddev[0]"/] --> LF1_COMBINE;
             LMMD1[/"self.last_mmd[0]"/] --> LF1_COMBINE;
             LF1_COMBINE --> LF1_TILEFLAT["Tile/Flatten (Batch)"];
-            LF1_TILEFLAT --> LF1_PROJ["Dense (Project Feedback)"]; %% Projection Layer
-
-            %% Combine Merged Features (M) with Projected Loss Feedback
+            LF1_TILEFLAT --> LF1_PROJ["Dense (Project Feedback)"];
+            %% Projection Layer Comment Moved Below
+            %% Combine Merged Input (M) with Projected Loss Feedback
             M --> ADD1{"Add"};
             LF1_PROJ --> ADD1;
 
-            %% Head Intermediate Layers
+            %% Head Layers
             ADD1 --> H1_DENSE["Dense x K"];
             %% Bayesian/Bias Layers
             H1_DENSE --> H1_BAYES{"DenseFlipout (Bayesian)"};
@@ -205,13 +205,13 @@ graph TD
             LSDN[/"self.last_stddev[N-1]"/] --> LFN_COMBINE;
             LMMDN[/"self.last_mmd[N-1]"/] --> LFN_COMBINE;
             LFN_COMBINE --> LFN_TILEFLAT["Tile/Flatten (Batch)"];
-            LFN_TILEFLAT --> LFN_PROJ["Dense (Project Feedback)"]; %% Projection Layer
-
-            %% Combine Merged Features (M) with Projected Loss Feedback
+            LFN_TILEFLAT --> LFN_PROJ["Dense (Project Feedback)"];
+             %% Projection Layer Comment Moved Below
+            %% Combine Merged Input (M) with Projected Loss Feedback
             M --> ADDN{"Add"};
             LFN_PROJ --> ADDN;
 
-             %% Head Intermediate Layers
+             %% Head Layers
             ADDN --> HN_DENSE["Dense x K"];
             %% Bayesian/Bias Layers
             HN_DENSE --> HN_BAYES{"DenseFlipout (Bayesian)"};
@@ -227,13 +227,11 @@ graph TD
     subgraph "Loss Calculation per Head (Updates self.last_... lists)"
         direction LR
         O1 --> Loss1["Global::composite_loss(..., head_index=0, lists=self.last_..., params=self.local_...)"];
-        %% Loss1 -- Contains call --> DFC1["Global::dummy_feedback_control(...)"];
         Loss1 -- Updates --> LSE1;
         Loss1 -- Updates --> LSD1;
         Loss1 -- Updates --> LMMD1;
 
         ON --> LossN["Global::composite_loss(..., head_index=N-1, lists=self.last_..., params=self.local_...)"];
-        %% LossN -- Contains call --> DFCN["Global::dummy_feedback_control(...)"];
         LossN -- Updates --> LSEN;
         LossN -- Updates --> LSDN;
         LossN -- Updates --> LMMDN;
