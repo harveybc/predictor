@@ -32,13 +32,13 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Add
 
 # Denine TensorFlow global variables(used from the composite loss function):
-last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
-last_std = tf.Variable(0.0, trainable=False, dtype=tf.float32)
-intercept=tf.Variable(1e-8, trainable=False, dtype=tf.float32)# best 1e-8
-d_control=tf.Variable(1, trainable=False, dtype=tf.float32)
-i_control=tf.Variable(1, trainable=False, dtype=tf.float32)
-peak_reward = tf.constant(-1500, dtype=tf.float32)             # Peak value (can be negative)
-peak_penalty = tf.constant(1500, dtype=tf.float32)             # Peak value (can be negative)
+last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32) # last mean absolute error from the composite loss function to use in global feedback
+last_std = tf.Variable(0.0, trainable=False, dtype=tf.float32) # last standard deviation from the composite loss function to use in global feedback
+p_control=tf.Variable(0, trainable=False, dtype=tf.float32) # proportional control for the feedback
+d_control=tf.Variable(1, trainable=False, dtype=tf.float32) # derivative control for the feedback
+i_control=tf.Variable(1, trainable=False, dtype=tf.float32) # integral control for the feedback
+global_feedback = tf.Variable(0.0, trainable=False, dtype=tf.float32) # global feedback variable
+local_feedback = [] # list of local feedback variables for each output head 
 
 
 # ---------------------------
@@ -191,41 +191,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
             lambda: 3*tf.math.log(tf.abs(value - center))+20        
         )   
            
-        return res
-    
-    def right_slope(value, center):
-        res = tf.cond(tf.greater_equal(value, center),
-            lambda: tf.constant(0.0, dtype=tf.float32),
-            lambda: mse_loss_val*1e4
-            #lambda: tf.math.log(mse_min)+17
-        )   
-        return res
-
-
-    # --- Compute custom reward and penalty using the Gaussian-like function ---
-    #verify that the abs_avg_true is not zero
-    abs_avg_true = tf.cond(
-        tf.greater(abs_avg_true, 1e-10),
-        lambda: abs_avg_true,
-        lambda: 1e-10
-    )   
-    # Reward: Peak of -1, width 8e-4, centered on abs_avg_true.
-    # Here, the arbitrary value is abs_avg_error.
-    reward = gaussian_like(
-        value=signed_avg_pred,
-        center=abs_avg_true,
-        peak=peak_reward,
-        width=abs_avg_true/2
-    )
-    
-    # Penalty: Peak of 1, width 8e-4, centered on 0.
-    # Here, the arbitrary value is signed_avg_error.
-    penalty = gaussian_like(
-        value=signed_avg_pred,
-        center=0.0,
-        peak=peak_penalty,
-        width=abs_avg_true/2
-    )
+        return res   
     
     # --- Additional feedback values ---
     # Compute a divisor to avoid division by very small numbers.
@@ -241,8 +207,6 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     
     #calcualte the vertical left asymptote
     asymptote = vertical_right_asymptote(signed_avg_pred, signed_avg_true)
-    slope = right_slope(signed_avg_pred, signed_avg_true)
-
 
     # Update global variables last_mae and last_std with control dependencies.
     with tf.control_dependencies([last_mae.assign(batch_signed_error)]):
@@ -387,137 +351,192 @@ class Plugin:
 
     def build_model(self, input_shape, x_train, config):
         """
-        Build a multi-branch, multi-output model for forecasting returns using STL-decomposed data.
-        The architecture processes the trend, seasonal, and noise channels via Dense branches,
-        concatenates them, and then feeds the merged features into multiple identical output heads,
-        one for each predicted horizon. Each head consists of two Dense layers, a Bayesian
-        DenseFlipout layer, and a deterministic bias Dense layer.
+        Build a multi-input-branch, multi-output model with global and local feedback.
+        Input features and global feedback are processed in parallel branches.
+        Their merged output, combined with specific local feedback for each head,
+        feeds into multiple identical output heads (Dense layers + Bayesian/Bias layers).
 
         Args:
-            input_shape (tuple): Expected input shape (window_size, num_channels=3).
-            x_train (np.ndarray): Training data (for shape inference, can be None if not used).
-            config (dict): Configuration parameters including 'predicted_horizons'.
+            input_shape (tuple): Expected input shape (window_size, num_channels).
+            x_train (np.ndarray): Training data (can be None if not used for shape inference).
+            config (dict): Configuration parameters including:
+                        'predicted_horizons' (list): Output horizons.
+                        'intermediate_layers' (int): Num dense layers in input/global feedback branches.
+                        'intermediate' (int): Num dense layers within each output head before Bayesian/Bias.
+                        'branch_units' (int): Units in input/global feedback branch dense layers.
+                        'merged_units' (int): Units in head intermediate dense layers.
+                        'activation' (str): Activation function.
+                        'l2_reg' (float): L2 regularization factor.
+                        'learning_rate' (float): Optimizer learning rate.
+                        'mmd_lambda' (float): Lambda for MMD component in loss (if used).
         """
-        # Assume necessary imports (tf, layers, Model, l2, AdamW, tfp, np) are done
-        # Assume helper functions (composite_loss, mae_magnitude, r2_metric) are defined
-        # Assume initializers (random_normal_initializer_44) are defined/imported
-        # Assume state variables (last_mae, last_std) are accessible (e.g., global or self.)
-        # Assume self.params and self.kl_weight_var exist from the class instance
+        # --- Assume necessary imports are done ---
+        # import tensorflow as tf
+        # from tensorflow.keras.layers import Input, Dense, Concatenate, Lambda, Flatten, Add
+        # from tensorflow.keras.models import Model
+        # from tensorflow.keras.regularizers import l2
+        # from tensorflow.keras.optimizers import AdamW # Or your specific optimizer
+        # import tensorflow_probability as tfp
+        # import numpy as np
 
-        window_size, num_channels = input_shape  # Expecting num_channels=3
-        l2_reg = config.get("l2_reg", self.params["l2_reg"])
-        activation = config.get("activation", self.params["activation"])
-        num_branch_layers = config.get("num_branch_layers", self.params["num_branch_layers"])
-        branch_units = config.get("branch_units", self.params["branch_units"])
-        merged_units = config.get("merged_units", self.params["merged_units"])
-        predicted_horizons = config['predicted_horizons'] # Mandatory config
+        # --- Assume helper functions/initializers/variables are defined/accessible ---
+        # - posterior_mean_field_custom, prior_fn (for Bayesian layer)
+        # - composite_loss, mae_magnitude, r2_metric (for compilation)
+        # - random_normal_initializer_44 (for bias layer)
+        # - global_feedback (tf.Variable or Tensor, potentially multi-channel)
+        # - local_feedback (Python list of tf.Variables or Tensors, one per output head)
+        # - self.params (dict for default values, though direct config access is used more now)
+        # - self.kl_weight_var (tf.Variable for Bayesian KL weight)
+        # - DenseFlipout monkey-patch applied elsewhere
+
+        window_size, num_channels = input_shape
+        # Get parameters from config, providing defaults if necessary
+        l2_reg = config.get("l2_reg", self.params.get("l2_reg", 0.001))
+        activation = config.get("activation", self.params.get("activation", "relu"))
+        num_intermediate_layers = config['intermediate_layers'] # Num layers for input feature/global feedback branches
+        num_head_intermediate_layers = config['intermediate'] # Num layers for output head branches (before bayes/bias)
+        branch_units = config.get("branch_units", self.params.get("branch_units", 64)) # Units for input/global feedback branches
+        merged_units = config.get("merged_units", self.params.get("merged_units", 128)) # Units for head branches
+        predicted_horizons = config['predicted_horizons']
         num_outputs = len(predicted_horizons)
 
-        # Define input layer with original 3 channels.
+        # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # Add error and std feedback channels.
-        def get_error_channel(x):
-            batch_size = tf.shape(x)[0]
-            win = tf.shape(x)[1]
-            # Ensure last_mae is accessible here (global or self.)
-            return tf.fill([batch_size, win, 1], last_mae)
-        error_channel = Lambda(get_error_channel, output_shape=lambda inp: (inp[0], inp[1], 1), name="error_channel")(inputs)
+        feature_branch_outputs = []
+        # --- Parallel Feature Processing Branches (Generalized) ---
+        print(f"DEBUG: Building {num_channels} feature processing branches...")
+        for c in range(num_channels):
+            feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
+                                name=f"feature_{c+1}_input")(inputs)
+            x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
+            for i in range(num_intermediate_layers):
+                x = Dense(branch_units, activation=activation,
+                        kernel_regularizer=l2(l2_reg),
+                        name=f"feature_{c+1}_dense_{i+1}")(x)
+            feature_branch_outputs.append(x)
+            print(f"  - Branch {c+1} output shape (symbolic): {x.shape}")
 
-        def get_std_channel(x):
-            batch_size = tf.shape(x)[0]
-            win = tf.shape(x)[1]
-            # Ensure last_std is accessible here (global or self.)
-            return tf.fill([batch_size, win, 1], last_std)
-        std_channel = Lambda(get_std_channel, output_shape=lambda inp: (inp[0], inp[1], 1), name="std_channel")(inputs)
+        # --- Global Feedback Processing Branch ---
+        print("DEBUG: Building global feedback processing branch...")
+        # Helper function to safely access and flatten global feedback
+        def get_flat_global_feedback(tensor_input):
+            batch_size = tf.shape(tensor_input)[0]
+            # Assume global_feedback is an accessible tf.Variable or Tensor
+            # Use tf.identity to ensure it's treated as a tensor in graph mode
+            gf = tf.identity(global_feedback)
+            return tf.reshape(gf, [batch_size, -1]) # Flatten
 
-        # Concatenate the original input with error and std channels.
-        augmented_input = Concatenate(axis=2, name="augmented_input")([inputs, error_channel, std_channel])
-        # Now the augmented input has shape (window_size, 3+2=5).
+        flat_global_feedback = Lambda(get_flat_global_feedback, name="flatten_global_feedback")(inputs)
+        print(f"  - Flattened global feedback shape (symbolic): {flat_global_feedback.shape}")
 
-        # Split the augmented input into separate channels.
-        trend_input = Lambda(lambda x: x[:, :, 0:1], name="trend_input")(augmented_input)
-        seasonal_input = Lambda(lambda x: x[:, :, 1:2], name="seasonal_input")(augmented_input)
-        noise_input = Lambda(lambda x: x[:, :, 2:3], name="noise_input")(augmented_input)
+        # Process flattened global feedback through dense layers
+        x_gf = flat_global_feedback
+        for i in range(num_intermediate_layers):
+            x_gf = Dense(branch_units, activation=activation, # Using same units as feature branches
+                        kernel_regularizer=l2(l2_reg),
+                        name=f"global_feedback_dense_{i+1}")(x_gf)
+        global_feedback_output = x_gf
+        print(f"  - Processed global feedback output shape (symbolic): {global_feedback_output.shape}")
 
-        trend_branch = build_branch(trend_input, "trend", num_branch_layers=num_branch_layers, branch_units=branch_units, activation=activation, l2_reg=l2_reg)
-        seasonal_branch = build_branch(seasonal_input, "seasonal", num_branch_layers=num_branch_layers, branch_units=branch_units, activation=activation, l2_reg=l2_reg)
-        noise_branch = build_branch(noise_input, "noise", num_branch_layers=num_branch_layers, branch_units=branch_units, activation=activation, l2_reg=l2_reg)
+        # --- Merging Feature Branches and Global Feedback Branch ---
+        all_branch_outputs = feature_branch_outputs + [global_feedback_output]
+        merged = Concatenate(name="merged_all_inputs")(all_branch_outputs)
+        print(f"DEBUG: Merged all input branches shape (symbolic): {merged.shape}")
 
-        # Concatenate all branch outputs. This is the base for the output heads.
-        merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch])
 
-        # --- Define Bayesian Layer Components (Helper functions defined at the start of the file) ---
-
+        # --- Define Bayesian Layer Components (Assume functions defined elsewhere) ---
         KL_WEIGHT = self.kl_weight_var # Use the class attribute tf.Variable
-        DenseFlipout = tfp.layers.DenseFlipout # Alias for convenience
+        DenseFlipout = tfp.layers.DenseFlipout # Alias
+
 
         # --- Build Multiple Output Heads ---
         outputs_list = []
         output_names = []
+        print(f"DEBUG: Building {num_outputs} output heads...")
+
+        # Helper function to safely get/flatten specific local feedback tensor
+        # Defined outside lambda to help with variable capture
+        def get_specific_local_feedback(tensor_input, head_index):
+            batch_size = tf.shape(tensor_input)[0]
+            # Assume local_feedback is python list of tf.Variables/Tensors accessible here
+            lf_tensor = tf.identity(local_feedback[head_index]) # Use tf.identity
+            return tf.reshape(lf_tensor, [batch_size, -1]) # Flatten
+
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}" # Unique suffix for layers in this head
+            print(f"  - Building head for Horizon {horizon} (Index {i})...")
 
-            # --- Replicate Layers for this Output Head ---
+            # --- Local Feedback Integration for this Head ---
+            # Use Lambda to capture loop index 'i' and pass it to helper
+            flattened_local_feedback = Lambda(lambda x: get_specific_local_feedback(x, i),
+                                            name=f"flatten_local_fb{branch_suffix}")(inputs)
+            print(f"    - H{horizon}: Flattened local feedback shape (symbolic): {flattened_local_feedback.shape}")
 
-            # 1. First Dense layer after merging
-            merged_dense_branch = Dense(merged_units, activation=activation,
+            # Add local feedback to the merged input branch data
+            head_input_with_feedback = Add(name=f"head_input_with_feedback{branch_suffix}")(
+                [merged, flattened_local_feedback] # Add merged data and local feedback
+            )
+            print(f"    - H{horizon}: Head input combined shape (symbolic): {head_input_with_feedback.shape}")
+
+            # --- Head Intermediate Dense Layers ---
+            head_dense_output = head_input_with_feedback # Start with combined input
+            print(f"    - H{horizon}: Building {num_head_intermediate_layers} intermediate head dense layers...")
+            for j in range(num_head_intermediate_layers):
+                head_dense_output = Dense(merged_units, activation=activation, # Using merged_units here
                                         kernel_regularizer=l2(l2_reg),
-                                        name=f"merged_dense{branch_suffix}")(merged)
+                                        name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
+            print(f"    - H{horizon}: Output shape after head dense layers (symbolic): {head_dense_output.shape}")
 
-            # 2. Second Dense layer
-            merged_dense_last_branch = Dense(merged_units, activation=activation,
-                                            kernel_regularizer=l2(l2_reg),
-                                            name=f"merged_dense_last{branch_suffix}")(merged_dense_branch)
-
-            # 3. Bayesian Output Layer (DenseFlipout)
-            print(f"DEBUG: Creating DenseFlipout for horizon {horizon} (index {i}) with units: 1")
+            # --- Bayesian Output Layer (DenseFlipout) ---
+            print(f"    - H{horizon}: Creating DenseFlipout layer...")
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
+            # Ensure posterior_mean_field_custom and prior_fn are defined and accessible
             flipout_layer_branch = DenseFlipout(
-                units=1, # Single output value per head
+                units=1,
                 activation='linear',
-                # Ensure posterior_mean_field_custom and prior_fn are accessible here
                 kernel_posterior_fn=lambda dtype, shape, bias_size, train, name=flipout_layer_name: posterior_mean_field_custom(dtype, shape, bias_size, train, name),
                 kernel_prior_fn=lambda dtype, shape, bias_size, train, name=flipout_layer_name: prior_fn(dtype, shape, bias_size, train, name),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-                name=flipout_layer_name # Layer name
+                name=flipout_layer_name
             )
-            # Use a Lambda layer to apply it and give a unique functional name
             bayesian_output_branch = Lambda(
-                lambda t: flipout_layer_branch(t),
-                output_shape=lambda s: (s[0], 1),
-                name=f"bayesian_output{branch_suffix}" # Functional name
-            )(merged_dense_last_branch) # Input from the last dense layer of this branch
-            print(f"DEBUG: Horizon {horizon} Bayesian output shape: {bayesian_output_branch.shape}")
+                lambda t: flipout_layer_branch(t), # Apply the layer instance
+                name=f"bayesian_output{branch_suffix}"
+            )(head_dense_output) # Input from the last intermediate head dense layer
+            print(f"    - H{horizon}: Bayesian output shape (symbolic): {bayesian_output_branch.shape}")
 
-
-            # 4. Deterministic Bias Layer
-            # Ensure random_normal_initializer_44 is accessible here
+            # --- Deterministic Bias Layer ---
+            print(f"    - H{horizon}: Creating Deterministic Bias layer...")
+            # Ensure random_normal_initializer_44 is defined and accessible
             bias_layer_branch = Dense(
-                units=1, # Single bias value per head
+                units=1,
                 activation='linear',
-                kernel_initializer=random_normal_initializer_44, # Use the same initializer
+                kernel_initializer=random_normal_initializer_44,
                 name=f"deterministic_bias{branch_suffix}"
-            )(merged_dense_last_branch) # Input from the last dense layer of this branch
-            print(f"DEBUG: Horizon {horizon} Deterministic bias output shape: {bias_layer_branch.shape}")
+            )(head_dense_output) # Input from the last intermediate head dense layer
+            print(f"    - H{horizon}: Deterministic bias output shape (symbolic): {bias_layer_branch.shape}")
 
-            # 5. Combine Bayesian output and Bias layer for the final output of this head
+            # --- Combine Bayesian and Bias for Final Head Output ---
             output_name = f"output_horizon_{horizon}" # Unique name for this specific output
-            final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
-            print(f"DEBUG: Horizon {horizon} Final output shape after adding bias: {final_branch_output.shape}")
+            final_branch_output = Add(name=output_name)(
+                [bayesian_output_branch, bias_layer_branch]
+            )
+            print(f"    - H{horizon}: Final output shape (symbolic): {final_branch_output.shape}")
 
             outputs_list.append(final_branch_output)
             output_names.append(output_name)
-            # --- End Replication for this Output Head ---
+            # --- End of Head ---
 
         # --- Model Definition and Compilation ---
-        self.model = Model(inputs=inputs, outputs=outputs_list, name=f"MultiBranchPredictor_MultiOutput_{len(predicted_horizons)}H")
+        self.model = Model(inputs=inputs, outputs=outputs_list, name=f"GeneralizedFeedbackPredictor_{len(predicted_horizons)}H")
+        print("DEBUG: Model instantiated.")
 
-        optimizer = AdamW(learning_rate=config.get("learning_rate", self.params["learning_rate"]))
-        mmd_lambda = config.get("mmd_lambda", self.params["mmd_lambda"])
+        optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
+        mmd_lambda = config.get("mmd_lambda", self.params.get("mmd_lambda", 0.1)) # If using composite_loss with MMD
 
-        # Prepare loss and metrics for multi-output: use dictionaries mapping output names
-        # Assuming composite_loss, mae_magnitude, r2_metric are defined elsewhere
+        # Prepare loss and metrics for multi-output
+        # Ensure composite_loss, mae_magnitude, r2_metric are defined elsewhere
         loss_dict = {name: lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0)
                     for name in output_names}
         metrics_dict = {name: [mae_magnitude, r2_metric]
@@ -526,11 +545,10 @@ class Plugin:
         self.model.compile(optimizer=optimizer,
                         loss=loss_dict,
                         metrics=metrics_dict)
+        print("DEBUG: Model compiled.")
 
-        print("DEBUG: MMD lambda =", mmd_lambda)
-        print(f"Multi-Branch Multi-Output Predictor model built successfully for horizons: {predicted_horizons}.")
-        self.model.summary() # Print model summary
-
+        print(f"Generalized Feedback Predictor model built successfully for {num_outputs} horizons: {predicted_horizons}.")
+        self.model.summary(line_length=120) # Print model summary with longer lines
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
