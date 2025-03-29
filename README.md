@@ -163,11 +163,11 @@ graph TD
 
     %% Input Processing Subgraph
     subgraph "Input Processing (Features Only)"
-        %% direction LR removed
+        %% direction removed
         I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
 
         subgraph "Feature Branches (Parallel)"
-             %% direction TD removed
+             %% direction removed
              %% Layout branches Top-Down
              FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
              FS -- ... --> F_DOTS["..."];
@@ -182,15 +182,15 @@ graph TD
 
     %% Output Heads Subgraph (Vertical Layout)
     subgraph "Output Heads (Parallel)"
-         %% direction TD removed
+         %% direction removed
          %% Layout heads Top-Down
 
         %% Conceptual Link from Merged Features to all Heads
         M -- To Each Head --> HeadInput{Input to Heads};
         HeadInput -.-> CONCAT1;
-%% CORRECTED: Link to first node inside Head 1
+        %% CORRECTED: Link to first node inside Head 1
         HeadInput -.-> CONCATN;
-%% CORRECTED: Link to first node inside Head N
+        %% CORRECTED: Link to first node inside Head N
         %% Dashed lines for clarity
 
 
@@ -235,7 +235,7 @@ graph TD
 
     %% Loss Calculation Subgraph (Conceptual side process)
     subgraph "Loss Calculation per Head (Updates Feedback & Control Action Lists)"
-       %% direction LR removed
+       %% direction removed
        %% Show loss as a separate flow
         subgraph LossHead1
              O1 --> Loss1["Global::composite_loss(...)"];
@@ -243,7 +243,7 @@ graph TD
              Loss1 -- Updates --> LSD1[/"self.last_stddev[0]"/];
              Loss1 -- Updates --> LMMD1[/"self.last_mmd[0]"/];
              Loss1 -- Updates --> LF1[/"self.local_feedback[0]"/];
-%% Updated with ControlAction
+             %% Updated with ControlAction
         end
         subgraph LossHeadN
              ON --> LossN["Global::composite_loss(...)"];
@@ -251,7 +251,7 @@ graph TD
              LossN -- Updates --> LSDN[/"self.last_stddev[N-1]"/];
              LossN -- Updates --> LMMDN[/"self.last_mmd[N-1]"/];
              LossN -- Updates --> LFN[/"self.local_feedback[N-1]"/];
-%% Updated with ControlAction
+             %% Updated with ControlAction
         end
     end
 
@@ -275,10 +275,10 @@ graph TD
     style H1_BIAS,HN_BIAS fill:#4682B4,stroke:#333,color:#fff;
     style LSE1,LSD1,LMMD1,LSEN,LSDN,LMMDN fill:#696969,stroke:#333,color:#fff;
     style LF1,LFN fill:#B8860B,stroke:#333,color:#fff;
-%% Style local_feedback nodes (DarkGoldenrod)
+    %% Style local_feedback nodes (DarkGoldenrod)
     style Loss1,LossN fill:#708090,stroke:#f00,stroke-dasharray:5 5,color:#fff;
     style NoteM,NoteK,NoteListUpdate,NoteInputFB fill:#8B4513,stroke:#333,stroke-dasharray:5 5,color:#fff;
     style CONCAT1,CONCATN fill:#D2B48C;
-%% Style concat node - Tan color
+    %% Style concat node - Tan color
 
 ```
