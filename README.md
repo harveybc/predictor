@@ -160,6 +160,8 @@ predictor/
 ```mermaid
 graph TD
 
+    graph TD
+
     subgraph SP_Input ["Input Processing (Features Only)"]
         I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
 
@@ -176,15 +178,8 @@ graph TD
 
     subgraph SP_Heads ["Output Heads (Parallel)"]
 
-        M -- To Each Head --> HeadInput{Input to Heads};
-        HeadInput -.-> CONCAT1;
-        HeadInput -.-> CONCATN;
-
         subgraph Head1 ["Head for Horizon 1"]
-            LF1[/"self.local_feedback[0]"/] --> LF1_TILEFLAT["Tile/Flatten (Batch)"];
-            M --> CONCAT1["Concatenate"];
-            LF1_TILEFLAT --> CONCAT1;
-            CONCAT1 --> H1_DENSE["Dense x K"];
+            M --> H1_DENSE["Dense x K"]; %% Input DIRECTLY from Merged Features
             H1_DENSE --> H1_BAYES{"DenseFlipout (Bayesian)"};
             H1_DENSE --> H1_BIAS["Dense (Bias)"];
             H1_BAYES --> H1_ADD{"Add"};
@@ -192,11 +187,9 @@ graph TD
             H1_ADD --> O1["Output H1"];
         end
 
-        subgraph HeadN ["Head for Horizon N"]
-            LFN[/"self.local_feedback[N-1]"/] --> LFN_TILEFLAT["Tile/Flatten (Batch)"];
-            M --> CONCATN["Concatenate"];
-            LFN_TILEFLAT --> CONCATN;
-            CONCATN --> HN_DENSE["Dense x K"];
+
+         subgraph HeadN ["Head for Horizon N"]
+            M --> HN_DENSE["Dense x K"]; %% Input DIRECTLY from Merged Features
             HN_DENSE --> HN_BAYES{"DenseFlipout (Bayesian)"};
             HN_DENSE --> HN_BIAS["Dense (Bias)"];
             HN_BAYES --> HN_ADD{"Add"};
@@ -206,39 +199,19 @@ graph TD
 
     end
 
-    subgraph SP_Loss ["Loss Calculation per Head (Updates Feedback & Control Action Lists)"]
-        subgraph LossHead1
-             O1 --> Loss1["Global::composite_loss(...)"];
-             Loss1 -- Updates --> LSE1[/"self.last_signed_error[0]"/];
-             Loss1 -- Updates --> LSD1[/"self.last_stddev[0]"/];
-             Loss1 -- Updates --> LMMD1[/"self.last_mmd[0]"/];
-             Loss1 -- Updates --> LF1[/"self.local_feedback[0]"/];
-        end
-        subgraph LossHeadN
-             ON --> LossN["Global::composite_loss(...)"];
-             LossN -- Updates --> LSEN[/"self.last_signed_error[N-1]"/];
-             LossN -- Updates --> LSDN[/"self.last_stddev[N-1]"/];
-             LossN -- Updates --> LMMDN[/"self.last_mmd[N-1]"/];
-             LossN -- Updates --> LFN[/"self.local_feedback[N-1]"/];
-        end
-    end
-
     O1 --> Z((Final Output List));
     ON --> Z;
+
 
     subgraph Legend
          NoteM["M = config['intermediate_layers']"];
          NoteK["K = config['intermediate']"];
-         NoteListUpdate["Loss Updates: self.last_xxx (metrics) & self.local_feedback (control action)"];
-         NoteInputFB["Head Input = Concat(Merged Features, Control Action Feedback)"];
+         NoteNoFB["NOTE: Diagram simplified - Feedback loops not shown."]; %% Updated Note
     end
 
+    %% Styling (Earth Tones - Simplified)
     style H1_BAYES,HN_BAYES fill:#556B2F,stroke:#333,color:#fff;
     style H1_BIAS,HN_BIAS fill:#4682B4,stroke:#333,color:#fff;
-    style LSE1,LSD1,LMMD1,LSEN,LSDN,LMMDN fill:#696969,stroke:#333,color:#fff;
-    style LF1,LFN fill:#B8860B,stroke:#333,color:#fff;
-    style Loss1,LossN fill:#708090,stroke:#f00,stroke-dasharray:5 5,color:#fff;
-    style NoteM,NoteK,NoteListUpdate,NoteInputFB fill:#8B4513,stroke:#333,stroke-dasharray:5 5,color:#fff;
-    style CONCAT1,CONCATN fill:#D2B48C;
+    style NoteM,NoteK,NoteNoFB fill:#8B4513,stroke:#333,stroke-dasharray:5 5,color:#fff; %% Updated Note ID
 
 ```
