@@ -161,63 +161,49 @@ predictor/
 graph TD
 %% Top Down layout
 
-   
-%% Input Processing Subgraph
+    %% Input Processing Subgraph
     subgraph "Input Processing (Features Only)"
-       
-%% direction LR removed
+        %% direction LR removed
         I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
 
         subgraph "Feature Branches (Parallel)"
-            
-%% direction TD removed
-            
-%% Layout branches Top-Down
+             %% direction TD removed
+             %% Layout branches Top-Down
              FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
              FS -- ... --> F_DOTS["..."];
              FS -- Feature n --> Fn_FLAT["Flatten"] --> Fn_DENSE["Dense x M"];
         end
 
-       
-%% Merging point
+        %% Merging point
         F1_DENSE --> M{"Merge Concat Features"};
         F_DOTS --> M;
         Fn_DENSE --> M;
     end
 
-   
-%% Output Heads Subgraph (Vertical Layout)
+    %% Output Heads Subgraph (Vertical Layout)
     subgraph "Output Heads (Parallel)"
-        
-%% direction TD removed
-        
-%% Layout heads Top-Down
+         %% direction TD removed
+         %% Layout heads Top-Down
 
-       
-%% Conceptual Link from Merged Features to all Heads
+        %% Conceptual Link from Merged Features to all Heads
         M -- To Each Head --> HeadInput{Input to Heads};
         HeadInput -.-> CONCAT1;
 %% CORRECTED: Link to first node inside Head 1
         HeadInput -.-> CONCATN;
 %% CORRECTED: Link to first node inside Head N
-       
-%% Dashed lines for clarity
+        %% Dashed lines for clarity
 
 
         subgraph "Head for Horizon 1" id=Head1
-           
-%% Control Action Feedback Path (from previous step's control output)
+            %% Control Action Feedback Path (from previous step's control output)
             LF1[/"self.local_feedback[0]"/] --> LF1_TILEFLAT["Tile/Flatten (Batch)"];
 
-           
-%% Combine Merged Features (M) with Control Action Feedback via Concatenate
+            %% Combine Merged Features (M) with Control Action Feedback via Concatenate
             M --> CONCAT1["Concatenate"];
             LF1_TILEFLAT --> CONCAT1;
-           
-%% Concatenate control action feedback
+            %% Concatenate control action feedback
 
-           
-%% Head Processing Layers
+            %% Head Processing Layers
             CONCAT1 --> H1_DENSE["Dense x K"];
             H1_DENSE --> H1_BAYES{"DenseFlipout (Bayesian)"};
             H1_DENSE --> H1_BIAS["Dense (Bias)"];
@@ -226,23 +212,18 @@ graph TD
             H1_ADD --> O1["Output H1"];
         end
 
-       
-%% --- Other heads similar (...) ---
+        %% --- Other heads similar (...) ---
 
          subgraph "Head for Horizon N" id=HeadN
-            
-%% Control Action Feedback Path (from previous step's control output)
+             %% Control Action Feedback Path (from previous step's control output)
             LFN[/"self.local_feedback[N-1]"/] --> LFN_TILEFLAT["Tile/Flatten (Batch)"];
 
-           
-%% Combine Merged Features (M) with Control Action Feedback via Concatenate
+            %% Combine Merged Features (M) with Control Action Feedback via Concatenate
             M --> CONCATN["Concatenate"];
             LFN_TILEFLAT --> CONCATN;
-           
-%% Concatenate control action feedback
+            %% Concatenate control action feedback
 
-            
-%% Head Processing Layers
+             %% Head Processing Layers
             CONCATN --> HN_DENSE["Dense x K"];
             HN_DENSE --> HN_BAYES{"DenseFlipout (Bayesian)"};
             HN_DENSE --> HN_BIAS["Dense (Bias)"];
@@ -252,13 +233,10 @@ graph TD
         end
     end
 
-   
-%% Loss Calculation Subgraph (Conceptual side process)
+    %% Loss Calculation Subgraph (Conceptual side process)
     subgraph "Loss Calculation per Head (Updates Feedback & Control Action Lists)"
-      
-%% direction LR removed
-      
-%% Show loss as a separate flow
+       %% direction LR removed
+       %% Show loss as a separate flow
         subgraph LossHead1
              O1 --> Loss1["Global::composite_loss(...)"];
              Loss1 -- Updates --> LSE1[/"self.last_signed_error[0]"/];
@@ -278,16 +256,13 @@ graph TD
     end
 
 
-   
-%% Final outputs list (still conceptually gathered)
+    %% Final outputs list (still conceptually gathered)
     O1 --> Z((Final Output List));
-   
-%% Circle for final output aggregation
+    %% Circle for final output aggregation
     ON --> Z;
 
 
-   
-%% Legend Subgraph
+    %% Legend Subgraph
     subgraph Legend
          NoteM["M = config['intermediate_layers']"];
          NoteK["K = config['intermediate']"];
@@ -295,8 +270,7 @@ graph TD
          NoteInputFB["Head Input = Concat(Merged Features, Control Action Feedback)"];
     end
 
-   
-%% Styling (Earth Tones)
+    %% Styling (Earth Tones)
     style H1_BAYES,HN_BAYES fill:#556B2F,stroke:#333,color:#fff;
     style H1_BIAS,HN_BIAS fill:#4682B4,stroke:#333,color:#fff;
     style LSE1,LSD1,LMMD1,LSEN,LSDN,LMMDN fill:#696969,stroke:#333,color:#fff;
