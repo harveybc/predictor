@@ -162,26 +162,26 @@ graph TD
 %% Top Down layout
 
     %% Input Processing Subgraph
-    subgraph "Input Processing (Features Only)"
+    subgraph SP_Input ["Input Processing (Features Only)"] %% Changed syntax ID ["Title"]
         %% direction removed
         I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
 
-        subgraph "Feature Branches (Parallel)"
+        subgraph SP_Branches ["Feature Branches (Parallel)"] %% Changed syntax ID ["Title"]
              %% direction removed
              %% Layout branches Top-Down
              FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
              FS -- ... --> F_DOTS["..."];
              FS -- Feature n --> Fn_FLAT["Flatten"] --> Fn_DENSE["Dense x M"];
-        end
+        end %% Added end for SP_Branches
 
         %% Merging point
         F1_DENSE --> M{"Merge Concat Features"};
         F_DOTS --> M;
         Fn_DENSE --> M;
-    end
+    end %% Added end for SP_Input
 
     %% Output Heads Subgraph (Vertical Layout)
-    subgraph "Output Heads (Parallel)"
+    subgraph SP_Heads ["Output Heads (Parallel)"] %% Changed syntax ID ["Title"]
          %% direction removed
          %% Layout heads Top-Down
 
@@ -194,8 +194,7 @@ graph TD
         %% Dashed lines for clarity
 
 
-        subgraph "Head for Horizon 1" id=Head1
-
+        subgraph Head1 ["Head for Horizon 1"] %% Changed syntax ID ["Title"]
             %% Control Action Feedback Path (from previous step's control output)
             LF1[/"self.local_feedback[0]"/] --> LF1_TILEFLAT["Tile/Flatten (Batch)"];
 
@@ -211,12 +210,11 @@ graph TD
             H1_BAYES --> H1_ADD{"Add"};
             H1_BIAS --> H1_ADD;
             H1_ADD --> O1["Output H1"];
-        end %% End of Head 1 subgraph
+        end %% Added end for Head1
 
         %% --- Other heads similar (...) ---
 
-         subgraph "Head for Horizon N" id=HeadN
-
+         subgraph HeadN ["Head for Horizon N"] %% Changed syntax ID ["Title"]
              %% Control Action Feedback Path (from previous step's control output)
             LFN[/"self.local_feedback[N-1]"/] --> LFN_TILEFLAT["Tile/Flatten (Batch)"];
 
@@ -232,31 +230,31 @@ graph TD
             HN_BAYES --> HN_ADD{"Add"};
             HN_BIAS --> HN_ADD;
             HN_ADD --> ON["Output HN"];
-        end %% End of Head N subgraph
+        end %% Added end for HeadN
 
-    end %% End of Output Heads subgraph
+    end %% Added end for SP_Heads
 
     %% Loss Calculation Subgraph (Conceptual side process)
-    subgraph "Loss Calculation per Head (Updates Feedback & Control Action Lists)"
+    subgraph SP_Loss ["Loss Calculation per Head (Updates Feedback & Control Action Lists)"] %% Changed syntax ID ["Title"]
        %% direction removed
        %% Show loss as a separate flow
-        subgraph LossHead1
+        subgraph LossHead1 %% Simple ID ok if not linking to it
              O1 --> Loss1["Global::composite_loss(...)"];
              Loss1 -- Updates --> LSE1[/"self.last_signed_error[0]"/];
              Loss1 -- Updates --> LSD1[/"self.last_stddev[0]"/];
              Loss1 -- Updates --> LMMD1[/"self.last_mmd[0]"/];
              Loss1 -- Updates --> LF1[/"self.local_feedback[0]"/];
              %% Updated with ControlAction
-        end
-        subgraph LossHeadN
+        end %% Added end for LossHead1
+        subgraph LossHeadN %% Simple ID ok if not linking to it
              ON --> LossN["Global::composite_loss(...)"];
              LossN -- Updates --> LSEN[/"self.last_signed_error[N-1]"/];
              LossN -- Updates --> LSDN[/"self.last_stddev[N-1]"/];
              LossN -- Updates --> LMMDN[/"self.last_mmd[N-1]"/];
              LossN -- Updates --> LFN[/"self.local_feedback[N-1]"/];
              %% Updated with ControlAction
-        end
-    end %% End of Loss Calculation subgraph
+        end %% Added end for LossHeadN
+    end %% Added end for SP_Loss
 
 
     %% Final outputs list (still conceptually gathered)
@@ -266,12 +264,12 @@ graph TD
 
 
     %% Legend Subgraph
-    subgraph Legend
+    subgraph Legend %% Simple ID ok if not linking to it
          NoteM["M = config['intermediate_layers']"];
          NoteK["K = config['intermediate']"];
          NoteListUpdate["Loss Updates: self.last_xxx (metrics) & self.local_feedback (control action)"];
          NoteInputFB["Head Input = Concat(Merged Features, Control Action Feedback)"];
-    end %% End of Legend subgraph
+    end %% Added end for Legend
 
     %% Styling (Earth Tones)
     style H1_BAYES,HN_BAYES fill:#556B2F,stroke:#333,color:#fff;
