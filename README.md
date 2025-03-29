@@ -226,12 +226,12 @@ graph TD
     %% Loss Calculation (Conceptual - Updates Feedback Vars in self)
     subgraph "Loss Calculation per Head (Updates self.last_... lists)"
         direction LR
-        O1 --> Loss1["Global::composite_loss(..., head_index=0, lists=self.last_..., params=self.local_...)"];
+        O1 --> Loss1["Global::composite_loss(...)"];
         Loss1 -- Updates --> LSE1;
         Loss1 -- Updates --> LSD1;
         Loss1 -- Updates --> LMMD1;
 
-        ON --> LossN["Global::composite_loss(..., head_index=N-1, lists=self.last_..., params=self.local_...)"];
+        ON --> LossN["Global::composite_loss(...)"];
         LossN -- Updates --> LSEN;
         LossN -- Updates --> LSDN;
         LossN -- Updates --> LMMDN;
@@ -251,12 +251,18 @@ graph TD
          NoteProj["Feedback projected via Dense layer before Add"];
     end
 
-    %% Styling (Optional)
-    style H1_BAYES,HN_BAYES fill:#f9d,stroke:#333,stroke-width:2px;
-    style H1_BIAS,HN_BIAS fill:#ccf,stroke:#333,stroke-width:2px;
-    style LSE1,LSD1,LMMD1,LSEN,LSDN,LMMDN fill:#eff,stroke:#333;
-    style Loss1,LossN fill:#eee,stroke:#f00,stroke-dasharray: 5 5;
-    style NoteM,NoteK,NoteFB,NoteProj fill:#eee,stroke:#333,stroke-dasharray: 5 5;
-    style LF1_PROJ,LFN_PROJ fill:#ddd,stroke:#333;
+    %% Styling (Using Earth Tones for Readability with White Text)
+    %% Bayesian Layers: Dark Olive Green
+    style H1_BAYES,HN_BAYES fill:#556B2F,stroke:#333,stroke-width:1px,color:#fff;
+    %% Bias Layers: Steel Blue
+    style H1_BIAS,HN_BIAS fill:#4682B4,stroke:#333,stroke-width:1px,color:#fff;
+    %% Feedback Variable Nodes: Dim Gray
+    style LSE1,LSD1,LMMD1,LSEN,LSDN,LMMDN fill:#696969,stroke:#333,stroke-width:1px,color:#fff;
+    %% Loss Nodes: Slate Gray
+    style Loss1,LossN fill:#708090,stroke:#f00,stroke-dasharray:5 5,color:#fff;
+    %% Legend Notes: Saddle Brown
+    style NoteM,NoteK,NoteFB,NoteProj fill:#8B4513,stroke:#333,stroke-dasharray: 5 5,color:#fff;
+    %% Projection Nodes: Sienna
+    style LF1_PROJ,LFN_PROJ fill:#A0522D,stroke:#333,stroke-width:1px,color:#fff;
 
 ```
