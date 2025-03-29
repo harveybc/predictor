@@ -158,111 +158,116 @@ predictor/
 
 ## Example of plugin model:
 ```mermaid
-graph TD
+graph TD %% Top Down layout
+
+    %% Input Processing Subgraph
     subgraph "Input Processing (Features Only)"
+        direction LR %% Process features Left-to-Right
         I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
 
-        FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
-        FS -- ... --> F_DOTS["..."];
-        FS -- Feature n --> Fn_FLAT["Flatten"] --> Fn_DENSE["Dense x M"];
+        subgraph "Feature Branches (Parallel)"
+             direction TD %% Layout branches Top-Down
+             FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
+             FS -- ... --> F_DOTS["..."];
+             FS -- Feature n --> Fn_FLAT["Flatten"] --> Fn_DENSE["Dense x M"];
+        end
 
+        %% Merging point
         F1_DENSE --> M{"Merge Concat Features"};
         F_DOTS --> M;
         Fn_DENSE --> M;
     end
 
+    %% Output Heads Subgraph (Vertical Layout)
     subgraph "Output Heads (Parallel)"
-        %% M is the Merged Feature Tensor feeding all heads
+        direction TD %% Layout heads Top-Down
 
-        subgraph "Head for Horizon 1"
-            %% Loss-Generated Feedback for Head 1 (from previous step)
-            LSE1[/"self.last_signed_error[0]"/] --> LF1_COMBINE{"Combine/Stack (Feedback Vals)"};
-            LSD1[/"self.last_stddev[0]"/] --> LF1_COMBINE;
-            LMMD1[/"self.last_mmd[0]"/] --> LF1_COMBINE;
-            LF1_COMBINE --> LF1_TILEFLAT["Tile/Flatten (Batch)"];
-            LF1_TILEFLAT --> LF1_PROJ["Dense (Project Feedback)"];
-            %% Projection Layer Comment Moved Below
-            %% Combine Merged Input (M) with Projected Loss Feedback
-            M --> ADD1{"Add"};
-            LF1_PROJ --> ADD1;
+        %% Conceptual Link from Merged Features to all Heads
+        M -- To Each Head --> HeadInput{Input to Heads};
+        HeadInput -.-> Head1 subgraph; %% Dashed lines for clarity
+        HeadInput -.-> HeadN subgraph;
 
-            %% Head Layers
-            ADD1 --> H1_DENSE["Dense x K"];
-            %% Bayesian/Bias Layers
+
+        subgraph "Head for Horizon 1" id=Head1
+            %% Control Action Feedback Path (from previous step's control output)
+            LF1[/"self.local_feedback[0]"/] --> LF1_TILEFLAT["Tile/Flatten (Batch)"];
+
+            %% Combine Merged Features (M) with Control Action Feedback via Concatenate
+            M --> CONCAT1["Concatenate"];
+            LF1_TILEFLAT --> CONCAT1;    %% Concatenate control action feedback
+
+            %% Head Processing Layers
+            CONCAT1 --> H1_DENSE["Dense x K"];
             H1_DENSE --> H1_BAYES{"DenseFlipout (Bayesian)"};
             H1_DENSE --> H1_BIAS["Dense (Bias)"];
-            %% Head Output
             H1_BAYES --> H1_ADD{"Add"};
             H1_BIAS --> H1_ADD;
             H1_ADD --> O1["Output H1"];
         end
 
-        %% --- Other heads similar ---
+        %% --- Other heads similar (...) ---
 
-         subgraph "Head for Horizon N"
-            %% Loss-Generated Feedback for Head N (from previous step)
-            LSEN[/"self.last_signed_error[N-1]"/] --> LFN_COMBINE{"Combine/Stack (Feedback Vals)"};
-            LSDN[/"self.last_stddev[N-1]"/] --> LFN_COMBINE;
-            LMMDN[/"self.last_mmd[N-1]"/] --> LFN_COMBINE;
-            LFN_COMBINE --> LFN_TILEFLAT["Tile/Flatten (Batch)"];
-            LFN_TILEFLAT --> LFN_PROJ["Dense (Project Feedback)"];
-             %% Projection Layer Comment Moved Below
-            %% Combine Merged Input (M) with Projected Loss Feedback
-            M --> ADDN{"Add"};
-            LFN_PROJ --> ADDN;
+         subgraph "Head for Horizon N" id=HeadN
+             %% Control Action Feedback Path (from previous step's control output)
+            LFN[/"self.local_feedback[N-1]"/] --> LFN_TILEFLAT["Tile/Flatten (Batch)"];
 
-             %% Head Layers
-            ADDN --> HN_DENSE["Dense x K"];
-            %% Bayesian/Bias Layers
+            %% Combine Merged Features (M) with Control Action Feedback via Concatenate
+            M --> CONCATN["Concatenate"];
+            LFN_TILEFLAT --> CONCATN;    %% Concatenate control action feedback
+
+             %% Head Processing Layers
+            CONCATN --> HN_DENSE["Dense x K"];
             HN_DENSE --> HN_BAYES{"DenseFlipout (Bayesian)"};
             HN_DENSE --> HN_BIAS["Dense (Bias)"];
-            %% Head Output
             HN_BAYES --> HN_ADD{"Add"};
             HN_BIAS --> HN_ADD;
             HN_ADD --> ON["Output HN"];
         end
     end
 
-    %% Loss Calculation (Conceptual - Updates Feedback Vars in self)
-    subgraph "Loss Calculation per Head (Updates self.last_... lists)"
+    %% Loss Calculation Subgraph (Conceptual side process)
+    subgraph "Loss Calculation per Head (Updates Feedback & Control Action Lists)"
         direction LR
-        O1 --> Loss1["Global::composite_loss(...)"];
-        Loss1 -- Updates --> LSE1;
-        Loss1 -- Updates --> LSD1;
-        Loss1 -- Updates --> LMMD1;
+        %% Inputs to Loss conceptually include Head Output (Oi) and Ground Truth (y_true_i)
+        O1 --> Loss1["Global::composite_loss(..., head_index=0)"];
+        %% Loss Function Internal Logic:
+        %%   1. Calculates Metrics (LSE, LSD, LMMD)
+        %%   2. Calls dummy_feedback_control(Metrics, PID) -> ControlAction
+        %%   3. Updates lists:
+        Loss1 -- Updates --> LSE1[/"self.last_signed_error[0]"/];
+        Loss1 -- Updates --> LSD1[/"self.last_stddev[0]"/];
+        Loss1 -- Updates --> LMMD1[/"self.last_mmd[0]"/];
+        Loss1 -- Updates --> LF1[/"self.local_feedback[0]"/]; %% Updated with ControlAction
 
-        ON --> LossN["Global::composite_loss(...)"];
-        LossN -- Updates --> LSEN;
-        LossN -- Updates --> LSDN;
-        LossN -- Updates --> LMMDN;
+        %% Similar flow for Head N
+        ON --> LossN["Global::composite_loss(..., head_index=N-1)"];
+        LossN -- Updates --> LSEN[/"self.last_signed_error[N-1]"/];
+        LossN -- Updates --> LSDN[/"self.last_stddev[N-1]"/];
+        LossN -- Updates --> LMMDN[/"self.last_mmd[N-1]"/];
+        LossN -- Updates --> LFN[/"self.local_feedback[N-1]"/]; %% Updated with ControlAction
     end
 
 
     %% Final outputs list (still conceptually gathered)
-    O1 --> Z["Final Output List"];
+    O1 --> Z((Final Output List)); %% Circle for final output aggregation
     ON --> Z;
 
 
     %% Legend Subgraph
     subgraph Legend
-         NoteM["M = config['intermediate_layers'] (Feature Branch Layers)"];
-         NoteK["K = config['intermediate'] (Head Branch Layers)"];
-         NoteFB["Feedback Vars (self.last_... lists) updated by Global Loss (previous step)"];
-         NoteProj["Feedback projected via Dense layer before Add"];
+         NoteM["M = config['intermediate_layers']"];
+         NoteK["K = config['intermediate']"];
+         NoteListUpdate["Loss Updates: self.last_xxx (metrics) & self.local_feedback (control action)"];
+         NoteInputFB["Head Input = Concat(Merged Features, Control Action Feedback)"]; %% Updated Note
     end
 
-    %% Styling (Using Earth Tones for Readability with White Text)
-    %% Bayesian Layers: Dark Olive Green
-    style H1_BAYES,HN_BAYES fill:#556B2F,stroke:#333,stroke-width:1px,color:#fff;
-    %% Bias Layers: Steel Blue
-    style H1_BIAS,HN_BIAS fill:#4682B4,stroke:#333,stroke-width:1px,color:#fff;
-    %% Feedback Variable Nodes: Dim Gray
-    style LSE1,LSD1,LMMD1,LSEN,LSDN,LMMDN fill:#696969,stroke:#333,stroke-width:1px,color:#fff;
-    %% Loss Nodes: Slate Gray
+    %% Styling (Earth Tones)
+    style H1_BAYES,HN_BAYES fill:#556B2F,stroke:#333,color:#fff;
+    style H1_BIAS,HN_BIAS fill:#4682B4,stroke:#333,color:#fff;
+    style LSE1,LSD1,LMMD1,LSEN,LSDN,LMMDN fill:#696969,stroke:#333,color:#fff;
+    style LF1,LFN fill:#B8860B,stroke:#333,color:#fff; %% Style local_feedback nodes (DarkGoldenrod)
     style Loss1,LossN fill:#708090,stroke:#f00,stroke-dasharray:5 5,color:#fff;
-    %% Legend Notes: Saddle Brown
-    style NoteM,NoteK,NoteFB,NoteProj fill:#8B4513,stroke:#333,stroke-dasharray: 5 5,color:#fff;
-    %% Projection Nodes: Sienna
-    style LF1_PROJ,LFN_PROJ fill:#A0522D,stroke:#333,stroke-width:1px,color:#fff;
+    style NoteM,NoteK,NoteListUpdate,NoteInputFB fill:#8B4513,stroke:#333,stroke-dasharray:5 5,color:#fff;
+    style CONCAT1,CONCATN fill:#D2B48C; %% Style concat node - Tan color
 
 ```

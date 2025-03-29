@@ -108,36 +108,26 @@ def compute_mmd(x, y, sigma=1.0, sample_size=256):
     return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
 
 
-# --- Define composite loss ---
+# --- Composite Loss Function ---
 def composite_loss(y_true, y_pred,
-                   # Arguments needed for loss calculation and updates:
+                   # Arguments needed:
                    head_index,
                    mmd_lambda,
                    sigma,
-                   p, i, d, # Control parameters for this head
-                   list_last_signed_error, # The list of tf.Variables
-                   list_last_stddev,       # The list of tf.Variables
-                   list_last_mmd           # The list of tf.Variables
+                   p, i, d, # Control parameters for this head (tf.Variable)
+                   list_last_signed_error, # List of tf.Variables for metric storage
+                   list_last_stddev,       # List of tf.Variables for metric storage
+                   list_last_mmd,          # List of tf.Variables for metric storage
+                   list_local_feedback     # List of tf.Variables for control action storage/feedback
                    ):
     """
     Global composite loss function for a specific head.
-    Accepts feedback lists and control params as arguments.
-    Calls global dummy control func. Updates feedback variables in the passed lists.
-
-    Args:
-        y_true, y_pred: Tensors for this head.
-        head_index (int): Index of the head.
-        mmd_lambda (float): MMD weight.
-        sigma (float): MMD sigma.
-        p, i, d (tf.Variable): Control parameters for this specific head.
-        list_last_signed_error (list): List containing tf.Variable for signed errors.
-        list_last_stddev (list): List containing tf.Variable for std devs.
-        list_last_mmd (list): List containing tf.Variable for MMDs.
-
-    Returns:
-        total_loss: Scalar loss value for this head.
+    Calculates metrics (signed_error, stddev, mmd).
+    Calls global dummy_feedback_control with metrics and PID params.
+    Assigns control function output to list_local_feedback[head_index].
+    Also assigns metrics to list_last_xxx[head_index].
+    Returns the scalar loss value (MSE + Asymptote + MMD).
     """
-    # Ensure shapes are correct
     y_true = tf.reshape(y_true, [-1, 1])
     y_pred = tf.reshape(y_pred, [-1, 1])
     mag_true = y_true
@@ -145,51 +135,53 @@ def composite_loss(y_true, y_pred,
 
     # --- Calculate Primary Losses ---
     mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
-    mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma) # Call global MMD func
+    mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
     mse_min = tf.maximum(mse_loss_val, 1e-10)
 
     # --- Calculate Summary Statistics ---
     signed_avg_pred = tf.reduce_mean(mag_pred)
     signed_avg_true = tf.reduce_mean(mag_true)
-    abs_avg_true = tf.abs(signed_avg_true)
 
-    # --- Calculate Dynamic Asymptote Penalty (Original Logic, Renamed) ---
+    # --- Calculate Dynamic Asymptote Penalty (Original User Logic) ---
     def vertical_dynamic_asymptote(value, center):
         res = tf.cond(tf.greater_equal(value, center),
             lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20,
-            lambda: mse_loss_val*1e3 - 1
-        )
+            lambda: mse_loss_val*1e3 - 1)
         res = tf.cond(tf.greater_equal(center, value),
             lambda: mse_loss_val*1e3 - 1,
-            lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20
-        )
+            lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20)
         return res
     asymptote = vertical_dynamic_asymptote(signed_avg_pred, signed_avg_true)
 
-    # --- Calculate Feedback Values ---
+    # --- Calculate Feedback Metrics ---
     feedback_signed_error = signed_avg_true - signed_avg_pred
-    feedback_stddev = tf.reduce_mean(tf.abs(mag_true - mag_pred)) # Use MAE
-    feedback_mmd = mmd_loss_val
+    feedback_stddev = tf.reduce_mean(tf.abs(mag_true - mag_pred)) # MAE
+    feedback_mmd = mmd_loss_val # MMD Loss value
 
-    # --- Call Global Dummy Control Function ---
-    # Pass feedback values and the specific control parameters received as args
-    _ = dummy_feedback_control(feedback_signed_error, feedback_stddev, feedback_mmd, p, i, d)
+    # --- Call Control Function ---
+    # Pass feedback metrics and head-specific PID parameters (which are tf.Variables)
+    local_control_action = dummy_feedback_control(
+        feedback_signed_error, feedback_stddev, feedback_mmd, p, i, d
+    )
 
-    # --- Update Feedback Variables (Passed Lists) ---
-    # Use the lists passed as arguments
+    # --- Update Feedback Variables (using control dependencies) ---
     update_ops = [
+        # Store calculated metrics
         list_last_signed_error[head_index].assign(feedback_signed_error),
         list_last_stddev[head_index].assign(feedback_stddev),
-        list_last_mmd[head_index].assign(feedback_mmd)
+        list_last_mmd[head_index].assign(feedback_mmd),
+        # Store the output of the control function - THIS IS THE FEEDBACK FOR THE MODEL
+        list_local_feedback[head_index].assign(local_control_action)
     ]
 
     with tf.control_dependencies(update_ops):
-        # Calculate final loss *after* ensuring updates are part of the graph
+        # Calculate final loss term
         total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-        # REMOVED the tf.identity line - total_loss is calculated and used directly
 
-    # Return the calculated scalar loss value directly
+    # Return the final scalar loss value
     return total_loss
+
+
 
 # --- Can be defined inside the class or outside ---
 @tf.function
@@ -202,12 +194,7 @@ def dummy_feedback_control(signed_error, stddev, mmd, p, i, d):
     control_action = tf.identity(p)
     return control_action
 
-# --- Placeholder for MMD function ---
-@tf.function
-def compute_mmd(x, y, sigma=1.0):
-    # Replace with your actual MMD implementation using TensorFlow ops
-    print("WARNING: Using dummy compute_mmd function.")
-    return tf.constant(0.0, dtype=tf.float32)
+
 # --- Named initializer to avoid lambda serialization warnings ---
 def random_normal_initializer_44(shape, dtype=None):
     return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
@@ -305,66 +292,49 @@ class Plugin:
     }
     plugin_debug_vars = ['batch_size', 'num_branch_layers', 'branch_units', 'merged_units', 'learning_rate', 'l2_reg', 'time_horizon']
 
-    def __init__(self, config): # Expect config dict here
+    def __init__(self, config):
         """
         Initialize the predictor plugin, including feedback/control lists.
         """
-
-        # Ensure config is provided
         if config is None:
             raise ValueError("Configuration dictionary ('config') is required for initialization.")
 
-        # Store default parameters (consider merging with or overriding by input config)
+        # Store parameters, update with config
         self.plugin_params = {
             "l2_reg": 0.001, "activation": "relu", "branch_units": 64,
             "merged_units": 128, "learning_rate": 0.001, "mmd_lambda": 0.1,
-            "sigma_mmd": 1.0
-            # Add other defaults as needed
+            "sigma_mmd": 1.0, "predicted_horizons": [1] # Default horizon if not in config
         }
         self.params = self.plugin_params.copy()
         if config:
-           self.params.update(config) # Update defaults with provided config
+           self.params.update(config)
+
+        # Ensure predicted_horizons exists after potential update
+        if 'predicted_horizons' not in self.params:
+             raise ValueError("Config must contain 'predicted_horizons' list.")
+        predicted_horizons = self.params['predicted_horizons']
+        num_outputs = len(predicted_horizons)
 
         self.model = None
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
-        print("DEBUG: Initialized kl_weight_var with 0.0")
 
-        # --- Initialize Control and Feedback Lists ---
-        # Requires 'predicted_horizons' in config
-        if 'predicted_horizons' not in config:
-             raise ValueError("Config must contain 'predicted_horizons' list.")
-        predicted_horizons = config['predicted_horizons']
-        num_outputs = len(predicted_horizons)
-
+        # --- Initialize Control Parameter & Feedback Lists ---
         print(f"Initializing control and feedback lists for {num_outputs} outputs in __init__.")
 
-        # Initialize Control Parameters (Example: P=0, I=1, D=1 per head)
-        self.local_p_control = [
-            tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_p_{i}")
-            for i in range(num_outputs)
-        ]
-        self.local_i_control = [
-            tf.Variable(1.0, trainable=False, dtype=tf.float32, name=f"local_i_{i}")
-            for i in range(num_outputs)
-        ]
-        self.local_d_control = [
-            tf.Variable(1.0, trainable=False, dtype=tf.float32, name=f"local_d_{i}")
-            for i in range(num_outputs)
-        ]
+        # Control Parameters per Head (Values are examples)
+        self.local_p_control = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_p_{i}") for i in range(num_outputs)]
+        self.local_i_control = [tf.Variable(1.0, trainable=False, dtype=tf.float32, name=f"local_i_{i}") for i in range(num_outputs)]
+        self.local_d_control = [tf.Variable(1.0, trainable=False, dtype=tf.float32, name=f"local_d_{i}") for i in range(num_outputs)]
 
-        # Initialize Feedback Value Placeholders (updated by loss function)
-        self.last_signed_error = [
-            tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"last_signed_error_{i}")
-            for i in range(num_outputs)
-        ]
-        self.last_stddev = [
-            tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"last_stddev_{i}")
-            for i in range(num_outputs)
-        ]
-        self.last_mmd = [
-            tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"last_mmd_{i}")
-            for i in range(num_outputs)
-        ]
+        # Feedback Metrics Storage per Head (updated by loss)
+        self.last_signed_error = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"last_signed_error_{i}") for i in range(num_outputs)]
+        self.last_stddev = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"last_stddev_{i}") for i in range(num_outputs)]
+        self.last_mmd = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"last_mmd_{i}") for i in range(num_outputs)]
+
+        # Feedback Action Storage per Head (output of control func, INPUT to model) - NEW/REVISED
+        # Shape depends on output of dummy_feedback_control. If it returns scalar P, shape is scalar.
+        self.local_feedback = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_feedback_{i}") for i in range(num_outputs)]
+
         print("Control/Feedback lists initialized.")
 
         # --- Apply DenseFlipout Patch ---
@@ -372,10 +342,11 @@ class Plugin:
             def _patched_add_variable(layer_instance, name, shape, dtype, initializer, trainable, **kwargs):
                 return layer_instance.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
             tfp.layers.DenseFlipout.add_variable = _patched_add_variable
-            tfp.layers.DenseFlipout._already_patched_add_variable = True # Mark as patched
+            tfp.layers.DenseFlipout._already_patched_add_variable = True
             print("DEBUG: DenseFlipout patched successfully in __init__.")
         else:
             print("DEBUG: DenseFlipout already patched.")
+
 
     def set_params(self, **kwargs):
         """Update predictor plugin parameters with provided configuration."""
@@ -391,33 +362,27 @@ class Plugin:
         debug_info.update(self.get_debug_info())
 
 
-
+    # --- Define within your YourPredictorPlugin class ---
     def build_model(self, input_shape, x_train, config):
         """
         Build model: processes features, merges, feeds into heads.
-        Head inputs include merged features + projected loss-generated feedback (previous step).
-        NO global feedback branch. Assumes feedback/control lists initialized in __init__.
-        Uses GLOBAL composite_loss and GLOBAL dummy_feedback_control.
-
-        Args:
-            input_shape (tuple): Expected input shape (window_size, num_channels).
-            x_train (np.ndarray): Training data (can be None).
-            config (dict): Configuration parameters.
+        Head inputs CONCATENATE merged features + control action feedback
+        (read from self.local_feedback, generated by loss/control func previous step).
+        Assumes feedback/control lists initialized in __init__.
+        Uses GLOBAL composite_loss. NO global feedback branch.
         """
 
-        # --- Verify lists are initialized (essential check) ---
-        if self.last_signed_error is None or self.local_p_control is None:
+        # --- Pre-checks ---
+        if self.local_feedback is None or self.local_p_control is None: # Check essential lists
              raise RuntimeError("Feedback/Control lists were not initialized in __init__.")
 
         window_size, num_channels = input_shape
         predicted_horizons = config['predicted_horizons']
         num_outputs = len(predicted_horizons)
+        if len(self.local_feedback) != num_outputs: # Verify length
+             raise RuntimeError(f"Initialized list length != num_outputs. Re-initialize?")
 
-        # Verify list lengths match num_outputs
-        if len(self.last_signed_error) != num_outputs:
-             raise RuntimeError(f"Init list length ({len(self.last_signed_error)}) != num_outputs ({num_outputs}).")
-
-        # --- Get parameters from config (use self.params for defaults) ---
+        # --- Get Parameters ---
         l2_reg = config.get("l2_reg", self.params.get("l2_reg", 0.001))
         activation = config.get("activation", self.params.get("activation", "relu"))
         num_intermediate_layers = config['intermediate_layers']
@@ -430,7 +395,6 @@ class Plugin:
 
         # --- Parallel Feature Processing Branches ---
         feature_branch_outputs = []
-        print(f"DEBUG: Building {num_channels} feature processing branches...")
         for c in range(num_channels):
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
                                    name=f"feature_{c+1}_input")(inputs)
@@ -442,53 +406,42 @@ class Plugin:
 
         # --- Merging Feature Branches ONLY ---
         if len(feature_branch_outputs) == 1:
-             merged = feature_branch_outputs[0]
-             merged = tf.identity(merged, name="merged_features") # Use identity to name clearly
+             merged = tf.identity(feature_branch_outputs[0], name="merged_features")
         elif len(feature_branch_outputs) > 1:
              merged = Concatenate(name="merged_features")(feature_branch_outputs)
         else:
              raise ValueError("Model must have at least one input feature channel.")
-        print(f"DEBUG: Merged feature branches shape (symbolic): {merged.shape}")
 
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
-        # Assumes posterior_mean_field_custom, prior_fn, random_normal_initializer_44 defined/accessible
+        # Assumes posterior_mean_field_custom, prior_fn, random_normal_initializer_44 accessible
 
         # --- Build Multiple Output Heads ---
         outputs_list = []
         output_names = []
-        print(f"DEBUG: Building {num_outputs} output heads with loss-generated feedback...")
 
-        # Helper to get combined loss feedback (accessing self attributes)
-        # Defined inside build_model to easily access self
-        def get_specific_loss_feedback(tensor_input, head_index):
+        # Helper to get the CONTROL ACTION feedback for a specific head
+        def get_specific_control_feedback(tensor_input, head_index):
+             """Retrieves control action feedback and tiles it for the batch."""
              batch_size = tf.shape(tensor_input)[0]
-             # Access instance attributes lists directly
-             lse = tf.identity(self.last_signed_error[head_index])
-             lsd = tf.identity(self.last_stddev[head_index])
-             lmmd = tf.identity(self.last_mmd[head_index])
-             # Stack feedback values -> shape=(3,)
-             stacked_feedback = tf.stack([lse, lsd, lmmd], axis=0)
-             # Tile across batch -> shape=(batch_size, 3)
-             tiled_feedback = tf.tile(tf.expand_dims(stacked_feedback, 0), [batch_size, 1])
+             # Access the control action stored in the instance's list
+             control_action = tf.identity(self.local_feedback[head_index]) # Shape likely scalar
+             # Tile across batch -> shape=(batch_size, 1) if scalar
+             tiled_feedback = tf.tile(tf.reshape(control_action, [1, -1]), [batch_size, 1])
              return tiled_feedback
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
-            # --- Integrate Loss-Generated Feedback (Previous Step) ---
-            combined_loss_feedback = Lambda(lambda x: get_specific_loss_feedback(x, i),
-                                              name=f"get_loss_fb{branch_suffix}")(inputs)
+            # --- Get Control Action Feedback (Previous Step) ---
+            # This feedback IS the output of the control function from the last loss calc
+            control_feedback_input = Lambda(lambda x: get_specific_control_feedback(x, i),
+                                              name=f"get_control_fb{branch_suffix}")(inputs)
 
-            # --- Project Feedback to Match Merged Dimension ---
-            # Use 'linear' activation for simple projection
-            feedback_projected = Dense(merged.shape[-1], activation='linear',
-                                       name=f"project_loss_fb{branch_suffix}")(combined_loss_feedback)
-
-            # --- Combine Merged Features + Projected Feedback ---
-            head_input_combined = Add(name=f"head_input_combined{branch_suffix}")(
-                [merged, feedback_projected]
+            # --- Combine Merged Features + Control Action Feedback via Concatenation ---
+            head_input_combined = Concatenate(name=f"head_input_combined{branch_suffix}")(
+                [merged, control_feedback_input] # Concatenate features and control action
             )
 
             # --- Head Intermediate Dense Layers ---
@@ -501,8 +454,8 @@ class Plugin:
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
                 units=1, activation='linear',
-                kernel_posterior_fn=lambda dtype, shape, bias_size, train, name=flipout_layer_name: posterior_mean_field_custom(dtype, shape, bias_size, train, name),
-                kernel_prior_fn=lambda dtype, shape, bias_size, train, name=flipout_layer_name: prior_fn(dtype, shape, bias_size, train, name),
+                kernel_posterior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: posterior_mean_field_custom(dt, sh, bs, tr, nm),
+                kernel_prior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: prior_fn(dt, sh, bs, tr, nm),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT, name=flipout_layer_name
             )
             bayesian_output_branch = Lambda(lambda t: flipout_layer_branch(t), name=f"bayesian_output{branch_suffix}")(head_dense_output)
@@ -519,57 +472,52 @@ class Plugin:
             # --- End of Head ---
 
         # --- Model Definition ---
-        self.model = Model(inputs=inputs, outputs=outputs_list, name=f"LossFeedbackPredictor_{len(predicted_horizons)}H")
-        print("DEBUG: Model instantiated.")
+        self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
 
         # --- Compilation (Using GLOBAL composite_loss) ---
         optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
         mmd_lambda = config.get("mmd_lambda", self.params.get("mmd_lambda", 0.1))
         sigma_mmd = config.get("sigma_mmd", self.params.get("sigma_mmd", 1.0))
 
-        # Prepare loss dictionary, passing instance lists and params to GLOBAL composite_loss
+        # Prepare loss dictionary, passing ALL necessary lists and params to GLOBAL composite_loss
         loss_dict = {}
-        print("DEBUG: Preparing loss dictionary for compilation...")
         for i, name in enumerate(output_names):
             # Capture necessary values from self for this specific head
-            # These are tf.Variable objects
             p_val = self.local_p_control[i]
             i_val = self.local_i_control[i]
             d_val = self.local_d_control[i]
-            # Capture references to the lists themselves
+            # Capture references to ALL relevant lists from self
             lse_list = self.last_signed_error
             lsd_list = self.last_stddev
             lmmd_list = self.last_mmd
+            lf_list = self.local_feedback # Capture the list for control action storage
 
             # Define loss func for this head using captured values/references
             loss_fn_for_head = (
-                lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list:
+                lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list, lf=lf_list:
                     lambda y_true, y_pred: composite_loss( # Call GLOBAL func
                         y_true, y_pred,
                         head_index=index,       # Pass correct index
                         mmd_lambda=mmd_lambda,  # Pass config value
                         sigma=sigma_mmd,        # Pass config value
                         p=p, i=iv, d=dv,        # Pass captured head control params (tf.Variable)
-                        list_last_signed_error=lse, # Pass captured list references
+                        list_last_signed_error=lse, # Pass list refs for metric storage
                         list_last_stddev=lsd,
-                        list_last_mmd=lmmd
+                        list_last_mmd=lmmd,
+                        list_local_feedback=lf     # Pass list ref for control action storage
                     )
-            )(i) # Immediately invoke outer lambda with current loop variable i
+            )(i) # Immediately invoke outer lambda
             loss_dict[name] = loss_fn_for_head
-            print(f"  - Loss function created for head {i} ('{name}')")
 
-        # Prepare metrics dictionary (Assume mae_magnitude, r2_metric are defined globally/imported)
+        # Prepare metrics dictionary
         metrics_dict = {name: [mae_magnitude, r2_metric] for name in output_names}
 
         self.model.compile(optimizer=optimizer,
                            loss=loss_dict,
                            metrics=metrics_dict)
-        print("DEBUG: Model compiled successfully.")
 
-        print(f"Loss-Feedback Predictor model built successfully for {num_outputs} horizons: {predicted_horizons}.")
-        self.model.summary(line_length=150) # Use longer lines for summary
-
-
+        print(f"Control-Feedback Predictor model built successfully for {num_outputs} horizons.")
+        self.model.summary(line_length=150)
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
