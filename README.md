@@ -163,11 +163,13 @@ graph TD
 
     %% Input Processing Subgraph
     subgraph "Input Processing (Features Only)"
-        direction LR %% Process features Left-to-Right
+        direction LR
+        %% Process features Left-to-Right
         I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
 
         subgraph "Feature Branches (Parallel)"
-             direction TD %% Layout branches Top-Down
+             direction TD
+             %% Layout branches Top-Down
              FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
              FS -- ... --> F_DOTS["..."];
              FS -- Feature n --> Fn_FLAT["Flatten"] --> Fn_DENSE["Dense x M"];
@@ -181,11 +183,13 @@ graph TD
 
     %% Output Heads Subgraph (Vertical Layout)
     subgraph "Output Heads (Parallel)"
-        direction TD %% Layout heads Top-Down
+        direction TD
+        %% Layout heads Top-Down
 
         %% Conceptual Link from Merged Features to all Heads
         M -- To Each Head --> HeadInput{Input to Heads};
-        HeadInput -.-> Head1 subgraph; %% Dashed lines for clarity
+        HeadInput -.-> Head1 subgraph;
+        %% Dashed lines for clarity
         HeadInput -.-> HeadN subgraph;
 
 
@@ -195,7 +199,8 @@ graph TD
 
             %% Combine Merged Features (M) with Control Action Feedback via Concatenate
             M --> CONCAT1["Concatenate"];
-            LF1_TILEFLAT --> CONCAT1;    %% Concatenate control action feedback
+            LF1_TILEFLAT --> CONCAT1;
+            %% Concatenate control action feedback
 
             %% Head Processing Layers
             CONCAT1 --> H1_DENSE["Dense x K"];
@@ -214,7 +219,8 @@ graph TD
 
             %% Combine Merged Features (M) with Control Action Feedback via Concatenate
             M --> CONCATN["Concatenate"];
-            LFN_TILEFLAT --> CONCATN;    %% Concatenate control action feedback
+            LFN_TILEFLAT --> CONCATN;
+            %% Concatenate control action feedback
 
              %% Head Processing Layers
             CONCATN --> HN_DENSE["Dense x K"];
@@ -228,7 +234,8 @@ graph TD
 
     %% Loss Calculation Subgraph (Conceptual side process)
     subgraph "Loss Calculation per Head (Updates Feedback & Control Action Lists)"
-        direction LR %% Show loss as a separate flow
+        direction LR
+        %% Show loss as a separate flow
         subgraph LossHead1
              O1 --> Loss1["Global::composite_loss(...)"];
              Loss1 -- Updates --> LSE1[/"self.last_signed_error[0]"/];
@@ -247,7 +254,8 @@ graph TD
 
 
     %% Final outputs list (still conceptually gathered)
-    O1 --> Z((Final Output List)); %% Circle for final output aggregation
+    O1 --> Z((Final Output List));
+    %% Circle for final output aggregation
     ON --> Z;
 
 
