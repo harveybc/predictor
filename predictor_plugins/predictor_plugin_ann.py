@@ -471,9 +471,10 @@ class Plugin:
             output_names.append(output_name)
             # --- End of Head ---
 
+        self.output_names = output_names # Store output names for later use
         # --- Model Definition ---
         self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
-
+        
         # --- Compilation (Using GLOBAL composite_loss) ---
         optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
         mmd_lambda = config.get("mmd_lambda", self.params.get("mmd_lambda", 0.1))
@@ -519,7 +520,67 @@ class Plugin:
         print(f"Control-Feedback Predictor model built successfully for {num_outputs} horizons.")
         self.model.summary(line_length=150)
 
+    # --- Method within YourPredictorPlugin class ---
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
+        """
+        Trains the multi-output model using provided data and configuration.
+
+        Expects y_train and y_val to be dictionaries mapping output layer names
+        to their corresponding target numpy arrays (e.g., shape [num_samples, 1]).
+        Utilizes KL annealing and other callbacks during training.
+        Calculates final metrics based on the specific output head designated
+        by config['plotted_horizon'].
+
+        Args:
+            x_train (np.ndarray): Training input features.
+            y_train (dict): Dictionary of training target arrays for each output head.
+            epochs (int): Number of training epochs.
+            batch_size (int): Batch size for training.
+            threshold_error: (Not used in provided snippet, kept for signature consistency).
+            x_val (np.ndarray): Validation input features.
+            y_val (dict): Dictionary of validation target arrays for each output head.
+            config (dict): Configuration dictionary for training parameters, MUST contain
+                           'predicted_horizons' (list) and 'plotted_horizon' (int).
+
+        Returns:
+            tuple: Contains history object, list of train predictions per head,
+                   list of train uncertainties (placeholders), list of validation
+                   predictions per head, list of validation uncertainties (placeholders).
+
+        Raises:
+            ValueError: If config is missing required keys or if 'plotted_horizon'
+                        is not found within 'predicted_horizons'.
+            TypeError: If y_train or y_val are not dictionaries.
+            AttributeError: If self.output_names was not set by build_model.
+        """
+        # --- Configuration Validation ---
+        if config is None:
+            raise ValueError("Configuration dictionary ('config') is required for training.")
+        if 'predicted_horizons' not in config:
+            raise ValueError("Config dictionary must contain the key 'predicted_horizons' (list of ints).")
+        if 'plotted_horizon' not in config:
+            raise ValueError("Config dictionary must contain the key 'plotted_horizon' (int).")
+
+        predicted_horizons = config['predicted_horizons']
+        plotted_horizon = config['plotted_horizon'] # Horizon used for final metric reporting
+
+        # Validate that the plotted_horizon is one of the predicted horizons
+        if plotted_horizon not in predicted_horizons:
+            raise ValueError(
+                f"Invalid configuration: 'plotted_horizon' ({plotted_horizon}) "
+                f"is not present in the 'predicted_horizons' list ({predicted_horizons}). "
+                f"Please ensure 'plotted_horizon' matches one of the values in 'predicted_horizons'."
+            )
+
+        # Find the index corresponding to the plotted horizon
+        try:
+            plotted_index = predicted_horizons.index(plotted_horizon)
+        except ValueError:
+             # This case should be caught by the 'in' check above, but added for robustness
+             raise ValueError(f"'plotted_horizon' {plotted_horizon} not found in {predicted_horizons} (index error).")
+
+
+        # --- Inner Class for KL Annealing Callback ---
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
@@ -529,46 +590,89 @@ class Plugin:
             def on_epoch_begin(self, epoch, logs=None):
                 new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
                 self.plugin.kl_weight_var.assign(new_kl)
-                print(f"DEBUG: Epoch {epoch+1}: KL weight updated to {new_kl}")
+                # print(f"Epoch {epoch+1}: KL weight updated to {new_kl}")
 
-        anneal_epochs = config.get("kl_anneal_epochs", 10) if config is not None else 10
+        # --- Setup Callbacks ---
+        anneal_epochs = config.get("kl_anneal_epochs", self.params.get("kl_anneal_epochs", 10))
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        min_delta = config.get("min_delta", 1e-4) if config is not None else 1e-4
-        
+        min_delta_early_stopping = config.get("min_delta", self.params.get("min_delta", 1e-4))
+        patience_early_stopping = self.params.get('early_patience', 10)
+        start_from_epoch_es = self.params.get('start_from_epoch', 10)
+        patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 4))) # Ensure patience >= 1
+
+        # Assumes relevant Callback classes are imported/defined
         callbacks = [
-            EarlyStoppingWithPatienceCounter(   monitor='val_loss',
-                                                patience=self.params.get('early_patience', 10),
-                                                restore_best_weights=True,
-                                                verbose=1,
-                                                start_from_epoch=self.params.get('start_from_epoch', 10),
-                                                min_delta=min_delta),
-            ReduceLROnPlateauWithCounter(monitor="val_loss",
-                                         factor=0.5,
-                                         patience=config.get("early_patience", 20) / 4,
-                                         verbose=1),
-            LambdaCallback(on_epoch_end=lambda epoch, logs: 
-                           print(f"DEBUG: Learning Rate at epoch {epoch+1}: {K.get_value(self.model.optimizer.learning_rate)}")),
+            EarlyStoppingWithPatienceCounter(
+                monitor='val_loss', patience=patience_early_stopping, restore_best_weights=True,
+                verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
+            ),
+            ReduceLROnPlateauWithCounter(
+                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, verbose=1
+            ),
+            LambdaCallback(on_epoch_end=lambda epoch, logs:
+                           print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
             ClearMemoryCallback(),
             kl_callback
         ]
 
+        # --- Input Data Verification ---
+        if not isinstance(y_train, dict) or not isinstance(y_val, dict):
+             raise TypeError("y_train and y_val must be dictionaries for multi-output models.")
+        if not hasattr(self, 'output_names') or not self.output_names:
+             raise AttributeError("Model output names not found. Ensure build_model sets self.output_names.")
+        if len(self.output_names) != len(predicted_horizons):
+             raise ValueError("Mismatch between self.output_names and config['predicted_horizons'].")
+        # Check if required target keys exist
+        plotted_output_name = f"output_horizon_{plotted_horizon}"
+        if plotted_output_name not in y_train or plotted_output_name not in y_val:
+             raise ValueError(f"Target dictionaries y_train/y_val missing required key: '{plotted_output_name}'")
+        # Optional: Check all keys match
+        if set(y_train.keys()) != set(self.output_names) or set(y_val.keys()) != set(self.output_names):
+             print("WARNING: Target data dictionary keys may not perfectly match all model output names.")
 
-        print(f"DEBUG: Starting training for {epochs} epochs with batch size {batch_size}")
-        history = self.model.fit(x_train, y_train[0],
+
+        # --- Model Training ---
+        # print(f"Starting training for {epochs} epochs with batch size {batch_size}")
+        history = self.model.fit(x_train, y_train, # Pass dict
                                  epochs=epochs,
                                  batch_size=batch_size,
-                                 validation_data=(x_val, y_val[0]),
+                                 validation_data=(x_val, y_val), # Pass dict
                                  callbacks=callbacks,
                                  verbose=1)
-        train_preds = self.model.predict(x_train, batch_size=batch_size)
-        val_preds = self.model.predict(x_val, batch_size=batch_size)
-        train_uncertainty = np.zeros_like(train_preds)
-        val_uncertainty = np.zeros_like(val_preds)
-        self.calculate_mae(y_train[0], train_preds)
-        self.calculate_r2(y_train[0], train_preds)
-        return history, train_preds, train_uncertainty, val_preds, val_uncertainty
 
+        # --- Post-Training Predictions ---
+        list_train_preds = self.model.predict(x_train, batch_size=batch_size)
+        list_val_preds = self.model.predict(x_val, batch_size=batch_size)
+        list_train_uncertainty = [np.zeros_like(preds) for preds in list_train_preds]
+        list_val_uncertainty = [np.zeros_like(preds) for preds in list_val_preds]
+
+        # --- Post-Training Metrics (for the configured 'plotted_horizon') ---
+        # Assumes self.calculate_mae and self.calculate_r2 methods exist
+        try:
+            # Get target data for the specific plotted horizon
+            y_train_plotted = y_train[plotted_output_name]
+            # Get prediction data for the specific plotted horizon using its index
+            train_preds_plotted = list_train_preds[plotted_index]
+
+            # Calculate metrics using data for the specified head
+            print(f"Calculating final MAE/R2 for plotted horizon: {plotted_horizon} (Index: {plotted_index})")
+            if hasattr(self, 'calculate_mae') and callable(self.calculate_mae):
+                self.calculate_mae(y_train_plotted, train_preds_plotted)
+            if hasattr(self, 'calculate_r2') and callable(self.calculate_r2):
+                self.calculate_r2(y_train_plotted, train_preds_plotted)
+        except KeyError:
+            print(f"ERROR: Could not find key '{plotted_output_name}' in y_train dictionary for metric calculation.")
+        except IndexError:
+             print(f"ERROR: Could not get prediction index {plotted_index} for metric calculation.")
+        except Exception as e:
+             print(f"ERROR during post-training metric calculation: {e}")
+
+
+        # Return history and lists of predictions/uncertainties
+        return history, list_train_preds, list_train_uncertainty, list_val_preds, list_val_uncertainty
+    
+    
     def predict_with_uncertainty(self, x_test, mc_samples=100):
         predictions = np.array([self.model(x_test, training=True).numpy() for _ in range(mc_samples)])
         mean_predictions = np.mean(predictions, axis=0)
