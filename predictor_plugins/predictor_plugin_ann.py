@@ -253,14 +253,74 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
         #total_loss = 1e2*mse_loss_val + slope
     return total_loss
 
-
-
 # --- Named initializer to avoid lambda serialization warnings ---
 def random_normal_initializer_44(shape, dtype=None):
     return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
 
+# Build Dense branches for trend, seasonal, and noise channels.
+def build_branch(branch_input, branch_name):
+    x = Flatten(name=f"{branch_name}_flatten")(branch_input)
+    for i in range(num_branch_layers):
+        x = Dense(branch_units, activation=activation,
+                kernel_regularizer=l2(l2_reg),
+                name=f"{branch_name}_dense_{i+1}")(x)
+    return x
+
+def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
+    """Custom posterior distribution function for DenseFlipout kernel."""
+    print(f"DEBUG: posterior_mean_field_custom (name={name}):")
+    print(f"       dtype={dtype}, kernel_shape={kernel_shape}, bias_size={bias_size} (overridden to 0), trainable={trainable}")
+    if not isinstance(name, str): name = None # Ensure name is string or None
+    bias_size = 0 # Force bias size to 0 for kernel posterior
+    n = int(np.prod(kernel_shape)) + bias_size
+    c = np.log(np.expm1(1.))
+    # Use unique variable names based on the layer name if provided
+    loc_name = f"{name}_loc" if name else "posterior_loc"
+    scale_name = f"{name}_scale" if name else "posterior_scale"
+    loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name=loc_name)
+    scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name=scale_name)
+    scale = 1e-3 + tf.nn.softplus(scale + c)
+    scale = tf.clip_by_value(scale, 1e-3, 1.0)
+    print(f"DEBUG: posterior: created loc name: {loc.name}, shape: {loc.shape}")
+    print(f"DEBUG: posterior: created scale name: {scale.name}, shape: {scale.shape}")
+    try:
+        loc_reshaped = tf.reshape(loc, kernel_shape)
+        scale_reshaped = tf.reshape(scale, kernel_shape)
+        print(f"DEBUG: posterior: reshaped loc to {loc_reshaped.shape} and scale to {scale_reshaped.shape}")
+    except Exception as e:
+        print(f"DEBUG: Exception during reshape in posterior (name={name}):", e)
+        raise e
+    # Ensure reinterpreted_batch_ndims matches the rank of the kernel shape
+    return tfp.distributions.Independent(
+        tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+        reinterpreted_batch_ndims=len(kernel_shape)
+    )
+
+def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
+    """Custom prior distribution function for DenseFlipout kernel."""
+    print(f"DEBUG: prior_fn (name={name}):")
+    print(f"       dtype={dtype}, kernel_shape={kernel_shape}, bias_size={bias_size} (overridden to 0), trainable={trainable}")
+    if not isinstance(name, str): name = None # Ensure name is string or None
+    bias_size = 0 # Force bias size to 0 for kernel prior
+    n = int(np.prod(kernel_shape)) + bias_size
+    loc = tf.zeros([n], dtype=dtype)
+    scale = tf.ones([n], dtype=dtype)
+    print(f"DEBUG: prior_fn: computed n={n}")
+    try:
+        loc_reshaped = tf.reshape(loc, kernel_shape)
+        scale_reshaped = tf.reshape(scale, kernel_shape)
+        print(f"DEBUG: prior_fn: reshaped loc to {loc_reshaped.shape} and scale to {scale_reshaped.shape}")
+    except Exception as e:
+        print(f"DEBUG: Exception during reshape in prior_fn (name={name}):", e)
+        raise e
+    # Ensure reinterpreted_batch_ndims matches the rank of the kernel shape
+    return tfp.distributions.Independent(
+        tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
+        reinterpreted_batch_ndims=len(kernel_shape)
+    )
+
 # ---------------------------
-# Multi-Branch Predictor Plugin Definition
+# Multi-Branch Predictor Plugin Class Definition
 # ---------------------------
 class Plugin:
     """
@@ -296,6 +356,18 @@ class Plugin:
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
         print("DEBUG: Initialized kl_weight_var with 0.0")
 
+    # Apply this patch once globally or within your class initialization (__init__)
+    # before the build_model method is ever called.
+    if not hasattr(tfp.layers.DenseFlipout, '_already_patched_add_variable'):
+        def _patched_add_variable(layer_instance, name, shape, dtype, initializer, trainable, **kwargs):
+            # Use layer_instance instead of self
+            return layer_instance.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
+        tfp.layers.DenseFlipout.add_variable = _patched_add_variable
+        tfp.layers.DenseFlipout._already_patched_add_variable = True # Mark as patched
+        print("DEBUG: DenseFlipout patched successfully.")
+    else:
+        print("DEBUG: DenseFlipout already patched.")
+
     def set_params(self, **kwargs):
         """Update predictor plugin parameters with provided configuration."""
         for key, value in kwargs.items():
@@ -309,183 +381,154 @@ class Plugin:
         """Add predictor plugin debug information to the given dictionary."""
         debug_info.update(self.get_debug_info())
 
+
+
     def build_model(self, input_shape, x_train, config):
         """
-        Build a multi-branch model for forecasting returns using STL-decomposed data.
+        Build a multi-branch, multi-output model for forecasting returns using STL-decomposed data.
         The architecture processes the trend, seasonal, and noise channels via Dense branches,
-        while the error and std feedback channels are simply flattened and then concatenated with the branch outputs.
-        The merged features are passed to a Dense layer, and finally to a Bayesian output layer (DenseFlipout)
-        plus a deterministic bias layer.
-        
+        concatenates them, and then feeds the merged features into multiple identical output heads,
+        one for each predicted horizon. Each head consists of two Dense layers, a Bayesian
+        DenseFlipout layer, and a deterministic bias Dense layer.
+
         Args:
-            input_shape (tuple): Expected input shape (window_size, num_channels).
-                                  Originally, num_channels is 3 (trend, seasonal, noise).
-                                  With error and std channels added, the raw input is augmented to shape (window_size, 5).
-            x_train (np.ndarray): Training data (for shape inference).
-            config (dict): Configuration parameters.
+            input_shape (tuple): Expected input shape (window_size, num_channels=3).
+            x_train (np.ndarray): Training data (for shape inference, can be None if not used).
+            config (dict): Configuration parameters including 'predicted_horizons'.
         """
+        # Assume necessary imports (tf, layers, Model, l2, AdamW, tfp, np) are done
+        # Assume helper functions (composite_loss, mae_magnitude, r2_metric) are defined
+        # Assume initializers (random_normal_initializer_44) are defined/imported
+        # Assume state variables (last_mae, last_std) are accessible (e.g., global or self.)
+        # Assume self.params and self.kl_weight_var exist from the class instance
+
         window_size, num_channels = input_shape  # Expecting num_channels=3
         l2_reg = config.get("l2_reg", self.params["l2_reg"])
         activation = config.get("activation", self.params["activation"])
         num_branch_layers = config.get("num_branch_layers", self.params["num_branch_layers"])
         branch_units = config.get("branch_units", self.params["branch_units"])
         merged_units = config.get("merged_units", self.params["merged_units"])
-        time_horizon = config.get("time_horizon", self.params["time_horizon"])
+        predicted_horizons = config['predicted_horizons'] # Mandatory config
+        num_outputs = len(predicted_horizons)
 
         # Define input layer with original 3 channels.
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
-        
+
         # Add error and std feedback channels.
         def get_error_channel(x):
             batch_size = tf.shape(x)[0]
             win = tf.shape(x)[1]
+            # Ensure last_mae is accessible here (global or self.)
             return tf.fill([batch_size, win, 1], last_mae)
         error_channel = Lambda(get_error_channel, output_shape=lambda inp: (inp[0], inp[1], 1), name="error_channel")(inputs)
-        
+
         def get_std_channel(x):
             batch_size = tf.shape(x)[0]
             win = tf.shape(x)[1]
+            # Ensure last_std is accessible here (global or self.)
             return tf.fill([batch_size, win, 1], last_std)
         std_channel = Lambda(get_std_channel, output_shape=lambda inp: (inp[0], inp[1], 1), name="std_channel")(inputs)
-        
+
         # Concatenate the original input with error and std channels.
         augmented_input = Concatenate(axis=2, name="augmented_input")([inputs, error_channel, std_channel])
         # Now the augmented input has shape (window_size, 3+2=5).
-        
+
         # Split the augmented input into separate channels.
         trend_input = Lambda(lambda x: x[:, :, 0:1], name="trend_input")(augmented_input)
         seasonal_input = Lambda(lambda x: x[:, :, 1:2], name="seasonal_input")(augmented_input)
         noise_input = Lambda(lambda x: x[:, :, 2:3], name="noise_input")(augmented_input)
-    
-        
-        # Build Dense branches for trend, seasonal, and noise channels.
-        def build_branch(branch_input, branch_name):
-            x = Flatten(name=f"{branch_name}_flatten")(branch_input)
-            for i in range(num_branch_layers):
-                x = Dense(branch_units, activation=activation,
-                          kernel_regularizer=l2(l2_reg),
-                          name=f"{branch_name}_dense_{i+1}")(x)
-            return x
-        
+
         trend_branch = build_branch(trend_input, "trend")
         seasonal_branch = build_branch(seasonal_input, "seasonal")
         noise_branch = build_branch(noise_input, "noise")
-        
-        
-        # Concatenate all branch outputs.
+
+        # Concatenate all branch outputs. This is the base for the output heads.
         merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch])
-        
-        # Further process merged features.
-        merged_dense = Dense(merged_units, activation=activation,
-                             kernel_regularizer=l2(l2_reg),
-                             name="merged_dense")(merged)
-        
-        # Further process merged features.
-        merged_dense = Dense(merged_units, activation=activation,
-                             kernel_regularizer=l2(l2_reg),
-                             name="merged_dense_last")(merged_dense)
-        
 
-        # Monkey-patch DenseFlipout to use add_weight instead of deprecated add_variable
-        def _patched_add_variable(self, name, shape, dtype, initializer, trainable, **kwargs):
-            return self.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
-        tfp.layers.DenseFlipout.add_variable = _patched_add_variable
+        # --- Define Bayesian Layer Components (Helper functions defined at the start of the file) ---
 
-        def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
-            print("DEBUG: In posterior_mean_field_custom:")
-            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
-            print("       Received bias_size =", bias_size, "; overriding to 0")
-            print("       trainable =", trainable, "name =", name)
-            if not isinstance(name, str):
-                print("DEBUG: 'name' is not a string; setting to None")
-                name = None
-            bias_size = 0
-            n = int(np.prod(kernel_shape)) + bias_size
-            print("DEBUG: posterior: computed n =", n)
-            c = np.log(np.expm1(1.))
-            print("DEBUG: posterior: computed c =", c)
-            loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name="posterior_loc")
-            scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name="posterior_scale")
-            scale = 1e-3 + tf.nn.softplus(scale + c)
-            scale = tf.clip_by_value(scale, 1e-3, 1.0)
-            print("DEBUG: posterior: created loc shape:", loc.shape, "scale shape:", scale.shape)
-            try:
-                loc_reshaped = tf.reshape(loc, kernel_shape)
-                scale_reshaped = tf.reshape(scale, kernel_shape)
-                print("DEBUG: posterior: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
-            except Exception as e:
-                print("DEBUG: Exception during reshape in posterior:", e)
-                raise e
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
-                reinterpreted_batch_ndims=len(kernel_shape)
+        KL_WEIGHT = self.kl_weight_var # Use the class attribute tf.Variable
+        DenseFlipout = tfp.layers.DenseFlipout # Alias for convenience
+
+        # --- Build Multiple Output Heads ---
+        outputs_list = []
+        output_names = []
+        for i, horizon in enumerate(predicted_horizons):
+            branch_suffix = f"_h{horizon}" # Unique suffix for layers in this head
+
+            # --- Replicate Layers for this Output Head ---
+
+            # 1. First Dense layer after merging
+            merged_dense_branch = Dense(merged_units, activation=activation,
+                                        kernel_regularizer=l2(l2_reg),
+                                        name=f"merged_dense{branch_suffix}")(merged)
+
+            # 2. Second Dense layer
+            merged_dense_last_branch = Dense(merged_units, activation=activation,
+                                            kernel_regularizer=l2(l2_reg),
+                                            name=f"merged_dense_last{branch_suffix}")(merged_dense_branch)
+
+            # 3. Bayesian Output Layer (DenseFlipout)
+            print(f"DEBUG: Creating DenseFlipout for horizon {horizon} (index {i}) with units: 1")
+            flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
+            flipout_layer_branch = DenseFlipout(
+                units=1, # Single output value per head
+                activation='linear',
+                # Ensure posterior_mean_field_custom and prior_fn are accessible here
+                kernel_posterior_fn=lambda dtype, shape, bias_size, train, name=flipout_layer_name: posterior_mean_field_custom(dtype, shape, bias_size, train, name),
+                kernel_prior_fn=lambda dtype, shape, bias_size, train, name=flipout_layer_name: prior_fn(dtype, shape, bias_size, train, name),
+                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+                name=flipout_layer_name # Layer name
             )
+            # Use a Lambda layer to apply it and give a unique functional name
+            bayesian_output_branch = Lambda(
+                lambda t: flipout_layer_branch(t),
+                output_shape=lambda s: (s[0], 1),
+                name=f"bayesian_output{branch_suffix}" # Functional name
+            )(merged_dense_last_branch) # Input from the last dense layer of this branch
+            print(f"DEBUG: Horizon {horizon} Bayesian output shape: {bayesian_output_branch.shape}")
 
-        def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
-            print("DEBUG: In prior_fn:")
-            print("       dtype =", dtype, "kernel_shape =", kernel_shape)
-            print("       Received bias_size =", bias_size, "; overriding to 0")
-            print("       trainable =", trainable, "name =", name)
-            if not isinstance(name, str):
-                print("DEBUG: 'name' is not a string in prior_fn; setting to None")
-                name = None
-            bias_size = 0
-            n = int(np.prod(kernel_shape)) + bias_size
-            print("DEBUG: prior_fn: computed n =", n)
-            loc = tf.zeros([n], dtype=dtype)
-            scale = tf.ones([n], dtype=dtype)
-            try:
-                loc_reshaped = tf.reshape(loc, kernel_shape)
-                scale_reshaped = tf.reshape(scale, kernel_shape)
-                print("DEBUG: prior_fn: reshaped loc to", loc_reshaped.shape, "and scale to", scale_reshaped.shape)
-            except Exception as e:
-                print("DEBUG: Exception during reshape in prior_fn:", e)
-                raise e
-            return tfp.distributions.Independent(
-                tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
-                reinterpreted_batch_ndims=len(kernel_shape)
-            )
 
-        # --- Bayesian Output Layer Implementation  ---
-        KL_WEIGHT = self.kl_weight_var
-        DenseFlipout = tfp.layers.DenseFlipout
-        print("DEBUG: Creating DenseFlipout final layer with units:", 1)
-        flipout_layer = DenseFlipout(
-            units=1,
-            activation='linear',
-            kernel_posterior_fn=posterior_mean_field_custom,
-            kernel_prior_fn=prior_fn,
-            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-            name="output_layer"
-        )
-        bayesian_output = tf.keras.layers.Lambda(
-            lambda t: flipout_layer(t),
-            output_shape=lambda s: (s[0], 1),
-            name="bayesian_dense_flipout"
-        )(merged_dense)
-        print("DEBUG: After DenseFlipout (via Lambda), bayesian_output shape:", bayesian_output.shape)
+            # 4. Deterministic Bias Layer
+            # Ensure random_normal_initializer_44 is accessible here
+            bias_layer_branch = Dense(
+                units=1, # Single bias value per head
+                activation='linear',
+                kernel_initializer=random_normal_initializer_44, # Use the same initializer
+                name=f"deterministic_bias{branch_suffix}"
+            )(merged_dense_last_branch) # Input from the last dense layer of this branch
+            print(f"DEBUG: Horizon {horizon} Deterministic bias output shape: {bias_layer_branch.shape}")
 
-        bias_layer = tf.keras.layers.Dense(
-            units=1,
-            activation='linear',
-            kernel_initializer=random_normal_initializer_44,
-            name="deterministic_bias"
-        )(merged_dense)
-        print("DEBUG: Deterministic bias layer output shape:", bias_layer.shape)
+            # 5. Combine Bayesian output and Bias layer for the final output of this head
+            output_name = f"output_horizon_{horizon}" # Unique name for this specific output
+            final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
+            print(f"DEBUG: Horizon {horizon} Final output shape after adding bias: {final_branch_output.shape}")
 
-        outputs = bayesian_output + bias_layer
-        print("DEBUG: Final outputs shape after adding bias:", outputs.shape)
-        
-        self.model = Model(inputs=inputs, outputs=outputs, name="MultiBranchPredictor")
+            outputs_list.append(final_branch_output)
+            output_names.append(output_name)
+            # --- End Replication for this Output Head ---
+
+        # --- Model Definition and Compilation ---
+        self.model = Model(inputs=inputs, outputs=outputs_list, name=f"MultiBranchPredictor_MultiOutput_{len(predicted_horizons)}H")
+
         optimizer = AdamW(learning_rate=config.get("learning_rate", self.params["learning_rate"]))
         mmd_lambda = config.get("mmd_lambda", self.params["mmd_lambda"])
-        
+
+        # Prepare loss and metrics for multi-output: use dictionaries mapping output names
+        # Assuming composite_loss, mae_magnitude, r2_metric are defined elsewhere
+        loss_dict = {name: lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0)
+                    for name in output_names}
+        metrics_dict = {name: [mae_magnitude, r2_metric]
+                        for name in output_names}
+
         self.model.compile(optimizer=optimizer,
-                           loss=lambda y_true, y_pred: composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0),
-                           metrics=[mae_magnitude, r2_metric])
+                        loss=loss_dict,
+                        metrics=metrics_dict)
+
         print("DEBUG: MMD lambda =", mmd_lambda)
-        print("Multi-Branch Predictor model built successfully.")
-        self.model.summary()
+        print(f"Multi-Branch Multi-Output Predictor model built successfully for horizons: {predicted_horizons}.")
+        self.model.summary() # Print model summary
+
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
