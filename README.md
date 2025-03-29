@@ -177,7 +177,7 @@ graph TD
     subgraph SP_Heads ["Output Heads (Parallel)"]
 
         subgraph Head1 ["Head for Horizon 1"]
-            M --> H1_DENSE["Dense x K"]; %% Input DIRECTLY from Merged Features
+            M --> H1_DENSE["Dense x K"];
             H1_DENSE --> H1_BAYES{"DenseFlipout (Bayesian)"};
             H1_DENSE --> H1_BIAS["Dense (Bias)"];
             H1_BAYES --> H1_ADD{"Add"};
@@ -185,9 +185,8 @@ graph TD
             H1_ADD --> O1["Output H1"];
         end
 
-
          subgraph HeadN ["Head for Horizon N"]
-            M --> HN_DENSE["Dense x K"]; %% Input DIRECTLY from Merged Features
+            M --> HN_DENSE["Dense x K"];
             HN_DENSE --> HN_BAYES{"DenseFlipout (Bayesian)"};
             HN_DENSE --> HN_BIAS["Dense (Bias)"];
             HN_BAYES --> HN_ADD{"Add"};
@@ -200,16 +199,14 @@ graph TD
     O1 --> Z((Final Output List));
     ON --> Z;
 
-
     subgraph Legend
          NoteM["M = config['intermediate_layers']"];
          NoteK["K = config['intermediate']"];
-         NoteNoFB["NOTE: Diagram simplified - Feedback loops not shown."]; %% Updated Note
+         NoteNoFB["NOTE: Diagram simplified - Feedback loops not shown."];
     end
 
-    %% Styling (Earth Tones - Simplified)
     style H1_BAYES,HN_BAYES fill:#556B2F,stroke:#333,color:#fff;
     style H1_BIAS,HN_BIAS fill:#4682B4,stroke:#333,color:#fff;
-    style NoteM,NoteK,NoteNoFB fill:#8B4513,stroke:#333,stroke-dasharray:5 5,color:#fff; %% Updated Note ID
+    style NoteM,NoteK,NoteNoFB fill:#8B413,stroke:#333,stroke-dasharray:5 5,color:#fff;
 
 ```
