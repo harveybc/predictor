@@ -195,7 +195,6 @@ graph TD
 
 
         subgraph "Head for Horizon 1" id=Head1
-        %% <<< Implicit newline needed here was likely missing/eaten by formatter
 
             %% Control Action Feedback Path (from previous step's control output)
             LF1[/"self.local_feedback[0]"/] --> LF1_TILEFLAT["Tile/Flatten (Batch)"];
@@ -217,7 +216,6 @@ graph TD
         %% --- Other heads similar (...) ---
 
          subgraph "Head for Horizon N" id=HeadN
-         %% <<< Implicit newline needed here was likely missing/eaten by formatter
 
              %% Control Action Feedback Path (from previous step's control output)
             LFN[/"self.local_feedback[N-1]"/] --> LFN_TILEFLAT["Tile/Flatten (Batch)"];
