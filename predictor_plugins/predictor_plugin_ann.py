@@ -144,7 +144,6 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     # Compute primary losses:
     # Replace Huber loss with Mean Squared Error (MSE) loss.
     mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
-    mae_loss_val = tf.keras.losses.MeanAbsoluteError()(mag_true, mag_pred)
     mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
     mse_min = tf.cond(tf.greater(mse_loss_val,1e-10),
             lambda: mse_loss_val,
@@ -156,30 +155,7 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
     signed_avg_pred  = tf.reduce_mean(mag_pred)             # Average predicted value
     signed_avg_true  = tf.reduce_mean(mag_true)               # Average true value
     signed_avg_error = tf.reduce_mean(mag_true - mag_pred)    # Average error (true minus predicted)
-    #abs_avg_pred     = tf.abs(signed_avg_pred)               # Absolute average of prediction
     abs_avg_true     = tf.abs(signed_avg_true)               # Absolute average of true values
-    #abs_avg_error    = tf.abs(signed_avg_error - signed_avg_true)  # Absolute difference from signed average true
-    
-    # Define the Gaussian-like function.
-    def gaussian_like(value, center, peak, width):
-        """
-        Gaussian-like function: Computes peak * exp(-k * (value - center)^2),
-        where k = 4 * ln(2) / (width^2).
-        
-        Parameters:
-          value : The arbitrary input value.
-          center: The center (optimal value) for the function.
-          peak  : The function's peak value (can be negative).
-          width : The width at half the peak value.
-          
-        Returns:
-          A Tensor representing the Gaussian-like output.
-        """
-        # Compute k = 4*ln(2)/(width^2)
-        k = (4.0 * tf.math.log(tf.constant(2.0, dtype=tf.float32))) / (tf.math.square(width))
-        # Compute and return the Gaussian-like value.
-        return peak * tf.math.exp(-k * tf.math.square(value - center))
-        # k=4332169.878499658
     
     def vertical_right_asymptote(value, center):
         res = tf.cond(tf.greater_equal(value, center),
@@ -190,7 +166,6 @@ def composite_loss(y_true, y_pred, mmd_lambda, sigma=1.0):
             lambda: mse_loss_val*1e3 - 1, # best 1e6,
             lambda: 3*tf.math.log(tf.abs(value - center))+20        
         )   
-           
         return res   
     
     # --- Additional feedback values ---
