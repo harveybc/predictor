@@ -195,6 +195,8 @@ graph TD
 
 
         subgraph "Head for Horizon 1" id=Head1
+        %% <<< Implicit newline needed here was likely missing/eaten by formatter
+
             %% Control Action Feedback Path (from previous step's control output)
             LF1[/"self.local_feedback[0]"/] --> LF1_TILEFLAT["Tile/Flatten (Batch)"];
 
@@ -210,11 +212,13 @@ graph TD
             H1_BAYES --> H1_ADD{"Add"};
             H1_BIAS --> H1_ADD;
             H1_ADD --> O1["Output H1"];
-        end
+        end %% End of Head 1 subgraph
 
         %% --- Other heads similar (...) ---
 
          subgraph "Head for Horizon N" id=HeadN
+         %% <<< Implicit newline needed here was likely missing/eaten by formatter
+
              %% Control Action Feedback Path (from previous step's control output)
             LFN[/"self.local_feedback[N-1]"/] --> LFN_TILEFLAT["Tile/Flatten (Batch)"];
 
@@ -230,8 +234,9 @@ graph TD
             HN_BAYES --> HN_ADD{"Add"};
             HN_BIAS --> HN_ADD;
             HN_ADD --> ON["Output HN"];
-        end
-    end
+        end %% End of Head N subgraph
+
+    end %% End of Output Heads subgraph
 
     %% Loss Calculation Subgraph (Conceptual side process)
     subgraph "Loss Calculation per Head (Updates Feedback & Control Action Lists)"
@@ -253,7 +258,7 @@ graph TD
              LossN -- Updates --> LFN[/"self.local_feedback[N-1]"/];
              %% Updated with ControlAction
         end
-    end
+    end %% End of Loss Calculation subgraph
 
 
     %% Final outputs list (still conceptually gathered)
@@ -268,7 +273,7 @@ graph TD
          NoteK["K = config['intermediate']"];
          NoteListUpdate["Loss Updates: self.last_xxx (metrics) & self.local_feedback (control action)"];
          NoteInputFB["Head Input = Concat(Merged Features, Control Action Feedback)"];
-    end
+    end %% End of Legend subgraph
 
     %% Styling (Earth Tones)
     style H1_BAYES,HN_BAYES fill:#556B2F,stroke:#333,color:#fff;
