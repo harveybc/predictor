@@ -520,6 +520,8 @@ class Plugin:
         print(f"Control-Feedback Predictor model built successfully for {num_outputs} horizons.")
         self.model.summary(line_length=150)
 
+
+
     # --- Method within YourPredictorPlugin class ---
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
         """
@@ -672,7 +674,7 @@ class Plugin:
         # Return history and lists of predictions/uncertainties
         return history, list_train_preds, list_train_uncertainty, list_val_preds, list_val_uncertainty
     
-    
+
     def predict_with_uncertainty(self, x_test, mc_samples=100):
         predictions = np.array([self.model(x_test, training=True).numpy() for _ in range(mc_samples)])
         mean_predictions = np.mean(predictions, axis=0)
