@@ -156,3 +156,116 @@ predictor/
 └── prompt.txt                         # Project documentation
 ```
 
+## Example of plugin model:
+```mermaid
+graph TD
+    subgraph "Input Processing"
+        %% Inputs
+        I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
+        GF_IN[/"Global Feedback (tf.Variable)"/] --> GF_FLAT["Flatten"];
+
+        %% Feature Branches (Parallel)
+        FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
+        FS -- ... --> F_DOTS["..."];
+        FS -- Feature n --> Fn_FLAT["Flatten"] --> Fn_DENSE["Dense x M"];
+
+        %% Global Feedback Branch
+        GF_FLAT --> GF_DENSE["Dense x M"];
+
+        %% Merging Input Branches
+        F1_DENSE --> M{"Merge Concat"};
+        F_DOTS --> M;
+        Fn_DENSE --> M;
+        GF_DENSE --> M;
+    end
+
+    subgraph "Output Heads (Parallel)"
+        %% M is the Merged Input Tensor feeding all heads
+
+        subgraph "Head for Horizon 1"
+            %% Local Feedback for Head 1
+            LF1_IN[/"Local Feedback 1 (tf.Variable)"/] --> LF1_FLAT["Flatten"];
+
+            %% Combine Merged Input (M) with Local Feedback
+            M --> ADD1{"Add"};
+            LF1_FLAT --> ADD1;
+
+            %% Head Intermediate Layers
+            ADD1 --> H1_DENSE["Dense x K"];
+
+            %% Bayesian/Bias Layers
+            H1_DENSE --> H1_BAYES{"DenseFlipout (Bayesian)"};
+            H1_DENSE --> H1_BIAS["Dense (Bias)"];
+
+            %% Head Output
+            H1_BAYES --> H1_ADD{"Add"};
+            H1_BIAS --> H1_ADD;
+            H1_ADD --> O1["Output H1"];
+        end
+
+        subgraph "Head for Horizon ..."
+            %% Local Feedback for Head ...
+            LF__IN[/"Local Feedback ..."/] --> LF__FLAT["Flatten"];
+
+            %% Combine Merged Input (M) with Local Feedback
+            M --> ADD_{"Add"};
+            LF__FLAT --> ADD_;
+
+            %% Head Intermediate Layers
+            ADD_ --> H__DENSE["Dense x K"];
+
+            %% Bayesian/Bias Layers
+            H__DENSE --> H__BAYES{"DenseFlipout (Bayesian)"};
+            H__DENSE --> H__BIAS["Dense (Bias)"];
+
+             %% Head Output
+            H__BAYES --> H__ADD{"Add"};
+            H__BIAS --> H__ADD;
+            H__ADD --> O_["Output H..."];
+        end
+
+         subgraph "Head for Horizon N"
+            %% Local Feedback for Head N
+            LFN_IN[/"Local Feedback N (tf.Variable)"/] --> LFN_FLAT["Flatten"];
+
+            %% Combine Merged Input (M) with Local Feedback
+            M --> ADDN{"Add"};
+            LFN_FLAT --> ADDN;
+
+             %% Head Intermediate Layers
+            ADDN --> HN_DENSE["Dense x K"];
+
+            %% Bayesian/Bias Layers
+            HN_DENSE --> HN_BAYES{"DenseFlipout (Bayesian)"};
+            HN_DENSE --> HN_BIAS["Dense (Bias)"];
+
+            %% Head Output
+            HN_BAYES --> HN_ADD{"Add"};
+            HN_BIAS --> HN_ADD;
+            HN_ADD --> ON["Output HN"];
+        end
+    end
+
+    %% Final outputs gather conceptually
+    O1 --> Z["Final Output List"];
+    O_ --> Z;
+    ON --> Z;
+
+    %% Legend/Notes (Optional)
+    note "M = config['intermediate_layers']";
+    note "K = config['intermediate']";
+
+
+    %% Styling (Optional)
+    style H1_BAYES fill:#f9d,stroke:#333,stroke-width:2px;
+    style H__BAYES fill:#f9d,stroke:#333,stroke-width:2px;
+    style HN_BAYES fill:#f9d,stroke:#333,stroke-width:2px;
+    style H1_BIAS fill:#ccf,stroke:#333,stroke-width:2px;
+    style H__BIAS fill:#ccf,stroke:#333,stroke-width:2px;
+    style HN_BIAS fill:#ccf,stroke:#333,stroke-width:2px;
+    style GF_IN fill:#ffe,stroke:#333;
+    style LF1_IN fill:#eff,stroke:#333;
+    style LF__IN fill:#eff,stroke:#333;
+    style LFN_IN fill:#eff,stroke:#333;
+
+```
