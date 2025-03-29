@@ -185,18 +185,14 @@ graph TD
         subgraph "Head for Horizon 1"
             %% Local Feedback for Head 1
             LF1_IN[/"Local Feedback 1 (tf.Variable)"/] --> LF1_FLAT["Flatten"];
-
             %% Combine Merged Input (M) with Local Feedback
             M --> ADD1{"Add"};
             LF1_FLAT --> ADD1;
-
             %% Head Intermediate Layers
             ADD1 --> H1_DENSE["Dense x K"];
-
             %% Bayesian/Bias Layers
             H1_DENSE --> H1_BAYES{"DenseFlipout (Bayesian)"};
             H1_DENSE --> H1_BIAS["Dense (Bias)"];
-
             %% Head Output
             H1_BAYES --> H1_ADD{"Add"};
             H1_BIAS --> H1_ADD;
@@ -206,18 +202,14 @@ graph TD
         subgraph "Head for Horizon ..."
             %% Local Feedback for Head ...
             LF__IN[/"Local Feedback ..."/] --> LF__FLAT["Flatten"];
-
             %% Combine Merged Input (M) with Local Feedback
             M --> ADD_{"Add"};
             LF__FLAT --> ADD_;
-
             %% Head Intermediate Layers
             ADD_ --> H__DENSE["Dense x K"];
-
             %% Bayesian/Bias Layers
             H__DENSE --> H__BAYES{"DenseFlipout (Bayesian)"};
             H__DENSE --> H__BIAS["Dense (Bias)"];
-
              %% Head Output
             H__BAYES --> H__ADD{"Add"};
             H__BIAS --> H__ADD;
@@ -227,18 +219,14 @@ graph TD
          subgraph "Head for Horizon N"
             %% Local Feedback for Head N
             LFN_IN[/"Local Feedback N (tf.Variable)"/] --> LFN_FLAT["Flatten"];
-
             %% Combine Merged Input (M) with Local Feedback
             M --> ADDN{"Add"};
             LFN_FLAT --> ADDN;
-
              %% Head Intermediate Layers
             ADDN --> HN_DENSE["Dense x K"];
-
             %% Bayesian/Bias Layers
             HN_DENSE --> HN_BAYES{"DenseFlipout (Bayesian)"};
             HN_DENSE --> HN_BIAS["Dense (Bias)"];
-
             %% Head Output
             HN_BAYES --> HN_ADD{"Add"};
             HN_BIAS --> HN_ADD;
@@ -251,10 +239,11 @@ graph TD
     O_ --> Z;
     ON --> Z;
 
-    %% Legend/Notes (Optional)
-    note "M = config['intermediate_layers']";
-    note "K = config['intermediate']";
-
+    %% Legend Subgraph (Replaces 'note')
+    subgraph Legend
+         Note1["M = config['intermediate_layers'] (Input/Global Feedback Branch Layers)"];
+         Note2["K = config['intermediate'] (Output Head Branch Layers)"];
+    end
 
     %% Styling (Optional)
     style H1_BAYES fill:#f9d,stroke:#333,stroke-width:2px;
@@ -267,5 +256,8 @@ graph TD
     style LF1_IN fill:#eff,stroke:#333;
     style LF__IN fill:#eff,stroke:#333;
     style LFN_IN fill:#eff,stroke:#333;
+    %% Style legend nodes slightly differently
+    style Note1 fill:#eee,stroke:#333,stroke-dasharray: 5 5;
+    style Note2 fill:#eee,stroke:#333,stroke-dasharray: 5 5;
 
 ```
