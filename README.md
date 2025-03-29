@@ -163,11 +163,11 @@ graph TD
 
     %% Input Processing Subgraph
     subgraph "Input Processing (Features Only)"
-        %% direction LR removed - Rely on default or TD from main graph
+        %% direction LR removed
         I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
 
         subgraph "Feature Branches (Parallel)"
-             %% direction TD removed - Rely on default or TD from main graph
+             %% direction TD removed
              %% Layout branches Top-Down
              FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
              FS -- ... --> F_DOTS["..."];
@@ -182,14 +182,14 @@ graph TD
 
     %% Output Heads Subgraph (Vertical Layout)
     subgraph "Output Heads (Parallel)"
-        %% direction TD removed - Rely on default or TD from main graph
-        %% Layout heads Top-Down
+         %% direction TD removed
+         %% Layout heads Top-Down
 
         %% Conceptual Link from Merged Features to all Heads
         M -- To Each Head --> HeadInput{Input to Heads};
-        HeadInput -.-> Head1 subgraph;
+        HeadInput -.-> CONCAT1; %% CORRECTED: Link to first node inside Head 1
+        HeadInput -.-> CONCATN; %% CORRECTED: Link to first node inside Head N
         %% Dashed lines for clarity
-        HeadInput -.-> HeadN subgraph;
 
 
         subgraph "Head for Horizon 1" id=Head1
@@ -233,7 +233,7 @@ graph TD
 
     %% Loss Calculation Subgraph (Conceptual side process)
     subgraph "Loss Calculation per Head (Updates Feedback & Control Action Lists)"
-       %% direction LR removed - Rely on default or TD from main graph
+       %% direction LR removed
        %% Show loss as a separate flow
         subgraph LossHead1
              O1 --> Loss1["Global::composite_loss(...)"];
