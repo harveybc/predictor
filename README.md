@@ -160,8 +160,6 @@ predictor/
 ```mermaid
 graph TD
 
-    graph TD
-
     subgraph SP_Input ["Input Processing (Features Only)"]
         I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
 
