@@ -159,7 +159,8 @@ predictor/
 ## Example of plugin model included
 ```mermaid
 graph TD
-    subgraph Input Processing
+    %% Added quotes around "Input Processing" for consistency
+    subgraph "Input Processing"
         A["Input (ws, 3)"] --> B("Add Feedback Ch.");
         B --> C{"Concat (ws, 5)"};
         C --> D{"Split"};
@@ -171,7 +172,8 @@ graph TD
         G --> H;
     end
 
-    subgraph Output Heads (Parallel)
+    %% Corrected line: Title is now quoted
+    subgraph "Output Heads (Parallel)"
         %% Link from merged features H directly to the start of each head
 
         subgraph "Head for Horizon 1"
