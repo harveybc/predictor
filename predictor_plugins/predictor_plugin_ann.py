@@ -28,6 +28,8 @@ import os
 from sklearn.metrics import r2_score
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.initializers import GlorotUniform
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Add
 
 # Denine TensorFlow global variables(used from the composite loss function):
 last_mae = tf.Variable(1.0, trainable=False, dtype=tf.float32)
@@ -258,7 +260,7 @@ def random_normal_initializer_44(shape, dtype=None):
     return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
 
 # Build Dense branches for trend, seasonal, and noise channels.
-def build_branch(branch_input, branch_name):
+def build_branch(branch_input, branch_name, num_branch_layers=2, branch_units=32, activation='relu', l2_reg=1e-5):
     x = Flatten(name=f"{branch_name}_flatten")(branch_input)
     for i in range(num_branch_layers):
         x = Dense(branch_units, activation=activation,
@@ -438,9 +440,9 @@ class Plugin:
         seasonal_input = Lambda(lambda x: x[:, :, 1:2], name="seasonal_input")(augmented_input)
         noise_input = Lambda(lambda x: x[:, :, 2:3], name="noise_input")(augmented_input)
 
-        trend_branch = build_branch(trend_input, "trend")
-        seasonal_branch = build_branch(seasonal_input, "seasonal")
-        noise_branch = build_branch(noise_input, "noise")
+        trend_branch = build_branch(trend_input, "trend", num_branch_layers=num_branch_layers, branch_units=branch_units, activation=activation, l2_reg=l2_reg)
+        seasonal_branch = build_branch(seasonal_input, "seasonal", num_branch_layers=num_branch_layers, branch_units=branch_units, activation=activation, l2_reg=l2_reg)
+        noise_branch = build_branch(noise_input, "noise", num_branch_layers=num_branch_layers, branch_units=branch_units, activation=activation, l2_reg=l2_reg)
 
         # Concatenate all branch outputs. This is the base for the output heads.
         merged = Concatenate(name="merged_branches")([trend_branch, seasonal_branch, noise_branch])
