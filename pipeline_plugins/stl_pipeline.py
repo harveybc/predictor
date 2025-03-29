@@ -560,7 +560,6 @@ class STLPipelinePlugin:
 
 
         print(f"\nTotal Pipeline Execution Time: {time.time() - start_time:.2f} seconds")
-
         
 
     def load_and_evaluate_model(self, config, predictor_plugin, preprocessor_plugin):
