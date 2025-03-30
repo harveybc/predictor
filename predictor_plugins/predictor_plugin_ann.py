@@ -336,8 +336,8 @@ class Plugin:
 
         # Control Parameters per Head (Values are examples)
         self.local_p_control = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_p_{i}") for i in range(num_outputs)]
-        self.local_i_control = [tf.Variable(1.0, trainable=False, dtype=tf.float32, name=f"local_i_{i}") for i in range(num_outputs)]
-        self.local_d_control = [tf.Variable(1.0, trainable=False, dtype=tf.float32, name=f"local_d_{i}") for i in range(num_outputs)]
+        self.local_i_control = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_i_{i}") for i in range(num_outputs)]
+        self.local_d_control = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_d_{i}") for i in range(num_outputs)]
 
         # Feedback Metrics Storage per Head (updated by loss)
         self.last_signed_error = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"last_signed_error_{i}") for i in range(num_outputs)]

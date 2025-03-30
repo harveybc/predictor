@@ -9,7 +9,7 @@
     "output_file": "examples/results/phase_1/phase_1_ann_25200_1h_prediction.csv",
     "results_file": "examples/results/phase_1/phase_1_ann_25200_1h_results.csv",
     "loss_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_loss_plot.png",
-    "model_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_model_plot.png",
+    "model_plot_file": "examples/results/phase_1/phase_1_ann_1h_model_plot.png",
     "uncertainties_file": "examples/results/phase_1/phase_1_ann_25200_1h_uncertanties.csv",
     "predictions_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_predictions_plot.png",
     "stl_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_stl_decomposition_plot.png",
