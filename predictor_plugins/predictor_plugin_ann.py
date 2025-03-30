@@ -238,32 +238,50 @@ class Plugin:
                       'merged_units', 'learning_rate', 'l2_reg', 'mmd_lambda', 'predicted_horizons']
 
     def __init__(self, config=None):
-        """Initialize the predictor plugin."""
+        """
+        Initialize the predictor plugin.
+        Applies DenseFlipout patch with corrected signature.
+        Initializes parameters and KL weight. No feedback lists.
+        """
         self.params = self.plugin_params.copy()
-        if config: self.params.update(config)
+        if config:
+            self.params.update(config) # Update defaults with provided config
 
-        if 'predicted_horizons' not in self.params: raise ValueError("'predicted_horizons' required.")
+        # Basic checks for essential config items
+        if 'predicted_horizons' not in self.params:
+             raise ValueError("Config must contain 'predicted_horizons' list.")
         if not isinstance(self.params['predicted_horizons'], list) or not self.params['predicted_horizons']:
              raise ValueError("'predicted_horizons' must be a non-empty list.")
+        num_outputs = len(self.params['predicted_horizons']) # Use self.params
 
         self.model = None
-        self.output_names = []
+        self.output_names = [] # Initialize here, populated in build_model
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
 
-        # REMOVED initialization of all feedback/control/metric lists
-        # (local_p_control, local_i_control, local_d_control)
-        # (last_signed_error, last_stddev, last_mmd)
-        # (local_feedback)
+        # REMOVED initialization of feedback/control lists
 
-        print("Predictor Plugin Initialized (No feedback state).")
+        print(f"Predictor Plugin Initialized for {num_outputs} outputs (No feedback state).")
 
-        # Apply DenseFlipout Patch
+        # --- Apply DenseFlipout Patch (with CORRECTED SIGNATURE) ---
         if not hasattr(tfp.layers.DenseFlipout, '_already_patched_add_variable'):
-            def _patched_add_variable(instance, name, shape, dtype, init, train, **kwargs):
-                return instance.add_weight(name=name, shape=shape, dtype=dtype, initializer=init, trainable=train, **kwargs)
+            # Define the patch function accepting 'init' and 'train' arguments
+            def _patched_add_variable(layer_instance, name, shape, dtype, init, train, **kwargs):
+                # Call add_weight using the standard Keras argument names
+                return layer_instance.add_weight(
+                    name=name,
+                    shape=shape,
+                    dtype=dtype,
+                    initializer=init,  # Pass 'init' to 'initializer'
+                    trainable=train,   # Pass 'train' to 'trainable'
+                    **kwargs
+                )
+            # Apply the patch
             tfp.layers.DenseFlipout.add_variable = _patched_add_variable
             tfp.layers.DenseFlipout._already_patched_add_variable = True
-            # print("DenseFlipout patched in __init__.") # Informative print
+            print("DEBUG: DenseFlipout patched successfully in __init__ (corrected signature).")
+        else:
+            # print("DEBUG: DenseFlipout already patched.") # Informative print
+            pass # Already patched, do nothing
 
     def set_params(self, **kwargs):
         """Update predictor plugin parameters."""
