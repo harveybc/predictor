@@ -33,7 +33,7 @@ import tensorflow.keras.backend as K
 from app.data_handler import write_csv
 
 
-# --- Denormalization Functions (Assumed Correct) ---
+# --- Denormalization Functions (Assumed Correct as provided) ---
 def denormalize(data, config):
     """Denormalizes price or price delta."""
     data = np.asarray(data)
@@ -79,12 +79,13 @@ class STLPipelinePlugin:
         "loss_plot_file": "loss_plot.png", "output_file": "test_predictions.csv",
         "uncertainties_file": "test_uncertainties.csv", "model_plot_file": "model_plot.png",
         "predictions_plot_file": "predictions_plot.png", "results_file": "results.csv",
-        "plot_points": 480, "plotted_horizon": 6, "use_strategy": False,
+        "plot_points": 480, # Default plot points consistent with original plotting
+        "plotted_horizon": 6, "use_strategy": False,
         "predicted_horizons": [1, 6, 12, 24], "use_returns": True, "normalize_features": True,
         "window_size": 48, "target_column": "TARGET", "use_normalization_json": None,
         "mc_samples": 100,
         # Add other necessary params possibly needed by preprocessor/predictor if required by config
-        # "stl_period": 24, "stl_window": 48, "stl_trend": 49, # Example if needed
+        # "stl_period": 24, "stl_window": 48, "stl_trend": 49, # Example if needed by pipeline
     }
     plugin_debug_vars = [
         "iterations", "batch_size", "epochs", "threshold_error",
@@ -97,12 +98,11 @@ class STLPipelinePlugin:
 
     def set_params(self, **kwargs):
         for key, value in kwargs.items(): self.params[key] = value
-        # Apply post-update logic if needed (e.g., STL defaults - not strictly needed here if Preprocessor handles it)
         config = self.params
-        # Example: if stl params are needed by pipeline itself later, resolve here
-        if config.get("stl_period") is not None and config.get("stl_period") > 1:
-            if config.get("stl_window") is None: config["stl_window"] = 2 * config["stl_period"] + 1
-            # Add trend resolution if needed by pipeline logic
+        # Example post-update logic (if needed):
+        # if config.get("stl_period") is not None and config.get("stl_period") > 1:
+        #     if config.get("stl_window") is None: config["stl_window"] = 2 * config["stl_period"] + 1
+        #     # Add trend resolution if needed
 
     def get_debug_info(self): return {var: self.params.get(var) for var in self.plugin_debug_vars}
     def add_debug_info(self, debug_info): debug_info.update(self.get_debug_info())
@@ -139,7 +139,7 @@ class STLPipelinePlugin:
         print(f"Predicting Horizons: {predicted_horizons}, Plotting: H={plotted_horizon}")
 
         # --- Iteration Loop ---
-        list_test_preds = None # Define placeholders for last iteration results
+        list_test_preds = None # Placeholders for last iteration results
         list_test_unc = None
         for iteration in range(1, iterations + 1):
             print(f"\n=== Iteration {iteration}/{iterations} ===")
@@ -179,9 +179,8 @@ class STLPipelinePlugin:
             # Evaluate Test & Calc Metrics (All Horizons)
             print("Evaluating test set & calculating metrics...")
             mc_samples = config.get("mc_samples", 100)
-            # --- Use CORRECT variable names from assignment ---
+            # Use the CORRECT variable names assigned here
             list_test_preds, list_test_unc = predictor_plugin.predict_with_uncertainty(X_test, mc_samples=mc_samples)
-            # --- End Correction ---
             if not all(len(lst)==num_outputs for lst in [list_test_preds, list_test_unc]): raise ValueError("Predictor predict mismatch outputs.")
             for idx, h in enumerate(predicted_horizons):
                  try:
@@ -198,9 +197,14 @@ class STLPipelinePlugin:
                  train_mae_plot=metrics_results["Train"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan; train_r2_plot=metrics_results["Train"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
                  val_mae_plot=metrics_results["Validation"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan; val_r2_plot=metrics_results["Validation"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
                  test_mae_plot=metrics_results["Test"]["MAE"][plotted_horizon][-1]; test_r2_plot=metrics_results["Test"]["R2"][plotted_horizon][-1]; test_unc_plot=metrics_results["Test"]["Uncertainty"][plotted_horizon][-1]; test_snr_plot=metrics_results["Test"]["SNR"][plotted_horizon][-1]
-                 print("*"*72); print(f"Iter {iteration} Done|Time:{time.time()-iter_start:.2f}s|Plot H:{plotted_horizon}")
-                 print(f"  Train MAE:{train_mae_plot:.6f}|R²:{train_r2_plot:.4f} -- Valid MAE:{val_mae_plot:.6f}|R²:{val_r2_plot:.4f}")
-                 print(f"  Test  MAE:{test_mae_plot:.6f}|R²:{test_r2_plot:.4f}|Unc:{test_unc_plot:.6f}|SNR:{test_snr_plot:.2f}"); print("*"*72)
+                 # --- RESTORED ORIGINAL PRINT FORMAT ---
+                 print("************************************************************************")
+                 print(f"Iteration {iteration} Completed | Time: {time.time() - iter_start:.2f} sec | Plotted Horizon: {plotted_horizon}")
+                 print(f"  Train MAE: {train_mae_plot:.6f} | Train R²: {train_r2_plot:.4f}")
+                 print(f"  Valid MAE: {val_mae_plot:.6f} | Valid R²: {val_r2_plot:.4f}")
+                 print(f"  Test  MAE: {test_mae_plot:.6f} | Test  R²: {test_r2_plot:.4f} | Test Unc: {test_unc_plot:.6f} | Test SNR: {test_snr_plot:.2f}")
+                 print("************************************************************************")
+                 # --- END RESTORED PRINT ---
             except Exception as e: print(f"WARN: Error printing iter summary: {e}")
             # --- End of Iteration Loop ---
 
@@ -208,7 +212,7 @@ class STLPipelinePlugin:
         # --- Consolidate results across iterations FOR ALL HORIZONS (Avg/Std/Min/Max) ---
         print("\n--- Aggregating Results Across Iterations (All Horizons) ---")
         results_list = []
-        # (Logic confirmed correct in previous step)
+        # (Logic confirmed correct and includes Min/Max)
         for ds in data_sets:
              for mn in metric_names:
                  for h in predicted_horizons:
@@ -216,26 +220,28 @@ class STLPipelinePlugin:
                       if valid_values: results_list.append({"Metric": f"{ds} {mn} H{h}", "Average": np.mean(valid_values), "Std Dev": np.std(valid_values), "Min": np.min(valid_values), "Max": np.max(valid_values)})
                       else: results_list.append({"Metric": f"{ds} {mn} H{h}", "Average": np.nan, "Std Dev": np.nan, "Min": np.nan, "Max": np.nan})
         results_df = pd.DataFrame(results_list); results_file = config.get("results_file", self.params["results_file"])
-        try: results_df.to_csv(results_file, index=False, float_format='%.6f'); print(f"Aggregated results saved: {results_file}"); print(results_df.to_string())
+        try: results_df.to_csv(results_file, index=False, float_format='%.6f'); print(f"Aggregated results saved: {results_file}"); print(results_df.to_string()) # Print table
         except Exception as e: print(f"ERROR saving results: {e}")
 
 
         # --- Save Final Test Outputs (Separate Files - Verified & Corrected) ---
         print("\n--- Saving Final Test Outputs (Predictions & Uncertainties Separately) ---")
         try:
-            final_predictions = list_test_preds # Use correct variable from last iteration
-            final_uncertainties = list_test_unc # Use correct variable from last iteration
-            num_test_points = min(len(d) for d in [final_predictions[0], baseline_test, test_dates] if d is not None)
-            print(f"Determined consistent output length: {num_test_points}")
-
-            final_dates = list(test_dates[:num_test_points]) if test_dates is not None else list(range(num_test_points))
-            final_baseline = baseline_test[:num_test_points] if baseline_test is not None else None
-
+            # Use last iteration's results
+            final_predictions = list_test_preds # Use correct name
+            final_uncertainties = list_test_unc # Use correct name
+            # Determine consistent length
+            arrays_to_check_len = [final_predictions[0], baseline_test, test_dates]; num_test_points = min(len(arr) for arr in arrays_to_check_len if arr is not None); print(f"Determined consistent output length: {num_test_points}")
+            # Prepare common data
+            final_dates = list(test_dates[:num_test_points]) if test_dates is not None else list(range(num_test_points)); final_baseline = baseline_test[:num_test_points] if baseline_test is not None else None
+            # Prepare dictionaries
             output_data = {"DATE_TIME": final_dates}; uncertainty_data = {"DATE_TIME": final_dates}
+            # Add denormalized test CLOSE
             try: denorm_test_close=denormalize(final_baseline, config) if final_baseline is not None else np.full(num_test_points, np.nan)
             except Exception as e: print(f"WARN: Error denorm test_CLOSE: {e}"); denorm_test_close = np.full(num_test_points, np.nan)
-            output_data["test_CLOSE"] = denorm_test_close.flatten()
+            output_data["test_CLOSE"] = denorm_test_close.flatten() # Ensure 1D
 
+            # Process each horizon
             for idx, h in enumerate(predicted_horizons):
                 preds_raw=final_predictions[idx][:num_test_points]; target_raw=y_test_list[idx][:num_test_points]; unc_raw=final_uncertainties[idx][:num_test_points]
                 pred_price_denorm=np.full(num_test_points,np.nan); target_price_denorm=np.full(num_test_points,np.nan); unc_denorm=np.full(num_test_points,np.nan)
@@ -274,15 +280,14 @@ class STLPipelinePlugin:
         except Exception as e: print(f"ERROR during final CSV saving: {e}")
 
 
-        # --- Plot Predictions for 'plotted_horizon' (CORRECTED - Variable Names & Flattening) ---
+        # --- Plot Predictions for 'plotted_horizon' (CORRECTED - Flattening & Variable Names) ---
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
-            # --- Use CORRECT variable names from last iteration ---
+            # Use CORRECT variable names from last iteration, sliced
             preds_plot_raw = list_test_preds[plotted_index][:num_test_points]
             target_plot_raw = y_test_list[plotted_index][:num_test_points]
             unc_plot_raw = list_test_unc[plotted_index][:num_test_points]
-            # --- End Correction ---
-            baseline_plot = final_baseline # Already sliced
+            baseline_plot = final_baseline # Already sliced baseline
 
             # Denormalize correctly and FLATTEN for plotting
             if use_returns:
@@ -292,7 +297,7 @@ class STLPipelinePlugin:
                 pred_plot_price_flat = denormalize(preds_plot_raw, config).flatten()
                 target_plot_price_flat = denormalize(target_plot_raw, config).flatten()
             unc_plot_denorm_flat = denormalize_returns(unc_plot_raw, config).flatten()
-            true_plot_price_flat = denormalize(baseline_plot, config).flatten()
+            true_plot_price_flat = denormalize(baseline_plot, config).flatten() # Actual price is denorm baseline
 
             # Determine plot points and slice FLATTENED arrays
             n_plot = config.get("plot_points", self.params["plot_points"])
@@ -304,12 +309,11 @@ class STLPipelinePlugin:
             true_plot_final = true_plot_price_flat[plot_slice]
             unc_plot_final = unc_plot_denorm_flat[plot_slice] # This is now 1D
 
-            # Plotting
+            # Plotting (using original labels where appropriate)
             plt.figure(figsize=(14, 7))
-            plt.plot(dates_plot_final, pred_plot_final, label=f"Pred Price H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
+            plt.plot(dates_plot_final, pred_plot_final, label=f"Predicted Price H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
             plt.plot(dates_plot_final, target_plot_final, label=f"Target Price H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
             plt.plot(dates_plot_final, true_plot_final, label="Actual Price", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
-            # Use abs(unc_plot_final) which is guaranteed 1D now
             plt.fill_between(dates_plot_final, pred_plot_final - abs(unc_plot_final), pred_plot_final + abs(unc_plot_final),
                              color=config.get("plot_color_uncertainty", "green"), alpha=0.2, label=f"Uncertainty H{plotted_horizon}", zorder=0)
             plt.title(f"Predictions vs Target/Actual (H={plotted_horizon})"); plt.xlabel("Time"); plt.ylabel("Price"); plt.legend(); plt.grid(True, alpha=0.6); plt.tight_layout()
