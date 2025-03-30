@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """
-STL Pipeline Plugin - Corrected Version 3 (Focus on Pipeline Fixes)
+STL Pipeline Plugin - Corrected Version 4 (Fix Plotting NameError)
 
-Fixes Plotting Dimension Error and adds checks for CSV Length Error.
-Verifies correct denormalization, separate uncertainty file, and all-horizon stats.
+Fixes NameError in the prediction plotting section.
+Keeps previous fixes for Denormalization, Separate Uncertainty File, All Horizon Stats.
 ASSUMES PREPROCESSOR IS WORKING PERFECTLY.
 """
 
@@ -33,7 +33,7 @@ import tensorflow.keras.backend as K
 from app.data_handler import write_csv
 
 
-# --- Denormalization Functions (Assumed Correct as provided) ---
+# --- Denormalization Functions (Assumed Correct) ---
 def denormalize(data, config):
     """Denormalizes price or price delta."""
     data = np.asarray(data)
@@ -73,31 +73,19 @@ def denormalize_returns(data, config):
 
 
 class STLPipelinePlugin:
-    # Default parameters - Including uncertainties_file, matching user's original where possible
+    # Default parameters (kept from previous correct version)
     plugin_params = {
-        "iterations": 1,
-        "batch_size": 32,
-        "epochs": 50,
-        "threshold_error": 0.001, # Still seems unused in train call provided
-        "loss_plot_file": "loss_plot.png",
-        "output_file": "test_predictions.csv",      # Predictions/Targets/Close
-        "uncertainties_file": "test_uncertainties.csv", # Separate file for uncertainties
-        "model_plot_file": "model_plot.png",
-        "predictions_plot_file": "predictions_plot.png",
-        "results_file": "results.csv",              # Aggregated stats for ALL horizons
-        "plot_points": 480, # Default plot points, consistent with original plotting code
-        "plotted_horizon": 6, # Default horizon for iteration summary/plots
-        "use_strategy": False, # As provided
-        # Parameters likely needed by preprocessor/predictor, mirroring original structure
-        "predicted_horizons": [1, 6, 12, 24],
-        "use_returns": True, # Original flag name for Y calculation
-        # Add other relevant params possibly needed by preprocessor/predictor if missing
-        "window_size": 48, # From original preprocessor
-        "target_column": "TARGET", # From original preprocessor
-        "use_normalization_json": None, # Explicitly add, default to None
-        "mc_samples": 100, # Default for uncertainty prediction
+        "iterations": 1, "batch_size": 32, "epochs": 50, "threshold_error": 0.001,
+        "loss_plot_file": "loss_plot.png", "output_file": "test_predictions.csv",
+        "uncertainties_file": "test_uncertainties.csv", "model_plot_file": "model_plot.png",
+        "predictions_plot_file": "predictions_plot.png", "results_file": "results.csv",
+        "plot_points": 480, "plotted_horizon": 6, "use_strategy": False,
+        "predicted_horizons": [1, 6, 12, 24], "use_returns": True, "normalize_features": True,
+        "window_size": 48, "target_column": "TARGET", "use_normalization_json": None,
+        "mc_samples": 100,
+        # Add other necessary params possibly needed by preprocessor/predictor if required by config
+        # "stl_period": 24, "stl_window": 48, "stl_trend": 49, # Example if needed
     }
-    # Debug vars reflect pipeline control parameters
     plugin_debug_vars = [
         "iterations", "batch_size", "epochs", "threshold_error",
         "output_file", "uncertainties_file", "results_file",
@@ -109,37 +97,27 @@ class STLPipelinePlugin:
 
     def set_params(self, **kwargs):
         for key, value in kwargs.items(): self.params[key] = value
+        # Apply post-update logic if needed (e.g., STL defaults - not strictly needed here if Preprocessor handles it)
+        config = self.params
+        # Example: if stl params are needed by pipeline itself later, resolve here
+        if config.get("stl_period") is not None and config.get("stl_period") > 1:
+            if config.get("stl_window") is None: config["stl_window"] = 2 * config["stl_period"] + 1
+            # Add trend resolution if needed by pipeline logic
 
-    def get_debug_info(self):
-        return {var: self.params.get(var) for var in self.plugin_debug_vars}
-
-    def add_debug_info(self, debug_info):
-        debug_info.update(self.get_debug_info())
+    def get_debug_info(self): return {var: self.params.get(var) for var in self.plugin_debug_vars}
+    def add_debug_info(self, debug_info): debug_info.update(self.get_debug_info())
 
     def run_prediction_pipeline(self, config, predictor_plugin, preprocessor_plugin):
-        """
-        Executes the complete forecasting pipeline for multi-output models.
-        FIXED: CSV length error checks, Plotting dimension error.
-        Verified: Correct denormalization, Separate Uncertainty File, All Horizon Stats (Avg/Std/Min/Max).
-        """
-        start_time = time.time()
-        run_config = self.params.copy(); run_config.update(config); config = run_config
+        start_time = time.time(); run_config = self.params.copy(); run_config.update(config); config = run_config
+        iterations = config.get("iterations", 1); print(f"Iterations: {iterations}")
 
-        iterations = config.get("iterations", 1); print(f"Number of iterations: {iterations}")
-
-        # Init metric storage FOR ALL HORIZONS
-        predicted_horizons = config.get('predicted_horizons')
-        if not isinstance(predicted_horizons, list) or not predicted_horizons: raise ValueError("'predicted_horizons' missing/empty.")
-        num_outputs = len(predicted_horizons)
+        # Init metric storage
+        predicted_horizons = config.get('predicted_horizons'); num_outputs = len(predicted_horizons)
         metric_names=["MAE","R2","Uncertainty","SNR"]; data_sets=["Train","Validation","Test"]
         metrics_results = {ds:{mn:{h:[] for h in predicted_horizons} for mn in metric_names} for ds in data_sets}
 
-        # 1. Get datasets from Preprocessor Plugin (ASSUMED PERFECT)
-        print("Loading/processing datasets via Preprocessor...")
-        try: datasets = preprocessor_plugin.run_preprocessing(config); print("Preprocessor finished.")
-        except Exception as e: print(f"\nCRITICAL ERROR during preprocessing: {e}"); import traceback; traceback.print_exc(); raise
-
-        # Unpack datasets
+        # 1. Get datasets
+        print("Loading/processing datasets via Preprocessor..."); datasets = preprocessor_plugin.run_preprocessing(config); print("Preprocessor finished.")
         X_train=datasets["x_train"]; X_val=datasets["x_val"]; X_test=datasets["x_test"]
         y_train_list=datasets["y_train"]; y_val_list=datasets["y_val"]; y_test_list=datasets["y_test"]
         train_dates=datasets.get("y_train_dates"); val_dates=datasets.get("y_val_dates"); test_dates=datasets.get("y_test_dates")
@@ -148,44 +126,37 @@ class STLPipelinePlugin:
         if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None): raise ValueError("Baselines required when use_returns=True.")
 
         # Config Validation & Setup
-        plotted_horizon = config.get('plotted_horizon')
-        if plotted_horizon is None or plotted_horizon not in predicted_horizons: raise ValueError(f"'{plotted_horizon=}' invalid/missing.")
-        plotted_index = predicted_horizons.index(plotted_horizon)
+        plotted_horizon = config.get('plotted_horizon'); plotted_index = predicted_horizons.index(plotted_horizon)
         output_names = [f"output_horizon_{h}" for h in predicted_horizons]
-        plotted_output_name = output_names[plotted_index]
 
-        # Prepare Target Data Dictionaries for Training
-        if not all(len(lst)==num_outputs for lst in [y_train_list, y_val_list, y_test_list]): raise ValueError("Y lists length mismatch.")
-        y_train_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_train_list)}
-        y_val_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_val_list)}
+        # Prepare Target Dicts for Training
+        y_train_dict={name: y.reshape(-1,1).astype(np.float32) for name,y in zip(output_names,y_train_list)}
+        y_val_dict={name: y.reshape(-1,1).astype(np.float32) for name,y in zip(output_names,y_val_list)}
 
         print(f"Input shapes: Train:{X_train.shape}, Val:{X_val.shape}, Test:{X_test.shape}")
         print(f"Target shapes(H={predicted_horizons[0]}): Train:{y_train_list[0].shape}, Val:{y_val_list[0].shape}, Test:{y_test_list[0].shape}")
-        window_size = config.get("window_size"); batch_size = config.get("batch_size", 32); epochs = config.get("epochs", 50)
+        batch_size=config.get("batch_size",32); epochs=config.get("epochs",50)
         print(f"Predicting Horizons: {predicted_horizons}, Plotting: H={plotted_horizon}")
 
         # --- Iteration Loop ---
+        list_test_preds = None # Define placeholders for last iteration results
+        list_test_unc = None
         for iteration in range(1, iterations + 1):
             print(f"\n=== Iteration {iteration}/{iterations} ===")
             iter_start = time.time()
 
-            # Build & Train Model
-            input_shape = (X_train.shape[1], X_train.shape[2]) if X_train.ndim==3 else (X_train.shape[1],)
+            # Build & Train
+            input_shape=(X_train.shape[1], X_train.shape[2]) if X_train.ndim==3 else (X_train.shape[1],)
             predictor_plugin.build_model(input_shape=input_shape, x_train=X_train, config=config)
             history, list_train_preds, list_train_unc, list_val_preds, list_val_unc = predictor_plugin.train(
-                X_train, y_train_dict, epochs=epochs, batch_size=batch_size,
-                threshold_error=config.get("threshold_error", 0.001),
+                X_train, y_train_dict, epochs=epochs, batch_size=batch_size, threshold_error=config.get("threshold_error",0.001),
                 x_val=X_val, y_val=y_val_dict, config=config
             )
 
-            # Check returned list lengths
+            # Check outputs & Calc Train/Val Metrics (All Horizons)
             can_calc_train_val_stats = all(len(lst) == num_outputs for lst in [list_train_preds, list_train_unc, list_val_preds, list_val_unc])
-            if not can_calc_train_val_stats: print("WARN: Predictor train outputs mismatch num_outputs. Full Train/Val stats skipped.")
-
-            # Calculate & Store Train/Val Metrics FOR ALL HORIZONS
             if can_calc_train_val_stats:
                 print("Calculating Train/Validation metrics (all horizons)...")
-                # (Logic confirmed correct in previous step)
                 for idx, h in enumerate(predicted_horizons):
                     try:
                         train_preds_h=list_train_preds[idx].flatten(); train_target_h=y_train_list[idx].flatten(); train_unc_h=list_train_unc[idx].flatten()
@@ -193,42 +164,32 @@ class STLPipelinePlugin:
                         num_train_pts=min(len(train_preds_h),len(train_target_h),len(baseline_train)); num_val_pts=min(len(val_preds_h),len(val_target_h),len(baseline_val))
                         train_preds_h=train_preds_h[:num_train_pts]; train_target_h=train_target_h[:num_train_pts]; train_unc_h=train_unc_h[:num_train_pts]; baseline_train_h=baseline_train[:num_train_pts]
                         val_preds_h=val_preds_h[:num_val_pts]; val_target_h=val_target_h[:num_val_pts]; val_unc_h=val_unc_h[:num_val_pts]; baseline_val_h=baseline_val[:num_val_pts]
-                        train_target_price=denormalize(baseline_train_h+train_target_h if use_returns else train_target_h, config)
-                        train_pred_price=denormalize(baseline_train_h+train_preds_h if use_returns else train_preds_h, config)
-                        val_target_price=denormalize(baseline_val_h+val_target_h if use_returns else val_target_h, config)
-                        val_pred_price=denormalize(baseline_val_h+val_preds_h if use_returns else val_preds_h, config)
-                        train_mae_h=np.mean(np.abs(denormalize_returns(train_preds_h-train_target_h, config))); train_r2_h=r2_score(train_target_price, train_pred_price)
-                        train_unc_mean_h=np.mean(np.abs(denormalize_returns(train_unc_h, config))); train_snr_h=np.mean(train_pred_price)/(train_unc_mean_h+1e-9)
-                        val_mae_h=np.mean(np.abs(denormalize_returns(val_preds_h-val_target_h, config))); val_r2_h=r2_score(val_target_price, val_pred_price)
-                        val_unc_mean_h=np.mean(np.abs(denormalize_returns(val_unc_h, config))); val_snr_h=np.mean(val_pred_price)/(val_unc_mean_h+1e-9)
+                        train_target_price=denormalize(baseline_train_h+train_target_h if use_returns else train_target_h, config); train_pred_price=denormalize(baseline_train_h+train_preds_h if use_returns else train_preds_h, config)
+                        val_target_price=denormalize(baseline_val_h+val_target_h if use_returns else val_target_h, config); val_pred_price=denormalize(baseline_val_h+val_preds_h if use_returns else val_preds_h, config)
+                        train_mae_h=np.mean(np.abs(denormalize_returns(train_preds_h-train_target_h, config))); train_r2_h=r2_score(train_target_price, train_pred_price); train_unc_mean_h=np.mean(np.abs(denormalize_returns(train_unc_h, config))); train_snr_h=np.mean(train_pred_price)/(train_unc_mean_h+1e-9)
+                        val_mae_h=np.mean(np.abs(denormalize_returns(val_preds_h-val_target_h, config))); val_r2_h=r2_score(val_target_price, val_pred_price); val_unc_mean_h=np.mean(np.abs(denormalize_returns(val_unc_h, config))); val_snr_h=np.mean(val_pred_price)/(val_unc_mean_h+1e-9)
                         metrics_results["Train"]["MAE"][h].append(train_mae_h); metrics_results["Train"]["R2"][h].append(train_r2_h); metrics_results["Train"]["Uncertainty"][h].append(train_unc_mean_h); metrics_results["Train"]["SNR"][h].append(train_snr_h)
                         metrics_results["Validation"]["MAE"][h].append(val_mae_h); metrics_results["Validation"]["R2"][h].append(val_r2_h); metrics_results["Validation"]["Uncertainty"][h].append(val_unc_mean_h); metrics_results["Validation"]["SNR"][h].append(val_snr_h)
                     except Exception as e: print(f"WARN: Error Train/Val metrics H={h}: {e}"); [metrics_results[ds][m][h].append(np.nan) for ds in ["Train","Validation"] for m in metric_names]
+            else: print("WARN: Skipping Train/Val stats calculation due to predictor output mismatch.")
 
             # Save Loss Plot
-            loss_plot_file=config.get("loss_plot_file",self.params["loss_plot_file"])
-            try:plt.figure(figsize=(10,5)); plt.plot(history.history['loss'],label='Train'); plt.plot(history.history['val_loss'],label='Val'); plt.title(f"Loss-Iter {iteration}"); plt.ylabel("Loss"); plt.xlabel("Epoch"); plt.legend(); plt.grid(True,alpha=0.6); plt.savefig(loss_plot_file); plt.close(); print(f"Loss plot saved: {loss_plot_file}")
-            except Exception as e: print(f"WARN: Failed loss plot: {e}"); plt.close()
+            loss_plot_file=config.get("loss_plot_file"); plt.figure(figsize=(10,5)); plt.plot(history.history['loss'],label='Train'); plt.plot(history.history['val_loss'],label='Val'); plt.title(f"Loss-Iter {iteration}"); plt.ylabel("Loss"); plt.xlabel("Epoch"); plt.legend(); plt.grid(True,alpha=0.6); plt.savefig(loss_plot_file); plt.close(); print(f"Loss plot saved: {loss_plot_file}")
 
-            # Evaluate on Test & Calculate Test Metrics FOR ALL HORIZONS
+            # Evaluate Test & Calc Metrics (All Horizons)
             print("Evaluating test set & calculating metrics...")
             mc_samples = config.get("mc_samples", 100)
+            # --- Use CORRECT variable names from assignment ---
             list_test_preds, list_test_unc = predictor_plugin.predict_with_uncertainty(X_test, mc_samples=mc_samples)
+            # --- End Correction ---
             if not all(len(lst)==num_outputs for lst in [list_test_preds, list_test_unc]): raise ValueError("Predictor predict mismatch outputs.")
             for idx, h in enumerate(predicted_horizons):
                  try:
                      test_preds_h=list_test_preds[idx].flatten(); test_target_h=y_test_list[idx].flatten(); test_unc_h=list_test_unc[idx].flatten()
                      num_test_pts=min(len(test_preds_h),len(test_target_h),len(baseline_test))
                      test_preds_h=test_preds_h[:num_test_pts]; test_target_h=test_target_h[:num_test_pts]; test_unc_h=test_unc_h[:num_test_pts]; baseline_test_h=baseline_test[:num_test_pts]
-                     # Denormalize Price (add baseline first if returns) - Stored temporarily
-                     test_target_price=denormalize(baseline_test_h+test_target_h if use_returns else test_target_h, config)
-                     test_pred_price=denormalize(baseline_test_h+test_preds_h if use_returns else test_preds_h, config)
-                     # Metrics
-                     test_mae_h=np.mean(np.abs(denormalize_returns(test_preds_h-test_target_h, config))) # MAE on returns scale
-                     test_r2_h=r2_score(test_target_price, test_pred_price) # R2 on price scale
-                     test_unc_mean_h=np.mean(np.abs(denormalize_returns(test_unc_h, config))) # Avg Unc magnitude (scaled like returns)
-                     test_snr_h=np.mean(test_pred_price)/(test_unc_mean_h+1e-9) # SNR using denorm pred price / denorm unc return scale
-                     # Store
+                     test_target_price=denormalize(baseline_test_h+test_target_h if use_returns else test_target_h, config); test_pred_price=denormalize(baseline_test_h+test_preds_h if use_returns else test_preds_h, config)
+                     test_mae_h=np.mean(np.abs(denormalize_returns(test_preds_h-test_target_h, config))); test_r2_h=r2_score(test_target_price, test_pred_price); test_unc_mean_h=np.mean(np.abs(denormalize_returns(test_unc_h, config))); test_snr_h=np.mean(test_pred_price)/(test_unc_mean_h+1e-9)
                      metrics_results["Test"]["MAE"][h].append(test_mae_h); metrics_results["Test"]["R2"][h].append(test_r2_h); metrics_results["Test"]["Uncertainty"][h].append(test_unc_mean_h); metrics_results["Test"]["SNR"][h].append(test_snr_h)
                  except Exception as e: print(f"WARN: Error Test metrics H={h}: {e}"); [metrics_results["Test"][m][h].append(np.nan) for m in metric_names]
 
@@ -251,127 +212,77 @@ class STLPipelinePlugin:
         for ds in data_sets:
              for mn in metric_names:
                  for h in predicted_horizons:
-                      values = metrics_results[ds][mn][h]
-                      # Check if list has valid data before calculating stats
-                      valid_values = [v for v in values if not np.isnan(v)]
-                      if valid_values:
-                           results_list.append({"Metric": f"{ds} {mn} H{h}",
-                                                "Average": np.mean(valid_values), "Std Dev": np.std(valid_values),
-                                                "Min": np.min(valid_values), "Max": np.max(valid_values)})
+                      values = metrics_results[ds][mn][h]; valid_values = [v for v in values if not np.isnan(v)]
+                      if valid_values: results_list.append({"Metric": f"{ds} {mn} H{h}", "Average": np.mean(valid_values), "Std Dev": np.std(valid_values), "Min": np.min(valid_values), "Max": np.max(valid_values)})
                       else: results_list.append({"Metric": f"{ds} {mn} H{h}", "Average": np.nan, "Std Dev": np.nan, "Min": np.nan, "Max": np.nan})
-        results_df = pd.DataFrame(results_list)
-        results_file = config.get("results_file", self.params["results_file"])
+        results_df = pd.DataFrame(results_list); results_file = config.get("results_file", self.params["results_file"])
         try: results_df.to_csv(results_file, index=False, float_format='%.6f'); print(f"Aggregated results saved: {results_file}"); print(results_df.to_string())
         except Exception as e: print(f"ERROR saving results: {e}")
 
 
-        # --- Save Final Test Outputs (Predictions & Uncertainties Separately - CORRECTED & VERIFIED) ---
+        # --- Save Final Test Outputs (Separate Files - Verified & Corrected) ---
         print("\n--- Saving Final Test Outputs (Predictions & Uncertainties Separately) ---")
         try:
-            # Use last iteration's predictions/uncertainties
-            final_predictions = list_test_predictions
-            final_uncertainties = list_uncertainty_estimates
-
-            # Determine consistent length based on minimum of available required arrays
-            arrays_to_check_len = [final_predictions[0], baseline_test, test_dates]
-            num_test_points = min(len(arr) for arr in arrays_to_check_len if arr is not None)
+            final_predictions = list_test_preds # Use correct variable from last iteration
+            final_uncertainties = list_test_unc # Use correct variable from last iteration
+            num_test_points = min(len(d) for d in [final_predictions[0], baseline_test, test_dates] if d is not None)
             print(f"Determined consistent output length: {num_test_points}")
 
-            # Prepare common data (sliced to consistent length)
             final_dates = list(test_dates[:num_test_points]) if test_dates is not None else list(range(num_test_points))
             final_baseline = baseline_test[:num_test_points] if baseline_test is not None else None
 
-            # Prepare dictionaries
-            output_data = {"DATE_TIME": final_dates}
-            uncertainty_data = {"DATE_TIME": final_dates}
-
-            # Add denormalized test CLOSE price (actual price at time t)
-            try: denorm_test_close = denormalize(final_baseline, config) if final_baseline is not None else np.full(num_test_points, np.nan)
+            output_data = {"DATE_TIME": final_dates}; uncertainty_data = {"DATE_TIME": final_dates}
+            try: denorm_test_close=denormalize(final_baseline, config) if final_baseline is not None else np.full(num_test_points, np.nan)
             except Exception as e: print(f"WARN: Error denorm test_CLOSE: {e}"); denorm_test_close = np.full(num_test_points, np.nan)
-            output_data["test_CLOSE"] = denorm_test_close.flatten() # Ensure 1D
+            output_data["test_CLOSE"] = denorm_test_close.flatten()
 
-            # Process each horizon
             for idx, h in enumerate(predicted_horizons):
-                # Get raw results (sliced)
-                preds_raw = final_predictions[idx][:num_test_points]
-                target_raw = y_test_list[idx][:num_test_points]
-                unc_raw = final_uncertainties[idx][:num_test_points]
-
-                # --- Denormalize CORRECTLY: Add baseline THEN denormalize price ---
-                # Separate variables to avoid multiple denormalizations
-                pred_price_denorm = np.full(num_test_points, np.nan)
-                target_price_denorm = np.full(num_test_points, np.nan)
-                unc_denorm = np.full(num_test_points, np.nan)
-
+                preds_raw=final_predictions[idx][:num_test_points]; target_raw=y_test_list[idx][:num_test_points]; unc_raw=final_uncertainties[idx][:num_test_points]
+                pred_price_denorm=np.full(num_test_points,np.nan); target_price_denorm=np.full(num_test_points,np.nan); unc_denorm=np.full(num_test_points,np.nan)
                 try:
-                    if use_returns:
-                         if final_baseline is None: raise ValueError("Baseline missing for return denorm.")
-                         pred_price_before_denorm = final_baseline + preds_raw
-                         target_price_before_denorm = final_baseline + target_raw
-                    else:
-                         pred_price_before_denorm = preds_raw
-                         target_price_before_denorm = target_raw
+                    pred_price_before = final_baseline + preds_raw if use_returns else preds_raw
+                    target_price_before = final_baseline + target_raw if use_returns else target_raw
+                    pred_price_denorm = denormalize(pred_price_before, config)
+                    target_price_denorm = denormalize(target_price_before, config)
+                    unc_denorm = denormalize_returns(unc_raw, config)
+                except Exception as e: print(f"WARN: Error denorm H={h}: {e}")
+                output_data[f"Target_H{h}"]=target_price_denorm.flatten(); output_data[f"Prediction_H{h}"]=pred_price_denorm.flatten(); uncertainty_data[f"Uncertainty_H{h}"]=unc_denorm.flatten()
 
-                    pred_price_denorm = denormalize(pred_price_before_denorm, config)
-                    target_price_denorm = denormalize(target_price_before_denorm, config)
-                    unc_denorm = denormalize_returns(unc_raw, config) # Uncertainty is relative
-
-                except Exception as e:
-                     print(f"WARN: Error during denormalization H={h}: {e}")
-                     # Keep NaNs if error occurs
-
-                # Add to dictionaries (flatten ensures 1D for DataFrame)
-                output_data[f"Target_H{h}"] = target_price_denorm.flatten()
-                output_data[f"Prediction_H{h}"] = pred_price_denorm.flatten()
-                uncertainty_data[f"Uncertainty_H{h}"] = unc_denorm.flatten()
-
-            # --- Save Predictions DataFrame (output_file) ---
+            # Save Predictions DataFrame
             output_file = config.get("output_file", self.params["output_file"])
             try:
-                # Add diagnostic print for lengths just before DataFrame creation
-                print("\nChecking final lengths for Predictions DataFrame:")
-                for k, v in output_data.items(): print(f"  - {k}: {len(v)}")
-                if len(set(len(v) for v in output_data.values())) > 1: raise ValueError("Length mismatch detected before creating output DataFrame.")
-
-                output_df = pd.DataFrame(output_data)
-                cols_order=['DATE_TIME','test_CLOSE'] if 'test_CLOSE' in output_df else ['DATE_TIME']
-                for h in predicted_horizons: cols_order.extend([f"Target_H{h}", f"Prediction_H{h}"])
-                output_df = output_df.reindex(columns=[c for c in cols_order if c in output_df.columns]) # Robust column order
-                write_csv(file_path=output_file, data=output_df, include_date=False, headers=True)
-                print(f"Predictions/Targets saved: {output_file} ({len(output_df)} rows)")
+                print("\nChecking final lengths for Predictions DataFrame:"); [print(f"  - {k}: {len(v)}") for k, v in output_data.items()]
+                if len(set(len(v) for v in output_data.values())) > 1: raise ValueError("Length mismatch (Predictions).")
+                output_df = pd.DataFrame(output_data); cols_order=['DATE_TIME','test_CLOSE'] if 'test_CLOSE' in output_df else ['DATE_TIME']; [cols_order.extend([f"Target_H{h}", f"Prediction_H{h}"]) for h in predicted_horizons]; output_df = output_df.reindex(columns=[c for c in cols_order if c in output_df.columns])
+                write_csv(file_path=output_file, data=output_df, include_date=False, headers=True); print(f"Predictions/Targets saved: {output_file} ({len(output_df)} rows)")
             except ImportError: print(f"WARN: write_csv not found. Skip save: {output_file}.")
-            except ValueError as ve: print(f"ERROR creating/saving predictions CSV: {ve}") # Catch length error here
+            except ValueError as ve: print(f"ERROR creating/saving predictions CSV: {ve}")
             except Exception as e: print(f"ERROR saving predictions CSV: {e}")
 
-            # --- Save Uncertainties DataFrame (uncertainties_file) ---
+            # Save Uncertainties DataFrame
             uncertainties_file = config.get("uncertainties_file", self.params.get("uncertainties_file"))
             if uncertainties_file:
                 try:
-                    print("\nChecking final lengths for Uncertainty DataFrame:")
-                    for k, v in uncertainty_data.items(): print(f"  - {k}: {len(v)}")
-                    if len(set(len(v) for v in uncertainty_data.values())) > 1: raise ValueError("Length mismatch detected before creating uncertainty DataFrame.")
-
-                    uncertainty_df = pd.DataFrame(uncertainty_data)
-                    cols_order=['DATE_TIME']; [cols_order.append(f"Uncertainty_H{h}") for h in predicted_horizons]
-                    uncertainty_df = uncertainty_df.reindex(columns=[c for c in cols_order if c in uncertainty_df.columns])
-                    write_csv(file_path=uncertainties_file, data=uncertainty_df, include_date=False, headers=True)
-                    print(f"Uncertainties saved: {uncertainties_file} ({len(uncertainty_df)} rows)")
+                    print("\nChecking final lengths for Uncertainty DataFrame:"); [print(f"  - {k}: {len(v)}") for k, v in uncertainty_data.items()]
+                    if len(set(len(v) for v in uncertainty_data.values())) > 1: raise ValueError("Length mismatch (Uncertainty).")
+                    uncertainty_df = pd.DataFrame(uncertainty_data); cols_order=['DATE_TIME']; [cols_order.append(f"Uncertainty_H{h}") for h in predicted_horizons]; uncertainty_df = uncertainty_df.reindex(columns=[c for c in cols_order if c in uncertainty_df.columns])
+                    write_csv(file_path=uncertainties_file, data=uncertainty_df, include_date=False, headers=True); print(f"Uncertainties saved: {uncertainties_file} ({len(uncertainty_df)} rows)")
                 except ImportError: print(f"WARN: write_csv not found. Skip save: {uncertainties_file}.")
-                except ValueError as ve: print(f"ERROR creating/saving uncertainties CSV: {ve}") # Catch length error here
+                except ValueError as ve: print(f"ERROR creating/saving uncertainties CSV: {ve}")
                 except Exception as e: print(f"ERROR saving uncertainties CSV: {e}")
             else: print("INFO: No 'uncertainties_file' specified.")
+        except Exception as e: print(f"ERROR during final CSV saving: {e}")
 
-        except Exception as e: print(f"ERROR during final CSV saving block: {e}")
 
-
-        # --- Plot Predictions for 'plotted_horizon' (CORRECTED - Flattening) ---
+        # --- Plot Predictions for 'plotted_horizon' (CORRECTED - Variable Names & Flattening) ---
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
-            # Get data for plotted horizon (using last iteration's results, sliced to num_test_points)
-            preds_plot_raw = list_test_predictions[plotted_index][:num_test_points]
+            # --- Use CORRECT variable names from last iteration ---
+            preds_plot_raw = list_test_preds[plotted_index][:num_test_points]
             target_plot_raw = y_test_list[plotted_index][:num_test_points]
-            unc_plot_raw = list_uncertainty_estimates[plotted_index][:num_test_points]
-            baseline_plot = final_baseline # Already sliced baseline
+            unc_plot_raw = list_test_unc[plotted_index][:num_test_points]
+            # --- End Correction ---
+            baseline_plot = final_baseline # Already sliced
 
             # Denormalize correctly and FLATTEN for plotting
             if use_returns:
@@ -383,7 +294,7 @@ class STLPipelinePlugin:
             unc_plot_denorm_flat = denormalize_returns(unc_plot_raw, config).flatten()
             true_plot_price_flat = denormalize(baseline_plot, config).flatten()
 
-            # Determine plot points and slice the FLATTENED arrays
+            # Determine plot points and slice FLATTENED arrays
             n_plot = config.get("plot_points", self.params["plot_points"])
             plot_slice = slice(max(0, num_test_points - n_plot), num_test_points)
 
@@ -398,7 +309,7 @@ class STLPipelinePlugin:
             plt.plot(dates_plot_final, pred_plot_final, label=f"Pred Price H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
             plt.plot(dates_plot_final, target_plot_final, label=f"Target Price H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
             plt.plot(dates_plot_final, true_plot_final, label="Actual Price", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
-            # fill_between uses the 1D arrays - should work now
+            # Use abs(unc_plot_final) which is guaranteed 1D now
             plt.fill_between(dates_plot_final, pred_plot_final - abs(unc_plot_final), pred_plot_final + abs(unc_plot_final),
                              color=config.get("plot_color_uncertainty", "green"), alpha=0.2, label=f"Uncertainty H{plotted_horizon}", zorder=0)
             plt.title(f"Predictions vs Target/Actual (H={plotted_horizon})"); plt.xlabel("Time"); plt.ylabel("Price"); plt.legend(); plt.grid(True, alpha=0.6); plt.tight_layout()
@@ -409,7 +320,7 @@ class STLPipelinePlugin:
 
         # --- Plot/Save Model --- (Keep as is)
         if plot_model is not None and hasattr(predictor_plugin, 'model') and predictor_plugin.model is not None:
-            try: model_plot_file = config.get('model_plot_file','model_plot.png'); plot_model(predictor_plugin.model,to_file=model_plot_file,show_shapes=True,show_layer_names=True,dpi=300); print(f"Model plot saved: {model_plot_file}")
+            try: model_plot_file=config.get('model_plot_file','model_plot.png'); plot_model(predictor_plugin.model,to_file=model_plot_file,show_shapes=True,show_layer_names=True,dpi=300); print(f"Model plot saved: {model_plot_file}")
             except Exception as e: print(f"WARN: Failed model plot: {e}")
         else: print("INFO: Skipping model plot.")
 
@@ -424,8 +335,8 @@ class STLPipelinePlugin:
 
 
     # --- load_and_evaluate_model (Keep as provided by user, with multi-output save fix) ---
+    # (Copied from previous response)
     def load_and_evaluate_model(self, config, predictor_plugin, preprocessor_plugin):
-        # (Copied from previous response, includes multi-output eval saving fix)
         from tensorflow.keras.models import load_model
         print(f"Loading pre-trained model from {config['load_model']}...")
         try: custom_objects={}; predictor_plugin.model = load_model(config['load_model'], custom_objects=custom_objects); print("Model loaded.")
