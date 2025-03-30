@@ -94,7 +94,7 @@ def r2_metric(y_true, y_pred):
     SS_tot = tf.reduce_sum(tf.square(mag_true - tf.reduce_mean(mag_true)))
     return 1 - SS_res/(SS_tot + tf.keras.backend.epsilon())
 
-def compute_mmd(x, y, sigma=1.0, sample_size=256):
+def compute_mmd(x, y, sigma=1.0, sample_size=32):
     """Compute the Maximum Mean Discrepancy (MMD) between two samples."""
     idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:sample_size]
     x_sample = tf.gather(x, idx)
