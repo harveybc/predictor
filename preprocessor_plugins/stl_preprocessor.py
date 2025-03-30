@@ -329,25 +329,46 @@ class PreprocessorPlugin:
 
     def _compute_wavelet_features(self, series):
         """Computes Wavelet features using MODWT (pywt.swt)."""
-        # (Implementation from previous correct step - kept the same)
         if pywt is None: print("ERROR: pywt library not installed."); return {}
-        name = self.params['wavelet_name']; levels = self.params['wavelet_levels']; n_original = len(series)
+        name = self.params['wavelet_name']; levels = self.params['wavelet_levels'];
+        n_original = len(series) if hasattr(series, '__len__') else 'N/A (Not iterable?)' # Check len safely
+
+        # --- ADD THIS DEBUG BLOCK ---
+        print(f"\nDEBUG Wavelet Input: Type={type(series)}, Shape={getattr(series, 'shape', 'N/A')}, Len={n_original}")
+        if not hasattr(series, '__len__') or len(series) < 2: # Check if it's iterable and has enough length
+            print(f"ERROR: Input series for wavelet computation is not a valid array/list or is too short.")
+            return {}
+        # --- END DEBUG BLOCK ---
+
         if levels is None:
             try:
-                levels = pywt.swt_max_level(n_original); print(f"Auto wavelet levels: {levels}")
+                levels = pywt.swt_max_level(len(series)); # Use actual length now
+                print(f"Auto wavelet levels: {levels}")
             except Exception as e: print(f"ERROR calculating max wavelet levels: {e}."); return {}
         if levels <= 0: print(f"ERROR: Wavelet levels ({levels}) not positive."); return {}
+
         print(f"Computing Wavelets (MODWT/SWT): {name}, Levels={levels}...", end="")
         try:
+            # This is where the error likely occurs if 'series' is not array-like
             coeffs = pywt.swt(series, wavelet=name, level=levels, trim_approx=True, norm=True)
+
             features = {'approx_L{}'.format(levels): coeffs[0][0]}
             for i in range(levels): features['detail_L{}'.format(levels - i)] = coeffs[i][1]
             # Sanity check lengths
+            n_original_len = len(series) # Re-get length just in case
             for k, v in features.items():
-                 if len(v) != n_original: print(f"WARN: Wavelet '{k}' length ({len(v)}) != original ({n_original}).")
+                 if len(v) != n_original_len: print(f"WARN: Wavelet '{k}' length ({len(v)}) != original ({n_original_len}).")
             print(f" Done ({len(features)} channels).")
             return features
-        except Exception as e: print(f" FAILED. Error: {e}"); return {}
+        except TypeError as e: # Catch the specific error
+             print(f" FAILED. TypeError: {e}")
+             print(f"      Check the DEBUG line above - the input series might not be an array.")
+             return {}
+        except Exception as e:
+             print(f" FAILED. Error: {e}")
+             import traceback
+             traceback.print_exc() # Print full traceback for other errors
+             return {}
 
     def _plot_wavelets(self, original_series, wavelet_features, file_path):
         """Plots original series and computed Wavelet features."""
