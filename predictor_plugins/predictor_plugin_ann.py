@@ -208,10 +208,12 @@ def build_branch(branch_input, branch_name, num_branch_layers=2, branch_units=32
                 name=f"{branch_name}_dense_{i+1}")(x)
     return x
 
+# Assume necessary imports like tensorflow, numpy, tfp are available
+
 def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
     """Custom posterior distribution function for DenseFlipout kernel."""
-    print(f"DEBUG: posterior_mean_field_custom (name={name}):")
-    print(f"       dtype={dtype}, kernel_shape={kernel_shape}, bias_size={bias_size} (overridden to 0), trainable={trainable}")
+    # print(f"DEBUG: posterior_mean_field_custom (name={name}):") # Optional: Keep top-level debug print
+    # print(f"       dtype={dtype}, kernel_shape={kernel_shape}, bias_size={bias_size} (overridden to 0), trainable={trainable}") # Optional
     if not isinstance(name, str): name = None # Ensure name is string or None
     bias_size = 0 # Force bias size to 0 for kernel posterior
     n = int(np.prod(kernel_shape)) + bias_size
@@ -223,20 +225,29 @@ def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name)
     scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name=scale_name)
     scale = 1e-3 + tf.nn.softplus(scale + c)
     scale = tf.clip_by_value(scale, 1e-3, 1.0)
-    print(f"DEBUG: posterior: created loc name: {loc.name}, shape: {loc.shape}")
-    print(f"DEBUG: posterior: created scale name: {scale.name}, shape: {scale.shape}")
+
+    # --- CORRECTED PRINT STATEMENTS ---
+    # Removed access to .name attribute
+    print(f"DEBUG: posterior: created loc shape: {loc.shape}")
+    print(f"DEBUG: posterior: created scale shape: {scale.shape}")
+    # --- END CORRECTION ---
+
     try:
         loc_reshaped = tf.reshape(loc, kernel_shape)
         scale_reshaped = tf.reshape(scale, kernel_shape)
-        print(f"DEBUG: posterior: reshaped loc to {loc_reshaped.shape} and scale to {scale_reshaped.shape}")
+        # print(f"DEBUG: posterior: reshaped loc to {loc_reshaped.shape} and scale to {scale_reshaped.shape}") # Optional
     except Exception as e:
-        print(f"DEBUG: Exception during reshape in posterior (name={name}):", e)
+        print(f"ERROR: Exception during reshape in posterior (name={name}):", e)
         raise e
     # Ensure reinterpreted_batch_ndims matches the rank of the kernel shape
     return tfp.distributions.Independent(
         tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
         reinterpreted_batch_ndims=len(kernel_shape)
     )
+
+# NOTE: Also double-check your 'prior_fn' function definition. If it contains
+# similar print statements accessing '.name', remove those as well, although
+# based on previous versions, it likely does not.
 
 def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
     """Custom prior distribution function for DenseFlipout kernel."""
