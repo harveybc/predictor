@@ -57,11 +57,10 @@ def verify_date_consistency(date_lists, dataset_name):
                     consistent = False
             else: print(f"Warning: Date array {i} in {dataset_name} is empty."); consistent = False
         except Exception as e: print(f"Warning: Could not compare dates in {dataset_name} for array {i}. Error: {e}."); consistent = False
-    # if consistent: print(f"{dataset_name} date ranges appear consistent.") # Less verbose
 
 
 class PreprocessorPlugin:
-    # Default plugin parameters - Merging original and new params
+    # Default plugin parameters - Restored working version + Original Y defaults
     plugin_params = {
         # --- File Paths ---
         "x_train_file": "data/x_train.csv",
@@ -73,44 +72,39 @@ class PreprocessorPlugin:
         # --- Data Loading ---
         "headers": True,
         "max_steps_train": None, "max_steps_val": None, "max_steps_test": None,
-        "target_column": "TARGET", # Target col name in Y files (from original)
+        "target_column": "TARGET", # From original Y logic
         # --- Windowing & Horizons ---
         "window_size": 48, # Original Default
-        # "time_horizon": 6, # Original single horizon - Replaced by multi-horizon
-        "predicted_horizons": [1, 6, 12, 24], # New multi-horizon (used for Y calc)
+        # "time_horizon": 6, # Replaced by predicted_horizons
+        "predicted_horizons": [1, 6, 12, 24], # Multi-horizon support
         # --- Feature Engineering Flags ---
         "use_stl": False,
         "use_wavelets": True,
         "use_multi_tapper": False,
-        "use_returns": True, # Original name for use_returns_as_target
+        "use_returns": True, # Original flag name for Y calculation
         "normalize_features": True,
         # --- STL Parameters ---
         "stl_period": 24,
-        "stl_window": 48, # Default, will be resolved if None later
-        "stl_trend": 49,  # Default, will be resolved if None later
+        "stl_window": 48, # Default, resolved later if None
+        "stl_trend": 49,  # Default, resolved later if None
         "stl_plot_file": "stl_plot.png",
         # --- Wavelet Parameters ---
         "wavelet_name": 'db4',
-        "wavelet_levels": 2, # Set based on previous error message
+        "wavelet_levels": 2, # Based on previous error
         "wavelet_mode": 'symmetric',
         "wavelet_plot_file": "wavelet_features.png",
         # --- Multitaper Parameters ---
-        # Note: "multitaper" is the standard spelling
         "mtm_window_len": 168,
         "mtm_step": 1,
         "mtm_time_bandwidth": 5.0,
         "mtm_num_tapers": None,
         "mtm_freq_bands": [(0, 0.01), (0.01, 0.06), (0.06, 0.2), (0.2, 0.5)],
         "tapper_plot_file": "mtm_features.png",
-        "tapper_plot_points": 480, # Consistent plot points
-        # "pos_encoding_dim": 16 # Keep commented as per original
+        "tapper_plot_points": 480, # Plot points
+        # "pos_encoding_dim": 16 # Keep commented
     }
-    # Update debug vars list
-    plugin_debug_vars = [
-        "window_size", #"time_horizon", # Removed single horizon
-        "predicted_horizons", # Added multi-horizon
-        "use_returns", # Keep original name
-        "normalize_features",
+    plugin_debug_vars = [ # Updated list
+        "window_size", "predicted_horizons", "use_returns", "normalize_features",
         "use_stl", "stl_period", "stl_window", "stl_trend", "stl_plot_file",
         "use_wavelets", "wavelet_name", "wavelet_levels", "wavelet_mode", "wavelet_plot_file",
         "use_multi_tapper", "mtm_window_len", "mtm_step", "mtm_time_bandwidth", "mtm_num_tapers", "mtm_freq_bands", "tapper_plot_file", "tapper_plot_points"
@@ -122,18 +116,15 @@ class PreprocessorPlugin:
 
     def set_params(self, **kwargs):
         """Update plugin parameters with global configuration."""
-        for key, value in kwargs.items():
-            self.params[key] = value
-        # Apply logic based on updated params
+        # (Logic from previous working version)
+        for key, value in kwargs.items(): self.params[key] = value
         config = self.params
         if config.get("stl_period") is not None and config.get("stl_period") > 1:
             if config.get("stl_window") is None: config["stl_window"] = 2 * config["stl_period"] + 1
             if config.get("stl_trend") is None:
                 current_stl_window = config.get("stl_window")
                 if current_stl_window is not None and current_stl_window > 3:
-                     try:
-                         trend_calc = int(1.5 * config["stl_period"] / (1 - 1.5 / current_stl_window)) + 1
-                         config["stl_trend"] = max(3, trend_calc) # Ensure minimum length
+                     try: trend_calc = int(1.5 * config["stl_period"] / (1 - 1.5 / current_stl_window)) + 1; config["stl_trend"] = max(3, trend_calc)
                      except ZeroDivisionError: config["stl_trend"] = config["stl_period"] + 1
                 else: config["stl_trend"] = config["stl_period"] + 1
             if config.get("stl_trend") is not None and config["stl_trend"] % 2 == 0: config["stl_trend"] += 1
@@ -146,154 +137,122 @@ class PreprocessorPlugin:
         """Add plugin debug info to the provided dictionary."""
         debug_info.update(self.get_debug_info())
 
-    # --- Helper Methods ---
+    # --- Helper Methods (Restored working versions) ---
     def _load_data(self, file_path, max_rows, headers):
-        # (Implementation from previous step - uses YOUR load_csv)
+        # (Implementation from previous working version)
         print(f"Loading data: {file_path} (Max rows: {max_rows})...", end="")
         try:
             df = load_csv(file_path, headers=headers, max_rows=max_rows)
-            if df is None or df.empty: raise ValueError(f"load_csv returned None or empty for {file_path}")
+            if df is None or df.empty: raise ValueError(f"load_csv None/empty for {file_path}")
             print(f" Done. Shape: {df.shape}")
             if not isinstance(df.index, pd.DatetimeIndex):
-                print(f"Attempting to convert index of {file_path} to DatetimeIndex...", end="")
+                print(f"Attempting DatetimeIndex conversion for {file_path}...", end="")
                 original_index_name = df.index.name
-                try: df.index = pd.to_datetime(df.index); print(" Success (from index).")
+                try: df.index = pd.to_datetime(df.index); print(" OK (from index).")
                 except Exception:
-                    try: df.index = pd.to_datetime(df.iloc[:, 0]); print(" Success (from first column).")
-                    except Exception as e_col: print(f" FAILED. Error: {e_col}. Dates unavailable."); df.index = None
+                    try: df.index = pd.to_datetime(df.iloc[:, 0]); print(" OK (from col 0).")
+                    except Exception as e_col: print(f" FAILED ({e_col}). Dates unavailable."); df.index = None
                 if original_index_name: df.index.name = original_index_name
-            required_cols = ["CLOSE"]
-            target_col_name = self.params.get("target_column", "TARGET")
-            # Check target only in Y files (assuming 'y_' in filename indicates Y file)
+            required_cols = ["CLOSE"]; target_col_name=self.params.get("target_column","TARGET")
             if 'y_' in os.path.basename(file_path).lower(): required_cols.append(target_col_name)
-            missing_cols = [col for col in required_cols if col not in df.columns]
-            if missing_cols: raise ValueError(f"Missing required columns in {file_path}: {missing_cols}. Available: {df.columns.tolist()}")
+            missing_cols = [c for c in required_cols if c not in df.columns]
+            if missing_cols: raise ValueError(f"Missing cols in {file_path}: {missing_cols}")
             return df
-        except FileNotFoundError: print(f"\nCRITICAL ERROR: File not found at {file_path}."); raise
-        except Exception as e: print(f"\nCRITICAL ERROR loading or processing {file_path}: {e}"); import traceback; traceback.print_exc(); raise
+        except FileNotFoundError: print(f"\nERROR: File not found: {file_path}."); raise
+        except Exception as e: print(f"\nERROR loading/processing {file_path}: {e}"); import traceback; traceback.print_exc(); raise
 
     def _normalize_series(self, series, name, fit=False):
         """Normalizes a time series using StandardScaler."""
-        # (Implementation from previous step)
+        # (Implementation from previous working version)
         if not self.params.get("normalize_features", True): return series.astype(np.float32)
         series = series.astype(np.float32)
         if np.any(np.isnan(series)) or np.any(np.isinf(series)):
-            print(f"WARN: NaNs/Infs in '{name}' before normalization. Filling...", end="")
+            print(f"WARN: NaNs/Infs in '{name}' pre-norm. Filling...", end="")
             series = pd.Series(series).fillna(method='ffill').fillna(method='bfill').values
             if np.any(np.isnan(series)) or np.any(np.isinf(series)):
-                 print(f" Filling FAILED. Filling remaining with 0.", end="")
+                 print(f" FAILED. Filling with 0.", end="")
                  series = np.nan_to_num(series, nan=0.0, posinf=0.0, neginf=0.0)
-            print(" Done.")
+            print(" OK.")
         data_reshaped = series.reshape(-1, 1)
         if fit:
             scaler = StandardScaler()
             if np.std(data_reshaped) < 1e-9:
-                 print(f"WARN: Feature '{name}' is constant. Using dummy scaler.")
+                 print(f"WARN: '{name}' constant. Dummy scaler.")
                  class DummyScaler:
-                     def fit(self, X): pass
-                     def transform(self, X): return X.astype(np.float32)
-                     def inverse_transform(self, X): return X.astype(np.float32)
+                     def fit(self,X):pass; transform=lambda self,X:X.astype(np.float32); inverse_transform=lambda self,X:X.astype(np.float32)
                  scaler = DummyScaler()
             else: scaler.fit(data_reshaped)
             self.scalers[name] = scaler
         else:
-            if name not in self.scalers: raise RuntimeError(f"Scaler for '{name}' not fitted.")
+            if name not in self.scalers: raise RuntimeError(f"Scaler '{name}' not fitted.")
             scaler = self.scalers[name]
         normalized_data = scaler.transform(data_reshaped)
         return normalized_data.flatten()
 
-    # --- Original _rolling_stl (kept exactly as provided by user) ---
-    def _rolling_stl(self, series, stl_window, period):
-        # Uses original rolling STL logic from user provided snippet
-        print("Performing rolling STL decomposition (Original Method)...")
+    # --- _rolling_stl (Restored working version - NOT original user version) ---
+    # Using the version compatible with conditional logic and explicit trend smoother
+    def _rolling_stl(self, series, stl_window, period, trend_smoother):
+        # Uses the robust version compatible with conditional logic
+        print(f"Performing rolling STL: Win={stl_window}, Period={period}, Trend={trend_smoother}...", end="")
         n = len(series)
         num_points = n - stl_window + 1
-        if num_points <= 0: raise ValueError(f"stl_window ({stl_window}) is too large for the series length ({n}).")
-        trend = np.zeros(num_points); seasonal = np.zeros(num_points); resid = np.zeros(num_points)
-        # --- Get stl_trend from resolved self.params ---
-        stl_trend = self.params.get("stl_trend") # Use resolved trend smoother length
-
-        for i in tqdm(range(stl_window, n + 1), desc="STL Decomposition", unit="window", disable=None, leave=False):
+        if num_points <= 0: raise ValueError(f"stl_window ({stl_window}) > series length ({n}).")
+        trend=np.zeros(num_points); seasonal=np.zeros(num_points); resid=np.zeros(num_points)
+        if trend_smoother is not None: # Validate trend smoother parameter
+             if not isinstance(trend_smoother,int) or trend_smoother<=0: trend_smoother=None
+             elif trend_smoother % 2 == 0: trend_smoother += 1
+        for i in tqdm(range(stl_window, n + 1), desc="STL", unit="w", disable=None, leave=False):
             window = series[i - stl_window: i]
-            # --- Validate and Adjust stl_trend locally ---
-            current_stl_trend = stl_trend
-            if current_stl_trend is not None:
-                if not isinstance(current_stl_trend, int) or current_stl_trend <=0: current_stl_trend = None
-                elif current_stl_trend >= len(window): current_stl_trend = len(window) - 1 if len(window) > 1 else None
-                if current_stl_trend is not None and current_stl_trend % 2 == 0: current_stl_trend += 1
-            # --- End validation ---
+            current_trend = trend_smoother
+            if current_trend is not None and current_trend >= len(window):
+                 current_trend = len(window) - 1 if len(window) > 1 else None
+                 if current_trend is not None and current_trend % 2 == 0: current_trend = max(1, current_trend -1 )
             try:
-                 stl = STL(window, period=period, trend=current_stl_trend, robust=True) # Use adjusted trend
-                 result = stl.fit()
-                 trend[i - stl_window] = result.trend[-1]
-                 seasonal[i - stl_window] = result.seasonal[-1]
-                 resid[i - stl_window] = result.resid[-1]
-            except Exception as e:
-                 print(f"WARN: STL fit failed window ending {i-1}. Err: {e}. NaN used.")
-                 trend[i - stl_window]=np.nan; seasonal[i - stl_window]=np.nan; resid[i - stl_window]=np.nan
+                 stl = STL(window, period=period, trend=current_trend, robust=True); result = stl.fit()
+                 trend[i-stl_window]=result.trend[-1]; seasonal[i-stl_window]=result.seasonal[-1]; resid[i-stl_window]=result.resid[-1]
+            except Exception as e: trend[i-stl_window]=np.nan; seasonal[i-stl_window]=np.nan; resid[i-stl_window]=np.nan # Keep NaN fill on error
         trend = pd.Series(trend).fillna(method='ffill').fillna(method='bfill').values
         seasonal = pd.Series(seasonal).fillna(method='ffill').fillna(method='bfill').values
         resid = pd.Series(resid).fillna(method='ffill').fillna(method='bfill').values
+        print(" Done.")
         return trend, seasonal, resid
-    # --- End of original _rolling_stl ---
+    # --- End of _rolling_stl ---
 
-    # --- Original _plot_decomposition (kept exactly as provided by user, with robust slicing) ---
+    # --- _plot_decomposition (Restored working version) ---
+    # Uses the robust version compatible with conditional logic
     def _plot_decomposition(self, series, trend, seasonal, resid, file_path):
-        # Uses original plotting logic, limited points
         print(f"Plotting STL decomposition to {file_path}...")
-        plot_points = 480 # Limit plot points for readability (from original)
-        # --- Robust Slicing ---
-        n_series = len(series)
-        n_comp = min(len(trend), len(seasonal), len(resid))
-        if n_comp == 0: print("WARN: Zero length components for STL plotting."); return
+        plot_points = 480; n_series = len(series); n_comp = min(len(trend), len(seasonal), len(resid))
+        if n_comp==0: print("WARN: Zero length STL components."); return
         points_to_plot = min(plot_points, n_series, n_comp)
         if points_to_plot <= 0: print("WARN: No points to plot for STL."); return
-        series_plot = series[-points_to_plot:]
-        trend_plot = trend[-points_to_plot:]
-        seasonal_plot = seasonal[-points_to_plot:]
-        resid_plot = resid[-points_to_plot:]
-        # --- End Slicing ---
+        series_plot=series[-points_to_plot:]; trend_plot=trend[-points_to_plot:]; seasonal_plot=seasonal[-points_to_plot:]; resid_plot=resid[-points_to_plot:]
+        final_len=min(len(series_plot), len(trend_plot)); series_plot=series_plot[:final_len]; trend_plot=trend_plot[:final_len]; seasonal_plot=seasonal_plot[:final_len]; resid_plot=resid_plot[:final_len]
+        if final_len <= 0: print("WARN: No data points left after STL plot slicing."); return
         try:
-            # Using original subplot structure and labels
-            plt.figure(figsize=(12, 9))
-            plt.subplot(411); plt.plot(series_plot, label="Log-Transformed Series"); plt.legend(loc="upper left"); plt.grid(True, alpha=0.5)
-            plt.subplot(412); plt.plot(trend_plot, label="Trend", color="orange"); plt.legend(loc="upper left"); plt.grid(True, alpha=0.5)
-            plt.subplot(413); plt.plot(seasonal_plot, label="Seasonal", color="green"); plt.legend(loc="upper left"); plt.grid(True, alpha=0.5)
-            plt.subplot(414); plt.plot(resid_plot, label="Residual", color="red"); plt.legend(loc="upper left"); plt.grid(True, alpha=0.5)
-            plt.tight_layout()
-            plt.savefig(file_path, dpi=300)
-            plt.close()
-            print(f"STL decomposition plot saved to {file_path}")
-        except Exception as e:
-             print(f"WARN: Failed to plot STL decomposition: {e}")
-             plt.close()
-    # --- End of original _plot_decomposition ---
+            plt.figure(figsize=(12, 9)); plt.subplot(411); plt.plot(series_plot); plt.title("Original Series (Recent)"); plt.grid(True, alpha=0.5)
+            plt.subplot(412); plt.plot(trend_plot, color="orange"); plt.title("Trend"); plt.grid(True, alpha=0.5)
+            plt.subplot(413); plt.plot(seasonal_plot, color="green"); plt.title("Seasonal"); plt.grid(True, alpha=0.5)
+            plt.subplot(414); plt.plot(resid_plot, color="red"); plt.title("Residual"); plt.grid(True, alpha=0.5)
+            plt.tight_layout(); plt.savefig(file_path, dpi=300); plt.close(); print(f"STL plot saved.")
+        except Exception as e: print(f"WARN: Failed plot STL: {e}"); plt.close()
+    # --- End of _plot_decomposition ---
 
     # --- Updated _compute_wavelet_features with TypeError Fix Attempt ---
     def _compute_wavelet_features(self, series):
         """Computes Wavelet features using MODWT (pywt.swt). Includes TypeError fix attempts."""
         if pywt is None: print("ERROR: pywt library not installed."); return {}
         name = self.params['wavelet_name']; levels = self.params['wavelet_levels'];
-        n_original_check = len(series) if hasattr(series, '__len__') else 'N/A (Not iterable?)'
-
-        # --- Input Check Block ---
-        # print(f"\nDEBUG Wavelet Input: Type={type(series)}, Shape={getattr(series, 'shape', 'N/A')}, Len={n_original_check}") # Keep for debugging if needed
-        if not isinstance(series, (np.ndarray, pd.Series, list)) or len(series) < 2:
-            print(f"ERROR: Wavelet input not array/list or too short.")
-            return {}
+        n_original_check = len(series) if hasattr(series, '__len__') else 'N/A'
+        if not isinstance(series, (np.ndarray, pd.Series, list)) or len(series) < 2: print(f"ERROR: Wavelet input not array/list or too short."); return {}
         try:
-            # --- Attempting Fix 1: Ensure float64 and check NaNs ---
-            series_clean = np.asarray(series, dtype=np.float64)
+            series_clean = np.asarray(series, dtype=np.float64) # Use float64
             if np.any(np.isnan(series_clean)) or np.any(np.isinf(series_clean)):
                 print("WARN: NaNs/Infs in wavelet input. Filling...", end="")
                 series_clean = pd.Series(series_clean).fillna(method='ffill').fillna(method='bfill').values
-                if np.any(np.isnan(series_clean)) or np.any(np.isinf(series_clean)):
-                    print(" Fill FAILED. Skipping."); return {}
-                print(" Done.")
-            # --- End Fix 1 ---
+                if np.any(np.isnan(series_clean)) or np.any(np.isinf(series_clean)): print(" Fill FAILED. Skipping."); return {}
+                print(" OK.")
         except Exception as e: print(f"ERROR during wavelet input validation: {e}"); return {}
-        # --- End Input Check Block ---
-
         if levels is None:
             try: levels = pywt.swt_max_level(len(series_clean)); print(f"Auto wavelet levels: {levels}")
             except Exception as e: print(f"ERROR calculating max wavelet levels: {e}."); return {}
@@ -301,8 +260,9 @@ class PreprocessorPlugin:
 
         print(f"Computing Wavelets (MODWT/SWT): {name}, Levels={levels}...", end="")
         try:
-            # Use the cleaned float64 series
-            coeffs = pywt.swt(series_clean, wavelet=name, level=levels, trim_approx=True, norm=True)
+            # --- Attempting Fix: Try norm=False ---
+            coeffs = pywt.swt(series_clean, wavelet=name, level=levels, trim_approx=True, norm=False)
+            # --- End Fix ---
 
             features = {'approx_L{}'.format(levels): coeffs[0][0]}
             for i in range(levels): features['detail_L{}'.format(levels - i)] = coeffs[i][1]
@@ -312,10 +272,8 @@ class PreprocessorPlugin:
             print(f" Done ({len(features)} channels).")
             return features
         except TypeError as e:
-             print(f" FAILED. TypeError: {e}") # Keep reporting specific error
-             # --- Attempting Fix 2: Add context if possible ---
-             print(f"      Occurred during pywt.swt call. Input length={len(series_clean)}, Levels={levels}, Wavelet='{name}'.")
-             # --- End Fix 2 ---
+             print(f" FAILED. TypeError: {e}")
+             print(f"      Occurred during pywt.swt call (Input Len={len(series_clean)}, Levels={levels}, Wavelet='{name}', norm=False).")
              return {}
         except Exception as e: print(f" FAILED. Error: {e}"); import traceback; traceback.print_exc(); return {}
     # --- End of _compute_wavelet_features ---
@@ -323,45 +281,42 @@ class PreprocessorPlugin:
 
     def _plot_wavelets(self, original_series, wavelet_features, file_path):
         """Plots original series and computed Wavelet features."""
-        # (Implementation from previous correct step - kept the same, uses 480 points)
+        # (Implementation from previous working step - plots last N points)
         print(f"Plotting Wavelet features to {file_path}...")
         plot_points = 480; num_features = len(wavelet_features)
         if num_features == 0: print("WARN: No wavelet features to plot."); return
-        start_idx = max(0, len(original_series) - plot_points); original_plot = original_series[start_idx:]
+        start_idx=max(0,len(original_series)-plot_points); original_plot=original_series[start_idx:]
         actual_plot_points = len(original_plot)
-        if actual_plot_points <= 0: print("WARN: No original series points for Wavelet plot."); return
+        if actual_plot_points <= 0: print("WARN: No original points for Wavelet plot."); return
         num_plots = num_features + 1; plt.figure(figsize=(12, 2 * num_plots))
         plt.subplot(num_plots, 1, 1); plt.plot(original_plot); plt.title(f"Original Series (Recent {actual_plot_points} points)"); plt.grid(True, alpha=0.5)
         plot_index = 2
         for name, feature_series in wavelet_features.items():
-             feat_start_idx = max(0, len(feature_series) - actual_plot_points); feature_plot = feature_series[feat_start_idx:]
-             if len(feature_plot) != actual_plot_points: print(f"WARN: Skip plot Wavelet '{name}', length mismatch."); continue
-             plt.subplot(num_plots, 1, plot_index); plt.plot(feature_plot, label=name); plt.title(f"Wavelet Feature: {name}"); plt.grid(True, alpha=0.5); plot_index += 1
+             feat_start_idx=max(0,len(feature_series)-actual_plot_points); feature_plot=feature_series[feat_start_idx:]
+             if len(feature_plot)!=actual_plot_points: print(f"WARN: Skip plot Wavelet '{name}', length mismatch."); continue
+             plt.subplot(num_plots,1,plot_index); plt.plot(feature_plot,label=name); plt.title(f"Wavelet: {name}"); plt.grid(True, alpha=0.5); plot_index += 1
         if plot_index > 2:
-             try:
-                 plt.tight_layout(rect=[0, 0.03, 1, 0.95]); plt.suptitle("Wavelet Decomposition Features", fontsize=14)
-                 plt.savefig(file_path, dpi=300); plt.close(); print(f"Wavelet plot saved.")
-             except Exception as e: print(f"WARN: Failed to save Wavelet plot: {e}"); plt.close()
-        else: print("WARN: No wavelet features were successfully plotted."); plt.close() # Ensure plot closed
+             try: plt.tight_layout(rect=[0, 0.03, 1, 0.95]); plt.suptitle("Wavelet Features", fontsize=14); plt.savefig(file_path, dpi=300); plt.close(); print(f"Wavelet plot saved.")
+             except Exception as e: print(f"WARN: Failed save Wavelet plot: {e}"); plt.close()
+        else: print("WARN: No wavelet features plotted."); plt.close()
 
 
     def _compute_mtm_features(self, series):
         """Computes Rolling Multitaper Method spectral power in bands."""
-        # (Implementation from previous correct step - kept the same)
+        # (Implementation from previous working step)
         if dpss is None: print("ERROR: scipy.signal.windows unavailable for MTM."); return {}
-        window_len = self.params['mtm_window_len']; step = self.params['mtm_step']; nw = self.params['mtm_time_bandwidth']
-        num_tapers = self.params['mtm_num_tapers']; freq_bands = self.params['mtm_freq_bands']; n_original = len(series)
+        window_len=self.params['mtm_window_len']; step=self.params['mtm_step']; nw=self.params['mtm_time_bandwidth']
+        num_tapers=self.params['mtm_num_tapers']; freq_bands=self.params['mtm_freq_bands']; n_original=len(series)
         if num_tapers is None: num_tapers = max(1, int(2 * nw - 1))
         if n_original < window_len: print(f"ERROR: Series length ({n_original}) < MTM window ({window_len})."); return {}
         print(f"Computing MTM: Win={window_len}, Step={step}, NW={nw}, K={num_tapers}...", end="")
         try: tapers = dpss(window_len, nw, num_tapers)
         except ValueError as e: print(f" FAILED generating DPSS tapers: {e}."); return {}
-        num_windows = (n_original - window_len) // step + 1
-        mtm_features = {f"band_{i}": np.full(num_windows, np.nan) for i in range(len(freq_bands))}
-        fft_freqs = np.fft.rfftfreq(window_len)
-        freq_masks = [(fft_freqs >= f_low) & (fft_freqs < f_high) for f_low, f_high in freq_bands]
-        for i in tqdm(range(num_windows), desc="MTM Calc", unit="window", disable=True, leave=False):
-            start = i * step; end = start + window_len; window_data = series[start:end]
+        num_windows=(n_original - window_len) // step + 1
+        mtm_features={f"band_{i}": np.full(num_windows, np.nan) for i in range(len(freq_bands))}
+        fft_freqs=np.fft.rfftfreq(window_len); freq_masks=[(fft_freqs >= f_low) & (fft_freqs < f_high) for f_low, f_high in freq_bands]
+        for i in range(num_windows): # Removed tqdm here for cleaner logs
+            start=i*step; end=start+window_len; window_data=series[start:end]
             if np.any(np.isnan(window_data)): continue
             spectra = np.zeros((num_tapers, len(fft_freqs)))
             for k in range(num_tapers): spectra[k, :] = np.abs(np.fft.rfft(window_data * tapers[k]))**2
@@ -369,15 +324,15 @@ class PreprocessorPlugin:
             for band_idx, mask in enumerate(freq_masks):
                  if np.any(mask): mtm_features[f"band_{band_idx}"][i] = np.mean(avg_spectrum[mask])
                  else: mtm_features[f"band_{band_idx}"][i] = 0.0
-        for name in mtm_features: mtm_features[name] = pd.Series(mtm_features[name]).fillna(method='ffill').fillna(method='bfill').values
+        for name in mtm_features: mtm_features[name]=pd.Series(mtm_features[name]).fillna(method='ffill').fillna(method='bfill').values
         print(f" Done ({len(mtm_features)} channels).")
         return mtm_features
 
     def _plot_mtm(self, mtm_features, file_path, points_to_plot=500):
         """Plots computed Multitaper features (power bands)."""
-        # (Implementation from previous correct step - uses points_to_plot)
+        # (Implementation from previous working step - uses points_to_plot)
         print(f"Plotting MTM features to {file_path}...")
-        num_features = len(mtm_features)
+        num_features = len(mtm_features); points_to_plot = self.params.get("tapper_plot_points", 480) # Get from params
         if num_features == 0: print("WARN: No MTM features to plot."); return
         min_len = 0; valid_keys = [k for k, v in mtm_features.items() if v is not None and len(v) > 0]
         if valid_keys: min_len = min(len(mtm_features[k]) for k in valid_keys)
@@ -387,42 +342,37 @@ class PreprocessorPlugin:
         plot_index = 1
         for name in valid_keys:
              feature_series = mtm_features[name]; start_idx = max(0, len(feature_series) - plot_points); feature_plot = feature_series[start_idx:]
-             plt.subplot(num_features, 1, plot_index); plt.plot(feature_plot, label=name); plt.title(f"MTM Feature: {name} (Recent {plot_points} points)"); plt.grid(True, alpha=0.5); plot_index += 1
+             plt.subplot(num_features, 1, plot_index); plt.plot(feature_plot, label=name); plt.title(f"MTM: {name} (Recent {plot_points} points)"); plt.grid(True, alpha=0.5); plot_index += 1
         if plot_index > 1:
-             try:
-                 plt.tight_layout(rect=[0, 0.03, 1, 0.95]); plt.suptitle("Multitaper Spectral Power Features", fontsize=14)
-                 plt.savefig(file_path, dpi=300); plt.close(); print(f"MTM plot saved.")
+             try: plt.tight_layout(rect=[0, 0.03, 1, 0.95]); plt.suptitle("Multitaper Spectral Power Features", fontsize=14); plt.savefig(file_path, dpi=300); plt.close(); print(f"MTM plot saved.")
              except Exception as e: print(f"WARN: Failed to save MTM plot: {e}"); plt.close()
         else: print("WARN: No MTM features plotted."); plt.close()
 
+
     # --- Original create_sliding_windows (kept exactly as provided by user) ---
-    # --- !!! IMPORTANT NOTE: This version calculates targets internally, which we override later !!! ---
+    # This is used by the FEATURE generation loop now, requires single time_horizon
     def create_sliding_windows(self, data, window_size, time_horizon, date_times=None):
         """
         Creates sliding windows for a univariate series.
-        Original user version - calculates targets internally but they are ignored later.
-        Requires a single `time_horizon`.
+        Original user version - calculates targets internally but they are ignored.
+        Requires a single `time_horizon` argument (use max_horizon here).
         """
-        print(f"Creating sliding windows (Original Method - Size={window_size}, Horizon={time_horizon})...", end="")
-        windows = []
-        targets = [] # This target list will be ignored by the main process_data logic now
-        date_windows = []
+        print(f"Creating sliding windows (Orig Method - Size={window_size}, Horizon={time_horizon})...", end="")
+        windows = []; targets = []; date_windows = [] # Initialize targets list
         n = len(data)
-        num_possible_windows = n - window_size - time_horizon + 1 # Original calculation
+        num_possible_windows = n - window_size - time_horizon + 1 # Use passed horizon
         if num_possible_windows <= 0:
-             print(f" WARN: Data length ({n}) too short for Win={window_size} + Horizon={time_horizon}. No windows.")
+             print(f" WARN: Data short ({n}) for Win={window_size}+Horizon={time_horizon}. No windows.")
              return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), np.array(date_windows, dtype=object)
-
         for i in range(num_possible_windows):
             window = data[i: i + window_size]
-            target = data[i + window_size + time_horizon - 1] # Original target calculation (ignored)
+            target = data[i + window_size + time_horizon - 1] # Original target calc (ignored)
             windows.append(window)
             targets.append(target) # Ignored target
             if date_times is not None:
                 date_index = i + window_size - 1
                 if date_index < len(date_times): date_windows.append(date_times[date_index])
                 else: date_windows.append(None)
-
         # Convert dates
         if date_times is not None:
              date_windows_arr = np.array(date_windows, dtype=object)
@@ -430,14 +380,13 @@ class PreprocessorPlugin:
                   try: date_windows_arr = np.array(date_windows, dtype='datetime64[ns]')
                   except (ValueError, TypeError): pass
         else: date_windows_arr = np.array(date_windows, dtype=object)
-
         print(f" Done ({len(windows)} windows).")
         return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), date_windows_arr # Return dates array
     # --- End of original create_sliding_windows ---
 
     def align_features(self, feature_dict, base_length):
         """Aligns feature time series to a common length by truncating the beginning."""
-        # (Implementation from previous correct step - kept the same)
+        # (Implementation from previous working step - kept the same)
         aligned_features = {}
         min_len = base_length; feature_lengths = {'base': base_length}
         valid_keys = [k for k, v in feature_dict.items() if v is not None]
@@ -445,22 +394,24 @@ class PreprocessorPlugin:
         for name in valid_keys: feature_lengths[name] = len(feature_dict[name]); min_len = min(min_len, feature_lengths[name])
         needs_alignment = any(l != min_len for l in feature_lengths.values() if l > 0)
         if needs_alignment:
+             # print(f"Aligning features to length: {min_len}. Orig: {feature_lengths}") # Verbose
              for name in valid_keys:
                  series = feature_dict[name]; current_len = len(series)
                  if current_len > min_len: aligned_features[name] = series[current_len - min_len:]
                  elif current_len == min_len: aligned_features[name] = series
-                 else: print(f"WARN: Feature '{name}' length ({current_len}) < target align length ({min_len})."); aligned_features[name] = None
+                 else: print(f"WARN: Feature '{name}' len({current_len})<target({min_len})."); aligned_features[name] = None
         else: aligned_features = {k: feature_dict[k] for k in valid_keys}
         final_lengths = {name: len(s) for name, s in aligned_features.items() if s is not None}
         unique_lengths = set(final_lengths.values())
-        if len(unique_lengths) > 1: raise RuntimeError(f"Alignment FAILED! Inconsistent final lengths: {final_lengths}")
+        if len(unique_lengths) > 1: raise RuntimeError(f"Alignment FAILED! Inconsistent lengths: {final_lengths}")
+        # print(f"Aligned feature length: {min_len}") # Verbose
         return aligned_features, min_len
 
 
     # --- process_data Method ---
     def process_data(self, config):
         """
-        Processes data for forecasting with optional features, using original Y/Baseline logic.
+        Processes data using new feature generation and ORIGINAL Y/Baseline logic.
         """
         # 0. Setup & Parameter Resolution
         print("\n" + "="*15 + " Starting Preprocessing " + "="*15)
@@ -471,36 +422,31 @@ class PreprocessorPlugin:
         # Get key parameters used in multiple places
         window_size = config['window_size']
         predicted_horizons = config['predicted_horizons']
-        if not isinstance(predicted_horizons, list) or not predicted_horizons:
-            raise ValueError("'predicted_horizons' must be a non-empty list of integers.")
-        # *** Use max_horizon for windowing consistency ***
-        max_horizon = max(predicted_horizons)
-        stl_window = config.get('stl_window') # Needed for original offset calc, ensure resolved
+        if not isinstance(predicted_horizons, list) or not predicted_horizons: raise ValueError("'predicted_horizons' must be a non-empty list.")
+        max_horizon = max(predicted_horizons) # Use max for windowing alignment
+        # Get stl_window for original Y calc - MUST be resolved here
+        stl_window = config.get('stl_window')
+        if stl_window is None: raise ValueError("stl_window parameter must be resolved before processing Y/Baseline.")
+
 
         # --- 1. Load Data ---
         print("\n--- 1. Loading Data ---")
-        x_train_df = self._load_data(config["x_train_file"], config.get("max_steps_train"), config.get("headers"))
-        x_val_df = self._load_data(config["x_validation_file"], config.get("max_steps_val"), config.get("headers"))
-        x_test_df = self._load_data(config["x_test_file"], config.get("max_steps_test"), config.get("headers"))
-        y_train_df = self._load_data(config["y_train_file"], config.get("max_steps_train"), config.get("headers"))
-        y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"))
-        y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"))
+        x_train_df=self._load_data(config["x_train_file"], config.get("max_steps_train"), config.get("headers"))
+        x_val_df=self._load_data(config["x_validation_file"], config.get("max_steps_val"), config.get("headers"))
+        x_test_df=self._load_data(config["x_test_file"], config.get("max_steps_test"), config.get("headers"))
+        y_train_df=self._load_data(config["y_train_file"], config.get("max_steps_train"), config.get("headers"))
+        y_val_df=self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"))
+        y_test_df=self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"))
 
         # --- 2. Initial Prep: Log Transform, Dates ---
         print("\n--- 2. Initial Data Prep ---")
-        try:
-            close_train = x_train_df["CLOSE"].astype(np.float32).values
-            close_val = x_val_df["CLOSE"].astype(np.float32).values
-            close_test = x_test_df["CLOSE"].astype(np.float32).values
-        except KeyError: raise ValueError("'CLOSE' column not found in X data.")
-        except Exception as e: raise ValueError(f"Error converting 'CLOSE' to numeric: {e}")
-        log_train = np.log1p(np.maximum(0, close_train)) # log1p for robustness
-        log_val = np.log1p(np.maximum(0, close_val))
-        log_test = np.log1p(np.maximum(0, close_test))
+        try: close_train=x_train_df["CLOSE"].astype(np.float32).values; close_val=x_val_df["CLOSE"].astype(np.float32).values; close_test=x_test_df["CLOSE"].astype(np.float32).values
+        except Exception as e: raise ValueError(f"Error converting 'CLOSE': {e}")
+        log_train=np.log1p(np.maximum(0, close_train)); log_val=np.log1p(np.maximum(0, close_val)); log_test=np.log1p(np.maximum(0, close_test))
         print(f"Log transform applied. Train shape: {log_train.shape}")
-        dates_train = x_train_df.index if isinstance(x_train_df.index, pd.DatetimeIndex) else None
-        dates_val = x_val_df.index if isinstance(x_val_df.index, pd.DatetimeIndex) else None
-        dates_test = x_test_df.index if isinstance(x_test_df.index, pd.DatetimeIndex) else None
+        dates_train=x_train_df.index if isinstance(x_train_df.index, pd.DatetimeIndex) else None
+        dates_val=x_val_df.index if isinstance(x_val_df.index, pd.DatetimeIndex) else None
+        dates_test=x_test_df.index if isinstance(x_test_df.index, pd.DatetimeIndex) else None
 
         # --- 3. Feature Generation (Conditional) ---
         print("\n--- 3. Feature Generation ---")
@@ -510,35 +456,29 @@ class PreprocessorPlugin:
         log_ret_val=np.diff(log_val,prepend=log_val[0]); features_val['log_return']=self._normalize_series(log_ret_val,'log_return',fit=False)
         log_ret_test=np.diff(log_test,prepend=log_test[0]); features_test['log_return']=self._normalize_series(log_ret_test,'log_return',fit=False)
         print("Generated: Log Returns (Normalized)")
-        # 3.b. STL
+        # 3.b. STL (using restored working version of _rolling_stl)
         if config.get('use_stl'):
              print("Attempting STL features...")
-             stl_period=config['stl_period']; # stl_window already resolved
+             stl_period=config['stl_period']; stl_trend=config['stl_trend'] # Use resolved params
              try:
-                 trend_train, seasonal_train, resid_train = self._rolling_stl(log_train, stl_window, stl_period)
-                 trend_val, seasonal_val, resid_val = self._rolling_stl(log_val, stl_window, stl_period)
-                 trend_test, seasonal_test, resid_test = self._rolling_stl(log_test, stl_window, stl_period)
+                 trend_train,seasonal_train,resid_train=self._rolling_stl(log_train,stl_window,stl_period,stl_trend) # Pass trend explicitly
+                 trend_val,seasonal_val,resid_val=self._rolling_stl(log_val,stl_window,stl_period,stl_trend)
+                 trend_test,seasonal_test,resid_test=self._rolling_stl(log_test,stl_window,stl_period,stl_trend)
                  if len(trend_train) > 0:
-                      features_train['stl_trend']=self._normalize_series(trend_train,'stl_trend',fit=True)
-                      features_train['stl_seasonal']=self._normalize_series(seasonal_train,'stl_seasonal',fit=True)
-                      features_train['stl_resid']=self._normalize_series(resid_train,'stl_resid',fit=True)
-                      features_val['stl_trend']=self._normalize_series(trend_val,'stl_trend',fit=False)
-                      features_val['stl_seasonal']=self._normalize_series(seasonal_val,'stl_seasonal',fit=False)
-                      features_val['stl_resid']=self._normalize_series(resid_val,'stl_resid',fit=False)
-                      features_test['stl_trend']=self._normalize_series(trend_test,'stl_trend',fit=False)
-                      features_test['stl_seasonal']=self._normalize_series(seasonal_test,'stl_seasonal',fit=False)
-                      features_test['stl_resid']=self._normalize_series(resid_test,'stl_resid',fit=False)
+                      features_train['stl_trend']=self._normalize_series(trend_train,'stl_trend',fit=True); features_train['stl_seasonal']=self._normalize_series(seasonal_train,'stl_seasonal',fit=True); features_train['stl_resid']=self._normalize_series(resid_train,'stl_resid',fit=True)
+                      features_val['stl_trend']=self._normalize_series(trend_val,'stl_trend',fit=False); features_val['stl_seasonal']=self._normalize_series(seasonal_val,'stl_seasonal',fit=False); features_val['stl_resid']=self._normalize_series(resid_val,'stl_resid',fit=False)
+                      features_test['stl_trend']=self._normalize_series(trend_test,'stl_trend',fit=False); features_test['stl_seasonal']=self._normalize_series(seasonal_test,'stl_seasonal',fit=False); features_test['stl_resid']=self._normalize_series(resid_test,'stl_resid',fit=False)
                       print("Generated: STL Trend, Seasonal, Residual (Normalized)")
                       stl_plot_file = config.get("stl_plot_file")
-                      if stl_plot_file: self._plot_decomposition(log_train[len(log_train)-len(trend_train):], trend_train, seasonal_train, resid_train, stl_plot_file)
+                      if stl_plot_file: self._plot_decomposition(log_train[len(log_train)-len(trend_train):], trend_train, seasonal_train, resid_train, stl_plot_file) # Use restored plot func
                  else: print("WARN: STL output zero length.")
              except Exception as e: print(f"ERROR processing STL: {e}. Skipping.")
         else: print("Skipped: STL features.")
-        # 3.c. Wavelets
+        # 3.c. Wavelets (using fixed _compute_wavelet_features)
         if config.get('use_wavelets'):
              print("Attempting Wavelet features...")
              try:
-                 wav_features_train = self._compute_wavelet_features(log_train) # Using fixed version
+                 wav_features_train = self._compute_wavelet_features(log_train)
                  if wav_features_train:
                       wav_features_val = self._compute_wavelet_features(log_val)
                       wav_features_test = self._compute_wavelet_features(log_test)
@@ -586,22 +526,20 @@ class PreprocessorPlugin:
         print("\n--- 5. Windowing Features & Channel Stacking ---")
         X_train_channels, X_val_channels, X_test_channels = [], [], []
         feature_names = []; x_dates_train, x_dates_val, x_dates_test = None, None, None; first_feature_dates_captured = False
-        feature_order = ['log_return'] # Determine order
+        feature_order = ['log_return']
         if config.get('use_stl'): feature_order.extend(['stl_trend', 'stl_seasonal', 'stl_resid'])
         if config.get('use_wavelets'): feature_order.extend(sorted([k for k in features_train if k.startswith('wav_')]))
         if config.get('use_multi_tapper'): feature_order.extend(sorted([k for k in features_train if k.startswith('mtm_')]))
         if not config.get('use_stl') and not config.get('use_wavelets') and not config.get('use_multi_tapper'): feature_order = ['log_return']
-
         print(f"Attempting to window features: {feature_order}")
         # --- Use max_horizon for windowing function ---
         time_horizon_for_windowing = max_horizon
-
         for name in feature_order:
             if name in features_train and features_train[name] is not None and \
                name in features_val and features_val[name] is not None and \
                name in features_test and features_test[name] is not None:
                 print(f"Windowing feature: {name}...", end="")
-                # --- Call YOUR create_sliding_windows, passing max_horizon ---
+                # --- Pass max_horizon to original windowing function ---
                 win_train, _, dates_win_train = self.create_sliding_windows(features_train[name], window_size, time_horizon_for_windowing, dates_train_aligned)
                 win_val, _, dates_win_val   = self.create_sliding_windows(features_val[name], window_size, time_horizon_for_windowing, dates_val_aligned)
                 win_test, _, dates_win_test = self.create_sliding_windows(features_test[name], window_size, time_horizon_for_windowing, dates_test_aligned)
@@ -612,7 +550,6 @@ class PreprocessorPlugin:
                          x_dates_train, x_dates_val, x_dates_test = dates_win_train, dates_win_val, dates_win_test
                          first_feature_dates_captured = True; print(f"Captured dates from '{name}'.")
                 else: print(f" Skipping channel '{name}' (windowing produced 0 samples).")
-            # else: print(f"Feature '{name}' not available, skipping.") # Verbose
 
         # --- 6. Stack channels ---
         if not X_train_channels: raise RuntimeError("No feature channels available after windowing!")
@@ -627,88 +564,69 @@ class PreprocessorPlugin:
         print(f"Final X shapes: Train={X_train_combined.shape}, Val={X_val_combined.shape}, Test={X_test_combined.shape}")
         print(f"Included features: {feature_names}")
 
-        # --- 7. Baseline & Target Processing (Reverting to User's Original Logic) ---
-        print("\n--- 7. Baseline and Target Processing (Using Original Logic Structure) ---")
+        # --- 7. Baseline & Target Processing (REVERTED TO USER'S ORIGINAL LOGIC - ALIGNED) ---
+        print("\n--- 7. Baseline and Target Processing (Original Logic - Aligned) ---")
         target_column = config["target_column"]
         use_returns = config.get("use_returns", False) # Original flag name
 
         # --- Original Offset Calculation ---
         # Requires stl_window even if STL not used - ensure it's resolved
         if stl_window is None:
-             print("WARN: stl_window not resolved, defaulting to window_size for offset calculation.")
-             effective_stl_window = window_size # Fallback if STL wasn't run/configured
+             print("WARN: stl_window not resolved for Y/Baseline offset. Using window_size as fallback.")
+             effective_stl_window = window_size
         else:
              effective_stl_window = stl_window
+        # This offset is relative to the START of the original log_train etc.
         original_offset = effective_stl_window + window_size - 2
-        print(f"Calculated original logic offset: {original_offset} (using effective_stl_window={effective_stl_window})")
+        print(f"Calculated original logic offset: {original_offset}")
 
         # --- Load Raw Target Data ---
-        if target_column not in y_train_df.columns: raise ValueError(f"Column '{target_column}' not found in training Y data.")
+        if target_column not in y_train_df.columns: raise ValueError(f"Column '{target_column}' not found in Y train.")
         target_train_raw = y_train_df[target_column].astype(np.float32).values
         target_val_raw = y_val_df[target_column].astype(np.float32).values
         target_test_raw = y_test_df[target_column].astype(np.float32).values
 
-        # --- Apply Original Slicing to Raw Targets & Dates ---
-        # Slice raw targets based on original offset calculation
-        target_train_sliced = target_train_raw[original_offset:]
-        target_val_sliced = target_val_raw[original_offset:]
-        target_test_sliced = target_test_raw[original_offset:]
-
-        # Slice original dates based on original offset (and max_horizon for length)
-        # The length needs to align with the *expected* number of samples *before* the final shift
-        # Expected length before shift = num_samples + max_horizon - 1 ??? This is tricky.
-        # Let's align the DATES using the x_dates_* derived from the actual X windows.
-        y_dates_train = x_dates_train
-        y_dates_val = x_dates_val
-        y_dates_test = x_dates_test
-        print("Using X window dates for Y/Baseline date alignment.")
-
-        # --- Calculate Baseline using original logic's slice indices ---
-        # Slice based on offset, ensure length matches final X samples
+        # --- Calculate Baseline using original offset logic BUT ensure length matches num_*_windows ---
         baseline_slice_end_train = original_offset + num_samples_train
         baseline_slice_end_val = original_offset + num_samples_val
         baseline_slice_end_test = original_offset + num_samples_test
 
-        if original_offset >= len(close_train) or baseline_slice_end_train > len(close_train): raise ValueError(f"Baseline train indices [{original_offset}:{baseline_slice_end_train}] out of bounds for close_train len {len(close_train)}.")
+        if original_offset < 0 or baseline_slice_end_train > len(close_train): raise ValueError(f"Baseline train indices invalid.")
         baseline_train = close_train[original_offset : baseline_slice_end_train]
-
-        if original_offset >= len(close_val) or baseline_slice_end_val > len(close_val): raise ValueError(f"Baseline val indices [{original_offset}:{baseline_slice_end_val}] out of bounds for close_val len {len(close_val)}.")
+        if original_offset < 0 or baseline_slice_end_val > len(close_val): raise ValueError(f"Baseline val indices invalid.")
         baseline_val = close_val[original_offset : baseline_slice_end_val]
-
-        if original_offset >= len(close_test) or baseline_slice_end_test > len(close_test): raise ValueError(f"Baseline test indices [{original_offset}:{baseline_slice_end_test}] out of bounds for close_test len {len(close_test)}.")
+        if original_offset < 0 or baseline_slice_end_test > len(close_test): raise ValueError(f"Baseline test indices invalid.")
         baseline_test = close_test[original_offset : baseline_slice_end_test]
 
-        # Final length check for baseline
-        if len(baseline_train) != num_samples_train: raise ValueError(f"Final Baseline train length mismatch: Expected {num_samples_train}, Got {len(baseline_train)}")
-        if len(baseline_val) != num_samples_val: raise ValueError(f"Final Baseline val length mismatch: Expected {num_samples_val}, Got {len(baseline_val)}")
-        if len(baseline_test) != num_samples_test: raise ValueError(f"Final Baseline test length mismatch: Expected {num_samples_test}, Got {len(baseline_test)}")
-        print(f"Baseline shapes (Original Logic, Adjusted Length): Train: {baseline_train.shape}, Val: {baseline_val.shape}, Test: {baseline_test.shape}")
+        if len(baseline_train) != num_samples_train: raise ValueError(f"Baseline train length mismatch: Expected {num_samples_train}, Got {len(baseline_train)}")
+        if len(baseline_val) != num_samples_val: raise ValueError(f"Baseline val length mismatch: Expected {num_samples_val}, Got {len(baseline_val)}")
+        if len(baseline_test) != num_samples_test: raise ValueError(f"Baseline test length mismatch: Expected {num_samples_test}, Got {len(baseline_test)}")
+        print(f"Baseline shapes (Original Logic): Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
 
+        # --- Process targets using original slicing and shifting logic, adjusted for multi-horizon ---
+        # 1. Apply original initial slice
+        target_train = target_train_raw[original_offset:]
+        target_val = target_val_raw[original_offset:]
+        target_test = target_test_raw[original_offset:]
 
-        # --- Shift Targets for Each Horizon (Adapting Original Shift) ---
-        y_train_final_list = []
-        y_val_final_list = []
-        y_test_final_list = []
+        # 2. Calculate shifted targets for each horizon and slice to final length
+        y_train_final_list = []; y_val_final_list = []; y_test_final_list = []
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
-
         for h in predicted_horizons:
-            # Original shift logic: y_sw = target_sliced[h:]
-            # We need to slice target_sliced to match num_samples AFTER the shift
-            target_train_shifted = target_train_sliced[h:]
-            target_val_shifted = target_val_sliced[h:]
-            target_test_shifted = target_test_sliced[h:]
+            # 2a. Apply original shift logic: target_sliced[h:]
+            target_train_shifted = target_train[h:]
+            target_val_shifted = target_val[h:]
+            target_test_shifted = target_test[h:]
 
-            # Now truncate/slice this shifted array to match the final num_samples
+            # 2b. Slice the shifted result to match num_samples
             if len(target_train_shifted) < num_samples_train: raise ValueError(f"Not enough shifted target data for H={h} (Train). Needed {num_samples_train}, got {len(target_train_shifted)}")
             target_train_h = target_train_shifted[:num_samples_train]
-
             if len(target_val_shifted) < num_samples_val: raise ValueError(f"Not enough shifted target data for H={h} (Val). Needed {num_samples_val}, got {len(target_val_shifted)}")
             target_val_h = target_val_shifted[:num_samples_val]
-
             if len(target_test_shifted) < num_samples_test: raise ValueError(f"Not enough shifted target data for H={h} (Test). Needed {num_samples_test}, got {len(target_test_shifted)}")
             target_test_h = target_test_shifted[:num_samples_test]
 
-            # Apply returns adjustment
+            # 2c. Apply returns adjustment using the ALIGNED baseline
             if use_returns:
                 target_train_h = target_train_h - baseline_train
                 target_val_h = target_val_h - baseline_val
@@ -718,15 +636,20 @@ class PreprocessorPlugin:
             y_val_final_list.append(target_val_h.astype(np.float32))
             y_test_final_list.append(target_test_h.astype(np.float32))
 
+        # --- Assign Dates based on X windows ---
+        # The dates should correspond to the *end* of the input window (X)
+        y_dates_train = x_dates_train
+        y_dates_val = x_dates_val
+        y_dates_test = x_dates_test
         print("Target processing complete (Original Logic Structure).")
 
-        # Prepare Test Close Prices (Original Logic)
-        # Needs to align with baseline_test length
-        test_close_prices = baseline_test # Baseline is already the aligned close prices
+        # --- Test Close Prices (Original Logic - Aligned) ---
+        # This should match the baseline_test calculated above
+        test_close_prices = baseline_test
 
         # --- 8. Final Date Consistency Check ---
         print("\n--- 8. Final Date Consistency Checks ---")
-        # Verify the dates associated with the final X samples
+        # Dates for X and Y (and Baseline dates derived from Y) should align
         verify_date_consistency([list(x_dates_train) if x_dates_train is not None else None, list(y_dates_train) if y_dates_train is not None else None], "Train X/Y Dates")
         verify_date_consistency([list(x_dates_val) if x_dates_val is not None else None, list(y_dates_val) if y_dates_val is not None else None], "Val X/Y Dates")
         verify_date_consistency([list(x_dates_test) if x_dates_test is not None else None, list(y_dates_test) if y_dates_test is not None else None], "Test X/Y Dates")
@@ -740,25 +663,23 @@ class PreprocessorPlugin:
         ret["x_val"] = X_val_combined
         ret["x_test"] = X_test_combined
 
-        # Extract STL channels if they exist
-        stl_keys = ['stl_trend', 'stl_seasonal', 'stl_resid']
+        # Extract STL channels if they exist and add with original keys
+        stl_keys_orig = {'stl_trend': 'trend', 'stl_seasonal': 'seasonal', 'stl_resid': 'noise'}
         channel_map = {name: i for i, name in enumerate(feature_names)}
-        for key in stl_keys:
-            if key in channel_map:
-                idx = channel_map[key]
-                ret[f"x_train_{key.split('_')[1]}"] = X_train_combined[:, :, idx:idx+1] # Keep channel dim
-                ret[f"x_val_{key.split('_')[1]}"] = X_val_combined[:, :, idx:idx+1]
-                ret[f"x_test_{key.split('_')[1]}"] = X_test_combined[:, :, idx:idx+1]
-            # else: # Omit key if STL feature wasn't generated/included
-            #     pass
+        for stl_key_new, stl_key_orig_suffix in stl_keys_orig.items():
+            if stl_key_new in channel_map:
+                idx = channel_map[stl_key_new]
+                ret[f"x_train_{stl_key_orig_suffix}"] = X_train_combined[:, :, idx:idx+1]
+                ret[f"x_val_{stl_key_orig_suffix}"] = X_val_combined[:, :, idx:idx+1]
+                ret[f"x_test_{stl_key_orig_suffix}"] = X_test_combined[:, :, idx:idx+1]
 
-        # Y data (List of arrays for multi-horizon)
-        ret["y_train"] = y_train_final_list
+        # Y data (List of arrays for multi-horizon) - Use keys from original code
+        ret["y_train"] = y_train_final_list # Multi-horizon list
         ret["y_val"] = y_val_final_list
         ret["y_test"] = y_test_final_list
-        # Omit y_*_array keys as they don't fit multi-horizon
+        # Omit y_*_array keys as they don't fit multi-horizon naturally
 
-        # Dates (Aligned with final X/Y samples)
+        # Dates (Aligned with final X/Y samples) - Use keys from original code
         ret["x_train_dates"] = x_dates_train
         ret["y_train_dates"] = y_dates_train
         ret["x_val_dates"] = x_dates_val
@@ -766,7 +687,7 @@ class PreprocessorPlugin:
         ret["x_test_dates"] = x_dates_test
         ret["y_test_dates"] = y_dates_test
 
-        # Baseline data and dates
+        # Baseline data and dates - Use keys from original code
         ret["baseline_train"] = baseline_train
         ret["baseline_val"] = baseline_val
         ret["baseline_test"] = baseline_test
@@ -774,18 +695,21 @@ class PreprocessorPlugin:
         ret["baseline_val_dates"] = y_dates_val
         ret["baseline_test_dates"] = y_dates_test
 
-        # Test Close Prices
+        # Test Close Prices - Use key from original code
         ret["test_close_prices"] = test_close_prices
 
+        # Add feature names for reference (New key)
+        ret["feature_names"] = feature_names
+
         print(f"Final returned keys: {list(ret.keys())}")
-        # Optional: Clean up memory
-        del x_train_df, x_val_df, x_test_df, y_train_df, y_val_df, y_test_df
+        del x_train_df, x_val_df, x_test_df, y_train_df, y_val_df, y_test_df # Cleanup
         del features_train, features_val, features_test
 
         print("\n" + "="*15 + " Preprocessing Finished " + "="*15)
         return ret
 
     # --- Original run_preprocessing (kept exactly as provided by user) ---
+    # --- MODIFIED to call set_params correctly ---
     def run_preprocessing(self, config):
         """Convenience method to execute data processing."""
         # Merge instance defaults with passed config
@@ -795,6 +719,6 @@ class PreprocessorPlugin:
         self.set_params(**run_config)
         # Run with the fully resolved self.params
         return self.process_data(self.params)
-    # --- End of original run_preprocessing ---
+    # --- End of run_preprocessing ---
 
 # --- NO if __name__ == '__main__': block ---
