@@ -374,6 +374,7 @@ class Plugin:
 
 
     # --- Define within your YourPredictorPlugin class ---
+    # --- Define within your YourPredictorPlugin class ---
     def build_model(self, input_shape, x_train, config):
         """
         Build model: processes features, merges, feeds into heads.
@@ -382,23 +383,21 @@ class Plugin:
         Assumes feedback/control lists initialized in __init__.
         Uses GLOBAL composite_loss. NO global feedback branch.
         """
- 
-
         # --- Pre-checks ---
-        if self.local_feedback is None or self.local_p_control is None: # Check essential lists
+        if self.local_feedback is None or self.local_p_control is None:
              raise RuntimeError("Feedback/Control lists were not initialized in __init__.")
 
         window_size, num_channels = input_shape
         predicted_horizons = config['predicted_horizons']
         num_outputs = len(predicted_horizons)
-        if len(self.local_feedback) != num_outputs: # Verify length
+        if len(self.local_feedback) != num_outputs:
              raise RuntimeError(f"Initialized list length != num_outputs. Re-initialize?")
 
         # --- Get Parameters ---
         l2_reg = config.get("l2_reg", self.params.get("l2_reg", 0.001))
         activation = config.get("activation", self.params.get("activation", "relu"))
         num_intermediate_layers = config['intermediate_layers']
-        num_head_intermediate_layers = config['intermediate_layers']
+        num_head_intermediate_layers = config['intermediate']
         branch_units = config.get("branch_units", self.params.get("branch_units", 64))
         merged_units = config.get("merged_units", self.params.get("merged_units", 128))
 
@@ -407,7 +406,6 @@ class Plugin:
 
         # --- Parallel Feature Processing Branches ---
         feature_branch_outputs = []
-        # print(f"Building {num_channels} feature processing branches...")
         for c in range(num_channels):
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
                                    name=f"feature_{c+1}_input")(inputs)
@@ -419,12 +417,14 @@ class Plugin:
 
         # --- Merging Feature Branches ONLY ---
         if len(feature_branch_outputs) == 1:
-             merged = tf.identity(feature_branch_outputs[0], name="merged_features")
+             # Use Keras Identity layer for naming and compatibility
+             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
         elif len(feature_branch_outputs) > 1:
+             # Concatenate is already a Keras layer
              merged = Concatenate(name="merged_features")(feature_branch_outputs)
         else:
              raise ValueError("Model must have at least one input feature channel.")
-        # print(f"Merged feature branches shape (symbolic): {merged.shape}")
+        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
 
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
@@ -432,12 +432,10 @@ class Plugin:
 
         # --- Build Multiple Output Heads ---
         outputs_list = []
-        self.output_names = [] # Initialize or clear instance variable for output names
-        # print(f"Building {num_outputs} output heads with control action feedback...")
+        self.output_names = []
 
         # Helper to get the CONTROL ACTION feedback for a specific head
         def get_specific_control_feedback(tensor_input, head_index):
-             """Retrieves control action feedback and tiles it for the batch."""
              batch_size = tf.shape(tensor_input)[0]
              control_action = tf.identity(self.local_feedback[head_index])
              tiled_feedback = tf.tile(tf.reshape(control_action, [1, -1]), [batch_size, 1])
@@ -472,7 +470,7 @@ class Plugin:
             # Apply DenseFlipout layer via Lambda WITH output_shape specified
             bayesian_output_branch = Lambda(
                 lambda t: flipout_layer_branch(t),
-                output_shape=lambda s: (s[0], 1), # <<<====== ADDED output_shape
+                output_shape=lambda s: (s[0], 1), # Explicit output shape
                 name=f"bayesian_output{branch_suffix}"
             )(head_dense_output)
 
@@ -489,7 +487,6 @@ class Plugin:
 
         # --- Model Definition ---
         self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
-        # print("Model instantiated.")
 
         # --- Compilation (Using GLOBAL composite_loss) ---
         optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
@@ -498,52 +495,34 @@ class Plugin:
 
         # Prepare loss dictionary, passing ALL necessary lists and params to GLOBAL composite_loss
         loss_dict = {}
-        # print("Preparing loss dictionary for compilation...")
-        for i, name in enumerate(self.output_names): # Use self.output_names
-            # Capture necessary values from self for this specific head
+        for i, name in enumerate(self.output_names):
             p_val = self.local_p_control[i]
             i_val = self.local_i_control[i]
             d_val = self.local_d_control[i]
-            # Capture references to ALL relevant lists from self
             lse_list = self.last_signed_error
             lsd_list = self.last_stddev
             lmmd_list = self.last_mmd
             lf_list = self.local_feedback
 
-            # Define loss func for this head using captured values/references
             loss_fn_for_head = (
                 lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list, lf=lf_list:
                     lambda y_true, y_pred: composite_loss( # Call GLOBAL func
-                        y_true, y_pred,
-                        head_index=index,
-                        mmd_lambda=mmd_lambda,
-                        sigma=sigma_mmd,
-                        p=p, i=iv, d=dv,
-                        list_last_signed_error=lse,
-                        list_last_stddev=lsd,
-                        list_last_mmd=lmmd,
-                        list_local_feedback=lf
+                        y_true, y_pred, head_index=index, mmd_lambda=mmd_lambda, sigma=sigma_mmd,
+                        p=p, i=iv, d=dv, list_last_signed_error=lse, list_last_stddev=lsd,
+                        list_last_mmd=lmmd, list_local_feedback=lf
                     )
             )(i)
             loss_dict[name] = loss_fn_for_head
-            # print(f"  - Loss function created for head {i} ('{name}')")
 
-        # Prepare metrics dictionary to only show the highest prediction horizon
-        highest_horizon_index = predicted_horizons.index(max(predicted_horizons))
-        metrics_dict = {
-            self.output_names[highest_horizon_index]: [
-                mae_magnitude, r2_metric
-            ]
-        }
-        
+        # Prepare metrics dictionary
+        metrics_dict = {name: [mae_magnitude, r2_metric] for name in self.output_names}
+
         self.model.compile(optimizer=optimizer,
                            loss=loss_dict,
                            metrics=metrics_dict)
-        # print("Model compiled successfully.")
 
         print(f"Control-Feedback Predictor model built successfully for {num_outputs} horizons.")
         self.model.summary(line_length=150)
-
 
     # --- Method within YourPredictorPlugin class ---
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
