@@ -336,12 +336,13 @@ class STLPipelinePlugin:
             print(f"ERROR saving aggregated results: {e}")
 
         # --- Save Final Test Predictions and Uncertainties for ALL Horizons ---
-        # Uses the results from the LAST iteration's MC sampling
+        # --- Save Final Test Predictions and Uncertainties for ALL Horizons ---
         print(f"Preparing final output CSV for all {num_outputs} predicted horizons...")
 
         # 1) Determine consistent length based on minimum available points
         try:
-            num_test_points = len(list_test_predictions[0]) # Start with prediction length
+            if not list_test_predictions: raise ValueError("No test predictions available.")
+            num_test_points = len(list_test_predictions[0])
             min_available_len = num_test_points
             sources_to_check = {'test_dates': test_dates, 'test_close_prices': test_close_prices}
             if config.get("use_returns", False): sources_to_check['baseline_test'] = baseline_test
@@ -350,7 +351,6 @@ class STLPipelinePlugin:
             for name, data_arr in sources_to_check.items():
                 if data_arr is not None: min_available_len = min(min_available_len, len(data_arr))
                 elif name.startswith('y_test_'): raise ValueError(f"Target array '{name}' is None.")
-                # Allow optional arrays like dates/close/baseline to be None initially
 
             if min_available_len < num_test_points:
                 print(f"WARN: Truncating output rows from {num_test_points} to {min_available_len} due to shortest input array.")
@@ -358,78 +358,111 @@ class STLPipelinePlugin:
 
         except Exception as e:
              print(f"ERROR determining consistent output length: {e}. Skipping CSV output.")
-             num_test_points = 0 # Prevent further processing
+             num_test_points = 0
 
         if num_test_points > 0:
             # 2) Prepare Dates, Close Prices, Baseline using the final num_test_points
             if test_dates is not None: final_dates = list(test_dates)[:num_test_points]
-            else: final_dates = list(range(num_test_points)) # Use simple range index if no dates
+            else: final_dates = list(range(num_test_points))
 
+            # Use raw close prices before potential denormalization issue
             final_close_raw = test_close_prices[:num_test_points] if test_close_prices is not None else np.full(num_test_points, np.nan)
-            denorm_test_close_prices = denormalize(final_close_raw, config) if config.get("use_normalization_json") else final_close_raw
+            # Attempt denormalization for close price separately
+            try:
+                 denorm_test_close_prices = denormalize(final_close_raw, config) if config.get("use_normalization_json") else final_close_raw
+                 if len(denorm_test_close_prices) != num_test_points:
+                      print(f"WARN: Denormalized test_CLOSE length ({len(denorm_test_close_prices)}) != expected ({num_test_points}). Using NaN.")
+                      denorm_test_close_prices = np.full(num_test_points, np.nan)
+            except Exception as e:
+                 print(f"WARN: Error denormalizing test_CLOSE: {e}. Using NaN.")
+                 denorm_test_close_prices = np.full(num_test_points, np.nan)
+
 
             final_baseline = None
             if config.get("use_returns", False) and baseline_test is not None:
                  final_baseline = baseline_test[:num_test_points]
 
-            # 3) Build Dictionary for DataFrame
+            # 3) Build Dictionary for DataFrame (All Horizons)
             output_data = {"DATE_TIME": final_dates}
             if not np.isnan(denorm_test_close_prices).all():
                  output_data["test_CLOSE"] = denorm_test_close_prices
 
+            print("DEBUG: Populating output_data dictionary...")
             for idx, h in enumerate(predicted_horizons):
                 # Slice ALL arrays using the final num_test_points
                 preds_raw = np.reshape(list_test_predictions[idx][:num_test_points], (-1, 1))
                 unc_raw = np.reshape(list_uncertainty_estimates[idx][:num_test_points], (-1, 1))
                 target_raw = np.reshape(y_test_list[idx][:num_test_points], (-1, 1))
 
-                # Denormalize
+                # --- DEBUGGING LENGTH ISSUE: BYPASS DENORMALIZE FOR TARGET/PRED ---
+                # Denormalize only Uncertainty for now, assign raw Target/Prediction
+                print(f"  H={h}: Raw shapes - Target: {target_raw.shape}, Pred: {preds_raw.shape}, Unc: {unc_raw.shape}")
                 try:
-                    if config.get("use_returns", False):
-                         baseline_h = final_baseline if final_baseline is not None else np.zeros_like(target_raw)
-                         if len(baseline_h) != len(target_raw): baseline_h = np.zeros_like(target_raw)
-                         denorm_preds = denormalize((baseline_h + preds_raw), config)
-                         denorm_target = denormalize((baseline_h + target_raw), config)
-                         denorm_unc = denormalize_returns(unc_raw, config)
-                    else:
-                         denorm_preds = denormalize(preds_raw, config)
-                         denorm_target = denormalize(target_raw, config)
-                         denorm_unc = denormalize_returns(unc_raw, config)
-                except Exception as e:
-                    print(f"WARN: Error during denormalization for H={h}: {e}. Skipping columns for this horizon.")
-                    continue # Skip adding columns for this horizon if denorm fails
+                     denorm_unc = denormalize_returns(unc_raw, config)
+                     # Verify uncertainty length after potential denorm
+                     if len(denorm_unc) != num_test_points:
+                         print(f"WARN: Denormalized Uncertainty_H{h} length ({len(denorm_unc)}) != expected ({num_test_points}). Skipping uncertainty column.")
+                         denorm_unc_flat = np.full(num_test_points, np.nan) # Use NaN placeholder
+                     else:
+                          denorm_unc_flat = denorm_unc.flatten()
 
-                # Add columns
-                output_data[f"Target_H{h}"] = denorm_target.flatten()
-                output_data[f"Prediction_H{h}"] = denorm_preds.flatten()
-                output_data[f"Uncertainty_H{h}"] = denorm_unc.flatten()
+                     # Assign RAW values for Target and Prediction (BYPASSING DENORMALIZE)
+                     denorm_target_flat = target_raw.flatten()
+                     denorm_preds_flat = preds_raw.flatten()
+
+                     # Print shapes before adding to dict
+                     print(f"  H={h}: Final shapes - Target: {denorm_target_flat.shape}, Pred: {denorm_preds_flat.shape}, Unc: {denorm_unc_flat.shape}")
+
+                     # Add columns using the arrays that *should* have the correct length
+                     output_data[f"Target_H{h}"] = denorm_target_flat
+                     output_data[f"Prediction_H{h}"] = denorm_preds_flat
+                     output_data[f"Uncertainty_H{h}"] = denorm_unc_flat
+
+                except Exception as e:
+                    print(f"WARN: Error during denormalization/assignment for H={h}: {e}. Skipping columns for this horizon.")
+                    continue # Skip adding columns for this horizon if errors occur
+
+            # --- END DEBUGGING BLOCK ---
+
 
             # 4) Create and Save DataFrame
+            print("DEBUG: Attempting to create DataFrame...")
             try:
-                final_output_df = pd.DataFrame(output_data) # Create with potentially varying columns if denorm failed
+                # Check final lengths before creating DataFrame
+                all_lengths_ok = True
+                for k, v in output_data.items():
+                    current_len = len(v) if hasattr(v, '__len__') else -1
+                    print(f"  - Final check - {k}: length {current_len}")
+                    if current_len != num_test_points:
+                        print(f"ERROR: Final length mismatch for {k}. Expected {num_test_points}, got {current_len}.")
+                        all_lengths_ok = False
+                        # Optionally remove the problematic column: del output_data[k]
 
-                # Define expected columns based on successful processing
+                if not all_lengths_ok:
+                     raise ValueError("Cannot create DataFrame due to final length mismatches (see logs above).")
+
+                final_output_df = pd.DataFrame(output_data)
+
                 cols_order = ['DATE_TIME']
                 if 'test_CLOSE' in output_data: cols_order.append('test_CLOSE')
                 for h in predicted_horizons:
-                     # Only include columns if they were successfully added to output_data
+                     # Only include columns if they likely exist (adjust if needed)
                      if f"Target_H{h}" in output_data:
                           cols_order.extend([f"Target_H{h}", f"Prediction_H{h}", f"Uncertainty_H{h}"])
-                # Reindex safely, filling missing columns with NaN if necessary
                 final_output_df = final_output_df.reindex(columns=cols_order)
 
                 output_file = config.get("output_file", self.params["output_file"])
-                # Ensure data_handler and write_csv are correctly imported/accessible
                 # from app.data_handler import write_csv # Assumed imported earlier
                 write_csv(file_path=output_file, data=final_output_df, include_date=False, headers=config.get('headers', True))
-                print(f"Final test predictions and uncertainties ({num_test_points} rows) saved to {output_file}")
+                print(f"Final test data ({num_test_points} rows) saved to {output_file}. NOTE: Targets/Predictions might be normalized if denormalize was bypassed.")
             except ImportError:
                  output_file = config.get("output_file", self.params["output_file"])
                  print(f"WARN: Could not import write_csv. Saving with pandas default to {output_file}.")
                  final_output_df.to_csv(output_file, index=False, date_format='%Y-%m-%d %H:%M:%S.%f')
-            except ValueError as ve: # Catch DataFrame creation errors (e.g., if lengths somehow still mismatch)
+            except ValueError as ve:
                  print(f"ERROR: Failed to create final output DataFrame: {ve}")
-                 for k, v in output_data.items(): print(f"  - {k}: length {len(v) if hasattr(v, '__len__') else 'N/A'}")
+                 # Print lengths again on error
+                 for k, v in output_data.items(): print(f"  - Error state - {k}: length {len(v) if hasattr(v, '__len__') else 'N/A'}")
             except Exception as e:
                  print(f"ERROR: Failed to save final predictions CSV: {e}")
         # --- End of CSV Saving Block ---
