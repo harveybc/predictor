@@ -101,7 +101,7 @@ class PreprocessorPlugin:
         "stl_plot_file": "stl_decomposition.png",
         # --- Wavelet Parameters (if use_wavelets=True) ---
         "wavelet_name": 'db4',      # Common choice
-        "wavelet_levels": 6,        # Enough levels to potentially capture weekly patterns (auto if None)
+        "wavelet_levels": 2,        # Enough levels to potentially capture weekly patterns (auto if None)
         "wavelet_mode": 'symmetric', # Padding mode for DWT/MODWT if needed by implementation
         "wavelet_plot_file": "wavelet_features.png",
         # --- Multitaper Parameters (if use_multi_tapper=True) ---
