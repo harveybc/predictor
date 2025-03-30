@@ -30,6 +30,8 @@ from tensorflow.keras.regularizers import l2
 from tensorflow.keras.initializers import GlorotUniform
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Add
+# keras identity
+from tensorflow.keras.layers import Identity
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
