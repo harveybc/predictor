@@ -49,5 +49,5 @@
     "predicted_horizons": [24,48,72,96,120,144],
     "use_stl": true,
     "use_wavelets": true,
-    "usemulti_tapper": true
+    "use_multi_tapper": true
 }
