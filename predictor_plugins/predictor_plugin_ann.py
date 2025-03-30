@@ -438,27 +438,12 @@ class Plugin:
         outputs_list = []
         self.output_names = []
 
-        # Helper to get the CONTROL ACTION feedback for a specific head
-        def get_specific_control_feedback(tensor_input, head_index):
-             batch_size = tf.shape(tensor_input)[0]
-             control_action = tf.identity(self.local_feedback[head_index])
-             tiled_feedback = tf.tile(tf.reshape(control_action, [1, -1]), [batch_size, 1])
-             return tiled_feedback
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
-            # --- Get Control Action Feedback (Previous Step) ---
-            control_feedback_input = Lambda(lambda x: get_specific_control_feedback(x, i),
-                                              name=f"get_control_fb{branch_suffix}")(inputs)
-
-            # --- Combine Merged Features + Control Action Feedback via Concatenation ---
-            head_input_combined = Concatenate(name=f"head_input_combined{branch_suffix}")(
-                [merged, control_feedback_input]
-            )
-
             # --- Head Intermediate Dense Layers ---
-            head_dense_output = head_input_combined
+            head_dense_output = merged
             for j in range(num_head_intermediate_layers):
                  head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
                                            name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
