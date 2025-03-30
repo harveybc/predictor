@@ -43,7 +43,7 @@
     "plot_color_uncertainty": "green",
     "plot_color_target": "orange",
     "uncertainty_color_alpha": 0.01,
-    "plot_points": 120,
+    "plot_points": 480,
     "min_delta": 1e-7,
     "epochs": 2000,
     "use_strategy": false,
