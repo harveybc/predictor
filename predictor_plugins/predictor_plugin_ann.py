@@ -413,10 +413,10 @@ class Plugin:
         activation = config.get("activation", self.params.get("activation", "relu"))
         num_intermediate_layers = config['intermediate_layers']
         num_head_intermediate_layers = config['intermediate_layers']
-        branch_units = config.get("branch_units", self.params.get("branch_units", 64))
-        merged_units = config.get("merged_units", self.params.get("merged_units", 128))
+        merged_units = config.get("initial_layer_size", 128)
+        branch_units = merged_units//config.get("layer_size_divisor", 2)
         # Add LSTM units parameter (provide a default)
-        lstm_units = config.get("lstm_units", 32) # New parameter for LSTM size
+        lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
 
 
         # --- Input Layer ---
