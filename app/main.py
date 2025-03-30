@@ -79,7 +79,7 @@ def main():
     print(f"Loading Predictor Plugin: {plugin_name}")
     try:
         predictor_class, _ = load_plugin('predictor.plugins', plugin_name)
-        predictor_plugin = predictor_class()
+        predictor_plugin = predictor_class(config)
         predictor_plugin.set_params(**config)
     except Exception as e:
         print(f"Failed to load or initialize Predictor Plugin '{plugin_name}': {e}")
