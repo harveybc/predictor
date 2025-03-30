@@ -13,7 +13,8 @@
     "uncertainties_file": "examples/results/phase_1/phase_1_ann_25200_1h_uncertanties.csv",
     "predictions_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_predictions_plot.png",
     "stl_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_stl_decomposition_plot.png",
-    
+    "wavelet_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_wavelet_decomposition_plot.png",
+    "multi_tapper_plot_file": "examples/results/phase_1/phase_1_ann_25200_1h_multi_tapper_decomposition_plot.png",
     "target_column": "CLOSE",
     "predictor_plugin": "ann",
     "optimizer_plugin": "default_optimizer",
