@@ -505,7 +505,7 @@ class Plugin:
             loss_dict[name] = loss_fn_for_head
 
         # Prepare metrics dictionary
-        metrics_dict = {name: [mae_magnitude, r2_metric] for name in self.output_names}
+        metrics_dict = {name: [mae_magnitude] for name in self.output_names}
 
         self.model.compile(optimizer=optimizer,
                            loss=loss_dict,
