@@ -46,6 +46,8 @@
     "epochs": 2000,
     "use_strategy": false,
     "stl_period":24,
-    "predicted_horizons": [24,48,72,96,120,144]
-
+    "predicted_horizons": [24,48,72,96,120,144],
+    "use_stl": false,
+    "use_wavelets": false,
+    "usemulti_tapper": false
 }
