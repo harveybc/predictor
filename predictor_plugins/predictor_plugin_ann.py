@@ -242,7 +242,7 @@ class Plugin:
     def __init__(self, config=None):
         """
         Initialize the predictor plugin.
-        Applies DenseFlipout patch with default values for init/train args.
+        Applies DenseFlipout patch, ensuring kwargs don't duplicate args.
         Initializes parameters and KL weight. No feedback lists.
         """
         self.params = self.plugin_params.copy()
@@ -264,30 +264,32 @@ class Plugin:
 
         print(f"Predictor Plugin Initialized for {num_outputs} outputs (No feedback state).")
 
-        # --- Apply DenseFlipout Patch (Signature with DEFAULTS for init/train) ---
+        # --- Apply DenseFlipout Patch (Handling kwargs explicitly) ---
         if not hasattr(tfp.layers.DenseFlipout, '_already_patched_add_variable'):
             # Define the patch function accepting 'init' and 'train' arguments WITH DEFAULTS
             def _patched_add_variable(layer_instance, name, shape, dtype, init=None, train=None, **kwargs):
-                                                                              # ^^^^^^^^^^^^^^^^^^ Added defaults
-                # Call add_weight using the standard Keras argument names
+                # Ensure standard Keras args are not duplicated in kwargs
+                kwargs.pop('initializer', None) # Remove initializer from kwargs if present
+                kwargs.pop('trainable', None)   # Remove trainable from kwargs if present
+
                 # Ensure trainable defaults to True if 'train' is None (standard add_weight behavior)
                 resolved_trainable = train if train is not None else True
+
+                # Call add_weight using the standard Keras argument names
                 return layer_instance.add_weight(
                     name=name,
                     shape=shape,
                     dtype=dtype,
-                    initializer=init,       # Pass 'init' to 'initializer'
-                    trainable=resolved_trainable, # Pass 'train' (or default True) to 'trainable'
-                    **kwargs
+                    initializer=init,       # Pass 'init' explicitly
+                    trainable=resolved_trainable, # Pass resolved 'train' explicitly
+                    **kwargs                # Pass remaining kwargs
                 )
             # Apply the patch
             tfp.layers.DenseFlipout.add_variable = _patched_add_variable
             tfp.layers.DenseFlipout._already_patched_add_variable = True
-            print("DEBUG: DenseFlipout patched successfully in __init__ (defaults added to signature).")
+            print("DEBUG: DenseFlipout patched successfully in __init__ (kwargs handled).")
         else:
-            # print("DEBUG: DenseFlipout already patched.") # Informative print
-            pass # Already patched, do nothing
-
+            pass # Already patched
 
 
     def set_params(self, **kwargs):
