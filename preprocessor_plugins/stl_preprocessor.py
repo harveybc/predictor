@@ -85,8 +85,8 @@ class PreprocessorPlugin:
         "normalize_features": True,
         # --- STL Parameters ---
         "stl_period": 24,
-        "stl_window": 48, # Default, resolved later if None
-        "stl_trend": 49,  # Default, resolved later if None
+        "stl_window": None, # Default, resolved later if None
+        "stl_trend": None,  # Default, resolved later if None
         "stl_plot_file": "stl_plot.png",
         # --- Wavelet Parameters ---
         "wavelet_name": 'db4',
@@ -239,6 +239,9 @@ class PreprocessorPlugin:
     # --- End of _plot_decomposition ---
 
     # --- Updated _compute_wavelet_features with TypeError Fix Attempt ---
+    # --- Inside PreprocessorPlugin Class ---
+
+    # --- Updated _compute_wavelet_features: Trying trim_approx=False ---
     def _compute_wavelet_features(self, series):
         """Computes Wavelet features using MODWT (pywt.swt). Includes TypeError fix attempts."""
         if pywt is None: print("ERROR: pywt library not installed."); return {}
@@ -260,24 +263,59 @@ class PreprocessorPlugin:
 
         print(f"Computing Wavelets (MODWT/SWT): {name}, Levels={levels}...", end="")
         try:
-            # --- Attempting Fix: Try norm=False ---
-            coeffs = pywt.swt(series_clean, wavelet=name, level=levels, trim_approx=True, norm=False)
+            # --- Attempting Fix: Try trim_approx=False, norm=True ---
+            coeffs = pywt.swt(series_clean, wavelet=name, level=levels, trim_approx=False, norm=True)
             # --- End Fix ---
 
-            features = {'approx_L{}'.format(levels): coeffs[0][0]}
-            for i in range(levels): features['detail_L{}'.format(levels - i)] = coeffs[i][1]
+            # Note: If trim_approx=False, the approximation coeffs list has length `level + 1`
+            # The details lists still have length `level`
+            # The structure might be [(cA_n, cD_n), ..., (cA_1, cD_1)] or similar.
+            # Let's adjust the feature extraction carefully based on pywt documentation structure
+
+            if not isinstance(coeffs, list) or len(coeffs) != levels:
+                 print(f" FAILED. Unexpected output structure from swt (expected list of length {levels}). Got type {type(coeffs)}")
+                 return {}
+
+            features = {}
+            # swt returns list [(cA_n, cD_n), ..., (cA_1, cD_1)]
+            # Extract details first
+            for i in range(levels):
+                level_index_from_end = levels - 1 - i # 0 for last level (cD1), levels-1 for first level (cDn)
+                if len(coeffs[level_index_from_end]) == 2:
+                    details_coeffs = coeffs[level_index_from_end][1] # cD_{n-level_index_from_end} = cD_{i+1}
+                    features[f'detail_L{i+1}'] = details_coeffs
+                else: print(f"WARN: Unexpected structure in swt output at index {level_index_from_end}"); return {}
+
+            # Extract final approximation
+            if len(coeffs[0]) == 2:
+                approx_coeffs = coeffs[0][0] # cA_n (final approximation)
+                features[f'approx_L{levels}'] = approx_coeffs
+            else: print(f"WARN: Could not extract final approximation coeffs."); return {}
+
+
             n_original_len = len(series_clean)
+            valid_features = {}
             for k, v in features.items():
-                 if len(v) != n_original_len: print(f"WARN: Wavelet '{k}' len({len(v)})!=orig({n_original_len}).")
-            print(f" Done ({len(features)} channels).")
-            return features
+                 if v is not None and hasattr(v, '__len__') and len(v) == n_original_len:
+                      valid_features[k] = v
+                 else:
+                      print(f"WARN: Wavelet '{k}' has unexpected length/type (len={len(v) if hasattr(v,'__len__') else 'N/A'}, type={type(v)}). Discarding.")
+
+            if not valid_features: print(f" FAILED. No valid features extracted after length check."); return {}
+
+            print(f" Done ({len(valid_features)} channels).")
+            return valid_features
+
         except TypeError as e:
              print(f" FAILED. TypeError: {e}")
-             print(f"      Occurred during pywt.swt call (Input Len={len(series_clean)}, Levels={levels}, Wavelet='{name}', norm=False).")
+             print(f"      Occurred during pywt.swt call (Input Len={len(series_clean)}, Levels={levels}, Wavelet='{name}', trim_approx=False, norm=True).")
              return {}
         except Exception as e: print(f" FAILED. Error: {e}"); import traceback; traceback.print_exc(); return {}
     # --- End of _compute_wavelet_features ---
 
+    # --- process_data Method ---
+    # (Keep the rest of the process_data method and other helpers exactly as in the previous response)
+   
 
     def _plot_wavelets(self, original_series, wavelet_features, file_path):
         """Plots original series and computed Wavelet features."""
