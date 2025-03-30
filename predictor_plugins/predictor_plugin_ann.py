@@ -2,46 +2,33 @@
 """
 Enhanced Multi-Branch Predictor Plugin using Keras for forecasting EUR/USD returns.
 
-This plugin is designed to use the decomposed signals produced by the STL Preprocessor Plugin.
-It assumes the input is a multi-channel time window where each channel corresponds to a decomposed component:
-  - Trend component
-  - Seasonal component
-  - Noise (residual) component
-
-The architecture is composed of three branches—each processing one channel through its own Dense sub-network.
-The outputs of these branches are concatenated and fed to a final set of layers to produce the predicted return.
-The loss is computed using a composite loss (Huber + MMD), and custom metrics (MAE and R²) are calculated
-on the predicted return. This implementation is intended for the case when use_returns is True.
+This plugin uses decomposed signals (Trend, Seasonal, Noise) as input channels.
+The architecture has parallel branches for each channel, concatenated results,
+and multiple output heads using Bayesian layers for uncertainty estimation.
+NO feedback loops are implemented in this version.
 """
 
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
+from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda, Add, Identity
 from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback, LambdaCallback
-from tensorflow.keras.losses import Huber
+# from tensorflow.keras.losses import Huber # Original mentioned Huber, but code uses MSE
+from tensorflow.keras.losses import MeanSquaredError # Use MSE as implemented
 import tensorflow.keras.backend as K
 import gc
 import os
 from sklearn.metrics import r2_score
 from tensorflow.keras.regularizers import l2
-from tensorflow.keras.initializers import GlorotUniform
-from tensorflow.keras import backend as K
-from tensorflow.keras.layers import Add
-# keras identity
-from tensorflow.keras.layers import Identity
+from tensorflow.keras.initializers import GlorotUniform # Not used in current implementation, but kept import
 
-# Define TensorFlow local header output feedback variables(used from the composite loss function):
-local_p_control=[]
-local_i_control=[]
-local_d_control=[]
-local_feedback=[] # local feedback values for the model
-# ---------------------------
-# Custom Callbacks (same as before)
-# ---------------------------
+# Removed global feedback/control variable definitions
 
+# ---------------------------
+# Custom Callbacks (Modified for informative prints)
+# ---------------------------
 
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
     """Custom ReduceLROnPlateau callback that prints the patience counter."""
@@ -50,9 +37,16 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
         self.patience_counter = 0
 
     def on_epoch_end(self, epoch, logs=None):
-        super().on_epoch_end(epoch, logs)
-        self.patience_counter = self.wait if self.wait > 0 else 0
-        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}")
+        # Store current LR before super call modifies it
+        current_lr = K.get_value(self.model.optimizer.learning_rate)
+        super().on_epoch_end(epoch, logs) # Let superclass handle LR reduction logic
+        self.patience_counter = self.wait # Superclass updates 'wait' counter
+        # Print counter *after* super call updates it
+        print(f"Epoch {epoch+1}: ReduceLROnPlateau patience counter: {self.patience_counter}/{self.patience}")
+        new_lr = K.get_value(self.model.optimizer.learning_rate)
+        if new_lr < current_lr:
+             print(f"Epoch {epoch+1}: ReduceLROnPlateau reduced learning rate to {new_lr:.7f}.")
+
 
 class EarlyStoppingWithPatienceCounter(EarlyStopping):
     """Custom EarlyStopping callback that prints the patience counter."""
@@ -61,73 +55,80 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
         self.patience_counter = 0
 
     def on_epoch_end(self, epoch, logs=None):
-        super().on_epoch_end(epoch, logs)
-        self.patience_counter = self.wait if self.wait > 0 else 0
-        print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}")
-
-class ClearMemoryCallback(Callback):
-    def on_epoch_end(self, epoch, logs=None):
-        K.clear_session()
-        gc.collect()
+        super().on_epoch_end(epoch, logs) # Let superclass handle stopping logic
+        self.patience_counter = self.wait # Superclass updates 'wait' counter
+        # Print counter *after* super call updates it
+        print(f"Epoch {epoch+1}: EarlyStopping patience counter: {self.patience_counter}/{self.patience}")
 
 
 # ---------------------------
-# Custom Metrics and Loss Functions
+# Custom Metrics and Helper Functions
 # ---------------------------
 def mae_magnitude(y_true, y_pred):
-    """Compute MAE on the first column (magnitude)."""
-    if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
-        y_true = tf.reshape(y_true, [-1, 1])
-        y_true = tf.concat([y_true, tf.zeros_like(y_true)], axis=1)
-    mag_true = y_true[:, 0:1]
-    mag_pred = y_pred[:, 0:1]
-    return tf.reduce_mean(tf.abs(mag_true - mag_pred))
+    """Compute MAE on the prediction output (assumed single value)."""
+    # Reshape based on typical Keras usage during training/evaluation
+    y_true = tf.reshape(y_true, [-1, 1])
+    y_pred = tf.reshape(y_pred, [-1, 1])
+    return tf.reduce_mean(tf.abs(y_true - y_pred))
 
 def r2_metric(y_true, y_pred):
-    """Compute R² metric on the first column (magnitude)."""
-    if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
-        y_true = tf.reshape(y_true, [-1, 1])
-        y_true = tf.concat([y_true, tf.zeros_like(y_true)], axis=1)
-    mag_true = y_true[:, 0:1]
-    mag_pred = y_pred[:, 0:1]
-    SS_res = tf.reduce_sum(tf.square(mag_true - mag_pred))
-    SS_tot = tf.reduce_sum(tf.square(mag_true - tf.reduce_mean(mag_true)))
+    """Compute R² metric on the prediction output."""
+    y_true = tf.reshape(y_true, [-1, 1])
+    y_pred = tf.reshape(y_pred, [-1, 1])
+    SS_res = tf.reduce_sum(tf.square(y_true - y_pred))
+    SS_tot = tf.reduce_sum(tf.square(y_true - tf.reduce_mean(y_true)))
     return 1 - SS_res/(SS_tot + tf.keras.backend.epsilon())
 
+@tf.function # Decorate MMD for potential graph optimization
 def compute_mmd(x, y, sigma=1.0, sample_size=256):
     """Compute the Maximum Mean Discrepancy (MMD) between two samples."""
-    idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:sample_size]
-    x_sample = tf.gather(x, idx)
-    y_sample = tf.gather(y, idx)
-    def gaussian_kernel(x, y, sigma):
-        x = tf.expand_dims(x, 1)
-        y = tf.expand_dims(y, 0)
-        dist = tf.reduce_sum(tf.square(x - y), axis=-1)
-        return tf.exp(-dist / (2.0 * sigma ** 2))
+    # Ensure inputs are float32
+    x = tf.cast(x, tf.float32)
+    y = tf.cast(y, tf.float32)
+
+    # Sample efficiently if needed
+    x_len = tf.shape(x)[0]
+    y_len = tf.shape(y)[0]
+    sample_size_tf = tf.cast(sample_size, tf.int32) # Ensure sample_size is tensor/int
+
+    idx_x = tf.random.shuffle(tf.range(x_len))[:sample_size_tf]
+    idx_y = tf.random.shuffle(tf.range(y_len))[:sample_size_tf]
+    x_sample = tf.gather(x, idx_x)
+    y_sample = tf.gather(y, idx_y)
+
+    # Define Gaussian kernel using TensorFlow operations
+    @tf.function
+    def gaussian_kernel(a, b, sigma):
+        a = tf.expand_dims(a, 1) # (N, 1, D)
+        b = tf.expand_dims(b, 0) # (1, M, D)
+        # Ensure dimensions match for subtraction if D > 1
+        dist_sq = tf.reduce_sum(tf.square(a - b), axis=-1) # (N, M)
+        # Ensure sigma is float32 and non-zero
+        sigma_sq = tf.square(tf.cast(sigma, tf.float32)) + tf.keras.backend.epsilon()
+        return tf.exp(-dist_sq / (2.0 * sigma_sq))
+
+    # Calculate kernel matrices
     K_xx = gaussian_kernel(x_sample, x_sample, sigma)
     K_yy = gaussian_kernel(y_sample, y_sample, sigma)
     K_xy = gaussian_kernel(x_sample, y_sample, sigma)
-    return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
+
+    # Calculate MMD squared statistic
+    mmd2 = tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
+    # Return non-negative MMD value
+    return tf.maximum(mmd2, 0.0)
 
 
-# --- Composite Loss Function ---
+# --- Composite Loss Function (Simplified - No Feedback Updates/Control) ---
+# Defined globally as requested
 def composite_loss(y_true, y_pred,
-                   # Arguments needed:
-                   head_index,
+                   # Required arguments:
+                   head_index, # Still needed for potential future use or logging, but not for updates
                    mmd_lambda,
-                   sigma,
-                   p, i, d, # Control parameters for this head (tf.Variable)
-                   list_last_signed_error, # List of tf.Variables for metric storage
-                   list_last_stddev,       # List of tf.Variables for metric storage
-                   list_last_mmd,          # List of tf.Variables for metric storage
-                   list_local_feedback     # List of tf.Variables for control action storage/feedback
+                   sigma
+                   # Removed args: p, i, d, list_last_signed_error, ... list_local_feedback
                    ):
     """
-    Global composite loss function for a specific head.
-    Calculates metrics (signed_error, stddev, mmd).
-    Calls global dummy_feedback_control with metrics and PID params.
-    Assigns control function output to list_local_feedback[head_index].
-    Also assigns metrics to list_last_xxx[head_index].
+    Global composite loss function for a specific head. NO feedback updates.
     Returns the scalar loss value (MSE + Asymptote + MMD).
     """
     y_true = tf.reshape(y_true, [-1, 1])
@@ -146,6 +147,7 @@ def composite_loss(y_true, y_pred,
 
     # --- Calculate Dynamic Asymptote Penalty (Original User Logic) ---
     def vertical_dynamic_asymptote(value, center):
+        # This nested function needs access to mse_loss_val from the outer scope
         res = tf.cond(tf.greater_equal(value, center),
             lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20,
             lambda: mse_loss_val*1e3 - 1)
@@ -154,254 +156,179 @@ def composite_loss(y_true, y_pred,
             lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20)
         return res
     asymptote = vertical_dynamic_asymptote(signed_avg_pred, signed_avg_true)
+    # asymptote = 0.0 # Option to disable asymptote if needed
 
-    # --- Calculate Feedback Metrics ---
-    feedback_signed_error = signed_avg_true - signed_avg_pred
-    feedback_stddev = tf.reduce_mean(tf.abs(mag_true - mag_pred)) # MAE
-    feedback_mmd = mmd_loss_val # MMD Loss value
+    # --- REMOVED Feedback Metrics Calculation ---
+    # --- REMOVED Control Function Call ---
+    # --- REMOVED Update Feedback Variables ---
 
-    # --- Call Control Function ---
-    # Pass feedback metrics and head-specific PID parameters (which are tf.Variables)
-    local_control_action = dummy_feedback_control(
-        feedback_signed_error, feedback_stddev, feedback_mmd, p, i, d
-    )
+    # Calculate final loss term directly
+    total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
 
-    # --- Update Feedback Variables (using control dependencies) ---
-    update_ops = [
-        # Store calculated metrics
-        list_last_signed_error[head_index].assign(feedback_signed_error),
-        list_last_stddev[head_index].assign(feedback_stddev),
-        list_last_mmd[head_index].assign(feedback_mmd),
-        # Store the output of the control function - THIS IS THE FEEDBACK FOR THE MODEL
-        list_local_feedback[head_index].assign(local_control_action)
-    ]
-
-    with tf.control_dependencies(update_ops):
-        # Calculate final loss term
-        total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-
-    # Return the final scalar loss value
     return total_loss
 
 
-
-# --- Can be defined inside the class or outside ---
-@tf.function
-def dummy_feedback_control(signed_error, stddev, mmd, p, i, d):
-    """
-    Global dummy control function using only TF ops.
-    Takes head feedback values and PID parameters. Returns a placeholder action.
-    """
-    # Placeholder: Just return the 'p' value.
-    control_action = tf.identity(p)
-    return control_action
+# --- Removed global dummy_feedback_control function ---
 
 
-# --- Named initializer to avoid lambda serialization warnings ---
+# --- Named initializer ---
 def random_normal_initializer_44(shape, dtype=None):
+    """Initializes with random normal distribution."""
     return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
 
-# Build Dense branches for trend, seasonal, and noise channels.
-def build_branch(branch_input, branch_name, num_branch_layers=2, branch_units=32, activation='relu', l2_reg=1e-5):
-    x = Flatten(name=f"{branch_name}_flatten")(branch_input)
-    for i in range(num_branch_layers):
-        x = Dense(branch_units, activation=activation,
-                kernel_regularizer=l2(l2_reg),
-                name=f"{branch_name}_dense_{i+1}")(x)
-    return x
-
-# Assume necessary imports like tensorflow, numpy, tfp are available
-
+# --- Bayesian Helper Functions (Defined globally as requested) ---
 def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name):
     """Custom posterior distribution function for DenseFlipout kernel."""
-    # print(f"DEBUG: posterior_mean_field_custom (name={name}):") # Optional: Keep top-level debug print
-    # print(f"       dtype={dtype}, kernel_shape={kernel_shape}, bias_size={bias_size} (overridden to 0), trainable={trainable}") # Optional
-    if not isinstance(name, str): name = None # Ensure name is string or None
-    bias_size = 0 # Force bias size to 0 for kernel posterior
+    if not isinstance(name, str): name = None
+    bias_size = 0 # No bias in kernel posterior
     n = int(np.prod(kernel_shape)) + bias_size
-    c = np.log(np.expm1(1.))
-    # Use unique variable names based on the layer name if provided
+    c = np.log(np.expm1(1.)) # Constant for softplus transformation
     loc_name = f"{name}_loc" if name else "posterior_loc"
     scale_name = f"{name}_scale" if name else "posterior_scale"
     loc = tf.Variable(tf.random.normal([n], stddev=0.05, seed=42), dtype=dtype, trainable=trainable, name=loc_name)
     scale = tf.Variable(tf.random.normal([n], stddev=0.05, seed=43), dtype=dtype, trainable=trainable, name=scale_name)
-    scale = 1e-3 + tf.nn.softplus(scale + c)
-    scale = tf.clip_by_value(scale, 1e-3, 1.0)
+    scale = 1e-3 + tf.nn.softplus(scale + c) # Softplus transformation with offset and floor
+    scale = tf.clip_by_value(scale, 1e-3, 1.0) # Clip scale
 
-    # --- CORRECTED PRINT STATEMENTS ---
-    # Removed access to .name attribute
-    print(f"DEBUG: posterior: created loc shape: {loc.shape}")
-    print(f"DEBUG: posterior: created scale shape: {scale.shape}")
-    # --- END CORRECTION ---
+    # Debug prints (optional, removed .name access)
+    # print(f"DEBUG: posterior: created loc shape: {loc.shape}")
+    # print(f"DEBUG: posterior: created scale shape: {scale.shape}")
 
     try:
         loc_reshaped = tf.reshape(loc, kernel_shape)
         scale_reshaped = tf.reshape(scale, kernel_shape)
-        # print(f"DEBUG: posterior: reshaped loc to {loc_reshaped.shape} and scale to {scale_reshaped.shape}") # Optional
     except Exception as e:
         print(f"ERROR: Exception during reshape in posterior (name={name}):", e)
         raise e
-    # Ensure reinterpreted_batch_ndims matches the rank of the kernel shape
+    # Return Independent Normal distribution
     return tfp.distributions.Independent(
         tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
-        reinterpreted_batch_ndims=len(kernel_shape)
+        reinterpreted_batch_ndims=len(kernel_shape) # Match kernel rank
     )
-
-# NOTE: Also double-check your 'prior_fn' function definition. If it contains
-# similar print statements accessing '.name', remove those as well, although
-# based on previous versions, it likely does not.
 
 def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
     """Custom prior distribution function for DenseFlipout kernel."""
-    print(f"DEBUG: prior_fn (name={name}):")
-    print(f"       dtype={dtype}, kernel_shape={kernel_shape}, bias_size={bias_size} (overridden to 0), trainable={trainable}")
-    if not isinstance(name, str): name = None # Ensure name is string or None
-    bias_size = 0 # Force bias size to 0 for kernel prior
+    # print(f"DEBUG: prior_fn (name={name}):") # Optional debug
+    # print(f"       dtype={dtype}, kernel_shape={kernel_shape}, bias_size={bias_size} (overridden to 0), trainable={trainable}") # Optional debug
+    if not isinstance(name, str): name = None
+    bias_size = 0 # No bias in kernel prior
     n = int(np.prod(kernel_shape)) + bias_size
-    loc = tf.zeros([n], dtype=dtype)
-    scale = tf.ones([n], dtype=dtype)
-    print(f"DEBUG: prior_fn: computed n={n}")
+    loc = tf.zeros([n], dtype=dtype) # Prior mean is zero
+    scale = tf.ones([n], dtype=dtype) # Prior scale is one
+    # print(f"DEBUG: prior_fn: computed n={n}") # Optional debug
     try:
         loc_reshaped = tf.reshape(loc, kernel_shape)
         scale_reshaped = tf.reshape(scale, kernel_shape)
-        print(f"DEBUG: prior_fn: reshaped loc to {loc_reshaped.shape} and scale to {scale_reshaped.shape}")
+        # print(f"DEBUG: prior_fn: reshaped loc to {loc_reshaped.shape} and scale to {scale_reshaped.shape}") # Optional debug
     except Exception as e:
-        print(f"DEBUG: Exception during reshape in prior_fn (name={name}):", e)
+        print(f"ERROR: Exception during reshape in prior_fn (name={name}):", e)
         raise e
-    # Ensure reinterpreted_batch_ndims matches the rank of the kernel shape
+    # Return Independent Normal distribution
     return tfp.distributions.Independent(
         tfp.distributions.Normal(loc=loc_reshaped, scale=scale_reshaped),
-        reinterpreted_batch_ndims=len(kernel_shape)
+        reinterpreted_batch_ndims=len(kernel_shape) # Match kernel rank
     )
 
+
 # ---------------------------
-# Multi-Branch Predictor Plugin Class Definition
+# Predictor Plugin Class Definition (Simplified)
 # ---------------------------
 class Plugin:
     """
-    Enhanced Multi-Branch Predictor Plugin.
-
-    This plugin builds a multi-branch model to process STL-decomposed input channels:
-      - One branch processes the trend channel.
-      - One branch processes the seasonal channel.
-      - One branch processes the noise (residual) channel.
-
-    Each branch passes its input through dedicated Dense layers.
-    Their outputs are concatenated and then combined with the flattened error and std feedback channels
-    (which bypass further Dense processing) and passed to a merged Dense layer.
-    The final output is produced by a Bayesian layer (tfp.layers.DenseFlipout) plus a deterministic bias layer,
-    so that uncertainty estimates can be derived.
+    Multi-Branch Bayesian Predictor Plugin without feedback loops.
+    Uses STL-decomposed features, processes channels in parallel, merges,
+    and uses multiple Bayesian output heads.
     """
+    # Default parameters (can be overridden by config)
     plugin_params = {
         'batch_size': 32,
-        'num_branch_layers': 2,      # Number of Dense layers in each branch
-        'branch_units': 32,          # Units in each branch layer
-        'merged_units': 64,          # Units in the merged network
+        'intermediate_layers': 2, # Renamed from num_branch_layers
+        'intermediate': 2,      # Renamed from num_head_intermediate_layers
+        'branch_units': 32,
+        'merged_units': 64,
         'learning_rate': 0.0001,
         'activation': 'relu',
         'l2_reg': 1e-5,
         'mmd_lambda': 1e-3,
-        'time_horizon': 6           # Forecast horizon (in hours)
+        'sigma_mmd': 1.0,
+        'predicted_horizons': [1, 6, 12], # Example
+        'kl_weight': 1e-3, # Default target KL weight
+        'kl_anneal_epochs': 10,
+        # Parameters for callbacks
+        'min_delta': 1e-4,
+        'early_patience': 10,
+        'start_from_epoch': 10,
+        'reduce_lr_patience': None # Default calculated from early_patience
     }
-    plugin_debug_vars = ['batch_size', 'num_branch_layers', 'branch_units', 'merged_units', 'learning_rate', 'l2_reg', 'time_horizon']
+    # Debug vars can be adjusted if needed
+    plugin_debug_vars = ['batch_size', 'intermediate_layers', 'intermediate', 'branch_units', 'merged_units', 'learning_rate', 'l2_reg', 'mmd_lambda']
 
-    def __init__(self, config):
-        """
-        Initialize the predictor plugin, including feedback/control lists.
-        """
-        if config is None:
-            raise ValueError("Configuration dictionary ('config') is required for initialization.")
-
-        # Store parameters, update with config
-        self.plugin_params = {
-            "l2_reg": 0.001, "activation": "relu", "branch_units": 64,
-            "merged_units": 128, "learning_rate": 0.001, "mmd_lambda": 0.1,
-            "sigma_mmd": 1.0, "predicted_horizons": [1] # Default horizon if not in config
-        }
+    def __init__(self, config=None):
+        """Initialize the predictor plugin."""
         self.params = self.plugin_params.copy()
         if config:
-           self.params.update(config)
+            self.params.update(config) # Update defaults with provided config
 
-        # Ensure predicted_horizons exists after potential update
+        # Basic checks for essential config items
         if 'predicted_horizons' not in self.params:
              raise ValueError("Config must contain 'predicted_horizons' list.")
-        predicted_horizons = self.params['predicted_horizons']
-        num_outputs = len(predicted_horizons)
+        if not isinstance(self.params['predicted_horizons'], list) or not self.params['predicted_horizons']:
+             raise ValueError("'predicted_horizons' must be a non-empty list.")
 
         self.model = None
+        self.output_names = [] # Will be populated in build_model
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
 
-        # --- Initialize Control Parameter & Feedback Lists ---
-        print(f"Initializing control and feedback lists for {num_outputs} outputs in __init__.")
+        # REMOVED initialization of feedback/control lists (local_p_control, local_feedback, last_xxx)
 
-        # Control Parameters per Head (Values are examples)
-        self.local_p_control = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_p_{i}") for i in range(num_outputs)]
-        self.local_i_control = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_i_{i}") for i in range(num_outputs)]
-        self.local_d_control = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_d_{i}") for i in range(num_outputs)]
+        print("Predictor Plugin Initialized (No feedback state).")
 
-        # Feedback Metrics Storage per Head (updated by loss)
-        self.last_signed_error = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"last_signed_error_{i}") for i in range(num_outputs)]
-        self.last_stddev = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"last_stddev_{i}") for i in range(num_outputs)]
-        self.last_mmd = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"last_mmd_{i}") for i in range(num_outputs)]
-
-        # Feedback Action Storage per Head (output of control func, INPUT to model) - NEW/REVISED
-        # Shape depends on output of dummy_feedback_control. If it returns scalar P, shape is scalar.
-        self.local_feedback = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_feedback_{i}") for i in range(num_outputs)]
-
-        print("Control/Feedback lists initialized.")
-
-        # --- Apply DenseFlipout Patch ---
+        # --- Apply DenseFlipout Patch (Essential) ---
+        # Applying here ensures it's done once per instance creation
         if not hasattr(tfp.layers.DenseFlipout, '_already_patched_add_variable'):
             def _patched_add_variable(layer_instance, name, shape, dtype, initializer, trainable, **kwargs):
                 return layer_instance.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
             tfp.layers.DenseFlipout.add_variable = _patched_add_variable
             tfp.layers.DenseFlipout._already_patched_add_variable = True
-            print("DEBUG: DenseFlipout patched successfully in __init__.")
-        else:
-            print("DEBUG: DenseFlipout already patched.")
+            # print("DenseFlipout patched successfully in __init__.") # Informative print
+        # else:
+            # print("DenseFlipout already patched.") # Informative print
 
 
     def set_params(self, **kwargs):
-        """Update predictor plugin parameters with provided configuration."""
-        for key, value in kwargs.items():
-            self.params[key] = value
+        """Update predictor plugin parameters."""
+        self.params.update(kwargs)
 
     def get_debug_info(self):
         """Return debug information for the predictor plugin."""
-        return {var: self.params[var] for var in self.plugin_debug_vars}
+        # Return relevant parameters currently set
+        debug_keys = ['batch_size', 'intermediate_layers', 'intermediate', 'branch_units',
+                      'merged_units', 'learning_rate', 'l2_reg', 'mmd_lambda', 'predicted_horizons']
+        return {k: self.params.get(k, 'N/A') for k in debug_keys}
 
     def add_debug_info(self, debug_info):
         """Add predictor plugin debug information to the given dictionary."""
         debug_info.update(self.get_debug_info())
 
-
-    # --- Define within your YourPredictorPlugin class ---
-    # --- Define within your YourPredictorPlugin class ---
     def build_model(self, input_shape, x_train, config):
         """
-        Build model: processes features, merges, feeds into heads.
-        Head inputs CONCATENATE merged features + control action feedback
-        (read from self.local_feedback, generated by loss/control func previous step).
-        Assumes feedback/control lists initialized in __init__.
-        Uses GLOBAL composite_loss. NO global feedback branch.
+        Build the multi-output model without feedback inputs to heads.
         """
-        # --- Pre-checks ---
-        if self.local_feedback is None or self.local_p_control is None:
-             raise RuntimeError("Feedback/Control lists were not initialized in __init__.")
+        # Update instance params with potentially new config from pipeline
+        self.params.update(config)
+        config = self.params # Use merged config
 
         window_size, num_channels = input_shape
         predicted_horizons = config['predicted_horizons']
         num_outputs = len(predicted_horizons)
-        if len(self.local_feedback) != num_outputs:
-             raise RuntimeError(f"Initialized list length != num_outputs. Re-initialize?")
 
         # --- Get Parameters ---
-        l2_reg = config.get("l2_reg", self.params.get("l2_reg", 0.001))
-        activation = config.get("activation", self.params.get("activation", "relu"))
+        l2_reg = config.get("l2_reg", 0.001)
+        activation = config.get("activation", "relu")
         num_intermediate_layers = config['intermediate_layers']
-        num_head_intermediate_layers = config['intermediate_layers']
-        branch_units = config.get("branch_units", self.params.get("branch_units", 64))
-        merged_units = config.get("merged_units", self.params.get("merged_units", 128))
+        num_head_intermediate_layers = config['intermediate'] # Use 'intermediate' key
+        branch_units = config.get("branch_units", 64)
+        merged_units = config.get("merged_units", 128)
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
@@ -419,14 +346,11 @@ class Plugin:
 
         # --- Merging Feature Branches ONLY ---
         if len(feature_branch_outputs) == 1:
-             # Use Keras Identity layer for naming and compatibility
-             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
+             merged = Identity(name="merged_features")(feature_branch_outputs[0])
         elif len(feature_branch_outputs) > 1:
-             # Concatenate is already a Keras layer
              merged = Concatenate(name="merged_features")(feature_branch_outputs)
         else:
-             raise ValueError("Model must have at least one input feature channel.")
-        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
+             raise ValueError("Model requires at least one input feature channel.")
 
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
@@ -434,29 +358,17 @@ class Plugin:
 
         # --- Build Multiple Output Heads ---
         outputs_list = []
-        self.output_names = []
-
-        # Helper to get the CONTROL ACTION feedback for a specific head
-        def get_specific_control_feedback(tensor_input, head_index):
-             batch_size = tf.shape(tensor_input)[0]
-             control_action = tf.identity(self.local_feedback[head_index])
-             tiled_feedback = tf.tile(tf.reshape(control_action, [1, -1]), [batch_size, 1])
-             return tiled_feedback
+        self.output_names = [] # Reset output names list
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
-            # --- Get Control Action Feedback (Previous Step) ---
-            control_feedback_input = Lambda(lambda x: get_specific_control_feedback(x, i),
-                                              name=f"get_control_fb{branch_suffix}")(inputs)
-
-            # --- Combine Merged Features + Control Action Feedback via Concatenation ---
-            head_input_combined = Concatenate(name=f"head_input_combined{branch_suffix}")(
-                [merged, control_feedback_input]
-            )
+            # --- REMOVED Get Control Action Feedback ---
+            # --- REMOVED Concatenate Merged Features + Feedback ---
 
             # --- Head Intermediate Dense Layers ---
-            head_dense_output = head_input_combined
+            # Input is now directly the 'merged' tensor
+            head_dense_output = merged
             for j in range(num_head_intermediate_layers):
                  head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
                                            name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
@@ -469,10 +381,9 @@ class Plugin:
                 kernel_prior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: prior_fn(dt, sh, bs, tr, nm),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT, name=flipout_layer_name
             )
-            # Apply DenseFlipout layer via Lambda WITH output_shape specified
             bayesian_output_branch = Lambda(
                 lambda t: flipout_layer_branch(t),
-                output_shape=lambda s: (s[0], 1), # Explicit output shape
+                output_shape=lambda s: (s[0], 1), # Specify output shape
                 name=f"bayesian_output{branch_suffix}"
             )(head_dense_output)
 
@@ -484,34 +395,29 @@ class Plugin:
             final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
 
             outputs_list.append(final_branch_output)
-            self.output_names.append(output_name) # Store the name
+            self.output_names.append(output_name) # Store the generated name
             # --- End of Head ---
 
         # --- Model Definition ---
-        self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
+        self.model = Model(inputs=inputs, outputs=outputs_list, name=f"NoFeedbackPredictor_{len(predicted_horizons)}H")
 
-        # --- Compilation (Using GLOBAL composite_loss) ---
-        optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
-        mmd_lambda = config.get("mmd_lambda", self.params.get("mmd_lambda", 0.1))
-        sigma_mmd = config.get("sigma_mmd", self.params.get("sigma_mmd", 1.0))
+        # --- Compilation (Using simplified GLOBAL composite_loss) ---
+        optimizer = AdamW(learning_rate=config.get("learning_rate", 0.001))
+        mmd_lambda = config.get("mmd_lambda", 0.1)
+        sigma_mmd = config.get("sigma_mmd", 1.0)
 
-        # Prepare loss dictionary, passing ALL necessary lists and params to GLOBAL composite_loss
+        # Prepare loss dictionary calling the simplified global composite_loss
         loss_dict = {}
         for i, name in enumerate(self.output_names):
-            p_val = self.local_p_control[i]
-            i_val = self.local_i_control[i]
-            d_val = self.local_d_control[i]
-            lse_list = self.last_signed_error
-            lsd_list = self.last_stddev
-            lmmd_list = self.last_mmd
-            lf_list = self.local_feedback
-
+            # Lambda only needs to capture index and params for loss calculation itself
             loss_fn_for_head = (
-                lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list, lf=lf_list:
-                    lambda y_true, y_pred: composite_loss( # Call GLOBAL func
-                        y_true, y_pred, head_index=index, mmd_lambda=mmd_lambda, sigma=sigma_mmd,
-                        p=p, i=iv, d=dv, list_last_signed_error=lse, list_last_stddev=lsd,
-                        list_last_mmd=lmmd, list_local_feedback=lf
+                lambda index=i:
+                    lambda y_true, y_pred: composite_loss( # Call GLOBAL simplified func
+                        y_true, y_pred,
+                        head_index=index,       # Pass index
+                        mmd_lambda=mmd_lambda,  # Pass config value
+                        sigma=sigma_mmd        # Pass config value
+                        # REMOVED: p, i, d, and all list arguments
                     )
             )(i)
             loss_dict[name] = loss_fn_for_head
@@ -523,280 +429,210 @@ class Plugin:
                            loss=loss_dict,
                            metrics=metrics_dict)
 
-        print(f"Control-Feedback Predictor model built successfully for {num_outputs} horizons.")
+        print(f"No-Feedback Predictor model built successfully for {num_outputs} horizons.")
         self.model.summary(line_length=150)
 
-    # --- Method within YourPredictorPlugin class ---
+
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
         """
-        Trains the multi-output model using provided data and configuration.
-
-        Expects y_train and y_val to be dictionaries mapping output layer names
-        to their corresponding target numpy arrays (e.g., shape [num_samples, 1]).
-        Utilizes KL annealing and other callbacks during training.
-        Calculates final metrics based on the specific output head designated
-        by config['plotted_horizon'].
-
-        Args:
-            x_train (np.ndarray): Training input features.
-            y_train (dict): Dictionary of training target arrays for each output head.
-            epochs (int): Number of training epochs.
-            batch_size (int): Batch size for training.
-            threshold_error: (Not used in provided snippet, kept for signature consistency).
-            x_val (np.ndarray): Validation input features.
-            y_val (dict): Dictionary of validation target arrays for each output head.
-            config (dict): Configuration dictionary for training parameters, MUST contain
-                           'predicted_horizons' (list) and 'plotted_horizon' (int).
-
-        Returns:
-            tuple: Contains history object, list of train predictions per head,
-                   list of train uncertainties (placeholders), list of validation
-                   predictions per head, list of validation uncertainties (placeholders).
-
-        Raises:
-            ValueError: If config is missing required keys or if 'plotted_horizon'
-                        is not found within 'predicted_horizons'.
-            TypeError: If y_train or y_val are not dictionaries.
-            AttributeError: If self.output_names was not set by build_model.
+        Trains the multi-output model (no feedback version).
+        Expects y_train/y_val dictionaries. Calculates metrics for plotted_horizon.
         """
+        # Update instance params with potentially new config from pipeline
+        self.params.update(config)
+        config = self.params # Use merged config
+
         # --- Configuration Validation ---
-        if config is None:
-            raise ValueError("Configuration dictionary ('config') is required for training.")
-        if 'predicted_horizons' not in config:
-            raise ValueError("Config dictionary must contain the key 'predicted_horizons' (list of ints).")
-        if 'plotted_horizon' not in config:
-            raise ValueError("Config dictionary must contain the key 'plotted_horizon' (int).")
-
+        if 'predicted_horizons' not in config: raise ValueError("'predicted_horizons' missing.")
+        if 'plotted_horizon' not in config: raise ValueError("'plotted_horizon' missing.")
         predicted_horizons = config['predicted_horizons']
-        plotted_horizon = config['plotted_horizon'] # Horizon used for final metric reporting
-
-        # Validate that the plotted_horizon is one of the predicted horizons
-        if plotted_horizon not in predicted_horizons:
-            raise ValueError(
-                f"Invalid configuration: 'plotted_horizon' ({plotted_horizon}) "
-                f"is not present in the 'predicted_horizons' list ({predicted_horizons}). "
-                f"Please ensure 'plotted_horizon' matches one of the values in 'predicted_horizons'."
-            )
-
-        # Find the index corresponding to the plotted horizon
+        plotted_horizon = config['plotted_horizon']
+        if plotted_horizon not in predicted_horizons: raise ValueError(f"'{plotted_horizon=}' not in {predicted_horizons=}.")
         try:
             plotted_index = predicted_horizons.index(plotted_horizon)
-        except ValueError:
-             # This case should be caught by the 'in' check above, but added for robustness
-             raise ValueError(f"'plotted_horizon' {plotted_horizon} not found in {predicted_horizons} (index error).")
+        except ValueError: raise ValueError(f"Index error for {plotted_horizon=}.")
 
-
-        # --- Inner Class for KL Annealing Callback ---
+        # --- KL Annealing Callback Definition ---
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
-            # ... (keep implementation as provided) ...
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
-                self.plugin = plugin
-                self.target_kl = target_kl
-                self.anneal_epochs = anneal_epochs
+                self.plugin = plugin; self.target_kl = target_kl; self.anneal_epochs = anneal_epochs
             def on_epoch_begin(self, epoch, logs=None):
                 new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
                 self.plugin.kl_weight_var.assign(new_kl)
 
         # --- Setup Callbacks ---
-        anneal_epochs = config.get("kl_anneal_epochs", self.params.get("kl_anneal_epochs", 10))
-        target_kl = self.params.get('kl_weight', 1e-3)
+        anneal_epochs = config.get("kl_anneal_epochs", 10)
+        target_kl = self.params.get('kl_weight', 1e-3) # Use kl_weight from params
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        min_delta_early_stopping = config.get("min_delta", self.params.get("min_delta", 1e-4))
-        patience_early_stopping = self.params.get('early_patience', 10)
-        start_from_epoch_es = self.params.get('start_from_epoch', 10)
-        patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 4)))
+        min_delta_es = config.get("min_delta", 1e-4)
+        patience_es = config.get('early_patience', 10)
+        start_epoch_es = config.get('start_from_epoch', 10)
+        patience_lr = config.get("reduce_lr_patience", max(1, int(patience_es / 4)))
 
-        # Instantiate callbacks WITHOUT ClearMemoryCallback
         # Assumes relevant Callback classes are imported/defined
         callbacks = [
-            EarlyStoppingWithPatienceCounter(
-                monitor='val_loss', patience=patience_early_stopping, restore_best_weights=True,
-                verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
-            ),
-            ReduceLROnPlateauWithCounter(
-                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, verbose=1
-            ),
-            LambdaCallback(on_epoch_end=lambda epoch, logs:
-                           print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
-            # Removed: ClearMemoryCallback(), # <<< REMOVED THIS LINE
+            EarlyStoppingWithPatienceCounter(monitor='val_loss', patience=patience_es, restore_best_weights=True, verbose=1, start_from_epoch=start_epoch_es, min_delta=min_delta_es),
+            ReduceLROnPlateauWithCounter(monitor="val_loss", factor=0.5, patience=patience_lr, verbose=1),
+            # Ensure K is imported if using LambdaCallback with K
+            LambdaCallback(on_epoch_end=lambda epoch, logs: print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}") if K else None),
+            # REMOVED ClearMemoryCallback
             kl_callback
         ]
 
         # --- Input Data Verification ---
-        if not isinstance(y_train, dict) or not isinstance(y_val, dict):
-             raise TypeError("y_train and y_val must be dictionaries.")
-        if not hasattr(self, 'output_names') or not self.output_names:
-             raise AttributeError("self.output_names not set by build_model.")
+        if not isinstance(y_train, dict) or not isinstance(y_val, dict): raise TypeError("y_train/y_val must be dictionaries.")
+        if not hasattr(self, 'output_names') or not self.output_names: raise AttributeError("self.output_names not set.")
         plotted_output_name = f"output_horizon_{plotted_horizon}"
-        if plotted_output_name not in y_train or plotted_output_name not in y_val:
-             raise ValueError(f"Target dicts missing key: '{plotted_output_name}'")
-        # Optional: Check all keys match
-        if set(y_train.keys()) != set(self.output_names) or set(y_val.keys()) != set(self.output_names):
-             print("WARN: Target data dictionary keys may not perfectly match all model output names.")
+        if plotted_output_name not in y_train or plotted_output_name not in y_val: raise ValueError(f"Target dicts missing key: '{plotted_output_name}'")
+        if set(y_train.keys()) != set(self.output_names) or set(y_val.keys()) != set(self.output_names): print("WARN: Target keys may not match all output names.")
 
         # --- Model Training ---
-        history = self.model.fit(x_train, y_train,
-                                 epochs=epochs,
-                                 batch_size=batch_size,
-                                 validation_data=(x_val, y_val),
-                                 callbacks=callbacks,
-                                 verbose=1)
+        history = self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size,
+                                 validation_data=(x_val, y_val), callbacks=callbacks, verbose=1)
 
         # --- Post-Training Predictions ---
-        # Note: Predicting on full train/val sets uses memory. Consider alternatives if needed.
         list_train_preds = self.model.predict(x_train, batch_size=batch_size)
         list_val_preds = self.model.predict(x_val, batch_size=batch_size)
+        # Ensure predictions are lists
+        if not isinstance(list_train_preds, list): list_train_preds = [list_train_preds]
+        if not isinstance(list_val_preds, list): list_val_preds = [list_val_preds]
 
-        # Placeholder uncertainties (as these weren't generated during training)
+
+        # Placeholder uncertainties
         list_train_uncertainty = [np.zeros_like(preds) for preds in list_train_preds]
         list_val_uncertainty = [np.zeros_like(preds) for preds in list_val_preds]
 
-        # --- Post-Training Metrics (for the configured 'plotted_horizon') ---
-        # Assumes self.calculate_mae and self.calculate_r2 methods exist
+        # --- Post-Training Metrics (for 'plotted_horizon') ---
+        # Assumes self.calculate_mae/r2 methods exist
         try:
             y_train_plotted = y_train[plotted_output_name]
-            train_preds_plotted = list_train_preds[plotted_index] # Use pre-calculated index
-            print(f"Calculating final MAE/R2 for plotted horizon: {plotted_horizon} (Index: {plotted_index})")
-            if hasattr(self, 'calculate_mae') and callable(self.calculate_mae):
-                self.calculate_mae(y_train_plotted, train_preds_plotted)
-            if hasattr(self, 'calculate_r2') and callable(self.calculate_r2):
-                self.calculate_r2(y_train_plotted, train_preds_plotted)
+            # Check if list_train_preds index exists before accessing
+            if plotted_index < len(list_train_preds):
+                 train_preds_plotted = list_train_preds[plotted_index]
+                 # print(f"Calculating final MAE/R2 for plotted horizon: {plotted_horizon} (Index: {plotted_index})") # Informative print
+                 if hasattr(self, 'calculate_mae') and callable(self.calculate_mae):
+                     self.calculate_mae(y_train_plotted, train_preds_plotted)
+                 if hasattr(self, 'calculate_r2') and callable(self.calculate_r2):
+                     self.calculate_r2(y_train_plotted, train_preds_plotted)
+            else:
+                 print(f"ERROR: Plotted index {plotted_index} out of bounds for train predictions list (len {len(list_train_preds)}).")
+
         except Exception as e:
              print(f"ERROR during post-training metric calculation: {e}")
 
-        # Return history and lists of predictions/uncertainties
         return history, list_train_preds, list_train_uncertainty, list_val_preds, list_val_uncertainty
-    
 
-    # --- Method within PredictorPluginANN class ---
-    # --- Method within PredictorPluginANN class ---
+
     def predict_with_uncertainty(self, x_test, mc_samples=100):
         """
-        Performs Monte Carlo dropout predictions for the multi-output model
-        using an incremental approach to avoid large memory allocation.
-
-        Runs the model multiple times with dropout enabled (training=True)
-        to estimate predictive uncertainty (standard deviation) for each output head.
-
-        Args:
-            x_test (np.ndarray): Input data for prediction.
-            mc_samples (int): Number of Monte Carlo samples to perform.
-
-        Returns:
-            tuple: (list_mean_predictions, list_uncertainty_estimates)
-                   Lists containing numpy arrays (one per output head)
-                   for mean predictions and standard deviations (uncertainty).
-                   Shape of each array: [num_samples, output_dim (usually 1)].
+        Performs Monte Carlo dropout predictions (incremental calculation).
         """
-        if self.model is None:
-            raise ValueError("Model has not been built or loaded.")
-        if mc_samples <= 0:
-            return [], []
-
-        # Get dimensions from a single sample run
+        if self.model is None: raise ValueError("Model not built/loaded.")
+        if mc_samples <= 0: return [], []
         try:
-            first_run_output_tf = self.model(x_test[:1], training=True) # Predict on one sample
+            first_run_output_tf = self.model(x_test[:1], training=True)
             if not isinstance(first_run_output_tf, list): first_run_output_tf = [first_run_output_tf]
             num_heads = len(first_run_output_tf)
             if num_heads == 0: return [], []
             first_head_output = first_run_output_tf[0].numpy()
             num_test_samples = x_test.shape[0]
             output_dim = first_head_output.shape[1] if first_head_output.ndim > 1 else 1
-        except Exception as e:
-            print(f"ERROR getting model output shape in predict_with_uncertainty: {e}")
-            raise ValueError("Could not determine model output structure.") from e
+        except Exception as e: raise ValueError("Could not determine model output structure.") from e
 
-        # Initialize accumulators for mean and variance calculation (Welford's algorithm components)
-        # Using lists to store per-head accumulators
         means = [np.zeros((num_test_samples, output_dim), dtype=np.float32) for _ in range(num_heads)]
         m2s = [np.zeros((num_test_samples, output_dim), dtype=np.float32) for _ in range(num_heads)]
-        counts = [0] * num_heads # Use a single count across heads, assuming samples are drawn together
+        counts = [0] * num_heads
 
-        # print(f"Running {mc_samples} MC samples for uncertainty (incremental)...") # Informative print
         for i in range(mc_samples):
-            # Get predictions for all heads in this sample
             head_outputs_tf = self.model(x_test, training=True)
             if not isinstance(head_outputs_tf, list): head_outputs_tf = [head_outputs_tf]
+            if len(head_outputs_tf) != num_heads: continue # Skip if output structure inconsistent
 
-            # Process each head's output for this sample
             for h in range(num_heads):
                 head_output_np = head_outputs_tf[h].numpy()
-                # Reshape if necessary
-                if head_output_np.ndim == 1:
-                    head_output_np = np.expand_dims(head_output_np, axis=-1)
-                if head_output_np.shape != (num_test_samples, output_dim):
-                     raise ValueError(f"Shape mismatch in MC sample {i}, head {h}: Expected {(num_test_samples, output_dim)}, got {head_output_np.shape}")
+                if head_output_np.ndim == 1: head_output_np = np.expand_dims(head_output_np, axis=-1)
+                if head_output_np.shape != (num_test_samples, output_dim): continue # Skip inconsistent shape
 
-                # Welford's online algorithm update
                 counts[h] += 1
                 delta = head_output_np - means[h]
                 means[h] += delta / counts[h]
-                delta2 = head_output_np - means[h] # New delta using updated mean
+                delta2 = head_output_np - means[h]
                 m2s[h] += delta * delta2
 
-            # Optional progress print
-            # if (i + 1) % (mc_samples // 10 or 1) == 0: print(f"  MC sample {i+1}/{mc_samples}")
-
-        # Finalize calculations: variance = M2 / (n - 1), stddev = sqrt(variance)
-        list_mean_predictions = means # The mean is already calculated
+        list_mean_predictions = means
         list_uncertainty_estimates = []
         for h in range(num_heads):
-             if counts[h] < 2: # Need at least 2 samples for variance/stddev
-                 variance = np.full((num_test_samples, output_dim), np.nan, dtype=np.float32)
-             else:
-                 variance = m2s[h] / (counts[h] - 1)
-             stddev = np.sqrt(np.maximum(variance, 0)) # Ensure variance isn't negative due to float issues
+             variance = m2s[h] / (counts[h] - 1) if counts[h] >= 2 else np.full((num_test_samples, output_dim), np.nan, dtype=np.float32)
+             stddev = np.sqrt(np.maximum(variance, 0))
              list_uncertainty_estimates.append(stddev.astype(np.float32))
 
-        # print("MC sampling finished.") # Informative print
         return list_mean_predictions, list_uncertainty_estimates
+
+
     def save(self, file_path):
-        self.model.save(file_path)
-        print(f"Model saved to {file_path}")
+        """Saves the Keras model."""
+        if self.model:
+            self.model.save(file_path)
+            # print(f"Model saved to {file_path}") # Informative print
+        else:
+            print("WARN: No model available to save.")
 
     def load(self, file_path):
-        self.model = load_model(file_path, custom_objects={
-            "composite_loss": composite_loss,
+        """Loads a Keras model with custom objects."""
+        # Define custom objects needed for loading
+        custom_objects = {
+            # Note: Need to provide the GLOBAL composite_loss correctly, possibly via wrapper
+            # Keras might struggle to deserialize the lambda used during compile.
+            # Simplest is often to re-compile after loading if loss args changed.
+            # "composite_loss": composite_loss, # May cause issues due to arg changes
             "compute_mmd": compute_mmd,
             "r2_metric": r2_metric,
-            "mae_magnitude": mae_magnitude
-        })
-        print(f"Predictor model loaded from {file_path}")
+            "mae_magnitude": mae_magnitude,
+            # Add Bayesian layers if they are custom classes, TFP layers usually handled
+            # 'DenseFlipout': tfp.layers.DenseFlipout # Example if needed explicitly
+        }
+        # It's often safer to load structure and weights separately, or re-compile
+        try:
+            self.model = load_model(file_path, custom_objects=custom_objects, compile=False) # Load without compiling optimizer/loss
+            print(f"Predictor model structure loaded from {file_path}. Re-compile if needed.")
+            # Optionally re-compile here if config is available
+            # self.compile_model(self.params) # Assuming a helper method compile_model exists
+        except Exception as e:
+             print(f"ERROR loading model from {file_path}: {e}")
+             self.model = None
 
+
+    # Keep calculate_mae and calculate_r2 as they were (with corrected reshape logic)
     def calculate_mae(self, y_true, y_pred):
-        if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
-            y_true = np.reshape(y_true, (-1, 1))
-            y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
-        mag_true = y_true[:, 0:1]
-        mag_pred = y_pred[:, 0:1]
-        print(f"DEBUG: y_true (sample): {mag_true.flatten()[:5]}")
-        print(f"DEBUG: y_pred (sample): {mag_pred.flatten()[:5]}")
-        mae = np.mean(np.abs(mag_true.flatten() - mag_pred.flatten()))
-        print(f"Calculated MAE (magnitude): {mae}")
-        return mae
+        """Calculates MAE between true and predicted values."""
+        # Ensure inputs are numpy arrays and flattened/reshaped appropriately
+        try:
+             y_true_np = np.reshape(y_true, (-1, 1))
+             y_pred_np = np.reshape(y_pred, (-1, 1))
+             # Ensure they have same length
+             min_len = min(len(y_true_np), len(y_pred_np))
+             mae = np.mean(np.abs(y_true_np[:min_len] - y_pred_np[:min_len]))
+             print(f"Calculated MAE: {mae:.6f}")
+             return mae
+        except Exception as e:
+             print(f"ERROR calculating MAE: {e}")
+             return np.nan
 
     def calculate_r2(self, y_true, y_pred):
-        if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
-            y_true = np.reshape(y_true, (-1, 1))
-            y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
-        mag_true = y_true[:, 0:1]
-        mag_pred = y_pred[:, 0:1]
-        print(f"Calculating R²: y_true shape={mag_true.shape}, y_pred shape={mag_pred.shape}")
-        SS_res = np.sum((mag_true - mag_pred) ** 2, axis=0)
-        SS_tot = np.sum((mag_true - np.mean(mag_true, axis=0)) ** 2, axis=0)
-        r2_scores = 1 - (SS_res / (SS_tot + np.finfo(float).eps))
-        r2 = np.mean(r2_scores)
-        print(f"Calculated R² (magnitude): {r2}")
-        return r2
+        """Calculates R-squared between true and predicted values."""
+        try:
+             y_true_np = np.reshape(y_true, (-1, 1))
+             y_pred_np = np.reshape(y_pred, (-1, 1))
+             min_len = min(len(y_true_np), len(y_pred_np))
+             y_true_np = y_true_np[:min_len]
+             y_pred_np = y_pred_np[:min_len]
+             # print(f"Calculating R²: y_true shape={y_true_np.shape}, y_pred shape={y_pred_np.shape}") # Informative print
+             r2 = r2_score(y_true_np, y_pred_np)
+             print(f"Calculated R²: {r2:.4f}")
+             return r2
+        except Exception as e:
+             print(f"ERROR calculating R2: {e}")
+             return np.nan
 
-# ---------------------------
-# Debugging usage example (if run as main)
-# ---------------------------
-if __name__ == "__main__":
-    plugin = Plugin()
-    # For debugging, assume input shape (window_size, num_channels) where num_channels=3.
-    # Example: window_size=24, 3 channels (trend, seasonal, noise).
-    plugin.build_model(input_shape=(24, 3), x_train=None, config={})
-    debug_info = plugin.get_debug_info()
-    print(f"Debug Info: {debug_info}")
+# Removed __main__ block for plugin file
