@@ -46,6 +46,7 @@
     "min_delta": 1e-7,
     "epochs": 2000,
     "use_strategy": false,
-    "stl_period":24
+    "stl_period":24,
+    "predicted_horizons": [1,2,3,4,5,6]
 
 }
