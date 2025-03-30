@@ -370,6 +370,7 @@ class PreprocessorPlugin:
              traceback.print_exc() # Print full traceback for other errors
              return {}
 
+
     def _plot_wavelets(self, original_series, wavelet_features, file_path):
         """Plots original series and computed Wavelet features."""
         # (Implementation from previous correct step - kept the same)
