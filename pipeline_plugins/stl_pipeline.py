@@ -146,8 +146,8 @@ class STLPipelinePlugin:
             )
 
             # Check outputs & Calc Train/Val Metrics (All Horizons)
-            can_calc_train_val_stats = all(len(lst) == num_outputs for lst in [list_train_preds, list_train_unc, list_val_preds, list_val_unc])
-            if can_calc_train_val_stats:
+            can_calc_train_stats = all(len(lst) == num_outputs for lst in [list_train_preds, list_train_unc])
+            if can_calc_train_stats:
                 print("Calculating Train/Validation metrics (all horizons)...")
                 for idx, h in enumerate(predicted_horizons):
                     try:
@@ -169,6 +169,8 @@ class STLPipelinePlugin:
                         metrics_results["Validation"]["MAE"][h].append(val_mae_h); metrics_results["Validation"]["R2"][h].append(val_r2_h); metrics_results["Validation"]["Uncertainty"][h].append(val_unc_mean_h); metrics_results["Validation"]["SNR"][h].append(val_snr_h)
                     except Exception as e: print(f"WARN: Error Train/Val metrics H={h}: {e}"); [metrics_results[ds][m][h].append(np.nan) for ds in ["Train","Validation"] for m in metric_names]
             else: print("WARN: Skipping Train/Val stats calculation.")
+
+
 
             # Save Loss Plot
             loss_plot_file=config.get("loss_plot_file"); plt.figure(figsize=(10,5)); plt.plot(history.history['loss'],label='Train'); plt.plot(history.history['val_loss'],label='Val'); plt.title(f"Loss-Iter {iteration}"); plt.ylabel("Loss"); plt.xlabel("Epoch"); plt.legend(); plt.grid(True,alpha=0.6); plt.savefig(loss_plot_file); plt.close(); print(f"Loss plot saved: {loss_plot_file}")

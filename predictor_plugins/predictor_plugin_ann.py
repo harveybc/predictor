@@ -633,12 +633,15 @@ class Plugin:
 
         # --- Post-Training Predictions ---
         # Note: Predicting on full train/val sets uses memory. Consider alternatives if needed.
-        list_train_preds = self.model.predict(x_train, batch_size=batch_size)
-        list_val_preds = self.model.predict(x_val, batch_size=batch_size)
+        #list_train_preds = self.model.predict(x_train, batch_size=batch_size)
+        #list_val_preds = self.model.predict(x_val, batch_size=batch_size)
+        mc_samples = config.get("mc_samples", 100)
+        list_train_preds,list_train_uncertainty  = self.predict_with_uncertainty(x_train, mc_samples)
+        list_val_preds, list_val_uncertainty = self.predict_with_uncertainty(x_val, mc_samples)   
 
         # Placeholder uncertainties (as these weren't generated during training)
-        list_train_uncertainty = [np.zeros_like(preds) for preds in list_train_preds]
-        list_val_uncertainty = [np.zeros_like(preds) for preds in list_val_preds]
+        #list_train_uncertainty = [np.zeros_like(preds) for preds in list_train_preds]
+        #list_val_uncertainty = [np.zeros_like(preds) for preds in list_val_preds]
 
         # --- Post-Training Metrics (for the configured 'plotted_horizon') ---
         # Assumes self.calculate_mae and self.calculate_r2 methods exist
