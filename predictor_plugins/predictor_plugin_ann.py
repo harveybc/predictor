@@ -23,6 +23,8 @@ from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback, LambdaCallback
 from tensorflow.keras.losses import Huber
 import tensorflow.keras.backend as K
+#bilstm
+from tensorflow.keras.layers import Bidirectional, LSTM
 import gc
 import os
 from sklearn.metrics import r2_score
@@ -158,8 +160,8 @@ def composite_loss(y_true, y_pred,
             lambda: mse_loss_val*1e3 - 1,
             lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20)
         return res
-    asymptote = vertical_dynamic_asymptote(signed_avg_pred, signed_avg_true)
-    #asymptote = 0.0
+    #asymptote = vertical_dynamic_asymptote(signed_avg_pred, signed_avg_true)
+    asymptote = 0.0
 
     # --- Calculate Feedback Metrics ---
     #feedback_signed_error = 0.0
@@ -175,7 +177,7 @@ def composite_loss(y_true, y_pred,
     # --- Update Feedback Variables (using control dependencies) ---
     #update_ops = [
         # Store calculated metrics
-    #    list_last_signed_error[head_index].assign(feedback_signed_error),
+    #    list_last_signed_error[head_index].assign(signed_avg_true-signed_avg_pred),
     #    list_last_stddev[head_index].assign(feedback_stddev),
     #    list_last_mmd[head_index].assign(feedback_mmd),
         # Store the output of the control function - THIS IS THE FEEDBACK FOR THE MODEL
@@ -185,8 +187,8 @@ def composite_loss(y_true, y_pred,
     #with tf.control_dependencies(update_ops):
         # Calculate final loss term
         #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    #total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
+    #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
+    total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
     # Return the final scalar loss value
     return total_loss
 
@@ -453,6 +455,15 @@ class Plugin:
                  head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
                                            name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
+            # --- Add BiLSTM Layer ---
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
+            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            # Apply Bidirectional LSTM
+            # return_sequences=False gives output shape (batch, 2 * lstm_units)
+            lstm_output = Bidirectional(
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+            )(reshaped_for_lstm)
+
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
@@ -466,7 +477,7 @@ class Plugin:
                 lambda t: flipout_layer_branch(t),
                 output_shape=lambda s: (s[0], 1), # Explicit output shape
                 name=f"bayesian_output{branch_suffix}"
-            )(head_dense_output)
+            )(lstm_output)
 
             bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44,
                                       name=f"deterministic_bias{branch_suffix}")(head_dense_output)
