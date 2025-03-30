@@ -34,6 +34,10 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Add
 # keras identity
 from tensorflow.keras.layers import Identity
+from tensorflow.keras import Model
+from tensorflow.keras.layers import Layer
+#reshape 
+from tensorflow.keras.layers import Reshape
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -411,6 +415,9 @@ class Plugin:
         num_head_intermediate_layers = config['intermediate_layers']
         branch_units = config.get("branch_units", self.params.get("branch_units", 64))
         merged_units = config.get("merged_units", self.params.get("merged_units", 128))
+        # Add LSTM units parameter (provide a default)
+        lstm_units = config.get("lstm_units", 32) # New parameter for LSTM size
+
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
