@@ -698,11 +698,94 @@ class Plugin:
         return history, list_train_preds, list_train_uncertainty, list_val_preds, list_val_uncertainty
     
 
+    # --- Method within PredictorPluginANN class ---
     def predict_with_uncertainty(self, x_test, mc_samples=100):
-        predictions = np.array([self.model(x_test, training=True).numpy() for _ in range(mc_samples)])
-        mean_predictions = np.mean(predictions, axis=0)
-        uncertainty_estimates = np.std(predictions, axis=0)
-        return mean_predictions, uncertainty_estimates
+        """
+        Performs Monte Carlo dropout predictions for the multi-output model.
+
+        Runs the model multiple times with dropout enabled (training=True)
+        to estimate predictive uncertainty (standard deviation) for each output head.
+
+        Args:
+            x_test (np.ndarray): Input data for prediction.
+            mc_samples (int): Number of Monte Carlo samples to perform.
+
+        Returns:
+            tuple: (list_mean_predictions, list_uncertainty_estimates)
+                   - list_mean_predictions: List of numpy arrays, one per head,
+                     containing the mean prediction across MC samples.
+                     Shape of each array: [num_samples, 1].
+                   - list_uncertainty_estimates: List of numpy arrays, one per head,
+                     containing the standard deviation across MC samples.
+                     Shape of each array: [num_samples, 1].
+        """
+        # Stores outputs from each MC sample: list[list[array]]
+        mc_outputs_list_of_lists = []
+        # print(f"Running {mc_samples} MC samples for uncertainty...") # Informative print
+        if self.model is None:
+            raise ValueError("Model has not been built or loaded.")
+
+        for i in range(mc_samples):
+            # model() returns a list of tensors (one per output head) when called
+            head_outputs_tf = self.model(x_test, training=True) # Keep training=True for dropout
+
+            # Ensure the output is a list (Keras sometimes returns single tensor if only one output)
+            if not isinstance(head_outputs_tf, list):
+                head_outputs_tf = [head_outputs_tf]
+
+            # Convert each tensor in the list to a numpy array
+            head_outputs_np = [t.numpy() for t in head_outputs_tf]
+            mc_outputs_list_of_lists.append(head_outputs_np)
+            # Optional progress print
+            # if (i + 1) % (mc_samples // 10 or 1) == 0: print(f"  MC sample {i+1}/{mc_samples}")
+
+        # Process the collected samples
+        if not mc_outputs_list_of_lists:
+             print("WARN: No MC samples collected.")
+             # Determine expected number of heads from model if possible
+             num_heads = len(self.model.outputs) if hasattr(self.model, 'outputs') else 0
+             return [np.array([])] * num_heads, [np.array([])] * num_heads
+
+        num_heads = len(mc_outputs_list_of_lists[0])
+        if num_heads == 0:
+             print("WARN: Model seems to have zero output heads.")
+             return [], []
+
+        # Assuming all heads produce output like (num_test_samples, 1)
+        # Get shape from the first sample, first head
+        first_pred = mc_outputs_list_of_lists[0][0]
+        num_test_samples = first_pred.shape[0]
+        output_dim = first_pred.shape[1] if first_pred.ndim > 1 else 1
+
+        # Convert the list of lists into a NumPy array for efficient calculation
+        # Target Shape: (mc_samples, num_heads, num_test_samples, output_dim)
+        try:
+             predictions_np = np.zeros((mc_samples, num_heads, num_test_samples, output_dim))
+             for s in range(mc_samples):
+                 for h in range(num_heads):
+                     # Reshape head output if it's squeezed, e.g., (N,) to (N, 1)
+                     current_head_output = mc_outputs_list_of_lists[s][h]
+                     if current_head_output.ndim == 1:
+                         current_head_output = np.expand_dims(current_head_output, axis=-1)
+                     # Ensure output_dim matches expectation
+                     if current_head_output.shape[1] != output_dim:
+                          raise ValueError(f"Head {h} output dim {current_head_output.shape[1]} != expected {output_dim}")
+                     predictions_np[s, h, :, :] = current_head_output
+        except Exception as e:
+             print(f"ERROR reshaping MC outputs: {e}. Check head output dimensions/consistency.")
+             raise ValueError("Failed to consolidate MC outputs.") from e
+
+        # Calculate mean and standard deviation across the MC samples axis (axis=0)
+        mean_predictions_np = np.mean(predictions_np, axis=0)
+        # Shape after mean: (num_heads, num_test_samples, output_dim)
+        uncertainty_estimates_np = np.std(predictions_np, axis=0)
+        # Shape after std: (num_heads, num_test_samples, output_dim)
+
+        # Convert back to lists for the return value (one array per head)
+        list_mean_predictions = [mean_predictions_np[h].astype(np.float32) for h in range(num_heads)]
+        list_uncertainty_estimates = [uncertainty_estimates_np[h].astype(np.float32) for h in range(num_heads)]
+
+        return list_mean_predictions, list_uncertainty_estimates
 
     def save(self, file_path):
         self.model.save(file_path)
