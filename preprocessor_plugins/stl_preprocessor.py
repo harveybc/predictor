@@ -10,8 +10,6 @@ from app.data_handler import load_csv # Assuming load_csv is here
 from scipy.signal import hilbert
 from scipy.stats import shapiro
 # Include the user-provided verify_date_consistency function
-
-
 def verify_date_consistency(date_lists, dataset_name):
     """
     Verifies that all date arrays in date_lists have the same first and last elements.
