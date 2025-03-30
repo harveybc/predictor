@@ -158,8 +158,8 @@ def composite_loss(y_true, y_pred,
             lambda: mse_loss_val*1e3 - 1,
             lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20)
         return res
-    #asymptote = vertical_dynamic_asymptote(signed_avg_pred, signed_avg_true)
-    asymptote = 0.0
+    asymptote = vertical_dynamic_asymptote(signed_avg_pred, signed_avg_true)
+    #asymptote = 0.0
 
     # --- Calculate Feedback Metrics ---
     #feedback_signed_error = 0.0
@@ -185,8 +185,8 @@ def composite_loss(y_true, y_pred,
     #with tf.control_dependencies(update_ops):
         # Calculate final loss term
         #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
+    total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
+    #total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
     # Return the final scalar loss value
     return total_loss
 
