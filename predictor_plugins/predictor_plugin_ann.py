@@ -137,8 +137,8 @@ def composite_loss(y_true, y_pred,
 
     # --- Calculate Primary Losses ---
     mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
-    #mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
-    mmd_loss_val = 0.0
+    mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
+    #mmd_loss_val = 0.0
     mse_min = tf.maximum(mse_loss_val, 1e-10)
 
     # --- Calculate Summary Statistics ---
@@ -154,8 +154,8 @@ def composite_loss(y_true, y_pred,
             lambda: mse_loss_val*1e3 - 1,
             lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20)
         return res
-    #asymptote = vertical_dynamic_asymptote(signed_avg_pred, signed_avg_true)
-    asymptote = 0.0
+    asymptote = vertical_dynamic_asymptote(signed_avg_pred, signed_avg_true)
+    #asymptote = 0.0
 
     # --- Calculate Feedback Metrics ---
     #feedback_signed_error = 0.0
