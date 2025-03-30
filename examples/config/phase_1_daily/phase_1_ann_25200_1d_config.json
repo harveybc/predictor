@@ -47,7 +47,7 @@
     "use_strategy": false,
     "stl_period":24,
     "predicted_horizons": [24,48,72,96,120,144],
-    "use_stl": false,
-    "use_wavelets": false,
-    "usemulti_tapper": false
+    "use_stl": true,
+    "use_wavelets": true,
+    "usemulti_tapper": true
 }
