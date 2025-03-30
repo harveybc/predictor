@@ -528,9 +528,14 @@ class Plugin:
             loss_dict[name] = loss_fn_for_head
             # print(f"  - Loss function created for head {i} ('{name}')")
 
-        # Prepare metrics dictionary
-        metrics_dict = {name: [mae_magnitude, r2_metric] for name in self.output_names}
-
+        # Prepare metrics dictionary to only show the highest prediction horizon
+        highest_horizon_index = predicted_horizons.index(max(predicted_horizons))
+        metrics_dict = {
+            self.output_names[highest_horizon_index]: [
+                mae_magnitude, r2_metric
+            ]
+        }
+        
         self.model.compile(optimizer=optimizer,
                            loss=loss_dict,
                            metrics=metrics_dict)
