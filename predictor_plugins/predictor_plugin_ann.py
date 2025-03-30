@@ -588,6 +588,7 @@ class Plugin:
 
         # --- Inner Class for KL Annealing Callback ---
         class KLAnnealingCallback(tf.keras.callbacks.Callback):
+            # ... (keep implementation as provided) ...
             def __init__(self, plugin, target_kl, anneal_epochs):
                 super().__init__()
                 self.plugin = plugin
@@ -596,7 +597,6 @@ class Plugin:
             def on_epoch_begin(self, epoch, logs=None):
                 new_kl = self.target_kl * min(1.0, (epoch + 1) / self.anneal_epochs)
                 self.plugin.kl_weight_var.assign(new_kl)
-                # print(f"Epoch {epoch+1}: KL weight updated to {new_kl}")
 
         # --- Setup Callbacks ---
         anneal_epochs = config.get("kl_anneal_epochs", self.params.get("kl_anneal_epochs", 10))
@@ -605,8 +605,9 @@ class Plugin:
         min_delta_early_stopping = config.get("min_delta", self.params.get("min_delta", 1e-4))
         patience_early_stopping = self.params.get('early_patience', 10)
         start_from_epoch_es = self.params.get('start_from_epoch', 10)
-        patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 4))) # Ensure patience >= 1
+        patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 4)))
 
+        # Instantiate callbacks WITHOUT ClearMemoryCallback
         # Assumes relevant Callback classes are imported/defined
         callbacks = [
             EarlyStoppingWithPatienceCounter(
@@ -618,71 +619,62 @@ class Plugin:
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs:
                            print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
-            ClearMemoryCallback(),
+            # Removed: ClearMemoryCallback(), # <<< REMOVED THIS LINE
             kl_callback
         ]
 
         # --- Input Data Verification ---
         if not isinstance(y_train, dict) or not isinstance(y_val, dict):
-             raise TypeError("y_train and y_val must be dictionaries for multi-output models.")
+             raise TypeError("y_train and y_val must be dictionaries.")
         if not hasattr(self, 'output_names') or not self.output_names:
-             raise AttributeError("Model output names not found. Ensure build_model sets self.output_names.")
-        if len(self.output_names) != len(predicted_horizons):
-             raise ValueError("Mismatch between self.output_names and config['predicted_horizons'].")
-        # Check if required target keys exist
+             raise AttributeError("self.output_names not set by build_model.")
         plotted_output_name = f"output_horizon_{plotted_horizon}"
         if plotted_output_name not in y_train or plotted_output_name not in y_val:
-             raise ValueError(f"Target dictionaries y_train/y_val missing required key: '{plotted_output_name}'")
+             raise ValueError(f"Target dicts missing key: '{plotted_output_name}'")
         # Optional: Check all keys match
         if set(y_train.keys()) != set(self.output_names) or set(y_val.keys()) != set(self.output_names):
-             print("WARNING: Target data dictionary keys may not perfectly match all model output names.")
-
+             print("WARN: Target data dictionary keys may not perfectly match all model output names.")
 
         # --- Model Training ---
-        # print(f"Starting training for {epochs} epochs with batch size {batch_size}")
-        history = self.model.fit(x_train, y_train, # Pass dict
+        history = self.model.fit(x_train, y_train,
                                  epochs=epochs,
                                  batch_size=batch_size,
-                                 validation_data=(x_val, y_val), # Pass dict
+                                 validation_data=(x_val, y_val),
                                  callbacks=callbacks,
                                  verbose=1)
 
         # --- Post-Training Predictions ---
+        # Note: Predicting on full train/val sets uses memory. Consider alternatives if needed.
         list_train_preds = self.model.predict(x_train, batch_size=batch_size)
         list_val_preds = self.model.predict(x_val, batch_size=batch_size)
+
+        # Placeholder uncertainties (as these weren't generated during training)
         list_train_uncertainty = [np.zeros_like(preds) for preds in list_train_preds]
         list_val_uncertainty = [np.zeros_like(preds) for preds in list_val_preds]
 
         # --- Post-Training Metrics (for the configured 'plotted_horizon') ---
         # Assumes self.calculate_mae and self.calculate_r2 methods exist
         try:
-            # Get target data for the specific plotted horizon
             y_train_plotted = y_train[plotted_output_name]
-            # Get prediction data for the specific plotted horizon using its index
-            train_preds_plotted = list_train_preds[plotted_index]
-
-            # Calculate metrics using data for the specified head
+            train_preds_plotted = list_train_preds[plotted_index] # Use pre-calculated index
             print(f"Calculating final MAE/R2 for plotted horizon: {plotted_horizon} (Index: {plotted_index})")
             if hasattr(self, 'calculate_mae') and callable(self.calculate_mae):
                 self.calculate_mae(y_train_plotted, train_preds_plotted)
             if hasattr(self, 'calculate_r2') and callable(self.calculate_r2):
                 self.calculate_r2(y_train_plotted, train_preds_plotted)
-        except KeyError:
-            print(f"ERROR: Could not find key '{plotted_output_name}' in y_train dictionary for metric calculation.")
-        except IndexError:
-             print(f"ERROR: Could not get prediction index {plotted_index} for metric calculation.")
         except Exception as e:
              print(f"ERROR during post-training metric calculation: {e}")
-
 
         # Return history and lists of predictions/uncertainties
         return history, list_train_preds, list_train_uncertainty, list_val_preds, list_val_uncertainty
     
 
     # --- Method within PredictorPluginANN class ---
+    # --- Method within PredictorPluginANN class ---
     def predict_with_uncertainty(self, x_test, mc_samples=100):
         """
-        Performs Monte Carlo dropout predictions for the multi-output model.
+        Performs Monte Carlo dropout predictions for the multi-output model
+        using an incremental approach to avoid large memory allocation.
 
         Runs the model multiple times with dropout enabled (training=True)
         to estimate predictive uncertainty (standard deviation) for each output head.
@@ -693,81 +685,72 @@ class Plugin:
 
         Returns:
             tuple: (list_mean_predictions, list_uncertainty_estimates)
-                   - list_mean_predictions: List of numpy arrays, one per head,
-                     containing the mean prediction across MC samples.
-                     Shape of each array: [num_samples, 1].
-                   - list_uncertainty_estimates: List of numpy arrays, one per head,
-                     containing the standard deviation across MC samples.
-                     Shape of each array: [num_samples, 1].
+                   Lists containing numpy arrays (one per output head)
+                   for mean predictions and standard deviations (uncertainty).
+                   Shape of each array: [num_samples, output_dim (usually 1)].
         """
-        # Stores outputs from each MC sample: list[list[array]]
-        mc_outputs_list_of_lists = []
-        # print(f"Running {mc_samples} MC samples for uncertainty...") # Informative print
         if self.model is None:
             raise ValueError("Model has not been built or loaded.")
+        if mc_samples <= 0:
+            return [], []
 
+        # Get dimensions from a single sample run
+        try:
+            first_run_output_tf = self.model(x_test[:1], training=True) # Predict on one sample
+            if not isinstance(first_run_output_tf, list): first_run_output_tf = [first_run_output_tf]
+            num_heads = len(first_run_output_tf)
+            if num_heads == 0: return [], []
+            first_head_output = first_run_output_tf[0].numpy()
+            num_test_samples = x_test.shape[0]
+            output_dim = first_head_output.shape[1] if first_head_output.ndim > 1 else 1
+        except Exception as e:
+            print(f"ERROR getting model output shape in predict_with_uncertainty: {e}")
+            raise ValueError("Could not determine model output structure.") from e
+
+        # Initialize accumulators for mean and variance calculation (Welford's algorithm components)
+        # Using lists to store per-head accumulators
+        means = [np.zeros((num_test_samples, output_dim), dtype=np.float32) for _ in range(num_heads)]
+        m2s = [np.zeros((num_test_samples, output_dim), dtype=np.float32) for _ in range(num_heads)]
+        counts = [0] * num_heads # Use a single count across heads, assuming samples are drawn together
+
+        # print(f"Running {mc_samples} MC samples for uncertainty (incremental)...") # Informative print
         for i in range(mc_samples):
-            # model() returns a list of tensors (one per output head) when called
-            head_outputs_tf = self.model(x_test, training=True) # Keep training=True for dropout
+            # Get predictions for all heads in this sample
+            head_outputs_tf = self.model(x_test, training=True)
+            if not isinstance(head_outputs_tf, list): head_outputs_tf = [head_outputs_tf]
 
-            # Ensure the output is a list (Keras sometimes returns single tensor if only one output)
-            if not isinstance(head_outputs_tf, list):
-                head_outputs_tf = [head_outputs_tf]
+            # Process each head's output for this sample
+            for h in range(num_heads):
+                head_output_np = head_outputs_tf[h].numpy()
+                # Reshape if necessary
+                if head_output_np.ndim == 1:
+                    head_output_np = np.expand_dims(head_output_np, axis=-1)
+                if head_output_np.shape != (num_test_samples, output_dim):
+                     raise ValueError(f"Shape mismatch in MC sample {i}, head {h}: Expected {(num_test_samples, output_dim)}, got {head_output_np.shape}")
 
-            # Convert each tensor in the list to a numpy array
-            head_outputs_np = [t.numpy() for t in head_outputs_tf]
-            mc_outputs_list_of_lists.append(head_outputs_np)
+                # Welford's online algorithm update
+                counts[h] += 1
+                delta = head_output_np - means[h]
+                means[h] += delta / counts[h]
+                delta2 = head_output_np - means[h] # New delta using updated mean
+                m2s[h] += delta * delta2
+
             # Optional progress print
             # if (i + 1) % (mc_samples // 10 or 1) == 0: print(f"  MC sample {i+1}/{mc_samples}")
 
-        # Process the collected samples
-        if not mc_outputs_list_of_lists:
-             print("WARN: No MC samples collected.")
-             # Determine expected number of heads from model if possible
-             num_heads = len(self.model.outputs) if hasattr(self.model, 'outputs') else 0
-             return [np.array([])] * num_heads, [np.array([])] * num_heads
+        # Finalize calculations: variance = M2 / (n - 1), stddev = sqrt(variance)
+        list_mean_predictions = means # The mean is already calculated
+        list_uncertainty_estimates = []
+        for h in range(num_heads):
+             if counts[h] < 2: # Need at least 2 samples for variance/stddev
+                 variance = np.full((num_test_samples, output_dim), np.nan, dtype=np.float32)
+             else:
+                 variance = m2s[h] / (counts[h] - 1)
+             stddev = np.sqrt(np.maximum(variance, 0)) # Ensure variance isn't negative due to float issues
+             list_uncertainty_estimates.append(stddev.astype(np.float32))
 
-        num_heads = len(mc_outputs_list_of_lists[0])
-        if num_heads == 0:
-             print("WARN: Model seems to have zero output heads.")
-             return [], []
-
-        # Assuming all heads produce output like (num_test_samples, 1)
-        # Get shape from the first sample, first head
-        first_pred = mc_outputs_list_of_lists[0][0]
-        num_test_samples = first_pred.shape[0]
-        output_dim = first_pred.shape[1] if first_pred.ndim > 1 else 1
-
-        # Convert the list of lists into a NumPy array for efficient calculation
-        # Target Shape: (mc_samples, num_heads, num_test_samples, output_dim)
-        try:
-             predictions_np = np.zeros((mc_samples, num_heads, num_test_samples, output_dim))
-             for s in range(mc_samples):
-                 for h in range(num_heads):
-                     # Reshape head output if it's squeezed, e.g., (N,) to (N, 1)
-                     current_head_output = mc_outputs_list_of_lists[s][h]
-                     if current_head_output.ndim == 1:
-                         current_head_output = np.expand_dims(current_head_output, axis=-1)
-                     # Ensure output_dim matches expectation
-                     if current_head_output.shape[1] != output_dim:
-                          raise ValueError(f"Head {h} output dim {current_head_output.shape[1]} != expected {output_dim}")
-                     predictions_np[s, h, :, :] = current_head_output
-        except Exception as e:
-             print(f"ERROR reshaping MC outputs: {e}. Check head output dimensions/consistency.")
-             raise ValueError("Failed to consolidate MC outputs.") from e
-
-        # Calculate mean and standard deviation across the MC samples axis (axis=0)
-        mean_predictions_np = np.mean(predictions_np, axis=0)
-        # Shape after mean: (num_heads, num_test_samples, output_dim)
-        uncertainty_estimates_np = np.std(predictions_np, axis=0)
-        # Shape after std: (num_heads, num_test_samples, output_dim)
-
-        # Convert back to lists for the return value (one array per head)
-        list_mean_predictions = [mean_predictions_np[h].astype(np.float32) for h in range(num_heads)]
-        list_uncertainty_estimates = [uncertainty_estimates_np[h].astype(np.float32) for h in range(num_heads)]
-
+        # print("MC sampling finished.") # Informative print
         return list_mean_predictions, list_uncertainty_estimates
-
     def save(self, file_path):
         self.model.save(file_path)
         print(f"Model saved to {file_path}")
