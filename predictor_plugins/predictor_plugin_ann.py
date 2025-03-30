@@ -486,13 +486,13 @@ class Plugin:
         # Prepare loss dictionary, passing ALL necessary lists and params to GLOBAL composite_loss
         loss_dict = {}
         for i, name in enumerate(self.output_names):
-            p_val = self.local_p_control[i]
-            i_val = self.local_i_control[i]
-            d_val = self.local_d_control[i]
-            lse_list = self.last_signed_error
-            lsd_list = self.last_stddev
-            lmmd_list = self.last_mmd
-            lf_list = self.local_feedback
+            p_val = 0
+            i_val = 0
+            d_val = 0
+            lse_list = []
+            lsd_list = []
+            lmmd_list = []
+            lf_list = []
 
             loss_fn_for_head = (
                 lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list, lf=lf_list:
