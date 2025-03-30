@@ -158,29 +158,30 @@ def composite_loss(y_true, y_pred,
 
 
     # --- Calculate Feedback Metrics ---
-    feedback_signed_error = signed_avg_true - signed_avg_pred
-    feedback_stddev = tf.reduce_mean(tf.abs(mag_true - mag_pred)) # MAE
-    feedback_mmd = mmd_loss_val # MMD Loss value
+    #feedback_signed_error = 0.0
+    #feedback_stddev = 0.0
+    #feedback_mmd = 0.0
 
     # --- Call Control Function ---
     # Pass feedback metrics and head-specific PID parameters (which are tf.Variables)
-    local_control_action = dummy_feedback_control(
-        feedback_signed_error, feedback_stddev, feedback_mmd, p, i, d
-    )
+    #local_control_action = dummy_feedback_control(
+    #    feedback_signed_error, feedback_stddev, feedback_mmd, p, i, d
+    #)
 
     # --- Update Feedback Variables (using control dependencies) ---
-    update_ops = [
+    #update_ops = [
         # Store calculated metrics
-        list_last_signed_error[head_index].assign(feedback_signed_error),
-        list_last_stddev[head_index].assign(feedback_stddev),
-        list_last_mmd[head_index].assign(feedback_mmd),
+    #    list_last_signed_error[head_index].assign(feedback_signed_error),
+    #    list_last_stddev[head_index].assign(feedback_stddev),
+    #    list_last_mmd[head_index].assign(feedback_mmd),
         # Store the output of the control function - THIS IS THE FEEDBACK FOR THE MODEL
-        list_local_feedback[head_index].assign(local_control_action)
-    ]
+        #list_local_feedback[head_index].assign(local_control_action)
+    #]
 
-    with tf.control_dependencies(update_ops):
+    #with tf.control_dependencies(update_ops):
         # Calculate final loss term
-        total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
+        #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
+    total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
 
     # Return the final scalar loss value
     return total_loss
