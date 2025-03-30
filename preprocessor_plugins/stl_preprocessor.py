@@ -1,3 +1,28 @@
+# Ensure these imports are present at the top of the file
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from statsmodels.tsa.seasonal import STL
+from tqdm import tqdm
+import json
+from app.data_handler import load_csv # Assuming load_csv is here
+# from app.data_handler import write_csv # Not used directly in process_data
+from scipy.signal import hilbert
+from scipy.stats import shapiro
+# Include the user-provided verify_date_consistency function
+# Try importing optional dependencies
+try:
+    import pywt # For Wavelets
+except ImportError:
+    print("WARN: pywt library not found. Wavelet features ('use_wavelets=True') will be unavailable.")
+    pywt = None
+try:
+    from scipy.signal.windows import dpss # For MTM tapers
+except ImportError:
+    print("WARN: scipy.signal.windows not found. MTM features ('use_multi_tapper=True') may be unavailable.")
+    dpss = None
+
+
 # Include the user-provided verify_date_consistency function (as provided in the prompt)
 def verify_date_consistency(date_lists, dataset_name):
     """
@@ -832,3 +857,5 @@ class PreprocessorPlugin:
         # --- Run with the fully resolved self.params ---
         return self.process_data(self.params)
     # --- End of original run_preprocessing ---
+# Example placeholder for create_sliding_windows if needed outside class
+# def create_sliding_windows_standalone(data, window_size, time_horizon, date_times=None): ...
