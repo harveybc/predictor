@@ -386,7 +386,7 @@ class Plugin:
         l2_reg = config.get("l2_reg", self.params.get("l2_reg", 0.001))
         activation = config.get("activation", self.params.get("activation", "relu"))
         num_intermediate_layers = config['intermediate_layers']
-        num_head_intermediate_layers = config['intermediate']
+        num_head_intermediate_layers = config['intermediate_layers']
         branch_units = config.get("branch_units", self.params.get("branch_units", 64))
         merged_units = config.get("merged_units", self.params.get("merged_units", 128))
 
