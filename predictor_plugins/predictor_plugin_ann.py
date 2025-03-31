@@ -149,12 +149,12 @@ def composite_loss(y_true, y_pred,
     #mmd_loss_val = 0.0
 
 
-    mse_min = tf.maximum(huber_loss_val, 1e-10)
+    #mse_min = tf.maximum(huber_loss_val, 1e-10)
     #mse_min = tf.maximum(mse_loss_val, 1e-10)
 
     # --- Calculate Summary Statistics ---
-    signed_avg_pred = tf.reduce_mean(mag_pred)
-    signed_avg_true = tf.reduce_mean(mag_true)
+    #signed_avg_pred = tf.reduce_mean(mag_pred)
+    #signed_avg_true = tf.reduce_mean(mag_true)
 
     # --- Calculate Dynamic Asymptote Penalty (Original User Logic) ---
     #def vertical_dynamic_asymptote(value, center):
