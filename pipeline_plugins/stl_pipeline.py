@@ -146,6 +146,7 @@ class STLPipelinePlugin:
             )
 
             # Check outputs & Calc Train/Val Metrics (All Horizons)
+            
             can_calc_train_stats = all(len(lst) == num_outputs for lst in [list_train_preds, list_train_unc])
             if can_calc_train_stats:
                 print("Calculating Train/Validation metrics (all horizons)...")
@@ -196,6 +197,7 @@ class STLPipelinePlugin:
 
             # Print Iteration Summary (using PLOTTED horizon)
             try:
+                 can_calc_train_val_stats = all(len(lst) == num_outputs for lst in [list_val_preds, list_val_unc])
                  train_mae_plot=metrics_results["Train"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan; train_r2_plot=metrics_results["Train"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
                  val_mae_plot=metrics_results["Validation"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan; val_r2_plot=metrics_results["Validation"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
                  test_mae_plot=metrics_results["Test"]["MAE"][plotted_horizon][-1]; test_r2_plot=metrics_results["Test"]["R2"][plotted_horizon][-1]; test_unc_plot=metrics_results["Test"]["Uncertainty"][plotted_horizon][-1]; test_snr_plot=metrics_results["Test"]["SNR"][plotted_horizon][-1]
