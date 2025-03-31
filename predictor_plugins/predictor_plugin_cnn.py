@@ -434,7 +434,8 @@ class Plugin:
                             activation=activation, padding='valid',
                             kernel_regularizer=l2(l2_reg),
                             name=f"feature_{c+1}_conv_{i+1}")(x)
-            # Pool the time dimension to create a fixed-size representation
+                # Pool the time dimension to create a fixed-size representation
+                x = tf.keras.layers.GlobalAveragePooling1D(name=f"feature_{c+1}_gap")(x)
             feature_branch_outputs.append(x)
 
         # --- Merging Feature Branches ONLY ---
@@ -471,9 +472,7 @@ class Plugin:
                                 kernel_regularizer=l2(l2_reg),
                                 name=f"head_conv_{j+1}{branch_suffix}")(x)
             # Remove the time dimension to obtain a vector representation
-            head_dense_output = tf.keras.layers.GlobalAveragePooling1D(name=f"feature_{c+1}_gap")(x)
-            head_dense_output = tf.keras.layers.Flatten(name=f"head_flatten{branch_suffix}")(head_dense_output)
-            
+            head_dense_output = tf.keras.layers.Flatten(name=f"head_flatten{branch_suffix}")(x)
 
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
