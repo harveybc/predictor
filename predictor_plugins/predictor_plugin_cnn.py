@@ -427,11 +427,15 @@ class Plugin:
         feature_branch_outputs = []
         for c in range(num_channels):
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                                   name=f"feature_{c+1}_input")(inputs)
-            x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
+                       name=f"feature_{c+1}_input")(inputs)
+            x = feature_input
             for i in range(num_intermediate_layers):
-                x = Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                          name=f"feature_{c+1}_dense_{i+1}")(x)
+                x = tf.keras.layers.Conv1D(filters=branch_units, kernel_size=1,
+                            activation=activation, padding='valid',
+                            kernel_regularizer=l2(l2_reg),
+                            name=f"feature_{c+1}_conv_{i+1}")(x)
+                # Pool the time dimension to create a fixed-size representation
+                #x = tf.keras.layers.GlobalAveragePooling1D(name=f"feature_{c+1}_gap")(x)
             feature_branch_outputs.append(x)
 
         # --- Merging Feature Branches ONLY ---
@@ -453,15 +457,22 @@ class Plugin:
         outputs_list = []
         self.output_names = []
 
-
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
-            # --- Head Intermediate Dense Layers ---
-            head_dense_output = merged
+            # Reshape merged vector to add a time dimension for Conv1D operations
+            head_input = tf.keras.layers.Reshape((1, merged.shape[-1]),
+                             name=f"head_reshape{branch_suffix}")(merged)
+
+            # --- Head Intermediate Conv1D Layers ---
+            x = head_input
             for j in range(num_head_intermediate_layers):
-                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
+                x = tf.keras.layers.Conv1D(filters=merged_units, kernel_size=1,
+                                activation=activation, padding='valid',
+                                kernel_regularizer=l2(l2_reg),
+                                name=f"head_conv_{j+1}{branch_suffix}")(x)
+            # Remove the time dimension to obtain a vector representation
+            head_dense_output = tf.keras.layers.Flatten(name=f"head_flatten{branch_suffix}")(x)
 
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
