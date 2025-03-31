@@ -471,8 +471,8 @@ class Plugin:
                                 kernel_regularizer=l2(l2_reg),
                                 name=f"head_conv_{j+1}{branch_suffix}")(x)
             # Remove the time dimension to obtain a vector representation
-            #head_dense_output = tf.keras.layers.Flatten(name=f"head_flatten{branch_suffix}")(x)
             head_dense_output = tf.keras.layers.GlobalAveragePooling1D(name=f"feature_{c+1}_gap")(x)
+            head_dense_output = tf.keras.layers.Flatten(name=f"head_flatten{branch_suffix}")(head_dense_output)
             
 
             # --- Add BiLSTM Layer ---
