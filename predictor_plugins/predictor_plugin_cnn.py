@@ -435,7 +435,7 @@ class Plugin:
                             kernel_regularizer=l2(l2_reg),
                             name=f"feature_{c+1}_conv_{i+1}")(x)
                 # Pool the time dimension to create a fixed-size representation
-                #x = tf.keras.layers.GlobalAveragePooling1D(name=f"feature_{c+1}_gap")(x)
+                x = tf.keras.layers.GlobalAveragePooling1D(name=f"feature_{c+1}_gap")(x)
             feature_branch_outputs.append(x)
 
         # --- Merging Feature Branches ONLY ---
