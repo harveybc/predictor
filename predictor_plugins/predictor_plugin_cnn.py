@@ -423,67 +423,35 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Parallel Feature Processing Branches ---
-        feature_branch_outputs = []
-        for c in range(num_channels):
-            feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                       name=f"feature_{c+1}_input")(inputs)
-            x = feature_input
-            for i in range(num_intermediate_layers):
-                x = tf.keras.layers.Conv1D(filters=branch_units, kernel_size=1,
-                            activation=activation, padding='valid',
-                            kernel_regularizer=l2(l2_reg),
-                            name=f"feature_{c+1}_conv_{i+1}")(x)
-            # Pool the time dimension to create a fixed-size representation
-            x = tf.keras.layers.GlobalAveragePooling1D(name=f"feature_{c+1}_gap")(x)
-            feature_branch_outputs.append(x)
-
-        # --- Merging Feature Branches ONLY ---
-        if len(feature_branch_outputs) == 1:
-             # Use Keras Identity layer for naming and compatibility
-             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
-        elif len(feature_branch_outputs) > 1:
-             # Concatenate is already a Keras layer
-             merged = Concatenate(name="merged_features")(feature_branch_outputs)
-        else:
-             raise ValueError("Model must have at least one input feature channel.")
-        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
-
-        # --- Define Bayesian Layer Components ---
-        KL_WEIGHT = self.kl_weight_var
-        DenseFlipout = tfp.layers.DenseFlipout
-
+        for i in range(num_intermediate_layers):
+            x = tf.keras.layers.Conv1D(filters=branch_units, kernel_size=1,
+                        activation=activation, padding='valid',
+                        kernel_regularizer=l2(l2_reg),
+                        name=f"feature_{c+1}_conv_{i+1}")(x)
+  
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
-
-            # Reshape merged vector to add a time dimension for Conv1D operations
-            head_input = tf.keras.layers.Reshape((1, merged.shape[-1]),
-                             name=f"head_reshape{branch_suffix}")(merged)
-
-            # --- Head Intermediate Conv1D Layers ---
-            x = head_input
             for j in range(num_head_intermediate_layers):
                 x = tf.keras.layers.Conv1D(filters=merged_units, kernel_size=1,
                                 activation=activation, padding='valid',
                                 kernel_regularizer=l2(l2_reg),
                                 name=f"head_conv_{j+1}{branch_suffix}")(x)
             # Remove the time dimension to obtain a vector representation
-            head_dense_output = tf.keras.layers.Flatten(name=f"head_flatten{branch_suffix}")(x)
-
+            #head_dense_output = tf.keras.layers.Flatten(name=f"head_flatten{branch_suffix}")(x)
+            
             # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
-            # Apply Bidirectional LSTM
-            # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(reshaped_for_lstm)
+            )(x)
 
             # --- Bayesian / Bias Layers ---
+            # --- Define Bayesian Layer Components ---
+            KL_WEIGHT = self.kl_weight_var
+            DenseFlipout = tfp.layers.DenseFlipout
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
                 units=1, activation='linear',
