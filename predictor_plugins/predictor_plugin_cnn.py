@@ -432,9 +432,11 @@ class Plugin:
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
+        head_input = x
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
+            x = head_input
             for j in range(num_head_intermediate_layers):
                 x = tf.keras.layers.Conv1D(filters=merged_units, kernel_size=1,
                                 activation=activation, padding='valid',
