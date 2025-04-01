@@ -445,7 +445,7 @@ class Plugin:
             x = tf.keras.layers.Conv1D(filters=1, kernel_size=1,
                                 activation=activation, padding='valid',
                                 kernel_regularizer=l2(l2_reg),
-                                name=f"head_conv_{j+1}{branch_suffix}")(x)
+                                name=f"head_conv_last_{branch_suffix}")(x)
             x= Flatten(name=f"head_flatten{branch_suffix}")(x)            
             x = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
                                            name=f"head_dense_last_{branch_suffix}")(x)
