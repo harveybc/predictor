@@ -444,17 +444,17 @@ class Plugin:
                                 name=f"head_conv_{j+1}{branch_suffix}")(x)
             # Remove the time dimension to obtain a vector representation
             #head_dense_output = tf.keras.layers.Flatten(name=f"head_flatten{branch_suffix}")(x)
-            x= Flatten(name=f"head_flatten{branch_suffix}")(x)            
-            lstm_output = Dense(1, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_last_{branch_suffix}")(x)
+            #x= Flatten(name=f"head_flatten{branch_suffix}")(x)            
+            #x = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+            #                               name=f"head_dense_last_{branch_suffix}")(x)
 
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             #x = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(x)
             # --- Add BiLSTM Layer ---
-            #lstm_output = Bidirectional(
-            #    LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            #)(x)
+            lstm_output = Bidirectional(
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+            )(x)
 
             # --- Bayesian / Bias Layers ---
             # --- Define Bayesian Layer Components ---
