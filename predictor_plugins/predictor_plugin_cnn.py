@@ -467,7 +467,7 @@ class Plugin:
             )(lstm_output)
 
             bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44,
-                                      name=f"deterministic_bias{branch_suffix}")(head_dense_output)
+                                      name=f"deterministic_bias{branch_suffix}")(lstm_output)
 
             # --- Final Head Output ---
             output_name = f"output_horizon_{horizon}"
