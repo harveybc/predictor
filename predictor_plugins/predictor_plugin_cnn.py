@@ -445,14 +445,8 @@ class Plugin:
             x = tf.keras.layers.Conv1D(filters=1, kernel_size=1,
                                 activation=activation, padding='valid',
                                 kernel_regularizer=l2(l2_reg),
-                                name=f"head_conv_{j+1}{branch_suffix}")(x)
-            x = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_{j+1}{branch_suffix}")(x)
+                                name=f"head_last_conv_{branch_suffix}")(x)
 
-            # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            x = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(x)
-            # --- Add BiLSTM Layer ---
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
             )(x)
