@@ -443,7 +443,7 @@ class Plugin:
             # Remove the time dimension to obtain a vector representation
             #head_dense_output = tf.keras.layers.Flatten(name=f"head_flatten{branch_suffix}")(x)
             x= Flatten(name=f"head_flatten{branch_suffix}")(x)            
-            lstm_output = Dense(1, activation='ĺinear', kernel_regularizer=l2(l2_reg),
+            lstm_output = Dense(1, activation='linear', kernel_regularizer=l2(l2_reg),
                                            name=f"head_dense_{j+1}{branch_suffix}")(x)
 
             # --- Add BiLSTM Layer ---
