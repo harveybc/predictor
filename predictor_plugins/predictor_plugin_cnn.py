@@ -427,7 +427,7 @@ class Plugin:
             x = tf.keras.layers.Conv1D(filters=branch_units, kernel_size=1,
                         activation=activation, padding='valid',
                         kernel_regularizer=l2(l2_reg),
-                        name=f"feature_{c+1}_conv_{i+1}")(x)
+                        name=f"input_conv_{i+1}")(x)
   
         # --- Build Multiple Output Heads ---
         outputs_list = []
