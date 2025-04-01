@@ -446,6 +446,7 @@ class Plugin:
                                 activation=activation, padding='valid',
                                 kernel_regularizer=l2(l2_reg),
                                 name=f"head_last_conv_{branch_suffix}")(x)
+            x= Flatten(name=f"head_flatten{branch_suffix}")(x)            
             x = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
                                            name=f"head_dense_{j+1}{branch_suffix}")(x)
 
