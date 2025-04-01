@@ -422,7 +422,7 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
-
+        x=inputs
         for i in range(num_intermediate_layers):
             x = tf.keras.layers.Conv1D(filters=branch_units, kernel_size=1,
                         activation=activation, padding='valid',
