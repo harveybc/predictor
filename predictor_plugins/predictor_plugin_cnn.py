@@ -145,7 +145,7 @@ def composite_loss(y_true, y_pred,
     #mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
     huber_loss_val = Huber(delta=1.0)(mag_true, mag_pred)
     #mse_loss_val = huber_loss_val
-    mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
+    #mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
     #mmd_loss_val = 0.0
 
 
@@ -193,7 +193,8 @@ def composite_loss(y_true, y_pred,
         # Calculate final loss term
         #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
     #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
+    #total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
+    total_loss = huber_loss_val
     # Return the final scalar loss value
     return total_loss
 
