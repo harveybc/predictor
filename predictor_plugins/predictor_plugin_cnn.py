@@ -429,6 +429,9 @@ class Plugin:
                         activation=activation, padding='valid',
                         kernel_regularizer=l2(l2_reg),
                         name=f"input_conv_{i+1}")(x)
+                # MaxPooling layer
+            x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"input_maxpool_{i+1}")(x)    
+
   
         # --- Build Multiple Output Heads ---
         outputs_list = []
@@ -443,6 +446,8 @@ class Plugin:
                                 activation=activation, padding='valid',
                                 kernel_regularizer=l2(l2_reg),
                                 name=f"head_conv_{j+1}{branch_suffix}")(x)
+                # MaxPooling layer
+                x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"head_maxpool_{j+1}{branch_suffix}")(x)
             # Remove the time dimension to obtain a vector representation
             #head_dense_output = tf.keras.layers.Flatten(name=f"head_flatten{branch_suffix}")(x)
             #x= Flatten(name=f"head_flatten{branch_suffix}")(x)            
