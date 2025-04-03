@@ -17,6 +17,7 @@ on the predicted return. This implementation is intended for the case when use_r
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
+
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
 from tensorflow.keras.optimizers import AdamW
@@ -38,6 +39,8 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Layer
 #reshape 
 from tensorflow.keras.layers import Reshape
+from tensorflow.keras.layers import Conv1D
+
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -145,7 +148,7 @@ def composite_loss(y_true, y_pred,
     #mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
     huber_loss_val = Huber(delta=1.0)(mag_true, mag_pred)
     #mse_loss_val = huber_loss_val
-    mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
+    #mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
     #mmd_loss_val = 0.0
 
 
@@ -193,7 +196,8 @@ def composite_loss(y_true, y_pred,
         # Calculate final loss term
         #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
     #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
+    #total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
+    total_loss = huber_loss_val
     # Return the final scalar loss value
     return total_loss
 
@@ -423,75 +427,58 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Parallel Feature Processing Branches ---
+        # --- Individual Conv1D Branches per Feature ---
         feature_branch_outputs = []
         for c in range(num_channels):
+            # Extracting a single channel (feature)
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                       name=f"feature_{c+1}_input")(inputs)
-            x = feature_input  # shape: (batch, window_size, 1)
-            for i in range(num_intermediate_layers):
-            # For stacking LSTM layers, use return_sequences=True for all but the last layer.
-                return_seq = True if i < num_intermediate_layers - 1 else False
-                x = Bidirectional(
-                    LSTM(branch_units, return_sequences=return_seq),
-                    name=f"feature_{c+1}_bilstm_{i+1}"
-                )(x)
+                                name=f"feature_{c+1}_input")(inputs)
+
+            # Conv1D layers for individual feature extraction
+            x = Conv1D(filters=branch_units, kernel_size=3, padding='same',
+                    activation=activation, kernel_regularizer=l2(l2_reg),
+                    name=f"feature_{c+1}_conv")(feature_input)
+
             feature_branch_outputs.append(x)
 
-        # --- Merging Feature Branches ONLY ---
-        if len(feature_branch_outputs) == 1:
-             merged = Identity(name="merged_features")(feature_branch_outputs[0])
-        elif len(feature_branch_outputs) > 1:
-             merged = Concatenate(name="merged_features")(feature_branch_outputs)
-        else:
-             raise ValueError("Model must have at least one input feature channel.")
+        # --- Concatenation along Channels ---
+        # Resulting shape: (batch_size, window_size, branch_filters * num_channels)
+        concatenated_features = Concatenate(axis=-1, name="concatenated_features")(feature_branch_outputs)
 
+        # --- Common Conv1D Processing ---
+        x = Conv1D(filters=merged_units, kernel_size=3, padding='same',
+                activation=activation, kernel_regularizer=l2(l2_reg),
+                name="combined_conv")(concatenated_features)
+
+        # Flatten before Dense layer
+        merged = Flatten(name="flatten_layer")(x)
+  
+        # --- Build Multiple Output Heads ---
+        outputs_list = []
+        self.output_names = []
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
 
-        # --- Build Multiple Output Heads ---
-        outputs_list = []
-        self.output_names = []
-
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
-            # --- Head Intermediate Layers replaced with BiLSTM Layers ---
-            # Reshape merged output if necessary for LSTM processing.
-            # If merged has shape (batch, feature_dim), reshape to (batch, 1, feature_dim)
-            # Otherwise, if merged is already sequence-like, you may adjust accordingly.
-            if len(merged.shape) == 2:
-                lstm_input = Reshape((1, merged.shape[-1]), name=f"reshape_for_bilstm{branch_suffix}")(merged)
-            else:
-                lstm_input = merged
-
-            head_output = lstm_input
-            # Add one or more Bidirectional LSTM layers for the head.
-            head_lstm_units = merged_units // 2  # Adjusting units so that output dims align with merged_units
+            # --- Head Intermediate Dense Layers ---
+            head_dense_output = merged
             for j in range(num_head_intermediate_layers):
-            # For the head LSTMs, use return_sequences=True for intermediate layers and False for the final one.
-                return_seq_head = True if j < num_head_intermediate_layers - 1 else False
-                head_output = Bidirectional(
-                    LSTM(head_lstm_units, return_sequences=return_seq_head),
-                    name=f"head_bilstm_{j+1}{branch_suffix}"
-                )(head_output)
+                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
-            # If the last LSTM returns a sequence, flatten it.
-            if len(head_output.shape) > 2:
-                head_dense_output = Flatten(name=f"head_flatten{branch_suffix}")(head_output)
-            else:
-                if len(head_output.shape) > 2:
-                    head_dense_output = Flatten(name=f"head_flatten{branch_suffix}")(head_output)
-                else:
-                    head_dense_output = head_output
-
-            # --- Add BiLSTM Layer and integrate with Dense output ---
+            # --- Add BiLSTM Layer ---
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            # Apply Bidirectional LSTM
+            # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
             )(reshaped_for_lstm)
-            integrated_output = Concatenate(name=f"integrated_output{branch_suffix}")([head_dense_output, lstm_output])
+
+            # --- Bayesian / Bias Layers ---
 
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
@@ -500,20 +487,36 @@ class Plugin:
                 kernel_prior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: prior_fn(dt, sh, bs, tr, nm),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT, name=flipout_layer_name
             )
-            # Use the integrated output for the Bayesian branch
+            # Apply DenseFlipout layer via Lambda WITH output_shape specified
             bayesian_output_branch = Lambda(
                 lambda t: flipout_layer_branch(t),
-                output_shape=lambda s: (s[0], 1),
+                output_shape=lambda s: (s[0], 1), # Explicit output shape
                 name=f"bayesian_output{branch_suffix}"
-            )(integrated_output)
+            )(lstm_output)
 
-            # Use the same integrated output for the deterministic bias branch
+
+            # --- Bayesian / Bias Layers ---
+            KL_WEIGHT = self.kl_weight_var
+            # --- Define Bayesian Layer Components ---
+            flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
+            flipout_layer_branch = DenseFlipout(
+                units=1, activation='linear',
+                kernel_posterior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: posterior_mean_field_custom(dt, sh, bs, tr, nm),
+                kernel_prior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: prior_fn(dt, sh, bs, tr, nm),
+                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT, name=flipout_layer_name
+            )
+            # Apply DenseFlipout layer via Lambda WITH output_shape specified
+            bayesian_output_branch = Lambda(
+                lambda t: flipout_layer_branch(t),
+                output_shape=lambda s: (s[0], 1), # Explicit output shape
+                name=f"bayesian_output{branch_suffix}"
+            )(lstm_output)
+
             bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44,
-                                      name=f"deterministic_bias{branch_suffix}")(integrated_output)
+                                      name=f"deterministic_bias{branch_suffix}")(lstm_output)
 
             # --- Final Head Output ---
             output_name = f"output_horizon_{horizon}"
-            final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
             final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
 
             outputs_list.append(final_branch_output)
