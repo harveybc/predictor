@@ -459,8 +459,8 @@ class Plugin:
         x = MaxPooling1D(pool_size=2, name="combined_maxpool")(x)
 
         # Flatten before Dense layer
-        #merged = Flatten(name="flatten_layer")(x)
-        merged = x
+        merged = Flatten(name="flatten_layer")(x)
+        #merged = x
 
         # --- Build Multiple Output Heads ---
         outputs_list = []
@@ -475,19 +475,8 @@ class Plugin:
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
             for j in range(num_head_intermediate_layers):
-                 #head_dense_output = DeSnse(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                 #                          name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
-                head_dense_output = Conv1D(
-                        filters=merged_units//((j+1)*2), kernel_size=3, padding='same',
-                        activation=activation, 
-                        #kernel_regularizer=l2(l2_reg),
-                        name=f"head_conv1d_{j+1}_{branch_suffix}")(head_dense_output)
-                # MaxPooling layer
-                head_dense_output = MaxPooling1D(pool_size=2, name=f"head_maxpool_{j+1}{branch_suffix}")(head_dense_output)
-            # collapse to 1D
-            head_dense_output =Flatten(name=f"head_flatten{branch_suffix}")(head_dense_output)
-            head_dense_output = Dense(lstm_units, activation=activation,
-                                      name=f"head_dense_final{branch_suffix}")(head_dense_output)
+                head_dense_output = Dense(merged_units//((j+1)*2), activation=activation, kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             reshaped_for_lstm = Reshape((1, lstm_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
