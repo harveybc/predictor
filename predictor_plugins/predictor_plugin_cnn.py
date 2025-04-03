@@ -439,7 +439,7 @@ class Plugin:
             x = feature_input
             for j in range(num_head_intermediate_layers):
                 # Conv1D layers for individual feature extraction
-                x = Conv1D(filters=branch_units, kernel_size=3, padding='same',
+                x = Conv1D(filters=branch_units/((j+1)*2), kernel_size=3, padding='same',
                         activation=activation, kernel_regularizer=l2(l2_reg),
                         name=f"feature_{c+1}_conv_{j+1}")(x)
                 # MaxPooling layer
