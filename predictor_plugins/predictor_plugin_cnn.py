@@ -430,38 +430,21 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Individual Conv1D Branches per Feature ---
-        feature_branch_outputs = []
-        for c in range(num_channels):
-            # Extracting a single channel (feature)
-            feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                                name=f"feature_{c+1}_input")(inputs)
-            x = feature_input
-            for j in range(num_head_intermediate_layers):
-                # Conv1D layers for individual feature extraction
-                x = Conv1D(filters=branch_units//((j+1)*2), kernel_size=3, padding='same',
-                        activation=activation, kernel_regularizer=l2(l2_reg),
-                        name=f"feature_{c+1}_conv_{j+1}")(x)
-                # MaxPooling layer
-                x = MaxPooling1D(pool_size=2, name=f"feature_{c+1}_maxpool_{j+1}")(x)
-
-            feature_branch_outputs.append(x)
-
-        # --- Concatenation along Channels ---
-        # Resulting shape: (batch_size, window_size, branch_filters * num_channels)
-        concatenated_features = Concatenate(axis=-1, name="concatenated_features")(feature_branch_outputs)
-
-        # --- Common Conv1D Processing ---
-        x = Conv1D(filters=merged_units, kernel_size=3, padding='same',
-                activation=activation, kernel_regularizer=l2(l2_reg),
-                name="combined_conv")(concatenated_features)
+        x = Conv1D(filters=merged_units, kernel_size=3, padding='causal',
+                    activation=activation, kernel_regularizer=l2(l2_reg),
+                    name=f"initial_conv")(x)(inputs)
         # MaxPooling layer
-        x = MaxPooling1D(pool_size=2, name="combined_maxpool")(x)
+        x = MaxPooling1D(pool_size=2, name=f"feature_{c+1}_maxpool_{j+1}")(x)
+        for j in range(num_head_intermediate_layers):
+            # Conv1D layers for individual feature extraction
+            x = Conv1D(filters=merged_units//((j+1)*2), kernel_size=3, padding='causal',
+                    activation=activation, kernel_regularizer=l2(l2_reg),
+                    name=f"features_conv_{j+1}")(x)
+            # MaxPooling layer
+            x = MaxPooling1D(pool_size=2, name=f"feature_{c+1}_maxpool_{j+1}")(x)
 
-        # Flatten before Dense layer
-        merged = Flatten(name="flatten_layer")(x)
-        #merged = x
-
+        merged =x
+        
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
@@ -474,18 +457,20 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
-            for j in range(num_head_intermediate_layers):
-                head_dense_output = Dense(merged_units//((j+1)*2), activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
+            head_dense_output = Conv1D(filters=lstm_units, kernel_size=3, padding='causal',
+                    activation=activation, kernel_regularizer=l2(l2_reg),
+                    name=f"head_conv_{branch_suffix}")(head_dense_output)
+            # MaxPooling layer
+            head_dense_output = MaxPooling1D(pool_size=2, name=f"head_{branch_suffix}_maxpool")(head_dense_output)
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            reshaped_for_lstm = Reshape((1, lstm_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            #reshaped_for_lstm = Reshape((1, lstm_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             #reshaped_for_lstm = head_dense_output
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(reshaped_for_lstm)
+            )(head_dense_output)
 
             # --- Bayesian / Bias Layers ---
 
