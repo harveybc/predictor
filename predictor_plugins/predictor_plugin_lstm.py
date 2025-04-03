@@ -426,40 +426,32 @@ class Plugin:
         # Add LSTM units parameter (provide a default)
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
 
-
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Individual LSTM Branches per Feature ---
+        # --- Parallel Feature Processing Branches with TimeDistributed Dense layers ---
         feature_branch_outputs = []
         for c in range(num_channels):
-            # Extract a single channel with shape (batch, window_size, 1)
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                   name=f"feature_{c+1}_input")(inputs)
-            x = feature_input
-            # Process each channel with a stack of LSTM layers (keeping the time dimension)
-            for j in range(num_head_intermediate_layers):
-                lstm_units_feature = branch_units // ((j+1)*2)
-                x = LSTM(units=lstm_units_feature, return_sequences=True, activation=activation,
-                    kernel_regularizer=l2(l2_reg),
-                    name=f"feature_{c+1}_lstm_{j+1}")(x)
-            # Apply Global Max Pooling after processing with LSTM layers
-            x = tf.keras.layers.GlobalMaxPooling1D(name=f"feature_{c+1}_global_max_pool")(x)
+                       name=f"feature_{c+1}_input")(inputs)
+            x = feature_input  # Preserve the time dimension
+            for i in range(num_intermediate_layers):
+                x = TimeDistributed(
+                    Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg)),
+                    name=f"feature_{c+1}_dense_{i+1}"
+                )(x)
             feature_branch_outputs.append(x)
 
-        # Concatenate the sequence outputs from all channels along the feature axis
-        concatenated_features = Concatenate(axis=-1, name="concatenated_features")(feature_branch_outputs)
+        # --- Merge Processed Channels as Multichannel Input for LSTM ---
+        # Concatenate along the last dimension so each time step includes features from all channels
+        merged = Concatenate(axis=-1, name="merged_channels")(feature_branch_outputs)
 
-        # Process the concatenated sequences with a big LSTM to continue processing
-        # 'big_lstm_units' can be set to the merged_units (or any desired value) from the config
-        
-        merged = LSTM(units=merged_units, return_sequences=True, activation=activation,
-                       kernel_regularizer=l2(l2_reg), name="big_lstm")(concatenated_features)
-        merged = tf.keras.layers.GlobalMaxPooling1D(name=f"feature_{c+1}_global_max_pool")(merged)
-        # --- Build Multiple Output Heads ---
-        outputs_list = []
-        self.output_names = []
-        # --- Define Bayesian Layer Components ---
+        # --- LSTM Layer ---
+        merged = LSTM(merged_units, return_sequences=True, name="lstm_layer")(merged)
+
+
+            
+
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
 
@@ -473,7 +465,7 @@ class Plugin:
                 head_dense_output = LSTM(units=lstm_units_feature, return_sequences=True, activation=activation,
                             kernel_regularizer=l2(l2_reg),
                             name=f"head_{j+1}_{branch_suffix}")(head_dense_output)
-                head_dense_output = tf.keras.layers.GlobalMaxPooling1D(name=f"feature_{c+1}_global_max_pool")(head_dense_output)
+                #head_dense_output = tf.keras.layers.GlobalMaxPooling1D(name=f"feature_{c+1}_global_max_pool")(head_dense_output)
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             #reshaped_for_lstm = Reshape((1, lstm_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
