@@ -432,7 +432,7 @@ class Plugin:
 
         x = Conv1D(filters=merged_units, kernel_size=3, padding='causal',
                     activation=activation, kernel_regularizer=l2(l2_reg),
-                    name=f"initial_conv")(x)(inputs)
+                    name=f"initial_conv")(inputs)
         # MaxPooling layer
         x = MaxPooling1D(pool_size=2, name=f"feature_{c+1}_maxpool_{j+1}")(x)
         for j in range(num_head_intermediate_layers):
