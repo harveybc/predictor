@@ -40,6 +40,9 @@ from tensorflow.keras.layers import Layer
 #reshape 
 from tensorflow.keras.layers import Reshape
 from tensorflow.keras.layers import Conv1D
+#MaxPooling1D
+from tensorflow.keras.layers import MaxPooling1D
+from tensorflow.keras.layers import TimeDistributed
 
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
@@ -433,11 +436,14 @@ class Plugin:
             # Extracting a single channel (feature)
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
                                 name=f"feature_{c+1}_input")(inputs)
-
-            # Conv1D layers for individual feature extraction
-            x = Conv1D(filters=branch_units, kernel_size=3, padding='same',
-                    activation=activation, kernel_regularizer=l2(l2_reg),
-                    name=f"feature_{c+1}_conv")(feature_input)
+            x = feature_input
+            for j in range(num_head_intermediate_layers):
+                # Conv1D layers for individual feature extraction
+                x = Conv1D(filters=branch_units, kernel_size=3, padding='same',
+                        activation=activation, kernel_regularizer=l2(l2_reg),
+                        name=f"feature_{c+1}_conv_{j+1}")(x)
+                # MaxPooling layer
+                x = MaxPooling1D(pool_size=2, name=f"feature_{c+1}_maxpool_{j+1}")(x)
 
             feature_branch_outputs.append(x)
 
@@ -449,6 +455,8 @@ class Plugin:
         x = Conv1D(filters=merged_units, kernel_size=3, padding='same',
                 activation=activation, kernel_regularizer=l2(l2_reg),
                 name="combined_conv")(concatenated_features)
+        # MaxPooling layer
+        x = MaxPooling1D(pool_size=2, name="combined_maxpool")(x)
 
         # Flatten before Dense layer
         #merged = Flatten(name="flatten_layer")(x)
@@ -472,7 +480,9 @@ class Plugin:
                 head_dense_output = Conv1D(
                         filters=merged_units, kernel_size=3, padding='same',
                         activation=activation, kernel_regularizer=l2(l2_reg),
-                        name=f"head_conv1d_{j+1}{branch_suffix}")(head_dense_output)
+                        name=f"head_conv1d_{j+1}_{branch_suffix}")(head_dense_output)
+                # MaxPooling layer
+                head_dense_output = MaxPooling1D(pool_size=2, name=f"head_maxpool_{j+1}{branch_suffix}")(head_dense_output)
             # collapse to 1D
             head_dense_output = Conv1D(
                         filters=1, kernel_size=3, padding='same',
