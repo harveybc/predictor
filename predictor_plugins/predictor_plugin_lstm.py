@@ -471,7 +471,7 @@ class Plugin:
                 lstm_units_feature = branch_units // ((j+1)*2)
                 head_dense_output = LSTM(units=lstm_units_feature, return_sequences=True, activation=activation,
                             kernel_regularizer=l2(l2_reg),
-                            name=f"feature_{c+1}_lstm_{j+1}")(head_dense_output)
+                            name=f"head_{j+1}_{branch_suffix}")(head_dense_output)
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             #reshaped_for_lstm = Reshape((1, lstm_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
