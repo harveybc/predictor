@@ -38,6 +38,7 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Layer
 #reshape 
 from tensorflow.keras.layers import Reshape
+from tensorflow.keras.layers import Conv1D
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -423,22 +424,34 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
-        x = inputs
-        for i in range(num_intermediate_layers):
-            x = tf.keras.layers.Conv1D(filters=branch_units, kernel_size=1,
-                                       activation=activation, padding='valid',
-                                       kernel_regularizer=l2(l2_reg),
-                                       name=f"input_conv_{i+1}")(x)
-            # MaxPooling layer
-            x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"input_maxpool_{i+1}")(x)
-        # flatten layer moved outside the loop
-        x = Flatten(name="input_flatten")(x)
+
+        # --- Parallel Feature Processing Branches ---
+        feature_branch_outputs = []
+        for c in range(num_channels):
+            feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
+                                   name=f"feature_{c+1}_input")(inputs)
+            x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
+            for i in range(num_intermediate_layers):
+                x = Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                          name=f"feature_{c+1}_dense_{i+1}")(x)
+            feature_branch_outputs.append(x)
+
+        # --- Merging Feature Branches ONLY ---
+        if len(feature_branch_outputs) == 1:
+             # Use Keras Identity layer for naming and compatibility
+             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
+        elif len(feature_branch_outputs) > 1:
+             # Concatenate is already a Keras layer
+             merged = Concatenate(name="merged_features")(feature_branch_outputs)
+        else:
+             raise ValueError("Model must have at least one input feature channel.")
+        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
 
   
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
-        merged = x
+  
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
@@ -446,17 +459,16 @@ class Plugin:
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
             for j in range(num_head_intermediate_layers):
-                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
-
+                 head_dense_output = Conv1D(
+                     filters= merged_units, kernel_size=1, activation=activation,
+                     kernel_regularizer=l2(l2_reg), name=f"head_dense_{j+1}{branch_suffix}"
+                 )(head_dense_output)
             # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(reshaped_for_lstm)
+            )(head_dense_output)
 
 
             # --- Bayesian / Bias Layers ---
