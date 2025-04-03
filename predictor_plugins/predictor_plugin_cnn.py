@@ -457,6 +457,9 @@ class Plugin:
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
+        # --- Define Bayesian Layer Components ---
+        KL_WEIGHT = self.kl_weight_var
+        DenseFlipout = tfp.layers.DenseFlipout
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
@@ -477,9 +480,6 @@ class Plugin:
             )(reshaped_for_lstm)
 
             # --- Bayesian / Bias Layers ---
-            # --- Define Bayesian Layer Components ---
-            KL_WEIGHT = self.kl_weight_var
-            DenseFlipout = tfp.layers.DenseFlipout
 
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
