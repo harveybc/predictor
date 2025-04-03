@@ -472,40 +472,17 @@ class Plugin:
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
             for j in range(num_head_intermediate_layers):
-                head_dense_output = Dense(merged_units // ((j+1)*2), activation=activation,
-                            kernel_regularizer=l2(l2_reg),
-                            name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
-            # --- BiLSTM Enhancement in the Head ---
-            # Reshape to (batch, 1, lstm_units) to allow sequential processing in the head
+                head_dense_output = Dense(merged_units//((j+1)*2), activation=activation, kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
+            # --- Add BiLSTM Layer ---
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             reshaped_for_lstm = Reshape((1, lstm_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            #reshaped_for_lstm = head_dense_output
+            # Apply Bidirectional LSTM
+            # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
-                                LSTM(lstm_units, return_sequences=False),
-                                name=f"bidir_lstm{branch_suffix}"
-                            )(reshaped_for_lstm)
-
-            # --- Bayesian / Bias Layers ---
-            flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
-            flipout_layer_branch = DenseFlipout(
-            units=1, activation='linear',
-            kernel_posterior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: posterior_mean_field_custom(dt, sh, bs, tr, nm),
-            kernel_prior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: prior_fn(dt, sh, bs, tr, nm),
-            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-            name=flipout_layer_name
-            )
-            bayesian_output_branch = Lambda(
-            lambda t: flipout_layer_branch(t),
-            output_shape=lambda s: (s[0], 1),
-            name=f"bayesian_output{branch_suffix}"
-            )(lstm_output)
-
-            bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44,
-                        name=f"deterministic_bias{branch_suffix}")(lstm_output)
-
-            # --- Final Head Output ---
-            output_name = f"output_horizon_{horizon}"
-            final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
-            outputs_list.append(final_branch_output)
-            self.output_names.append(output_name)
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+            )(reshaped_for_lstm)
 
             # --- Bayesian / Bias Layers ---
 
@@ -547,6 +524,7 @@ class Plugin:
             # --- Final Head Output ---
             output_name = f"output_horizon_{horizon}"
             final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
+
 
             outputs_list.append(final_branch_output)
             self.output_names.append(output_name) # Store the name
