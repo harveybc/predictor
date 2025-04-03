@@ -40,6 +40,9 @@ from tensorflow.keras.layers import Layer
 #reshape 
 from tensorflow.keras.layers import Reshape
 from tensorflow.keras.layers import Conv1D
+#MaxPooling1D
+from tensorflow.keras.layers import MaxPooling1D
+from tensorflow.keras.layers import TimeDistributed
 
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
@@ -427,32 +430,35 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Individual Conv1D Branches per Feature ---
+        # --- Individual LSTM Branches per Feature ---
         feature_branch_outputs = []
         for c in range(num_channels):
-            # Extracting a single channel (feature)
+            # Extract a single channel with shape (batch, window_size, 1)
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                                name=f"feature_{c+1}_input")(inputs)
-
-            # Conv1D layers for individual feature extraction
-            x = Conv1D(filters=branch_units, kernel_size=3, padding='same',
-                    activation=activation, kernel_regularizer=l2(l2_reg),
-                    name=f"feature_{c+1}_conv")(feature_input)
-
+                       name=f"feature_{c+1}_input")(inputs)
+            x = feature_input
+            # Stack LSTM layers to process the sequential information for this feature
+            for j in range(num_head_intermediate_layers):
+                lstm_units_feature = branch_units // ((j+1)*2)
+                # For stacked LSTMs, always return sequences
+                x = LSTM(units=lstm_units_feature, return_sequences=True, activation=activation,
+                    kernel_regularizer=l2(l2_reg),
+                    name=f"feature_{c+1}_lstm_{j+1}")(x)
+            # Use Global Max Pooling to extract the most salient features from the sequence
+            x = tf.keras.layers.GlobalMaxPooling1D(name=f"feature_{c+1}_global_max_pool")(x)
+            # Expand dims to reintroduce a time axis for potential common processing later
+            x = tf.keras.layers.Reshape((1, -1), name=f"feature_{c+1}_reshape")(x)
             feature_branch_outputs.append(x)
 
-        # --- Concatenation along Channels ---
-        # Resulting shape: (batch_size, window_size, branch_filters * num_channels)
+        # --- Concatenation across Features ---
+        # Concatenate along the feature axis (last axis) to combine information from all channels
         concatenated_features = Concatenate(axis=-1, name="concatenated_features")(feature_branch_outputs)
+        # Resulting shape: (batch_size, 1, combined_feature_dim)
 
-        # --- Common Conv1D Processing ---
-        x = Conv1D(filters=merged_units, kernel_size=3, padding='same',
-                activation=activation, kernel_regularizer=l2(l2_reg),
-                name="combined_conv")(concatenated_features)
+        # --- Mix and Flatten ---
+        # A Dense layer can mix the features before branching into outputs; here we flatten the result.
+        merged = Flatten(name="flatten_layer")(concatenated_features)
 
-        # Flatten before Dense layer
-        merged = Flatten(name="flatten_layer")(x)
-  
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
@@ -466,17 +472,40 @@ class Plugin:
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
             for j in range(num_head_intermediate_layers):
-                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
-
-            # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
-            # Apply Bidirectional LSTM
-            # return_sequences=False gives output shape (batch, 2 * lstm_units)
+                head_dense_output = Dense(merged_units // ((j+1)*2), activation=activation,
+                            kernel_regularizer=l2(l2_reg),
+                            name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
+            # --- BiLSTM Enhancement in the Head ---
+            # Reshape to (batch, 1, lstm_units) to allow sequential processing in the head
+            reshaped_for_lstm = Reshape((1, lstm_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(reshaped_for_lstm)
+                                LSTM(lstm_units, return_sequences=False),
+                                name=f"bidir_lstm{branch_suffix}"
+                            )(reshaped_for_lstm)
+
+            # --- Bayesian / Bias Layers ---
+            flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
+            flipout_layer_branch = DenseFlipout(
+            units=1, activation='linear',
+            kernel_posterior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: posterior_mean_field_custom(dt, sh, bs, tr, nm),
+            kernel_prior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: prior_fn(dt, sh, bs, tr, nm),
+            kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
+            name=flipout_layer_name
+            )
+            bayesian_output_branch = Lambda(
+            lambda t: flipout_layer_branch(t),
+            output_shape=lambda s: (s[0], 1),
+            name=f"bayesian_output{branch_suffix}"
+            )(lstm_output)
+
+            bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44,
+                        name=f"deterministic_bias{branch_suffix}")(lstm_output)
+
+            # --- Final Head Output ---
+            output_name = f"output_horizon_{horizon}"
+            final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
+            outputs_list.append(final_branch_output)
+            self.output_names.append(output_name)
 
             # --- Bayesian / Bias Layers ---
 
