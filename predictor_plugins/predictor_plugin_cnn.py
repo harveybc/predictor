@@ -423,16 +423,16 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
-        x=inputs
+        x = inputs
         for i in range(num_intermediate_layers):
             x = tf.keras.layers.Conv1D(filters=branch_units, kernel_size=1,
-                        activation=activation, padding='valid',
-                        kernel_regularizer=l2(l2_reg),
-                        name=f"input_conv_{i+1}")(x)
-                # MaxPooling layer
-            x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"input_maxpool_{i+1}")(x)    
-            # flatten layer
-            x = Flatten(name=f"input_flatten")(x)
+                                       activation=activation, padding='valid',
+                                       kernel_regularizer=l2(l2_reg),
+                                       name=f"input_conv_{i+1}")(x)
+            # MaxPooling layer
+            x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"input_maxpool_{i+1}")(x)
+        # flatten layer moved outside the loop
+        x = Flatten(name="input_flatten")(x)
 
   
         # --- Build Multiple Output Heads ---
