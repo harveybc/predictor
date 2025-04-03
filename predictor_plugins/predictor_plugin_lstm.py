@@ -432,32 +432,28 @@ class Plugin:
 
         # --- Individual LSTM Branches per Feature ---
         feature_branch_outputs = []
+        feature_branch_outputs = []
         for c in range(num_channels):
             # Extract a single channel with shape (batch, window_size, 1)
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                       name=f"feature_{c+1}_input")(inputs)
+                   name=f"feature_{c+1}_input")(inputs)
             x = feature_input
-            # Stack LSTM layers to process the sequential information for this feature
+            # Process each channel with a stack of LSTM layers (keeping the time dimension)
             for j in range(num_head_intermediate_layers):
                 lstm_units_feature = branch_units // ((j+1)*2)
-                # For stacked LSTMs, always return sequences
                 x = LSTM(units=lstm_units_feature, return_sequences=True, activation=activation,
                     kernel_regularizer=l2(l2_reg),
                     name=f"feature_{c+1}_lstm_{j+1}")(x)
-            # Use Global Max Pooling to extract the most salient features from the sequence
-            x = tf.keras.layers.GlobalMaxPooling1D(name=f"feature_{c+1}_global_max_pool")(x)
-            # Expand dims to reintroduce a time axis for potential common processing later
-            x = tf.keras.layers.Reshape((1, -1), name=f"feature_{c+1}_reshape")(x)
             feature_branch_outputs.append(x)
 
-        # --- Concatenation across Features ---
-        # Concatenate along the feature axis (last axis) to combine information from all channels
+        # Concatenate the sequence outputs from all channels along the feature axis
         concatenated_features = Concatenate(axis=-1, name="concatenated_features")(feature_branch_outputs)
-        # Resulting shape: (batch_size, 1, combined_feature_dim)
 
-        # --- Mix and Flatten ---
-        # A Dense layer can mix the features before branching into outputs; here we flatten the result.
-        merged = Flatten(name="flatten_layer")(concatenated_features)
+        # Process the concatenated sequences with a big LSTM to continue processing
+        # 'big_lstm_units' can be set to the merged_units (or any desired value) from the config
+        
+        merged = LSTM(units=merged_units, return_sequences=False, activation=activation,
+                       kernel_regularizer=l2(l2_reg), name="big_lstm")(concatenated_features)
 
         # --- Build Multiple Output Heads ---
         outputs_list = []
@@ -472,17 +468,19 @@ class Plugin:
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
             for j in range(num_head_intermediate_layers):
-                head_dense_output = Dense(merged_units//((j+1)*2), activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
+                lstm_units_feature = branch_units // ((j+1)*2)
+                head_dense_output = LSTM(units=lstm_units_feature, return_sequences=True, activation=activation,
+                            kernel_regularizer=l2(l2_reg),
+                            name=f"feature_{c+1}_lstm_{j+1}")(head_dense_output)
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            reshaped_for_lstm = Reshape((1, lstm_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            #reshaped_for_lstm = Reshape((1, lstm_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             #reshaped_for_lstm = head_dense_output
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(reshaped_for_lstm)
+            )(head_dense_output)
 
             # --- Bayesian / Bias Layers ---
 
