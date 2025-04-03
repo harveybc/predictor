@@ -470,8 +470,16 @@ class Plugin:
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+                LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm{branch_suffix}"
             )(reshaped_for_lstm)
+            # Aplicar Global Average Pooling para reducir la dimensión temporal
+            lstm_output = GlobalAveragePooling1D(
+                name='global_avg_pooling'                       # Nombre de la capa
+            )(lstm_output)
+            lstm_output = Dense(lstm_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_{j+1}{branch_suffix}")(lstm_output)
+
+
             #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"

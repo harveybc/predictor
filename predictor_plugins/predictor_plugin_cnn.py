@@ -434,7 +434,7 @@ class Plugin:
                     activation=activation, kernel_regularizer=l2(l2_reg),
                     name=f"initial_conv")(inputs)
         # MaxPooling layer
-        x = MaxPooling1D(pool_size=2, name=f"initial_maxpool_{j+1}")(x)
+        x = MaxPooling1D(pool_size=2, name=f"initial_maxpool")(x)
         for j in range(num_head_intermediate_layers):
             # Conv1D layers for individual feature extraction
             x = Conv1D(filters=merged_units//((j+1)*2), kernel_size=3, padding='causal',
