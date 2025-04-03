@@ -425,33 +425,35 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Parallel Feature Processing Branches ---
+        # --- Individual Conv1D Branches per Feature ---
         feature_branch_outputs = []
         for c in range(num_channels):
+            # Extracting a single channel (feature)
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                                   name=f"feature_{c+1}_input")(inputs)
-            x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
-            for i in range(num_intermediate_layers):
-                x = Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                          name=f"feature_{c+1}_dense_{i+1}")(x)
+                                name=f"feature_{c+1}_input")(inputs)
+
+            # Conv1D layers for individual feature extraction
+            x = Conv1D(filters=branch_units, kernel_size=3, padding='same',
+                    activation=activation, kernel_regularizer=l2(l2_reg),
+                    name=f"feature_{c+1}_conv")(feature_input)
+
             feature_branch_outputs.append(x)
 
-        # --- Merging Feature Branches ONLY ---
-        if len(feature_branch_outputs) == 1:
-             # Use Keras Identity layer for naming and compatibility
-             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
-        elif len(feature_branch_outputs) > 1:
-             # Concatenate is already a Keras layer
-             merged = Concatenate(name="merged_features")(feature_branch_outputs)
-        else:
-             raise ValueError("Model must have at least one input feature channel.")
-        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
+        # --- Concatenation along Channels ---
+        # Resulting shape: (batch_size, window_size, branch_filters * num_channels)
+        concatenated_features = Concatenate(axis=-1, name="concatenated_features")(feature_branch_outputs)
 
+        # --- Common Conv1D Processing ---
+        x = Conv1D(filters=merged_units, kernel_size=3, padding='same',
+                activation=activation, kernel_regularizer=l2(l2_reg),
+                name="combined_conv")(concatenated_features)
+
+        # Flatten before Dense layer
+        merged = Flatten(name="flatten_layer")(x)
   
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
-  
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
@@ -459,16 +461,32 @@ class Plugin:
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
             for j in range(num_head_intermediate_layers):
-                 head_dense_output = Conv1D(
-                     filters= merged_units, kernel_size=1, activation=activation,
-                     kernel_regularizer=l2(l2_reg), name=f"head_dense_{j+1}{branch_suffix}"
-                 )(head_dense_output)
+                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
+
             # --- Add BiLSTM Layer ---
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
+            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(head_dense_output)
+            )(reshaped_for_lstm)
+
+            # --- Bayesian / Bias Layers ---
+            flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
+            flipout_layer_branch = DenseFlipout(
+                units=1, activation='linear',
+                kernel_posterior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: posterior_mean_field_custom(dt, sh, bs, tr, nm),
+                kernel_prior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: prior_fn(dt, sh, bs, tr, nm),
+                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT, name=flipout_layer_name
+            )
+            # Apply DenseFlipout layer via Lambda WITH output_shape specified
+            bayesian_output_branch = Lambda(
+                lambda t: flipout_layer_branch(t),
+                output_shape=lambda s: (s[0], 1), # Explicit output shape
+                name=f"bayesian_output{branch_suffix}"
+            )(lstm_output)
 
 
             # --- Bayesian / Bias Layers ---
