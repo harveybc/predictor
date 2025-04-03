@@ -452,7 +452,7 @@ class Plugin:
         # Process the concatenated sequences with a big LSTM to continue processing
         # 'big_lstm_units' can be set to the merged_units (or any desired value) from the config
         
-        merged = LSTM(units=merged_units, return_sequences=False, activation=activation,
+        merged = LSTM(units=merged_units, return_sequences=True, activation=activation,
                        kernel_regularizer=l2(l2_reg), name="big_lstm")(concatenated_features)
 
         # --- Build Multiple Output Heads ---
