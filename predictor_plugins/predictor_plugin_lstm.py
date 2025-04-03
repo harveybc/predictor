@@ -432,7 +432,6 @@ class Plugin:
 
         # --- Individual LSTM Branches per Feature ---
         feature_branch_outputs = []
-        feature_branch_outputs = []
         for c in range(num_channels):
             # Extract a single channel with shape (batch, window_size, 1)
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
@@ -444,9 +443,8 @@ class Plugin:
                 x = LSTM(units=lstm_units_feature, return_sequences=True, activation=activation,
                     kernel_regularizer=l2(l2_reg),
                     name=f"feature_{c+1}_lstm_{j+1}")(x)
-                # globalmaxpooling
-                # Use Global Max Pooling to extract the most salient features from the sequence
-                x = tf.keras.layers.GlobalMaxPooling1D(name=f"feature_{c+1}_global_max_pool")(x)
+            # Apply Global Max Pooling after processing with LSTM layers
+            x = tf.keras.layers.GlobalMaxPooling1D(name=f"feature_{c+1}_global_max_pool")(x)
             feature_branch_outputs.append(x)
 
         # Concatenate the sequence outputs from all channels along the feature axis
