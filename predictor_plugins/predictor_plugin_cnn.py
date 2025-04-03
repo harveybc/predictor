@@ -17,8 +17,7 @@ on the predicted return. This implementation is intended for the case when use_r
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-#tfp.layers.DenseFlipout
-from tensorflow_probability  import DenseFlipout
+
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
 from tensorflow.keras.optimizers import AdamW
@@ -480,6 +479,8 @@ class Plugin:
             # --- Bayesian / Bias Layers ---
             # --- Define Bayesian Layer Components ---
             KL_WEIGHT = self.kl_weight_var
+            tfp.layers.DenseFlipout
+
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
                 units=1, activation='linear',
