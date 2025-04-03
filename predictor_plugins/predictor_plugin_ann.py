@@ -469,10 +469,10 @@ class Plugin:
             reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
-            #lstm_output = Bidirectional(
-            #    LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            #)(reshaped_for_lstm)
-            lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
+            lstm_output = Bidirectional(
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+            )(reshaped_for_lstm)
+            #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
