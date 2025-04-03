@@ -431,36 +431,33 @@ class Plugin:
                         name=f"input_conv_{i+1}")(x)
                 # MaxPooling layer
             x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"input_maxpool_{i+1}")(x)    
+            # flatten layer
+            x = Flatten(name=f"input_flatten")(x)
 
   
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
-        head_input = x
+        merged = x
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
-            x = head_input
+
+            # --- Head Intermediate Dense Layers ---
+            head_dense_output = merged
             for j in range(num_head_intermediate_layers):
-                x = tf.keras.layers.Conv1D(filters=merged_units, kernel_size=1,
-                                activation=activation, padding='valid',
-                                kernel_regularizer=l2(l2_reg),
-                                name=f"head_conv_{j+1}{branch_suffix}")(x)
-                # MaxPooling layer
-                x = tf.keras.layers.MaxPooling1D(pool_size=2, name=f"head_maxpool_{j+1}{branch_suffix}")(x)
-            # Remove the time dimension to obtain a vector representation
-            #head_dense_output = tf.keras.layers.Flatten(name=f"head_flatten{branch_suffix}")(x)
-            #x= Flatten(name=f"head_flatten{branch_suffix}")(x)            
-            #x = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-            #                               name=f"head_dense_last_{branch_suffix}")(x)
+                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            #x = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(x)
-            # --- Add BiLSTM Layer ---
+            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            # Apply Bidirectional LSTM
+            # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(x)
+            )(reshaped_for_lstm)
+
 
             # --- Bayesian / Bias Layers ---
             # --- Define Bayesian Layer Components ---
