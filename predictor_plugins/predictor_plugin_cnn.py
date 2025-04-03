@@ -39,6 +39,8 @@ from tensorflow.keras.layers import Layer
 #reshape 
 from tensorflow.keras.layers import Reshape
 from tensorflow.keras.layers import Conv1D
+# denseflipout
+from tensorflow.keras.layers import DenseFlipout
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -474,6 +476,8 @@ class Plugin:
             )(reshaped_for_lstm)
 
             # --- Bayesian / Bias Layers ---
+            # --- Define Bayesian Layer Components ---
+            KL_WEIGHT = self.kl_weight_var
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
                 units=1, activation='linear',
