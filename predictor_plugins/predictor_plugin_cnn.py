@@ -479,7 +479,7 @@ class Plugin:
             # --- Bayesian / Bias Layers ---
             # --- Define Bayesian Layer Components ---
             KL_WEIGHT = self.kl_weight_var
-            tfp.layers.DenseFlipout
+            DenseFlipout = tfp.layers.DenseFlipout
 
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
