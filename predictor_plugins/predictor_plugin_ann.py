@@ -37,6 +37,7 @@ from tensorflow.keras.layers import Identity
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Layer
 #reshape 
+from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
