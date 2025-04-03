@@ -449,11 +449,13 @@ class Plugin:
         # --- LSTM Layer ---
         merged = LSTM(merged_units, return_sequences=True, name="lstm_layer")(merged)
 
-
-            
-
+# --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
+
+        # --- Build Multiple Output Heads ---
+        outputs_list = []
+        self.output_names = []
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
