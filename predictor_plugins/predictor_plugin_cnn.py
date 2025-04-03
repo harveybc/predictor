@@ -18,7 +18,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 #tfp.layers.DenseFlipout
-from tensorflow_probability.layers import DenseFlipout
+from tensorflow_probability.python.layers import DenseFlipout
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
 from tensorflow.keras.optimizers import AdamW
