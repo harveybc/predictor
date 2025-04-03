@@ -478,7 +478,7 @@ class Plugin:
                  #head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
                  #                          name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
                 head_dense_output = Conv1D(
-                        filters=merged_units, kernel_size=3, padding='same',
+                        filters=merged_units/((j+1)*2), kernel_size=3, padding='same',
                         activation=activation, 
                         #kernel_regularizer=l2(l2_reg),
                         name=f"head_conv1d_{j+1}_{branch_suffix}")(head_dense_output)
