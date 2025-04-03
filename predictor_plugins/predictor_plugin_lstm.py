@@ -444,6 +444,9 @@ class Plugin:
                 x = LSTM(units=lstm_units_feature, return_sequences=True, activation=activation,
                     kernel_regularizer=l2(l2_reg),
                     name=f"feature_{c+1}_lstm_{j+1}")(x)
+                # globalmaxpooling
+                # Use Global Max Pooling to extract the most salient features from the sequence
+                x = tf.keras.layers.GlobalMaxPooling1D(name=f"feature_{c+1}_global_max_pool")(x)
             feature_branch_outputs.append(x)
 
         # Concatenate the sequence outputs from all channels along the feature axis
@@ -454,7 +457,7 @@ class Plugin:
         
         merged = LSTM(units=merged_units, return_sequences=True, activation=activation,
                        kernel_regularizer=l2(l2_reg), name="big_lstm")(concatenated_features)
-
+        merged = tf.keras.layers.GlobalMaxPooling1D(name=f"feature_{c+1}_global_max_pool")(merged)
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
@@ -472,6 +475,7 @@ class Plugin:
                 head_dense_output = LSTM(units=lstm_units_feature, return_sequences=True, activation=activation,
                             kernel_regularizer=l2(l2_reg),
                             name=f"head_{j+1}_{branch_suffix}")(head_dense_output)
+                head_dense_output = tf.keras.layers.GlobalMaxPooling1D(name=f"feature_{c+1}_global_max_pool")(head_dense_output)
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             #reshaped_for_lstm = Reshape((1, lstm_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
