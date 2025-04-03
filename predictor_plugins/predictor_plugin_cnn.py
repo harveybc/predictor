@@ -40,8 +40,7 @@ from tensorflow.keras.layers import Layer
 #reshape 
 from tensorflow.keras.layers import Reshape
 from tensorflow.keras.layers import Conv1D
-# denseflipout
-from tensorflow.keras.layers import DenseFlipout
+
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
