@@ -428,22 +428,36 @@ class Plugin:
 
 
         # --- Input Layer ---
-        inputs = Input(shape=(window_size, num_channels), name="input_layer")
+        inputs = Input(shape=(144, 11), name="input_layer")
 
-        x = Conv1D(filters=merged_units, kernel_size=3, padding='causal',
-                    activation=activation, 
-                    name=f"initial_conv")(inputs)
-        # MaxPooling layer
-        x = MaxPooling1D(pool_size=2, name=f"initial_maxpool")(x)
-        for j in range(num_head_intermediate_layers):
-            # Conv1D layers for individual feature extraction
-            x = Conv1D(filters=merged_units//((j+1)*2), kernel_size=3, padding='causal',
-                    activation=activation, 
-                    name=f"features_conv_{j+1}")(x)
-            # MaxPooling layer
-            x = MaxPooling1D(pool_size=2, name=f"feature_maxpool_{j+1}")(x)
+        # --- Process Each Channel While Preserving the Time Dimension ---
+        feature_branch_outputs = []
+        for c in range(11):
+            # Extract the c-th channel: shape (batch, 144, 1)
+            feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
+                   name=f"feature_{c+1}_input")(inputs)
+            x = feature_input
+            # Apply Dense layers in a time-distributed manner to keep the (batch, steps, features) format
+            for i in range(num_intermediate_layers):
+                x = TimeDistributed(
+                    Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg)),
+                    name=f"feature_{c+1}_dense_{i+1}"
+                )(x)
+            feature_branch_outputs.append(x)
+        # Concatenate the processed channels along the features axis.
+        # Resulting shape: (batch, 144, branch_units * 11)
+        merged = Concatenate(axis=-1, name="feature_merged")(feature_branch_outputs)       
 
-        merged =x
+        # Now, the merged tensor has the required 3D shape for Conv1D: (128, 144, branch_units * 11)
+        merged = Conv1D(filters=merged_units, kernel_size=3, padding='causal',
+            activation=activation, 
+            name=f"features_conv_merger")(merged)
+        merged = MaxPooling1D(pool_size=2, name=f"head_{branch_suffix}_maxpool")(merged)
+        
+
+    
+        
+        #mer0ged =x
         
         # --- Build Multiple Output Heads ---
         outputs_list = []
@@ -457,7 +471,7 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
-            head_dense_output = Conv1D(filters=lstm_units, kernel_size=3, padding='causal',
+            head_dense_output = Conv1D(filters=branch_units/((2*i)+1), kernel_size=3, padding='causal',
                     activation=activation, 
                     name=f"head_conv_{branch_suffix}")(head_dense_output)
             # MaxPooling layer
