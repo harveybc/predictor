@@ -428,12 +428,12 @@ class Plugin:
 
 
         # --- Input Layer ---
-        inputs = Input(shape=(144, 11), name="input_layer")
+        inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
         # --- Process Each Channel While Preserving the Time Dimension ---
         feature_branch_outputs = []
         for c in range(11):
-            # Extract the c-th channel: shape (batch, 144, 1)
+            # Extract the c-th channel: shape (i.e batch, 144, 1)
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
                    name=f"feature_{c+1}_input")(inputs)
             x = feature_input
@@ -533,7 +533,7 @@ class Plugin:
             # --- End of Head ---
 
         # --- Model Definition ---
-        self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
+        self.model = Model(inputs=inputs, outputs=outputs_list, name=f"Conv1DPredictor_{len(predicted_horizons)}H")
 
         # --- Compilation (Using GLOBAL composite_loss) ---
         optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
