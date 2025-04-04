@@ -430,18 +430,11 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        x = Conv1D(filters=merged_units, kernel_size=3, padding='causal',
+        x = Conv1D(filters=merged_units, kernel_size=3, padding='same',
                     activation=activation, 
                     name=f"initial_conv")(inputs)
         # MaxPooling layer
         x = MaxPooling1D(pool_size=2, name=f"initial_maxpool")(x)
-        for j in range(num_head_intermediate_layers):
-            # Conv1D layers for individual feature extraction
-            x = Conv1D(filters=merged_units//((j*2)+1), kernel_size=3, padding='causal',
-                    activation=activation, 
-                    name=f"features_conv_{j+1}")(x)
-            # MaxPooling layer
-            x = MaxPooling1D(pool_size=2, name=f"feature_maxpool_{j+1}")(x)
         merged = x
       
         # --- Build Multiple Output Heads ---
@@ -457,17 +450,18 @@ class Plugin:
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
             for j in range(num_head_intermediate_layers):
-                head_dense_output = x = Conv1D(filters=merged_units//((j+1)*2), kernel_size=3, padding='causal',
+                head_dense_output = Conv1D(filters=merged_units, kernel_size=3, padding='same',
                     activation=activation, name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
                 head_dense_output = MaxPooling1D(pool_size=2, name=f"head_maxpool_{j+1}{branch_suffix}")(head_dense_output)
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            #reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            head_dense_output = Flatten(name=f"flatten_dense{branch_suffix}")(head_dense_output)
+            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                     LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-                )(head_dense_output)
+                )(reshaped_for_lstm)
             #)(reshaped_for_lstm)
             # last dense    
             # Apply Dense layer to LSTM output
