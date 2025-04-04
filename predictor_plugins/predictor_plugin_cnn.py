@@ -435,7 +435,7 @@ class Plugin:
             # Conv1D layers for individual feature extraction
             x = Conv1D(filters=merged_units//((j*2)+1), kernel_size=3, padding='causal',
                     activation=activation, kernel_regularizer=l2(l2_reg),
-                    name=f"features_conv_{j+1}")()
+                    name=f"features_conv_{j+1}")(x)
             # MaxPooling layer
             x = MaxPooling1D(pool_size=2, name=f"feature_maxpool_{j+1}")(x)
         merged = Flatten(name="merge_flatten")(x)
