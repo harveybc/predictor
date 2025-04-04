@@ -430,8 +430,6 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # MaxPooling layer
-        x = MaxPooling1D(pool_size=2, name=f"initial_maxpool")(x)
         for j in range(num_head_intermediate_layers):
             # Conv1D layers for individual feature extraction
             x = Conv1D(filters=merged_units//((j*2)+1), kernel_size=3, padding='causal',
