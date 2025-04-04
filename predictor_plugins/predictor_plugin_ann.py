@@ -471,7 +471,7 @@ class Plugin:
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm{branch_suffix}"
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
             )(reshaped_for_lstm)
           
 
