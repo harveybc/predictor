@@ -467,7 +467,7 @@ class Plugin:
                 head_dense_output = Conv1D(filters=merged_units//((j*2)+1), kernel_size=3, padding='causal',
                             activation=activation, 
                             name=f"head_conv_{j+1}{branch_suffix}")(head_dense_output)
-                head_dense_output = MaxPooling1D(pool_size=2, name=f"head_maxpool_{j+1}{branch_suffix}")(head_dense_output)
+                head_dense_output = MaxPooling1D(pool_size=4, name=f"head_maxpool_{j+1}{branch_suffix}")(head_dense_output)
             head_dense_output = Flatten(name=f"flatten_head{branch_suffix}")(head_dense_output)
             head_dense_output = Dense(merged_units, activation=activation, 
                                         kernel_regularizer=l2(l2_reg),
