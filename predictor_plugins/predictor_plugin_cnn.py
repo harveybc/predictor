@@ -456,6 +456,8 @@ class Plugin:
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             head_dense_output = Flatten(name=f"flatten_dense{branch_suffix}")(head_dense_output)
+            head_dense_output = Dense(merged_units, activation=activation, name=f"head_dense_flatten{branch_suffix}")(head_dense_output)
+
             reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
