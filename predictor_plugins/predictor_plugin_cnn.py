@@ -450,16 +450,8 @@ class Plugin:
         # Resulting shape: (batch, 144, branch_units * 11)
         merged = Concatenate(axis=-1, name="feature_merged")(feature_branch_outputs)       
 
-        # Now, the merged tensor has the required 3D shape for Conv1D: (128, 144, branch_units * 11)
-        merged = Conv1D(filters=merged_units, kernel_size=3, padding='causal',
-            activation=activation, 
-            name=f"features_conv_merger")(merged)
-        merged = MaxPooling1D(pool_size=2, name=f"features_merger_maxpool")(merged)
-        
 
-    
-        
-        #mer0ged =x
+
         
         # --- Build Multiple Output Heads ---
         outputs_list = []
