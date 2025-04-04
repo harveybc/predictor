@@ -452,7 +452,7 @@ class Plugin:
         merged = Conv1D(filters=merged_units, kernel_size=3, padding='causal',
             activation=activation, 
             name=f"features_conv_merger")(merged)
-        merged = MaxPooling1D(pool_size=2, name=f"head_{branch_suffix}_maxpool")(merged)
+        merged = MaxPooling1D(pool_size=2, name=f"features_merger_maxpool")(merged)
         
 
     
