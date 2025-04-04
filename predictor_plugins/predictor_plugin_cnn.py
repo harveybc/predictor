@@ -471,7 +471,7 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
-            head_dense_output = Conv1D(filters=branch_units/((2*i)+1), kernel_size=3, padding='causal',
+            head_dense_output = Conv1D(filters=branch_units//((2*i)+1), kernel_size=3, padding='causal',
                     activation=activation, 
                     name=f"head_conv_{branch_suffix}")(head_dense_output)
             # MaxPooling layer
