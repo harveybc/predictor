@@ -473,12 +473,7 @@ class Plugin:
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm{branch_suffix}"
             )(reshaped_for_lstm)
-            # Aplicar Global Average Pooling para reducir la dimensión temporal
-            lstm_output = GlobalAveragePooling1D(
-                                name=f"global_avg_pooling_{branch_suffix}"     
-                            )(lstm_output)
-            lstm_output = Dense(lstm_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_out_{branch_suffix}")(lstm_output)
+          
 
 
             #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
