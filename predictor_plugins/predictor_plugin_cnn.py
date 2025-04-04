@@ -430,9 +430,6 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        x = Conv1D(filters=merged_units, kernel_size=3, padding='causal',
-                    activation=activation, kernel_regularizer=l2(l2_reg),
-                    name=f"initial_conv")(inputs)
         # MaxPooling layer
         x = MaxPooling1D(pool_size=2, name=f"initial_maxpool")(x)
         for j in range(num_head_intermediate_layers):
@@ -457,18 +454,11 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
-            for j in range(num_head_intermediate_layers):
-                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
-
-            # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(reshaped_for_lstm)
+            )(head_dense_output)
           
             
             # --- Bayesian / Bias Layers ---
