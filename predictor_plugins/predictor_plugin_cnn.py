@@ -471,10 +471,10 @@ class Plugin:
             head_dense_output = Flatten(name=f"flatten_head{branch_suffix}")(head_dense_output)
             head_dense_output = Dense(merged_units, activation=activation, 
                                         kernel_regularizer=l2(l2_reg),
-                                        name=f"head_dense{branch_suffix}")(head_dense_output)
+                                        name=f"head_dense_1_{branch_suffix}")(head_dense_output)
             head_dense_output = Dense(merged_units, activation=activation, 
                                         kernel_regularizer=l2(l2_reg),
-                                        name=f"head_dense{branch_suffix}")(head_dense_output)
+                                        name=f"head_dense_2_{branch_suffix}")(head_dense_output)
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
