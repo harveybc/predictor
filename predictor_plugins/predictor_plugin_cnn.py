@@ -469,7 +469,7 @@ class Plugin:
                 head_dense_output = Conv1D(filters=merged_units//((j*2)+1), kernel_size=3, padding='causal',
                                         activation=activation, 
                                         name=f"head_conv_{j+1}{branch_suffix}")(head_dense_output)
-                head_dense_output = MaxPooling1D(pool_size=2, name=f"initial_maxpool")(head_dense_output)
+                head_dense_output = MaxPooling1D(pool_size=2, name=f"head_maxpool_{j+1}{branch_suffix}")(head_dense_output)
             head_dense_output = Flatten(name=f"flatten_head{branch_suffix}")(head_dense_output)
             head_dense_output = Dense(merged_units, activation=activation, 
                                         kernel_regularizer=l2(l2_reg),
@@ -531,7 +531,7 @@ class Plugin:
             # --- End of Head ---
 
         # --- Model Definition ---
-        self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
+        self.model = Model(inputs=inputs, outputs=outputs_list, name=f"Conv1DPredictor{len(predicted_horizons)}H")
 
         # --- Compilation (Using GLOBAL composite_loss) ---
         optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
