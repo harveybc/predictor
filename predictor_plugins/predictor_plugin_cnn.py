@@ -475,7 +475,7 @@ class Plugin:
             lstm_output = Dense(
                 units=lstm_units,                             # Número de unidades en la capa densa
                 activation='relu',                             # Activación ReLU
-                name='dense_hidden'                            # Nombre de la capa
+                name='dense_hidden_{branch_suffix}'                            # Nombre de la capa
             )(lstm_output)
             # --- Bayesian / Bias Layers ---
 
