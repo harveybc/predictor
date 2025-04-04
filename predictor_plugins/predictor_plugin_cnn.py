@@ -431,14 +431,14 @@ class Plugin:
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
         x = Conv1D(filters=merged_units, kernel_size=3, padding='causal',
-                    activation=activation, kernel_regularizer=l2(l2_reg),
+                    activation=activation, 
                     name=f"initial_conv")(inputs)
         # MaxPooling layer
         x = MaxPooling1D(pool_size=2, name=f"initial_maxpool")(x)
         for j in range(num_head_intermediate_layers):
             # Conv1D layers for individual feature extraction
             x = Conv1D(filters=merged_units//((j+1)*2), kernel_size=3, padding='causal',
-                    activation=activation, kernel_regularizer=l2(l2_reg),
+                    activation=activation, 
                     name=f"features_conv_{j+1}")(x)
             # MaxPooling layer
             x = MaxPooling1D(pool_size=2, name=f"feature_maxpool_{j+1}")(x)
@@ -458,7 +458,7 @@ class Plugin:
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
             head_dense_output = Conv1D(filters=lstm_units, kernel_size=3, padding='causal',
-                    activation=activation, kernel_regularizer=l2(l2_reg),
+                    activation=activation, 
                     name=f"head_conv_{branch_suffix}")(head_dense_output)
             # MaxPooling layer
             head_dense_output = MaxPooling1D(pool_size=2, name=f"head_{branch_suffix}_maxpool")(head_dense_output)
@@ -469,7 +469,7 @@ class Plugin:
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm{branch_suffix}"
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
             )(head_dense_output)
             # last dense    
             # Apply Dense layer to LSTM output
