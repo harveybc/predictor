@@ -43,6 +43,8 @@ from tensorflow.keras.layers import Conv1D
 #MaxPooling1D
 from tensorflow.keras.layers import MaxPooling1D
 from tensorflow.keras.layers import TimeDistributed
+#Adam
+from tensorflow.keras.optimizers import Adam
 
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
@@ -536,7 +538,7 @@ class Plugin:
         self.model = Model(inputs=inputs, outputs=outputs_list, name=f"Conv1DPredictor_{len(predicted_horizons)}H")
 
         # --- Compilation (Using GLOBAL composite_loss) ---
-        optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
+        optimizer = Adam(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
         mmd_lambda = config.get("mmd_lambda", self.params.get("mmd_lambda", 0.1))
         sigma_mmd = config.get("sigma_mmd", self.params.get("sigma_mmd", 1.0))
 
