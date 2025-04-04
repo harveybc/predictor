@@ -469,9 +469,14 @@ class Plugin:
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+                LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm{branch_suffix}"
             )(head_dense_output)
-
+            # last dense    
+            lstm_output = Dense(
+                units=lstm_units,                             # Número de unidades en la capa densa
+                activation='relu',                             # Activación ReLU
+                name='dense_hidden'                            # Nombre de la capa
+            )(lstm_output)
             # --- Bayesian / Bias Layers ---
 
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
