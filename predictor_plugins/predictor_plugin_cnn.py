@@ -434,25 +434,23 @@ class Plugin:
         feature_branch_outputs = []
         for c in range(num_channels):
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                                   name=f"feature_{c+1}_input")(inputs)
+                       name=f"feature_{c+1}_input")(inputs)
             x = feature_input
             for i in range(num_intermediate_layers):
-                x = TimeDistributed(Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg)),
-                                    name=f"feature_{c+1}_dense_{i+1}")(x)
+                x = Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                            name=f"feature_{c+1}_dense_{i+1}")(x)
             feature_branch_outputs.append(x)
 
         # --- Merging Feature Branches for Conv1D ---
-        # For Conv1D, we need a 3D tensor: (batch_size, steps, features).
-        # Here we concatenate the processed channels along the features axis.
+        # We do NOT flatten here because Conv1D requires a 3D tensor (batch, steps, features)
+        # of which the time dimension must be preserved.
         if len(feature_branch_outputs) == 1:
              merged = feature_branch_outputs[0]
         elif len(feature_branch_outputs) > 1:
              merged = tf.keras.layers.Concatenate(axis=-1, name="merged_features")(feature_branch_outputs)
         else:
              raise ValueError("Model must have at least one input feature channel.")
-        
-        
-        
+
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
@@ -467,8 +465,8 @@ class Plugin:
             head_dense_output = merged
             for j in range(num_head_intermediate_layers):
                 head_dense_output = Conv1D(filters=merged_units//((j*2)+1), kernel_size=3, padding='causal',
-                                        activation=activation, 
-                                        name=f"head_conv_{j+1}{branch_suffix}")(head_dense_output)
+                            activation=activation, 
+                            name=f"head_conv_{j+1}{branch_suffix}")(head_dense_output)
                 head_dense_output = MaxPooling1D(pool_size=2, name=f"head_maxpool_{j+1}{branch_suffix}")(head_dense_output)
             head_dense_output = Flatten(name=f"flatten_head{branch_suffix}")(head_dense_output)
             head_dense_output = Dense(merged_units, activation=activation, 
