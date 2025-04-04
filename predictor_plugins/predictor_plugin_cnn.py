@@ -472,6 +472,8 @@ class Plugin:
                 LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm{branch_suffix}"
             )(head_dense_output)
             # last dense    
+            # Apply Dense layer to LSTM output
+            lstm_output = Flatten(name=f"flatten_lstm_out{branch_suffix}")(lstm_output)
             lstm_output = Dense(
                 units=lstm_units,                             # Número de unidades en la capa densa
                 activation='relu',                             # Activación ReLU
