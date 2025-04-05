@@ -488,7 +488,7 @@ class Plugin:
                                         LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm_{j}{branch_suffix}"
                                     )(reshaped_for_lstm)
             lstm_output = Bidirectional(
-                                LSTM(lstm_units, return_1sequences=False), name=f"final_bidir_lstm{branch_suffix}"
+                                LSTM(lstm_units, return_sequences=False), name=f"final_bidir_lstm{branch_suffix}"
                             )(reshaped_for_lstm)
           
           
