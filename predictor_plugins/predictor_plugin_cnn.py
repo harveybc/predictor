@@ -438,7 +438,7 @@ class Plugin:
                 x = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
                           name=f"feature_{c+1}_conv1d_{i+1}")(x)
                 # Max pooling
-                x = MaxPooling1D(pool_size=4, strides=2, padding='same', name=f"feature_{c+1}_maxpooling_{i+1}")(x)
+                #x = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"feature_{c+1}_maxpooling_{i+1}")(x)
             x = Conv1D(filters=1, kernel_size=3, padding='same', kernel_regularizer=l2(l2_reg),
                           name=f"feature_{c+1}_last_conv1d")(x)
             feature_branch_outputs.append(x)
@@ -453,7 +453,7 @@ class Plugin:
         else:
              raise ValueError("Model must have at least one input feature channel.")
         # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
-        merged = Flatten(name="merged_features_flatten")(merged)
+        #merged = Flatten(name="merged_features_flatten")(merged)
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
@@ -468,14 +468,11 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
-            for j in range(num_head_intermediate_layers):
-                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
             # TODO: probar (batch, merged_units, 1)
-            reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
+            #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
             reshaped_for_lstm = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
             reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
