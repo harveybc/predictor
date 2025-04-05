@@ -472,16 +472,19 @@ class Plugin:
             for j in range(num_head_intermediate_layers):
                 head_dense_output = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
                                            name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
-                head_dense_output = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"head_maxpooling_{j+1}{branch_suffix}")(head_dense_output)
+            head_dense_output = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"head_maxpooling_{j+1}{branch_suffix}")(head_dense_output)
+            
+            head_dense_output = Conv1D(filters=1, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_last{branch_suffix}")(head_dense_output)
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            #reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            reshaped_for_lstm = Reshape((1, -1), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            #)(reshaped_for_lstm)
-            )(head_dense_output)
+            )(reshaped_for_lstm)
+            #)(head_dense_output)
           
 
 
