@@ -471,18 +471,20 @@ class Plugin:
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
-            for j in range(num_intermediate_layers):
-                merged = Conv1D(filters=merged_units, kernel_size=3, padding='same', kernel_regularizer=l2(l2_reg),
-                            name=f"merge_head_conv1d_{j+1}")(merged)
-            merged = Conv1D(filters=1, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
-                        name=f"merge_head_last_conv1d")(merged)
-                
-                
-            merged = Flatten(name="merged_features_flatten")(merged)
-                
-
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
+
+            for j in range(num_intermediate_layers):
+                head_dense_output = Conv1D(filters=merged_units, kernel_size=3, padding='same', kernel_regularizer=l2(l2_reg),
+                            name=f"merge_head_conv1d_{j+1}")(head_dense_output)
+            head_dense_output = Conv1D(filters=1, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
+                        name=f"merge_head_last_conv1d")(head_dense_output)
+                
+                
+            head_dense_output = Flatten(name="merged_features_flatten")(head_dense_output)
+                
+
+            
             for j in range(num_head_intermediate_layers):
                  head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
                                            name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
