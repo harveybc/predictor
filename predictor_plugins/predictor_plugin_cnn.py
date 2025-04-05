@@ -432,7 +432,7 @@ class Plugin:
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
                                    name=f"feature_{c+1}_input")(inputs)
             x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
-            x = Reshape((window_size, 1), name=f"reshape_lstm_in{branch_suffix}")(x)
+            x = Reshape((window_size, 1), name=f"reshape_conv1d_in{c+1}")(x)
             for i in range(num_intermediate_layers):
                 x = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
                           name=f"feature_{c+1}_conv1d_{i+1}")(x)
