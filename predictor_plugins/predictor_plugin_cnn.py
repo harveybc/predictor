@@ -454,7 +454,10 @@ class Plugin:
         else:
              raise ValueError("Model must have at least one input feature channel.")
         # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
-        
+        merged = Reshape((-1, 1), name="reshape_merged_in")(merged)
+
+
+
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
@@ -463,7 +466,7 @@ class Plugin:
         outputs_list = []
         self.output_names = []
 
-        merged = Reshape((-1, 1), name="reshape_merged_in")(merged)
+
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
