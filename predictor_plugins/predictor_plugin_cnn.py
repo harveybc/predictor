@@ -436,6 +436,8 @@ class Plugin:
             for i in range(num_intermediate_layers):
                 x = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
                           name=f"feature_{c+1}_conv1d_{i+1}")(x)
+            x = Conv1D(filters=1, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
+                          name=f"feature_{c+1}_last_conv1d")(x)
             feature_branch_outputs.append(x)
 
         # --- Merging Feature Branches ONLY ---
