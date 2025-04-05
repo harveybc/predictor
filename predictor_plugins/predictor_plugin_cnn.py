@@ -435,17 +435,15 @@ class Plugin:
             x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
             x = Reshape((window_size, 1), name=f"reshape_conv1d_in{c+1}")(x)
             for i in range(num_intermediate_layers):
-                x = Conv1D(filters=branch_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
+                x = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
                           name=f"feature_{c+1}_conv1d_{i+1}")(x)
                 # Max pooling
                 #x = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"feature_{c+1}_maxpooling_{i+1}")(x)
             x = Conv1D(filters=1, kernel_size=3, padding='same', kernel_regularizer=l2(l2_reg),
                           name=f"feature_{c+1}_last_conv1d")(x)
-            #x = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"feature_{c+1}_last_maxpooling")(x)
             feature_branch_outputs.append(x)
 
         # --- Merging Feature Branches ONLY ---
-        merged = x
         if len(feature_branch_outputs) == 1:
              # Use Keras Identity layer for naming and compatibility
              merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
@@ -454,10 +452,7 @@ class Plugin:
              merged = Concatenate(name="merged_features")(feature_branch_outputs)
         else:
              raise ValueError("Model must have at least one input feature channel.")
-        print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
-        #merged = Reshape((-1, 1), name="reshape_merged_in")(merged)
-
-
+        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
 
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
@@ -473,27 +468,16 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
-
-            for j in range(num_intermediate_layers):
-                head_dense_output = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
-                            name=f"merge_head{branch_suffix}_conv1d_{j+1}")(head_dense_output)
-                # Max pooling
-                #head_dense_output = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"merge_head{branch_suffix}_maxpooling_{j+1}")(head_dense_output)
-            head_dense_output = Conv1D(filters=3, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
-                        name=f"merge_head{branch_suffix}_last_conv1d")(head_dense_output)
-                
-                
-            head_dense_output = Flatten(name=f"merged_head_{branch_suffix}_flatten")(head_dense_output)
-                
-
-            
             for j in range(num_head_intermediate_layers):
                  head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
                                            name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
             # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
+            # TODO: probar (batch, merged_units, 1)
+            reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
+            reshaped_for_lstm = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
