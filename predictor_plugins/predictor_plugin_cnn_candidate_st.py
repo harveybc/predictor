@@ -435,13 +435,12 @@ class Plugin:
             x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
             x = Reshape((window_size, 1), name=f"reshape_conv1d_in{c+1}")(x)
             for i in range(num_intermediate_layers):
-                x = Conv1D(filters=branch_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
+                x = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
                           name=f"feature_{c+1}_conv1d_{i+1}")(x)
                 # Max pooling
-                x = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"feature_{c+1}_maxpooling_{i+1}")(x)
+                #x = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"feature_{c+1}_maxpooling_{i+1}")(x)
             x = Conv1D(filters=1, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
                           name=f"feature_{c+1}_last_conv1d")(x)
-            x = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"feature_{c+1}_last_maxpooling")(x)
             feature_branch_outputs.append(x)
 
         # --- Merging Feature Branches ONLY ---
@@ -454,7 +453,7 @@ class Plugin:
         else:
              raise ValueError("Model must have at least one input feature channel.")
         # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
-        #merged = Flatten(name="merged_features_flatten")(merged)
+        merged = Flatten(name="merged_features_flatten")(merged)
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
@@ -470,12 +469,12 @@ class Plugin:
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
             for j in range(num_head_intermediate_layers):
-                head_dense_output = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
+                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
                                            name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
-                head_dense_output = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"head_maxpooling_{j+1}{branch_suffix}")(head_dense_output)
+
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            #reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
