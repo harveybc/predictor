@@ -34,7 +34,7 @@
     "early_patience": 100,
     "start_from_epoch": 15,
     "use_returns": true,
-    "mc_samples":100,
+    "mc_samples":20,
     "plotted_horizon": 6,
     "mmd_lambda": 1e-2,
     "window_size": 144,
