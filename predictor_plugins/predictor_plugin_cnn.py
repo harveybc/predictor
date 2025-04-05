@@ -445,6 +445,7 @@ class Plugin:
             feature_branch_outputs.append(x)
 
         # --- Merging Feature Branches ONLY ---
+        merged = x
         if len(feature_branch_outputs) == 1:
              # Use Keras Identity layer for naming and compatibility
              merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
@@ -454,7 +455,7 @@ class Plugin:
         else:
              raise ValueError("Model must have at least one input feature channel.")
         print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
-        merged = Reshape((-1, 1), name="reshape_merged_in")(merged)
+        #merged = Reshape((-1, 1), name="reshape_merged_in")(merged)
 
 
 
