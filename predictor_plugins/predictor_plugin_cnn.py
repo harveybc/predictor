@@ -438,7 +438,8 @@ class Plugin:
                     name=f"features_conv_{j+1}")(x)
             # MaxPooling layer
             x = MaxPooling1D(pool_size=2, name=f"feature_maxpool_{j+1}")(x)
-        merged = Flatten(name="merge_flatten")(x)
+        #merged = Flatten(name="merge_flatten")(x)
+        merged = x
 
       
         # --- Build Multiple Output Heads ---
