@@ -747,7 +747,18 @@ class Plugin:
         # print(f"Running {mc_samples} MC samples for uncertainty (incremental)...") # Informative print
         for i in range(mc_samples):
             # Get predictions for all heads in this sample
-            head_outputs_tf = self.model(x_test, training=True)
+            
+            batch_size = 1024  # ✅ Use safe batch size
+
+            head_outputs_list = []
+            for i in range(0, len(x_test), batch_size):
+                batch_x = x_test[i:i + batch_size]
+                preds = self.model(batch_x, training=False)
+                head_outputs_list.append(preds)
+
+            head_outputs_tf = tf.concat(head_outputs_list, axis=0)
+
+            #head_outputs_tf = self.model(x_test, training=True)
             if not isinstance(head_outputs_tf, list): head_outputs_tf = [head_outputs_tf]
 
             # Process each head's output for this sample
