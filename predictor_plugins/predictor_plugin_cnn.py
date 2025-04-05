@@ -752,7 +752,7 @@ class Plugin:
 
             ## Initialize a list for each output head
             head_outputs_lists = None
-            for i in tqdm(range(0, len(x_test), leave=False), batch_size):
+            for i in range(0, len(x_test), batch_size):
                 batch_x = x_test[i:i + batch_size]
                 preds = self.model(batch_x, training=False)
                 if not isinstance(preds, list):
