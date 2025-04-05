@@ -455,16 +455,6 @@ class Plugin:
              raise ValueError("Model must have at least one input feature channel.")
         # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
         
-        for i in range(num_intermediate_layers):
-            merged = Conv1D(filters=merged_units, kernel_size=3, padding='same', kernel_regularizer=l2(l2_reg),
-                        name=f"merge_conv1d_{i+1}")(merged)
-            # Max pooling
-            #x = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"feature_{c+1}_maxpooling_{i+1}")(x)
-        merged = Conv1D(filters=1, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
-                        name=f"merge_last_conv1d")(merged)
-        
-        
-        merged = Flatten(name="merged_features_flatten")(merged)
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
@@ -476,6 +466,16 @@ class Plugin:
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
+
+            for j in range(num_intermediate_layers):
+                merged = Conv1D(filters=merged_units, kernel_size=3, padding='same', kernel_regularizer=l2(l2_reg),
+                            name=f"merge_head_conv1d_{j+1}")(merged)
+            merged = Conv1D(filters=1, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
+                        name=f"merge_head_last_conv1d")(merged)
+                
+                
+            merged = Flatten(name="merged_features_flatten")(merged)
+                
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
