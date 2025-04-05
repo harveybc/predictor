@@ -737,18 +737,26 @@ class Plugin:
             # Get predictions for all heads in this sample
             
 
+            
             batch_size = 1024  # ✅ Use safe batch size
 
-            head_outputs_list = []
+            # Initialize a list for each output head
+            head_outputs_lists = None
             for i in range(0, len(x_test), batch_size):
                 batch_x = x_test[i:i + batch_size]
                 preds = self.model(batch_x, training=False)
-                head_outputs_list.append(preds)
+                if not isinstance(preds, list):
+                    preds = [preds]
+                if head_outputs_lists is None:
+                    head_outputs_lists = [[] for _ in range(len(preds))]
+                for h, pred in enumerate(preds):
+                    head_outputs_lists[h].append(pred)
 
-            head_outputs_tf = tf.concat(head_outputs_list, axis=0)
-
+            # Concatenate outputs for each head along the batch dimension
+            head_outputs_tf = [tf.concat(head_list, axis=0) for head_list in head_outputs_lists]
 
             if not isinstance(head_outputs_tf, list): head_outputs_tf = [head_outputs_tf]
+
 
             # Process each head's output for this sample
             for h in range(num_heads):
