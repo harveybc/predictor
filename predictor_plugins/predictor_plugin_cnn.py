@@ -435,7 +435,7 @@ class Plugin:
             x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
             x = Reshape((window_size, 1), name=f"reshape_conv1d_in{c+1}")(x)
             for i in range(num_intermediate_layers):
-                x = Conv1D(filters=branch_units//((j*2)+1), kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg),
+                x = Conv1D(filters=branch_units//((i*2)+1), kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg),
                           name=f"feature_{c+1}_conv1d_{i+1}")(x)
                 # Max pooling
                 #x = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"feature_{c+1}_maxpooling_{i+1}")(x)
