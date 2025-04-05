@@ -39,6 +39,7 @@ from tensorflow.keras.layers import Layer
 #reshape 
 from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
+from tqdm import tqdm
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -733,9 +734,28 @@ class Plugin:
         counts = [0] * num_heads # Use a single count across heads, assuming samples are drawn together
 
         # print(f"Running {mc_samples} MC samples for uncertainty (incremental)...") # Informative print
-        for i in range(mc_samples):
+        for i in tqdm(range(mc_samples), desc="MC Samples"):
             # Get predictions for all heads in this sample
-            head_outputs_tf = self.model(x_test, training=False)
+            batch_size = 1024  # ✅ Use safe batch size
+
+            ## Initialize a list for each output head
+            head_outputs_lists = None
+            for i in tqdm(range(0, len(x_test), leave=False), batch_size):
+                batch_x = x_test[i:i + batch_size]
+                preds = self.model(batch_x, training=False)
+                if not isinstance(preds, list):
+                    preds = [preds]
+                if head_outputs_lists is None:
+                    head_outputs_lists = [[] for _ in range(len(preds))]
+                for h, pred in enumerate(preds):
+                    head_outputs_lists[h].append(pred)
+
+
+            # Concatenate outputs for each head along the batch dimension
+            head_outputs_tf = [tf.concat(head_list, axis=0) for head_list in head_outputs_lists]
+
+
+
             if not isinstance(head_outputs_tf, list): head_outputs_tf = [head_outputs_tf]
 
             # Process each head's output for this sample
