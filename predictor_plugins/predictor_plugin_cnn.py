@@ -475,7 +475,7 @@ class Plugin:
             head_dense_output = merged
 
             for j in range(num_intermediate_layers):
-                head_dense_output = Conv1D(filters=merged_units, kernel_size=3, padding='same', kernel_regularizer=l2(l2_reg),
+                head_dense_output = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
                             name=f"merge_head{branch_suffix}_conv1d_{j+1}")(head_dense_output)
                 # Max pooling
                 #head_dense_output = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"merge_head{branch_suffix}_maxpooling_{j+1}")(head_dense_output)
