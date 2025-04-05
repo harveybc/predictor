@@ -453,6 +453,8 @@ class Plugin:
         else:
              raise ValueError("Model must have at least one input feature channel.")
         # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
+        merged = Flatten(name="merged_features_flatten")(merged)
+        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
 
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
