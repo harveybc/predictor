@@ -430,7 +430,7 @@ class Plugin:
 
         x = inputs
         for i in range(num_intermediate_layers):
-                x = Conv1D(filters=branch_units, kernel_size=3, stride=2, activation=activation,
+                x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
                           name=f"feature_conv_{i+1}")(x)
 
         # --- Flatten  ---
