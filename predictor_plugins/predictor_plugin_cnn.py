@@ -463,7 +463,7 @@ class Plugin:
         outputs_list = []
         self.output_names = []
 
-
+        merged = Reshape((-1, 1), name="reshape_merged_in")(merged)
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
