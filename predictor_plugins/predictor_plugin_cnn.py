@@ -476,12 +476,12 @@ class Plugin:
 
             for j in range(num_intermediate_layers):
                 head_dense_output = Conv1D(filters=merged_units, kernel_size=3, padding='same', kernel_regularizer=l2(l2_reg),
-                            name=f"merge_head_conv1d_{j+1}")(head_dense_output)
+                            name=f"merge_head_{i+1}_conv1d_{j+1}")(head_dense_output)
             head_dense_output = Conv1D(filters=1, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
-                        name=f"merge_head_last_conv1d")(head_dense_output)
+                        name=f"merge_head_{i+1}_last_conv1d")(head_dense_output)
                 
                 
-            head_dense_output = Flatten(name="merged_features_flatten")(head_dense_output)
+            head_dense_output = Flatten(name=f"merged_head_{i+1}_flatten")(head_dense_output)
                 
 
             
