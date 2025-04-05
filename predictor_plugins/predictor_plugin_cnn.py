@@ -40,7 +40,7 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tensorflow.keras.layers import Conv1D
-from tensorflow.keras.layers import MaxPooling1D
+from tensorflow.keras.layers import MaxPooling1D, AveragePooling1D
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -435,7 +435,7 @@ class Plugin:
             x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
             x = Reshape((window_size, 1), name=f"reshape_conv1d_in{c+1}")(x)
             for i in range(num_intermediate_layers):
-                x = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
+                x = Conv1D(filters=branch_units//((j*2)+1), kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg),
                           name=f"feature_{c+1}_conv1d_{i+1}")(x)
                 # Max pooling
                 #x = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"feature_{c+1}_maxpooling_{i+1}")(x)
@@ -468,14 +468,16 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
+            for j in range(num_head_intermediate_layers):
+                 head_dense_output = Dense(merged_units//((j*2)+1), activation=activation, kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
             # TODO: probar (batch, merged_units, 1)
-            #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
-            reshaped_for_lstm = head_dense_output
-            reshaped_for_lstm = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
-            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
+            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=branch_units//2, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
