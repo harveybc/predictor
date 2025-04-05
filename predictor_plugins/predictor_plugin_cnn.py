@@ -453,7 +453,7 @@ class Plugin:
              merged = Concatenate(name="merged_features")(feature_branch_outputs)
         else:
              raise ValueError("Model must have at least one input feature channel.")
-        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
+        print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
         merged = Reshape((-1, 1), name="reshape_merged_in")(merged)
 
 
