@@ -469,7 +469,7 @@ class Plugin:
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             # TODO: probar (batch, merged_units, 1)
-            reshaped_for_lstm = Reshape((1, 1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             reshaped_for_lstm = Conv1D(filters=merged_units, kernel_size=1, padding='same', name=f"conv1d_lstm_in{branch_suffix}")(reshaped_for_lstm)
             reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=1, padding='same', name=f"conv1d_lstm_in{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
