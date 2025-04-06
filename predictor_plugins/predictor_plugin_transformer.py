@@ -506,36 +506,66 @@ class Plugin:
             #     head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
             #                               name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
-            # Build transformer blocks (same number as intermediate_layers)
-            for idx in range(num_intermediate_layers):
-                embedding_dim = branch_units//(idx*2)
-                print(f"DEBUG: Building Transformer block {idx+1} with embedding dim {embedding_dim}")
-                # Layer Normalization before attention
-                x_norm = LayerNormalization(name=f"layer_norm_{idx+1}{branch_suffix}")(x)
-                key_dim = max(1, embedding_dim // num_heads)
-                attn_output = MultiHeadAttention(
-                    num_heads=num_heads,
-                    key_dim=key_dim,
-                    name=f"mha_layer_{idx+1}{branch_suffix}"
-                )(x_norm, x_norm)
-                print(f"DEBUG: After MultiHeadAttention in block {idx+1}, attn_output shape: {attn_output.shape}")
-                # Residual connection for attention sub-layer
-                x = Add(name=f"residual_add_attn_{idx+1}{branch_suffix}")([x, attn_output])
-                # Feedforward network
-                x_ff_norm = LayerNormalization(name=f"layer_norm_ff_{idx+1}{branch_suffix}")(x)
-                ff_output = Dense(
-                    units=embedding_dim,
-                    activation=self.params['activation'],
-                    kernel_initializer=GlorotUniform(),
-                    kernel_regularizer=l2(l2_reg),
-                    name=f"ff_dense_{idx+1}{branch_suffix}"
-                )(x_ff_norm)
-                print(f"DEBUG: After feedforward dense in block {idx+1}, ff_output shape: {ff_output.shape}")
-                x = Add(name=f"residual_add_ff_{idx+1}{branch_suffix}")([x, ff_output])
-                print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
-                x = AveragePooling1D(pool_size=3, strides=2, name=f"features_pooling_1{idx+1}{branch_suffix}")(x)
-            reshaped_for_lstm = x
+            # -------------------------------- First auto attention block
+            embedding_dim = branch_units
+            idx = 0
+            print(f"DEBUG: Building Transformer block {idx+1} with embedding dim {embedding_dim}")
+            # Layer Normalization before attention
+            x_norm = LayerNormalization(name=f"layer_norm_{idx+1}{branch_suffix}")(x)
+            key_dim = max(1, embedding_dim // num_heads)
+            attn_output = MultiHeadAttention(
+                num_heads=num_heads,
+                key_dim=key_dim,
+                name=f"mha_layer_{idx+1}{branch_suffix}"
+            )(x_norm, x_norm)
+            print(f"DEBUG: After MultiHeadAttention in block {idx+1}, attn_output shape: {attn_output.shape}")
+            # Residual connection for attention sub-layer
+            x = Add(name=f"residual_add_attn_{idx+1}{branch_suffix}")([x, attn_output])
+            # Feedforward network
+            x_ff_norm = LayerNormalization(name=f"layer_norm_ff_{idx+1}{branch_suffix}")(x)
+            ff_output = Dense(
+                units=embedding_dim,
+                activation=self.params['activation'],
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"ff_dense_{idx+1}{branch_suffix}"
+            )(x_ff_norm)
+            print(f"DEBUG: After feedforward dense in block {idx+1}, ff_output shape: {ff_output.shape}")
+            x = Add(name=f"residual_add_ff_{idx+1}{branch_suffix}")([x, ff_output])
+            print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
+            x = AveragePooling1D(pool_size=3, strides=2, name=f"features_pooling_1{idx+1}{branch_suffix}")(x)
+            
+            # ------------------------------- Second auto attention block
+            embedding_dim = lstm_units
+            idx = 1
+            print(f"DEBUG: Building Transformer block {idx+1} with embedding dim {embedding_dim}")
+            # Layer Normalization before attention
+            x_norm = LayerNormalization(name=f"layer_norm_{idx+1}{branch_suffix}")(x)
+            key_dim = max(1, embedding_dim // num_heads)
+            attn_output = MultiHeadAttention(
+                num_heads=num_heads,
+                key_dim=key_dim,
+                name=f"mha_layer_{idx+1}{branch_suffix}"
+            )(x_norm, x_norm)
+            print(f"DEBUG: After MultiHeadAttention in block {idx+1}, attn_output shape: {attn_output.shape}")
+            # Residual connection for attention sub-layer
+            x = Add(name=f"residual_add_attn_{idx+1}{branch_suffix}")([x, attn_output])
+            # Feedforward network
+            x_ff_norm = LayerNormalization(name=f"layer_norm_ff_{idx+1}{branch_suffix}")(x)
+            ff_output = Dense(
+                units=embedding_dim,
+                activation=self.params['activation'],
+                kernel_initializer=GlorotUniform(),
+                kernel_regularizer=l2(l2_reg),
+                name=f"ff_dense_{idx+1}{branch_suffix}"
+            )(x_ff_norm)
+            print(f"DEBUG: After feedforward dense in block {idx+1}, ff_output shape: {ff_output.shape}")
+            x = Add(name=f"residual_add_ff_{idx+1}{branch_suffix}")([x, ff_output])
+            print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
+            x = AveragePooling1D(pool_size=3, strides=2, name=f"features_pooling_1{idx+1}{branch_suffix}")(x)
+            
             # Apply Bidirectional LSTM
+            reshaped_for_lstm = x
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
