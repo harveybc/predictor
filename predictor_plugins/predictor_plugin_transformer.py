@@ -431,16 +431,13 @@ class Plugin:
 
         # --- Get Parameters ---
         l2_reg = config.get("l2_reg", self.params.get("l2_reg", 0.001))
-        activation = config.get("activation", self.params.get("activation", "relu"))
-        num_intermediate_layers = config['intermediate_layers']
-        num_head_intermediate_layers = config['intermediate_layers']
+        num_intermediate_layers = config.get('intermediate_layers', 2)
         merged_units = config.get("initial_layer_size", 128)
         branch_units = merged_units//config.get("layer_size_divisor", 2)
         # Add LSTM units parameter (provide a default)
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
         self.params['input_shape'] = input_shape  # (window_size, num_features)
         num_heads = self.params.get('num_heads', 2)
-        time_horizon = self.params['time_horizon']
         embedding_dim = self.params.get('initial_layer_size', 32)
 
         print("DEBUG: Input shape:", input_shape)
