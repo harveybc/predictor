@@ -482,7 +482,7 @@ class Plugin:
             x = Add(name=f"residual_add_ff_{idx+1}")([x, ff_output])
             print(f"DEBUG: After Transformer block {idx+1}, x shape: {x.shape}")
             x = AveragePooling1D(pool_size=3, strides=2, name=f"features_pooling_1{idx+1}")(x)
-            embedding_dim = embedding_dim // config.get("layer_size_divisor", 2) # Reduce embedding dim for next block
+            ##embedding_dim = embedding_dim // config.get("layer_size_divisor", 2) # Reduce embedding dim for next block
             
         # --- Flatten  ---
         #merged = Flatten(name="flatten")(x)
