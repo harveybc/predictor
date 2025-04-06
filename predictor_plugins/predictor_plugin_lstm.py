@@ -39,9 +39,9 @@ from tensorflow.keras.layers import Layer
 #reshape 
 from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
-from tensorflow.keras.layers import Conv1D
-from tensorflow.keras.layers import MaxPooling1D, AveragePooling1D
 from tqdm import tqdm
+from tensorflow.keras.layers import Conv1D
+
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -428,33 +428,15 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Parallel Feature Processing Branches ---
-        feature_branch_outputs = []
-        for c in range(num_channels):
-            feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                                   name=f"feature_{c+1}_input")(inputs)
-            x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
-            x = Reshape((window_size, 1), name=f"reshape_conv1d_in{c+1}")(x)
-            for i in range(num_intermediate_layers):
-                x = Conv1D(filters=branch_units//((i*2)+1), kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg),
-                          name=f"feature_{c+1}_conv1d_{i+1}")(x)
-                # Max pooling
-                #x = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"feature_{c+1}_maxpooling_{i+1}")(x)
-            x = Conv1D(filters=1, kernel_size=3, padding='same', kernel_regularizer=l2(l2_reg),
-                          name=f"feature_{c+1}_last_conv1d")(x)
-            feature_branch_outputs.append(x)
+        x = inputs
+        for i in range(num_intermediate_layers):
+                x = Bidirectional(LSTM(merged_units, return_sequences=True,
+                          name=f"feature_lstm_{i+1}"))(x)
 
-        # --- Merging Feature Branches ONLY ---
-        if len(feature_branch_outputs) == 1:
-             # Use Keras Identity layer for naming and compatibility
-             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
-        elif len(feature_branch_outputs) > 1:
-             # Concatenate is already a Keras layer
-             merged = Concatenate(name="merged_features")(feature_branch_outputs)
-        else:
-             raise ValueError("Model must have at least one input feature channel.")
-        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
-        #merged = Flatten(name="merged_features_flatten")(merged)
+        # --- Flatten  ---
+        #merged = Flatten(name="flatten")(x)
+        merged = x
+
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
@@ -469,28 +451,22 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
-            for j in range(num_head_intermediate_layers):
-                 head_dense_output = Dense(merged_units//((j*2)+1), activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
+            #for j in range(num_head_intermediate_layers):
+            #     head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+            #                               name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
             # TODO: probar (batch, merged_units, 1)
             #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
             reshaped_for_lstm = head_dense_output
-            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
-            reshaped_for_lstm = Conv1D(filters=branch_units//2, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Bidirectional(LSTM(branch_units, return_sequences=True, name=f"lstm_head_1_{branch_suffix}"))(reshaped_for_lstm)
+            reshaped_for_lstm = Bidirectional(LSTM(lstm_units, return_sequences=True, name=f"lstm_head_2_{branch_suffix}"))(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
-            head_dense_output = merged
-            for j in range(num_head_intermediate_layers):
-                reshaped_for_lstm = Bidirectional(
-                                        LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm_{j}{branch_suffix}"
-                                    )(reshaped_for_lstm)
             lstm_output = Bidirectional(
-                                LSTM(lstm_units, return_sequences=False), name=f"final_bidir_lstm{branch_suffix}"
-                            )(reshaped_for_lstm)
-          
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+            )(reshaped_for_lstm)
           
 
 
@@ -750,11 +726,10 @@ class Plugin:
         m2s = [np.zeros((num_test_samples, output_dim), dtype=np.float32) for _ in range(num_heads)]
         counts = [0] * num_heads # Use a single count across heads, assuming samples are drawn together
 
+        # print(f"Running {mc_samples} MC samples for uncertainty (incremental)...") # Informative print
         for i in tqdm(range(mc_samples), desc="MC Samples"):
             # Get predictions for all heads in this sample
-            
             batch_size = 1024  # ✅ Use safe batch size
-
             ## Initialize a list for each output head
             head_outputs_lists = None
             for i in range(0, len(x_test), batch_size):
@@ -772,9 +747,7 @@ class Plugin:
             head_outputs_tf = [tf.concat(head_list, axis=0) for head_list in head_outputs_lists]
 
 
-            # Get predictions for all heads in this sample
-            #head_outputs_tf = self.model(x_test, training=False)
-            
+
             if not isinstance(head_outputs_tf, list): head_outputs_tf = [head_outputs_tf]
 
             # Process each head's output for this sample
