@@ -438,7 +438,7 @@ class Plugin:
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
         self.params['input_shape'] = input_shape  # (window_size, num_features)
         num_heads = self.params.get('num_heads', 2)
-        embedding_dim = self.params.get('initial_layer_size', 32)
+        embedding_dim = merged_units
 
         print("DEBUG: Input shape:", input_shape)
         inputs = tf.keras.Input(shape=input_shape, name="model_input", dtype=tf.float32)
