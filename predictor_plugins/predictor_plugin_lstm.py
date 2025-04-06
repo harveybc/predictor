@@ -459,9 +459,9 @@ class Plugin:
             #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
             reshaped_for_lstm = head_dense_output
             reshaped_for_lstm = Bidirectional(LSTM(branch_units, return_sequences=True, name=f"lstm_head_1_{branch_suffix}"))(reshaped_for_lstm)
-            reshaped_for_lstm = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_{i+1}")(reshaped_for_lstm)
+            reshaped_for_lstm = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_1{branch_suffix}")(reshaped_for_lstm)
             reshaped_for_lstm = Bidirectional(LSTM(lstm_units, return_sequences=True, name=f"lstm_head_2_{branch_suffix}"))(reshaped_for_lstm)
-            reshaped_for_lstm = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_{i+1}")(reshaped_for_lstm)
+            reshaped_for_lstm = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_2{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
