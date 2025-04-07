@@ -8,21 +8,42 @@ setup(
         'console_scripts': [
             'predictor=app.main:main'
         ],
+        # Plugins para el Predictor
         'predictor.plugins': [
-            'default=app.plugins.predictor_plugin_ann:Plugin',
-            'ann=app.plugins.predictor_plugin_ann:Plugin',
-            'cnn=app.plugins.predictor_plugin_cnn:Plugin',
-            'cnn_mmd=app.plugins.predictor_plugin_cnn_mmd:Plugin',
-            'lstm=app.plugins.predictor_plugin_lstm:Plugin',
-            'transformer=app.plugins.predictor_plugin_transformer:Plugin',
-            'transformer_mmd=app.plugins.predictor_plugin_transformer_mmd:Plugin',
-            'base=app.plugins.predictor_plugin_base:Plugin'
+            'default_predictor=predictor_plugins.predictor_plugin_ann:Plugin',
+            'ann=predictor_plugins.predictor_plugin_ann:Plugin',
+            'n_beats=predictor_plugins.predictor_plugin_n_beats:Plugin',
+            'cnn=predictor_plugins.predictor_plugin_cnn:Plugin',
+            'lstm=predictor_plugins.predictor_plugin_lstm:Plugin',
+            'transformer=predictor_plugins.predictor_plugin_transformer:Plugin',
+            'base=predictor_plugin.predictor_plugin_base:Plugin'
+        ],
+        # Plugins para la Optimización (por defecto, basado en DEAP)
+        'optimizer.plugins': [
+            'default_optimizer=optimizer_plugins.default_optimizer:Plugin'
+        ],
+        # Plugins para el Pipeline (orquestación del flujo completo)
+        'pipeline.plugins': [
+            'default_pipeline=pipeline_plugins.default_pipeline:PipelinePlugin',
+            'stl_pipeline=pipeline_plugins.stl_pipeline:STLPipelinePlugin'
+        ],
+        # Plugins para el Preprocesamiento (incluye process_data, ventanas deslizantes y STL)
+        'preprocessor.plugins': [
+            'default_preprocessor=preprocessor_plugins.default_preprocessor:PreprocessorPlugin',
+            'stl_preprocessor=preprocessor_plugins.stl_preprocessor:PreprocessorPlugin'
         ]
     },
     install_requires=[
+<<<<<<< HEAD
+        'build'
+=======
            
+>>>>>>> master
     ],
     author='Harvey Bastidas',
     author_email='your.email@example.com',
-    description='A timeseries prediction system that supports dynamic loading of predictor plugins for processing time series data.'
+    description=(
+        'A timeseries prediction system that supports dynamic loading of plugins for prediction, '
+        'optimization, pipeline orchestration, and data pre-processing.'
+    )
 )
