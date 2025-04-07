@@ -507,7 +507,7 @@ class Plugin:
             #                               name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
             # -------------------------------- First auto attention block
-            embedding_dim = branch_units
+            embedding_dim = merged_units
             idx = 0
             print(f"DEBUG: Building Transformer block {idx+1} with embedding dim {embedding_dim}")
             # Layer Normalization before attention
