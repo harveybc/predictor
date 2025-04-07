@@ -536,7 +536,7 @@ class Plugin:
             x = AveragePooling1D(pool_size=3, strides=2, name=f"features_pooling_1{idx+1}{branch_suffix}")(x)
             
             # ------------------------------- Second auto attention block
-            embedding_dim = lstm_units
+            embedding_dim = merged_units
             idx = 1
             print(f"DEBUG: Building Transformer block {idx+1} with embedding dim {embedding_dim}")
             # Layer Normalization before attention
