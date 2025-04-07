@@ -156,3 +156,57 @@ predictor/
 └── prompt.txt                         # Project documentation
 ```
 
+## Example of plugin model:
+```mermaid
+graph TD
+
+    subgraph SP_Input ["Input Processing (Features Only)"]
+        I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
+
+        subgraph SP_Branches ["Feature Branches (Parallel)"]
+             FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
+             FS -- ... --> F_DOTS["..."];
+             FS -- Feature n --> Fn_FLAT["Flatten"] --> Fn_DENSE["Dense x M"];
+        end
+
+        F1_DENSE --> M{"Merge Concat Features"};
+        F_DOTS --> M;
+        Fn_DENSE --> M;
+    end
+
+    subgraph SP_Heads ["Output Heads (Parallel)"]
+
+        subgraph Head1 ["Head for Horizon 1"]
+            M --> H1_DENSE["Dense x K"];
+            H1_DENSE --> H1_BAYES{"DenseFlipout (Bayesian)"};
+            H1_DENSE --> H1_BIAS["Dense (Bias)"];
+            H1_BAYES --> H1_ADD{"Add"};
+            H1_BIAS --> H1_ADD;
+            H1_ADD --> O1["Output H1"];
+        end
+
+         subgraph HeadN ["Head for Horizon N"]
+            M --> HN_DENSE["Dense x K"];
+            HN_DENSE --> HN_BAYES{"DenseFlipout (Bayesian)"};
+            HN_DENSE --> HN_BIAS["Dense (Bias)"];
+            HN_BAYES --> HN_ADD{"Add"};
+            HN_BIAS --> HN_ADD;
+            HN_ADD --> ON["Output HN"];
+        end
+
+    end
+
+    O1 --> Z((Final Output List));
+    ON --> Z;
+
+    subgraph Legend
+         NoteM["M = config['intermediate_layers']"];
+         NoteK["K = config['intermediate']"];
+         NoteNoFB["NOTE: Diagram simplified - Feedback loops not shown."];
+    end
+
+    style H1_BAYES,HN_BAYES fill:#556B2F,stroke:#333,color:#fff;
+    style H1_BIAS,HN_BIAS fill:#4682B4,stroke:#333,color:#fff;
+    style NoteM,NoteK,NoteNoFB fill:#8B413,stroke:#333,stroke-dasharray:5 5,color:#fff;
+
+```

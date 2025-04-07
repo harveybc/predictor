@@ -11,15 +11,15 @@ def load_config(file_path):
         config = json.load(f)
     return config
 
-def get_plugin_default_params(plugin_name):
+def get_plugin_default_params(plugin_name, config=None):
     plugin_class, _ = load_plugin('predictor.plugins', plugin_name)
-    plugin_instance = plugin_class()
+    plugin_instance = plugin_class(config)
     return plugin_instance.plugin_params
 
 def compose_config(config):
     plugin_name = config.get('plugin', DEFAULT_VALUES.get('plugin'))
     
-    plugin_default_params = get_plugin_default_params(plugin_name)
+    plugin_default_params = get_plugin_default_params(plugin_name, config)
 
     config_to_save = {}
     for k, v in config.items():

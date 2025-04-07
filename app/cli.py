@@ -32,5 +32,7 @@ def parse_args():
     parser.add_argument('-it', '--iterations', type=int,help='number of times the whole process is made and after that the training and validation MAE are averaged and also the std dev, max and min is shown.')
     parser.add_argument('-e', '--epochs', type=int,help='number of epochs for the plugin model training.')
     parser.add_argument('-ud', '--use_daily', action='store_true',help='isntead of predicting the next time_horizon hours, predict the next time_horizon days.')
-    
+    # the predicted_hrizons parameter is a list of integers, each integer is a number of hours to predict
+    parser.add_argument('-ph', '--predicted_hrizons', type=int, nargs='*', help='list of predicted hrizons to predict.')
+
     return parser.parse_known_args()
