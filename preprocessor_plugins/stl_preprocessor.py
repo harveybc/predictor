@@ -560,34 +560,143 @@ class PreprocessorPlugin:
         dates_test_aligned = dates_test[-aligned_len_test:] if dates_test is not None and aligned_len_test > 0 else None
         print(f"Final aligned feature length: Train={aligned_len_train}, Val={aligned_len_val}, Test={aligned_len_test}")
 
-        # --- 5. Windowing Features & Stacking ---
+
+        # --- NEW 4.b: Prepare and Align Original X Columns ---
+        print("\n--- 4.b Preparing and Aligning Original X Columns ---")
+        # Identify original columns (present in train_df, excluding 'CLOSE')
+        if 'CLOSE' in x_train_df.columns:
+            original_x_cols = [col for col in x_train_df.columns if col != 'CLOSE']
+        else:
+            # Handle case where CLOSE might not be present (though unlikely based on previous code)
+            original_x_cols = list(x_train_df.columns)
+            print("WARN: 'CLOSE' column not found in x_train_df. Including all columns as 'original'.")
+
+        if not original_x_cols:
+            print("WARN: No original columns found besides 'CLOSE' (or input is empty).")
+            aligned_original_train_dict, aligned_original_val_dict, aligned_original_test_dict = {}, {}, {}
+        else:
+            print(f"Identified original columns to include: {original_x_cols}")
+            # Ensure these columns exist in val and test as well (basic check)
+            missing_val_cols = [c for c in original_x_cols if c not in x_val_df.columns]
+            missing_test_cols = [c for c in original_x_cols if c not in x_test_df.columns]
+            if missing_val_cols: print(f"WARN: Original columns missing in x_val_df: {missing_val_cols}")
+            if missing_test_cols: print(f"WARN: Original columns missing in x_test_df: {missing_test_cols}")
+
+            # Select existing original columns for each dataset
+            original_x_cols_val = [c for c in original_x_cols if c in x_val_df.columns]
+            original_x_cols_test = [c for c in original_x_cols if c in x_test_df.columns]
+
+            # Align original columns to match the length of aligned generated features
+            # Take the last 'aligned_len_xxx' rows based on index alignment
+            aligned_original_train_df = x_train_df[original_x_cols].iloc[-aligned_len_train:]
+            aligned_original_val_df = x_val_df[original_x_cols_val].iloc[-aligned_len_val:]
+            aligned_original_test_df = x_test_df[original_x_cols_test].iloc[-aligned_len_test:]
+
+            # Convert to dictionary of numpy arrays (float32 for consistency with generated features)
+            # Use .get() with default None in case a column was missing after the warning
+            aligned_original_train_dict = {col: aligned_original_train_df[col].values.astype(np.float32) for col in original_x_cols}
+            aligned_original_val_dict = {col: df_col.values.astype(np.float32) if (df_col := aligned_original_val_df.get(col)) is not None else None for col in original_x_cols}
+            aligned_original_test_dict = {col: df_col.values.astype(np.float32) if (df_col := aligned_original_test_df.get(col)) is not None else None for col in original_x_cols}
+
+            # Verify lengths (optional but good practice)
+            mismatched_train = [k for k, v in aligned_original_train_dict.items() if len(v) != aligned_len_train]
+            mismatched_val = [k for k, v in aligned_original_val_dict.items() if v is not None and len(v) != aligned_len_val]
+            mismatched_test = [k for k, v in aligned_original_test_dict.items() if v is not None and len(v) != aligned_len_test]
+            if mismatched_train: print(f"WARN: Length mismatch after aligning original train columns: {mismatched_train}")
+            if mismatched_val: print(f"WARN: Length mismatch after aligning original val columns: {mismatched_val}")
+            if mismatched_test: print(f"WARN: Length mismatch after aligning original test columns: {mismatched_test}")
+            print(f"Aligned original columns. Train={len(aligned_original_train_dict)}, Val={len(aligned_original_val_dict)}, Test={len(aligned_original_test_dict)}")
+
+        # Combine generated features and aligned original columns for windowing
+        # Generated features take precedence if names collide (unlikely here)
+        all_features_train = {**aligned_original_train_dict, **features_train}
+        all_features_val = {**aligned_original_val_dict, **features_val}
+        all_features_test = {**aligned_original_test_dict, **features_test}
+
+
+
+        # --- 5. Windowing Features & Stacking (MODIFIED to include original columns) ---
         print("\n--- 5. Windowing Features & Channel Stacking ---")
         X_train_channels, X_val_channels, X_test_channels = [], [], []
-        feature_names = []; x_dates_train, x_dates_val, x_dates_test = None, None, None; first_feature_dates_captured = False
-        feature_order = ['log_return']
-        if config.get('use_stl'): feature_order.extend(['stl_trend', 'stl_seasonal', 'stl_resid'])
-        if config.get('use_wavelets'): feature_order.extend(sorted([k for k in features_train if k.startswith('wav_')]))
-        if config.get('use_multi_tapper'): feature_order.extend(sorted([k for k in features_train if k.startswith('mtm_')]))
-        if not config.get('use_stl') and not config.get('use_wavelets') and not config.get('use_multi_tapper'): feature_order = ['log_return']
-        print(f"Attempting to window features: {feature_order}")
+        feature_names = [] # Will store names of ALL features (generated + original) in final order
+        x_dates_train, x_dates_val, x_dates_test = None, None, None
+        first_feature_dates_captured = False
+
+        # Define the order: generated features first (if they exist), then original columns alphabetically
+        generated_feature_order = ['log_return'] # Always include log_return if generated
+        if config.get('use_stl'): generated_feature_order.extend(['stl_trend', 'stl_seasonal', 'stl_resid'])
+        if config.get('use_wavelets'): generated_feature_order.extend(sorted([k for k in features_train if k.startswith('wav_')]))
+        if config.get('use_multi_tapper'): generated_feature_order.extend(sorted([k for k in features_train if k.startswith('mtm_')]))
+
+        # Filter generated_feature_order to only include features that were actually created and aligned
+        generated_feature_order = [f for f in generated_feature_order if f in all_features_train and all_features_train[f] is not None]
+
+        # Get original columns that were successfully aligned (using keys from the dict created in 4.b)
+        original_feature_order = sorted([k for k, v in aligned_original_train_dict.items() if v is not None])
+
+        # Combine the order lists
+        windowing_order = generated_feature_order + original_feature_order
+        print(f"Final feature order for windowing: {windowing_order}")
+
         # --- Use max_horizon for windowing function ---
         time_horizon_for_windowing = max_horizon
-        for name in feature_order:
-            if name in features_train and features_train[name] is not None and \
-               name in features_val and features_val[name] is not None and \
-               name in features_test and features_test[name] is not None:
+
+        for name in windowing_order:
+            # Get the correct aligned series for train, val, test from the combined dictionary
+            series_train = all_features_train.get(name)
+            series_val = all_features_val.get(name)
+            series_test = all_features_test.get(name)
+
+            # Ensure the feature exists and is valid for all splits before windowing
+            if series_train is not None and series_val is not None and series_test is not None and \
+               len(series_train) == aligned_len_train and \
+               len(series_val) == aligned_len_val and \
+               len(series_test) == aligned_len_test:
+
                 print(f"Windowing feature: {name}...", end="")
-                # --- Pass max_horizon to original windowing function ---
-                win_train, _, dates_win_train = self.create_sliding_windows(features_train[name], window_size, time_horizon_for_windowing, dates_train_aligned)
-                win_val, _, dates_win_val   = self.create_sliding_windows(features_val[name], window_size, time_horizon_for_windowing, dates_val_aligned)
-                win_test, _, dates_win_test = self.create_sliding_windows(features_test[name], window_size, time_horizon_for_windowing, dates_test_aligned)
-                if win_train.shape[0] > 0 and win_val.shape[0] > 0 and win_test.shape[0] > 0:
-                    X_train_channels.append(win_train); X_val_channels.append(win_val); X_test_channels.append(win_test)
-                    feature_names.append(name); print(" Appended.")
-                    if not first_feature_dates_captured:
-                         x_dates_train, x_dates_val, x_dates_test = dates_win_train, dates_win_val, dates_win_test
-                         first_feature_dates_captured = True; print(f"Captured dates from '{name}'.")
-                else: print(f" Skipping channel '{name}' (windowing produced 0 samples).")
+                try:
+                    # Pass max_horizon and the aligned dates
+                    win_train, _, dates_win_train = self.create_sliding_windows(series_train, window_size, time_horizon_for_windowing, dates_train_aligned)
+                    win_val, _, dates_win_val   = self.create_sliding_windows(series_val, window_size, time_horizon_for_windowing, dates_val_aligned)
+                    win_test, _, dates_win_test = self.create_sliding_windows(series_test, window_size, time_horizon_for_windowing, dates_test_aligned)
+
+                    # Check if windowing was successful (produced samples)
+                    # Also check if the number of samples is consistent across splits (important!)
+                    if win_train.shape[0] > 0 and win_val.shape[0] > 0 and win_test.shape[0] > 0:
+                        # If this is the first feature, set the expected number of samples
+                        if not first_feature_dates_captured:
+                            expected_samples_train = win_train.shape[0]
+                            expected_samples_val = win_val.shape[0]
+                            expected_samples_test = win_test.shape[0]
+                            print(f" Initializing sample counts: Train={expected_samples_train}, Val={expected_samples_val}, Test={expected_samples_test}", end="")
+
+                        # Check consistency with previously windowed features
+                        if win_train.shape[0] == expected_samples_train and \
+                           win_val.shape[0] == expected_samples_val and \
+                           win_test.shape[0] == expected_samples_test:
+
+                            X_train_channels.append(win_train)
+                            X_val_channels.append(win_val)
+                            X_test_channels.append(win_test)
+                            feature_names.append(name) # Add name to the list of included features
+                            print(" Appended.")
+
+                            if not first_feature_dates_captured:
+                                x_dates_train, x_dates_val, x_dates_test = dates_win_train, dates_win_val, dates_win_test
+                                first_feature_dates_captured = True
+                                print(f"Captured dates from '{name}'. Lengths: T={len(x_dates_train)}, V={len(x_dates_val)}, Ts={len(x_dates_test)}")
+                        else:
+                             print(f" Skipping channel '{name}' due to inconsistent sample count after windowing.")
+                             print(f"   Expected T={expected_samples_train}, V={expected_samples_val}, Ts={expected_samples_test}")
+                             print(f"   Got      T={win_train.shape[0]}, V={win_val.shape[0]}, Ts={win_test.shape[0]}")
+
+                    else:
+                        print(f" Skipping channel '{name}' (windowing produced 0 samples in at least one split).")
+                except Exception as e:
+                    print(f" FAILED windowing '{name}'. Error: {e}. Skipping.")
+            else:
+                # This handles cases where original columns might have been missing or had length mismatches earlier
+                 print(f"WARN: Feature '{name}' skipped. Not valid or consistently aligned across train/val/test before windowing.")
 
         # --- 6. Stack channels ---
         if not X_train_channels: raise RuntimeError("No feature channels available after windowing!")
