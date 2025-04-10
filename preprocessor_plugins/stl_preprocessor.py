@@ -264,7 +264,12 @@ class PreprocessorPlugin:
         print(f"Computing Wavelets (MODWT/SWT): {name}, Levels={levels}...", end="")
         try:
             # --- Attempting Fix: Try trim_approx=False, norm=True ---
-            coeffs = pywt.swt(series_clean, wavelet=name, level=levels, trim_approx=False, norm=True)
+            coeffs = pywt.swt(series_clean, 
+                              wavelet=name, 
+                              level=levels, 
+                              trim_approx=False, 
+                              norm=True,
+                              mode='constant') # <- ensures no future data is used in padding
             # --- End Fix ---
 
             # Note: If trim_approx=False, the approximation coeffs list has length `level + 1`
