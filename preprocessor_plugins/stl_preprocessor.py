@@ -243,7 +243,21 @@ class PreprocessorPlugin:
 
     # --- Updated _compute_wavelet_features: Trying trim_approx=False ---
     def _compute_wavelet_features(self, series):
-        """Computes Wavelet features using MODWT (pywt.swt). Includes TypeError fix attempts."""
+        """
+        Computes Wavelet features using MODWT (pywt.swt).
+        Includes causality correction (forward shift/first value padding).
+        """
+        # --- Ensure necessary import for Wavelet object ---
+        # Add this check in case Wavelet wasn't imported successfully earlier
+        global Wavelet
+        try:
+            if Wavelet is None:
+                from pywt import Wavelet
+        except ImportError:
+             print("ERROR: Cannot import pywt.Wavelet, required for causality correction.")
+             Wavelet = None # Keep it None if import fails here too
+
+        # --- Original input validation and setup ---
         if pywt is None: print("ERROR: pywt library not installed."); return {}
         name = self.params['wavelet_name']; levels = self.params['wavelet_levels'];
         n_original_check = len(series) if hasattr(series, '__len__') else 'N/A'
@@ -263,42 +277,34 @@ class PreprocessorPlugin:
 
         print(f"Computing Wavelets (MODWT/SWT): {name}, Levels={levels}...", end="")
         try:
-            # --- Attempting Fix: Try trim_approx=False, norm=True ---
-            coeffs = pywt.swt(series_clean, 
-                              wavelet=name, 
-                              level=levels, 
-                              trim_approx=False, 
+            # --- Call pywt.swt ---
+            coeffs = pywt.swt(series_clean,
+                              wavelet=name,
+                              level=levels,
+                              trim_approx=False,
                               norm=True,
-                              mode='constant') # <- ensures no future data is used in padding
-            # --- End Fix ---
+                              mode='constant') # Boundary mode
 
-            # Note: If trim_approx=False
-            # , the approximation coeffs list has length `level + 1`
-            # The details lists still have length `level`
-            # The structure might be [(cA_n, cD_n), ..., (cA_1, cD_1)] or similar.
-            # Let's adjust the feature extraction carefully based on pywt documentation structure
-
+            # --- Extract coefficients ---
             if not isinstance(coeffs, list) or len(coeffs) != levels:
                  print(f" FAILED. Unexpected output structure from swt (expected list of length {levels}). Got type {type(coeffs)}")
                  return {}
 
             features = {}
             # swt returns list [(cA_n, cD_n), ..., (cA_1, cD_1)]
-            # Extract details first
             for i in range(levels):
-                level_index_from_end = levels - 1 - i # 0 for last level (cD1), levels-1 for first level (cDn)
+                level_index_from_end = levels - 1 - i
                 if len(coeffs[level_index_from_end]) == 2:
-                    details_coeffs = coeffs[level_index_from_end][1] # cD_{n-level_index_from_end} = cD_{i+1}
+                    details_coeffs = coeffs[level_index_from_end][1]
                     features[f'detail_L{i+1}'] = details_coeffs
                 else: print(f"WARN: Unexpected structure in swt output at index {level_index_from_end}"); return {}
 
-            # Extract final approximation
             if len(coeffs[0]) == 2:
-                approx_coeffs = coeffs[0][0] # cA_n (final approximation)
+                approx_coeffs = coeffs[0][0]
                 features[f'approx_L{levels}'] = approx_coeffs
             else: print(f"WARN: Could not extract final approximation coeffs."); return {}
 
-
+            # --- Validate extracted features ---
             n_original_len = len(series_clean)
             valid_features = {}
             for k, v in features.items():
@@ -307,17 +313,79 @@ class PreprocessorPlugin:
                  else:
                       print(f"WARN: Wavelet '{k}' has unexpected length/type (len={len(v) if hasattr(v,'__len__') else 'N/A'}, type={type(v)}). Discarding.")
 
-            if not valid_features: print(f" FAILED. No valid features extracted after length check."); return {}
+            # --- Check if any valid features remain ---
+            if not valid_features:
+                print(f" FAILED. No valid features extracted after length check.")
+                return {}
 
+            # --- [START] CAUSALITY SHIFT CORRECTION (Forward Shift / First Value Padding Method) ---
+            try:
+                # Calculate the necessary shift based on the filter length
+                if Wavelet is None: # Check if import failed
+                    raise ImportError("pywt.Wavelet not available for causality check.")
+
+                wavelet = Wavelet(name)
+                filter_len = wavelet.dec_len
+                # Shift amount based on centered filter lookahead. max(0, (L // 2) - 1)
+                shift_amount = max(0, (filter_len // 2) - 1)
+
+                if shift_amount > 0:
+                    print(f" Applying causality shift (shifting data forward by {shift_amount}, padding start with first value)...", end="")
+                    shifted_features = {}
+                    # Get length from one of the valid features before shift
+                    try:
+                        # Use next(iter(...)) to get first value without knowing the key
+                        original_length = len(next(iter(valid_features.values())))
+                        # Check if series is long enough to perform the shift meaningfully
+                        if original_length <= shift_amount:
+                             print(f" FAILED. Shift amount ({shift_amount}) >= series length ({original_length}). Cannot create causal features.")
+                             return {} # Return empty if shift is too large
+                    except StopIteration:
+                        print(" FAILED. Cannot determine length from empty valid_features.")
+                        return {} # Return empty if valid_features was somehow empty here
+
+                    for k_feat, v in valid_features.items():
+                        if len(v) == original_length:
+                            # Get the first value that will be part of the shifted data (v[0] = C[0])
+                            # This is the first value calculated by SWT before shifting.
+                            first_known_value = v[0]
+
+                            # Create new array of the same size, initialized with the FIRST KNOWN VALUE
+                            shifted_v = np.full(original_length, first_known_value, dtype=v.dtype) # PAD WITH FIRST VALUE
+
+                            # Copy the relevant part of the original data, shifted forward
+                            # Target: F[t] = C[t-k]  => Implement as: F[k:] = C[:N-k]
+                            # This overwrites the padding from index shift_amount onwards
+                            shifted_v[shift_amount:] = v[:-shift_amount]
+                            shifted_features[k_feat] = shifted_v
+                        else:
+                             # Handle defensively if length mismatch somehow occurred
+                             print(f" WARN: Inconsistent length for feature '{k_feat}' before shift. Skipping shift for this feature.")
+                             shifted_features[k_feat] = v # Keep original if length mismatch
+
+                    valid_features = shifted_features # Replace with shifted features
+                    print(f" Done. Features shifted, start padded.", end="")
+                else:
+                    # Only print if shift wasn't needed (e.g., Haar)
+                    print(f" No causality shift needed (filter length {filter_len}).", end="")
+
+            except Exception as e_shift:
+                # Catch errors during shift calculation/application specifically
+                print(f" FAILED applying causality shift. Error: {e_shift}. Returning unshifted features (potential leakage).")
+            # --- [END] CAUSALITY SHIFT CORRECTION ---
+
+            # Final print message for the wavelet computation step before returning
             print(f" Done ({len(valid_features)} channels).")
-            return valid_features
+            return valid_features # Return the shifted features (NO NANS ADDED)
 
+        # --- Exception handling for the main pywt.swt call and feature extraction ---
         except TypeError as e:
              print(f" FAILED. TypeError: {e}")
              print(f"      Occurred during pywt.swt call (Input Len={len(series_clean)}, Levels={levels}, Wavelet='{name}', trim_approx=False, norm=True).")
              return {}
-        except Exception as e: print(f" FAILED. Error: {e}"); import traceback; traceback.print_exc(); return {}
-    # --- End of _compute_wavelet_features ---
+        except Exception as e:
+             # Catch errors from the main wavelet computation part before shift correction
+             print(f" FAILED. Error during Wavelet computation: {e}"); import traceback; traceback.print_exc(); return {}# --- End of _compute_wavelet_features ---
 
     # --- process_data Method ---
     # (Keep the rest of the process_data method and other helpers exactly as in the previous response)
