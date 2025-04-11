@@ -272,7 +272,8 @@ class PreprocessorPlugin:
                               mode='constant') # <- ensures no future data is used in padding
             # --- End Fix ---
 
-            # Note: If trim_approx=False, the approximation coeffs list has length `level + 1`
+            # Note: If trim_approx=False
+            # , the approximation coeffs list has length `level + 1`
             # The details lists still have length `level`
             # The structure might be [(cA_n, cD_n), ..., (cA_1, cD_1)] or similar.
             # Let's adjust the feature extraction carefully based on pywt documentation structure
