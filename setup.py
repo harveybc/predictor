@@ -34,11 +34,7 @@ setup(
         ]
     },
     install_requires=[
-<<<<<<< HEAD
         'build'
-=======
-           
->>>>>>> master
     ],
     author='Harvey Bastidas',
     author_email='your.email@example.com',

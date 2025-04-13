@@ -16,11 +16,7 @@ pmdarima
 protobuf
 matplotlib
 tensorflow-probability
-<<<<<<< HEAD
 keras.utils
 tf-keras
 tqdm
 PyWavelets
-=======
-keras.utils
->>>>>>> master

@@ -15,12 +15,8 @@ from sklearn.model_selection import TimeSeriesSplit
 import json
 from plugin_loader import load_plugin
 
-<<<<<<< HEAD
 # Updated import: use tensorflow.keras instead of keras.
 from tensorflow.keras.utils import plot_model
-=======
-from keras.utils import plot_model
->>>>>>> master
 from tensorflow.keras.losses import Huber
 
 #!/usr/bin/env python
