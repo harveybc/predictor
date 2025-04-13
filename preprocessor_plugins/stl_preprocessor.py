@@ -243,7 +243,21 @@ class PreprocessorPlugin:
 
     # --- Updated _compute_wavelet_features: Trying trim_approx=False ---
     def _compute_wavelet_features(self, series):
-        """Computes Wavelet features using MODWT (pywt.swt). Includes TypeError fix attempts."""
+        """
+        Computes Wavelet features using MODWT (pywt.swt).
+        Includes causality correction (forward shift/first value padding). So no future data leaks.
+        """
+        # --- Ensure necessary import for Wavelet object ---
+        # Add this check in case Wavelet wasn't imported successfully earlier
+        global Wavelet
+        try:
+            if Wavelet is None:
+                from pywt import Wavelet
+        except ImportError:
+             print("ERROR: Cannot import pywt.Wavelet, required for causality correction.")
+             Wavelet = None # Keep it None if import fails here too
+
+        # --- Original input validation and setup ---
         if pywt is None: print("ERROR: pywt library not installed."); return {}
         name = self.params['wavelet_name']; levels = self.params['wavelet_levels'];
         n_original_check = len(series) if hasattr(series, '__len__') else 'N/A'
@@ -263,36 +277,34 @@ class PreprocessorPlugin:
 
         print(f"Computing Wavelets (MODWT/SWT): {name}, Levels={levels}...", end="")
         try:
-            # --- Attempting Fix: Try trim_approx=False, norm=True ---
-            coeffs = pywt.swt(series_clean, wavelet=name, level=levels, trim_approx=False, norm=True)
-            # --- End Fix ---
+            # --- Call pywt.swt ---
+            coeffs = pywt.swt(series_clean,
+                              wavelet=name,
+                              level=levels,
+                              trim_approx=False,
+                              norm=True,
+                              mode='constant') # Boundary mode, no future data is used in padding
 
-            # Note: If trim_approx=False, the approximation coeffs list has length `level + 1`
-            # The details lists still have length `level`
-            # The structure might be [(cA_n, cD_n), ..., (cA_1, cD_1)] or similar.
-            # Let's adjust the feature extraction carefully based on pywt documentation structure
-
+            # --- Extract coefficients ---
             if not isinstance(coeffs, list) or len(coeffs) != levels:
                  print(f" FAILED. Unexpected output structure from swt (expected list of length {levels}). Got type {type(coeffs)}")
                  return {}
 
             features = {}
             # swt returns list [(cA_n, cD_n), ..., (cA_1, cD_1)]
-            # Extract details first
             for i in range(levels):
-                level_index_from_end = levels - 1 - i # 0 for last level (cD1), levels-1 for first level (cDn)
+                level_index_from_end = levels - 1 - i
                 if len(coeffs[level_index_from_end]) == 2:
-                    details_coeffs = coeffs[level_index_from_end][1] # cD_{n-level_index_from_end} = cD_{i+1}
+                    details_coeffs = coeffs[level_index_from_end][1]
                     features[f'detail_L{i+1}'] = details_coeffs
                 else: print(f"WARN: Unexpected structure in swt output at index {level_index_from_end}"); return {}
 
-            # Extract final approximation
             if len(coeffs[0]) == 2:
-                approx_coeffs = coeffs[0][0] # cA_n (final approximation)
+                approx_coeffs = coeffs[0][0]
                 features[f'approx_L{levels}'] = approx_coeffs
             else: print(f"WARN: Could not extract final approximation coeffs."); return {}
 
-
+            # --- Validate extracted features ---
             n_original_len = len(series_clean)
             valid_features = {}
             for k, v in features.items():
@@ -301,17 +313,79 @@ class PreprocessorPlugin:
                  else:
                       print(f"WARN: Wavelet '{k}' has unexpected length/type (len={len(v) if hasattr(v,'__len__') else 'N/A'}, type={type(v)}). Discarding.")
 
-            if not valid_features: print(f" FAILED. No valid features extracted after length check."); return {}
+            # --- Check if any valid features remain ---
+            if not valid_features:
+                print(f" FAILED. No valid features extracted after length check.")
+                return {}
 
+            # --- [START] CAUSALITY SHIFT CORRECTION (Forward Shift / First Value Padding Method) ---
+            try:
+                # Calculate the necessary shift based on the filter length
+                if Wavelet is None: # Check if import failed
+                    raise ImportError("pywt.Wavelet not available for causality check.")
+
+                wavelet = Wavelet(name)
+                filter_len = wavelet.dec_len
+                # Shift amount based on centered filter lookahead. max(0, (L // 2) - 1)
+                shift_amount = max(0, (filter_len // 2) - 1)
+
+                if shift_amount > 0:
+                    print(f" Applying causality shift (shifting data forward by {shift_amount}, padding start with first value)...", end="")
+                    shifted_features = {}
+                    # Get length from one of the valid features before shift
+                    try:
+                        # Use next(iter(...)) to get first value without knowing the key
+                        original_length = len(next(iter(valid_features.values())))
+                        # Check if series is long enough to perform the shift meaningfully
+                        if original_length <= shift_amount:
+                             print(f" FAILED. Shift amount ({shift_amount}) >= series length ({original_length}). Cannot create causal features.")
+                             return {} # Return empty if shift is too large
+                    except StopIteration:
+                        print(" FAILED. Cannot determine length from empty valid_features.")
+                        return {} # Return empty if valid_features was somehow empty here
+
+                    for k_feat, v in valid_features.items():
+                        if len(v) == original_length:
+                            # Get the first value that will be part of the shifted data (v[0] = C[0])
+                            # This is the first value calculated by SWT before shifting.
+                            first_known_value = v[0]
+
+                            # Create new array of the same size, initialized with the FIRST KNOWN VALUE
+                            shifted_v = np.full(original_length, first_known_value, dtype=v.dtype) # PAD WITH FIRST VALUE
+
+                            # Copy the relevant part of the original data, shifted forward
+                            # Target: F[t] = C[t-k]  => Implement as: F[k:] = C[:N-k]
+                            # This overwrites the padding from index shift_amount onwards
+                            shifted_v[shift_amount:] = v[:-shift_amount]
+                            shifted_features[k_feat] = shifted_v
+                        else:
+                             # Handle defensively if length mismatch somehow occurred
+                             print(f" WARN: Inconsistent length for feature '{k_feat}' before shift. Skipping shift for this feature.")
+                             shifted_features[k_feat] = v # Keep original if length mismatch
+
+                    valid_features = shifted_features # Replace with shifted features
+                    print(f" Done. Features shifted, start padded.", end="")
+                else:
+                    # Only print if shift wasn't needed (e.g., Haar)
+                    print(f" No causality shift needed (filter length {filter_len}).", end="")
+
+            except Exception as e_shift:
+                # Catch errors during shift calculation/application specifically
+                print(f" FAILED applying causality shift. Error: {e_shift}. Returning unshifted features (potential leakage).")
+            # --- [END] CAUSALITY SHIFT CORRECTION ---
+
+            # Final print message for the wavelet computation step before returning
             print(f" Done ({len(valid_features)} channels).")
-            return valid_features
+            return valid_features # Return the shifted features (NO NANS ADDED)
 
+        # --- Exception handling for the main pywt.swt call and feature extraction ---
         except TypeError as e:
              print(f" FAILED. TypeError: {e}")
              print(f"      Occurred during pywt.swt call (Input Len={len(series_clean)}, Levels={levels}, Wavelet='{name}', trim_approx=False, norm=True).")
              return {}
-        except Exception as e: print(f" FAILED. Error: {e}"); import traceback; traceback.print_exc(); return {}
-    # --- End of _compute_wavelet_features ---
+        except Exception as e:
+             # Catch errors from the main wavelet computation part before shift correction
+             print(f" FAILED. Error during Wavelet computation: {e}"); import traceback; traceback.print_exc(); return {}# --- End of _compute_wavelet_features ---
 
     # --- process_data Method ---
     # (Keep the rest of the process_data method and other helpers exactly as in the previous response)
@@ -340,7 +414,7 @@ class PreprocessorPlugin:
 
 
     def _compute_mtm_features(self, series):
-        """Computes Rolling Multitaper Method spectral power in bands."""
+        """Computes Rolling Multitaper Method spectral power in bands. It uses a window of past data to calculate each value, so no future data leaks"""
         # (Implementation from previous working step)
         if dpss is None: print("ERROR: scipy.signal.windows unavailable for MTM."); return {}
         window_len=self.params['mtm_window_len']; step=self.params['mtm_step']; nw=self.params['mtm_time_bandwidth']
@@ -560,34 +634,143 @@ class PreprocessorPlugin:
         dates_test_aligned = dates_test[-aligned_len_test:] if dates_test is not None and aligned_len_test > 0 else None
         print(f"Final aligned feature length: Train={aligned_len_train}, Val={aligned_len_val}, Test={aligned_len_test}")
 
-        # --- 5. Windowing Features & Stacking ---
+
+        # --- NEW 4.b: Prepare and Align Original X Columns ---
+        print("\n--- 4.b Preparing and Aligning Original X Columns ---")
+        # Identify original columns (present in train_df, excluding 'CLOSE')
+        if 'CLOSE' in x_train_df.columns:
+            original_x_cols = [col for col in x_train_df.columns if col != 'CLOSE']
+        else:
+            # Handle case where CLOSE might not be present (though unlikely based on previous code)
+            original_x_cols = list(x_train_df.columns)
+            print("WARN: 'CLOSE' column not found in x_train_df. Including all columns as 'original'.")
+
+        if not original_x_cols:
+            print("WARN: No original columns found besides 'CLOSE' (or input is empty).")
+            aligned_original_train_dict, aligned_original_val_dict, aligned_original_test_dict = {}, {}, {}
+        else:
+            print(f"Identified original columns to include: {original_x_cols}")
+            # Ensure these columns exist in val and test as well (basic check)
+            missing_val_cols = [c for c in original_x_cols if c not in x_val_df.columns]
+            missing_test_cols = [c for c in original_x_cols if c not in x_test_df.columns]
+            if missing_val_cols: print(f"WARN: Original columns missing in x_val_df: {missing_val_cols}")
+            if missing_test_cols: print(f"WARN: Original columns missing in x_test_df: {missing_test_cols}")
+
+            # Select existing original columns for each dataset
+            original_x_cols_val = [c for c in original_x_cols if c in x_val_df.columns]
+            original_x_cols_test = [c for c in original_x_cols if c in x_test_df.columns]
+
+            # Align original columns to match the length of aligned generated features
+            # Take the last 'aligned_len_xxx' rows based on index alignment
+            aligned_original_train_df = x_train_df[original_x_cols].iloc[-aligned_len_train:]
+            aligned_original_val_df = x_val_df[original_x_cols_val].iloc[-aligned_len_val:]
+            aligned_original_test_df = x_test_df[original_x_cols_test].iloc[-aligned_len_test:]
+
+            # Convert to dictionary of numpy arrays (float32 for consistency with generated features)
+            # Use .get() with default None in case a column was missing after the warning
+            aligned_original_train_dict = {col: aligned_original_train_df[col].values.astype(np.float32) for col in original_x_cols}
+            aligned_original_val_dict = {col: df_col.values.astype(np.float32) if (df_col := aligned_original_val_df.get(col)) is not None else None for col in original_x_cols}
+            aligned_original_test_dict = {col: df_col.values.astype(np.float32) if (df_col := aligned_original_test_df.get(col)) is not None else None for col in original_x_cols}
+
+            # Verify lengths (optional but good practice)
+            mismatched_train = [k for k, v in aligned_original_train_dict.items() if len(v) != aligned_len_train]
+            mismatched_val = [k for k, v in aligned_original_val_dict.items() if v is not None and len(v) != aligned_len_val]
+            mismatched_test = [k for k, v in aligned_original_test_dict.items() if v is not None and len(v) != aligned_len_test]
+            if mismatched_train: print(f"WARN: Length mismatch after aligning original train columns: {mismatched_train}")
+            if mismatched_val: print(f"WARN: Length mismatch after aligning original val columns: {mismatched_val}")
+            if mismatched_test: print(f"WARN: Length mismatch after aligning original test columns: {mismatched_test}")
+            print(f"Aligned original columns. Train={len(aligned_original_train_dict)}, Val={len(aligned_original_val_dict)}, Test={len(aligned_original_test_dict)}")
+
+        # Combine generated features and aligned original columns for windowing
+        # Generated features take precedence if names collide (unlikely here)
+        all_features_train = {**aligned_original_train_dict, **features_train}
+        all_features_val = {**aligned_original_val_dict, **features_val}
+        all_features_test = {**aligned_original_test_dict, **features_test}
+
+
+
+        # --- 5. Windowing Features & Stacking (MODIFIED to include original columns) ---
         print("\n--- 5. Windowing Features & Channel Stacking ---")
         X_train_channels, X_val_channels, X_test_channels = [], [], []
-        feature_names = []; x_dates_train, x_dates_val, x_dates_test = None, None, None; first_feature_dates_captured = False
-        feature_order = ['log_return']
-        if config.get('use_stl'): feature_order.extend(['stl_trend', 'stl_seasonal', 'stl_resid'])
-        if config.get('use_wavelets'): feature_order.extend(sorted([k for k in features_train if k.startswith('wav_')]))
-        if config.get('use_multi_tapper'): feature_order.extend(sorted([k for k in features_train if k.startswith('mtm_')]))
-        if not config.get('use_stl') and not config.get('use_wavelets') and not config.get('use_multi_tapper'): feature_order = ['log_return']
-        print(f"Attempting to window features: {feature_order}")
+        feature_names = [] # Will store names of ALL features (generated + original) in final order
+        x_dates_train, x_dates_val, x_dates_test = None, None, None
+        first_feature_dates_captured = False
+
+        # Define the order: generated features first (if they exist), then original columns alphabetically
+        generated_feature_order = ['log_return'] # Always include log_return if generated
+        if config.get('use_stl'): generated_feature_order.extend(['stl_trend', 'stl_seasonal', 'stl_resid'])
+        if config.get('use_wavelets'): generated_feature_order.extend(sorted([k for k in features_train if k.startswith('wav_')]))
+        if config.get('use_multi_tapper'): generated_feature_order.extend(sorted([k for k in features_train if k.startswith('mtm_')]))
+
+        # Filter generated_feature_order to only include features that were actually created and aligned
+        generated_feature_order = [f for f in generated_feature_order if f in all_features_train and all_features_train[f] is not None]
+
+        # Get original columns that were successfully aligned (using keys from the dict created in 4.b)
+        original_feature_order = sorted([k for k, v in aligned_original_train_dict.items() if v is not None])
+
+        # Combine the order lists
+        windowing_order = generated_feature_order + original_feature_order
+        print(f"Final feature order for windowing: {windowing_order}")
+
         # --- Use max_horizon for windowing function ---
         time_horizon_for_windowing = max_horizon
-        for name in feature_order:
-            if name in features_train and features_train[name] is not None and \
-               name in features_val and features_val[name] is not None and \
-               name in features_test and features_test[name] is not None:
+
+        for name in windowing_order:
+            # Get the correct aligned series for train, val, test from the combined dictionary
+            series_train = all_features_train.get(name)
+            series_val = all_features_val.get(name)
+            series_test = all_features_test.get(name)
+
+            # Ensure the feature exists and is valid for all splits before windowing
+            if series_train is not None and series_val is not None and series_test is not None and \
+               len(series_train) == aligned_len_train and \
+               len(series_val) == aligned_len_val and \
+               len(series_test) == aligned_len_test:
+
                 print(f"Windowing feature: {name}...", end="")
-                # --- Pass max_horizon to original windowing function ---
-                win_train, _, dates_win_train = self.create_sliding_windows(features_train[name], window_size, time_horizon_for_windowing, dates_train_aligned)
-                win_val, _, dates_win_val   = self.create_sliding_windows(features_val[name], window_size, time_horizon_for_windowing, dates_val_aligned)
-                win_test, _, dates_win_test = self.create_sliding_windows(features_test[name], window_size, time_horizon_for_windowing, dates_test_aligned)
-                if win_train.shape[0] > 0 and win_val.shape[0] > 0 and win_test.shape[0] > 0:
-                    X_train_channels.append(win_train); X_val_channels.append(win_val); X_test_channels.append(win_test)
-                    feature_names.append(name); print(" Appended.")
-                    if not first_feature_dates_captured:
-                         x_dates_train, x_dates_val, x_dates_test = dates_win_train, dates_win_val, dates_win_test
-                         first_feature_dates_captured = True; print(f"Captured dates from '{name}'.")
-                else: print(f" Skipping channel '{name}' (windowing produced 0 samples).")
+                try:
+                    # Pass max_horizon and the aligned dates
+                    win_train, _, dates_win_train = self.create_sliding_windows(series_train, window_size, time_horizon_for_windowing, dates_train_aligned)
+                    win_val, _, dates_win_val   = self.create_sliding_windows(series_val, window_size, time_horizon_for_windowing, dates_val_aligned)
+                    win_test, _, dates_win_test = self.create_sliding_windows(series_test, window_size, time_horizon_for_windowing, dates_test_aligned)
+
+                    # Check if windowing was successful (produced samples)
+                    # Also check if the number of samples is consistent across splits (important!)
+                    if win_train.shape[0] > 0 and win_val.shape[0] > 0 and win_test.shape[0] > 0:
+                        # If this is the first feature, set the expected number of samples
+                        if not first_feature_dates_captured:
+                            expected_samples_train = win_train.shape[0]
+                            expected_samples_val = win_val.shape[0]
+                            expected_samples_test = win_test.shape[0]
+                            print(f" Initializing sample counts: Train={expected_samples_train}, Val={expected_samples_val}, Test={expected_samples_test}", end="")
+
+                        # Check consistency with previously windowed features
+                        if win_train.shape[0] == expected_samples_train and \
+                           win_val.shape[0] == expected_samples_val and \
+                           win_test.shape[0] == expected_samples_test:
+
+                            X_train_channels.append(win_train)
+                            X_val_channels.append(win_val)
+                            X_test_channels.append(win_test)
+                            feature_names.append(name) # Add name to the list of included features
+                            print(" Appended.")
+
+                            if not first_feature_dates_captured:
+                                x_dates_train, x_dates_val, x_dates_test = dates_win_train, dates_win_val, dates_win_test
+                                first_feature_dates_captured = True
+                                print(f"Captured dates from '{name}'. Lengths: T={len(x_dates_train)}, V={len(x_dates_val)}, Ts={len(x_dates_test)}")
+                        else:
+                             print(f" Skipping channel '{name}' due to inconsistent sample count after windowing.")
+                             print(f"   Expected T={expected_samples_train}, V={expected_samples_val}, Ts={expected_samples_test}")
+                             print(f"   Got      T={win_train.shape[0]}, V={win_val.shape[0]}, Ts={win_test.shape[0]}")
+
+                    else:
+                        print(f" Skipping channel '{name}' (windowing produced 0 samples in at least one split).")
+                except Exception as e:
+                    print(f" FAILED windowing '{name}'. Error: {e}. Skipping.")
+            else:
+                # This handles cases where original columns might have been missing or had length mismatches earlier
+                 print(f"WARN: Feature '{name}' skipped. Not valid or consistently aligned across train/val/test before windowing.")
 
         # --- 6. Stack channels ---
         if not X_train_channels: raise RuntimeError("No feature channels available after windowing!")
