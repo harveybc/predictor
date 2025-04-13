@@ -245,7 +245,7 @@ class PreprocessorPlugin:
     def _compute_wavelet_features(self, series):
         """
         Computes Wavelet features using MODWT (pywt.swt).
-        Includes causality correction (forward shift/first value padding).
+        Includes causality correction (forward shift/first value padding). So no future data leaks.
         """
         # --- Ensure necessary import for Wavelet object ---
         # Add this check in case Wavelet wasn't imported successfully earlier
@@ -283,7 +283,7 @@ class PreprocessorPlugin:
                               level=levels,
                               trim_approx=False,
                               norm=True,
-                              mode='constant') # Boundary mode
+                              mode='constant') # Boundary mode, no future data is used in padding
 
             # --- Extract coefficients ---
             if not isinstance(coeffs, list) or len(coeffs) != levels:
@@ -414,7 +414,7 @@ class PreprocessorPlugin:
 
 
     def _compute_mtm_features(self, series):
-        """Computes Rolling Multitaper Method spectral power in bands."""
+        """Computes Rolling Multitaper Method spectral power in bands. It uses a window of past data to calculate each value, so no future data leaks"""
         # (Implementation from previous working step)
         if dpss is None: print("ERROR: scipy.signal.windows unavailable for MTM."); return {}
         window_len=self.params['mtm_window_len']; step=self.params['mtm_step']; nw=self.params['mtm_time_bandwidth']
