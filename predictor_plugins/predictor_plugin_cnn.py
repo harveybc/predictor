@@ -351,7 +351,7 @@ class Plugin:
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
 
         # --- Initialize Control Parameter & Feedback Lists ---
-        print(f"Initializing control and feedback lists for {num_outputs} outputs in __init__.")
+        #print(f"Initializing control and feedback lists for {num_outputs} outputs in __init__.")
 
         # Control Parameters per Head (Values are examples)
         self.local_p_control = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_p_{i}") for i in range(num_outputs)]
