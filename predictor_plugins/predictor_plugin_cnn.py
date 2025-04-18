@@ -18,7 +18,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda, TimeDistributed
+from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
 from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback, LambdaCallback
 from tensorflow.keras.losses import Huber
@@ -44,7 +44,6 @@ from tensorflow.keras.layers import Conv1D
 from tensorflow.keras.layers import Attention
 from tensorflow.keras.layers import MultiHeadAttention
 # LayerNormalization
-
 from tensorflow.keras.layers import LayerNormalization
 
 
@@ -448,38 +447,54 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # 1) Add absolute positional encoding to the raw inputs
-        #    positional_encoding returns shape (1, window_size, num_channels)
-        pos_enc = positional_encoding(window_size, num_channels)  
+        # 1) Add absolute positional encoding
+        pos_enc = positional_encoding(window_size, num_channels)  # shape (1, window_size, num_channels)
         x = Add(name="positional_encoding_add")([inputs, pos_enc])
-        
-        # --- Parallel Feature Processing Branches ---
-        feature_branch_outputs = []
+
+        # --- Parallel 1×1‑Conv “Dense” Branches (no TimeDistributed) ---
+        branch_outputs = []
         for c in range(num_channels):
-            feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                                   name=f"feature_{c+1}_input")(inputs)
-            x_branch = feature_input
+            # slice out channel c → shape (batch, window_size, 1)
+            feat = Lambda(lambda t, ch=c: t[:, :, ch:ch+1],
+                  name=f"feature_{c+1}_input")(x)
+
+            # apply num_intermediate_layers of 1×1 Conv1D as a time‑distributed Dense
+            b = feat
             for i in range(num_intermediate_layers):
-                x_branch = TimeDistributed(
-                    Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg)),
-                    name=f"feature_{c+1}_dense_{i+1}"
-                )(x_branch)
-            feature_branch_outputs.append(x_branch)
+                b = Conv1D(
+                    filters=branch_units,
+                    kernel_size=1,
+                    activation=activation,
+                    kernel_regularizer=l2(l2_reg),
+                    padding="same",
+                    name=f"feature_{c+1}_conv1d_{i+1}"
+                )(b)
+                branch_outputs.append(b)
 
-        # --- Merging Feature Branches ONLY ---
-        if len(feature_branch_outputs) == 1:
-             # Use Keras Identity layer for naming and compatibility
-             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
-        elif len(feature_branch_outputs) > 1:
-             # Concatenate is already a Keras layer
-             merged = Concatenate(name="merged_features")(feature_branch_outputs)
+        # --- Merge Branch Outputs into a 3D Tensor ---
+        if len(branch_outputs) == 1:
+            merged = Identity(name="merged_features")(branch_outputs[0])
         else:
-             raise ValueError("Model must have at least one input feature channel.")
-        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
+            merged = Concatenate(axis=-1, name="merged_features")(branch_outputs)
+        # merged shape: (batch, window_size, branch_units * num_channels)
 
-
-        merged = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1")(merged)
-        merged = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2")(merged)
+        # --- Down‑sampling Conv1D Stack ---
+        merged = Conv1D(
+            filters=merged_units,
+            kernel_size=3,
+            strides=2,
+            padding="valid",
+            kernel_regularizer=l2(l2_reg),
+            name="conv1d_1"
+        )(merged)
+        merged = Conv1D(
+            filters=branch_units,
+            kernel_size=3,
+            strides=2,
+            padding="valid",
+            kernel_regularizer=l2(l2_reg),
+            name="conv1d_2"
+        )(merged)
 
         
         # --- Define Bayesian Layer Components ---
