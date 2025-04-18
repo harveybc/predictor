@@ -18,7 +18,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
+from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda, TimeDistributed
 from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback, LambdaCallback
 from tensorflow.keras.losses import Huber
@@ -44,6 +44,7 @@ from tensorflow.keras.layers import Conv1D
 from tensorflow.keras.layers import Attention
 from tensorflow.keras.layers import MultiHeadAttention
 # LayerNormalization
+
 from tensorflow.keras.layers import LayerNormalization
 
 
@@ -452,16 +453,18 @@ class Plugin:
         pos_enc = positional_encoding(window_size, num_channels)  
         x = Add(name="positional_encoding_add")([inputs, pos_enc])
         
-                # --- Parallel Feature Processing Branches ---
+        # --- Parallel Feature Processing Branches ---
         feature_branch_outputs = []
         for c in range(num_channels):
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
                                    name=f"feature_{c+1}_input")(inputs)
-            x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
+            x_branch = feature_input
             for i in range(num_intermediate_layers):
-                x = Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                          name=f"feature_{c+1}_dense_{i+1}")(x)
-            feature_branch_outputs.append(x)
+                x_branch = TimeDistributed(
+                    Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg)),
+                    name=f"feature_{c+1}_dense_{i+1}"
+                )(x_branch)
+            feature_branch_outputs.append(x_branch)
 
         # --- Merging Feature Branches ONLY ---
         if len(feature_branch_outputs) == 1:
