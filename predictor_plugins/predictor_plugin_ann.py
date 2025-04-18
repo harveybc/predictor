@@ -491,7 +491,7 @@ class Plugin:
             # --- Add BiLSTM with full sequences ---
             # now returns all time‑steps so attention can collapse them ↓
             lstm_seq = Bidirectional(
-                LSTM(lstm_units, return_sequences=True),
+                LSTM(lstm_units, return_sequences=False),
                 name=f"bidir_lstm_seq{branch_suffix}"
             )(reshaped_for_lstm)
 
