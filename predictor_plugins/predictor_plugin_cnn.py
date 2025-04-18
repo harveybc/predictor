@@ -447,31 +447,14 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Parallel Feature Processing Branches ---
-        feature_branch_outputs = []
-        for c in range(num_channels):
-            # extract single channel → (batch, window_size, 1)
-            feat = Lambda(lambda x, ch=c: x[:, :, ch:ch+1],
-                  name=f"feature_{c+1}_input")(inputs)
-            # flatten + dense stack → (batch, branch_units)
-            y = Flatten(name=f"feature_{c+1}_flatten")(feat)
-            for i in range(num_intermediate_layers):
-                y = Dense(branch_units,
-                    activation=activation,
-                    kernel_regularizer=l2(l2_reg),
-                    name=f"feature_{c+1}_dense_{i+1}")(y)
-            feature_branch_outputs.append(y)
+        x = inputs
+        for i in range(num_intermediate_layers):
+                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+                          name=f"feature_conv_{i+1}")(x)
 
-        # --- Expand each branch to 3D and concatenate → (batch, branch_units, num_channels)
-        expanded = []
-        for i, br in enumerate(feature_branch_outputs):
-            e = Reshape((branch_units, 1),
-                name=f"feature_{i+1}_expand")(br)
-            expanded.append(e)
-
-        merged = Concatenate(axis=-1, name="merged_features")(expanded)
-        # now merged.shape == (batch_size, branch_units, num_channels)
-
+        # --- Flatten  ---
+        #merged = Flatten(name="flatten")(x)
+        merged = x
     
 
         # --- Define Bayesian Layer Components ---
