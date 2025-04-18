@@ -42,6 +42,9 @@ from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D
 from tensorflow.keras.layers import Attention
+from tensorflow.keras.layers import MultiHeadAttention
+# LayerNormalization
+from tensorflow.keras.layers import LayerNormalization
 
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
@@ -448,7 +451,7 @@ class Plugin:
         #    positional_encoding returns shape (1, window_size, num_channels)
         pos_enc = positional_encoding(window_size, num_channels)  
         x = Add(name="positional_encoding_add")([inputs, pos_enc])
-
+        
         for i in range(num_intermediate_layers):
                 x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
                           name=f"feature_conv_{i+1}")(x)
@@ -482,38 +485,30 @@ class Plugin:
             reshaped_for_lstm = head_dense_output
             reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
             reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
-            # --- Add BiLSTM with full sequences ---
-            # now returns all time‑steps so attention can collapse them ↓
-            lstm_seq = Bidirectional(
-                LSTM(lstm_units, return_sequences=True),
-                name=f"bidir_lstm_seq{branch_suffix}"
-            )(reshaped_for_lstm)
 
-            # --- Collapse via dot‑product Attention (query=last hidden state) ---
-            # 1) extract the last time‑step from lstm_seq as the “query”
-            last_hidden = Lambda(
-                lambda z: z[:, -1, :],
-                name=f"lstm_last_hidden{branch_suffix}"
-            )(lstm_seq)  # shape=(batch, 2*lstm_units)
+            # 1) MultiHead Self‑Attention over the conv sequence:
+            attn_output = MultiHeadAttention(
+                num_heads=2,                                            # comment: use same num_heads as transformer blocks
+                key_dim=max(1, lstm_units // 2),                        # comment: split dims evenly across heads
+                name=f"pre_lstm_mha{branch_suffix}"                             # comment: unique layer name per horizon
+            )(reshaped_for_lstm, reshaped_for_lstm)                             # comment: self‑attention: query=key=value
 
-            # 2) expand dims so Attention sees it as a length‑1 sequence
-            query = Reshape(
-                (1, 2*lstm_units),
-                name=f"expand_query{branch_suffix}"
-            )(last_hidden)  # shape=(batch, 1, 2*lstm_units)
+            # 2) Add & Normalize residual:
+            attn_residual = Add(
+                name=f"residual_pre_lstm{branch_suffix}"                        # comment: residual connection name
+            )([reshaped_for_lstm, attn_output])                                 # comment: combine original + attention
+            attn_norm = LayerNormalization(
+                name=f"norm_pre_lstm{branch_suffix}"                            # comment: layer norm for stability
+            )(attn_residual)                                                    # comment: normalize post‑residual
 
-            # 3) dot‑product self‑attention: (1,features) attends over full sequence
-            context = Attention(
-                name=f"post_lstm_attention{branch_suffix}"
-            )([query, lstm_seq])  # shape=(batch, 1, 2*lstm_units)
 
-            # 4) squeeze back to (batch, features)
-            context_vector = Lambda(
-                lambda t: tf.squeeze(t, axis=1),
-                name=f"context_vector{branch_suffix}"
-            )(context)  # shape=(batch, 2*lstm_units)
+            # Apply Bidirectional LSTM
+            # return_sequences=False gives output shape (batch, 2 * lstm_units)
+            lstm_output = Bidirectional(
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+            )(attn_norm)
+          
 
-            lstm_output = context_vector
 
             #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
             # --- Bayesian / Bias Layers ---
