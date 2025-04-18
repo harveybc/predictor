@@ -476,7 +476,7 @@ class Plugin:
             # after last Conv1D add ppositional encoding:
             seq_len, d_model = merged.shape[1], merged.shape[2]
             pos_enc2 = positional_encoding(seq_len, d_model)
-            merged = Add(name="pos_enc_after_conv")([merged, pos_enc2])
+            merged = Add(name=f"pos_enc_after_conv{branch_suffix}")([merged, pos_enc2])
 
             # 1) MultiHead Self‑Attention over the conv sequence:
             attn_output = MultiHeadAttention(
