@@ -474,9 +474,9 @@ class Plugin:
             reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
     
             # after last Conv1D add ppositional encoding:
-            seq_len, d_model = merged.shape[1], merged.shape[2]
+            seq_len, d_model = reshaped_for_lstm.shape[1], reshaped_for_lstm.shape[2]
             pos_enc2 = positional_encoding(seq_len, d_model)
-            merged = Add(name=f"pos_enc_after_conv{branch_suffix}")([merged, pos_enc2])
+            merged = Add(name=f"pos_enc_after_conv{branch_suffix}")([reshaped_for_lstm, pos_enc2])
 
             # 1) MultiHead Self‑Attention over the conv sequence:
             attn_output = MultiHeadAttention(
