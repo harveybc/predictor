@@ -41,10 +41,6 @@ from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D
-from tensorflow.keras.layers import Attention
-from tensorflow.keras.layers import MultiHeadAttention
-# LayerNormalization
-from tensorflow.keras.layers import LayerNormalization
 
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
@@ -88,21 +84,6 @@ class ClearMemoryCallback(Callback):
 # ---------------------------
 # Custom Metrics and Loss Functions
 # ---------------------------
-def get_angles(pos, i, d_model):
-    angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
-    return pos * angle_rates
-
-def positional_encoding(position, d_model):
-    angle_rads = get_angles(np.arange(position)[:, np.newaxis],
-                            np.arange(d_model)[np.newaxis, :],
-                            d_model)
-    # Apply sin to even indices; cos to odd indices
-    sines = np.sin(angle_rads[:, 0::2])
-    cosines = np.cos(angle_rads[:, 1::2])
-    pos_encoding = np.concatenate([sines, cosines], axis=-1)
-    pos_encoding = pos_encoding[np.newaxis, ...]  # Shape: (1, position, d_model)
-    return tf.cast(pos_encoding, dtype=tf.float32)
-
 def mae_magnitude(y_true, y_pred):
     """Compute MAE on the first column (magnitude)."""
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
@@ -453,9 +434,8 @@ class Plugin:
                           name=f"feature_conv_{i+1}")(x)
 
         # --- Flatten  ---
-        #merged = Flatten(name="flatten")(x)
-        merged = x
-    
+        merged = Flatten(name="flatten")(x)
+        #merged = x
 
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
@@ -465,40 +445,24 @@ class Plugin:
         outputs_list = []
         self.output_names = []
 
+
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
             # --- Head Intermediate Dense Layers ---
-            reshaped_for_lstm = merged
-            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
-            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
-    
-            # after last Conv1D add ppositional encoding:
-            seq_len, d_model = reshaped_for_lstm.shape[1], reshaped_for_lstm.shape[2]
-            pos_enc2 = positional_encoding(seq_len, d_model)
-            reshaped_for_lstm = Add(name=f"pos_enc_after_conv{branch_suffix}")([reshaped_for_lstm, pos_enc2])
+            head_dense_output = merged
+            for j in range(num_head_intermediate_layers):
+                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
-            # 1) MultiHead Self‑Attention over the conv sequence:
-            attn_output = MultiHeadAttention(
-                num_heads=2,                                            # comment: use same num_heads as transformer blocks
-                key_dim=max(1, lstm_units // 2),                        # comment: split dims evenly across heads
-                name=f"pre_lstm_mha{branch_suffix}"                             # comment: unique layer name per horizon
-            )(reshaped_for_lstm, reshaped_for_lstm)                             # comment: self‑attention: query=key=value
-
-            # 2) Add & Normalize residual:
-            attn_residual = Add(
-                name=f"residual_pre_lstm{branch_suffix}"                        # comment: residual connection name
-            )([reshaped_for_lstm, attn_output])                                 # comment: combine original + attention
-            attn_norm = LayerNormalization(
-                name=f"norm_pre_lstm{branch_suffix}"                            # comment: layer norm for stability
-            )(attn_residual)                                                    # comment: normalize post‑residual
-
-
+            # --- Add BiLSTM Layer ---
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
+            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(attn_norm)
+            )(reshaped_for_lstm)
           
 
 
