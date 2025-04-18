@@ -496,11 +496,8 @@ class Plugin:
             )(reshaped_for_lstm)
 
             # --- Collapse via dot‑product Attention (query=last hidden state) ---
-            # 1) extract the last time‑step from lstm_seq as the “query”
-            last_hidden = Lambda(
-                lambda z: z[:, -1, :],
-                name=f"lstm_last_hidden{branch_suffix}"
-            )(lstm_seq)  # shape=(batch, 2*lstm_units)
+            # 1) take the LSTM final output directly as the “query”
+            last_hidden = Identity(name=f"lstm_last_hidden{branch_suffix}")(lstm_seq)
 
             # 2) expand dims so Attention sees it as a length‑1 sequence
             query = Reshape(
