@@ -474,16 +474,11 @@ class Plugin:
              raise ValueError("Model must have at least one input feature channel.")
         # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
 
-        merged = x
 
-        for i in range(num_intermediate_layers):
-                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
-                          name=f"feature_conv_{i+1}")(x)
+        reshaped_for_lstm = Conv1D(filters=merged_units_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
+        reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
 
-        # --- Flatten  ---
-        #merged = Flatten(name="flatten")(x)
-        merged = x
-
+        
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
@@ -492,23 +487,8 @@ class Plugin:
         outputs_list = []
         self.output_names = []
 
-
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
-
-            # --- Head Intermediate Dense Layers ---
-            head_dense_output = merged
-            #for j in range(num_head_intermediate_layers):
-            #     head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-            #                               name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
-
-            # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
-            # TODO: probar (batch, merged_units, 1)
-            #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
-            reshaped_for_lstm = head_dense_output
-            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
-            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
 
             # 1) MultiHead Self‑Attention over the conv sequence:
             attn_output = MultiHeadAttention(
