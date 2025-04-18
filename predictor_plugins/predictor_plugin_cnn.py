@@ -433,7 +433,7 @@ class Plugin:
 
         x = inputs
         x = Conv1D(filters=window_size, kernel_size=3, strides=2, padding='valid', activation=activation,
-                          name=f"feature_conv_1_{i+1}")(x)
+                          name=f"feature_conv_0")(x)
         for i in range(num_intermediate_layers):
                 x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
                           name=f"feature_conv_1_{i+1}")(x)
