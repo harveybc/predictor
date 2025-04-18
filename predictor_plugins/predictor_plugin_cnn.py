@@ -434,8 +434,8 @@ class Plugin:
                           name=f"feature_conv_{i+1}")(x)
 
         # --- Flatten  ---
-        #merged = Flatten(name="flatten")(x)
-        merged = x
+        merged = Flatten(name="flatten")(x)
+        #merged = x
 
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
