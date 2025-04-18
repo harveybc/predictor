@@ -475,8 +475,8 @@ class Plugin:
         # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
 
 
-        reshaped_for_lstm = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1")(reshaped_for_lstm)
-        reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2")(reshaped_for_lstm)
+        merged = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1")(merged)
+        merged = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2")(merged)
 
         
         # --- Define Bayesian Layer Components ---
@@ -489,6 +489,8 @@ class Plugin:
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
+
+            reshaped_for_lstm = merged
 
             # 1) MultiHead Self‑Attention over the conv sequence:
             attn_output = MultiHeadAttention(
