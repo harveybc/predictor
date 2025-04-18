@@ -505,10 +505,15 @@ class Plugin:
                 name=f"expand_query{branch_suffix}"
             )(last_hidden)  # shape=(batch, 1, 2*lstm_units)
 
-            # 3) dot‑product self‑attention: (1,features) attends over full sequence
+            # 3) reshape LSTM output to 3D for attention key/value
+            key = Reshape(
+                (1, 2*lstm_units),
+                name=f"expand_key{branch_suffix}"
+            )(lstm_seq)  # shape=(batch, 1, 2*lstm_units)
+            # 4) dot‑product self‑attention
             context = Attention(
                 name=f"post_lstm_attention{branch_suffix}"
-            )([query, lstm_seq])  # shape=(batch, 1, 2*lstm_units)
+            )([query, key])  # shape=(batch, 1, 2*lstm_units)
 
             # 4) squeeze back to (batch, features)
             context_vector = Lambda(
