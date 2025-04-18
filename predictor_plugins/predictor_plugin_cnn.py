@@ -458,7 +458,8 @@ class Plugin:
             attention_key_dim = 64
             attention_output = MultiHeadAttention(
                 num_heads=num_attention_heads, # Assumed to be defined
-                key_dim=attention_key_dim      # Assumed to be defined
+                key_dim=attention_key_dim,      # Assumed to be defined
+                name=f"multi_head_attention{branch_suffix}"
             )(query=x, value=x, key=x)
             x = Add()([x, attention_output])
             x = LayerNormalization()(x)
