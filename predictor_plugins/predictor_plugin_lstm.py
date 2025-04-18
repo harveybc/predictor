@@ -41,6 +41,8 @@ from tensorflow.keras.layers import GlobalAveragePooling1D, AveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D
+from tensorflow.keras.layers import MultiHeadAttention
+from tensorflow.keras.layers import LayerNormalization
 
 
 
@@ -426,13 +428,25 @@ class Plugin:
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
         x = inputs
+        x = Conv1D(filters=window_size, kernel_size=3, strides=2, padding='valid', activation=activation,
+                          name=f"feature_conv_1_{i+1}")(x)
         for i in range(num_intermediate_layers):
-                x = Bidirectional(LSTM(merged_units, return_sequences=True,
-                          name=f"feature_lstm_{i+1}"))(x)
-                x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_{i+1}")(x)
+                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+                          name=f"feature_conv_1_{i+1}")(x)
+        for i in range(num_intermediate_layers):
+                        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+                                name=f"feature_conv_2_{i+1}")(x)
 
-        # --- Flatten  ---
-        #merged = Flatten(name="flatten")(x)
+        # --- Self-Attention Block ---
+        num_attention_heads = 2
+        attention_key_dim = 64
+        attention_output = MultiHeadAttention(
+            num_heads=num_attention_heads, # Assumed to be defined
+            key_dim=attention_key_dim      # Assumed to be defined
+        )(query=x, value=x, key=x)
+        x = Add()([x, attention_output])
+        x = LayerNormalization()(x)
+        # --- End Self-Attention Block ---
         merged = x
 
         # --- Define Bayesian Layer Components ---
