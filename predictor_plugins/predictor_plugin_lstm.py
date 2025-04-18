@@ -426,9 +426,10 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
+        x = inputs
+        
         x = Bidirectional(LSTM(window_size, return_sequences=True,
                           name=f"feature_lstm_{i+1}"))(x)
-        x = inputs
         for i in range(num_intermediate_layers):
                 x = Bidirectional(LSTM(merged_units, return_sequences=True,
                           name=f"feature_lstm_{i+1}"))(x)
