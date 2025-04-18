@@ -41,6 +41,7 @@ from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D
+from tensorflow.keras.layers import Attention
 
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
@@ -84,6 +85,21 @@ class ClearMemoryCallback(Callback):
 # ---------------------------
 # Custom Metrics and Loss Functions
 # ---------------------------
+def get_angles(pos, i, d_model):
+    angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
+    return pos * angle_rates
+
+def positional_encoding(position, d_model):
+    angle_rads = get_angles(np.arange(position)[:, np.newaxis],
+                            np.arange(d_model)[np.newaxis, :],
+                            d_model)
+    # Apply sin to even indices; cos to odd indices
+    sines = np.sin(angle_rads[:, 0::2])
+    cosines = np.cos(angle_rads[:, 1::2])
+    pos_encoding = np.concatenate([sines, cosines], axis=-1)
+    pos_encoding = pos_encoding[np.newaxis, ...]  # Shape: (1, position, d_model)
+    return tf.cast(pos_encoding, dtype=tf.float32)
+
 def mae_magnitude(y_true, y_pred):
     """Compute MAE on the first column (magnitude)."""
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
@@ -429,6 +445,12 @@ class Plugin:
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
         x = inputs
+
+        # Add absolute positional encoding to raw inputs
+        # (positional_encoding returns a (1, window_size, num_channels) tensor)
+        pos_enc = positional_encoding(window_size, num_channels)   # Compute PE
+        x = Add(name="positional_encoding_add")([x, pos_enc])      # x ← x + PE
+
         for i in range(num_intermediate_layers):
                 x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
                           name=f"feature_conv_{i+1}")(x)
@@ -462,13 +484,20 @@ class Plugin:
             reshaped_for_lstm = head_dense_output
             reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
             reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
-            # Apply Bidirectional LSTM
-            # return_sequences=False gives output shape (batch, 2 * lstm_units)
-            lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+            # --- Add BiLSTM with full sequences ---
+            # BiLSTM now returns a sequence; shape → (batch, timesteps', 2*lstm_units)
+            lstm_seq = Bidirectional(
+                LSTM(lstm_units, return_sequences=True),   # keep all time steps
+                name=f"bidir_lstm_seq{branch_suffix}"
             )(reshaped_for_lstm)
-          
 
+            # --- Post‑LSTM Attention collapse ---
+            # using additive dot‑product attention over the sequence against itself
+            context_vector = Attention(
+                name=f"post_lstm_attention{branch_suffix}"
+            )([lstm_seq, lstm_seq])   
+
+            lstm_output = context_vector
 
             #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
             # --- Bayesian / Bias Layers ---
