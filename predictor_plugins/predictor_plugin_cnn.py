@@ -430,14 +430,11 @@ class Plugin:
 
         x = inputs
         for i in range(num_intermediate_layers):
-                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
                           name=f"feature_conv_1_{i+1}")(x)
         for i in range(num_intermediate_layers):
-                        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+                        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
                                 name=f"feature_conv_2_{i+1}")(x)
-        for i in range(num_intermediate_layers):
-                        x = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', activation=activation,
-                                name=f"feature_conv_3_{i+1}")(x)
 
         # --- Flatten  ---
         merged = Flatten(name="flatten")(x)
