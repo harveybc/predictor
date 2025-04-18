@@ -447,54 +447,43 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # 1) Add absolute positional encoding
-        pos_enc = positional_encoding(window_size, num_channels)  # shape (1, window_size, num_channels)
+        # 1) Add absolute positional encoding to the raw inputs
+        pos_enc = positional_encoding(window_size, num_channels)  
         x = Add(name="positional_encoding_add")([inputs, pos_enc])
 
-        # --- Parallel 1×1‑Conv “Dense” Branches (no TimeDistributed) ---
-        branch_outputs = []
+        # --- Parallel Feature Processing Branches ---
+        feature_branch_outputs = []
         for c in range(num_channels):
-            # slice out channel c → shape (batch, window_size, 1)
-            feat = Lambda(lambda t, ch=c: t[:, :, ch:ch+1],
-                  name=f"feature_{c+1}_input")(x)
-
-            # apply num_intermediate_layers of 1×1 Conv1D as a time‑distributed Dense
-            b = feat
+            # extract single channel → (batch, window_size, 1)
+            feat = Lambda(lambda x, ch=c: x[:, :, ch:ch+1],
+                  name=f"feature_{c+1}_input")(inputs)
+            # flatten + dense stack → (batch, branch_units)
+            y = Flatten(name=f"feature_{c+1}_flatten")(feat)
             for i in range(num_intermediate_layers):
-                b = Conv1D(
-                    filters=branch_units,
-                    kernel_size=1,
+                y = Dense(branch_units,
                     activation=activation,
                     kernel_regularizer=l2(l2_reg),
-                    padding="same",
-                    name=f"feature_{c+1}_conv1d_{i+1}"
-                )(b)
-                branch_outputs.append(b)
+                    name=f"feature_{c+1}_dense_{i+1}")(y)
+            feature_branch_outputs.append(y)
 
-        # --- Merge Branch Outputs into a 3D Tensor ---
-        if len(branch_outputs) == 1:
-            merged = Identity(name="merged_features")(branch_outputs[0])
-        else:
-            merged = Concatenate(axis=-1, name="merged_features")(branch_outputs)
-        # merged shape: (batch, window_size, branch_units * num_channels)
+        # --- Expand each branch to 3D and concatenate → (batch, branch_units, num_channels)
+        expanded = []
+        for i, br in enumerate(feature_branch_outputs):
+            e = Reshape((branch_units, 1),
+                name=f"feature_{i+1}_expand")(br)
+            expanded.append(e)
 
-        # --- Down‑sampling Conv1D Stack ---
-        merged = Conv1D(
-            filters=merged_units,
-            kernel_size=3,
-            strides=2,
-            padding="valid",
-            kernel_regularizer=l2(l2_reg),
-            name="conv1d_1"
-        )(merged)
-        merged = Conv1D(
-            filters=branch_units,
-            kernel_size=3,
-            strides=2,
-            padding="valid",
-            kernel_regularizer=l2(l2_reg),
-            name="conv1d_2"
-        )(merged)
+        merged = Concatenate(axis=-1, name="merged_features")(expanded)
+        # now merged.shape == (batch_size, branch_units, num_channels)
+
+        # First Conv1D (unchanged)
+        merged = Conv1D(filters=merged_units,
+                kernel_size=3,
+                strides=2,
+                padding='valid',
+                kernel_regularizer=l2(l2_reg),
+                name="conv1d_1")(merged)
+        merged = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2")(merged)
 
         
         # --- Define Bayesian Layer Components ---
