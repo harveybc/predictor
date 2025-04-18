@@ -426,17 +426,15 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
-
+        x = Bidirectional(LSTM(window_size, return_sequences=True,
+                          name=f"feature_lstm_{i+1}"))(x)
         x = inputs
-        x = Conv1D(filters=window_size, kernel_size=3, strides=2, padding='valid', activation=activation,
-                          name=f"feature_conv_0")(x)
         for i in range(num_intermediate_layers):
-                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
-                          name=f"feature_conv_1_{i+1}")(x)
-        for i in range(num_intermediate_layers):
-                        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
-                                name=f"feature_conv_2_{i+1}")(x)
+                x = Bidirectional(LSTM(merged_units, return_sequences=True,
+                          name=f"feature_lstm_{i+1}"))(x)
+                x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_{i+1}")(x)
 
+        
         # --- Self-Attention Block ---
         num_attention_heads = 2
         attention_key_dim = 64
@@ -447,6 +445,7 @@ class Plugin:
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
         # --- End Self-Attention Block ---
+        
         merged = x
 
         # --- Define Bayesian Layer Components ---
@@ -472,10 +471,8 @@ class Plugin:
             # TODO: probar (batch, merged_units, 1)
             #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
             reshaped_for_lstm = head_dense_output
-            reshaped_for_lstm = Bidirectional(LSTM(branch_units, return_sequences=True, name=f"lstm_head_1_{branch_suffix}"))(reshaped_for_lstm)
-            reshaped_for_lstm = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_1{branch_suffix}")(reshaped_for_lstm)
             reshaped_for_lstm = Bidirectional(LSTM(lstm_units, return_sequences=True, name=f"lstm_head_2_{branch_suffix}"))(reshaped_for_lstm)
-            reshaped_for_lstm = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_2{branch_suffix}")(reshaped_for_lstm)
+            #reshaped_for_lstm = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_2{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
