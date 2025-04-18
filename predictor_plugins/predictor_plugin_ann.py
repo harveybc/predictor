@@ -42,6 +42,8 @@ from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
 from tensorflow.keras.layers import MultiHeadAttention
 from tensorflow.keras.layers import LayerNormalization
+from tensorflow.keras.layers import Add
+from tensorflow.keras.layers import Attention
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -486,37 +488,39 @@ class Plugin:
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            # --- Add BiLSTM with full sequences ---
+            # now returns all time‑steps so attention can collapse them ↓
+            lstm_seq = Bidirectional(
+                LSTM(lstm_units, return_sequences=True),
+                name=f"bidir_lstm_seq{branch_suffix}"
+            )(reshaped_for_lstm)
 
-            # after last Conv1D add ppositional encoding:
-            seq_len, d_model = reshaped_for_lstm.shape[1], reshaped_for_lstm.shape[2]
-            pos_enc2 = positional_encoding(seq_len, d_model)
-            reshaped_for_lstm = Add(name=f"pos_enc_after_conv{branch_suffix}")([reshaped_for_lstm, pos_enc2])
+            # --- Collapse via dot‑product Attention (query=last hidden state) ---
+            # 1) extract the last time‑step from lstm_seq as the “query”
+            last_hidden = Lambda(
+                lambda z: z[:, -1, :],
+                name=f"lstm_last_hidden{branch_suffix}"
+            )(lstm_seq)  # shape=(batch, 2*lstm_units)
 
-            # 1) MultiHead Self‑Attention over the conv sequence:
-            attn_output = MultiHeadAttention(
-                num_heads=2,                                            # comment: use same num_heads as transformer blocks
-                key_dim=max(1, lstm_units // 2),                        # comment: split dims evenly across heads
-                name=f"pre_lstm_mha{branch_suffix}"                             # comment: unique layer name per horizon
-            )(reshaped_for_lstm, reshaped_for_lstm)                             # comment: self‑attention: query=key=value
+            # 2) expand dims so Attention sees it as a length‑1 sequence
+            query = Reshape(
+                (1, 2*lstm_units),
+                name=f"expand_query{branch_suffix}"
+            )(last_hidden)  # shape=(batch, 1, 2*lstm_units)
 
-            # 2) Add & Normalize residual:
-            attn_residual = Add(
-                name=f"residual_pre_lstm{branch_suffix}"                        # comment: residual connection name
-            )([reshaped_for_lstm, attn_output])                                 # comment: combine original + attention
-            attn_norm = LayerNormalization(
-                name=f"norm_pre_lstm{branch_suffix}"                            # comment: layer norm for stability
-            )(attn_residual)                                                    # comment: normalize post‑residual
+            # 3) dot‑product self‑attention: (1,features) attends over full sequence
+            context = Attention(
+                name=f"post_lstm_attention{branch_suffix}"
+            )([query, lstm_seq])  # shape=(batch, 1, 2*lstm_units)
 
-
-            # Apply Bidirectional LSTM
-            # return_sequences=False gives output shape (batch, 2 * lstm_units)
-            lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(attn_norm)
-          
+            # 4) squeeze back to (batch, features)
+            context_vector = Lambda(
+                lambda t: tf.squeeze(t, axis=1),
+                name=f"context_vector{branch_suffix}"
+            )(context)  # shape=(batch, 2*lstm_units)                                               # comment: normalize post‑residual
 
 
-            #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
+
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
@@ -530,10 +534,10 @@ class Plugin:
                 lambda t: flipout_layer_branch(t),
                 output_shape=lambda s: (s[0], 1), # Explicit output shape
                 name=f"bayesian_output{branch_suffix}"
-            )(lstm_output)
+            )(context_vector)
 
             bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44,
-                                      name=f"deterministic_bias{branch_suffix}")(lstm_output)
+                                      name=f"deterministic_bias{branch_suffix}")(context_vector)
 
             # --- Final Head Output ---
             output_name = f"output_horizon_{horizon}"
