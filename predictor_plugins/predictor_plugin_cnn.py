@@ -472,20 +472,7 @@ class Plugin:
         merged = Concatenate(axis=-1, name="merged_features")(expanded)
         # now merged.shape == (batch_size, branch_units, num_channels)
 
-        # First Conv1D (unchanged)
-        merged = Conv1D(filters=merged_units,
-                kernel_size=3,
-                strides=2,
-                padding='valid',
-                kernel_regularizer=l2(l2_reg),
-                name="conv1d_1")(merged)
-        merged = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2")(merged)
-
-        # after your second Conv1D:
-        seq_len, d_model = merged.shape[1], merged.shape[2]
-        pos_enc2 = positional_encoding(seq_len, d_model)
-        merged = Add(name="pos_enc_after_conv")([merged, pos_enc2])
-
+    
 
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
@@ -498,7 +485,15 @@ class Plugin:
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
+            # --- Head Intermediate Dense Layers ---
             reshaped_for_lstm = merged
+            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
+    
+            # after last Conv1D add ppositional encoding:
+            seq_len, d_model = merged.shape[1], merged.shape[2]
+            pos_enc2 = positional_encoding(seq_len, d_model)
+            merged = Add(name="pos_enc_after_conv")([merged, pos_enc2])
 
             # 1) MultiHead Self‑Attention over the conv sequence:
             attn_output = MultiHeadAttention(
