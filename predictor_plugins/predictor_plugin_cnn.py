@@ -41,6 +41,9 @@ from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D
+from tensorflow.keras.layers import MultiHeadAttention
+# layernormalization
+from tensorflow.keras.layers import LayerNormalization
 
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
@@ -430,14 +433,24 @@ class Plugin:
 
         x = inputs
         for i in range(num_intermediate_layers):
-                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
+                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
                           name=f"feature_conv_1_{i+1}")(x)
         for i in range(num_intermediate_layers):
-                        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
+                        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
                                 name=f"feature_conv_2_{i+1}")(x)
 
+        # --- Self-Attention Block ---
+        num_attention_heads = 2
+        attention_key_dim = 64
+        attention_output = MultiHeadAttention(
+            num_heads=num_attention_heads, # Assumed to be defined
+            key_dim=attention_key_dim      # Assumed to be defined
+        )(query=x, value=x, key=x)
+        x = Add()([x, attention_output])
+        x = LayerNormalization()(x)
+        # --- End Self-Attention Block ---
         # --- Flatten  ---
-        merged = Flatten(name="flatten")(x)
+        merged = Flatten(name="flatten")(attention_output) # Flatten attention output
         #merged = x
 
         # --- Define Bayesian Layer Components ---
