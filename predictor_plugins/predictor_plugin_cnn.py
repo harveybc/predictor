@@ -475,8 +475,8 @@ class Plugin:
         # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
 
 
-        reshaped_for_lstm = Conv1D(filters=merged_units_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
-        reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
+        reshaped_for_lstm = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1")(reshaped_for_lstm)
+        reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2")(reshaped_for_lstm)
 
         
         # --- Define Bayesian Layer Components ---
