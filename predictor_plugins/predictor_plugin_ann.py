@@ -40,10 +40,6 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
-from tensorflow.keras.layers import MultiHeadAttention
-from tensorflow.keras.layers import LayerNormalization
-from tensorflow.keras.layers import Add
-from tensorflow.keras.layers import Attention
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -86,21 +82,6 @@ class ClearMemoryCallback(Callback):
 # ---------------------------
 # Custom Metrics and Loss Functions
 # ---------------------------
-def get_angles(pos, i, d_model):
-    angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
-    return pos * angle_rates
-
-def positional_encoding(position, d_model):
-    angle_rads = get_angles(np.arange(position)[:, np.newaxis],
-                            np.arange(d_model)[np.newaxis, :],
-                            d_model)
-    # Apply sin to even indices; cos to odd indices
-    sines = np.sin(angle_rads[:, 0::2])
-    cosines = np.cos(angle_rads[:, 1::2])
-    pos_encoding = np.concatenate([sines, cosines], axis=-1)
-    pos_encoding = pos_encoding[np.newaxis, ...]  # Shape: (1, position, d_model)
-    return tf.cast(pos_encoding, dtype=tf.float32)
-
 def mae_magnitude(y_true, y_pred):
     """Compute MAE on the first column (magnitude)."""
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
@@ -488,41 +469,15 @@ class Plugin:
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
-            # --- Add BiLSTM with full sequences ---
-            # now returns all time‑steps so attention can collapse them ↓
-            lstm_seq = Bidirectional(
-                LSTM(lstm_units, return_sequences=False),
-                name=f"bidir_lstm_seq{branch_suffix}"
+            # Apply Bidirectional LSTM
+            # return_sequences=False gives output shape (batch, 2 * lstm_units)
+            lstm_output = Bidirectional(
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
             )(reshaped_for_lstm)
-
-            # --- Collapse via dot‑product Attention (query=last hidden state) ---
-            # 1) take the LSTM final output directly as the “query”
-            last_hidden = Identity(name=f"lstm_last_hidden{branch_suffix}")(lstm_seq)
-
-            # 2) expand dims so Attention sees it as a length‑1 sequence
-            query = Reshape(
-                (1, 2*lstm_units),
-                name=f"expand_query{branch_suffix}"
-            )(last_hidden)  # shape=(batch, 1, 2*lstm_units)
-
-            # 3) reshape LSTM output to 3D for attention key/value
-            key = Reshape(
-                (1, 2*lstm_units),
-                name=f"expand_key{branch_suffix}"
-            )(lstm_seq)  # shape=(batch, 1, 2*lstm_units)
-            # 4) dot‑product self‑attention
-            context = Attention(
-                name=f"post_lstm_attention{branch_suffix}"
-            )([query, key])  # shape=(batch, 1, 2*lstm_units)
-
-            # 4) squeeze back to (batch, features)
-            context_vector = Lambda(
-                lambda t: tf.squeeze(t, axis=1),
-                name=f"context_vector{branch_suffix}"
-            )(context)  # shape=(batch, 2*lstm_units)                                               # comment: normalize post‑residual
+          
 
 
-
+            #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
@@ -536,10 +491,10 @@ class Plugin:
                 lambda t: flipout_layer_branch(t),
                 output_shape=lambda s: (s[0], 1), # Explicit output shape
                 name=f"bayesian_output{branch_suffix}"
-            )(context_vector)
+            )(lstm_output)
 
             bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44,
-                                      name=f"deterministic_bias{branch_suffix}")(context_vector)
+                                      name=f"deterministic_bias{branch_suffix}")(lstm_output)
 
             # --- Final Head Output ---
             output_name = f"output_horizon_{horizon}"
