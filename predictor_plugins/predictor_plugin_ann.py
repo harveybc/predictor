@@ -40,6 +40,8 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
+from tensorflow.keras.layers import MultiHeadAttention
+from tensorflow.keras.layers import LayerNormalization
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -469,11 +471,28 @@ class Plugin:
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
             reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+
+            # 1) MultiHead Self‑Attention over the conv sequence:
+            attn_output = MultiHeadAttention(
+                num_heads=2,                                            # comment: use same num_heads as transformer blocks
+                key_dim=max(1, lstm_units // 2),                        # comment: split dims evenly across heads
+                name=f"pre_lstm_mha{branch_suffix}"                             # comment: unique layer name per horizon
+            )(reshaped_for_lstm, reshaped_for_lstm)                             # comment: self‑attention: query=key=value
+
+            # 2) Add & Normalize residual:
+            attn_residual = Add(
+                name=f"residual_pre_lstm{branch_suffix}"                        # comment: residual connection name
+            )([reshaped_for_lstm, attn_output])                                 # comment: combine original + attention
+            attn_norm = LayerNormalization(
+                name=f"norm_pre_lstm{branch_suffix}"                            # comment: layer norm for stability
+            )(attn_residual)                                                    # comment: normalize post‑residual
+
+
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(reshaped_for_lstm)
+            )(attn_norm)
           
 
 
