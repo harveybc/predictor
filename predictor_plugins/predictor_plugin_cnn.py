@@ -444,12 +444,10 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        x = inputs
-
-        # Add absolute positional encoding to raw inputs
-        # (positional_encoding returns a (1, window_size, num_channels) tensor)
-        pos_enc = positional_encoding(window_size, num_channels)   # Compute PE
-        x = Add(name="positional_encoding_add")([x, pos_enc])      # x ← x + PE
+        # 1) Add absolute positional encoding to the raw inputs
+        #    positional_encoding returns shape (1, window_size, num_channels)
+        pos_enc = positional_encoding(window_size, num_channels)  
+        x = Add(name="positional_encoding_add")([inputs, pos_enc])
 
         for i in range(num_intermediate_layers):
                 x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
@@ -485,17 +483,35 @@ class Plugin:
             reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
             reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
             # --- Add BiLSTM with full sequences ---
-            # BiLSTM now returns a sequence; shape → (batch, timesteps', 2*lstm_units)
+            # now returns all time‑steps so attention can collapse them ↓
             lstm_seq = Bidirectional(
-                LSTM(lstm_units, return_sequences=True),   # keep all time steps
+                LSTM(lstm_units, return_sequences=True),
                 name=f"bidir_lstm_seq{branch_suffix}"
             )(reshaped_for_lstm)
 
-            # --- Post‑LSTM Attention collapse ---
-            # using additive dot‑product attention over the sequence against itself
-            context_vector = Attention(
+            # --- Collapse via dot‑product Attention (query=last hidden state) ---
+            # 1) extract the last time‑step from lstm_seq as the “query”
+            last_hidden = Lambda(
+                lambda z: z[:, -1, :],
+                name=f"lstm_last_hidden{branch_suffix}"
+            )(lstm_seq)  # shape=(batch, 2*lstm_units)
+
+            # 2) expand dims so Attention sees it as a length‑1 sequence
+            query = Reshape(
+                (1, 2*lstm_units),
+                name=f"expand_query{branch_suffix}"
+            )(last_hidden)  # shape=(batch, 1, 2*lstm_units)
+
+            # 3) dot‑product self‑attention: (1,features) attends over full sequence
+            context = Attention(
                 name=f"post_lstm_attention{branch_suffix}"
-            )([lstm_seq, lstm_seq])   
+            )([query, lstm_seq])  # shape=(batch, 1, 2*lstm_units)
+
+            # 4) squeeze back to (batch, features)
+            context_vector = Lambda(
+                lambda t: tf.squeeze(t, axis=1),
+                name=f"context_vector{branch_suffix}"
+            )(context)  # shape=(batch, 2*lstm_units)
 
             lstm_output = context_vector
 
