@@ -447,10 +447,6 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # 1) Add absolute positional encoding to the raw inputs
-        pos_enc = positional_encoding(window_size, num_channels)  
-        x = Add(name="positional_encoding_add")([inputs, pos_enc])
-
         # --- Parallel Feature Processing Branches ---
         feature_branch_outputs = []
         for c in range(num_channels):
@@ -485,7 +481,12 @@ class Plugin:
                 name="conv1d_1")(merged)
         merged = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2")(merged)
 
-        
+        # after your second Conv1D:
+        seq_len, d_model = merged.shape[1], merged.shape[2]
+        pos_enc2 = positional_encoding(seq_len, d_model)
+        merged = Add(name="pos_enc_after_conv")([merged, pos_enc2])
+
+
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
