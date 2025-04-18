@@ -283,8 +283,7 @@ class PreprocessorPlugin:
                               wavelet=name,
                               level=levels,
                               trim_approx=False,
-                              norm=True,
-                              mode='constant') # Boundary mode, no future data is used in padding
+                              norm=True) # Boundary mode, no future data is used in padding
 
             # --- Extract coefficients ---
             if not isinstance(coeffs, list) or len(coeffs) != levels:
