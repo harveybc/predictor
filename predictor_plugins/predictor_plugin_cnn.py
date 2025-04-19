@@ -46,6 +46,7 @@ from tensorflow.keras.layers import LayerNormalization
 
 
 
+
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
 local_i_control=[]
@@ -87,6 +88,21 @@ class ClearMemoryCallback(Callback):
 # ---------------------------
 # Custom Metrics and Loss Functions
 # ---------------------------
+def get_angles(pos, i, d_model):
+    angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
+    return pos * angle_rates
+
+def positional_encoding(position, d_model):
+    angle_rads = get_angles(np.arange(position)[:, np.newaxis],
+                            np.arange(d_model)[np.newaxis, :],
+                            d_model)
+    # Apply sin to even indices; cos to odd indices
+    sines = np.sin(angle_rads[:, 0::2])
+    cosines = np.cos(angle_rads[:, 1::2])
+    pos_encoding = np.concatenate([sines, cosines], axis=-1)
+    pos_encoding = pos_encoding[np.newaxis, ...]  # Shape: (1, position, d_model)
+    return tf.cast(pos_encoding, dtype=tf.float32)
+
 def mae_magnitude(y_true, y_pred):
     """Compute MAE on the first column (magnitude)."""
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
@@ -426,19 +442,22 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
-
         x = inputs
-
+        
+        # Add positional encoding to capture temporal order
+        pos_enc = positional_encoding(window_size, num_channels)
+        x = x + pos_enc
+        
         # --- Self-Attention Block ---
         num_attention_heads = 2
-        attention_key_dim = 64
+        attention_key_dim = merged_units
         attention_output = MultiHeadAttention(
             num_heads=num_attention_heads, # Assumed to be defined
-            key_dim=attention_key_dim,      # Assumed to be defined
-            name=f"multi_head_attention{branch_suffix}"
+            key_dim=attention_key_dim      # Assumed to be defined
         )(query=x, value=x, key=x)
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
+        
         # --- End Self-Attention Block ---
 
         x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
