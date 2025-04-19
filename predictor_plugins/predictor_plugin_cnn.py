@@ -450,8 +450,8 @@ class Plugin:
         x = x + pos_enc
         
         # --- Self-Attention Block ---
-        num_attention_heads = 2
-        attention_key_dim = merged_units
+        num_attention_heads = 4
+        attention_key_dim = num_channels//num_attention_heads
         attention_output = MultiHeadAttention(
             num_heads=num_attention_heads, # Assumed to be defined
             key_dim=attention_key_dim      # Assumed to be defined
