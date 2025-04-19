@@ -438,7 +438,7 @@ class Plugin:
         branch_units = merged_units//config.get("layer_size_divisor", 2)
         # Add LSTM units parameter (provide a default)
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
-
+        num_attention_heads = config.get("num_attention_heads", 2) # New parameter for number of attention heads
 
         # Assume necessary imports like Input, Conv1D, Attention, Add, LayerNormalization, Flatten, K, tf
         # Assume 'get_positional_encoding' function from above is defined here or imported
@@ -446,50 +446,48 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
-
-        # --- Self-Attention Block ---
-        num_attention_heads = 2
-        attention_key_dim = num_channels//num_attention_heads
-        attention_output = MultiHeadAttention(
-            num_heads=num_attention_heads, # Assumed to be defined
-            key_dim=attention_key_dim,      # Assumed to be defined
-            kernel_regularizer=l2(l2_reg)
-        )(query=x, value=x, key=x)
-        x = Add()([x, attention_output])
-        x = LayerNormalization()(x)
-
-                # --- Self-Attention Block ---
-        num_attention_heads = 2
-        attention_key_dim = num_channels//num_attention_heads
-        attention_output = MultiHeadAttention(
-            num_heads=num_attention_heads, # Assumed to be defined
-            key_dim=attention_key_dim,      # Assumed to be defined
-            kernel_regularizer=l2(l2_reg)
-        )(query=x, value=x, key=x)
-        x = Add()([x, attention_output])
-        x = LayerNormalization()(x)
-
-        x=Flatten(name="flatten_0")(x)
-
-
-        x = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_0")(x)
-
-        # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-        x = Reshape((1, merged_units), name=f"reshape_0")(x)
         
-        # Add positional encoding to capture temporal order
-        # get static shape tuple via Keras backend
-        last_layer_shape = K.int_shape(x)
-        feature_dim = last_layer_shape[-1]
-        # get the sequence length from the last layer shape
-        seq_length = last_layer_shape[1]
-        pos_enc = positional_encoding(seq_length, feature_dim)
-        x = x + pos_enc
+        # NOTE: Recommended to add Positional Encoding here:
+        # pos_encoding = get_positional_encoding(window_size, num_channels)
+        # x = x + pos_encoding
+
+        # --- Self-Attention Block 1 ---
+        # Input 'x' has feature dimension: num_channels
+        feature_dim_1 = num_channels
+        if feature_dim_1 % num_attention_heads != 0:
+            raise ValueError(f"Input feature dimension ({feature_dim_1}) is not divisible by "
+                             f"number of attention heads ({num_attention_heads}) in Block 1")
+        key_dim_1 = feature_dim_1 // num_attention_heads
+
+        attention_output_1 = MultiHeadAttention(
+            num_heads=num_attention_heads,
+            key_dim=key_dim_1, # Use correctly calculated key_dim
+            kernel_regularizer=l2(l2_reg),
+            name="mha_1" # Added name for clarity
+        )(query=x, value=x, key=x)
+        x = Add(name="add_1")([x, attention_output_1])
+        x = LayerNormalization(name="norm_1")(x)
+
+        # --- Self-Attention Block 2 ---
+        # Input 'x' (output of Block 1) has feature dimension: num_channels
+        # (Assuming MHA defaults to projecting output back to input dimension)
+        feature_dim_2 = num_channels
+        if feature_dim_2 % num_attention_heads != 0:
+            raise ValueError(f"Input feature dimension ({feature_dim_2}) is not divisible by "
+                             f"number of attention heads ({num_attention_heads}) in Block 2")
+        key_dim_2 = feature_dim_2 // num_attention_heads
+
+        attention_output_2 = MultiHeadAttention(
+            num_heads=num_attention_heads,
+            key_dim=key_dim_2, # Use correctly calculated key_dim
+            kernel_regularizer=l2(l2_reg),
+            name="mha_2" # Added name for clarity
+        )(query=x, value=x, key=x)
+        x = Add(name="add_2")([x, attention_output_2])
+        x = LayerNormalization(name="norm_2")(x)
+
         
-
-        merged = x
-
+        merged = x 
 
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
@@ -499,27 +497,34 @@ class Plugin:
         outputs_list = []
         self.output_names = []
 
-
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
             # --- Head Intermediate Dense Layers ---
-            head_dense_output = merged
-            # --- Self-Attention Block ---
-            num_attention_heads = 2
-            attention_key_dim = num_channels//num_attention_heads
-            attention_output = MultiHeadAttention(
-                num_heads=num_attention_heads, # Assumed to be defined
-                key_dim=attention_key_dim,      # Assumed to be defined
-                kernel_regularizer=l2(l2_reg)
+            head_dense_output = merged # Input shape (batch, 1, merged_units)
+
+            # --- Self-Attention Block within Head ---
+            # Input 'head_dense_output' has feature dimension: merged_units
+            feature_dim_3 = merged_units
+            if feature_dim_3 % num_attention_heads != 0:
+                raise ValueError(f"Input feature dimension ({feature_dim_3}) for head {horizon} "
+                                 f"is not divisible by number of attention heads ({num_attention_heads})")
+            key_dim_3 = feature_dim_3 // num_attention_heads
+
+            attention_output_3 = MultiHeadAttention(
+                num_heads=num_attention_heads,
+                key_dim=key_dim_3, # Use correctly calculated key_dim
+                kernel_regularizer=l2(l2_reg),
+                name=f"mha_head{branch_suffix}" # Added name
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
-            head_dense_output = Add()([head_dense_output, attention_output])
-            head_dense_output = LayerNormalization()(head_dense_output)
-            
+            head_dense_output = Add(name=f"add_head{branch_suffix}")([head_dense_output, attention_output_3])
+            head_dense_output = LayerNormalization(name=f"norm_head{branch_suffix}")(head_dense_output)
+
             # Bidirectional LSTM layer
+            # NOTE: LSTM processes a sequence of length 1 here.
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg)), name=f"bidir_lstm{branch_suffix}"
-            )(head_dense_output)
+            )(head_dense_output) # Input sequence length is 1
         
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
