@@ -449,11 +449,11 @@ class Plugin:
 
         # --- Convolutional Layers ---
         # (Your Conv1D layers remain the same)
-        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
                 name=f"feature_conv_1")(x)
-        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
                 name=f"feature_conv_2")(x)
-        x = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+        x = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
                 name=f"feature_conv_3")(x)
         # x shape: (batch_size, seq_len_after_convs, lstm_units)
 
@@ -498,14 +498,15 @@ class Plugin:
             attention_key_dim = num_channels//num_attention_heads
             attention_output = MultiHeadAttention(
                 num_heads=num_attention_heads, # Assumed to be defined
-                key_dim=attention_key_dim      # Assumed to be defined
+                key_dim=attention_key_dim,      # Assumed to be defined
+                kernel_regularizer=l2(l2_reg)
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add()([head_dense_output, attention_output])
             head_dense_output = LayerNormalization()(head_dense_output)
             
             # Bidirectional LSTM layer
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg),), name=f"bidir_lstm{branch_suffix}"
+                LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg)), name=f"bidir_lstm{branch_suffix}"
             )(head_dense_output)
         
             # --- Bayesian / Bias Layers ---
