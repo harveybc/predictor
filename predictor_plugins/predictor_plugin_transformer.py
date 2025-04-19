@@ -445,6 +445,9 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
+        
+        
+        # -- Feature-Extractor Begin (to be replaced with external pretrained encoderm of an autoencoder based feature extractor)
         x = inputs
         
         # Positional Encoding:
@@ -497,6 +500,8 @@ class Plugin:
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
+
+        # -- Feature-Extractor End
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
