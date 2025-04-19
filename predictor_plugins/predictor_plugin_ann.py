@@ -40,9 +40,6 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
-from tensorflow.keras.layers import MultiHeadAttention
-from tensorflow.keras.layers import LayerNormalization
-from tensorflow.keras.layers import AveragePooling1D
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -451,9 +448,6 @@ class Plugin:
              raise ValueError("Model must have at least one input feature channel.")
         # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
 
-        # --- Reshape for LSTM ---
-        x = Reshape((1, merged_units), name=f"reshape_0")(x)
-
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
@@ -468,22 +462,18 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
-            # --- Self-Attention Block ---
-            num_attention_heads = 2
-            attention_key_dim = num_channels//num_attention_heads
-            attention_output = MultiHeadAttention(
-                num_heads=num_attention_heads, # Assumed to be defined
-                key_dim=attention_key_dim,      # Assumed to be defined
-                kernel_regularizer=l2(l2_reg)
-            )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
-            head_dense_output = Add()([head_dense_output, attention_output])
-            head_dense_output = LayerNormalization()(head_dense_output)
-            head_dense_output = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_1{branch_suffix}")(head_dense_output)
+            for j in range(num_head_intermediate_layers):
+                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
-            # Bidirectional LSTM layer
+            # --- Add BiLSTM Layer ---
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
+            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            # Apply Bidirectional LSTM
+            # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg)), name=f"bidir_lstm{branch_suffix}"
-            )(head_dense_output)
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+            )(reshaped_for_lstm)
           
 
 
