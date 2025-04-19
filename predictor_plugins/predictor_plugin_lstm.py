@@ -450,7 +450,9 @@ class Plugin:
         x = Bidirectional(LSTM(branch_units, return_sequences=True,
                     name=f"feature_lstm_2"))(x)
         x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
-
+        x = Bidirectional(LSTM(lstm_units, return_sequences=True,
+                    name=f"feature_lstm_2"))(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
         
         # Add positional encoding to capture temporal order
         # get static shape tuple via Keras backend
@@ -496,7 +498,7 @@ class Plugin:
             # TODO: probar (batch, merged_units, 1)
             #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
             reshaped_for_lstm = head_dense_output
-            reshaped_for_lstm = Bidirectional(LSTM(lstm_units, return_sequences=True, name=f"lstm_head_2_{branch_suffix}"))(reshaped_for_lstm)
+            #reshaped_for_lstm = Bidirectional(LSTM(lstm_units, return_sequences=True, name=f"lstm_head_2_{branch_suffix}"))(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
