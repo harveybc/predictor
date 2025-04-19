@@ -451,7 +451,7 @@ class Plugin:
                     name=f"feature_lstm_2"))(x)
         x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
                 # --- End Self-Attention Block ---
-        x = Bidirectional(LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg),
+        x = Bidirectional(LSTM(lstm_units, return_sequences=False,
                     name=f"feature_lstm_3"))(x)
 
         
