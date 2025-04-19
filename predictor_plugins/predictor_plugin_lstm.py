@@ -460,10 +460,10 @@ class Plugin:
         # --- End Self-Attention Block ---
         x = Bidirectional(LSTM(merged_units, return_sequences=True,
                     name=f"feature_lstm_1"))(x)
-        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_{i+1}")(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(x)
         x = Bidirectional(LSTM(branch_units, return_sequences=True,
                     name=f"feature_lstm_2"))(x)
-        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_{i+1}")(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
 
         
 
