@@ -440,6 +440,11 @@ class Plugin:
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
         num_attention_heads = config.get("num_attention_heads", 2) # New parameter for number of attention heads
 
+        # --- Define Bayesian Layer Components ---
+        KL_WEIGHT = self.kl_weight_var
+        DenseFlipout = tfp.layers.DenseFlipout
+
+
         # Assume necessary imports like Input, Conv1D, Attention, Add, LayerNormalization, Flatten, K, tf
         # Assume 'get_positional_encoding' function from above is defined here or imported
 
@@ -502,12 +507,6 @@ class Plugin:
         # Now 'merged' has shape (batch_size, seq_len_after_2_pools, merged_units)
 
         # --- Feature-Extractor End ---
-
-
-        # --- Define Bayesian Layer Components ---
-        # (This part likely belongs inside your class __init__ or model building scope)
-        # KL_WEIGHT = self.kl_weight_var
-        # DenseFlipout = tfp.layers.DenseFlipout
 
         # --- Build Multiple Output Heads ---
         # (This part remains unchanged as requested)
