@@ -429,7 +429,7 @@ class Plugin:
         x = inputs
         
         x = Bidirectional(LSTM(window_size, return_sequences=True,
-                          name=f"feature_lstm_{i+1}"))(x)
+                          name=f"feature_lstm_0"))(x)
         for i in range(num_intermediate_layers):
                 x = Bidirectional(LSTM(merged_units, return_sequences=True,
                           name=f"feature_lstm_{i+1}"))(x)
