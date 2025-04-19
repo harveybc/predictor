@@ -443,6 +443,15 @@ class Plugin:
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
         
+        # Add positional encoding to capture temporal order
+        # get static shape tuple via Keras backend
+        last_layer_shape = K.int_shape(x)
+        feature_dim = last_layer_shape[-1]
+        # get the sequence length from the last layer shape
+        seq_length = last_layer_shape[1]
+        pos_enc = positional_encoding(seq_length, feature_dim)
+        x = x + pos_enc
+
         # --- End Self-Attention Block ---
         x = Bidirectional(LSTM(merged_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_1"))(x)
@@ -452,28 +461,10 @@ class Plugin:
         #x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
         
         # --- End Self-Attention Block ---
-        x = Bidirectional(LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg),
+        x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_3"))(x)
 
         
-        x = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_0")(x)
-
-        # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-        x = Reshape((1, merged_units), name=f"reshape_0")(x)
-
-        
-        # Add positional encoding to capture temporal order
-        # get static shape tuple via Keras backend
-        last_layer_shape = K.int_shape(x)
-        feature_dim = last_layer_shape[-1]
-        # get the sequence length from the last layer shape
-        seq_length = last_layer_shape[1]
-        pos_enc = positional_encoding(seq_length, feature_dim)
-        x = x + pos_enc
-        
-       
-
 
         merged = x
 
