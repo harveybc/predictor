@@ -40,6 +40,7 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
+from tensorflow.keras.layers import Conv1D, GlobalAveragePooling1D
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -428,31 +429,47 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Feature Extractor: Parallel Isolated Preprocessing Branches ---
+        # --- Parallel isolated preprocessing branches (unchanged) ---
         feature_branch_outputs = []
+        feature_inputs = []
         for c in range(num_channels):
-            feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                                   name=f"feature_{c+1}_input")(inputs)
+            feature_input = Lambda(
+                lambda x, channel=c: x[:, :, channel : channel + 1],
+                name=f"feature_{c+1}_input"
+            )(inputs)
+            feature_inputs.append(feature_input)
+
             x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
             for i in range(num_intermediate_layers):
-                x = Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                          name=f"feature_{c+1}_dense_{i+1}")(x)
+                x = Dense(
+                    branch_units,
+                    activation=activation,
+                    kernel_regularizer=l2(l2_reg),
+                    name=f"feature_{c+1}_dense_{i+1}"
+                )(x)
             feature_branch_outputs.append(x)
 
-        # --- Feature Extractor: Branch Merging ---
-        if len(feature_branch_outputs) == 1:
-             # Use Keras Identity layer for naming and compatibility
-             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
-        elif len(feature_branch_outputs) > 1:
-             # Concatenate is already a Keras layer
-             merged = Concatenate(name="merged_features")(feature_branch_outputs)
-        else:
-             raise ValueError("Model must have at least one input feature channel.")
-        # --- Feature Extractor: Merged Features Processing ---
-        head_dense_output = merged
-        for j in range(num_head_intermediate_layers):
-                head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                        name=f"meerged_dense_{j+1}")(head_dense_output)
+        # --- Replace Merge + Dense head with Conv1D over time using one branch of features ---
+        # Stack the raw feature_inputs along channel axis for Conv1D
+        merged = Concatenate(axis=2, name="conv_input_features")(feature_inputs)
+
+        # Apply Conv1D instead of merged dense layers
+
+        merged = Conv1D(
+            filters=merged_units,
+            kernel_size=3,
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_1"
+        )(merged)
+
+        merged = Conv1D(
+            filters=branch_units,
+            kernel_size=3,
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_2"
+        )(merged)
         
         # --- Build Multiple Output Heads ---
         outputs_list = []
@@ -460,10 +477,7 @@ class Plugin:
         # Loop through each predicted horizon
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
-
-            # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            reshaped_for_lstm = merged
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
