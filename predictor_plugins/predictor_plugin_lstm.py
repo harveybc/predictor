@@ -503,7 +503,7 @@ class Plugin:
 
             # Bidirectional LSTM layer
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+                LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg)), name=f"bidir_lstm{branch_suffix}"
             )(head_dense_output)
           
             # --- Bayesian / Bias Layers ---
