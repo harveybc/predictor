@@ -450,6 +450,13 @@ class Plugin:
         x = Bidirectional(LSTM(branch_units, return_sequences=True,
                     name=f"feature_lstm_2"))(x)
         x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
+                # --- End Self-Attention Block ---
+        x = Bidirectional(LSTM(merged_units, return_sequences=True,
+                    name=f"feature_lstm_3"))(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_3")(x)
+        x = Bidirectional(LSTM(branch_units, return_sequences=True,
+                    name=f"feature_lstm_4"))(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_4")(x)
 
         
         # Add positional encoding to capture temporal order
