@@ -451,11 +451,11 @@ class Plugin:
                     name=f"feature_lstm_2"))(x)
         x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
                 # --- End Self-Attention Block ---
-        x = Bidirectional(LSTM(lstm_units, return_sequences=False,
+        x = Bidirectional(LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_3"))(x)
 
         
-        x = Dense(merged_units, activation=activation,
+        x = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
                                            name=f"head_dense_0")(x)
 
         # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
