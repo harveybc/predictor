@@ -445,76 +445,87 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
+
+
+        # -- Feature-Extractor Begin ---
         
-        
-        # -- Feature-Extractor Begin (to be replaced with external pretrained encoderm of an autoencoder based feature extractor)
         x = inputs
-        
+
         # Positional Encoding:
+        # Ensure your positional_encoding function is defined and accessible
         pos_encoding = positional_encoding(window_size, num_channels)
-        x = x + pos_encoding
+        x = x + pos_encoding # Add PE to input
 
         # --- Self-Attention Block 1 ---
-        # Input 'x' has feature dimension: num_channels
-        feature_dim_1 = num_channels
+        feature_dim_1 = num_channels # Input feature dimension is num_channels
         if feature_dim_1 % num_attention_heads != 0:
             raise ValueError(f"Input feature dimension ({feature_dim_1}) is not divisible by "
-                             f"number of attention heads ({num_attention_heads}) in Block 1")
+                            f"number of attention heads ({num_attention_heads}) in Block 1")
         key_dim_1 = feature_dim_1 // num_attention_heads
 
         attention_output_1 = MultiHeadAttention(
             num_heads=num_attention_heads,
-            key_dim=key_dim_1, # Use correctly calculated key_dim
+            key_dim=key_dim_1,
             kernel_regularizer=l2(l2_reg),
-            name="mha_1" # Added name for clarity
+            name="mha_1"
         )(query=x, value=x, key=x)
         x = Add(name="add_1")([x, attention_output_1])
         x = LayerNormalization(name="norm_1")(x)
-        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(x)
+        x = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"pooling_1")(x) # Added padding='same' for robustness
+
         # --- Self-Attention Block 2 ---
-        # Input 'x' (output of Block 1) has feature dimension: num_channels
-        # (Assuming MHA defaults to projecting output back to input dimension)
-        feature_dim_2 = num_channels
+        feature_dim_2 = num_channels # Input feature dimension is still num_channels after pooling
         if feature_dim_2 % num_attention_heads != 0:
             raise ValueError(f"Input feature dimension ({feature_dim_2}) is not divisible by "
-                             f"number of attention heads ({num_attention_heads}) in Block 2")
+                            f"number of attention heads ({num_attention_heads}) in Block 2")
         key_dim_2 = feature_dim_2 // num_attention_heads
 
         attention_output_2 = MultiHeadAttention(
             num_heads=num_attention_heads,
-            key_dim=key_dim_2, # Use correctly calculated key_dim
+            key_dim=key_dim_2,
             kernel_regularizer=l2(l2_reg),
-            name="mha_2" # Added name for clarity
+            name="mha_2"
         )(query=x, value=x, key=x)
         x = Add(name="add_2")([x, attention_output_2])
         x = LayerNormalization(name="norm_2")(x)
-        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
-        
-        
-        merged = x 
+        x = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"pooling_2")(x) # Added padding='same' for robustness
+
+        # --- **FIX**: Add Projection Layer to match expected head dimension ---
+        # Project features from num_channels to merged_units using Conv1D kernel_size=1
+        merged = Conv1D(
+            filters=merged_units,
+            kernel_size=1, # Acts like a time-distributed dense layer
+            activation=activation, # Apply activation if needed before the head
+            padding='same', # Keep sequence length the same
+            name="feature_projection"
+        )(x)
+        # Now 'merged' has shape (batch_size, seq_len_after_2_pools, merged_units)
+
+        # --- Feature-Extractor End ---
+
 
         # --- Define Bayesian Layer Components ---
-        KL_WEIGHT = self.kl_weight_var
-        DenseFlipout = tfp.layers.DenseFlipout
+        # (This part likely belongs inside your class __init__ or model building scope)
+        # KL_WEIGHT = self.kl_weight_var
+        # DenseFlipout = tfp.layers.DenseFlipout
 
         # --- Build Multiple Output Heads ---
+        # (This part remains unchanged as requested)
         outputs_list = []
-        self.output_names = []
-
-        # -- Feature-Extractor End
+        self.output_names = [] # Assuming self exists in your model building context
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
             # --- Head Intermediate Dense Layers ---
-            head_dense_output = merged # Input shape (batch, 1, merged_units)
+            head_dense_output = merged # Input 'merged' now has feature dimension 'merged_units'
 
             # --- Self-Attention Block within Head ---
             # Input 'head_dense_output' has feature dimension: merged_units
-            feature_dim_3 = merged_units
+            feature_dim_3 = merged_units # This calculation is now correct
             if feature_dim_3 % num_attention_heads != 0:
                 raise ValueError(f"Input feature dimension ({feature_dim_3}) for head {horizon} "
-                                 f"is not divisible by number of attention heads ({num_attention_heads})")
+                                f"is not divisible by number of attention heads ({num_attention_heads})")
             key_dim_3 = feature_dim_3 // num_attention_heads
 
             attention_output_3 = MultiHeadAttention(
@@ -525,14 +536,14 @@ class Plugin:
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add(name=f"add_head{branch_suffix}")([head_dense_output, attention_output_3])
             head_dense_output = LayerNormalization(name=f"norm_head{branch_suffix}")(head_dense_output)
-            head_dense_output = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head{branch_suffix}")(head_dense_output)
-        
+            # Consider if pooling is still appropriate here given the sequence length might be small
+            head_dense_output = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"pooling_head{branch_suffix}")(head_dense_output) # Added padding
+
 
             # Bidirectional LSTM layer
-            # NOTE: LSTM processes a sequence of length 1 here.
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg)), name=f"bidir_lstm{branch_suffix}"
-            )(head_dense_output) # Input sequence length is 1
+            )(head_dense_output) # Input now has 'merged_units' features
         
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
