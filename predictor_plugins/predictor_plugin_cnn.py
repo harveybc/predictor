@@ -498,7 +498,7 @@ class Plugin:
             head_dense_output = LayerNormalization()(head_dense_output)
 
             
-            reshaped_for_lstm = merged
+            reshaped_for_lstm = head_dense_output
             
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
