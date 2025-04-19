@@ -43,7 +43,7 @@ from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D
 from tensorflow.keras.layers import MultiHeadAttention
 from tensorflow.keras.layers import LayerNormalization
-
+from tensorflow.keras.layers import Attention
 
 
 
@@ -440,35 +440,28 @@ class Plugin:
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
 
 
+        # Assume necessary imports like Input, Conv1D, Attention, Add, LayerNormalization, Flatten, K, tf
+        # Assume 'get_positional_encoding' function from above is defined here or imported
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
 
+        # --- Convolutional Layers ---
+        # (Your Conv1D layers remain the same)
+        x = Conv1D(filters=window_size, kernel_size=3, strides=2, padding='valid', activation=activation,
+                name=f"feature_conv_0")(x)
         x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
                 name=f"feature_conv_1")(x)
         x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
                 name=f"feature_conv_2")(x)
-        
-        # Add positional encoding to capture temporal order
-        # get static shape tuple via Keras backend
-        last_layer_shape = K.int_shape(x)
-        feature_dim = last_layer_shape[-1]
-        # get the sequence length from the last layer shape
-        seq_length = last_layer_shape[1]
-        pos_enc = positional_encoding(seq_length, feature_dim)
-        x = x + pos_enc
-        
-        # --- Self-Attention Block ---
-        num_attention_heads = 2
-        attention_key_dim = num_channels//num_attention_heads
-        attention_output = MultiHeadAttention(
-            num_heads=num_attention_heads, # Assumed to be defined
-            key_dim=attention_key_dim      # Assumed to be defined
-        )(query=x, value=x, key=x)
-        x = Add()([x, attention_output])
-        x = LayerNormalization()(x)
+        x = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+                name=f"feature_conv_3")(x)
+        # x shape: (batch_size, seq_len_after_convs, lstm_units)
 
+
+
+        # merged = Flatten()(x)
 
         merged = x
 
@@ -484,7 +477,6 @@ class Plugin:
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
-
                    
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
@@ -492,12 +484,36 @@ class Plugin:
             #     head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
             #                               name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
+            # --- Positional Encoding ---
+            # Get dynamic shape components after convolutions
+            shape_list = tf.shape(head_dense_output)
+            seq_length = shape_list[1]  # Sequence length after convs
+            feature_dim = shape_list[2] # Feature dimension (lstm_units)
+
+            # Generate and add positional encoding
+            pos_encoding = positional_encoding(seq_length, feature_dim)
+            x = x + pos_encoding
+
+            # --- Self-Attention Block (using tf.keras.layers.Attention) ---
+            # 1. Attention Layer
+            attention_layer = Attention(use_scale=True) # Using scaling, like the example implicitly might
+            attention_output = attention_layer([head_dense_output, head_dense_output]) # Self-attention: query=x, value=x
+
+            # 2. Residual Connection
+            head_dense_output = Add()([head_dense_output, attention_output])
+
+            # 3. Layer Normalization
+            head_dense_output = LayerNormalization()(head_dense_output)
+            # --- End Self-Attention Block ---
+
+
+
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
             # TODO: probar (batch, merged_units, 1)
             #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
             reshaped_for_lstm = head_dense_output
-            reshaped_for_lstm = Bidirectional(LSTM(lstm_units, return_sequences=True, name=f"lstm_head_2{branch_suffix}"))(reshaped_for_lstm)
+            #reshaped_for_lstm = Bidirectional(LSTM(lstm_units, return_sequences=True, name=f"lstm_head_2{branch_suffix}"))(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
