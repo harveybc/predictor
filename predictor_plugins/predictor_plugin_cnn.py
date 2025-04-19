@@ -458,6 +458,7 @@ class Plugin:
         merged = Conv1D(
             filters=merged_units,
             kernel_size=3,
+            strides=2, 
             padding='same',
             activation=activation,
             name="conv_merged_features_1",
@@ -467,6 +468,7 @@ class Plugin:
         merged = Conv1D(
             filters=branch_units,
             kernel_size=3,
+            strides=2, 
             padding='same',
             activation=activation,
             name="conv_merged_features_2",
