@@ -444,9 +444,19 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
+
+        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+                name=f"feature_conv_1")(x)
+        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+                name=f"feature_conv_2")(x)
         
         # Add positional encoding to capture temporal order
-        pos_enc = positional_encoding(window_size, num_channels)
+        #get  number of features from the last layer shape
+        last_layer_shape = x.shape.as_list()
+        feature_dim = last_layer_shape[-1]
+        # get the sequence length from the last layer shape
+        seq_length = last_layer_shape[1]
+        pos_enc = positional_encoding(seq_length, feature_dim)
         x = x + pos_enc
         
         # --- Self-Attention Block ---
@@ -459,12 +469,7 @@ class Plugin:
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
         
-        # --- End Self-Attention Block ---
 
-        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
-                name=f"feature_conv_1")(x)
-        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
-                name=f"feature_conv_2")(x)
 
         merged = x
 
