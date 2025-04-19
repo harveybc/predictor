@@ -460,7 +460,8 @@ class Plugin:
             kernel_size=3,
             padding='same',
             activation=activation,
-            name="conv_merged_features_1"
+            name="conv_merged_features_1",
+            kernel_regularizer=l2(l2_reg)
         )(merged)
 
         merged = Conv1D(
@@ -468,7 +469,8 @@ class Plugin:
             kernel_size=3,
             padding='same',
             activation=activation,
-            name="conv_merged_features_2"
+            name="conv_merged_features_2",
+            kernel_regularizer=l2(l2_reg)
         )(merged)
         
         # --- Build Multiple Output Heads ---
