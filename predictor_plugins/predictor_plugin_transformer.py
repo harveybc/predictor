@@ -447,9 +447,9 @@ class Plugin:
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
         
-        # NOTE: Recommended to add Positional Encoding here:
-        # pos_encoding = get_positional_encoding(window_size, num_channels)
-        # x = x + pos_encoding
+        # Positional Encoding:
+        pos_encoding = positional_encoding(window_size, num_channels)
+        x = x + pos_encoding
 
         # --- Self-Attention Block 1 ---
         # Input 'x' has feature dimension: num_channels
@@ -520,7 +520,7 @@ class Plugin:
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add(name=f"add_head{branch_suffix}")([head_dense_output, attention_output_3])
             head_dense_output = LayerNormalization(name=f"norm_head{branch_suffix}")(head_dense_output)
-            head_dense_output = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(head_dense_output)
+            head_dense_output = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head{branch_suffix}")(head_dense_output)
         
 
             # Bidirectional LSTM layer
