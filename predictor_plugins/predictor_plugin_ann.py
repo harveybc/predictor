@@ -458,7 +458,7 @@ class Plugin:
 
         # --- Add BiLSTM Layer ---
         # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-        merged = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(merged)
+        merged = Reshape((1, merged_units), name=f"reshape_lstm_in")(merged)
     
         # --- Build Multiple Output Heads ---
         outputs_list = []
