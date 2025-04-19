@@ -465,16 +465,6 @@ class Plugin:
         seq_length = last_layer_shape[1]
         pos_enc = positional_encoding(seq_length, feature_dim)
         x = x + pos_enc
-        
-        # --- Self-Attention Block ---
-        num_attention_heads = 2
-        attention_key_dim = num_channels//num_attention_heads
-        attention_output = MultiHeadAttention(
-            num_heads=num_attention_heads, # Assumed to be defined
-            key_dim=attention_key_dim      # Assumed to be defined
-        )(query=x, value=x, key=x)
-        x = Add()([x, attention_output])
-        x = LayerNormalization()(x)
 
         merged = x
 
@@ -494,12 +484,29 @@ class Plugin:
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
 
+            # --- Self-Attention Block ---
+            num_attention_heads = 2
+            attention_key_dim = num_channels//num_attention_heads
+            attention_output = MultiHeadAttention(
+                num_heads=num_attention_heads, # Assumed to be defined
+                key_dim=attention_key_dim      # Assumed to be defined
+            )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
+            head_dense_output = Add()([head_dense_output, attention_output])
+            head_dense_output = LayerNormalization()(head_dense_output)
+
+
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
             # TODO: probar (batch, merged_units, 1)
             #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
             reshaped_for_lstm = head_dense_output
-            #reshaped_for_lstm = Bidirectional(LSTM(lstm_units, return_sequences=True, name=f"lstm_head_2{branch_suffix}"))(reshaped_for_lstm)
+            # --- Add BiLSTM Layer ---
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
+            # TODO: probar (batch, merged_units, 1)
+            #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
+            reshaped_for_lstm = head_dense_output
+            reshaped_for_lstm = Bidirectional(LSTM(lstm_units, return_sequences=True, name=f"lstm_head_1{branch_suffix}"))(reshaped_for_lstm)
+            reshaped_for_lstm = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_1{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
