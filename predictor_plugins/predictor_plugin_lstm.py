@@ -451,8 +451,8 @@ class Plugin:
                     name=f"feature_lstm_2"))(x)
         x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
         x = Bidirectional(LSTM(lstm_units, return_sequences=True,
-                    name=f"feature_lstm_2"))(x)
-        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
+                    name=f"feature_lstm_3"))(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_3")(x)
         
         # Add positional encoding to capture temporal order
         # get static shape tuple via Keras backend
