@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# Validation MAE H144     0.004361 con l2_reg=1e-4
 """
 Enhanced Multi-Branch Predictor Plugin using Keras for forecasting EUR/USD returns.
 
@@ -454,8 +453,8 @@ class Plugin:
                 name=f"feature_conv_1")(x)
         x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
                 name=f"feature_conv_2")(x)
-        x = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
-                name=f"feature_conv_3")(x)
+        #x = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
+        #        name=f"feature_conv_3")(x)
         # x shape: (batch_size, seq_len_after_convs, lstm_units)
 
         x=Flatten(name="flatten_0")(x)
