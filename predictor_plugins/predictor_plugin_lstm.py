@@ -486,9 +486,9 @@ class Plugin:
             attention_output = MultiHeadAttention(
                 num_heads=num_attention_heads, # Assumed to be defined
                 key_dim=attention_key_dim      # Assumed to be defined
-            )(query=x, value=x, key=x)
-            x = Add()([x, attention_output])
-            x = LayerNormalization()(x)
+            )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
+            head_dense_output = Add()([head_dense_output, attention_output])
+            head_dense_output = LayerNormalization()(head_dense_output)
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
             # TODO: probar (batch, merged_units, 1)
