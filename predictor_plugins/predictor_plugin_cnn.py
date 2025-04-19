@@ -484,15 +484,11 @@ class Plugin:
             #     head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
             #                               name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
-            # --- Positional Encoding ---
-            # Get dynamic shape components after convolutions
-            shape_list = tf.shape(head_dense_output)
-            seq_length = shape_list[1]  # Sequence length after convs
-            feature_dim = shape_list[2] # Feature dimension (lstm_units)
-
-            # Generate and add positional encoding
-            pos_encoding = positional_encoding(seq_length, feature_dim)
-            x = x + pos_encoding
+            # --- Positional Encoding wrapped in Lambda to work with KerasTensor ---
+            head_dense_output = Lambda(
+                lambda t: t + positional_encoding(tf.shape(t)[1], tf.shape(t)[2]),
+                name=f"pos_encoding{branch_suffix}"
+            )(head_dense_output)
 
             # --- Self-Attention Block (using tf.keras.layers.Attention) ---
             # 1. Attention Layer
