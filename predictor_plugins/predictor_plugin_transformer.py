@@ -447,12 +447,27 @@ class Plugin:
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
 
-        # --- Convolutional Layers ---
-        # (Your Conv1D layers remain the same)
-        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
-                name=f"feature_conv_1")(x)
-        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
-                name=f"feature_conv_2")(x)
+        # --- Self-Attention Block ---
+        num_attention_heads = 2
+        attention_key_dim = num_channels//num_attention_heads
+        attention_output = MultiHeadAttention(
+            num_heads=num_attention_heads, # Assumed to be defined
+            key_dim=attention_key_dim,      # Assumed to be defined
+            kernel_regularizer=l2(l2_reg)
+        )(query=x, value=x, key=x)
+        x = Add()([x, attention_output])
+        x = LayerNormalization()(x)
+
+                # --- Self-Attention Block ---
+        num_attention_heads = 2
+        attention_key_dim = num_channels//num_attention_heads
+        attention_output = MultiHeadAttention(
+            num_heads=num_attention_heads, # Assumed to be defined
+            key_dim=attention_key_dim,      # Assumed to be defined
+            kernel_regularizer=l2(l2_reg)
+        )(query=x, value=x, key=x)
+        x = Add()([x, attention_output])
+        x = LayerNormalization()(x)
 
         x=Flatten(name="flatten_0")(x)
 
