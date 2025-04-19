@@ -40,6 +40,8 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
+from tensorflow.keras.layers import MultiHeadAttention
+from tensorflow.keras.layers import LayerNormalization
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -465,8 +467,21 @@ class Plugin:
         self.output_names = []
         # Loop through each predicted horizon
         for i, horizon in enumerate(predicted_horizons):
-            reshaped_for_lstm = merged
             branch_suffix = f"_h{horizon}"
+
+            # --- Head Intermediate Dense Layers ---
+            head_dense_output = merged
+            # --- Self-Attention Block ---
+            num_attention_heads = 2
+            attention_key_dim = num_channels//num_attention_heads
+            attention_output = MultiHeadAttention(
+                num_heads=num_attention_heads, # Assumed to be defined
+                key_dim=attention_key_dim,      # Assumed to be defined
+                kernel_regularizer=l2(l2_reg)
+            )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
+            head_dense_output = Add()([head_dense_output, attention_output])
+            head_dense_output = LayerNormalization()(head_dense_output)
+
 
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
