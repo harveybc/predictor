@@ -492,7 +492,7 @@ class Plugin:
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add()([head_dense_output, attention_output])
             head_dense_output = LayerNormalization()(head_dense_output)
-            head_dense_output = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(head_dense_output)
+            head_dense_output = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_1{branch_suffix}")(head_dense_output)
 
             # Bidirectional LSTM layer
             lstm_output = Bidirectional(
