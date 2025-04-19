@@ -426,23 +426,25 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
+
         x = inputs
 
-        # --- Self‑Attention Block ---
-        attention = MultiHeadAttention(
-            num_heads=2,
-            key_dim=64,
-            name="self_attention"
-        )(x, x, x)
-        x = Add(name="attention_residual")([x, attention])
-        x = LayerNormalization(name="attention_norm")(x)
+        # --- Self-Attention Block ---
+        num_attention_heads = 2
+        attention_key_dim = 64
+        attention_output = MultiHeadAttention(
+            num_heads=num_attention_heads, # Assumed to be defined
+            key_dim=attention_key_dim,      # Assumed to be defined
+            name=f"multi_head_attention{branch_suffix}"
+        )(query=x, value=x, key=x)
+        x = Add()([x, attention_output])
+        x = LayerNormalization()(x)
+        # --- End Self-Attention Block ---
 
-        for i in range(num_intermediate_layers):
-                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
-                          name=f"feature_conv_1_{i+1}")(x)
-        for i in range(num_intermediate_layers):
-                        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
-                                name=f"feature_conv_2_{i+1}")(x)
+        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+                name=f"feature_conv_1")(x)
+        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+                name=f"feature_conv_2")(x)
 
         merged = x
 
