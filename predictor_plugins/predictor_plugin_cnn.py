@@ -451,8 +451,8 @@ class Plugin:
                 name=f"feature_conv_2")(x)
         
         # Add positional encoding to capture temporal order
-        #get  number of features from the last layer shape
-        last_layer_shape = x.shape.as_list()
+        # get static shape tuple via Keras backend
+        last_layer_shape = K.int_shape(x)
         feature_dim = last_layer_shape[-1]
         # get the sequence length from the last layer shape
         seq_length = last_layer_shape[1]
@@ -468,7 +468,6 @@ class Plugin:
         )(query=x, value=x, key=x)
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
-        
 
 
         merged = x
