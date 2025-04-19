@@ -455,7 +455,7 @@ class Plugin:
                     name=f"feature_lstm_3"))(x)
 
         
-        x = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+        x = Dense(merged_units, activation=activation,
                                            name=f"head_dense_0")(x)
 
         # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
