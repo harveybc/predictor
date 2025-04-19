@@ -444,14 +444,14 @@ class Plugin:
         x = inputs
         
         # --- End Self-Attention Block ---
-        x = Bidirectional(LSTM(merged_units, return_sequences=True,
+        x = Bidirectional(LSTM(merged_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_1"))(x)
         x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(x)
-        x = Bidirectional(LSTM(branch_units, return_sequences=True,
+        x = Bidirectional(LSTM(branch_units, kernel_regularizer=l2(l2_reg), return_sequences=True,
                     name=f"feature_lstm_2"))(x)
         x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
                 # --- End Self-Attention Block ---
-        x = Bidirectional(LSTM(lstm_units, return_sequences=False,
+        x = Bidirectional(LSTM(lstm_units, kernel_regularizer=l2(l2_reg), return_sequences=False,
                     name=f"feature_lstm_3"))(x)
 
         
@@ -495,7 +495,8 @@ class Plugin:
             attention_key_dim = num_channels//num_attention_heads
             attention_output = MultiHeadAttention(
                 num_heads=num_attention_heads, # Assumed to be defined
-                key_dim=attention_key_dim      # Assumed to be defined
+                key_dim=attention_key_dim,      # Assumed to be defined
+                kernel_regularizer=l2(l2_reg)
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add()([head_dense_output, attention_output])
             head_dense_output = LayerNormalization()(head_dense_output)
