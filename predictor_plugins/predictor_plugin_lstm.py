@@ -430,10 +430,13 @@ class Plugin:
         
         x = Bidirectional(LSTM(window_size, return_sequences=True,
                           name=f"feature_lstm_0"))(x)
-        for i in range(num_intermediate_layers):
-                x = Bidirectional(LSTM(merged_units, return_sequences=True,
-                          name=f"feature_lstm_{i+1}"))(x)
-                x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_{i+1}")(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_0")(x)
+        x = Bidirectional(LSTM(merged_units, return_sequences=True,
+                    name=f"feature_lstm_{i+1}"))(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_{i+1}")(x)
+        x = Bidirectional(LSTM(branch_units, return_sequences=True,
+                    name=f"feature_lstm_{i+1}"))(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_{i+1}")(x)
 
         
         # --- Self-Attention Block ---
