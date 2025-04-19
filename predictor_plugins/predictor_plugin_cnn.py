@@ -481,10 +481,9 @@ class Plugin:
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
-            x = merged
                    
             # --- Head Intermediate Dense Layers ---
-            head_dense_output = x
+            head_dense_output = merged
             #for j in range(num_head_intermediate_layers):
             #     head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
             #                               name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
