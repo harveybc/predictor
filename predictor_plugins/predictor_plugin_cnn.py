@@ -440,6 +440,7 @@ class Plugin:
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
 
 
+
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
