@@ -444,7 +444,7 @@ class Plugin:
         x = inputs
         
         # Add positional encoding to capture temporal order
-        pos_enc = positional_encoding(input_shape[0], embedding_dim)
+        pos_enc = positional_encoding(window_size, num_channels)
         x = x + pos_enc
         
         # --- Self-Attention Block ---
