@@ -457,6 +457,15 @@ class Plugin:
                 name=f"feature_conv_3")(x)
         # x shape: (batch_size, seq_len_after_convs, lstm_units)
 
+        x=Flatten(name="flatten_0")(x)
+
+
+        x = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_0")(x)
+
+        # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
+        x = Reshape((1, merged_units), name=f"reshape_0")(x)
+        
         # Add positional encoding to capture temporal order
         # get static shape tuple via Keras backend
         last_layer_shape = K.int_shape(x)
@@ -465,6 +474,7 @@ class Plugin:
         seq_length = last_layer_shape[1]
         pos_enc = positional_encoding(seq_length, feature_dim)
         x = x + pos_enc
+        
 
         merged = x
 
