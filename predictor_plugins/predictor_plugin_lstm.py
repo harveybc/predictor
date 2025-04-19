@@ -463,7 +463,7 @@ class Plugin:
         # --- End Self-Attention Block ---
         x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_3"))(x)
-
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_3")(x)
         
 
         merged = x
@@ -492,7 +492,7 @@ class Plugin:
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add()([head_dense_output, attention_output])
             head_dense_output = LayerNormalization()(head_dense_output)
-            
+            x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(x)
 
             # Bidirectional LSTM layer
             lstm_output = Bidirectional(
