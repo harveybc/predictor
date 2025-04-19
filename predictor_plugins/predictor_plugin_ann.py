@@ -423,10 +423,14 @@ class Plugin:
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
 
 
+        # --- Define Bayesian Layer Components ---
+        KL_WEIGHT = self.kl_weight_var
+        DenseFlipout = tfp.layers.DenseFlipout
+
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Parallel Feature Processing Branches ---
+        # --- Feature Extractor: Parallel Isolated Preprocessing Branches ---
         feature_branch_outputs = []
         for c in range(num_channels):
             feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
@@ -437,7 +441,7 @@ class Plugin:
                           name=f"feature_{c+1}_dense_{i+1}")(x)
             feature_branch_outputs.append(x)
 
-        # --- Merging Feature Branches ONLY ---
+        # --- Feature Extractor: Branch Merging ---
         if len(feature_branch_outputs) == 1:
              # Use Keras Identity layer for naming and compatibility
              merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
@@ -446,25 +450,18 @@ class Plugin:
              merged = Concatenate(name="merged_features")(feature_branch_outputs)
         else:
              raise ValueError("Model must have at least one input feature channel.")
-        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
-
-        # --- Define Bayesian Layer Components ---
-        KL_WEIGHT = self.kl_weight_var
-        DenseFlipout = tfp.layers.DenseFlipout
-
+        # --- Feature Extractor: Merged Features Processing ---
+        head_dense_output = merged
+        for j in range(num_head_intermediate_layers):
+                head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                                        name=f"meerged_dense_{j+1}")(head_dense_output)
+        
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
-
-
+        # Loop through each predicted horizon
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
-
-            # --- Head Intermediate Dense Layers ---
-            head_dense_output = merged
-            for j in range(num_head_intermediate_layers):
-                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
             # --- Add BiLSTM Layer ---
             # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
