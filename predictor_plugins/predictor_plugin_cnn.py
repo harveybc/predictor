@@ -453,8 +453,8 @@ class Plugin:
                 name=f"feature_conv_1")(x)
         x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', activation=activation,
                 name=f"feature_conv_2")(x)
-        x = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', activation=activation,
-                name=f"feature_conv_3")(x)
+        #x = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+        #        name=f"feature_conv_3")(x)
         # x shape: (batch_size, seq_len_after_convs, lstm_units)
 
         # Add positional encoding to capture temporal order
@@ -494,28 +494,13 @@ class Plugin:
             head_dense_output = Add()([head_dense_output, attention_output])
             head_dense_output = LayerNormalization()(head_dense_output)
 
+            # --- Add BiLSTM Layer ---
+            reshaped_for_lstm = head_dense_output
 
-            # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
-            # TODO: probar (batch, merged_units, 1)
-            #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
-            reshaped_for_lstm = head_dense_output
-            # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
-            # TODO: probar (batch, merged_units, 1)
-            #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
-            reshaped_for_lstm = head_dense_output
-            reshaped_for_lstm = Bidirectional(LSTM(lstm_units, return_sequences=True, name=f"lstm_head_1{branch_suffix}"))(reshaped_for_lstm)
-            reshaped_for_lstm = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_1{branch_suffix}")(reshaped_for_lstm)
-            # Apply Bidirectional LSTM
-            # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
             )(reshaped_for_lstm)
-          
-
-
-            #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
+        
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
