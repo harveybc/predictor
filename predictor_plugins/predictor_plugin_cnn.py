@@ -480,10 +480,9 @@ class Plugin:
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
-                   
+
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
-
             # --- Self-Attention Block ---
             num_attention_heads = 2
             attention_key_dim = num_channels//num_attention_heads
@@ -493,10 +492,18 @@ class Plugin:
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add()([head_dense_output, attention_output])
             head_dense_output = LayerNormalization()(head_dense_output)
+            
+            # Flatten the output of the attention block
+            head_dense_output = Flatten(name=f"flatten_attention{branch_suffix}")(head_dense_output)
 
-            # --- Add BiLSTM Layer ---
-            reshaped_for_lstm = head_dense_output
+            # --- Head Intermediate Dense Layers ---
+            for j in range(num_head_intermediate_layers):
+                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
+            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            # Bidirectional LSTM layer
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
             )(reshaped_for_lstm)
