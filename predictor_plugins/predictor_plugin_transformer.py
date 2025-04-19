@@ -44,6 +44,7 @@ from tensorflow.keras.layers import Conv1D
 from tensorflow.keras.layers import MultiHeadAttention
 from tensorflow.keras.layers import LayerNormalization
 from tensorflow.keras.layers import Attention
+from tensorflow.keras.layers import Dropout
 
 
 
@@ -448,65 +449,95 @@ class Plugin:
         # Assume necessary imports like Input, Conv1D, Attention, Add, LayerNormalization, Flatten, K, tf
         # Assume 'get_positional_encoding' function from above is defined here or imported
 
+        # New Hyperparameters for PatchTST-style Extractor:
+        patch_length = 16        # Length of each patch (subsequence)
+        patch_stride = 8         # Stride between patches (can overlap if stride < length)
+        d_model = 128            # Internal dimension of the Transformer model
+        num_transformer_blocks = 3 # Number of Transformer encoder blocks to stack
+        d_ff = d_model * 4       # Hidden dimension of the Feed-Forward Network
+        dropout_rate = 0.1       # Dropout rate
+
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
+        # --- Feature-Extractor Begin (PatchTST-Inspired) ---
 
-        # -- Feature-Extractor Begin ---
-        
-        x = inputs
+        # 1. Patching and Embedding
+        # Calculate number of patches
+        num_patches = (window_size - patch_length) // patch_stride + 1
 
-        # Positional Encoding:
-        # Ensure your positional_encoding function is defined and accessible
-        pos_encoding = positional_encoding(window_size, num_channels)
-        x = x + pos_encoding # Add PE to input
+        # Use Conv1D for efficient patching and linear embedding
+        # Kernel size = patch length, Stride = patch stride, Filters = d_model
+        # This applies a linear layer to each patch and extracts the sequence of patch embeddings
+        x = Conv1D(
+            filters=d_model,
+            kernel_size=patch_length,
+            strides=patch_stride,
+            padding='valid', # 'valid' ensures we only take full patches based on stride
+            name="patching_embedding"
+        )(inputs)
+        # Output shape of Conv1D: (batch_size, num_patches, d_model)
 
-        # --- Self-Attention Block 1 ---
-        feature_dim_1 = num_channels # Input feature dimension is num_channels
-        if feature_dim_1 % num_attention_heads != 0:
-            raise ValueError(f"Input feature dimension ({feature_dim_1}) is not divisible by "
-                            f"number of attention heads ({num_attention_heads}) in Block 1")
-        key_dim_1 = feature_dim_1 // num_attention_heads
+        # 2. Add Positional Encoding (based on number of patches)
+        # Ensure get_positional_encoding can handle dynamic shapes if needed
+        pos_encoding = positional_encoding(num_patches, d_model)
+        x = x + pos_encoding
 
-        attention_output_1 = MultiHeadAttention(
-            num_heads=num_attention_heads,
-            key_dim=key_dim_1,
-            kernel_regularizer=l2(l2_reg),
-            name="mha_1"
-        )(query=x, value=x, key=x)
-        x = Add(name="add_1")([x, attention_output_1])
-        x = LayerNormalization(name="norm_1")(x)
-        x = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"pooling_1")(x) # Added padding='same' for robustness
+        # --- Transformer Encoder Blocks ---
+        for i in range(num_transformer_blocks):
+            # --- Sublayer 1: Multi-Head Self-Attention (with Pre-Norm) ---
+            x_norm1 = LayerNormalization(name=f"norm_{i}_1")(x)
 
-        # --- Self-Attention Block 2 ---
-        feature_dim_2 = num_channels # Input feature dimension is still num_channels after pooling
-        if feature_dim_2 % num_attention_heads != 0:
-            raise ValueError(f"Input feature dimension ({feature_dim_2}) is not divisible by "
-                            f"number of attention heads ({num_attention_heads}) in Block 2")
-        key_dim_2 = feature_dim_2 // num_attention_heads
+            # Check divisibility for MHA
+            if d_model % num_attention_heads != 0:
+                raise ValueError(f"d_model ({d_model}) must be divisible by num_attention_heads ({num_attention_heads})")
+            key_dim = d_model // num_attention_heads
 
-        attention_output_2 = MultiHeadAttention(
-            num_heads=num_attention_heads,
-            key_dim=key_dim_2,
-            kernel_regularizer=l2(l2_reg),
-            name="mha_2"
-        )(query=x, value=x, key=x)
-        x = Add(name="add_2")([x, attention_output_2])
-        x = LayerNormalization(name="norm_2")(x)
-        x = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"pooling_2")(x) # Added padding='same' for robustness
+            attention_output = MultiHeadAttention(
+                num_heads=num_attention_heads,
+                key_dim=key_dim,
+                kernel_regularizer=l2(l2_reg),
+                dropout=dropout_rate, # Add dropout within MHA
+                name=f"mha_{i}"
+            )(query=x_norm1, value=x_norm1, key=x_norm1)
 
-        # --- **FIX**: Add Projection Layer to match expected head dimension ---
-        # Project features from num_channels to merged_units using Conv1D kernel_size=1
+            # Add dropout after attention (common practice)
+            attention_output = Dropout(dropout_rate, name=f"mha_dropout_{i}")(attention_output)
+
+            # Residual Connection 1
+            x = Add(name=f"add_{i}_1")([x, attention_output])
+
+            # --- Sublayer 2: Feed-Forward Network (with Pre-Norm) ---
+            x_norm2 = LayerNormalization(name=f"norm_{i}_2")(x)
+
+            # Position-wise Feed-Forward Network
+            ffn_output = Dense(d_ff, activation=activation, kernel_regularizer=l2(l2_reg), name=f"ffn_{i}_dense_1")(x_norm2)
+            ffn_output = Dropout(dropout_rate, name=f"ffn_dropout_{i}")(ffn_output) # Dropout after first dense
+            ffn_output = Dense(d_model, kernel_regularizer=l2(l2_reg), name=f"ffn_{i}_dense_2")(ffn_output)
+            # Note: No activation on the second Dense layer in standard FFN
+
+            # Residual Connection 2
+            x = Add(name=f"add_{i}_2")([x, ffn_output])
+            # Output 'x' shape after loop: (batch_size, num_patches, d_model)
+
+        # --- **FIX**: Final Projection Layer to match head's expected dimension ---
+        # Project features from d_model to merged_units using Conv1D kernel_size=1
         merged = Conv1D(
             filters=merged_units,
             kernel_size=1, # Acts like a time-distributed dense layer
-            activation=activation, # Apply activation if needed before the head
-            padding='same', # Keep sequence length the same
+            activation=activation, # Or None, depending on what head expects
+            padding='same', # Keep sequence length (num_patches) the same
             name="feature_projection"
         )(x)
-        # Now 'merged' has shape (batch_size, seq_len_after_2_pools, merged_units)
+        # Now 'merged' has shape (batch_size, num_patches, merged_units)
 
         # --- Feature-Extractor End ---
+
+
+        # --- Define Bayesian Layer Components ---
+        # (This part belongs inside your class __init__ or model building scope)
+        # KL_WEIGHT = self.kl_weight_var
+        # DenseFlipout = tfp.layers.DenseFlipout
 
         # --- Build Multiple Output Heads ---
         # (This part remains unchanged as requested)
@@ -516,8 +547,7 @@ class Plugin:
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
-            # --- Head Intermediate Dense Layers ---
-            head_dense_output = merged # Input 'merged' now has feature dimension 'merged_units'
+            head_dense_output = merged # Input 'merged' now has feature dimension 'merged_units' and sequence length 'num_patches'
 
             # --- Self-Attention Block within Head ---
             # Input 'head_dense_output' has feature dimension: merged_units
@@ -529,20 +559,21 @@ class Plugin:
 
             attention_output_3 = MultiHeadAttention(
                 num_heads=num_attention_heads,
-                key_dim=key_dim_3, # Use correctly calculated key_dim
+                key_dim=key_dim_3,
                 kernel_regularizer=l2(l2_reg),
-                name=f"mha_head{branch_suffix}" # Added name
+                name=f"mha_head{branch_suffix}"
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add(name=f"add_head{branch_suffix}")([head_dense_output, attention_output_3])
             head_dense_output = LayerNormalization(name=f"norm_head{branch_suffix}")(head_dense_output)
-            # Consider if pooling is still appropriate here given the sequence length might be small
-            head_dense_output = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"pooling_head{branch_suffix}")(head_dense_output) # Added padding
+            # Consider adjusting pooling based on num_patches sequence length
+            head_dense_output = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"pooling_head{branch_suffix}")(head_dense_output)
 
 
             # Bidirectional LSTM layer
+            # Input sequence length is now num_patches (or less after pooling in head)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg)), name=f"bidir_lstm{branch_suffix}"
-            )(head_dense_output) # Input now has 'merged_units' features
+            )(head_dense_output)
         
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
