@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Validation MAE H144     0.004361
+# Validation MAE H144     0.004361 con l2_reg=1e-4
 """
 Enhanced Multi-Branch Predictor Plugin using Keras for forecasting EUR/USD returns.
 
