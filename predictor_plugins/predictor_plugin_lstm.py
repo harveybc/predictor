@@ -443,8 +443,22 @@ class Plugin:
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
         
+        # --- End Self-Attention Block ---
+        x = Bidirectional(LSTM(merged_units, return_sequences=True,
+                    name=f"feature_lstm_1"))(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(x)
+        x = Bidirectional(LSTM(branch_units, return_sequences=True,
+                    name=f"feature_lstm_2"))(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
+
+        
         # Add positional encoding to capture temporal order
-        pos_enc = positional_encoding(window_size, num_channels)
+        #get  number of features from the last layer shape
+        last_layer_shape = x.shape.as_list()
+        feature_dim = last_layer_shape[-1]
+        # get the sequence length from the last layer shape
+        seq_length = last_layer_shape[1]
+        pos_enc = positional_encoding(seq_length, feature_dim)
         x = x + pos_enc
         
         # --- Self-Attention Block ---
@@ -456,17 +470,6 @@ class Plugin:
         )(query=x, value=x, key=x)
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
-        
-        # --- End Self-Attention Block ---
-        x = Bidirectional(LSTM(merged_units, return_sequences=True,
-                    name=f"feature_lstm_1"))(x)
-        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(x)
-        x = Bidirectional(LSTM(branch_units, return_sequences=True,
-                    name=f"feature_lstm_2"))(x)
-        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
-
-        
-
         
         merged = x
 
