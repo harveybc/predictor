@@ -450,22 +450,24 @@ class Plugin:
              merged = Concatenate(name="merged_features")(feature_branch_outputs)
         else:
              raise ValueError("Model must have at least one input feature channel.")
-        # --- Feature Extractor: Merged Features Processing ---
-        head_dense_output = merged
-        for j in range(num_head_intermediate_layers):
-                head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                        name=f"meerged_dense_{j+1}")(head_dense_output)
         
+        # --- Feature Extractor: Merged Features Processing ---
+        for j in range(num_head_intermediate_layers):
+                merged = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                                        name=f"meerged_dense_{j+1}")(merged)
+
+        # --- Add BiLSTM Layer ---
+        # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
+        merged = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(merged)
+    
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
         # Loop through each predicted horizon
         for i, horizon in enumerate(predicted_horizons):
+            reshaped_for_lstm = merged
             branch_suffix = f"_h{horizon}"
 
-            # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
