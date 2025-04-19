@@ -467,7 +467,7 @@ class Plugin:
         )(query=x, value=x, key=x)
         x = Add(name="add_1")([x, attention_output_1])
         x = LayerNormalization(name="norm_1")(x)
-
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(x)
         # --- Self-Attention Block 2 ---
         # Input 'x' (output of Block 1) has feature dimension: num_channels
         # (Assuming MHA defaults to projecting output back to input dimension)
@@ -485,7 +485,8 @@ class Plugin:
         )(query=x, value=x, key=x)
         x = Add(name="add_2")([x, attention_output_2])
         x = LayerNormalization(name="norm_2")(x)
-
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
+        
         
         merged = x 
 
@@ -519,6 +520,8 @@ class Plugin:
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add(name=f"add_head{branch_suffix}")([head_dense_output, attention_output_3])
             head_dense_output = LayerNormalization(name=f"norm_head{branch_suffix}")(head_dense_output)
+            head_dense_output = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(head_dense_output)
+        
 
             # Bidirectional LSTM layer
             # NOTE: LSTM processes a sequence of length 1 here.
