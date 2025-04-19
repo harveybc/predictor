@@ -87,6 +87,21 @@ class ClearMemoryCallback(Callback):
 # ---------------------------
 # Custom Metrics and Loss Functions
 # ---------------------------
+def get_angles(pos, i, d_model):
+    angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
+    return pos * angle_rates
+
+def positional_encoding(position, d_model):
+    angle_rads = get_angles(np.arange(position)[:, np.newaxis],
+                            np.arange(d_model)[np.newaxis, :],
+                            d_model)
+    # Apply sin to even indices; cos to odd indices
+    sines = np.sin(angle_rads[:, 0::2])
+    cosines = np.cos(angle_rads[:, 1::2])
+    pos_encoding = np.concatenate([sines, cosines], axis=-1)
+    pos_encoding = pos_encoding[np.newaxis, ...]  # Shape: (1, position, d_model)
+    return tf.cast(pos_encoding, dtype=tf.float32)
+
 def mae_magnitude(y_true, y_pred):
     """Compute MAE on the first column (magnitude)."""
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
@@ -121,23 +136,6 @@ def compute_mmd(x, y, sigma=1.0, sample_size=32):
     K_yy = gaussian_kernel(y_sample, y_sample, sigma)
     K_xy = gaussian_kernel(x_sample, y_sample, sigma)
     return tf.reduce_mean(K_xx) + tf.reduce_mean(K_yy) - 2 * tf.reduce_mean(K_xy)
-
-
-def get_angles(pos, i, d_model):
-    angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
-    return pos * angle_rates
-
-def positional_encoding(position, d_model):
-    angle_rads = get_angles(np.arange(position)[:, np.newaxis],
-                            np.arange(d_model)[np.newaxis, :],
-                            d_model)
-    # Apply sin to even indices; cos to odd indices
-    sines = np.sin(angle_rads[:, 0::2])
-    cosines = np.cos(angle_rads[:, 1::2])
-    pos_encoding = np.concatenate([sines, cosines], axis=-1)
-    pos_encoding = pos_encoding[np.newaxis, ...]  # Shape: (1, position, d_model)
-    return tf.cast(pos_encoding, dtype=tf.float32)
-
 
 # --- Composite Loss Function ---
 def composite_loss(y_true, y_pred,
