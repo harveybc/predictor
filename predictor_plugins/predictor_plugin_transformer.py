@@ -513,6 +513,7 @@ class Plugin:
         num_attention_heads = 2
         # get the last layer shape from the merged tensor
         last_layer_shape = K.int_shape(x)
+        
         # get the feature dimension from the last layer shape as the last component of the shape tuple
         feature_dim = last_layer_shape[-1]
         # define key dimension for attention    
