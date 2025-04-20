@@ -513,7 +513,7 @@ class Plugin:
         num_attention_heads = 2
         # get the last layer shape from the merged tensor
         last_layer_shape = K.int_shape(x)
-        
+
         # get the feature dimension from the last layer shape as the last component of the shape tuple
         feature_dim = last_layer_shape[-1]
         # define key dimension for attention    
@@ -734,7 +734,7 @@ class Plugin:
         anneal_epochs = config.get("kl_anneal_epochs", self.params.get("kl_anneal_epochs", 10))
         target_kl = self.params.get('kl_weight', 1e-3)
         kl_callback = KLAnnealingCallback(self, target_kl, anneal_epochs)
-        min_delta_early_stopping = config.get("min_delta", self.params.get("min_delta", 1e-4))
+        min_delta_early_stopping = config.get("min_delta", self.params.get("min_delta", 1e-7))
         patience_early_stopping = self.params.get('early_patience', 10)
         start_from_epoch_es = self.params.get('start_from_epoch', 10)
         patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 4)))
@@ -747,7 +747,7 @@ class Plugin:
                 verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
             ),
             ReduceLROnPlateauWithCounter(
-                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, verbose=1
+                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs:
                            print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),

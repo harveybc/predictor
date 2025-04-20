@@ -678,7 +678,7 @@ class Plugin:
                 verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
             ),
             ReduceLROnPlateauWithCounter(
-                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, verbose=1
+                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs:
                            print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
