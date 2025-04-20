@@ -457,7 +457,19 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
+        
         x = inputs
+        # --- Convolutional Layer 1 ---
+        x = Conv1D(
+            filters=merged_units,
+            kernel_size=3,
+            strides=2, 
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_1",
+            kernel_regularizer=l2(l2_reg)
+        )(x)
+        
         # Add positional encoding to capture temporal order
         # get static shape tuple via Keras backend
         last_layer_shape = K.int_shape(x)
@@ -484,8 +496,17 @@ class Plugin:
         )(query=x, value=x, key=x)
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
-        # --- Average Pooling ---
-        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(x)
+        
+        # conv1d 2
+        x = Conv1D(
+            filters=merged_units,
+            kernel_size=3,
+            strides=2, 
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_2",
+            kernel_regularizer=l2(l2_reg)
+        )(x)
 
         # --- Self-Attention Block ---
         num_attention_heads = 2
@@ -504,8 +525,7 @@ class Plugin:
         )(query=x, value=x, key=x)
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
-        # --- Average Pooling ---
-        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
+
 
 
         merged = x
@@ -540,8 +560,8 @@ class Plugin:
             feature_dim = last_layer_shape[-1]
             # get the sequence length from the last layer shape
             seq_length = last_layer_shape[1]
-            pos_enc = positional_encoding(seq_length, feature_dim)
-            head_dense_output = head_dense_output + pos_enc
+            #pos_enc = positional_encoding(seq_length, feature_dim)
+            #head_dense_output = head_dense_output + pos_enc
 
             # --- Self-Attention Block ---
             num_attention_heads = 2
