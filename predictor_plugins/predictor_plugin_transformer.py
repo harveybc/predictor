@@ -457,121 +457,119 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
+        x = inputs
+        # Add positional encoding to capture temporal order
+        # get static shape tuple via Keras backend
+        last_layer_shape = K.int_shape(x)
+        feature_dim = last_layer_shape[-1]
+        # get the sequence length from the last layer shape
+        seq_length = last_layer_shape[1]
+        pos_enc = positional_encoding(seq_length, feature_dim)
+        x = x + pos_enc
 
-        # --- Feature-Extractor Begin (PatchTST-Inspired) ---
+        # --- Self-Attention Block ---
+        num_attention_heads = 2
+        # get the last layer shape from the merged tensor
+        last_layer_shape = K.int_shape(x)
+        # get the feature dimension from the last layer shape as the last component of the shape tuple
+        feature_dim = last_layer_shape[-1]
+        # define key dimension for attention    
+        attention_key_dim = feature_dim//num_attention_heads
+        # Apply MultiHeadAttention
+        attention_output = MultiHeadAttention(
+            num_heads=num_attention_heads, # Assumed to be defined
+            key_dim=attention_key_dim,      # Assumed to be defined
+            kernel_regularizer=l2(l2_reg),
+            name=f"multihead_attention_1"
+        )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
+        x = Add()([x, attention_output])
+        x = LayerNormalization()(x)
+        # --- Average Pooling ---
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(x)
 
-        # 1. Patching and Embedding
-        # Calculate number of patches
-        num_patches = (window_size - patch_length) // patch_stride + 1
+        # --- Self-Attention Block ---
+        num_attention_heads = 2
+        # get the last layer shape from the merged tensor
+        last_layer_shape = K.int_shape(x)
+        # get the feature dimension from the last layer shape as the last component of the shape tuple
+        feature_dim = last_layer_shape[-1]
+        # define key dimension for attention    
+        attention_key_dim = feature_dim//num_attention_heads
+        # Apply MultiHeadAttention
+        attention_output = MultiHeadAttention(
+            num_heads=num_attention_heads, # Assumed to be defined
+            key_dim=attention_key_dim,      # Assumed to be defined
+            kernel_regularizer=l2(l2_reg),
+            name=f"multihead_attention_2"
+        )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
+        x = Add()([x, attention_output])
+        x = LayerNormalization()(x)
+        # --- Average Pooling ---
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
 
-        # Use Conv1D for efficient patching and linear embedding
-        # Kernel size = patch length, Stride = patch stride, Filters = d_model
-        # This applies a linear layer to each patch and extracts the sequence of patch embeddings
-        x = Conv1D(
-            filters=d_model,
-            kernel_size=patch_length,
-            strides=patch_stride,
-            padding='valid', # 'valid' ensures we only take full patches based on stride
-            name="patching_embedding"
-        )(inputs)
-        # Output shape of Conv1D: (batch_size, num_patches, d_model)
+        
+        merged = x
 
-        # 2. Add Positional Encoding (based on number of patches)
-        # Ensure get_positional_encoding can handle dynamic shapes if needed
-        pos_encoding = positional_encoding(num_patches, d_model)
-        x = x + pos_encoding
-
-        # --- Transformer Encoder Blocks ---
-        for i in range(num_transformer_blocks):
-            # --- Sublayer 1: Multi-Head Self-Attention (with Pre-Norm) ---
-            x_norm1 = LayerNormalization(name=f"norm_{i}_1")(x)
-
-            # Check divisibility for MHA
-            if d_model % num_attention_heads != 0:
-                raise ValueError(f"d_model ({d_model}) must be divisible by num_attention_heads ({num_attention_heads})")
-            key_dim = d_model // num_attention_heads
-
-            attention_output = MultiHeadAttention(
-                num_heads=num_attention_heads,
-                key_dim=key_dim,
-                kernel_regularizer=l2(l2_reg),
-                dropout=dropout_rate, # Add dropout within MHA
-                name=f"mha_{i}"
-            )(query=x_norm1, value=x_norm1, key=x_norm1)
-
-            # Add dropout after attention (common practice)
-            attention_output = Dropout(dropout_rate, name=f"mha_dropout_{i}")(attention_output)
-
-            # Residual Connection 1
-            x = Add(name=f"add_{i}_1")([x, attention_output])
-
-            # --- Sublayer 2: Feed-Forward Network (with Pre-Norm) ---
-            x_norm2 = LayerNormalization(name=f"norm_{i}_2")(x)
-
-            # Position-wise Feed-Forward Network
-            ffn_output = Dense(d_ff, activation=activation, kernel_regularizer=l2(l2_reg), name=f"ffn_{i}_dense_1")(x_norm2)
-            ffn_output = Dropout(dropout_rate, name=f"ffn_dropout_{i}")(ffn_output) # Dropout after first dense
-            ffn_output = Dense(d_model, kernel_regularizer=l2(l2_reg), name=f"ffn_{i}_dense_2")(ffn_output)
-            # Note: No activation on the second Dense layer in standard FFN
-
-            # Residual Connection 2
-            x = Add(name=f"add_{i}_2")([x, ffn_output])
-            # Output 'x' shape after loop: (batch_size, num_patches, d_model)
-
-        # --- **FIX**: Final Projection Layer to match head's expected dimension ---
-        # Project features from d_model to merged_units using Conv1D kernel_size=1
-        merged = Conv1D(
-            filters=merged_units,
-            kernel_size=1, # Acts like a time-distributed dense layer
-            activation=activation, # Or None, depending on what head expects
-            padding='same', # Keep sequence length (num_patches) the same
-            name="feature_projection"
-        )(x)
-        # Now 'merged' has shape (batch_size, num_patches, merged_units)
-
-        # --- Feature-Extractor End ---
-
-
-        # --- Define Bayesian Layer Components ---
-        # (This part belongs inside your class __init__ or model building scope)
-        # KL_WEIGHT = self.kl_weight_var
-        # DenseFlipout = tfp.layers.DenseFlipout
 
         # --- Build Multiple Output Heads ---
         # (This part remains unchanged as requested)
         outputs_list = []
         self.output_names = [] # Assuming self exists in your model building context
 
+        # Loop through each predicted horizon
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
-            head_dense_output = merged # Input 'merged' now has feature dimension 'merged_units' and sequence length 'num_patches'
-
-            # --- Self-Attention Block within Head ---
-            # Input 'head_dense_output' has feature dimension: merged_units
-            feature_dim_3 = merged_units # This calculation is now correct
-            if feature_dim_3 % num_attention_heads != 0:
-                raise ValueError(f"Input feature dimension ({feature_dim_3}) for head {horizon} "
-                                f"is not divisible by number of attention heads ({num_attention_heads})")
-            key_dim_3 = feature_dim_3 // num_attention_heads
-
-            attention_output_3 = MultiHeadAttention(
-                num_heads=num_attention_heads,
-                key_dim=key_dim_3,
-                kernel_regularizer=l2(l2_reg),
-                name=f"mha_head{branch_suffix}"
-            )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
-            head_dense_output = Add(name=f"add_head{branch_suffix}")([head_dense_output, attention_output_3])
-            head_dense_output = LayerNormalization(name=f"norm_head{branch_suffix}")(head_dense_output)
-            # Consider adjusting pooling based on num_patches sequence length
-            head_dense_output = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"pooling_head{branch_suffix}")(head_dense_output)
-
-
-            # Bidirectional LSTM layer
-            # Input sequence length is now num_patches (or less after pooling in head)
-            lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg)), name=f"bidir_lstm{branch_suffix}"
+            # --- Head Intermediate Dense Layers ---
+            head_dense_output = merged
+        
+            # Conv1D layers for each head
+            head_dense_output = Conv1D(
+                filters=lstm_units,
+                kernel_size=3,
+                strides=2, 
+                padding='same',
+                activation=activation,
+                name=f"conv_head{branch_suffix}",
+                kernel_regularizer=l2(l2_reg)
             )(head_dense_output)
+        
+            # Add positional encoding to capture temporal order
+            # get static shape tuple via Keras backend
+            last_layer_shape = K.int_shape(head_dense_output)
+            feature_dim = last_layer_shape[-1]
+            # get the sequence length from the last layer shape
+            seq_length = last_layer_shape[1]
+            pos_enc = positional_encoding(seq_length, feature_dim)
+            head_dense_output = head_dense_output + pos_enc
+
+            # --- Self-Attention Block ---
+            num_attention_heads = 2
+            # get the last layer shape from the merged tensor
+            last_layer_shape = K.int_shape(head_dense_output)
+            # get the feature dimension from the last layer shape as the last component of the shape tuple
+            feature_dim = last_layer_shape[-1]
+            # define key dimension for attention    
+            attention_key_dim = feature_dim//num_attention_heads
+            # Apply MultiHeadAttention
+            attention_output = MultiHeadAttention(
+                num_heads=num_attention_heads, # Assumed to be defined
+                key_dim=attention_key_dim,      # Assumed to be defined
+                kernel_regularizer=l2(l2_reg),
+                name=f"multihead_attention_head{branch_suffix}"
+            )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
+            head_dense_output = Add()([head_dense_output, attention_output])
+            head_dense_output = LayerNormalization()(head_dense_output)
+
+            # --- Reshape for LSTM ---
+            reshaped_for_lstm = head_dense_output
+
+            # Apply Bidirectional LSTM
+            # return_sequences=False gives output shape (batch, 2 * lstm_units)
+            lstm_output = Bidirectional(
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm_head{branch_suffix}"
+            )(reshaped_for_lstm)
+
         
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"

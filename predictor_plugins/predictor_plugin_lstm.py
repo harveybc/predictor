@@ -438,20 +438,15 @@ class Plugin:
         # Add LSTM units parameter (provide a default)
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
         embedding_dim = merged_units
+        # --- Define Bayesian Layer Components ---
+        KL_WEIGHT = self.kl_weight_var
+        DenseFlipout = tfp.layers.DenseFlipout
+
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
         
-        # Add positional encoding to capture temporal order
-        # get static shape tuple via Keras backend
-        last_layer_shape = K.int_shape(x)
-        feature_dim = last_layer_shape[-1]
-        # get the sequence length from the last layer shape
-        seq_length = last_layer_shape[1]
-        pos_enc = positional_encoding(seq_length, feature_dim)
-        x = x + pos_enc
-
         # --- End Self-Attention Block ---
         x = Bidirectional(LSTM(merged_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_1"))(x)
@@ -461,43 +456,73 @@ class Plugin:
         #x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
         
         # --- End Self-Attention Block ---
-        x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
-                    name=f"feature_lstm_3"))(x)
-        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_3")(x)
+        x = Bidirectional(LSTM(branch_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
+                    name=f"feature_lstm_2"))(x)
+        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
         
 
         merged = x
 
-        # --- Define Bayesian Layer Components ---
-        KL_WEIGHT = self.kl_weight_var
-        DenseFlipout = tfp.layers.DenseFlipout
-
+  
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
 
 
+        # Loop through each predicted horizon
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
+        
+            # Conv1D layers for each head
+            head_dense_output = Conv1D(
+                filters=lstm_units,
+                kernel_size=3,
+                strides=2, 
+                padding='same',
+                activation=activation,
+                name=f"conv_head{branch_suffix}",
+                kernel_regularizer=l2(l2_reg)
+            )(head_dense_output)
+        
+            # Add positional encoding to capture temporal order
+            # get static shape tuple via Keras backend
+            last_layer_shape = K.int_shape(head_dense_output)
+            feature_dim = last_layer_shape[-1]
+            # get the sequence length from the last layer shape
+            seq_length = last_layer_shape[1]
+            pos_enc = positional_encoding(seq_length, feature_dim)
+            head_dense_output = head_dense_output + pos_enc
+
             # --- Self-Attention Block ---
             num_attention_heads = 2
-            attention_key_dim = num_channels//num_attention_heads
+            # get the last layer shape from the merged tensor
+            last_layer_shape = K.int_shape(head_dense_output)
+            # get the feature dimension from the last layer shape as the last component of the shape tuple
+            feature_dim = last_layer_shape[-1]
+            # define key dimension for attention    
+            attention_key_dim = feature_dim//num_attention_heads
+            # Apply MultiHeadAttention
             attention_output = MultiHeadAttention(
                 num_heads=num_attention_heads, # Assumed to be defined
                 key_dim=attention_key_dim,      # Assumed to be defined
-                kernel_regularizer=l2(l2_reg)
+                kernel_regularizer=l2(l2_reg),
+                name=f"multihead_attention_head{branch_suffix}"
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add()([head_dense_output, attention_output])
             head_dense_output = LayerNormalization()(head_dense_output)
-            head_dense_output = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_1{branch_suffix}")(head_dense_output)
 
-            # Bidirectional LSTM layer
+            # --- Reshape for LSTM ---
+            reshaped_for_lstm = head_dense_output
+
+            # Apply Bidirectional LSTM
+            # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False, kernel_regularizer=l2(l2_reg)), name=f"bidir_lstm{branch_suffix}"
-            )(head_dense_output)
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm_head{branch_suffix}"
+            )(reshaped_for_lstm)
+
           
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
