@@ -447,32 +447,6 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Parallel isolated preprocessing branches (unchanged) ---
-        feature_branch_outputs = []
-        for c in range(num_channels):
-            feature_input = Lambda(
-                lambda x, channel=c: x[:, :, channel : channel + 1],
-                name=f"feature_{c+1}_input"
-            )(inputs)
-
-            x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
-            for i in range(num_intermediate_layers):
-                x = Dense(
-                    branch_units,
-                    activation=activation,
-                    kernel_regularizer=l2(l2_reg),
-                    name=f"feature_{c+1}_dense_{i+1}"
-                )(x)
-            # reshape each branch’s 2D output (batch, branch_units)
-            # into a 3D tensor (batch, timesteps=branch_units, channels=1)
-            x = Reshape((branch_units, 1), name=f"feature_{c+1}_reshape")(x)
-            feature_branch_outputs.append(x)
-        
-        # Stack the raw feature_inputs along channel axis for Conv1D
-        merged = Concatenate(axis=2, name="conv_input_features")(feature_branch_outputs)
-
-        # Apply Conv1D instead of merged dense layers
-
         merged = Conv1D(
             filters=merged_units,
             kernel_size=3,
@@ -481,7 +455,7 @@ class Plugin:
             activation=activation,
             name="conv_merged_features_1",
             kernel_regularizer=l2(l2_reg)
-        )(merged)
+        )(inputs)
 
         merged = Conv1D(
             filters=branch_units,
@@ -493,15 +467,6 @@ class Plugin:
             kernel_regularizer=l2(l2_reg)
         )(merged)
         
-        # Add positional encoding to capture temporal order
-        # get static shape tuple via Keras backend
-        last_layer_shape = K.int_shape(merged)
-        feature_dim = last_layer_shape[-1]
-        # get the sequence length from the last layer shape
-        seq_length = last_layer_shape[1]
-        pos_enc = positional_encoding(seq_length, feature_dim)
-        merged = merged + pos_enc
-
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
@@ -511,29 +476,54 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
+        
+            # Conv1D layers for each head
+            head_dense_output = Conv1D(
+                filters=lstm_units,
+                kernel_size=3,
+                strides=2, 
+                padding='same',
+                activation=activation,
+                name=f"conv_head{branch_suffix}",
+                kernel_regularizer=l2(l2_reg)
+            )(head_dense_output)
+        
+            # Add positional encoding to capture temporal order
+            # get static shape tuple via Keras backend
+            last_layer_shape = K.int_shape(head_dense_output)
+            feature_dim = last_layer_shape[-1]
+            # get the sequence length from the last layer shape
+            seq_length = last_layer_shape[1]
+            pos_enc = positional_encoding(seq_length, feature_dim)
+            head_dense_output = head_dense_output + pos_enc
+
             # --- Self-Attention Block ---
             num_attention_heads = 2
-            attention_key_dim = num_channels//num_attention_heads
+            # get the last layer shape from the merged tensor
+            last_layer_shape = K.int_shape(head_dense_output)
+            # get the feature dimension from the last layer shape as the last component of the shape tuple
+            feature_dim = last_layer_shape[-1]
+            # define key dimension for attention    
+            attention_key_dim = feature_dim//num_attention_heads
+            # Apply MultiHeadAttention
             attention_output = MultiHeadAttention(
                 num_heads=num_attention_heads, # Assumed to be defined
                 key_dim=attention_key_dim,      # Assumed to be defined
-                kernel_regularizer=l2(l2_reg)
+                kernel_regularizer=l2(l2_reg),
+                name=f"multihead_attention_head{branch_suffix}"
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add()([head_dense_output, attention_output])
             head_dense_output = LayerNormalization()(head_dense_output)
 
-            
+            # --- Reshape for LSTM ---
             reshaped_for_lstm = head_dense_output
-            
+
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm_head{branch_suffix}"
             )(reshaped_for_lstm)
-          
 
-
-            #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
