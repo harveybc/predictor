@@ -449,13 +449,11 @@ class Plugin:
 
         # --- Parallel isolated preprocessing branches (unchanged) ---
         feature_branch_outputs = []
-        feature_inputs = []
         for c in range(num_channels):
             feature_input = Lambda(
                 lambda x, channel=c: x[:, :, channel : channel + 1],
                 name=f"feature_{c+1}_input"
             )(inputs)
-            feature_inputs.append(feature_input)
 
             x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
             for i in range(num_intermediate_layers):
@@ -466,10 +464,9 @@ class Plugin:
                     name=f"feature_{c+1}_dense_{i+1}"
                 )(x)
             feature_branch_outputs.append(x)
-
-        # --- Replace Merge + Dense head with Conv1D over time using one branch of features ---
+        
         # Stack the raw feature_inputs along channel axis for Conv1D
-        merged = Concatenate(axis=2, name="conv_input_features")(feature_inputs)
+        merged = Concatenate(axis=2, name="conv_input_features")(feature_branch_outputs)
 
         # Apply Conv1D instead of merged dense layers
 
