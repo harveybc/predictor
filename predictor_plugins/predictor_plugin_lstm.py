@@ -447,6 +447,33 @@ class Plugin:
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
         
+                # Add positional encoding to capture temporal order
+        # get static shape tuple via Keras backend
+        last_layer_shape = K.int_shape(x)
+        feature_dim = last_layer_shape[-1]
+        # get the sequence length from the last layer shape
+        seq_length = last_layer_shape[1]
+        pos_enc = positional_encoding(seq_length, feature_dim)
+        x = x + pos_enc
+
+        # --- Self-Attention Block 1 ---
+        num_attention_heads = 2
+        # get the last layer shape from the merged tensor
+        last_layer_shape = K.int_shape(x)
+        # get the feature dimension from the last layer shape as the last component of the shape tuple
+        feature_dim = last_layer_shape[-1]
+        # define key dimension for attention    
+        attention_key_dim = feature_dim//num_attention_heads
+        # Apply MultiHeadAttention
+        attention_output = MultiHeadAttention(
+            num_heads=num_attention_heads, # Assumed to be defined
+            key_dim=attention_key_dim,      # Assumed to be defined
+            kernel_regularizer=l2(l2_reg),
+            name=f"multihead_attention_1"
+        )(query=x, value=x, key=x)
+        x = Add()([x, attention_output])
+        x = LayerNormalization()(x)
+
         # --- End Self-Attention Block ---
         x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_1"))(x)
@@ -455,26 +482,6 @@ class Plugin:
         x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_2"))(x)
         
-        x = Conv1D(
-            filters=lstm_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation=activation,
-            name="conv_merged_features_1",
-            kernel_regularizer=l2(l2_reg)
-        )(x)
-        
-        x = Conv1D(
-            filters=lstm_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation=activation,
-            name="conv_merged_features_2",
-            kernel_regularizer=l2(l2_reg)
-        )(x)
-
         merged = x
 
   
