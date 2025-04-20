@@ -387,8 +387,6 @@ class Plugin:
         # Shape depends on output of dummy_feedback_control. If it returns scalar P, shape is scalar.
         self.local_feedback = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_feedback_{i}") for i in range(num_outputs)]
 
-        print("Control/Feedback lists initialized.")
-
         # --- Apply DenseFlipout Patch ---
         if not hasattr(tfp.layers.DenseFlipout, '_already_patched_add_variable'):
             def _patched_add_variable(layer_instance, name, shape, dtype, initializer, trainable, **kwargs):
