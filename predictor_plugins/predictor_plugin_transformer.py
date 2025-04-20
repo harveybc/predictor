@@ -470,6 +470,17 @@ class Plugin:
             kernel_regularizer=l2(l2_reg)
         )(x)
         
+                # conv1d 2
+        x = Conv1D(
+            filters=branch_units,
+            kernel_size=3,
+            strides=2, 
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_2",
+            kernel_regularizer=l2(l2_reg)
+        )(x)
+
         # Add positional encoding to capture temporal order
         # get static shape tuple via Keras backend
         last_layer_shape = K.int_shape(x)
@@ -479,7 +490,7 @@ class Plugin:
         pos_enc = positional_encoding(seq_length, feature_dim)
         x = x + pos_enc
 
-        # --- Self-Attention Block ---
+        # --- Self-Attention Block 1 ---
         num_attention_heads = 2
         # get the last layer shape from the merged tensor
         last_layer_shape = K.int_shape(x)
@@ -496,19 +507,9 @@ class Plugin:
         )(query=x, value=x, key=x)
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
+              
         
-        # conv1d 2
-        x = Conv1D(
-            filters=branch_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation=activation,
-            name="conv_merged_features_2",
-            kernel_regularizer=l2(l2_reg)
-        )(x)
-
-        # --- Self-Attention Block ---
+        # --- Self-Attention Block  2---
         num_attention_heads = 2
         # get the last layer shape from the merged tensor
         last_layer_shape = K.int_shape(x)
