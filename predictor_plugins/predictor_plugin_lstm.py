@@ -465,6 +465,15 @@ class Plugin:
             kernel_regularizer=l2(l2_reg)
         )(x)
         
+        x = Conv1D(
+            filters=lstm_units,
+            kernel_size=3,
+            strides=2, 
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_2",
+            kernel_regularizer=l2(l2_reg)
+        )(x)
 
         merged = x
 
