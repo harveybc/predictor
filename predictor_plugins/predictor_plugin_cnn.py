@@ -85,6 +85,21 @@ class ClearMemoryCallback(Callback):
 # ---------------------------
 # Custom Metrics and Loss Functions
 # ---------------------------
+def get_angles(pos, i, d_model):
+    angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
+    return pos * angle_rates
+
+def positional_encoding(position, d_model):
+    angle_rads = get_angles(np.arange(position)[:, np.newaxis],
+                            np.arange(d_model)[np.newaxis, :],
+                            d_model)
+    # Apply sin to even indices; cos to odd indices
+    sines = np.sin(angle_rads[:, 0::2])
+    cosines = np.cos(angle_rads[:, 1::2])
+    pos_encoding = np.concatenate([sines, cosines], axis=-1)
+    pos_encoding = pos_encoding[np.newaxis, ...]  # Shape: (1, position, d_model)
+    return tf.cast(pos_encoding, dtype=tf.float32)
+
 def mae_magnitude(y_true, y_pred):
     """Compute MAE on the first column (magnitude)."""
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
@@ -427,6 +442,7 @@ class Plugin:
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
+        embedding_dim = self.params.get('initial_layer_size', 32)
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
@@ -477,6 +493,15 @@ class Plugin:
             kernel_regularizer=l2(l2_reg)
         )(merged)
         
+        # Add positional encoding to capture temporal order
+        # get static shape tuple via Keras backend
+        last_layer_shape = K.int_shape(merged)
+        feature_dim = last_layer_shape[-1]
+        # get the sequence length from the last layer shape
+        seq_length = last_layer_shape[1]
+        pos_enc = positional_encoding(seq_length, feature_dim)
+        merged = merged + pos_enc
+
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
