@@ -446,14 +446,32 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
+        # --- Convolutional Layer 1 ---
+        x = Conv1D(
+            filters=merged_units,
+            kernel_size=3,
+            strides=2, 
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_1",
+            kernel_regularizer=l2(l2_reg)
+        )(x)
         
         # --- End Self-Attention Block ---
         x = Bidirectional(LSTM(merged_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_1"))(x)
-        x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_1")(x)
-        #x = Bidirectional(LSTM(branch_units, return_sequences=True,
-        #            name=f"feature_lstm_2"))(x)
-        #x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
+
+        # --- Convolutional Layer 2 ---
+        x = Conv1D(
+            filters=branch_units,
+            kernel_size=3,
+            strides=2, 
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_2",
+            kernel_regularizer=l2(l2_reg)
+        )(x)
+        
         
         # --- End Self-Attention Block ---
         x = Bidirectional(LSTM(branch_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
