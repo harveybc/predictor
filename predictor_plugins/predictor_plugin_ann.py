@@ -458,22 +458,8 @@ class Plugin:
                           name=f"feature_{c+1}_dense_{i+1}")(x)
             feature_branch_outputs.append(x)
 
-        # --- Feature Extractor: Branch Merging ---
-        if len(feature_branch_outputs) == 1:
-             # Use Keras Identity layer for naming and compatibility
-             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
-        elif len(feature_branch_outputs) > 1:
-             # Concatenate is already a Keras layer
-             merged = Concatenate(name="merged_features")(feature_branch_outputs)
-        else:
-             raise ValueError("Model must have at least one input feature channel.")
-        
-        # --- Feature Extractor: Merged Features Processing ---
-        for j in range(num_head_intermediate_layers):
-                merged = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                        name=f"meerged_dense_{j+1}")(merged)
-
-        merged = Reshape((1, merged_units), name=f"reshape_lstm_in")(merged)
+        # Stack the raw feature_inputs along channel axis for Conv1D
+        merged = Concatenate(axis=2, name="conv_input_features")(feature_branch_outputs)
 
         # Add positional encoding to capture temporal order
         # get static shape tuple via Keras backend
@@ -483,7 +469,7 @@ class Plugin:
         seq_length = last_layer_shape[1]
         pos_enc = positional_encoding(seq_length, feature_dim)
         merged = merged + pos_enc
-        
+
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
