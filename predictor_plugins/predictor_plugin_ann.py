@@ -42,6 +42,8 @@ from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
 from tensorflow.keras.layers import MultiHeadAttention
 from tensorflow.keras.layers import LayerNormalization
+from tensorflow.keras.layers import AveragePooling1D
+from tensorflow.keras.layers import Conv1D
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -461,33 +463,53 @@ class Plugin:
             x = Reshape((branch_units, 1), name=f"feature_{c+1}_reshape")(x)
             feature_branch_outputs.append(x)
         # Stack the raw feature_inputs along channel axis for Conv1D
-        merged = Concatenate(axis=2, name="conv_input_features")(feature_branch_outputs)
-
-        # Add positional encoding to capture temporal order
-        # get static shape tuple via Keras backend
-        last_layer_shape = K.int_shape(merged)
-        feature_dim = last_layer_shape[-1]
-        # get the sequence length from the last layer shape
-        seq_length = last_layer_shape[1]
-        pos_enc = positional_encoding(seq_length, feature_dim)
-        merged = merged + pos_enc
+        merged = Concatenate(axis=2, name="extracted_features")(feature_branch_outputs)
 
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
+        
         # Loop through each predicted horizon
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
+        
+            # Conv1D layers for each head
+            head_dense_output = Conv1D(
+                filters=lstm_units,
+                kernel_size=3,
+                strides=2, 
+                padding='same',
+                activation=activation,
+                name=f"conv_head{branch_suffix}",
+                kernel_regularizer=l2(l2_reg)
+            )(head_dense_output)
+        
+            # Add positional encoding to capture temporal order
+            # get static shape tuple via Keras backend
+            last_layer_shape = K.int_shape(head_dense_output)
+            feature_dim = last_layer_shape[-1]
+            # get the sequence length from the last layer shape
+            seq_length = last_layer_shape[1]
+            pos_enc = positional_encoding(seq_length, feature_dim)
+            head_dense_output = head_dense_output + pos_enc
+
             # --- Self-Attention Block ---
             num_attention_heads = 2
-            attention_key_dim = num_channels//num_attention_heads
+            # get the last layer shape from the merged tensor
+            last_layer_shape = K.int_shape(head_dense_output)
+            # get the feature dimension from the last layer shape as the last component of the shape tuple
+            feature_dim = last_layer_shape[-1]
+            # define key dimension for attention    
+            attention_key_dim = feature_dim//num_attention_heads
+            # Apply MultiHeadAttention
             attention_output = MultiHeadAttention(
                 num_heads=num_attention_heads, # Assumed to be defined
                 key_dim=attention_key_dim,      # Assumed to be defined
-                kernel_regularizer=l2(l2_reg)
+                kernel_regularizer=l2(l2_reg),
+                name=f"multihead_attention_head{branch_suffix}"
             )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
             head_dense_output = Add()([head_dense_output, attention_output])
             head_dense_output = LayerNormalization()(head_dense_output)
@@ -498,9 +520,8 @@ class Plugin:
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(reshaped_for_lstm)
-          
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm_head{branch_suffix}"
+            )(reshaped_for_lstm)          
 
 
             #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
