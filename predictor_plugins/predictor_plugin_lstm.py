@@ -446,25 +446,6 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
-        x = Conv1D(
-            filters=merged_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation=activation,
-            name="conv_merged_features_1",
-            kernel_regularizer=l2(l2_reg)
-        )(x)
-
-        x = Conv1D(
-            filters=branch_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation=activation,
-            name="conv_merged_features_2",
-            kernel_regularizer=l2(l2_reg)
-        )(x)
         
         # --- End Self-Attention Block ---
         x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
@@ -474,6 +455,26 @@ class Plugin:
         x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_2"))(x)
         
+        x = Conv1D(
+            filters=lstm_units,
+            kernel_size=3,
+            strides=2, 
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_1",
+            kernel_regularizer=l2(l2_reg)
+        )(x)
+        
+                # conv1d 2
+        x = Conv1D(
+            filters=lstm_units,
+            kernel_size=3,
+            strides=2, 
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_2",
+            kernel_regularizer=l2(l2_reg)
+        )(x)
 
         merged = x
 
