@@ -782,7 +782,7 @@ class Plugin:
         # print(f"Running {mc_samples} MC samples for uncertainty (incremental)...") # Informative print
         for i in tqdm(range(mc_samples), desc="MC Samples"):
             # Get predictions for all heads in this sample
-            batch_size = 1024  # ✅ Use safe batch size
+            batch_size = 256  # ✅ Use safe batch size
             ## Initialize a list for each output head
             head_outputs_lists = None
             for i in range(0, len(x_test), batch_size):
