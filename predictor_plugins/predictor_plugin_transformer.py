@@ -499,7 +499,7 @@ class Plugin:
         
         # conv1d 2
         x = Conv1D(
-            filters=merged_units,
+            filters=branch_units,
             kernel_size=3,
             strides=2, 
             padding='same',
