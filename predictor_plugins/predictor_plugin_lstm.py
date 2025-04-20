@@ -467,11 +467,11 @@ class Plugin:
         )(x)
         
         # --- End Self-Attention Block ---
-        x = Bidirectional(LSTM(merged_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
+        x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_1"))(x)
 
         # --- End Self-Attention Block ---
-        x = Bidirectional(LSTM(branch_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
+        x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_2"))(x)
         
 
