@@ -481,7 +481,7 @@ class Plugin:
             key_dim=attention_key_dim,      # Assumed to be defined
             kernel_regularizer=l2(l2_reg),
             name=f"multihead_attention_1"
-        )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
+        )(query=x, value=x, key=x)
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
         # --- Average Pooling ---
@@ -501,13 +501,13 @@ class Plugin:
             key_dim=attention_key_dim,      # Assumed to be defined
             kernel_regularizer=l2(l2_reg),
             name=f"multihead_attention_2"
-        )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
+        )(query=x, value=x, key=x)
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
         # --- Average Pooling ---
         x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_2")(x)
 
-        
+
         merged = x
 
 
