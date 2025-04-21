@@ -440,7 +440,7 @@ class Plugin:
         branch_units = merged_units//config.get("layer_size_divisor", 2)
         # Add LSTM units parameter (provide a default)
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
-        feature_units = 8
+        feature_units = merged_units
 
 
         # --- Define Bayesian Layer Components ---
