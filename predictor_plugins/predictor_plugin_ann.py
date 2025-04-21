@@ -440,6 +440,7 @@ class Plugin:
         branch_units = merged_units//config.get("layer_size_divisor", 2)
         # Add LSTM units parameter (provide a default)
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
+        feature_units = 8
 
 
         # --- Define Bayesian Layer Components ---
@@ -456,7 +457,7 @@ class Plugin:
                                    name=f"feature_{c+1}_input")(inputs)
             x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
             for i in range(num_intermediate_layers):
-                x = Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                x = Dense(feature_units, activation=activation, kernel_regularizer=l2(l2_reg),
                           name=f"feature_{c+1}_dense_{i+1}")(x)
             # reshape each branch’s 2D output (batch, branch_units)
             # into a 3D tensor (batch, timesteps=branch_units, channels=1)
