@@ -461,7 +461,7 @@ class Plugin:
                           name=f"feature_{c+1}_dense_{i+1}")(x)
             # reshape each branch’s 2D output (batch, branch_units)
             # into a 3D tensor (batch, timesteps=branch_units, channels=1)
-            x = Reshape((branch_units, 1), name=f"feature_{c+1}_reshape")(x)
+            x = Reshape((feature_units, 1), name=f"feature_{c+1}_reshape")(x)
             feature_branch_outputs.append(x)
         # Stack the raw feature_inputs along channel axis for Conv1D
         merged = Concatenate(axis=2, name="extracted_features")(feature_branch_outputs)
