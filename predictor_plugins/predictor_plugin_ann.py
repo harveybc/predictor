@@ -476,54 +476,24 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
+            #for j in range(num_head_intermediate_layers):
+            #     head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+            #                               name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
-            # Add positional encoding to capture temporal order
-            # get static shape tuple via Keras backend
-            last_layer_shape = K.int_shape(head_dense_output)
-            feature_dim = last_layer_shape[-1]
-            # get the sequence length from the last layer shape
-            seq_length = last_layer_shape[1]
-            pos_enc = positional_encoding(seq_length, feature_dim)
-            head_dense_output = head_dense_output + pos_enc
-
-            # --- Self-Attention Block ---
-            num_attention_heads = 2
-            # get the last layer shape from the merged tensor
-            last_layer_shape = K.int_shape(head_dense_output)
-            # get the feature dimension from the last layer shape as the last component of the shape tuple
-            feature_dim = last_layer_shape[-1]
-            # define key dimension for attention    
-            attention_key_dim = feature_dim//num_attention_heads
-            # Apply MultiHeadAttention
-            attention_output = MultiHeadAttention(
-                num_heads=num_attention_heads, # Assumed to be defined
-                key_dim=attention_key_dim,      # Assumed to be defined
-                kernel_regularizer=l2(l2_reg),
-                name=f"multihead_attention_head{branch_suffix}"
-            )(query=head_dense_output, value=head_dense_output, key=head_dense_output)
-            head_dense_output = Add()([head_dense_output, attention_output])
-            head_dense_output = LayerNormalization()(head_dense_output)
-
-
-            # Conv1D layers for each head
-            head_dense_output = Conv1D(
-                filters=lstm_units,
-                kernel_size=3,
-                strides=2, 
-                padding='same',
-                activation=activation,
-                name=f"conv_head{branch_suffix}",
-                kernel_regularizer=l2(l2_reg)
-            )(head_dense_output)
-        
-            # --- Reshape for LSTM ---
+            # --- Add BiLSTM Layer ---
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
+            # TODO: probar (batch, merged_units, 1)
+            #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
             reshaped_for_lstm = head_dense_output
-
+            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm_head{branch_suffix}"
-            )(reshaped_for_lstm)          
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+            )(reshaped_for_lstm)
+          
+        
 
 
             #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
