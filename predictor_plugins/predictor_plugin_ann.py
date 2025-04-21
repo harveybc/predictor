@@ -475,18 +475,7 @@ class Plugin:
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
-        
-            # Conv1D layers for each head
-            head_dense_output = Conv1D(
-                filters=lstm_units,
-                kernel_size=3,
-                strides=2, 
-                padding='same',
-                activation=activation,
-                name=f"conv_head{branch_suffix}",
-                kernel_regularizer=l2(l2_reg)
-            )(head_dense_output)
-        
+
             # Add positional encoding to capture temporal order
             # get static shape tuple via Keras backend
             last_layer_shape = K.int_shape(head_dense_output)
@@ -514,6 +503,18 @@ class Plugin:
             head_dense_output = Add()([head_dense_output, attention_output])
             head_dense_output = LayerNormalization()(head_dense_output)
 
+
+            # Conv1D layers for each head
+            head_dense_output = Conv1D(
+                filters=lstm_units,
+                kernel_size=3,
+                strides=2, 
+                padding='same',
+                activation=activation,
+                name=f"conv_head{branch_suffix}",
+                kernel_regularizer=l2(l2_reg)
+            )(head_dense_output)
+        
             # --- Reshape for LSTM ---
             reshaped_for_lstm = head_dense_output
 
