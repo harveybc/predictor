@@ -473,6 +473,8 @@ class Plugin:
         )(query=x, value=x, key=x)
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
+        #AveragePooling1D
+        x = AveragePooling1D(pool_size=3, strides=2, padding='valid', name=f"average_pooling_1")(x)
 
         # --- End Self-Attention Block ---
         x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
@@ -482,6 +484,8 @@ class Plugin:
         x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_2"))(x)
         
+        x = AveragePooling1D(pool_size=3, strides=2, padding='valid', name=f"average_pooling_2")(x)
+
         merged = x
 
   
