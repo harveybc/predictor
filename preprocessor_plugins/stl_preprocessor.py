@@ -201,7 +201,7 @@ class PreprocessorPlugin:
         if trend_smoother is not None: # Validate trend smoother parameter
              if not isinstance(trend_smoother,int) or trend_smoother<=0: trend_smoother=None
              elif trend_smoother % 2 == 0: trend_smoother += 1
-        for i in tqdm(range(stl_window, n + 1), desc="STL", unit="w", disable=None, leave=False):
+        for i in tqdm(range(stl_window, n + 1), desc="STL", unit="w", disable=True, leave=False):
             window = series[i - stl_window: i]
             current_trend = trend_smoother
             if current_trend is not None and current_trend >= len(window):
