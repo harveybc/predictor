@@ -459,59 +459,69 @@ class Plugin:
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         
         x = inputs
-        
-        # Add positional encoding to capture temporal order
-        # get static shape tuple via Keras backend
-        last_layer_shape = K.int_shape(x)
-        feature_dim = last_layer_shape[-1]
-        # get the sequence length from the last layer shape
-        seq_length = last_layer_shape[1]
-        pos_enc = positional_encoding(seq_length, feature_dim)
-        x = x + pos_enc
 
-        # --- Self-Attention Block 1 ---
-        num_attention_heads = 2
-        # get the last layer shape from the merged tensor
-        last_layer_shape = K.int_shape(x)
-        # get the feature dimension from the last layer shape as the last component of the shape tuple
-        feature_dim = last_layer_shape[-1]
-        # define key dimension for attention    
-        attention_key_dim = feature_dim//num_attention_heads
-        # Apply MultiHeadAttention
-        attention_output = MultiHeadAttention(
-            num_heads=num_attention_heads, # Assumed to be defined
-            key_dim=attention_key_dim,      # Assumed to be defined
-            kernel_regularizer=l2(l2_reg),
-            name=f"multihead_attention_1"
-        )(query=x, value=x, key=x)
-        x = Add()([x, attention_output])
-        x = LayerNormalization()(x)
+        # Feature Extractor
+        if config.get("feature_extractor_file"):
+            # Load the pretrained feature extractor
+            fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
+            # Enable or disable training of the feature extractor
+            fe_model.trainable = bool(config.get("train_fe", False))
+            # Apply the feature extractor to the inputs
+            merged = fe_model(inputs)
+        else:
         
-        
-        # --- Convolutional Layer 1 ---
-        x = Conv1D(
-            filters=merged_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation=activation,
-            name="conv_merged_features_1",
-            kernel_regularizer=l2(l2_reg)
-        )(x)
-        
-                # conv1d 2
-        x = Conv1D(
-            filters=branch_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation=activation,
-            name="conv_merged_features_2",
-            kernel_regularizer=l2(l2_reg)
-        )(x)
+            # Add positional encoding to capture temporal order
+            # get static shape tuple via Keras backend
+            last_layer_shape = K.int_shape(x)
+            feature_dim = last_layer_shape[-1]
+            # get the sequence length from the last layer shape
+            seq_length = last_layer_shape[1]
+            pos_enc = positional_encoding(seq_length, feature_dim)
+            x = x + pos_enc
+
+            # --- Self-Attention Block 1 ---
+            num_attention_heads = 2
+            # get the last layer shape from the merged tensor
+            last_layer_shape = K.int_shape(x)
+            # get the feature dimension from the last layer shape as the last component of the shape tuple
+            feature_dim = last_layer_shape[-1]
+            # define key dimension for attention    
+            attention_key_dim = feature_dim//num_attention_heads
+            # Apply MultiHeadAttention
+            attention_output = MultiHeadAttention(
+                num_heads=num_attention_heads, # Assumed to be defined
+                key_dim=attention_key_dim,      # Assumed to be defined
+                kernel_regularizer=l2(l2_reg),
+                name=f"multihead_attention_1"
+            )(query=x, value=x, key=x)
+            x = Add()([x, attention_output])
+            x = LayerNormalization()(x)
+            
+            
+            # --- Convolutional Layer 1 ---
+            x = Conv1D(
+                filters=merged_units,
+                kernel_size=3,
+                strides=2, 
+                padding='same',
+                activation=activation,
+                name="conv_merged_features_1",
+                kernel_regularizer=l2(l2_reg)
+            )(x)
+            
+                    # conv1d 2
+            x = Conv1D(
+                filters=branch_units,
+                kernel_size=3,
+                strides=2, 
+                padding='same',
+                activation=activation,
+                name="conv_merged_features_2",
+                kernel_regularizer=l2(l2_reg)
+            )(x)
 
 
-        merged = x
+            merged = x
 
 
         # --- Build Multiple Output Heads ---
