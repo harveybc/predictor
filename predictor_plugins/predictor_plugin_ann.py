@@ -27,6 +27,18 @@ from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback, LambdaCallback
 from tensorflow.keras.losses import Huber
 import tensorflow.keras.backend as K
+
+# Custom layer for channel slicing to support serialization/deserialization
+class ChannelSlice(tf.keras.layers.Layer):
+    def __init__(self, channel, **kwargs):
+        super().__init__(**kwargs)
+        self.channel = channel
+    def call(self, inputs):
+        return inputs[:, :, self.channel:self.channel+1]
+    def get_config(self):
+        config = super().get_config()
+        config.update({'channel': self.channel})
+        return config
 #bilstm
 from tensorflow.keras.layers import Bidirectional, LSTM
 import gc
@@ -445,19 +457,21 @@ class Plugin:
         # Add LSTM units parameter (provide a default)
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
         feature_units = merged_units
-
+        
 
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
 
         # --- Input Layer ---
-        inputs = Input(shape=(window_size, num_channels), name="input_layer")
-
+        feature_input = ChannelSlice(channel=c, name=f"feature_{c+1}_input")(inputs)
         # Feature Extractor
         if config.get("feature_extractor_file"):
             # Load the pretrained feature extractor
-            fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
+            fe_model = tf.keras.models.load_model(
+                config["feature_extractor_file"],
+                custom_objects={'ChannelSlice': ChannelSlice}
+            )
             # Enable or disable training of the feature extractor
             fe_model.trainable = bool(config.get("train_fe", False))
             # Apply the feature extractor to the inputs
