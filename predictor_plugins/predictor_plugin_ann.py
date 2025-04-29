@@ -450,21 +450,31 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        # --- Feature Extractor: Parallel Isolated Preprocessing Branches ---
-        feature_branch_outputs = []
-        for c in range(num_channels):
-            feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                                   name=f"feature_{c+1}_input")(inputs)
-            x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
-            for i in range(num_intermediate_layers):
-                x = Dense(feature_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                          name=f"feature_{c+1}_dense_{i+1}")(x)
-            # reshape each branch’s 2D output (batch, branch_units)
-            # into a 3D tensor (batch, timesteps=branch_units, channels=1)
-            x = Reshape((feature_units, 1), name=f"feature_{c+1}_reshape")(x)
-            feature_branch_outputs.append(x)
-        # Stack the raw feature_inputs along channel axis for Conv1D
-        merged = Concatenate(axis=2, name="extracted_features")(feature_branch_outputs)
+        # Feature Extractor
+        if config.get("feature_extractor_file"):
+            # Load the pretrained feature extractor
+            fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
+            # Enable or disable training of the feature extractor
+            fe_model.trainable = bool(config.get("train_fe", False))
+            # Apply the feature extractor to the inputs
+            merged = fe_model(inputs)
+        else:
+
+            # --- Feature Extractor: Parallel Isolated Preprocessing Branches ---
+            feature_branch_outputs = []
+            for c in range(num_channels):
+                feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
+                                    name=f"feature_{c+1}_input")(inputs)
+                x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
+                for i in range(num_intermediate_layers):
+                    x = Dense(feature_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                            name=f"feature_{c+1}_dense_{i+1}")(x)
+                # reshape each branch’s 2D output (batch, branch_units)
+                # into a 3D tensor (batch, timesteps=branch_units, channels=1)
+                x = Reshape((feature_units, 1), name=f"feature_{c+1}_reshape")(x)
+                feature_branch_outputs.append(x)
+            # Stack the raw feature_inputs along channel axis for Conv1D
+            merged = Concatenate(axis=2, name="extracted_features")(feature_branch_outputs)
 
         # --- Build Multiple Output Heads ---
         outputs_list = []
