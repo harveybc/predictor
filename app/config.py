@@ -73,5 +73,6 @@ DEFAULT_VALUES = {
     "optimizer_output_file": "optimizer_output.json",
     "penalty_close_lambda":0.0001, # penalty in thel loss function for the predicted value being 0 (Naive)
     "penalty_far_lambda":0.0001,    # penalty in thel loss function for the predicted value being far from the target value in the opposite dicection of the 0 (Naive)
-    "feature_extractor_file": "examples/data/phase_1/feature_extractor.json",
+    "feature_extractor_file": None,
+    "train_fe" : False
 }
