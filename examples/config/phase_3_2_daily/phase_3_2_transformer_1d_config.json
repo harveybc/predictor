@@ -51,5 +51,8 @@
     "predicted_horizons": [24,48,72,96,120,144],
     "use_stl": true,
     "use_wavelets": true,
-    "use_multi_tapper": true
+    "use_multi_tapper": true,
+    "feature_extractor_file": "examples/results/phase_3_2_daily/phase_3_2_transformer_25200_1d_encoder_model.h5.keras",
+    "train_fe" : false
+
 }
