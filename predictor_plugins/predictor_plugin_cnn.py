@@ -447,25 +447,35 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        merged = Conv1D(
-            filters=merged_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation=activation,
-            name="conv_merged_features_1",
-            kernel_regularizer=l2(l2_reg)
-        )(inputs)
+        # Feature Extractor
+        if config.get("feature_extractor_file"):
+            # Load the pretrained feature extractor
+            fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
+            # Enable or disable training of the feature extractor
+            fe_model.trainable = bool(config.get("train_fe", False))
+            # Apply the feature extractor to the inputs
+            merged = fe_model(inputs)
+        else:
+            # Original Conv1D feature-extraction layers
+            merged = Conv1D(
+                filters=merged_units,
+                kernel_size=3,
+                strides=2,
+                padding='same',
+                activation=activation,
+                name="conv_merged_features_1",
+                kernel_regularizer=l2(l2_reg)
+            )(inputs)
 
-        merged = Conv1D(
-            filters=branch_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation=activation,
-            name="conv_merged_features_2",
-            kernel_regularizer=l2(l2_reg)
-        )(merged)
+            merged = Conv1D(
+                filters=branch_units,
+                kernel_size=3,
+                strides=2,
+                padding='same',
+                activation=activation,
+                name="conv_merged_features_2",
+                kernel_regularizer=l2(l2_reg)
+            )(merged)
         
         # --- Build Multiple Output Heads ---
         outputs_list = []
