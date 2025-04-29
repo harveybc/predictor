@@ -17,6 +17,10 @@ on the predicted return. This implementation is intended for the case when use_r
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
+
+# Allow loading models with Python lambdas (unsafe deserialization)
+import keras
+keras.config.enable_unsafe_deserialization()
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
 from tensorflow.keras.optimizers import AdamW
