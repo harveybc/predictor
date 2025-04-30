@@ -463,15 +463,20 @@ class Plugin:
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
 
+                # --- Input Layer ---
+        inputs = Input(shape=(window_size, num_channels), name="input_layer")
+        x = inputs
+
         # --- Input Layer ---
-        feature_input = ChannelSlice(channel=c, name=f"feature_{c+1}_input")(inputs)
+        #feature_input = ChannelSlice(channel=c, name=f"feature_{c+1}_input")(inputs)
         # Feature Extractor
         if config.get("feature_extractor_file"):
             # Load the pretrained feature extractor
+            fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
             fe_model = tf.keras.models.load_model(
-                config["feature_extractor_file"],
-                custom_objects={'ChannelSlice': ChannelSlice}
-            )
+            config["feature_extractor_file"],
+            custom_objects={'ChannelSlice': ChannelSlice}
+        )
             # Enable or disable training of the feature extractor
             fe_model.trainable = bool(config.get("train_fe", False))
             # Apply the feature extractor to the inputs
