@@ -472,7 +472,22 @@ class Plugin:
         # Feature Extractor
         if config.get("feature_extractor_file"):
             # Load the pretrained feature extractor
-            # Load the pretrained feature extractor with custom layer support
+            # — Patch Lambda.from_config so that defaults lists become tuples —
+            from tensorflow.keras.layers import Lambda as KerasLambda
+            if not hasattr(KerasLambda, '_patched_from_config'):
+                _orig_from_config = KerasLambda.from_config
+                @classmethod
+                def _patched_from_config(cls, config, custom_objects=None):
+                    fn_cfg = config.get('function', {})
+                    # convert list of defaults to tuple
+                    if 'defaults' in fn_cfg and isinstance(fn_cfg['defaults'], list):
+                        fn_cfg['defaults'] = tuple(fn_cfg['defaults'])
+                    config['function'] = fn_cfg
+                    return _orig_from_config(config, custom_objects)
+                KerasLambda.from_config = _patched_from_config
+                KerasLambda._patched_from_config = True
+
+            # — Load the pretrained feature extractor with custom layer support —
             fe_model = tf.keras.models.load_model(
                 config["feature_extractor_file"],
                 custom_objects={'ChannelSlice': ChannelSlice},
