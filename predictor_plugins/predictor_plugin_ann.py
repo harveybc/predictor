@@ -473,26 +473,32 @@ class Plugin:
         if config.get("feature_extractor_file"):
             # Load the pretrained feature extractor
             # — Patch Lambda.from_config so that defaults lists become tuples —
+            # — Patch Lambda.from_config so that its inner 'defaults' list becomes a tuple —
             from tensorflow.keras.layers import Lambda as KerasLambda
             if not hasattr(KerasLambda, '_patched_from_config'):
                 _orig_from_config = KerasLambda.from_config
+
                 @classmethod
-                def _patched_from_config(cls, config, custom_objects=None):
-                    fn_cfg = config.get('function', {})
-                    # convert list of defaults to tuple
-                    if 'defaults' in fn_cfg and isinstance(fn_cfg['defaults'], list):
-                        fn_cfg['defaults'] = tuple(fn_cfg['defaults'])
-                    config['function'] = fn_cfg
-                    return _orig_from_config(config, custom_objects)
+                def _patched_from_config(cls, layer_config, custom_objects=None):
+                    fn = layer_config.get('function', {})
+                    fn_conf = fn.get('config', {})
+                    # convert inner defaults list to tuple
+                    if 'defaults' in fn_conf and isinstance(fn_conf['defaults'], list):
+                        fn_conf['defaults'] = tuple(fn_conf['defaults'])
+                    fn['config'] = fn_conf
+                    layer_config['function'] = fn
+                    return _orig_from_config(layer_config, custom_objects)
+
                 KerasLambda.from_config = _patched_from_config
                 KerasLambda._patched_from_config = True
 
-            # — Load the pretrained feature extractor with custom layer support —
+            # — Now load the pretrained extractor —
             fe_model = tf.keras.models.load_model(
                 config["feature_extractor_file"],
                 custom_objects={'ChannelSlice': ChannelSlice},
                 compile=False
             )
+
             # Enable or disable training of the feature extractor
             fe_model.trainable = bool(config.get("train_fe", False))
             # Apply the feature extractor to the inputs
