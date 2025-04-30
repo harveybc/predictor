@@ -472,11 +472,12 @@ class Plugin:
         # Feature Extractor
         if config.get("feature_extractor_file"):
             # Load the pretrained feature extractor
-            fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
+            # Load the pretrained feature extractor with custom layer support
             fe_model = tf.keras.models.load_model(
-            config["feature_extractor_file"],
-            custom_objects={'ChannelSlice': ChannelSlice}
-        )
+                config["feature_extractor_file"],
+                custom_objects={'ChannelSlice': ChannelSlice},
+                compile=False
+            )
             # Enable or disable training of the feature extractor
             fe_model.trainable = bool(config.get("train_fe", False))
             # Apply the feature extractor to the inputs
