@@ -1,7 +1,7 @@
 {
     "use_normalization_json": "examples/data/phase_3/phase_3_debug_out.json",
-    "x_train_file": "examples/data/phase_3/normalized_d4.csv",
-    "y_train_file": "examples/data/phase_3/normalized_d4.csv",
+    "x_train_file": "examples/data/phase_4/normalized_d4_25200_synthetic_12600_prepended.csv",
+    "y_train_file": "examples/data/phase_4/normalized_d4_25200_synthetic_12600_prepended.csv",
     "x_validation_file": "examples/data/phase_3/normalized_d5.csv",
     "y_validation_file": "examples/data/phase_3/normalized_d5.csv",
     "x_test_file": "examples/data/phase_3/normalized_d6.csv",
@@ -21,7 +21,7 @@
     "pipeline_plugin": "stl_pipeline",
     "preprocessor_plugin": "stl_preprocessor",
     "use_daily": false,
-    "max_steps_train": 25200,
+    "max_steps_train": 38000,
     "max_steps_test": 6300,
     "intermediate_layers": 2,
     "initial_layer_size": 48,
