@@ -41,6 +41,8 @@ from tensorflow.keras.layers import GlobalAveragePooling1D, AveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D
+from tensorflow.keras.layers import MultiHeadAttention
+from tensorflow.keras.layers import LayerNormalization
 
 
 
@@ -85,6 +87,21 @@ class ClearMemoryCallback(Callback):
 # ---------------------------
 # Custom Metrics and Loss Functions
 # ---------------------------
+def get_angles(pos, i, d_model):
+    angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
+    return pos * angle_rates
+
+def positional_encoding(position, d_model):
+    angle_rads = get_angles(np.arange(position)[:, np.newaxis],
+                            np.arange(d_model)[np.newaxis, :],
+                            d_model)
+    # Apply sin to even indices; cos to odd indices
+    sines = np.sin(angle_rads[:, 0::2])
+    cosines = np.cos(angle_rads[:, 1::2])
+    pos_encoding = np.concatenate([sines, cosines], axis=-1)
+    pos_encoding = pos_encoding[np.newaxis, ...]  # Shape: (1, position, d_model)
+    return tf.cast(pos_encoding, dtype=tf.float32)
+
 def mae_magnitude(y_true, y_pred):
     """Compute MAE on the first column (magnitude)."""
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
@@ -352,7 +369,7 @@ class Plugin:
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
 
         # --- Initialize Control Parameter & Feedback Lists ---
-        print(f"Initializing control and feedback lists for {num_outputs} outputs in __init__.")
+        #print(f"Initializing control and feedback lists for {num_outputs} outputs in __init__.")
 
         # Control Parameters per Head (Values are examples)
         self.local_p_control = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_p_{i}") for i in range(num_outputs)]
@@ -420,25 +437,68 @@ class Plugin:
         branch_units = merged_units//config.get("layer_size_divisor", 2)
         # Add LSTM units parameter (provide a default)
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
-
-
-        # --- Input Layer ---
-        inputs = Input(shape=(window_size, num_channels), name="input_layer")
-
-        x = inputs
-        for i in range(num_intermediate_layers):
-                x = Bidirectional(LSTM(merged_units, return_sequences=True,
-                          name=f"feature_lstm_{i+1}"))(x)
-                x = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_{i+1}")(x)
-
-        # --- Flatten  ---
-        #merged = Flatten(name="flatten")(x)
-        merged = x
-
+        embedding_dim = merged_units
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
 
+
+        # --- Input Layer ---
+        inputs = Input(shape=(window_size, num_channels), name="input_layer")
+        x = inputs
+        
+        # Feature Extractor
+        if config.get("feature_extractor_file"):
+            # Load the pretrained feature extractor
+            fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
+            # Enable or disable training of the feature extractor
+            fe_model.trainable = bool(config.get("train_fe", False))
+            # Apply the feature extractor to the inputs
+            merged = fe_model(inputs)
+        else:
+               
+            # Add positional encoding to capture temporal order
+            # get static shape tuple via Keras backend
+            last_layer_shape = K.int_shape(x)
+            feature_dim = last_layer_shape[-1]
+            # get the sequence length from the last layer shape
+            seq_length = last_layer_shape[1]
+            pos_enc = positional_encoding(seq_length, feature_dim)
+            x = x + pos_enc
+
+            # --- Self-Attention Block 1 ---
+            num_attention_heads = 2
+            # get the last layer shape from the merged tensor
+            last_layer_shape = K.int_shape(x)
+            # get the feature dimension from the last layer shape as the last component of the shape tuple
+            feature_dim = last_layer_shape[-1]
+            # define key dimension for attention    
+            attention_key_dim = feature_dim//num_attention_heads
+            # Apply MultiHeadAttention
+            attention_output = MultiHeadAttention(
+                num_heads=num_attention_heads, # Assumed to be defined
+                key_dim=attention_key_dim,      # Assumed to be defined
+                kernel_regularizer=l2(l2_reg),
+                name=f"multihead_attention_1"
+            )(query=x, value=x, key=x)
+            x = Add()([x, attention_output])
+            x = LayerNormalization()(x)
+            #AveragePooling1D
+            x = AveragePooling1D(pool_size=3, strides=2, padding='valid', name=f"average_pooling_1")(x)
+
+            # --- End Self-Attention Block ---
+            x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
+                        name=f"feature_lstm_1"))(x)
+
+            # --- End Self-Attention Block ---
+            x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
+                        name=f"feature_lstm_2"))(x)
+            
+            x = AveragePooling1D(pool_size=3, strides=2, padding='valid', name=f"average_pooling_2")(x)
+
+            merged = x
+
+  
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
@@ -458,10 +518,8 @@ class Plugin:
             # TODO: probar (batch, merged_units, 1)
             #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
             reshaped_for_lstm = head_dense_output
-            reshaped_for_lstm = Bidirectional(LSTM(branch_units, return_sequences=True, name=f"lstm_head_1_{branch_suffix}"))(reshaped_for_lstm)
-            reshaped_for_lstm = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_1{branch_suffix}")(reshaped_for_lstm)
-            reshaped_for_lstm = Bidirectional(LSTM(lstm_units, return_sequences=True, name=f"lstm_head_2_{branch_suffix}"))(reshaped_for_lstm)
-            reshaped_for_lstm = AveragePooling1D(pool_size=3, strides=2, name=f"pooling_head_2{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
@@ -469,8 +527,7 @@ class Plugin:
             )(reshaped_for_lstm)
           
 
-
-            #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
+          
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
@@ -615,7 +672,7 @@ class Plugin:
         min_delta_early_stopping = config.get("min_delta", self.params.get("min_delta", 1e-4))
         patience_early_stopping = self.params.get('early_patience', 10)
         start_from_epoch_es = self.params.get('start_from_epoch', 10)
-        patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 5)))
+        patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 4)))
 
         # Instantiate callbacks WITHOUT ClearMemoryCallback
         # Assumes relevant Callback classes are imported/defined
@@ -625,7 +682,7 @@ class Plugin:
                 verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
             ),
             ReduceLROnPlateauWithCounter(
-                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, verbose=1
+                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs:
                            print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
@@ -729,7 +786,7 @@ class Plugin:
         # print(f"Running {mc_samples} MC samples for uncertainty (incremental)...") # Informative print
         for i in tqdm(range(mc_samples), desc="MC Samples"):
             # Get predictions for all heads in this sample
-            batch_size = 1024  # ✅ Use safe batch size
+            batch_size = 256  # ✅ Use safe batch size
             ## Initialize a list for each output head
             head_outputs_lists = None
             for i in range(0, len(x_test), batch_size):

@@ -17,12 +17,28 @@ on the predicted return. This implementation is intended for the case when use_r
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
+
+# Allow loading models with Python lambdas (unsafe deserialization)
+import keras
+keras.config.enable_unsafe_deserialization()
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
 from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback, LambdaCallback
 from tensorflow.keras.losses import Huber
 import tensorflow.keras.backend as K
+
+# Custom layer for channel slicing to support serialization/deserialization
+class ChannelSlice(tf.keras.layers.Layer):
+    def __init__(self, channel, **kwargs):
+        super().__init__(**kwargs)
+        self.channel = channel
+    def call(self, inputs):
+        return inputs[:, :, self.channel:self.channel+1]
+    def get_config(self):
+        config = super().get_config()
+        config.update({'channel': self.channel})
+        return config
 #bilstm
 from tensorflow.keras.layers import Bidirectional, LSTM
 import gc
@@ -40,6 +56,10 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
+from tensorflow.keras.layers import MultiHeadAttention
+from tensorflow.keras.layers import LayerNormalization
+from tensorflow.keras.layers import AveragePooling1D
+from tensorflow.keras.layers import Conv1D
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -82,6 +102,21 @@ class ClearMemoryCallback(Callback):
 # ---------------------------
 # Custom Metrics and Loss Functions
 # ---------------------------
+def get_angles(pos, i, d_model):
+    angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
+    return pos * angle_rates
+
+def positional_encoding(position, d_model):
+    angle_rads = get_angles(np.arange(position)[:, np.newaxis],
+                            np.arange(d_model)[np.newaxis, :],
+                            d_model)
+    # Apply sin to even indices; cos to odd indices
+    sines = np.sin(angle_rads[:, 0::2])
+    cosines = np.cos(angle_rads[:, 1::2])
+    pos_encoding = np.concatenate([sines, cosines], axis=-1)
+    pos_encoding = pos_encoding[np.newaxis, ...]  # Shape: (1, position, d_model)
+    return tf.cast(pos_encoding, dtype=tf.float32)
+
 def mae_magnitude(y_true, y_pred):
     """Compute MAE on the first column (magnitude)."""
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
@@ -349,7 +384,7 @@ class Plugin:
         self.kl_weight_var = tf.Variable(0.0, trainable=False, dtype=tf.float32, name='kl_weight_var')
 
         # --- Initialize Control Parameter & Feedback Lists ---
-        print(f"Initializing control and feedback lists for {num_outputs} outputs in __init__.")
+        #print(f"Initializing control and feedback lists for {num_outputs} outputs in __init__.")
 
         # Control Parameters per Head (Values are examples)
         self.local_p_control = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_p_{i}") for i in range(num_outputs)]
@@ -421,60 +456,99 @@ class Plugin:
         branch_units = merged_units//config.get("layer_size_divisor", 2)
         # Add LSTM units parameter (provide a default)
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
-
-
-        # --- Input Layer ---
-        inputs = Input(shape=(window_size, num_channels), name="input_layer")
-
-        # --- Parallel Feature Processing Branches ---
-        feature_branch_outputs = []
-        for c in range(num_channels):
-            feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                                   name=f"feature_{c+1}_input")(inputs)
-            x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
-            for i in range(num_intermediate_layers):
-                x = Dense(branch_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                          name=f"feature_{c+1}_dense_{i+1}")(x)
-            feature_branch_outputs.append(x)
-
-        # --- Merging Feature Branches ONLY ---
-        if len(feature_branch_outputs) == 1:
-             # Use Keras Identity layer for naming and compatibility
-             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
-        elif len(feature_branch_outputs) > 1:
-             # Concatenate is already a Keras layer
-             merged = Concatenate(name="merged_features")(feature_branch_outputs)
-        else:
-             raise ValueError("Model must have at least one input feature channel.")
-        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
+        feature_units = merged_units
+        
 
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
 
+                # --- Input Layer ---
+        inputs = Input(shape=(window_size, num_channels), name="input_layer")
+        x = inputs
+
+        # --- Input Layer ---
+        #feature_input = ChannelSlice(channel=c, name=f"feature_{c+1}_input")(inputs)
+        # Feature Extractor
+        if config.get("feature_extractor_file"):
+            # Load the pretrained feature extractor
+            # — Patch Lambda.from_config so that defaults lists become tuples —
+            # — Patch Lambda.from_config so that its inner 'defaults' list becomes a tuple —
+            from tensorflow.keras.layers import Lambda as KerasLambda
+            if not hasattr(KerasLambda, '_patched_from_config'):
+                _orig_from_config = KerasLambda.from_config
+
+                @classmethod
+                def _patched_from_config(cls, layer_config, custom_objects=None):
+                    fn = layer_config.get('function', {})
+                    fn_conf = fn.get('config', {})
+                    # convert inner defaults list to tuple
+                    if 'defaults' in fn_conf and isinstance(fn_conf['defaults'], list):
+                        fn_conf['defaults'] = tuple(fn_conf['defaults'])
+                    fn['config'] = fn_conf
+                    layer_config['function'] = fn
+                    return _orig_from_config(layer_config, custom_objects)
+
+                KerasLambda.from_config = _patched_from_config
+                KerasLambda._patched_from_config = True
+
+            # — Now load the pretrained extractor —
+            fe_model = tf.keras.models.load_model(
+                config["feature_extractor_file"],
+                custom_objects={'ChannelSlice': ChannelSlice},
+                compile=False
+            )
+
+            # Enable or disable training of the feature extractor
+            fe_model.trainable = bool(config.get("train_fe", False))
+            # Apply the feature extractor to the inputs
+            merged = fe_model(inputs)
+        else:
+
+            # --- Feature Extractor: Parallel Isolated Preprocessing Branches ---
+            feature_branch_outputs = []
+            for c in range(num_channels):
+                feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
+                                    name=f"feature_{c+1}_input")(inputs)
+                x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
+                for i in range(num_intermediate_layers):
+                    x = Dense(feature_units, activation=activation, kernel_regularizer=l2(l2_reg),
+                            name=f"feature_{c+1}_dense_{i+1}")(x)
+                # reshape each branch’s 2D output (batch, branch_units)
+                # into a 3D tensor (batch, timesteps=branch_units, channels=1)
+                x = Reshape((feature_units, 1), name=f"feature_{c+1}_reshape")(x)
+                feature_branch_outputs.append(x)
+            # Stack the raw feature_inputs along channel axis for Conv1D
+            merged = Concatenate(axis=2, name="extracted_features")(feature_branch_outputs)
+
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
-
-
+        
+        # Loop through each predicted horizon
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
             # --- Head Intermediate Dense Layers ---
             head_dense_output = merged
-            for j in range(num_head_intermediate_layers):
-                 head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-                                           name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
+            #for j in range(num_head_intermediate_layers):
+            #     head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+            #                               name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
 
             # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units)
-            reshaped_for_lstm = Reshape((1, merged_units), name=f"reshape_lstm_in{branch_suffix}")(head_dense_output)
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
+            # TODO: probar (batch, merged_units, 1)
+            #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
+            reshaped_for_lstm = head_dense_output
+            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
                 LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
             )(reshaped_for_lstm)
           
+        
 
 
             #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
@@ -622,7 +696,7 @@ class Plugin:
         min_delta_early_stopping = config.get("min_delta", self.params.get("min_delta", 1e-4))
         patience_early_stopping = self.params.get('early_patience', 10)
         start_from_epoch_es = self.params.get('start_from_epoch', 10)
-        patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 5)))
+        patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 4)))
 
         # Instantiate callbacks WITHOUT ClearMemoryCallback
         # Assumes relevant Callback classes are imported/defined
@@ -632,7 +706,7 @@ class Plugin:
                 verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
             ),
             ReduceLROnPlateauWithCounter(
-                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, verbose=1
+                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs:
                            print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
@@ -736,7 +810,7 @@ class Plugin:
         # print(f"Running {mc_samples} MC samples for uncertainty (incremental)...") # Informative print
         for i in tqdm(range(mc_samples), desc="MC Samples"):
             # Get predictions for all heads in this sample
-            batch_size = 1024  # ✅ Use safe batch size
+            batch_size = 256  # ✅ Use safe batch size
             ## Initialize a list for each output head
             head_outputs_lists = None
             for i in range(0, len(x_test), batch_size):
