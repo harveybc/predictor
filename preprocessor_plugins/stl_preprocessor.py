@@ -250,12 +250,13 @@ class PreprocessorPlugin:
         # --- Ensure necessary import for Wavelet object ---
         # Add this check in case Wavelet wasn't imported successfully earlier
         global Wavelet
-        try:
-            if Wavelet is None:
+        if 'Wavelet' not in globals() or Wavelet is None:
+            try:
                 from pywt import Wavelet
-        except ImportError:
-             print("ERROR: Cannot import pywt.Wavelet, required for causality correction.")
-             Wavelet = None # Keep it None if import fails here too
+            except ImportError:
+                print("ERROR: Cannot import pywt.Wavelet, required for causality correction.")
+                Wavelet = None  # Keep it None if import fails here too
+
 
         # --- Original input validation and setup ---
         if pywt is None: print("ERROR: pywt library not installed."); return {}
@@ -282,8 +283,7 @@ class PreprocessorPlugin:
                               wavelet=name,
                               level=levels,
                               trim_approx=False,
-                              norm=True,
-                              mode='constant') # Boundary mode, no future data is used in padding
+                              norm=True) # Boundary mode, no future data is used in padding
 
             # --- Extract coefficients ---
             if not isinstance(coeffs, list) or len(coeffs) != levels:

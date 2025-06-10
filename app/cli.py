@@ -34,5 +34,11 @@ def parse_args():
     parser.add_argument('-ud', '--use_daily', action='store_true',help='isntead of predicting the next time_horizon hours, predict the next time_horizon days.')
     # the predicted_hrizons parameter is a list of integers, each integer is a number of hours to predict
     parser.add_argument('-ph', '--predicted_hrizons', type=int, nargs='*', help='list of predicted hrizons to predict.')
+    # "feature_extractor_file": "examples/results/phase_3_2_daily/phase_3_2_cnn_25200_1d_encoder_model.h5.keras",
+    # "train_fe" : false
+    parser.add_argument('--feature_extractor_file', type=str, help='Path to the feature extractor file.')
+    parser.add_argument('--train_fe', action='store_true', help='Train the feature extractor.')
+
+
 
     return parser.parse_known_args()
