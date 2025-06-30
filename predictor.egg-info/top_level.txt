@@ -1,6 +1,0 @@
-app
-optimizer_plugins
-pipeline_plugins
-predictor_plugins
-preprocessor_plugins
-tests
