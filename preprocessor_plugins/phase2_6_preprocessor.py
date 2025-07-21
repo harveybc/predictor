@@ -264,7 +264,7 @@ class PreprocessorPlugin:
         use_returns = config.get("use_returns", False)
         
         # For baseline, we need the CLOSE value at the end of each window
-        # This corresponds to the last value in each window for the target column
+        # FIXED: Use original unnormalized CLOSE values, NOT normalized ones from windows
         num_train_windows = X_train_windows.shape[0]
         num_val_windows = X_val_windows.shape[0]
         num_test_windows = X_test_windows.shape[0]
@@ -274,15 +274,13 @@ class PreprocessorPlugin:
         baseline_val = np.zeros(num_val_windows, dtype=np.float32)
         baseline_test = np.zeros(num_test_windows, dtype=np.float32)
         
-        # Find CLOSE column index
-        close_col_idx = list(x_train_df.columns).index(target_column)
-        
+        # Calculate baseline from original CLOSE values (not normalized windows)
         for i in range(num_train_windows):
-            baseline_train[i] = X_train_windows[i, -1, close_col_idx]  # Last timestep, CLOSE column
+            baseline_train[i] = close_train[i + window_size - 1]  # End of window in original data
         for i in range(num_val_windows):
-            baseline_val[i] = X_val_windows[i, -1, close_col_idx]
+            baseline_val[i] = close_val[i + window_size - 1]
         for i in range(num_test_windows):
-            baseline_test[i] = X_test_windows[i, -1, close_col_idx]
+            baseline_test[i] = close_test[i + window_size - 1]
 
         print(f"Baseline shapes: Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
 
