@@ -41,6 +41,11 @@ from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D
+from tensorflow.keras.layers import Conv1DTranspose
+from tensorflow.keras.layers import BatchNormalization
+#linear activation
+from tensorflow.keras.layers import Activation
+
 
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
@@ -429,7 +434,7 @@ class Plugin:
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
         x = inputs
-        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=linear, name="initial_conv")(x)
+        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation='linear', name="initial_conv")(x)
         for i in range(num_intermediate_layers):
                 x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
                           name=f"feature_conv_{i+1}")(x)
