@@ -37,7 +37,7 @@ from app.data_handler import write_csv
 
 # --- Denormalization Functions (Assumed Correct as provided) ---
 def denormalize(data, config):
-    """Denormalizes price or price delta."""
+    """Denormalizes price or price delta. Supports both min-max and z-score normalization."""
     data = np.asarray(data)
     if config.get("use_normalization_json"):
         norm_json = config["use_normalization_json"]
@@ -47,15 +47,26 @@ def denormalize(data, config):
             except Exception as e: print(f"WARN: Failed load norm JSON {norm_json}: {e}"); return data
         if isinstance(norm_json, dict) and "CLOSE" in norm_json:
             try:
-                close_min = norm_json["CLOSE"]["min"]; close_max = norm_json["CLOSE"]["max"]; diff = close_max - close_min
-                if diff == 0: return data + close_min
-                return data * diff + close_min
+                # Check if it's z-score normalization (has mean/std) or min-max (has min/max)
+                if "mean" in norm_json["CLOSE"] and "std" in norm_json["CLOSE"]:
+                    # Z-score denormalization: value = (normalized * std) + mean
+                    close_mean = norm_json["CLOSE"]["mean"]
+                    close_std = norm_json["CLOSE"]["std"]
+                    return (data * close_std) + close_mean
+                elif "min" in norm_json["CLOSE"] and "max" in norm_json["CLOSE"]:
+                    # Min-max denormalization: value = (normalized * (max-min)) + min
+                    close_min = norm_json["CLOSE"]["min"]; close_max = norm_json["CLOSE"]["max"]; diff = close_max - close_min
+                    if diff == 0: return data + close_min
+                    return data * diff + close_min
+                else:
+                    print(f"WARN: Unknown normalization format in JSON. Expected 'mean'/'std' or 'min'/'max' keys")
+                    return data
             except KeyError as e: print(f"WARN: Missing key in norm JSON: {e}"); return data
             except Exception as e: print(f"WARN: Error during denormalize: {e}"); return data
     return data
 
 def denormalize_returns(data, config):
-    """Denormalizes return values (deltas) - only scales by range."""
+    """Denormalizes return values (deltas). Supports both min-max and z-score normalization."""
     data = np.asarray(data)
     if config.get("use_normalization_json"):
         norm_json = config["use_normalization_json"]
@@ -65,9 +76,19 @@ def denormalize_returns(data, config):
             except Exception as e: print(f"WARN: Failed load norm JSON {norm_json}: {e}"); return data
         if isinstance(norm_json, dict) and "CLOSE" in norm_json:
             try:
-                close_min=norm_json["CLOSE"]["min"]; close_max=norm_json["CLOSE"]["max"]; diff=close_max - close_min
-                if diff == 0: return data
-                return data * diff
+                # Check if it's z-score normalization (has mean/std) or min-max (has min/max)
+                if "mean" in norm_json["CLOSE"] and "std" in norm_json["CLOSE"]:
+                    # Z-score denormalization for returns: only scale by std (no mean shift)
+                    close_std = norm_json["CLOSE"]["std"]
+                    return data * close_std
+                elif "min" in norm_json["CLOSE"] and "max" in norm_json["CLOSE"]:
+                    # Min-max denormalization for returns: only scale by range
+                    close_min=norm_json["CLOSE"]["min"]; close_max=norm_json["CLOSE"]["max"]; diff=close_max - close_min
+                    if diff == 0: return data
+                    return data * diff
+                else:
+                    print(f"WARN: Unknown normalization format in JSON for returns. Expected 'mean'/'std' or 'min'/'max' keys")
+                    return data
             except KeyError as e: print(f"WARN: Missing key in norm JSON: {e}"); return data
             except Exception as e: print(f"WARN: Error during denormalize_returns: {e}"); return data
     return data
