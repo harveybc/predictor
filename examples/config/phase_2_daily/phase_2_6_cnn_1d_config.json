@@ -18,8 +18,8 @@
     "target_column": "CLOSE",
     "predictor_plugin": "cnn",
     "optimizer_plugin": "default_optimizer",
-    "pipeline_plugin": "stl_pipeline",
-    "preprocessor_plugin": "stl_preprocessor",
+    "pipeline_plugin": "phase2_6_pipeline",
+    "preprocessor_plugin": "phase2_6_preprocessor",
     "max_steps_train": 25200,
     "max_steps_test": 6300,
     "intermediate_layers": 2,
@@ -49,7 +49,7 @@
     "use_strategy": false,
     "stl_period":24,
     "predicted_horizons": [24,48,72,96,120,144],
-    "use_stl": true,
-    "use_wavelets": true,
-    "use_multi_tapper": true
+    "use_stl": false,
+    "use_wavelets": false,
+    "use_multi_tapper": false
 }
