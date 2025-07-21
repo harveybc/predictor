@@ -24,7 +24,7 @@ from app.config_handler import (
 from app.cli import parse_args
 from app.config import DEFAULT_VALUES
 from app.plugin_loader import load_plugin
-from config_merger import merge_config, process_unknown_args
+from app.config_merger import merge_config, process_unknown_args
 
 # Se asume que los siguientes plugins se cargan desde sus respectivos namespaces:
 # - predictor.plugins

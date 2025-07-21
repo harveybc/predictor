@@ -1,18 +1,31 @@
 # config.py
 
 DEFAULT_VALUES = {
-    "use_normalization_json": "examples\\config\\phase_2_normalizer_debug_out.json",
 
 
-    "x_train_file": "examples\\data\\phase_3\\phase_3_encoder_eval_d2.csv",
+
+    "use_normalization_json": "examples/config/normalization_config_b.json",
+
+    # Plugin Selection
+    "pipeline_plugin": "phase2_6_pipeline",
+    "preprocessor_plugin": "phase2_6_preprocessor",
+
+    "x_train_file": "examples/data/phase_2_6/normalized_d4.csv",
+    #"x_train_file": "examples\\data\\phase_3\\phase_3_encoder_eval_d2.csv",
     #"x_train_file": "examples\\data\\phase_2\\normalized_d2.csv",
     #"x_train_file": "examples\\data\\phase_3\\extracted_features_transformer_va_d2.csv",
-    "y_train_file": "examples\\data\\phase_2\\exp_4\\normalized_d2.csv",
+    "y_train_file": "examples/data/phase_2_6/normalized_d4.csv",
+    #"y_train_file": "examples\\data\\phase_2\\exp_4\\normalized_d2.csv",
     
-    "x_validation_file": "examples\\data\\phase_3\\phase_3_encoder_eval_d3.csv",
+    "x_validation_file": "examples/data/phase_2_6/normalized_d5.csv",
+    #"x_validation_file": "examples\\data\\phase_3\\phase_3_encoder_eval_d3.csv",
     #"x_validation_file": "examples\\data\\phase_2\\normalized_d3.csv",
     #"x_validation_file": "examples\\data\\phase_3\\extracted_features_transformer_va_d2.csv",
-    "y_validation_file": "examples\\data\\phase_2\\exp_4\\normalized_d3.csv",
+    "y_validation_file": "examples/data/phase_2_6/normalized_d5.csv",
+    #"y_validation_file": "examples\\data\\phase_2\\exp_4\\normalized_d3.csv",
+    
+    "x_test_file": "examples/data/phase_2_6/normalized_d6.csv",
+    "y_test_file": "examples/data/phase_2_6/normalized_d6.csv",
     
     'target_column': 'CLOSE',
     'output_file': './prediction.csv',
@@ -39,6 +52,7 @@ DEFAULT_VALUES = {
     'window_size': 256,  # Number of time steps in each window (e.g., 24 for daily patterns)
     'l2_reg': 1e-4,          # L2 regularization factor
     'early_patience': 30,           # Early stopping patience
+    'intermediate_layers': 2,        # Number of intermediate layers for ANN predictor
     'max_steps_train': 6300,
     'max_steps_val': 6300,
     'max_steps_test': 6300,
@@ -53,6 +67,7 @@ DEFAULT_VALUES = {
     "overfitting_penalty": 0.1,
     "use_returns": True,
     "mc_samples":100,
+    "predicted_horizons": [1, 2, 3, 4, 5, 6], 
     "plotted_horizon": 6,
     "min_delta": 1e-4,
     "start_from_epoch": 10,

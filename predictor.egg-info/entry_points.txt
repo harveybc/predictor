@@ -6,6 +6,7 @@ default_optimizer = optimizer_plugins.default_optimizer:Plugin
 
 [pipeline.plugins]
 default_pipeline = pipeline_plugins.default_pipeline:PipelinePlugin
+phase2_6_pipeline = pipeline_plugins.phase2_6_pipeline:Phase26PipelinePlugin
 stl_pipeline = pipeline_plugins.stl_pipeline:STLPipelinePlugin
 
 [predictor.plugins]
@@ -19,4 +20,5 @@ transformer = predictor_plugins.predictor_plugin_transformer:Plugin
 
 [preprocessor.plugins]
 default_preprocessor = preprocessor_plugins.default_preprocessor:PreprocessorPlugin
+phase2_6_preprocessor = preprocessor_plugins.phase2_6_preprocessor:PreprocessorPlugin
 stl_preprocessor = preprocessor_plugins.stl_preprocessor:PreprocessorPlugin
