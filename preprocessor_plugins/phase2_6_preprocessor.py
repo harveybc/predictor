@@ -45,10 +45,10 @@ class PreprocessorPlugin:
         # --- Windowing & Horizons ---
         "window_size": 288, # Default window size for phase 2.6
         "predicted_horizons": [24, 48, 72, 96, 120, 144], # Multi-horizon support
-        # --- Feature Engineering Flags (disabled for preprocessed data) ---
-        "use_stl": False, # STL features already in data
-        "use_wavelets": False, # Wavelet features already in data
-        "use_multi_tapper": False, # MTM features already in data
+        # --- Feature Engineering Flags (enabled since config may override) ---
+        "use_stl": True, # STL features available in data 
+        "use_wavelets": True, # Wavelet features available in data
+        "use_multi_tapper": True, # MTM features available in data
         "use_returns": True, # Use returns for prediction
         "normalize_features": False, # Data already normalized
         # --- Phase 2.6 specific parameters ---
