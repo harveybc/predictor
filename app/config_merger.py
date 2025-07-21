@@ -4,6 +4,10 @@ import sys
 from app.config import DEFAULT_VALUES
 
 def process_unknown_args(unknown_args):
+    if len(unknown_args) % 2 != 0:
+        # Handle odd number of unknown args by dropping the last one
+        unknown_args = unknown_args[:-1]
+    
     return {unknown_args[i].lstrip('--'): unknown_args[i + 1] for i in range(0, len(unknown_args), 2)}
 
 def convert_type(value):

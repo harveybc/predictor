@@ -122,9 +122,8 @@ class PreprocessorPlugin:
         print(f"Creating sliding windows (Size={window_size}, Horizon={time_horizon})...", end="")
         
         if isinstance(data, pd.DataFrame):
-            # Multi-feature data
+            # Multi-feature data (features only, no target column)
             windows = []
-            targets = []
             date_windows = []
             
             n = len(data)
@@ -132,20 +131,12 @@ class PreprocessorPlugin:
             
             if num_possible_windows <= 0:
                 print(f" WARN: Data short ({n}) for Win={window_size}+Horizon={time_horizon}. No windows.")
-                return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), np.array(date_windows, dtype=object)
+                return np.array(windows, dtype=np.float32), np.array([], dtype=np.float32), np.array(date_windows, dtype=object)
             
-            target_col = self.params.get("target_column", "CLOSE")
-            if target_col not in data.columns:
-                raise ValueError(f"Target column '{target_col}' not found in data")
-                
             for i in range(num_possible_windows):
-                # Create window for all features
+                # Create window for all features (no target calculation here)
                 window = data.iloc[i:i + window_size].values  # All features
-                # Target is the CLOSE value at horizon
-                target = data[target_col].iloc[i + window_size + time_horizon - 1]
-                
                 windows.append(window)
-                targets.append(target)
                 
                 # Date handling
                 if date_times is not None:
@@ -158,7 +149,6 @@ class PreprocessorPlugin:
         else:
             # Single feature data (univariate)
             windows = []
-            targets = []
             date_windows = []
             
             n = len(data)
@@ -166,14 +156,11 @@ class PreprocessorPlugin:
             
             if num_possible_windows <= 0:
                 print(f" WARN: Data short ({n}) for Win={window_size}+Horizon={time_horizon}. No windows.")
-                return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), np.array(date_windows, dtype=object)
+                return np.array(windows, dtype=np.float32), np.array([], dtype=np.float32), np.array(date_windows, dtype=object)
                 
             for i in range(num_possible_windows):
                 window = data[i:i + window_size]
-                target = data[i + window_size + time_horizon - 1]
-                
                 windows.append(window)
-                targets.append(target)
                 
                 if date_times is not None:
                     date_index = i + window_size - 1
@@ -194,7 +181,7 @@ class PreprocessorPlugin:
             date_windows_arr = np.array(date_windows, dtype=object)
             
         print(f" Done ({len(windows)} windows).")
-        return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), date_windows_arr
+        return np.array(windows, dtype=np.float32), np.array([], dtype=np.float32), date_windows_arr
 
     def process_data(self, config):
         """
@@ -241,27 +228,62 @@ class PreprocessorPlugin:
         dates_val = x_val_df.index if isinstance(x_val_df.index, pd.DatetimeIndex) else None
         dates_test = x_test_df.index if isinstance(x_test_df.index, pd.DatetimeIndex) else None
 
+        # Extract target values for baseline calculation (keep original CLOSE for baseline)
+        close_train = x_train_df[target_column].astype(np.float32).values
+        close_val = x_val_df[target_column].astype(np.float32).values
+        close_test = x_test_df[target_column].astype(np.float32).values
+
         # Extract target values for baseline calculation
         close_train = x_train_df[target_column].astype(np.float32).values
         close_val = x_val_df[target_column].astype(np.float32).values
         close_test = x_test_df[target_column].astype(np.float32).values
 
-        # --- 3. Create Windows for All Features ---
-        print("\n--- 3. Creating Sliding Windows ---")
+        # --- 3. Prepare Feature Set (FIXED: Exclude raw CLOSE like STL preprocessor) ---
+        print("\n--- 3. Preparing Feature Set ---")
+        
+        # Exclude raw CLOSE column from features (like STL preprocessor does)
+        feature_columns = [col for col in x_train_df.columns if col != target_column]
+        print(f"Excluding '{target_column}' column from features. Using {len(feature_columns)} features.")
+        print(f"Feature columns: {feature_columns}")
+        
+        # Create feature-only dataframes
+        x_train_features = x_train_df[feature_columns]
+        x_val_features = x_val_df[feature_columns]
+        x_test_features = x_test_df[feature_columns]
+
+        # --- 4. Create Windows for Features (NOT including raw CLOSE) ---
+        print("\n--- 4. Creating Sliding Windows ---")
         
         # Use max_horizon for windowing to ensure we have enough data for all horizons
         print(f"Using max horizon {max_horizon} for windowing")
         
-        # Create windows for X data (all features)
-        X_train_windows, _, x_dates_train = self.create_sliding_windows(x_train_df, window_size, max_horizon, dates_train)
-        X_val_windows, _, x_dates_val = self.create_sliding_windows(x_val_df, window_size, max_horizon, dates_val)
-        X_test_windows, _, x_dates_test = self.create_sliding_windows(x_test_df, window_size, max_horizon, dates_test)
+        # Create windows for X data (features only, excluding raw CLOSE)
+        X_train_windows, _, x_dates_train = self.create_sliding_windows(x_train_features, window_size, max_horizon, dates_train)
+        X_val_windows, _, x_dates_val = self.create_sliding_windows(x_val_features, window_size, max_horizon, dates_val)
+        X_test_windows, _, x_dates_test = self.create_sliding_windows(x_test_features, window_size, max_horizon, dates_test)
 
         print(f"X window shapes: Train={X_train_windows.shape}, Val={X_val_windows.shape}, Test={X_test_windows.shape}")
 
         # --- 4. Calculate Baselines ---
         print("\n--- 4. Calculating Baselines ---")
         use_returns = config.get("use_returns", False)
+        
+        # Load normalization parameters for denormalization
+        import json
+        norm_config_path = config.get("use_normalization_json")
+        if norm_config_path and os.path.exists(norm_config_path):
+            with open(norm_config_path, 'r') as f:
+                norm_params = json.load(f)
+            close_mean = norm_params.get("CLOSE", {}).get("mean", 0)
+            close_std = norm_params.get("CLOSE", {}).get("std", 1)
+            print(f"Loaded CLOSE normalization: mean={close_mean}, std={close_std}")
+        else:
+            print("WARN: No normalization config found. Using identity transform.")
+            close_mean, close_std = 0, 1
+        
+        # Denormalization function for z-score normalized data
+        def denormalize_close(normalized_values):
+            return normalized_values * close_std + close_mean
         
         # For baseline, we need the CLOSE value at the end of each window
         # FIXED: Use original unnormalized CLOSE values, NOT normalized ones from windows
@@ -286,6 +308,7 @@ class PreprocessorPlugin:
 
         # --- 5. Calculate Targets for Each Horizon ---
         print("\n--- 5. Calculating Multi-Horizon Targets ---")
+        
         y_train_list = []
         y_val_list = []
         y_test_list = []
@@ -300,16 +323,33 @@ class PreprocessorPlugin:
             target_start_val = window_size + h - 1
             target_start_test = window_size + h - 1
             
-            # Extract targets
+            # Extract targets (normalized)
             y_train_h = close_train[target_start_train:target_start_train + num_train_windows]
             y_val_h = close_val[target_start_val:target_start_val + num_val_windows]
             y_test_h = close_test[target_start_test:target_start_test + num_test_windows]
             
-            # Apply returns if needed
+            # Apply returns if needed (FIXED: Denormalize before calculating returns)
             if use_returns:
-                y_train_h = y_train_h - baseline_train
-                y_val_h = y_val_h - baseline_val
-                y_test_h = y_test_h - baseline_test
+                # Denormalize both target and baseline before calculating returns
+                y_train_h_denorm = denormalize_close(y_train_h)
+                y_val_h_denorm = denormalize_close(y_val_h)
+                y_test_h_denorm = denormalize_close(y_test_h)
+                
+                baseline_train_denorm = denormalize_close(baseline_train)
+                baseline_val_denorm = denormalize_close(baseline_val)
+                baseline_test_denorm = denormalize_close(baseline_test)
+                
+                # Calculate returns in denormalized space
+                y_train_h = y_train_h_denorm - baseline_train_denorm
+                y_val_h = y_val_h_denorm - baseline_val_denorm
+                y_test_h = y_test_h_denorm - baseline_test_denorm
+                print(f"  Calculated returns in denormalized space for horizon {h}")
+            else:
+                # If not using returns, denormalize the targets
+                y_train_h = denormalize_close(y_train_h)
+                y_val_h = denormalize_close(y_val_h)
+                y_test_h = denormalize_close(y_test_h)
+                print(f"  Denormalized targets for horizon {h}")
                 
             y_train_list.append(y_train_h.astype(np.float32))
             y_val_list.append(y_val_h.astype(np.float32))
@@ -343,15 +383,15 @@ class PreprocessorPlugin:
         ret["y_test_dates"] = y_dates_test
 
         # Baseline data
-        ret["baseline_train"] = baseline_train
-        ret["baseline_val"] = baseline_val
-        ret["baseline_test"] = baseline_test
+        ret["baseline_train"] = denormalize_close(baseline_train) if use_returns else denormalize_close(baseline_train)
+        ret["baseline_val"] = denormalize_close(baseline_val) if use_returns else denormalize_close(baseline_val)
+        ret["baseline_test"] = denormalize_close(baseline_test) if use_returns else denormalize_close(baseline_test)
         ret["baseline_train_dates"] = y_dates_train
         ret["baseline_val_dates"] = y_dates_val
         ret["baseline_test_dates"] = y_dates_test
 
-        # Test close prices (for compatibility)
-        ret["test_close_prices"] = baseline_test
+        # Test close prices (for compatibility) - denormalized
+        ret["test_close_prices"] = denormalize_close(baseline_test)
 
         # Feature names for reference
         ret["feature_names"] = list(x_train_df.columns)
