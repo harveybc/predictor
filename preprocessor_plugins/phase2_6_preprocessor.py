@@ -493,9 +493,11 @@ class PreprocessorPlugin:
         print(f"Final X shapes: Train={X_train_combined.shape}, Val={X_val_combined.shape}, Test={X_test_combined.shape}")
         print(f"Included features: {feature_names}")
 
-        # --- 7. Baseline and Target Calculation (unchanged) ---
-        print("\n--- 7. Calculating Baselines and Targets ---")
+        # --- 7. Baseline and Target Calculation (EXACT STL LOGIC) ---
+        print("\n--- 7. Calculating Baselines and Targets (STL Method) ---")
         use_returns = config.get("use_returns", False)
+        
+        # Use the same denormalization logic as before
         import json
         norm_config_path = config.get("use_normalization_json")
         if norm_config_path and os.path.exists(norm_config_path):
@@ -509,49 +511,91 @@ class PreprocessorPlugin:
             close_mean, close_std = 0, 1
         def denormalize_close(normalized_values):
             return normalized_values * close_std + close_mean
-        num_train_windows = X_train_combined.shape[0]
-        num_val_windows = X_val_combined.shape[0]
-        num_test_windows = X_test_combined.shape[0]
-        baseline_train = np.zeros(num_train_windows, dtype=np.float32)
-        baseline_val = np.zeros(num_val_windows, dtype=np.float32)
-        baseline_test = np.zeros(num_test_windows, dtype=np.float32)
-        for i in range(num_train_windows):
-            baseline_train[i] = close_train[i + window_size - 1]
-        for i in range(num_val_windows):
-            baseline_val[i] = close_val[i + window_size - 1]
-        for i in range(num_test_windows):
-            baseline_test[i] = close_test[i + window_size - 1]
-
-        y_train_list = []
-        y_val_list = []
-        y_test_list = []
+            
+        # Get number of samples from windowing
+        num_samples_train = X_train_combined.shape[0]
+        num_samples_val = X_val_combined.shape[0]
+        num_samples_test = X_test_combined.shape[0]
+        
+        # Calculate original offset (EXACT STL LOGIC)
+        # For phase2_6, we don't have STL decomposition so effective_stl_window = 0
+        effective_stl_window = 0  # No STL processing in phase2_6
+        original_offset = effective_stl_window + window_size - 2
+        print(f"Calculated original logic offset: {original_offset}")
+        
+        # Load Raw Target Data (use denormalized CLOSE values)
+        target_column = config["target_column"]
+        target_train_raw = denormalize_close(close_train)
+        target_val_raw = denormalize_close(close_val)
+        target_test_raw = denormalize_close(close_test)
+        
+        # Calculate Baseline using original offset logic (EXACT STL LOGIC)
+        baseline_slice_end_train = original_offset + num_samples_train
+        baseline_slice_end_val = original_offset + num_samples_val
+        baseline_slice_end_test = original_offset + num_samples_test
+        
+        if original_offset < 0 or baseline_slice_end_train > len(target_train_raw): 
+            raise ValueError(f"Baseline train indices invalid. offset={original_offset}, end={baseline_slice_end_train}, len={len(target_train_raw)}")
+        baseline_train = target_train_raw[original_offset : baseline_slice_end_train]
+        
+        if original_offset < 0 or baseline_slice_end_val > len(target_val_raw): 
+            raise ValueError(f"Baseline val indices invalid. offset={original_offset}, end={baseline_slice_end_val}, len={len(target_val_raw)}")
+        baseline_val = target_val_raw[original_offset : baseline_slice_end_val]
+        
+        if original_offset < 0 or baseline_slice_end_test > len(target_test_raw): 
+            raise ValueError(f"Baseline test indices invalid. offset={original_offset}, end={baseline_slice_end_test}, len={len(target_test_raw)}")
+        baseline_test = target_test_raw[original_offset : baseline_slice_end_test]
+        
+        # Verify baseline lengths match number of samples
+        if len(baseline_train) != num_samples_train: 
+            raise ValueError(f"Baseline train length mismatch: Expected {num_samples_train}, Got {len(baseline_train)}")
+        if len(baseline_val) != num_samples_val: 
+            raise ValueError(f"Baseline val length mismatch: Expected {num_samples_val}, Got {len(baseline_val)}")
+        if len(baseline_test) != num_samples_test: 
+            raise ValueError(f"Baseline test length mismatch: Expected {num_samples_test}, Got {len(baseline_test)}")
+        
+        print(f"Baseline shapes (STL Logic): Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
+        
+        # Process targets using original slicing and shifting logic (EXACT STL LOGIC)
+        # 1. Apply original initial slice
+        target_train = target_train_raw[original_offset:]
+        target_val = target_val_raw[original_offset:]
+        target_test = target_test_raw[original_offset:]
+        
+        # 2. Calculate shifted targets for each horizon and slice to final length
+        y_train_list = []; y_val_list = []; y_test_list = []
+        print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
         for h in predicted_horizons:
-            print(f"Processing horizon {h}...")
-            target_start_train = window_size + h - 1
-            target_start_val = window_size + h - 1
-            target_start_test = window_size + h - 1
-            y_train_h = close_train[target_start_train:target_start_train + num_train_windows]
-            y_val_h = close_val[target_start_val:target_start_val + num_val_windows]
-            y_test_h = close_test[target_start_test:target_start_test + num_test_windows]
+            # 2a. Apply original shift logic: target_sliced[h:]
+            target_train_shifted = target_train[h:]
+            target_val_shifted = target_val[h:]
+            target_test_shifted = target_test[h:]
+            
+            # 2b. Slice the shifted result to match num_samples
+            if len(target_train_shifted) < num_samples_train: 
+                raise ValueError(f"Not enough shifted target data for H={h} (Train). Needed {num_samples_train}, got {len(target_train_shifted)}")
+            target_train_h = target_train_shifted[:num_samples_train]
+            
+            if len(target_val_shifted) < num_samples_val: 
+                raise ValueError(f"Not enough shifted target data for H={h} (Val). Needed {num_samples_val}, got {len(target_val_shifted)}")
+            target_val_h = target_val_shifted[:num_samples_val]
+            
+            if len(target_test_shifted) < num_samples_test: 
+                raise ValueError(f"Not enough shifted target data for H={h} (Test). Needed {num_samples_test}, got {len(target_test_shifted)}")
+            target_test_h = target_test_shifted[:num_samples_test]
+            
+            # 2c. Apply returns adjustment using the ALIGNED baseline (EXACT STL LOGIC)
             if use_returns:
-                y_train_h_denorm = denormalize_close(y_train_h)
-                y_val_h_denorm = denormalize_close(y_val_h)
-                y_test_h_denorm = denormalize_close(y_test_h)
-                baseline_train_denorm = denormalize_close(baseline_train)
-                baseline_val_denorm = denormalize_close(baseline_val)
-                baseline_test_denorm = denormalize_close(baseline_test)
-                y_train_h = y_train_h_denorm - baseline_train_denorm
-                y_val_h = y_val_h_denorm - baseline_val_denorm
-                y_test_h = y_test_h_denorm - baseline_test_denorm
-                print(f"  Calculated returns in denormalized space for horizon {h}")
+                target_train_h = target_train_h - baseline_train
+                target_val_h = target_val_h - baseline_val
+                target_test_h = target_test_h - baseline_test
+                print(f"  Applied returns adjustment for horizon {h}")
             else:
-                y_train_h = denormalize_close(y_train_h)
-                y_val_h = denormalize_close(y_val_h)
-                y_test_h = denormalize_close(y_test_h)
-                print(f"  Denormalized targets for horizon {h}")
-            y_train_list.append(y_train_h.astype(np.float32))
-            y_val_list.append(y_val_h.astype(np.float32))
-            y_test_list.append(y_test_h.astype(np.float32))
+                print(f"  Using raw target values for horizon {h}")
+            
+            y_train_list.append(target_train_h.astype(np.float32))
+            y_val_list.append(target_val_h.astype(np.float32))
+            y_test_list.append(target_test_h.astype(np.float32))
 
         # --- 8. Prepare Date Arrays ---
         y_dates_train = x_dates_train
@@ -573,13 +617,13 @@ class PreprocessorPlugin:
         ret["y_val_dates"] = y_dates_val
         ret["x_test_dates"] = x_dates_test
         ret["y_test_dates"] = y_dates_test
-        ret["baseline_train"] = denormalize_close(baseline_train) if use_returns else denormalize_close(baseline_train)
-        ret["baseline_val"] = denormalize_close(baseline_val) if use_returns else denormalize_close(baseline_val)
-        ret["baseline_test"] = denormalize_close(baseline_test) if use_returns else denormalize_close(baseline_test)
+        ret["baseline_train"] = baseline_train  # Already denormalized in STL logic
+        ret["baseline_val"] = baseline_val      # Already denormalized in STL logic  
+        ret["baseline_test"] = baseline_test    # Already denormalized in STL logic
         ret["baseline_train_dates"] = y_dates_train
         ret["baseline_val_dates"] = y_dates_val
         ret["baseline_test_dates"] = y_dates_test
-        ret["test_close_prices"] = denormalize_close(baseline_test)
+        ret["test_close_prices"] = baseline_test  # STL logic: test_close_prices = baseline_test
         
         # --- 8. Rename STL/MTM features to match STL naming ---
         print("\n🔄 Renaming STL/MTM features to match STL naming...")
