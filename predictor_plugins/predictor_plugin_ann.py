@@ -17,6 +17,20 @@ on the predicted return. This implementation is intended for the case when use_r
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
+
+# Configure TensorFlow GPU memory growth to prevent OOM crashes
+try:
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        print(f"Configured GPU memory growth for {len(gpus)} GPU(s)")
+        
+        # Optional: Set memory limit (uncomment if needed)
+        # tf.config.experimental.set_memory_limit(gpus[0], 12288)  # 12GB limit
+except Exception as e:
+    print(f"GPU configuration warning: {e}")
+
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
 from tensorflow.keras.optimizers import AdamW
