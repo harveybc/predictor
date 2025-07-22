@@ -518,10 +518,11 @@ class PreprocessorPlugin:
         num_samples_test = X_test_combined.shape[0]
         
         # Calculate original offset (EXACT STL LOGIC)
-        # For phase2_6, we don't have STL decomposition so effective_stl_window = 0
+        # Must use the exact same offset calculation as STL to prevent data leakage
         effective_stl_window = 0  # No STL processing in phase2_6
+        # CRITICAL: Use window_size - 2 to match STL logic exactly
         original_offset = effective_stl_window + window_size - 2
-        print(f"Calculated original logic offset: {original_offset}")
+        print(f"Calculated original logic offset (STL EXACT): {original_offset}")
         
         # Load Raw Target Data (use denormalized CLOSE values)
         target_column = config["target_column"]
