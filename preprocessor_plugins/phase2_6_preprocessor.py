@@ -1,24 +1,23 @@
 #!/usr/bin/env python
 """
-Phase 2.6 Preprocessor Plugin - For Pre-processed Z-Score Normalized Data
+Phase 2.6 Preprocessor Plugin - For Pre-processed Data with STL-Exact Processing
 
 This preprocessor plugin is designed to work with data that has already been:
 1. Feature engineered (STL decomposition, wavelets, MTM features already included)
-2. Z-score normalized using separate normalizers A/B
-3. Split into D1-D6 datasets
+2. Pre-processed and split into D1-D6 datasets
 
-Key differences from STL preprocessor:
-- Assumes data is already preprocessed and normalized
-- No STL decomposition, wavelet, or MTM feature generation
-- No normalization step needed
-- Simplified windowing for already-prepared features
-- Direct loading of z-score normalized CSV files
+Key processing to match STL preprocessor exactly:
+- Re-calculates log_return from CLOSE using exact STL logic
+- Applies StandardScaler normalization to ALL features (log_return, STL, MTM, originals)
+- Uses identical feature ordering and stacking as STL preprocessor
+- Ensures numerical equivalence, not just structural compatibility
 """
 
 import numpy as np
 import pandas as pd
 import os
 from tqdm import tqdm
+from sklearn.preprocessing import StandardScaler
 
 # Assuming load_csv is correctly imported
 try:
@@ -50,7 +49,7 @@ class PreprocessorPlugin:
         "use_wavelets": True, # Wavelet features available in data
         "use_multi_tapper": True, # MTM features available in data
         "use_returns": True, # Use returns for prediction
-        "normalize_features": False, # Data already normalized
+        "normalize_features": True, # Enable normalization to match STL exactly
         # --- Phase 2.6 specific parameters ---
         "use_preprocessed_data": True, # Flag indicating preprocessed data
         "expected_feature_count": 55, # Expected number of features in preprocessed data
@@ -64,6 +63,7 @@ class PreprocessorPlugin:
 
     def __init__(self):
         self.params = self.plugin_params.copy()
+        self.scalers = {}
 
     def set_params(self, **kwargs):
         """Update plugin parameters with global configuration."""
@@ -76,6 +76,38 @@ class PreprocessorPlugin:
     
     def add_debug_info(self, debug_info): 
         debug_info.update(self.get_debug_info())
+
+    def _normalize_series(self, series, name, fit=False):
+        """Normalizes a time series using StandardScaler (EXACT COPY FROM STL PREPROCESSOR)."""
+        if not self.params.get("normalize_features", True): 
+            return series.astype(np.float32)
+        series = series.astype(np.float32)
+        if np.any(np.isnan(series)) or np.any(np.isinf(series)):
+            print(f"WARN: NaNs/Infs in '{name}' pre-norm. Filling...", end="")
+            series = pd.Series(series).fillna(method='ffill').fillna(method='bfill').values
+            if np.any(np.isnan(series)) or np.any(np.isinf(series)):
+                 print(f" FAILED. Filling with 0.", end="")
+                 series = np.nan_to_num(series, nan=0.0, posinf=0.0, neginf=0.0)
+            print(" OK.")
+        data_reshaped = series.reshape(-1, 1)
+        if fit:
+            scaler = StandardScaler()
+            if np.std(data_reshaped) < 1e-9:
+                 print(f"WARN: '{name}' constant. Dummy scaler.")
+                 class DummyScaler:
+                     def fit(self,X):pass
+                     def transform(self,X):return X.astype(np.float32)
+                     def inverse_transform(self,X):return X.astype(np.float32)
+                 scaler = DummyScaler()
+            else: 
+                scaler.fit(data_reshaped)
+            self.scalers[name] = scaler
+        else:
+            if name not in self.scalers: 
+                raise RuntimeError(f"Scaler '{name}' not fitted.")
+            scaler = self.scalers[name]
+        normalized_data = scaler.transform(data_reshaped)
+        return normalized_data.flatten()
 
     def _load_data(self, file_path, max_rows, headers):
         """Loads CSV file for preprocessed data."""
@@ -116,72 +148,55 @@ class PreprocessorPlugin:
 
     def create_sliding_windows(self, data, window_size, time_horizon, date_times=None):
         """
-        Creates sliding windows for preprocessed data.
-        Simplified version for already processed features.
+        Creates sliding windows for a univariate series.
+        EXACT COPY from STL preprocessor to ensure identical windowing behavior.
         """
-        print(f"Creating sliding windows (Size={window_size}, Horizon={time_horizon})...", end="")
-        
-        if isinstance(data, pd.DataFrame):
-            # Multi-feature data (features only, no target column)
-            windows = []
-            date_windows = []
-            
-            n = len(data)
-            num_possible_windows = n - window_size - time_horizon + 1
-            
-            if num_possible_windows <= 0:
-                print(f" WARN: Data short ({n}) for Win={window_size}+Horizon={time_horizon}. No windows.")
-                return np.array(windows, dtype=np.float32), np.array([], dtype=np.float32), np.array(date_windows, dtype=object)
-            
-            for i in range(num_possible_windows):
-                # Create window for all features (no target calculation here)
-                window = data.iloc[i:i + window_size].values  # All features
-                windows.append(window)
-                
-                # Date handling
-                if date_times is not None:
-                    date_index = i + window_size - 1
-                    if date_index < len(date_times):
-                        date_windows.append(date_times[date_index])
-                    else:
-                        date_windows.append(None)
-                        
-        else:
-            # Single feature data (univariate)
-            windows = []
-            date_windows = []
-            
-            n = len(data)
-            num_possible_windows = n - window_size - time_horizon + 1
-            
-            if num_possible_windows <= 0:
-                print(f" WARN: Data short ({n}) for Win={window_size}+Horizon={time_horizon}. No windows.")
-                return np.array(windows, dtype=np.float32), np.array([], dtype=np.float32), np.array(date_windows, dtype=object)
-                
-            for i in range(num_possible_windows):
-                window = data[i:i + window_size]
-                windows.append(window)
-                
-                if date_times is not None:
-                    date_index = i + window_size - 1
-                    if date_index < len(date_times):
-                        date_windows.append(date_times[date_index])
-                    else:
-                        date_windows.append(None)
-
+        print(f"Creating sliding windows (Orig Method - Size={window_size}, Horizon={time_horizon})...", end="")
+        windows = []; targets = []; date_windows = [] # Initialize targets list
+        n = len(data)
+        num_possible_windows = n - window_size - time_horizon + 1 # Use passed horizon
+        if num_possible_windows <= 0:
+             print(f" WARN: Data short ({n}) for Win={window_size}+Horizon={time_horizon}. No windows.")
+             return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), np.array(date_windows, dtype=object)
+        for i in range(num_possible_windows):
+            window = data[i: i + window_size]
+            target = data[i + window_size + time_horizon - 1] # Original target calc (ignored)
+            windows.append(window)
+            targets.append(target) # Ignored target
+            if date_times is not None:
+                date_index = i + window_size - 1
+                if date_index < len(date_times): date_windows.append(date_times[date_index])
+                else: date_windows.append(None)
         # Convert dates
         if date_times is not None:
-            date_windows_arr = np.array(date_windows, dtype=object)
-            if all(isinstance(d, pd.Timestamp) for d in date_windows if d is not None):
-                try:
-                    date_windows_arr = np.array(date_windows, dtype='datetime64[ns]')
-                except (ValueError, TypeError):
-                    pass
-        else:
-            date_windows_arr = np.array(date_windows, dtype=object)
-            
+             date_windows_arr = np.array(date_windows, dtype=object)
+             if all(isinstance(d, pd.Timestamp) for d in date_windows if d is not None):
+                  try: date_windows_arr = np.array(date_windows, dtype='datetime64[ns]')
+                  except (ValueError, TypeError): pass
+        else: date_windows_arr = np.array(date_windows, dtype=object)
         print(f" Done ({len(windows)} windows).")
-        return np.array(windows, dtype=np.float32), np.array([], dtype=np.float32), date_windows_arr
+        return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), date_windows_arr # Return dates array
+
+    def align_features(self, feature_dict, base_length):
+        """Aligns feature time series to a common length by truncating the beginning."""
+        # EXACT COPY from STL preprocessor
+        aligned_features = {}
+        min_len = base_length; feature_lengths = {'base': base_length}
+        valid_keys = [k for k, v in feature_dict.items() if v is not None]
+        if not valid_keys: return {}, 0
+        for name in valid_keys: feature_lengths[name] = len(feature_dict[name]); min_len = min(min_len, feature_lengths[name])
+        needs_alignment = any(l != min_len for l in feature_lengths.values() if l > 0)
+        if needs_alignment:
+             for name in valid_keys:
+                 series = feature_dict[name]; current_len = len(series)
+                 if current_len > min_len: aligned_features[name] = series[current_len - min_len:]
+                 elif current_len == min_len: aligned_features[name] = series
+                 else: print(f"WARN: Feature '{name}' len({current_len})<target({min_len})."); aligned_features[name] = None
+        else: aligned_features = {k: feature_dict[k] for k in valid_keys}
+        final_lengths = {name: len(s) for name, s in aligned_features.items() if s is not None}
+        unique_lengths = set(final_lengths.values())
+        if len(unique_lengths) > 1: raise RuntimeError(f"Alignment FAILED! Inconsistent lengths: {final_lengths}")
+        return aligned_features, min_len
 
     def process_data(self, config):
         """
@@ -217,12 +232,15 @@ class PreprocessorPlugin:
             "CLOSE_mtm_band_3_0.060_0.200": "mtm_band_2",
             "CLOSE_mtm_band_4_0.200_0.500": "mtm_band_3",
         }
-        for df in [x_train_df, x_val_df, x_test_df]:
+        print("*** HARVEY DEBUG: UPDATED CODE IS BEING USED ***")
+        print(f"DEBUG: Before renaming - sample columns: {[col for col in x_train_df.columns if 'stl' in col or 'mtm' in col]}")
+        for df in [x_train_df, x_val_df, x_test_df, y_train_df, y_val_df, y_test_df]:
             df.rename(columns=rename_map, inplace=True)
             # Drop extra wavelet columns not present in STL pipeline
             for col in ["CLOSE_wav_approx_L2", "CLOSE_wav_detail_L1", "CLOSE_wav_detail_L2"]:
                 if col in df.columns:
                     df.drop(columns=col, inplace=True)
+        print(f"DEBUG: After renaming - sample columns: {[col for col in x_train_df.columns if 'stl' in col or 'mtm' in col]}")
 
         # Validate feature count
         expected_features = config.get("expected_feature_count", 55)
@@ -245,69 +263,235 @@ class PreprocessorPlugin:
         close_val = x_val_df[target_column].astype(np.float32).values
         close_test = x_test_df[target_column].astype(np.float32).values
 
-        # --- 3. Feature Generation: log_return ---
+        # --- 3. Feature Generation: log_return (EXACT STL MATCH) ---
         print("\n--- 3. Generating log_return feature (STL-compatible) ---")
-        def compute_log_return(series):
-            log_series = np.log1p(np.maximum(0, series))
-            return np.diff(log_series, prepend=log_series[0])
-        log_return_train = compute_log_return(close_train)
-        log_return_val = compute_log_return(close_val)
-        log_return_test = compute_log_return(close_test)
+        # First apply log transform exactly as STL does
+        log_train = np.log1p(np.maximum(0, close_train))
+        log_val = np.log1p(np.maximum(0, close_val))
+        log_test = np.log1p(np.maximum(0, close_test))
+        # Then compute log returns exactly as STL does
+        log_return_train = np.diff(log_train, prepend=log_train[0])
+        log_return_val = np.diff(log_val, prepend=log_val[0])
+        log_return_test = np.diff(log_test, prepend=log_test[0])
 
         # --- 4. Prepare Feature Set: STL-compatible stacking and ordering ---
         print("\n--- 4. Preparing Feature Set (STL-compatible) ---")
+        # Initialize scalers for this preprocessing run
+        self.scalers = {}
+        
         # Exclude raw CLOSE column from features
         original_feature_columns = [col for col in x_train_df.columns if col != target_column]
-        # Build feature dicts
+        # Build feature dicts from pre-calculated features (but will normalize them like STL)
         features_train = {col: x_train_df[col].astype(np.float32).values for col in original_feature_columns}
         features_val = {col: x_val_df[col].astype(np.float32).values for col in original_feature_columns}
         features_test = {col: x_test_df[col].astype(np.float32).values for col in original_feature_columns}
-        # Add log_return as first feature (STL always does this)
-        features_train = {"log_return": log_return_train, **features_train}
-        features_val = {"log_return": log_return_val, **features_val}
-        features_test = {"log_return": log_return_test, **features_test}
+        
+        # Add normalized log_return as first feature (EXACT STL MATCH)
+        features_train = {"log_return": self._normalize_series(log_return_train, 'log_return', fit=True), **features_train}
+        features_val = {"log_return": self._normalize_series(log_return_val, 'log_return', fit=False), **features_val}
+        features_test = {"log_return": self._normalize_series(log_return_test, 'log_return', fit=False), **features_test}
+        
+        # Normalize the pre-calculated STL features to match STL preprocessor exactly
+        stl_features = ['stl_trend', 'stl_seasonal', 'stl_resid']
+        for feat in stl_features:
+            if feat in features_train:
+                features_train[feat] = self._normalize_series(features_train[feat], feat, fit=True)
+                if feat in features_val:
+                    features_val[feat] = self._normalize_series(features_val[feat], feat, fit=False)
+                if feat in features_test:
+                    features_test[feat] = self._normalize_series(features_test[feat], feat, fit=False)
+        
+        # Normalize MTM features to match STL preprocessor exactly
+        mtm_features = ['mtm_band_0', 'mtm_band_1', 'mtm_band_2', 'mtm_band_3']
+        for feat in mtm_features:
+            if feat in features_train:
+                features_train[feat] = self._normalize_series(features_train[feat], feat, fit=True)
+                if feat in features_val:
+                    features_val[feat] = self._normalize_series(features_val[feat], feat, fit=False)
+                if feat in features_test:
+                    features_test[feat] = self._normalize_series(features_test[feat], feat, fit=False)
+        
+        # Normalize all other original features to match STL preprocessor exactly
+        for feat in original_feature_columns:
+            if feat not in stl_features and feat not in mtm_features:
+                # These are the original dataset features that STL also normalizes
+                features_train[feat] = self._normalize_series(features_train[feat], feat, fit=True)
+                if feat in features_val:
+                    features_val[feat] = self._normalize_series(features_val[feat], feat, fit=False)
+                if feat in features_test:
+                    features_test[feat] = self._normalize_series(features_test[feat], feat, fit=False)
 
-        # --- 5. Feature Order: Match STL pipeline exactly ---
-        stl_feature_order = [
-            'log_return',
-            'stl_trend', 'stl_seasonal', 'stl_resid',
-            'mtm_band_0', 'mtm_band_1', 'mtm_band_2', 'mtm_band_3',
-        ]
-        # Add the rest of the features (excluding those already in stl_feature_order and log_return), sorted alphabetically
-        rest_features = [col for col in original_feature_columns if col not in stl_feature_order and col != 'log_return']
-        feature_order = stl_feature_order + sorted(rest_features)
-        print(f"Final feature order for windowing: {feature_order}")
+        # --- 5. Align Feature Lengths (STL EXACT MATCH) ---
+        print("\n--- 5. Aligning Feature Lengths ---")
+        
+        # Find the minimum length across ALL features to ensure consistency
+        all_lengths_train = [len(v) for v in features_train.values() if v is not None]
+        all_lengths_val = [len(v) for v in features_val.values() if v is not None]
+        all_lengths_test = [len(v) for v in features_test.values() if v is not None]
+        
+        aligned_len_train = min(all_lengths_train) if all_lengths_train else 0
+        aligned_len_val = min(all_lengths_val) if all_lengths_val else 0
+        aligned_len_test = min(all_lengths_test) if all_lengths_test else 0
+        
+        print(f"DEBUG: Length ranges - Train: {min(all_lengths_train)}-{max(all_lengths_train)}, Val: {min(all_lengths_val)}-{max(all_lengths_val)}, Test: {min(all_lengths_test)}-{max(all_lengths_test)}")
+        
+        # Force align all features to the minimum length
+        features_train, aligned_len_train = self.align_features(features_train, aligned_len_train)
+        features_val, aligned_len_val = self.align_features(features_val, aligned_len_val)
+        features_test, aligned_len_test = self.align_features(features_test, aligned_len_test)
+        dates_train_aligned = dates_train[-aligned_len_train:] if dates_train is not None and aligned_len_train > 0 else None
+        dates_val_aligned = dates_val[-aligned_len_val:] if dates_val is not None and aligned_len_val > 0 else None
+        dates_test_aligned = dates_test[-aligned_len_test:] if dates_test is not None and aligned_len_test > 0 else None
+        print(f"Final aligned feature length: Train={aligned_len_train}, Val={aligned_len_val}, Test={aligned_len_test}")
 
-        # --- 6. Windowing Features ---
-        print("\n--- 6. Creating Sliding Windows (STL-compatible) ---")
+        # --- 4.5. Apply STL offset to match window count ---
+        print("\n--- 4.5. Applying STL offset to match window counts ---")
+        # Phase2_6 data starts 168 rows earlier than STL data, causing different window counts
+        # To match STL's window count, we need to trim 168 rows from the start of phase2_6 data
+        stl_offset = 168
+        print(f"Trimming {stl_offset} rows from the start to match STL's starting point...")
+        
+        # Apply offset to all features
+        for feature_name in features_train:
+            if features_train[feature_name] is not None and len(features_train[feature_name]) > stl_offset:
+                features_train[feature_name] = features_train[feature_name][stl_offset:]
+                features_val[feature_name] = features_val[feature_name][stl_offset:]
+                features_test[feature_name] = features_test[feature_name][stl_offset:]
+        
+        # Update aligned lengths
+        aligned_len_train = max(0, aligned_len_train - stl_offset)
+        aligned_len_val = max(0, aligned_len_val - stl_offset)
+        aligned_len_test = max(0, aligned_len_test - stl_offset)
+        
+        # Update aligned dates
+        if dates_train_aligned is not None and len(dates_train_aligned) > stl_offset:
+            dates_train_aligned = dates_train_aligned[stl_offset:]
+        if dates_val_aligned is not None and len(dates_val_aligned) > stl_offset:
+            dates_val_aligned = dates_val_aligned[stl_offset:]
+        if dates_test_aligned is not None and len(dates_test_aligned) > stl_offset:
+            dates_test_aligned = dates_test_aligned[stl_offset:]
+            
+        print(f"After STL offset: Train={aligned_len_train}, Val={aligned_len_val}, Test={aligned_len_test}")
+
+        # --- 5.b: Prepare and Align Original X Columns (STL EXACT MATCH) ---
+        print("\n--- 5.b Preparing and Aligning Original X Columns ---")
+        # Get original columns (already in features_train) - but exclude the generated ones
+        generated_features = ['log_return', 'stl_trend', 'stl_seasonal', 'stl_resid', 'mtm_band_0', 'mtm_band_1', 'mtm_band_2', 'mtm_band_3']
+        original_x_cols = [col for col in features_train.keys() if col not in generated_features]
+        print(f"Identified original columns to include: {original_x_cols}")
+
+        # All features are already aligned in the previous step, so combine them
+        all_features_train = features_train
+        all_features_val = features_val
+        all_features_test = features_test
+
+        # --- 6. Windowing Features & Channel Stacking (STL EXACT MATCH) ---
+        print("\n--- 6. Windowing Features & Channel Stacking ---")
         X_train_channels, X_val_channels, X_test_channels = [], [], []
+        feature_names = [] # Will store names of ALL features in final order
         x_dates_train, x_dates_val, x_dates_test = None, None, None
         first_feature_dates_captured = False
-        for name in feature_order:
-            arr_train = features_train[name]
-            arr_val = features_val[name]
-            arr_test = features_test[name]
-            # Window each feature
-            win_train, _, dates_win_train = self.create_sliding_windows(arr_train, window_size, max_horizon, dates_train)
-            win_val, _, dates_win_val = self.create_sliding_windows(arr_val, window_size, max_horizon, dates_val)
-            win_test, _, dates_win_test = self.create_sliding_windows(arr_test, window_size, max_horizon, dates_test)
-            if win_train.shape[0] == 0 or win_val.shape[0] == 0 or win_test.shape[0] == 0:
-                print(f"WARN: Feature '{name}' produced 0 windows in at least one split. Skipping.")
-                continue
-            X_train_channels.append(win_train)
-            X_val_channels.append(win_val)
-            X_test_channels.append(win_test)
-            if not first_feature_dates_captured:
-                x_dates_train, x_dates_val, x_dates_test = dates_win_train, dates_win_val, dates_win_test
-                first_feature_dates_captured = True
 
-        if not X_train_channels:
-            raise RuntimeError("No feature channels available after windowing!")
+        # Define the order: generated features first, then original columns alphabetically (STL EXACT MATCH)
+        generated_feature_order = ['log_return'] # Always include log_return if generated
+        if config.get('use_stl'): 
+            generated_feature_order.extend(['stl_trend', 'stl_seasonal', 'stl_resid'])
+        if config.get('use_wavelets'): 
+            # Look for wavelet features (should be none after dropping them)
+            generated_feature_order.extend(sorted([k for k in features_train if k.startswith('wav_')]))
+        if config.get('use_multi_tapper'): 
+            # Use the renamed MTM feature names
+            generated_feature_order.extend(['mtm_band_0', 'mtm_band_1', 'mtm_band_2', 'mtm_band_3'])
+
+        # Filter generated_feature_order to only include features that were actually created and aligned
+        generated_feature_order = [f for f in generated_feature_order if f in all_features_train and all_features_train[f] is not None]
+
+        # Get original columns that were successfully aligned
+        original_feature_order = sorted([k for k, v in all_features_train.items() if v is not None and k not in generated_feature_order])
+
+        # Combine the order lists
+        windowing_order = generated_feature_order + original_feature_order
+        print(f"Final feature order for windowing: {windowing_order}")
+
+        # Debug: Check all feature lengths before windowing
+        print("DEBUG: Feature lengths before windowing:")
+        for name in windowing_order[:5]:  # Check first 5 features
+            series_train = all_features_train.get(name)
+            series_val = all_features_val.get(name)
+            series_test = all_features_test.get(name)
+            if series_train is not None:
+                print(f"  {name}: Train={len(series_train)}, Val={len(series_val)}, Test={len(series_test)}")
+
+        # --- Use max_horizon for windowing function ---
+        time_horizon_for_windowing = max_horizon
+
+        for name in windowing_order:
+            # Get the correct aligned series for train, val, test from the combined dictionary
+            series_train = all_features_train.get(name)
+            series_val = all_features_val.get(name)
+            series_test = all_features_test.get(name)
+
+            # Ensure the feature exists and is valid for all splits before windowing
+            if series_train is not None and series_val is not None and series_test is not None and \
+               len(series_train) == aligned_len_train and \
+               len(series_val) == aligned_len_val and \
+               len(series_test) == aligned_len_test:
+
+                print(f"Windowing feature: {name}...", end="")
+                try:
+                    # Pass max_horizon and the aligned dates (EXACT STL MATCH)
+                    win_train, _, dates_win_train = self.create_sliding_windows(series_train, window_size, time_horizon_for_windowing, dates_train_aligned)
+                    win_val, _, dates_win_val   = self.create_sliding_windows(series_val, window_size, time_horizon_for_windowing, dates_val_aligned)
+                    win_test, _, dates_win_test = self.create_sliding_windows(series_test, window_size, time_horizon_for_windowing, dates_test_aligned)
+
+                    # Check if windowing was successful (produced samples)
+                    if win_train.shape[0] > 0 and win_val.shape[0] > 0 and win_test.shape[0] > 0:
+                        # If this is the first feature, set the expected number of samples
+                        if not first_feature_dates_captured:
+                            expected_samples_train = win_train.shape[0]
+                            expected_samples_val = win_val.shape[0]
+                            expected_samples_test = win_test.shape[0]
+                            print(f" Initializing sample counts: Train={expected_samples_train}, Val={expected_samples_val}, Test={expected_samples_test}", end="")
+
+                        # Check consistency with previously windowed features
+                        if win_train.shape[0] == expected_samples_train and \
+                           win_val.shape[0] == expected_samples_val and \
+                           win_test.shape[0] == expected_samples_test:
+
+                            X_train_channels.append(win_train)
+                            X_val_channels.append(win_val)
+                            X_test_channels.append(win_test)
+                            feature_names.append(name) # Add name to the list of included features
+                            print(" Appended.")
+
+                            if not first_feature_dates_captured:
+                                x_dates_train, x_dates_val, x_dates_test = dates_win_train, dates_win_val, dates_win_test
+                                first_feature_dates_captured = True
+                                print(f"Captured dates from '{name}'. Lengths: T={len(x_dates_train)}, V={len(x_dates_val)}, Ts={len(x_dates_test)}")
+                        else:
+                             print(f" Skipping channel '{name}' due to inconsistent sample count after windowing.")
+                             print(f"   Expected T={expected_samples_train}, V={expected_samples_val}, Ts={expected_samples_test}")
+                             print(f"   Got      T={win_train.shape[0]}, V={win_val.shape[0]}, Ts={win_test.shape[0]}")
+
+                    else:
+                        print(f" Skipping channel '{name}' (windowing produced 0 samples in at least one split).")
+                except Exception as e:
+                    print(f" FAILED windowing '{name}'. Error: {e}. Skipping.")
+            else:
+                print(f"WARN: Feature '{name}' skipped. Not valid or consistently aligned across train/val/test before windowing.")
+
+        # --- 7. Stack channels ---
+        if not X_train_channels: raise RuntimeError("No feature channels available after windowing!")
+        print("\n--- 7. Stacking Feature Channels ---")
+        num_samples_train = X_train_channels[0].shape[0]; num_samples_val = X_val_channels[0].shape[0]; num_samples_test = X_test_channels[0].shape[0]
+        if not all(c.shape[0] == num_samples_train for c in X_train_channels): raise RuntimeError("Inconsistent samples in train channels.")
+        if not all(c.shape[0] == num_samples_val for c in X_val_channels): raise RuntimeError("Inconsistent samples in val channels.")
+        if not all(c.shape[0] == num_samples_test for c in X_test_channels): raise RuntimeError("Inconsistent samples in test channels.")
         X_train_combined = np.stack(X_train_channels, axis=-1).astype(np.float32)
         X_val_combined = np.stack(X_val_channels, axis=-1).astype(np.float32)
         X_test_combined = np.stack(X_test_channels, axis=-1).astype(np.float32)
         print(f"Final X shapes: Train={X_train_combined.shape}, Val={X_val_combined.shape}, Test={X_test_combined.shape}")
-        print(f"Included features: {feature_order}")
+        print(f"Included features: {feature_names}")
 
         # --- 7. Baseline and Target Calculation (unchanged) ---
         print("\n--- 7. Calculating Baselines and Targets ---")
@@ -396,7 +580,56 @@ class PreprocessorPlugin:
         ret["baseline_val_dates"] = y_dates_val
         ret["baseline_test_dates"] = y_dates_test
         ret["test_close_prices"] = denormalize_close(baseline_test)
-        ret["feature_names"] = feature_order
+        
+        # --- 8. Rename STL/MTM features to match STL naming ---
+        print("\n🔄 Renaming STL/MTM features to match STL naming...")
+        print(f"Original feature names ({len(feature_names)}): {feature_names}")
+        
+        # Rename STL features from "CLOSE_stl_*" to "stl_*"
+        feature_names = [name.replace("CLOSE_stl_", "stl_") for name in feature_names]
+        
+        # Rename MTM features from "CLOSE_mtm_band_X_..." to "mtm_band_Y" 
+        # Phase2_6 has: CLOSE_mtm_band_1_0.000_0.010, CLOSE_mtm_band_2_0.010_0.060, CLOSE_mtm_band_3_0.060_0.200, CLOSE_mtm_band_4_0.200_0.500
+        # STL has: mtm_band_0, mtm_band_1, mtm_band_2, mtm_band_3
+        mtm_mapping = {
+            "CLOSE_mtm_band_1_0.000_0.010": "mtm_band_0",
+            "CLOSE_mtm_band_2_0.010_0.060": "mtm_band_1", 
+            "CLOSE_mtm_band_3_0.060_0.200": "mtm_band_2",
+            "CLOSE_mtm_band_4_0.200_0.500": "mtm_band_3"
+        }
+        for old_name, new_name in mtm_mapping.items():
+            if old_name in feature_names:
+                idx = feature_names.index(old_name)
+                feature_names[idx] = new_name
+                print(f"  Renamed: {old_name} → {new_name}")
+        
+        # Remove wavelet features to match STL (which doesn't have wavelets)
+        wavelet_features = ["CLOSE_wav_detail_L1", "CLOSE_wav_detail_L2", "CLOSE_wav_approx_L2"]
+        original_count = len(feature_names)
+        wavelet_indices = []
+        for wavelet_feat in wavelet_features:
+            if wavelet_feat in feature_names:
+                wavelet_indices.append(feature_names.index(wavelet_feat))
+        
+        # Remove from feature names list
+        feature_names = [name for name in feature_names if name not in wavelet_features]
+        removed_count = original_count - len(feature_names)
+        
+        # Remove corresponding columns from X arrays if any wavelet features were found
+        if wavelet_indices:
+            wavelet_indices = sorted(wavelet_indices, reverse=True)  # Remove from highest index first
+            for idx in wavelet_indices:
+                X_train_combined = np.delete(X_train_combined, idx, axis=2)
+                X_val_combined = np.delete(X_val_combined, idx, axis=2)
+                X_test_combined = np.delete(X_test_combined, idx, axis=2)
+                print(f"  Removed wavelet feature at index {idx} from X arrays")
+        
+        if removed_count > 0:
+            print(f"  Removed {removed_count} wavelet features: {[f for f in wavelet_features if f in wavelet_features]}")
+        
+        print(f"Final feature names ({len(feature_names)}): {feature_names}")
+        
+        ret["feature_names"] = feature_names
         print(f"Final shapes:")
         print(f"  X: Train={X_train_combined.shape}, Val={X_val_combined.shape}, Test={X_test_combined.shape}")
         print(f"  Y: {len(y_train_list)} horizons, Train[0]={y_train_list[0].shape}")
