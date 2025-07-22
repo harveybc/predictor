@@ -346,9 +346,9 @@ class PreprocessorPlugin:
 
         # --- 4.5. Apply STL offset to match window count ---
         print("\n--- 4.5. Applying STL offset to match window counts ---")
-        # Phase2_6 data starts 168 rows earlier than STL data, causing different window counts
-        # To match STL's window count, we need to trim 168 rows from the start of phase2_6 data
-        stl_offset = 168
+        # Phase2_6 data starts earlier than STL data, causing different window counts
+        # Based on test results: Phase2_6=401 windows, STL=402 windows, so we need 1 less trim
+        stl_offset = 167  # Adjusted from 168 to 167
         print(f"Trimming {stl_offset} rows from the start to match STL's starting point...")
         
         # Apply offset to all features
