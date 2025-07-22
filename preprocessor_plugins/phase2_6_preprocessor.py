@@ -185,10 +185,9 @@ class PreprocessorPlugin:
 
     def process_data(self, config):
         """
-        Processes preprocessed z-score normalized data.
-        Much simpler than STL preprocessor since data is already prepared.
+        Processes preprocessed z-score normalized data, but ensures the exact same feature stacking, ordering, and logic as the STL preprocessor.
         """
-        print("\n" + "="*15 + " Starting Phase 2.6 Preprocessing " + "="*15)
+        print("\n" + "="*15 + " Starting Phase 2.6 Preprocessing (STL-Compatible) " + "="*15)
         self.set_params(**config)
         config = self.params
 
@@ -212,63 +211,83 @@ class PreprocessorPlugin:
         expected_features = config.get("expected_feature_count", 55)
         if len(x_train_df.columns) != expected_features:
             print(f"WARN: Expected {expected_features} features, got {len(x_train_df.columns)}")
-        
         print(f"Loaded preprocessed data with {len(x_train_df.columns)} features")
         print(f"Features: {list(x_train_df.columns)}")
 
         # --- 2. Extract Target Column and Dates ---
         print("\n--- 2. Extracting Target and Dates ---")
         target_column = config["target_column"]
-        
         if target_column not in x_train_df.columns:
             raise ValueError(f"Target column '{target_column}' not found in data")
-            
         # Extract dates
         dates_train = x_train_df.index if isinstance(x_train_df.index, pd.DatetimeIndex) else None
         dates_val = x_val_df.index if isinstance(x_val_df.index, pd.DatetimeIndex) else None
         dates_test = x_test_df.index if isinstance(x_test_df.index, pd.DatetimeIndex) else None
-
         # Extract target values for baseline calculation (keep original CLOSE for baseline)
         close_train = x_train_df[target_column].astype(np.float32).values
         close_val = x_val_df[target_column].astype(np.float32).values
         close_test = x_test_df[target_column].astype(np.float32).values
 
-        # Extract target values for baseline calculation
-        close_train = x_train_df[target_column].astype(np.float32).values
-        close_val = x_val_df[target_column].astype(np.float32).values
-        close_test = x_test_df[target_column].astype(np.float32).values
+        # --- 3. Feature Generation: log_return ---
+        print("\n--- 3. Generating log_return feature (STL-compatible) ---")
+        def compute_log_return(series):
+            log_series = np.log1p(np.maximum(0, series))
+            return np.diff(log_series, prepend=log_series[0])
+        log_return_train = compute_log_return(close_train)
+        log_return_val = compute_log_return(close_val)
+        log_return_test = compute_log_return(close_test)
 
-        # --- 3. Prepare Feature Set (FIXED: Exclude raw CLOSE like STL preprocessor) ---
-        print("\n--- 3. Preparing Feature Set ---")
-        
-        # Exclude raw CLOSE column from features (like STL preprocessor does)
-        feature_columns = [col for col in x_train_df.columns if col != target_column]
-        print(f"Excluding '{target_column}' column from features. Using {len(feature_columns)} features.")
-        print(f"Feature columns: {feature_columns}")
-        
-        # Create feature-only dataframes
-        x_train_features = x_train_df[feature_columns]
-        x_val_features = x_val_df[feature_columns]
-        x_test_features = x_test_df[feature_columns]
+        # --- 4. Prepare Feature Set: STL-compatible stacking and ordering ---
+        print("\n--- 4. Preparing Feature Set (STL-compatible) ---")
+        # Exclude raw CLOSE column from features
+        original_feature_columns = [col for col in x_train_df.columns if col != target_column]
+        # Build feature dicts
+        features_train = {col: x_train_df[col].astype(np.float32).values for col in original_feature_columns}
+        features_val = {col: x_val_df[col].astype(np.float32).values for col in original_feature_columns}
+        features_test = {col: x_test_df[col].astype(np.float32).values for col in original_feature_columns}
+        # Add log_return as first feature (STL always does this)
+        features_train = {"log_return": log_return_train, **features_train}
+        features_val = {"log_return": log_return_val, **features_val}
+        features_test = {"log_return": log_return_test, **features_test}
 
-        # --- 4. Create Windows for Features (NOT including raw CLOSE) ---
-        print("\n--- 4. Creating Sliding Windows ---")
-        
-        # Use max_horizon for windowing to ensure we have enough data for all horizons
-        print(f"Using max horizon {max_horizon} for windowing")
-        
-        # Create windows for X data (features only, excluding raw CLOSE)
-        X_train_windows, _, x_dates_train = self.create_sliding_windows(x_train_features, window_size, max_horizon, dates_train)
-        X_val_windows, _, x_dates_val = self.create_sliding_windows(x_val_features, window_size, max_horizon, dates_val)
-        X_test_windows, _, x_dates_test = self.create_sliding_windows(x_test_features, window_size, max_horizon, dates_test)
+        # --- 5. Feature Order: log_return first, then all other columns (alphabetically, STL style) ---
+        feature_order = ["log_return"] + sorted([col for col in original_feature_columns if col != "log_return"])
+        print(f"Final feature order for windowing: {feature_order}")
 
-        print(f"X window shapes: Train={X_train_windows.shape}, Val={X_val_windows.shape}, Test={X_test_windows.shape}")
+        # --- 6. Windowing Features ---
+        print("\n--- 6. Creating Sliding Windows (STL-compatible) ---")
+        X_train_channels, X_val_channels, X_test_channels = [], [], []
+        x_dates_train, x_dates_val, x_dates_test = None, None, None
+        first_feature_dates_captured = False
+        for name in feature_order:
+            arr_train = features_train[name]
+            arr_val = features_val[name]
+            arr_test = features_test[name]
+            # Window each feature
+            win_train, _, dates_win_train = self.create_sliding_windows(arr_train, window_size, max_horizon, dates_train)
+            win_val, _, dates_win_val = self.create_sliding_windows(arr_val, window_size, max_horizon, dates_val)
+            win_test, _, dates_win_test = self.create_sliding_windows(arr_test, window_size, max_horizon, dates_test)
+            if win_train.shape[0] == 0 or win_val.shape[0] == 0 or win_test.shape[0] == 0:
+                print(f"WARN: Feature '{name}' produced 0 windows in at least one split. Skipping.")
+                continue
+            X_train_channels.append(win_train)
+            X_val_channels.append(win_val)
+            X_test_channels.append(win_test)
+            if not first_feature_dates_captured:
+                x_dates_train, x_dates_val, x_dates_test = dates_win_train, dates_win_val, dates_win_test
+                first_feature_dates_captured = True
 
-        # --- 4. Calculate Baselines ---
-        print("\n--- 4. Calculating Baselines ---")
+        if not X_train_channels:
+            raise RuntimeError("No feature channels available after windowing!")
+        X_train_combined = np.stack(X_train_channels, axis=-1).astype(np.float32)
+        X_val_combined = np.stack(X_val_channels, axis=-1).astype(np.float32)
+        X_test_combined = np.stack(X_test_channels, axis=-1).astype(np.float32)
+        print(f"Final X shapes: Train={X_train_combined.shape}, Val={X_val_combined.shape}, Test={X_test_combined.shape}")
+        print(f"Included features: {feature_order}")
+
+        # --- 7. Baseline and Target Calculation (unchanged) ---
+        print("\n--- 7. Calculating Baselines and Targets ---")
         use_returns = config.get("use_returns", False)
-        
-        # Load normalization parameters for denormalization
         import json
         norm_config_path = config.get("use_normalization_json")
         if norm_config_path and os.path.exists(norm_config_path):
@@ -280,129 +299,86 @@ class PreprocessorPlugin:
         else:
             print("WARN: No normalization config found. Using identity transform.")
             close_mean, close_std = 0, 1
-        
-        # Denormalization function for z-score normalized data
         def denormalize_close(normalized_values):
             return normalized_values * close_std + close_mean
-        
-        # For baseline, we need the CLOSE value at the end of each window
-        # FIXED: Use original unnormalized CLOSE values, NOT normalized ones from windows
-        num_train_windows = X_train_windows.shape[0]
-        num_val_windows = X_val_windows.shape[0]
-        num_test_windows = X_test_windows.shape[0]
-        
-        # Baseline is the CLOSE value at the end of each input window
+        num_train_windows = X_train_combined.shape[0]
+        num_val_windows = X_val_combined.shape[0]
+        num_test_windows = X_test_combined.shape[0]
         baseline_train = np.zeros(num_train_windows, dtype=np.float32)
         baseline_val = np.zeros(num_val_windows, dtype=np.float32)
         baseline_test = np.zeros(num_test_windows, dtype=np.float32)
-        
-        # Calculate baseline from original CLOSE values (not normalized windows)
         for i in range(num_train_windows):
-            baseline_train[i] = close_train[i + window_size - 1]  # End of window in original data
+            baseline_train[i] = close_train[i + window_size - 1]
         for i in range(num_val_windows):
             baseline_val[i] = close_val[i + window_size - 1]
         for i in range(num_test_windows):
             baseline_test[i] = close_test[i + window_size - 1]
 
-        print(f"Baseline shapes: Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
-
-        # --- 5. Calculate Targets for Each Horizon ---
-        print("\n--- 5. Calculating Multi-Horizon Targets ---")
-        
         y_train_list = []
         y_val_list = []
         y_test_list = []
-        
-        # For each horizon, calculate the target
         for h in predicted_horizons:
             print(f"Processing horizon {h}...")
-            
-            # Calculate starting indices for targets
-            # Target is h steps ahead of the end of the window
             target_start_train = window_size + h - 1
             target_start_val = window_size + h - 1
             target_start_test = window_size + h - 1
-            
-            # Extract targets (normalized)
             y_train_h = close_train[target_start_train:target_start_train + num_train_windows]
             y_val_h = close_val[target_start_val:target_start_val + num_val_windows]
             y_test_h = close_test[target_start_test:target_start_test + num_test_windows]
-            
-            # Apply returns if needed (FIXED: Denormalize before calculating returns)
             if use_returns:
-                # Denormalize both target and baseline before calculating returns
                 y_train_h_denorm = denormalize_close(y_train_h)
                 y_val_h_denorm = denormalize_close(y_val_h)
                 y_test_h_denorm = denormalize_close(y_test_h)
-                
                 baseline_train_denorm = denormalize_close(baseline_train)
                 baseline_val_denorm = denormalize_close(baseline_val)
                 baseline_test_denorm = denormalize_close(baseline_test)
-                
-                # Calculate returns in denormalized space
                 y_train_h = y_train_h_denorm - baseline_train_denorm
                 y_val_h = y_val_h_denorm - baseline_val_denorm
                 y_test_h = y_test_h_denorm - baseline_test_denorm
                 print(f"  Calculated returns in denormalized space for horizon {h}")
             else:
-                # If not using returns, denormalize the targets
                 y_train_h = denormalize_close(y_train_h)
                 y_val_h = denormalize_close(y_val_h)
                 y_test_h = denormalize_close(y_test_h)
                 print(f"  Denormalized targets for horizon {h}")
-                
             y_train_list.append(y_train_h.astype(np.float32))
             y_val_list.append(y_val_h.astype(np.float32))
             y_test_list.append(y_test_h.astype(np.float32))
 
-        # --- 6. Prepare Date Arrays ---
-        y_dates_train = x_dates_train  # Y dates same as X dates (end of window)
+        # --- 8. Prepare Date Arrays ---
+        y_dates_train = x_dates_train
         y_dates_val = x_dates_val
         y_dates_test = x_dates_test
 
-        # --- 7. Prepare Return Dictionary ---
-        print("\n--- 7. Preparing Final Output ---")
+        # --- 9. Prepare Return Dictionary ---
+        print("\n--- 9. Preparing Final Output ---")
         ret = {}
-        
-        # X data (windowed features)
-        ret["x_train"] = X_train_windows
-        ret["x_val"] = X_val_windows
-        ret["x_test"] = X_test_windows
-
-        # Y data (multi-horizon targets)
+        ret["x_train"] = X_train_combined
+        ret["x_val"] = X_val_combined
+        ret["x_test"] = X_test_combined
         ret["y_train"] = y_train_list
         ret["y_val"] = y_val_list
         ret["y_test"] = y_test_list
-
-        # Dates
         ret["x_train_dates"] = x_dates_train
         ret["y_train_dates"] = y_dates_train
         ret["x_val_dates"] = x_dates_val
         ret["y_val_dates"] = y_dates_val
         ret["x_test_dates"] = x_dates_test
         ret["y_test_dates"] = y_dates_test
-
-        # Baseline data
         ret["baseline_train"] = denormalize_close(baseline_train) if use_returns else denormalize_close(baseline_train)
         ret["baseline_val"] = denormalize_close(baseline_val) if use_returns else denormalize_close(baseline_val)
         ret["baseline_test"] = denormalize_close(baseline_test) if use_returns else denormalize_close(baseline_test)
         ret["baseline_train_dates"] = y_dates_train
         ret["baseline_val_dates"] = y_dates_val
         ret["baseline_test_dates"] = y_dates_test
-
-        # Test close prices (for compatibility) - denormalized
         ret["test_close_prices"] = denormalize_close(baseline_test)
-
-        # Feature names for reference
-        ret["feature_names"] = list(x_train_df.columns)
-
+        ret["feature_names"] = feature_order
         print(f"Final shapes:")
-        print(f"  X: Train={X_train_windows.shape}, Val={X_val_windows.shape}, Test={X_test_windows.shape}")
+        print(f"  X: Train={X_train_combined.shape}, Val={X_val_combined.shape}, Test={X_test_combined.shape}")
         print(f"  Y: {len(y_train_list)} horizons, Train[0]={y_train_list[0].shape}")
         print(f"  Baselines: Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
         print(f"  Features: {len(ret['feature_names'])}")
-
-        print("\n" + "="*15 + " Phase 2.6 Preprocessing Finished " + "="*15)
+        print("\n" + "="*15 + " Phase 2.6 Preprocessing Finished (STL-Compatible) " + "="*15)
         return ret
 
     def run_preprocessing(self, config):
