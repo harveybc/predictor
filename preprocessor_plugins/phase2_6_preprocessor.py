@@ -557,12 +557,8 @@ class PreprocessorPlugin:
         
         print(f"Baseline shapes (STL Logic): Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
         
-<<<<<<< Updated upstream
-        # Process targets using original slicing and shifting logic (EXACT STL LOGIC)
-=======
         # Process targets using corrected logic to prevent data leakage
         # CRITICAL FIX: Targets must be calculated from the END of the window, not the baseline time
->>>>>>> Stashed changes
         # 1. Apply original initial slice
         target_train = target_train_raw[original_offset:]
         target_val = target_val_raw[original_offset:]
@@ -572,12 +568,6 @@ class PreprocessorPlugin:
         y_train_list = []; y_val_list = []; y_test_list = []
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
         for h in predicted_horizons:
-<<<<<<< Updated upstream
-            # 2a. Apply original shift logic: target_sliced[h:]
-            target_train_shifted = target_train[h:]
-            target_val_shifted = target_val[h:]
-            target_test_shifted = target_test[h:]
-=======
             # CRITICAL FIX: Add window_size to horizon to ensure target is AFTER window end
             # Window ends at t+window_size-1, so target should be at t+window_size-1+h
             # This requires shifting by h + window_size - (window_size - 2) = h + 2
@@ -588,7 +578,6 @@ class PreprocessorPlugin:
             target_train_shifted = target_train[adjusted_horizon:]
             target_val_shifted = target_val[adjusted_horizon:]
             target_test_shifted = target_test[adjusted_horizon:]
->>>>>>> Stashed changes
             
             # 2b. Slice the shifted result to match num_samples
             if len(target_train_shifted) < num_samples_train: 
@@ -603,11 +592,7 @@ class PreprocessorPlugin:
                 raise ValueError(f"Not enough shifted target data for H={h} (Test). Needed {num_samples_test}, got {len(target_test_shifted)}")
             target_test_h = target_test_shifted[:num_samples_test]
             
-<<<<<<< Updated upstream
-            # 2c. Apply returns adjustment using the ALIGNED baseline (EXACT STL LOGIC)
-=======
             # 2c. Apply returns adjustment using the ALIGNED baseline
->>>>>>> Stashed changes
             if use_returns:
                 target_train_h = target_train_h - baseline_train
                 target_val_h = target_val_h - baseline_val
