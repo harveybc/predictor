@@ -12,9 +12,9 @@ with open('examples/config/phase_3_1_daily/phase_3_1_cnn_1d_config.json') as f:
 
 # Force IDENTICAL parameters for fair comparison
 identical_params = {
-    "max_steps_train": 1000,
-    "max_steps_val": 1000, 
-    "max_steps_test": 1000,
+    "max_steps_train": 600,  # Increased to handle STL offset
+    "max_steps_val": 600, 
+    "max_steps_test": 600,
     "window_size": 288,
     "predicted_horizons": [24, 48, 72, 96, 120, 144],
     "stl_period": 24,

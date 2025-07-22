@@ -13,11 +13,11 @@ from preprocessor_plugins.phase2_6_preprocessor import PreprocessorPlugin as Pha
 with open('examples/config/phase_2/phase_2_6_cnn_1h_config.json') as f:
     config = json.load(f)
 
-# Use smaller data for testing
+# Use larger data for testing (enough after STL offset)
 config.update({
-    "max_steps_train": 200,
-    "max_steps_val": 200, 
-    "max_steps_test": 200,
+    "max_steps_train": 500,  # Increased to handle STL offset
+    "max_steps_val": 500, 
+    "max_steps_test": 500,
     "window_size": 144,
     "predicted_horizons": [1, 2, 3],  # Test first 3 horizons
     "use_returns": True
