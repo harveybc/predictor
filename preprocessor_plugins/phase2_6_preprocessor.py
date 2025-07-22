@@ -207,6 +207,23 @@ class PreprocessorPlugin:
         y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"))
         y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"))
 
+        # --- 1b. Rename columns to STL-compatible names ---
+        rename_map = {
+            "CLOSE_stl_trend": "stl_trend",
+            "CLOSE_stl_seasonal": "stl_seasonal",
+            "CLOSE_stl_resid": "stl_resid",
+            "CLOSE_mtm_band_1_0.000_0.010": "mtm_band_0",
+            "CLOSE_mtm_band_2_0.010_0.060": "mtm_band_1",
+            "CLOSE_mtm_band_3_0.060_0.200": "mtm_band_2",
+            "CLOSE_mtm_band_4_0.200_0.500": "mtm_band_3",
+        }
+        for df in [x_train_df, x_val_df, x_test_df]:
+            df.rename(columns=rename_map, inplace=True)
+            # Drop extra wavelet columns not present in STL pipeline
+            for col in ["CLOSE_wav_approx_L2", "CLOSE_wav_detail_L1", "CLOSE_wav_detail_L2"]:
+                if col in df.columns:
+                    df.drop(columns=col, inplace=True)
+
         # Validate feature count
         expected_features = config.get("expected_feature_count", 55)
         if len(x_train_df.columns) != expected_features:
@@ -250,8 +267,15 @@ class PreprocessorPlugin:
         features_val = {"log_return": log_return_val, **features_val}
         features_test = {"log_return": log_return_test, **features_test}
 
-        # --- 5. Feature Order: log_return first, then all other columns (alphabetically, STL style) ---
-        feature_order = ["log_return"] + sorted([col for col in original_feature_columns if col != "log_return"])
+        # --- 5. Feature Order: Match STL pipeline exactly ---
+        stl_feature_order = [
+            'log_return',
+            'stl_trend', 'stl_seasonal', 'stl_resid',
+            'mtm_band_0', 'mtm_band_1', 'mtm_band_2', 'mtm_band_3',
+        ]
+        # Add the rest of the features (excluding those already in stl_feature_order and log_return), sorted alphabetically
+        rest_features = [col for col in original_feature_columns if col not in stl_feature_order and col != 'log_return']
+        feature_order = stl_feature_order + sorted(rest_features)
         print(f"Final feature order for windowing: {feature_order}")
 
         # --- 6. Windowing Features ---
