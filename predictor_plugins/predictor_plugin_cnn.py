@@ -40,13 +40,9 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import GlobalAveragePooling1D
 from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
-from tensorflow.keras.layers import Conv1D
-from tensorflow.keras.layers import Conv1DTranspose
-from tensorflow.keras.layers import BatchNormalization
-#linear activation
-from tensorflow.keras.layers import Activation
-
-
+from tensorflow.keras.layers import Conv1D, GlobalAveragePooling1D
+from tensorflow.keras.layers import MultiHeadAttention
+from tensorflow.keras.layers import LayerNormalization
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -89,6 +85,21 @@ class ClearMemoryCallback(Callback):
 # ---------------------------
 # Custom Metrics and Loss Functions
 # ---------------------------
+def get_angles(pos, i, d_model):
+    angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
+    return pos * angle_rates
+
+def positional_encoding(position, d_model):
+    angle_rads = get_angles(np.arange(position)[:, np.newaxis],
+                            np.arange(d_model)[np.newaxis, :],
+                            d_model)
+    # Apply sin to even indices; cos to odd indices
+    sines = np.sin(angle_rads[:, 0::2])
+    cosines = np.cos(angle_rads[:, 1::2])
+    pos_encoding = np.concatenate([sines, cosines], axis=-1)
+    pos_encoding = pos_encoding[np.newaxis, ...]  # Shape: (1, position, d_model)
+    return tf.cast(pos_encoding, dtype=tf.float32)
+
 def mae_magnitude(y_true, y_pred):
     """Compute MAE on the first column (magnitude)."""
     if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
@@ -428,30 +439,38 @@ class Plugin:
         branch_units = merged_units//config.get("layer_size_divisor", 2)
         # Add LSTM units parameter (provide a default)
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
-
+        # --- Define Bayesian Layer Components ---
+        KL_WEIGHT = self.kl_weight_var
+        DenseFlipout = tfp.layers.DenseFlipout
+        embedding_dim = self.params.get('initial_layer_size', 32)
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        x = inputs
-        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation='linear',  name="initial_conv")(x)
-        for i in range(num_intermediate_layers):
-                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
-                          name=f"feature_conv_{i+1}")(x)
+        merged = Conv1D(
+            filters=merged_units,
+            kernel_size=3,
+            strides=2, 
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_1",
+            kernel_regularizer=l2(l2_reg)
+        )(inputs)
 
-        # --- Flatten  ---
-        #merged = Flatten(name="flatten")(x)
-        merged = x
-
-        # --- Define Bayesian Layer Components ---
-        KL_WEIGHT = self.kl_weight_var
-        DenseFlipout = tfp.layers.DenseFlipout
-
+        merged = Conv1D(
+            filters=branch_units,
+            kernel_size=3,
+            strides=2, 
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_2",
+            kernel_regularizer=l2(l2_reg)
+        )(merged)
+        
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
-
-
+        # Loop through each predicted horizon
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
 
@@ -476,7 +495,6 @@ class Plugin:
           
 
 
-            #lstm_output = LSTM(lstm_units, return_sequences=False)(reshaped_for_lstm)
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
@@ -621,7 +639,7 @@ class Plugin:
         min_delta_early_stopping = config.get("min_delta", self.params.get("min_delta", 1e-4))
         patience_early_stopping = self.params.get('early_patience', 10)
         start_from_epoch_es = self.params.get('start_from_epoch', 10)
-        patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 5)))
+        patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 4)))
 
         # Instantiate callbacks WITHOUT ClearMemoryCallback
         # Assumes relevant Callback classes are imported/defined
@@ -631,7 +649,7 @@ class Plugin:
                 verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
             ),
             ReduceLROnPlateauWithCounter(
-                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, verbose=1
+                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs:
                            print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
@@ -735,7 +753,7 @@ class Plugin:
         # print(f"Running {mc_samples} MC samples for uncertainty (incremental)...") # Informative print
         for i in tqdm(range(mc_samples), desc="MC Samples"):
             # Get predictions for all heads in this sample
-            batch_size = 1024  # ✅ Use safe batch size
+            batch_size = 256  # ✅ Use safe batch size
             ## Initialize a list for each output head
             head_outputs_lists = None
             for i in range(0, len(x_test), batch_size):
