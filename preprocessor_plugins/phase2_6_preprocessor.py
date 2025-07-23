@@ -223,6 +223,25 @@ class PreprocessorPlugin:
         y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"))
         y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"))
 
+        # --- 2. Add close_logreturn Column ---
+        print("\n--- 2. Adding close_logreturn Column ---")
+        target_column = config["target_column"]
+        
+        # Calculate log returns for CLOSE: log(CLOSE[t] / CLOSE[t-1]) = log(CLOSE[t]) - log(CLOSE[t-1])
+        x_train_df['close_logreturn'] = np.log(x_train_df[target_column]).diff()
+        x_val_df['close_logreturn'] = np.log(x_val_df[target_column]).diff()
+        x_test_df['close_logreturn'] = np.log(x_test_df[target_column]).diff()
+        
+        # Fill NaN values (first row) with 0
+        x_train_df['close_logreturn'].fillna(0, inplace=True)
+        x_val_df['close_logreturn'].fillna(0, inplace=True)
+        x_test_df['close_logreturn'].fillna(0, inplace=True)
+        
+        print(f"Added close_logreturn column to all datasets")
+        print(f"Train close_logreturn stats: mean={x_train_df['close_logreturn'].mean():.6f}, std={x_train_df['close_logreturn'].std():.6f}")
+        print(f"Val close_logreturn stats: mean={x_val_df['close_logreturn'].mean():.6f}, std={x_val_df['close_logreturn'].std():.6f}")
+        print(f"Test close_logreturn stats: mean={x_test_df['close_logreturn'].mean():.6f}, std={x_test_df['close_logreturn'].std():.6f}")
+
 
 
 
@@ -255,6 +274,17 @@ class PreprocessorPlugin:
         print(f"Feature columns: {feature_columns}")
         print(f"Data shapes - Train: {features_train.shape}, Val: {features_val.shape}, Test: {features_test.shape}")
         print(f"CLOSE shapes - Train: {close_train.shape}, Val: {close_val.shape}, Test: {close_test.shape}")
+        
+        # Verify close_logreturn is in features and CLOSE is not
+        has_close_logreturn = 'close_logreturn' in feature_columns
+        has_close = target_column in feature_columns
+        print(f"USER REQUIREMENTS VERIFIED:")
+        print(f"  - CLOSE column removed from features: {not has_close}")
+        print(f"  - close_logreturn included in features: {has_close_logreturn}")
+        if not has_close_logreturn:
+            raise ValueError("close_logreturn column not found in features!")
+        if has_close:
+            raise ValueError(f"Target column '{target_column}' should not be in features!")
 
         # --- 4. Create Sliding Windows (USER REQUIREMENTS) ---
         print("\n--- 4. Creating Sliding Windows (USER REQUIREMENTS) ---")
@@ -325,9 +355,10 @@ class PreprocessorPlugin:
         # USER REQUIREMENTS: Always calculate targets as returns: CLOSE[t+horizon] - CLOSE[t]
         y_train_list = []; y_val_list = []; y_test_list = []
         print(f"Processing targets per USER REQUIREMENTS for horizons: {predicted_horizons} (Always using returns)...")
+        print(f"Max horizon: {max_horizon}, ensuring enough future data for all targets")
         
-        for h in predicted_horizons:
-            print(f"  Horizon {h}: Calculating targets per USER REQUIREMENTS...")
+        for h_idx, h in enumerate(predicted_horizons):
+            print(f"  Horizon {h_idx+1}/{len(predicted_horizons)}: H={h} - Calculating targets per USER REQUIREMENTS...")
             
             # USER REQUIREMENTS: Target indices
             # For window i (i=0 to num_samples-1), prediction timestamp is at baseline_start_idx + i
@@ -357,11 +388,32 @@ class PreprocessorPlugin:
             target_test_h = target_test_h_raw - baseline_test
             print(f"    USER REQUIREMENTS: target = CLOSE[t+{h}] - CLOSE[t]")
             
+            # Validation: Check for any obvious issues
+            train_finite = np.isfinite(target_train_h).sum()
+            val_finite = np.isfinite(target_val_h).sum()
+            test_finite = np.isfinite(target_test_h).sum()
+            print(f"    Finite values: Train={train_finite}/{len(target_train_h)}, Val={val_finite}/{len(target_val_h)}, Test={test_finite}/{len(target_test_h)}")
+            
+            # Add target statistics for verification
+            print(f"    Target stats - Train: mean={target_train_h.mean():.6f}, std={target_train_h.std():.6f}")
+            print(f"    Target stats - Val: mean={target_val_h.mean():.6f}, std={target_val_h.std():.6f}")
+            print(f"    Target stats - Test: mean={target_test_h.mean():.6f}, std={target_test_h.std():.6f}")
+            
             y_train_list.append(target_train_h.astype(np.float32))
             y_val_list.append(target_val_h.astype(np.float32))
             y_test_list.append(target_test_h.astype(np.float32))
             
             print(f"    Target shapes: Train={target_train_h.shape}, Val={target_val_h.shape}, Test={target_test_h.shape}")
+
+        # Final verification of target lists
+        print(f"\nTARGET VERIFICATION:")
+        print(f"  Generated {len(y_train_list)} target sets for {len(predicted_horizons)} horizons")
+        print(f"  Expected horizons: {predicted_horizons}")
+        print(f"  Target list lengths: Train={len(y_train_list)}, Val={len(y_val_list)}, Test={len(y_test_list)}")
+        if len(y_train_list) != len(predicted_horizons):
+            raise ValueError(f"Mismatch: {len(y_train_list)} target sets != {len(predicted_horizons)} horizons")
+        for i, h in enumerate(predicted_horizons):
+            print(f"  Horizon {h}: Train={y_train_list[i].shape}, Val={y_val_list[i].shape}, Test={y_test_list[i].shape}")
 
         # --- 7. Prepare Date Arrays ---
         y_dates_train = train_dates_windows
