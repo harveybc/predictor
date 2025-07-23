@@ -112,7 +112,7 @@ class PreprocessorPlugin:
             traceback.print_exc()
             raise
 
-    def create_sliding_windows(self, data, window_size, time_horizon, date_times=None):
+    def create_sliding_windows(self, data, window_size, time_horizon, date_times=None, max_horizon=1):
         """
         Creates sliding windows for feature data with STRICT CAUSALITY per user requirements.
         
@@ -121,14 +121,16 @@ class PreprocessorPlugin:
         - Window: data[t-window_size : t] (EXCLUDES current tick t to prevent data leakage)
         - Prediction timestamp: t (current tick)
         - The sliding window fed to model MUST NOT include the current tick to maintain causality
+        - Must ensure enough data remains for target calculation at max_horizon
         
         Args:
             data: 2D numpy array (n_samples, n_features) or 1D array for single feature
             window_size: Size of the sliding window
             time_horizon: Not used in this implementation (targets calculated separately)
             date_times: Optional datetime array
+            max_horizon: Maximum prediction horizon to ensure enough future data
         """
-        print(f"Creating sliding windows (USER REQUIREMENTS - Size={window_size}, EXCLUDING current tick)...", end="")
+        print(f"Creating sliding windows (USER REQUIREMENTS - Size={window_size}, EXCLUDING current tick, max_horizon={max_horizon})...", end="")
         
         # Handle both 1D and 2D data
         if data.ndim == 1:
@@ -143,13 +145,17 @@ class PreprocessorPlugin:
         # and create windows that EXCLUDE the current tick to prevent data leakage
         # For tick t, window is data[t-window_size : t] (so it has exactly window_size elements BEFORE tick t)
         start_tick = window_size  # First tick where we can create a full window (0-indexed)
-        num_possible_windows = n_samples - start_tick
+        
+        # CRITICAL: Ensure we have enough future data for target calculation
+        # Last tick we can use is n_samples - max_horizon - 1 (so target at t+max_horizon is valid)
+        end_tick = n_samples - max_horizon
+        num_possible_windows = end_tick - start_tick
         
         if num_possible_windows <= 0:
-             print(f" WARN: Data short ({n_samples}) for window_size={window_size}. No windows.")
+             print(f" WARN: Data short ({n_samples}) for window_size={window_size} and max_horizon={max_horizon}. No windows.")
              return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), np.array(date_windows, dtype=object)
              
-        for t in range(start_tick, n_samples):
+        for t in range(start_tick, end_tick):
             # USER REQUIREMENTS: Window from [t-window_size : t] (EXCLUDES current tick t)
             # This gives us exactly window_size elements: data[t-window_size], ..., data[t-2], data[t-1]
             window_start = t - window_size
@@ -189,7 +195,7 @@ class PreprocessorPlugin:
         else: 
             date_windows_arr = np.array(date_windows, dtype=object)
             
-        print(f" Done ({len(windows)} windows, prediction timestamps from tick {start_tick} to {n_samples-1}).")
+        print(f" Done ({len(windows)} windows, prediction timestamps from tick {start_tick} to {end_tick-1}).")
         return windows, np.array(targets, dtype=np.float32), date_windows_arr
 
 
@@ -258,11 +264,11 @@ class PreprocessorPlugin:
         
         # Create windows for features
         X_train_windows, _, train_dates_windows = self.create_sliding_windows(
-            features_train, window_size, 1, dates_train)
+            features_train, window_size, 1, dates_train, max_horizon)
         X_val_windows, _, val_dates_windows = self.create_sliding_windows(
-            features_val, window_size, 1, dates_val)
+            features_val, window_size, 1, dates_val, max_horizon)
         X_test_windows, _, test_dates_windows = self.create_sliding_windows(
-            features_test, window_size, 1, dates_test)
+            features_test, window_size, 1, dates_test, max_horizon)
         
         # The windows are already in the correct shape: (samples, window_size, features)
         X_train_combined = X_train_windows
