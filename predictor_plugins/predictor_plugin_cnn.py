@@ -434,9 +434,9 @@ class Plugin:
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
         x = inputs
-        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation='linear', name="initial_conv")(x)
+        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation='linear', kernel_regularizer=l2(l2_reg), name="initial_conv")(x)
         for i in range(num_intermediate_layers):
-                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation,
+                x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding='valid', activation=activation, kernel_regularizer=l2(l2_reg),
                           name=f"feature_conv_{i+1}")(x)
 
         # --- Flatten  ---
