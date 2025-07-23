@@ -154,7 +154,11 @@ class PreprocessorPlugin:
         print(f"Creating sliding windows (Orig Method - Size={window_size}, Horizon={time_horizon})...", end="")
         windows = []; targets = []; date_windows = [] # Initialize targets list
         n = len(data)
-        num_possible_windows = n - window_size - time_horizon + 1 # Use passed horizon
+        # CRITICAL FIX: For strict causality, we need enough data for:
+        # - Window of size window_size 
+        # - At least 1 position after window for prediction timestamp
+        # - time_horizon positions for the ignored target calculation
+        num_possible_windows = n - window_size - time_horizon  # Remove +1 to account for prediction timestamp
         if num_possible_windows <= 0:
              print(f" WARN: Data short ({n}) for Win={window_size}+Horizon={time_horizon}. No windows.")
              return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), np.array(date_windows, dtype=object)
@@ -164,9 +168,13 @@ class PreprocessorPlugin:
             windows.append(window)
             targets.append(target) # Ignored target
             if date_times is not None:
+                # CAUSALITY FIX: Use the LAST data point timestamp in the window (i+window_size-1)
+                # Window spans [i : i+window_size-1], so prediction is made FROM the last available data point
                 date_index = i + window_size - 1
-                if date_index < len(date_times): date_windows.append(date_times[date_index])
-                else: date_windows.append(None)
+                if date_index < len(date_times): 
+                    date_windows.append(date_times[date_index])
+                else: 
+                    date_windows.append(None)
         # Convert dates
         if date_times is not None:
              date_windows_arr = np.array(date_windows, dtype=object)
@@ -422,8 +430,11 @@ class PreprocessorPlugin:
             if series_train is not None:
                 print(f"  {name}: Train={len(series_train)}, Val={len(series_val)}, Test={len(series_test)}")
 
-        # --- Use max_horizon for windowing function ---
-        time_horizon_for_windowing = max_horizon
+        # --- Use horizon=1 for windowing to ensure strict causality ---
+        # CRITICAL FIX: Use horizon=1 for windowing to prevent data leakage
+        # Windows should only include past data, and targets will be calculated 
+        # separately with proper horizon offsets
+        time_horizon_for_windowing = 1  # STRICT CAUSALITY: Only use past data
 
         for name in windowing_order:
             # Get the correct aligned series for train, val, test from the combined dictionary
@@ -517,12 +528,11 @@ class PreprocessorPlugin:
         num_samples_val = X_val_combined.shape[0]
         num_samples_test = X_test_combined.shape[0]
         
-        # Calculate original offset (EXACT STL LOGIC)
-        # Must use the exact same offset calculation as STL to prevent data leakage
-        effective_stl_window = 0  # No STL processing in phase2_6
-        # CRITICAL: Use window_size - 2 to match STL logic exactly
-        original_offset = effective_stl_window + window_size - 2
-        print(f"Calculated original logic offset (STL EXACT): {original_offset}")
+        # Calculate original offset (STRICT CAUSALITY FIX)
+        # CRITICAL FIX: Use window_size for proper alignment
+        # Windows end at position window_size-1, so baseline should start at window_size
+        original_offset = window_size
+        print(f"Calculated STRICT CAUSALITY offset: {original_offset}")
         
         # Load Raw Target Data (use denormalized CLOSE values)
         target_column = config["target_column"]
@@ -557,27 +567,34 @@ class PreprocessorPlugin:
         
         print(f"Baseline shapes (STL Logic): Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
         
-        # Process targets using corrected logic to prevent data leakage
-        # CRITICAL FIX: Targets must be calculated from the END of the window, not the baseline time
+        # Process targets using STRICT CAUSALITY to prevent data leakage
+        # CRITICAL FIX: Targets must be calculated AFTER the window end with proper horizon
         # 1. Apply original initial slice
         target_train = target_train_raw[original_offset:]
         target_val = target_val_raw[original_offset:]
         target_test = target_test_raw[original_offset:]
         
-        # 2. Calculate shifted targets for each horizon and slice to final length
+        # 2. Calculate strictly causal targets for each horizon
         y_train_list = []; y_val_list = []; y_test_list = []
-        print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
+        print(f"Processing STRICTLY CAUSAL targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
         for h in predicted_horizons:
-            # CRITICAL FIX: Add window_size to horizon to ensure target is AFTER window end
-            # Window ends at t+window_size-1, so target should be at t+window_size-1+h
-            # This requires shifting by h + window_size - (window_size - 2) = h + 2
-            adjusted_horizon = h + 2  # Compensate for the -2 in original_offset
-            print(f"  Horizon {h}: Using adjusted shift of {adjusted_horizon} to prevent data leakage")
+            # CRITICAL FIX: For strict causality, target at horizon h should be:
+            # - Window ends at position window_size-1 in the original data
+            # - Target should be at position window_size-1+h in the original data
+            # Since we already applied original_offset, we just need to shift by h
+            print(f"  Horizon {h}: Using STRICT CAUSALITY shift of {h}")
             
-            # 2a. Apply corrected shift logic
-            target_train_shifted = target_train[adjusted_horizon:]
-            target_val_shifted = target_val[adjusted_horizon:]
-            target_test_shifted = target_test[adjusted_horizon:]
+            # 2a. Apply STRICT CAUSALITY shift logic
+            if len(target_train) <= h:
+                raise ValueError(f"Not enough target data for H={h} (Train). Available: {len(target_train)}, needed: {h+1}")
+            if len(target_val) <= h:
+                raise ValueError(f"Not enough target data for H={h} (Val). Available: {len(target_val)}, needed: {h+1}")
+            if len(target_test) <= h:
+                raise ValueError(f"Not enough target data for H={h} (Test). Available: {len(target_test)}, needed: {h+1}")
+                
+            target_train_shifted = target_train[h:]
+            target_val_shifted = target_val[h:]
+            target_test_shifted = target_test[h:]
             
             # 2b. Slice the shifted result to match num_samples
             if len(target_train_shifted) < num_samples_train: 
