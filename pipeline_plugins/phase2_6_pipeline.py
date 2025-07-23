@@ -12,6 +12,24 @@ Key differences from STL pipeline:
 - Works directly with z-score normalized data
 - Uses existing normalization_config_b.json for denormalization
 - No additional STL decomposition needed
+
+CRITICAL UPDATE: Z-Score Normalization vs Returns Prediction
+============================================================
+The preprocessor now handles the incompatibility between z-score normalization and returns prediction:
+
+1. PREPROCESSOR (phase2_6_preprocessor.py):
+   - Loads z-score normalized features and CLOSE data
+   - DENORMALIZES CLOSE values before calculating returns
+   - Targets = actual returns (denormalized_CLOSE[t+h] - denormalized_CLOSE[t])
+   - Baselines = denormalized CLOSE[t] values (actual prices)
+
+2. PIPELINE (this file):
+   - Receives actual returns as predictions from model
+   - Receives denormalized baselines from preprocessor
+   - Final price = baseline + prediction (no additional denormalization needed)
+   - Only uncertainties need return-style denormalization
+
+This ensures mathematical consistency and maintains compatibility with previous phases.
 """
 
 import time
@@ -207,11 +225,20 @@ class Phase26PipelinePlugin:
                         val_unc_h = val_unc_h[:num_val_pts]
                         baseline_val_h = baseline_val[:num_val_pts].flatten()
                         
-                        # Denormalize Price (add baseline first if returns)
-                        train_target_price = denormalize(baseline_train_h + train_target_h if use_returns else train_target_h, config)
-                        train_pred_price = denormalize(baseline_train_h + train_preds_h if use_returns else train_preds_h, config)
-                        val_target_price = denormalize(baseline_val_h + val_target_h if use_returns else val_target_h, config)
-                        val_pred_price = denormalize(baseline_val_h + val_preds_h if use_returns else val_preds_h, config)
+                        # CRITICAL FIX: Handle denormalized baselines and actual returns
+                        # Our preprocessor now provides denormalized baselines and actual returns
+                        if use_returns:
+                            # Apply actual returns to denormalized baselines (no additional denormalization needed)
+                            train_target_price = baseline_train_h + train_target_h  # Already denormalized
+                            train_pred_price = baseline_train_h + train_preds_h    # Already denormalized  
+                            val_target_price = baseline_val_h + val_target_h       # Already denormalized
+                            val_pred_price = baseline_val_h + val_preds_h          # Already denormalized
+                        else:
+                            # If not using returns, denormalize directly
+                            train_target_price = denormalize(train_target_h, config)
+                            train_pred_price = denormalize(train_preds_h, config)
+                            val_target_price = denormalize(val_target_h, config)
+                            val_pred_price = denormalize(val_preds_h, config)
                         
                         # Metrics
                         train_mae_h = np.mean(np.abs(denormalize_returns(train_preds_h - train_target_h, config)))
@@ -277,9 +304,16 @@ class Phase26PipelinePlugin:
                     test_unc_h = test_unc_h[:num_test_pts]
                     baseline_test_h = baseline_test[:num_test_pts].flatten()
                     
-                    # Denormalize Price (add baseline first if returns)
-                    test_target_price = denormalize(baseline_test_h + test_target_h if use_returns else test_target_h, config)
-                    test_pred_price = denormalize(baseline_test_h + test_preds_h if use_returns else test_preds_h, config)
+                    # CRITICAL FIX: Handle denormalized baselines and actual returns
+                    # Our preprocessor now provides denormalized baselines and actual returns
+                    if use_returns:
+                        # Apply actual returns to denormalized baselines (no additional denormalization needed)
+                        test_target_price = baseline_test_h + test_target_h  # Already denormalized
+                        test_pred_price = baseline_test_h + test_preds_h     # Already denormalized
+                    else:
+                        # If not using returns, denormalize directly
+                        test_target_price = denormalize(test_target_h, config)
+                        test_pred_price = denormalize(test_preds_h, config)
                     
                     # Metrics
                     test_mae_h = np.mean(np.abs(denormalize_returns(test_preds_h - test_target_h, config)))
@@ -394,19 +428,26 @@ class Phase26PipelinePlugin:
                 unc_denorm = np.full(num_test_points, np.nan)
                 
                 try:
-                    # --- Apply FIX: Ensure baseline and raw are 1D before adding ---
+                    # --- CRITICAL FIX: Handle denormalized baselines and actual returns ---
+                    # Our preprocessor now provides:
+                    # - final_baseline: already denormalized CLOSE values (actual prices)
+                    # - preds_raw: actual returns (CLOSE[t+h] - CLOSE[t] in actual units)
+                    # - target_raw: actual returns (CLOSE[t+h] - CLOSE[t] in actual units)
+                    
                     if use_returns:
                         if final_baseline is None:
                             raise ValueError("Baseline missing.")
-                        # Ensure baseline is 1D (already flattened above)
-                        pred_price_before = final_baseline + preds_raw  # (N,) + (N,) -> (N,)
-                        target_price_before = final_baseline + target_raw  # (N,) + (N,) -> (N,)
+                        # Apply returns to denormalized baseline to get final denormalized price
+                        pred_price_denorm = final_baseline + preds_raw  # Already in actual price units
+                        target_price_denorm = final_baseline + target_raw  # Already in actual price units
+                        # NO additional denormalization needed since baseline is denormalized and returns are actual
+                        print(f"    H={h}: Applied actual returns to denormalized baseline")
                     else:
-                        pred_price_before = preds_raw
-                        target_price_before = target_raw
-
-                    pred_price_denorm = denormalize(pred_price_before, config)
-                    target_price_denorm = denormalize(target_price_before, config)
+                        # If not using returns (shouldn't happen in phase 2.6), denormalize predictions directly
+                        pred_price_denorm = denormalize(preds_raw, config)
+                        target_price_denorm = denormalize(target_raw, config)
+                        
+                    # Uncertainties are still returns/deltas, so denormalize with returns function
                     unc_denorm = denormalize_returns(unc_raw, config)
                 except Exception as e:
                     print(f"WARN: Error denorm H={h}: {e}")
@@ -478,16 +519,17 @@ class Phase26PipelinePlugin:
             unc_plot_raw = list_test_unc[plotted_index][:num_test_points]
             baseline_plot = final_baseline  # Already sliced
 
-            # Denormalize correctly and FLATTEN *before* slicing for plot
+            # CRITICAL FIX: Handle denormalized baselines and actual returns for plotting
             if use_returns:
-                # --- Apply FIX: Ensure inputs to addition are flattened ---
-                pred_plot_price_flat = denormalize(baseline_plot + preds_plot_raw.flatten(), config).flatten()
-                target_plot_price_flat = denormalize(baseline_plot + target_plot_raw.flatten(), config).flatten()
+                # Apply actual returns to denormalized baselines (no additional denormalization needed)
+                pred_plot_price_flat = (baseline_plot + preds_plot_raw.flatten()).flatten()
+                target_plot_price_flat = (baseline_plot + target_plot_raw.flatten()).flatten()
             else:
+                # If not using returns, denormalize directly
                 pred_plot_price_flat = denormalize(preds_plot_raw, config).flatten()
                 target_plot_price_flat = denormalize(target_plot_raw, config).flatten()
             unc_plot_denorm_flat = denormalize_returns(unc_plot_raw, config).flatten()
-            true_plot_price_flat = denormalize(baseline_plot, config).flatten()
+            true_plot_price_flat = baseline_plot.flatten()  # Already denormalized
 
             # Determine plot points and slice FLATTENED arrays
             n_plot = config.get("plot_points", self.params["plot_points"])

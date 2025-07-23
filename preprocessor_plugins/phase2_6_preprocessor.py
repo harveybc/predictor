@@ -17,6 +17,7 @@ Key processing per USER REQUIREMENTS:
 import numpy as np
 import pandas as pd
 import os
+import json
 
 # Assuming load_csv is correctly imported
 try:
@@ -24,6 +25,28 @@ try:
 except ImportError:
     print("CRITICAL ERROR: Could not import 'load_csv' from 'app.data_handler'.")
     raise
+
+
+def denormalize_close(normalized_data, config):
+    """Denormalizes z-score normalized CLOSE data using normalization config."""
+    use_normalization_json = config.get("use_normalization_json")
+    if use_normalization_json and os.path.exists(use_normalization_json):
+        try:
+            with open(use_normalization_json, 'r') as f:
+                norm_json = json.load(f)
+            if isinstance(norm_json, dict) and "CLOSE" in norm_json:
+                close_mean = norm_json["CLOSE"]["mean"]
+                close_std = norm_json["CLOSE"]["std"]
+                return (normalized_data * close_std) + close_mean
+            else:
+                print(f"WARN: CLOSE normalization data not found in {use_normalization_json}")
+                return normalized_data
+        except Exception as e:
+            print(f"WARN: Error loading normalization config: {e}")
+            return normalized_data
+    else:
+        print(f"WARN: Normalization config file not found: {use_normalization_json}")
+        return normalized_data
 
 
 class PreprocessorPlugin:
@@ -258,9 +281,20 @@ class PreprocessorPlugin:
         dates_test = x_test_df.index if isinstance(x_test_df.index, pd.DatetimeIndex) else None
         
         # Extract target values (CLOSE) - these are already preprocessed and aligned
-        close_train = x_train_df[target_column].astype(np.float32).values
-        close_val = x_val_df[target_column].astype(np.float32).values
-        close_test = x_test_df[target_column].astype(np.float32).values
+        close_train_normalized = x_train_df[target_column].astype(np.float32).values
+        close_val_normalized = x_val_df[target_column].astype(np.float32).values
+        close_test_normalized = x_test_df[target_column].astype(np.float32).values
+        
+        # CRITICAL FIX: Denormalize CLOSE values before calculating returns
+        print(f"CRITICAL FIX: Denormalizing CLOSE values before target calculation...")
+        close_train = denormalize_close(close_train_normalized, config)
+        close_val = denormalize_close(close_val_normalized, config)
+        close_test = denormalize_close(close_test_normalized, config)
+        
+        print(f"Denormalized CLOSE stats:")
+        print(f"  Train: mean={close_train.mean():.6f}, std={close_train.std():.6f}, range=[{close_train.min():.6f}, {close_train.max():.6f}]")
+        print(f"  Val: mean={close_val.mean():.6f}, std={close_val.std():.6f}, range=[{close_val.min():.6f}, {close_val.max():.6f}]")
+        print(f"  Test: mean={close_test.mean():.6f}, std={close_test.std():.6f}, range=[{close_test.min():.6f}, {close_test.max():.6f}]")
         
         # Remove target column from features
         feature_columns = [col for col in x_train_df.columns if col != target_column]
