@@ -89,7 +89,7 @@ class Phase26PipelinePlugin:
         "uncertainties_file": "test_uncertainties.csv", "model_plot_file": "model_plot.png",
         "predictions_plot_file": "predictions_plot.png", "results_file": "results.csv",
         "plot_points": 480, "plotted_horizon": 6, "use_strategy": False,
-        "predicted_horizons": [1, 6, 12, 24], "use_returns": True, "normalize_features": True,
+        "predicted_horizons": [1, 6, 12, 24], # REMOVED: use_returns - always use returns, "normalize_features": True,
         "window_size": 48, "target_column": "CLOSE", "use_normalization_json": None,
         "mc_samples": 100,
     }
@@ -143,9 +143,10 @@ class Phase26PipelinePlugin:
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
         
-        use_returns = config.get("use_returns", False)
-        if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None):
-            raise ValueError("Baselines required when use_returns=True.")
+        # USER REQUIREMENTS: Always use returns (CLOSE[t+horizon] - CLOSE[t])
+        use_returns = True  # Always True per user requirements
+        if baseline_train is None or baseline_val is None or baseline_test is None:
+            raise ValueError("Baselines required for return calculation.")
 
         # Config Validation & Setup
         plotted_horizon = config.get('plotted_horizon')
