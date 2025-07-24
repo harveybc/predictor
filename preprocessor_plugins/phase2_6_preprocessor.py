@@ -246,24 +246,47 @@ class PreprocessorPlugin:
         y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"))
         y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"))
 
-        # --- 2. Add close_logreturn Column ---
-        print("\n--- 2. Adding close_logreturn Column ---")
+        # --- 2. Add close_logreturn Column (CRITICAL FIX) ---
+        print("\n--- 2. Adding close_logreturn Column (CRITICAL FIX) ---")
         target_column = config["target_column"]
         
-        # Calculate log returns for CLOSE: log(CLOSE[t] / CLOSE[t-1]) = log(CLOSE[t]) - log(CLOSE[t-1])
-        x_train_df['close_logreturn'] = np.log(x_train_df[target_column]).diff()
-        x_val_df['close_logreturn'] = np.log(x_val_df[target_column]).diff()
-        x_test_df['close_logreturn'] = np.log(x_test_df[target_column]).diff()
+        # CRITICAL FIX: Calculate log returns from DENORMALIZED CLOSE to match STL phase
+        # This ensures feature and target are in the same domain
+        print("CRITICAL FIX: Calculating close_logreturn from denormalized CLOSE (matching STL phase)...")
         
-        # Fill NaN values (first row) with 0
-        x_train_df['close_logreturn'].fillna(0, inplace=True)
-        x_val_df['close_logreturn'].fillna(0, inplace=True)
-        x_test_df['close_logreturn'].fillna(0, inplace=True)
+        # First denormalize CLOSE for all datasets
+        close_train_denorm = denormalize_close(x_train_df[target_column].values, config)
+        close_val_denorm = denormalize_close(x_val_df[target_column].values, config)
+        close_test_denorm = denormalize_close(x_test_df[target_column].values, config)
         
-        print(f"Added close_logreturn column to all datasets")
-        print(f"Train close_logreturn stats: mean={x_train_df['close_logreturn'].mean():.6f}, std={x_train_df['close_logreturn'].std():.6f}")
-        print(f"Val close_logreturn stats: mean={x_val_df['close_logreturn'].mean():.6f}, std={x_val_df['close_logreturn'].std():.6f}")
-        print(f"Test close_logreturn stats: mean={x_test_df['close_logreturn'].mean():.6f}, std={x_test_df['close_logreturn'].std():.6f}")
+        # Calculate log returns from denormalized CLOSE: log(CLOSE[t] / CLOSE[t-1])
+        # Using np.diff(np.log(close), prepend=log_close[0]) to match STL exactly
+        log_close_train = np.log(close_train_denorm)
+        log_close_val = np.log(close_val_denorm)
+        log_close_test = np.log(close_test_denorm)
+        
+        log_ret_train = np.diff(log_close_train, prepend=log_close_train[0])
+        log_ret_val = np.diff(log_close_val, prepend=log_close_val[0])
+        log_ret_test = np.diff(log_close_test, prepend=log_close_test[0])
+        
+        # Normalize log returns to match other z-score normalized features
+        # Use same normalization as other features (z-score)
+        log_ret_mean = log_ret_train.mean()
+        log_ret_std = log_ret_train.std()
+        
+        close_logreturn_train = (log_ret_train - log_ret_mean) / log_ret_std
+        close_logreturn_val = (log_ret_val - log_ret_mean) / log_ret_std
+        close_logreturn_test = (log_ret_test - log_ret_mean) / log_ret_std
+        
+        # Add normalized close_logreturn to dataframes
+        x_train_df['close_logreturn'] = close_logreturn_train.astype(np.float32)
+        x_val_df['close_logreturn'] = close_logreturn_val.astype(np.float32)
+        x_test_df['close_logreturn'] = close_logreturn_test.astype(np.float32)
+        
+        print(f"FIXED: close_logreturn calculated from denormalized CLOSE and normalized")
+        print(f"Train close_logreturn stats: mean={close_logreturn_train.mean():.6f}, std={close_logreturn_train.std():.6f}")
+        print(f"Val close_logreturn stats: mean={close_logreturn_val.mean():.6f}, std={close_logreturn_val.std():.6f}")
+        print(f"Test close_logreturn stats: mean={close_logreturn_test.mean():.6f}, std={close_logreturn_test.std():.6f}")
 
 
 
@@ -296,8 +319,28 @@ class PreprocessorPlugin:
         print(f"  Val: mean={close_val.mean():.6f}, std={close_val.std():.6f}, range=[{close_val.min():.6f}, {close_val.max():.6f}]")
         print(f"  Test: mean={close_test.mean():.6f}, std={close_test.std():.6f}, range=[{close_test.min():.6f}, {close_test.max():.6f}]")
         
-        # Remove target column from features
-        feature_columns = [col for col in x_train_df.columns if col != target_column]
+        # Remove target column from features and enforce STL-compatible ordering
+        all_feature_columns = [col for col in x_train_df.columns if col != target_column]
+        
+        # CRITICAL FIX: Enforce STL-compatible feature ordering
+        # In STL: log_return is ALWAYS FIRST, then other features alphabetically
+        feature_columns = []
+        
+        # 1. close_logreturn MUST be first (equivalent to log_return in STL)
+        if 'close_logreturn' in all_feature_columns:
+            feature_columns.append('close_logreturn')
+            remaining_features = [col for col in all_feature_columns if col != 'close_logreturn']
+        else:
+            raise ValueError("close_logreturn not found in features after creation!")
+        
+        # 2. Sort remaining features alphabetically (like STL does with original columns)
+        remaining_features.sort()
+        feature_columns.extend(remaining_features)
+        
+        print(f"FIXED: STL-compatible feature ordering:")
+        print(f"  1. close_logreturn (first, like log_return in STL)")
+        print(f"  2. Remaining features alphabetically: {remaining_features[:5]}{'...' if len(remaining_features) > 5 else ''}")
+        print(f"  Total features: {len(feature_columns)}")
         
         # Extract features (already preprocessed and normalized)
         features_train = x_train_df[feature_columns].astype(np.float32).values

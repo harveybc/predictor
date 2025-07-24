@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+"""
+FINAL DIAGNOSIS: Exact Feature Mapping Between Phases
+"""
+
+def final_feature_comparison():
+    print("="*70)
+    print("FINAL FEATURE COMPARISON: Phase 2.6 vs Phase 3.1")
+    print("="*70)
+    
+    print("\n🔍 PHASE 2.6 MODEL INPUTS (After our fixes):")
+    print("   Window Shape: (samples, window_size, num_features)")
+    print("   Features in sliding windows (in order):")
+    print("   1. close_logreturn (FIRST - now calculated from denormalized CLOSE)")
+    print("   2. CLOSE_mtm_band_1_0.000_0.010")
+    print("   3. CLOSE_mtm_band_2_0.010_0.060") 
+    print("   4. CLOSE_mtm_band_3_0.060_0.200")
+    print("   5. CLOSE_mtm_band_4_0.200_0.500")
+    print("   6. CLOSE_stl_resid")
+    print("   7. CLOSE_stl_seasonal")
+    print("   8. CLOSE_stl_trend")
+    print("   9. CLOSE_wav_approx_L2")
+    print("   10. CLOSE_wav_detail_L1")
+    print("   11. CLOSE_wav_detail_L2")
+    print("   12. EMA")
+    print("   13. HIGH")
+    print("   14. LOW") 
+    print("   15. MACD")
+    print("   16. MACD_Histogram")
+    print("   17. MACD_Signal")
+    print("   18. OPEN")
+    print("   19. RSI")
+    print("   TOTAL: 19 features")
+    
+    print("\n🔍 PHASE 3.1 (STL) MODEL INPUTS:")
+    print("   Window Shape: (samples, window_size, num_features)")
+    print("   Features in sliding windows (in order):")
+    print("   1. log_return (FIRST - calculated from raw CLOSE)")
+    print("   2. stl_trend")
+    print("   3. stl_seasonal") 
+    print("   4. stl_resid")
+    print("   5. wav_detail_L1")
+    print("   6. wav_detail_L2")
+    print("   7. wav_approx_L2")
+    print("   8. mtm_band_1")
+    print("   9. mtm_band_2")
+    print("   10. mtm_band_3")
+    print("   11. mtm_band_4")
+    print("   12. [Original columns alphabetically - could include OHLC, indicators]")
+    print("   TOTAL: Variable (depends on original columns)")
+    
+    print("\n🔍 KEY DIFFERENCES:")
+    print("   ✅ FIXED: close_logreturn now calculated from denormalized CLOSE")
+    print("   ✅ FIXED: close_logreturn is now FIRST feature")
+    print("   ❌ ISSUE: Feature names are different (CLOSE_ prefix vs no prefix)")
+    print("   ❌ ISSUE: Feature count likely different")
+    print("   ❌ ISSUE: Original columns (OHLC) are explicitly included in 2.6")
+    
+    print("\n🎯 REMAINING PROBLEMS:")
+    print("   1. STL expects: 'stl_trend' but 2.6 has: 'CLOSE_stl_trend'")
+    print("   2. STL expects: 'wav_detail_L1' but 2.6 has: 'CLOSE_wav_detail_L1'")
+    print("   3. STL expects: 'mtm_band_1' but 2.6 has: 'CLOSE_mtm_band_1_0.000_0.010'")
+    print("   4. 2.6 includes OHLC columns, STL might not")
+    
+    print("\n💡 SOLUTION:")
+    print("   Option A: Rename features in CSV preprocessing to match STL names")
+    print("   Option B: Retrain model with 2.6 feature names (recommended)")
+    print("   Option C: Map features dynamically in preprocessor")
+
+if __name__ == "__main__":
+    final_feature_comparison()
