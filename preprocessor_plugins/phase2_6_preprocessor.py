@@ -343,16 +343,98 @@ class PreprocessorPlugin:
         if 'close_logreturn' in all_feature_columns:
             old_log_features_removed.append('close_logreturn')
         
-        # 2. Sort remaining features alphabetically (like STL does with original columns)
-        remaining_features.sort()
-        feature_columns.extend(remaining_features)
+        # 2. Sort remaining features by correlation for Conv1D optimization
+        print("Calculating feature correlations for Conv1D-optimized ordering...")
         
-        print(f"FIXED: STL-compatible feature ordering:")
-        print(f"  1. log_return (first, calculated using exact STL method)")
+        # Extract remaining feature data for correlation calculation
+        remaining_feature_data = x_train_df[remaining_features].astype(np.float32)
+        log_return_data = x_train_df['log_return'].astype(np.float32)
+        
+        # Calculate correlation matrix for remaining features
+        corr_matrix = remaining_feature_data.corr().abs()  # Use absolute correlation
+        
+        # Calculate correlation of each feature with log_return
+        log_return_corr = remaining_feature_data.corrwith(log_return_data).abs()
+        
+        # Conv1D-optimized ordering: Start with features most correlated to log_return
+        # Then arrange others by hierarchical clustering based on correlation
+        print("Applying Conv1D-optimized feature ordering...")
+        
+        # Sort features by correlation with log_return (descending)
+        sorted_by_log_corr = log_return_corr.sort_values(ascending=False)
+        
+        # Use hierarchical clustering to group correlated features together
+        try:
+            from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
+            from scipy.spatial.distance import squareform
+            
+            # Convert correlation to distance matrix (1 - correlation)
+            distance_matrix = 1 - corr_matrix.values
+            np.fill_diagonal(distance_matrix, 0)  # Distance to self is 0
+            
+            # Perform hierarchical clustering
+            condensed_distances = squareform(distance_matrix)
+            linkage_matrix = linkage(condensed_distances, method='ward')
+            
+            # Get optimal number of clusters (or use a reasonable default)
+            n_clusters = min(10, len(remaining_features) // 3 + 1)
+            clusters = fcluster(linkage_matrix, n_clusters, criterion='maxclust')
+            
+            clustering_available = True
+        except ImportError:
+            print("WARN: scipy not available, using correlation-based ordering without clustering")
+            clustering_available = False
+            clusters = [1] * len(remaining_features)  # All features in one cluster
+            n_clusters = 1
+        
+        # Create cluster-based ordering
+        clustered_features = []
+        cluster_dict = {}
+        
+        # Group features by cluster
+        for i, feature in enumerate(remaining_features):
+            cluster_id = clusters[i]
+            if cluster_id not in cluster_dict:
+                cluster_dict[cluster_id] = []
+            cluster_dict[cluster_id].append((feature, log_return_corr[feature]))
+        
+        # Sort clusters by average correlation with log_return
+        cluster_avg_corr = {}
+        for cluster_id, features_in_cluster in cluster_dict.items():
+            avg_corr = np.mean([corr for _, corr in features_in_cluster])
+            cluster_avg_corr[cluster_id] = avg_corr
+        
+        # Sort clusters by average correlation (descending)
+        sorted_clusters = sorted(cluster_avg_corr.items(), key=lambda x: x[1], reverse=True)
+        
+        # Build final feature order: within each cluster, sort by log_return correlation
+        conv1d_ordered_features = []
+        for cluster_id, _ in sorted_clusters:
+            cluster_features = cluster_dict[cluster_id]
+            # Sort features within cluster by log_return correlation (descending)
+            cluster_features.sort(key=lambda x: x[1], reverse=True)
+            conv1d_ordered_features.extend([feat for feat, _ in cluster_features])
+        
+        # Final feature ordering: log_return first, then Conv1D-optimized remaining features
+        feature_columns.extend(conv1d_ordered_features)
+        
+        print(f"CONV1D-OPTIMIZED: Feature ordering for spatial pattern detection:")
+        print(f"  1. log_return (first, anchor feature)")
         if old_log_features_removed:
             print(f"  REMOVED old log return features: {old_log_features_removed}")
-        print(f"  2. Remaining features alphabetically: {remaining_features[:5]}{'...' if len(remaining_features) > 5 else ''}")
+        if clustering_available:
+            print(f"  2. Remaining features grouped by correlation clusters ({n_clusters} clusters)")
+            print(f"  3. Within clusters: sorted by correlation with log_return")
+        else:
+            print(f"  2. Remaining features sorted by correlation with log_return (no clustering)")
+        print(f"  4. First 5 features after log_return: {conv1d_ordered_features[:5]}")
         print(f"  Total features: {len(feature_columns)}")
+        
+        # Print correlation info for verification
+        print(f"Feature correlation analysis:")
+        print(f"  Highest log_return correlation: {sorted_by_log_corr.iloc[0]:.4f} ({sorted_by_log_corr.index[0]})")
+        print(f"  Lowest log_return correlation: {sorted_by_log_corr.iloc[-1]:.4f} ({sorted_by_log_corr.index[-1]})")
+        print(f"  Average correlation with log_return: {log_return_corr.mean():.4f}")
         
         # CRITICAL: Ensure CLOSE column is definitively excluded from sliding windows
         # Debug: Check if CLOSE is somehow still in feature_columns
@@ -416,14 +498,20 @@ class PreprocessorPlugin:
         print(f"Feature columns: {feature_columns}")
         
         # DEBUG: Print each and every feature name that will be fed to the model
-        print(f"\nDEBUG: Complete list of features fed to model in sliding windows ({len(feature_columns)} features):")
+        print(f"\nDEBUG: Complete list of Conv1D-optimized features ({len(feature_columns)} features):")
         for i, feature_name in enumerate(feature_columns):
-            print(f"  Feature {i+1:2d}: {feature_name}")
+            correlation_info = ""
+            if feature_name == 'log_return':
+                correlation_info = " (anchor feature)"
+            elif feature_name in log_return_corr.index:
+                correlation_info = f" (corr with log_return: {log_return_corr[feature_name]:.4f})"
+            print(f"  Feature {i+1:2d}: {feature_name}{correlation_info}")
         print(f"DEBUG: Total features in sliding windows: {len(feature_columns)}")
         if X_train_combined.shape[2] != len(feature_columns):
             print(f"ERROR: Mismatch between feature_columns length ({len(feature_columns)}) and sliding window features ({X_train_combined.shape[2]})")
         else:
             print(f"VERIFIED: Sliding window feature count matches feature_columns list")
+            print(f"VERIFIED: Features ordered for Conv1D spatial pattern detection")
         
         # --- 5. Baseline and Target Calculation (USER REQUIREMENTS) ---
         print("\n--- 5. Calculating Baselines and Targets (USER REQUIREMENTS) ---")
