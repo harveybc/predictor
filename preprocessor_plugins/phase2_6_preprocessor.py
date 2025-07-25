@@ -18,6 +18,8 @@ import numpy as np
 import pandas as pd
 import os
 import json
+import traceback
+from sklearn.preprocessing import StandardScaler
 
 # Assuming load_csv is correctly imported
 try:
@@ -246,47 +248,48 @@ class PreprocessorPlugin:
         y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"))
         y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"))
 
-        # --- 2. Add close_logreturn Column (CRITICAL FIX) ---
-        print("\n--- 2. Adding close_logreturn Column (CRITICAL FIX) ---")
+        # --- 2. Calculate log_return Feature (Exact STL Method) ---
+        print("\n--- 2. Calculate log_return Feature (Exact STL Method) ---")
         target_column = config["target_column"]
         
-        # CRITICAL FIX: Calculate log returns from DENORMALIZED CLOSE to match STL phase
-        # This ensures feature and target are in the same domain
-        print("CRITICAL FIX: Calculating close_logreturn from denormalized CLOSE (matching STL phase)...")
+        # Extract CLOSE values and denormalize them first
+        print("Extracting and denormalizing CLOSE values for log return calculation...")
+        close_train_normalized = x_train_df[target_column].values.astype(np.float32)
+        close_val_normalized = x_val_df[target_column].values.astype(np.float32)
+        close_test_normalized = x_test_df[target_column].values.astype(np.float32)
         
-        # First denormalize CLOSE for all datasets
-        close_train_denorm = denormalize_close(x_train_df[target_column].values, config)
-        close_val_denorm = denormalize_close(x_val_df[target_column].values, config)
-        close_test_denorm = denormalize_close(x_test_df[target_column].values, config)
+        # Denormalize CLOSE values to get actual prices
+        close_train = denormalize_close(close_train_normalized, config)
+        close_val = denormalize_close(close_val_normalized, config)
+        close_test = denormalize_close(close_test_normalized, config)
         
-        # Calculate log returns from denormalized CLOSE: log(CLOSE[t] / CLOSE[t-1])
-        # Using np.diff(np.log(close), prepend=log_close[0]) to match STL exactly
-        log_close_train = np.log(close_train_denorm)
-        log_close_val = np.log(close_val_denorm)
-        log_close_test = np.log(close_test_denorm)
+        # EXACT STL METHOD: Apply log transform with safety (matching STL exactly)
+        log_train = np.log1p(np.maximum(0, close_train))
+        log_val = np.log1p(np.maximum(0, close_val))
+        log_test = np.log1p(np.maximum(0, close_test))
+        print(f"Log transform applied. Train shape: {log_train.shape}")
         
-        log_ret_train = np.diff(log_close_train, prepend=log_close_train[0])
-        log_ret_val = np.diff(log_close_val, prepend=log_close_val[0])
-        log_ret_test = np.diff(log_close_test, prepend=log_close_test[0])
+        # EXACT STL METHOD: Calculate log returns (matching STL exactly)
+        log_ret_train = np.diff(log_train, prepend=log_train[0])
+        log_ret_val = np.diff(log_val, prepend=log_val[0])
+        log_ret_test = np.diff(log_test, prepend=log_test[0])
         
-        # Normalize log returns to match other z-score normalized features
-        # Use same normalization as other features (z-score)
-        log_ret_mean = log_ret_train.mean()
-        log_ret_std = log_ret_train.std()
+        # EXACT STL METHOD: Normalize using StandardScaler (matching STL exactly)
+        # Fit scaler on training data
+        scaler = StandardScaler()
+        log_ret_train_normalized = scaler.fit_transform(log_ret_train.reshape(-1, 1)).flatten().astype(np.float32)
+        log_ret_val_normalized = scaler.transform(log_ret_val.reshape(-1, 1)).flatten().astype(np.float32)
+        log_ret_test_normalized = scaler.transform(log_ret_test.reshape(-1, 1)).flatten().astype(np.float32)
         
-        close_logreturn_train = (log_ret_train - log_ret_mean) / log_ret_std
-        close_logreturn_val = (log_ret_val - log_ret_mean) / log_ret_std
-        close_logreturn_test = (log_ret_test - log_ret_mean) / log_ret_std
+        # Add normalized log_return to dataframes (using STL naming convention)
+        x_train_df['log_return'] = log_ret_train_normalized
+        x_val_df['log_return'] = log_ret_val_normalized
+        x_test_df['log_return'] = log_ret_test_normalized
         
-        # Add normalized close_logreturn to dataframes
-        x_train_df['close_logreturn'] = close_logreturn_train.astype(np.float32)
-        x_val_df['close_logreturn'] = close_logreturn_val.astype(np.float32)
-        x_test_df['close_logreturn'] = close_logreturn_test.astype(np.float32)
-        
-        print(f"FIXED: close_logreturn calculated from denormalized CLOSE and normalized")
-        print(f"Train close_logreturn stats: mean={close_logreturn_train.mean():.6f}, std={close_logreturn_train.std():.6f}")
-        print(f"Val close_logreturn stats: mean={close_logreturn_val.mean():.6f}, std={close_logreturn_val.std():.6f}")
-        print(f"Test close_logreturn stats: mean={close_logreturn_test.mean():.6f}, std={close_logreturn_test.std():.6f}")
+        print(f"STL METHOD: log_return calculated and normalized using StandardScaler")
+        print(f"Train log_return stats: mean={log_ret_train_normalized.mean():.6f}, std={log_ret_train_normalized.std():.6f}")
+        print(f"Val log_return stats: mean={log_ret_val_normalized.mean():.6f}, std={log_ret_val_normalized.std():.6f}")
+        print(f"Test log_return stats: mean={log_ret_test_normalized.mean():.6f}, std={log_ret_test_normalized.std():.6f}")
 
 
 
@@ -322,26 +325,45 @@ class PreprocessorPlugin:
         # Remove target column from features and enforce STL-compatible ordering
         all_feature_columns = [col for col in x_train_df.columns if col != target_column]
         
-        # CRITICAL FIX: Enforce STL-compatible feature ordering
-        # In STL: log_return is ALWAYS FIRST, then other features alphabetically
+        # CRITICAL FIX: Remove old log return features and enforce STL-compatible feature ordering
+        # Remove both 'logreturn' (from CSV) and 'close_logreturn' (old calculated) if they exist
         feature_columns = []
         
-        # 1. close_logreturn MUST be first (equivalent to log_return in STL)
-        if 'close_logreturn' in all_feature_columns:
-            feature_columns.append('close_logreturn')
-            remaining_features = [col for col in all_feature_columns if col != 'close_logreturn']
+        # 1. log_return MUST be first (calculated using exact STL method)
+        if 'log_return' in all_feature_columns:
+            feature_columns.append('log_return')
+            remaining_features = [col for col in all_feature_columns if col not in ['log_return', 'logreturn', 'close_logreturn']]
         else:
-            raise ValueError("close_logreturn not found in features after creation!")
+            raise ValueError("log_return not found in features after STL calculation!")
+        
+        # Remove old log return features if they exist
+        old_log_features_removed = []
+        if 'logreturn' in all_feature_columns:
+            old_log_features_removed.append('logreturn')
+        if 'close_logreturn' in all_feature_columns:
+            old_log_features_removed.append('close_logreturn')
         
         # 2. Sort remaining features alphabetically (like STL does with original columns)
         remaining_features.sort()
         feature_columns.extend(remaining_features)
         
         print(f"FIXED: STL-compatible feature ordering:")
-        print(f"  1. close_logreturn (first, like log_return in STL)")
+        print(f"  1. log_return (first, calculated using exact STL method)")
+        if old_log_features_removed:
+            print(f"  REMOVED old log return features: {old_log_features_removed}")
         print(f"  2. Remaining features alphabetically: {remaining_features[:5]}{'...' if len(remaining_features) > 5 else ''}")
         print(f"  Total features: {len(feature_columns)}")
         
+        # CRITICAL: Ensure CLOSE column is definitively excluded from sliding windows
+        # Debug: Check if CLOSE is somehow still in feature_columns
+        print(f"DEBUG: Before CLOSE removal - feature_columns contains CLOSE: {target_column in feature_columns}")
+        print(f"DEBUG: feature_columns length before CLOSE removal: {len(feature_columns)}")
+        if target_column in feature_columns:
+            feature_columns.remove(target_column)
+            print(f"REMOVED: {target_column} column excluded from sliding windows to reduce features from 55 to 54")
+        print(f"DEBUG: After CLOSE removal - feature_columns contains CLOSE: {target_column in feature_columns}")
+        print(f"DEBUG: feature_columns length after CLOSE removal: {len(feature_columns)}")
+         
         # Extract features (already preprocessed and normalized)
         features_train = x_train_df[feature_columns].astype(np.float32).values
         features_val = x_val_df[feature_columns].astype(np.float32).values  
@@ -351,17 +373,25 @@ class PreprocessorPlugin:
         print(f"Feature columns: {feature_columns}")
         print(f"Data shapes - Train: {features_train.shape}, Val: {features_val.shape}, Test: {features_test.shape}")
         print(f"CLOSE shapes - Train: {close_train.shape}, Val: {close_val.shape}, Test: {close_test.shape}")
-        
-        # Verify close_logreturn is in features and CLOSE is not
-        has_close_logreturn = 'close_logreturn' in feature_columns
+    
+        # Verify log_return is in features and CLOSE is not
+        has_log_return = 'log_return' in feature_columns
         has_close = target_column in feature_columns
+        has_old_logreturn = 'logreturn' in feature_columns
+        has_old_close_logreturn = 'close_logreturn' in feature_columns
         print(f"USER REQUIREMENTS VERIFIED:")
         print(f"  - CLOSE column removed from features: {not has_close}")
-        print(f"  - close_logreturn included in features: {has_close_logreturn}")
-        if not has_close_logreturn:
-            raise ValueError("close_logreturn column not found in features!")
+        print(f"  - log_return included in features (STL method): {has_log_return}")
+        print(f"  - Old 'logreturn' removed from features: {not has_old_logreturn}")
+        print(f"  - Old 'close_logreturn' removed from features: {not has_old_close_logreturn}")
+        if not has_log_return:
+            raise ValueError("log_return column not found in features!")
         if has_close:
             raise ValueError(f"Target column '{target_column}' should not be in features!")
+        if has_old_logreturn:
+            raise ValueError("Old 'logreturn' column should be removed from features!")
+        if has_old_close_logreturn:
+            raise ValueError("Old 'close_logreturn' column should be removed from features!")
 
         # --- 4. Create Sliding Windows (USER REQUIREMENTS) ---
         print("\n--- 4. Creating Sliding Windows (USER REQUIREMENTS) ---")
@@ -384,6 +414,16 @@ class PreprocessorPlugin:
         
         print(f"Final X shapes: Train={X_train_combined.shape}, Val={X_val_combined.shape}, Test={X_test_combined.shape}")
         print(f"Feature columns: {feature_columns}")
+        
+        # DEBUG: Print each and every feature name that will be fed to the model
+        print(f"\nDEBUG: Complete list of features fed to model in sliding windows ({len(feature_columns)} features):")
+        for i, feature_name in enumerate(feature_columns):
+            print(f"  Feature {i+1:2d}: {feature_name}")
+        print(f"DEBUG: Total features in sliding windows: {len(feature_columns)}")
+        if X_train_combined.shape[2] != len(feature_columns):
+            print(f"ERROR: Mismatch between feature_columns length ({len(feature_columns)}) and sliding window features ({X_train_combined.shape[2]})")
+        else:
+            print(f"VERIFIED: Sliding window feature count matches feature_columns list")
         
         # --- 5. Baseline and Target Calculation (USER REQUIREMENTS) ---
         print("\n--- 5. Calculating Baselines and Targets (USER REQUIREMENTS) ---")
