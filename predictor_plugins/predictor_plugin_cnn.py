@@ -447,14 +447,7 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        merged = Conv1D(
-            filters=merged_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation='linear',  # Use linear activation for initial Conv1D
-            name="conv_merged_features_0"
-        )(inputs)
+        merged = inputs
         
         merged = Conv1D(
             filters=merged_units,
