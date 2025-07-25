@@ -87,6 +87,7 @@ DEFAULT_VALUES = {
     "target_scaling_factor":1000,
     "optimizer_output_file": "optimizer_output.json",
     "penalty_close_lambda":0.0001, # penalty in thel loss function for the predicted value being 0 (Naive)
-    "penalty_far_lambda":0.0001    # penalty in thel loss function for the predicted value being far from the target value in the opposite dicection of the 0 (Naive)
+    "penalty_far_lambda":0.0001,    # penalty in thel loss function for the predicted value being far from the target value in the opposite dicection of the 0 (Naive)
+    "exclude_features": []         # List of feature names to exclude from preprocessing
 
 }

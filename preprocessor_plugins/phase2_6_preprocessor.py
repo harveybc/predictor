@@ -80,7 +80,7 @@ class PreprocessorPlugin:
     
     plugin_debug_vars = [
         "window_size", "predicted_horizons", "normalize_features",
-        "use_preprocessed_data", "expected_feature_count", "target_column"
+        "use_preprocessed_data", "expected_feature_count", "target_column", "exclude_features"
     ]
 
     def __init__(self):
@@ -324,6 +324,19 @@ class PreprocessorPlugin:
         
         # Remove target column from features and enforce STL-compatible ordering
         all_feature_columns = [col for col in x_train_df.columns if col != target_column]
+        
+        # Apply feature exclusion from global config
+        exclude_features = config.get('exclude_features', [])
+        if exclude_features:
+            print(f"Excluding features from config: {exclude_features}")
+            excluded_features = [col for col in all_feature_columns if col in exclude_features]
+            all_feature_columns = [col for col in all_feature_columns if col not in exclude_features]
+            if excluded_features:
+                print(f"Features excluded: {excluded_features}")
+                # Remove excluded features from dataframes
+                x_train_df = x_train_df.drop(columns=excluded_features, errors='ignore')
+                x_val_df = x_val_df.drop(columns=excluded_features, errors='ignore')
+                x_test_df = x_test_df.drop(columns=excluded_features, errors='ignore')
         
         # CRITICAL FIX: Remove old log return features and enforce STL-compatible feature ordering
         # Remove both 'logreturn' (from CSV) and 'close_logreturn' (old calculated) if they exist
