@@ -106,7 +106,7 @@ class Phase26PipelinePlugin:
         "loss_plot_file": "loss_plot.png", "output_file": "test_predictions.csv",
         "uncertainties_file": "test_uncertainties.csv", "model_plot_file": "model_plot.png",
         "predictions_plot_file": "predictions_plot.png", "results_file": "results.csv",
-        "plot_points": 480, "plotted_horizon": 6, "use_strategy": False,
+        "plot_points": 480, "plotted_horizon": 6,
         "predicted_horizons": [1, 6, 12, 24], # REMOVED: use_returns - always use returns, "normalize_features": True,
         "window_size": 48, "target_column": "CLOSE", "use_normalization_json": None,
         "mc_samples": 100,

@@ -18,15 +18,7 @@ import numpy as np
 import pandas as pd
 import os
 import json
-import traceback
 from sklearn.preprocessing import StandardScaler
-
-# Assuming load_csv is correctly imported
-try:
-    from app.data_handler import load_csv
-except ImportError:
-    print("CRITICAL ERROR: Could not import 'load_csv' from 'app.data_handler'.")
-    raise
 
 
 def denormalize_close(normalized_data, config):
@@ -56,11 +48,8 @@ class PreprocessorPlugin:
     plugin_params = {
         # --- File Paths ---
         "x_train_file": "examples/data/phase_2_6/normalized_d4.csv",
-        "y_train_file": "examples/data/phase_2_6/normalized_d4.csv",
-        "x_validation_file": "examples/data/phase_2_6/normalized_d5.csv",
-        "y_validation_file": "examples/data/phase_2_6/normalized_d5.csv",
+        "x_validation_file": "examples/data/phase_2_6/normalized_d5.csv", 
         "x_test_file": "examples/data/phase_2_6/normalized_d6.csv",
-        "y_test_file": "examples/data/phase_2_6/normalized_d6.csv",
         # --- Data Loading ---
         "headers": True,
         "max_steps_train": None, "max_steps_val": None, "max_steps_test": None,
@@ -68,19 +57,12 @@ class PreprocessorPlugin:
         # --- Windowing & Horizons ---
         "window_size": 288, # Default window size for phase 2.6
         "predicted_horizons": [24, 48, 72, 96, 120, 144], # Multi-horizon support
-        # --- Feature Engineering Flags (legacy - features are already preprocessed) ---
-        # REMOVED: All feature generation flags since features are precomputed
-        # REMOVED: use_returns flag - targets are always calculated as returns (CLOSE[t+horizon] - CLOSE[t])
-        "normalize_features": True, # Keep for compatibility (data is already normalized)
         # --- Phase 2.6 specific parameters ---
-        "use_preprocessed_data": True, # Flag indicating preprocessed data
-        "expected_feature_count": None, # No strict feature count requirement for preprocessed data
         "date_column": "DATE_TIME", # Date column name
     }
     
     plugin_debug_vars = [
-        "window_size", "predicted_horizons", "normalize_features",
-        "use_preprocessed_data", "expected_feature_count", "target_column", "exclude_features"
+        "window_size", "predicted_horizons", "target_column", "exclude_features"
     ]
 
     def __init__(self):
@@ -133,11 +115,9 @@ class PreprocessorPlugin:
             raise
         except Exception as e:
             print(f"\nERROR loading/processing {file_path}: {e}")
-            import traceback
-            traceback.print_exc()
             raise
 
-    def create_sliding_windows(self, data, window_size, time_horizon, date_times=None, max_horizon=1):
+    def create_sliding_windows(self, data, window_size, date_times=None, max_horizon=1):
         """
         Creates sliding windows for feature data with STRICT CAUSALITY per user requirements.
         
@@ -151,7 +131,6 @@ class PreprocessorPlugin:
         Args:
             data: 2D numpy array (n_samples, n_features) or 1D array for single feature
             window_size: Size of the sliding window
-            time_horizon: Not used in this implementation (targets calculated separately)
             date_times: Optional datetime array
             max_horizon: Maximum prediction horizon to ensure enough future data
         """
@@ -163,7 +142,6 @@ class PreprocessorPlugin:
         
         n_samples, n_features = data.shape
         windows = []
-        targets = []
         date_windows = []
         
         # USER REQUIREMENTS: Start from tick window_size (so we have window_size previous ticks)
@@ -178,7 +156,7 @@ class PreprocessorPlugin:
         
         if num_possible_windows <= 0:
              print(f" WARN: Data short ({n_samples}) for window_size={window_size} and max_horizon={max_horizon}. No windows.")
-             return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), np.array(date_windows, dtype=object)
+             return np.array(windows, dtype=np.float32), np.array(date_windows, dtype=object)
              
         for t in range(start_tick, end_tick):
             # USER REQUIREMENTS: Window from [t-window_size : t] (EXCLUDES current tick t)
@@ -192,11 +170,7 @@ class PreprocessorPlugin:
                 print(f" ERROR: Window at tick {t} has size {window.shape[0]}, expected {window_size}")
                 continue
             
-            # Target calculation is ignored here - will be done separately with proper horizon logic
-            target = 0.0  # Placeholder - not used
-            
             windows.append(window)
-            targets.append(target)
             
             if date_times is not None:
                 # PREDICTION TIMESTAMP: Current tick t
@@ -221,7 +195,7 @@ class PreprocessorPlugin:
             date_windows_arr = np.array(date_windows, dtype=object)
             
         print(f" Done ({len(windows)} windows, prediction timestamps from tick {start_tick} to {end_tick-1}).")
-        return windows, np.array(targets, dtype=np.float32), date_windows_arr
+        return windows, date_windows_arr
 
 
     def process_data(self, config):
@@ -244,9 +218,6 @@ class PreprocessorPlugin:
         x_train_df = self._load_data(config["x_train_file"], config.get("max_steps_train"), config.get("headers"))
         x_val_df = self._load_data(config["x_validation_file"], config.get("max_steps_val"), config.get("headers"))
         x_test_df = self._load_data(config["x_test_file"], config.get("max_steps_test"), config.get("headers"))
-        y_train_df = self._load_data(config["y_train_file"], config.get("max_steps_train"), config.get("headers"))
-        y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"))
-        y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"))
 
         # --- 2. Calculate log_return Feature (Exact STL Method) ---
         print("\n--- 2. Calculate log_return Feature (Exact STL Method) ---")
@@ -384,7 +355,7 @@ class PreprocessorPlugin:
             
             # Calculate correlation matrix for remaining features
             corr_matrix = remaining_feature_data.corr().abs()  # Use absolute correlation
-        if remaining_features:
+            
             # Conv1D-optimized ordering: Start with features most correlated to reference feature
             # Then arrange others by hierarchical clustering based on correlation
             print("Applying Conv1D-optimized feature ordering...")
@@ -548,8 +519,8 @@ class PreprocessorPlugin:
             correlation_info = ""
             if feature_name == 'log_return':
                 correlation_info = " (anchor feature)"
-            elif feature_name in log_return_corr.index:
-                correlation_info = f" (corr with log_return: {log_return_corr[feature_name]:.4f})"
+            elif 'log_return_corr' in locals() and feature_name in log_return_corr.index:
+                correlation_info = f" (corr with reference: {log_return_corr[feature_name]:.4f})"
             print(f"  Feature {i+1:2d}: {feature_name}{correlation_info}")
         print(f"DEBUG: Total features in sliding windows: {len(feature_columns)}")
         if X_train_combined.shape[2] != len(feature_columns):
