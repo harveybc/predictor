@@ -88,13 +88,5 @@
     "CLOSE_mtm_band_3_0.060_0.200",
     "CLOSE_mtm_band_4_0.200_0.500"
   ],
-  "use_mtm_for_all_features": true,
-  "mtm_features_only": [
-    "OPEN",
-    "LOW",
-    "HIGH",
-    "RSI",
-    "MACD",
-    "EMA"
-  ]
+  "use_mtm_for_all_features": true
 }
