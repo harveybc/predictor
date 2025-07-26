@@ -26,12 +26,14 @@ setup(
         'pipeline.plugins': [
             'default_pipeline=pipeline_plugins.default_pipeline:PipelinePlugin',
             'stl_pipeline=pipeline_plugins.stl_pipeline:STLPipelinePlugin',
+            'stl_pipeline_zscore=pipeline_plugins.stl_pipeline_zscore:STLPipelinePlugin',
             'phase2_6_pipeline=pipeline_plugins.phase2_6_pipeline:Phase26PipelinePlugin'
         ],
         # Plugins para el Preprocesamiento (incluye process_data, ventanas deslizantes y STL)
         'preprocessor.plugins': [
             'default_preprocessor=preprocessor_plugins.default_preprocessor:PreprocessorPlugin',
             'stl_preprocessor=preprocessor_plugins.stl_preprocessor:PreprocessorPlugin',
+            'stl_preprocessor_zscore=preprocessor_plugins.stl_preprocessor_zscore:PreprocessorPlugin',
             'phase2_6_preprocessor=preprocessor_plugins.phase2_6_preprocessor:PreprocessorPlugin'
         ]
     },
