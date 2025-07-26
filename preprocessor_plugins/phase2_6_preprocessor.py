@@ -363,9 +363,8 @@ class PreprocessorPlugin:
         
         # Check if MTM decomposition is enabled
         use_mtm_for_all = config.get('use_mtm_for_all_features', False)
-        mtm_specific_features = config.get('mtm_features_only', [])
         
-        if not use_mtm_for_all and not mtm_specific_features:
+        if not use_mtm_for_all:
             print("MTM decomposition DISABLED - using original features")
             print("This avoids potential current-value bias from frequency analysis")
             
@@ -407,14 +406,8 @@ class PreprocessorPlugin:
                 mtm_feature_columns = all_feature_columns
             
             # Determine which features to apply MTM to
-            if use_mtm_for_all:
-                features_for_mtm = mtm_feature_columns
-                print(f"Applying MTM to ALL {len(features_for_mtm)} features (excluding decomposition features)")
-            else:
-                features_for_mtm = [f for f in mtm_specific_features if f in mtm_feature_columns]
-                features_to_keep = [f for f in mtm_feature_columns if f not in features_for_mtm]
-                print(f"Applying MTM to SPECIFIC {len(features_for_mtm)} features: {features_for_mtm}")
-                print(f"Keeping {len(features_to_keep)} features as-is: {features_to_keep[:5]}...")
+            features_for_mtm = mtm_feature_columns
+            print(f"Applying MTM to ALL {len(features_for_mtm)} features (excluding decomposition features)")
             
             # MTM parameters
             mtm_window_size = config.get('window_size', 288)
@@ -422,106 +415,59 @@ class PreprocessorPlugin:
             
             print(f"MTM Parameters: window_size={mtm_window_size}, components={mtm_components}")
             
-            # Initialize enhanced dataframes
-            if use_mtm_for_all:
-                # Replace all features with MTM components
-                mtm_train_dict = {}
-                mtm_val_dict = {}
-                mtm_test_dict = {}
+            # Apply MTM decomposition to all eligible features
+            mtm_train_dict = {}
+            mtm_val_dict = {}
+            mtm_test_dict = {}
+            
+            # Apply MTM decomposition to each feature
+            for feature_name in features_for_mtm:
+                print(f"  Decomposing feature: {feature_name}...")
                 
-                # Apply MTM decomposition to each feature
-                for feature_name in features_for_mtm:
-                    print(f"  Decomposing feature: {feature_name}...")
-                    
-                    feature_train = x_train_df[feature_name].values.astype(np.float32)
-                    feature_val = x_val_df[feature_name].values.astype(np.float32)
-                    feature_test = x_test_df[feature_name].values.astype(np.float32)
-                    
-                    mtm_train_components = self._apply_causal_mtm_decomposition(
-                        feature_train, mtm_window_size, mtm_components, f"{feature_name}_train")
-                    mtm_val_components = self._apply_causal_mtm_decomposition(
-                        feature_val, mtm_window_size, mtm_components, f"{feature_name}_val")
-                    mtm_test_components = self._apply_causal_mtm_decomposition(
-                        feature_test, mtm_window_size, mtm_components, f"{feature_name}_test")
-                    
-                    for comp_idx in range(mtm_components):
-                        comp_name = f"{feature_name}_mtm_{comp_idx+1}"
-                        mtm_train_dict[comp_name] = mtm_train_components[:, comp_idx]
-                        mtm_val_dict[comp_name] = mtm_val_components[:, comp_idx]
-                        mtm_test_dict[comp_name] = mtm_test_components[:, comp_idx]
+                feature_train = x_train_df[feature_name].values.astype(np.float32)
+                feature_val = x_val_df[feature_name].values.astype(np.float32)
+                feature_test = x_test_df[feature_name].values.astype(np.float32)
                 
-                # Create new dataframes with MTM components
-                train_index = x_train_df.index
-                val_index = x_val_df.index
-                test_index = x_test_df.index
+                mtm_train_components = self._apply_causal_mtm_decomposition(
+                    feature_train, mtm_window_size, mtm_components, f"{feature_name}_train")
+                mtm_val_components = self._apply_causal_mtm_decomposition(
+                    feature_val, mtm_window_size, mtm_components, f"{feature_name}_val")
+                mtm_test_components = self._apply_causal_mtm_decomposition(
+                    feature_test, mtm_window_size, mtm_components, f"{feature_name}_test")
                 
-                x_train_df = pd.DataFrame(mtm_train_dict, index=train_index)
-                x_val_df = pd.DataFrame(mtm_val_dict, index=val_index)
-                x_test_df = pd.DataFrame(mtm_test_dict, index=test_index)
-                
-                # Add target column back
-                x_train_df[target_column] = close_train_normalized
-                x_val_df[target_column] = close_val_normalized
-                x_test_df[target_column] = close_test_normalized
-                
-                all_feature_columns = list(mtm_train_dict.keys())
-                
-                print(f"MTM FULL REPLACEMENT: {len(all_feature_columns)} MTM features created")
-                
-            else:
-                # Hybrid approach: MTM for some features, original for others
-                hybrid_train_dict = {}
-                hybrid_val_dict = {}
-                hybrid_test_dict = {}
-                
-                # Keep non-MTM features as-is
-                for feature_name in features_to_keep:
-                    hybrid_train_dict[feature_name] = x_train_df[feature_name].values
-                    hybrid_val_dict[feature_name] = x_val_df[feature_name].values
-                    hybrid_test_dict[feature_name] = x_test_df[feature_name].values
-                
-                # Apply MTM to specific features
-                for feature_name in features_for_mtm:
-                    print(f"  Decomposing feature: {feature_name}...")
-                    
-                    feature_train = x_train_df[feature_name].values.astype(np.float32)
-                    feature_val = x_val_df[feature_name].values.astype(np.float32)
-                    feature_test = x_test_df[feature_name].values.astype(np.float32)
-                    
-                    mtm_train_components = self._apply_causal_mtm_decomposition(
-                        feature_train, mtm_window_size, mtm_components, f"{feature_name}_train")
-                    mtm_val_components = self._apply_causal_mtm_decomposition(
-                        feature_val, mtm_window_size, mtm_components, f"{feature_name}_val")
-                    mtm_test_components = self._apply_causal_mtm_decomposition(
-                        feature_test, mtm_window_size, mtm_components, f"{feature_name}_test")
-                    
-                    for comp_idx in range(mtm_components):
-                        comp_name = f"{feature_name}_mtm_{comp_idx+1}"
-                        hybrid_train_dict[comp_name] = mtm_train_components[:, comp_idx]
-                        hybrid_val_dict[comp_name] = mtm_val_components[:, comp_idx]
-                        hybrid_test_dict[comp_name] = mtm_test_components[:, comp_idx]
-                
-                # Create hybrid dataframes
-                train_index = x_train_df.index
-                val_index = x_val_df.index
-                test_index = x_test_df.index
-                
-                x_train_df = pd.DataFrame(hybrid_train_dict, index=train_index)
-                x_val_df = pd.DataFrame(hybrid_val_dict, index=val_index)
-                x_test_df = pd.DataFrame(hybrid_test_dict, index=test_index)
-                
-                # Add target column back
-                x_train_df[target_column] = close_train_normalized
-                x_val_df[target_column] = close_val_normalized
-                x_test_df[target_column] = close_test_normalized
-                
-                all_feature_columns = list(hybrid_train_dict.keys())
-                
-                print(f"MTM HYBRID: {len(features_for_mtm)} features -> MTM, {len(features_to_keep)} kept original")
-                print(f"Total features: {len(all_feature_columns)}")
-
-
-        # --- 3. Extract Target Column and Create Features ---
+                for comp_idx in range(mtm_components):
+                    comp_name = f"{feature_name}_mtm_{comp_idx+1}"
+                    mtm_train_dict[comp_name] = mtm_train_components[:, comp_idx]
+                    mtm_val_dict[comp_name] = mtm_val_components[:, comp_idx]
+                    mtm_test_dict[comp_name] = mtm_test_components[:, comp_idx]
+            
+            # Add excluded features back (the ones we preserved without MTM)
+            exclude_from_mtm = config.get('exclude_from_mtm', [])
+            for feature_name in exclude_from_mtm:
+                if feature_name in x_train_df.columns:
+                    mtm_train_dict[feature_name] = x_train_df[feature_name].values
+                    mtm_val_dict[feature_name] = x_val_df[feature_name].values
+                    mtm_test_dict[feature_name] = x_test_df[feature_name].values
+            
+            # Create new dataframes with MTM components + excluded features
+            train_index = x_train_df.index
+            val_index = x_val_df.index
+            test_index = x_test_df.index
+            
+            x_train_df = pd.DataFrame(mtm_train_dict, index=train_index)
+            x_val_df = pd.DataFrame(mtm_val_dict, index=val_index)
+            x_test_df = pd.DataFrame(mtm_test_dict, index=test_index)
+            
+            # Add target column back
+            x_train_df[target_column] = close_train_normalized
+            x_val_df[target_column] = close_val_normalized
+            x_test_df[target_column] = close_test_normalized
+            
+            all_feature_columns = list(mtm_train_dict.keys())
+            
+            print(f"MTM PROCESSING COMPLETE: {len(features_for_mtm)} features decomposed into {len(features_for_mtm)*mtm_components} MTM components")
+            print(f"EXCLUDED FEATURES PRESERVED: {len(exclude_from_mtm)} existing decomposition features kept as-is")
+            print(f"Total features: {len(all_feature_columns)}")
         print("\n--- 3. Extract Target and Organize Features ---")
         target_column = config["target_column"]
         if target_column not in x_train_df.columns:
@@ -691,8 +637,7 @@ class PreprocessorPlugin:
         
         # Check MTM usage
         use_mtm_for_all = config.get('use_mtm_for_all_features', False)
-        mtm_specific_features = config.get('mtm_features_only', [])
-        using_mtm = use_mtm_for_all or len(mtm_specific_features) > 0
+        using_mtm = use_mtm_for_all
         
         # Check if log_return was excluded by user
         log_return_excluded = 'log_return' in config.get('exclude_features', [])
@@ -729,21 +674,8 @@ class PreprocessorPlugin:
         
         # Verification based on configuration
         if using_mtm:
-            if use_mtm_for_all:
-                if not log_return_excluded and not has_log_return_mtm:
-                    raise ValueError("log_return MTM components not found (and not excluded by user)!")
-            else:
-                # Hybrid - check that specified features got MTM treatment
-                expected_mtm_features = [f for f in mtm_specific_features if f not in config.get('exclude_features', [])]
-                actual_mtm_base_features = set()
-                for col in feature_columns:
-                    if '_mtm_' in col:
-                        base_feature = col.split('_mtm_')[0]
-                        actual_mtm_base_features.add(base_feature)
-                
-                for expected_feature in expected_mtm_features:
-                    if expected_feature not in actual_mtm_base_features:
-                        print(f"WARNING: Expected MTM feature '{expected_feature}' not found in results")
+            if not log_return_excluded and not has_log_return_mtm:
+                raise ValueError("log_return MTM components not found (and not excluded by user)!")
         else:
             # Traditional processing
             if not log_return_excluded and not has_log_return_original:
@@ -784,7 +716,7 @@ class PreprocessorPlugin:
         # DEBUG: Print feature information
         print(f"\nDEBUG: Complete feature list ({len(feature_columns)} features):")
         
-        using_mtm = config.get('use_mtm_for_all_features', False) or len(config.get('mtm_features_only', [])) > 0
+        using_mtm = config.get('use_mtm_for_all_features', False)
         
         for i, feature_name in enumerate(feature_columns):
             feature_info = ""

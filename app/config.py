@@ -99,7 +99,5 @@ DEFAULT_VALUES = {
         "CLOSE_mtm_band_1_0.000_0.010", "CLOSE_mtm_band_2_0.010_0.060", 
         "CLOSE_mtm_band_3_0.060_0.200", "CLOSE_mtm_band_4_0.200_0.500"
     ],         # List of feature names to exclude from MTM decomposition only
-    "use_mtm_for_all_features": False,  # Whether to apply MTM decomposition to all features (experimental)
-    "mtm_features_only": [],            # List of specific features to apply MTM decomposition to (if not all)
-
+    "use_mtm_for_all_features": True   # Whether to apply MTM decomposition to all features (experimental)
 }
