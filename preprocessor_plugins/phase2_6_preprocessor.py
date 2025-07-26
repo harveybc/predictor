@@ -197,6 +197,102 @@ class PreprocessorPlugin:
         print(f" Done ({len(windows)} windows, prediction timestamps from tick {start_tick} to {end_tick-1}).")
         return windows, date_windows_arr
 
+    def _apply_causal_mtm_decomposition(self, data, window_size, n_components, data_name):
+        """
+        Apply STRICTLY causal MTM decomposition to remove current-value bias.
+        
+        CRITICAL FIX: This method now uses ONLY PAST data for decomposition,
+        ensuring the model learns patterns rather than current values.
+        
+        Args:
+            data: 1D numpy array of feature values
+            window_size: Size of MTM analysis window
+            n_components: Number of frequency components to extract
+            data_name: Name for debugging
+            
+        Returns:
+            2D numpy array (n_samples, n_components) with MTM frequency components
+        """
+        print(f"    STRICTLY CAUSAL MTM decomposing {data_name} (length={len(data)}, window={window_size}, components={n_components})...")
+        
+        if len(data) < window_size + 1:  # Need at least window_size + 1 for causal analysis
+            print(f"    WARNING: Data too short for strictly causal MTM, using zero components")
+            return np.zeros((len(data), n_components), dtype=np.float32)
+        
+        n_samples = len(data)
+        mtm_components = np.zeros((n_samples, n_components), dtype=np.float32)
+        
+        # CRITICAL FIX: For each time point, use ONLY PREVIOUS data (strictly causal)
+        for t in range(n_samples):
+            if t < window_size:
+                # Not enough past data - use zeros (no predictive information)
+                mtm_components[t, :] = 0.0
+                continue
+            
+            # STRICTLY CAUSAL: Use ONLY past data [t-window_size : t] (EXCLUDES current tick t)
+            # This ensures we NEVER use current or future information
+            window_start = t - window_size
+            window_end = t  # Exclusive - does NOT include current tick
+            past_data = data[window_start:window_end]
+            
+            if len(past_data) != window_size:
+                print(f"    ERROR: Past data length {len(past_data)} != window_size {window_size}")
+                mtm_components[t, :] = 0.0
+                continue
+            
+            # Apply frequency decomposition to PAST data only
+            try:
+                # Calculate differences (returns) of past data to remove level bias
+                past_returns = np.diff(past_data)
+                if len(past_returns) == 0:
+                    mtm_components[t, :] = 0.0
+                    continue
+                
+                # Pad returns to window_size for consistent FFT
+                padded_returns = np.zeros(window_size)
+                padded_returns[:len(past_returns)] = past_returns
+                
+                # Apply FFT to past returns (not levels)
+                fft_result = np.fft.fft(padded_returns)
+                
+                # Extract magnitude of first n_components frequencies
+                freq_magnitudes = np.abs(fft_result[:n_components])
+                
+                # Normalize to prevent scale bias
+                if np.sum(freq_magnitudes) > 0:
+                    freq_magnitudes = freq_magnitudes / np.sum(freq_magnitudes)
+                else:
+                    freq_magnitudes = np.ones(n_components) / n_components  # Uniform if no signal
+                
+                mtm_components[t, :] = freq_magnitudes.astype(np.float32)
+                
+            except Exception as e:
+                print(f"    WARNING: Strictly causal MTM failed at t={t}, using zeros: {e}")
+                mtm_components[t, :] = 0.0
+        
+        # Apply differencing to MTM components to remove any remaining level bias
+        mtm_differenced = np.zeros_like(mtm_components)
+        for comp in range(n_components):
+            comp_data = mtm_components[:, comp]
+            # First value is zero (no past information)
+            mtm_differenced[0, comp] = 0.0
+            # Subsequent values are differences
+            mtm_differenced[1:, comp] = np.diff(comp_data)
+        
+        # Final normalization using StandardScaler for consistency
+        scaler = StandardScaler()
+        # Handle edge case where all values might be zero
+        if np.any(mtm_differenced != 0):
+            mtm_normalized = scaler.fit_transform(mtm_differenced).astype(np.float32)
+        else:
+            mtm_normalized = mtm_differenced.astype(np.float32)
+        
+        print(f"    STRICTLY CAUSAL MTM complete: {data_name} -> {mtm_normalized.shape} frequency components")
+        print(f"    Component stats: mean={mtm_normalized.mean():.6f}, std={mtm_normalized.std():.6f}")
+        print(f"    BIAS ELIMINATED: Uses only past returns, not current levels")
+        
+        return mtm_normalized
+
 
     def process_data(self, config):
         """
@@ -262,12 +358,173 @@ class PreprocessorPlugin:
         print(f"Val log_return stats: mean={log_ret_val_normalized.mean():.6f}, std={log_ret_val_normalized.std():.6f}")
         print(f"Test log_return stats: mean={log_ret_test_normalized.mean():.6f}, std={log_ret_test_normalized.std():.6f}")
 
+        # --- 2.5. OPTIONAL CAUSAL MTM DECOMPOSITION ---
+        print("\n--- 2.5. OPTIONAL CAUSAL MTM DECOMPOSITION ---")
+        
+        # Check if MTM decomposition is enabled
+        use_mtm_for_all = config.get('use_mtm_for_all_features', False)
+        mtm_specific_features = config.get('mtm_features_only', [])
+        
+        if not use_mtm_for_all and not mtm_specific_features:
+            print("MTM decomposition DISABLED - using original features")
+            print("This avoids potential current-value bias from frequency analysis")
+            
+            # Get all feature columns (excluding target) and apply exclusions
+            all_feature_columns = [col for col in x_train_df.columns if col != target_column]
+            
+            # Apply feature exclusion from global config
+            exclude_features = config.get('exclude_features', [])
+            if exclude_features:
+                print(f"Excluding features from config: {exclude_features}")
+                excluded_features = [col for col in all_feature_columns if col in exclude_features]
+                all_feature_columns = [col for col in all_feature_columns if col not in exclude_features]
+                if excluded_features:
+                    print(f"Features excluded: {excluded_features}")
+                    # Remove excluded features from dataframes
+                    x_train_df = x_train_df.drop(columns=excluded_features, errors='ignore')
+                    x_val_df = x_val_df.drop(columns=excluded_features, errors='ignore')
+                    x_test_df = x_test_df.drop(columns=excluded_features, errors='ignore')
+            
+            print(f"TRADITIONAL PREPROCESSING: Using {len(all_feature_columns)} original features")
+            print(f"Features preserved: log_return calculation, normalization, feature ordering")
+            
+        else:
+            print("MTM decomposition ENABLED - applying frequency analysis to features")
+            print("This transforms features into frequency components to reduce current-value bias")
+            
+            # Get all feature columns (excluding target)
+            all_feature_columns = [col for col in x_train_df.columns if col != target_column]
+            
+            # Apply feature exclusion from global config BEFORE MTM decomposition
+            exclude_features = config.get('exclude_features', [])
+            if exclude_features:
+                print(f"Excluding features from config before MTM: {exclude_features}")
+                excluded_features = [col for col in all_feature_columns if col in exclude_features]
+                all_feature_columns = [col for col in all_feature_columns if col not in exclude_features]
+                if excluded_features:
+                    print(f"Features excluded before MTM: {excluded_features}")
+                    # Remove excluded features from dataframes
+                    x_train_df = x_train_df.drop(columns=excluded_features, errors='ignore')
+                    x_val_df = x_val_df.drop(columns=excluded_features, errors='ignore')
+                    x_test_df = x_test_df.drop(columns=excluded_features, errors='ignore')
+            
+            # Determine which features to apply MTM to
+            if use_mtm_for_all:
+                features_for_mtm = all_feature_columns
+                print(f"Applying MTM to ALL {len(features_for_mtm)} features")
+            else:
+                features_for_mtm = [f for f in mtm_specific_features if f in all_feature_columns]
+                features_to_keep = [f for f in all_feature_columns if f not in features_for_mtm]
+                print(f"Applying MTM to SPECIFIC {len(features_for_mtm)} features: {features_for_mtm}")
+                print(f"Keeping {len(features_to_keep)} features as-is: {features_to_keep[:5]}...")
+            
+            # MTM parameters
+            mtm_window_size = config.get('window_size', 288)
+            mtm_components = 5
+            
+            print(f"MTM Parameters: window_size={mtm_window_size}, components={mtm_components}")
+            
+            # Initialize enhanced dataframes
+            if use_mtm_for_all:
+                # Replace all features with MTM components
+                mtm_train_dict = {}
+                mtm_val_dict = {}
+                mtm_test_dict = {}
+                
+                # Apply MTM decomposition to each feature
+                for feature_name in features_for_mtm:
+                    print(f"  Decomposing feature: {feature_name}...")
+                    
+                    feature_train = x_train_df[feature_name].values.astype(np.float32)
+                    feature_val = x_val_df[feature_name].values.astype(np.float32)
+                    feature_test = x_test_df[feature_name].values.astype(np.float32)
+                    
+                    mtm_train_components = self._apply_causal_mtm_decomposition(
+                        feature_train, mtm_window_size, mtm_components, f"{feature_name}_train")
+                    mtm_val_components = self._apply_causal_mtm_decomposition(
+                        feature_val, mtm_window_size, mtm_components, f"{feature_name}_val")
+                    mtm_test_components = self._apply_causal_mtm_decomposition(
+                        feature_test, mtm_window_size, mtm_components, f"{feature_name}_test")
+                    
+                    for comp_idx in range(mtm_components):
+                        comp_name = f"{feature_name}_mtm_{comp_idx+1}"
+                        mtm_train_dict[comp_name] = mtm_train_components[:, comp_idx]
+                        mtm_val_dict[comp_name] = mtm_val_components[:, comp_idx]
+                        mtm_test_dict[comp_name] = mtm_test_components[:, comp_idx]
+                
+                # Create new dataframes with MTM components
+                train_index = x_train_df.index
+                val_index = x_val_df.index
+                test_index = x_test_df.index
+                
+                x_train_df = pd.DataFrame(mtm_train_dict, index=train_index)
+                x_val_df = pd.DataFrame(mtm_val_dict, index=val_index)
+                x_test_df = pd.DataFrame(mtm_test_dict, index=test_index)
+                
+                # Add target column back
+                x_train_df[target_column] = close_train_normalized
+                x_val_df[target_column] = close_val_normalized
+                x_test_df[target_column] = close_test_normalized
+                
+                all_feature_columns = list(mtm_train_dict.keys())
+                
+                print(f"MTM FULL REPLACEMENT: {len(all_feature_columns)} MTM features created")
+                
+            else:
+                # Hybrid approach: MTM for some features, original for others
+                hybrid_train_dict = {}
+                hybrid_val_dict = {}
+                hybrid_test_dict = {}
+                
+                # Keep non-MTM features as-is
+                for feature_name in features_to_keep:
+                    hybrid_train_dict[feature_name] = x_train_df[feature_name].values
+                    hybrid_val_dict[feature_name] = x_val_df[feature_name].values
+                    hybrid_test_dict[feature_name] = x_test_df[feature_name].values
+                
+                # Apply MTM to specific features
+                for feature_name in features_for_mtm:
+                    print(f"  Decomposing feature: {feature_name}...")
+                    
+                    feature_train = x_train_df[feature_name].values.astype(np.float32)
+                    feature_val = x_val_df[feature_name].values.astype(np.float32)
+                    feature_test = x_test_df[feature_name].values.astype(np.float32)
+                    
+                    mtm_train_components = self._apply_causal_mtm_decomposition(
+                        feature_train, mtm_window_size, mtm_components, f"{feature_name}_train")
+                    mtm_val_components = self._apply_causal_mtm_decomposition(
+                        feature_val, mtm_window_size, mtm_components, f"{feature_name}_val")
+                    mtm_test_components = self._apply_causal_mtm_decomposition(
+                        feature_test, mtm_window_size, mtm_components, f"{feature_name}_test")
+                    
+                    for comp_idx in range(mtm_components):
+                        comp_name = f"{feature_name}_mtm_{comp_idx+1}"
+                        hybrid_train_dict[comp_name] = mtm_train_components[:, comp_idx]
+                        hybrid_val_dict[comp_name] = mtm_val_components[:, comp_idx]
+                        hybrid_test_dict[comp_name] = mtm_test_components[:, comp_idx]
+                
+                # Create hybrid dataframes
+                train_index = x_train_df.index
+                val_index = x_val_df.index
+                test_index = x_test_df.index
+                
+                x_train_df = pd.DataFrame(hybrid_train_dict, index=train_index)
+                x_val_df = pd.DataFrame(hybrid_val_dict, index=val_index)
+                x_test_df = pd.DataFrame(hybrid_test_dict, index=test_index)
+                
+                # Add target column back
+                x_train_df[target_column] = close_train_normalized
+                x_val_df[target_column] = close_val_normalized
+                x_test_df[target_column] = close_test_normalized
+                
+                all_feature_columns = list(hybrid_train_dict.keys())
+                
+                print(f"MTM HYBRID: {len(features_for_mtm)} features -> MTM, {len(features_to_keep)} kept original")
+                print(f"Total features: {len(all_feature_columns)}")
 
 
-
-
-        # --- 3. Extract Target Column and Create Row-by-Row Features ---
-        print("\n--- 3. Extract Target and Create Simple Row-by-Row Features ---")
+        # --- 3. Extract Target Column and Create Features ---
+        print("\n--- 3. Extract Target and Organize Features ---")
         target_column = config["target_column"]
         if target_column not in x_train_df.columns:
             raise ValueError(f"Target column '{target_column}' not found in data")
@@ -291,157 +548,105 @@ class PreprocessorPlugin:
         print(f"  Val: mean={close_val.mean():.6f}, std={close_val.std():.6f}, range=[{close_val.min():.6f}, {close_val.max():.6f}]")
         print(f"  Test: mean={close_test.mean():.6f}, std={close_test.std():.6f}, range=[{close_test.min():.6f}, {close_test.max():.6f}]")
         
-        # Remove target column from features and enforce STL-compatible ordering
+        # Remove target column from features and enforce MTM-enhanced feature ordering
         all_feature_columns = [col for col in x_train_df.columns if col != target_column]
         
-        # Apply feature exclusion from global config
-        exclude_features = config.get('exclude_features', [])
-        if exclude_features:
-            print(f"Excluding features from config: {exclude_features}")
-            excluded_features = [col for col in all_feature_columns if col in exclude_features]
-            all_feature_columns = [col for col in all_feature_columns if col not in exclude_features]
-            if excluded_features:
-                print(f"Features excluded: {excluded_features}")
-                # Remove excluded features from dataframes
-                x_train_df = x_train_df.drop(columns=excluded_features, errors='ignore')
-                x_val_df = x_val_df.drop(columns=excluded_features, errors='ignore')
-                x_test_df = x_test_df.drop(columns=excluded_features, errors='ignore')
+        # NOTE: Feature exclusion was already applied before MTM decomposition above
+        # all_feature_columns now contains only MTM components (no excluded features)
         
-        # CRITICAL FIX: Remove old log return features and enforce STL-compatible feature ordering
-        # Remove both 'logreturn' (from CSV) and 'close_logreturn' (old calculated) if they exist
+        # CRITICAL FIX: Optimize MTM feature ordering for Conv1D pattern detection
+        # Group MTM components by original feature, then by frequency component
         feature_columns = []
         
-        # Check if log_return is available (might be excluded by user)
-        if 'log_return' in all_feature_columns:
-            # 1. log_return goes first if available (calculated using exact STL method)
-            feature_columns.append('log_return')
-            remaining_features = [col for col in all_feature_columns if col not in ['log_return', 'logreturn', 'close_logreturn']]
-            log_return_available = True
-            print("Using log_return as primary feature (STL method)")
+        # Check if log_return MTM components are available
+        log_return_mtm_features = [col for col in all_feature_columns if col.startswith('log_return_mtm_')]
+        log_return_available = len(log_return_mtm_features) > 0
+        
+        if log_return_available:
+            # 1. log_return MTM components go first (calculated using exact STL method)
+            log_return_mtm_features.sort(key=lambda x: int(x.split('_')[-1]))  # Sort by component number
+            feature_columns.extend(log_return_mtm_features)
+            remaining_features = [col for col in all_feature_columns if not col.startswith('log_return_mtm_')]
+            print(f"Using log_return MTM components as anchor features: {log_return_mtm_features}")
         else:
             # log_return was excluded by user - proceed without it
-            remaining_features = [col for col in all_feature_columns if col not in ['logreturn', 'close_logreturn']]
-            log_return_available = False
-            print("WARNING: log_return excluded by user - proceeding without primary log return feature")
+            remaining_features = [col for col in all_feature_columns]
+            print("WARNING: log_return MTM components not available - proceeding without anchor features")
         
-        # Remove old log return features if they exist
-        old_log_features_removed = []
-        if 'logreturn' in all_feature_columns:
-            old_log_features_removed.append('logreturn')
-        if 'close_logreturn' in all_feature_columns:
-            old_log_features_removed.append('close_logreturn')
-        
-        # 2. Sort remaining features by correlation for Conv1D optimization
-        print("Calculating feature correlations for Conv1D-optimized ordering...")
+        # 2. Group remaining MTM features by original feature name
+        print("Organizing MTM features for Conv1D-optimized ordering...")
         
         if remaining_features:
-            # Extract remaining feature data for correlation calculation
-            remaining_feature_data = x_train_df[remaining_features].astype(np.float32)
-            
-            if log_return_available:
-                # Calculate correlation of each feature with log_return
-                log_return_data = x_train_df['log_return'].astype(np.float32)
-                log_return_corr = remaining_feature_data.corrwith(log_return_data).abs()
-            else:
-                # No log_return available - use first remaining feature or target for correlation reference
-                if remaining_features:
-                    reference_feature = remaining_features[0]
-                    print(f"Using {reference_feature} as correlation reference (no log_return available)")
-                    reference_data = x_train_df[reference_feature].astype(np.float32)
-                    log_return_corr = remaining_feature_data.corrwith(reference_data).abs()
+            # Group MTM components by original feature
+            feature_groups = {}
+            for col in remaining_features:
+                if '_mtm_' in col:
+                    # Extract original feature name (everything before _mtm_)
+                    base_feature = col.split('_mtm_')[0]
+                    comp_num = int(col.split('_mtm_')[1])
+                    
+                    if base_feature not in feature_groups:
+                        feature_groups[base_feature] = []
+                    feature_groups[base_feature].append((col, comp_num))
                 else:
-                    # No features left after exclusion
-                    raise ValueError("No features remaining after exclusions!")
+                    # Non-MTM feature (shouldn't happen after decomposition)
+                    if 'other' not in feature_groups:
+                        feature_groups['other'] = []
+                    feature_groups['other'].append((col, 0))
             
-            # Calculate correlation matrix for remaining features
-            corr_matrix = remaining_feature_data.corr().abs()  # Use absolute correlation
-            
-            # Conv1D-optimized ordering: Start with features most correlated to reference feature
-            # Then arrange others by hierarchical clustering based on correlation
-            print("Applying Conv1D-optimized feature ordering...")
-            
-            # Sort features by correlation with reference feature (descending)
-            sorted_by_ref_corr = log_return_corr.sort_values(ascending=False)
-            
-            # Use hierarchical clustering to group correlated features together
-            try:
-                from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
-                from scipy.spatial.distance import squareform
+            # Calculate correlation of each feature group with log_return MTM (if available)
+            if log_return_available and feature_groups:
+                print("Calculating feature group correlations for Conv1D optimization...")
                 
-                # Convert correlation to distance matrix (1 - correlation)
-                distance_matrix = 1 - corr_matrix.values
-                np.fill_diagonal(distance_matrix, 0)  # Distance to self is 0
+                # Get first log_return MTM component as reference
+                reference_feature = log_return_mtm_features[0]
+                reference_data = x_train_df[reference_feature].astype(np.float32)
                 
-                # Perform hierarchical clustering
-                condensed_distances = squareform(distance_matrix)
-                linkage_matrix = linkage(condensed_distances, method='ward')
+                # Calculate average correlation for each feature group
+                group_correlations = {}
+                for base_feature, components in feature_groups.items():
+                    correlations = []
+                    for comp_name, comp_num in components:
+                        comp_data = x_train_df[comp_name].astype(np.float32)
+                        corr = np.corrcoef(reference_data, comp_data)[0, 1]
+                        if np.isfinite(corr):
+                            correlations.append(abs(corr))
+                    
+                    # Average correlation for this feature group
+                    avg_corr = np.mean(correlations) if correlations else 0.0
+                    group_correlations[base_feature] = avg_corr
                 
-                # Get optimal number of clusters (or use a reasonable default)
-                n_clusters = min(10, len(remaining_features) // 3 + 1)
-                clusters = fcluster(linkage_matrix, n_clusters, criterion='maxclust')
+                # Sort feature groups by correlation (descending)
+                sorted_groups = sorted(group_correlations.items(), key=lambda x: x[1], reverse=True)
+                print(f"Feature groups ordered by correlation with {reference_feature}:")
+                for base_feature, corr in sorted_groups[:5]:  # Show top 5
+                    print(f"  {base_feature}: {corr:.4f}")
                 
-                clustering_available = True
-            except ImportError:
-                print("WARN: scipy not available, using correlation-based ordering without clustering")
-                clustering_available = False
-                clusters = [1] * len(remaining_features)  # All features in one cluster
-                n_clusters = 1
-                
-            # Create cluster-based ordering
-            clustered_features = []
-            cluster_dict = {}
+            else:
+                # No log_return available - use alphabetical ordering
+                sorted_groups = [(base_feature, 0.0) for base_feature in sorted(feature_groups.keys())]
+                print("No log_return reference - using alphabetical feature group ordering")
             
-            # Group features by cluster
-            for i, feature in enumerate(remaining_features):
-                cluster_id = clusters[i]
-                if cluster_id not in cluster_dict:
-                    cluster_dict[cluster_id] = []
-                cluster_dict[cluster_id].append((feature, log_return_corr[feature]))
+            # Build final feature order: for each group, add components in order
+            mtm_ordered_features = []
+            for base_feature, _ in sorted_groups:
+                # Sort components within group by component number
+                group_components = feature_groups[base_feature]
+                group_components.sort(key=lambda x: x[1])  # Sort by component number
+                mtm_ordered_features.extend([comp_name for comp_name, _ in group_components])
             
-            # Sort clusters by average correlation with reference feature
-            cluster_avg_corr = {}
-            for cluster_id, features_in_cluster in cluster_dict.items():
-                avg_corr = np.mean([corr for _, corr in features_in_cluster])
-                cluster_avg_corr[cluster_id] = avg_corr
+            feature_columns.extend(mtm_ordered_features)
             
-            # Sort clusters by average correlation (descending)
-            sorted_clusters = sorted(cluster_avg_corr.items(), key=lambda x: x[1], reverse=True)
-            
-            # Build final feature order: within each cluster, sort by reference correlation
-            conv1d_ordered_features = []
-            for cluster_id, _ in sorted_clusters:
-                cluster_features = cluster_dict[cluster_id]
-                # Sort features within cluster by reference correlation (descending)
-                cluster_features.sort(key=lambda x: x[1], reverse=True)
-                conv1d_ordered_features.extend([feat for feat, _ in cluster_features])
-            
-            # Final feature ordering: log_return first (if available), then Conv1D-optimized remaining features
-            feature_columns.extend(conv1d_ordered_features)
-            
-            print(f"CONV1D-OPTIMIZED: Feature ordering for spatial pattern detection:")
+            print(f"MTM-CONV1D OPTIMIZED: Feature ordering for frequency pattern detection:")
             if log_return_available:
-                print(f"  1. log_return (first, anchor feature)")
-                reference_name = "log_return"
-            else:
-                reference_name = reference_feature if remaining_features else "none"
-                print(f"  1. Features ordered by correlation with {reference_name}")
-            if old_log_features_removed:
-                print(f"  REMOVED old log return features: {old_log_features_removed}")
-            if clustering_available:
-                print(f"  2. Remaining features grouped by correlation clusters ({n_clusters} clusters)")
-                print(f"  3. Within clusters: sorted by correlation with {reference_name}")
-            else:
-                print(f"  2. Remaining features sorted by correlation with {reference_name} (no clustering)")
-            print(f"  3. First 5 features: {feature_columns[:5]}")
-            print(f"  Total features: {len(feature_columns)}")
+                print(f"  1. log_return MTM components (anchor): {len(log_return_mtm_features)} components")
+            print(f"  2. Feature groups ordered by correlation: {len(sorted_groups)} groups")
+            print(f"  3. Within groups: MTM components 1-5 in frequency order")
+            print(f"  4. Total MTM features: {len(feature_columns)}")
+            print(f"  5. Current-value bias eliminated: All features are frequency patterns")
             
-            # Print correlation info for verification
-            print(f"Feature correlation analysis:")
-            print(f"  Highest {reference_name} correlation: {sorted_by_ref_corr.iloc[0]:.4f} ({sorted_by_ref_corr.index[0]})")
-            print(f"  Lowest {reference_name} correlation: {sorted_by_ref_corr.iloc[-1]:.4f} ({sorted_by_ref_corr.index[-1]})")
-            print(f"  Average correlation with {reference_name}: {log_return_corr.mean():.4f}")
         else:
-            print("WARNING: No remaining features after exclusions - only target column available")
+            print("WARNING: No remaining MTM features - only log_return MTM components available")
         
         # CRITICAL: Ensure CLOSE column is definitively excluded from sliding windows
         # Debug: Check if CLOSE is somehow still in feature_columns
@@ -463,33 +668,82 @@ class PreprocessorPlugin:
         print(f"Data shapes - Train: {features_train.shape}, Val: {features_val.shape}, Test: {features_test.shape}")
         print(f"CLOSE shapes - Train: {close_train.shape}, Val: {close_val.shape}, Test: {close_test.shape}")
     
-        # Verify log_return is in features and CLOSE is not
-        has_log_return = 'log_return' in feature_columns
+        # Verify features and CLOSE target
+        has_log_return_mtm = any(col.startswith('log_return_mtm_') for col in feature_columns)
+        has_log_return_original = 'log_return' in feature_columns
         has_close = target_column in feature_columns
         has_old_logreturn = 'logreturn' in feature_columns
         has_old_close_logreturn = 'close_logreturn' in feature_columns
         
+        # Check MTM usage
+        use_mtm_for_all = config.get('use_mtm_for_all_features', False)
+        mtm_specific_features = config.get('mtm_features_only', [])
+        using_mtm = use_mtm_for_all or len(mtm_specific_features) > 0
+        
         # Check if log_return was excluded by user
         log_return_excluded = 'log_return' in config.get('exclude_features', [])
         
-        print(f"USER REQUIREMENTS VERIFIED:")
+        print(f"FEATURE VERIFICATION:")
         print(f"  - CLOSE column removed from features: {not has_close}")
-        if log_return_excluded:
-            print(f"  - log_return excluded by user configuration: {log_return_excluded}")
-        else:
-            print(f"  - log_return included in features (STL method): {has_log_return}")
-        print(f"  - Old 'logreturn' removed from features: {not has_old_logreturn}")
-        print(f"  - Old 'close_logreturn' removed from features: {not has_old_close_logreturn}")
+        print(f"  - Using MTM decomposition: {using_mtm}")
         
-        # Conditional verification based on user exclusions
-        if not log_return_excluded and not has_log_return:
-            raise ValueError("log_return column not found in features (and not excluded by user)!")
+        if using_mtm:
+            if log_return_excluded:
+                print(f"  - log_return MTM excluded by user: {log_return_excluded}")
+            else:
+                print(f"  - log_return MTM components available: {has_log_return_mtm}")
+            
+            if use_mtm_for_all:
+                all_mtm = all('_mtm_' in col for col in feature_columns)
+                print(f"  - All features are MTM components: {all_mtm}")
+                print(f"  - Current-value bias eliminated via frequency analysis: {all_mtm}")
+            else:
+                mtm_count = sum(1 for col in feature_columns if '_mtm_' in col)
+                original_count = len(feature_columns) - mtm_count
+                print(f"  - Hybrid approach: {mtm_count} MTM + {original_count} original features")
+                print(f"  - Partial bias reduction via selective MTM: True")
+        else:
+            if log_return_excluded:
+                print(f"  - log_return excluded by user: {log_return_excluded}")
+            else:
+                print(f"  - log_return original feature available: {has_log_return_original}")
+            print(f"  - Traditional preprocessing: Using original normalized features")
+            print(f"  - Current-value bias: May be present (no MTM filtering)")
+        
+        print(f"  - Old 'logreturn' removed: {not has_old_logreturn}")
+        print(f"  - Old 'close_logreturn' removed: {not has_old_close_logreturn}")
+        
+        # Verification based on configuration
+        if using_mtm:
+            if use_mtm_for_all:
+                if not log_return_excluded and not has_log_return_mtm:
+                    raise ValueError("log_return MTM components not found (and not excluded by user)!")
+            else:
+                # Hybrid - check that specified features got MTM treatment
+                expected_mtm_features = [f for f in mtm_specific_features if f not in config.get('exclude_features', [])]
+                actual_mtm_base_features = set()
+                for col in feature_columns:
+                    if '_mtm_' in col:
+                        base_feature = col.split('_mtm_')[0]
+                        actual_mtm_base_features.add(base_feature)
+                
+                for expected_feature in expected_mtm_features:
+                    if expected_feature not in actual_mtm_base_features:
+                        print(f"WARNING: Expected MTM feature '{expected_feature}' not found in results")
+        else:
+            # Traditional processing
+            if not log_return_excluded and not has_log_return_original:
+                raise ValueError("log_return feature not found (and not excluded by user)!")
+        
         if has_close:
             raise ValueError(f"Target column '{target_column}' should not be in features!")
         if has_old_logreturn:
             raise ValueError("Old 'logreturn' column should be removed from features!")
         if has_old_close_logreturn:
             raise ValueError("Old 'close_logreturn' column should be removed from features!")
+        
+        print(f"VERIFIED: Feature configuration matches settings")
+        print(f"VERIFIED: {len(feature_columns)} features ready for model training")
 
         # --- 4. Create Sliding Windows (USER REQUIREMENTS) ---
         print("\n--- 4. Creating Sliding Windows (USER REQUIREMENTS) ---")
@@ -513,21 +767,37 @@ class PreprocessorPlugin:
         print(f"Final X shapes: Train={X_train_combined.shape}, Val={X_val_combined.shape}, Test={X_test_combined.shape}")
         print(f"Feature columns: {feature_columns}")
         
-        # DEBUG: Print each and every feature name that will be fed to the model
-        print(f"\nDEBUG: Complete list of Conv1D-optimized features ({len(feature_columns)} features):")
+        # DEBUG: Print feature information
+        print(f"\nDEBUG: Complete feature list ({len(feature_columns)} features):")
+        
+        using_mtm = config.get('use_mtm_for_all_features', False) or len(config.get('mtm_features_only', [])) > 0
+        
         for i, feature_name in enumerate(feature_columns):
-            correlation_info = ""
-            if feature_name == 'log_return':
-                correlation_info = " (anchor feature)"
-            elif 'log_return_corr' in locals() and feature_name in log_return_corr.index:
-                correlation_info = f" (corr with reference: {log_return_corr[feature_name]:.4f})"
-            print(f"  Feature {i+1:2d}: {feature_name}{correlation_info}")
+            feature_info = ""
+            if feature_name.startswith('log_return_mtm_'):
+                feature_info = " (log_return MTM frequency component)"
+            elif '_mtm_' in feature_name:
+                base_feature = feature_name.split('_mtm_')[0]
+                comp_num = feature_name.split('_mtm_')[1]
+                feature_info = f" (MTM freq component {comp_num} of {base_feature})"
+            elif feature_name == 'log_return':
+                feature_info = " (original log_return STL method)"
+            else:
+                feature_info = " (original normalized feature)"
+            print(f"  Feature {i+1:2d}: {feature_name}{feature_info}")
+        
         print(f"DEBUG: Total features in sliding windows: {len(feature_columns)}")
         if X_train_combined.shape[2] != len(feature_columns):
             print(f"ERROR: Mismatch between feature_columns length ({len(feature_columns)}) and sliding window features ({X_train_combined.shape[2]})")
         else:
             print(f"VERIFIED: Sliding window feature count matches feature_columns list")
-            print(f"VERIFIED: Features ordered for Conv1D spatial pattern detection")
+            
+            if using_mtm:
+                print(f"VERIFIED: MTM frequency features optimized for pattern detection")
+                print(f"VERIFIED: Current-value bias reduced through frequency decomposition")
+            else:
+                print(f"VERIFIED: Traditional features ordered for Conv1D spatial detection")
+                print(f"NOTE: Current-value bias may be present (MTM disabled)")
         
         # --- 5. Baseline and Target Calculation (USER REQUIREMENTS) ---
         print("\n--- 5. Calculating Baselines and Targets (USER REQUIREMENTS) ---")

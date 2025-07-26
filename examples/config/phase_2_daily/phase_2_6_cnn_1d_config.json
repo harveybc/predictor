@@ -49,5 +49,7 @@
     "use_strategy": false,
     "stl_period":24,
     "predicted_horizons": [24,48,72,96,120,144],
+    "use_mtm_for_all_features": false,
+    "mtm_features_only": [],
     "iterations": 1
 }
