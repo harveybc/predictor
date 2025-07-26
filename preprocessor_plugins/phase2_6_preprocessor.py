@@ -572,22 +572,38 @@ class PreprocessorPlugin:
             print("WARNING: log_return MTM components not available - proceeding without anchor features")
         
         # 2. Group remaining MTM features by original feature name
-        print("Organizing MTM features for Conv1D-optimized ordering...")
+        print("Organizing features for Conv1D-optimized ordering...")
         
         if remaining_features:
-            # Group MTM components by original feature
+            # Group features by type and original feature
             feature_groups = {}
             for col in remaining_features:
                 if '_mtm_' in col:
                     # Extract original feature name (everything before _mtm_)
                     base_feature = col.split('_mtm_')[0]
-                    comp_num = int(col.split('_mtm_')[1])
+                    
+                    # Handle different MTM formats
+                    try:
+                        mtm_part = col.split('_mtm_')[1]
+                        if mtm_part.isdigit():
+                            # Simple format: feature_mtm_1
+                            comp_num = int(mtm_part)
+                        else:
+                            # Complex format: feature_mtm_band_1_0.000_0.010
+                            # Extract band number if available
+                            if 'band_' in mtm_part:
+                                band_part = mtm_part.split('band_')[1]
+                                comp_num = int(band_part.split('_')[0])
+                            else:
+                                comp_num = 0  # Default for unparseable MTM features
+                    except (ValueError, IndexError):
+                        comp_num = 0  # Default for unparseable MTM features
                     
                     if base_feature not in feature_groups:
                         feature_groups[base_feature] = []
                     feature_groups[base_feature].append((col, comp_num))
                 else:
-                    # Non-MTM feature (shouldn't happen after decomposition)
+                    # Non-MTM feature
                     if 'other' not in feature_groups:
                         feature_groups['other'] = []
                     feature_groups['other'].append((col, 0))
