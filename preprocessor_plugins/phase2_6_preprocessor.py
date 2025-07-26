@@ -498,12 +498,12 @@ class PreprocessorPlugin:
         # Window: data[t-window_size : t] (EXCLUDES current tick t)
         
         # Create windows for features
-        X_train_windows, _, train_dates_windows = self.create_sliding_windows(
-            features_train, window_size, 1, dates_train, max_horizon)
-        X_val_windows, _, val_dates_windows = self.create_sliding_windows(
-            features_val, window_size, 1, dates_val, max_horizon)
-        X_test_windows, _, test_dates_windows = self.create_sliding_windows(
-            features_test, window_size, 1, dates_test, max_horizon)
+        X_train_windows, train_dates_windows = self.create_sliding_windows(
+            features_train, window_size, dates_train, max_horizon)
+        X_val_windows, val_dates_windows = self.create_sliding_windows(
+            features_val, window_size, dates_val, max_horizon)
+        X_test_windows, test_dates_windows = self.create_sliding_windows(
+            features_test, window_size, dates_test, max_horizon)
         
         # The windows are already in the correct shape: (samples, window_size, features)
         X_train_combined = X_train_windows
