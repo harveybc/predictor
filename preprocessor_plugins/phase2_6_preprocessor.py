@@ -62,7 +62,7 @@ class PreprocessorPlugin:
     }
     
     plugin_debug_vars = [
-        "window_size", "predicted_horizons", "target_column", "exclude_features"
+        "window_size", "predicted_horizons", "target_column", "exclude_features", "exclude_from_mtm"
     ]
 
     def __init__(self):
@@ -395,26 +395,24 @@ class PreprocessorPlugin:
             # Get all feature columns (excluding target)
             all_feature_columns = [col for col in x_train_df.columns if col != target_column]
             
-            # Apply feature exclusion from global config BEFORE MTM decomposition
-            exclude_features = config.get('exclude_features', [])
-            if exclude_features:
-                print(f"Excluding features from config before MTM: {exclude_features}")
-                excluded_features = [col for col in all_feature_columns if col in exclude_features]
-                all_feature_columns = [col for col in all_feature_columns if col not in exclude_features]
-                if excluded_features:
-                    print(f"Features excluded before MTM: {excluded_features}")
-                    # Remove excluded features from dataframes
-                    x_train_df = x_train_df.drop(columns=excluded_features, errors='ignore')
-                    x_val_df = x_val_df.drop(columns=excluded_features, errors='ignore')
-                    x_test_df = x_test_df.drop(columns=excluded_features, errors='ignore')
+            # Apply feature exclusion from MTM decomposition ONLY (keep features in sliding windows)
+            exclude_from_mtm = config.get('exclude_from_mtm', [])
+            if exclude_from_mtm:
+                print(f"Excluding features from MTM decomposition: {exclude_from_mtm}")
+                excluded_from_mtm = [col for col in all_feature_columns if col in exclude_from_mtm]
+                mtm_feature_columns = [col for col in all_feature_columns if col not in exclude_from_mtm]
+                if excluded_from_mtm:
+                    print(f"Features excluded from MTM: {excluded_from_mtm}")
+            else:
+                mtm_feature_columns = all_feature_columns
             
             # Determine which features to apply MTM to
             if use_mtm_for_all:
-                features_for_mtm = all_feature_columns
-                print(f"Applying MTM to ALL {len(features_for_mtm)} features")
+                features_for_mtm = mtm_feature_columns
+                print(f"Applying MTM to ALL {len(features_for_mtm)} features (excluding decomposition features)")
             else:
-                features_for_mtm = [f for f in mtm_specific_features if f in all_feature_columns]
-                features_to_keep = [f for f in all_feature_columns if f not in features_for_mtm]
+                features_for_mtm = [f for f in mtm_specific_features if f in mtm_feature_columns]
+                features_to_keep = [f for f in mtm_feature_columns if f not in features_for_mtm]
                 print(f"Applying MTM to SPECIFIC {len(features_for_mtm)} features: {features_for_mtm}")
                 print(f"Keeping {len(features_to_keep)} features as-is: {features_to_keep[:5]}...")
             
