@@ -88,8 +88,17 @@ DEFAULT_VALUES = {
     "optimizer_output_file": "optimizer_output.json",
     "penalty_close_lambda":0.0001, # penalty in thel loss function for the predicted value being 0 (Naive)
     "penalty_far_lambda":0.0001,    # penalty in thel loss function for the predicted value being far from the target value in the opposite dicection of the 0 (Naive)
-    #"exclude_features": ['log_return', 'BC-BO', 'BO-BL']         # List of feature names to exclude from preprocessing
-    "exclude_features": [],         # List of feature names to exclude from preprocessing
+    # List of feature names to exclude from preprocessing
+    "exclude_features": [
+        # Exclude existing decomposition features that are already in the dataset
+        # STL decomposition features (already calculated)
+        "stl_trend", "stl_seasonal", "stl_residual",
+        # Wavelet decomposition features (already calculated)
+        "CLOSE_wav_detail_L1", "CLOSE_wav_detail_L2", "CLOSE_wav_approx_L2",
+        # MTM decomposition features (already calculated)
+        "CLOSE_mtm_band_1_0.000_0.010", "CLOSE_mtm_band_2_0.010_0.060", 
+        "CLOSE_mtm_band_3_0.060_0.200", "CLOSE_mtm_band_4_0.200_0.500"
+    ],         # List of feature names to exclude from preprocessing
     "use_mtm_for_all_features": False,  # Whether to apply MTM decomposition to all features (experimental)
     "mtm_features_only": [],            # List of specific features to apply MTM decomposition to (if not all)
 
