@@ -311,13 +311,11 @@ class PreprocessorPlugin:
         close_val_normalized = x_val_df[target_column].astype(np.float32).values
         close_test_normalized = x_test_df[target_column].astype(np.float32).values
         
-        # CRITICAL FIX: Denormalize CLOSE values before calculating returns
-        print(f"CRITICAL FIX: Denormalizing CLOSE values before target calculation...")
-        close_train = denormalize_close(close_train_normalized, config)
-        close_val = denormalize_close(close_val_normalized, config)
-        close_test = denormalize_close(close_test_normalized, config)
+        # CRITICAL FIX: Use ALREADY denormalized CLOSE values from step 2 (no double denormalization!)
+        print(f"CRITICAL FIX: Using already denormalized CLOSE values from step 2 (avoiding double denormalization)...")
+        # close_train, close_val, close_test were already denormalized in step 2 - reuse them!
         
-        print(f"Denormalized CLOSE stats:")
+        print(f"Already denormalized CLOSE stats (from step 2):")
         print(f"  Train: mean={close_train.mean():.6f}, std={close_train.std():.6f}, range=[{close_train.min():.6f}, {close_train.max():.6f}]")
         print(f"  Val: mean={close_val.mean():.6f}, std={close_val.std():.6f}, range=[{close_val.min():.6f}, {close_val.max():.6f}]")
         print(f"  Test: mean={close_test.mean():.6f}, std={close_test.std():.6f}, range=[{close_test.min():.6f}, {close_test.max():.6f}]")
