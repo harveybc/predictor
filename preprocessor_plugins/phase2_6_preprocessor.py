@@ -499,13 +499,22 @@ class PreprocessorPlugin:
         has_close = target_column in feature_columns
         has_old_logreturn = 'logreturn' in feature_columns
         has_old_close_logreturn = 'close_logreturn' in feature_columns
+        
+        # Check if log_return was excluded by user
+        log_return_excluded = 'log_return' in config.get('exclude_features', [])
+        
         print(f"USER REQUIREMENTS VERIFIED:")
         print(f"  - CLOSE column removed from features: {not has_close}")
-        print(f"  - log_return included in features (STL method): {has_log_return}")
+        if log_return_excluded:
+            print(f"  - log_return excluded by user configuration: {log_return_excluded}")
+        else:
+            print(f"  - log_return included in features (STL method): {has_log_return}")
         print(f"  - Old 'logreturn' removed from features: {not has_old_logreturn}")
         print(f"  - Old 'close_logreturn' removed from features: {not has_old_close_logreturn}")
-        if not has_log_return:
-            raise ValueError("log_return column not found in features!")
+        
+        # Conditional verification based on user exclusions
+        if not log_return_excluded and not has_log_return:
+            raise ValueError("log_return column not found in features (and not excluded by user)!")
         if has_close:
             raise ValueError(f"Target column '{target_column}' should not be in features!")
         if has_old_logreturn:
