@@ -143,7 +143,7 @@ class PreprocessorPlugin:
         # (Implementation from previous working version)
         print(f"Loading data: {file_path} (Max rows: {max_rows})...", end="")
         try:
-            df = load_csv(file_path, headers=headers, max_rows=max_rows)
+            df = pd.read_csv(file_path, nrows=max_rows, header=0 if headers else None, engine='python')
             if df is None or df.empty: raise ValueError(f"load_csv None/empty for {file_path}")
             print(f" Done. Shape: {df.shape}")
             if not isinstance(df.index, pd.DatetimeIndex):
