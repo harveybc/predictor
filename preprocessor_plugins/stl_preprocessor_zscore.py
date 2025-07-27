@@ -960,7 +960,8 @@ class PreprocessorPlugin:
         # Call set_params again AFTER merge to resolve defaults
         self.set_params(**run_config)
         # Run with the fully resolved self.params
-        return self.process_data(self.params)
+        processed_data = self.process_data(self.params)
+        return processed_data, self.plugin_debug_vars
     # --- End of run_preprocessing ---
 
 # --- NO if __name__ == '__main__': block ---
