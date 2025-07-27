@@ -108,7 +108,7 @@ class PreprocessorPlugin:
         "use_stl", "stl_period", "stl_window", "stl_trend", "stl_plot_file",
         "use_wavelets", "wavelet_name", "wavelet_levels", "wavelet_mode", "wavelet_plot_file",
         "use_multi_tapper", "mtm_window_len", "mtm_step", "mtm_time_bandwidth", "mtm_num_tapers", "mtm_freq_bands", "tapper_plot_file", "tapper_plot_points",
-        "returns_mean", "returns_std"
+        "target_returns_mean", "target_returns_std"
     ]
 
     def __init__(self):
@@ -859,16 +859,20 @@ class PreprocessorPlugin:
                 # --- NEW: Normalize the residual returns ---
 
                 # Calculate normalization stats from the training set ONLY
-                returns_mean = target_train_h.mean()
-                returns_std = target_train_h.std()
+                target_returns_mean = target_train_h.mean()
+                target_returns_std = target_train_h.std()
 
-                # IMPORTANT: You will need 'returns_mean' and 'returns_std' later
+                # Save normalization stats to plugin debug info
+                self.plugin_debug_vars['target_returns_mean'] = target_returns_mean
+                self.plugin_debug_vars['target_returns_std'] = target_returns_std
+
+                # IMPORTANT: You will need 'target_returns_mean' and 'target_returns_std' later
                 # to denormalize your model's predictions back to the original scale.
 
                 # Apply z-score normalization to all target sets
-                target_train_h = (target_train_h - returns_mean) / returns_std
-                target_val_h = (target_val_h - returns_mean) / returns_std
-                target_test_h = (target_test_h - returns_mean) / returns_std
+                target_train_h = (target_train_h - target_returns_mean) / target_returns_std
+                target_val_h = (target_val_h - target_returns_mean) / target_returns_std
+                target_test_h = (target_test_h - target_returns_mean) / target_returns_std
 
             y_train_final_list.append(target_train_h.astype(np.float32))
             y_val_final_list.append(target_val_h.astype(np.float32))
