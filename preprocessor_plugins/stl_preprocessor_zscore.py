@@ -107,7 +107,8 @@ class PreprocessorPlugin:
         "window_size", "predicted_horizons", "use_returns", "normalize_features",
         "use_stl", "stl_period", "stl_window", "stl_trend", "stl_plot_file",
         "use_wavelets", "wavelet_name", "wavelet_levels", "wavelet_mode", "wavelet_plot_file",
-        "use_multi_tapper", "mtm_window_len", "mtm_step", "mtm_time_bandwidth", "mtm_num_tapers", "mtm_freq_bands", "tapper_plot_file", "tapper_plot_points"
+        "use_multi_tapper", "mtm_window_len", "mtm_step", "mtm_time_bandwidth", "mtm_num_tapers", "mtm_freq_bands", "tapper_plot_file", "tapper_plot_points",
+        "returns_mean", "returns_std"
     ]
 
     def __init__(self):
@@ -786,10 +787,10 @@ class PreprocessorPlugin:
         print(f"Final X shapes: Train={X_train_combined.shape}, Val={X_val_combined.shape}, Test={X_test_combined.shape}")
         print(f"Included features: {feature_names}")
 
-        # --- 7. Enhanced Target Processing (Z-Score Compatible) ---
-        print("\n--- 7. Enhanced Target Processing (Z-Score Compatible) ---")
+        # --- 7. Baseline & Target Processing (REVERTED TO USER'S ORIGINAL LOGIC - ALIGNED) ---
+        print("\n--- 7. Baseline and Target Processing (Original Logic - Aligned) ---")
         target_column = config["target_column"]
-        use_returns = config.get("use_returns", False)
+        use_returns = config.get("use_returns", False) # Original flag name
 
         # --- Original Offset Calculation ---
         # Requires stl_window even if STL not used - ensure it's resolved
@@ -802,85 +803,83 @@ class PreprocessorPlugin:
         original_offset = effective_stl_window + window_size - 2
         print(f"Calculated original logic offset: {original_offset}")
 
-        # --- Load Raw Target Data (Should be normalized CLOSE values) ---
-        if target_column not in y_train_df.columns: 
-            raise ValueError(f"Column '{target_column}' not found in Y train.")
+        # --- Load Raw Target Data ---
+        if target_column not in y_train_df.columns: raise ValueError(f"Column '{target_column}' not found in Y train.")
         target_train_raw = y_train_df[target_column].astype(np.float32).values
         target_val_raw = y_val_df[target_column].astype(np.float32).values
         target_test_raw = y_test_df[target_column].astype(np.float32).values
 
         # --- Calculate Baseline using original offset logic BUT ensure length matches num_*_windows ---
-        # These should be normalized CLOSE values corresponding to current tick
         baseline_slice_end_train = original_offset + num_samples_train
         baseline_slice_end_val = original_offset + num_samples_val
         baseline_slice_end_test = original_offset + num_samples_test
 
-        if original_offset < 0 or baseline_slice_end_train > len(close_train): 
-            raise ValueError(f"Baseline train indices invalid.")
+        if original_offset < 0 or baseline_slice_end_train > len(close_train): raise ValueError(f"Baseline train indices invalid.")
         baseline_train = close_train[original_offset : baseline_slice_end_train]
-        if original_offset < 0 or baseline_slice_end_val > len(close_val): 
-            raise ValueError(f"Baseline val indices invalid.")
+        if original_offset < 0 or baseline_slice_end_val > len(close_val): raise ValueError(f"Baseline val indices invalid.")
         baseline_val = close_val[original_offset : baseline_slice_end_val]
-        if original_offset < 0 or baseline_slice_end_test > len(close_test): 
-            raise ValueError(f"Baseline test indices invalid.")
+        if original_offset < 0 or baseline_slice_end_test > len(close_test): raise ValueError(f"Baseline test indices invalid.")
         baseline_test = close_test[original_offset : baseline_slice_end_test]
 
-        if len(baseline_train) != num_samples_train: 
-            raise ValueError(f"Baseline train length mismatch: Expected {num_samples_train}, Got {len(baseline_train)}")
-        if len(baseline_val) != num_samples_val: 
-            raise ValueError(f"Baseline val length mismatch: Expected {num_samples_val}, Got {len(baseline_val)}")
-        if len(baseline_test) != num_samples_test: 
-            raise ValueError(f"Baseline test length mismatch: Expected {num_samples_test}, Got {len(baseline_test)}")
+        if len(baseline_train) != num_samples_train: raise ValueError(f"Baseline train length mismatch: Expected {num_samples_train}, Got {len(baseline_train)}")
+        if len(baseline_val) != num_samples_val: raise ValueError(f"Baseline val length mismatch: Expected {num_samples_val}, Got {len(baseline_val)}")
+        if len(baseline_test) != num_samples_test: raise ValueError(f"Baseline test length mismatch: Expected {num_samples_test}, Got {len(baseline_test)}")
+        print(f"Baseline shapes (Original Logic): Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
 
-        print(f"Baseline shapes (Z-Score Compatible): Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
+        # --- Process targets using original slicing and shifting logic, adjusted for multi-horizon ---
+        # 1. Apply original initial slice
+        target_train = target_train_raw[original_offset:]
+        target_val = target_val_raw[original_offset:]
+        target_test = target_test_raw[original_offset:]
 
-        # --- Process targets for each horizon: Store normalized future CLOSE values ---
-        # The pipeline will handle denormalization and proper target calculation
-        y_train_final_list = []
-        y_val_final_list = []
-        y_test_final_list = []
-        
+        # 2. Calculate shifted targets for each horizon and slice to final length
+        y_train_final_list = []; y_val_final_list = []; y_test_final_list = []
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
-        print("Note: Storing normalized future CLOSE values for z-score pipeline processing")
-        
         for h in predicted_horizons:
-            # Apply original slice and shift logic to get future CLOSE values
-            target_train = target_train_raw[original_offset:]
-            target_val = target_val_raw[original_offset:]
-            target_test = target_test_raw[original_offset:]
-            
-            # Shift by horizon to get future values
+            # 2a. Apply original shift logic: target_sliced[h:]
             target_train_shifted = target_train[h:]
             target_val_shifted = target_val[h:]
             target_test_shifted = target_test[h:]
 
-            # Slice to match number of windows
-            if len(target_train_shifted) < num_samples_train: 
-                raise ValueError(f"Not enough shifted target data for H={h} (Train). Needed {num_samples_train}, got {len(target_train_shifted)}")
+            # 2b. Slice the shifted result to match num_samples
+            if len(target_train_shifted) < num_samples_train: raise ValueError(f"Not enough shifted target data for H={h} (Train). Needed {num_samples_train}, got {len(target_train_shifted)}")
             target_train_h = target_train_shifted[:num_samples_train]
-            
-            if len(target_val_shifted) < num_samples_val: 
-                raise ValueError(f"Not enough shifted target data for H={h} (Val). Needed {num_samples_val}, got {len(target_val_shifted)}")
+            if len(target_val_shifted) < num_samples_val: raise ValueError(f"Not enough shifted target data for H={h} (Val). Needed {num_samples_val}, got {len(target_val_shifted)}")
             target_val_h = target_val_shifted[:num_samples_val]
-            
-            if len(target_test_shifted) < num_samples_test: 
-                raise ValueError(f"Not enough shifted target data for H={h} (Test). Needed {num_samples_test}, got {len(target_test_shifted)}")
+            if len(target_test_shifted) < num_samples_test: raise ValueError(f"Not enough shifted target data for H={h} (Test). Needed {num_samples_test}, got {len(target_test_shifted)}")
             target_test_h = target_test_shifted[:num_samples_test]
 
-            # Store the normalized future CLOSE values directly 
-            # (no subtraction of baseline here - that will be done in the pipeline after denormalization)
+            # 2c. Apply returns adjustment and then normalize the targets
+            if use_returns:
+                # First, calculate the residual returns by subtracting the baseline
+                target_train_h = target_train_h - baseline_train
+                target_val_h = target_val_h - baseline_val
+                target_test_h = target_test_h - baseline_test
+
+                # --- NEW: Normalize the residual returns ---
+
+                # Calculate normalization stats from the training set ONLY
+                returns_mean = target_train_h.mean()
+                returns_std = target_train_h.std()
+
+                # IMPORTANT: You will need 'returns_mean' and 'returns_std' later
+                # to denormalize your model's predictions back to the original scale.
+
+                # Apply z-score normalization to all target sets
+                target_train_h = (target_train_h - returns_mean) / returns_std
+                target_val_h = (target_val_h - returns_mean) / returns_std
+                target_test_h = (target_test_h - returns_mean) / returns_std
+
             y_train_final_list.append(target_train_h.astype(np.float32))
             y_val_final_list.append(target_val_h.astype(np.float32))
             y_test_final_list.append(target_test_h.astype(np.float32))
-            
-            print(f"Horizon {h} - Target shape: Train={target_train_h.shape}, Val={target_val_h.shape}, Test={target_test_h.shape}")
 
         # --- Assign Dates based on X windows ---
         # The dates should correspond to the *end* of the input window (X)
         y_dates_train = x_dates_train
         y_dates_val = x_dates_val
         y_dates_test = x_dates_test
-        print("Target processing complete (Z-Score Pipeline Compatible).")
+        print("Target processing complete (Original Logic Structure).")
 
         # --- Test Close Prices (Original Logic - Aligned) ---
         # This should match the baseline_test calculated above
