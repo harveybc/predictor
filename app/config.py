@@ -7,8 +7,8 @@ DEFAULT_VALUES = {
     "use_normalization_json": "examples/config/normalization_config_b.json",
 
     # Plugin Selection
-    "pipeline_plugin": "phase2_6_pipeline",
-    "preprocessor_plugin": "phase2_6_preprocessor",
+    "pipeline_plugin": "stl_pipeline_zscore",
+    "preprocessor_plugin": "stl_preprocessor_zscore",
 
     "x_train_file": "examples/data/phase_5/normalized_d4.csv",
     #"x_train_file": "examples\\data\\phase_3\\phase_3_encoder_eval_d2.csv",
