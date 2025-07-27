@@ -863,8 +863,8 @@ class PreprocessorPlugin:
                 target_returns_std = target_train_h.std()
 
                 # Save normalization stats to plugin debug info
-                self.plugin_debug_vars['target_returns_mean'] = target_returns_mean
-                self.plugin_debug_vars['target_returns_std'] = target_returns_std
+                self.params['target_returns_mean'] = target_returns_mean
+                self.params['target_returns_std'] = target_returns_std
 
                 # IMPORTANT: You will need 'target_returns_mean' and 'target_returns_std' later
                 # to denormalize your model's predictions back to the original scale.
@@ -961,7 +961,7 @@ class PreprocessorPlugin:
         self.set_params(**run_config)
         # Run with the fully resolved self.params
         processed_data = self.process_data(self.params)
-        return processed_data, self.plugin_debug_vars
+        return processed_data, self.params
     # --- End of run_preprocessing ---
 
 # --- NO if __name__ == '__main__': block ---
