@@ -545,6 +545,14 @@ class PreprocessorPlugin:
 
         # --- 1. Load Data ---
         print("\n--- 1. Loading Data ---")
+        # Debug: Print the file paths being used
+        print(f"DEBUG: x_train_file = {config.get('x_train_file')}")
+        print(f"DEBUG: y_train_file = {config.get('y_train_file')}")
+        print(f"DEBUG: x_validation_file = {config.get('x_validation_file')}")
+        print(f"DEBUG: y_validation_file = {config.get('y_validation_file')}")
+        print(f"DEBUG: x_test_file = {config.get('x_test_file')}")
+        print(f"DEBUG: y_test_file = {config.get('y_test_file')}")
+
         x_train_df=self._load_data(config["x_train_file"], config.get("max_steps_train"), config.get("headers"))
         x_val_df=self._load_data(config["x_validation_file"], config.get("max_steps_val"), config.get("headers"))
         x_test_df=self._load_data(config["x_test_file"], config.get("max_steps_test"), config.get("headers"))
