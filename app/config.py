@@ -4,7 +4,7 @@ DEFAULT_VALUES = {
 
 
 
-    "use_normalization_json": "examples/config/normalization_config_b.json",
+    "use_normalization_json": "examples/data/phase_5/normalization_config_b.json",
 
     # Plugin Selection
     "pipeline_plugin": "stl_pipeline_zscore",
