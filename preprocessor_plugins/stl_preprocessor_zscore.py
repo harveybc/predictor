@@ -40,18 +40,17 @@ def verify_date_consistency(date_lists, dataset_name):
 
 
 class PreprocessorPlugin:
-    # Simplified plugin parameters - removed all decomposition parameters
+    # Plugin parameters
     plugin_params = {
-        # --- File Paths ---
         # --- Data Loading ---
         "headers": True,
         "max_steps_train": None, "max_steps_val": None, "max_steps_test": None,
         "target_column": "TARGET",
         # --- Windowing & Horizons ---
         "window_size": 48,
-        "predicted_horizons": [1, 6, 12, 24], # Multi-horizon support
+        "predicted_horizons": [1, 6, 12, 24],
         # --- Feature Engineering Flags ---
-        "use_returns": True, # Flag for Y calculation
+        "use_returns": True,
         "normalize_features": True,
     }
     
@@ -121,49 +120,15 @@ class PreprocessorPlugin:
             traceback.print_exc()
             raise
 
-    def _normalize_series(self, series, name, fit=False):
-        """Normalizes a time series using StandardScaler."""
-        if not self.params.get("normalize_features", True): 
-            return series.astype(np.float32)
-        
-        series = series.astype(np.float32)
-        if np.any(np.isnan(series)) or np.any(np.isinf(series)):
-            print(f"WARN: NaNs/Infs in '{name}' pre-norm. Filling...", end="")
-            series = pd.Series(series).fillna(method='ffill').fillna(method='bfill').values
-            if np.any(np.isnan(series)) or np.any(np.isinf(series)):
-                 print(f" FAILED. Filling with 0.", end="")
-                 series = np.nan_to_num(series, nan=0.0, posinf=0.0, neginf=0.0)
-            print(" OK.")
-        
-        data_reshaped = series.reshape(-1, 1)
-        if fit:
-            scaler = StandardScaler()
-            if np.std(data_reshaped) < 1e-9:
-                 print(f"WARN: '{name}' constant. Dummy scaler.")
-                 class DummyScaler:
-                     def fit(self,X):pass
-                     def transform(self,X):return X.astype(np.float32)
-                     def inverse_transform(self,X):return X.astype(np.float32)
-                 scaler = DummyScaler()
-            else: 
-                scaler.fit(data_reshaped)
-            self.scalers[name] = scaler
-        else:
-            if name not in self.scalers: 
-                raise RuntimeError(f"Scaler '{name}' not fitted.")
-            scaler = self.scalers[name]
-        
-        normalized_data = scaler.transform(data_reshaped)
-        return normalized_data.flatten()
-
     def create_causality_safe_windows_and_targets(self, close_prices, target_values, dates, window_size, horizons):
         """
-        Creates causality-safe sliding windows and multi-horizon targets.
+        Creates causality-safe sliding windows and multi-horizon targets with PERFECT alignment.
         
-        For each valid tick t (starting from window_size):
-        - Window: uses data from [t-window_size+1 : t+1] (inclusive of current tick t)
-        - Target: target_values[t+horizon] - target_values[t] for each horizon
-        - Date: dates[t] (the current tick date)
+        CRITICAL ALIGNMENT RULES:
+        - For tick t: Window contains [t-window_size : t] (EXCLUDES tick t, NO future data)
+        - For tick t: Target = target_values[t+horizon] - target_values[t] 
+        - For tick t: Date = dates[t] (the current prediction time)
+        - All arrays must have EXACT same length and alignment
         
         Args:
             close_prices: Array of close prices for feature calculation
@@ -179,52 +144,61 @@ class PreprocessorPlugin:
         target_values = np.array(target_values, dtype=np.float32)
         
         if len(close_prices) != len(target_values):
-            raise ValueError(f"Length mismatch: close_prices={len(close_prices)}, target_values={len(target_values)}")
+            raise ValueError(f"CRITICAL: Length mismatch close_prices={len(close_prices)} vs target_values={len(target_values)}")
         
-        max_horizon = max(horizons)
         total_length = len(close_prices)
+        max_horizon = max(horizons)
         
-        # Calculate log returns from close prices
-        log_prices = np.log1p(np.maximum(0, close_prices))
-        log_returns = np.diff(log_prices, prepend=log_prices[0])
+        # CRITICAL: Determine exact valid range for tick t
+        # We need: window_size points before t, and max_horizon points after t
+        # So t can range from window_size to total_length-max_horizon-1 (inclusive)
+        min_t = window_size  # First valid t (has enough history [t-window_size : t])
+        max_t = total_length - max_horizon - 1  # Last valid t (has enough future for max horizon)
         
-        # Normalize log returns
-        log_returns_norm = self._normalize_series(log_returns, 'log_return', fit=True)
-        
-        # Determine valid range for windowing
-        # Start from window_size (so we have enough history)
-        # End early enough so we have targets for max_horizon
-        start_idx = window_size
-        end_idx = total_length - max_horizon
-        
-        if start_idx >= end_idx:
-            print(f"WARN: Not enough data for windowing. Need at least {window_size + max_horizon} points, got {total_length}")
+        if min_t > max_t:
+            print(f"CRITICAL ERROR: Not enough data. Need {window_size + max_horizon} points, got {total_length}")
             return np.array([], dtype=np.float32), {h: np.array([], dtype=np.float32) for h in horizons}, np.array([], dtype=object)
         
-        num_windows = end_idx - start_idx
-        print(f"Creating {num_windows} causality-safe windows (start={start_idx}, end={end_idx-1})")
+        # Valid tick range [min_t, max_t] inclusive
+        valid_ticks = list(range(min_t, max_t + 1))
+        num_windows = len(valid_ticks)
+        
+        print(f"ALIGNMENT CHECK: Creating {num_windows} windows for ticks [{min_t}, {max_t}]")
+        print(f"  Window size: {window_size}, Max horizon: {max_horizon}, Total length: {total_length}")
+        
+        # Calculate log returns from close prices (input data is already normalized)
+        log_prices = np.log1p(np.maximum(1e-8, close_prices))  # Avoid log(0)
+        log_returns = np.diff(log_prices, prepend=log_prices[0])
         
         # Pre-allocate arrays
-        X_windows = np.zeros((num_windows, window_size, 1), dtype=np.float32)  # 1 feature channel
+        X_windows = np.zeros((num_windows, window_size, 1), dtype=np.float32)
         Y_targets = {h: np.zeros(num_windows, dtype=np.float32) for h in horizons}
         window_dates = []
         
-        # Create windows and targets
-        for i, t in enumerate(range(start_idx, end_idx)):
-            # Window: use data from [t-window_size+1 : t+1] 
-            # This includes the current tick t, but no future information
-            window_start = t - window_size + 1
-            window_end = t + 1
-            X_windows[i, :, 0] = log_returns_norm[window_start:window_end]
+        # Create windows and targets with PERFECT alignment
+        for i, t in enumerate(valid_ticks):
+            # WINDOW: [t-window_size : t] - EXCLUDES current tick t, NO future data
+            # This gives exactly window_size historical points
+            window_start = t - window_size
+            window_end = t
             
-            # Targets: calculate returns for each horizon
-            # target[t+h] - target[t] where target is the target column value
+            # Sanity checks
+            assert window_start >= 0, f"Window start {window_start} < 0 for tick {t}"
+            assert window_end <= total_length, f"Window end {window_end} > {total_length} for tick {t}"
+            assert window_end - window_start == window_size, f"Window size mismatch: {window_end - window_start} != {window_size}"
+            
+            # Fill window with historical log returns
+            X_windows[i, :, 0] = log_returns[window_start:window_end]
+            
+            # TARGETS: target_values[t+horizon] - target_values[t] for each horizon
             current_target = target_values[t]
             for h in horizons:
-                future_target = target_values[t + h]
+                future_idx = t + h
+                assert future_idx < total_length, f"Future index {future_idx} >= {total_length} for tick {t}, horizon {h}"
+                future_target = target_values[future_idx]
                 Y_targets[h][i] = future_target - current_target
             
-            # Date: use the current tick date (t)
+            # DATE: dates[t] (the current prediction time)
             if dates is not None and t < len(dates):
                 window_dates.append(dates[t])
             else:
@@ -241,7 +215,13 @@ class PreprocessorPlugin:
         else:
             window_dates_arr = np.array(window_dates, dtype=object)
         
-        print(f"Created {len(X_windows)} windows with targets for horizons {horizons}")
+        print(f"PERFECT ALIGNMENT: Created {len(X_windows)} windows with targets for horizons {horizons}")
+        
+        # Final verification
+        for h in horizons:
+            assert len(Y_targets[h]) == num_windows, f"Target length mismatch for horizon {h}"
+        assert len(window_dates_arr) == num_windows, "Date length mismatch"
+        
         return X_windows, Y_targets, window_dates_arr
 
     def process_data(self, config):
@@ -310,59 +290,68 @@ class PreprocessorPlugin:
             close_test, target_test, dates_test, window_size, predicted_horizons
         )
 
-        # --- 4. Normalize Targets if using returns ---
-        print("\n--- 4. Target Normalization ---")
+        # --- 4. Calculate and Apply Target Normalization (Z-Score) ---
+        print("\n--- 4. Target Normalization (Z-Score) ---")
         if use_returns:
-            print("Normalizing target returns using training statistics...")
+            print("Calculating Z-score normalization parameters from training data...")
             
-            # Calculate normalization stats from training data for first horizon
-            first_horizon = predicted_horizons[0]
-            target_returns_mean = Y_train_dict[first_horizon].mean()
-            target_returns_std = Y_train_dict[first_horizon].std()
+            # Calculate normalization stats from ALL training targets (all horizons combined)
+            all_train_targets = np.concatenate([Y_train_dict[h] for h in predicted_horizons])
+            target_returns_mean = float(np.mean(all_train_targets))
+            target_returns_std = float(np.std(all_train_targets))
             
             if target_returns_std < 1e-9:
                 print("WARN: Target returns have near-zero std. Using dummy normalization.")
                 target_returns_std = 1.0
             
-            # Store normalization stats
-            self.params['target_returns_mean'] = float(target_returns_mean)
-            self.params['target_returns_std'] = float(target_returns_std)
+            # Store normalization parameters in self.params
+            self.params['target_returns_mean'] = target_returns_mean
+            self.params['target_returns_std'] = target_returns_std
             
-            print(f"Target normalization stats: mean={target_returns_mean:.6f}, std={target_returns_std:.6f}")
+            print(f"Target Z-score normalization: mean={target_returns_mean:.6f}, std={target_returns_std:.6f}")
             
-            # Apply normalization to all horizons and all splits
+            # Apply Z-score normalization to all horizons and all splits
             for h in predicted_horizons:
                 Y_train_dict[h] = (Y_train_dict[h] - target_returns_mean) / target_returns_std
                 Y_val_dict[h] = (Y_val_dict[h] - target_returns_mean) / target_returns_std
                 Y_test_dict[h] = (Y_test_dict[h] - target_returns_mean) / target_returns_std
+                
+            print("Z-score normalization applied to all target splits and horizons.")
+        else:
+            # No normalization, but set params to zero for consistency
+            self.params['target_returns_mean'] = 0.0
+            self.params['target_returns_std'] = 1.0
+            print("Target normalization skipped (use_returns=False).")
         
         # --- 5. Create Baseline Values ---
         print("\n--- 5. Creating Baseline Values ---")
-        # Baseline should be the close price at the time of prediction (current tick)
-        # These align exactly with the window dates since we use tick t for both
+        # Baseline values are the target column values at prediction time (tick t)
+        # These correspond exactly to the current target values used in target calculation
         
         baseline_train = np.zeros(len(X_train), dtype=np.float32)
         baseline_val = np.zeros(len(X_val), dtype=np.float32)
         baseline_test = np.zeros(len(X_test), dtype=np.float32)
         
-        # Extract baseline values - these are the close prices at prediction time
-        start_idx_train = window_size
-        start_idx_val = window_size  
-        start_idx_test = window_size
-        
+        # Extract baseline values from the target column at tick t
         max_horizon = max(predicted_horizons)
-        end_idx_train = len(close_train) - max_horizon
-        end_idx_val = len(close_val) - max_horizon
-        end_idx_test = len(close_test) - max_horizon
         
-        for i, t in enumerate(range(start_idx_train, end_idx_train)):
-            baseline_train[i] = close_train[t]
+        # For training data
+        min_t_train = window_size
+        max_t_train = len(target_train) - max_horizon - 1
+        for i, t in enumerate(range(min_t_train, max_t_train + 1)):
+            baseline_train[i] = target_train[t]
             
-        for i, t in enumerate(range(start_idx_val, end_idx_val)):
-            baseline_val[i] = close_val[t]
+        # For validation data
+        min_t_val = window_size
+        max_t_val = len(target_val) - max_horizon - 1
+        for i, t in enumerate(range(min_t_val, max_t_val + 1)):
+            baseline_val[i] = target_val[t]
             
-        for i, t in enumerate(range(start_idx_test, end_idx_test)):
-            baseline_test[i] = close_test[t]
+        # For test data
+        min_t_test = window_size
+        max_t_test = len(target_test) - max_horizon - 1
+        for i, t in enumerate(range(min_t_test, max_t_test + 1)):
+            baseline_test[i] = target_test[t]
         
         print(f"Baseline shapes: Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
 
@@ -400,7 +389,7 @@ class PreprocessorPlugin:
         ret["x_test_dates"] = x_dates_test
         ret["y_test_dates"] = x_dates_test
         
-        # Baseline data (close prices at prediction time)
+        # Baseline data (target values at prediction time)
         ret["baseline_train"] = baseline_train
         ret["baseline_val"] = baseline_val
         ret["baseline_test"] = baseline_test
@@ -409,7 +398,7 @@ class PreprocessorPlugin:
         ret["baseline_test_dates"] = x_dates_test
         
         # Test close prices (for compatibility)
-        ret["test_close_prices"] = baseline_test
+        ret["test_close_prices"] = close_test[window_size:len(close_test)-max_horizon]
         
         # Feature names
         ret["feature_names"] = ["log_return"]
@@ -419,6 +408,7 @@ class PreprocessorPlugin:
         print(f"  Y: {len(predicted_horizons)} horizons, Train={len(ret['y_train'][0])}, Val={len(ret['y_val'][0])}, Test={len(ret['y_test'][0])}")
         print(f"  Baselines: Train={len(baseline_train)}, Val={len(baseline_val)}, Test={len(baseline_test)}")
         print(f"  Horizons: {predicted_horizons}")
+        print(f"  Target normalization: mean={self.params.get('target_returns_mean', 'N/A')}, std={self.params.get('target_returns_std', 'N/A')}")
         
         # Cleanup
         del x_train_df, x_val_df, x_test_df, y_train_df, y_val_df, y_test_df
