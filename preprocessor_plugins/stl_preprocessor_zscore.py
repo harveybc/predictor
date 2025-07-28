@@ -811,34 +811,71 @@ class PreprocessorPlugin:
         original_offset = effective_stl_window + window_size - 2
         print(f"Calculated original logic offset: {original_offset}")
 
+        # Replace the baseline calculation section (around lines 820-840) with this debug version:
+
         # --- Load Raw Target Data ---
         if target_column not in y_train_df.columns: raise ValueError(f"Column '{target_column}' not found in Y train.")
         target_train_raw = y_train_df[target_column].astype(np.float32).values
         target_val_raw = y_val_df[target_column].astype(np.float32).values
         target_test_raw = y_test_df[target_column].astype(np.float32).values
 
-        # --- Calculate Baseline using original offset logic BUT ensure length matches num_*_windows ---
-        baseline_slice_end_train = original_offset + num_samples_train
-        baseline_slice_end_val = original_offset + num_samples_val
-        baseline_slice_end_test = original_offset + num_samples_test
+        # --- DEBUG: Print all the relevant lengths ---
+        print(f"DEBUG: Data lengths:")
+        print(f"  close_train: {len(close_train)}")
+        print(f"  close_val: {len(close_val)}")
+        print(f"  close_test: {len(close_test)}")
+        print(f"  aligned_len_train: {aligned_len_train}")
+        print(f"  aligned_len_val: {aligned_len_val}")
+        print(f"  aligned_len_test: {aligned_len_test}")
+        print(f"  num_samples_train: {num_samples_train}")
+        print(f"  num_samples_val: {num_samples_val}")
+        print(f"  num_samples_test: {num_samples_test}")
+        print(f"  original_offset: {original_offset}")
+        print(f"  baseline_slice_end_train: {original_offset + num_samples_train}")
 
-        if original_offset < 0 or baseline_slice_end_train > len(close_train): raise ValueError(f"Baseline train indices invalid.")
-        baseline_train = close_train[original_offset : baseline_slice_end_train]
-        if original_offset < 0 or baseline_slice_end_val > len(close_val): raise ValueError(f"Baseline val indices invalid.")
-        baseline_val = close_val[original_offset : baseline_slice_end_val]
-        if original_offset < 0 or baseline_slice_end_test > len(close_test): raise ValueError(f"Baseline test indices invalid.")
-        baseline_test = close_test[original_offset : baseline_slice_end_test]
+        # --- CORRECTED: Calculate offset based on actual alignment difference ---
+        # The issue is that aligned features are shorter due to STL window, but we're using the original offset
+        actual_data_reduction = len(close_train) - aligned_len_train
+        print(f"  actual_data_reduction: {actual_data_reduction}")
+        
+        # Use the actual data reduction as the offset instead of the theoretical calculation
+        corrected_offset = actual_data_reduction
+        print(f"  corrected_offset: {corrected_offset}")
 
-        if len(baseline_train) != num_samples_train: raise ValueError(f"Baseline train length mismatch: Expected {num_samples_train}, Got {len(baseline_train)}")
-        if len(baseline_val) != num_samples_val: raise ValueError(f"Baseline val length mismatch: Expected {num_samples_val}, Got {len(baseline_val)}")
-        if len(baseline_test) != num_samples_test: raise ValueError(f"Baseline test length mismatch: Expected {num_samples_test}, Got {len(baseline_test)}")
-        print(f"Baseline shapes (Original Logic): Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
+        # --- Calculate Baseline using corrected offset ---
+        baseline_slice_end_train = corrected_offset + num_samples_train
+        baseline_slice_end_val = corrected_offset + num_samples_val
+        baseline_slice_end_test = corrected_offset + num_samples_test
 
-        # --- Process targets using original slicing and shifting logic, adjusted for multi-horizon ---
-        # 1. Apply original initial slice
-        target_train = target_train_raw[original_offset:]
-        target_val = target_val_raw[original_offset:]
-        target_test = target_test_raw[original_offset:]
+        print(f"  corrected baseline_slice_end_train: {baseline_slice_end_train}")
+
+        if corrected_offset < 0 or baseline_slice_end_train > len(close_train): 
+            print(f"ERROR: Even with corrected offset, baseline indices are invalid:")
+            print(f"  corrected_offset: {corrected_offset}")
+            print(f"  baseline_slice_end_train: {baseline_slice_end_train}")
+            print(f"  len(close_train): {len(close_train)}")
+            raise ValueError(f"Baseline train indices invalid even after correction.")
+            
+        baseline_train = close_train[corrected_offset : baseline_slice_end_train]
+        if corrected_offset < 0 or baseline_slice_end_val > len(close_val): 
+            raise ValueError(f"Baseline val indices invalid.")
+        baseline_val = close_val[corrected_offset : baseline_slice_end_val]
+        if corrected_offset < 0 or baseline_slice_end_test > len(close_test): 
+            raise ValueError(f"Baseline test indices invalid.")
+        baseline_test = close_test[corrected_offset : baseline_slice_end_test]
+
+        if len(baseline_train) != num_samples_train: 
+            raise ValueError(f"Baseline train length mismatch: Expected {num_samples_train}, Got {len(baseline_train)}")
+        if len(baseline_val) != num_samples_val: 
+            raise ValueError(f"Baseline val length mismatch: Expected {num_samples_val}, Got {len(baseline_val)}")
+        if len(baseline_test) != num_samples_test: 
+            raise ValueError(f"Baseline test length mismatch: Expected {num_samples_test}, Got {len(baseline_test)}")
+        print(f"Baseline shapes (Corrected Logic): Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
+
+        # --- Process targets using corrected offset ---
+        target_train = target_train_raw[corrected_offset:]
+        target_val = target_val_raw[corrected_offset:]
+        target_test = target_test_raw[corrected_offset:]
 
         # 2. Calculate shifted targets for each horizon and slice to final length
         y_train_final_list = []; y_val_final_list = []; y_test_final_list = []
