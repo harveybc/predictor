@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 """
-STL Pipeline Plugin - Corrected Version 7 (Z-Score Target Denormalization)
+STL Pipeline Plugin - Per-Horizon Z-Score Denormalization
 
-Integrates two-step denormalization for targets normalized separately by the preprocessor.
-1. Denormalizes model's residual output using target_returns_mean/std from preprocessor.
-2. Adds denormalized residual to baseline, then denormalizes final price using JSON stats.
-Ensures correct MAE calculation and uncertainty scaling.
-Compatible with z-score normalization for all features via JSON config.
+Uses per-horizon target normalization parameters from preprocessor.
+Handles separate mean/std for each prediction horizon during denormalization.
 """
 
 import time
@@ -28,7 +25,7 @@ import tensorflow.keras.backend as K
 from app.data_handler import write_csv
 
 
-# --- Denormalization Functions (Verified for Z-Score) ---
+# --- Denormalization Functions ---
 def denormalize(data, config):
     """Denormalizes price or price delta. Supports both min-max and z-score normalization."""
     data = np.asarray(data)
@@ -85,7 +82,6 @@ def denormalize_returns(data, config):
             except KeyError as e: print(f"WARN: Missing key in norm JSON: {e}"); return data
             except Exception as e: print(f"WARN: Error during denormalize_returns: {e}"); return data
     return data
-# --- End Denormalization Functions ---
 
 
 class STLPipelinePlugin:
@@ -130,11 +126,22 @@ class STLPipelinePlugin:
         use_returns = config.get("use_returns", False)
         if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None): raise ValueError("Baselines required when use_returns=True.")
 
-        # --- UPDATED FOR Z-SCORE TARGETS ---
-        # Get target-specific normalization stats from preprocessor
-        target_returns_mean = plugin_debug_vars.get('target_returns_mean', 0.0)
-        target_returns_std = plugin_debug_vars.get('target_returns_std', 1.0)
-        if use_returns: print(f"Target returns stats loaded: Mean={target_returns_mean:.6f}, Std={target_returns_std:.6f}")
+        # Get per-horizon target normalization stats from preprocessor
+        target_returns_mean = plugin_debug_vars.get('target_returns_mean', [0.0] * len(predicted_horizons))
+        target_returns_std = plugin_debug_vars.get('target_returns_std', [1.0] * len(predicted_horizons))
+        
+        # Ensure lists have correct length
+        if not isinstance(target_returns_mean, list) or len(target_returns_mean) != len(predicted_horizons):
+            print(f"WARN: target_returns_mean not properly formatted. Using defaults.")
+            target_returns_mean = [0.0] * len(predicted_horizons)
+        if not isinstance(target_returns_std, list) or len(target_returns_std) != len(predicted_horizons):
+            print(f"WARN: target_returns_std not properly formatted. Using defaults.")
+            target_returns_std = [1.0] * len(predicted_horizons)
+            
+        if use_returns: 
+            print(f"Per-horizon target normalization stats loaded:")
+            for i, h in enumerate(predicted_horizons):
+                print(f"  Horizon {h}: Mean={target_returns_mean[i]:.6f}, Std={target_returns_std[i]:.6f}")
         
         # Config Validation & Setup
         plotted_horizon = config.get('plotted_horizon'); plotted_index = predicted_horizons.index(plotted_horizon)
@@ -168,20 +175,23 @@ class STLPipelinePlugin:
                 print("Calculating Train/Validation metrics (all horizons)...")
                 for idx, h in enumerate(predicted_horizons):
                     try:
-                        # --- Ensure inputs are flattened BEFORE potential addition ---
+                        # Get horizon-specific normalization parameters
+                        h_mean = target_returns_mean[idx]
+                        h_std = target_returns_std[idx]
+                        
+                        # Ensure inputs are flattened BEFORE potential addition
                         train_preds_h=list_train_preds[idx].flatten(); train_target_h=y_train_list[idx].flatten(); train_unc_h=list_train_unc[idx].flatten()
                         val_preds_h=list_val_preds[idx].flatten(); val_target_h=y_val_list[idx].flatten(); val_unc_h=list_val_unc[idx].flatten()
                         num_train_pts=min(len(train_preds_h),len(train_target_h),len(baseline_train)); num_val_pts=min(len(val_preds_h),len(val_target_h),len(baseline_val))
                         train_preds_h=train_preds_h[:num_train_pts]; train_target_h=train_target_h[:num_train_pts]; train_unc_h=train_unc_h[:num_train_pts]; baseline_train_h=baseline_train[:num_train_pts].flatten()
                         val_preds_h=val_preds_h[:num_val_pts]; val_target_h=val_target_h[:num_val_pts]; val_unc_h=val_unc_h[:num_val_pts]; baseline_val_h=baseline_val[:num_val_pts].flatten()
 
-                        # --- UPDATED FOR Z-SCORE TARGETS ---
                         if use_returns:
-                            # 1. Denormalize residuals using preprocessor stats
-                            train_preds_denorm_return = (train_preds_h * target_returns_std) + target_returns_mean
-                            train_target_denorm_return = (train_target_h * target_returns_std) + target_returns_mean
-                            val_preds_denorm_return = (val_preds_h * target_returns_std) + target_returns_mean
-                            val_target_denorm_return = (val_target_h * target_returns_std) + target_returns_mean
+                            # 1. Denormalize residuals using horizon-specific stats
+                            train_preds_denorm_return = (train_preds_h * h_std) + h_mean
+                            train_target_denorm_return = (train_target_h * h_std) + h_mean
+                            val_preds_denorm_return = (val_preds_h * h_std) + h_mean
+                            val_target_denorm_return = (val_target_h * h_std) + h_mean
                             
                             # 2. Add to baseline, then denormalize final price using JSON stats
                             train_pred_price = denormalize(baseline_train_h + train_preds_denorm_return, config)
@@ -189,9 +199,9 @@ class STLPipelinePlugin:
                             val_pred_price = denormalize(baseline_val_h + val_preds_denorm_return, config)
                             val_target_price = denormalize(baseline_val_h + val_target_denorm_return, config)
                             
-                            # Denorm uncertainty: scale by target std, then by feature (CLOSE) std
-                            train_unc_denorm_return = train_unc_h * target_returns_std
-                            val_unc_denorm_return = val_unc_h * target_returns_std
+                            # Denorm uncertainty: scale by horizon-specific std, then by feature (CLOSE) std
+                            train_unc_denorm_return = train_unc_h * h_std
+                            val_unc_denorm_return = val_unc_h * h_std
                             train_unc_final = denormalize_returns(train_unc_denorm_return, config)
                             val_unc_final = denormalize_returns(val_unc_denorm_return, config)
                         else:
@@ -220,17 +230,20 @@ class STLPipelinePlugin:
             if not all(len(lst)==num_outputs for lst in [list_test_preds, list_test_unc]): raise ValueError("Predictor predict mismatch outputs.")
             for idx, h in enumerate(predicted_horizons):
                  try:
+                     # Get horizon-specific normalization parameters
+                     h_mean = target_returns_mean[idx]
+                     h_std = target_returns_std[idx]
+                     
                      test_preds_h=list_test_preds[idx].flatten(); test_target_h=y_test_list[idx].flatten(); test_unc_h=list_test_unc[idx].flatten()
                      num_test_pts=min(len(test_preds_h),len(test_target_h),len(baseline_test))
                      test_preds_h=test_preds_h[:num_test_pts]; test_target_h=test_target_h[:num_test_pts]; test_unc_h=test_unc_h[:num_test_pts]; baseline_test_h=baseline_test[:num_test_pts].flatten()
                      
-                     # --- UPDATED FOR Z-SCORE TARGETS ---
                      if use_returns:
-                         test_preds_denorm_return = (test_preds_h * target_returns_std) + target_returns_mean
-                         test_target_denorm_return = (test_target_h * target_returns_std) + target_returns_mean
+                         test_preds_denorm_return = (test_preds_h * h_std) + h_mean
+                         test_target_denorm_return = (test_target_h * h_std) + h_mean
                          test_pred_price = denormalize(baseline_test_h + test_preds_denorm_return, config)
                          test_target_price = denormalize(baseline_test_h + test_target_denorm_return, config)
-                         test_unc_denorm_return = test_unc_h * target_returns_std
+                         test_unc_denorm_return = test_unc_h * h_std
                          test_unc_final = denormalize_returns(test_unc_denorm_return, config)
                      else:
                          test_pred_price = denormalize(test_preds_h, config)
@@ -253,7 +266,7 @@ class STLPipelinePlugin:
                  print(f"  Test  MAE:{test_mae_plot:.6f}|R²:{test_r2_plot:.4f}|Unc:{test_unc_plot:.6f}|SNR:{test_snr_plot:.2f}"); print("*"*72)
             except Exception as e: print(f"WARN: Error printing iter summary: {e}")
 
-        # --- Aggregating Results (No changes needed here) ---
+        # --- Aggregating Results ---
         print("\n--- Aggregating Results Across Iterations (All Horizons) ---")
         results_list = []
         for ds in data_sets:
@@ -282,19 +295,22 @@ class STLPipelinePlugin:
             output_data["test_CLOSE"] = denorm_test_close.flatten()
 
             for idx, h in enumerate(predicted_horizons):
+                # Get horizon-specific normalization parameters
+                h_mean = target_returns_mean[idx]
+                h_std = target_returns_std[idx]
+                
                 preds_raw=final_predictions[idx][:num_test_points].flatten()
                 target_raw=y_test_list[idx][:num_test_points].flatten()
                 unc_raw=final_uncertainties[idx][:num_test_points].flatten()
                 pred_price_denorm=np.full(num_test_points,np.nan); target_price_denorm=np.full(num_test_points,np.nan); unc_denorm=np.full(num_test_points,np.nan)
                 try:
-                    # --- UPDATED FOR Z-SCORE TARGETS ---
                     if use_returns:
                          if final_baseline is None: raise ValueError("Baseline missing for returns-based prediction.")
-                         preds_denorm_return = (preds_raw * target_returns_std) + target_returns_mean
-                         target_denorm_return = (target_raw * target_returns_std) + target_returns_mean
+                         preds_denorm_return = (preds_raw * h_std) + h_mean
+                         target_denorm_return = (target_raw * h_std) + h_mean
                          pred_price_denorm = denormalize(final_baseline + preds_denorm_return, config)
                          target_price_denorm = denormalize(final_baseline + target_denorm_return, config)
-                         unc_denorm_return = unc_raw * target_returns_std
+                         unc_denorm_return = unc_raw * h_std
                          unc_denorm = denormalize_returns(unc_denorm_return, config)
                     else:
                          pred_price_denorm = denormalize(preds_raw, config)
@@ -324,18 +340,21 @@ class STLPipelinePlugin:
         # --- Plot Predictions for 'plotted_horizon' ---
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
+            # Get horizon-specific normalization parameters for plotting
+            plot_h_mean = target_returns_mean[plotted_index]
+            plot_h_std = target_returns_std[plotted_index]
+            
             preds_plot_raw = list_test_preds[plotted_index][:num_test_points]
             target_plot_raw = y_test_list[plotted_index][:num_test_points]
             unc_plot_raw = list_test_unc[plotted_index][:num_test_points]
             baseline_plot = final_baseline
             
-            # --- UPDATED FOR Z-SCORE TARGETS ---
             if use_returns:
-                preds_denorm_return = (preds_plot_raw.flatten() * target_returns_std) + target_returns_mean
-                target_denorm_return = (target_plot_raw.flatten() * target_returns_std) + target_returns_mean
+                preds_denorm_return = (preds_plot_raw.flatten() * plot_h_std) + plot_h_mean
+                target_denorm_return = (target_plot_raw.flatten() * plot_h_std) + plot_h_mean
                 pred_plot_price_flat = denormalize(baseline_plot + preds_denorm_return, config).flatten()
                 target_plot_price_flat = denormalize(baseline_plot + target_denorm_return, config).flatten()
-                unc_denorm_return = unc_plot_raw.flatten() * target_returns_std
+                unc_denorm_return = unc_plot_raw.flatten() * plot_h_std
                 unc_plot_denorm_flat = denormalize_returns(unc_denorm_return, config).flatten()
             else:
                 pred_plot_price_flat = denormalize(preds_plot_raw, config).flatten()
