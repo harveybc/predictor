@@ -582,7 +582,7 @@ class PreprocessorPlugin:
         ret["feature_names"] = feature_names
         
         print(f"Final shapes:")
-        print(f"  X: Train={X_train.shape}, Val={X_val.shape}, Test={X_test.shape}")
+        #print(f"  X: Train={X_train.shape}, Val={X_val.shape}, Test={X_test.shape}")
         print(f"  Y: {len(predicted_horizons)} horizons, Train={len(ret['y_train'][0])}, Val={len(ret['y_val'][0])}, Test={len(ret['y_test'][0])}")
         print(f"  Baselines: Train={len(baseline_train)}, Val={len(baseline_val)}, Test={len(baseline_test)}")
         print(f"  Horizons: {predicted_horizons}")
