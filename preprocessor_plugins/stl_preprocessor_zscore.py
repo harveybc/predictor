@@ -477,9 +477,6 @@ class PreprocessorPlugin:
                 if std_h < 1e-8:
                     std_h = 1.0  # Evita división por cero
 
-                target_return_
-
-
         # Save normalization stats in params
         self.params['target_returns_mean'] = target_returns_means
         self.params['target_returns_std'] = target_returns_stds
