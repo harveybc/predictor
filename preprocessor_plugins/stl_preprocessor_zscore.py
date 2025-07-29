@@ -567,6 +567,15 @@ class PreprocessorPlugin:
         del x_train_df, x_val_df, x_test_df, y_train_df, y_val_df, y_test_df
         
         print("\n" + "="*15 + " Preprocessing Finished " + "="*15)
+
+        assert len(target_returns_means) == len(predicted_horizons), "Mismatch: means vs horizons"
+        assert len(target_returns_stds) == len(predicted_horizons), "Mismatch: stds vs horizons"
+
+        self.params["target_returns_mean"] = target_returns_means
+        self.params["target_returns_std"] = target_returns_stds
+
+        ret["target_returns_mean"] = target_returns_means
+        ret["target_returns_std"] = target_returns_stds
         return ret
 
     def run_preprocessing(self, config):
