@@ -165,8 +165,9 @@ class STLPipelinePlugin:
         output_names = [f"output_horizon_{h}" for h in predicted_horizons]
 
         # Prepare Target Dicts for Training
-        y_train_dict={name: y.reshape(-1,1).astype(np.float32) for name,y in zip(output_names,y_train_list)}
-        y_val_dict={name: y.reshape(-1,1).astype(np.float32) for name,y in zip(output_names,y_val_list)}
+        # Instead of zipping, iterate over output_names and get arrays from the dict
+        y_train_dict = {name: y_train_list[name].reshape(-1, 1).astype(np.float32) for name in output_names}
+        y_val_dict   = {name: y_val_list[name].reshape(-1, 1).astype(np.float32) for name in output_names}
 
         print(f"Input shapes: Train:{X_train.shape}, Val:{X_val.shape}, Test:{X_test.shape}")
         print(f"Target shapes(H={predicted_horizons[0]}): Train:{y_train_list[0].shape}, Val:{y_val_list[0].shape}, Test:{y_test_list[0].shape}")
