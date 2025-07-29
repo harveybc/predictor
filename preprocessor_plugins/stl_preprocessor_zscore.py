@@ -436,19 +436,19 @@ class PreprocessorPlugin:
         target_column = config["target_column"]
         use_returns = config.get("use_returns", False)
 
-        # The baseline index for each sample is the last index in its window:
-        # For sample i, it corresponds to i + window_size - 1
-        train_pred_indices = np.arange(num_samples_train) + window_size - 1
-        val_pred_indices = np.arange(num_samples_val) + window_size - 1
-        test_pred_indices = np.arange(num_samples_test) + window_size - 1
+        # Usamos slicing directo: el primer valor válido de baseline está en close[window_size]
+        baseline_train = close_train[window_size:window_size + num_samples_train]
+        baseline_val = close_val[window_size:window_size + num_samples_val]
+        baseline_test = close_test[window_size:window_size + num_samples_test]
 
-        baseline_train = close_train[train_pred_indices]
-        baseline_val = close_val[val_pred_indices]
-        baseline_test = close_test[test_pred_indices]
+        print(f"Baseline shapes: Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
 
-        print(f"Baseline lengths: Train={len(baseline_train)}, Val={len(baseline_val)}, Test={len(baseline_test)}")
+        # Fechas del baseline alineadas con ese slicing
+        baseline_train_dates = dates_train[window_size:window_size + num_samples_train] if dates_train is not None else None
+        baseline_val_dates   = dates_val[window_size:window_size + num_samples_val]     if dates_val is not None else None
+        baseline_test_dates  = dates_test[window_size:window_size + num_samples_test]   if dates_test is not None else None
 
-        # Load raw target series
+        # Target series cruda
         target_train_raw = y_train_df[target_column].astype(np.float32).values
         target_val_raw = y_val_df[target_column].astype(np.float32).values
         target_test_raw = y_test_df[target_column].astype(np.float32).values
@@ -460,48 +460,25 @@ class PreprocessorPlugin:
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
 
         for h in predicted_horizons:
-            # Calculate future indices
-            train_target_indices = train_pred_indices + h
-            val_target_indices = val_pred_indices + h
-            test_target_indices = test_pred_indices + h
-
-            # Verify index bounds
-            if train_target_indices.max() >= len(target_train_raw):
-                raise ValueError(f"Train target indices exceed array for horizon {h}")
-            if val_target_indices.max() >= len(target_val_raw):
-                raise ValueError(f"Val target indices exceed array for horizon {h}")
-            if test_target_indices.max() >= len(target_test_raw):
-                raise ValueError(f"Test target indices exceed array for horizon {h}")
-
-            # Select targets
-            target_train_h = target_train_raw[train_target_indices]
-            target_val_h = target_val_raw[val_target_indices]
-            target_test_h = target_test_raw[test_target_indices]
+            # Target real para predicción desde t → t+h
+            target_train_h = target_train_raw[window_size + h : window_size + h + num_samples_train]
+            target_val_h   = target_val_raw[window_size + h : window_size + h + num_samples_val]
+            target_test_h  = target_test_raw[window_size + h : window_size + h + num_samples_test]
 
             if use_returns:
-                # Return = V_{t+h} - V_t
+                # Retorno = V_{t+h} - V_t
                 target_train_h = target_train_h - baseline_train
-                target_val_h = target_val_h - baseline_val
-                target_test_h = target_test_h - baseline_test
+                target_val_h   = target_val_h - baseline_val
+                target_test_h  = target_test_h - baseline_test
 
-                # Normalize using z-score from train
+                # Normalizar con media y std de TRAIN
                 mean_h = target_train_h.mean()
                 std_h = target_train_h.std()
-                if std_h < 1e-8: std_h = 1.0
+                if std_h < 1e-8:
+                    std_h = 1.0  # Evita división por cero
 
-                target_returns_means.append(float(mean_h))
-                target_returns_stds.append(float(std_h))
+                target_return_
 
-                target_train_h = (target_train_h - mean_h) / std_h
-                target_val_h = (target_val_h - mean_h) / std_h
-                target_test_h = (target_test_h - mean_h) / std_h
-            else:
-                target_returns_means.append(0.0)
-                target_returns_stds.append(1.0)
-
-            y_train_final_list.append(target_train_h.astype(np.float32))
-            y_val_final_list.append(target_val_h.astype(np.float32))
-            y_test_final_list.append(target_test_h.astype(np.float32))
 
         # Save normalization stats in params
         self.params['target_returns_mean'] = target_returns_means
