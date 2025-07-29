@@ -366,19 +366,20 @@ class PreprocessorPlugin:
         max_horizon = max(predicted_horizons)
         
         # For training data
-        min_t_train = window_size
+        # For training data
+        min_t_train = window_size - 1
         max_t_train = len(target_train) - max_horizon - 1
         for i, t in enumerate(range(min_t_train, max_t_train + 1)):
             baseline_train[i] = target_train[t]
             
         # For validation data
-        min_t_val = window_size
+        min_t_val = window_size - 1
         max_t_val = len(target_val) - max_horizon - 1
         for i, t in enumerate(range(min_t_val, max_t_val + 1)):
             baseline_val[i] = target_val[t]
             
         # For test data
-        min_t_test = window_size
+        min_t_test = window_size - 1
         max_t_test = len(target_test) - max_horizon - 1
         for i, t in enumerate(range(min_t_test, max_t_test + 1)):
             baseline_test[i] = target_test[t]
