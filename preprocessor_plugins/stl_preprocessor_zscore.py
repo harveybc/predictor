@@ -120,7 +120,7 @@ class PreprocessorPlugin:
             traceback.print_exc()
             raise
 
-    def create_causality_safe_windows_and_targets(self, close_prices, target_values, dates, window_size, horizons):
+    def create_causality_safe_windows_and_targets(self, features_df, target_values, dates, window_size, horizons):
         """
         Creates causality-safe sliding windows and multi-horizon targets with PERFECT alignment.
         
@@ -131,33 +131,43 @@ class PreprocessorPlugin:
         - All arrays must have EXACT same length and alignment
         
         Args:
-            close_prices: Array of close prices for feature calculation
+            features_df: DataFrame with all feature columns (CLOSE, OPEN, HIGH, LOW, VOLUME, etc.)
             target_values: Array of target column values 
             dates: Array of datetime indices
             window_size: Size of sliding window
             horizons: List of prediction horizons
             
         Returns:
-            tuple: (X_windows, Y_targets_dict, window_dates)
+            tuple: (X_windows, Y_targets_dict, window_dates, feature_names)
         """
-        close_prices = np.array(close_prices, dtype=np.float32)
+        # Convert features to numpy array and get feature names
+        if isinstance(features_df, pd.DataFrame):
+            feature_names = list(features_df.columns)
+            features_array = features_df.values.astype(np.float32)
+        else:
+            # Fallback for array input (backward compatibility)
+            feature_names = ["CLOSE"]
+            features_array = np.array(features_df, dtype=np.float32).reshape(-1, 1)
+        
         target_values = np.array(target_values, dtype=np.float32)
         
-        if len(close_prices) != len(target_values):
-            raise ValueError(f"CRITICAL: Length mismatch close_prices={len(close_prices)} vs target_values={len(target_values)}")
+        if len(features_array) != len(target_values):
+            raise ValueError(f"CRITICAL: Length mismatch features={len(features_array)} vs target_values={len(target_values)}")
         
-        total_length = len(close_prices)
+        total_length = len(features_array)
         max_horizon = max(horizons)
+        num_features = features_array.shape[1]
+        
+        print(f"Feature engineering: {num_features} features detected")
+        print(f"Feature names: {feature_names}")
         
         # CRITICAL: Determine exact valid range for tick t
-        # We need: window_size points before t, and max_horizon points after t
-        # So t can range from window_size to total_length-max_horizon-1 (inclusive)
         min_t = window_size  # First valid t (has enough history [t-window_size : t])
         max_t = total_length - max_horizon - 1  # Last valid t (has enough future for max horizon)
         
         if min_t > max_t:
             print(f"CRITICAL ERROR: Not enough data. Need {window_size + max_horizon} points, got {total_length}")
-            return np.array([], dtype=np.float32), {h: np.array([], dtype=np.float32) for h in horizons}, np.array([], dtype=object)
+            return np.array([], dtype=np.float32), {h: np.array([], dtype=np.float32) for h in horizons}, np.array([], dtype=object), feature_names
         
         # Valid tick range [min_t, max_t] inclusive
         valid_ticks = list(range(min_t, max_t + 1))
@@ -165,20 +175,16 @@ class PreprocessorPlugin:
         
         print(f"ALIGNMENT CHECK: Creating {num_windows} windows for ticks [{min_t}, {max_t}]")
         print(f"  Window size: {window_size}, Max horizon: {max_horizon}, Total length: {total_length}")
+        print(f"  Features per window: {num_features}")
         
-        # Calculate log returns from close prices (input data is already normalized)
-        log_prices = np.log1p(np.maximum(1e-8, close_prices))  # Avoid log(0)
-        log_returns = np.diff(log_prices, prepend=log_prices[0])
-        
-        # Pre-allocate arrays
-        X_windows = np.zeros((num_windows, window_size, 1), dtype=np.float32)
+        # Pre-allocate arrays - NOW WITH CORRECT FEATURE DIMENSION
+        X_windows = np.zeros((num_windows, window_size, num_features), dtype=np.float32)
         Y_targets = {h: np.zeros(num_windows, dtype=np.float32) for h in horizons}
         window_dates = []
         
         # Create windows and targets with PERFECT alignment
         for i, t in enumerate(valid_ticks):
             # WINDOW: [t-window_size : t] - EXCLUDES current tick t, NO future data
-            # This gives exactly window_size historical points
             window_start = t - window_size
             window_end = t
             
@@ -187,8 +193,8 @@ class PreprocessorPlugin:
             assert window_end <= total_length, f"Window end {window_end} > {total_length} for tick {t}"
             assert window_end - window_start == window_size, f"Window size mismatch: {window_end - window_start} != {window_size}"
             
-            # Fill window with historical log returns
-            X_windows[i, :, 0] = log_returns[window_start:window_end]
+            # Fill window with ALL FEATURES (not just log returns)
+            X_windows[i, :, :] = features_array[window_start:window_end, :]
             
             # TARGETS: target_values[t+horizon] - target_values[t] for each horizon
             current_target = target_values[t]
@@ -215,14 +221,18 @@ class PreprocessorPlugin:
         else:
             window_dates_arr = np.array(window_dates, dtype=object)
         
-        print(f"PERFECT ALIGNMENT: Created {len(X_windows)} windows with targets for horizons {horizons}")
+        print(f"PERFECT ALIGNMENT: Created {len(X_windows)} windows with shape {X_windows.shape}")
+        print(f"Window shape breakdown: [samples={X_windows.shape[0]}, timesteps={X_windows.shape[1]}, features={X_windows.shape[2]}]")
         
         # Final verification
         for h in horizons:
             assert len(Y_targets[h]) == num_windows, f"Target length mismatch for horizon {h}"
         assert len(window_dates_arr) == num_windows, "Date length mismatch"
         
-        return X_windows, Y_targets, window_dates_arr
+        return X_windows, Y_targets, window_dates_arr, feature_names
+
+
+
 
     def process_data(self, config):
         """
@@ -275,19 +285,27 @@ class PreprocessorPlugin:
         # --- 3. Create Causality-Safe Windows and Targets ---
         print("\n--- 3. Creating Causality-Safe Windows and Targets ---")
         
+        # Prepare feature DataFrames (all columns except target-specific ones)
+        feature_cols = [col for col in x_train_df.columns if col != target_column]
+        x_train_features = x_train_df[feature_cols]
+        x_val_features = x_val_df[feature_cols]
+        x_test_features = x_test_df[feature_cols]
+        
+        print(f"Using {len(feature_cols)} feature columns: {feature_cols}")
+        
         print("Processing TRAIN data...")
-        X_train, Y_train_dict, x_dates_train = self.create_causality_safe_windows_and_targets(
-            close_train, target_train, dates_train, window_size, predicted_horizons
+        X_train, Y_train_dict, x_dates_train, feature_names = self.create_causality_safe_windows_and_targets(
+            x_train_features, target_train, dates_train, window_size, predicted_horizons
         )
         
         print("Processing VALIDATION data...")
-        X_val, Y_val_dict, x_dates_val = self.create_causality_safe_windows_and_targets(
-            close_val, target_val, dates_val, window_size, predicted_horizons
+        X_val, Y_val_dict, x_dates_val, _ = self.create_causality_safe_windows_and_targets(
+            x_val_features, target_val, dates_val, window_size, predicted_horizons
         )
         
         print("Processing TEST data...")
-        X_test, Y_test_dict, x_dates_test = self.create_causality_safe_windows_and_targets(
-            close_test, target_test, dates_test, window_size, predicted_horizons
+        X_test, Y_test_dict, x_dates_test, _ = self.create_causality_safe_windows_and_targets(
+            x_test_features, target_test, dates_test, window_size, predicted_horizons
         )
 
         # --- 4. Calculate and Apply Per-Horizon Target Normalization (Z-Score) ---
@@ -411,14 +429,15 @@ class PreprocessorPlugin:
         # Test close prices (for compatibility)
         ret["test_close_prices"] = close_test[window_size:len(close_test)-max_horizon]
         
-        # Feature names
-        ret["feature_names"] = ["log_return"]
+        # Feature names (now properly extracted from data)
+        ret["feature_names"] = feature_names
         
         print(f"Final shapes:")
         print(f"  X: Train={X_train.shape}, Val={X_val.shape}, Test={X_test.shape}")
         print(f"  Y: {len(predicted_horizons)} horizons, Train={len(ret['y_train'][0])}, Val={len(ret['y_val'][0])}, Test={len(ret['y_test'][0])}")
         print(f"  Baselines: Train={len(baseline_train)}, Val={len(baseline_val)}, Test={len(baseline_test)}")
         print(f"  Horizons: {predicted_horizons}")
+        print(f"  Features ({len(feature_names)}): {feature_names}")
         print(f"  Target normalization per horizon:")
         for i, h in enumerate(predicted_horizons):
             mean_h = self.params.get('target_returns_mean', [0])[i] if isinstance(self.params.get('target_returns_mean'), list) else 0
