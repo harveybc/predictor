@@ -1,7 +1,6 @@
 # Ensure these imports are present at the top of the file
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 import json
 import os
@@ -40,8 +39,15 @@ def verify_date_consistency(date_lists, dataset_name):
 
 
 class PreprocessorPlugin:
-    # Plugin parameters
+    # Default plugin parameters - Restored working version defaults
     plugin_params = {
+        # --- File Paths ---
+        "x_train_file": "data/x_train.csv",
+        "y_train_file": "data/y_train.csv",
+        "x_validation_file": "data/x_val.csv",
+        "y_validation_file": "data/y_val.csv",
+        "x_test_file": "data/x_test.csv",
+        "y_test_file": "data/y_test.csv",
         # --- Data Loading ---
         "headers": True,
         "max_steps_train": None, "max_steps_val": None, "max_steps_test": None,
@@ -52,11 +58,14 @@ class PreprocessorPlugin:
         # --- Feature Engineering Flags ---
         "use_returns": True,
         "normalize_features": True,
+        # --- STL Parameters (needed for offset calculation only) ---
+        "stl_period": 24,
+        "stl_window": None,  # Will be resolved to 2 * stl_period + 1
     }
     
     plugin_debug_vars = [
         "window_size", "predicted_horizons", "use_returns", "normalize_features",
-        "target_returns_mean", "target_returns_std"
+        "target_returns_mean", "target_returns_std"  # These will now be lists
     ]
 
     def __init__(self):
@@ -67,10 +76,20 @@ class PreprocessorPlugin:
         """Update plugin parameters with global configuration."""
         for key, value in kwargs.items(): 
             self.params[key] = value
+        
+        # Resolve STL window for offset calculation (even though we don't use STL)
+        config = self.params
+        if config.get("stl_period") is not None and config.get("stl_period") > 1:
+            if config.get("stl_window") is None: 
+                config["stl_window"] = 2 * config["stl_period"] + 1
 
     def get_debug_info(self):
         """Return debug information for the plugin."""
-        return {var: self.params.get(var) for var in self.plugin_debug_vars}
+        debug_info = {}
+        for var in self.plugin_debug_vars:
+            value = self.params.get(var)
+            debug_info[var] = value
+        return debug_info
 
     def add_debug_info(self, debug_info):
         """Add plugin debug info to the provided dictionary."""
@@ -85,9 +104,8 @@ class PreprocessorPlugin:
                 raise ValueError(f"load_csv None/empty for {file_path}")
             print(f" Done. Shape: {df.shape}")
             
-            # Ensure datetime index
             if not isinstance(df.index, pd.DatetimeIndex):
-                print(f"Converting to DatetimeIndex for {file_path}...", end="")
+                print(f"Attempting DatetimeIndex conversion for {file_path}...", end="")
                 original_index_name = df.index.name
                 try: 
                     df.index = pd.to_datetime(df.index)
@@ -102,7 +120,6 @@ class PreprocessorPlugin:
                 if original_index_name: 
                     df.index.name = original_index_name
             
-            # Verify required columns
             required_cols = ["CLOSE"]
             target_col_name = self.params.get("target_column", "TARGET")
             if 'y_' in os.path.basename(file_path).lower(): 
@@ -120,124 +137,124 @@ class PreprocessorPlugin:
             traceback.print_exc()
             raise
 
-    def create_causality_safe_windows_and_targets(self, features_df, target_values, dates, window_size, horizons):
-        """
-        Creates causality-safe sliding windows and multi-horizon targets with PERFECT alignment.
+    def _normalize_series(self, series, name, fit=False):
+        """Normalizes a time series using StandardScaler."""
+        if not self.params.get("normalize_features", True): 
+            return series.astype(np.float32)
         
-        CRITICAL ALIGNMENT RULES:
-        - For tick t: Window contains [t-window_size : t] (EXCLUDES tick t, NO future data)
-        - For tick t: Target = target_values[t+horizon] - target_values[t] 
-        - For tick t: Date = dates[t] (the current prediction time)
-        - All arrays must have EXACT same length and alignment
+        series = series.astype(np.float32)
+        if np.any(np.isnan(series)) or np.any(np.isinf(series)):
+            print(f"WARN: NaNs/Infs in '{name}' pre-norm. Filling...", end="")
+            series = pd.Series(series).fillna(method='ffill').fillna(method='bfill').values
+            if np.any(np.isnan(series)) or np.any(np.isinf(series)):
+                 print(f" FAILED. Filling with 0.", end="")
+                 series = np.nan_to_num(series, nan=0.0, posinf=0.0, neginf=0.0)
+            print(" OK.")
         
-        Args:
-            features_df: DataFrame with all feature columns (CLOSE, OPEN, HIGH, LOW, VOLUME, etc.)
-            target_values: Array of target column values 
-            dates: Array of datetime indices
-            window_size: Size of sliding window
-            horizons: List of prediction horizons
-            
-        Returns:
-            tuple: (X_windows, Y_targets_dict, window_dates, feature_names)
-        """
-        # Convert features to numpy array and get feature names
-        if isinstance(features_df, pd.DataFrame):
-            feature_names = list(features_df.columns)
-            features_array = features_df.values.astype(np.float32)
+        data_reshaped = series.reshape(-1, 1)
+        if fit:
+            scaler = StandardScaler()
+            if np.std(data_reshaped) < 1e-9:
+                 print(f"WARN: '{name}' constant. Dummy scaler.")
+                 class DummyScaler:
+                     def fit(self,X):pass
+                     def transform(self,X):return X.astype(np.float32)
+                     def inverse_transform(self,X):return X.astype(np.float32)
+                 scaler = DummyScaler()
+            else: 
+                scaler.fit(data_reshaped)
+            self.scalers[name] = scaler
         else:
-            # Fallback for array input (backward compatibility)
-            feature_names = ["CLOSE"]
-            features_array = np.array(features_df, dtype=np.float32).reshape(-1, 1)
+            if name not in self.scalers: 
+                raise RuntimeError(f"Scaler '{name}' not fitted.")
+            scaler = self.scalers[name]
         
-        target_values = np.array(target_values, dtype=np.float32)
-        
-        if len(features_array) != len(target_values):
-            raise ValueError(f"CRITICAL: Length mismatch features={len(features_array)} vs target_values={len(target_values)}")
-        
-        total_length = len(features_array)
-        max_horizon = max(horizons)
-        num_features = features_array.shape[1]
-        
-        print(f"Feature engineering: {num_features} features detected")
-        print(f"Feature names: {feature_names}")
-        
-        # CRITICAL: Determine exact valid range for tick t
-        min_t = window_size - 1  # First valid t (has enough history [t-window_size+1 : t+1])
-        max_t = total_length - max_horizon - 1  # Last valid t (has enough future for max horizon)
-        
-        if min_t > max_t:
-            print(f"CRITICAL ERROR: Not enough data. Need {window_size + max_horizon} points, got {total_length}")
-            return np.array([], dtype=np.float32), {h: np.array([], dtype=np.float32) for h in horizons}, np.array([], dtype=object), feature_names
-        
-        # Valid tick range [min_t, max_t] inclusive
-        valid_ticks = list(range(min_t, max_t + 1))
-        num_windows = len(valid_ticks)
-        
-        print(f"ALIGNMENT CHECK: Creating {num_windows} windows for ticks [{min_t}, {max_t}]")
-        print(f"  Window size: {window_size}, Max horizon: {max_horizon}, Total length: {total_length}")
-        print(f"  Features per window: {num_features}")
-        
-        # Pre-allocate arrays - NOW WITH CORRECT FEATURE DIMENSION
-        X_windows = np.zeros((num_windows, window_size, num_features), dtype=np.float32)
-        Y_targets = {h: np.zeros(num_windows, dtype=np.float32) for h in horizons}
-        window_dates = []
-        
-        # Create windows and targets with PERFECT alignment
-        for i, t in enumerate(valid_ticks):
-            # WINDOW: [t-window_size : t] - INCLUDES current tick t, NO future data
-            # WINDOW: [t-window_size+1 : t+1] - INCLUDES current tick t, NO future data  
-            window_start = t - window_size + 1
-            window_end = t + 1
+        normalized_data = scaler.transform(data_reshaped)
+        return normalized_data.flatten()
 
-            # Sanity checks
-            assert window_start >= 0, f"Window start {window_start} < 0 for tick {t}"
-            assert window_end <= total_length, f"Window end {window_end} > {total_length} for tick {t}"
-            assert window_end - window_start == window_size, f"Window size mismatch: {window_end - window_start} != {window_size}"
-            
-            # Fill window with ALL FEATURES (not just log returns)
-            X_windows[i, :, :] = features_array[window_start:window_end, :]
-            
-            # TARGETS: target_values[t+horizon] - target_values[t] for each horizon
-            current_target = target_values[t]
-            for h in horizons:
-                future_idx = t + h
-                assert future_idx < total_length, f"Future index {future_idx} >= {total_length} for tick {t}, horizon {h}"
-                future_target = target_values[future_idx]
-                Y_targets[h][i] = future_target - current_target
-            
-            # DATE: dates[t] (the current prediction time)
-            if dates is not None and t < len(dates):
-                window_dates.append(dates[t])
-            else:
-                window_dates.append(None)
+    def create_sliding_windows(self, data, window_size, time_horizon, date_times=None):
+        """
+        Creates sliding windows for a univariate series.
+        Original user version - calculates targets internally but they are ignored.
+        Requires a single `time_horizon` argument (use max_horizon here).
+        """
+        print(f"Creating sliding windows (Orig Method - Size={window_size}, Horizon={time_horizon})...", end="")
+        windows = []
+        targets = []  # Initialize targets list
+        date_windows = []
+        n = len(data)
+        num_possible_windows = n - window_size - time_horizon + 1
         
-        # Convert dates to appropriate array
-        if dates is not None:
-            window_dates_arr = np.array(window_dates, dtype=object)
-            if all(isinstance(d, pd.Timestamp) for d in window_dates if d is not None):
-                try:
-                    window_dates_arr = np.array(window_dates, dtype='datetime64[ns]')
-                except (ValueError, TypeError):
-                    pass
-        else:
-            window_dates_arr = np.array(window_dates, dtype=object)
+        if num_possible_windows <= 0:
+             print(f" WARN: Data short ({n}) for Win={window_size}+Horizon={time_horizon}. No windows.")
+             return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), np.array(date_windows, dtype=object)
         
-        print(f"PERFECT ALIGNMENT: Created {len(X_windows)} windows with shape {X_windows.shape}")
-        print(f"Window shape breakdown: [samples={X_windows.shape[0]}, timesteps={X_windows.shape[1]}, features={X_windows.shape[2]}]")
+        for i in range(num_possible_windows):
+            window = data[i: i + window_size]
+            target = data[i + window_size + time_horizon - 1]  # Original target calc (ignored)
+            windows.append(window)
+            targets.append(target)  # Ignored target
+            if date_times is not None:
+                date_index = i + window_size - 1
+                if date_index < len(date_times): 
+                    date_windows.append(date_times[date_index])
+                else: 
+                    date_windows.append(None)
         
-        # Final verification
-        for h in horizons:
-            assert len(Y_targets[h]) == num_windows, f"Target length mismatch for horizon {h}"
-        assert len(window_dates_arr) == num_windows, "Date length mismatch"
+        # Convert dates
+        if date_times is not None:
+             date_windows_arr = np.array(date_windows, dtype=object)
+             if all(isinstance(d, pd.Timestamp) for d in date_windows if d is not None):
+                  try: 
+                      date_windows_arr = np.array(date_windows, dtype='datetime64[ns]')
+                  except (ValueError, TypeError): 
+                      pass
+        else: 
+            date_windows_arr = np.array(date_windows, dtype=object)
         
-        return X_windows, Y_targets, window_dates_arr, feature_names
+        print(f" Done ({len(windows)} windows).")
+        return np.array(windows, dtype=np.float32), np.array(targets, dtype=np.float32), date_windows_arr
 
-
-
+    def align_features(self, feature_dict, base_length):
+        """Aligns feature time series to a common length by truncating the beginning."""
+        aligned_features = {}
+        min_len = base_length
+        feature_lengths = {'base': base_length}
+        valid_keys = [k for k, v in feature_dict.items() if v is not None]
+        
+        if not valid_keys: 
+            return {}, 0
+        
+        for name in valid_keys: 
+            feature_lengths[name] = len(feature_dict[name])
+            min_len = min(min_len, feature_lengths[name])
+        
+        needs_alignment = any(l != min_len for l in feature_lengths.values() if l > 0)
+        if needs_alignment:
+             for name in valid_keys:
+                 series = feature_dict[name]
+                 current_len = len(series)
+                 if current_len > min_len: 
+                     aligned_features[name] = series[current_len - min_len:]
+                 elif current_len == min_len: 
+                     aligned_features[name] = series
+                 else: 
+                     print(f"WARN: Feature '{name}' len({current_len})<target({min_len}).")
+                     aligned_features[name] = None
+        else: 
+            aligned_features = {k: feature_dict[k] for k in valid_keys}
+        
+        final_lengths = {name: len(s) for name, s in aligned_features.items() if s is not None}
+        unique_lengths = set(final_lengths.values())
+        if len(unique_lengths) > 1: 
+            raise RuntimeError(f"Alignment FAILED! Inconsistent lengths: {final_lengths}")
+        
+        return aligned_features, min_len
 
     def process_data(self, config):
         """
-        Processes data with causality-safe windowing and proper datetime alignment.
+        Processes data using ORIGINAL target calculation and windowing logic.
+        Simplified to remove decomposition methods but maintain core logic.
         """
         print("\n" + "="*15 + " Starting Preprocessing " + "="*15)
         self.set_params(**config)
@@ -247,11 +264,14 @@ class PreprocessorPlugin:
         # Get key parameters
         window_size = config['window_size']
         predicted_horizons = config['predicted_horizons']
-        target_column = config['target_column']
-        use_returns = config.get('use_returns', True)
-        
-        if not isinstance(predicted_horizons, list) or not predicted_horizons:
+        if not isinstance(predicted_horizons, list) or not predicted_horizons: 
             raise ValueError("'predicted_horizons' must be a non-empty list.")
+        max_horizon = max(predicted_horizons)
+        
+        # Get stl_window for original offset calculation
+        stl_window = config.get('stl_window')
+        if stl_window is None: 
+            raise ValueError("stl_window parameter must be resolved before processing.")
 
         # --- 1. Load Data ---
         print("\n--- 1. Loading Data ---")
@@ -262,163 +282,301 @@ class PreprocessorPlugin:
         y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"))
         y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"))
 
-        # --- 2. Extract Data Arrays ---
-        print("\n--- 2. Extracting Data Arrays ---")
+        # --- 2. Initial Prep: Log Transform, Dates ---
+        print("\n--- 2. Initial Data Prep ---")
+        try: 
+            close_train = x_train_df["CLOSE"].astype(np.float32).values
+            close_val = x_val_df["CLOSE"].astype(np.float32).values
+            close_test = x_test_df["CLOSE"].astype(np.float32).values
+        except Exception as e: 
+            raise ValueError(f"Error converting 'CLOSE': {e}")
         
-        # Verify target column exists
-        if target_column not in y_train_df.columns:
-            raise ValueError(f"Column '{target_column}' not found in Y train.")
+        log_train = np.log1p(np.maximum(0, close_train))
+        log_val = np.log1p(np.maximum(0, close_val))
+        log_test = np.log1p(np.maximum(0, close_test))
+        print(f"Log transform applied. Train shape: {log_train.shape}")
         
-        # Extract close prices and target values
-        close_train = x_train_df["CLOSE"].astype(np.float32).values
-        close_val = x_val_df["CLOSE"].astype(np.float32).values
-        close_test = x_test_df["CLOSE"].astype(np.float32).values
-        
-        target_train = y_train_df[target_column].astype(np.float32).values
-        target_val = y_val_df[target_column].astype(np.float32).values
-        target_test = y_test_df[target_column].astype(np.float32).values
-        
-        # Extract dates
         dates_train = x_train_df.index if isinstance(x_train_df.index, pd.DatetimeIndex) else None
         dates_val = x_val_df.index if isinstance(x_val_df.index, pd.DatetimeIndex) else None
         dates_test = x_test_df.index if isinstance(x_test_df.index, pd.DatetimeIndex) else None
 
-        # --- 3. Create Causality-Safe Windows and Targets ---
-        print("\n--- 3. Creating Causality-Safe Windows and Targets ---")
+        # --- 3. Feature Generation (Only Log Returns) ---
+        print("\n--- 3. Feature Generation (Log Returns Only) ---")
+        features_train, features_val, features_test = {}, {}, {}
         
-        # Prepare feature DataFrames (all columns except target-specific ones)
-        feature_cols = [col for col in x_train_df.columns if col != target_column]
-        x_train_features = x_train_df[feature_cols]
-        x_val_features = x_val_df[feature_cols]
-        x_test_features = x_test_df[feature_cols]
+        # 3.a. Log Returns (normalized)
+        log_ret_train = np.diff(log_train, prepend=log_train[0])
+        features_train['log_return'] = self._normalize_series(log_ret_train, 'log_return', fit=True)
         
-        print(f"Using {len(feature_cols)} feature columns: {feature_cols}")
+        log_ret_val = np.diff(log_val, prepend=log_val[0])
+        features_val['log_return'] = self._normalize_series(log_ret_val, 'log_return', fit=False)
         
-        print("Processing TRAIN data...")
-        X_train, Y_train_dict, x_dates_train, feature_names = self.create_causality_safe_windows_and_targets(
-            x_train_features, target_train, dates_train, window_size, predicted_horizons
-        )
-        
-        print("Processing VALIDATION data...")
-        X_val, Y_val_dict, x_dates_val, _ = self.create_causality_safe_windows_and_targets(
-            x_val_features, target_val, dates_val, window_size, predicted_horizons
-        )
-        
-        print("Processing TEST data...")
-        X_test, Y_test_dict, x_dates_test, _ = self.create_causality_safe_windows_and_targets(
-            x_test_features, target_test, dates_test, window_size, predicted_horizons
-        )
+        log_ret_test = np.diff(log_test, prepend=log_test[0])
+        features_test['log_return'] = self._normalize_series(log_ret_test, 'log_return', fit=False)
+        print("Generated: Log Returns (Normalized)")
 
-        # --- 4. Calculate and Apply Per-Horizon Target Normalization (Z-Score) ---
-        print("\n--- 4. Per-Horizon Target Normalization (Z-Score) ---")
-        if use_returns:
-            print("Calculating Z-score normalization parameters per horizon from training data...")
-            
-            # Initialize lists to store mean and std for each horizon
-            target_returns_mean = []
-            target_returns_std = []
-            
-            # Calculate normalization stats for each horizon separately
-            for i, h in enumerate(predicted_horizons):
-                train_targets_h = Y_train_dict[h]
-                mean_h = float(np.mean(train_targets_h))
-                std_h = float(np.std(train_targets_h))
-                
-                if std_h < 1e-9:
-                    print(f"WARN: Target returns for horizon {h} have near-zero std. Using dummy normalization.")
-                    std_h = 1.0
-                
-                target_returns_mean.append(mean_h)
-                target_returns_std.append(std_h)
-                
-                print(f"Horizon {h}: mean={mean_h:.6f}, std={std_h:.6f}")
-            
-            # Store normalization parameters in self.params as lists
-            self.params['target_returns_mean'] = target_returns_mean
-            self.params['target_returns_std'] = target_returns_std
-            
-            # Apply Z-score normalization per horizon to all splits
-            for i, h in enumerate(predicted_horizons):
-                mean_h = target_returns_mean[i]
-                std_h = target_returns_std[i]
-                
-                Y_train_dict[h] = (Y_train_dict[h] - mean_h) / std_h
-                Y_val_dict[h] = (Y_val_dict[h] - mean_h) / std_h
-                Y_test_dict[h] = (Y_test_dict[h] - mean_h) / std_h
-                
-            print("Per-horizon Z-score normalization applied to all target splits.")
+        # 3.b. Add Original X Columns (excluding CLOSE)
+        print("\n--- 3.b Preparing Original X Columns ---")
+        original_x_cols = [col for col in x_train_df.columns if col != 'CLOSE']
+        
+        if not original_x_cols:
+            print("WARN: No original columns found besides 'CLOSE'.")
+            aligned_original_train_dict, aligned_original_val_dict, aligned_original_test_dict = {}, {}, {}
         else:
-            # No normalization, but set params to lists of zeros for consistency
-            self.params['target_returns_mean'] = [0.0] * len(predicted_horizons)
-            self.params['target_returns_std'] = [1.0] * len(predicted_horizons)
-            print("Target normalization skipped (use_returns=False).")
-        
-        # --- 5. Create Baseline Values ---
-        print("\n--- 5. Creating Baseline Values ---")
-        # Baseline values are the target column values at prediction time (tick t)
-        # These correspond exactly to the current target values used in target calculation
-        
-        baseline_train = np.zeros(len(X_train), dtype=np.float32)
-        baseline_val = np.zeros(len(X_val), dtype=np.float32)
-        baseline_test = np.zeros(len(X_test), dtype=np.float32)
-        
-        # Extract baseline values from the target column at tick t
-        max_horizon = max(predicted_horizons)
-        
-        # For training data
-        # For training data
-        min_t_train = window_size - 1
-        max_t_train = len(target_train) - max_horizon - 1
-        for i, t in enumerate(range(min_t_train, max_t_train + 1)):
-            baseline_train[i] = target_train[t]
+            print(f"Including original columns: {original_x_cols}")
             
-        # For validation data
-        min_t_val = window_size - 1
-        max_t_val = len(target_val) - max_horizon - 1
-        for i, t in enumerate(range(min_t_val, max_t_val + 1)):
-            baseline_val[i] = target_val[t]
+            # Get base length from log returns
+            base_len_train = len(features_train['log_return'])
+            base_len_val = len(features_val['log_return'])
+            base_len_test = len(features_test['log_return'])
             
-        # For test data
-        min_t_test = window_size - 1
-        max_t_test = len(target_test) - max_horizon - 1
-        for i, t in enumerate(range(min_t_test, max_t_test + 1)):
-            baseline_test[i] = target_test[t]
+            # Align original columns to match log returns length
+            aligned_original_train_df = x_train_df[original_x_cols].iloc[-base_len_train:]
+            aligned_original_val_df = x_val_df[original_x_cols].iloc[-base_len_val:]
+            aligned_original_test_df = x_test_df[original_x_cols].iloc[-base_len_test:]
+            
+            # Convert to dictionary of numpy arrays
+            aligned_original_train_dict = {col: aligned_original_train_df[col].values.astype(np.float32) for col in original_x_cols}
+            aligned_original_val_dict = {col: aligned_original_val_df[col].values.astype(np.float32) for col in original_x_cols}
+            aligned_original_test_dict = {col: aligned_original_test_df[col].values.astype(np.float32) for col in original_x_cols}
+
+        # --- 4. Combine Features ---
+        print("\n--- 4. Combining Features ---")
+        all_features_train = {**aligned_original_train_dict, **features_train}
+        all_features_val = {**aligned_original_val_dict, **features_val}
+        all_features_test = {**aligned_original_test_dict, **features_test}
+
+        # Get aligned length from log returns
+        aligned_len_train = len(features_train['log_return'])
+        aligned_len_val = len(features_val['log_return'])
+        aligned_len_test = len(features_test['log_return'])
         
+        dates_train_aligned = dates_train[-aligned_len_train:] if dates_train is not None and aligned_len_train > 0 else None
+        dates_val_aligned = dates_val[-aligned_len_val:] if dates_val is not None and aligned_len_val > 0 else None
+        dates_test_aligned = dates_test[-aligned_len_test:] if dates_test is not None and aligned_len_test > 0 else None
+        
+        print(f"Final aligned feature length: Train={aligned_len_train}, Val={aligned_len_val}, Test={aligned_len_test}")
+
+        # --- 5. Windowing Features & Stacking ---
+        print("\n--- 5. Windowing Features & Channel Stacking ---")
+        X_train_channels, X_val_channels, X_test_channels = [], [], []
+        feature_names = []
+        x_dates_train, x_dates_val, x_dates_test = None, None, None
+        first_feature_dates_captured = False
+
+        # Define feature order: log_return first, then original columns alphabetically
+        windowing_order = ['log_return'] + sorted([k for k, v in aligned_original_train_dict.items() if v is not None])
+        print(f"Feature order for windowing: {windowing_order}")
+
+        # Use max_horizon for windowing function
+        time_horizon_for_windowing = max_horizon
+
+        for name in windowing_order:
+            series_train = all_features_train.get(name)
+            series_val = all_features_val.get(name)
+            series_test = all_features_test.get(name)
+
+            if series_train is not None and series_val is not None and series_test is not None and \
+               len(series_train) == aligned_len_train and \
+               len(series_val) == aligned_len_val and \
+               len(series_test) == aligned_len_test:
+
+                print(f"Windowing feature: {name}...", end="")
+                try:
+                    win_train, _, dates_win_train = self.create_sliding_windows(series_train, window_size, time_horizon_for_windowing, dates_train_aligned)
+                    win_val, _, dates_win_val = self.create_sliding_windows(series_val, window_size, time_horizon_for_windowing, dates_val_aligned)
+                    win_test, _, dates_win_test = self.create_sliding_windows(series_test, window_size, time_horizon_for_windowing, dates_test_aligned)
+
+                    if win_train.shape[0] > 0 and win_val.shape[0] > 0 and win_test.shape[0] > 0:
+                        if not first_feature_dates_captured:
+                            expected_samples_train = win_train.shape[0]
+                            expected_samples_val = win_val.shape[0]
+                            expected_samples_test = win_test.shape[0]
+                            print(f" Initializing sample counts: Train={expected_samples_train}, Val={expected_samples_val}, Test={expected_samples_test}", end="")
+
+                        if win_train.shape[0] == expected_samples_train and \
+                           win_val.shape[0] == expected_samples_val and \
+                           win_test.shape[0] == expected_samples_test:
+
+                            X_train_channels.append(win_train)
+                            X_val_channels.append(win_val)
+                            X_test_channels.append(win_test)
+                            feature_names.append(name)
+                            print(" Appended.")
+
+                            if not first_feature_dates_captured:
+                                x_dates_train, x_dates_val, x_dates_test = dates_win_train, dates_win_val, dates_win_test
+                                first_feature_dates_captured = True
+                        else:
+                             print(f" Skipping '{name}' due to inconsistent sample count.")
+                    else:
+                        print(f" Skipping '{name}' (windowing produced 0 samples).")
+                except Exception as e:
+                    print(f" FAILED windowing '{name}'. Error: {e}. Skipping.")
+            else:
+                 print(f"WARN: Feature '{name}' skipped - not valid across all splits.")
+
+        # --- 6. Stack channels ---
+        if not X_train_channels: 
+            raise RuntimeError("No feature channels available after windowing!")
+        
+        print("\n--- 6. Stacking Feature Channels ---")
+        num_samples_train = X_train_channels[0].shape[0]
+        num_samples_val = X_val_channels[0].shape[0]
+        num_samples_test = X_test_channels[0].shape[0]
+        
+        X_train_combined = np.stack(X_train_channels, axis=-1).astype(np.float32)
+        X_val_combined = np.stack(X_val_channels, axis=-1).astype(np.float32)
+        X_test_combined = np.stack(X_test_channels, axis=-1).astype(np.float32)
+        print(f"Final X shapes: Train={X_train_combined.shape}, Val={X_val_combined.shape}, Test={X_test_combined.shape}")
+        print(f"Included features: {feature_names}")
+
+        # --- 7. ORIGINAL Target Processing Logic ---
+        print("\n--- 7. Target Processing (Original Logic) ---")
+        target_column = config["target_column"]
+        use_returns = config.get("use_returns", False)
+
+        # ORIGINAL offset calculation
+        effective_stl_window = stl_window
+        original_offset = effective_stl_window + window_size - 2
+        print(f"Calculated original logic offset: {original_offset}")
+
+        # Load raw target data
+        if target_column not in y_train_df.columns: 
+            raise ValueError(f"Column '{target_column}' not found in Y train.")
+        target_train_raw = y_train_df[target_column].astype(np.float32).values
+        target_val_raw = y_val_df[target_column].astype(np.float32).values
+        target_test_raw = y_test_df[target_column].astype(np.float32).values
+
+        # ORIGINAL baseline calculation
+        baseline_slice_end_train = original_offset + num_samples_train
+        baseline_slice_end_val = original_offset + num_samples_val
+        baseline_slice_end_test = original_offset + num_samples_test
+
+        if original_offset < 0 or baseline_slice_end_train > len(close_train): 
+            raise ValueError(f"Baseline train indices invalid.")
+        baseline_train = close_train[original_offset : baseline_slice_end_train]
+        
+        if original_offset < 0 or baseline_slice_end_val > len(close_val): 
+            raise ValueError(f"Baseline val indices invalid.")
+        baseline_val = close_val[original_offset : baseline_slice_end_val]
+        
+        if original_offset < 0 or baseline_slice_end_test > len(close_test): 
+            raise ValueError(f"Baseline test indices invalid.")
+        baseline_test = close_test[original_offset : baseline_slice_end_test]
+
         print(f"Baseline shapes: Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
 
-        # --- 6. Final Date Consistency Check ---
-        print("\n--- 6. Final Date Consistency Checks ---")
-        verify_date_consistency([
-            list(x_dates_train) if x_dates_train is not None else None
-        ], "Train Dates")
-        verify_date_consistency([
-            list(x_dates_val) if x_dates_val is not None else None
-        ], "Val Dates")
-        verify_date_consistency([
-            list(x_dates_test) if x_dates_test is not None else None
-        ], "Test Dates")
+        # ORIGINAL target processing logic
+        target_train = target_train_raw[original_offset:]
+        target_val = target_val_raw[original_offset:]
+        target_test = target_test_raw[original_offset:]
 
-        # --- 7. Prepare Return Dictionary ---
-        print("\n--- 7. Preparing Final Output ---")
+        # In the preprocessor, replace the target processing section with:
+
+        # Initialize per-horizon normalization storage
+        target_returns_means = []
+        target_returns_stds = []
+
+        y_train_final_list = []
+        y_val_final_list = []
+        y_test_final_list = []
+        print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
+
+        for h in predicted_horizons:
+            # ORIGINAL shift logic
+            target_train_shifted = target_train[h:]
+            target_val_shifted = target_val[h:]
+            target_test_shifted = target_test[h:]
+
+            # ORIGINAL slice to match num_samples
+            if len(target_train_shifted) < num_samples_train: 
+                raise ValueError(f"Not enough shifted target data for H={h} (Train).")
+            target_train_h = target_train_shifted[:num_samples_train]
+            
+            if len(target_val_shifted) < num_samples_val: 
+                raise ValueError(f"Not enough shifted target data for H={h} (Val).")
+            target_val_h = target_val_shifted[:num_samples_val]
+            
+            if len(target_test_shifted) < num_samples_test: 
+                raise ValueError(f"Not enough shifted target data for H={h} (Test).")
+            target_test_h = target_test_shifted[:num_samples_test]
+
+            # ORIGINAL returns adjustment and normalization
+            if use_returns:
+                # Calculate residual returns by subtracting baseline
+                target_train_h = target_train_h - baseline_train
+                target_val_h = target_val_h - baseline_val
+                target_test_h = target_test_h - baseline_test
+
+                # Calculate per-horizon normalization stats
+                target_returns_mean_h = target_train_h.mean()
+                target_returns_std_h = target_train_h.std()
+                
+                # Store per-horizon stats
+                target_returns_means.append(float(target_returns_mean_h))
+                target_returns_stds.append(float(target_returns_std_h))
+
+                # Apply z-score normalization using horizon-specific stats
+                target_train_h = (target_train_h - target_returns_mean_h) / target_returns_std_h
+                target_val_h = (target_val_h - target_returns_mean_h) / target_returns_std_h
+                target_test_h = (target_test_h - target_returns_mean_h) / target_returns_std_h
+            else:
+                # For non-returns mode, add dummy normalization stats
+                target_returns_means.append(0.0)
+                target_returns_stds.append(1.0)
+
+            y_train_final_list.append(target_train_h.astype(np.float32))
+            y_val_final_list.append(target_val_h.astype(np.float32))
+            y_test_final_list.append(target_test_h.astype(np.float32))
+
+        # Save normalization stats in params
+        self.params['target_returns_mean'] = target_returns_means
+        self.params['target_returns_std'] = target_returns_stds
+
+        print(f"Per-horizon target normalization stats:")
+        for i, h in enumerate(predicted_horizons):
+            print(f"  Horizon {h}: Mean={target_returns_means[i]:.6f}, Std={target_returns_stds[i]:.6f}")
+
+        # Assign dates based on X windows
+        y_dates_train = x_dates_train
+        y_dates_val = x_dates_val
+        y_dates_test = x_dates_test
+        print("Target processing complete (Original Logic).")
+
+        # Test close prices (original logic)
+        test_close_prices = baseline_test
+
+        # --- 8. Final Date Consistency Check ---
+        print("\n--- 8. Final Date Consistency Checks ---")
+        verify_date_consistency([list(x_dates_train) if x_dates_train is not None else None, 
+                                list(y_dates_train) if y_dates_train is not None else None], "Train X/Y Dates")
+        verify_date_consistency([list(x_dates_val) if x_dates_val is not None else None, 
+                                list(y_dates_val) if y_dates_val is not None else None], "Val X/Y Dates")
+        verify_date_consistency([list(x_dates_test) if x_dates_test is not None else None, 
+                                list(y_dates_test) if y_dates_test is not None else None], "Test X/Y Dates")
+
+        # --- 9. Prepare Return Dictionary ---
+        print("\n--- 9. Preparing Final Output ---")
         ret = {}
         
-        # X data (features)
-        ret["x_train"] = X_train
-        ret["x_val"] = X_val
-        ret["x_test"] = X_test
-        
-        # Y data (targets as lists for multi-horizon)
-        ret["y_train"] = [Y_train_dict[h] for h in predicted_horizons]
-        ret["y_val"] = [Y_val_dict[h] for h in predicted_horizons]
-        ret["y_test"] = [Y_test_dict[h] for h in predicted_horizons]
-        
-        # Dates (all aligned to current tick t)
+        # X data
+        ret["x_train"] = X_train_combined
+        ret["x_val"] = X_val_combined
+        ret["x_test"] = X_test_combined
+
+        # Y data (multi-horizon list)
+        ret["y_train"] = y_train_final_list
+        ret["y_val"] = y_val_final_list
+        ret["y_test"] = y_test_final_list
+
+        # Dates
         ret["x_train_dates"] = x_dates_train
-        ret["y_train_dates"] = x_dates_train  # Same as X dates
+        ret["y_train_dates"] = y_dates_train
         ret["x_val_dates"] = x_dates_val
-        ret["y_val_dates"] = x_dates_val
+        ret["y_val_dates"] = y_dates_val
         ret["x_test_dates"] = x_dates_test
-        ret["y_test_dates"] = x_dates_test
+        ret["y_test_dates"] = y_dates_test
         
         # Baseline data (target values at prediction time)
         ret["baseline_train"] = baseline_train

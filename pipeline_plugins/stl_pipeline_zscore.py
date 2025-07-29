@@ -126,18 +126,35 @@ class STLPipelinePlugin:
         use_returns = config.get("use_returns", False)
         if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None): raise ValueError("Baselines required when use_returns=True.")
 
+        # In the pipeline, replace the stats extraction section with:
+
         # Get per-horizon target normalization stats from preprocessor
         target_returns_mean = plugin_debug_vars.get('target_returns_mean', [0.0] * len(predicted_horizons))
         target_returns_std = plugin_debug_vars.get('target_returns_std', [1.0] * len(predicted_horizons))
-        
-        # Ensure lists have correct length
-        if not isinstance(target_returns_mean, list) or len(target_returns_mean) != len(predicted_horizons):
-            print(f"WARN: target_returns_mean not properly formatted. Using defaults.")
-            target_returns_mean = [0.0] * len(predicted_horizons)
-        if not isinstance(target_returns_std, list) or len(target_returns_std) != len(predicted_horizons):
-            print(f"WARN: target_returns_std not properly formatted. Using defaults.")
-            target_returns_std = [1.0] * len(predicted_horizons)
-            
+
+        # Ensure we have the correct format and length
+        if not isinstance(target_returns_mean, list):
+            print(f"WARN: target_returns_mean not a list. Converting: {target_returns_mean}")
+            if isinstance(target_returns_mean, (int, float)):
+                target_returns_mean = [float(target_returns_mean)] * len(predicted_horizons)
+            else:
+                target_returns_mean = [0.0] * len(predicted_horizons)
+
+        if not isinstance(target_returns_std, list):
+            print(f"WARN: target_returns_std not a list. Converting: {target_returns_std}")
+            if isinstance(target_returns_std, (int, float)):
+                target_returns_std = [float(target_returns_std)] * len(predicted_horizons)
+            else:
+                target_returns_std = [1.0] * len(predicted_horizons)
+
+        if len(target_returns_mean) != len(predicted_horizons):
+            print(f"WARN: target_returns_mean length mismatch. Expected {len(predicted_horizons)}, got {len(target_returns_mean)}")
+            target_returns_mean = target_returns_mean[:len(predicted_horizons)] + [0.0] * max(0, len(predicted_horizons) - len(target_returns_mean))
+
+        if len(target_returns_std) != len(predicted_horizons):
+            print(f"WARN: target_returns_std length mismatch. Expected {len(predicted_horizons)}, got {len(target_returns_std)}")
+            target_returns_std = target_returns_std[:len(predicted_horizons)] + [1.0] * max(0, len(predicted_horizons) - len(target_returns_std))
+
         if use_returns: 
             print(f"Per-horizon target normalization stats loaded:")
             for i, h in enumerate(predicted_horizons):
