@@ -177,8 +177,21 @@ class STLPipelinePlugin:
 
         # Prepare Target Dicts for Training
         # Reshape arrays for model input
-        y_train_dict = {name: y_train_dict[name].reshape(-1, 1).astype(np.float32) for name in output_names}
-        y_val_dict = {name: y_val_dict[name].reshape(-1, 1).astype(np.float32) for name in output_names}
+        # Truncate all targets to the shortest available length across all requested horizons
+        def truncate_targets(target_dict, output_names):
+            missing = [name for name in output_names if name not in target_dict]
+            if missing:
+                raise KeyError(f"Missing target horizons in preprocessor output: {missing}. All requested horizons must be present.")
+            lengths = [len(target_dict[name]) for name in output_names]
+            min_len = min(lengths)
+            truncated = {}
+            for name in output_names:
+                arr = target_dict[name][:min_len]
+                truncated[name] = arr.reshape(-1, 1).astype(np.float32)
+            return truncated
+
+        y_train_dict = truncate_targets(y_train_dict, output_names)
+        y_val_dict = truncate_targets(y_val_dict, output_names)
 
         print(f"Input shapes: Train:{X_train.shape}, Val:{X_val.shape}, Test:{X_test.shape}")
         print(f"Target shapes(H={predicted_horizons[0]}): Train:{y_train_dict[output_names[0]].shape}, Val:{y_val_dict[output_names[0]].shape}, Test:{y_test_dict[output_names[0]].shape}")
