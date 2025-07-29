@@ -290,37 +290,48 @@ class PreprocessorPlugin:
             close_test, target_test, dates_test, window_size, predicted_horizons
         )
 
-        # --- 4. Calculate and Apply Target Normalization (Z-Score) ---
-        print("\n--- 4. Target Normalization (Z-Score) ---")
+        # --- 4. Calculate and Apply Per-Horizon Target Normalization (Z-Score) ---
+        print("\n--- 4. Per-Horizon Target Normalization (Z-Score) ---")
         if use_returns:
-            print("Calculating Z-score normalization parameters from training data...")
+            print("Calculating Z-score normalization parameters per horizon from training data...")
             
-            # Calculate normalization stats from ALL training targets (all horizons combined)
-            all_train_targets = np.concatenate([Y_train_dict[h] for h in predicted_horizons])
-            target_returns_mean = float(np.mean(all_train_targets))
-            target_returns_std = float(np.std(all_train_targets))
+            # Initialize lists to store mean and std for each horizon
+            target_returns_mean = []
+            target_returns_std = []
             
-            if target_returns_std < 1e-9:
-                print("WARN: Target returns have near-zero std. Using dummy normalization.")
-                target_returns_std = 1.0
+            # Calculate normalization stats for each horizon separately
+            for i, h in enumerate(predicted_horizons):
+                train_targets_h = Y_train_dict[h]
+                mean_h = float(np.mean(train_targets_h))
+                std_h = float(np.std(train_targets_h))
+                
+                if std_h < 1e-9:
+                    print(f"WARN: Target returns for horizon {h} have near-zero std. Using dummy normalization.")
+                    std_h = 1.0
+                
+                target_returns_mean.append(mean_h)
+                target_returns_std.append(std_h)
+                
+                print(f"Horizon {h}: mean={mean_h:.6f}, std={std_h:.6f}")
             
-            # Store normalization parameters in self.params
+            # Store normalization parameters in self.params as lists
             self.params['target_returns_mean'] = target_returns_mean
             self.params['target_returns_std'] = target_returns_std
             
-            print(f"Target Z-score normalization: mean={target_returns_mean:.6f}, std={target_returns_std:.6f}")
-            
-            # Apply Z-score normalization to all horizons and all splits
-            for h in predicted_horizons:
-                Y_train_dict[h] = (Y_train_dict[h] - target_returns_mean) / target_returns_std
-                Y_val_dict[h] = (Y_val_dict[h] - target_returns_mean) / target_returns_std
-                Y_test_dict[h] = (Y_test_dict[h] - target_returns_mean) / target_returns_std
+            # Apply Z-score normalization per horizon to all splits
+            for i, h in enumerate(predicted_horizons):
+                mean_h = target_returns_mean[i]
+                std_h = target_returns_std[i]
                 
-            print("Z-score normalization applied to all target splits and horizons.")
+                Y_train_dict[h] = (Y_train_dict[h] - mean_h) / std_h
+                Y_val_dict[h] = (Y_val_dict[h] - mean_h) / std_h
+                Y_test_dict[h] = (Y_test_dict[h] - mean_h) / std_h
+                
+            print("Per-horizon Z-score normalization applied to all target splits.")
         else:
-            # No normalization, but set params to zero for consistency
-            self.params['target_returns_mean'] = 0.0
-            self.params['target_returns_std'] = 1.0
+            # No normalization, but set params to lists of zeros for consistency
+            self.params['target_returns_mean'] = [0.0] * len(predicted_horizons)
+            self.params['target_returns_std'] = [1.0] * len(predicted_horizons)
             print("Target normalization skipped (use_returns=False).")
         
         # --- 5. Create Baseline Values ---
@@ -408,7 +419,11 @@ class PreprocessorPlugin:
         print(f"  Y: {len(predicted_horizons)} horizons, Train={len(ret['y_train'][0])}, Val={len(ret['y_val'][0])}, Test={len(ret['y_test'][0])}")
         print(f"  Baselines: Train={len(baseline_train)}, Val={len(baseline_val)}, Test={len(baseline_test)}")
         print(f"  Horizons: {predicted_horizons}")
-        print(f"  Target normalization: mean={self.params.get('target_returns_mean', 'N/A')}, std={self.params.get('target_returns_std', 'N/A')}")
+        print(f"  Target normalization per horizon:")
+        for i, h in enumerate(predicted_horizons):
+            mean_h = self.params.get('target_returns_mean', [0])[i] if isinstance(self.params.get('target_returns_mean'), list) else 0
+            std_h = self.params.get('target_returns_std', [1])[i] if isinstance(self.params.get('target_returns_std'), list) else 1
+            print(f"    Horizon {h}: mean={mean_h:.6f}, std={std_h:.6f}")
         
         # Cleanup
         del x_train_df, x_val_df, x_test_df, y_train_df, y_val_df, y_test_df
