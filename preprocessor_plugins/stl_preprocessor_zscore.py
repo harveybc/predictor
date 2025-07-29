@@ -494,6 +494,11 @@ class PreprocessorPlugin:
         y_val_final_list.append(target_val_h.astype(np.float32))
         y_test_final_list.append(target_test_h.astype(np.float32))
 
+        # Convert lists to dicts with expected keys for multi-output models
+        y_train_dict = {f"output_horizon_{h}": arr for h, arr in zip(predicted_horizons, y_train_final_list)}
+        y_val_dict   = {f"output_horizon_{h}": arr for h, arr in zip(predicted_horizons, y_val_final_list)}
+        y_test_dict  = {f"output_horizon_{h}": arr for h, arr in zip(predicted_horizons, y_test_final_list)}
+
         # Save normalization stats in params
         self.params['target_returns_mean'] = target_returns_means
         self.params['target_returns_std'] = target_returns_stds
@@ -530,10 +535,10 @@ class PreprocessorPlugin:
         ret["x_val"] = X_val_combined
         ret["x_test"] = X_test_combined
 
-        # Y data (multi-horizon list)
-        ret["y_train"] = y_train_final_list
-        ret["y_val"] = y_val_final_list
-        ret["y_test"] = y_test_final_list
+        # Y data (multi-horizon dict)
+        ret["y_train"] = y_train_dict
+        ret["y_val"] = y_val_dict
+        ret["y_test"] = y_test_dict
 
         # Dates
         ret["x_train_dates"] = x_dates_train
