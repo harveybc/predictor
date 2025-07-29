@@ -522,9 +522,9 @@ class PreprocessorPlugin:
         
 
 
-        y_train_final_list.append(target_train_h.astype(np.float32))
-        y_val_final_list.append(target_val_h.astype(np.float32))
-        y_test_final_list.append(target_test_h.astype(np.float32))
+                y_train_final_list.append(target_train_h.astype(np.float32))
+                y_val_final_list.append(target_val_h.astype(np.float32))
+                y_test_final_list.append(target_test_h.astype(np.float32))
 
         # Convert lists to dicts with expected keys for multi-output models
         y_train_dict = {f"output_horizon_{h}": arr for h, arr in zip(predicted_horizons, y_train_final_list)}
