@@ -137,13 +137,37 @@ class PreprocessorPlugin:
             traceback.print_exc()
             raise
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-        # ...existing code...
-        return df
-=======
-=======
->>>>>>> parent of 409864ff (Update stl_preprocessor_zscore.py)
+    def _normalize_series(self, series, name, fit=False):
+        """Normalizes a time series using StandardScaler."""
+        if not self.params.get("normalize_features", True): 
+            return series.astype(np.float32)
+        series = series.astype(np.float32)
+        if np.any(np.isnan(series)) or np.any(np.isinf(series)):
+            print(f"WARN: NaNs/Infs in '{name}' pre-norm. Filling...", end="")
+            series = pd.Series(series).fillna(method='ffill').fillna(method='bfill').values
+            if np.any(np.isnan(series)) or np.any(np.isinf(series)):
+                 print(f" FAILED. Filling with 0.", end="")
+                 series = np.nan_to_num(series, nan=0.0, posinf=0.0, neginf=0.0)
+            print(" OK.")
+        data_reshaped = series.reshape(-1, 1)
+        if fit:
+            scaler = StandardScaler()
+            if np.std(data_reshaped) < 1e-9:
+                 print(f"WARN: '{name}' constant. Dummy scaler.")
+                 class DummyScaler:
+                     def fit(self,X):pass
+                     def transform(self,X):return X.astype(np.float32)
+                     def inverse_transform(self,X):return X.astype(np.float32)
+                 scaler = DummyScaler()
+            else: 
+                scaler.fit(data_reshaped)
+            self.scalers[name] = scaler
+        else:
+            if name not in self.scalers: 
+                raise RuntimeError(f"Scaler '{name}' not fitted.")
+            scaler = self.scalers[name]
+        normalized_data = scaler.transform(data_reshaped)
+        return normalized_data.flatten()
     def _normalize_series(self, series, name, fit=False):
         """Normalizes a time series using StandardScaler."""
         if not self.params.get("normalize_features", True): 
@@ -178,7 +202,7 @@ class PreprocessorPlugin:
         
         normalized_data = scaler.transform(data_reshaped)
         return normalized_data.flatten()
->>>>>>> parent of 409864ff (Update stl_preprocessor_zscore.py)
+
 
     def create_sliding_windows(self, data, window_size, time_horizon, date_times=None):
         """
