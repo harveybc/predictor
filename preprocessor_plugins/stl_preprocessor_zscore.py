@@ -483,6 +483,12 @@ class PreprocessorPlugin:
                 if std_h < 1e-8:
                     std_h = 1.0  # Evita división por cero
 
+                target_returns_means.append(mean_h)
+                target_returns_stds.append(std_h)
+        
+
+        
+
 
         y_train_final_list.append(target_train_h.astype(np.float32))
         y_val_final_list.append(target_val_h.astype(np.float32))
