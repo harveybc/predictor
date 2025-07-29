@@ -436,82 +436,62 @@ class PreprocessorPlugin:
         target_column = config["target_column"]
         use_returns = config.get("use_returns", False)
 
-        # --- FIX START ---
-        # A more robust method is to calculate the exact indices for baselines and targets
-        # directly from the raw data, rather than using a single offset.
-        
-        # The i-th sample from windowing corresponds to a prediction made at the time
-        # of the last point in its window.
-        # The index for this point in the original series is (i + window_size - 1).
-        
-        # Calculate these "prediction point" indices for each dataset.
+        # The baseline index for each sample is the last index in its window:
+        # For sample i, it corresponds to i + window_size - 1
         train_pred_indices = np.arange(num_samples_train) + window_size - 1
         val_pred_indices = np.arange(num_samples_val) + window_size - 1
         test_pred_indices = np.arange(num_samples_test) + window_size - 1
 
-        # The baseline is the CLOSE price at these exact prediction points.
         baseline_train = close_train[train_pred_indices]
         baseline_val = close_val[val_pred_indices]
         baseline_test = close_test[test_pred_indices]
 
-        # Verify that the number of samples matches the baseline length.
-        if len(baseline_train) != num_samples_train:
-            raise ValueError(f"Mismatch train baseline length ({len(baseline_train)}) and samples ({num_samples_train})")
-        if len(baseline_val) != num_samples_val:
-            raise ValueError(f"Mismatch val baseline length ({len(baseline_val)}) and samples ({num_samples_val})")
-        if len(baseline_test) != num_samples_test:
-            raise ValueError(f"Mismatch test baseline length ({len(baseline_test)}) and samples ({num_samples_test})")
-        
-        print(f"Baseline shapes: Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
-        
-        # Load raw target data
-        if target_column not in y_train_df.columns: 
-            raise ValueError(f"Column '{target_column}' not found in Y train.")
+        print(f"Baseline lengths: Train={len(baseline_train)}, Val={len(baseline_val)}, Test={len(baseline_test)}")
+
+        # Load raw target series
         target_train_raw = y_train_df[target_column].astype(np.float32).values
         target_val_raw = y_val_df[target_column].astype(np.float32).values
         target_test_raw = y_test_df[target_column].astype(np.float32).values
-        
-        # Initialize storage for final processed targets
+
+        # Final targets (multi-horizon)
         y_train_final_list, y_val_final_list, y_test_final_list = [], [], []
         target_returns_means, target_returns_stds = [], []
-        
+
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
 
         for h in predicted_horizons:
-            # The target for a given sample is `h` steps after its prediction point.
-            # Note: Horizons are 1-based, but we add to a 0-based index.
+            # Calculate future indices
             train_target_indices = train_pred_indices + h
             val_target_indices = val_pred_indices + h
             test_target_indices = test_pred_indices + h
 
-            # Check that the calculated target indices are within the bounds of the raw data.
+            # Verify index bounds
             if train_target_indices.max() >= len(target_train_raw):
-                raise ValueError(f"Not enough raw target data for H={h} (Train). Required index {train_target_indices.max()}, have {len(target_train_raw)}")
+                raise ValueError(f"Train target indices exceed array for horizon {h}")
             if val_target_indices.max() >= len(target_val_raw):
-                 raise ValueError(f"Not enough raw target data for H={h} (Val). Required index {val_target_indices.max()}, have {len(target_val_raw)}")
+                raise ValueError(f"Val target indices exceed array for horizon {h}")
             if test_target_indices.max() >= len(target_test_raw):
-                 raise ValueError(f"Not enough raw target data for H={h} (Test). Required index {test_target_indices.max()}, have {len(target_test_raw)}")
+                raise ValueError(f"Test target indices exceed array for horizon {h}")
 
-            # Extract the actual target values using these calculated indices.
+            # Select targets
             target_train_h = target_train_raw[train_target_indices]
             target_val_h = target_val_raw[val_target_indices]
             target_test_h = target_test_raw[test_target_indices]
 
             if use_returns:
-                # Calculate returns relative to the baseline.
+                # Return = V_{t+h} - V_t
                 target_train_h = target_train_h - baseline_train
                 target_val_h = target_val_h - baseline_val
                 target_test_h = target_test_h - baseline_test
 
-                # Calculate normalization stats from the training set ONLY.
+                # Normalize using z-score from train
                 mean_h = target_train_h.mean()
                 std_h = target_train_h.std()
-                if std_h < 1e-9: std_h = 1.0 # Avoid division by zero.
+                if std_h < 1e-8: std_h = 1.0
 
                 target_returns_means.append(float(mean_h))
                 target_returns_stds.append(float(std_h))
 
-                # Apply z-score normalization.
                 target_train_h = (target_train_h - mean_h) / std_h
                 target_val_h = (target_val_h - mean_h) / std_h
                 target_test_h = (target_test_h - mean_h) / std_h
@@ -522,8 +502,7 @@ class PreprocessorPlugin:
             y_train_final_list.append(target_train_h.astype(np.float32))
             y_val_final_list.append(target_val_h.astype(np.float32))
             y_test_final_list.append(target_test_h.astype(np.float32))
-        # --- FIX END ---
-        
+
         # Save normalization stats in params
         self.params['target_returns_mean'] = target_returns_means
         self.params['target_returns_std'] = target_returns_stds
