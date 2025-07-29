@@ -98,27 +98,28 @@ class PreprocessorPlugin:
     # --- Helper Methods ---
     def _load_data(self, file_path, max_rows, headers):
         print(f"Loading data: {file_path} (Max rows: {max_rows})...", end="")
-        df = load_csv(file_path, headers=headers, max_rows=max_rows)
-        if df is None or df.empty: 
-            raise ValueError(f"load_csv None/empty for {file_path}")
-        print(f" Done. Shape: {df.shape}")
-        
-        if not isinstance(df.index, pd.DatetimeIndex):
-            print(f"Attempting DatetimeIndex conversion for {file_path}...", end="")
-            original_index_name = df.index.name
-            try: 
-                df.index = pd.to_datetime(df.index)
-                print(" OK (from index).")
-            except Exception:
+        try:
+            df = load_csv(file_path, headers=headers, max_rows=max_rows)
+            if df is None or df.empty: 
+                raise ValueError(f"load_csv None/empty for {file_path}")
+            print(f" Done. Shape: {df.shape}")
+            
+            if not isinstance(df.index, pd.DatetimeIndex):
+                print(f"Attempting DatetimeIndex conversion for {file_path}...", end="")
+                original_index_name = df.index.name
                 try: 
-                    df.index = pd.to_datetime(df.iloc[:, 0])
-                    print(" OK (from col 0).")
-                except Exception as e_col: 
-                    print(f" FAILED ({e_col}). Dates unavailable.")
-                    df.index = None
-            if original_index_name: 
-                df.index.name = original_index_name
-        
+                    df.index = pd.to_datetime(df.index)
+                    print(" OK (from index).")
+                except Exception:
+                    try: 
+                        df.index = pd.to_datetime(df.iloc[:, 0])
+                        print(" OK (from col 0).")
+                    except Exception as e_col: 
+                        print(f" FAILED ({e_col}). Dates unavailable.")
+                        df.index = None
+                if original_index_name: 
+                    df.index.name = original_index_name
+            
             required_cols = ["CLOSE"]
             target_col_name = self.params.get("target_column", "TARGET")
             if 'y_' in os.path.basename(file_path).lower(): 
@@ -126,9 +127,55 @@ class PreprocessorPlugin:
             missing_cols = [c for c in required_cols if c not in df.columns]
             if missing_cols: 
                 raise ValueError(f"Missing cols in {file_path}: {missing_cols}")
+            return df
+        except FileNotFoundError: 
+            print(f"\nERROR: File not found: {file_path}.")
+            raise
+        except Exception as e: 
+            print(f"\nERROR loading/processing {file_path}: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
 
+<<<<<<< HEAD
         # ...existing code...
         return df
+=======
+    def _normalize_series(self, series, name, fit=False):
+        """Normalizes a time series using StandardScaler."""
+        if not self.params.get("normalize_features", True): 
+            return series.astype(np.float32)
+        
+        series = series.astype(np.float32)
+        if np.any(np.isnan(series)) or np.any(np.isinf(series)):
+            print(f"WARN: NaNs/Infs in '{name}' pre-norm. Filling...", end="")
+            series = pd.Series(series).fillna(method='ffill').fillna(method='bfill').values
+            if np.any(np.isnan(series)) or np.any(np.isinf(series)):
+                 print(f" FAILED. Filling with 0.", end="")
+                 series = np.nan_to_num(series, nan=0.0, posinf=0.0, neginf=0.0)
+            print(" OK.")
+        
+        data_reshaped = series.reshape(-1, 1)
+        if fit:
+            scaler = StandardScaler()
+            if np.std(data_reshaped) < 1e-9:
+                 print(f"WARN: '{name}' constant. Dummy scaler.")
+                 class DummyScaler:
+                     def fit(self,X):pass
+                     def transform(self,X):return X.astype(np.float32)
+                     def inverse_transform(self,X):return X.astype(np.float32)
+                 scaler = DummyScaler()
+            else: 
+                scaler.fit(data_reshaped)
+            self.scalers[name] = scaler
+        else:
+            if name not in self.scalers: 
+                raise RuntimeError(f"Scaler '{name}' not fitted.")
+            scaler = self.scalers[name]
+        
+        normalized_data = scaler.transform(data_reshaped)
+        return normalized_data.flatten()
+>>>>>>> parent of 409864ff (Update stl_preprocessor_zscore.py)
 
     def create_sliding_windows(self, data, window_size, time_horizon, date_times=None):
         """
