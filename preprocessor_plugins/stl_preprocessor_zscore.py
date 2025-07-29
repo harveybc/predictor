@@ -437,107 +437,93 @@ class PreprocessorPlugin:
         use_returns = config.get("use_returns", False)
 
         # --- FIX START ---
-        # The original offset calculation was incorrect. It combined an stl_window
-        # value with the window_size, leading to an offset that was too large.
-        # The correct offset should represent the number of initial data points that are
-        # unusable because they can't form a complete window and have a corresponding
-        # target at the maximum prediction horizon.
-        max_horizon = max(predicted_horizons)
+        # A more robust method is to calculate the exact indices for baselines and targets
+        # directly from the raw data, rather than using a single offset.
         
-        # The correct offset is the size of the window plus the max horizon, minus one
-        # because the target is inclusive of the final step.
-        offset = window_size + max_horizon - 1
-        print(f"Calculated alignment offset: {offset}")
-        # --- FIX END ---
+        # The i-th sample from windowing corresponds to a prediction made at the time
+        # of the last point in its window.
+        # The index for this point in the original series is (i + window_size - 1).
+        
+        # Calculate these "prediction point" indices for each dataset.
+        train_pred_indices = np.arange(num_samples_train) + window_size - 1
+        val_pred_indices = np.arange(num_samples_val) + window_size - 1
+        test_pred_indices = np.arange(num_samples_test) + window_size - 1
 
+        # The baseline is the CLOSE price at these exact prediction points.
+        baseline_train = close_train[train_pred_indices]
+        baseline_val = close_val[val_pred_indices]
+        baseline_test = close_test[test_pred_indices]
+
+        # Verify that the number of samples matches the baseline length.
+        if len(baseline_train) != num_samples_train:
+            raise ValueError(f"Mismatch train baseline length ({len(baseline_train)}) and samples ({num_samples_train})")
+        if len(baseline_val) != num_samples_val:
+            raise ValueError(f"Mismatch val baseline length ({len(baseline_val)}) and samples ({num_samples_val})")
+        if len(baseline_test) != num_samples_test:
+            raise ValueError(f"Mismatch test baseline length ({len(baseline_test)}) and samples ({num_samples_test})")
+        
+        print(f"Baseline shapes: Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
+        
         # Load raw target data
         if target_column not in y_train_df.columns: 
             raise ValueError(f"Column '{target_column}' not found in Y train.")
         target_train_raw = y_train_df[target_column].astype(np.float32).values
         target_val_raw = y_val_df[target_column].astype(np.float32).values
         target_test_raw = y_test_df[target_column].astype(np.float32).values
-
-        # Align the start of the raw target and close data with the windowed data
-        target_train = target_train_raw[offset:]
-        target_val = target_val_raw[offset:]
-        target_test = target_test_raw[offset:]
         
-        close_train_aligned = close_train[offset:]
-        close_val_aligned = close_val[offset:]
-        close_test_aligned = close_test[offset:]
-
-        # Baseline is now calculated from the ALIGNED close data, ensuring lengths match
-        baseline_train = close_train_aligned[:num_samples_train]
-        baseline_val = close_val_aligned[:num_samples_val]
-        baseline_test = close_test_aligned[:num_samples_test]
-
-        # Verify that the number of samples does not exceed the available baseline data
-        if len(baseline_train) != num_samples_train:
-            raise ValueError(f"Mismatch between train baseline length ({len(baseline_train)}) and expected samples ({num_samples_train})")
-        if len(baseline_val) != num_samples_val:
-            raise ValueError(f"Mismatch between validation baseline length ({len(baseline_val)}) and expected samples ({num_samples_val})")
-        if len(baseline_test) != num_samples_test:
-            raise ValueError(f"Mismatch between test baseline length ({len(baseline_test)}) and expected samples ({num_samples_test})")
-
-        print(f"Baseline shapes: Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
-
-        # Initialize per-horizon normalization storage
-        target_returns_means = []
-        target_returns_stds = []
-
-        y_train_final_list = []
-        y_val_final_list = []
-        y_test_final_list = []
+        # Initialize storage for final processed targets
+        y_train_final_list, y_val_final_list, y_test_final_list = [], [], []
+        target_returns_means, target_returns_stds = [], []
+        
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
 
         for h in predicted_horizons:
-            # The target for a given window is at `h-1` steps from the start of the aligned target array
-            # because horizons are 1-based.
-            idx_shift = h - 1
+            # The target for a given sample is `h` steps after its prediction point.
+            # Note: Horizons are 1-based, but we add to a 0-based index.
+            train_target_indices = train_pred_indices + h
+            val_target_indices = val_pred_indices + h
+            test_target_indices = test_pred_indices + h
 
-            # Slice the target arrays to get the correct values for horizon h
-            target_train_h = target_train[idx_shift : idx_shift + num_samples_train]
-            target_val_h = target_val[idx_shift : idx_shift + num_samples_val]
-            target_test_h = target_test[idx_shift : idx_shift + num_samples_test]
+            # Check that the calculated target indices are within the bounds of the raw data.
+            if train_target_indices.max() >= len(target_train_raw):
+                raise ValueError(f"Not enough raw target data for H={h} (Train). Required index {train_target_indices.max()}, have {len(target_train_raw)}")
+            if val_target_indices.max() >= len(target_val_raw):
+                 raise ValueError(f"Not enough raw target data for H={h} (Val). Required index {val_target_indices.max()}, have {len(target_val_raw)}")
+            if test_target_indices.max() >= len(target_test_raw):
+                 raise ValueError(f"Not enough raw target data for H={h} (Test). Required index {test_target_indices.max()}, have {len(target_test_raw)}")
 
-            if len(target_train_h) != num_samples_train: 
-                raise ValueError(f"Not enough shifted target data for H={h} (Train). Required: {num_samples_train}, Found: {len(target_train_h)}")
-            if len(target_val_h) != num_samples_val: 
-                raise ValueError(f"Not enough shifted target data for H={h} (Val). Required: {num_samples_val}, Found: {len(target_val_h)}")
-            if len(target_test_h) != num_samples_test: 
-                raise ValueError(f"Not enough shifted target data for H={h} (Test). Required: {num_samples_test}, Found: {len(target_test_h)}")
+            # Extract the actual target values using these calculated indices.
+            target_train_h = target_train_raw[train_target_indices]
+            target_val_h = target_val_raw[val_target_indices]
+            target_test_h = target_test_raw[test_target_indices]
 
             if use_returns:
-                # Calculate residual returns by subtracting baseline
+                # Calculate returns relative to the baseline.
                 target_train_h = target_train_h - baseline_train
                 target_val_h = target_val_h - baseline_val
                 target_test_h = target_test_h - baseline_test
 
-                # Calculate per-horizon normalization stats from the training set ONLY
-                target_returns_mean_h = target_train_h.mean()
-                target_returns_std_h = target_train_h.std()
-                
-                # Handle cases with zero standard deviation
-                if target_returns_std_h < 1e-9:
-                    print(f"WARN: Horizon {h} has near-zero standard deviation. Normalization may be unstable.")
-                    target_returns_std_h = 1.0
+                # Calculate normalization stats from the training set ONLY.
+                mean_h = target_train_h.mean()
+                std_h = target_train_h.std()
+                if std_h < 1e-9: std_h = 1.0 # Avoid division by zero.
 
-                target_returns_means.append(float(target_returns_mean_h))
-                target_returns_stds.append(float(target_returns_std_h))
+                target_returns_means.append(float(mean_h))
+                target_returns_stds.append(float(std_h))
 
-                # Apply z-score normalization using horizon-specific stats
-                target_train_h = (target_train_h - target_returns_mean_h) / target_returns_std_h
-                target_val_h = (target_val_h - target_returns_mean_h) / target_returns_std_h
-                target_test_h = (target_test_h - target_returns_mean_h) / target_returns_std_h
+                # Apply z-score normalization.
+                target_train_h = (target_train_h - mean_h) / std_h
+                target_val_h = (target_val_h - mean_h) / std_h
+                target_test_h = (target_test_h - mean_h) / std_h
             else:
-                # For non-returns mode, add dummy normalization stats
                 target_returns_means.append(0.0)
                 target_returns_stds.append(1.0)
 
             y_train_final_list.append(target_train_h.astype(np.float32))
             y_val_final_list.append(target_val_h.astype(np.float32))
             y_test_final_list.append(target_test_h.astype(np.float32))
-
+        # --- FIX END ---
+        
         # Save normalization stats in params
         self.params['target_returns_mean'] = target_returns_means
         self.params['target_returns_std'] = target_returns_stds
@@ -547,9 +533,7 @@ class PreprocessorPlugin:
             print(f"  Horizon {h}: Mean={target_returns_means[i]:.6f}, Std={target_returns_stds[i]:.6f}")
 
         # Assign dates based on X windows
-        y_dates_train = x_dates_train
-        y_dates_val = x_dates_val
-        y_dates_test = x_dates_test
+        y_dates_train, y_dates_val, y_dates_test = x_dates_train, x_dates_val, x_dates_test
         print("Target processing complete.")
 
         # --- 8. Final Date Consistency Check ---
