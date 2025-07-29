@@ -127,8 +127,8 @@ class PreprocessorPlugin:
             if missing_cols: 
                 raise ValueError(f"Missing cols in {file_path}: {missing_cols}")
 
-        normalized_data = scaler.transform(data_reshaped)
-        return normalized_data.flatten()
+        # ...existing code...
+        return df
 
     def create_sliding_windows(self, data, window_size, time_horizon, date_times=None):
         """
