@@ -461,21 +461,32 @@ class PreprocessorPlugin:
 
         for h in predicted_horizons:
             # Target real para predicción desde t → t+h
-            target_train_h = target_train_raw[window_size + h : window_size + h + num_samples_train]
-            target_val_h   = target_val_raw[window_size + h : window_size + h + num_samples_val]
-            target_test_h  = target_test_raw[window_size + h : window_size + h + num_samples_test]
+            # Recalcular baseline para alinearse con target desplazado h
+            baseline_train_h = baseline_train[:len(baseline_train) - h]
+            baseline_val_h   = baseline_val[:len(baseline_val) - h]
+            baseline_test_h  = baseline_test[:len(baseline_test) - h]
+
+            target_train_h = target_train_raw[window_size + h : window_size + h + len(baseline_train_h)]
+            target_val_h   = target_val_raw[window_size + h : window_size + h + len(baseline_val_h)]
+            target_test_h  = target_test_raw[window_size + h : window_size + h + len(baseline_test_h)]
+
 
             if use_returns:
-                # Retorno = V_{t+h} - V_t
-                target_train_h = target_train_h - baseline_train
-                target_val_h   = target_val_h - baseline_val
-                target_test_h  = target_test_h - baseline_test
+                target_train_h = target_train_h - baseline_train_h
+                target_val_h   = target_val_h - baseline_val_h
+                target_test_h  = target_test_h - baseline_test_h
+
 
                 # Normalizar con media y std de TRAIN
                 mean_h = target_train_h.mean()
                 std_h = target_train_h.std()
                 if std_h < 1e-8:
                     std_h = 1.0  # Evita división por cero
+
+
+        y_train_final_list.append(target_train_h.astype(np.float32))
+        y_val_final_list.append(target_val_h.astype(np.float32))
+        y_test_final_list.append(target_test_h.astype(np.float32))
 
         # Save normalization stats in params
         self.params['target_returns_mean'] = target_returns_means
