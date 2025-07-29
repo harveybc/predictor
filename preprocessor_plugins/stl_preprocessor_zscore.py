@@ -558,6 +558,9 @@ class PreprocessorPlugin:
         print(f"  Horizons: {predicted_horizons}")
         print(f"  Features ({len(feature_names)}): {feature_names}")
         print(f"  Target normalization per horizon:")
+        self.params["target_returns_mean"] = target_returns_means
+        self.params["target_returns_std"] = target_returns_stds
+
         for i, h in enumerate(predicted_horizons):
             mean_h = self.params.get('target_returns_mean', [0])[i] if isinstance(self.params.get('target_returns_mean'), list) else 0
             std_h = self.params.get('target_returns_std', [1])[i] if isinstance(self.params.get('target_returns_std'), list) else 1
