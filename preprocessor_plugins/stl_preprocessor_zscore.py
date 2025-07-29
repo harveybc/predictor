@@ -530,6 +530,23 @@ class PreprocessorPlugin:
         y_train_dict = {f"output_horizon_{h}": arr for h, arr in zip(predicted_horizons, y_train_final_list)}
         y_val_dict   = {f"output_horizon_{h}": arr for h, arr in zip(predicted_horizons, y_val_final_list)}
         y_test_dict  = {f"output_horizon_{h}": arr for h, arr in zip(predicted_horizons, y_test_final_list)}
+        # --- Truncate X, baseline, and dates to match Y length for all splits ---
+        def truncate_to_y(X, baseline, dates, y_dict):
+            min_len = min(arr.shape[0] for arr in y_dict.values())
+            if X.shape[0] > min_len:
+                print(f"Truncating X from {X.shape[0]} to {min_len} to match Y.")
+                X = X[:min_len]
+            if baseline is not None and baseline.shape[0] > min_len:
+                baseline = baseline[:min_len]
+            if dates is not None and len(dates) > min_len:
+                dates = dates[:min_len]
+            for k in y_dict:
+                y_dict[k] = y_dict[k][:min_len]
+            return X, baseline, dates, y_dict
+
+        X_train_combined, baseline_train, x_dates_train, y_train_dict = truncate_to_y(X_train_combined, baseline_train, x_dates_train, y_train_dict)
+        X_val_combined, baseline_val, x_dates_val, y_val_dict = truncate_to_y(X_val_combined, baseline_val, x_dates_val, y_val_dict)
+        X_test_combined, baseline_test, x_dates_test, y_test_dict = truncate_to_y(X_test_combined, baseline_test, x_dates_test, y_test_dict)
 
         # Save normalization stats in params
         self.params['target_returns_mean'] = target_returns_means
