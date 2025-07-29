@@ -185,13 +185,14 @@ class PreprocessorPlugin:
         # Create windows and targets with PERFECT alignment
         for i, t in enumerate(valid_ticks):
             # WINDOW: [t-window_size : t] - INCLUDES current tick t, NO future data
-            window_start = t - window_size
-            window_end = t + 1  # +1 because Python slicing is exclusive of end
+            # WINDOW: [t-window_size+1 : t+1] - INCLUDES current tick t, NO future data  
+            window_start = t - window_size + 1
+            window_end = t + 1
 
             # Sanity checks
             assert window_start >= 0, f"Window start {window_start} < 0 for tick {t}"
             assert window_end <= total_length, f"Window end {window_end} > {total_length} for tick {t}"
-            assert window_end - window_start == window_size + 1, f"Window size mismatch: {window_end - window_start} != {window_size + 1}"
+            assert window_end - window_start == window_size, f"Window size mismatch: {window_end - window_start} != {window_size}"
             
             # Fill window with ALL FEATURES (not just log returns)
             X_windows[i, :, :] = features_array[window_start:window_end, :]
