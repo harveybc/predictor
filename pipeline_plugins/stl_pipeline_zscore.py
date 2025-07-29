@@ -120,13 +120,19 @@ class STLPipelinePlugin:
         # 1. Get datasets
         print("Loading/processing datasets via Preprocessor..."); datasets, plugin_debug_vars = preprocessor_plugin.run_preprocessing(config); print("Preprocessor finished.")
         X_train=datasets["x_train"]; X_val=datasets["x_val"]; X_test=datasets["x_test"]
-        y_train_list=datasets["y_train"]; y_val_list=datasets["y_val"]; y_test_list=datasets["y_test"]
-        train_dates=datasets.get("y_train_dates"); val_dates=datasets.get("y_val_dates"); test_dates=datasets.get("y_test_dates")
-        baseline_train=datasets.get("baseline_train"); baseline_val=datasets.get("baseline_val"); baseline_test=datasets.get("baseline_test")
-        use_returns = config.get("use_returns", False)
-        if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None): raise ValueError("Baselines required when use_returns=True.")
 
-        # In the pipeline, replace the stats extraction section with:
+        y_train_dict = datasets["y_train"]
+        y_val_dict = datasets["y_val"]
+        y_test_dict = datasets["y_test"]
+        train_dates = datasets.get("y_train_dates")
+        val_dates = datasets.get("y_val_dates")
+        test_dates = datasets.get("y_test_dates")
+        baseline_train = datasets.get("baseline_train")
+        baseline_val = datasets.get("baseline_val")
+        baseline_test = datasets.get("baseline_test")
+        use_returns = config.get("use_returns", False)
+        if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None):
+            raise ValueError("Baselines required when use_returns=True.")
 
         # Get per-horizon target normalization stats from preprocessor
         target_returns_mean = plugin_debug_vars.get('target_returns_mean', [0.0] * len(predicted_horizons))
@@ -155,22 +161,27 @@ class STLPipelinePlugin:
             print(f"WARN: target_returns_std length mismatch. Expected {len(predicted_horizons)}, got {len(target_returns_std)}")
             target_returns_std = target_returns_std[:len(predicted_horizons)] + [1.0] * max(0, len(predicted_horizons) - len(target_returns_std))
 
-        if use_returns: 
+        if use_returns:
             print(f"Per-horizon target normalization stats loaded:")
             for i, h in enumerate(predicted_horizons):
                 print(f"  Horizon {h}: Mean={target_returns_mean[i]:.6f}, Std={target_returns_std[i]:.6f}")
-        
+
         # Config Validation & Setup
-        plotted_horizon = config.get('plotted_horizon'); plotted_index = predicted_horizons.index(plotted_horizon)
+        plotted_horizon = config.get('plotted_horizon')
+        plotted_index = predicted_horizons.index(plotted_horizon)
         output_names = [f"output_horizon_{h}" for h in predicted_horizons]
 
+        # Debug: print available keys
+        print("Available y_train_dict keys:", list(y_train_dict.keys()))
+        print("Expected output_names:", output_names)
+
         # Prepare Target Dicts for Training
-        # Instead of zipping, iterate over output_names and get arrays from the dict
-        y_train_dict = {name: y_train_list[name].reshape(-1, 1).astype(np.float32) for name in output_names}
-        y_val_dict   = {name: y_val_list[name].reshape(-1, 1).astype(np.float32) for name in output_names}
+        # Reshape arrays for model input
+        y_train_dict = {name: y_train_dict[name].reshape(-1, 1).astype(np.float32) for name in output_names}
+        y_val_dict = {name: y_val_dict[name].reshape(-1, 1).astype(np.float32) for name in output_names}
 
         print(f"Input shapes: Train:{X_train.shape}, Val:{X_val.shape}, Test:{X_test.shape}")
-        print(f"Target shapes(H={predicted_horizons[0]}): Train:{y_train_list[0].shape}, Val:{y_val_list[0].shape}, Test:{y_test_list[0].shape}")
+        print(f"Target shapes(H={predicted_horizons[0]}): Train:{y_train_dict[output_names[0]].shape}, Val:{y_val_dict[output_names[0]].shape}, Test:{y_test_dict[output_names[0]].shape}")
         batch_size=config.get("batch_size",32); epochs=config.get("epochs",50)
         print(f"Predicting Horizons: {predicted_horizons}, Plotting: H={plotted_horizon}")
 
@@ -198,8 +209,8 @@ class STLPipelinePlugin:
                         h_std = target_returns_std[idx]
                         
                         # Ensure inputs are flattened BEFORE potential addition
-                        train_preds_h=list_train_preds[idx].flatten(); train_target_h=y_train_list[idx].flatten(); train_unc_h=list_train_unc[idx].flatten()
-                        val_preds_h=list_val_preds[idx].flatten(); val_target_h=y_val_list[idx].flatten(); val_unc_h=list_val_unc[idx].flatten()
+                        train_preds_h=list_train_preds[idx].flatten(); train_target_h=y_train_dict[output_names[idx]].flatten(); train_unc_h=list_train_unc[idx].flatten()
+                        val_preds_h=list_val_preds[idx].flatten(); val_target_h=y_val_dict[output_names[idx]].flatten(); val_unc_h=list_val_unc[idx].flatten()
                         num_train_pts=min(len(train_preds_h),len(train_target_h),len(baseline_train)); num_val_pts=min(len(val_preds_h),len(val_target_h),len(baseline_val))
                         train_preds_h=train_preds_h[:num_train_pts]; train_target_h=train_target_h[:num_train_pts]; train_unc_h=train_unc_h[:num_train_pts]; baseline_train_h=baseline_train[:num_train_pts].flatten()
                         val_preds_h=val_preds_h[:num_val_pts]; val_target_h=val_target_h[:num_val_pts]; val_unc_h=val_unc_h[:num_val_pts]; baseline_val_h=baseline_val[:num_val_pts].flatten()
@@ -254,7 +265,7 @@ class STLPipelinePlugin:
                      h_mean = target_returns_mean[idx]
                      h_std = target_returns_std[idx]
                      
-                     test_preds_h=list_test_preds[idx].flatten(); test_target_h=y_test_list[idx].flatten(); test_unc_h=list_test_unc[idx].flatten()
+                     test_preds_h=list_test_preds[idx].flatten(); test_target_h=y_test_dict[output_names[idx]].flatten(); test_unc_h=list_test_unc[idx].flatten()
                      num_test_pts=min(len(test_preds_h),len(test_target_h),len(baseline_test))
                      test_preds_h=test_preds_h[:num_test_pts]; test_target_h=test_target_h[:num_test_pts]; test_unc_h=test_unc_h[:num_test_pts]; baseline_test_h=baseline_test[:num_test_pts].flatten()
                      
@@ -327,7 +338,7 @@ class STLPipelinePlugin:
                 h_std = target_returns_std[idx]
                 
                 preds_raw=final_predictions[idx][:num_test_points].flatten()
-                target_raw=y_test_list[idx][:num_test_points].flatten()
+                target_raw=y_test_dict[output_names[idx]][:num_test_points].flatten()
                 unc_raw=final_uncertainties[idx][:num_test_points].flatten()
                 pred_price_denorm=np.full(num_test_points,np.nan); target_price_denorm=np.full(num_test_points,np.nan); unc_denorm=np.full(num_test_points,np.nan)
                 try:
@@ -379,7 +390,7 @@ class STLPipelinePlugin:
             plot_h_std = target_returns_std[plotted_index]
             
             preds_plot_raw = list_test_preds[plotted_index][:num_test_points]
-            target_plot_raw = y_test_list[plotted_index][:num_test_points]
+            target_plot_raw = y_test_dict[output_names[plotted_index]][:num_test_points]
             unc_plot_raw = list_test_unc[plotted_index][:num_test_points]
             baseline_plot = final_baseline
             
