@@ -562,8 +562,8 @@ class PreprocessorPlugin:
         self.params["target_returns_std"] = target_returns_stds
 
         for i, h in enumerate(predicted_horizons):
-            mean_h = self.params.get('target_returns_mean', [0])[i] if isinstance(self.params.get('target_returns_mean'), list) else 0
-            std_h = self.params.get('target_returns_std', [1])[i] if isinstance(self.params.get('target_returns_std'), list) else 1
+            mean_h = target_returns_means[i]
+            std_h  = target_returns_stds[i]
             print(f"    Horizon {h}: mean={mean_h:.6f}, std={std_h:.6f}")
         
         # Cleanup
