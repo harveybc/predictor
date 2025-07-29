@@ -431,15 +431,24 @@ class PreprocessorPlugin:
         print(f"Final X shapes: Train={X_train_combined.shape}, Val={X_val_combined.shape}, Test={X_test_combined.shape}")
         print(f"Included features: {feature_names}")
 
-        # --- 7. ORIGINAL Target Processing Logic ---
-        print("\n--- 7. Target Processing (Original Logic) ---")
+        # --- 7. Target Processing ---
+        print("\n--- 7. Target Processing ---")
         target_column = config["target_column"]
         use_returns = config.get("use_returns", False)
 
-        # ORIGINAL offset calculation
-        effective_stl_window = stl_window
-        original_offset = effective_stl_window + window_size - 2
-        print(f"Calculated original logic offset: {original_offset}")
+        # --- FIX START ---
+        # The original offset calculation was incorrect. It combined an stl_window
+        # value with the window_size, leading to an offset that was too large.
+        # The correct offset should represent the number of initial data points that are
+        # unusable because they can't form a complete window and have a corresponding
+        # target at the maximum prediction horizon.
+        max_horizon = max(predicted_horizons)
+        
+        # The correct offset is the size of the window plus the max horizon, minus one
+        # because the target is inclusive of the final step.
+        offset = window_size + max_horizon - 1
+        print(f"Calculated alignment offset: {offset}")
+        # --- FIX END ---
 
         # Load raw target data
         if target_column not in y_train_df.columns: 
@@ -448,31 +457,29 @@ class PreprocessorPlugin:
         target_val_raw = y_val_df[target_column].astype(np.float32).values
         target_test_raw = y_test_df[target_column].astype(np.float32).values
 
-        # ORIGINAL baseline calculation
-        baseline_slice_end_train = original_offset + num_samples_train
-        baseline_slice_end_val = original_offset + num_samples_val
-        baseline_slice_end_test = original_offset + num_samples_test
+        # Align the start of the raw target and close data with the windowed data
+        target_train = target_train_raw[offset:]
+        target_val = target_val_raw[offset:]
+        target_test = target_test_raw[offset:]
+        
+        close_train_aligned = close_train[offset:]
+        close_val_aligned = close_val[offset:]
+        close_test_aligned = close_test[offset:]
 
-        if original_offset < 0 or baseline_slice_end_train > len(close_train): 
-            raise ValueError(f"Baseline train indices invalid.")
-        baseline_train = close_train[original_offset : baseline_slice_end_train]
-        
-        if original_offset < 0 or baseline_slice_end_val > len(close_val): 
-            raise ValueError(f"Baseline val indices invalid.")
-        baseline_val = close_val[original_offset : baseline_slice_end_val]
-        
-        if original_offset < 0 or baseline_slice_end_test > len(close_test): 
-            raise ValueError(f"Baseline test indices invalid.")
-        baseline_test = close_test[original_offset : baseline_slice_end_test]
+        # Baseline is now calculated from the ALIGNED close data, ensuring lengths match
+        baseline_train = close_train_aligned[:num_samples_train]
+        baseline_val = close_val_aligned[:num_samples_val]
+        baseline_test = close_test_aligned[:num_samples_test]
+
+        # Verify that the number of samples does not exceed the available baseline data
+        if len(baseline_train) != num_samples_train:
+            raise ValueError(f"Mismatch between train baseline length ({len(baseline_train)}) and expected samples ({num_samples_train})")
+        if len(baseline_val) != num_samples_val:
+            raise ValueError(f"Mismatch between validation baseline length ({len(baseline_val)}) and expected samples ({num_samples_val})")
+        if len(baseline_test) != num_samples_test:
+            raise ValueError(f"Mismatch between test baseline length ({len(baseline_test)}) and expected samples ({num_samples_test})")
 
         print(f"Baseline shapes: Train={baseline_train.shape}, Val={baseline_val.shape}, Test={baseline_test.shape}")
-
-        # ORIGINAL target processing logic
-        target_train = target_train_raw[original_offset:]
-        target_val = target_val_raw[original_offset:]
-        target_test = target_test_raw[original_offset:]
-
-        # In the preprocessor, replace the target processing section with:
 
         # Initialize per-horizon normalization storage
         target_returns_means = []
@@ -484,36 +491,37 @@ class PreprocessorPlugin:
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
 
         for h in predicted_horizons:
-            # ORIGINAL shift logic
-            target_train_shifted = target_train[h:]
-            target_val_shifted = target_val[h:]
-            target_test_shifted = target_test[h:]
+            # The target for a given window is at `h-1` steps from the start of the aligned target array
+            # because horizons are 1-based.
+            idx_shift = h - 1
 
-            # ORIGINAL slice to match num_samples
-            if len(target_train_shifted) < num_samples_train: 
-                raise ValueError(f"Not enough shifted target data for H={h} (Train).")
-            target_train_h = target_train_shifted[:num_samples_train]
-            
-            if len(target_val_shifted) < num_samples_val: 
-                raise ValueError(f"Not enough shifted target data for H={h} (Val).")
-            target_val_h = target_val_shifted[:num_samples_val]
-            
-            if len(target_test_shifted) < num_samples_test: 
-                raise ValueError(f"Not enough shifted target data for H={h} (Test).")
-            target_test_h = target_test_shifted[:num_samples_test]
+            # Slice the target arrays to get the correct values for horizon h
+            target_train_h = target_train[idx_shift : idx_shift + num_samples_train]
+            target_val_h = target_val[idx_shift : idx_shift + num_samples_val]
+            target_test_h = target_test[idx_shift : idx_shift + num_samples_test]
 
-            # ORIGINAL returns adjustment and normalization
+            if len(target_train_h) != num_samples_train: 
+                raise ValueError(f"Not enough shifted target data for H={h} (Train). Required: {num_samples_train}, Found: {len(target_train_h)}")
+            if len(target_val_h) != num_samples_val: 
+                raise ValueError(f"Not enough shifted target data for H={h} (Val). Required: {num_samples_val}, Found: {len(target_val_h)}")
+            if len(target_test_h) != num_samples_test: 
+                raise ValueError(f"Not enough shifted target data for H={h} (Test). Required: {num_samples_test}, Found: {len(target_test_h)}")
+
             if use_returns:
                 # Calculate residual returns by subtracting baseline
                 target_train_h = target_train_h - baseline_train
                 target_val_h = target_val_h - baseline_val
                 target_test_h = target_test_h - baseline_test
 
-                # Calculate per-horizon normalization stats
+                # Calculate per-horizon normalization stats from the training set ONLY
                 target_returns_mean_h = target_train_h.mean()
                 target_returns_std_h = target_train_h.std()
                 
-                # Store per-horizon stats
+                # Handle cases with zero standard deviation
+                if target_returns_std_h < 1e-9:
+                    print(f"WARN: Horizon {h} has near-zero standard deviation. Normalization may be unstable.")
+                    target_returns_std_h = 1.0
+
                 target_returns_means.append(float(target_returns_mean_h))
                 target_returns_stds.append(float(target_returns_std_h))
 
@@ -542,10 +550,7 @@ class PreprocessorPlugin:
         y_dates_train = x_dates_train
         y_dates_val = x_dates_val
         y_dates_test = x_dates_test
-        print("Target processing complete (Original Logic).")
-
-        # Test close prices (original logic)
-        test_close_prices = baseline_test
+        print("Target processing complete.")
 
         # --- 8. Final Date Consistency Check ---
         print("\n--- 8. Final Date Consistency Checks ---")
