@@ -138,9 +138,12 @@ class PreprocessorPlugin:
             raise
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         # ...existing code...
         return df
 =======
+=======
+>>>>>>> parent of 409864ff (Update stl_preprocessor_zscore.py)
     def _normalize_series(self, series, name, fit=False):
         """Normalizes a time series using StandardScaler."""
         if not self.params.get("normalize_features", True): 
