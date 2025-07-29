@@ -162,7 +162,7 @@ class PreprocessorPlugin:
         print(f"Feature names: {feature_names}")
         
         # CRITICAL: Determine exact valid range for tick t
-        min_t = window_size  # First valid t (has enough history [t-window_size : t])
+        min_t = window_size - 1  # First valid t (has enough history [t-window_size+1 : t+1])
         max_t = total_length - max_horizon - 1  # Last valid t (has enough future for max horizon)
         
         if min_t > max_t:

@@ -187,23 +187,25 @@ class STLPipelinePlugin:
                         val_preds_h=val_preds_h[:num_val_pts]; val_target_h=val_target_h[:num_val_pts]; val_unc_h=val_unc_h[:num_val_pts]; baseline_val_h=baseline_val[:num_val_pts].flatten()
 
                         if use_returns:
-                            # 1. Denormalize residuals using horizon-specific stats
+                            # 1. First denormalize baseline CLOSE values using JSON stats
+                            baseline_train_denorm = denormalize(baseline_train_h, config)
+                            baseline_val_denorm = denormalize(baseline_val_h, config)
+                            
+                            # 2. Denormalize prediction returns using horizon-specific stats
                             train_preds_denorm_return = (train_preds_h * h_std) + h_mean
                             train_target_denorm_return = (train_target_h * h_std) + h_mean
                             val_preds_denorm_return = (val_preds_h * h_std) + h_mean
                             val_target_denorm_return = (val_target_h * h_std) + h_mean
                             
-                            # 2. Add to baseline, then denormalize final price using JSON stats
-                            train_pred_price = denormalize(baseline_train_h + train_preds_denorm_return, config)
-                            train_target_price = denormalize(baseline_train_h + train_target_denorm_return, config)
-                            val_pred_price = denormalize(baseline_val_h + val_preds_denorm_return, config)
-                            val_target_price = denormalize(baseline_val_h + val_target_denorm_return, config)
+                            # 3. Add denormalized returns to denormalized baseline to get final prices
+                            train_pred_price = baseline_train_denorm + train_preds_denorm_return
+                            train_target_price = baseline_train_denorm + train_target_denorm_return
+                            val_pred_price = baseline_val_denorm + val_preds_denorm_return
+                            val_target_price = baseline_val_denorm + val_target_denorm_return
                             
-                            # Denorm uncertainty: scale by horizon-specific std, then by feature (CLOSE) std
-                            train_unc_denorm_return = train_unc_h * h_std
-                            val_unc_denorm_return = val_unc_h * h_std
-                            train_unc_final = denormalize_returns(train_unc_denorm_return, config)
-                            val_unc_final = denormalize_returns(val_unc_denorm_return, config)
+                            # 4. Denormalize uncertainty (only horizon normalization, no baseline)
+                            train_unc_final = train_unc_h * h_std
+                            val_unc_final = val_unc_h * h_std
                         else:
                             train_pred_price=denormalize(train_preds_h, config)
                             train_target_price=denormalize(train_target_h, config)
@@ -239,12 +241,19 @@ class STLPipelinePlugin:
                      test_preds_h=test_preds_h[:num_test_pts]; test_target_h=test_target_h[:num_test_pts]; test_unc_h=test_unc_h[:num_test_pts]; baseline_test_h=baseline_test[:num_test_pts].flatten()
                      
                      if use_returns:
-                         test_preds_denorm_return = (test_preds_h * h_std) + h_mean
-                         test_target_denorm_return = (test_target_h * h_std) + h_mean
-                         test_pred_price = denormalize(baseline_test_h + test_preds_denorm_return, config)
-                         test_target_price = denormalize(baseline_test_h + test_target_denorm_return, config)
-                         test_unc_denorm_return = test_unc_h * h_std
-                         test_unc_final = denormalize_returns(test_unc_denorm_return, config)
+                        # 1. First denormalize baseline CLOSE values using JSON stats
+                        baseline_test_denorm = denormalize(baseline_test_h, config)
+                        
+                        # 2. Denormalize prediction returns using horizon-specific stats
+                        test_preds_denorm_return = (test_preds_h * h_std) + h_mean
+                        test_target_denorm_return = (test_target_h * h_std) + h_mean
+                        
+                        # 3. Add denormalized returns to denormalized baseline to get final prices
+                        test_pred_price = baseline_test_denorm + test_preds_denorm_return
+                        test_target_price = baseline_test_denorm + test_target_denorm_return
+                        
+                        # 4. Denormalize uncertainty (only horizon normalization, no baseline)
+                        test_unc_final = test_unc_h * h_std
                      else:
                          test_pred_price = denormalize(test_preds_h, config)
                          test_target_price = denormalize(test_target_h, config)
@@ -305,13 +314,20 @@ class STLPipelinePlugin:
                 pred_price_denorm=np.full(num_test_points,np.nan); target_price_denorm=np.full(num_test_points,np.nan); unc_denorm=np.full(num_test_points,np.nan)
                 try:
                     if use_returns:
-                         if final_baseline is None: raise ValueError("Baseline missing for returns-based prediction.")
-                         preds_denorm_return = (preds_raw * h_std) + h_mean
-                         target_denorm_return = (target_raw * h_std) + h_mean
-                         pred_price_denorm = denormalize(final_baseline + preds_denorm_return, config)
-                         target_price_denorm = denormalize(final_baseline + target_denorm_return, config)
-                         unc_denorm_return = unc_raw * h_std
-                         unc_denorm = denormalize_returns(unc_denorm_return, config)
+                        if final_baseline is None: raise ValueError("Baseline missing for returns-based prediction.")
+                        # 1. First denormalize baseline CLOSE values using JSON stats
+                        final_baseline_denorm = denormalize(final_baseline, config)
+                        
+                        # 2. Denormalize prediction returns using horizon-specific stats
+                        preds_denorm_return = (preds_raw * h_std) + h_mean
+                        target_denorm_return = (target_raw * h_std) + h_mean
+                        
+                        # 3. Add denormalized returns to denormalized baseline to get final prices
+                        pred_price_denorm = final_baseline_denorm + preds_denorm_return
+                        target_price_denorm = final_baseline_denorm + target_denorm_return
+                        
+                        # 4. Denormalize uncertainty (only horizon normalization, no baseline)
+                        unc_denorm = unc_raw * h_std
                     else:
                          pred_price_denorm = denormalize(preds_raw, config)
                          target_price_denorm = denormalize(target_raw, config)
@@ -350,12 +366,19 @@ class STLPipelinePlugin:
             baseline_plot = final_baseline
             
             if use_returns:
+                # 1. First denormalize baseline CLOSE values using JSON stats
+                baseline_plot_denorm = denormalize(baseline_plot, config)
+                
+                # 2. Denormalize prediction returns using horizon-specific stats
                 preds_denorm_return = (preds_plot_raw.flatten() * plot_h_std) + plot_h_mean
                 target_denorm_return = (target_plot_raw.flatten() * plot_h_std) + plot_h_mean
-                pred_plot_price_flat = denormalize(baseline_plot + preds_denorm_return, config).flatten()
-                target_plot_price_flat = denormalize(baseline_plot + target_denorm_return, config).flatten()
-                unc_denorm_return = unc_plot_raw.flatten() * plot_h_std
-                unc_plot_denorm_flat = denormalize_returns(unc_denorm_return, config).flatten()
+                
+                # 3. Add denormalized returns to denormalized baseline to get final prices
+                pred_plot_price_flat = (baseline_plot_denorm + preds_denorm_return).flatten()
+                target_plot_price_flat = (baseline_plot_denorm + target_denorm_return).flatten()
+                
+                # 4. Denormalize uncertainty (only horizon normalization, no baseline)
+                unc_plot_denorm_flat = (unc_plot_raw.flatten() * plot_h_std)
             else:
                 pred_plot_price_flat = denormalize(preds_plot_raw, config).flatten()
                 target_plot_price_flat = denormalize(target_plot_raw, config).flatten()
