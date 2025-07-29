@@ -492,9 +492,13 @@ class PreprocessorPlugin:
         self.params['target_returns_mean'] = target_returns_means
         self.params['target_returns_std'] = target_returns_stds
 
-        print(f"Per-horizon target normalization stats:")
-        for i, h in enumerate(predicted_horizons):
-            print(f"  Horizon {h}: Mean={target_returns_means[i]:.6f}, Std={target_returns_stds[i]:.6f}")
+        if use_returns:
+            print(f"Per-horizon target normalization stats:")
+            for i, h in enumerate(predicted_horizons):
+                print(f"  Horizon {h}: Mean={target_returns_means[i]:.6f}, Std={target_returns_stds[i]:.6f}")
+        else:
+            print("Per-horizon normalization skipped (use_returns=False). Using Mean=0.0, Std=1.0 for all horizons.")
+
 
         # Assign dates based on X windows
         y_dates_train, y_dates_val, y_dates_test = x_dates_train, x_dates_val, x_dates_test
