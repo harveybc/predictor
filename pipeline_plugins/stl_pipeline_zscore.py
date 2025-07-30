@@ -106,6 +106,7 @@ class STLPipelinePlugin:
         config = self.params
 
     def get_debug_info(self): return {var: self.params.get(var) for var in self.plugin_debug_vars}
+    
     def add_debug_info(self, debug_info): debug_info.update(self.get_debug_info())
 
     def run_prediction_pipeline(self, config, predictor_plugin, preprocessor_plugin):
