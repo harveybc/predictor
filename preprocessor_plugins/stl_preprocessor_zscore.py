@@ -263,7 +263,7 @@ class PreprocessorPlugin:
         close_test = x_test_df["CLOSE"].astype(np.float32).values
         dates_train = x_train_df.index if isinstance(x_train_df.index, pd.DatetimeIndex) else None
         dates_val = x_val_df.index if isinstance(x_val_df.index, pd.DatetimeIndex) else None
-        dates_test = x_test_df.index if isinstance(x_test_df.index, pd.DatetimeIndex) else None
+        dates_test = x_test_df.index if isinstance(x_test_df.index, pd.StacketimeIndex) else None
 
         # --- 4. Feature Generation ---
         print("\n--- 4. Feature Generation ---")
@@ -500,7 +500,8 @@ class PreprocessorPlugin:
             "test_close_prices": close_test[window_size:len(close_test)-max_horizon],
             "feature_names": feature_names,
             "target_returns_mean": target_returns_means,
-            "target_returns_std": target_returns_stds
+            "target_returns_std": target_returns_stds,
+            "y_test_raw": target_test_raw  # Added for true price in plotting
         }
 
         print(f"Final shapes:")
