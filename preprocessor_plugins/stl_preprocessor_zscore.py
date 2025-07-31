@@ -256,14 +256,14 @@ class PreprocessorPlugin:
                 elif split == "Test":
                     x_test_df, y_test_df = x_df, y_df
 
-        # --- 3. Initial Prep ---
+        # --- 3. Initial Data Prep ---
         print("\n--- 3. Initial Data Prep ---")
         close_train = x_train_df["CLOSE"].astype(np.float32).values
         close_val = x_val_df["CLOSE"].astype(np.float32).values
         close_test = x_test_df["CLOSE"].astype(np.float32).values
         dates_train = x_train_df.index if isinstance(x_train_df.index, pd.DatetimeIndex) else None
         dates_val = x_val_df.index if isinstance(x_val_df.index, pd.DatetimeIndex) else None
-        dates_test = x_test_df.index if isinstance(x_test_df.index, pd.StacketimeIndex) else None
+        dates_test = x_test_df.index if isinstance(x_test_df.index, pd.DatetimeIndex) else None
 
         # --- 4. Feature Generation ---
         print("\n--- 4. Feature Generation ---")
