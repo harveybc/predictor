@@ -77,8 +77,8 @@ class STLPipelinePlugin:
         "loss_plot_file": "loss_plot.png", "output_file": "test_predictions.csv",
         "uncertainties_file": "test_uncertainties.csv", "model_plot_file": "model_plot.png",
         "predictions_plot_file": "predictions_plot.png", "results_file": "results.csv",
-        "plot_points": 480, "plotted_horizon": 6, "use_strategy": False,
-        "predicted_horizons": [1, 6, 12, 24], "use_returns": True, "normalize_features": True,
+        "plot_points": 480, "plotted_horizon": 24, "use_strategy": False,
+        "predicted_horizons": [24, 48, 72, 96, 120, 144], "use_returns": True, "normalize_features": True,
         "window_size": 48, "target_column": "TARGET", "use_normalization_json": None,
         "mc_samples": 100,
     }
@@ -392,7 +392,7 @@ class STLPipelinePlugin:
             plot_h_std = target_returns_std[plotted_index]
             target_denorm_return = denormalize_returns(target_plot_raw, config, plotted_index, target_returns_mean, target_returns_std)
             target_plot_price_flat = (baseline_plot + target_denorm_return).flatten()
-            true_plot_raw = datasets["y_test_raw"][start_idx + plotted_horizon:start_idx + plotted_horizon + plot_points]
+            true_plot_raw = datasets["y_test_raw"][window_size + plotted_horizon:window_size + plotted_horizon + plot_points]
             true_plot_price_flat = true_plot_raw.flatten()  # Already in real-world scale
             pred_plot_flat = pred_plot.flatten()
             test_dates_plot = test_dates[start_idx:start_idx + plot_points] if test_dates is not None else range(plot_points)

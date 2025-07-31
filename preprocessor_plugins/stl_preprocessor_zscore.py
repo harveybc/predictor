@@ -78,7 +78,7 @@ class PreprocessorPlugin:
         "max_steps_train": None, "max_steps_val": None, "max_steps_test": None,
         "target_column": "TARGET",
         "window_size": 48,
-        "predicted_horizons": [1, 6, 12, 24],
+        "predicted_horizons": [24, 48, 72, 96, 120, 144],
         "use_returns": True,
         "normalize_features": True,
     }
@@ -430,18 +430,25 @@ class PreprocessorPlugin:
 
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
         for h in predicted_horizons:
-            # Compute returns in real-world scale
-            baseline_train_h = close_train[window_size:len(close_train) - h]
-            baseline_val_h = close_val[window_size:len(close_val) - h]
-            baseline_test_h = close_test[window_size:len(close_test) - h]
-            target_train_h = target_train_raw[window_size + h:len(target_train_raw) - h]
-            target_val_h = target_val_raw[window_size + h:len(target_val_raw) - h]
-            target_test_h = target_test_raw[window_size + h:len(target_test_raw) - h]
+            # Compute returns in real-world scale, aligned with sliding windows
+            baseline_train_h = close_train[window_size:window_size + num_samples_train]
+            baseline_val_h = close_val[window_size:window_size + num_samples_val]
+            baseline_test_h = close_test[window_size:window_size + num_samples_test]
+            target_train_h = target_train_raw[window_size + h:window_size + h + num_samples_train]
+            target_val_h = target_val_raw[window_size + h:window_size + h + num_samples_val]
+            target_test_h = target_test_raw[window_size + h:window_size + h + num_samples_test]
             if len(target_train_h) != len(baseline_train_h) or len(target_val_h) != len(baseline_val_h) or len(target_test_h) != len(baseline_test_h):
-                raise ValueError(f"Target-baseline length mismatch for horizon {h}: "
-                                 f"Train({len(target_train_h)} vs {len(baseline_train_h)}), "
-                                 f"Val({len(target_val_h)} vs {len(baseline_val_h)}), "
-                                 f"Test({len(target_test_h)} vs {len(baseline_test_h)})")
+                print(f"Adjusting lengths for horizon {h}...")
+                min_train_len = min(len(target_train_h), len(baseline_train_h))
+                min_val_len = min(len(target_val_h), len(baseline_val_h))
+                min_test_len = min(len(target_test_h), len(baseline_test_h))
+                baseline_train_h = baseline_train_h[:min_train_len]
+                target_train_h = target_train_h[:min_train_len]
+                baseline_val_h = baseline_val_h[:min_val_len]
+                target_val_h = target_val_h[:min_val_len]
+                baseline_test_h = baseline_test_h[:min_test_len]
+                target_test_h = target_test_h[:min_test_len]
+                print(f"  New lengths: Train={len(target_train_h)}, Val={len(target_val_h)}, Test={len(target_test_h)}")
             if use_returns:
                 # Returns: close_real[t + h] - close_real[t]
                 target_train_h = target_train_h - baseline_train_h
@@ -532,7 +539,7 @@ class PreprocessorPlugin:
             "baseline_train_dates": x_dates_train,
             "baseline_val_dates": x_dates_val,
             "baseline_test_dates": x_dates_test,
-            "test_close_prices": close_test[window_size:len(close_test)-max_horizon],
+            "test_close_prices": close_test[window_size:window_size + num_samples_test],
             "feature_names": feature_names,
             "target_returns_mean": target_returns_means,
             "target_returns_std": target_returns_stds,
