@@ -391,7 +391,8 @@ class PreprocessorPlugin:
                 raise ValueError(f"{split} target data too short: {len(target)} vs required {len(close) - window_size - h} for window_size={window_size}, horizon={h}")
 
         y_train_final_list, y_val_final_list, y_test_final_list = [], [], []
-        target_returns_means, target_returns_stds = []
+        target_returns_means = []
+        target_returns_stds = []
 
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
         for h in predicted_horizons:
