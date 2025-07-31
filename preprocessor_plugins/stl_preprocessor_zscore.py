@@ -2,12 +2,45 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import os
+import json
 
 try:
     from app.data_handler import load_csv
 except ImportError:
     print("CRITICAL ERROR: Could not import 'load_csv' from 'app.data_handler'.")
     raise
+
+def load_normalization_json(config):
+    """Loads normalization parameters from JSON file."""
+    if config.get("use_normalization_json"):
+        norm_json = config["use_normalization_json"]
+        if isinstance(norm_json, str):
+            try:
+                with open(norm_json, 'r') as f:
+                    norm_json = json.load(f)
+                return norm_json
+            except Exception as e:
+                print(f"WARN: Failed to load norm JSON {norm_json}: {e}")
+                return {}
+        return norm_json
+    return {}
+
+def denormalize(data, norm_json):
+    """Denormalizes data using JSON normalization parameters."""
+    data = np.asarray(data)
+    if isinstance(norm_json, dict) and "CLOSE" in norm_json:
+        try:
+            if "mean" in norm_json["CLOSE"] and "std" in norm_json["CLOSE"]:
+                close_mean = norm_json["CLOSE"]["mean"]
+                close_std = norm_json["CLOSE"]["std"]
+                return (data * close_std) + close_mean
+            else:
+                print(f"WARN: Missing 'mean' or 'std' in norm JSON")
+                return data
+        except Exception as e:
+            print(f"WARN: Error during denormalize: {e}")
+            return data
+    return data
 
 def verify_date_consistency(date_lists, dataset_name):
     """
@@ -258,9 +291,13 @@ class PreprocessorPlugin:
 
         # --- 3. Initial Data Prep ---
         print("\n--- 3. Initial Data Prep ---")
-        close_train = x_train_df["CLOSE"].astype(np.float32).values
-        close_val = x_val_df["CLOSE"].astype(np.float32).values
-        close_test = x_test_df["CLOSE"].astype(np.float32).values
+        norm_json = load_normalization_json(config)
+        close_train = denormalize(x_train_df["CLOSE"].astype(np.float32).values, norm_json)
+        close_val = denormalize(x_val_df["CLOSE"].astype(np.float32).values, norm_json)
+        close_test = denormalize(x_test_df["CLOSE"].astype(np.float32).values, norm_json)
+        target_train_raw = denormalize(y_train_df[config["target_column"]].astype(np.float32).values, norm_json)
+        target_val_raw = denormalize(y_val_df[config["target_column"]].astype(np.float32).values, norm_json)
+        target_test_raw = denormalize(y_test_df[config["target_column"]].astype(np.float32).values, norm_json)
         dates_train = x_train_df.index if isinstance(x_train_df.index, pd.DatetimeIndex) else None
         dates_val = x_val_df.index if isinstance(x_val_df.index, pd.DatetimeIndex) else None
         dates_test = x_test_df.index if isinstance(x_test_df.index, pd.DatetimeIndex) else None
@@ -379,9 +416,6 @@ class PreprocessorPlugin:
         baseline_train_dates = dates_train[window_size:window_size + num_samples_train] if dates_train is not None else None
         baseline_val_dates = dates_val[window_size:window_size + num_samples_val] if dates_val is not None else None
         baseline_test_dates = dates_test[window_size:window_size + num_samples_test] if dates_test is not None else None
-        target_train_raw = y_train_df[target_column].astype(np.float32).values
-        target_val_raw = y_val_df[target_column].astype(np.float32).values
-        target_test_raw = y_test_df[target_column].astype(np.float32).values
 
         # Verify target alignment
         for split, close, target, h in [("Train", close_train, target_train_raw, max_horizon), 
@@ -396,19 +430,20 @@ class PreprocessorPlugin:
 
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
         for h in predicted_horizons:
-            baseline_train_h = baseline_train[:len(baseline_train) - h]
-            baseline_val_h = baseline_val[:len(baseline_val) - h]
-            baseline_test_h = baseline_test[:len(baseline_test) - h]
-            target_train_h = target_train_raw[window_size + h : window_size + h + len(baseline_train_h)]
-            target_val_h = target_val_raw[window_size + h : window_size + h + len(baseline_val_h)]
-            target_test_h = target_test_raw[window_size + h : window_size + h + len(baseline_test_h)]
+            # Compute returns in real-world scale
+            baseline_train_h = close_train[window_size:len(close_train) - h]
+            baseline_val_h = close_val[window_size:len(close_val) - h]
+            baseline_test_h = close_test[window_size:len(close_test) - h]
+            target_train_h = target_train_raw[window_size + h:len(target_train_raw) - h]
+            target_val_h = target_val_raw[window_size + h:len(target_val_raw) - h]
+            target_test_h = target_test_raw[window_size + h:len(target_test_raw) - h]
             if len(target_train_h) != len(baseline_train_h) or len(target_val_h) != len(baseline_val_h) or len(target_test_h) != len(baseline_test_h):
                 raise ValueError(f"Target-baseline length mismatch for horizon {h}: "
                                  f"Train({len(target_train_h)} vs {len(baseline_train_h)}), "
                                  f"Val({len(target_val_h)} vs {len(baseline_val_h)}), "
                                  f"Test({len(target_test_h)} vs {len(baseline_test_h)})")
             if use_returns:
-                # Compute returns in normalized scale (equivalent to real-life returns after denormalization)
+                # Returns: close_real[t + h] - close_real[t]
                 target_train_h = target_train_h - baseline_train_h
                 target_val_h = target_val_h - baseline_val_h
                 target_test_h = target_test_h - baseline_test_h
@@ -501,7 +536,7 @@ class PreprocessorPlugin:
             "feature_names": feature_names,
             "target_returns_mean": target_returns_means,
             "target_returns_std": target_returns_stds,
-            "y_test_raw": target_test_raw  # Added for true price in plotting
+            "y_test_raw": target_test_raw
         }
 
         print(f"Final shapes:")
