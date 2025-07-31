@@ -504,34 +504,52 @@ class PreprocessorPlugin:
 
 
             if use_returns:
+                # Calculate returns (target - baseline)
                 target_train_h = target_train_h - baseline_train_h
                 target_val_h   = target_val_h - baseline_val_h
                 target_test_h  = target_test_h - baseline_test_h
 
-
-                # Normalizar con media y std de TRAIN
+                # Get normalization parameters (mean, std) from the TRAINING set returns
                 mean_h = target_train_h.mean()
                 std_h = target_train_h.std()
                 if std_h < 1e-8:
-                    std_h = 1.0  # Evita división por cero
+                    std_h = 1.0  # Avoid division by zero
 
                 target_returns_means.append(mean_h)
                 target_returns_stds.append(std_h)
         
+                # >>>>>>>>>>>>>>>>>>>> FIX START <<<<<<<<<<<<<<<<<<<<<<
+                # Apply z-score normalization to all datasets using the stats from TRAIN
+                print(f"  Normalizing H={h} with Mean={mean_h:.6f}, Std={std_h:.6f}")
+                y_train_norm = (target_train_h - mean_h) / std_h
+                y_val_norm = (target_val_h - mean_h) / std_h
+                y_test_norm = (target_test_h - mean_h) / std_h
 
-        
+                y_train_final_list.append(y_train_norm.astype(np.float32))
+                y_val_final_list.append(y_val_norm.astype(np.float32))
+                y_test_final_list.append(y_test_norm.astype(np.float32))
+                # >>>>>>>>>>>>>>>>>>>> FIX END <<<<<<<<<<<<<<<<<<<<<<
 
-
+            else:
+                # If not using returns, the target is the raw price.
+                # We don't normalize it per-horizon in this case.
+                # We append dummy values for mean/std to maintain structure.
+                target_returns_means.append(0.0)
+                target_returns_stds.append(1.0)
                 y_train_final_list.append(target_train_h.astype(np.float32))
                 y_val_final_list.append(target_val_h.astype(np.float32))
                 y_test_final_list.append(target_test_h.astype(np.float32))
+
 
         # Convert lists to dicts with expected keys for multi-output models
         y_train_dict = {f"output_horizon_{h}": arr for h, arr in zip(predicted_horizons, y_train_final_list)}
         y_val_dict   = {f"output_horizon_{h}": arr for h, arr in zip(predicted_horizons, y_val_final_list)}
         y_test_dict  = {f"output_horizon_{h}": arr for h, arr in zip(predicted_horizons, y_test_final_list)}
+        
         # --- Truncate X, baseline, and dates to match Y length for all splits ---
         def truncate_to_y(X, baseline, dates, y_dict):
+            if not y_dict: # Handle case where y_dict might be empty
+                return X, baseline, dates, y_dict
             min_len = min(arr.shape[0] for arr in y_dict.values())
             if X.shape[0] > min_len:
                 print(f"Truncating X from {X.shape[0]} to {min_len} to match Y.")
@@ -613,10 +631,11 @@ class PreprocessorPlugin:
         
         print(f"Final shapes:")
         #print(f"  X: Train={X_train.shape}, Val={X_val.shape}, Test={X_test.shape}")
-        print(f"  Y: {len(predicted_horizons)} horizons, "
-              f"Train={len(ret['y_train'][f'output_horizon_{predicted_horizons[0]}'])}, "
-              f"Val={len(ret['y_val'][f'output_horizon_{predicted_horizons[0]}'])}, "
-              f"Test={len(ret['y_test'][f'output_horizon_{predicted_horizons[0]}'])}")
+        if y_train_dict:
+            print(f"  Y: {len(predicted_horizons)} horizons, "
+                f"Train={len(ret['y_train'][f'output_horizon_{predicted_horizons[0]}'])}, "
+                f"Val={len(ret['y_val'][f'output_horizon_{predicted_horizons[0]}'])}, "
+                f"Test={len(ret['y_test'][f'output_horizon_{predicted_horizons[0]}'])}")
         print(f"  Baselines: Train={len(baseline_train)}, Val={len(baseline_val)}, Test={len(baseline_test)}")
         print(f"  Horizons: {predicted_horizons}")
         print(f"  Features ({len(feature_names)}): {feature_names}")
@@ -651,3 +670,5 @@ class PreprocessorPlugin:
         self.set_params(**run_config)
         processed_data = self.process_data(self.params)
         return processed_data, self.params
+
+
