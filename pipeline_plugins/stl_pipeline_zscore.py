@@ -73,34 +73,6 @@ def denormalize_target_returns(data, target_returns_mean, target_returns_std, ho
         print(f"WARN: Error during denormalize_target_returns: {e}")
         return data
 
-def denormalize_returns(data, config):
-    """Denormalizes return values (deltas) using z-score std only."""
-    data = np.asarray(data)
-    if config.get("use_normalization_json"):
-        norm_json = config["use_normalization_json"]
-        if isinstance(norm_json, str):
-            try:
-                with open(norm_json, 'r') as f: 
-                    norm_json = json.load(f)
-            except Exception as e: 
-                print(f"WARN: Failed load norm JSON {norm_json}: {e}")
-                return data
-        if isinstance(norm_json, dict) and "CLOSE" in norm_json:
-            try:
-                if "std" in norm_json["CLOSE"]:
-                    # Z-score denormalization for returns: only scale by std (no mean shift)
-                    close_std = norm_json["CLOSE"]["std"]
-                    return data * close_std
-                else:
-                    print(f"WARN: Missing 'std' in norm JSON for returns")
-                    return data
-            except KeyError as e: 
-                print(f"WARN: Missing key in norm JSON: {e}")
-                return data
-            except Exception as e: 
-                print(f"WARN: Error during denormalize_returns: {e}")
-                return data
-    return data
 # --- End Denormalization Functions ---
 
 
@@ -167,9 +139,11 @@ class STLPipelinePlugin:
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
         
-        # Get target normalization stats from preprocessor
-        target_returns_mean = datasets.get("target_returns_mean", [])
-        target_returns_std = datasets.get("target_returns_std", [])
+        # Get target normalization stats from preprocessor_params
+        if "target_returns_mean" not in preprocessor_params or "target_returns_std" not in preprocessor_params:
+            raise ValueError("Preprocessor did not return 'target_returns_mean' or 'target_returns_std'. Check preprocessor configuration and execution.")
+        target_returns_mean = preprocessor_params["target_returns_mean"]
+        target_returns_std = preprocessor_params["target_returns_std"]
         
         use_returns = config.get("use_returns", False)
         if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None): 
@@ -634,9 +608,11 @@ class STLPipelinePlugin:
         val_dates = datasets.get("y_val_dates")
         baseline_val_eval = datasets.get("baseline_val")
         
-        # Get target normalization stats from preprocessor
-        target_returns_mean = datasets.get("target_returns_mean", [])
-        target_returns_std = datasets.get("target_returns_std", [])
+        # Get target normalization stats from preprocessor_params
+        if "target_returns_mean" not in preprocessor_params or "target_returns_std" not in preprocessor_params:
+            raise ValueError("Preprocessor did not return 'target_returns_mean' or 'target_returns_std' for evaluation. Check preprocessor configuration and execution.")
+        target_returns_mean = preprocessor_params["target_returns_mean"]
+        target_returns_std = preprocessor_params["target_returns_std"]
         
         print(f"Validation data X shape: {x_val.shape}")
         print("Making predictions on validation data...")
