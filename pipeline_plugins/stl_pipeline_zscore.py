@@ -432,10 +432,9 @@ class STLPipelinePlugin:
                     if use_returns:
                         if final_baseline is None: 
                             raise ValueError("Baseline missing.")
-                        # Denormalize baseline and add to returns
-                        baseline_denorm = denormalize(final_baseline, config)  # Denormalize baseline
-                        pred_price_denorm = baseline_denorm + preds_denorm  # (N,) + (N,) -> (N,)
-                        target_price_denorm = baseline_denorm + target_denorm  # (N,) + (N,) -> (N,)
+                        # Baseline is already denormalized from target calculation, use directly
+                        pred_price_denorm = final_baseline + preds_denorm  # (N,) + (N,) -> (N,)
+                        target_price_denorm = final_baseline + target_denorm  # (N,) + (N,) -> (N,)
                     else:
                         pred_price_denorm = preds_denorm
                         target_price_denorm = target_denorm
@@ -519,11 +518,14 @@ class STLPipelinePlugin:
                 baseline_plot_denorm = baseline_plot.flatten()
                 pred_plot_price_flat = (baseline_plot_denorm + preds_plot_denorm).flatten()
                 target_plot_price_flat = (baseline_plot_denorm + target_plot_denorm).flatten()
-                true_plot_price_flat = baseline_plot_denorm.flatten()
+                # The "actual" price should be the target price (true future price at t+h)
+                # not the baseline price (current price at t)
+                true_plot_price_flat = target_plot_price_flat.copy()
             else:
                 pred_plot_price_flat = preds_plot_denorm.flatten()
                 target_plot_price_flat = target_plot_denorm.flatten()
-                true_plot_price_flat = baseline_plot.flatten()  # Already denormalized
+                # When not using returns, target already represents the future price
+                true_plot_price_flat = target_plot_price_flat.copy()
             
             unc_plot_denorm_flat = unc_plot_denorm.flatten()
 
