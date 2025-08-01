@@ -55,29 +55,136 @@ local_feedback=[] # local feedback values for the model
 
 
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
-    """Custom ReduceLROnPlateau callback that prints the patience counter and internal state."""
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    """Custom ReduceLROnPlateau callback that monitors ALL horizons' validation MAE and resets counter if ANY improves."""
+    def __init__(self, horizon_metrics, **kwargs):
+        # Store horizon metrics list but don't pass monitor to parent
+        self.horizon_metrics = horizon_metrics
+        self.best_metrics = {}
         self.patience_counter = 0
-
+        
+        # Initialize parent with dummy monitor, we'll override the logic
+        if 'monitor' in kwargs:
+            del kwargs['monitor']  # Remove monitor from kwargs
+        super().__init__(monitor='loss', **kwargs)  # Use dummy monitor
+        
+        # Initialize cooldown_counter (missing in parent class sometimes)
+        self.cooldown_counter = 0
+        
     def on_epoch_end(self, epoch, logs=None):
-        super().on_epoch_end(epoch, logs)
-        # Report actual internal state including cooldown
-        in_cooldown = hasattr(self, 'cooldown_counter') and self.cooldown_counter > 0
-        cooldown_remaining = getattr(self, 'cooldown_counter', 0)
+        logs = logs or {}
+        
+        # Check if any horizon improved
+        any_improved = False
+        current_metrics = {}
+        
+        for metric_name in self.horizon_metrics:
+            if metric_name in logs:
+                current_value = logs[metric_name]
+                current_metrics[metric_name] = current_value
+                
+                if metric_name not in self.best_metrics:
+                    self.best_metrics[metric_name] = current_value
+                    any_improved = True
+                else:
+                    # Check if current is better (lower for MAE)
+                    if current_value < self.best_metrics[metric_name] - self.min_delta:
+                        self.best_metrics[metric_name] = current_value
+                        any_improved = True
+        
+        # Reset counter if any horizon improved
+        if any_improved:
+            self.wait = 0
+            self.cooldown_counter = 0
+        else:
+            self.wait += 1
+            
+        # Apply learning rate reduction if patience exceeded
+        if self.wait >= self.patience and self.cooldown_counter == 0:
+            if hasattr(self, 'model') and self.model is not None:
+                old_lr = float(K.get_value(self.model.optimizer.learning_rate))
+                new_lr = old_lr * self.factor
+                K.set_value(self.model.optimizer.learning_rate, new_lr)
+                if self.verbose > 0:
+                    print(f'\nEpoch {epoch + 1}: ReduceLROnPlateau reducing learning rate to {new_lr}.')
+                self.cooldown_counter = self.cooldown
+                self.wait = 0
+            
+        # Handle cooldown
+        if self.cooldown_counter > 0:
+            self.cooldown_counter -= 1
+            
         self.patience_counter = self.wait
-        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}, cooldown: {cooldown_remaining}, in_cooldown: {in_cooldown}")
+        in_cooldown = self.cooldown_counter > 0
+        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}/{self.patience}, cooldown: {self.cooldown_counter}, any_improved: {any_improved}")
 
 class EarlyStoppingWithPatienceCounter(EarlyStopping):
-    """Custom EarlyStopping callback that prints the patience counter."""
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    """Custom EarlyStopping callback that monitors ALL horizons' validation MAE and resets counter if ANY improves."""
+    def __init__(self, horizon_metrics, **kwargs):
+        # Store horizon metrics list but don't pass monitor to parent
+        self.horizon_metrics = horizon_metrics
+        self.best_metrics = {}
         self.patience_counter = 0
-
+        
+        # Extract start_from_epoch before calling parent
+        self.start_from_epoch = kwargs.pop('start_from_epoch', 0)
+        
+        # Initialize parent with dummy monitor, we'll override the logic
+        if 'monitor' in kwargs:
+            del kwargs['monitor']  # Remove monitor from kwargs
+        super().__init__(monitor='loss', **kwargs)  # Use dummy monitor
+        
+        # Set baseline_epoch properly
+        self.baseline_epoch = self.start_from_epoch
+        
     def on_epoch_end(self, epoch, logs=None):
-        super().on_epoch_end(epoch, logs)
+        logs = logs or {}
+        
+        # Check if any horizon improved
+        any_improved = False
+        current_metrics = {}
+        
+        for metric_name in self.horizon_metrics:
+            if metric_name in logs:
+                current_value = logs[metric_name]
+                current_metrics[metric_name] = current_value
+                
+                if metric_name not in self.best_metrics:
+                    self.best_metrics[metric_name] = current_value
+                    any_improved = True
+                else:
+                    # Check if current is better (lower for MAE)
+                    if current_value < self.best_metrics[metric_name] - self.min_delta:
+                        self.best_metrics[metric_name] = current_value
+                        any_improved = True
+        
+        # Reset counter if any horizon improved
+        if any_improved:
+            self.wait = 0
+            if self.restore_best_weights and hasattr(self, 'best_weights'):
+                if self.verbose > 0:
+                    print(f'\nEpoch {epoch + 1}: early stopping counter reset due to improvement in validation metrics.')
+        else:
+            self.wait += 1
+            
+        # Stop training if patience exceeded
+        if self.wait >= self.patience:
+            if epoch >= self.baseline_epoch:
+                self.stopped_epoch = epoch
+                if hasattr(self, 'model') and self.model is not None:
+                    self.model.stop_training = True
+                if self.restore_best_weights and hasattr(self, 'best_weights'):
+                    if self.verbose > 0:
+                        print('Restoring model weights from the end of the best epoch.')
+                    if hasattr(self, 'model') and self.model is not None:
+                        self.model.set_weights(self.best_weights)
+        
+        # Store best weights when any metric improves
+        if any_improved and self.restore_best_weights:
+            if hasattr(self, 'model') and self.model is not None:
+                self.best_weights = self.model.get_weights()
+            
         self.patience_counter = self.wait
-        print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}")
+        print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}/{self.patience}, any_improved: {any_improved}")
 
 class ClearMemoryCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
@@ -649,17 +756,26 @@ class Plugin:
         # Monitor the correct validation metric for the plotted horizon
         plotted_output_name = f"output_horizon_{plotted_horizon}"
         val_metric_name = f"val_{plotted_output_name}_mae_magnitude"
-        print(f"Monitoring validation metric: {val_metric_name}")
+        print(f"Primary monitoring validation metric: {val_metric_name}")
+        
+        # Build list of ALL horizon validation MAE metrics for multi-horizon monitoring
+        predicted_horizons = config['predicted_horizons']
+        all_horizon_val_metrics = []
+        for horizon in predicted_horizons:
+            metric_name = f"val_output_horizon_{horizon}_mae_magnitude"
+            all_horizon_val_metrics.append(metric_name)
+        
+        print(f"Multi-horizon monitoring metrics: {all_horizon_val_metrics}")
 
         # Instantiate callbacks WITHOUT ClearMemoryCallback
         # Assumes relevant Callback classes are imported/defined
         callbacks = [
             EarlyStoppingWithPatienceCounter(
-                monitor=val_metric_name, patience=patience_early_stopping, restore_best_weights=True,
+                horizon_metrics=all_horizon_val_metrics, patience=patience_early_stopping, restore_best_weights=True,
                 verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping, mode='min'
             ),
             ReduceLROnPlateauWithCounter(
-                monitor=val_metric_name, factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1, mode='min'
+                horizon_metrics=all_horizon_val_metrics, factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1, mode='min'
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs:
                            print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
