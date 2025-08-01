@@ -101,9 +101,22 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
         # Apply learning rate reduction if patience exceeded
         if self.wait >= self.patience and self.cooldown_counter == 0:
             if hasattr(self, 'model') and self.model is not None:
-                old_lr = float(K.get_value(self.model.optimizer.learning_rate))
-                new_lr = old_lr * self.factor
-                K.set_value(self.model.optimizer.learning_rate, new_lr)
+                # Handle different TensorFlow/Keras versions for learning rate access
+                try:
+                    # Try the modern approach first
+                    old_lr = float(self.model.optimizer.learning_rate.numpy())
+                    self.model.optimizer.learning_rate.assign(old_lr * self.factor)
+                    new_lr = float(self.model.optimizer.learning_rate.numpy())
+                except (AttributeError, TypeError):
+                    # Fallback to older Keras backend approach
+                    try:
+                        old_lr = float(K.get_value(self.model.optimizer.learning_rate))
+                        K.set_value(self.model.optimizer.learning_rate, old_lr * self.factor)
+                        new_lr = old_lr * self.factor
+                    except Exception as e:
+                        print(f"WARNING: Could not adjust learning rate: {e}")
+                        new_lr = old_lr = 0.0
+                
                 if self.verbose > 0:
                     print(f'\nEpoch {epoch + 1}: ReduceLROnPlateau reducing learning rate to {new_lr}.')
                 self.cooldown_counter = self.cooldown
@@ -519,6 +532,18 @@ class Plugin:
         """Add predictor plugin debug information to the given dictionary."""
         debug_info.update(self.get_debug_info())
 
+    def _print_learning_rate(self, epoch):
+        """Safely print the current learning rate."""
+        try:
+            # Try the modern approach first
+            lr = float(self.model.optimizer.learning_rate.numpy())
+        except (AttributeError, TypeError):
+            # Fallback to older Keras backend approach
+            try:
+                lr = float(K.get_value(self.model.optimizer.learning_rate))
+            except Exception:
+                lr = 0.0
+        print(f"Epoch {epoch+1}: LR={lr:.6f}")
 
     # --- Define within your YourPredictorPlugin class ---
     # --- Define within your YourPredictorPlugin class ---
@@ -777,8 +802,7 @@ class Plugin:
             ReduceLROnPlateauWithCounter(
                 horizon_metrics=all_horizon_val_metrics, factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1, mode='min'
             ),
-            LambdaCallback(on_epoch_end=lambda epoch, logs:
-                           print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
+            LambdaCallback(on_epoch_end=lambda epoch, logs: self._print_learning_rate(epoch)),
             # Removed: ClearMemoryCallback(), # <<< REMOVED THIS LINE
             kl_callback
         ]
