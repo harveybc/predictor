@@ -537,14 +537,13 @@ class STLPipelinePlugin:
                 baseline_plot_denorm = baseline_plot.flatten()
                 pred_plot_price_flat = (baseline_plot_denorm + preds_plot_denorm).flatten()
                 target_plot_price_flat = (baseline_plot_denorm + target_plot_denorm).flatten()
-                # The "actual" price should be the target price (true future price at t+h)
-                # not the baseline price (current price at t)
-                true_plot_price_flat = target_plot_price_flat.copy()
+                # Show the actual baseline prices (current prices) for comparison
+                baseline_plot_price_flat = baseline_plot_denorm.copy()
             else:
                 pred_plot_price_flat = preds_plot_denorm.flatten()
                 target_plot_price_flat = target_plot_denorm.flatten()
-                # When not using returns, target already represents the future price
-                true_plot_price_flat = target_plot_price_flat.copy()
+                # When not using returns, show baseline as the reference
+                baseline_plot_price_flat = baseline_plot.flatten() if baseline_plot is not None else np.zeros_like(pred_plot_price_flat)
             
             unc_plot_denorm_flat = unc_plot_denorm.flatten()
 
@@ -556,21 +555,21 @@ class STLPipelinePlugin:
             dates_plot_final = final_dates[plot_slice]
             pred_plot_final = pred_plot_price_flat[plot_slice]
             target_plot_final = target_plot_price_flat[plot_slice]
-            true_plot_final = true_plot_price_flat[plot_slice]
+            baseline_plot_final = baseline_plot_price_flat[plot_slice]
             unc_plot_final = unc_plot_denorm_flat[plot_slice]  # This is now 1D
 
             # Plotting
             plt.figure(figsize=(14, 7))
-            plt.plot(dates_plot_final, pred_plot_final, label=f"Pred Price H{plotted_horizon}", 
+            plt.plot(dates_plot_final, pred_plot_final, label=f"Predicted Future Price H{plotted_horizon}", 
                     color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
-            plt.plot(dates_plot_final, target_plot_final, label=f"Target Price H{plotted_horizon}", 
+            plt.plot(dates_plot_final, target_plot_final, label=f"Target Future Price H{plotted_horizon}", 
                     color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
-            plt.plot(dates_plot_final, true_plot_final, label="Actual Price", 
+            plt.plot(dates_plot_final, baseline_plot_final, label="Current Price (Baseline)", 
                     color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
             plt.fill_between(dates_plot_final, pred_plot_final - abs(unc_plot_final), pred_plot_final + abs(unc_plot_final),
                             color=config.get("plot_color_uncertainty", "green"), alpha=0.2, 
                             label=f"Uncertainty H{plotted_horizon}", zorder=0)
-            plt.title(f"Predictions vs Target/Actual (H={plotted_horizon})")
+            plt.title(f"Predicted vs Target Future Prices (H={plotted_horizon})")
             plt.xlabel("Time")
             plt.ylabel("Price")
             plt.legend()
