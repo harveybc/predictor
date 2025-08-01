@@ -145,7 +145,7 @@ class TargetCalculationProcessor:
                 
                 print(f"  {split.capitalize()}: {len(target_normalized)} samples")
         
-        # Prepare baseline data (with correct alignment)
+        # Prepare baseline data (with correct alignment and bounds checking)
         baseline_info = {}
         for split in splits:
             num_samples = windowed_data[f'num_samples_{split}']
@@ -153,13 +153,32 @@ class TargetCalculationProcessor:
             # Baseline is the denormalized target column values at the end of each window
             # For window i, baseline is at index window_size-1+i
             baseline_indices = np.arange(window_size-1, window_size-1+num_samples)
-            baseline_values = denorm_targets[split][baseline_indices]
+            
+            # Ensure baseline indices don't exceed the denormalized target array
+            max_target_index = len(denorm_targets[split]) - 1
+            valid_baseline_indices = baseline_indices[baseline_indices <= max_target_index]
+            
+            if len(valid_baseline_indices) < len(baseline_indices):
+                print(f"WARN: Trimming baseline indices for {split}: {len(baseline_indices)} -> {len(valid_baseline_indices)}")
+                # Update num_samples to reflect the actual available data
+                actual_num_samples = len(valid_baseline_indices)
+            else:
+                actual_num_samples = num_samples
+                
+            baseline_values = denorm_targets[split][valid_baseline_indices]
             baseline_info[f'baseline_{split}'] = baseline_values
             
-            # Corresponding dates (aligned with baseline indices)
+            # Corresponding dates (aligned with valid baseline indices)
             dates = baseline_dates[split]
             if dates is not None:
-                baseline_info[f'baseline_{split}_dates'] = dates[baseline_indices]
+                # Ensure date indices don't exceed available dates
+                max_date_index = len(dates) - 1
+                valid_date_indices = valid_baseline_indices[valid_baseline_indices <= max_date_index]
+                if len(valid_date_indices) < len(valid_baseline_indices):
+                    print(f"WARN: Further trimming date indices for {split}: {len(valid_baseline_indices)} -> {len(valid_date_indices)}")
+                    # Trim baseline values to match available dates
+                    baseline_info[f'baseline_{split}'] = baseline_values[:len(valid_date_indices)]
+                baseline_info[f'baseline_{split}_dates'] = dates[valid_date_indices]
             else:
                 baseline_info[f'baseline_{split}_dates'] = None
         

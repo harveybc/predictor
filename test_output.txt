@@ -1,0 +1,143 @@
+Starting test execution...
+Import successful
+\n=== Testing Target Price Reconstruction ===
+
+--- Calculating Targets ---
+
+Processing train targets...
+Denormalized train target: 100 samples
+
+Processing val targets...
+Denormalized val target: 100 samples
+
+Processing test targets...
+Denormalized test target: 100 samples
+Processing targets for horizons: [1, 3, 6] (Use Returns=True)...
+
+Calculating targets for horizon 1...
+  Normalizing H=1 with Mean=0.100000, Std=0.000003
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Calculating targets for horizon 3...
+  Normalizing H=3 with Mean=0.300000, Std=0.000004
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Calculating targets for horizon 6...
+  Normalizing H=6 with Mean=0.600000, Std=0.000003
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Per-horizon target normalization stats:
+  Horizon 1: Mean=0.100000, Std=0.000003
+  Horizon 3: Mean=0.300000, Std=0.000004
+  Horizon 6: Mean=0.600000, Std=0.000003
+Target calculation complete.
+Target means: [0.1, 0.3, 0.6]
+Target stds: [3.0517583e-06, 3.7376437e-06, 3.051851e-06]
+Baseline test shape: (85,)
+Number of horizons: 3
+\n--- Testing Horizon 1 ---
+Normalized target shape: (85,)
+Sample normalized values: [-0.5004882 -0.5004882 -0.5004882  1.9995114 -0.5004882]
+Denormalized return shape: (85,)
+Sample denormalized returns: [0.09999847 0.09999847 0.09999847 0.1000061  0.09999847]
+Sample baselines: [100.9 101.  101.1 101.2 101.3]
+Reconstructed target price shape: (85,)
+Sample reconstructed prices: [101.  101.1 101.2 101.3 101.4]
+Baseline indices: 9 to 94
+Future indices: 10 to 95
+Expected baseline shape: (85,)
+Expected future price shape: (85,)
+Sample expected baselines: [100.9 101.  101.1 101.2 101.3]
+Sample expected future prices: [101.  101.1 101.2 101.3 101.4]
+✓ Baseline verification passed for horizon 1
+✓ Target price reconstruction passed for horizon 1
+✓ Return calculation verification passed for horizon 1
+\n--- Testing Horizon 3 ---
+Normalized target shape: (85,)
+Sample normalized values: [-1.227928  0.813303  0.813303  0.813303 -1.227928]
+Denormalized return shape: (85,)
+Sample denormalized returns: [0.29999542 0.30000305 0.30000305 0.30000305 0.29999542]
+Sample baselines: [100.9 101.  101.1 101.2 101.3]
+Reconstructed target price shape: (85,)
+Sample reconstructed prices: [101.2 101.3 101.4 101.5 101.6]
+Baseline indices: 9 to 94
+Future indices: 12 to 97
+Expected baseline shape: (85,)
+Expected future price shape: (85,)
+Sample expected baselines: [100.9 101.  101.1 101.2 101.3]
+Sample expected future prices: [101.2 101.3 101.4 101.5 101.6]
+✓ Baseline verification passed for horizon 3
+✓ Target price reconstruction passed for horizon 3
+✓ Return calculation verification passed for horizon 3
+\n--- Testing Horizon 6 ---
+Normalized target shape: (85,)
+Sample normalized values: [-0.507797  -0.507797  -0.507797   1.9921266 -0.507797 ]
+Denormalized return shape: (85,)
+Sample denormalized returns: [0.5999985 0.5999985 0.5999985 0.6000061 0.5999985]
+Sample baselines: [100.9 101.  101.1 101.2 101.3]
+Reconstructed target price shape: (85,)
+Sample reconstructed prices: [101.5 101.6 101.7 101.8 101.9]
+Baseline indices: 9 to 94
+Future indices: 15 to 100
+Expected baseline shape: (85,)
+Expected future price shape: (85,)
+Sample expected baselines: [100.9 101.  101.1 101.2 101.3]
+Sample expected future prices: [101.5 101.6 101.7 101.8 101.9]
+✓ Baseline verification passed for horizon 6
+✓ Target price reconstruction passed for horizon 6
+✓ Return calculation verification passed for horizon 6
+\n🎉 ALL TARGET RECONSTRUCTION TESTS PASSED! 🎉
+\n=== Testing Normalization Stats Calculation ===
+
+--- Calculating Targets ---
+
+Processing train targets...
+Denormalized train target: 100 samples
+
+Processing val targets...
+Denormalized val target: 100 samples
+
+Processing test targets...
+Denormalized test target: 100 samples
+Processing targets for horizons: [1, 3, 6] (Use Returns=True)...
+
+Calculating targets for horizon 1...
+  Normalizing H=1 with Mean=0.100000, Std=0.000003
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Calculating targets for horizon 3...
+  Normalizing H=3 with Mean=0.300000, Std=0.000004
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Calculating targets for horizon 6...
+  Normalizing H=6 with Mean=0.600000, Std=0.000003
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Per-horizon target normalization stats:
+  Horizon 1: Mean=0.100000, Std=0.000003
+  Horizon 3: Mean=0.300000, Std=0.000004
+  Horizon 6: Mean=0.600000, Std=0.000003
+Target calculation complete.
+Expected means: [0.1, 0.30000000000000004, 0.6000000000000001]
+Actual means: [0.1, 0.3, 0.6]
+Expected stds: [0.0, 0.0, 0.0]
+Actual stds: [3.0517583e-06, 3.7376437e-06, 3.051851e-06]
+✓ Normalization means are correct
+✓ Normalization stds are properly clamped
+\n============================================================
+✅ TARGET CALCULATION VERIFICATION: SUCCESS
+============================================================
+Test completed with result: True
+Script finished.
