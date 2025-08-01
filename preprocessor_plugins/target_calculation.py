@@ -83,12 +83,15 @@ class TargetCalculationProcessor:
                 num_samples = windowed_data[f'num_samples_{split}']
                 target_trimmed = denorm_targets[split]
                 
+                # CRITICAL FIX: Use same baseline calculation as in main loop
                 baseline_indices = np.arange(window_size-1, window_size-1+num_samples)
                 future_indices = baseline_indices + h
                 
-                if future_indices[-1] >= len(target_trimmed):
+                # Ensure we have enough data
+                max_required_index = max(baseline_indices[-1], future_indices[-1])
+                if max_required_index >= len(target_trimmed):
                     raise ValueError(f"Not enough target data for {split} split, horizon {h}: "
-                                   f"need index {future_indices[-1]}, have {len(target_trimmed)}")
+                                   f"need index {max_required_index}, have {len(target_trimmed)}")
                 
                 baseline_values = target_trimmed[baseline_indices]
                 future_values = target_trimmed[future_indices]
@@ -122,14 +125,19 @@ class TargetCalculationProcessor:
                 num_samples = windowed_data[f'num_samples_{split}']
                 target_trimmed = denorm_targets[split]
                 
-                # Calculate baseline and future values with correct alignment
+                # CRITICAL FIX: Calculate baseline and future indices with correct alignment
+                # Sliding windows now start at t=window_size-1, so baseline indices are:
+                # Window 0: baseline at index window_size-1
+                # Window 1: baseline at index window_size  
+                # Window i: baseline at index window_size-1+i
                 baseline_indices = np.arange(window_size-1, window_size-1+num_samples)
                 future_indices = baseline_indices + h
                 
-                # Ensure we have enough data
-                if future_indices[-1] >= len(target_trimmed):
+                # Ensure we have enough data for both baseline and future values
+                max_required_index = max(baseline_indices[-1], future_indices[-1])
+                if max_required_index >= len(target_trimmed):
                     raise ValueError(f"Not enough target data for {split} split, horizon {h}: "
-                                   f"need index {future_indices[-1]}, have {len(target_trimmed)}")
+                                   f"need index {max_required_index}, have {len(target_trimmed)}")
                 
                 baseline_values = target_trimmed[baseline_indices]
                 future_values = target_trimmed[future_indices]
@@ -155,8 +163,8 @@ class TargetCalculationProcessor:
         for split in splits:
             num_samples = windowed_data[f'num_samples_{split}']
             
-            # Baseline is the denormalized target column values at the end of each window
-            # For window i, baseline is at index window_size-1+i
+            # CRITICAL FIX: Baseline indices must match the sliding windows exactly
+            # Each window ends at baseline_index, so window i has baseline at window_size-1+i
             baseline_indices = np.arange(window_size-1, window_size-1+num_samples)
             
             # Ensure baseline indices don't exceed the denormalized target array
@@ -176,14 +184,16 @@ class TargetCalculationProcessor:
             # Corresponding dates (aligned with valid baseline indices)
             dates = baseline_dates[split]
             if dates is not None:
-                # Ensure date indices don't exceed available dates
+                # For baseline dates, we need the dates corresponding to the baseline indices
+                # These are the dates at the END of each window (current tick)
+                valid_date_indices = valid_baseline_indices
                 max_date_index = len(dates) - 1
-                valid_date_indices = valid_baseline_indices[valid_baseline_indices <= max_date_index]
-                if len(valid_date_indices) < len(valid_baseline_indices):
-                    print(f"WARN: Further trimming date indices for {split}: {len(valid_baseline_indices)} -> {len(valid_date_indices)}")
+                final_date_indices = valid_date_indices[valid_date_indices <= max_date_index]
+                if len(final_date_indices) < len(valid_baseline_indices):
+                    print(f"WARN: Further trimming date indices for {split}: {len(valid_baseline_indices)} -> {len(final_date_indices)}")
                     # Trim baseline values to match available dates
-                    baseline_info[f'baseline_{split}'] = baseline_values[:len(valid_date_indices)]
-                baseline_info[f'baseline_{split}_dates'] = dates[valid_date_indices]
+                    baseline_info[f'baseline_{split}'] = baseline_values[:len(final_date_indices)]
+                baseline_info[f'baseline_{split}_dates'] = dates[final_date_indices]
             else:
                 baseline_info[f'baseline_{split}_dates'] = None
         

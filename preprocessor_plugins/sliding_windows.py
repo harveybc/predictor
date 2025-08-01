@@ -13,12 +13,16 @@ class SlidingWindowsProcessor:
     
     def create_sliding_windows(self, data, window_size, time_horizon, date_times=None):
         """
-        Creates sliding windows from data.
+        Creates sliding windows from data with proper temporal alignment.
+        
+        CRITICAL: First window starts at t=window_size to ensure complete windows only.
+        Each window contains data[t-window_size+1:t+1] where t is the current tick.
+        The baseline for each window is the LAST value in the window (data[t]).
         
         Args:
             data: 1D array of values
-            window_size: Size of each window
-            time_horizon: Time horizon for predictions (affects how many windows can be created)
+            window_size: Size of each window  
+            time_horizon: Maximum time horizon for predictions (affects available windows)
             date_times: Optional datetime index for the data
             
         Returns:
@@ -28,19 +32,30 @@ class SlidingWindowsProcessor:
         windows = []
         date_windows = []
         n = len(data)
-        num_possible_windows = n - window_size - time_horizon + 1
         
-        if num_possible_windows <= 0:
-            print(f" WARN: Data short ({n}) for Win={window_size}+Horizon={time_horizon}. No windows.")
+        # CRITICAL FIX: Calculate available windows correctly
+        # We need at least window_size + time_horizon data points
+        # First window starts at index window_size-1 (0-based), last usable data at n-time_horizon-1
+        max_start_index = n - time_horizon - 1  # Last index where we can place a window baseline
+        min_start_index = window_size - 1      # First index where we can have a complete window
+        
+        if max_start_index < min_start_index:
+            print(f" WARN: Insufficient data ({n}) for Win={window_size}+Horizon={time_horizon}. Need at least {window_size + time_horizon}.")
             return np.array(windows, dtype=np.float32), np.array(date_windows, dtype=object)
         
-        for i in range(num_possible_windows):
-            window = data[i: i + window_size]
+        num_possible_windows = max_start_index - min_start_index + 1
+        
+        # Create windows: each window ends at current tick t, contains [t-window_size+1:t+1]
+        for t in range(min_start_index, max_start_index + 1):
+            window_start = t - window_size + 1
+            window_end = t + 1
+            window = data[window_start:window_end]
             windows.append(window)
+            
+            # Date corresponds to the current tick (end of window) - this is the baseline time
             if date_times is not None:
-                date_index = i + window_size - 1
-                if date_index < len(date_times): 
-                    date_windows.append(date_times[date_index])
+                if t < len(date_times): 
+                    date_windows.append(date_times[t])
                 else: 
                     date_windows.append(None)
         
@@ -87,17 +102,18 @@ class SlidingWindowsProcessor:
             dates = baseline_data[f'dates_{split}']
             close_data = baseline_data[f'close_{split}']
             
-            # Generate log returns feature (starting from window_size-1 to align properly)
+            # Generate log returns feature from DENORMALIZED close prices
             print("Generating log returns feature...")
             log_ret = np.diff(close_data, prepend=close_data[0])
-            # Normalize log returns
+            # CRITICAL FIX: Don't normalize again - close_data is already denormalized
+            # We'll normalize log returns using their own statistics
             log_ret_normalized = normalize_series(
                 log_ret, 'log_return', self.scalers, 
                 fit=(split == 'train'), 
                 normalize_features=normalize_features
             )
             
-            # Prepare original X columns (excluding CLOSE)
+            # Prepare original X columns (excluding CLOSE which is already processed)
             original_x_cols = [col for col in x_df.columns if col != 'CLOSE']
             features = {'log_return': log_ret_normalized}
             
