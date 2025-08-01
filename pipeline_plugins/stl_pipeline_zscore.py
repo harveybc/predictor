@@ -254,8 +254,13 @@ class STLPipelinePlugin:
                             print(f"  Normalized targets: mean={np.mean(train_target_h):.6f}, std={np.std(train_target_h):.6f}")
                             print(f"  Normalized predictions: mean={np.mean(train_preds_h):.6f}, std={np.std(train_preds_h):.6f}")
                             print(f"  MAE (normalized space): {train_mae_h:.6f}")
-                            print(f"  Expected target stats: mean≈0.0, std≈1.0 (if properly normalized)")
-                            print(f"  Normalization params: mean={target_returns_means[idx]:.6f}, std={target_returns_stds[idx]:.6f}")
+                            print(f"  JSON normalization params: mean={target_returns_means[idx]:.6f}, std={target_returns_stds[idx]:.6f}")
+                            print(f"  Expected: targets normalized using JSON stats (consistent with baseline)")
+                            
+                            # Additional verification: check if all horizons use same normalization
+                            all_same_std = all(abs(std - target_returns_stds[0]) < 1e-8 for std in target_returns_stds)
+                            all_same_mean = all(abs(mean - target_returns_means[0]) < 1e-8 for mean in target_returns_means)
+                            print(f"  Consistent normalization across horizons: std={all_same_std}, mean={all_same_mean}")
                         
                         metrics_results["Train"]["MAE"][h].append(train_mae_h)
                         metrics_results["Train"]["R2"][h].append(train_r2_h)

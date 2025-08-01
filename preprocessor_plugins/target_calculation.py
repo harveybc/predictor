@@ -73,47 +73,22 @@ class TargetCalculationProcessor:
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
         
         if use_returns:
-            # Calculate INDIVIDUAL normalization stats per horizon from training data
-            print("\nCalculating individual normalization stats per horizon...")
+            # Use JSON normalization stats for consistency with baseline denormalization
+            print("\nUsing JSON normalization stats for targets (same as baseline)...")
             
-            # Calculate individual stats for each horizon
-            horizon_stats = {}
+            # Get JSON normalization stats used for baseline denormalization
+            target_mean = 0.0  # For returns, mean should be 0
+            if norm_json and target_column in norm_json:
+                # We don't use the mean for returns, only std for scaling
+                target_std = norm_json[target_column].get("std", 1.0)
+            else:
+                target_std = 1.0
             
-            for h in predicted_horizons:
-                # Calculate returns for training split only for this horizon
-                split = 'train'
-                num_samples = windowed_data[f'num_samples_{split}']
-                target_trimmed = denorm_targets[split]
-                
-                # CRITICAL FIX: Use same baseline calculation as in main loop
-                baseline_indices = np.arange(window_size-1, window_size-1+num_samples)
-                future_indices = baseline_indices + h
-                
-                # Ensure we have enough data
-                max_required_index = max(baseline_indices[-1], future_indices[-1])
-                if max_required_index >= len(target_trimmed):
-                    raise ValueError(f"Not enough target data for {split} split, horizon {h}: "
-                                   f"need index {max_required_index}, have {len(target_trimmed)}")
-                
-                baseline_values = target_trimmed[baseline_indices]
-                future_values = target_trimmed[future_indices]
-                horizon_returns = future_values - baseline_values
-                
-                # Calculate individual stats for this horizon
-                horizon_mean = horizon_returns.mean()
-                horizon_std = horizon_returns.std() if horizon_returns.std() >= 1e-8 else 1.0
-                
-                horizon_stats[h] = {
-                    'mean': horizon_mean,
-                    'std': horizon_std
-                }
-                
-                print(f"Horizon {h}: Mean={horizon_mean:.6f}, Std={horizon_std:.6f}")
-                print(f"Horizon {h} return range: [{horizon_returns.min():.6f}, {horizon_returns.max():.6f}]")
+            # Use single normalization parameters for all horizons (consistent with JSON)
+            self.target_returns_means = [target_mean] * len(predicted_horizons)
+            self.target_returns_stds = [target_std] * len(predicted_horizons)
             
-            # Store individual normalization parameters per horizon
-            self.target_returns_means = [horizon_stats[h]['mean'] for h in predicted_horizons]
-            self.target_returns_stds = [horizon_stats[h]['std'] for h in predicted_horizons]
+            print(f"JSON normalization stats: Mean={target_mean:.6f}, Std={target_std:.6f}")
         else:
             self.target_returns_means = [0.0] * len(predicted_horizons)
             self.target_returns_stds = [1.0] * len(predicted_horizons)
@@ -150,7 +125,8 @@ class TargetCalculationProcessor:
                 if use_returns:
                     # Calculate returns: future[t+h] - baseline[t]
                     returns = future_values - baseline_values
-                    # Normalize using training stats
+                    # Normalize using JSON stats (consistent with baseline normalization)
+                    # mean_h and std_h are already defined above for this horizon
                     target_normalized = (returns - mean_h) / std_h
                 else:
                     target_normalized = future_values
@@ -204,12 +180,12 @@ class TargetCalculationProcessor:
         
         # Print normalization summary
         if use_returns:
-            print("\nPer-horizon target normalization stats:")
+            print("\nJSON-based target normalization stats (consistent with baseline):")
             for i, (mean, std) in enumerate(zip(self.target_returns_means, self.target_returns_stds)):
                 horizon = predicted_horizons[i]
                 print(f"  Horizon {horizon}: Mean={mean:.6f}, Std={std:.6f}")
         else:
-            print("Per-horizon normalization skipped (use_returns=False). Using Mean=0.0, Std=1.0 for all horizons.")
+            print("Target normalization skipped (use_returns=False). Using Mean=0.0, Std=1.0 for all horizons.")
         
         # Combine target data with baseline info and individual normalization parameters
         result = {
