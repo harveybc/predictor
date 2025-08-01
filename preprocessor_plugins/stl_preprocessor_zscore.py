@@ -38,7 +38,7 @@ class PreprocessorPlugin:
     
     plugin_debug_vars = [
         "window_size", "predicted_horizons", "use_returns", "normalize_features",
-        "target_returns_mean", "target_returns_std"
+        "target_returns_means", "target_returns_stds"
     ]
 
     def __init__(self):
@@ -258,9 +258,9 @@ class PreprocessorPlugin:
         # --- 6. Final Alignment ---
         self._truncate_to_match_targets(windowed_data, target_data)
         
-        # --- 7. Update params with normalization stats ---
-        self.params['target_returns_mean'] = target_data['target_returns_mean']
-        self.params['target_returns_std'] = target_data['target_returns_std']
+        # --- 7. Update params with individual normalization stats ---
+        self.params['target_returns_means'] = target_data['target_returns_means']
+        self.params['target_returns_stds'] = target_data['target_returns_stds']
         
         # --- 8. Final Date Consistency Check ---
         print("\n--- Final Date Consistency Checks ---")
@@ -310,8 +310,9 @@ class PreprocessorPlugin:
             
             # Metadata
             "feature_names": windowed_data['feature_names'],
-            "target_returns_mean": target_data['target_returns_mean'],
-            "target_returns_std": target_data['target_returns_std'],
+            "target_returns_means": target_data['target_returns_means'],
+            "target_returns_stds": target_data['target_returns_stds'],
+            "predicted_horizons": target_data['predicted_horizons'],
         }
         
         # Print final summary
@@ -329,8 +330,8 @@ class PreprocessorPlugin:
         print(f"  Features ({len(ret['feature_names'])}): {ret['feature_names']}")
         print(f"  Target normalization per horizon:")
         for i, h in enumerate(predicted_horizons):
-            mean_h = ret['target_returns_mean'][i]
-            std_h = ret['target_returns_std'][i]
+            mean_h = ret['target_returns_means'][i]
+            std_h = ret['target_returns_stds'][i]
             print(f"    Horizon {h}: mean={mean_h:.6f}, std={std_h:.6f}")
         
         print("\n" + "="*15 + " Preprocessing Finished " + "="*15)

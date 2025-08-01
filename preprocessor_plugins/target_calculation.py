@@ -73,12 +73,14 @@ class TargetCalculationProcessor:
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
         
         if use_returns:
-            # Calculate GLOBAL normalization stats from ALL returns across ALL horizons
-            print("\nCalculating global normalization stats from all horizons...")
-            all_returns = []
+            # Calculate INDIVIDUAL normalization stats per horizon from training data
+            print("\nCalculating individual normalization stats per horizon...")
+            
+            # Calculate individual stats for each horizon
+            horizon_stats = {}
             
             for h in predicted_horizons:
-                # Calculate returns for training split to collect all return values
+                # Calculate returns for training split only for this horizon
                 split = 'train'
                 num_samples = windowed_data[f'num_samples_{split}']
                 target_trimmed = denorm_targets[split]
@@ -95,20 +97,23 @@ class TargetCalculationProcessor:
                 
                 baseline_values = target_trimmed[baseline_indices]
                 future_values = target_trimmed[future_indices]
-                returns = future_values - baseline_values
-                all_returns.extend(returns)
+                horizon_returns = future_values - baseline_values
+                
+                # Calculate individual stats for this horizon
+                horizon_mean = horizon_returns.mean()
+                horizon_std = horizon_returns.std() if horizon_returns.std() >= 1e-8 else 1.0
+                
+                horizon_stats[h] = {
+                    'mean': horizon_mean,
+                    'std': horizon_std
+                }
+                
+                print(f"Horizon {h}: Mean={horizon_mean:.6f}, Std={horizon_std:.6f}")
+                print(f"Horizon {h} return range: [{horizon_returns.min():.6f}, {horizon_returns.max():.6f}]")
             
-            # Calculate single global normalization stats
-            all_returns = np.array(all_returns)
-            global_mean = all_returns.mean()
-            global_std = all_returns.std() if all_returns.std() >= 1e-8 else 1.0
-            
-            print(f"Global normalization stats: Mean={global_mean:.6f}, Std={global_std:.6f}")
-            print(f"Global return range: [{all_returns.min():.6f}, {all_returns.max():.6f}]")
-            
-            # Use the same normalization stats for ALL horizons
-            self.target_returns_means = [global_mean] * len(predicted_horizons)
-            self.target_returns_stds = [global_std] * len(predicted_horizons)
+            # Store individual normalization parameters per horizon
+            self.target_returns_means = [horizon_stats[h]['mean'] for h in predicted_horizons]
+            self.target_returns_stds = [horizon_stats[h]['std'] for h in predicted_horizons]
         else:
             self.target_returns_means = [0.0] * len(predicted_horizons)
             self.target_returns_stds = [1.0] * len(predicted_horizons)
@@ -206,14 +211,15 @@ class TargetCalculationProcessor:
         else:
             print("Per-horizon normalization skipped (use_returns=False). Using Mean=0.0, Std=1.0 for all horizons.")
         
-        # Combine target data with baseline info
+        # Combine target data with baseline info and individual normalization parameters
         result = {
             'y_train': target_data.get('train', {}),
             'y_val': target_data.get('val', {}),
             'y_test': target_data.get('test', {}),
             **baseline_info,
-            'target_returns_mean': self.target_returns_means,
-            'target_returns_std': self.target_returns_stds,
+            'target_returns_means': self.target_returns_means,  # List of means per horizon
+            'target_returns_stds': self.target_returns_stds,    # List of stds per horizon
+            'predicted_horizons': predicted_horizons,           # For reference
         }
         
         # Add raw test data for evaluation (denormalized, full length)
