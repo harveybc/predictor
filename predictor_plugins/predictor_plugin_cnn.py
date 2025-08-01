@@ -55,15 +55,18 @@ local_feedback=[] # local feedback values for the model
 
 
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
-    """Custom ReduceLROnPlateau callback that prints the patience counter."""
+    """Custom ReduceLROnPlateau callback that prints the patience counter and internal state."""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.patience_counter = 0
 
     def on_epoch_end(self, epoch, logs=None):
         super().on_epoch_end(epoch, logs)
-        self.patience_counter = self.wait if self.wait > 0 else 0
-        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}")
+        # Report actual internal state including cooldown
+        in_cooldown = hasattr(self, 'cooldown_counter') and self.cooldown_counter > 0
+        cooldown_remaining = getattr(self, 'cooldown_counter', 0)
+        self.patience_counter = self.wait
+        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}, cooldown: {cooldown_remaining}, in_cooldown: {in_cooldown}")
 
 class EarlyStoppingWithPatienceCounter(EarlyStopping):
     """Custom EarlyStopping callback that prints the patience counter."""
@@ -73,7 +76,7 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
 
     def on_epoch_end(self, epoch, logs=None):
         super().on_epoch_end(epoch, logs)
-        self.patience_counter = self.wait if self.wait > 0 else 0
+        self.patience_counter = self.wait
         print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}")
 
 class ClearMemoryCallback(Callback):
