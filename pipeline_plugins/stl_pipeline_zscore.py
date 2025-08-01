@@ -138,6 +138,7 @@ class STLPipelinePlugin:
         baseline_train = datasets.get("baseline_train")
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
+        test_close_prices = datasets.get("test_close_prices")  # Future prices for target calculation
         
         # Get target normalization stats from preprocessor_params
         if "target_returns_mean" not in preprocessor_params or "target_returns_std" not in preprocessor_params:
@@ -508,9 +509,27 @@ class STLPipelinePlugin:
             unc_plot_raw = list_test_unc[plotted_index][:num_test_points]  # Shape (num_test_points,) or (num_test_points, 1)
             baseline_plot = final_baseline  # Already sliced, shape (num_test_points,)
 
-            # Denormalize using target normalization stats and FLATTEN *before* slicing for plot
+            # CRITICAL FIX: Calculate true target returns mathematically
+            # Instead of denormalizing potentially incorrect normalized targets,
+            # calculate the true returns directly from baseline and future prices
+            
+            baseline_plot_values = baseline_plot.flatten()
+            
+            # Denormalize predictions using current normalization stats
             preds_plot_denorm = denormalize_target_returns(preds_plot_raw.flatten(), target_returns_mean, target_returns_std, plotted_index)
-            target_plot_denorm = denormalize_target_returns(target_plot_raw.flatten(), target_returns_mean, target_returns_std, plotted_index)
+            
+            # Calculate true target returns if we have access to future prices
+            if test_close_prices is not None and len(test_close_prices) > num_test_points + plotted_horizon:
+                # Calculate true returns: future_price - baseline_price
+                future_prices_slice = test_close_prices[plotted_horizon:num_test_points + plotted_horizon]
+                true_target_returns = future_prices_slice - baseline_plot_values
+                target_plot_denorm = true_target_returns
+                print(f"Using calculated true returns for plotting (length: {len(target_plot_denorm)})")
+            else:
+                # Fallback: denormalize the normalized targets (may have bias)
+                target_plot_denorm = denormalize_target_returns(target_plot_raw.flatten(), target_returns_mean, target_returns_std, plotted_index)
+                print(f"Using denormalized targets for plotting (may have bias)")
+            
             unc_plot_denorm = denormalize_target_returns(unc_plot_raw.flatten(), [0.0] * len(target_returns_mean), target_returns_std, plotted_index)
             
             if use_returns:
