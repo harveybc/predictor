@@ -39,7 +39,7 @@ class TargetCalculationProcessor:
         self.target_returns_means = []
         self.target_returns_stds = []
         
-        # First, prepare denormalized target columns for each split
+        # Extract and denormalize target column for each split
         denorm_targets = {}
         baseline_targets = {}
         baseline_dates = {}
@@ -47,7 +47,7 @@ class TargetCalculationProcessor:
         for split in splits:
             print(f"\nProcessing {split} targets...")
             
-            # Get the target column from baseline
+            # Get the target column from baseline and denormalize it
             if split == 'train':
                 y_df = baseline_data['y_train_df']
             elif split == 'val':
@@ -59,22 +59,15 @@ class TargetCalculationProcessor:
             target_raw = y_df[target_column].astype(np.float32).values
             target_denorm = denormalize(target_raw, norm_json, target_column)
             
-            # Trim first window_size-1 elements to align with sliding windows
-            # This ensures we start from the same point as the windowed features
-            target_trimmed = target_denorm[window_size-1:]
+            # Store the full denormalized target (aligned with windowed features)
+            denorm_targets[split] = target_denorm
+            baseline_targets[split] = target_denorm
             
-            # Get corresponding dates (also trimmed)
+            # Use corresponding dates
             dates = baseline_data[f'dates_{split}']
-            dates_trimmed = dates[window_size-1:] if dates is not None else None
+            baseline_dates[split] = dates
             
-            # Store for target calculation
-            denorm_targets[split] = target_trimmed
-            
-            # For baseline return (this will be further trimmed to match actual samples)
-            baseline_targets[split] = target_trimmed
-            baseline_dates[split] = dates_trimmed
-            
-            print(f"Denormalized and trimmed {split} target: {len(target_trimmed)} samples")
+            print(f"Denormalized {split} target: {len(target_denorm)} samples")
         
         # Now calculate targets for each horizon
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
@@ -87,14 +80,19 @@ class TargetCalculationProcessor:
             num_samples = windowed_data[f'num_samples_{split}']
             target_trimmed = denorm_targets[split]
             
-            # Ensure we have enough data for this horizon
-            if len(target_trimmed) < num_samples + h:
-                raise ValueError(f"Not enough target data for {split} split, horizon {h}: "
-                               f"need {num_samples + h}, have {len(target_trimmed)}")
+            # Calculate baseline and future values with correct alignment
+            # Window i uses data [i:i+window_size], so baseline is at index i+window_size-1
+            # Target for horizon h is at index i+window_size-1+h
+            baseline_indices = np.arange(window_size-1, window_size-1+num_samples)  # window_size-1, window_size, window_size+1, ...
+            future_indices = baseline_indices + h  # window_size-1+h, window_size+h, window_size+1+h, ...
             
-            # Calculate baseline and future values
-            baseline_values = target_trimmed[:num_samples]  # t=0 to t=num_samples-1
-            future_values = target_trimmed[h:num_samples + h]  # t=h to t=num_samples+h-1
+            # Ensure we have enough data for this horizon
+            if future_indices[-1] >= len(target_trimmed):
+                raise ValueError(f"Not enough target data for {split} split, horizon {h}: "
+                               f"need index {future_indices[-1]}, have {len(target_trimmed)}")
+            
+            baseline_values = target_trimmed[baseline_indices]
+            future_values = target_trimmed[future_indices]
             
             if use_returns:
                 # Calculate returns: future[t+h] - baseline[t]
@@ -119,14 +117,17 @@ class TargetCalculationProcessor:
                 num_samples = windowed_data[f'num_samples_{split}']
                 target_trimmed = denorm_targets[split]
                 
-                # Ensure we have enough data
-                if len(target_trimmed) < num_samples + h:
-                    raise ValueError(f"Not enough target data for {split} split, horizon {h}: "
-                                   f"need {num_samples + h}, have {len(target_trimmed)}")
+                # Calculate baseline and future values with correct alignment
+                baseline_indices = np.arange(window_size-1, window_size-1+num_samples)
+                future_indices = baseline_indices + h
                 
-                # Calculate baseline and future values
-                baseline_values = target_trimmed[:num_samples]
-                future_values = target_trimmed[h:num_samples + h]
+                # Ensure we have enough data
+                if future_indices[-1] >= len(target_trimmed):
+                    raise ValueError(f"Not enough target data for {split} split, horizon {h}: "
+                                   f"need index {future_indices[-1]}, have {len(target_trimmed)}")
+                
+                baseline_values = target_trimmed[baseline_indices]
+                future_values = target_trimmed[future_indices]
                 
                 if use_returns:
                     # Calculate returns: future[t+h] - baseline[t]
@@ -144,20 +145,21 @@ class TargetCalculationProcessor:
                 
                 print(f"  {split.capitalize()}: {len(target_normalized)} samples")
         
-        # Prepare baseline data (trimmed to match actual samples)
+        # Prepare baseline data (with correct alignment)
         baseline_info = {}
         for split in splits:
             num_samples = windowed_data[f'num_samples_{split}']
             
-            # Baseline is the denormalized target column values at t=0 for each sample
-            # This corresponds to the "current" price when making predictions
-            baseline_values = denorm_targets[split][:num_samples]
+            # Baseline is the denormalized target column values at the end of each window
+            # For window i, baseline is at index window_size-1+i
+            baseline_indices = np.arange(window_size-1, window_size-1+num_samples)
+            baseline_values = denorm_targets[split][baseline_indices]
             baseline_info[f'baseline_{split}'] = baseline_values
             
-            # Corresponding dates
-            dates_trimmed = baseline_dates[split]
-            if dates_trimmed is not None:
-                baseline_info[f'baseline_{split}_dates'] = dates_trimmed[:num_samples]
+            # Corresponding dates (aligned with baseline indices)
+            dates = baseline_dates[split]
+            if dates is not None:
+                baseline_info[f'baseline_{split}_dates'] = dates[baseline_indices]
             else:
                 baseline_info[f'baseline_{split}_dates'] = None
         
@@ -187,10 +189,17 @@ class TargetCalculationProcessor:
         )
         
         # Add test close prices for evaluation
-        result['test_close_prices'] = denormalize(
-            baseline_data['x_test_df']['CLOSE'].astype(np.float32).values[window_size:],
-            norm_json, 'CLOSE'
-        )[:windowed_data['num_samples_test']]
+        if 'x_test_df' in baseline_data:
+            result['test_close_prices'] = denormalize(
+                baseline_data['x_test_df']['CLOSE'].astype(np.float32).values[window_size:],
+                norm_json, 'CLOSE'
+            )[:windowed_data['num_samples_test']]
+        else:
+            # Fallback to using y_test_df if x_test_df is not available
+            result['test_close_prices'] = denormalize(
+                baseline_data['y_test_df'][target_column].astype(np.float32).values[window_size:],
+                norm_json, target_column
+            )[:windowed_data['num_samples_test']]
         
         print("Target calculation complete.")
         return result

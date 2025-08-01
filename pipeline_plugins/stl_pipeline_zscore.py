@@ -83,7 +83,7 @@ class STLPipelinePlugin:
         "loss_plot_file": "loss_plot.png", "output_file": "test_predictions.csv",
         "uncertainties_file": "test_uncertainties.csv", "model_plot_file": "model_plot.png",
         "predictions_plot_file": "predictions_plot.png", "results_file": "results.csv",
-        "plot_points": 480, "plotted_horizon": 6, "use_strategy": False,
+        "plot_points": 480, "plotted_horizon": 6,
         "predicted_horizons": [1, 6, 12, 24], "use_returns": True, "normalize_features": True,
         "window_size": 48, "target_column": "TARGET", "use_normalization_json": None,
         "mc_samples": 100,
@@ -298,8 +298,8 @@ class STLPipelinePlugin:
                     test_preds_denorm = denormalize_target_returns(test_preds_h, target_returns_mean, target_returns_std, idx)
                     test_target_denorm = denormalize_target_returns(test_target_h, target_returns_mean, target_returns_std, idx)
                     
-                    # Denormalize baseline using JSON normalization
-                    baseline_test_denorm = denormalize(baseline_test_h, config)
+                    # Baseline is already denormalized, use directly
+                    baseline_test_denorm = baseline_test_h
                     
                     # Calculate final prices (baseline + returns if use_returns)
                     if use_returns:
@@ -404,11 +404,11 @@ class STLPipelinePlugin:
             output_data = {"DATE_TIME": final_dates}
             uncertainty_data = {"DATE_TIME": final_dates}
 
-            # Add denormalized test CLOSE price
+            # Add denormalized test CLOSE price (baseline is already denormalized)
             try: 
-                denorm_test_close = denormalize(final_baseline, config) if final_baseline is not None else np.full(num_test_points, np.nan)
+                denorm_test_close = final_baseline if final_baseline is not None else np.full(num_test_points, np.nan)
             except Exception as e: 
-                print(f"WARN: Error denorm test_CLOSE: {e}")
+                print(f"WARN: Error using test_CLOSE: {e}")
                 denorm_test_close = np.full(num_test_points, np.nan)
             output_data["test_CLOSE"] = denorm_test_close.flatten()
 
@@ -515,15 +515,15 @@ class STLPipelinePlugin:
             unc_plot_denorm = denormalize_target_returns(unc_plot_raw.flatten(), [0.0] * len(target_returns_mean), target_returns_std, plotted_index)
             
             if use_returns:
-                # --- Apply FIX: Ensure inputs to addition are flattened ---
-                baseline_plot_denorm = denormalize(baseline_plot, config).flatten()
+                # --- Baseline is already denormalized, use directly ---
+                baseline_plot_denorm = baseline_plot.flatten()
                 pred_plot_price_flat = (baseline_plot_denorm + preds_plot_denorm).flatten()
                 target_plot_price_flat = (baseline_plot_denorm + target_plot_denorm).flatten()
                 true_plot_price_flat = baseline_plot_denorm.flatten()
             else:
                 pred_plot_price_flat = preds_plot_denorm.flatten()
                 target_plot_price_flat = target_plot_denorm.flatten()
-                true_plot_price_flat = denormalize(baseline_plot, config).flatten()
+                true_plot_price_flat = baseline_plot.flatten()  # Already denormalized
             
             unc_plot_denorm_flat = unc_plot_denorm.flatten()
 
