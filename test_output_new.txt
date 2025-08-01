@@ -1,0 +1,151 @@
+Starting test execution...
+Import successful
+\n=== Testing Target Price Reconstruction ===
+
+--- Calculating Targets ---
+
+Processing train targets...
+Denormalized train target: 100 samples
+
+Processing val targets...
+Denormalized val target: 100 samples
+
+Processing test targets...
+Denormalized test target: 100 samples
+Processing targets for horizons: [1, 3, 6] (Use Returns=True)...
+
+Calculating global normalization stats from all horizons...
+Global normalization stats: Mean=0.333333, Std=0.205480
+Global return range: [0.099998, 0.600006]
+
+Calculating targets for horizon 1...
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Calculating targets for horizon 3...
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Calculating targets for horizon 6...
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Per-horizon target normalization stats:
+  Horizon 1: Mean=0.333333, Std=0.205480
+  Horizon 3: Mean=0.333333, Std=0.205480
+  Horizon 6: Mean=0.333333, Std=0.205480
+Target calculation complete.
+Target means: [0.33333334, 0.33333334, 0.33333334]
+Target stds: [0.20548046, 0.20548046, 0.20548046]
+Baseline test shape: (85,)
+Number of horizons: 3
+\n--- Testing Horizon 1 ---
+Normalized target shape: (85,)
+Sample normalized values: [-1.1355575 -1.1355575 -1.1355575 -1.1355203 -1.1355575]
+Denormalized return shape: (85,)
+Sample denormalized returns: [0.09999846 0.09999846 0.09999846 0.1000061  0.09999846]
+Sample baselines: [100.9 101.  101.1 101.2 101.3]
+Reconstructed target price shape: (85,)
+Sample reconstructed prices: [101.  101.1 101.2 101.3 101.4]
+Baseline indices: 9 to 94
+Future indices: 10 to 95
+Expected baseline shape: (85,)
+Expected future price shape: (85,)
+Sample expected baselines: [100.9 101.  101.1 101.2 101.3]
+Sample expected future prices: [101.  101.1 101.2 101.3 101.4]
+✓ Baseline verification passed for horizon 1
+✓ Target price reconstruction passed for horizon 1
+✓ Return calculation verification passed for horizon 1
+\n--- Testing Horizon 3 ---
+Normalized target shape: (85,)
+Sample normalized values: [-0.16224375 -0.16220662 -0.16220662 -0.16220662 -0.16224375]
+Denormalized return shape: (85,)
+Sample denormalized returns: [0.29999542 0.30000305 0.30000305 0.30000305 0.29999542]
+Sample baselines: [100.9 101.  101.1 101.2 101.3]
+Reconstructed target price shape: (85,)
+Sample reconstructed prices: [101.2 101.3 101.4 101.5 101.6]
+Baseline indices: 9 to 94
+Future indices: 12 to 97
+Expected baseline shape: (85,)
+Expected future price shape: (85,)
+Sample expected baselines: [100.9 101.  101.1 101.2 101.3]
+Sample expected future prices: [101.2 101.3 101.4 101.5 101.6]
+✓ Baseline verification passed for horizon 3
+✓ Target price reconstruction passed for horizon 3
+✓ Return calculation verification passed for horizon 3
+\n--- Testing Horizon 6 ---
+Normalized target shape: (85,)
+Sample normalized values: [1.297764  1.297764  1.297764  1.2978011 1.297764 ]
+Denormalized return shape: (85,)
+Sample denormalized returns: [0.5999985 0.5999985 0.5999985 0.6000061 0.5999985]
+Sample baselines: [100.9 101.  101.1 101.2 101.3]
+Reconstructed target price shape: (85,)
+Sample reconstructed prices: [101.5 101.6 101.7 101.8 101.9]
+Baseline indices: 9 to 94
+Future indices: 15 to 100
+Expected baseline shape: (85,)
+Expected future price shape: (85,)
+Sample expected baselines: [100.9 101.  101.1 101.2 101.3]
+Sample expected future prices: [101.5 101.6 101.7 101.8 101.9]
+✓ Baseline verification passed for horizon 6
+✓ Target price reconstruction passed for horizon 6
+✓ Return calculation verification passed for horizon 6
+\n🎉 ALL TARGET RECONSTRUCTION TESTS PASSED! 🎉
+\n=== Testing Normalization Stats Calculation ===
+
+--- Calculating Targets ---
+
+Processing train targets...
+Denormalized train target: 100 samples
+
+Processing val targets...
+Denormalized val target: 100 samples
+
+Processing test targets...
+Denormalized test target: 100 samples
+Processing targets for horizons: [1, 3, 6] (Use Returns=True)...
+
+Calculating global normalization stats from all horizons...
+Global normalization stats: Mean=0.333333, Std=0.205480
+Global return range: [0.099998, 0.600006]
+
+Calculating targets for horizon 1...
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Calculating targets for horizon 3...
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Calculating targets for horizon 6...
+  Train: 85 samples
+  Val: 85 samples
+  Test: 85 samples
+
+Per-horizon target normalization stats:
+  Horizon 1: Mean=0.333333, Std=0.205480
+  Horizon 3: Mean=0.333333, Std=0.205480
+  Horizon 6: Mean=0.333333, Std=0.205480
+Target calculation complete.
+Expected means: [0.1, 0.30000000000000004, 0.6000000000000001]
+Actual means: [0.33333334, 0.33333334, 0.33333334]
+Expected stds: [0.0, 0.0, 0.0]
+Actual stds: [0.20548046, 0.20548046, 0.20548046]
+\n============================================================
+❌ TARGET CALCULATION VERIFICATION: FAILED
+Error: 
+Not equal to tolerance rtol=1e-06, atol=1e-06
+
+Mismatched elements: 3 / 3 (100%)
+Max absolute difference: 0.26666666
+Max relative difference: 2.33333343
+ x: array([0.333333, 0.333333, 0.333333], dtype=float32)
+ y: array([0.1, 0.3, 0.6])
+============================================================
+Test completed with result: False
+Script finished.

@@ -72,45 +72,50 @@ class TargetCalculationProcessor:
         # Now calculate targets for each horizon
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
         
+        if use_returns:
+            # Calculate GLOBAL normalization stats from ALL returns across ALL horizons
+            print("\nCalculating global normalization stats from all horizons...")
+            all_returns = []
+            
+            for h in predicted_horizons:
+                # Calculate returns for training split to collect all return values
+                split = 'train'
+                num_samples = windowed_data[f'num_samples_{split}']
+                target_trimmed = denorm_targets[split]
+                
+                baseline_indices = np.arange(window_size-1, window_size-1+num_samples)
+                future_indices = baseline_indices + h
+                
+                if future_indices[-1] >= len(target_trimmed):
+                    raise ValueError(f"Not enough target data for {split} split, horizon {h}: "
+                                   f"need index {future_indices[-1]}, have {len(target_trimmed)}")
+                
+                baseline_values = target_trimmed[baseline_indices]
+                future_values = target_trimmed[future_indices]
+                returns = future_values - baseline_values
+                all_returns.extend(returns)
+            
+            # Calculate single global normalization stats
+            all_returns = np.array(all_returns)
+            global_mean = all_returns.mean()
+            global_std = all_returns.std() if all_returns.std() >= 1e-8 else 1.0
+            
+            print(f"Global normalization stats: Mean={global_mean:.6f}, Std={global_std:.6f}")
+            print(f"Global return range: [{all_returns.min():.6f}, {all_returns.max():.6f}]")
+            
+            # Use the same normalization stats for ALL horizons
+            self.target_returns_means = [global_mean] * len(predicted_horizons)
+            self.target_returns_stds = [global_std] * len(predicted_horizons)
+        else:
+            self.target_returns_means = [0.0] * len(predicted_horizons)
+            self.target_returns_stds = [1.0] * len(predicted_horizons)
+        
+        # Now process all horizons with the SAME normalization
         for i, h in enumerate(predicted_horizons):
             print(f"\nCalculating targets for horizon {h}...")
             
-            # Calculate returns for training split first to get normalization stats
-            split = 'train'
-            num_samples = windowed_data[f'num_samples_{split}']
-            target_trimmed = denorm_targets[split]
-            
-            # Calculate baseline and future values with correct alignment
-            # Window i uses data [i:i+window_size], so baseline is at index i+window_size-1
-            # Target for horizon h is at index i+window_size-1+h
-            baseline_indices = np.arange(window_size-1, window_size-1+num_samples)  # window_size-1, window_size, window_size+1, ...
-            future_indices = baseline_indices + h  # window_size-1+h, window_size+h, window_size+1+h, ...
-            
-            # Ensure we have enough data for this horizon
-            if future_indices[-1] >= len(target_trimmed):
-                raise ValueError(f"Not enough target data for {split} split, horizon {h}: "
-                               f"need index {future_indices[-1]}, have {len(target_trimmed)}")
-            
-            baseline_values = target_trimmed[baseline_indices]
-            future_values = target_trimmed[future_indices]
-            
-            if use_returns:
-                # Calculate returns: future[t+h] - baseline[t]
-                returns_train = future_values - baseline_values
-                
-                # Calculate normalization stats from training data
-                mean_h = returns_train.mean()
-                std_h = returns_train.std() if returns_train.std() >= 1e-8 else 1.0
-                
-                self.target_returns_means.append(mean_h)
-                self.target_returns_stds.append(std_h)
-                
-                print(f"  Normalizing H={h} with Mean={mean_h:.6f}, Std={std_h:.6f}")
-            else:
-                mean_h = 0.0
-                std_h = 1.0
-                self.target_returns_means.append(mean_h)
-                self.target_returns_stds.append(std_h)
+            mean_h = self.target_returns_means[i]
+            std_h = self.target_returns_stds[i]
             
             # Now process all splits with the same normalization
             for split in splits:

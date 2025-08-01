@@ -643,15 +643,20 @@ class Plugin:
         start_from_epoch_es = self.params.get('start_from_epoch', 10)
         patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 4)))
 
+        # Monitor the correct validation metric for the plotted horizon
+        plotted_output_name = f"output_horizon_{plotted_horizon}"
+        val_metric_name = f"val_{plotted_output_name}_mae_magnitude"
+        print(f"Monitoring validation metric: {val_metric_name}")
+
         # Instantiate callbacks WITHOUT ClearMemoryCallback
         # Assumes relevant Callback classes are imported/defined
         callbacks = [
             EarlyStoppingWithPatienceCounter(
-                monitor='val_loss', patience=patience_early_stopping, restore_best_weights=True,
+                monitor=val_metric_name, patience=patience_early_stopping, restore_best_weights=True,
                 verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
             ),
             ReduceLROnPlateauWithCounter(
-                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
+                monitor=val_metric_name, factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs:
                            print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),

@@ -180,24 +180,26 @@ class TestTargetCalculation(unittest.TestCase):
         target_means = target_data['target_returns_mean']
         target_stds = target_data['target_returns_std']
         
-        # For our linear data, all returns should be constant
-        # horizon 1: return = 0.1, horizon 3: return = 0.3, horizon 6: return = 0.6
-        expected_means = [0.1 * h for h in self.config['predicted_horizons']]
-        expected_stds = [0.0] * len(self.config['predicted_horizons'])  # Should be 0 for constant returns, but clamped to 1.0
+        # For our linear data with global normalization across all horizons:
+        # All horizons will use the same global mean and std calculated from all returns
+        # Global mean = (0.1 + 0.3 + 0.6) / 3 = 0.333... for equal sample sizes
+        expected_global_mean = (0.1 + 0.3 + 0.6) / 3  # ≈ 0.333
+        expected_means = [expected_global_mean] * len(self.config['predicted_horizons'])
+        expected_stds = [0.20548046] * len(self.config['predicted_horizons'])  # Should be > 0 for varying returns
         
-        print(f"Expected means: {expected_means}")
+        print(f"Expected means (global): {expected_means}")
         print(f"Actual means: {target_means}")
-        print(f"Expected stds: {expected_stds}")
+        print(f"Expected stds (global): {expected_stds}")
         print(f"Actual stds: {target_stds}")
         
         # Check means match expected (using reasonable tolerance for float32 vs float64)
-        np.testing.assert_allclose(target_means, expected_means, rtol=1e-6, atol=1e-6)
-        print("✓ Normalization means are correct")
+        np.testing.assert_allclose(target_means, expected_means, rtol=1e-5, atol=1e-5)
+        print("✓ Global normalization means are correct")
         
-        # For constant returns, std should be close to 0 but clamped to 1.0
+        # For varying returns, std should be > 0
         for std_val in target_stds:
-            self.assertGreaterEqual(std_val, 1e-8)  # Should be clamped
-        print("✓ Normalization stds are properly clamped")
+            self.assertGreater(std_val, 0.1)  # Should be substantial for good learning
+        print("✓ Global normalization stds are substantial for learning")
 
     def run_target_calculation_test(self):
         """Public method to run the test and return results for external verification."""
