@@ -3,7 +3,7 @@
 STL Pipeline Plugin - Z-Score Version 
 
 Updated to work with the modular preprocessor that uses z-score normalization.
-Properly handles target_returns_mean and target_returns_std for each horizon.
+Properly handles target_returns_means and target_returns_stds for each horizon.
 Maintains all original functionality, outputs, and printed messages.
 """
 
@@ -140,11 +140,11 @@ class STLPipelinePlugin:
         baseline_test = datasets.get("baseline_test")
         test_close_prices = datasets.get("test_close_prices")  # Future prices for target calculation
         
-        # Get target normalization stats from preprocessor_params
-        if "target_returns_mean" not in preprocessor_params or "target_returns_std" not in preprocessor_params:
-            raise ValueError("Preprocessor did not return 'target_returns_mean' or 'target_returns_std'. Check preprocessor configuration and execution.")
-        target_returns_mean = preprocessor_params["target_returns_mean"]
-        target_returns_std = preprocessor_params["target_returns_std"]
+        # Get target normalization stats from preprocessor_params (now lists per horizon)
+        if "target_returns_means" not in preprocessor_params or "target_returns_stds" not in preprocessor_params:
+            raise ValueError("Preprocessor did not return 'target_returns_means' or 'target_returns_stds'. Check preprocessor configuration and execution.")
+        target_returns_means = preprocessor_params["target_returns_means"]
+        target_returns_stds = preprocessor_params["target_returns_stds"]
         
         use_returns = config.get("use_returns", False)
         if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None): 
@@ -209,10 +209,10 @@ class STLPipelinePlugin:
                         baseline_val_h = baseline_val[:num_val_pts].flatten()  # Flatten baseline too
                         
                         # Denormalize predictions and targets using target normalization stats
-                        train_preds_denorm = denormalize_target_returns(train_preds_h, target_returns_mean, target_returns_std, idx)
-                        train_target_denorm = denormalize_target_returns(train_target_h, target_returns_mean, target_returns_std, idx)
-                        val_preds_denorm = denormalize_target_returns(val_preds_h, target_returns_mean, target_returns_std, idx)
-                        val_target_denorm = denormalize_target_returns(val_target_h, target_returns_mean, target_returns_std, idx)
+                        train_preds_denorm = denormalize_target_returns(train_preds_h, target_returns_means, target_returns_stds, idx)
+                        train_target_denorm = denormalize_target_returns(train_target_h, target_returns_means, target_returns_stds, idx)
+                        val_preds_denorm = denormalize_target_returns(val_preds_h, target_returns_means, target_returns_stds, idx)
+                        val_target_denorm = denormalize_target_returns(val_target_h, target_returns_means, target_returns_stds, idx)
                         
                         # Denormalize baseline using JSON normalization
                         baseline_train_denorm = denormalize(baseline_train_h, config)
@@ -231,8 +231,8 @@ class STLPipelinePlugin:
                             val_pred_price = val_preds_denorm
                         
                         # Denormalize uncertainties using target normalization stats
-                        train_unc_denorm = denormalize_target_returns(train_unc_h, [0.0] * len(target_returns_mean), target_returns_std, idx)
-                        val_unc_denorm = denormalize_target_returns(val_unc_h, [0.0] * len(target_returns_mean), target_returns_std, idx)
+                        train_unc_denorm = denormalize_target_returns(train_unc_h, [0.0] * len(target_returns_means), target_returns_stds, idx)
+                        val_unc_denorm = denormalize_target_returns(val_unc_h, [0.0] * len(target_returns_means), target_returns_stds, idx)
                         
                         # Metrics
                         train_mae_h = np.mean(np.abs(train_preds_denorm - train_target_denorm))
@@ -296,8 +296,8 @@ class STLPipelinePlugin:
                     baseline_test_h = baseline_test[:num_test_pts].flatten()  # Flatten baseline too
                     
                     # Denormalize predictions and targets using target normalization stats
-                    test_preds_denorm = denormalize_target_returns(test_preds_h, target_returns_mean, target_returns_std, idx)
-                    test_target_denorm = denormalize_target_returns(test_target_h, target_returns_mean, target_returns_std, idx)
+                    test_preds_denorm = denormalize_target_returns(test_preds_h, target_returns_means, target_returns_stds, idx)
+                    test_target_denorm = denormalize_target_returns(test_target_h, target_returns_means, target_returns_stds, idx)
                     
                     # Baseline is already denormalized, use directly
                     baseline_test_denorm = baseline_test_h
@@ -311,7 +311,7 @@ class STLPipelinePlugin:
                         test_pred_price = test_preds_denorm
                     
                     # Denormalize uncertainties using target normalization stats
-                    test_unc_denorm = denormalize_target_returns(test_unc_h, [0.0] * len(target_returns_mean), target_returns_std, idx)
+                    test_unc_denorm = denormalize_target_returns(test_unc_h, [0.0] * len(target_returns_means), target_returns_stds, idx)
                     
                     # Metrics
                     test_mae_h = np.mean(np.abs(test_preds_denorm - test_target_denorm))
@@ -426,8 +426,8 @@ class STLPipelinePlugin:
                 
                 try:
                     # Denormalize predictions and targets using target normalization stats
-                    preds_denorm = denormalize_target_returns(preds_raw, target_returns_mean, target_returns_std, idx)
-                    target_denorm = denormalize_target_returns(target_raw, target_returns_mean, target_returns_std, idx)
+                    preds_denorm = denormalize_target_returns(preds_raw, target_returns_means, target_returns_stds, idx)
+                    target_denorm = denormalize_target_returns(target_raw, target_returns_means, target_returns_stds, idx)
                     
                     # --- Apply FIX: Ensure baseline and denormalized returns are 1D before adding ---
                     if use_returns:
@@ -441,7 +441,7 @@ class STLPipelinePlugin:
                         target_price_denorm = target_denorm
 
                     # Denormalize uncertainty (no mean shift for uncertainty)
-                    unc_denorm = denormalize_target_returns(unc_raw, [0.0] * len(target_returns_mean), target_returns_std, idx)
+                    unc_denorm = denormalize_target_returns(unc_raw, [0.0] * len(target_returns_means), target_returns_stds, idx)
                     
                 except Exception as e: 
                     print(f"WARN: Error denorm H={h}: {e}")
@@ -516,7 +516,7 @@ class STLPipelinePlugin:
             baseline_plot_values = baseline_plot.flatten()
             
             # Denormalize predictions using current normalization stats
-            preds_plot_denorm = denormalize_target_returns(preds_plot_raw.flatten(), target_returns_mean, target_returns_std, plotted_index)
+            preds_plot_denorm = denormalize_target_returns(preds_plot_raw.flatten(), target_returns_means, target_returns_stds, plotted_index)
             
             # Calculate true target returns if we have access to future prices
             if test_close_prices is not None and len(test_close_prices) > num_test_points + plotted_horizon:
