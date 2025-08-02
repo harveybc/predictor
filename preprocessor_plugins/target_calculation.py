@@ -59,15 +59,25 @@ class TargetCalculationProcessor:
             target_raw = y_df[target_column].astype(np.float32).values
             target_denorm = denormalize(target_raw, norm_json, target_column)
             
-            # Store the full denormalized target (aligned with windowed features)
-            denorm_targets[split] = target_denorm
-            baseline_targets[split] = target_denorm
+            # CRITICAL FIX: Simple trimming - remove first window_size-1 rows
+            # This aligns with windowed X data which also removes first window_size-1 rows
+            window_size = config.get('window_size', 48)
+            trimmed_start = window_size - 1
+            target_trimmed = target_denorm[trimmed_start:]
             
-            # Use corresponding dates
+            # Store the trimmed denormalized target (aligned with windowed features)
+            denorm_targets[split] = target_trimmed
+            baseline_targets[split] = target_trimmed
+            
+            # Use corresponding trimmed dates
             dates = baseline_data[f'dates_{split}']
-            baseline_dates[split] = dates
+            if dates is not None:
+                dates_trimmed = dates[trimmed_start:]
+                baseline_dates[split] = dates_trimmed
+            else:
+                baseline_dates[split] = None
             
-            print(f"Denormalized {split} target: {len(target_denorm)} samples")
+            print(f"Trimmed {split} target: {len(target_trimmed)} samples (removed first {trimmed_start} rows)")
         
         # Now calculate targets for each horizon
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
@@ -105,19 +115,18 @@ class TargetCalculationProcessor:
                 num_samples = windowed_data[f'num_samples_{split}']
                 target_trimmed = denorm_targets[split]
                 
-                # CRITICAL FIX: Calculate baseline and future indices with correct alignment
-                # Sliding windows now start at t=window_size-1, so baseline indices are:
-                # Window 0: baseline at index window_size-1
-                # Window 1: baseline at index window_size  
-                # Window i: baseline at index window_size-1+i
-                baseline_indices = np.arange(window_size-1, window_size-1+num_samples)
+                # SIMPLE ALIGNMENT: After trimming, targets align with windows
+                # Window 0 baseline -> target_trimmed[0]
+                # Window 1 baseline -> target_trimmed[1]  
+                # Window i baseline -> target_trimmed[i]
+                # Future for horizon h -> target_trimmed[i+h]
+                baseline_indices = np.arange(0, num_samples)
                 future_indices = baseline_indices + h
                 
-                # Ensure we have enough data for both baseline and future values
-                max_required_index = max(baseline_indices[-1], future_indices[-1])
-                if max_required_index >= len(target_trimmed):
-                    raise ValueError(f"Not enough target data for {split} split, horizon {h}: "
-                                   f"need index {max_required_index}, have {len(target_trimmed)}")
+                # Ensure we have enough trimmed data for future values
+                if future_indices[-1] >= len(target_trimmed):
+                    raise ValueError(f"Not enough trimmed target data for {split} split, horizon {h}: "
+                                   f"need index {future_indices[-1]}, have {len(target_trimmed)}")
                 
                 baseline_values = target_trimmed[baseline_indices]
                 future_values = target_trimmed[future_indices]
@@ -139,42 +148,38 @@ class TargetCalculationProcessor:
                 
                 print(f"  {split.capitalize()}: {len(target_normalized)} samples")
         
-        # Prepare baseline data (with correct alignment and bounds checking)
+        # Prepare baseline data (simple alignment after trimming)
         baseline_info = {}
         for split in splits:
             num_samples = windowed_data[f'num_samples_{split}']
+            target_trimmed = denorm_targets[split]
             
-            # CRITICAL FIX: Baseline indices must match the sliding windows exactly
-            # Each window ends at baseline_index, so window i has baseline at window_size-1+i
-            baseline_indices = np.arange(window_size-1, window_size-1+num_samples)
+            # SIMPLE ALIGNMENT: After trimming, baselines align directly with windows
+            # Window 0 -> baseline at trimmed_target[0]
+            # Window 1 -> baseline at trimmed_target[1]
+            # Window i -> baseline at trimmed_target[i]
+            baseline_indices = np.arange(0, num_samples)
             
-            # Ensure baseline indices don't exceed the denormalized target array
-            max_target_index = len(denorm_targets[split]) - 1
-            valid_baseline_indices = baseline_indices[baseline_indices <= max_target_index]
-            
-            if len(valid_baseline_indices) < len(baseline_indices):
-                print(f"WARN: Trimming baseline indices for {split}: {len(baseline_indices)} -> {len(valid_baseline_indices)}")
-                # Update num_samples to reflect the actual available data
-                actual_num_samples = len(valid_baseline_indices)
+            # Ensure we don't exceed the trimmed target array
+            if baseline_indices[-1] >= len(target_trimmed):
+                print(f"WARN: Adjusting baseline indices for {split}: need {baseline_indices[-1]}, have {len(target_trimmed)}")
+                actual_num_samples = len(target_trimmed)
+                baseline_indices = np.arange(0, actual_num_samples)
             else:
                 actual_num_samples = num_samples
                 
-            baseline_values = denorm_targets[split][valid_baseline_indices]
+            baseline_values = target_trimmed[baseline_indices]
             baseline_info[f'baseline_{split}'] = baseline_values
             
-            # Corresponding dates (aligned with valid baseline indices)
+            # Corresponding dates (already trimmed)
             dates = baseline_dates[split]
             if dates is not None:
-                # For baseline dates, we need the dates corresponding to the baseline indices
-                # These are the dates at the END of each window (current tick)
-                valid_date_indices = valid_baseline_indices
-                max_date_index = len(dates) - 1
-                final_date_indices = valid_date_indices[valid_date_indices <= max_date_index]
-                if len(final_date_indices) < len(valid_baseline_indices):
-                    print(f"WARN: Further trimming date indices for {split}: {len(valid_baseline_indices)} -> {len(final_date_indices)}")
-                    # Trim baseline values to match available dates
-                    baseline_info[f'baseline_{split}'] = baseline_values[:len(final_date_indices)]
-                baseline_info[f'baseline_{split}_dates'] = dates[final_date_indices]
+                # Use the same indices for dates (already trimmed to match)
+                if len(dates) >= actual_num_samples:
+                    baseline_info[f'baseline_{split}_dates'] = dates[baseline_indices]
+                else:
+                    print(f"WARN: Date array too short for {split}: need {actual_num_samples}, have {len(dates)}")
+                    baseline_info[f'baseline_{split}_dates'] = dates[:actual_num_samples] 
             else:
                 baseline_info[f'baseline_{split}_dates'] = None
         

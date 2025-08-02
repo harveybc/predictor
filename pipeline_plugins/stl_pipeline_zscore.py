@@ -261,6 +261,13 @@ class STLPipelinePlugin:
                             all_same_std = all(abs(std - target_returns_stds[0]) < 1e-8 for std in target_returns_stds)
                             all_same_mean = all(abs(mean - target_returns_means[0]) < 1e-8 for mean in target_returns_means)
                             print(f"  Consistent normalization across horizons: std={all_same_std}, mean={all_same_mean}")
+                            
+                            # ALIGNMENT VERIFICATION: Check data lengths match
+                            print(f"\nALIGNMENT VERIFICATION:")
+                            print(f"  X_train shape: {X_train.shape}")
+                            print(f"  y_train H{h} length: {len(train_target_h)}")
+                            print(f"  baseline_train length: {len(baseline_train)}")
+                            print(f"  Trimming should make all lengths match after windowing")
                         
                         metrics_results["Train"]["MAE"][h].append(train_mae_h)
                         metrics_results["Train"]["R2"][h].append(train_r2_h)
