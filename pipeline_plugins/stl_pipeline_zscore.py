@@ -135,6 +135,17 @@ class STLPipelinePlugin:
         baseline_test = datasets.get("baseline_test")
         test_close_prices = datasets.get("test_close_prices")  # Future prices for target calculation
         
+        # DEBUG: Check if baseline data is properly loaded
+        print(f"\nDEBUG - Baseline data verification:")
+        print(f"  baseline_train: {type(baseline_train)} length={len(baseline_train) if baseline_train is not None else 'None'}")
+        print(f"  baseline_val: {type(baseline_val)} length={len(baseline_val) if baseline_val is not None else 'None'}")
+        print(f"  baseline_test: {type(baseline_test)} length={len(baseline_test) if baseline_test is not None else 'None'}")
+        if baseline_test is not None and len(baseline_test) > 0:
+            print(f"  baseline_test sample: {baseline_test[:3]}")
+        else:
+            print(f"  ERROR: baseline_test is empty or None - plotting will fail!")
+            print(f"  Check target calculation processor output")
+        
         # Get target normalization stats from preprocessor_params (now lists per horizon)
         if "target_returns_means" not in preprocessor_params or "target_returns_stds" not in preprocessor_params:
             raise ValueError("Preprocessor did not return 'target_returns_means' or 'target_returns_stds'. Check preprocessor configuration and execution.")
@@ -437,6 +448,22 @@ class STLPipelinePlugin:
             final_dates = list(test_dates[:num_test_points]) if test_dates is not None else list(range(num_test_points))
             final_baseline = baseline_test[:num_test_points].flatten() if baseline_test is not None else None  # Flatten baseline here
 
+            # CRITICAL DEBUG: Check if final_baseline is valid
+            if final_baseline is None or len(final_baseline) == 0:
+                print(f"CRITICAL ERROR: final_baseline is empty!")
+                print(f"  baseline_test: {type(baseline_test)} length={len(baseline_test) if baseline_test is not None else 'None'}")
+                print(f"  num_test_points: {num_test_points}")
+                print(f"  This will cause plotting to fail - need to fix baseline data in preprocessor")
+                # Try to create a fallback baseline from predictions for debugging
+                if len(list_test_preds[0]) > 0:
+                    print(f"  Creating fallback baseline from first prediction for debugging...")
+                    # Use the first prediction as a fallback baseline (this is just for debugging)
+                    fallback_value = np.mean(list_test_preds[0][:10]) if len(list_test_preds[0]) > 10 else 1000.0
+                    final_baseline = np.full(num_test_points, fallback_value)
+                    print(f"  Fallback baseline created with value: {fallback_value}")
+                else:
+                    raise ValueError("No baseline data available for plotting and no fallback possible")
+
             # Prepare dictionaries
             output_data = {"DATE_TIME": final_dates}
             uncertainty_data = {"DATE_TIME": final_dates}
@@ -594,6 +621,15 @@ class STLPipelinePlugin:
             print(f"  targets: {len(target_plot_final)}")
             print(f"  baseline: {len(baseline_plot_final)}")
             print(f"  uncertainty: {len(unc_plot_final)}")
+            
+            # CRITICAL DEBUG: Check actual data values
+            print(f"Final plot data sample values:")
+            if len(pred_plot_final) > 0:
+                print(f"  predictions[0:3]: {pred_plot_final[:3]}")
+                print(f"  targets[0:3]: {target_plot_final[:3]}")
+                print(f"  baseline[0:3]: {baseline_plot_final[:3]}")
+                print(f"  uncertainty[0:3]: {unc_plot_final[:3]}")
+                print(f"  All finite? pred={np.all(np.isfinite(pred_plot_final))}, target={np.all(np.isfinite(target_plot_final))}, baseline={np.all(np.isfinite(baseline_plot_final))}")
             
             if len(pred_plot_final) == 0:
                 raise ValueError("No data available for plotting - all arrays are empty")
