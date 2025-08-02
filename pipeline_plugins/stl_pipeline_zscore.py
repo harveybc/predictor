@@ -130,6 +130,17 @@ class STLPipelinePlugin:
         train_dates = datasets.get("y_train_dates")
         val_dates = datasets.get("y_val_dates")
         test_dates = datasets.get("y_test_dates")
+        
+        # CRITICAL DEBUG: Verify dates are properly extracted from preprocessor
+        print(f"\nDEBUG - Dates extracted from preprocessor:")
+        print(f"  test_dates: {type(test_dates)} length={len(test_dates) if test_dates is not None else 'None'}")
+        if test_dates is not None and len(test_dates) > 0:
+            print(f"  test_dates sample: {test_dates[:3] if len(test_dates) >= 3 else test_dates}")
+            print(f"  test_dates types: {[type(d) for d in test_dates[:3]] if len(test_dates) >= 3 else [type(d) for d in test_dates]}")
+        else:
+            print(f"  ERROR: test_dates is None or empty! Preprocessor should return last element timestamps from sliding windows.")
+            print(f"  This means preprocessor is not correctly extracting dates from DATE_TIME column")
+        
         baseline_train = datasets.get("baseline_train")
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
@@ -441,11 +452,22 @@ class STLPipelinePlugin:
             final_uncertainties = list_test_unc
 
             # Determine consistent length
-            arrays_to_check_len = [final_predictions[0], baseline_test, test_dates]
+            arrays_to_check_len = [final_predictions[0], baseline_test]
+            if test_dates is not None:
+                arrays_to_check_len.append(test_dates)
             num_test_points = min(len(arr) for arr in arrays_to_check_len if arr is not None)
             print(f"Determined consistent output length: {num_test_points}")
             
-            final_dates = list(test_dates[:num_test_points]) if test_dates is not None else list(range(num_test_points))
+            # CRITICAL FIX: Use proper dates from preprocessor (last element timestamps from sliding windows)
+            if test_dates is not None and len(test_dates) > 0:
+                final_dates = list(test_dates[:num_test_points])
+                print(f"Using proper dates from preprocessor: {len(final_dates)} dates")
+                print(f"Sample preprocessor dates: {final_dates[:3] if len(final_dates) >= 3 else final_dates}")
+            else:
+                print("ERROR: No test_dates from preprocessor! Preprocessor should return last element timestamps from sliding windows.")
+                print("This indicates a problem in the preprocessor - dates should be extracted from DATE_TIME column")
+                print("Creating fallback range as last resort...")
+                final_dates = list(range(num_test_points))
             final_baseline = baseline_test[:num_test_points].flatten() if baseline_test is not None else None  # Flatten baseline here
 
             # CRITICAL DEBUG: Check if final_baseline is valid
@@ -608,11 +630,29 @@ class STLPipelinePlugin:
             num_avail_plot = len(pred_plot_price_flat)  # Length of data available for plot
             plot_slice = slice(max(0, num_avail_plot - n_plot), num_avail_plot)
 
-            dates_plot_final = final_dates[plot_slice]
+            # CRITICAL FIX: Use proper dates from preprocessor (not fallback ranges)
+            # final_dates should contain the last element timestamps from sliding windows as returned by preprocessor
+            try:
+                if final_dates is not None and len(final_dates) > 0:
+                    dates_plot_final = final_dates[plot_slice]
+                    print(f"Using {len(dates_plot_final)} dates from preprocessor for plotting")
+                    print(f"Date types: {[type(d) for d in dates_plot_final[:3]] if len(dates_plot_final) >= 3 else [type(d) for d in dates_plot_final]}")
+                    print(f"Sample dates: {dates_plot_final[:3] if len(dates_plot_final) >= 3 else dates_plot_final}")
+                    # These should be actual timestamps from the DATE_TIME column, not integer ranges
+                    if all(isinstance(d, (int, np.integer)) for d in dates_plot_final[:3]):
+                        print(f"WARNING: Dates appear to be integer ranges, not actual timestamps!")
+                        print(f"This suggests preprocessor is not returning proper dates from DATE_TIME column")
+                else:
+                    raise ValueError("final_dates is None or empty")
+            except Exception as e:
+                print(f"ERROR: Cannot use dates from preprocessor ({e})")
+                print(f"Creating fallback integer range for plotting...")
+                dates_plot_final = list(range(len(pred_plot_price_flat)))[plot_slice]
+            
             pred_plot_final = pred_plot_price_flat[plot_slice]
             target_plot_final = target_plot_price_flat[plot_slice]
             baseline_plot_final = baseline_plot_price_flat[plot_slice]
-            unc_plot_final = unc_plot_denorm_flat[plot_slice]  # This is now 1D
+            unc_plot_final = unc_plot_denorm_flat[plot_slice]
 
             # Verify we have data to plot
             print(f"Final plot data lengths:")
@@ -629,6 +669,7 @@ class STLPipelinePlugin:
                 print(f"  targets[0:3]: {target_plot_final[:3]}")
                 print(f"  baseline[0:3]: {baseline_plot_final[:3]}")
                 print(f"  uncertainty[0:3]: {unc_plot_final[:3]}")
+                print(f"  dates sample: {dates_plot_final[:3] if len(dates_plot_final) >= 3 else dates_plot_final}")
                 print(f"  All finite? pred={np.all(np.isfinite(pred_plot_final))}, target={np.all(np.isfinite(target_plot_final))}, baseline={np.all(np.isfinite(baseline_plot_final))}")
             
             if len(pred_plot_final) == 0:
