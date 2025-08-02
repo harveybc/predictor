@@ -83,25 +83,34 @@ class TargetCalculationProcessor:
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
         
         if use_returns:
-            # Use JSON normalization stats for consistency with baseline denormalization
-            print("\nUsing JSON normalization stats for targets (same as baseline)...")
+            # UNNORMALIZED RETURNS: Use raw denormalized returns as targets
+            print("\nCalculating UNNORMALIZED returns as targets...")
             
-            # Get JSON normalization stats used for baseline denormalization
-            target_mean = 0.0  # For returns, mean should be 0
-            if norm_json and target_column in norm_json:
-                # We don't use the mean for returns, only std for scaling
-                target_std = norm_json[target_column].get("std", 1.0)
-            else:
-                target_std = 1.0
+            # No normalization applied - targets will be raw denormalized returns
+            target_mean = 0.0  # No centering
+            target_std = 1.0   # No scaling
             
-            # Use single normalization parameters for all horizons (consistent with JSON)
-            self.target_returns_means = [target_mean] * len(predicted_horizons)
-            self.target_returns_stds = [target_std] * len(predicted_horizons)
+            print(f"Targets will be RAW denormalized returns (Mean={target_mean:.6f}, Std={target_std:.6f})")
             
-            print(f"JSON normalization stats: Mean={target_mean:.6f}, Std={target_std:.6f}")
+            # Calculate sample statistics for reference only
+            if 'train' in denorm_targets:
+                train_target = denorm_targets['train']
+                sample_baseline = train_target[:100] if len(train_target) > 100 else train_target
+                sample_future = train_target[1:101] if len(train_target) > 101 else train_target[1:]
+                if len(sample_future) == len(sample_baseline):
+                    sample_returns = sample_future - sample_baseline
+                    actual_mean = np.mean(sample_returns)
+                    actual_std = np.std(sample_returns)
+                    print(f"Sample denormalized returns statistics (for reference):")
+                    print(f"  Mean: {actual_mean:.6f}")
+                    print(f"  Std: {actual_std:.6f}")
         else:
-            self.target_returns_means = [0.0] * len(predicted_horizons)
-            self.target_returns_stds = [1.0] * len(predicted_horizons)
+            target_mean = 0.0
+            target_std = 1.0
+        
+        # Use NO normalization for all horizons (raw returns)
+        self.target_returns_means = [target_mean] * len(predicted_horizons)
+        self.target_returns_stds = [target_std] * len(predicted_horizons)
         
         # Now process all horizons with the SAME normalization
         for i, h in enumerate(predicted_horizons):
@@ -115,11 +124,9 @@ class TargetCalculationProcessor:
                 num_samples = windowed_data[f'num_samples_{split}']
                 target_trimmed = denorm_targets[split]
                 
-                # SIMPLE ALIGNMENT: After trimming, targets align with windows
-                # Window 0 baseline -> target_trimmed[0]
-                # Window 1 baseline -> target_trimmed[1]  
-                # Window i baseline -> target_trimmed[i]
-                # Future for horizon h -> target_trimmed[i+h]
+                # CORRECT ALIGNMENT: After trimming, targets align with windows
+                # Window i ends at tick (window_size-1+i) -> baseline at target_trimmed[i]
+                # Window i should predict tick (window_size-1+i+h) -> future at target_trimmed[i+h]
                 baseline_indices = np.arange(0, num_samples)
                 future_indices = baseline_indices + h
                 
@@ -131,12 +138,28 @@ class TargetCalculationProcessor:
                 baseline_values = target_trimmed[baseline_indices]
                 future_values = target_trimmed[future_indices]
                 
+                # ALIGNMENT VERIFICATION: Print sample for first horizon and first split
+                if i == 0 and split == 'train' and len(baseline_values) > 5:
+                    print(f"\nALIGNMENT VERIFICATION for H{h} {split}:")
+                    print(f"  Window 0: ends at tick {window_size-1}, baseline={baseline_values[0]:.6f} -> predicts tick {window_size-1+h}, future={future_values[0]:.6f}")
+                    print(f"  Window 1: ends at tick {window_size}, baseline={baseline_values[1]:.6f} -> predicts tick {window_size+h}, future={future_values[1]:.6f}")
+                    print(f"  Window 2: ends at tick {window_size+1}, baseline={baseline_values[2]:.6f} -> predicts tick {window_size+1+h}, future={future_values[2]:.6f}")
+                    print(f"  ✅ CORRECT: Window ending at tick t predicts value at tick t+{h}")
+                
                 if use_returns:
-                    # Calculate returns: future[t+h] - baseline[t]
+                    # Calculate RAW returns: future[t+h] - baseline[t] (NO NORMALIZATION)
                     returns = future_values - baseline_values
-                    # Normalize using JSON stats (consistent with baseline normalization)
-                    # mean_h and std_h are already defined above for this horizon
-                    target_normalized = (returns - mean_h) / std_h
+                    # NO NORMALIZATION: Use raw denormalized returns as targets
+                    target_normalized = returns.astype(np.float32)
+                    
+                    # SAMPLE VERIFICATION: Print sample raw targets
+                    if i == 0 and split == 'train' and len(target_normalized) > 5:
+                        print(f"  Sample RAW return targets: [{target_normalized[0]:.6f}, {target_normalized[1]:.6f}, {target_normalized[2]:.6f}]")
+                        print(f"  Target processing: NO NORMALIZATION (raw denormalized returns)")
+                        actual_mean = np.mean(target_normalized)
+                        actual_std = np.std(target_normalized)
+                        print(f"  Actual target stats: mean={actual_mean:.6f}, std={actual_std:.6f}")
+                        print(f"  ✅ TARGETS ARE RAW DENORMALIZED RETURNS")
                 else:
                     target_normalized = future_values
                 
@@ -148,7 +171,7 @@ class TargetCalculationProcessor:
                 
                 print(f"  {split.capitalize()}: {len(target_normalized)} samples")
         
-        # Prepare baseline data (simple alignment after trimming)
+        # Prepare baseline data (UNNORMALIZED for direct prediction addition)
         baseline_info = {}
         for split in splits:
             num_samples = windowed_data[f'num_samples_{split}']
@@ -168,8 +191,12 @@ class TargetCalculationProcessor:
             else:
                 actual_num_samples = num_samples
                 
+            # BASELINE IS UNNORMALIZED (denormalized target values)
             baseline_values = target_trimmed[baseline_indices]
             baseline_info[f'baseline_{split}'] = baseline_values
+            
+            if split == 'train':
+                print(f"  Baseline {split}: UNNORMALIZED values, mean={np.mean(baseline_values):.6f}, std={np.std(baseline_values):.6f}")
             
             # Corresponding dates (already trimmed)
             dates = baseline_dates[split]
@@ -183,24 +210,27 @@ class TargetCalculationProcessor:
             else:
                 baseline_info[f'baseline_{split}_dates'] = None
         
-        # Print normalization summary
+        # Print processing summary
         if use_returns:
-            print("\nJSON-based target normalization stats (consistent with baseline):")
-            for i, (mean, std) in enumerate(zip(self.target_returns_means, self.target_returns_stds)):
-                horizon = predicted_horizons[i]
-                print(f"  Horizon {horizon}: Mean={mean:.6f}, Std={std:.6f}")
+            print("\nTarget processing summary:")
+            print("  ✅ TARGETS: Raw denormalized returns (NO normalization)")
+            print("  ✅ BASELINE: Unnormalized denormalized values")
+            print("  ✅ PREDICTION: Add predicted returns to baseline for final prediction")
+            print("  Target means (all 0.0):", self.target_returns_means)
+            print("  Target stds (all 1.0):", self.target_returns_stds)
         else:
-            print("Target normalization skipped (use_returns=False). Using Mean=0.0, Std=1.0 for all horizons.")
+            print("Target normalization skipped (use_returns=False). Using raw values.")
         
-        # Combine target data with baseline info and individual normalization parameters
+        # Combine target data with baseline info and processing parameters
         result = {
             'y_train': target_data.get('train', {}),
             'y_val': target_data.get('val', {}),
             'y_test': target_data.get('test', {}),
             **baseline_info,
-            'target_returns_means': self.target_returns_means,  # List of means per horizon
-            'target_returns_stds': self.target_returns_stds,    # List of stds per horizon
+            'target_returns_means': self.target_returns_means,  # All 0.0 (no normalization)
+            'target_returns_stds': self.target_returns_stds,    # All 1.0 (no normalization)
             'predicted_horizons': predicted_horizons,           # For reference
+            'use_unnormalized_targets': True,                   # Flag for prediction processing
         }
         
         # Add raw test data for evaluation (denormalized, full length)

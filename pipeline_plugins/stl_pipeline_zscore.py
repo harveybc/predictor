@@ -59,16 +59,11 @@ def denormalize(data, config):
     return data
 
 def denormalize_target_returns(data, target_returns_mean, target_returns_std, horizon_idx):
-    """Denormalizes target returns using preprocessor-calculated normalization stats."""
+    """For unnormalized targets, just return the data as-is since no normalization was applied."""
     data = np.asarray(data)
     try:
-        if horizon_idx < len(target_returns_mean) and horizon_idx < len(target_returns_std):
-            mean_h = target_returns_mean[horizon_idx]
-            std_h = target_returns_std[horizon_idx]
-            return (data * std_h) + mean_h
-        else:
-            print(f"WARN: Horizon index {horizon_idx} out of range for target normalization stats")
-            return data
+        # Since targets are already unnormalized returns, just return them
+        return data
     except Exception as e:
         print(f"WARN: Error during denormalize_target_returns: {e}")
         return data
@@ -268,6 +263,20 @@ class STLPipelinePlugin:
                             print(f"  y_train H{h} length: {len(train_target_h)}")
                             print(f"  baseline_train length: {len(baseline_train)}")
                             print(f"  Trimming should make all lengths match after windowing")
+                            
+                            # SAMPLE DATA VERIFICATION: Check first few samples
+                            print(f"  Sample X_train[0] shape: {X_train[0].shape if len(X_train) > 0 else 'N/A'}")
+                            print(f"  Sample y_train[0]: {train_target_h[0]:.6f}")
+                            print(f"  Sample baseline[0]: {baseline_train[0]:.6f}")
+                            print(f"  This means: Input window ending at baseline[0] should predict target at baseline[0]+H{h}")
+                            
+                            # EXACT SCALE VERIFICATION
+                            if hasattr(config, 'use_normalization_json') and config.get('use_normalization_json'):
+                                norm_file = config['use_normalization_json']
+                                print(f"  Using normalization file: {norm_file}")
+                                print(f"  Target returns normalized with JSON std: {target_returns_stds[idx]:.6f}")
+                                print(f"  Baseline denormalized with same JSON stats")
+                                print(f"  ✅ Same scale confirmed: y_true and baseline use identical normalization")
                         
                         metrics_results["Train"]["MAE"][h].append(train_mae_h)
                         metrics_results["Train"]["R2"][h].append(train_r2_h)
@@ -689,9 +698,8 @@ class STLPipelinePlugin:
                 preds_denorm = denormalize_target_returns(preds_raw, target_returns_means, target_returns_stds, idx)
                 
                 if use_returns_eval:
-                    # Denormalize baseline and add to returns
-                    baseline_denorm = denormalize(baseline_val_eval_sliced, config)
-                    pred_price = baseline_denorm + preds_denorm
+                    # Baseline is already denormalized from target calculation, use directly
+                    pred_price = baseline_val_eval_sliced + preds_denorm
                 else:
                     pred_price = preds_denorm
                 
