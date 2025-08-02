@@ -208,15 +208,15 @@ class STLPipelinePlugin:
                         train_mae_h = np.mean(np.abs(train_preds_h - train_target_h))
                         val_mae_h = np.mean(np.abs(val_preds_h - val_target_h))
                         
-                        # For R² and price-based metrics, denormalize everything consistently
-                        train_preds_denorm = denormalize_target_returns(train_preds_h, target_returns_means, target_returns_stds, idx)
-                        train_target_denorm = denormalize_target_returns(train_target_h, target_returns_means, target_returns_stds, idx)
-                        val_preds_denorm = denormalize_target_returns(val_preds_h, target_returns_means, target_returns_stds, idx)
-                        val_target_denorm = denormalize_target_returns(val_target_h, target_returns_means, target_returns_stds, idx)
+                        # For R² and price-based metrics, predictions and targets are already denormalized
+                        train_preds_denorm = train_preds_h  # Already denormalized returns
+                        train_target_denorm = train_target_h  # Already denormalized returns
+                        val_preds_denorm = val_preds_h  # Already denormalized returns
+                        val_target_denorm = val_target_h  # Already denormalized returns
                         
-                        # Denormalize baseline using JSON normalization
-                        baseline_train_denorm = denormalize(baseline_train_h, config)
-                        baseline_val_denorm = denormalize(baseline_val_h, config)
+                        # Baselines are already denormalized from sliding windows - use directly
+                        baseline_train_denorm = baseline_train_h.copy()  # Already denormalized
+                        baseline_val_denorm = baseline_val_h.copy()  # Already denormalized
                         
                         # Calculate final prices (baseline + returns if use_returns)
                         if use_returns:
@@ -230,9 +230,9 @@ class STLPipelinePlugin:
                             val_target_price = val_target_denorm
                             val_pred_price = val_preds_denorm
                         
-                        # Denormalize uncertainties using target normalization stats
-                        train_unc_denorm = denormalize_target_returns(train_unc_h, [0.0] * len(target_returns_means), target_returns_stds, idx)
-                        val_unc_denorm = denormalize_target_returns(val_unc_h, [0.0] * len(target_returns_means), target_returns_stds, idx)
+                        # Uncertainties are also already denormalized - use directly
+                        train_unc_denorm = train_unc_h.copy()  # Already denormalized uncertainties
+                        val_unc_denorm = val_unc_h.copy()  # Already denormalized uncertainties
                         
                         # Metrics: MAE in normalized space, R² in price space
                         train_r2_h = r2_score(train_target_price, train_pred_price)
@@ -332,12 +332,12 @@ class STLPipelinePlugin:
                     # MAE should be calculated on the normalized returns (y_true scale during training)
                     test_mae_h = np.mean(np.abs(test_preds_h - test_target_h))
                     
-                    # For R² and price-based metrics, denormalize everything consistently
-                    test_preds_denorm = denormalize_target_returns(test_preds_h, target_returns_means, target_returns_stds, idx)
-                    test_target_denorm = denormalize_target_returns(test_target_h, target_returns_means, target_returns_stds, idx)
+                    # Predictions and targets are already denormalized returns - use directly
+                    test_preds_denorm = test_preds_h.copy()  # Already denormalized returns
+                    test_target_denorm = test_target_h.copy()  # Already denormalized returns
                     
                     # Baseline is already denormalized, use directly
-                    baseline_test_denorm = baseline_test_h
+                    baseline_test_denorm = baseline_test_h.copy()
                     
                     # Calculate final prices (baseline + returns if use_returns)
                     if use_returns:
@@ -347,8 +347,8 @@ class STLPipelinePlugin:
                         test_target_price = test_target_denorm
                         test_pred_price = test_preds_denorm
                     
-                    # Denormalize uncertainties using target normalization stats
-                    test_unc_denorm = denormalize_target_returns(test_unc_h, [0.0] * len(target_returns_means), target_returns_stds, idx)
+                    # Uncertainties are also already denormalized - use directly
+                    test_unc_denorm = test_unc_h.copy()  # Already denormalized uncertainties
                     
                     # Metrics: MAE in normalized space, R² in price space
                     test_r2_h = r2_score(test_target_price, test_pred_price)
@@ -461,9 +461,9 @@ class STLPipelinePlugin:
                 unc_denorm = np.full(num_test_points, np.nan)
                 
                 try:
-                    # Denormalize predictions and targets using target normalization stats
-                    preds_denorm = denormalize_target_returns(preds_raw, target_returns_means, target_returns_stds, idx)
-                    target_denorm = denormalize_target_returns(target_raw, target_returns_means, target_returns_stds, idx)
+                    # Predictions and targets are already denormalized returns - use directly
+                    preds_denorm = preds_raw.copy()  # Already denormalized returns
+                    target_denorm = target_raw.copy()  # Already denormalized returns
                     
                     # --- Apply FIX: Ensure baseline and denormalized returns are 1D before adding ---
                     if use_returns:
@@ -476,8 +476,8 @@ class STLPipelinePlugin:
                         pred_price_denorm = preds_denorm
                         target_price_denorm = target_denorm
 
-                    # Denormalize uncertainty (no mean shift for uncertainty)
-                    unc_denorm = denormalize_target_returns(unc_raw, [0.0] * len(target_returns_means), target_returns_stds, idx)
+                    # Uncertainties are already denormalized - use directly
+                    unc_denorm = unc_raw.copy()  # Already denormalized uncertainties
                     
                 except Exception as e: 
                     print(f"WARN: Error denorm H={h}: {e}")
@@ -536,7 +536,7 @@ class STLPipelinePlugin:
         except Exception as e: 
             print(f"ERROR during final CSV saving: {e}")
 
-        # --- Plot Predictions for 'plotted_horizon' (CORRECTED - Flattening & Variable Names) ---
+        # --- Plot Predictions for 'plotted_horizon' (FIXED FOR ALREADY DENORMALIZED DATA) ---
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
             # Use CORRECT variable names from last iteration, sliced
@@ -545,41 +545,34 @@ class STLPipelinePlugin:
             unc_plot_raw = list_test_unc[plotted_index][:num_test_points]  # Shape (num_test_points,) or (num_test_points, 1)
             baseline_plot = final_baseline  # Already sliced, shape (num_test_points,)
 
-            # CRITICAL FIX: Calculate true target returns mathematically
-            # Instead of denormalizing potentially incorrect normalized targets,
-            # calculate the true returns directly from baseline and future prices
+            # CRITICAL FIX: Since targets are calculated from already denormalized sliding window baselines
+            # and predictions are raw denormalized returns, NO ADDITIONAL DENORMALIZATION needed
             
             baseline_plot_values = baseline_plot.flatten()
             
-            # Denormalize predictions using current normalization stats
-            preds_plot_denorm = denormalize_target_returns(preds_plot_raw.flatten(), target_returns_means, target_returns_stds, plotted_index)
+            # Predictions and targets are already denormalized returns - use directly
+            preds_plot_denorm = preds_plot_raw.flatten()  # Already denormalized returns
+            target_plot_denorm = target_plot_raw.flatten()  # Already denormalized returns
+            unc_plot_denorm = unc_plot_raw.flatten()  # Already denormalized uncertainties
             
-            # Calculate true target returns if we have access to future prices
-            if test_close_prices is not None and len(test_close_prices) > num_test_points + plotted_horizon:
-                # Calculate true returns: future_price - baseline_price
-                future_prices_slice = test_close_prices[plotted_horizon:num_test_points + plotted_horizon]
-                true_target_returns = future_prices_slice - baseline_plot_values
-                target_plot_denorm = true_target_returns
-                print(f"Using calculated true returns for plotting (length: {len(target_plot_denorm)})")
-            else:
-                # Fallback: denormalize the normalized targets (may have bias)
-                target_plot_denorm = denormalize_target_returns(target_plot_raw.flatten(), target_returns_means, target_returns_stds, plotted_index)
-                print(f"Using denormalized targets for plotting (may have bias)")
-            
-            unc_plot_denorm = denormalize_target_returns(unc_plot_raw.flatten(), [0.0] * len(target_returns_means), target_returns_stds, plotted_index)
+            print(f"Using already denormalized data for plotting:")
+            print(f"  Baseline (sliding window): mean={np.mean(baseline_plot_values):.6f}, std={np.std(baseline_plot_values):.6f}")
+            print(f"  Predictions (returns): mean={np.mean(preds_plot_denorm):.6f}, std={np.std(preds_plot_denorm):.6f}")
+            print(f"  Targets (returns): mean={np.mean(target_plot_denorm):.6f}, std={np.std(target_plot_denorm):.6f}")
             
             if use_returns:
-                # --- Baseline is already denormalized, use directly ---
-                baseline_plot_denorm = baseline_plot.flatten()
+                # Baseline is already denormalized sliding window values - use directly
+                baseline_plot_denorm = baseline_plot_values.copy()
+                # Final prices = baseline + returns (both already denormalized)
                 pred_plot_price_flat = (baseline_plot_denorm + preds_plot_denorm).flatten()
                 target_plot_price_flat = (baseline_plot_denorm + target_plot_denorm).flatten()
                 # Show the actual baseline prices (current prices) for comparison
                 baseline_plot_price_flat = baseline_plot_denorm.copy()
             else:
+                # When not using returns, predictions and targets are already denormalized prices
                 pred_plot_price_flat = preds_plot_denorm.flatten()
                 target_plot_price_flat = target_plot_denorm.flatten()
-                # When not using returns, show baseline as the reference
-                baseline_plot_price_flat = baseline_plot.flatten() if baseline_plot is not None else np.zeros_like(pred_plot_price_flat)
+                baseline_plot_price_flat = baseline_plot_values.copy()
             
             unc_plot_denorm_flat = unc_plot_denorm.flatten()
 
@@ -594,7 +587,18 @@ class STLPipelinePlugin:
             baseline_plot_final = baseline_plot_price_flat[plot_slice]
             unc_plot_final = unc_plot_denorm_flat[plot_slice]  # This is now 1D
 
-            # Plotting
+            # Verify we have data to plot
+            print(f"Final plot data lengths:")
+            print(f"  dates: {len(dates_plot_final)}")
+            print(f"  predictions: {len(pred_plot_final)}")
+            print(f"  targets: {len(target_plot_final)}")
+            print(f"  baseline: {len(baseline_plot_final)}")
+            print(f"  uncertainty: {len(unc_plot_final)}")
+            
+            if len(pred_plot_final) == 0:
+                raise ValueError("No data available for plotting - all arrays are empty")
+
+            # Plotting with exact same style as original min-max pipeline
             plt.figure(figsize=(14, 7))
             plt.plot(dates_plot_final, pred_plot_final, label=f"Predicted Future Price H{plotted_horizon}", 
                     color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
@@ -694,8 +698,8 @@ class STLPipelinePlugin:
             for idx, h in enumerate(config['predicted_horizons']):
                 preds_raw = list_predictions[idx][:num_val_points].flatten()  # Flatten preds
                 
-                # Denormalize predictions using target normalization stats
-                preds_denorm = denormalize_target_returns(preds_raw, target_returns_means, target_returns_stds, idx)
+                # Predictions are already denormalized returns - use directly
+                preds_denorm = preds_raw.copy()  # Already denormalized returns
                 
                 if use_returns_eval:
                     # Baseline is already denormalized from target calculation, use directly

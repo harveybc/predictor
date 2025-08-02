@@ -257,17 +257,33 @@ class TargetCalculationProcessor:
         )
         
         # Add test close prices for evaluation
-        if 'x_test_df' in baseline_data:
+        test_samples = min_samples_per_split.get('test', 0)
+        if 'x_test_df' in baseline_data and test_samples > 0:
             result['test_close_prices'] = denormalize(
                 baseline_data['x_test_df']['CLOSE'].astype(np.float32).values[window_size:],
                 norm_json, 'CLOSE'
-            )[:windowed_data['num_samples_test']]
+            )[:test_samples]
         else:
             # Fallback to using y_test_df if x_test_df is not available
-            result['test_close_prices'] = denormalize(
-                baseline_data['y_test_df'][target_column].astype(np.float32).values[window_size:],
-                norm_json, target_column
-            )[:windowed_data['num_samples_test']]
+            if test_samples > 0:
+                result['test_close_prices'] = denormalize(
+                    baseline_data['y_test_df'][target_column].astype(np.float32).values[window_size:],
+                    norm_json, target_column
+                )[:test_samples]
+            else:
+                result['test_close_prices'] = np.array([])
         
         print("Target calculation complete.")
+        
+        # CRITICAL: Update windowed data sample counts to match truncated target data
+        print(f"\n--- Updating Windowed Data Sample Counts ---")
+        for split in splits:
+            if min_samples_per_split[split] > 0:
+                old_count = windowed_data.get(f'num_samples_{split}', 0)
+                windowed_data[f'num_samples_{split}'] = min_samples_per_split[split]
+                print(f"Updated {split} samples: {old_count} -> {min_samples_per_split[split]}")
+            else:
+                windowed_data[f'num_samples_{split}'] = 0
+                print(f"WARNING: {split} has 0 valid samples")
+        
         return result
