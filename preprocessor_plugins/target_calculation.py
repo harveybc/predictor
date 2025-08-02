@@ -40,44 +40,45 @@ class TargetCalculationProcessor:
         self.target_returns_stds = []
         
         # Extract and denormalize target column for each split
+        # USE SLIDING WINDOW BASELINES (already denormalized from sliding windows)
         denorm_targets = {}
         baseline_targets = {}
         baseline_dates = {}
         
+        print("\n✅ USING SLIDING WINDOW BASELINES (pre-calculated and denormalized)")
+        
         for split in splits:
             print(f"\nProcessing {split} targets...")
             
-            # Get the target column from baseline and denormalize it
-            if split == 'train':
-                y_df = baseline_data['y_train_df']
-            elif split == 'val':
-                y_df = baseline_data['y_val_df']
-            else:  # test
-                y_df = baseline_data['y_test_df']
+            # Use pre-calculated sliding window baselines (already denormalized)
+            sliding_baseline_key = f'sliding_baseline_{split}'
+            sliding_dates_key = f'sliding_baseline_{split}_dates'
             
-            # Extract and denormalize target column
-            target_raw = y_df[target_column].astype(np.float32).values
-            target_denorm = denormalize(target_raw, norm_json, target_column)
+            if sliding_baseline_key not in baseline_data:
+                raise ValueError(f"Sliding window baseline not found for {split}. Check sliding window calculation.")
             
-            # CRITICAL FIX: Simple trimming - remove first window_size-1 rows
-            # This aligns with windowed X data which also removes first window_size-1 rows
-            window_size = config.get('window_size', 48)
-            trimmed_start = window_size - 1
-            target_trimmed = target_denorm[trimmed_start:]
+            # Get denormalized baselines from sliding windows
+            sliding_baselines = baseline_data[sliding_baseline_key]
+            sliding_dates = baseline_data[sliding_dates_key]
             
-            # Store the trimmed denormalized target (aligned with windowed features)
-            denorm_targets[split] = target_trimmed
-            baseline_targets[split] = target_trimmed
+            if len(sliding_baselines) == 0:
+                print(f"WARN: No sliding window baselines available for {split}")
+                denorm_targets[split] = np.array([])
+                baseline_targets[split] = np.array([])
+                baseline_dates[split] = np.array([])
+                continue
             
-            # Use corresponding trimmed dates
-            dates = baseline_data[f'dates_{split}']
-            if dates is not None:
-                dates_trimmed = dates[trimmed_start:]
-                baseline_dates[split] = dates_trimmed
-            else:
-                baseline_dates[split] = None
+            # Store the sliding window baselines (already properly aligned and denormalized)
+            denorm_targets[split] = sliding_baselines  # These are the baseline values for each window
+            baseline_targets[split] = sliding_baselines
+            baseline_dates[split] = sliding_dates
             
-            print(f"Trimmed {split} target: {len(target_trimmed)} samples (removed first {trimmed_start} rows)")
+            print(f"✅ {split}: {len(sliding_baselines)} sliding window baselines loaded")
+            print(f"    Baseline sample: {sliding_baselines[:3]}")
+            print(f"    Will calculate targets from sliding window data only")
+        
+        # NOW CALCULATE FUTURE VALUES FROM SLIDING WINDOW BASELINES ONLY
+        # We calculate targets entirely from the sliding window dataset
         
         # Now calculate targets for each horizon
         print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
@@ -121,45 +122,56 @@ class TargetCalculationProcessor:
             
             # Now process all splits with the same normalization
             for split in splits:
-                num_samples = windowed_data[f'num_samples_{split}']
-                target_trimmed = denorm_targets[split]
+                sliding_baselines = denorm_targets[split]  # These are the window baseline values
                 
-                # CORRECT ALIGNMENT: After trimming, targets align with windows
-                # Window i ends at tick (window_size-1+i) -> baseline at target_trimmed[i]
-                # Window i should predict tick (window_size-1+i+h) -> future at target_trimmed[i+h]
-                baseline_indices = np.arange(0, num_samples)
-                future_indices = baseline_indices + h
+                if len(sliding_baselines) == 0:
+                    print(f"WARN: No baselines available for {split}")
+                    continue
                 
-                # Ensure we have enough trimmed data for future values
-                if future_indices[-1] >= len(target_trimmed):
-                    raise ValueError(f"Not enough trimmed target data for {split} split, horizon {h}: "
-                                   f"need index {future_indices[-1]}, have {len(target_trimmed)}")
+                num_samples = len(sliding_baselines)  # Use actual sliding window count
                 
-                baseline_values = target_trimmed[baseline_indices]
-                future_values = target_trimmed[future_indices]
+                # CRITICAL: Calculate future values from SLIDING WINDOW BASELINES ONLY
+                # For horizon h, future value for window i is the baseline value of window i+h
+                # Window i baseline = sliding_baselines[i]
+                # Window i should predict = sliding_baselines[i+h] (if it exists)
+                
+                # Check if we have enough sliding window data for this horizon
+                max_valid_samples = num_samples - h
+                if max_valid_samples <= 0:
+                    print(f"WARN: Insufficient sliding window data for H={h} {split}: need {h} extra windows")
+                    continue
+                
+                # Truncate to valid samples for this horizon
+                baseline_values = sliding_baselines[:max_valid_samples]
+                future_values = sliding_baselines[h:h+max_valid_samples]  # Future baselines from sliding windows
+                
+                # Verify alignment
+                if len(baseline_values) != len(future_values):
+                    print(f"ERROR: Alignment mismatch for H={h} {split}: baseline={len(baseline_values)}, future={len(future_values)}")
+                    continue
                 
                 # ALIGNMENT VERIFICATION: Print sample for first horizon and first split
                 if i == 0 and split == 'train' and len(baseline_values) > 5:
-                    print(f"\nALIGNMENT VERIFICATION for H{h} {split}:")
-                    print(f"  Window 0: ends at tick {window_size-1}, baseline={baseline_values[0]:.6f} -> predicts tick {window_size-1+h}, future={future_values[0]:.6f}")
-                    print(f"  Window 1: ends at tick {window_size}, baseline={baseline_values[1]:.6f} -> predicts tick {window_size+h}, future={future_values[1]:.6f}")
-                    print(f"  Window 2: ends at tick {window_size+1}, baseline={baseline_values[2]:.6f} -> predicts tick {window_size+1+h}, future={future_values[2]:.6f}")
-                    print(f"  ✅ CORRECT: Window ending at tick t predicts value at tick t+{h}")
+                    print(f"\nALIGNMENT VERIFICATION for H{h} {split} (SLIDING WINDOW ONLY):")
+                    print(f"  Window 0: baseline=sliding_baselines[0]={baseline_values[0]:.6f} -> predicts sliding_baselines[{h}]={future_values[0]:.6f}")
+                    print(f"  Window 1: baseline=sliding_baselines[1]={baseline_values[1]:.6f} -> predicts sliding_baselines[{1+h}]={future_values[1]:.6f}")
+                    print(f"  Window 2: baseline=sliding_baselines[2]={baseline_values[2]:.6f} -> predicts sliding_baselines[{2+h}]={future_values[2]:.6f}")
+                    print(f"  ✅ CORRECT: Using ONLY sliding window baselines for targets")
                 
                 if use_returns:
-                    # Calculate RAW returns: future[t+h] - baseline[t] (NO NORMALIZATION)
+                    # Calculate RAW returns from sliding window baselines: future_baseline[i+h] - baseline[i]
                     returns = future_values - baseline_values
                     # NO NORMALIZATION: Use raw denormalized returns as targets
                     target_normalized = returns.astype(np.float32)
                     
                     # SAMPLE VERIFICATION: Print sample raw targets
                     if i == 0 and split == 'train' and len(target_normalized) > 5:
-                        print(f"  Sample RAW return targets: [{target_normalized[0]:.6f}, {target_normalized[1]:.6f}, {target_normalized[2]:.6f}]")
-                        print(f"  Target processing: NO NORMALIZATION (raw denormalized returns)")
+                        print(f"  Sample RAW return targets from sliding windows: [{target_normalized[0]:.6f}, {target_normalized[1]:.6f}, {target_normalized[2]:.6f}]")
+                        print(f"  Target processing: NO NORMALIZATION (raw denormalized returns from sliding windows)")
                         actual_mean = np.mean(target_normalized)
                         actual_std = np.std(target_normalized)
                         print(f"  Actual target stats: mean={actual_mean:.6f}, std={actual_std:.6f}")
-                        print(f"  ✅ TARGETS ARE RAW DENORMALIZED RETURNS")
+                        print(f"  ✅ TARGETS CALCULATED FROM SLIDING WINDOW BASELINES ONLY")
                 else:
                     target_normalized = future_values
                 
@@ -174,39 +186,24 @@ class TargetCalculationProcessor:
         # Prepare baseline data (UNNORMALIZED for direct prediction addition)
         baseline_info = {}
         for split in splits:
-            num_samples = windowed_data[f'num_samples_{split}']
-            target_trimmed = denorm_targets[split]
+            sliding_baselines = denorm_targets[split]  # These are already the correct baselines
             
-            # SIMPLE ALIGNMENT: After trimming, baselines align directly with windows
-            # Window 0 -> baseline at trimmed_target[0]
-            # Window 1 -> baseline at trimmed_target[1]
-            # Window i -> baseline at trimmed_target[i]
-            baseline_indices = np.arange(0, num_samples)
+            if len(sliding_baselines) == 0:
+                print(f"WARN: No sliding window baselines for {split}")
+                baseline_info[f'baseline_{split}'] = np.array([])
+                baseline_info[f'baseline_{split}_dates'] = np.array([])
+                continue
             
-            # Ensure we don't exceed the trimmed target array
-            if baseline_indices[-1] >= len(target_trimmed):
-                print(f"WARN: Adjusting baseline indices for {split}: need {baseline_indices[-1]}, have {len(target_trimmed)}")
-                actual_num_samples = len(target_trimmed)
-                baseline_indices = np.arange(0, actual_num_samples)
-            else:
-                actual_num_samples = num_samples
-                
-            # BASELINE IS UNNORMALIZED (denormalized target values)
-            baseline_values = target_trimmed[baseline_indices]
-            baseline_info[f'baseline_{split}'] = baseline_values
+            # Use sliding window baselines directly (already denormalized and aligned)
+            baseline_info[f'baseline_{split}'] = sliding_baselines
             
             if split == 'train':
-                print(f"  Baseline {split}: UNNORMALIZED values, mean={np.mean(baseline_values):.6f}, std={np.std(baseline_values):.6f}")
+                print(f"  Baseline {split}: UNNORMALIZED sliding window values, mean={np.mean(sliding_baselines):.6f}, std={np.std(sliding_baselines):.6f}")
             
-            # Corresponding dates (already trimmed)
-            dates = baseline_dates[split]
-            if dates is not None:
-                # Use the same indices for dates (already trimmed to match)
-                if len(dates) >= actual_num_samples:
-                    baseline_info[f'baseline_{split}_dates'] = dates[baseline_indices]
-                else:
-                    print(f"WARN: Date array too short for {split}: need {actual_num_samples}, have {len(dates)}")
-                    baseline_info[f'baseline_{split}_dates'] = dates[:actual_num_samples] 
+            # Use corresponding sliding window dates
+            sliding_dates_key = f'sliding_baseline_{split}_dates'
+            if sliding_dates_key in baseline_data:
+                baseline_info[f'baseline_{split}_dates'] = baseline_data[sliding_dates_key]
             else:
                 baseline_info[f'baseline_{split}_dates'] = None
         

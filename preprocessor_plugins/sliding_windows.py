@@ -201,3 +201,100 @@ class SlidingWindowsProcessor:
         print(f"Included features: {feature_names}")
         
         return windowed_data
+    
+    def calculate_sliding_window_baselines(self, data_splits, config):
+        """
+        Calculate sliding window baselines from the target column for all splits.
+        Extracts the last tick (baseline) from each sliding window and denormalizes it.
+        
+        Args:
+            data_splits: Dict containing aligned data for all splits
+            config: Configuration dictionary
+            
+        Returns:
+            Dict containing sliding window baselines and dates for all splits
+        """
+        from .helpers import denormalize, load_normalization_json
+        
+        print("\n--- Calculating Sliding Windows Baseline ---")
+        
+        window_size = config.get("window_size", 48)
+        target_column = config.get("target_column", "CLOSE")
+        predicted_horizons = config.get('predicted_horizons', [1])
+        max_horizon = max(predicted_horizons)
+        
+        # Load normalization JSON for denormalization
+        norm_json = load_normalization_json(config)
+        
+        sliding_windows_data = {}
+        
+        splits = ['train', 'val', 'test']
+        for split in splits:
+            print(f"\nProcessing {split} sliding windows...")
+            
+            # Get the target column data (still normalized)
+            if split == 'train':
+                df_key = 'x_train_df'
+            elif split == 'val':
+                df_key = 'x_val_df'
+            else:  # test
+                df_key = 'x_test_df'
+                
+            if df_key not in data_splits:
+                print(f"WARN: No data found for {split}")
+                sliding_windows_data[f'sliding_baseline_{split}'] = np.array([])
+                sliding_windows_data[f'sliding_baseline_{split}_dates'] = np.array([])
+                continue
+                
+            df = data_splits[df_key]
+            
+            if target_column not in df.columns:
+                raise ValueError(f"Target column '{target_column}' not found in {split} data")
+            
+            # Extract normalized target column
+            target_normalized = df[target_column].astype(np.float32).values
+            dates = df.index if isinstance(df.index, pd.DatetimeIndex) else None
+            
+            # Calculate number of possible windows
+            n = len(target_normalized)
+            expected_windows = n - (window_size - 1) - max_horizon
+            
+            if expected_windows <= 0:
+                print(f"WARN: Insufficient data for {split}: {n} rows, need {window_size + max_horizon}")
+                sliding_windows_data[f'sliding_baseline_{split}'] = np.array([])
+                sliding_windows_data[f'sliding_baseline_{split}_dates'] = np.array([])
+                continue
+            
+            print(f"  Data length: {n}, Expected windows: {expected_windows}")
+            
+            # Create sliding windows and extract last tick (baseline) from each window
+            baselines = []
+            baseline_dates = []
+            
+            # Window i ends at tick (window_size-1+i), baseline is data[window_size-1+i]
+            for i in range(expected_windows):
+                window_end_idx = window_size - 1 + i  # Last tick of window i
+                baseline_normalized = target_normalized[window_end_idx]
+                baselines.append(baseline_normalized)
+                
+                if dates is not None and window_end_idx < len(dates):
+                    baseline_dates.append(dates[window_end_idx])
+                else:
+                    baseline_dates.append(None)
+            
+            # Convert to arrays
+            baselines_normalized = np.array(baselines, dtype=np.float32)
+            
+            # CRITICAL STEP 3: Denormalize using JSON parameters
+            print(f"  Denormalizing {len(baselines_normalized)} baseline values using JSON parameters...")
+            baselines_denormalized = denormalize(baselines_normalized, norm_json, target_column)
+            
+            # Store results
+            sliding_windows_data[f'sliding_baseline_{split}'] = baselines_denormalized
+            sliding_windows_data[f'sliding_baseline_{split}_dates'] = np.array(baseline_dates, dtype=object)
+            
+            print(f"  ✅ {split}: {len(baselines_denormalized)} denormalized baselines extracted")
+            print(f"    Sample baselines: {baselines_denormalized[:3]} (denormalized)")
+            print(f"    Baseline stats: mean={np.mean(baselines_denormalized):.6f}, std={np.std(baselines_denormalized):.6f}")
+        
+        return sliding_windows_data

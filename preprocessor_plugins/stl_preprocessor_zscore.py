@@ -184,6 +184,13 @@ class PreprocessorPlugin:
         
         return baseline_data
 
+    def _calculate_sliding_windows_baseline(self, aligned_data, config):
+        """
+        Calculate sliding windows baseline using the SlidingWindowsProcessor.
+        Maintains separation of concerns by delegating to the appropriate module.
+        """
+        return self.sliding_windows_processor.calculate_sliding_window_baselines(aligned_data, config)
+
     def _truncate_to_match_targets(self, windowed_data, target_data):
         """Truncate windowed data to match target data lengths."""
         print("\n--- Final Length Alignment ---")
@@ -246,10 +253,16 @@ class PreprocessorPlugin:
         # --- 2. Align Indices ---
         aligned_data = self._align_indices(x_train_df, y_train_df, x_val_df, y_val_df, x_test_df, y_test_df)
         
-        # --- 3. Prepare Baseline Data ---
+        # --- 3. Calculate Sliding Windows Immediately ---
+        sliding_windows_data = self._calculate_sliding_windows_baseline(aligned_data, config)
+        
+        # --- 4. Prepare Baseline Data ---
         baseline_data = self._prepare_baseline_data(aligned_data, config)
         
-        # --- 4. Generate Windowed Features ---
+        # --- 5. Add sliding window baselines to baseline_data ---
+        baseline_data.update(sliding_windows_data)
+        
+        # --- 5. Generate Windowed Features ---
         windowed_data = self.sliding_windows_processor.generate_windowed_features(baseline_data, config)
         
         # --- 5. Calculate Targets ---
