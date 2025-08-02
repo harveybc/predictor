@@ -197,37 +197,28 @@ class PreprocessorPlugin:
         
         splits = ['train', 'val', 'test']
         for split in splits:
-            # Get minimum length from all target horizons
-            y_dict = target_data[f'y_{split}']
-            if not y_dict:
-                continue
+            # Get target data length for this split (all horizons should have same length now)
+            if f'y_{split}' in target_data and target_data[f'y_{split}']:
+                # Get the length from the first horizon
+                first_horizon_key = list(target_data[f'y_{split}'].keys())[0]
+                target_length = len(target_data[f'y_{split}'][first_horizon_key])
                 
-            min_len = min(arr.shape[0] for arr in y_dict.values())
-            
-            # Truncate X data if needed
-            X_key = f'X_{split}'
-            if X_key in windowed_data and windowed_data[X_key].shape[0] > min_len:
-                print(f"Truncating {split} X from {windowed_data[X_key].shape[0]} to {min_len}")
-                windowed_data[X_key] = windowed_data[X_key][:min_len]
-            
-            # Truncate dates if needed
-            dates_key = f'x_dates_{split}'
-            if dates_key in windowed_data and windowed_data[dates_key] is not None:
-                if len(windowed_data[dates_key]) > min_len:
-                    windowed_data[dates_key] = windowed_data[dates_key][:min_len]
-            
-            # Truncate baseline if needed
-            baseline_key = f'baseline_{split}'
-            if baseline_key in target_data and target_data[baseline_key].shape[0] > min_len:
-                target_data[baseline_key] = target_data[baseline_key][:min_len]
-            
-            baseline_dates_key = f'baseline_{split}_dates'
-            if baseline_dates_key in target_data and target_data[baseline_dates_key] is not None:
-                if len(target_data[baseline_dates_key]) > min_len:
-                    target_data[baseline_dates_key] = target_data[baseline_dates_key][:min_len]
-            
-            # Update sample count
-            windowed_data[f'num_samples_{split}'] = min_len
+                # Truncate windowed features to match target length
+                X_key = f'X_{split}'
+                if X_key in windowed_data and len(windowed_data[X_key]) > target_length:
+                    print(f"Truncating {split} X data from {len(windowed_data[X_key])} to {target_length} samples")
+                    windowed_data[X_key] = windowed_data[X_key][:target_length]
+                    
+                    # Also truncate dates
+                    dates_key = f'x_dates_{split}'
+                    if dates_key in windowed_data and windowed_data[dates_key] is not None:
+                        if len(windowed_data[dates_key]) > target_length:
+                            windowed_data[dates_key] = windowed_data[dates_key][:target_length]
+                    
+                    # Update sample count
+                    windowed_data[f'num_samples_{split}'] = target_length
+            else:
+                print(f"No target data found for {split} split")
 
     def process_data(self, config):
         """Main processing pipeline."""

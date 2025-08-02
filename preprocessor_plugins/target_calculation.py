@@ -113,7 +113,21 @@ class TargetCalculationProcessor:
         self.target_returns_means = [target_mean] * len(predicted_horizons)
         self.target_returns_stds = [target_std] * len(predicted_horizons)
         
-        # Now process all horizons with the SAME normalization
+        # CRITICAL: Find the minimum number of samples across all horizons to ensure data alignment
+        max_horizon = max(predicted_horizons)
+        min_samples_per_split = {}
+        
+        # Calculate minimum samples for each split considering the largest horizon
+        for split in splits:
+            sliding_baselines = denorm_targets[split]
+            if len(sliding_baselines) > 0:
+                min_samples_per_split[split] = len(sliding_baselines) - max_horizon
+            else:
+                min_samples_per_split[split] = 0
+        
+        print(f"\nData alignment: Max horizon={max_horizon}, Min samples per split: {min_samples_per_split}")
+        
+        # Now process all horizons with the SAME normalization AND SAME SAMPLE COUNT
         for i, h in enumerate(predicted_horizons):
             print(f"\nCalculating targets for horizon {h}...")
             
@@ -128,20 +142,13 @@ class TargetCalculationProcessor:
                     print(f"WARN: No baselines available for {split}")
                     continue
                 
-                num_samples = len(sliding_baselines)  # Use actual sliding window count
-                
-                # CRITICAL: Calculate future values from SLIDING WINDOW BASELINES ONLY
-                # For horizon h, future value for window i is the baseline value of window i+h
-                # Window i baseline = sliding_baselines[i]
-                # Window i should predict = sliding_baselines[i+h] (if it exists)
-                
-                # Check if we have enough sliding window data for this horizon
-                max_valid_samples = num_samples - h
+                # Use the minimum sample count to ensure all horizons have the same number of samples
+                max_valid_samples = min_samples_per_split[split]
                 if max_valid_samples <= 0:
-                    print(f"WARN: Insufficient sliding window data for H={h} {split}: need {h} extra windows")
+                    print(f"WARN: Insufficient sliding window data for H={h} {split}: min_samples={max_valid_samples}")
                     continue
                 
-                # Truncate to valid samples for this horizon
+                # Truncate to the SAME number of samples for ALL horizons
                 baseline_values = sliding_baselines[:max_valid_samples]
                 future_values = sliding_baselines[h:h+max_valid_samples]  # Future baselines from sliding windows
                 
@@ -194,16 +201,29 @@ class TargetCalculationProcessor:
                 baseline_info[f'baseline_{split}_dates'] = np.array([])
                 continue
             
-            # Use sliding window baselines directly (already denormalized and aligned)
-            baseline_info[f'baseline_{split}'] = sliding_baselines
+            # Use the SAME truncated length as targets to ensure alignment
+            max_valid_samples = min_samples_per_split[split]
+            if max_valid_samples <= 0:
+                print(f"WARN: No valid samples for baseline {split}")
+                baseline_info[f'baseline_{split}'] = np.array([])
+                baseline_info[f'baseline_{split}_dates'] = np.array([])
+                continue
+            
+            # Truncate sliding window baselines to match target data length
+            baseline_info[f'baseline_{split}'] = sliding_baselines[:max_valid_samples]
             
             if split == 'train':
-                print(f"  Baseline {split}: UNNORMALIZED sliding window values, mean={np.mean(sliding_baselines):.6f}, std={np.std(sliding_baselines):.6f}")
+                truncated_baselines = sliding_baselines[:max_valid_samples]
+                print(f"  Baseline {split}: UNNORMALIZED sliding window values (truncated to {max_valid_samples}), mean={np.mean(truncated_baselines):.6f}, std={np.std(truncated_baselines):.6f}")
             
-            # Use corresponding sliding window dates
+            # Use corresponding sliding window dates (also truncated)
             sliding_dates_key = f'sliding_baseline_{split}_dates'
             if sliding_dates_key in baseline_data:
-                baseline_info[f'baseline_{split}_dates'] = baseline_data[sliding_dates_key]
+                dates = baseline_data[sliding_dates_key]
+                if len(dates) >= max_valid_samples:
+                    baseline_info[f'baseline_{split}_dates'] = dates[:max_valid_samples]
+                else:
+                    baseline_info[f'baseline_{split}_dates'] = dates
             else:
                 baseline_info[f'baseline_{split}_dates'] = None
         
