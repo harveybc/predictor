@@ -295,33 +295,10 @@ class SlidingWindowsProcessor:
                 print(f"    WARN: No original CSV data found for {split}")
                 aligned_dates = None
             
-            # STEP 4: Calculate targets as returns for each horizon
-            print(f"  Calculating targets for horizons {predicted_horizons}...")
-            targets = {}
-            
-            for h in predicted_horizons:
-                # target<t,h> = baseline<t+h> - baseline<t>
-                if len(baselines_denormalized) > h:
-                    baseline_t = baselines_denormalized[:-h]      # baseline<t>
-                    baseline_t_plus_h = baselines_denormalized[h:] # baseline<t+h>
-                    
-                    # Calculate returns: target<t,h> = baseline<t+h> - baseline<t>
-                    target_returns = baseline_t_plus_h - baseline_t
-                    targets[h] = target_returns.astype(np.float32)
-                    
-                    print(f"    Horizon {h}: {len(target_returns)} targets calculated")
-                    print(f"      Target stats: mean={np.mean(target_returns):.6f}, std={np.std(target_returns):.6f}")
-                else:
-                    print(f"    WARN: Not enough baselines for horizon {h}")
-                    targets[h] = np.array([])
-            
-            # STEP 5: Store results
+            # STEP 4: Store results
             result_data[f'sliding_baseline_{split}'] = baselines_denormalized
             result_data[f'sliding_baseline_{split}_dates'] = aligned_dates
             
-            for h in predicted_horizons:
-                result_data[f'targets_{split}_h{h}'] = targets[h]
-            
-            print(f"  ✅ {split}: {len(baselines_denormalized)} baselines, targets for {len(predicted_horizons)} horizons")
+            print(f"  ✅ {split}: {len(baselines_denormalized)} baselines calculated.")
         
         return result_data

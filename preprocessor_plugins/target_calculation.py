@@ -87,32 +87,36 @@ class TargetCalculationProcessor:
             # UNNORMALIZED RETURNS: Use raw denormalized returns as targets
             print("\nCalculating UNNORMALIZED returns as targets...")
             
-            # No normalization applied - targets will be raw denormalized returns
-            target_mean = 0.0  # No centering
-            target_std = 1.0   # No scaling
-            
-            print(f"Targets will be RAW denormalized returns (Mean={target_mean:.6f}, Std={target_std:.6f})")
-            
-            # Calculate sample statistics for reference only
-            if 'train' in denorm_targets:
-                train_target = denorm_targets['train']
-                sample_baseline = train_target[:100] if len(train_target) > 100 else train_target
-                sample_future = train_target[1:101] if len(train_target) > 101 else train_target[1:]
-                if len(sample_future) == len(sample_baseline):
-                    sample_returns = sample_future - sample_baseline
-                    actual_mean = np.mean(sample_returns)
-                    actual_std = np.std(sample_returns)
-                    print(f"Sample denormalized returns statistics (for reference):")
-                    print(f"  Mean: {actual_mean:.6f}")
-                    print(f"  Std: {actual_std:.6f}")
+            # Calculate targets for each horizon
+            for split in splits:
+                baselines = denorm_targets[split]
+                if len(baselines) == 0:
+                    continue
+                
+                for h in predicted_horizons:
+                    if len(baselines) > h:
+                        # target<t,h> = baseline<t+h> - baseline<t>
+                        targets = baselines[h:] - baselines[:-h]
+                        target_data.setdefault(split, {})[f'output_horizon_{h}'] = targets.astype(np.float32)
+                        print(f"  {split.capitalize()} H{h}: {len(targets)} targets calculated.")
+                    else:
+                        print(f"  WARN: Not enough baselines for H{h} in {split}.")
+                        target_data.setdefault(split, {})[f'output_horizon_{h}'] = np.array([])
         else:
-            target_mean = 0.0
-            target_std = 1.0
-        
-        # Use NO normalization for all horizons (raw returns)
-        self.target_returns_means = [target_mean] * len(predicted_horizons)
-        self.target_returns_stds = [target_std] * len(predicted_horizons)
-        
+            # Future value prediction
+            print("\nCalculating FUTURE VALUES as targets...")
+            for split in splits:
+                baselines = denorm_targets[split]
+                if len(baselines) == 0:
+                    continue
+                
+                for h in predicted_horizons:
+                    if len(baselines) > h:
+                        targets = baselines[h:]
+                        target_data.setdefault(split, {})[f'output_horizon_{h}'] = targets.astype(np.float32)
+                    else:
+                        target_data.setdefault(split, {})[f'output_horizon_{h}'] = np.array([])
+
         # CRITICAL: Find the minimum number of samples across all horizons to ensure data alignment
         max_horizon = max(predicted_horizons)
         min_samples_per_split = {}
