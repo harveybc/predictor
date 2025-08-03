@@ -68,6 +68,35 @@ def denormalize_target_returns(data, target_returns_mean, target_returns_std, ho
         print(f"WARN: Error during denormalize_target_returns: {e}")
         return data
 
+def denormalize_returns(data, config):
+    """Denormalizes return values (deltas) using z-score normalization parameters from JSON."""
+    data = np.asarray(data)
+    if config.get("use_normalization_json"):
+        norm_json = config["use_normalization_json"]
+        if isinstance(norm_json, str):
+            try:
+                with open(norm_json, 'r') as f: 
+                    norm_json = json.load(f)
+            except Exception as e: 
+                print(f"WARN: Failed load norm JSON {norm_json}: {e}")
+                return data
+        if isinstance(norm_json, dict) and "CLOSE" in norm_json:
+            try:
+                if "mean" in norm_json["CLOSE"] and "std" in norm_json["CLOSE"]:
+                    # Z-score denormalization for returns: only scale by std (no mean shift)
+                    close_std = norm_json["CLOSE"]["std"]
+                    return data * close_std
+                else:
+                    print(f"WARN: Missing 'mean' or 'std' in norm JSON for CLOSE")
+                    return data
+            except KeyError as e: 
+                print(f"WARN: Missing key in norm JSON: {e}")
+                return data
+            except Exception as e: 
+                print(f"WARN: Error during denormalize_returns: {e}")
+                return data
+    return data
+
 # --- End Denormalization Functions ---
 
 
@@ -510,7 +539,8 @@ class STLPipelinePlugin:
                 unc_denorm = np.full(num_test_points, np.nan)
                 
                 try:
-                    # Predictions and targets are already denormalized returns - use directly
+                    # Data from preprocessor is ALREADY DENORMALIZED - use directly
+                    # Based on target_calculation.py: outputs "raw denormalized returns" and "unnormalized baselines"
                     preds_denorm = preds_raw.copy()  # Already denormalized returns
                     target_denorm = target_raw.copy()  # Already denormalized returns
                     
@@ -585,7 +615,7 @@ class STLPipelinePlugin:
         except Exception as e: 
             print(f"ERROR during final CSV saving: {e}")
 
-        # --- Plot Predictions for 'plotted_horizon' (FIXED FOR ALREADY DENORMALIZED DATA) ---
+        # --- Plot Predictions for 'plotted_horizon' (CORRECTED - Using EXACT working code from stl_pipeline.py) ---
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
             # Use CORRECT variable names from last iteration, sliced
@@ -594,99 +624,41 @@ class STLPipelinePlugin:
             unc_plot_raw = list_test_unc[plotted_index][:num_test_points]  # Shape (num_test_points,) or (num_test_points, 1)
             baseline_plot = final_baseline  # Already sliced, shape (num_test_points,)
 
-            # CRITICAL FIX: Since targets are calculated from already denormalized sliding window baselines
-            # and predictions are raw denormalized returns, NO ADDITIONAL DENORMALIZATION needed
-            
-            baseline_plot_values = baseline_plot.flatten()
-            
-            # Predictions and targets are already denormalized returns - use directly
-            preds_plot_denorm = preds_plot_raw.flatten()  # Already denormalized returns
-            target_plot_denorm = target_plot_raw.flatten()  # Already denormalized returns
-            unc_plot_denorm = unc_plot_raw.flatten()  # Already denormalized uncertainties
-            
-            print(f"Using already denormalized data for plotting:")
-            print(f"  Baseline (sliding window): mean={np.mean(baseline_plot_values):.6f}, std={np.std(baseline_plot_values):.6f}")
-            print(f"  Predictions (returns): mean={np.mean(preds_plot_denorm):.6f}, std={np.std(preds_plot_denorm):.6f}")
-            print(f"  Targets (returns): mean={np.mean(target_plot_denorm):.6f}, std={np.std(target_plot_denorm):.6f}")
-            
+            # CRITICAL FIX: Data from preprocessor is ALREADY DENORMALIZED - use directly!
+            # Based on target_calculation.py: "UNNORMALIZED RETURNS: Use raw denormalized returns as targets"
+            # No denormalization needed - preprocessor outputs already denormalized data
             if use_returns:
-                # Baseline is already denormalized sliding window values - use directly
-                baseline_plot_denorm = baseline_plot_values.copy()
-                # Final prices = baseline + returns (both already denormalized)
-                pred_plot_price_flat = (baseline_plot_denorm + preds_plot_denorm).flatten()
-                target_plot_price_flat = (baseline_plot_denorm + target_plot_denorm).flatten()
-                # Show the actual baseline prices (current prices) for comparison
-                baseline_plot_price_flat = baseline_plot_denorm.copy()
+                # Predictions and targets are already denormalized returns, baseline is already denormalized
+                pred_plot_price_flat = (baseline_plot + preds_plot_raw.flatten()).flatten()
+                target_plot_price_flat = (baseline_plot + target_plot_raw.flatten()).flatten()
             else:
-                # When not using returns, predictions and targets are already denormalized prices
-                pred_plot_price_flat = preds_plot_denorm.flatten()
-                target_plot_price_flat = target_plot_denorm.flatten()
-                baseline_plot_price_flat = baseline_plot_values.copy()
+                # Raw predictions/targets are already denormalized
+                pred_plot_price_flat = preds_plot_raw.flatten()
+                target_plot_price_flat = target_plot_raw.flatten()
             
-            unc_plot_denorm_flat = unc_plot_denorm.flatten()
+            # Uncertainties and baseline are already denormalized - use directly
+            unc_plot_denorm_flat = unc_plot_raw.flatten()
+            true_plot_price_flat = baseline_plot.flatten()
 
             # Determine plot points and slice FLATTENED arrays
             n_plot = config.get("plot_points", self.params["plot_points"])
             num_avail_plot = len(pred_plot_price_flat)  # Length of data available for plot
             plot_slice = slice(max(0, num_avail_plot - n_plot), num_avail_plot)
 
-            # CRITICAL FIX: Use proper dates from preprocessor (not fallback ranges)
-            # final_dates should contain the last element timestamps from sliding windows as returned by preprocessor
-            try:
-                if final_dates is not None and len(final_dates) > 0:
-                    dates_plot_final = final_dates[plot_slice]
-                    print(f"Using {len(dates_plot_final)} dates from preprocessor for plotting")
-                    print(f"Date types: {[type(d) for d in dates_plot_final[:3]] if len(dates_plot_final) >= 3 else [type(d) for d in dates_plot_final]}")
-                    print(f"Sample dates: {dates_plot_final[:3] if len(dates_plot_final) >= 3 else dates_plot_final}")
-                    # These should be actual timestamps from the DATE_TIME column, not integer ranges
-                    if all(isinstance(d, (int, np.integer)) for d in dates_plot_final[:3]):
-                        print(f"WARNING: Dates appear to be integer ranges, not actual timestamps!")
-                        print(f"This suggests preprocessor is not returning proper dates from DATE_TIME column")
-                else:
-                    raise ValueError("final_dates is None or empty")
-            except Exception as e:
-                print(f"ERROR: Cannot use dates from preprocessor ({e})")
-                print(f"Creating fallback integer range for plotting...")
-                dates_plot_final = list(range(len(pred_plot_price_flat)))[plot_slice]
-            
+            dates_plot_final = final_dates[plot_slice]
             pred_plot_final = pred_plot_price_flat[plot_slice]
             target_plot_final = target_plot_price_flat[plot_slice]
-            baseline_plot_final = baseline_plot_price_flat[plot_slice]
-            unc_plot_final = unc_plot_denorm_flat[plot_slice]
+            true_plot_final = true_plot_price_flat[plot_slice]
+            unc_plot_final = unc_plot_denorm_flat[plot_slice]  # This is now 1D
 
-            # Verify we have data to plot
-            print(f"Final plot data lengths:")
-            print(f"  dates: {len(dates_plot_final)}")
-            print(f"  predictions: {len(pred_plot_final)}")
-            print(f"  targets: {len(target_plot_final)}")
-            print(f"  baseline: {len(baseline_plot_final)}")
-            print(f"  uncertainty: {len(unc_plot_final)}")
-            
-            # CRITICAL DEBUG: Check actual data values
-            print(f"Final plot data sample values:")
-            if len(pred_plot_final) > 0:
-                print(f"  predictions[0:3]: {pred_plot_final[:3]}")
-                print(f"  targets[0:3]: {target_plot_final[:3]}")
-                print(f"  baseline[0:3]: {baseline_plot_final[:3]}")
-                print(f"  uncertainty[0:3]: {unc_plot_final[:3]}")
-                print(f"  dates sample: {dates_plot_final[:3] if len(dates_plot_final) >= 3 else dates_plot_final}")
-                print(f"  All finite? pred={np.all(np.isfinite(pred_plot_final))}, target={np.all(np.isfinite(target_plot_final))}, baseline={np.all(np.isfinite(baseline_plot_final))}")
-            
-            if len(pred_plot_final) == 0:
-                raise ValueError("No data available for plotting - all arrays are empty")
-
-            # Plotting with exact same style as original min-max pipeline
+            # Plotting - EXACT same as working stl_pipeline.py
             plt.figure(figsize=(14, 7))
-            plt.plot(dates_plot_final, pred_plot_final, label=f"Predicted Future Price H{plotted_horizon}", 
-                    color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
-            plt.plot(dates_plot_final, target_plot_final, label=f"Target Future Price H{plotted_horizon}", 
-                    color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
-            plt.plot(dates_plot_final, baseline_plot_final, label="Current Price (Baseline)", 
-                    color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
+            plt.plot(dates_plot_final, pred_plot_final, label=f"Pred Price H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
+            plt.plot(dates_plot_final, target_plot_final, label=f"Target Price H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
+            plt.plot(dates_plot_final, true_plot_final, label="Actual Price", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
             plt.fill_between(dates_plot_final, pred_plot_final - abs(unc_plot_final), pred_plot_final + abs(unc_plot_final),
-                            color=config.get("plot_color_uncertainty", "green"), alpha=0.2, 
-                            label=f"Uncertainty H{plotted_horizon}", zorder=0)
-            plt.title(f"Predicted vs Target Future Prices (H={plotted_horizon})")
+                             color=config.get("plot_color_uncertainty", "green"), alpha=0.2, label=f"Uncertainty H{plotted_horizon}", zorder=0)
+            plt.title(f"Predictions vs Target/Actual (H={plotted_horizon})")
             plt.xlabel("Time")
             plt.ylabel("Price")
             plt.legend()
