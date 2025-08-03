@@ -745,14 +745,13 @@ class Plugin:
         # Assumes relevant Callback classes are imported/defined
         callbacks = [
             EarlyStoppingWithPatienceCounter(
-                horizon_metrics=all_horizon_val_metrics, patience=patience_early_stopping, restore_best_weights=True,
+                patience=patience_early_stopping, restore_best_weights=True,
                 verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping, mode='min'
             ),
             ReduceLROnPlateauWithCounter(
-                horizon_metrics=all_horizon_val_metrics, factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1, mode='min'
+                factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1, mode='min'
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs: self._print_learning_rate(epoch)),
-            # Removed: ClearMemoryCallback(), # <<< REMOVED THIS LINE
             kl_callback
         ]
 
