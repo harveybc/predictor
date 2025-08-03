@@ -696,12 +696,34 @@ class STLPipelinePlugin:
             num_avail_plot = len(pred_plot_price_flat)  # Length of data available for plot
             plot_slice = slice(max(0, num_avail_plot - n_plot), num_avail_plot)
 
-            # CRITICAL FIX: Convert datetime objects to continuous indices for plotting
-            # The dates have gaps which cause matplotlib to not display lines properly
-            dates_for_plot = list(range(len(final_dates)))  # Use continuous indices instead of gapped datetimes
-            print(f"  PLOT FIX: Converting {len(final_dates)} datetime objects to continuous indices for proper line plotting")
-            print(f"  Original date range: {final_dates[0] if len(final_dates) > 0 else 'None'} to {final_dates[-1] if len(final_dates) > 0 else 'None'}")
-            print(f"  Using indices: 0 to {len(dates_for_plot)-1}")
+            # CRITICAL FIX: Handle pandas Timestamp objects properly for plotting
+            # Convert pandas Timestamps to matplotlib-compatible format or use continuous indices
+            print(f"  PLOT FIX: Processing {len(final_dates)} dates for matplotlib plotting...")
+            print(f"  Date type: {type(final_dates[0]) if len(final_dates) > 0 else 'empty'}")
+            
+            if len(final_dates) > 0 and hasattr(final_dates[0], 'to_pydatetime'):
+                # Convert pandas Timestamps to Python datetime objects for matplotlib
+                try:
+                    dates_for_plot = [d.to_pydatetime() if hasattr(d, 'to_pydatetime') else d for d in final_dates]
+                    print(f"  Converted pandas Timestamps to Python datetime objects")
+                    print(f"  Original date range: {final_dates[0]} to {final_dates[-1]}")
+                    print(f"  Converted date range: {dates_for_plot[0]} to {dates_for_plot[-1]}")
+                    
+                    # Check for gaps that might still cause plotting issues
+                    if len(dates_for_plot) > 2:
+                        gap1 = dates_for_plot[1] - dates_for_plot[0]
+                        gap2 = dates_for_plot[2] - dates_for_plot[1]
+                        print(f"  Date gaps: {gap1} vs {gap2}")
+                        if abs(gap2.total_seconds() - gap1.total_seconds()) > 3600:  # More than 1 hour difference
+                            print(f"  ⚠️  Large time gaps detected - using continuous indices instead")
+                            dates_for_plot = list(range(len(final_dates)))
+                except Exception as e:
+                    print(f"  Error converting timestamps: {e}, falling back to continuous indices")
+                    dates_for_plot = list(range(len(final_dates)))
+            else:
+                # Fallback to continuous indices
+                print(f"  Using continuous indices for plotting")
+                dates_for_plot = list(range(len(final_dates)))
             
             dates_plot_final = dates_for_plot[plot_slice]
             pred_plot_final = pred_plot_price_flat[plot_slice]
@@ -715,12 +737,32 @@ class STLPipelinePlugin:
             print(f"  Final plot pred sample: {pred_plot_final[:3] if len(pred_plot_final) > 3 else pred_plot_final}")
             print(f"  Final plot target sample: {target_plot_final[:3] if len(target_plot_final) > 3 else target_plot_final}")
             print(f"  Final plot true sample: {true_plot_final[:3] if len(true_plot_final) > 3 else true_plot_final}")
+            
+            # CRITICAL DEBUG: Verify all arrays have valid ranges for plotting
+            print(f"\nDEBUG - Final plotting arrays verification:")
+            print(f"  dates_plot_final type: {type(dates_plot_final[0]) if len(dates_plot_final) > 0 else 'empty'}")
+            print(f"  All arrays same length: {len(dates_plot_final) == len(pred_plot_final) == len(target_plot_final) == len(true_plot_final)}")
+            print(f"  Value ranges:")
+            print(f"    pred: [{np.min(pred_plot_final):.6f}, {np.max(pred_plot_final):.6f}]")
+            print(f"    target: [{np.min(target_plot_final):.6f}, {np.max(target_plot_final):.6f}]")
+            print(f"    true: [{np.min(true_plot_final):.6f}, {np.max(true_plot_final):.6f}]")
+            print(f"    dates: [{dates_plot_final[0]}, {dates_plot_final[-1]}]")
 
             # Plotting - EXACT same as working stl_pipeline.py
+            print(f"  MATPLOTLIB DEBUG: Creating plot with {len(dates_plot_final)} data points...")
             plt.figure(figsize=(14, 7))
+            
+            # Plot each line individually with explicit debugging
+            print(f"  Plotting prediction line: {len(dates_plot_final)} x {len(pred_plot_final)} points")
             plt.plot(dates_plot_final, pred_plot_final, label=f"Pred Price H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
+            
+            print(f"  Plotting target line: {len(dates_plot_final)} x {len(target_plot_final)} points")
             plt.plot(dates_plot_final, target_plot_final, label=f"Target Price H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
+            
+            print(f"  Plotting actual line: {len(dates_plot_final)} x {len(true_plot_final)} points")
             plt.plot(dates_plot_final, true_plot_final, label="Actual Price", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
+            
+            print(f"  Plotting uncertainty band: {len(dates_plot_final)} x {len(unc_plot_final)} points")
             plt.fill_between(dates_plot_final, pred_plot_final - abs(unc_plot_final), pred_plot_final + abs(unc_plot_final),
                              color=config.get("plot_color_uncertainty", "green"), alpha=0.2, label=f"Uncertainty H{plotted_horizon}", zorder=0)
             plt.title(f"Predictions vs Target/Actual (H={plotted_horizon})")

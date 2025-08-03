@@ -61,11 +61,14 @@ class SlidingWindowsProcessor:
         
         if date_times is not None:
             date_windows_arr = np.array(date_windows, dtype=object)
+            # CRITICAL FIX: Don't convert to numpy.datetime64 - keep as pandas Timestamp objects for matplotlib compatibility
+            # The numpy.datetime64 format with gaps causes matplotlib plotting issues
             if all(isinstance(d, pd.Timestamp) for d in date_windows if d is not None):
-                try: 
-                    date_windows_arr = np.array(date_windows, dtype='datetime64[ns]')
-                except (ValueError, TypeError): 
-                    pass
+                print(f"  Keeping {len(date_windows)} dates as pandas Timestamp objects for plotting compatibility")
+                # Keep as object array with pandas Timestamps - matplotlib handles these better
+                pass  # date_windows_arr already set as object array above
+            else:
+                print(f"  Warning: Some dates are not pandas Timestamps: {[type(d) for d in date_windows[:3]]}")
         else: 
             date_windows_arr = np.array(date_windows, dtype=object)
         
