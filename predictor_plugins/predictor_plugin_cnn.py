@@ -79,15 +79,23 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
         # Calculate sum of validation losses for all outputs
         current_sum_val_loss = 0
         found_losses = 0
+        individual_losses = []
         for output_name in self.output_names:
             loss_key = f"val_{output_name}_loss"
             if loss_key in logs:
-                current_sum_val_loss += logs[loss_key]
+                loss_value = logs[loss_key]
+                current_sum_val_loss += loss_value
+                individual_losses.append(f"{output_name}: {loss_value:.6f}")
                 found_losses += 1
         
         if found_losses == 0:
             print("WARNING: No validation losses found for sum calculation")
+            print(f"Available keys in logs: {list(logs.keys())}")
             return
+            
+        # Debug: Print individual losses
+        print(f"DEBUG: Individual validation losses - {', '.join(individual_losses)}")
+        print(f"DEBUG: Sum = {current_sum_val_loss:.6f}")
             
         # Initialize best if first epoch
         if self.best is None:
@@ -126,14 +134,20 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
 
     def _get_lr(self):
         try:
-            return float(K.get_value(self.model.optimizer.learning_rate))
-        except Exception as e:
-            print(f"WARNING: Could not get learning rate: {e}")
-            return 0.0
+            return float(self.model.optimizer.learning_rate.numpy())
+        except (AttributeError, TypeError):
+            try:
+                return float(K.get_value(self.model.optimizer.learning_rate))
+            except Exception as e:
+                print(f"WARNING: Could not get learning rate: {e}")
+                return 0.0
 
     def _set_lr(self, new_lr):
         try:
-            K.set_value(self.model.optimizer.learning_rate, new_lr)
+            if hasattr(self.model.optimizer.learning_rate, 'assign'):
+                self.model.optimizer.learning_rate.assign(new_lr)
+            else:
+                K.set_value(self.model.optimizer.learning_rate, new_lr)
         except Exception as e:
             print(f"WARNING: Could not set learning rate: {e}")
 
@@ -173,15 +187,23 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
         # Calculate sum of validation losses for all outputs
         current_sum_val_loss = 0
         found_losses = 0
+        individual_losses = []
         for output_name in self.output_names:
             loss_key = f"val_{output_name}_loss"
             if loss_key in logs:
-                current_sum_val_loss += logs[loss_key]
+                loss_value = logs[loss_key]
+                current_sum_val_loss += loss_value
+                individual_losses.append(f"{output_name}: {loss_value:.6f}")
                 found_losses += 1
         
         if found_losses == 0:
             print("WARNING: No validation losses found for sum calculation")
+            print(f"Available keys in logs: {list(logs.keys())}")
             return
+            
+        # Debug: Print individual losses
+        print(f"DEBUG ES: Individual validation losses - {', '.join(individual_losses)}")
+        print(f"DEBUG ES: Sum = {current_sum_val_loss:.6f}")
             
         # Check for improvement
         if self.monitor_op(current_sum_val_loss, self.best):
