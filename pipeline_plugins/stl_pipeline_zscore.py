@@ -696,11 +696,25 @@ class STLPipelinePlugin:
             num_avail_plot = len(pred_plot_price_flat)  # Length of data available for plot
             plot_slice = slice(max(0, num_avail_plot - n_plot), num_avail_plot)
 
-            dates_plot_final = final_dates[plot_slice]
+            # CRITICAL FIX: Convert datetime objects to continuous indices for plotting
+            # The dates have gaps which cause matplotlib to not display lines properly
+            dates_for_plot = list(range(len(final_dates)))  # Use continuous indices instead of gapped datetimes
+            print(f"  PLOT FIX: Converting {len(final_dates)} datetime objects to continuous indices for proper line plotting")
+            print(f"  Original date range: {final_dates[0] if len(final_dates) > 0 else 'None'} to {final_dates[-1] if len(final_dates) > 0 else 'None'}")
+            print(f"  Using indices: 0 to {len(dates_for_plot)-1}")
+            
+            dates_plot_final = dates_for_plot[plot_slice]
             pred_plot_final = pred_plot_price_flat[plot_slice]
             target_plot_final = target_plot_price_flat[plot_slice]
             true_plot_final = true_plot_price_flat[plot_slice]
             unc_plot_final = unc_plot_denorm_flat[plot_slice]  # This is now 1D
+
+            print(f"  Plot slice: {plot_slice}")
+            print(f"  Final plot data lengths: dates={len(dates_plot_final)}, pred={len(pred_plot_final)}, target={len(target_plot_final)}, true={len(true_plot_final)}")
+            print(f"  Final plot date range: {dates_plot_final[0]} to {dates_plot_final[-1]}")
+            print(f"  Final plot pred sample: {pred_plot_final[:3] if len(pred_plot_final) > 3 else pred_plot_final}")
+            print(f"  Final plot target sample: {target_plot_final[:3] if len(target_plot_final) > 3 else target_plot_final}")
+            print(f"  Final plot true sample: {true_plot_final[:3] if len(true_plot_final) > 3 else true_plot_final}")
 
             # Plotting - EXACT same as working stl_pipeline.py
             plt.figure(figsize=(14, 7))
@@ -710,7 +724,7 @@ class STLPipelinePlugin:
             plt.fill_between(dates_plot_final, pred_plot_final - abs(unc_plot_final), pred_plot_final + abs(unc_plot_final),
                              color=config.get("plot_color_uncertainty", "green"), alpha=0.2, label=f"Uncertainty H{plotted_horizon}", zorder=0)
             plt.title(f"Predictions vs Target/Actual (H={plotted_horizon})")
-            plt.xlabel("Time")
+            plt.xlabel("Time Steps")  # Changed from "Time" since we're using indices
             plt.ylabel("Price")
             plt.legend()
             plt.grid(True, alpha=0.6)
