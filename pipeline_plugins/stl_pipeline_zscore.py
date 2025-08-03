@@ -263,6 +263,13 @@ class STLPipelinePlugin:
             # Build & Train
             input_shape = (X_train.shape[1], X_train.shape[2]) if X_train.ndim == 3 else (X_train.shape[1],)
             predictor_plugin.build_model(input_shape=input_shape, x_train=X_train, config=config)
+
+            # Multiply y_train_dict and y_val_dict values by target_factor if present
+            target_factor = config.get("target_factor", 1.0)
+            if target_factor != 1.0:
+                y_train_dict = {k: v * target_factor for k, v in y_train_dict.items()}
+                y_val_dict = {k: v * target_factor for k, v in y_val_dict.items()}
+
             history, list_train_preds, list_train_unc, list_val_preds, list_val_unc = predictor_plugin.train(
                 X_train, y_train_dict, epochs=epochs, batch_size=batch_size, 
                 threshold_error=config.get("threshold_error", 0.001),
@@ -296,8 +303,7 @@ class STLPipelinePlugin:
                         val_unc_h = val_unc_h[:num_val_pts]
                         baseline_val_h = baseline_val[:num_val_pts].flatten()  # Flatten baseline too
                         
-                        # CRITICAL FIX: Calculate metrics in NORMALIZED space (same scale as training)
-                        # MAE should be calculated on the normalized returns (y_true scale during training)
+                        # MAE should be calculated on the denormalized returns 
                         train_mae_h = np.mean(np.abs(train_preds_h - train_target_h))
                         val_mae_h = np.mean(np.abs(val_preds_h - val_target_h))
                         
