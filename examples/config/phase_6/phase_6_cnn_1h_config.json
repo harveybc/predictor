@@ -53,6 +53,7 @@
     "use_stl": false,
     "use_wavelets": false,
     "excluded_columns": ["CLOSE"],
+    "target_factor": 100,
     "use_multi_tapper": false
 
 }
