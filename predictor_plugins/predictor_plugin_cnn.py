@@ -72,7 +72,9 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
         logs = logs or {}
         current_val_loss = logs.get(self.monitor)
         any_improved = False
-        if current_val_loss is not None and hasattr(self, 'monitor_op') and self.monitor_op is not None:
+        if (current_val_loss is not None and 
+            hasattr(self, 'monitor_op') and self.monitor_op is not None and
+            hasattr(self, 'best') and self.best is not None):
             any_improved = self.monitor_op(current_val_loss - self.min_delta, self.best)
         
         print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}/{self.patience}, cooldown: {getattr(self, 'cooldown_counter', 0)}, improved: {any_improved}")
@@ -108,7 +110,9 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
         logs = logs or {}
         current_val_loss = logs.get(self.monitor)
         any_improved = False
-        if current_val_loss is not None and hasattr(self, 'monitor_op') and self.monitor_op is not None:
+        if (current_val_loss is not None and 
+            hasattr(self, 'monitor_op') and self.monitor_op is not None and
+            hasattr(self, 'best') and self.best is not None):
             any_improved = self.monitor_op(current_val_loss - self.min_delta, self.best)
         
         print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}/{self.patience}, improved: {any_improved}")
