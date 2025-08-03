@@ -159,7 +159,7 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
     def on_train_begin(self, logs=None):
         self.wait = 0
         self.stopped_epoch = 0
-        self.best = np.Inf
+        self.best = np.inf
         if self.restore_best_weights:
             self.best_weights = None
         
