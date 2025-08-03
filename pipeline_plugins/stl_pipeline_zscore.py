@@ -160,6 +160,47 @@ class STLPipelinePlugin:
         val_dates = datasets.get("y_val_dates")
         test_dates = datasets.get("y_test_dates")
         
+        # --- COLUMN EXCLUSION: Remove specified columns from sliding windows AFTER targets are calculated ---
+        excluded_columns = config.get("excluded_columns", [])
+        if excluded_columns:
+            print(f"\n--- Removing excluded columns from sliding windows: {excluded_columns} ---")
+            
+            # Get column names from preprocessor_params (assumes column names are available)
+            column_names = preprocessor_params.get("column_names", None)
+            if column_names is None:
+                print("WARNING: No column names available from preprocessor, cannot exclude columns by name")
+            else:
+                print(f"Available columns: {column_names}")
+                
+                # Find indices of columns to exclude
+                excluded_indices = []
+                for col_name in excluded_columns:
+                    if col_name in column_names:
+                        excluded_indices.append(column_names.index(col_name))
+                        print(f"  Excluding column '{col_name}' at index {column_names.index(col_name)}")
+                    else:
+                        print(f"  WARNING: Column '{col_name}' not found in dataset columns")
+                
+                if excluded_indices:
+                    # Remove excluded columns from all datasets (last dimension = features)
+                    remaining_indices = [i for i in range(len(column_names)) if i not in excluded_indices]
+                    print(f"  Keeping {len(remaining_indices)} columns out of {len(column_names)} original columns")
+                    
+                    print(f"  Original shapes: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
+                    X_train = X_train[:, :, remaining_indices]
+                    X_val = X_val[:, :, remaining_indices]
+                    X_test = X_test[:, :, remaining_indices]
+                    print(f"  New shapes after exclusion: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
+                    
+                    # Update column names in preprocessor_params for reference
+                    new_column_names = [column_names[i] for i in remaining_indices]
+                    preprocessor_params["column_names"] = new_column_names
+                    print(f"  Updated column names: {new_column_names}")
+                else:
+                    print("  No valid columns to exclude")
+        else:
+            print("No columns specified for exclusion")
+        
         # CRITICAL DEBUG: Verify dates are properly extracted from preprocessor
         print(f"\nDEBUG - Dates extracted from preprocessor:")
         print(f"  test_dates: {type(test_dates)} length={len(test_dates) if test_dates is not None else 'None'}")
