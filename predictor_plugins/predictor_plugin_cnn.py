@@ -55,149 +55,98 @@ local_feedback=[] # local feedback values for the model
 
 
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
-    """Custom ReduceLROnPlateau callback that monitors ALL horizons' validation MAE and resets counter if ANY improves."""
-    def __init__(self, horizon_metrics, **kwargs):
-        # Store horizon metrics list but don't pass monitor to parent
-        self.horizon_metrics = horizon_metrics
-        self.best_metrics = {}
+    """Custom ReduceLROnPlateau callback that monitors the sum of validation losses ('val_loss') and resets counter if it improves."""
+    def __init__(self, **kwargs):
+        # Monitor 'val_loss' by default
+        super().__init__(monitor='val_loss', **kwargs)
         self.patience_counter = 0
-        
-        # Initialize parent with dummy monitor, we'll override the logic
-        if 'monitor' in kwargs:
-            del kwargs['monitor']  # Remove monitor from kwargs
-        super().__init__(monitor='loss', **kwargs)  # Use dummy monitor
-        
-        # Initialize cooldown_counter (missing in parent class sometimes)
-        self.cooldown_counter = 0
         
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
-        
-        # Check if any horizon improved
-        any_improved = False
-        current_metrics = {}
-        
-        for metric_name in self.horizon_metrics:
-            if metric_name in logs:
-                current_value = logs[metric_name]
-                current_metrics[metric_name] = current_value
-                
-                if metric_name not in self.best_metrics:
-                    self.best_metrics[metric_name] = current_value
-                    any_improved = True
-                else:
-                    # Check if current is better (lower for MAE)
-                    if current_value < self.best_metrics[metric_name] - self.min_delta:
-                        self.best_metrics[metric_name] = current_value
-                        any_improved = True
-        
-        # Reset counter if any horizon improved
-        if any_improved:
-            self.wait = 0
-            self.cooldown_counter = 0
+        current_val_loss = logs.get(self.monitor)
+
+        if current_val_loss is None:
+            # If val_loss is not available, do not update
+            any_improved = False
         else:
-            self.wait += 1
-            
-        # Apply learning rate reduction if patience exceeded
-        if self.wait >= self.patience and self.cooldown_counter == 0:
-            if hasattr(self, 'model') and self.model is not None:
-                # Handle different TensorFlow/Keras versions for learning rate access
-                try:
-                    # Try the modern approach first
-                    old_lr = float(self.model.optimizer.learning_rate.numpy())
-                    self.model.optimizer.learning_rate.assign(old_lr * self.factor)
-                    new_lr = float(self.model.optimizer.learning_rate.numpy())
-                except (AttributeError, TypeError):
-                    # Fallback to older Keras backend approach
-                    try:
-                        old_lr = float(K.get_value(self.model.optimizer.learning_rate))
-                        K.set_value(self.model.optimizer.learning_rate, old_lr * self.factor)
-                        new_lr = old_lr * self.factor
-                    except Exception as e:
-                        print(f"WARNING: Could not adjust learning rate: {e}")
-                        new_lr = old_lr = 0.0
-                
-                if self.verbose > 0:
-                    print(f'\nEpoch {epoch + 1}: ReduceLROnPlateau reducing learning rate to {new_lr}.')
-                self.cooldown_counter = self.cooldown
+            if self.in_cooldown():
+                self.cooldown_counter -= 1
                 self.wait = 0
-            
-        # Handle cooldown
-        if self.cooldown_counter > 0:
-            self.cooldown_counter -= 1
-            
+
+            # Check if the monitored metric improved
+            if self.monitor_op(current_val_loss - self.min_delta, self.best):
+                self.best = current_val_loss
+                self.wait = 0
+                any_improved = True
+            else:
+                self.wait += 1
+                any_improved = False
+
+            # Apply learning rate reduction if patience exceeded
+            if self.wait >= self.patience and not self.in_cooldown():
+                old_lr = self._get_lr()
+                if old_lr > self.min_lr:
+                    new_lr = old_lr * self.factor
+                    new_lr = max(new_lr, self.min_lr)
+                    self._set_lr(new_lr)
+                    if self.verbose > 0:
+                        print(f'\nEpoch {epoch + 1}: ReduceLROnPlateau reducing learning rate to {new_lr}.')
+                    self.cooldown_counter = self.cooldown
+                    self.wait = 0
+        
         self.patience_counter = self.wait
-        in_cooldown = self.cooldown_counter > 0
-        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}/{self.patience}, cooldown: {self.cooldown_counter}, any_improved: {any_improved}")
+        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}/{self.patience}, cooldown: {self.cooldown_counter}, improved: {any_improved}")
+
+    def _get_lr(self):
+        try:
+            return float(K.get_value(self.model.optimizer.learning_rate))
+        except Exception as e:
+            print(f"WARNING: Could not get learning rate: {e}")
+            return 0.0
+
+    def _set_lr(self, new_lr):
+        try:
+            K.set_value(self.model.optimizer.learning_rate, new_lr)
+        except Exception as e:
+            print(f"WARNING: Could not set learning rate: {e}")
 
 class EarlyStoppingWithPatienceCounter(EarlyStopping):
-    """Custom EarlyStopping callback that monitors ALL horizons' validation MAE and resets counter if ANY improves."""
-    def __init__(self, horizon_metrics, **kwargs):
-        # Store horizon metrics list but don't pass monitor to parent
-        self.horizon_metrics = horizon_metrics
-        self.best_metrics = {}
+    """Custom EarlyStopping callback that monitors the sum of validation losses ('val_loss') and resets counter if it improves."""
+    def __init__(self, **kwargs):
+        # Monitor 'val_loss' by default
+        super().__init__(monitor='val_loss', **kwargs)
         self.patience_counter = 0
-        
-        # Extract start_from_epoch before calling parent
-        self.start_from_epoch = kwargs.pop('start_from_epoch', 0)
-        
-        # Initialize parent with dummy monitor, we'll override the logic
-        if 'monitor' in kwargs:
-            del kwargs['monitor']  # Remove monitor from kwargs
-        super().__init__(monitor='loss', **kwargs)  # Use dummy monitor
-        
-        # Set baseline_epoch properly
-        self.baseline_epoch = self.start_from_epoch
         
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
-        
-        # Check if any horizon improved
-        any_improved = False
-        current_metrics = {}
-        
-        for metric_name in self.horizon_metrics:
-            if metric_name in logs:
-                current_value = logs[metric_name]
-                current_metrics[metric_name] = current_value
-                
-                if metric_name not in self.best_metrics:
-                    self.best_metrics[metric_name] = current_value
-                    any_improved = True
-                else:
-                    # Check if current is better (lower for MAE)
-                    if current_value < self.best_metrics[metric_name] - self.min_delta:
-                        self.best_metrics[metric_name] = current_value
-                        any_improved = True
-        
-        # Reset counter if any horizon improved
-        if any_improved:
-            self.wait = 0
-            if self.restore_best_weights and hasattr(self, 'best_weights'):
-                if self.verbose > 0:
-                    print(f'\nEpoch {epoch + 1}: early stopping counter reset due to improvement in validation metrics.')
+        current_val_loss = logs.get(self.monitor)
+
+        if current_val_loss is None:
+            # If val_loss is not available, do not update
+            any_improved = False
         else:
-            self.wait += 1
-            
-        # Stop training if patience exceeded
-        if self.wait >= self.patience:
-            if epoch >= self.baseline_epoch:
+            # Check if the monitored metric improved
+            if self.monitor_op(current_val_loss - self.min_delta, self.best):
+                self.best = current_val_loss
+                self.wait = 0
+                any_improved = True
+                if self.restore_best_weights:
+                    self.best_weights = self.model.get_weights()
+            else:
+                self.wait += 1
+                any_improved = False
+
+            # Stop training if patience exceeded
+            if self.wait >= self.patience:
                 self.stopped_epoch = epoch
-                if hasattr(self, 'model') and self.model is not None:
-                    self.model.stop_training = True
-                if self.restore_best_weights and hasattr(self, 'best_weights'):
+                self.model.stop_training = True
+                if self.restore_best_weights:
                     if self.verbose > 0:
                         print('Restoring model weights from the end of the best epoch.')
-                    if hasattr(self, 'model') and self.model is not None:
-                        self.model.set_weights(self.best_weights)
+                    self.model.set_weights(self.best_weights)
         
-        # Store best weights when any metric improves
-        if any_improved and self.restore_best_weights:
-            if hasattr(self, 'model') and self.model is not None:
-                self.best_weights = self.model.get_weights()
-            
         self.patience_counter = self.wait
-        print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}/{self.patience}, any_improved: {any_improved}")
+        print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}/{self.patience}, improved: {any_improved}")
 
 class ClearMemoryCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
