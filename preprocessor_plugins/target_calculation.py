@@ -131,6 +131,12 @@ class TargetCalculationProcessor:
         
         print(f"\nData alignment: Max horizon={max_horizon}, Min samples per split: {min_samples_per_split}")
         
+        # Initialize normalization stats for all horizons (unnormalized: mean=0, std=1)
+        if use_returns:
+            # For unnormalized returns, all horizons have mean=0.0, std=1.0
+            self.target_returns_means = [0.0] * len(predicted_horizons)
+            self.target_returns_stds = [1.0] * len(predicted_horizons)
+        
         # Now process all horizons with the SAME normalization AND SAME SAMPLE COUNT
         for i, h in enumerate(predicted_horizons):
             print(f"\nCalculating targets for horizon {h}...")
