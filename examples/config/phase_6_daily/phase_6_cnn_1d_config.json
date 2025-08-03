@@ -53,5 +53,6 @@
     "use_wavelets": false,
     "excluded_columns": ["CLOSE"],
     "target_factor": 100,
+    "loss_factor": 1,
     "use_multi_tapper": false
 }

@@ -73,19 +73,81 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
         self.monitor_op = lambda a, b: a < (b - self.min_delta)
         self.patience_counter = 0
         
-    def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
+        # For adaptive weighting
+        self._loss_history = {}
+        self._weight_alpha = kwargs.get('weight_alpha', 0.9)  # EMA smoothing factor
+        self._weighting_strategy = kwargs.get('weighting_strategy', 'adaptive')  # 'adaptive', 'inverse_horizon', 'uniform'
+        self._predicted_horizons = kwargs.get('predicted_horizons', [])  # For inverse_horizon weighting
+        self._loss_factor = kwargs.get('loss_factor', 100)  # For inverse_horizon weighting
         
-        # Calculate sum of validation losses for all outputs
-        current_sum_val_loss = 0
-        found_losses = 0
-        individual_losses = []
+    def _calculate_adaptive_weights(self, logs):
+        """Calculate weights based on configured strategy."""
+        if self._weighting_strategy == 'uniform':
+            return [1.0] * len(self.output_names)
+        elif self._weighting_strategy == 'inverse_horizon':
+            return self._calculate_inverse_horizon_weights()
+        else:  # 'adaptive' (default)
+            return self._calculate_loss_adaptive_weights(logs)
+    
+    def _calculate_inverse_horizon_weights(self):
+        """Calculate weights using inverse horizon approach: weight = loss_factor / horizon."""
+        if not self._predicted_horizons or len(self._predicted_horizons) != len(self.output_names):
+            print("WARNING: predicted_horizons not properly set for inverse_horizon weighting, using uniform weights")
+            return [1.0] * len(self.output_names)
+        
+        weights = [self._loss_factor / max(horizon, 1) for horizon in self._predicted_horizons]
+        # Normalize to maintain scale
+        total_weight = sum(weights)
+        return [w * len(weights) / total_weight for w in weights] if total_weight > 0 else [1.0] * len(weights)
+    
+    def _calculate_loss_adaptive_weights(self, logs):
+        """Calculate adaptive weights based on loss magnitude history."""
+        weights = []
+        
         for output_name in self.output_names:
             loss_key = f"val_{output_name}_loss"
             if loss_key in logs:
+                current_loss = logs[loss_key]
+                
+                # Update exponential moving average of loss
+                if output_name in self._loss_history:
+                    self._loss_history[output_name] = (self._weight_alpha * self._loss_history[output_name] + 
+                                                      (1 - self._weight_alpha) * current_loss)
+                else:
+                    self._loss_history[output_name] = current_loss
+                
+                # Weight inversely proportional to sqrt of average loss (prevents extreme weights)
+                avg_loss = self._loss_history[output_name]
+                weight = 1.0 / np.sqrt(max(avg_loss, 1e-8))
+                weights.append(weight)
+            else:
+                weights.append(1.0)  # Default weight if loss not found
+        
+        # Normalize weights to sum to number of outputs (maintains original scale)
+        if weights:
+            total_weight = sum(weights)
+            normalized_weights = [w * len(weights) / total_weight for w in weights]
+            return normalized_weights
+        else:
+            return [1.0] * len(self.output_names)
+        
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        
+        # Calculate weighted sum of validation losses for all outputs
+        current_sum_val_loss = 0
+        found_losses = 0
+        individual_losses = []
+        weights = self._calculate_adaptive_weights(logs)
+        
+        for i, output_name in enumerate(self.output_names):
+            loss_key = f"val_{output_name}_loss"
+            if loss_key in logs:
                 loss_value = logs[loss_key]
-                current_sum_val_loss += loss_value
-                individual_losses.append(f"{output_name}: {loss_value:.6f}")
+                weight = weights[i] if i < len(weights) else 1.0
+                weighted_loss = loss_value * weight
+                current_sum_val_loss += weighted_loss
+                individual_losses.append(f"{output_name}: {loss_value:.6f} (w: {weight:.3f}, wl: {weighted_loss:.6f})")
                 found_losses += 1
         
         if found_losses == 0:
@@ -93,9 +155,9 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
             print(f"Available keys in logs: {list(logs.keys())}")
             return
             
-        # Debug: Print individual losses
-        print(f"DEBUG: Individual validation losses - {', '.join(individual_losses)}")
-        print(f"DEBUG: Sum = {current_sum_val_loss:.6f}")
+        # Debug: Print individual losses with weights
+        print(f"DEBUG: Weighted validation losses - {', '.join(individual_losses)}")
+        print(f"DEBUG: Weighted Sum = {current_sum_val_loss:.6f}")
             
         # Initialize best if first epoch
         if self.best is None:
@@ -175,6 +237,64 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
         self.monitor_op = lambda a, b: a < (b - self.min_delta)
         self.patience_counter = 0
         
+        # For adaptive weighting
+        self._loss_history = {}
+        self._weight_alpha = kwargs.get('weight_alpha', 0.9)  # EMA smoothing factor
+        self._weighting_strategy = kwargs.get('weighting_strategy', 'adaptive')  # 'adaptive', 'inverse_horizon', 'uniform'
+        self._predicted_horizons = kwargs.get('predicted_horizons', [])  # For inverse_horizon weighting
+        self._loss_factor = kwargs.get('loss_factor', 100)  # For inverse_horizon weighting
+        
+    def _calculate_adaptive_weights(self, logs):
+        """Calculate weights based on configured strategy."""
+        if self._weighting_strategy == 'uniform':
+            return [1.0] * len(self.output_names)
+        elif self._weighting_strategy == 'inverse_horizon':
+            return self._calculate_inverse_horizon_weights()
+        else:  # 'adaptive' (default)
+            return self._calculate_loss_adaptive_weights(logs)
+    
+    def _calculate_inverse_horizon_weights(self):
+        """Calculate weights using inverse horizon approach: weight = loss_factor / horizon."""
+        if not self._predicted_horizons or len(self._predicted_horizons) != len(self.output_names):
+            print("WARNING: predicted_horizons not properly set for inverse_horizon weighting, using uniform weights")
+            return [1.0] * len(self.output_names)
+        
+        weights = [self._loss_factor / max(horizon, 1) for horizon in self._predicted_horizons]
+        # Normalize to maintain scale
+        total_weight = sum(weights)
+        return [w * len(weights) / total_weight for w in weights] if total_weight > 0 else [1.0] * len(weights)
+    
+    def _calculate_loss_adaptive_weights(self, logs):
+        """Calculate adaptive weights based on loss magnitude history."""
+        weights = []
+        
+        for output_name in self.output_names:
+            loss_key = f"val_{output_name}_loss"
+            if loss_key in logs:
+                current_loss = logs[loss_key]
+                
+                # Update exponential moving average of loss
+                if output_name in self._loss_history:
+                    self._loss_history[output_name] = (self._weight_alpha * self._loss_history[output_name] + 
+                                                      (1 - self._weight_alpha) * current_loss)
+                else:
+                    self._loss_history[output_name] = current_loss
+                
+                # Weight inversely proportional to sqrt of average loss (prevents extreme weights)
+                avg_loss = self._loss_history[output_name]
+                weight = 1.0 / np.sqrt(max(avg_loss, 1e-8))
+                weights.append(weight)
+            else:
+                weights.append(1.0)  # Default weight if loss not found
+        
+        # Normalize weights to sum to number of outputs (maintains original scale)
+        if weights:
+            total_weight = sum(weights)
+            normalized_weights = [w * len(weights) / total_weight for w in weights]
+            return normalized_weights
+        else:
+            return [1.0] * len(self.output_names)
+        
     def on_train_begin(self, logs=None):
         self.wait = 0
         self.stopped_epoch = 0
@@ -189,16 +309,20 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
         if epoch < self.start_from_epoch:
             return
             
-        # Calculate sum of validation losses for all outputs
+        # Calculate weighted sum of validation losses for all outputs
         current_sum_val_loss = 0
         found_losses = 0
         individual_losses = []
-        for output_name in self.output_names:
+        weights = self._calculate_adaptive_weights(logs)
+        
+        for i, output_name in enumerate(self.output_names):
             loss_key = f"val_{output_name}_loss"
             if loss_key in logs:
                 loss_value = logs[loss_key]
-                current_sum_val_loss += loss_value
-                individual_losses.append(f"{output_name}: {loss_value:.6f}")
+                weight = weights[i] if i < len(weights) else 1.0
+                weighted_loss = loss_value * weight
+                current_sum_val_loss += weighted_loss
+                individual_losses.append(f"{output_name}: {loss_value:.6f} (w: {weight:.3f}, wl: {weighted_loss:.6f})")
                 found_losses += 1
         
         if found_losses == 0:
@@ -206,9 +330,9 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
             print(f"Available keys in logs: {list(logs.keys())}")
             return
             
-        # Debug: Print individual losses
-        print(f"DEBUG ES: Individual validation losses - {', '.join(individual_losses)}")
-        print(f"DEBUG ES: Sum = {current_sum_val_loss:.6f}")
+        # Debug: Print individual losses with weights
+        print(f"DEBUG ES: Weighted validation losses - {', '.join(individual_losses)}")
+        print(f"DEBUG ES: Weighted Sum = {current_sum_val_loss:.6f}")
             
         # Check for improvement
         improvement_threshold = self.best - self.min_delta
@@ -836,16 +960,25 @@ class Plugin:
         print(f"Multi-horizon monitoring metrics: {all_horizon_val_metrics}")
 
         # Instantiate callbacks WITHOUT ClearMemoryCallback
+        # Get weighting strategy from config
+        weighting_strategy = config.get('callback_weighting_strategy', 'adaptive')  # 'adaptive', 'inverse_horizon', 'uniform'
+        
         # Assumes relevant Callback classes are imported/defined
         callbacks = [
             EarlyStoppingWithPatienceCounter(
                 output_names=self.output_names,
                 patience=patience_early_stopping, restore_best_weights=True,
-                verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
+                verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping,
+                weighting_strategy=weighting_strategy,
+                predicted_horizons=predicted_horizons,
+                loss_factor=config.get('loss_factor', 100)
             ),
             ReduceLROnPlateauWithCounter(
                 output_names=self.output_names,
-                factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
+                factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1,
+                weighting_strategy=weighting_strategy,
+                predicted_horizons=predicted_horizons,
+                loss_factor=config.get('loss_factor', 100)
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs: self._print_learning_rate(epoch)),
             kl_callback
