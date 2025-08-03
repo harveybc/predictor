@@ -331,7 +331,7 @@ def composite_loss(y_true, y_pred,
     #mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
     huber_loss_val = Huber(delta=1.0)(mag_true, mag_pred)
     #mse_loss_val = huber_loss_val
-    #mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
+    mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
     #mmd_loss_val = 0.0
 
 
@@ -379,8 +379,8 @@ def composite_loss(y_true, y_pred,
         # Calculate final loss term
         #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
     #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    #total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
-    total_loss = huber_loss_val
+    total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
+    #total_loss = huber_loss_val
     # Return the final scalar loss value
     return total_loss
 
@@ -678,7 +678,7 @@ class Plugin:
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
-                units=1, activation='linear',
+                units=1, activation='tanh',
                 kernel_posterior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: posterior_mean_field_custom(dt, sh, bs, tr, nm),
                 kernel_prior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: prior_fn(dt, sh, bs, tr, nm),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT, name=flipout_layer_name
@@ -690,7 +690,7 @@ class Plugin:
                 name=f"bayesian_output{branch_suffix}"
             )(lstm_output)
 
-            bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44,
+            bias_layer_branch = Dense(units=1, activation='tanh', kernel_initializer=random_normal_initializer_44,
                                       name=f"deterministic_bias{branch_suffix}")(lstm_output)
 
             # --- Final Head Output ---
