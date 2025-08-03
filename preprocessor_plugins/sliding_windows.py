@@ -100,44 +100,28 @@ class SlidingWindowsProcessor:
         for split in splits:
             print(f"\nProcessing {split} split...")
             
-            # Get baseline data for this split
+            # Get original normalized dataframe - this contains ALL the features we need
             x_df = baseline_data[f'x_{split}_df']
             dates = baseline_data[f'dates_{split}']
-            close_data = baseline_data[f'close_{split}']
             
-            # Generate log returns feature from DENORMALIZED close prices
-            print("Generating log returns feature...")
-            log_ret = np.diff(close_data, prepend=close_data[0])
-            # CRITICAL FIX: Don't normalize again - close_data is already denormalized
-            # We'll normalize log returns using their own statistics
-            log_ret_normalized = normalize_series(
-                log_ret, 'log_return', self.scalers, 
-                fit=(split == 'train'), 
-                normalize_features=normalize_features
-            )
+            # CRITICAL FIX: Use original normalized columns directly from CSV
+            # The CSV already contains normalized data - no additional transformations needed
+            print("Using original normalized features directly from CSV (no transformations)...")
             
-            # Prepare original X columns (excluding CLOSE which is already processed)
-            original_x_cols = [col for col in x_df.columns if col != 'CLOSE']
-            features = {'log_return': log_ret_normalized}
+            # Get ALL columns from the original dataframe (all are already normalized)
+            feature_columns = [col for col in x_df.columns]  # Use ALL columns as-is
+            features = {}
             
-            if original_x_cols:
-                print(f"Including original columns: {original_x_cols}")
-                for col in original_x_cols:
-                    features[col] = x_df[col].values.astype(np.float32)
-            else:
-                print("WARN: No original columns found besides 'CLOSE'.")
+            print(f"Available normalized features: {feature_columns}")
             
-            # Align all features to same length
-            base_len = len(log_ret_normalized)
-            aligned_features = {}
-            for name, series in features.items():
-                if len(series) == base_len:
-                    aligned_features[name] = series
-                elif len(series) > base_len:
-                    aligned_features[name] = series[-base_len:]
-                else:
-                    print(f"WARN: Feature '{name}' too short ({len(series)} vs {base_len})")
-                    continue
+            # Use all normalized features directly without any transformations
+            for col in feature_columns:
+                features[col] = x_df[col].values.astype(np.float32)
+                print(f"  Added feature: {col} (length: {len(features[col])})")
+            
+            # All features should have the same length (from same dataframe)
+            base_len = len(x_df)
+            aligned_features = features  # No alignment needed - all from same dataframe
             
             # Align dates to match features
             dates_aligned = dates[-base_len:] if dates is not None and base_len > 0 else None
@@ -148,14 +132,11 @@ class SlidingWindowsProcessor:
             x_dates = None
             first_feature_processed = False
             
-            # Process features in consistent order
-            windowing_order = ['log_return'] + sorted([k for k in aligned_features.keys() if k != 'log_return'])
+            # Process features in consistent order (maintain column order from CSV)
+            windowing_order = feature_columns  # Use original CSV column order
             print(f"Feature order for windowing: {windowing_order}")
             
             for name in windowing_order:
-                if name not in aligned_features:
-                    continue
-                    
                 series = aligned_features[name]
                 print(f"Windowing feature: {name}...", end="")
                 
@@ -205,99 +186,142 @@ class SlidingWindowsProcessor:
         
         return windowed_data
     
-    def calculate_sliding_window_baselines(self, data_splits, config):
+    def calculate_sliding_window_baselines(self, windowed_data, data_splits, config):
         """
-        Calculate sliding window baselines from the target column for all splits.
-        Extracts the last tick (baseline) from each sliding window and denormalizes it.
+        Calculate sliding window baselines and targets from the EXISTING sliding windows matrix.
+        
+        EXACT REQUIREMENTS:
+        1. Extract baseline from sliding windows matrix - last value of each window for target_column
+        2. Denormalize baselines using JSON parameters  
+        3. Calculate targets as returns: target<t,h> = baseline<t+h> - baseline<t>
+        4. Extract dates from original CSV and trim first window_size-1 rows
         
         Args:
-            data_splits: Dict containing aligned data for all splits
+            windowed_data: Dict containing sliding windows matrix (X_train, X_val, X_test) and feature_names
+            data_splits: Dict containing original CSV data for date extraction
             config: Configuration dictionary
             
         Returns:
-            Dict containing sliding window baselines and dates for all splits
+            Dict containing baselines, targets, and dates for all splits
         """
         from .helpers import denormalize, load_normalization_json
         
-        print("\n--- Calculating Sliding Windows Baseline ---")
+        print("\n--- Calculating Sliding Windows Baselines and Targets ---")
         
         window_size = config.get("window_size", 48)
-        target_column = config.get("target_column", "CLOSE")
+        target_column = config.get("target_column", "CLOSE") 
         predicted_horizons = config.get('predicted_horizons', [1])
         max_horizon = max(predicted_horizons)
         
         # Load normalization JSON for denormalization
         norm_json = load_normalization_json(config)
         
-        sliding_windows_data = {}
+        # Get feature names from windowed data
+        feature_names = windowed_data.get('feature_names', [])
+        
+        # Find the index of the target column in the feature matrix
+        if target_column not in feature_names:
+            raise ValueError(f"Target column '{target_column}' not found in windowed features: {feature_names}")
+        
+        target_feature_index = feature_names.index(target_column)
+        print(f"Target column '{target_column}' found at feature index {target_feature_index}")
+        
+        result_data = {}
         
         splits = ['train', 'val', 'test']
         for split in splits:
-            print(f"\nProcessing {split} sliding windows...")
+            print(f"\nProcessing {split} split...")
             
-            # Get the target column data (still normalized)
-            if split == 'train':
-                df_key = 'x_train_df'
-            elif split == 'val':
-                df_key = 'x_val_df'
-            else:  # test
-                df_key = 'x_test_df'
-                
-            if df_key not in data_splits:
-                print(f"WARN: No data found for {split}")
-                sliding_windows_data[f'sliding_baseline_{split}'] = np.array([])
-                sliding_windows_data[f'sliding_baseline_{split}_dates'] = np.array([])
-                continue
-                
-            df = data_splits[df_key]
-            
-            if target_column not in df.columns:
-                raise ValueError(f"Target column '{target_column}' not found in {split} data")
-            
-            # Extract normalized target column
-            target_normalized = df[target_column].astype(np.float32).values
-            dates = df.index if isinstance(df.index, pd.DatetimeIndex) else None
-            
-            # Calculate number of possible windows
-            n = len(target_normalized)
-            expected_windows = n - (window_size - 1) - max_horizon
-            
-            if expected_windows <= 0:
-                print(f"WARN: Insufficient data for {split}: {n} rows, need {window_size + max_horizon}")
-                sliding_windows_data[f'sliding_baseline_{split}'] = np.array([])
-                sliding_windows_data[f'sliding_baseline_{split}_dates'] = np.array([])
+            # Get sliding windows matrix for this split
+            X_key = f'X_{split}'
+            if X_key not in windowed_data:
+                print(f"WARN: No windowed data found for {split}")
+                # Store empty results
+                result_data[f'sliding_baseline_{split}'] = np.array([])
+                result_data[f'sliding_baseline_{split}_dates'] = np.array([])
+                for h in predicted_horizons:
+                    result_data[f'targets_{split}_h{h}'] = np.array([])
                 continue
             
-            print(f"  Data length: {n}, Expected windows: {expected_windows}")
+            # Get sliding windows matrix: shape (num_windows, window_size, num_features)
+            X_matrix = windowed_data[X_key]
+            print(f"  Sliding windows matrix shape: {X_matrix.shape}")
             
-            # Create sliding windows and extract last tick (baseline) from each window
-            baselines = []
-            baseline_dates = []
+            if X_matrix.shape[0] == 0:
+                print(f"    WARN: Empty sliding windows matrix for {split}")
+                result_data[f'sliding_baseline_{split}'] = np.array([])
+                result_data[f'sliding_baseline_{split}_dates'] = np.array([])
+                for h in predicted_horizons:
+                    result_data[f'targets_{split}_h{h}'] = np.array([])
+                continue
             
-            # Window i ends at tick (window_size-1+i), baseline is data[window_size-1+i]
-            for i in range(expected_windows):
-                window_end_idx = window_size - 1 + i  # Last tick of window i
-                baseline_normalized = target_normalized[window_end_idx]
-                baselines.append(baseline_normalized)
-                
-                if dates is not None and window_end_idx < len(dates):
-                    baseline_dates.append(dates[window_end_idx])
-                else:
-                    baseline_dates.append(None)
+            # STEP 1: Extract baselines from sliding windows matrix
+            # Extract the target column (CLOSE) from all windows: X_matrix[:, :, target_feature_index]
+            # Then take the last value (rightmost) of each window: X_matrix[:, -1, target_feature_index]
+            print(f"  Extracting baselines from sliding windows matrix...")
+            target_windows = X_matrix[:, :, target_feature_index]  # Shape: (num_windows, window_size)
+            baselines_normalized = target_windows[:, -1]  # Last value of each window: (num_windows,)
             
-            # Convert to arrays
-            baselines_normalized = np.array(baselines, dtype=np.float32)
+            print(f"    Extracted {len(baselines_normalized)} baselines from windows")
+            print(f"    Baseline normalized stats: mean={np.mean(baselines_normalized):.6f}, std={np.std(baselines_normalized):.6f}")
             
-            # CRITICAL STEP 3: Denormalize using JSON parameters
-            print(f"  Denormalizing {len(baselines_normalized)} baseline values using JSON parameters...")
+            # STEP 2: Denormalize baselines using JSON parameters
+            print(f"  Denormalizing baselines...")
             baselines_denormalized = denormalize(baselines_normalized, norm_json, target_column)
+            print(f"    Baseline denormalized stats: mean={np.mean(baselines_denormalized):.6f}, std={np.std(baselines_denormalized):.6f}")
             
-            # Store results
-            sliding_windows_data[f'sliding_baseline_{split}'] = baselines_denormalized
-            sliding_windows_data[f'sliding_baseline_{split}_dates'] = np.array(baseline_dates, dtype=object)
+            # STEP 3: Extract dates from original CSV and align with baselines
+            print(f"  Extracting and aligning dates...")
+            df_key = f'x_{split}_df'
+            if df_key in data_splits:
+                df = data_splits[df_key]
+                if isinstance(df.index, pd.DatetimeIndex):
+                    original_dates = df.index
+                    # Trim first window_size-1 rows as required
+                    trimmed_dates = original_dates[window_size-1:]
+                    
+                    # Align dates with baselines (both should have same length)
+                    baseline_length = len(baselines_denormalized)
+                    if len(trimmed_dates) >= baseline_length:
+                        aligned_dates = trimmed_dates[:baseline_length]
+                        print(f"    Aligned {len(aligned_dates)} dates with baselines")
+                    else:
+                        print(f"    WARN: Not enough trimmed dates ({len(trimmed_dates)}) for baselines ({baseline_length})")
+                        aligned_dates = trimmed_dates
+                else:
+                    print(f"    WARN: No datetime index found for {split}")
+                    aligned_dates = None
+            else:
+                print(f"    WARN: No original CSV data found for {split}")
+                aligned_dates = None
             
-            print(f"  ✅ {split}: {len(baselines_denormalized)} denormalized baselines extracted")
-            print(f"    Sample baselines: {baselines_denormalized[:3]} (denormalized)")
-            print(f"    Baseline stats: mean={np.mean(baselines_denormalized):.6f}, std={np.std(baselines_denormalized):.6f}")
+            # STEP 4: Calculate targets as returns for each horizon
+            print(f"  Calculating targets for horizons {predicted_horizons}...")
+            targets = {}
+            
+            for h in predicted_horizons:
+                # target<t,h> = baseline<t+h> - baseline<t>
+                if len(baselines_denormalized) > h:
+                    baseline_t = baselines_denormalized[:-h]      # baseline<t>
+                    baseline_t_plus_h = baselines_denormalized[h:] # baseline<t+h>
+                    
+                    # Calculate returns: target<t,h> = baseline<t+h> - baseline<t>
+                    target_returns = baseline_t_plus_h - baseline_t
+                    targets[h] = target_returns.astype(np.float32)
+                    
+                    print(f"    Horizon {h}: {len(target_returns)} targets calculated")
+                    print(f"      Target stats: mean={np.mean(target_returns):.6f}, std={np.std(target_returns):.6f}")
+                else:
+                    print(f"    WARN: Not enough baselines for horizon {h}")
+                    targets[h] = np.array([])
+            
+            # STEP 5: Store results
+            result_data[f'sliding_baseline_{split}'] = baselines_denormalized
+            result_data[f'sliding_baseline_{split}_dates'] = aligned_dates
+            
+            for h in predicted_horizons:
+                result_data[f'targets_{split}_h{h}'] = targets[h]
+            
+            print(f"  ✅ {split}: {len(baselines_denormalized)} baselines, targets for {len(predicted_horizons)} horizons")
         
-        return sliding_windows_data
+        return result_data
