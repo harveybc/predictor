@@ -55,29 +55,74 @@ local_feedback=[] # local feedback values for the model
 
 
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
-    """Custom ReduceLROnPlateau callback that monitors the sum of validation losses ('val_loss') and resets counter if it improves."""
-    def __init__(self, **kwargs):
-        # Monitor 'val_loss' by default
-        super().__init__(monitor='val_loss', **kwargs)
+    """Custom ReduceLROnPlateau callback that monitors the sum of validation losses and resets counter if it improves."""
+    def __init__(self, output_names=None, **kwargs):
+        # Don't call super().__init__ yet, we need to set up custom monitoring
+        self.output_names = output_names or []
+        self.patience = kwargs.get('patience', 10)
+        self.factor = kwargs.get('factor', 0.1)
+        self.min_delta = kwargs.get('min_delta', 1e-4)
+        self.cooldown = kwargs.get('cooldown', 0)
+        self.min_lr = kwargs.get('min_lr', 0)
+        self.verbose = kwargs.get('verbose', 0)
+        
+        self.wait = 0
+        self.cooldown_counter = 0
+        self.best = None
+        self.mode = 'min'  # We want to minimize the sum of losses
+        self.monitor_op = lambda a, b: np.less(a, b - self.min_delta)
         self.patience_counter = 0
         
     def on_epoch_end(self, epoch, logs=None):
-        # Call parent's on_epoch_end first to set up monitor_op and handle the core logic
-        super().on_epoch_end(epoch, logs)
+        logs = logs or {}
         
-        # Update our custom patience counter
+        # Calculate sum of validation losses for all outputs
+        current_sum_val_loss = 0
+        found_losses = 0
+        for output_name in self.output_names:
+            loss_key = f"val_{output_name}_loss"
+            if loss_key in logs:
+                current_sum_val_loss += logs[loss_key]
+                found_losses += 1
+        
+        if found_losses == 0:
+            print("WARNING: No validation losses found for sum calculation")
+            return
+            
+        # Initialize best if first epoch
+        if self.best is None:
+            self.best = current_sum_val_loss
+            
+        # Check for improvement
+        if self.monitor_op(current_sum_val_loss, self.best):
+            self.best = current_sum_val_loss
+            self.wait = 0
+            self.cooldown_counter = 0
+            any_improved = True
+        else:
+            self.wait += 1
+            any_improved = False
+            
+        # Handle cooldown
+        if self.cooldown_counter > 0:
+            self.cooldown_counter -= 1
+            self.wait = 0
+            
+        # Reduce learning rate if needed
+        if self.wait >= self.patience and self.cooldown_counter == 0:
+            old_lr = self._get_lr()
+            if old_lr > self.min_lr:
+                new_lr = old_lr * self.factor
+                new_lr = max(new_lr, self.min_lr)
+                self._set_lr(new_lr)
+                if self.verbose > 0:
+                    print(f'\nEpoch {epoch + 1}: ReduceLROnPlateau reducing learning rate to {new_lr}.')
+                self.cooldown_counter = self.cooldown
+                self.wait = 0
+        
         self.patience_counter = self.wait
         
-        # Determine if improvement occurred
-        logs = logs or {}
-        current_val_loss = logs.get(self.monitor)
-        any_improved = False
-        if (current_val_loss is not None and 
-            hasattr(self, 'monitor_op') and self.monitor_op is not None and
-            hasattr(self, 'best') and self.best is not None):
-            any_improved = self.monitor_op(current_val_loss - self.min_delta, self.best)
-        
-        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}/{self.patience}, cooldown: {getattr(self, 'cooldown_counter', 0)}, improved: {any_improved}")
+        print(f"DEBUG: ReduceLROnPlateau sum_val_loss: {current_sum_val_loss:.6f}, best: {self.best:.6f}, patience: {self.patience_counter}/{self.patience}, cooldown: {self.cooldown_counter}, improved: {any_improved}")
 
     def _get_lr(self):
         try:
@@ -93,29 +138,78 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
             print(f"WARNING: Could not set learning rate: {e}")
 
 class EarlyStoppingWithPatienceCounter(EarlyStopping):
-    """Custom EarlyStopping callback that monitors the sum of validation losses ('val_loss') and resets counter if it improves."""
-    def __init__(self, **kwargs):
-        # Monitor 'val_loss' by default
-        super().__init__(monitor='val_loss', **kwargs)
+    """Custom EarlyStopping callback that monitors the sum of validation losses and resets counter if it improves."""
+    def __init__(self, output_names=None, **kwargs):
+        # Don't call super().__init__ yet, we need to set up custom monitoring
+        self.output_names = output_names or []
+        self.patience = kwargs.get('patience', 0)
+        self.min_delta = kwargs.get('min_delta', 0)
+        self.restore_best_weights = kwargs.get('restore_best_weights', False)
+        self.verbose = kwargs.get('verbose', 0)
+        self.start_from_epoch = kwargs.get('start_from_epoch', 0)
+        
+        self.wait = 0
+        self.stopped_epoch = 0
+        self.best = None
+        self.best_weights = None
+        self.mode = 'min'  # We want to minimize the sum of losses
+        self.monitor_op = lambda a, b: np.less(a, b - self.min_delta)
         self.patience_counter = 0
         
-    def on_epoch_end(self, epoch, logs=None):
-        # Call parent's on_epoch_end first to set up monitor_op and other attributes
-        super().on_epoch_end(epoch, logs)
+    def on_train_begin(self, logs=None):
+        self.wait = 0
+        self.stopped_epoch = 0
+        self.best = np.Inf
+        if self.restore_best_weights:
+            self.best_weights = None
         
-        # Update our custom patience counter
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        
+        # Skip early stopping logic if we haven't reached start_from_epoch
+        if epoch < self.start_from_epoch:
+            return
+            
+        # Calculate sum of validation losses for all outputs
+        current_sum_val_loss = 0
+        found_losses = 0
+        for output_name in self.output_names:
+            loss_key = f"val_{output_name}_loss"
+            if loss_key in logs:
+                current_sum_val_loss += logs[loss_key]
+                found_losses += 1
+        
+        if found_losses == 0:
+            print("WARNING: No validation losses found for sum calculation")
+            return
+            
+        # Check for improvement
+        if self.monitor_op(current_sum_val_loss, self.best):
+            self.best = current_sum_val_loss
+            self.wait = 0
+            if self.restore_best_weights:
+                self.best_weights = self.model.get_weights()
+            any_improved = True
+        else:
+            self.wait += 1
+            any_improved = False
+            
+        # Check if we should stop
+        if self.wait >= self.patience:
+            self.stopped_epoch = epoch
+            self.model.stop_training = True
+            if self.restore_best_weights and self.best_weights is not None:
+                if self.verbose > 0:
+                    print('Restoring model weights from the end of the best epoch.')
+                self.model.set_weights(self.best_weights)
+        
         self.patience_counter = self.wait
         
-        # Determine if improvement occurred
-        logs = logs or {}
-        current_val_loss = logs.get(self.monitor)
-        any_improved = False
-        if (current_val_loss is not None and 
-            hasattr(self, 'monitor_op') and self.monitor_op is not None and
-            hasattr(self, 'best') and self.best is not None):
-            any_improved = self.monitor_op(current_val_loss - self.min_delta, self.best)
+        print(f"DEBUG: EarlyStopping sum_val_loss: {current_sum_val_loss:.6f}, best: {self.best:.6f}, patience: {self.patience_counter}/{self.patience}, improved: {any_improved}")
         
-        print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}/{self.patience}, improved: {any_improved}")
+    def on_train_end(self, logs=None):
+        if self.stopped_epoch > 0 and self.verbose > 0:
+            print(f'Epoch {self.stopped_epoch + 1}: early stopping')
 
 class ClearMemoryCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
@@ -714,11 +808,13 @@ class Plugin:
         # Assumes relevant Callback classes are imported/defined
         callbacks = [
             EarlyStoppingWithPatienceCounter(
+                output_names=self.output_names,
                 patience=patience_early_stopping, restore_best_weights=True,
-                verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping, mode='min'
+                verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
             ),
             ReduceLROnPlateauWithCounter(
-                factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1, mode='min'
+                output_names=self.output_names,
+                factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs: self._print_learning_rate(epoch)),
             kl_callback
