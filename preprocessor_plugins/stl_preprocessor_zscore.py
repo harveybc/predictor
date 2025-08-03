@@ -244,7 +244,7 @@ class PreprocessorPlugin:
         windowed_data = self.sliding_windows_processor.generate_windowed_features(baseline_data, config)
         
         # --- 5. Calculate Sliding Windows Baselines FROM the windowed matrix ---
-        sliding_windows_data = self.sliding_windows_processor.calculate_sliding_window_baselines(windowed_data, aligned_data, config)
+        sliding_windows_data = self.target_calculation_processor.calculate_sliding_window_baselines(windowed_data, aligned_data, config)
         
         # --- 6. Add sliding window baselines to baseline_data ---
         baseline_data.update(sliding_windows_data)
