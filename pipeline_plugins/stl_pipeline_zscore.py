@@ -267,6 +267,7 @@ class STLPipelinePlugin:
             # Multiply y_train_dict and y_val_dict values by target_factor if present
             target_factor = config.get("target_factor", 1.0)
             if target_factor != 1.0:
+                print(f"Applying target_factor: {target_factor}")
                 y_train_dict = {k: v * target_factor for k, v in y_train_dict.items()}
                 y_val_dict = {k: v * target_factor for k, v in y_val_dict.items()}
 
@@ -275,6 +276,15 @@ class STLPipelinePlugin:
                 threshold_error=config.get("threshold_error", 0.001),
                 x_val=X_val, y_val=y_val_dict, config=config
             )
+
+            # Divide the predictions and uncertainties by target_factor to revert the scaling
+            if target_factor != 1.0:
+                print(f"Reverting target_factor: {target_factor} from predictions/uncertainties")
+                list_train_preds = [p / target_factor for p in list_train_preds]
+                list_train_unc = [u / target_factor for u in list_train_unc]
+                list_val_preds = [p / target_factor for p in list_val_preds]
+                list_val_unc = [u / target_factor for u in list_val_unc]
+
 
             # Check outputs & Calc Train/Val Metrics (All Horizons)
             can_calc_train_stats = all(len(lst) == num_outputs for lst in [list_train_preds, list_train_unc])
