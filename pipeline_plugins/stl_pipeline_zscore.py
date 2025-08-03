@@ -265,11 +265,11 @@ class STLPipelinePlugin:
             predictor_plugin.build_model(input_shape=input_shape, x_train=X_train, config=config)
 
             # Multiply y_train_dict and y_val_dict values by target_factor if present
-            target_factor = config.get("target_factor", 1.0)
-            if target_factor != 1.0:
-                print(f"Applying target_factor: {target_factor}")
-                y_train_dict = {k: v * target_factor for k, v in y_train_dict.items()}
-                y_val_dict = {k: v * target_factor for k, v in y_val_dict.items()}
+            #target_factor = config.get("target_factor", 1.0)
+            #if target_factor != 1.0:
+            #    print(f"Applying target_factor: {target_factor}")
+            #    y_train_dict = {k: v * target_factor for k, v in y_train_dict.items()}
+            #    y_val_dict = {k: v * target_factor for k, v in y_val_dict.items()}
 
             history, list_train_preds, list_train_unc, list_val_preds, list_val_unc = predictor_plugin.train(
                 X_train, y_train_dict, epochs=epochs, batch_size=batch_size, 
@@ -278,12 +278,12 @@ class STLPipelinePlugin:
             )
 
             # Divide the predictions and uncertainties by target_factor to revert the scaling
-            if target_factor != 1.0:
-                print(f"Reverting target_factor: {target_factor} from predictions/uncertainties")
-                list_train_preds = [p / target_factor for p in list_train_preds]
-                list_train_unc = [u / target_factor for u in list_train_unc]
-                list_val_preds = [p / target_factor for p in list_val_preds]
-                list_val_unc = [u / target_factor for u in list_val_unc]
+            #if target_factor != 1.0:
+            #    print(f"Reverting target_factor: {target_factor} from predictions/uncertainties")
+            #    list_train_preds = [p / target_factor for p in list_train_preds]
+            #    list_train_unc = [u / target_factor for u in list_train_unc]
+            #    list_val_preds = [p / target_factor for p in list_val_preds]
+            #    list_val_unc = [u / target_factor for u in list_val_unc]
 
 
             # Check outputs & Calc Train/Val Metrics (All Horizons)
@@ -343,7 +343,7 @@ class STLPipelinePlugin:
                         train_unc_denorm = train_unc_h.copy()  # Already denormalized uncertainties
                         val_unc_denorm = val_unc_h.copy()  # Already denormalized uncertainties
                         
-                        # Metrics: MAE in normalized space, R² in price space
+                        # Metrics: MAE , R² in price space
                         train_r2_h = r2_score(train_target_price, train_pred_price)
                         train_unc_mean_h = np.mean(np.abs(train_unc_denorm))
                         train_snr_h = np.mean(train_pred_price) / (train_unc_mean_h + 1e-9)
