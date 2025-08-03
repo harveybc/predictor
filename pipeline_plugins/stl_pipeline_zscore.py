@@ -640,6 +640,57 @@ class STLPipelinePlugin:
             unc_plot_denorm_flat = unc_plot_raw.flatten()
             true_plot_price_flat = baseline_plot.flatten()
 
+            # CRITICAL DEBUG: Check actual data values before plotting
+            print(f"\nDEBUG - Plotting data verification:")
+            print(f"  pred_plot_price_flat shape: {pred_plot_price_flat.shape}, dtype: {pred_plot_price_flat.dtype}")
+            print(f"  pred_plot_price_flat sample: {pred_plot_price_flat[:5]}")
+            print(f"  pred_plot_price_flat stats: min={np.min(pred_plot_price_flat):.6f}, max={np.max(pred_plot_price_flat):.6f}, mean={np.mean(pred_plot_price_flat):.6f}")
+            print(f"  pred_plot_price_flat NaN count: {np.isnan(pred_plot_price_flat).sum()}")
+            print(f"  pred_plot_price_flat inf count: {np.isinf(pred_plot_price_flat).sum()}")
+            
+            print(f"  target_plot_price_flat shape: {target_plot_price_flat.shape}, dtype: {target_plot_price_flat.dtype}")
+            print(f"  target_plot_price_flat sample: {target_plot_price_flat[:5]}")
+            print(f"  target_plot_price_flat stats: min={np.min(target_plot_price_flat):.6f}, max={np.max(target_plot_price_flat):.6f}, mean={np.mean(target_plot_price_flat):.6f}")
+            print(f"  target_plot_price_flat NaN count: {np.isnan(target_plot_price_flat).sum()}")
+            
+            print(f"  true_plot_price_flat shape: {true_plot_price_flat.shape}, dtype: {true_plot_price_flat.dtype}")
+            print(f"  true_plot_price_flat sample: {true_plot_price_flat[:5]}")
+            print(f"  true_plot_price_flat stats: min={np.min(true_plot_price_flat):.6f}, max={np.max(true_plot_price_flat):.6f}, mean={np.mean(true_plot_price_flat):.6f}")
+            print(f"  true_plot_price_flat NaN count: {np.isnan(true_plot_price_flat).sum()}")
+            
+            print(f"  final_dates length: {len(final_dates)}")
+            print(f"  final_dates sample: {final_dates[:5] if len(final_dates) >= 5 else final_dates}")
+            print(f"  final_dates type: {type(final_dates[0]) if len(final_dates) > 0 else 'empty'}")
+            
+            # Check if all values are identical (would cause invisible plot)
+            pred_unique = len(np.unique(pred_plot_price_flat[~np.isnan(pred_plot_price_flat)]))
+            target_unique = len(np.unique(target_plot_price_flat[~np.isnan(target_plot_price_flat)]))
+            true_unique = len(np.unique(true_plot_price_flat[~np.isnan(true_plot_price_flat)]))
+            print(f"  Unique values: pred={pred_unique}, target={target_unique}, true={true_unique}")
+            
+            if pred_unique <= 1 or target_unique <= 1 or true_unique <= 1:
+                print(f"  ⚠️  WARNING: One or more arrays have identical values - this will cause invisible plot lines!")
+                print(f"  This suggests an issue with data processing or denormalization")
+            
+            # Raw data verification (before any processing)
+            print(f"\nDEBUG - Raw data before processing:")
+            print(f"  preds_plot_raw shape: {preds_plot_raw.shape}, sample: {preds_plot_raw.flatten()[:5]}")
+            print(f"  target_plot_raw shape: {target_plot_raw.shape}, sample: {target_plot_raw.flatten()[:5]}")
+            print(f"  baseline_plot shape: {baseline_plot.shape}, sample: {baseline_plot[:5]}")
+            print(f"  use_returns: {use_returns}")
+            
+            # Check for calculation issues
+            if use_returns:
+                baseline_sample = baseline_plot[:5]
+                pred_returns_sample = preds_plot_raw.flatten()[:5]
+                target_returns_sample = target_plot_raw.flatten()[:5]
+                print(f"  Calculation verification:")
+                print(f"    baseline[0:5]: {baseline_sample}")
+                print(f"    pred_returns[0:5]: {pred_returns_sample}")
+                print(f"    target_returns[0:5]: {target_returns_sample}")
+                print(f"    pred_price[0:5] = baseline + pred_returns: {baseline_sample + pred_returns_sample}")
+                print(f"    target_price[0:5] = baseline + target_returns: {baseline_sample + target_returns_sample}")
+
             # Determine plot points and slice FLATTENED arrays
             n_plot = config.get("plot_points", self.params["plot_points"])
             num_avail_plot = len(pred_plot_price_flat)  # Length of data available for plot
