@@ -100,9 +100,14 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
         # Initialize best if first epoch
         if self.best is None:
             self.best = current_sum_val_loss
+            print(f"DEBUG: ReduceLROnPlateau - INITIALIZED best to {self.best:.6f}")
             
         # Check for improvement
+        improvement_threshold = self.best - self.min_delta
+        print(f"DEBUG: ReduceLROnPlateau - current: {current_sum_val_loss:.6f}, best: {self.best:.6f}, threshold for improvement: {improvement_threshold:.6f}")
+        
         if self.monitor_op(current_sum_val_loss, self.best):
+            print(f"DEBUG: ReduceLROnPlateau - IMPROVEMENT DETECTED! Updating best from {self.best:.6f} to {current_sum_val_loss:.6f}")
             self.best = current_sum_val_loss
             self.wait = 0
             self.cooldown_counter = 0
@@ -206,7 +211,11 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
         print(f"DEBUG ES: Sum = {current_sum_val_loss:.6f}")
             
         # Check for improvement
+        improvement_threshold = self.best - self.min_delta
+        print(f"DEBUG ES: current: {current_sum_val_loss:.6f}, best: {self.best:.6f}, threshold for improvement: {improvement_threshold:.6f}")
+        
         if self.monitor_op(current_sum_val_loss, self.best):
+            print(f"DEBUG ES: IMPROVEMENT DETECTED! Updating best from {self.best:.6f} to {current_sum_val_loss:.6f}")
             self.best = current_sum_val_loss
             self.wait = 0
             if self.restore_best_weights:
