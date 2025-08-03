@@ -70,7 +70,7 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
         self.cooldown_counter = 0
         self.best = None
         self.mode = 'min'  # We want to minimize the sum of losses
-        self.monitor_op = lambda a, b: np.less(a, b - self.min_delta)
+        self.monitor_op = lambda a, b: a < (b - self.min_delta)
         self.patience_counter = 0
         
     def on_epoch_end(self, epoch, logs=None):
@@ -153,13 +153,13 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
         self.best = None
         self.best_weights = None
         self.mode = 'min'  # We want to minimize the sum of losses
-        self.monitor_op = lambda a, b: np.less(a, b - self.min_delta)
+        self.monitor_op = lambda a, b: a < (b - self.min_delta)
         self.patience_counter = 0
         
     def on_train_begin(self, logs=None):
         self.wait = 0
         self.stopped_epoch = 0
-        self.best = np.inf
+        self.best = float('inf')
         if self.restore_best_weights:
             self.best_weights = None
         
