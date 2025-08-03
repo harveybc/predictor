@@ -62,40 +62,20 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
         self.patience_counter = 0
         
     def on_epoch_end(self, epoch, logs=None):
+        # Call parent's on_epoch_end first to set up monitor_op and handle the core logic
+        super().on_epoch_end(epoch, logs)
+        
+        # Update our custom patience counter
+        self.patience_counter = self.wait
+        
+        # Determine if improvement occurred
         logs = logs or {}
         current_val_loss = logs.get(self.monitor)
-
-        if current_val_loss is None:
-            # If val_loss is not available, do not update
-            any_improved = False
-        else:
-            if self.in_cooldown():
-                self.cooldown_counter -= 1
-                self.wait = 0
-
-            # Check if the monitored metric improved
-            if self.monitor_op(current_val_loss - self.min_delta, self.best):
-                self.best = current_val_loss
-                self.wait = 0
-                any_improved = True
-            else:
-                self.wait += 1
-                any_improved = False
-
-            # Apply learning rate reduction if patience exceeded
-            if self.wait >= self.patience and not self.in_cooldown():
-                old_lr = self._get_lr()
-                if old_lr > self.min_lr:
-                    new_lr = old_lr * self.factor
-                    new_lr = max(new_lr, self.min_lr)
-                    self._set_lr(new_lr)
-                    if self.verbose > 0:
-                        print(f'\nEpoch {epoch + 1}: ReduceLROnPlateau reducing learning rate to {new_lr}.')
-                    self.cooldown_counter = self.cooldown
-                    self.wait = 0
+        any_improved = False
+        if current_val_loss is not None and hasattr(self, 'monitor_op') and self.monitor_op is not None:
+            any_improved = self.monitor_op(current_val_loss - self.min_delta, self.best)
         
-        self.patience_counter = self.wait
-        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}/{self.patience}, cooldown: {self.cooldown_counter}, improved: {any_improved}")
+        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}/{self.patience}, cooldown: {getattr(self, 'cooldown_counter', 0)}, improved: {any_improved}")
 
     def _get_lr(self):
         try:
@@ -118,34 +98,19 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
         self.patience_counter = 0
         
     def on_epoch_end(self, epoch, logs=None):
+        # Call parent's on_epoch_end first to set up monitor_op and other attributes
+        super().on_epoch_end(epoch, logs)
+        
+        # Update our custom patience counter
+        self.patience_counter = self.wait
+        
+        # Determine if improvement occurred
         logs = logs or {}
         current_val_loss = logs.get(self.monitor)
-
-        if current_val_loss is None:
-            # If val_loss is not available, do not update
-            any_improved = False
-        else:
-            # Check if the monitored metric improved
-            if self.monitor_op(current_val_loss - self.min_delta, self.best):
-                self.best = current_val_loss
-                self.wait = 0
-                any_improved = True
-                if self.restore_best_weights:
-                    self.best_weights = self.model.get_weights()
-            else:
-                self.wait += 1
-                any_improved = False
-
-            # Stop training if patience exceeded
-            if self.wait >= self.patience:
-                self.stopped_epoch = epoch
-                self.model.stop_training = True
-                if self.restore_best_weights:
-                    if self.verbose > 0:
-                        print('Restoring model weights from the end of the best epoch.')
-                    self.model.set_weights(self.best_weights)
+        any_improved = False
+        if current_val_loss is not None and hasattr(self, 'monitor_op') and self.monitor_op is not None:
+            any_improved = self.monitor_op(current_val_loss - self.min_delta, self.best)
         
-        self.patience_counter = self.wait
         print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}/{self.patience}, improved: {any_improved}")
 
 class ClearMemoryCallback(Callback):
