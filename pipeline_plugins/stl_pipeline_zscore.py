@@ -165,10 +165,10 @@ class STLPipelinePlugin:
         if excluded_columns:
             print(f"\n--- Removing excluded columns from sliding windows: {excluded_columns} ---")
             
-            # Get column names from preprocessor_params (assumes column names are available)
-            column_names = preprocessor_params.get("column_names", None)
+            # Get column names from datasets (returned by preprocessor as feature_names)
+            column_names = datasets.get("feature_names", None)
             if column_names is None:
-                print("WARNING: No column names available from preprocessor, cannot exclude columns by name")
+                print("WARNING: No feature_names available from preprocessor, cannot exclude columns by name")
             else:
                 print(f"Available columns: {column_names}")
                 
@@ -192,9 +192,10 @@ class STLPipelinePlugin:
                     X_test = X_test[:, :, remaining_indices]
                     print(f"  New shapes after exclusion: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
                     
-                    # Update column names in preprocessor_params for reference
+                    # Update column names in datasets and preprocessor_params for reference
                     new_column_names = [column_names[i] for i in remaining_indices]
-                    preprocessor_params["column_names"] = new_column_names
+                    datasets["feature_names"] = new_column_names
+                    preprocessor_params["feature_names"] = new_column_names
                     print(f"  Updated column names: {new_column_names}")
                 else:
                     print("  No valid columns to exclude")
