@@ -159,14 +159,13 @@ class PreprocessorPlugin:
             x_df = aligned_data[f'x_{split}_df']
             y_df = aligned_data[f'y_{split}_df']
             
-            # Store original dataframes (baseline - untouched)
-            baseline_data[f'x_{split}_df'] = x_df
-            baseline_data[f'y_{split}_df'] = y_df
+            # Store DENORMALIZED dataframes (aligned_data was denormalized in step 2.5)
+            baseline_data[f'x_{split}_df'] = x_df  # These are now denormalized
+            baseline_data[f'y_{split}_df'] = y_df  # These are now denormalized
             
-            # Keep CLOSE prices NORMALIZED for sliding window feature generation
-            # CRITICAL FIX: DON'T denormalize here - features need normalized data!
-            close_normalized = x_df["CLOSE"].astype(np.float32).values
-            baseline_data[f'close_{split}'] = close_normalized  # Keep normalized for windowing
+            # CLOSE prices are now DENORMALIZED (from step 2.5) - sliding windows will contain real prices
+            close_denormalized = x_df["CLOSE"].astype(np.float32).values
+            baseline_data[f'close_{split}'] = close_denormalized  # Store denormalized for consistency
             
             # Extract, denormalize and trim target column for baseline usage
             target_normalized = y_df[target_column].astype(np.float32).values
@@ -184,7 +183,7 @@ class PreprocessorPlugin:
             else:
                 baseline_data[f'dates_{split}'] = None
             
-            print(f"{split.capitalize()} baseline prepared: {len(close_normalized)} samples (kept normalized), target baseline: {len(target_trimmed)} samples (denormalized)")
+            print(f"{split.capitalize()} baseline prepared: {len(close_denormalized)} samples (now denormalized), target baseline: {len(target_trimmed)} samples (denormalized)")
         
         return baseline_data
 
