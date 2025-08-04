@@ -67,7 +67,7 @@ class AntiNaiveLockProcessor:
             print("Strategy: none - returning original features")
             return x_train, x_val, x_test, {}
         elif strategy == 'selective':
-            return self._apply_conservative_preprocessing(x_train, x_val, x_test, feature_names, config)
+            return self._apply_selective_preprocessing(x_train, x_val, x_test, feature_names, config)
         else:
             print(f"WARNING: Unknown strategy '{strategy}', using conservative approach")
             return self._apply_conservative_preprocessing(x_train, x_val, x_test, feature_names, config)
@@ -163,49 +163,116 @@ class AntiNaiveLockProcessor:
         processing_stats = {'applied_transforms': {}}
         
         # Get feature categories from config with defaults
-        price_features = config.get('price_features', ['OPEN', 'LOW', 'HIGH', 'CLOSE'])
+        price_features = config.get('price_features', ['OPEN', 'LOW', 'HIGH'])
         temporal_features = config.get('temporal_features', ['day_of_week', 'hour_of_day', 'day_of_month'])
         trend_features = config.get('trend_features', ['stl_trend'])
+        stationary_indicators = config.get('stationary_indicators', ['RSI', 'MACD', 'MACD_Histogram', 'MACD_Signal', 'EMA', 
+                                          'Stochastic_%K', 'Stochastic_%D', 'ADX', 'DI+', 'DI-', 
+                                          'ATR', 'CCI', 'WilliamsR', 'Momentum', 'ROC'])
+        candlestick_patterns = config.get('candlestick_patterns', ['BC-BO', 'BH-BL', 'BH-BO', 'BO-BL'])
+        constant_daily_features = config.get('constant_daily_features', ['S&P500_Close', 'vix_close'])
+        decomposed_features = config.get('decomposed_features', ['stl_seasonal', 'stl_residual'])
+        wavelet_features = config.get('wavelet_features', ['CLOSE_wav_detail_L1', 'CLOSE_wav_detail_L2', 'CLOSE_wav_approx_L2'])
+        mtm_features = config.get('mtm_features', ['CLOSE_mtm_band_1_0.000_0.010', 'CLOSE_mtm_band_2_0.010_0.060', 
+                                 'CLOSE_mtm_band_3_0.060_0.200', 'CLOSE_mtm_band_4_0.200_0.500'])
+        subperiodicity_features = config.get('subperiodicity_features', [
+            'CLOSE_15m_tick_1', 'CLOSE_15m_tick_2', 'CLOSE_15m_tick_3', 'CLOSE_15m_tick_4',
+            'CLOSE_15m_tick_5', 'CLOSE_15m_tick_6', 'CLOSE_15m_tick_7', 'CLOSE_15m_tick_8',
+            'CLOSE_30m_tick_1', 'CLOSE_30m_tick_2', 'CLOSE_30m_tick_3', 'CLOSE_30m_tick_4',
+            'CLOSE_30m_tick_5', 'CLOSE_30m_tick_6', 'CLOSE_30m_tick_7', 'CLOSE_30m_tick_8'
+        ])
         
-        print(f"SMART ANTI-NAIVE-LOCK: Processing {len(feature_names)} features with conservative strategy...")
+        print(f"SMART ANTI-NAIVE-LOCK: Processing {len(feature_names)} features with selective strategy...")
+        print(f"Configuration: log_returns={config.get('use_log_returns', False)}, "
+              f"cyclic_encoding={config.get('use_cyclic_encoding', False)}, "
+              f"first_differences={config.get('use_first_differences', False)}, "
+              f"handle_daily={config.get('handle_constant_daily_features', False)}")
         
-        # Only apply minimal transformations to prevent over-processing
+        # Apply transformations based on feature categories and configuration
         for i, feature_name in enumerate(feature_names):
             try:
                 if feature_name in temporal_features and config.get('use_cyclic_encoding', True):
-                    # Only apply cyclic encoding to temporal features (most important)
+                    # Apply cyclic encoding to temporal features
                     x_train_processed[:, :, i] = self._apply_cyclic_encoding_simplified(x_train_processed[:, :, i], feature_name)
                     x_val_processed[:, :, i] = self._apply_cyclic_encoding_simplified(x_val_processed[:, :, i], feature_name)
                     x_test_processed[:, :, i] = self._apply_cyclic_encoding_simplified(x_test_processed[:, :, i], feature_name)
                     processing_stats['applied_transforms'][feature_name] = 'cyclic_encoding'
                     print(f"  Applied cyclic encoding to {feature_name}")
                     
-                elif feature_name in price_features and feature_name != 'CLOSE':
-                    # Apply mild standardization to price features (except CLOSE which is excluded anyway)
-                    x_train_processed[:, :, i] = self._apply_mild_standardization(x_train_processed[:, :, i])
-                    x_val_processed[:, :, i] = self._apply_mild_standardization(x_val_processed[:, :, i])
-                    x_test_processed[:, :, i] = self._apply_mild_standardization(x_test_processed[:, :, i])
-                    processing_stats['applied_transforms'][feature_name] = 'mild_standardization'
-                    print(f"  Applied mild standardization to {feature_name}")
+                elif feature_name in price_features and config.get('use_log_returns', True):
+                    # Apply log returns to price features
+                    x_train_processed[:, :, i] = self._apply_log_returns(x_train_processed[:, :, i])
+                    x_val_processed[:, :, i] = self._apply_log_returns(x_val_processed[:, :, i])
+                    x_test_processed[:, :, i] = self._apply_log_returns(x_test_processed[:, :, i])
+                    processing_stats['applied_transforms'][feature_name] = 'log_returns'
+                    print(f"  Applied log returns to {feature_name}")
+                    
+                elif feature_name in trend_features and config.get('use_first_differences', True):
+                    # Apply first differences to trend features
+                    x_train_processed[:, :, i] = self._apply_first_differences(x_train_processed[:, :, i])
+                    x_val_processed[:, :, i] = self._apply_first_differences(x_val_processed[:, :, i])
+                    x_test_processed[:, :, i] = self._apply_first_differences(x_test_processed[:, :, i])
+                    processing_stats['applied_transforms'][feature_name] = 'first_differences'
+                    print(f"  Applied first differences to {feature_name}")
+                    
+                elif feature_name in subperiodicity_features and config.get('use_log_returns', True):
+                    # Apply log returns to sub-periodicity features
+                    x_train_processed[:, :, i] = self._apply_log_returns(x_train_processed[:, :, i])
+                    x_val_processed[:, :, i] = self._apply_log_returns(x_val_processed[:, :, i])
+                    x_test_processed[:, :, i] = self._apply_log_returns(x_test_processed[:, :, i])
+                    processing_stats['applied_transforms'][feature_name] = 'log_returns'
+                    print(f"  Applied log returns to sub-periodicity {feature_name}")
+                    
+                elif feature_name in wavelet_features and config.get('use_log_returns', True):
+                    # Apply log returns to wavelet features
+                    x_train_processed[:, :, i] = self._apply_log_returns(x_train_processed[:, :, i])
+                    x_val_processed[:, :, i] = self._apply_log_returns(x_val_processed[:, :, i])
+                    x_test_processed[:, :, i] = self._apply_log_returns(x_test_processed[:, :, i])
+                    processing_stats['applied_transforms'][feature_name] = 'log_returns'
+                    print(f"  Applied log returns to wavelet {feature_name}")
+                    
+                elif feature_name in mtm_features and config.get('use_log_returns', True):
+                    # Apply log returns to MTM features
+                    x_train_processed[:, :, i] = self._apply_log_returns(x_train_processed[:, :, i])
+                    x_val_processed[:, :, i] = self._apply_log_returns(x_val_processed[:, :, i])
+                    x_test_processed[:, :, i] = self._apply_log_returns(x_test_processed[:, :, i])
+                    processing_stats['applied_transforms'][feature_name] = 'log_returns'
+                    print(f"  Applied log returns to MTM {feature_name}")
+                    
+                elif feature_name in constant_daily_features and config.get('handle_constant_daily_features', True):
+                    # Apply daily differences to constant daily features
+                    x_train_processed[:, :, i] = self._handle_constant_daily_feature(x_train_processed[:, :, i])
+                    x_val_processed[:, :, i] = self._handle_constant_daily_feature(x_val_processed[:, :, i])
+                    x_test_processed[:, :, i] = self._handle_constant_daily_feature(x_test_processed[:, :, i])
+                    processing_stats['applied_transforms'][feature_name] = 'daily_differences'
+                    print(f"  Applied daily differences to {feature_name}")
+                    
+                elif (feature_name in stationary_indicators or 
+                      feature_name in candlestick_patterns or 
+                      feature_name in decomposed_features) and config.get('preserve_stationary_indicators', True):
+                    # Preserve stationary indicators, candlestick patterns, and decomposed features
+                    processing_stats['applied_transforms'][feature_name] = 'preserved'
+                    print(f"  Preserved stationary feature {feature_name}")
                     
                 else:
-                    # Keep all other features as-is to preserve their predictive power
+                    # Default: preserve unknown features
                     processing_stats['applied_transforms'][feature_name] = 'preserved'
+                    print(f"  Preserved unknown feature {feature_name}")
                     
             except Exception as e:
                 print(f"ERROR processing feature {feature_name}: {e}")
                 processing_stats['applied_transforms'][feature_name] = f'error: {str(e)}'
         
-        # Apply very mild post-processing normalization ONLY if really necessary
-        if config.get('normalize_after_preprocessing', False):
-            print("WARNING: Skipping post-processing normalization to prevent over-normalization")
-            # x_train_processed, x_val_processed, x_test_processed, norm_stats = self._apply_feature_normalization(
-            #     x_train_processed, x_val_processed, x_test_processed, feature_names
-            # )
-            # processing_stats['normalization_stats'] = norm_stats
+        # Apply post-processing normalization if requested
+        if config.get('normalize_after_preprocessing', True):
+            print("Applying post-processing feature normalization...")
+            x_train_processed, x_val_processed, x_test_processed, norm_stats = self._apply_feature_normalization(
+                x_train_processed, x_val_processed, x_test_processed, feature_names
+            )
+            processing_stats['normalization_stats'] = norm_stats
         
-        transforms_applied = len([k for k, v in processing_stats['applied_transforms'].items() if v != 'preserved'])
-        print(f"SMART ANTI-NAIVE-LOCK: Applied conservative transforms to {transforms_applied} features (preserved {len(feature_names) - transforms_applied})")
+        transforms_applied = len([k for k, v in processing_stats['applied_transforms'].items() if v not in ['preserved', 'error']])
+        print(f"SELECTIVE ANTI-NAIVE-LOCK: Applied {transforms_applied} transforms, preserved {len(feature_names) - transforms_applied} features")
         
         return x_train_processed, x_val_processed, x_test_processed, processing_stats
     

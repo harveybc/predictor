@@ -279,9 +279,13 @@ class TargetCalculationProcessor:
                 
                 if use_returns:
                     # Calculate RAW returns from sliding window baselines: future_baseline[i+h] - baseline[i]
-                    returns = future_values - baseline_values
+                    #returns = future_values - baseline_values
                     # NO NORMALIZATION: Use raw denormalized returns as targets
-                    target_normalized = returns.astype(np.float32)
+                    #target_normalized = returns.astype(np.float32)
+
+                    # Calculate log returns: ln(future_baseline[i+h]/baseline[i])
+                    log_returns = np.log(future_values / baseline_values)
+                    target_normalized = log_returns.astype(np.float32)
                     
                     # SAMPLE VERIFICATION: Print sample raw targets
                     if i == 0 and split == 'train' and len(target_normalized) > 5:

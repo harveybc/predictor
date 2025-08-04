@@ -264,12 +264,6 @@ class STLPipelinePlugin:
             input_shape = (X_train.shape[1], X_train.shape[2]) if X_train.ndim == 3 else (X_train.shape[1],)
             predictor_plugin.build_model(input_shape=input_shape, x_train=X_train, config=config)
 
-            # Multiply y_train_dict and y_val_dict values by target_factor if present
-            #target_factor = config.get("target_factor", 1.0)
-            #if target_factor != 1.0:
-            #    print(f"Applying target_factor: {target_factor}")
-            #    y_train_dict = {k: v * target_factor for k, v in y_train_dict.items()}
-            #    y_val_dict = {k: v * target_factor for k, v in y_val_dict.items()}
 
             history, list_train_preds, list_train_unc, list_val_preds, list_val_unc = predictor_plugin.train(
                 X_train, y_train_dict, epochs=epochs, batch_size=batch_size, 
@@ -277,13 +271,9 @@ class STLPipelinePlugin:
                 x_val=X_val, y_val=y_val_dict, config=config
             )
 
-            # Divide the predictions and uncertainties by target_factor to revert the scaling
-            #if target_factor != 1.0:
-            #    print(f"Reverting target_factor: {target_factor} from predictions/uncertainties")
-            #    list_train_preds = [p / target_factor for p in list_train_preds]
-            #    list_train_unc = [u / target_factor for u in list_train_unc]
-            #    list_val_preds = [p / target_factor for p in list_val_preds]
-            #    list_val_unc = [u / target_factor for u in list_val_unc]
+            # POST-PROCESSING SECTION OF PREDICTION PIPELINE
+            # NOTE: Model predicts log returns, final prices calculated as: baseline * exp(predicted_log_return)
+            # END OF POST-PROCESSING SECTION
 
 
             # Check outputs & Calc Train/Val Metrics (All Horizons)
@@ -313,26 +303,32 @@ class STLPipelinePlugin:
                         val_unc_h = val_unc_h[:num_val_pts]
                         baseline_val_h = baseline_val[:num_val_pts].flatten()  # Flatten baseline too
                         
-                        # MAE should be calculated on the denormalized returns 
+                        # MAE should be calculated on the denormalized log returns 
                         train_mae_h = np.mean(np.abs(train_preds_h - train_target_h))
                         val_mae_h = np.mean(np.abs(val_preds_h - val_target_h))
                         
                         # For R² and price-based metrics, predictions and targets are already denormalized
-                        train_preds_denorm = train_preds_h  # Already denormalized returns
-                        train_target_denorm = train_target_h  # Already denormalized returns
-                        val_preds_denorm = val_preds_h  # Already denormalized returns
-                        val_target_denorm = val_target_h  # Already denormalized returns
+                        train_preds_denorm = train_preds_h  # Already denormalized log returns
+                        train_target_denorm = train_target_h  # Already denormalized log returns
+                        val_preds_denorm = val_preds_h  # Already denormalized log returns
+                        val_target_denorm = val_target_h  # Already denormalized log returns
                         
                         # Baselines are already denormalized from sliding windows - use directly
                         baseline_train_denorm = baseline_train_h.copy()  # Already denormalized
                         baseline_val_denorm = baseline_val_h.copy()  # Already denormalized
                         
-                        # Calculate final prices (baseline + returns if use_returns)
+                        # Calculate final prices (baseline * exp(log_returns) if use_returns)
                         if use_returns:
-                            train_target_price = baseline_train_denorm + train_target_denorm
-                            train_pred_price = baseline_train_denorm + train_preds_denorm
-                            val_target_price = baseline_val_denorm + val_target_denorm
-                            val_pred_price = baseline_val_denorm + val_preds_denorm
+                            # Clip log returns to prevent overflow in exp() (typical log returns are < 1.0)
+                            train_target_clipped = np.clip(train_target_denorm, -10, 10)
+                            train_preds_clipped = np.clip(train_preds_denorm, -10, 10)
+                            val_target_clipped = np.clip(val_target_denorm, -10, 10)
+                            val_preds_clipped = np.clip(val_preds_denorm, -10, 10)
+                            
+                            train_target_price = baseline_train_denorm * np.exp(train_target_clipped)
+                            train_pred_price = baseline_train_denorm * np.exp(train_preds_clipped)
+                            val_target_price = baseline_val_denorm * np.exp(val_target_clipped)
+                            val_pred_price = baseline_val_denorm * np.exp(val_preds_clipped)
                         else:
                             train_target_price = train_target_denorm
                             train_pred_price = train_preds_denorm
@@ -377,7 +373,7 @@ class STLPipelinePlugin:
                             print(f"  Sample X_train[0] shape: {X_train[0].shape if len(X_train) > 0 else 'N/A'}")
                             print(f"  Sample y_train[0]: {train_target_h[0]:.6f}")
                             print(f"  Sample baseline[0]: {baseline_train[0]:.6f}")
-                            print(f"  This means: Input window ending at baseline[0] should predict target at baseline[0]+H{h}")
+                            print(f"  This means: Input window ending at baseline[0] should predict log return for baseline[0]*exp(log_return) at H{h}")
                             
                             # EXACT SCALE VERIFICATION
                             if hasattr(config, 'use_normalization_json') and config.get('use_normalization_json'):
@@ -438,20 +434,24 @@ class STLPipelinePlugin:
                     baseline_test_h = baseline_test[:num_test_pts].flatten()  # Flatten baseline too
                     
                     # CRITICAL FIX: Calculate metrics in NORMALIZED space (same scale as training)
-                    # MAE should be calculated on the normalized returns (y_true scale during training)
+                    # MAE should be calculated on the normalized log returns (y_true scale during training)
                     test_mae_h = np.mean(np.abs(test_preds_h - test_target_h))
                     
-                    # Predictions and targets are already denormalized returns - use directly
-                    test_preds_denorm = test_preds_h.copy()  # Already denormalized returns
-                    test_target_denorm = test_target_h.copy()  # Already denormalized returns
+                    # Predictions and targets are already denormalized log returns - use directly
+                    test_preds_denorm = test_preds_h.copy()  # Already denormalized log returns
+                    test_target_denorm = test_target_h.copy()  # Already denormalized log returns
                     
                     # Baseline is already denormalized, use directly
                     baseline_test_denorm = baseline_test_h.copy()
                     
-                    # Calculate final prices (baseline + returns if use_returns)
+                    # Calculate final prices (baseline * exp(log_returns) if use_returns)
                     if use_returns:
-                        test_target_price = baseline_test_denorm + test_target_denorm
-                        test_pred_price = baseline_test_denorm + test_preds_denorm
+                        # Clip log returns to prevent overflow in exp() (typical log returns are < 1.0)
+                        test_target_clipped = np.clip(test_target_denorm, -10, 10)
+                        test_preds_clipped = np.clip(test_preds_denorm, -10, 10)
+                        
+                        test_target_price = baseline_test_denorm * np.exp(test_target_clipped)
+                        test_pred_price = baseline_test_denorm * np.exp(test_preds_clipped)
                     else:
                         test_target_price = test_target_denorm
                         test_pred_price = test_preds_denorm
@@ -598,17 +598,17 @@ class STLPipelinePlugin:
                 
                 try:
                     # Data from preprocessor is ALREADY DENORMALIZED - use directly
-                    # Based on target_calculation.py: outputs "raw denormalized returns" and "unnormalized baselines"
-                    preds_denorm = preds_raw.copy()  # Already denormalized returns
-                    target_denorm = target_raw.copy()  # Already denormalized returns
+                    # Based on target_calculation.py: outputs "raw denormalized log returns" and "unnormalized baselines"
+                    preds_denorm = preds_raw.copy()  # Already denormalized log returns
+                    target_denorm = target_raw.copy()  # Already denormalized log returns
                     
-                    # --- Apply FIX: Ensure baseline and denormalized returns are 1D before adding ---
+                    # --- Apply FIX: Ensure baseline and denormalized log returns are 1D before exponential ---
                     if use_returns:
                         if final_baseline is None: 
                             raise ValueError("Baseline missing.")
                         # Baseline is already denormalized from target calculation, use directly
-                        pred_price_denorm = final_baseline + preds_denorm  # (N,) + (N,) -> (N,)
-                        target_price_denorm = final_baseline + target_denorm  # (N,) + (N,) -> (N,)
+                        pred_price_denorm = final_baseline * np.exp(preds_denorm)  # (N,) * exp((N,)) -> (N,)
+                        target_price_denorm = final_baseline * np.exp(target_denorm)  # (N,) * exp((N,)) -> (N,)
                     else:
                         pred_price_denorm = preds_denorm
                         target_price_denorm = target_denorm
@@ -683,12 +683,12 @@ class STLPipelinePlugin:
             baseline_plot = final_baseline  # Already sliced, shape (num_test_points,)
 
             # CRITICAL FIX: Data from preprocessor is ALREADY DENORMALIZED - use directly!
-            # Based on target_calculation.py: "UNNORMALIZED RETURNS: Use raw denormalized returns as targets"
+            # Based on target_calculation.py: "UNNORMALIZED LOG RETURNS: Use raw denormalized log returns as targets"
             # No denormalization needed - preprocessor outputs already denormalized data
             if use_returns:
-                # Predictions and targets are already denormalized returns, baseline is already denormalized
-                pred_plot_price_flat = (baseline_plot + preds_plot_raw.flatten()).flatten()
-                target_plot_price_flat = (baseline_plot + target_plot_raw.flatten()).flatten()
+                # Predictions and targets are already denormalized log returns, baseline is already denormalized
+                pred_plot_price_flat = (baseline_plot * np.exp(preds_plot_raw.flatten())).flatten()
+                target_plot_price_flat = (baseline_plot * np.exp(target_plot_raw.flatten())).flatten()
             else:
                 # Raw predictions/targets are already denormalized
                 pred_plot_price_flat = preds_plot_raw.flatten()
@@ -744,10 +744,10 @@ class STLPipelinePlugin:
                 target_returns_sample = target_plot_raw.flatten()[:5]
                 print(f"  Calculation verification:")
                 print(f"    baseline[0:5]: {baseline_sample}")
-                print(f"    pred_returns[0:5]: {pred_returns_sample}")
-                print(f"    target_returns[0:5]: {target_returns_sample}")
-                print(f"    pred_price[0:5] = baseline + pred_returns: {baseline_sample + pred_returns_sample}")
-                print(f"    target_price[0:5] = baseline + target_returns: {baseline_sample + target_returns_sample}")
+                print(f"    pred_log_returns[0:5]: {pred_returns_sample}")
+                print(f"    target_log_returns[0:5]: {target_returns_sample}")
+                print(f"    pred_price[0:5] = baseline * exp(pred_log_returns): {baseline_sample * np.exp(pred_returns_sample)}")
+                print(f"    target_price[0:5] = baseline * exp(target_log_returns): {baseline_sample * np.exp(target_returns_sample)}")
 
             # Determine plot points and slice FLATTENED arrays
             n_plot = config.get("plot_points", self.params["plot_points"])
@@ -912,12 +912,12 @@ class STLPipelinePlugin:
             for idx, h in enumerate(config['predicted_horizons']):
                 preds_raw = list_predictions[idx][:num_val_points].flatten()  # Flatten preds
                 
-                # Predictions are already denormalized returns - use directly
-                preds_denorm = preds_raw.copy()  # Already denormalized returns
+                # Predictions are already denormalized log returns - use directly
+                preds_denorm = preds_raw.copy()  # Already denormalized log returns
                 
                 if use_returns_eval:
                     # Baseline is already denormalized from target calculation, use directly
-                    pred_price = baseline_val_eval_sliced + preds_denorm
+                    pred_price = baseline_val_eval_sliced * np.exp(preds_denorm)
                 else:
                     pred_price = preds_denorm
                 
