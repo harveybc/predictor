@@ -35,6 +35,8 @@ class PreprocessorPlugin:
         "predicted_horizons": [24, 48, 72, 96, 120, 144],
         "use_returns": True,
         "normalize_features": True,
+        "anti_naive_lock_enabled": True,
+        "feature_preprocessing_strategy": "selective",
     }
     
     plugin_debug_vars = [

@@ -13,91 +13,13 @@ import pandas as pd
 import json
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
-import os # Needed for basename check
-
 # Conditional import for plot_model
 try:
     from tensorflow.keras.utils import plot_model
 except ImportError:
     plot_model = None
-
-import tensorflow as tf
-import tensorflow.keras.backend as K
 # Assuming write_csv is correctly imported
 from app.data_handler import write_csv
-
-
-# --- Z-Score Denormalization Functions ---
-def denormalize(data, config):
-    """Denormalizes price using z-score normalization parameters from JSON."""
-    data = np.asarray(data)
-    if config.get("use_normalization_json"):
-        norm_json = config["use_normalization_json"]
-        if isinstance(norm_json, str):
-            try:
-                with open(norm_json, 'r') as f: 
-                    norm_json = json.load(f)
-            except Exception as e: 
-                print(f"WARN: Failed load norm JSON {norm_json}: {e}")
-                return data
-        if isinstance(norm_json, dict) and "CLOSE" in norm_json:
-            try:
-                if "mean" in norm_json["CLOSE"] and "std" in norm_json["CLOSE"]:
-                    # Z-score denormalization: value = (normalized * std) + mean
-                    close_mean = norm_json["CLOSE"]["mean"]
-                    close_std = norm_json["CLOSE"]["std"]
-                    return (data * close_std) + close_mean
-                else:
-                    print(f"WARN: Missing 'mean' or 'std' in norm JSON for CLOSE")
-                    return data
-            except KeyError as e: 
-                print(f"WARN: Missing key in norm JSON: {e}")
-                return data
-            except Exception as e: 
-                print(f"WARN: Error during denormalize: {e}")
-                return data
-    return data
-
-def denormalize_target_returns(data, target_returns_mean, target_returns_std, horizon_idx):
-    """For unnormalized targets, just return the data as-is since no normalization was applied."""
-    data = np.asarray(data)
-    try:
-        # Since targets are already unnormalized returns, just return them
-        return data
-    except Exception as e:
-        print(f"WARN: Error during denormalize_target_returns: {e}")
-        return data
-
-def denormalize_returns(data, config):
-    """Denormalizes return values (deltas) using z-score normalization parameters from JSON."""
-    data = np.asarray(data)
-    if config.get("use_normalization_json"):
-        norm_json = config["use_normalization_json"]
-        if isinstance(norm_json, str):
-            try:
-                with open(norm_json, 'r') as f: 
-                    norm_json = json.load(f)
-            except Exception as e: 
-                print(f"WARN: Failed load norm JSON {norm_json}: {e}")
-                return data
-        if isinstance(norm_json, dict) and "CLOSE" in norm_json:
-            try:
-                if "mean" in norm_json["CLOSE"] and "std" in norm_json["CLOSE"]:
-                    # Z-score denormalization for returns: only scale by std (no mean shift)
-                    close_std = norm_json["CLOSE"]["std"]
-                    return data * close_std
-                else:
-                    print(f"WARN: Missing 'mean' or 'std' in norm JSON for CLOSE")
-                    return data
-            except KeyError as e: 
-                print(f"WARN: Missing key in norm JSON: {e}")
-                return data
-            except Exception as e: 
-                print(f"WARN: Error during denormalize_returns: {e}")
-                return data
-    return data
-
-# --- End Denormalization Functions ---
 
 
 class STLPipelinePlugin:
@@ -120,9 +42,6 @@ class STLPipelinePlugin:
     def set_params(self, **kwargs):
         for key, value in kwargs.items(): 
             self.params[key] = value
-        config = self.params
-        # Example post-update logic (if needed):
-        # if config.get("stl_period") is not None and config.get("stl_period") > 1: ...
 
     def get_debug_info(self): 
         return {var: self.params.get(var) for var in self.plugin_debug_vars}
@@ -202,31 +121,14 @@ class STLPipelinePlugin:
         else:
             print("No columns specified for exclusion")
         
-        # CRITICAL DEBUG: Verify dates are properly extracted from preprocessor
-        print(f"\nDEBUG - Dates extracted from preprocessor:")
-        print(f"  test_dates: {type(test_dates)} length={len(test_dates) if test_dates is not None else 'None'}")
-        if test_dates is not None and len(test_dates) > 0:
-            print(f"  test_dates sample: {test_dates[:3] if len(test_dates) >= 3 else test_dates}")
-            print(f"  test_dates types: {[type(d) for d in test_dates[:3]] if len(test_dates) >= 3 else [type(d) for d in test_dates]}")
-        else:
-            print(f"  ERROR: test_dates is None or empty! Preprocessor should return last element timestamps from sliding windows.")
-            print(f"  This means preprocessor is not correctly extracting dates from DATE_TIME column")
-        
         baseline_train = datasets.get("baseline_train")
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
         test_close_prices = datasets.get("test_close_prices")  # Future prices for target calculation
         
-        # DEBUG: Check if baseline data is properly loaded
-        print(f"\nDEBUG - Baseline data verification:")
-        print(f"  baseline_train: {type(baseline_train)} length={len(baseline_train) if baseline_train is not None else 'None'}")
-        print(f"  baseline_val: {type(baseline_val)} length={len(baseline_val) if baseline_val is not None else 'None'}")
-        print(f"  baseline_test: {type(baseline_test)} length={len(baseline_test) if baseline_test is not None else 'None'}")
-        if baseline_test is not None and len(baseline_test) > 0:
-            print(f"  baseline_test sample: {baseline_test[:3]}")
-        else:
-            print(f"  ERROR: baseline_test is empty or None - plotting will fail!")
-            print(f"  Check target calculation processor output")
+        # Verify test dates are available for output
+        if test_dates is None or len(test_dates) == 0:
+            print(f"WARNING: test_dates not available from preprocessor - using indices for output")
         
         # Get target normalization stats from preprocessor_params (now lists per horizon)
         if "target_returns_means" not in preprocessor_params or "target_returns_stds" not in preprocessor_params:
@@ -348,41 +250,6 @@ class STLPipelinePlugin:
                         val_unc_mean_h = np.mean(np.abs(val_unc_denorm))
                         val_snr_h = np.mean(val_pred_price) / (val_unc_mean_h + 1e-9)
                         
-                        # Print scale verification for debugging
-                        if iteration == 1 and idx == 0:  # Only print once per run
-                            print(f"\nSCALE VERIFICATION H{h}:")
-                            print(f"  Normalized targets: mean={np.mean(train_target_h):.6f}, std={np.std(train_target_h):.6f}")
-                            print(f"  Normalized predictions: mean={np.mean(train_preds_h):.6f}, std={np.std(train_preds_h):.6f}")
-                            print(f"  MAE (normalized space): {train_mae_h:.6f}")
-                            print(f"  JSON normalization params: mean={target_returns_means[idx]:.6f}, std={target_returns_stds[idx]:.6f}")
-                            print(f"  Expected: targets normalized using JSON stats (consistent with baseline)")
-                            
-                            # Additional verification: check if all horizons use same normalization
-                            all_same_std = all(abs(std - target_returns_stds[0]) < 1e-8 for std in target_returns_stds)
-                            all_same_mean = all(abs(mean - target_returns_means[0]) < 1e-8 for mean in target_returns_means)
-                            print(f"  Consistent normalization across horizons: std={all_same_std}, mean={all_same_mean}")
-                            
-                            # ALIGNMENT VERIFICATION: Check data lengths match
-                            print(f"\nALIGNMENT VERIFICATION:")
-                            print(f"  X_train shape: {X_train.shape}")
-                            print(f"  y_train H{h} length: {len(train_target_h)}")
-                            print(f"  baseline_train length: {len(baseline_train)}")
-                            print(f"  Trimming should make all lengths match after windowing")
-                            
-                            # SAMPLE DATA VERIFICATION: Check first few samples
-                            print(f"  Sample X_train[0] shape: {X_train[0].shape if len(X_train) > 0 else 'N/A'}")
-                            print(f"  Sample y_train[0]: {train_target_h[0]:.6f}")
-                            print(f"  Sample baseline[0]: {baseline_train[0]:.6f}")
-                            print(f"  This means: Input window ending at baseline[0] should predict log return for baseline[0]*exp(log_return) at H{h}")
-                            
-                            # EXACT SCALE VERIFICATION
-                            if hasattr(config, 'use_normalization_json') and config.get('use_normalization_json'):
-                                norm_file = config['use_normalization_json']
-                                print(f"  Using normalization file: {norm_file}")
-                                print(f"  Target returns normalized with JSON std: {target_returns_stds[idx]:.6f}")
-                                print(f"  Baseline denormalized with same JSON stats")
-                                print(f"  ✅ Same scale confirmed: y_true and baseline use identical normalization")
-                        
                         metrics_results["Train"]["MAE"][h].append(train_mae_h)
                         metrics_results["Train"]["R2"][h].append(train_r2_h)
                         metrics_results["Train"]["Uncertainty"][h].append(train_unc_mean_h)
@@ -433,7 +300,7 @@ class STLPipelinePlugin:
                     test_unc_h = test_unc_h[:num_test_pts]
                     baseline_test_h = baseline_test[:num_test_pts].flatten()  # Flatten baseline too
                     
-                    # CRITICAL FIX: Calculate metrics in NORMALIZED space (same scale as training)
+                    # Calculate metrics in NORMALIZED space (same scale as training)
                     # MAE should be calculated on the normalized log returns (y_true scale during training)
                     test_mae_h = np.mean(np.abs(test_preds_h - test_target_h))
                     
@@ -545,7 +412,7 @@ class STLPipelinePlugin:
             num_test_points = min(len(arr) for arr in arrays_to_check_len if arr is not None)
             print(f"Determined consistent output length: {num_test_points}")
             
-            # CRITICAL FIX: Use proper dates from preprocessor (last element timestamps from sliding windows)
+            # Use proper dates from preprocessor (last element timestamps from sliding windows)
             if test_dates is not None and len(test_dates) > 0:
                 final_dates = list(test_dates[:num_test_points])
                 print(f"Using proper dates from preprocessor: {len(final_dates)} dates")
@@ -557,19 +424,14 @@ class STLPipelinePlugin:
                 final_dates = list(range(num_test_points))
             final_baseline = baseline_test[:num_test_points].flatten() if baseline_test is not None else None  # Flatten baseline here
 
-            # CRITICAL DEBUG: Check if final_baseline is valid
+            # Check if final_baseline is valid
             if final_baseline is None or len(final_baseline) == 0:
-                print(f"CRITICAL ERROR: final_baseline is empty!")
-                print(f"  baseline_test: {type(baseline_test)} length={len(baseline_test) if baseline_test is not None else 'None'}")
-                print(f"  num_test_points: {num_test_points}")
-                print(f"  This will cause plotting to fail - need to fix baseline data in preprocessor")
-                # Try to create a fallback baseline from predictions for debugging
+                print(f"ERROR: baseline_test is empty - plotting may fail!")
+                # Try to create a fallback baseline from predictions
                 if len(list_test_preds[0]) > 0:
-                    print(f"  Creating fallback baseline from first prediction for debugging...")
-                    # Use the first prediction as a fallback baseline (this is just for debugging)
                     fallback_value = np.mean(list_test_preds[0][:10]) if len(list_test_preds[0]) > 10 else 1000.0
                     final_baseline = np.full(num_test_points, fallback_value)
-                    print(f"  Fallback baseline created with value: {fallback_value}")
+                    print(f"  Using fallback baseline with value: {fallback_value}")
                 else:
                     raise ValueError("No baseline data available for plotting and no fallback possible")
 
@@ -627,8 +489,6 @@ class STLPipelinePlugin:
             # --- Save Predictions DataFrame (output_file) ---
             output_file = config.get("output_file", self.params["output_file"])
             try:
-                print("\nChecking final lengths for Predictions DataFrame:")
-                [print(f"  - {k}: {len(v)}") for k, v in output_data.items()]
                 if len(set(len(v) for v in output_data.values())) > 1: 
                     raise ValueError("Length mismatch (Predictions).")
                 
@@ -650,8 +510,6 @@ class STLPipelinePlugin:
             uncertainties_file = config.get("uncertainties_file", self.params.get("uncertainties_file"))
             if uncertainties_file:
                 try:
-                    print("\nChecking final lengths for Uncertainty DataFrame:")
-                    [print(f"  - {k}: {len(v)}") for k, v in uncertainty_data.items()]
                     if len(set(len(v) for v in uncertainty_data.values())) > 1: 
                         raise ValueError("Length mismatch (Uncertainty).")
                     
@@ -682,7 +540,7 @@ class STLPipelinePlugin:
             unc_plot_raw = list_test_unc[plotted_index][:num_test_points]  # Shape (num_test_points,) or (num_test_points, 1)
             baseline_plot = final_baseline  # Already sliced, shape (num_test_points,)
 
-            # CRITICAL FIX: Data from preprocessor is ALREADY DENORMALIZED - use directly!
+            # Data from preprocessor is ALREADY DENORMALIZED - use directly!
             # Based on target_calculation.py: "UNNORMALIZED LOG RETURNS: Use raw denormalized log returns as targets"
             # No denormalization needed - preprocessor outputs already denormalized data
             if use_returns:
@@ -698,89 +556,24 @@ class STLPipelinePlugin:
             unc_plot_denorm_flat = unc_plot_raw.flatten()
             true_plot_price_flat = baseline_plot.flatten()
 
-            # CRITICAL DEBUG: Check actual data values before plotting
-            print(f"\nDEBUG - Plotting data verification:")
-            print(f"  pred_plot_price_flat shape: {pred_plot_price_flat.shape}, dtype: {pred_plot_price_flat.dtype}")
-            print(f"  pred_plot_price_flat sample: {pred_plot_price_flat[:5]}")
-            print(f"  pred_plot_price_flat stats: min={np.min(pred_plot_price_flat):.6f}, max={np.max(pred_plot_price_flat):.6f}, mean={np.mean(pred_plot_price_flat):.6f}")
-            print(f"  pred_plot_price_flat NaN count: {np.isnan(pred_plot_price_flat).sum()}")
-            print(f"  pred_plot_price_flat inf count: {np.isinf(pred_plot_price_flat).sum()}")
-            
-            print(f"  target_plot_price_flat shape: {target_plot_price_flat.shape}, dtype: {target_plot_price_flat.dtype}")
-            print(f"  target_plot_price_flat sample: {target_plot_price_flat[:5]}")
-            print(f"  target_plot_price_flat stats: min={np.min(target_plot_price_flat):.6f}, max={np.max(target_plot_price_flat):.6f}, mean={np.mean(target_plot_price_flat):.6f}")
-            print(f"  target_plot_price_flat NaN count: {np.isnan(target_plot_price_flat).sum()}")
-            
-            print(f"  true_plot_price_flat shape: {true_plot_price_flat.shape}, dtype: {true_plot_price_flat.dtype}")
-            print(f"  true_plot_price_flat sample: {true_plot_price_flat[:5]}")
-            print(f"  true_plot_price_flat stats: min={np.min(true_plot_price_flat):.6f}, max={np.max(true_plot_price_flat):.6f}, mean={np.mean(true_plot_price_flat):.6f}")
-            print(f"  true_plot_price_flat NaN count: {np.isnan(true_plot_price_flat).sum()}")
-            
-            print(f"  final_dates length: {len(final_dates)}")
-            print(f"  final_dates sample: {final_dates[:5] if len(final_dates) >= 5 else final_dates}")
-            print(f"  final_dates type: {type(final_dates[0]) if len(final_dates) > 0 else 'empty'}")
-            
-            # Check if all values are identical (would cause invisible plot)
-            pred_unique = len(np.unique(pred_plot_price_flat[~np.isnan(pred_plot_price_flat)]))
-            target_unique = len(np.unique(target_plot_price_flat[~np.isnan(target_plot_price_flat)]))
-            true_unique = len(np.unique(true_plot_price_flat[~np.isnan(true_plot_price_flat)]))
-            print(f"  Unique values: pred={pred_unique}, target={target_unique}, true={true_unique}")
-            
-            if pred_unique <= 1 or target_unique <= 1 or true_unique <= 1:
-                print(f"  ⚠️  WARNING: One or more arrays have identical values - this will cause invisible plot lines!")
-                print(f"  This suggests an issue with data processing or denormalization")
-            
-            # Raw data verification (before any processing)
-            print(f"\nDEBUG - Raw data before processing:")
-            print(f"  preds_plot_raw shape: {preds_plot_raw.shape}, sample: {preds_plot_raw.flatten()[:5]}")
-            print(f"  target_plot_raw shape: {target_plot_raw.shape}, sample: {target_plot_raw.flatten()[:5]}")
-            print(f"  baseline_plot shape: {baseline_plot.shape}, sample: {baseline_plot[:5]}")
-            print(f"  use_returns: {use_returns}")
-            
-            # Check for calculation issues
-            if use_returns:
-                baseline_sample = baseline_plot[:5]
-                pred_returns_sample = preds_plot_raw.flatten()[:5]
-                target_returns_sample = target_plot_raw.flatten()[:5]
-                print(f"  Calculation verification:")
-                print(f"    baseline[0:5]: {baseline_sample}")
-                print(f"    pred_log_returns[0:5]: {pred_returns_sample}")
-                print(f"    target_log_returns[0:5]: {target_returns_sample}")
-                print(f"    pred_price[0:5] = baseline * exp(pred_log_returns): {baseline_sample * np.exp(pred_returns_sample)}")
-                print(f"    target_price[0:5] = baseline * exp(target_log_returns): {baseline_sample * np.exp(target_returns_sample)}")
-
             # Determine plot points and slice FLATTENED arrays
             n_plot = config.get("plot_points", self.params["plot_points"])
             num_avail_plot = len(pred_plot_price_flat)  # Length of data available for plot
             plot_slice = slice(max(0, num_avail_plot - n_plot), num_avail_plot)
 
-            # CRITICAL FIX: Handle pandas Timestamp objects properly for plotting
-            # Convert pandas Timestamps to matplotlib-compatible format or use continuous indices
-            print(f"  PLOT FIX: Processing {len(final_dates)} dates for matplotlib plotting...")
-            print(f"  Date type: {type(final_dates[0]) if len(final_dates) > 0 else 'empty'}")
-            
+            # Handle pandas Timestamp objects properly for plotting
             if len(final_dates) > 0 and hasattr(final_dates[0], 'to_pydatetime'):
-                # Convert pandas Timestamps to Python datetime objects for matplotlib
                 try:
                     dates_for_plot = [d.to_pydatetime() if hasattr(d, 'to_pydatetime') else d for d in final_dates]
-                    print(f"  Converted pandas Timestamps to Python datetime objects")
-                    print(f"  Original date range: {final_dates[0]} to {final_dates[-1]}")
-                    print(f"  Converted date range: {dates_for_plot[0]} to {dates_for_plot[-1]}")
-                    
-                    # Check for gaps that might still cause plotting issues
+                    # Check for large time gaps that might cause plotting issues
                     if len(dates_for_plot) > 2:
                         gap1 = dates_for_plot[1] - dates_for_plot[0]
                         gap2 = dates_for_plot[2] - dates_for_plot[1]
-                        print(f"  Date gaps: {gap1} vs {gap2}")
                         if abs(gap2.total_seconds() - gap1.total_seconds()) > 3600:  # More than 1 hour difference
-                            print(f"  ⚠️  Large time gaps detected - using continuous indices instead")
                             dates_for_plot = list(range(len(final_dates)))
-                except Exception as e:
-                    print(f"  Error converting timestamps: {e}, falling back to continuous indices")
+                except Exception:
                     dates_for_plot = list(range(len(final_dates)))
             else:
-                # Fallback to continuous indices
-                print(f"  Using continuous indices for plotting")
                 dates_for_plot = list(range(len(final_dates)))
             
             dates_plot_final = dates_for_plot[plot_slice]
@@ -789,38 +582,12 @@ class STLPipelinePlugin:
             true_plot_final = true_plot_price_flat[plot_slice]
             unc_plot_final = unc_plot_denorm_flat[plot_slice]  # This is now 1D
 
-            print(f"  Plot slice: {plot_slice}")
-            print(f"  Final plot data lengths: dates={len(dates_plot_final)}, pred={len(pred_plot_final)}, target={len(target_plot_final)}, true={len(true_plot_final)}")
-            print(f"  Final plot date range: {dates_plot_final[0]} to {dates_plot_final[-1]}")
-            print(f"  Final plot pred sample: {pred_plot_final[:3] if len(pred_plot_final) > 3 else pred_plot_final}")
-            print(f"  Final plot target sample: {target_plot_final[:3] if len(target_plot_final) > 3 else target_plot_final}")
-            print(f"  Final plot true sample: {true_plot_final[:3] if len(true_plot_final) > 3 else true_plot_final}")
-            
-            # CRITICAL DEBUG: Verify all arrays have valid ranges for plotting
-            print(f"\nDEBUG - Final plotting arrays verification:")
-            print(f"  dates_plot_final type: {type(dates_plot_final[0]) if len(dates_plot_final) > 0 else 'empty'}")
-            print(f"  All arrays same length: {len(dates_plot_final) == len(pred_plot_final) == len(target_plot_final) == len(true_plot_final)}")
-            print(f"  Value ranges:")
-            print(f"    pred: [{np.min(pred_plot_final):.6f}, {np.max(pred_plot_final):.6f}]")
-            print(f"    target: [{np.min(target_plot_final):.6f}, {np.max(target_plot_final):.6f}]")
-            print(f"    true: [{np.min(true_plot_final):.6f}, {np.max(true_plot_final):.6f}]")
-            print(f"    dates: [{dates_plot_final[0]}, {dates_plot_final[-1]}]")
-
-            # Plotting - EXACT same as working stl_pipeline.py
-            print(f"  MATPLOTLIB DEBUG: Creating plot with {len(dates_plot_final)} data points...")
+            # Plotting
             plt.figure(figsize=(14, 7))
             
-            # Plot each line individually with explicit debugging
-            print(f"  Plotting prediction line: {len(dates_plot_final)} x {len(pred_plot_final)} points")
             plt.plot(dates_plot_final, pred_plot_final, label=f"Pred Price H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
-            
-            print(f"  Plotting target line: {len(dates_plot_final)} x {len(target_plot_final)} points")
             plt.plot(dates_plot_final, target_plot_final, label=f"Target Price H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
-            
-            print(f"  Plotting actual line: {len(dates_plot_final)} x {len(true_plot_final)} points")
             plt.plot(dates_plot_final, true_plot_final, label="Actual Price", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
-            
-            print(f"  Plotting uncertainty band: {len(dates_plot_final)} x {len(unc_plot_final)} points")
             plt.fill_between(dates_plot_final, pred_plot_final - abs(unc_plot_final), pred_plot_final + abs(unc_plot_final),
                              color=config.get("plot_color_uncertainty", "green"), alpha=0.2, label=f"Uncertainty H{plotted_horizon}", zorder=0)
             plt.title(f"Predictions vs Target/Actual (H={plotted_horizon})")

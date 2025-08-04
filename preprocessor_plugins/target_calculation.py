@@ -183,11 +183,11 @@ class TargetCalculationProcessor:
         # We calculate targets entirely from the sliding window dataset
         
         # Now calculate targets for each horizon
-        print(f"Processing targets for horizons: {predicted_horizons} (Use Returns={use_returns})...")
+        print(f"Processing targets for horizons: {predicted_horizons} (Use Log Returns={use_returns})...")
         
         if use_returns:
-            # UNNORMALIZED RETURNS: Use raw denormalized returns as targets
-            print("\nCalculating UNNORMALIZED returns as targets...")
+            # UNNORMALIZED LOG RETURNS: Use raw denormalized log returns as targets
+            print("\nCalculating UNNORMALIZED log returns as targets...")
             
             # Calculate targets for each horizon
             for split in splits:
