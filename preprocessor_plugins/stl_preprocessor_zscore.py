@@ -244,6 +244,32 @@ class PreprocessorPlugin:
         # --- 3. Prepare Baseline Data ---
         baseline_data = self._prepare_baseline_data(aligned_data, config)
         
+        # --- 3.5. DENORMALIZE ALL FEATURES BEFORE SLIDING WINDOWS CREATION ---
+        print("\n--- 3.5. Denormalizing ALL Features Before Sliding Windows ---")
+        norm_json = load_normalization_json(config)
+        
+        # Denormalize all splits
+        for split in ['train', 'val', 'test']:
+            x_key = f'x_{split}_df'
+            if x_key in baseline_data:
+                df = baseline_data[x_key]
+                print(f"  Denormalizing {split} features...")
+                
+                # Denormalize each column
+                for column in df.columns:
+                    if column in norm_json:
+                        original_data = df[column].values
+                        denormalized_data = denormalize(original_data, norm_json, column)
+                        df[column] = denormalized_data
+                        print(f"    ✅ {column}: {len(denormalized_data)} values denormalized")
+                    else:
+                        print(f"    ⚠️  {column}: No normalization params found, keeping original")
+                
+                baseline_data[x_key] = df
+                print(f"  ✅ {split}: All features denormalized")
+        
+        print("✅ All features denormalized - sliding windows will contain real-scale data")
+        
         # --- 4. Generate Windowed Features FIRST (required for baseline extraction) ---
         windowed_data = self.sliding_windows_processor.generate_windowed_features(baseline_data, config)
         

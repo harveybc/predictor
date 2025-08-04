@@ -81,41 +81,33 @@ class TargetCalculationProcessor:
             print(f"    ✅ Extracted {len(baselines_normalized)} normalized baselines from windows")
             print(f"    📊 Baseline normalized stats: mean={np.mean(baselines_normalized):.6f}, std={np.std(baselines_normalized):.6f}")
             
-            # 🔑 STEP 2: Denormalize baselines using JSON parameters (CRITICAL)
-            print(f"  🔄 Denormalizing baselines using {target_column} parameters...")
+            # 🔑 STEP 2: Use baselines directly from sliding windows (already denormalized)
+            print(f"  🎯 Using baselines directly from sliding windows (already denormalized)...")
             
-            # STRICT NaN CHECK: Normalized baselines must NEVER have NaN
-            nan_count_normalized = np.sum(np.isnan(baselines_normalized))
-            if nan_count_normalized > 0:
-                print(f"❌ FATAL ERROR: Found {nan_count_normalized} NaN values in NORMALIZED baselines from sliding windows!")
+            # STRICT NaN CHECK: Baselines from sliding windows must NEVER have NaN
+            nan_count_baselines = np.sum(np.isnan(baselines_normalized))
+            if nan_count_baselines > 0:
+                print(f"❌ FATAL ERROR: Found {nan_count_baselines} NaN values in baselines from sliding windows!")
                 print(f"    Sliding windows matrix shape: {X_matrix.shape}")
                 print(f"    Target feature index: {target_feature_index}")
-                print(f"    Sample normalized baselines: {baselines_normalized[:10]}")
-                raise ValueError(f"CRITICAL: NaN values detected in normalized baselines from sliding windows matrix - this should NEVER happen!")
+                print(f"    Sample baselines: {baselines_normalized[:10]}")
+                raise ValueError(f"CRITICAL: NaN values detected in baselines from sliding windows matrix - this should NEVER happen!")
             
-            baselines_denormalized = denormalize(baselines_normalized, norm_json, target_column)
+            # No denormalization needed - sliding windows already contain denormalized data
+            baselines_denormalized = baselines_normalized  # These are already denormalized
             
-            # STRICT NaN CHECK: Denormalized baselines must NEVER have NaN
-            nan_count_denormalized = np.sum(np.isnan(baselines_denormalized))
-            if nan_count_denormalized > 0:
-                print(f"❌ FATAL ERROR: Found {nan_count_denormalized} NaN values in DENORMALIZED baselines!")
-                print(f"    Normalized baselines sample: {baselines_normalized[:10]}")
-                print(f"    Denormalized baselines sample: {baselines_denormalized[:10]}")
-                print(f"    Normalization JSON for {target_column}: {norm_json.get(target_column, 'NOT FOUND')}")
-                raise ValueError(f"CRITICAL: NaN values created during denormalization - check normalization parameters!")
-            
-            # STRICT ZERO CHECK: Denormalized baselines must NEVER be zero (for log returns)
+            # STRICT ZERO CHECK: Baselines must NEVER be zero (for log returns)
             zero_count = np.sum(baselines_denormalized == 0)
             if zero_count > 0:
-                print(f"❌ FATAL ERROR: Found {zero_count} ZERO values in denormalized baselines!")
-                print(f"    Sample denormalized baselines: {baselines_denormalized[:20]}")
+                print(f"❌ FATAL ERROR: Found {zero_count} ZERO values in baselines!")
+                print(f"    Sample baselines: {baselines_denormalized[:20]}")
                 zero_indices = np.where(baselines_denormalized == 0)[0]
                 print(f"    Zero indices: {zero_indices[:10]}")
                 for idx in zero_indices[:5]:
-                    print(f"      Index {idx}: normalized={baselines_normalized[idx]}, denormalized={baselines_denormalized[idx]}")
-                raise ValueError(f"CRITICAL: Zero values in denormalized baselines will cause log(0) = -inf in log returns!")
+                    print(f"      Index {idx}: baseline={baselines_denormalized[idx]}")
+                raise ValueError(f"CRITICAL: Zero values in baselines will cause log(0) = -inf in log returns!")
                 
-            print(f"    ✅ Baseline denormalized stats: mean={np.mean(baselines_denormalized):.6f}, std={np.std(baselines_denormalized):.6f}")
+            print(f"    ✅ Baseline stats (already denormalized): mean={np.mean(baselines_denormalized):.6f}, std={np.std(baselines_denormalized):.6f}")
             
             # 🔑 STEP 3: Extract dates from original CSV ONLY for alignment (not for data)
             print(f"  📅 Extracting and aligning dates...")
