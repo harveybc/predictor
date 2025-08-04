@@ -261,6 +261,14 @@ class PreprocessorPlugin:
                         original_data = df[column].values
                         denormalized_data = denormalize(original_data, norm_json, column)
                         df[column] = denormalized_data
+                        
+                        # DEBUG: Verify denormalization worked
+                        if column == 'CLOSE':
+                            print(f"    🔍 {column} DENORMALIZATION CHECK:")
+                            print(f"      Original (normalized): min={np.min(original_data):.6f}, max={np.max(original_data):.6f}, mean={np.mean(original_data):.6f}")
+                            print(f"      Denormalized: min={np.min(denormalized_data):.6f}, max={np.max(denormalized_data):.6f}, mean={np.mean(denormalized_data):.6f}")
+                            print(f"      Should be positive prices: {np.all(denormalized_data > 0)}")
+                        
                         print(f"    ✅ {column}: {len(denormalized_data)} values denormalized")
                     else:
                         print(f"    ⚠️  {column}: No normalization params found, keeping original")
