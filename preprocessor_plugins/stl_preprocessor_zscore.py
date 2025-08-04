@@ -11,6 +11,7 @@ except ImportError:
 from .helpers import load_normalization_json, denormalize, verify_date_consistency
 from .sliding_windows import SlidingWindowsProcessor
 from .target_calculation import TargetCalculationProcessor
+from .anti_naive_lock import AntiNaiveLockProcessor
 
 
 class PreprocessorPlugin:
@@ -46,6 +47,7 @@ class PreprocessorPlugin:
         self.scalers = {}
         self.sliding_windows_processor = SlidingWindowsProcessor(self.scalers)
         self.target_calculation_processor = TargetCalculationProcessor()
+        self.anti_naive_lock_processor = AntiNaiveLockProcessor()
 
     def set_params(self, **kwargs):
         for key, value in kwargs.items(): 
@@ -243,6 +245,36 @@ class PreprocessorPlugin:
         # --- 4. Generate Windowed Features FIRST (required for baseline extraction) ---
         windowed_data = self.sliding_windows_processor.generate_windowed_features(baseline_data, config)
         
+        # --- 4.5. Apply Anti-Naive-Lock Preprocessing to Sliding Windows ---
+        print("\n--- Applying Anti-Naive-Lock Preprocessing to Sliding Windows ---")
+        x_train_orig = windowed_data.get('X_train')
+        x_val_orig = windowed_data.get('X_val') 
+        x_test_orig = windowed_data.get('X_test')
+        feature_names = windowed_data.get('feature_names', [])
+        
+        if x_train_orig is not None and x_val_orig is not None and x_test_orig is not None:
+            print(f"Original sliding window shapes: Train={x_train_orig.shape}, Val={x_val_orig.shape}, Test={x_test_orig.shape}")
+            print(f"Feature names: {feature_names}")
+            
+            # Apply anti-naive-lock preprocessing
+            x_train_processed, x_val_processed, x_test_processed, processing_stats = (
+                self.anti_naive_lock_processor.process_sliding_windows(
+                    x_train_orig, x_val_orig, x_test_orig, feature_names, config
+                )
+            )
+            
+            # Update windowed_data with processed matrices
+            windowed_data['X_train'] = x_train_processed
+            windowed_data['X_val'] = x_val_processed
+            windowed_data['X_test'] = x_test_processed
+            windowed_data['anti_naive_lock_stats'] = processing_stats
+            
+            print(f"Processed sliding window shapes: Train={x_train_processed.shape}, Val={x_val_processed.shape}, Test={x_test_processed.shape}")
+            print("Anti-naive-lock preprocessing completed successfully")
+        else:
+            print("WARNING: Could not apply anti-naive-lock preprocessing - missing sliding window data")
+        
+        # --- 5. Calculate Sliding Windows Baselines FROM the windowed matrix ---
         # --- 5. Calculate Sliding Windows Baselines FROM the windowed matrix ---
         sliding_windows_data = self.target_calculation_processor.calculate_sliding_window_baselines(windowed_data, aligned_data, config)
         
