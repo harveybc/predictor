@@ -802,7 +802,7 @@ class Plugin:
             # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
-                units=1, activation='tanh',
+                units=1, activation='linear',
                 kernel_posterior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: posterior_mean_field_custom(dt, sh, bs, tr, nm),
                 kernel_prior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: prior_fn(dt, sh, bs, tr, nm),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT, name=flipout_layer_name
@@ -814,7 +814,7 @@ class Plugin:
                 name=f"bayesian_output{branch_suffix}"
             )(lstm_output)
 
-            bias_layer_branch = Dense(units=1, activation='tanh', kernel_initializer=random_normal_initializer_44,
+            bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44,
                                       name=f"deterministic_bias{branch_suffix}")(lstm_output)
 
             # --- Final Head Output ---
