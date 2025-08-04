@@ -83,7 +83,38 @@ class TargetCalculationProcessor:
             
             # 🔑 STEP 2: Denormalize baselines using JSON parameters (CRITICAL)
             print(f"  🔄 Denormalizing baselines using {target_column} parameters...")
+            
+            # STRICT NaN CHECK: Normalized baselines must NEVER have NaN
+            nan_count_normalized = np.sum(np.isnan(baselines_normalized))
+            if nan_count_normalized > 0:
+                print(f"❌ FATAL ERROR: Found {nan_count_normalized} NaN values in NORMALIZED baselines from sliding windows!")
+                print(f"    Sliding windows matrix shape: {X_matrix.shape}")
+                print(f"    Target feature index: {target_feature_index}")
+                print(f"    Sample normalized baselines: {baselines_normalized[:10]}")
+                raise ValueError(f"CRITICAL: NaN values detected in normalized baselines from sliding windows matrix - this should NEVER happen!")
+            
             baselines_denormalized = denormalize(baselines_normalized, norm_json, target_column)
+            
+            # STRICT NaN CHECK: Denormalized baselines must NEVER have NaN
+            nan_count_denormalized = np.sum(np.isnan(baselines_denormalized))
+            if nan_count_denormalized > 0:
+                print(f"❌ FATAL ERROR: Found {nan_count_denormalized} NaN values in DENORMALIZED baselines!")
+                print(f"    Normalized baselines sample: {baselines_normalized[:10]}")
+                print(f"    Denormalized baselines sample: {baselines_denormalized[:10]}")
+                print(f"    Normalization JSON for {target_column}: {norm_json.get(target_column, 'NOT FOUND')}")
+                raise ValueError(f"CRITICAL: NaN values created during denormalization - check normalization parameters!")
+            
+            # STRICT ZERO CHECK: Denormalized baselines must NEVER be zero (for log returns)
+            zero_count = np.sum(baselines_denormalized == 0)
+            if zero_count > 0:
+                print(f"❌ FATAL ERROR: Found {zero_count} ZERO values in denormalized baselines!")
+                print(f"    Sample denormalized baselines: {baselines_denormalized[:20]}")
+                zero_indices = np.where(baselines_denormalized == 0)[0]
+                print(f"    Zero indices: {zero_indices[:10]}")
+                for idx in zero_indices[:5]:
+                    print(f"      Index {idx}: normalized={baselines_normalized[idx]}, denormalized={baselines_denormalized[idx]}")
+                raise ValueError(f"CRITICAL: Zero values in denormalized baselines will cause log(0) = -inf in log returns!")
+                
             print(f"    ✅ Baseline denormalized stats: mean={np.mean(baselines_denormalized):.6f}, std={np.std(baselines_denormalized):.6f}")
             
             # 🔑 STEP 3: Extract dates from original CSV ONLY for alignment (not for data)
@@ -264,6 +295,33 @@ class TargetCalculationProcessor:
                 baseline_values = sliding_baselines[:max_valid_samples]
                 future_values = sliding_baselines[h:h+max_valid_samples]  # Future baselines from sliding windows
                 
+                # STRICT NaN CHECK: baseline_values must NEVER have NaN
+                nan_count_baseline = np.sum(np.isnan(baseline_values))
+                if nan_count_baseline > 0:
+                    print(f"❌ FATAL ERROR: Found {nan_count_baseline} NaN values in baseline_values for H{h} {split}!")
+                    print(f"    sliding_baselines sample: {sliding_baselines[:10]}")
+                    print(f"    baseline_values sample: {baseline_values[:10]}")
+                    print(f"    max_valid_samples: {max_valid_samples}")
+                    raise ValueError(f"CRITICAL: NaN values in baseline_values - data corruption detected!")
+                
+                # STRICT NaN CHECK: future_values must NEVER have NaN
+                nan_count_future = np.sum(np.isnan(future_values))
+                if nan_count_future > 0:
+                    print(f"❌ FATAL ERROR: Found {nan_count_future} NaN values in future_values for H{h} {split}!")
+                    print(f"    sliding_baselines sample: {sliding_baselines[:10]}")
+                    print(f"    future_values sample: {future_values[:10]}")
+                    print(f"    horizon offset: {h}, max_valid_samples: {max_valid_samples}")
+                    raise ValueError(f"CRITICAL: NaN values in future_values - data corruption detected!")
+                
+                # STRICT ZERO CHECK: baseline_values must NEVER be zero (for log returns)
+                zero_count_baseline = np.sum(baseline_values == 0)
+                if zero_count_baseline > 0:
+                    print(f"❌ FATAL ERROR: Found {zero_count_baseline} ZERO values in baseline_values for H{h} {split}!")
+                    print(f"    baseline_values sample: {baseline_values[:20]}")
+                    zero_indices = np.where(baseline_values == 0)[0]
+                    print(f"    Zero indices: {zero_indices[:10]}")
+                    raise ValueError(f"CRITICAL: Zero values in baseline_values will cause division by zero!")
+                
                 # Verify alignment
                 if len(baseline_values) != len(future_values):
                     print(f"ERROR: Alignment mismatch for H={h} {split}: baseline={len(baseline_values)}, future={len(future_values)}")
@@ -278,21 +336,74 @@ class TargetCalculationProcessor:
                     print(f"  ✅ CORRECT: Using ONLY sliding window baselines for targets")
                 
                 if use_returns:
-                    # Calculate RAW returns from sliding window baselines: future_baseline[i+h] - baseline[i]
-                    #returns = future_values - baseline_values
-                    # NO NORMALIZATION: Use raw denormalized returns as targets
-                    #target_normalized = returns.astype(np.float32)
-
                     # Calculate log returns: ln(future_baseline[i+h]/baseline[i])
-                    log_returns = np.log(future_values / baseline_values)
+                    ratio = future_values / baseline_values
+                    
+                    # STRICT NaN CHECK: ratio must NEVER have NaN
+                    nan_count_ratio = np.sum(np.isnan(ratio))
+                    if nan_count_ratio > 0:
+                        print(f"❌ FATAL ERROR: Found {nan_count_ratio} NaN values in ratio calculation for H{h} {split}!")
+                        print(f"    baseline_values shape: {baseline_values.shape}, dtype: {baseline_values.dtype}")
+                        print(f"    future_values shape: {future_values.shape}, dtype: {future_values.dtype}")
+                        print(f"    Sample baseline_values: {baseline_values[:10]}")
+                        print(f"    Sample future_values: {future_values[:10]}")
+                        print(f"    Sample ratios: {ratio[:10]}")
+                        nan_indices = np.where(np.isnan(ratio))[0]
+                        print(f"    NaN ratio indices: {nan_indices[:10]}")
+                        for idx in nan_indices[:5]:
+                            print(f"      Index {idx}: baseline={baseline_values[idx]}, future={future_values[idx]}, ratio={ratio[idx]}")
+                        raise ValueError(f"CRITICAL: NaN values in ratio calculation - this indicates data corruption!")
+                    
+                    # STRICT INF CHECK: ratio must NEVER have infinite values
+                    inf_count_ratio = np.sum(np.isinf(ratio))
+                    if inf_count_ratio > 0:
+                        print(f"❌ FATAL ERROR: Found {inf_count_ratio} INFINITE values in ratio calculation for H{h} {split}!")
+                        print(f"    Sample ratios: {ratio[:10]}")
+                        inf_indices = np.where(np.isinf(ratio))[0]
+                        print(f"    Infinite ratio indices: {inf_indices[:10]}")
+                        for idx in inf_indices[:5]:
+                            print(f"      Index {idx}: baseline={baseline_values[idx]}, future={future_values[idx]}, ratio={ratio[idx]}")
+                        raise ValueError(f"CRITICAL: Infinite values in ratio calculation - this indicates division by zero!")
+                    
+                    # STRICT NEGATIVE/ZERO CHECK: ratio must NEVER be <= 0 (for log returns)
+                    negative_zero_count = np.sum(ratio <= 0)
+                    if negative_zero_count > 0:
+                        print(f"❌ FATAL ERROR: Found {negative_zero_count} NEGATIVE/ZERO values in ratio calculation for H{h} {split}!")
+                        print(f"    Sample ratios: {ratio[:10]}")
+                        bad_indices = np.where(ratio <= 0)[0]
+                        print(f"    Negative/zero ratio indices: {bad_indices[:10]}")
+                        for idx in bad_indices[:5]:
+                            print(f"      Index {idx}: baseline={baseline_values[idx]}, future={future_values[idx]}, ratio={ratio[idx]}")
+                        raise ValueError(f"CRITICAL: Negative or zero ratios will cause log(<=0) = NaN or -inf!")
+                    
+                    log_returns = np.log(ratio)
+                    
+                    # STRICT NaN CHECK: log_returns must NEVER have NaN after calculation
+                    nan_count_log = np.sum(np.isnan(log_returns))
+                    if nan_count_log > 0:
+                        print(f"❌ FATAL ERROR: Found {nan_count_log} NaN values in log_returns for H{h} {split}!")
+                        print(f"    Sample log_returns: {log_returns[:10]}")
+                        nan_indices = np.where(np.isnan(log_returns))[0]
+                        print(f"    NaN log_returns indices: {nan_indices[:10]}")
+                        for idx in nan_indices[:5]:
+                            print(f"      Index {idx}: baseline={baseline_values[idx]}, future={future_values[idx]}, ratio={ratio[idx]}, log={log_returns[idx]}")
+                        raise ValueError(f"CRITICAL: NaN values in log_returns - mathematical error detected!")
+                    
                     target_normalized = log_returns.astype(np.float32)
+                    
+                    # FINAL STRICT NaN CHECK: target_normalized must NEVER have NaN
+                    nan_count_final = np.sum(np.isnan(target_normalized))
+                    if nan_count_final > 0:
+                        print(f"❌ FATAL ERROR: Found {nan_count_final} NaN values in final target_normalized for H{h} {split}!")
+                        print(f"    Sample target_normalized: {target_normalized[:10]}")
+                        raise ValueError(f"CRITICAL: NaN values in final targets - this should be impossible at this point!")
                     
                     # SAMPLE VERIFICATION: Print sample raw targets
                     if i == 0 and split == 'train' and len(target_normalized) > 5:
-                        print(f"  Sample RAW return targets from sliding windows: [{target_normalized[0]:.6f}, {target_normalized[1]:.6f}, {target_normalized[2]:.6f}]")
-                        print(f"  Target processing: NO NORMALIZATION (raw denormalized returns from sliding windows)")
                         actual_mean = np.mean(target_normalized)
                         actual_std = np.std(target_normalized)
+                        print(f"  Sample RAW return targets from sliding windows: [{target_normalized[0]:.6f}, {target_normalized[1]:.6f}, {target_normalized[2]:.6f}]")
+                        print(f"  Target processing: NO NORMALIZATION (raw denormalized returns from sliding windows)")
                         print(f"  Actual target stats: mean={actual_mean:.6f}, std={actual_std:.6f}")
                         print(f"  ✅ TARGETS CALCULATED FROM SLIDING WINDOW BASELINES ONLY")
                 else:
