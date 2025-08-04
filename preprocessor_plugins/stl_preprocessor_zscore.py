@@ -241,26 +241,32 @@ class PreprocessorPlugin:
         # --- 2. Align Indices ---
         aligned_data = self._align_indices(x_train_df, y_train_df, x_val_df, y_val_df, x_test_df, y_test_df)
         
-        # --- 3. Prepare Baseline Data ---
-        baseline_data = self._prepare_baseline_data(aligned_data, config)
+        # --- 2.5. DENORMALIZE ALL FEATURES BEFORE BASELINE DATA PREPARATION ---
+        print("\n--- 2.5. Denormalizing ALL Features Before Baseline Data ---")
+        print("🔍 DENORMALIZATION DEBUG: Starting denormalization process...")
         
-        # --- 3.5. DENORMALIZE ALL FEATURES BEFORE SLIDING WINDOWS CREATION ---
-        print("\n--- 3.5. Denormalizing ALL Features Before Sliding Windows ---")
         norm_json = load_normalization_json(config)
+        print(f"🔍 DENORMALIZATION DEBUG: Loaded normalization JSON with {len(norm_json)} features")
         
-        # Denormalize all splits
+        # Denormalize all splits BEFORE storing in baseline_data
         for split in ['train', 'val', 'test']:
             x_key = f'x_{split}_df'
-            if x_key in baseline_data:
-                df = baseline_data[x_key]
+            print(f"🔍 DENORMALIZATION DEBUG: Processing {split} split with key {x_key}")
+            
+            if x_key in aligned_data:
+                df = aligned_data[x_key]
                 print(f"  Denormalizing {split} features...")
+                print(f"  🔍 DEBUG: DataFrame shape: {df.shape}, columns: {list(df.columns)}")
+                
+                # Create a copy to avoid modifying original
+                df_denormalized = df.copy()
                 
                 # Denormalize each column
-                for column in df.columns:
+                for column in df_denormalized.columns:
                     if column in norm_json:
-                        original_data = df[column].values
+                        original_data = df_denormalized[column].values
                         denormalized_data = denormalize(original_data, norm_json, column)
-                        df[column] = denormalized_data
+                        df_denormalized[column] = denormalized_data
                         
                         # DEBUG: Verify denormalization worked
                         if column == 'CLOSE':
@@ -273,10 +279,17 @@ class PreprocessorPlugin:
                     else:
                         print(f"    ⚠️  {column}: No normalization params found, keeping original")
                 
-                baseline_data[x_key] = df
-                print(f"  ✅ {split}: All features denormalized")
+                # Replace the original with denormalized version
+                aligned_data[x_key] = df_denormalized
+                print(f"  ✅ {split}: All features denormalized and stored")
+            else:
+                print(f"  ❌ ERROR: Key {x_key} not found in aligned_data!")
+                print(f"     Available keys: {list(aligned_data.keys())}")
         
         print("✅ All features denormalized - sliding windows will contain real-scale data")
+        
+        # --- 3. Prepare Baseline Data ---
+        baseline_data = self._prepare_baseline_data(aligned_data, config)
         
         # --- 4. Generate Windowed Features FIRST (required for baseline extraction) ---
         windowed_data = self.sliding_windows_processor.generate_windowed_features(baseline_data, config)
