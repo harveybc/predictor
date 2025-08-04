@@ -100,24 +100,34 @@ class SlidingWindowsProcessor:
         for split in splits:
             print(f"\nProcessing {split} split...")
             
-            # Get original normalized dataframe - this contains ALL the features we need
+            # Get DENORMALIZED dataframe - these should contain real-scale values from step 2.5
             x_df = baseline_data[f'x_{split}_df']
             dates = baseline_data[f'dates_{split}']
             
-            # CRITICAL FIX: Use original normalized columns directly from CSV
-            # The CSV already contains normalized data - no additional transformations needed
-            print("Using original normalized features directly from CSV (no transformations)...")
+            # CRITICAL: Use DENORMALIZED columns from aligned_data (processed in step 2.5)
+            # The DataFrames in baseline_data should now contain denormalized data
+            print("Using DENORMALIZED features from preprocessor step 2.5...")
             
-            # Get ALL columns from the original dataframe (all are already normalized)
+            # Get ALL columns from the DENORMALIZED dataframe (real-scale values)
             feature_columns = [col for col in x_df.columns]  # Use ALL columns as-is
             features = {}
             
-            print(f"Available normalized features: {feature_columns}")
+            print(f"Available DENORMALIZED features: {feature_columns}")
             
-            # Use all normalized features directly without any transformations
+            # Use all DENORMALIZED features directly without any transformations
             for col in feature_columns:
                 features[col] = x_df[col].values.astype(np.float32)
                 print(f"  Added feature: {col} (length: {len(features[col])})")
+                
+                # DEBUG: Check if CLOSE prices are actually denormalized (should be > 0 for prices)
+                if col == 'CLOSE':
+                    sample_values = features[col][:10]
+                    print(f"  🔍 DEBUG: {col} sample values: {sample_values}")
+                    print(f"  🔍 DEBUG: {col} stats: min={np.min(features[col]):.6f}, max={np.max(features[col]):.6f}, mean={np.mean(features[col]):.6f}")
+                    if np.any(features[col] <= 0):
+                        print(f"  ❌ CRITICAL: {col} contains non-positive values - denormalization failed!")
+                    else:
+                        print(f"  ✅ {col} values are positive - denormalization successful")
             
             # All features should have the same length (from same dataframe)
             base_len = len(x_df)
