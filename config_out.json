@@ -13,6 +13,7 @@
     "use_wavelets": true,
     "use_multi_tapper": true,
     "normalize_features": true,
+    "normalize_after_preprocessing": false,
     "use_preprocessed_data": true,
     "expected_feature_count": 55,
     "date_column": "DATE_TIME",
