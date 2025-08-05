@@ -124,6 +124,15 @@ class SlidingWindowsProcessor:
                     sample_values = features[col][:10]
                     print(f"  🔍 DEBUG: {col} sample values: {sample_values}")
                     print(f"  🔍 DEBUG: {col} stats: min={np.min(features[col]):.6f}, max={np.max(features[col]):.6f}, mean={np.mean(features[col]):.6f}")
+                    
+                    # Check for reasonable price ranges (typical stock/forex prices)
+                    if np.mean(features[col]) > 10000:
+                        print(f"  ⚠️  WARNING: {col} values are very large (mean={np.mean(features[col]):.2f})")
+                        print(f"      This may cause training instability due to large feature scales")
+                    elif np.mean(features[col]) < 0.01:
+                        print(f"  ⚠️  WARNING: {col} values are very small (mean={np.mean(features[col]):.6f})")
+                        print(f"      This may indicate normalization artifacts")
+                    
                     if np.any(features[col] <= 0):
                         print(f"  ❌ CRITICAL: {col} contains non-positive values - denormalization failed!")
                     else:
@@ -190,6 +199,37 @@ class SlidingWindowsProcessor:
         
         # Store feature names (same for all splits)
         windowed_data['feature_names'] = feature_names
+        
+        # CRITICAL DIAGNOSTIC: Check feature scales for training stability
+        print(f"\n=== FEATURE SCALE DIAGNOSTIC ===")
+        if len(feature_names) > 0 and 'X_train' in windowed_data:
+            X_sample = windowed_data['X_train']
+            if X_sample.shape[0] > 0:
+                print(f"Analyzing feature scales for training stability...")
+                for i, fname in enumerate(feature_names):
+                    feature_values = X_sample[:, :, i].flatten()
+                    valid_values = feature_values[np.isfinite(feature_values)]
+                    
+                    if len(valid_values) > 0:
+                        f_mean = np.mean(valid_values)
+                        f_std = np.std(valid_values)
+                        f_min = np.min(valid_values)
+                        f_max = np.max(valid_values)
+                        f_range = f_max - f_min
+                        
+                        print(f"  {fname}: mean={f_mean:.4f}, std={f_std:.4f}, range=[{f_min:.4f}, {f_max:.4f}]")
+                        
+                        # Check for problematic scales
+                        if abs(f_mean) > 1000 or f_std > 1000:
+                            print(f"    ⚠️  SCALE WARNING: Large values may cause gradient issues")
+                        elif abs(f_mean) < 0.001 or f_std < 0.001:
+                            print(f"    ⚠️  SCALE WARNING: Very small values may cause vanishing gradients")
+                        elif f_range > 10000:
+                            print(f"    ⚠️  SCALE WARNING: Very large range may cause instability")
+                        else:
+                            print(f"    ✅ Scale looks reasonable for neural network training")
+                    else:
+                        print(f"  {fname}: No valid values found!")
         
         print(f"Denormalized windowed features generated for all splits.")
         print(f"Included denormalized features: {feature_names}")

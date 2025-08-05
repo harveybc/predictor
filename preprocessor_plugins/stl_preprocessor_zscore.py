@@ -281,39 +281,11 @@ class PreprocessorPlugin:
         baseline_data_denorm = self._prepare_baseline_data(aligned_denorm_data, config)
         windowed_data_denorm = self.sliding_windows_processor.generate_windowed_features(baseline_data_denorm, config)
         
-        # --- STEP 3: Extract Baselines (last element of each window for target_column) ---
-        print("\n--- STEP 3: Extract Baselines from Denormalized Sliding Windows ---")
-        target_column = config.get("target_column", "CLOSE")
-        feature_names = windowed_data_denorm.get('feature_names', [])
-        
-        if target_column not in feature_names:
-            raise ValueError(f"Target column '{target_column}' not found in features: {feature_names}")
-        
-        target_feature_index = feature_names.index(target_column)
-        baselines_denorm = {}
-        
-        for split in ['train', 'val', 'test']:
-            X_matrix = windowed_data_denorm[f'X_{split}']
-            if X_matrix.shape[0] > 0:
-                target_windows = X_matrix[:, :, target_feature_index]
-                baselines_denorm[f'baseline_{split}'] = target_windows[:, -1]  # Last element of each window
-                print(f"  {split}: Extracted {len(baselines_denorm[f'baseline_{split}'])} baselines")
-            else:
-                baselines_denorm[f'baseline_{split}'] = np.array([])
-        
-        # --- STEP 4: Calculate Targets using Target Calculation Processor ---
-        print("\n--- STEP 4: Calculate Targets using Target Calculation Processor ---")
+        # --- STEP 3: Calculate targets using sliding windows baselines directly ---
+        print("\n--- STEP 3: Calculate targets using sliding windows baselines directly ---")
         
         # Use the target calculation processor to compute targets from sliding window baselines
-        # First prepare baseline data with sliding window baselines
-        baseline_data_denorm['sliding_baseline_train'] = baselines_denorm['baseline_train']
-        baseline_data_denorm['sliding_baseline_val'] = baselines_denorm['baseline_val'] 
-        baseline_data_denorm['sliding_baseline_test'] = baselines_denorm['baseline_test']
-        baseline_data_denorm['sliding_baseline_train_dates'] = windowed_data_denorm.get('x_dates_train')
-        baseline_data_denorm['sliding_baseline_val_dates'] = windowed_data_denorm.get('x_dates_val')
-        baseline_data_denorm['sliding_baseline_test_dates'] = windowed_data_denorm.get('x_dates_test')
-        
-        # Calculate targets using the proper target calculation processor
+        # The sliding windows processor already calculated the baselines correctly
         target_data = self.target_calculation_processor.calculate_targets(baseline_data_denorm, windowed_data_denorm, config)
         
         # --- STEP 5: REMOVED - Skip Selective Preprocessing Step (anti-naive-lock applied to sliding windows instead) ---

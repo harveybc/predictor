@@ -178,43 +178,63 @@ class TargetCalculationProcessor:
         self.target_returns_means = []
         self.target_returns_stds = []
         
-        # Extract and denormalize target column for each split
-        # USE SLIDING WINDOW BASELINES (already denormalized from sliding windows)
+        # STEP 1: Extract baselines directly from sliding windows matrix
+        print("\n✅ EXTRACTING BASELINES DIRECTLY FROM SLIDING WINDOWS MATRIX")
+        
+        feature_names = windowed_data.get('feature_names', [])
+        if target_column not in feature_names:
+            raise ValueError(f"Target column '{target_column}' not found in windowed features: {feature_names}")
+        
+        target_feature_index = feature_names.index(target_column)
+        print(f"✅ Target column '{target_column}' found at feature index {target_feature_index}")
+        
         denorm_targets = {}
         baseline_targets = {}
         baseline_dates = {}
         
-        print("\n✅ USING SLIDING WINDOW BASELINES (pre-calculated and denormalized)")
-        
         for split in splits:
             print(f"\nProcessing {split} targets...")
             
-            # Use pre-calculated sliding window baselines (already denormalized)
-            sliding_baseline_key = f'sliding_baseline_{split}'
-            sliding_dates_key = f'sliding_baseline_{split}_dates'
-            
-            if sliding_baseline_key not in baseline_data:
-                raise ValueError(f"Sliding window baseline not found for {split}. Check sliding window calculation.")
-            
-            # Get denormalized baselines from sliding windows
-            sliding_baselines = baseline_data[sliding_baseline_key]
-            sliding_dates = baseline_data[sliding_dates_key]
-            
-            if len(sliding_baselines) == 0:
-                print(f"WARN: No sliding window baselines available for {split}")
+            # Extract baselines directly from sliding windows matrix
+            X_key = f'X_{split}'
+            if X_key not in windowed_data:
+                print(f"WARN: No sliding window data for {split}")
                 denorm_targets[split] = np.array([])
                 baseline_targets[split] = np.array([])
                 baseline_dates[split] = np.array([])
                 continue
             
-            # Store the sliding window baselines (already properly aligned and denormalized)
-            denorm_targets[split] = sliding_baselines  # These are the baseline values for each window
-            baseline_targets[split] = sliding_baselines
-            baseline_dates[split] = sliding_dates
+            X_matrix = windowed_data[X_key]
+            if X_matrix.shape[0] == 0:
+                print(f"WARN: Empty sliding windows matrix for {split}")
+                denorm_targets[split] = np.array([])
+                baseline_targets[split] = np.array([])
+                baseline_dates[split] = np.array([])
+                continue
             
-            print(f"✅ {split}: {len(sliding_baselines)} sliding window baselines loaded")
-            print(f"    Baseline sample: {sliding_baselines[:3]}")
-            print(f"    Will calculate targets from sliding window data only")
+            # Extract baselines from sliding windows (last value of each window for target column)
+            target_windows = X_matrix[:, :, target_feature_index]  # Shape: (num_windows, window_size)
+            sliding_baselines = target_windows[:, -1]  # Last value of each window: (num_windows,)
+            
+            print(f"✅ {split}: {len(sliding_baselines)} sliding window baselines extracted")
+            print(f"    Baseline sample: {sliding_baselines[:3] if len(sliding_baselines) >= 3 else sliding_baselines}")
+            
+            # STRICT VALIDATION: Baselines must be positive prices (denormalized)
+            if np.any(sliding_baselines <= 0):
+                negative_count = np.sum(sliding_baselines <= 0)
+                print(f"❌ CRITICAL ERROR: Found {negative_count} NON-POSITIVE values in baselines!")
+                print(f"    This indicates sliding windows contain NORMALIZED data instead of DENORMALIZED prices!")
+                raise ValueError(f"CRITICAL: Non-positive baselines indicate denormalization failed!")
+            
+            # Store baselines for this split
+            denorm_targets[split] = sliding_baselines
+            baseline_targets[split] = sliding_baselines
+            
+            # Get dates from windowed data
+            dates_key = f'x_dates_{split}'
+            baseline_dates[split] = windowed_data.get(dates_key, None)
+            
+            print(f"✅ {split}: {len(sliding_baselines)} sliding window baselines ready for target calculation")
         
         # NOW CALCULATE FUTURE VALUES FROM SLIDING WINDOW BASELINES ONLY
         # We calculate targets entirely from the sliding window dataset
@@ -325,17 +345,57 @@ class TargetCalculationProcessor:
                     log_returns = np.log(ratio)
                     all_training_targets.extend(log_returns)
         
-        # Calculate global normalization stats from all training targets
+        # CRITICAL FIX: Calculate per-horizon normalization stats instead of global
+        # Different horizons can have different return characteristics
         if len(all_training_targets) > 0 and use_returns:
-            global_mean = np.mean(all_training_targets)
-            global_std = np.std(all_training_targets)
-            global_std = max(global_std, 1e-8)  # Prevent division by zero
+            print("Calculating PER-HORIZON normalization statistics for better target scaling...")
             
-            # Use the same stats for all horizons
-            self.target_returns_means = [global_mean] * len(predicted_horizons)
-            self.target_returns_stds = [global_std] * len(predicted_horizons)
+            # Calculate stats for each horizon separately
+            horizon_means = []
+            horizon_stds = []
             
-            print(f"Global target normalization stats: mean={global_mean:.6f}, std={global_std:.6f}")
+            for i, h in enumerate(predicted_horizons):
+                horizon_targets = []
+                
+                # Collect training targets for this specific horizon only
+                for split in ['train']:
+                    sliding_baselines = denorm_targets[split]
+                    if len(sliding_baselines) == 0:
+                        continue
+                    
+                    max_valid_samples = min_samples_per_split[split]
+                    if max_valid_samples <= 0:
+                        continue
+                    
+                    baseline_values = sliding_baselines[:max_valid_samples]
+                    future_values = sliding_baselines[h:h+max_valid_samples]
+                    
+                    if len(baseline_values) != len(future_values) or len(baseline_values) == 0:
+                        continue
+                    
+                    ratio = future_values / baseline_values
+                    if np.any((ratio <= 0) | np.isnan(ratio) | np.isinf(ratio)):
+                        continue
+                    log_returns = np.log(ratio)
+                    horizon_targets.extend(log_returns)
+                
+                # Calculate stats for this horizon
+                if len(horizon_targets) > 0:
+                    h_mean = np.mean(horizon_targets)
+                    h_std = np.std(horizon_targets)
+                    h_std = max(h_std, 1e-8)  # Prevent division by zero
+                    horizon_means.append(h_mean)
+                    horizon_stds.append(h_std)
+                    print(f"  H{h}: mean={h_mean:.6f}, std={h_std:.6f} ({len(horizon_targets)} samples)")
+                else:
+                    print(f"  H{h}: WARNING - No valid targets found, using defaults")
+                    horizon_means.append(0.0)
+                    horizon_stds.append(1.0)
+            
+            self.target_returns_means = horizon_means
+            self.target_returns_stds = horizon_stds
+            
+            print(f"Per-horizon normalization complete: {len(predicted_horizons)} horizons")
         else:
             print("WARNING: No valid training targets found for normalization")
             self.target_returns_means = [0.0] * len(predicted_horizons)
@@ -345,7 +405,7 @@ class TargetCalculationProcessor:
         for i, h in enumerate(predicted_horizons):
             print(f"\nCalculating targets for horizon {h}...")
             
-            # Get normalization stats for this horizon (same for all horizons now)
+            # Get normalization stats for this horizon (now different for each horizon)
             mean_h = self.target_returns_means[i]
             std_h = self.target_returns_stds[i]
             
@@ -461,12 +521,12 @@ class TargetCalculationProcessor:
                             print(f"      Index {idx}: baseline={baseline_values[idx]}, future={future_values[idx]}, ratio={ratio[idx]}, log={log_returns[idx]}")
                         raise ValueError(f"CRITICAL: NaN values in log_returns - mathematical error detected!")
                     
-                    # CRITICAL FIX: Apply normalization using global stats (calculated from all training data)
-                    # This ensures consistent normalization across all horizons and splits
-                    if use_returns and len(all_training_targets) > 0:
+                    # CRITICAL FIX: Apply normalization using per-horizon stats (calculated for this specific horizon)
+                    # This ensures appropriate scaling for each horizon's characteristics
+                    if use_returns and std_h > 0:
                         target_normalized = (log_returns - mean_h) / std_h
                     else:
-                        target_normalized = log_returns  # No normalization if no training data
+                        target_normalized = log_returns  # No normalization if no valid stats
                     
                     target_normalized = target_normalized.astype(np.float32)
                     

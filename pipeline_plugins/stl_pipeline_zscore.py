@@ -176,14 +176,15 @@ class STLPipelinePlugin:
             # --- STEP 10: DE-TRANSFORM PREDICTIONS IMMEDIATELY AFTER TRAIN METHOD ---
             print("\n--- STEP 10: De-transforming predictions immediately after training ---")
             
-            # First: Denormalize target predictions back to log returns
-            target_mean = target_returns_means[0]  # All horizons use same normalization
-            target_std = target_returns_stds[0]
-            
+            # CRITICAL FIX: Use per-horizon normalization stats for proper denormalization
             list_train_denorm_preds = []
             list_val_denorm_preds = []
             
             for idx, h in enumerate(predicted_horizons):
+                # Use horizon-specific normalization stats
+                target_mean = target_returns_means[idx]
+                target_std = target_returns_stds[idx]
+                
                 # Denormalize predictions from normalized space back to log returns
                 train_normalized_preds = list_train_preds[idx].flatten()
                 train_log_returns = train_normalized_preds * target_std + target_mean
@@ -193,16 +194,19 @@ class STLPipelinePlugin:
                 val_log_returns = val_normalized_preds * target_std + target_mean
                 list_val_denorm_preds.append(val_log_returns)
                 
-                print(f"  H{h}: Denormalized predictions from normalized space to log returns")
+                print(f"  H{h}: Denormalized predictions using mean={target_mean:.6f}, std={target_std:.6f}")
             
             # --- STEP 10B: DENORMALIZE TARGETS TO MATCH DENORMALIZED PREDICTIONS ---
             print("\n--- STEP 10B: Denormalizing targets to match predictions ---")
             
-            # First: Denormalize targets from normalized space back to log returns
             list_train_denorm_targets = []
             list_val_denorm_targets = []
             
             for idx, h in enumerate(predicted_horizons):
+                # Use horizon-specific normalization stats for targets too
+                target_mean = target_returns_means[idx]
+                target_std = target_returns_stds[idx]
+                
                 # Train targets: denormalize from normalized space back to log returns
                 train_normalized_targets = y_train_list[idx].flatten()
                 train_log_return_targets = train_normalized_targets * target_std + target_mean
@@ -213,7 +217,7 @@ class STLPipelinePlugin:
                 val_log_return_targets = val_normalized_targets * target_std + target_mean
                 list_val_denorm_targets.append(val_log_return_targets)
                 
-                print(f"  H{h}: Denormalized targets from normalized space to log returns")
+                print(f"  H{h}: Denormalized targets using mean={target_mean:.6f}, std={target_std:.6f}")
             
             # --- CRITICAL FIX: Use consistent length and baseline slicing for both predictions and targets ---
             print("\n--- STEP 10C: Ensuring consistent baseline alignment for predictions and targets ---")
@@ -304,10 +308,13 @@ class STLPipelinePlugin:
                         val_target_price = val_target_h      # Already full prices
                         val_pred_price = val_preds_h         # Already full prices
                         
-                        # CRITICAL FIX: Make uncertainty processing consistent across all splits
-                        # Uncertainties represent log return std, only scale by target_std (same as test)
-                        train_unc_denorm = train_unc_h * target_std  # Convert from normalized to log return scale
-                        val_unc_denorm = val_unc_h * target_std    # Convert from normalized to log return scale
+                        # CRITICAL FIX: Use horizon-specific uncertainty denormalization
+                        # Get the horizon-specific target std for this horizon
+                        horizon_target_std = target_returns_stds[idx]
+                        
+                        # Uncertainties represent log return std, scale by horizon-specific target_std
+                        train_unc_denorm = train_unc_h * horizon_target_std  # Convert from normalized to log return scale
+                        val_unc_denorm = val_unc_h * horizon_target_std    # Convert from normalized to log return scale
                         
                         # MAE should be calculated on the full prices (not log returns)
                         train_mae_h = np.mean(np.abs(train_pred_price - train_target_price))
@@ -362,28 +369,33 @@ class STLPipelinePlugin:
             # --- STEP 11: DE-TRANSFORM TEST PREDICTIONS USING SAME LOGIC AS TRAINING/VALIDATION ---
             print("\n--- STEP 11: De-transforming test predictions using consistent logic ---")
             
-            # First: Denormalize test predictions from normalized space back to log returns
-            target_mean = target_returns_means[0]
-            target_std = target_returns_stds[0]
-            
+            # CRITICAL FIX: Use per-horizon normalization stats for test predictions
             list_test_denorm_preds = []
             for idx, h in enumerate(predicted_horizons):
+                # Use horizon-specific normalization stats
+                target_mean = target_returns_means[idx]
+                target_std = target_returns_stds[idx]
+                
                 # Denormalize predictions from normalized space back to log returns
                 test_normalized_preds = list_test_preds[idx].flatten()
                 test_log_returns = test_normalized_preds * target_std + target_mean
                 list_test_denorm_preds.append(test_log_returns)
-                print(f"  H{h}: Denormalized test predictions from normalized space to log returns")
+                print(f"  H{h}: Denormalized test predictions using mean={target_mean:.6f}, std={target_std:.6f}")
             
             # --- STEP 11B: DENORMALIZE TEST TARGETS TO MATCH PREDICTIONS ---
             print("\n--- STEP 11B: Denormalizing test targets to match predictions ---")
             
             list_test_denorm_targets = []
             for idx, h in enumerate(predicted_horizons):
+                # Use horizon-specific normalization stats for test targets too
+                target_mean = target_returns_means[idx]
+                target_std = target_returns_stds[idx]
+                
                 # Test targets: denormalize from normalized space back to log returns
                 test_normalized_targets = y_test_list[idx].flatten()
                 test_log_return_targets = test_normalized_targets * target_std + target_mean
                 list_test_denorm_targets.append(test_log_return_targets)
-                print(f"  H{h}: Denormalized test targets from normalized space to log returns")
+                print(f"  H{h}: Denormalized test targets using mean={target_mean:.6f}, std={target_std:.6f}")
             
             # --- STEP 11C: CONSISTENT BASELINE ALIGNMENT FOR TEST DATA ---
             print("\n--- STEP 11C: Ensuring consistent baseline alignment for test predictions and targets ---")
@@ -437,10 +449,14 @@ class STLPipelinePlugin:
                     test_target_price = test_target_h  # Already full prices
                     test_pred_price = test_preds_h     # Already full prices
                     
-                    # CRITICAL FIX: Uncertainties represent log return std, only scale by target_std
+                    # CRITICAL FIX: Use horizon-specific uncertainty denormalization for test
+                    # Get the horizon-specific target std for this horizon
+                    horizon_target_std = target_returns_stds[idx]
+                    
+                    # Uncertainties represent log return std, scale by horizon-specific target_std
                     # Do NOT multiply by baseline (price level) - that was causing massive uncertainty inflation
                     unc_normalized = test_unc_h
-                    test_unc_denorm = unc_normalized * target_std  # Convert from normalized to log return scale
+                    test_unc_denorm = unc_normalized * horizon_target_std  # Convert from normalized to log return scale
                     
                     # MAE should be calculated on the full prices (consistent with training/validation)
                     test_mae_h = np.mean(np.abs(test_pred_price - test_target_price))
