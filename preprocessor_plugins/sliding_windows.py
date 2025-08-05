@@ -131,23 +131,23 @@ class SlidingWindowsProcessor:
             
             # All features should have the same length (from same dataframe)
             base_len = len(x_df)
-            aligned_features = features  # No alignment needed - all from same dataframe
+            denormalized_features = features  # No alignment needed - all from same dataframe
             
             # Align dates to match features
             dates_aligned = dates[-base_len:] if dates is not None and base_len > 0 else None
             
-            # Create sliding windows for each feature
+            # Create sliding windows for each denormalized feature
             X_channels = []
             feature_names = []
             x_dates = None
             first_feature_processed = False
             
             # Process features in consistent order (maintain column order from CSV)
-            windowing_order = feature_columns  # Use original CSV column order
+            windowing_order = feature_columns  # Use denormalized CSV column order
             print(f"Feature order for windowing: {windowing_order}")
             
             for name in windowing_order:
-                series = aligned_features[name]
+                series = denormalized_features[name]
                 print(f"Windowing feature: {name}...", end="")
                 
                 try:
@@ -178,21 +178,21 @@ class SlidingWindowsProcessor:
             if not X_channels:
                 raise RuntimeError(f"No feature channels available after windowing for {split}!")
             
-            # Stack all feature channels
-            X_combined = np.stack(X_channels, axis=-1).astype(np.float32)
+            # Stack all denormalized feature channels
+            X_combined_denormalized = np.stack(X_channels, axis=-1).astype(np.float32)
             
             # Store results for this split
-            windowed_data[f'X_{split}'] = X_combined
+            windowed_data[f'X_{split}'] = X_combined_denormalized
             windowed_data[f'x_dates_{split}'] = x_dates
-            windowed_data[f'num_samples_{split}'] = X_combined.shape[0]
+            windowed_data[f'num_samples_{split}'] = X_combined_denormalized.shape[0]
             
-            print(f"Final X shape for {split}: {X_combined.shape}")
+            print(f"Final X shape for {split}: {X_combined_denormalized.shape}")
         
         # Store feature names (same for all splits)
         windowed_data['feature_names'] = feature_names
         
-        print(f"Windowed features generated for all splits.")
-        print(f"Included features: {feature_names}")
+        print(f"Denormalized windowed features generated for all splits.")
+        print(f"Included denormalized features: {feature_names}")
         
         return windowed_data
     

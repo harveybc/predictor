@@ -168,12 +168,12 @@ class PreprocessorPlugin:
             baseline_data[f'close_{split}'] = close_denormalized  # Store denormalized for consistency
             
             # Extract, denormalize and trim target column for baseline usage
-            target_normalized = y_df[target_column].astype(np.float32).values
-            target_denormalized = denormalize(target_normalized, norm_json, target_column)
+            target_from_y_normalized = y_df[target_column].astype(np.float32).values
+            target_from_y_denormalized = denormalize(target_from_y_normalized, norm_json, target_column)
             
             # Trim first window_size-1 elements to align with sliding windows
-            target_trimmed = target_denormalized[window_size-1:]
-            baseline_data[f'target_baseline_{split}'] = target_trimmed
+            target_from_y_trimmed = target_from_y_denormalized[window_size-1:]
+            baseline_data[f'target_baseline_{split}'] = target_from_y_trimmed
             
             # Extract and trim dates
             dates = x_df.index if isinstance(x_df.index, pd.DatetimeIndex) else None
@@ -183,7 +183,7 @@ class PreprocessorPlugin:
             else:
                 baseline_data[f'dates_{split}'] = None
             
-            print(f"{split.capitalize()} baseline prepared: {len(close_denormalized)} samples (now denormalized), target baseline: {len(target_trimmed)} samples (denormalized)")
+            print(f"{split.capitalize()} baseline prepared: {len(close_denormalized)} samples (now denormalized), target baseline: {len(target_from_y_trimmed)} samples (denormalized)")
         
         return baseline_data
 

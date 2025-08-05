@@ -76,25 +76,25 @@ class TargetCalculationProcessor:
             # CRITICAL: Use ONLY the sliding windows matrix, isolated from input data
             print(f"  🎯 Extracting baselines from sliding windows matrix (ISOLATED)...")
             target_windows = X_matrix[:, :, target_feature_index]  # Shape: (num_windows, window_size)
-            baselines_normalized = target_windows[:, -1]  # Last value of each window: (num_windows,)
+            baselines_from_windows = target_windows[:, -1]  # Last value of each window: (num_windows,)
             
-            print(f"    ✅ Extracted {len(baselines_normalized)} normalized baselines from windows")
-            print(f"    📊 Baseline normalized stats: mean={np.mean(baselines_normalized):.6f}, std={np.std(baselines_normalized):.6f}")
+            print(f"    ✅ Extracted {len(baselines_from_windows)} baselines from windows")
+            print(f"    📊 Baseline stats: mean={np.mean(baselines_from_windows):.6f}, std={np.std(baselines_from_windows):.6f}")
             
-            # 🔑 STEP 2: Use baselines directly from sliding windows (already denormalized)
-            print(f"  🎯 Using baselines directly from sliding windows (already denormalized)...")
+            # 🔑 STEP 2: Use baselines directly from sliding windows (should be denormalized)
+            print(f"  🎯 Using baselines directly from sliding windows (should be denormalized)...")
             
             # STRICT NaN CHECK: Baselines from sliding windows must NEVER have NaN
-            nan_count_baselines = np.sum(np.isnan(baselines_normalized))
+            nan_count_baselines = np.sum(np.isnan(baselines_from_windows))
             if nan_count_baselines > 0:
                 print(f"❌ FATAL ERROR: Found {nan_count_baselines} NaN values in baselines from sliding windows!")
                 print(f"    Sliding windows matrix shape: {X_matrix.shape}")
                 print(f"    Target feature index: {target_feature_index}")
-                print(f"    Sample baselines: {baselines_normalized[:10]}")
+                print(f"    Sample baselines: {baselines_from_windows[:10]}")
                 raise ValueError(f"CRITICAL: NaN values detected in baselines from sliding windows matrix - this should NEVER happen!")
             
-            # No denormalization needed - sliding windows already contain denormalized data
-            baselines_denormalized = baselines_normalized  # These are already denormalized
+            # No denormalization needed - sliding windows should already contain denormalized data
+            baselines_denormalized = baselines_from_windows  # These should be denormalized
             
             # STRICT ZERO CHECK: Baselines must NEVER be zero (for log returns)
             zero_count = np.sum(baselines_denormalized == 0)
@@ -107,7 +107,21 @@ class TargetCalculationProcessor:
                     print(f"      Index {idx}: baseline={baselines_denormalized[idx]}")
                 raise ValueError(f"CRITICAL: Zero values in baselines will cause log(0) = -inf in log returns!")
                 
-            print(f"    ✅ Baseline stats (already denormalized): mean={np.mean(baselines_denormalized):.6f}, std={np.std(baselines_denormalized):.6f}")
+            print(f"    ✅ Baseline stats (should be denormalized): mean={np.mean(baselines_denormalized):.6f}, std={np.std(baselines_denormalized):.6f}")
+            
+            # CRITICAL CHECK: Verify baselines are actually positive prices
+            if np.any(baselines_denormalized <= 0):
+                negative_count = np.sum(baselines_denormalized <= 0)
+                print(f"❌ CRITICAL ERROR: Found {negative_count} NON-POSITIVE values in baselines!")
+                print(f"    This indicates sliding windows still contain NORMALIZED data instead of DENORMALIZED prices!")
+                print(f"    Sample baselines: {baselines_denormalized[:20]}")
+                negative_indices = np.where(baselines_denormalized <= 0)[0]
+                print(f"    Non-positive indices: {negative_indices[:10]}")
+                for idx in negative_indices[:5]:
+                    print(f"      Index {idx}: baseline={baselines_denormalized[idx]}")
+                raise ValueError(f"CRITICAL: Non-positive baselines indicate denormalization failed - sliding windows contain normalized data!")
+            else:
+                print(f"    ✅ All baselines are positive - denormalization successful!")
             
             # 🔑 STEP 3: Extract dates from original CSV ONLY for alignment (not for data)
             print(f"  📅 Extracting and aligning dates...")
