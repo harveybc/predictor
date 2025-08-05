@@ -7,6 +7,10 @@ from .anti_naive_lock import AntiNaiveLockProcessor
 
 
 class STLPreprocessorZScore:
+from .anti_naive_lock import AntiNaiveLockProcessor
+
+
+class STLPreprocessorZScore:
     """Preprocessor implementing exact requirements - no compromises."""
     
     plugin_params = {
@@ -66,19 +70,22 @@ class STLPreprocessorZScore:
         # Store denormalized data for target calculation (CRITICAL: targets need real prices)
         self.denormalized_data = denormalized_data
         
-        # 3. Create FIRST sliding windows from denormalized data (for baseline extraction only)
+        # 3. Create sliding windows from denormalized data  
         print("Step 3: Create first sliding windows from denormalized data")
         denorm_sliding_windows = self._create_sliding_windows_from_denormalized(denormalized_data, config)
         
-        # 4 & 5. Calculate targets directly from first sliding windows
-        print("Step 4-5: Calculate targets from first sliding windows")
+        # 4. Extract baselines from FIRST sliding windows (for target calculation)
+        print("Step 4: Extract baselines from first sliding windows")
+        
+        # 5. Calculate log return targets using FIRST sliding windows and baselines
+        print("Step 5: Calculate log return targets from first sliding windows")
         targets = self._calculate_targets_from_sliding_windows(denorm_sliding_windows, config)
         
         # 6. Apply anti-naive-lock transformations to denormalized input datasets
         print("Step 6: Apply anti-naive-lock to denormalized datasets")
         processed_data = self._apply_anti_naive_lock_to_datasets(denormalized_data, config)
         
-        # 7. Create SECOND sliding windows matrix from processed datasets (for model input only)
+        # 7. Create final sliding windows matrix from processed datasets (for model input)
         print("Step 7: Create second sliding windows from processed datasets")
         final_sliding_windows = self._create_final_sliding_windows(processed_data, config)
         
@@ -154,23 +161,8 @@ class STLPreprocessorZScore:
         
         return self.sliding_windows_processor.generate_windowed_features(prepared_data, config)
     
-    def _calculate_targets_from_sliding_windows(self, sliding_windows, config):
-        """Step 4-5: Calculate targets directly from sliding windows (baselines are last element of each window)."""
-        # Extract baselines from sliding windows
-        baselines = self._extract_baselines_from_windows(sliding_windows, config)
-        
-        # Prepare data for target calculation - use the original denormalized data
-        baseline_data = {'norm_json': load_normalization_json(config)}
-        baseline_data.update(self.denormalized_data)  # Use denormalized data for price lookups
-        baseline_data.update(baselines)  # Add the extracted baselines
-        
-        # Create dummy windowed data (interface requirement)
-        dummy_windowed_data = {'feature_names': sliding_windows['feature_names']}
-        
-        return self.target_calculation_processor.calculate_targets(baseline_data, dummy_windowed_data, config)
-    
     def _extract_baselines_from_windows(self, sliding_windows, config):
-        """Extract baselines (last elements of each window for target column)."""
+        """Step 4: Extract baselines (last elements of each window for target column) with correct temporal alignment."""
         target_column = config['target_column']
         feature_names = sliding_windows['feature_names']
         
@@ -191,6 +183,7 @@ class STLPreprocessorZScore:
                     baselines[f'baseline_{split}'] = baseline_prices
                     
                     # Baseline dates correspond to the time when the baseline price occurs
+                    # This should be the date of the last element in each sliding window
                     if dates_key in sliding_windows:
                         baseline_dates = sliding_windows[dates_key]
                         baselines[f'baseline_{split}_dates'] = baseline_dates
@@ -204,6 +197,19 @@ class STLPreprocessorZScore:
                     print(f"  No data for {split} baseline extraction")
         
         return baselines
+    
+    def _calculate_targets_with_baselines(self, baselines, denormalized_data, config):
+        """Step 5: Calculate log return targets with baselines using ORIGINAL denormalized data for prices."""
+        # CRITICAL FIX: Use DENORMALIZED data for price lookups, NOT processed data
+        # Target calculation must use real prices, not transformed values
+        baseline_data = {'norm_json': load_normalization_json(config)}
+        baseline_data.update(denormalized_data)  # Use original denormalized data for prices
+        baseline_data.update(baselines)
+        
+        # Create dummy windowed data (not used, but required by interface)
+        dummy_windowed_data = {'feature_names': list(denormalized_data['x_train_df'].columns)}
+        
+        return self.target_calculation_processor.calculate_targets(baseline_data, dummy_windowed_data, config)
     
     def _apply_anti_naive_lock_to_datasets(self, denormalized_data, config):
         """Step 6: Apply anti-naive-lock transformations to denormalized datasets."""
@@ -272,21 +278,15 @@ class STLPreprocessorZScore:
                 if date_key in sliding_windows:
                     sliding_windows[date_key] = sliding_windows[date_key][:min_len]
     
-    def _prepare_final_output(self, sliding_windows, targets, config):
+    def _prepare_final_output(self, sliding_windows, targets, baselines, config):
         """Prepare final output structure."""
-        # Extract baselines from the original first sliding windows for output
-        baseline_data = {}
-        for split in ['train', 'val', 'test']:
-            # We don't have access to the original baselines here, so create empty arrays
-            baseline_data[f'baseline_{split}'] = np.array([])
-        
         return {
-            # Final sliding windows for model (SECOND sliding windows after anti-naive-lock)
+            # Final sliding windows for model
             "x_train": sliding_windows['X_train'],
             "x_val": sliding_windows['X_val'],
             "x_test": sliding_windows['X_test'],
             
-            # Targets by horizon (calculated from FIRST sliding windows)
+            # Targets by horizon
             "y_train": targets['y_train'],
             "y_val": targets['y_val'],
             "y_test": targets['y_test'],
@@ -299,10 +299,10 @@ class STLPreprocessorZScore:
             "x_test_dates": sliding_windows.get('x_dates_test'),
             "y_test_dates": sliding_windows.get('x_dates_test'),
             
-            # Baselines for prediction reconstruction (empty for now)
-            "baseline_train": baseline_data.get('baseline_train', np.array([])),
-            "baseline_val": baseline_data.get('baseline_val', np.array([])),
-            "baseline_test": baseline_data.get('baseline_test', np.array([])),
+            # Baselines for prediction reconstruction
+            "baseline_train": baselines.get('baseline_train', np.array([])),
+            "baseline_val": baselines.get('baseline_val', np.array([])),
+            "baseline_test": baselines.get('baseline_test', np.array([])),
             
             # Metadata
             "feature_names": sliding_windows['feature_names'],
