@@ -183,7 +183,7 @@ class STLPipelinePlugin:
             )
 
             # --- Convert predictions and targets to real-world prices for evaluation ---
-            print("\n--- Converting log-normalized predictions to real-world prices for evaluation ---")
+            print("\n--- Converting z-score normalized predictions to real-world prices for evaluation ---")
             
             # Store original predictions and targets for later reference
             original_train_preds = [pred.copy() for pred in list_train_preds]
@@ -206,43 +206,44 @@ class STLPipelinePlugin:
                 target_mean = target_returns_means[idx]
                 target_std = target_returns_stds[idx]
                 
-                # Convert predictions: log-normalized -> log returns -> prices
+                # Convert predictions: z-score normalized -> log returns -> prices
                 train_log_normalized_preds = original_train_preds[idx].flatten()
                 val_log_normalized_preds = original_val_preds[idx].flatten()
                 
                 train_log_returns = train_log_normalized_preds * target_std + target_mean
                 val_log_returns = val_log_normalized_preds * target_std + target_mean
                 
-                # Convert targets: log-normalized -> log returns -> prices  
+                # Convert targets: z-score normalized -> log returns -> prices  
                 train_log_normalized_targets = original_train_targets[idx].flatten()
                 val_log_normalized_targets = original_val_targets[idx].flatten()
                 
                 train_target_log_returns = train_log_normalized_targets * target_std + target_mean
                 val_target_log_returns = val_log_normalized_targets * target_std + target_mean
                 
-                # Convert uncertainties: log-normalized -> log returns -> price uncertainty
+                # Convert uncertainties: z-score normalized -> log returns -> price uncertainty
                 train_log_normalized_unc = original_train_unc[idx].flatten()
                 val_log_normalized_unc = original_val_unc[idx].flatten()
                 
                 train_unc_log_returns = train_log_normalized_unc * target_std
                 val_unc_log_returns = val_log_normalized_unc * target_std
                 
-                # Use consistent array lengths
-                num_train = min(len(train_log_returns), len(baseline_train))
-                num_val = min(len(val_log_returns), len(baseline_val))
+                # CRITICAL FIX: Baselines and predictions are perfectly aligned
+                # Both come from the same sliding windows matrix, so use them directly
+                num_train = len(train_log_returns)
+                num_val = len(val_log_returns)
                 
-                # Convert log returns to real prices using baselines
+                # Use the corresponding baselines (perfectly aligned with predictions)
                 train_baselines = baseline_train[:num_train]
                 val_baselines = baseline_val[:num_val]
                 
-                train_prices = train_baselines * np.exp(train_log_returns[:num_train])
-                val_prices = val_baselines * np.exp(val_log_returns[:num_val])
-                train_target_prices = train_baselines * np.exp(train_target_log_returns[:num_train])
-                val_target_prices = val_baselines * np.exp(val_target_log_returns[:num_val])
+                train_prices = train_baselines * np.exp(train_log_returns)
+                val_prices = val_baselines * np.exp(val_log_returns)
+                train_target_prices = train_baselines * np.exp(train_target_log_returns)
+                val_target_prices = val_baselines * np.exp(val_target_log_returns)
                 
                 # Convert uncertainty to price scale
-                train_price_uncertainties = train_baselines * np.abs(train_unc_log_returns[:num_train])
-                val_price_uncertainties = val_baselines * np.abs(val_unc_log_returns[:num_val])
+                train_price_uncertainties = train_baselines * np.abs(train_unc_log_returns)
+                val_price_uncertainties = val_baselines * np.abs(val_unc_log_returns)
                 
                 real_train_price_preds.append(train_prices)
                 real_val_price_preds.append(val_prices)
@@ -336,11 +337,7 @@ class STLPipelinePlugin:
             # --- Convert test predictions to real-world prices ---
             print("\n--- Converting test predictions to real-world prices ---")
             
-            # Convert test predictions using same logic as training/validation
-            list_test_price_preds = []
-            list_test_price_targets = []
-            
-            # Create separate real-world price arrays for test data
+            # Convert test predictions to real-world prices
             real_test_price_preds = []
             real_test_price_targets = []
             real_test_price_uncertainties = []
@@ -350,28 +347,31 @@ class STLPipelinePlugin:
                 target_mean = target_returns_means[idx]
                 target_std = target_returns_stds[idx]
                 
-                # Convert predictions: log-normalized -> log returns -> prices
-                # Note: predict_with_uncertainty returns predictions in same scale as targets (log-normalized)
+                # Convert predictions: z-score normalized -> log returns -> prices
+                # Note: predict_with_uncertainty returns predictions in same scale as targets (z-score normalized)
                 test_log_normalized_preds = list_test_preds[idx].flatten()
                 test_log_returns = test_log_normalized_preds * target_std + target_mean
                 
-                # Convert targets: log-normalized -> log returns -> prices
+                # Convert targets: z-score normalized -> log returns -> prices
                 test_log_normalized_targets = y_test_list[idx].flatten()
                 test_target_log_returns = test_log_normalized_targets * target_std + target_mean
                 
-                # Convert uncertainties: log-normalized -> log returns -> price uncertainty
+                # Convert uncertainties: z-score normalized -> log returns -> price uncertainty
                 test_log_normalized_unc = list_test_unc[idx].flatten()
                 test_unc_log_returns = test_log_normalized_unc * target_std
                 
-                # Correct temporal alignment for test data
-                num_test = min(len(test_log_returns), len(baseline_test))
+                # CRITICAL FIX: Baselines and predictions are perfectly aligned  
+                num_test = len(test_log_returns)
                 
-                # Convert log returns to real prices using baselines
-                test_prices = baseline_test[:num_test] * np.exp(test_log_returns[:num_test])
-                test_target_prices = baseline_test[:num_test] * np.exp(test_target_log_returns[:num_test])
+                # Use the corresponding baselines (perfectly aligned with predictions)
+                test_baselines = baseline_test[:num_test]
+                
+                # Convert log returns to real prices using aligned baselines
+                test_prices = test_baselines * np.exp(test_log_returns)
+                test_target_prices = test_baselines * np.exp(test_target_log_returns)
                 
                 # Convert uncertainty to price scale
-                test_price_unc = baseline_test[:num_test] * np.abs(test_unc_log_returns[:num_test])
+                test_price_unc = test_baselines * np.abs(test_unc_log_returns)
                 
                 real_test_price_preds.append(test_prices)
                 real_test_price_targets.append(test_target_prices)
@@ -489,7 +489,7 @@ class STLPipelinePlugin:
                 print("ERROR: No test_dates from preprocessor! Using fallback indices.")
                 final_dates = list(range(num_test_points))
                 
-            # Use correct baseline for output
+            # CRITICAL FIX: Baselines and predictions are perfectly aligned
             final_baseline = baseline_test[:num_test_points].flatten()
 
             # Validate baseline data
@@ -667,15 +667,18 @@ class STLPipelinePlugin:
                 target_mean = target_returns_means[idx]
                 target_std = target_returns_stds[idx]
                 
-                # Convert predictions: normalized -> log returns -> prices
+                # Convert predictions: z-score normalized -> log returns -> prices
                 pred_normalized = list_predictions[idx].flatten()
                 pred_log_returns = pred_normalized * target_std + target_mean
                 
-                # Use correct baselines for evaluation
-                num_val = min(len(pred_log_returns), len(baseline_val_eval))
+                # CRITICAL FIX: Baselines and predictions are perfectly aligned
+                num_val = len(pred_log_returns)
                 
-                # Convert log returns to real prices using baselines
-                pred_prices = baseline_val_eval[:num_val] * np.exp(pred_log_returns[:num_val])
+                # Use the corresponding baselines (perfectly aligned with predictions)
+                val_baselines = baseline_val_eval[:num_val]
+                
+                # Convert log returns to real prices using aligned baselines
+                pred_prices = val_baselines * np.exp(pred_log_returns)
                 
                 # Update predictions with real prices
                 list_predictions[idx] = pred_prices.reshape(-1, 1)

@@ -83,9 +83,9 @@ class STLPreprocessorZScore:
         print("Step 4: Extract baselines from FINAL sliding windows")
         baselines = self._extract_baselines_from_windows(final_sliding_windows, config)
         
-        # 5. Calculate log return targets with FINAL baselines
-        print("Step 5: Calculate log return targets with FINAL baselines")
-        targets = self._calculate_targets_with_baselines(baselines, denormalized_data, config)
+        # 5. Calculate log return targets with FINAL baselines using PROCESSED data
+        print("Step 5: Calculate log return targets with FINAL baselines using PROCESSED data")
+        targets = self._calculate_targets_with_baselines(baselines, processed_data, config)
         
         # Align final sliding windows with targets (both are now from the same matrix)
         self._align_sliding_windows_with_targets(final_sliding_windows, targets)
@@ -196,15 +196,15 @@ class STLPreprocessorZScore:
         
         return baselines
     
-    def _calculate_targets_with_baselines(self, baselines, denormalized_data, config):
-        """Step 5: Calculate log return targets with baselines."""
-        # Prepare data for target calculation
+    def _calculate_targets_with_baselines(self, baselines, processed_data, config):
+        """Step 5: Calculate log return targets with baselines using PROCESSED data."""
+        # CRITICAL FIX: Use processed data (after anti-naive-lock) to align with final sliding windows
         baseline_data = {'norm_json': load_normalization_json(config)}
-        baseline_data.update(denormalized_data)
+        baseline_data.update(processed_data)  # Use processed data, not denormalized
         baseline_data.update(baselines)
         
         # Create dummy windowed data (not used, but required by interface)
-        dummy_windowed_data = {'feature_names': list(denormalized_data['x_train_df'].columns)}
+        dummy_windowed_data = {'feature_names': list(processed_data['x_train_df'].columns)}
         
         return self.target_calculation_processor.calculate_targets(baseline_data, dummy_windowed_data, config)
     
