@@ -206,38 +206,120 @@ class STLPreprocessorZScore:
         return baselines
     
     def _apply_anti_naive_lock_to_datasets(self, denormalized_data, config):
-        """Step 6: Skip anti-naive-lock on datasets - apply it to sliding windows instead."""
-        # Don't apply anti-naive-lock to raw datasets, apply it to sliding windows
-        return denormalized_data
-    
-    def _apply_anti_naive_lock_to_sliding_windows(self, sliding_windows, config):
-        """Step 8: Apply anti-naive-lock transformations to sliding windows matrices (CORRECT WAY)."""
+        """Step 6: Apply anti-naive-lock transformations to FULL denormalized datasets to create processed data."""
         if not config.get("anti_naive_lock_enabled", True):
-            return sliding_windows
+            return denormalized_data
         
-        print("  Applying anti-naive-lock to sliding windows matrices...")
+        print("  Applying anti-naive-lock transformations to full denormalized datasets...")
+        processed = {}
         
-        # Extract sliding window matrices
-        X_train = sliding_windows.get('X_train', np.array([]))
-        X_val = sliding_windows.get('X_val', np.array([]))
-        X_test = sliding_windows.get('X_test', np.array([]))
-        feature_names = sliding_windows['feature_names']
+        for split in ['train', 'val', 'test']:
+            x_key = f'x_{split}_df'
+            y_key = f'y_{split}_df'
+            
+            if x_key in denormalized_data:
+                x_df = denormalized_data[x_key]
+                feature_names = list(x_df.columns)
+                
+                # Apply anti-naive-lock transformations directly to the time series data
+                processed_df = self._apply_anti_naive_lock_to_time_series(x_df, feature_names, config)
+                processed[x_key] = processed_df
+                print(f"    Processed {split} dataset with anti-naive-lock (shape: {processed_df.shape})")
+            
+            # Y data unchanged
+            if y_key in denormalized_data:
+                processed[y_key] = denormalized_data[y_key]
         
-        # Apply anti-naive-lock transformations to sliding windows (correct format)
-        X_train_processed, X_val_processed, X_test_processed, stats = \
-            self.anti_naive_lock_processor.process_sliding_windows(
-                X_train, X_val, X_test, feature_names, config
-            )
+        return processed
+    
+    def _apply_anti_naive_lock_to_time_series(self, df, feature_names, config):
+        """Apply anti-naive-lock transformations to a full time series DataFrame."""
+        processed_df = df.copy()
         
-        # Update sliding windows with processed matrices
-        processed_sliding_windows = sliding_windows.copy()
-        processed_sliding_windows['X_train'] = X_train_processed
-        processed_sliding_windows['X_val'] = X_val_processed
-        processed_sliding_windows['X_test'] = X_test_processed
+        # Get feature categories from config
+        price_features = config.get('price_features', ['OPEN', 'LOW', 'HIGH', 'CLOSE'])
+        temporal_features = config.get('temporal_features', ['day_of_week', 'hour_of_day', 'day_of_month'])
+        trend_features = config.get('trend_features', ['stl_trend'])
+        stationary_indicators = config.get('stationary_indicators', ['RSI', 'MACD', 'MACD_Histogram', 'MACD_Signal', 'EMA'])
+        target_column = config.get('target_column', 'CLOSE')
+        excluded_columns = config.get('excluded_columns', [])
         
-        print(f"    Applied anti-naive-lock to sliding windows: {stats.get('summary', {})}")
+        print(f"      Applying anti-naive-lock to {len(feature_names)} features...")
         
-        return processed_sliding_windows
+        for feature_name in feature_names:
+            try:
+                if feature_name in temporal_features and config.get('use_cyclic_encoding', True):
+                    # Apply cyclic encoding to temporal features
+                    processed_df[feature_name] = self._apply_cyclic_encoding_to_series(
+                        processed_df[feature_name], feature_name
+                    )
+                    print(f"        Applied cyclic encoding to {feature_name}")
+                    
+                elif (feature_name in price_features and 
+                      config.get('use_log_returns', True) and 
+                      feature_name != target_column and 
+                      feature_name not in excluded_columns):
+                    # Apply log returns to price features (except target)
+                    processed_df[feature_name] = self._apply_log_returns_to_series(
+                        processed_df[feature_name]
+                    )
+                    print(f"        Applied log returns to {feature_name}")
+                    
+                elif feature_name in trend_features and config.get('use_first_differences', True):
+                    # Apply first differences to trend features
+                    processed_df[feature_name] = self._apply_first_differences_to_series(
+                        processed_df[feature_name]
+                    )
+                    print(f"        Applied first differences to {feature_name}")
+                    
+                else:
+                    # Preserve other features (stationary indicators, target column, etc.)
+                    print(f"        Preserved {feature_name}")
+                    
+            except Exception as e:
+                print(f"        ERROR processing {feature_name}: {e}")
+        
+        return processed_df
+    
+    def _apply_cyclic_encoding_to_series(self, series, feature_name):
+        """Apply cyclic encoding to a pandas Series."""
+        # Determine period based on feature name
+        if 'hour_of_day' in feature_name:
+            period = 24
+        elif 'day_of_week' in feature_name:
+            period = 7
+        elif 'day_of_month' in feature_name:
+            period = 31
+        else:
+            period = max(series) + 1  # Fallback
+        
+        # Apply cyclic encoding (sin component only)
+        angle = 2 * np.pi * series / period
+        return np.sin(angle)
+    
+    def _apply_log_returns_to_series(self, series):
+        """Apply log returns to a pandas Series: ln(x_t / x_{t-1})."""
+        log_returns = series.copy()
+        
+        # Calculate log returns
+        for i in range(1, len(series)):
+            if series.iloc[i-1] > 0 and series.iloc[i] > 0:
+                log_returns.iloc[i] = np.log(series.iloc[i] / series.iloc[i-1])
+            else:
+                log_returns.iloc[i] = 0.0
+        
+        # First value gets zero change
+        log_returns.iloc[0] = 0.0
+        
+        return log_returns
+    
+    def _apply_first_differences_to_series(self, series):
+        """Apply first differences to a pandas Series: x_t - x_{t-1}."""
+        differences = series.copy()
+        differences.iloc[1:] = series.iloc[1:].values - series.iloc[:-1].values
+        differences.iloc[0] = 0.0  # First value gets zero change
+        
+        return differences
     
     def _create_final_sliding_windows(self, processed_data, config):
         """Step 7: Create SECOND sliding windows from processed datasets (anti-naive-lock applied data)."""
