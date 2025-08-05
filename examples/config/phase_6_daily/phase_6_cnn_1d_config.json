@@ -55,8 +55,16 @@
     "target_factor": 100,
     "loss_factor": 1,
     "use_multi_tapper": false,
+    "_comment_anti_naive_lock": "Anti-naive-lock preprocessing configuration",
+    "anti_naive_lock_enabled": true,
+    "use_cyclic_encoding": true,
+    "use_log_returns": true,
+    "use_first_differences": true,
+    "preserve_stationary_indicators": true,
+    "handle_constant_daily_features": true,
+    "feature_preprocessing_strategy": "selective",
+    "normalize_after_preprocessing": true,
     
-        
     "_comment_feature_categories": "SMART ANTI-NAIVE-LOCK: Transform price features to preserve info while eliminating naive lock",
     "price_features": ["OPEN", "LOW", "HIGH"],
     "temporal_features": ["day_of_week", "hour_of_day", "day_of_month"],
