@@ -73,7 +73,7 @@ class PreprocessorPlugin:
         debug_info.update(self.get_debug_info())
 
     def _load_data(self, file_path, max_rows, headers, config):
-        """Load and validate data from CSV file, then IMMEDIATELY denormalize."""
+        """Load CSV data and KEEP IT NORMALIZED for neural network training."""
         print(f"Loading data: {file_path} (Max rows: {max_rows})...", end="")
         try:
             df = load_csv(file_path, headers=headers, max_rows=max_rows)
@@ -107,30 +107,25 @@ class PreprocessorPlugin:
             if missing_cols: 
                 raise ValueError(f"Missing cols in {file_path}: {missing_cols}")
             
-            # 🔑 CRITICAL: DENORMALIZE DATA IMMEDIATELY AFTER LOADING
-            print(f"🔍 IMMEDIATE DENORMALIZATION: Processing {file_path}...")
+            # 🔑 CRITICAL FIX: KEEP DATA NORMALIZED FOR NEURAL NETWORK TRAINING
+            print(f"✅ KEEPING NORMALIZED DATA: Input data is already z-score normalized and ready for neural networks")
             norm_json = load_normalization_json(config)
             
-            # Denormalize each column that has normalization parameters
-            denormalized_count = 0
-            for column in df.columns:
-                if column in norm_json:
-                    original_data = df[column].values
-                    denormalized_data = denormalize(original_data, norm_json, column)
-                    df[column] = denormalized_data
-                    denormalized_count += 1
+            # Verify normalization by checking a few key features
+            for column in ['CLOSE', 'RSI', 'MACD']:
+                if column in df.columns:
+                    col_data = df[column].values
+                    col_mean = np.mean(col_data)
+                    col_std = np.std(col_data)
+                    print(f"  � {column}: mean={col_mean:.3f}, std={col_std:.3f} (normalized scale)")
                     
-                    # DEBUG: Check denormalization for CLOSE prices
-                    if column == 'CLOSE':
-                        print(f"  🔍 {column}: NORMALIZED -> DENORMALIZED")
-                        print(f"    Before: min={np.min(original_data):.6f}, max={np.max(original_data):.6f}, mean={np.mean(original_data):.6f}")
-                        print(f"    After:  min={np.min(denormalized_data):.6f}, max={np.max(denormalized_data):.6f}, mean={np.mean(denormalized_data):.6f}")
-                        if np.all(denormalized_data > 0):
-                            print(f"    ✅ {column} successfully denormalized - all values positive")
-                        else:
-                            print(f"    ❌ {column} denormalization failed - some values non-positive")
+                    # Check if data appears properly normalized (should be roughly mean~0, std~1 or similar small scale)
+                    if abs(col_mean) > 100 or col_std > 100:
+                        print(f"    ⚠️ WARNING: {column} may not be properly normalized (large values detected)")
+                    else:
+                        print(f"    ✅ {column} appears properly normalized for neural network training")
             
-            print(f"  ✅ Denormalized {denormalized_count} columns in {file_path}")
+            print(f"  ✅ Data kept in normalized state for optimal neural network training")
             return df
             
         except FileNotFoundError: 
@@ -253,8 +248,8 @@ class PreprocessorPlugin:
                 print(f"No target data found for {split} split")
 
     def process_data(self, config):
-        """Main processing pipeline - FOOL-PROOF PLAN IMPLEMENTATION."""
-        print("\n" + "="*15 + " Starting Preprocessing - FOOL-PROOF PLAN " + "="*15)
+        """Main processing pipeline - CORRECT FLOW IMPLEMENTATION."""
+        print("\n" + "="*15 + " Starting Preprocessing - CORRECT FLOW " + "="*15)
         self.set_params(**config)
         config = self.params
         self.scalers = {}  # Reset scalers
@@ -264,75 +259,143 @@ class PreprocessorPlugin:
         if not isinstance(predicted_horizons, list) or not predicted_horizons: 
             raise ValueError("'predicted_horizons' must be a non-empty list.")
         
-        # --- STEP 1: Load Data AND DENORMALIZE IMMEDIATELY ---
-        print("\n--- STEP 1: Loading Data AND DENORMALIZING IMMEDIATELY ---")
-        x_train_df_denorm = self._load_data(config["x_train_file"], config.get("max_steps_train"), config.get("headers"), config)
-        x_val_df_denorm = self._load_data(config["x_validation_file"], config.get("max_steps_val"), config.get("headers"), config)
-        x_test_df_denorm = self._load_data(config["x_test_file"], config.get("max_steps_test"), config.get("headers"), config)
-        y_train_df_denorm = self._load_data(config["y_train_file"], config.get("max_steps_train"), config.get("headers"), config)
-        y_val_df_denorm = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"), config)
-        y_test_df_denorm = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"), config)
+        # --- STEP 1: Load NORMALIZED CSV data (keep as-is from CSV) ---
+        print("\n--- STEP 1: Loading NORMALIZED CSV data (keep as-is) ---")
+        x_train_df_norm = self._load_data(config["x_train_file"], config.get("max_steps_train"), config.get("headers"), config)
+        x_val_df_norm = self._load_data(config["x_validation_file"], config.get("max_steps_val"), config.get("headers"), config)
+        x_test_df_norm = self._load_data(config["x_test_file"], config.get("max_steps_test"), config.get("headers"), config)
+        y_train_df_norm = self._load_data(config["y_train_file"], config.get("max_steps_train"), config.get("headers"), config)
+        y_val_df_norm = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"), config)
+        y_test_df_norm = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"), config)
         
-        # Align indices
-        aligned_denorm_data = self._align_indices(x_train_df_denorm, y_train_df_denorm, x_val_df_denorm, y_val_df_denorm, x_test_df_denorm, y_test_df_denorm)
+        # Align indices of normalized data
+        aligned_norm_data = self._align_indices(x_train_df_norm, y_train_df_norm, x_val_df_norm, y_val_df_norm, x_test_df_norm, y_test_df_norm)
         
-        # --- STEP 2: Calculate Sliding Windows with DENORMALIZED Data ---
-        print("\n--- STEP 2: Calculate Sliding Windows with DENORMALIZED Data ---")
+        # --- STEP 2: Denormalize aligned data for baseline extraction ---
+        print("\n--- STEP 2: Denormalize aligned data for baseline extraction ---")
+        norm_json = load_normalization_json(config)
+        aligned_denorm_data = {}
+        
+        for split in ['train', 'val', 'test']:
+            print(f"Denormalizing {split} data for baseline extraction...")
+            
+            # Denormalize X data
+            x_df_norm = aligned_norm_data[f'x_{split}_df']
+            x_df_denorm = x_df_norm.copy()
+            
+            for column in x_df_denorm.columns:
+                if column in norm_json:
+                    norm_data = x_df_denorm[column].values
+                    denorm_data = denormalize(norm_data, norm_json, column)
+                    x_df_denorm[column] = denorm_data
+                    
+                    if column == 'CLOSE':
+                        print(f"  {column}: ${np.mean(denorm_data):.2f} ± ${np.std(denorm_data):.2f} (denormalized)")
+            
+            # Denormalize Y data
+            y_df_norm = aligned_norm_data[f'y_{split}_df']
+            y_df_denorm = y_df_norm.copy()
+            
+            target_column = config.get("target_column", "CLOSE")
+            if target_column in y_df_denorm.columns and target_column in norm_json:
+                norm_data = y_df_denorm[target_column].values
+                denorm_data = denormalize(norm_data, norm_json, target_column)
+                y_df_denorm[target_column] = denorm_data
+            
+            aligned_denorm_data[f'x_{split}_df'] = x_df_denorm
+            aligned_denorm_data[f'y_{split}_df'] = y_df_denorm
+        
+        # --- STEP 3: Create sliding windows from DENORMALIZED data ---
+        print("\n--- STEP 3: Create sliding windows from DENORMALIZED data ---")
         baseline_data_denorm = self._prepare_baseline_data(aligned_denorm_data, config)
+        baseline_data_denorm['norm_json'] = norm_json
         windowed_data_denorm = self.sliding_windows_processor.generate_windowed_features(baseline_data_denorm, config)
         
-        # --- STEP 3: Calculate targets using sliding windows baselines directly ---
-        print("\n--- STEP 3: Calculate targets using sliding windows baselines directly ---")
+        # --- STEP 4: Extract baselines from denormalized sliding windows ---
+        print("\n--- STEP 4: Extract baselines from denormalized sliding windows ---")
+        target_column = config.get("target_column", "CLOSE")
+        feature_names = windowed_data_denorm.get('feature_names', [])
         
-        # Use the target calculation processor to compute targets from sliding window baselines
-        # The sliding windows processor already calculated the baselines correctly
+        if target_column not in feature_names:
+            raise ValueError(f"Target column '{target_column}' not found in features: {feature_names}")
+        
+        target_feature_index = feature_names.index(target_column)
+        baselines_denorm = {}
+        
+        for split in ['train', 'val', 'test']:
+            X_matrix = windowed_data_denorm[f'X_{split}']
+            if X_matrix.shape[0] > 0:
+                target_windows = X_matrix[:, :, target_feature_index]
+                baselines_denorm[f'baseline_{split}'] = target_windows[:, -1]  # Last element of each window
+                print(f"  {split}: Extracted {len(baselines_denorm[f'baseline_{split}'])} denormalized baselines")
+                print(f"    Sample baseline prices: ${baselines_denorm[f'baseline_{split}'][:3]}")
+            else:
+                baselines_denorm[f'baseline_{split}'] = np.array([])
+        
+        # --- STEP 5: Calculate targets using denormalized baselines ---
+        print("\n--- STEP 5: Calculate targets using denormalized baselines ---")
+        
+        # Store baselines in baseline_data for target calculation
+        for split in ['train', 'val', 'test']:
+            baseline_data_denorm[f'sliding_baseline_{split}'] = baselines_denorm[f'baseline_{split}']
+            baseline_data_denorm[f'sliding_baseline_{split}_dates'] = windowed_data_denorm.get(f'x_dates_{split}')
+        
+        # Calculate targets using the target calculation processor
         target_data = self.target_calculation_processor.calculate_targets(baseline_data_denorm, windowed_data_denorm, config)
         
-        # --- STEP 5: REMOVED - Skip Selective Preprocessing Step (anti-naive-lock applied to sliding windows instead) ---
-        print("\n--- STEP 5: REMOVED - Skip Selective Preprocessing Step ---")
-        print("Anti-naive-lock will be applied to sliding windows matrices instead of input data")
+        # --- STEP 6: Apply anti-naive-lock transformations to input datasets ---
+        print("\n--- STEP 6: Apply anti-naive-lock transformations to input datasets ---")
         
-        # --- STEP 6: REMOVED - Skip Z-score Normalization Step (anti-naive-lock handles feature scaling) ---
-        print("\n--- STEP 6: REMOVED - Skip Z-score Normalization Step ---")
-        print("Feature scaling will be handled by anti-naive-lock post-processing normalization")
+        processed_data = aligned_denorm_data.copy()  # Start with denormalized data
         
-        # --- STEP 7: REMOVED - Skip Additional Processing Step ---
-        print("\n--- STEP 7: REMOVED - Skip Additional Processing Step ---")
-        
-        # --- STEP 8: Use EXISTING DENORMALIZED Sliding Windows Matrix (calculated in Step 2) ---
-        print("\n--- STEP 8: Use EXISTING DENORMALIZED Sliding Windows Matrix (calculated in Step 2) ---")
-        
-        # CRITICAL FIX: Use the SAME sliding windows calculated in Step 2 for consistency
-        # The windowed_data_denorm already contains the correct denormalized sliding windows
-        print("CRITICAL FIX: Using EXISTING denormalized sliding windows from Step 2 for consistency...")
-        windowed_data_final = windowed_data_denorm  # Use existing windows from Step 2
-        
-        # Apply anti-naive-lock to sliding windows AFTER they're already created (not to input data)
         if config.get("anti_naive_lock_enabled", True):
-            print("Applying anti-naive-lock to existing sliding windows matrices...")
-            feature_names = windowed_data_final.get('feature_names', [])
+            print("Applying anti-naive-lock transformations to denormalized input datasets...")
             
-            # Apply anti-naive-lock to sliding window matrices
-            x_train_processed, x_val_processed, x_test_processed, processing_stats = \
-                self.anti_naive_lock_processor.process_sliding_windows(
-                    windowed_data_final['X_train'],
-                    windowed_data_final['X_val'], 
-                    windowed_data_final['X_test'],
-                    feature_names,
-                    config
-                )
-            
-            # Update windowed data with anti-naive-lock processed matrices
-            windowed_data_final['X_train'] = x_train_processed
-            windowed_data_final['X_val'] = x_val_processed
-            windowed_data_final['X_test'] = x_test_processed
-            
-            print("Anti-naive-lock applied to existing sliding window matrices")
+            # Apply transformations to each split's input data
+            for split in ['train', 'val', 'test']:
+                x_df_denorm = aligned_denorm_data[f'x_{split}_df']
+                
+                print(f"  Processing {split} data with anti-naive-lock...")
+                
+                # Apply anti-naive-lock transformations using the processor
+                # For this we need to create a dummy sliding window to use the existing interface
+                feature_matrix = x_df_denorm.values.astype(np.float32)
+                feature_names_list = list(x_df_denorm.columns)
+                
+                # Create a temporary single-window matrix for processing
+                if len(feature_matrix) > 0:
+                    temp_window = feature_matrix.reshape(1, -1, len(feature_names_list))  # (1, time_steps, features)
+                    
+                    # Apply anti-naive-lock (only using the first output since we're processing input data)
+                    processed_temp, _, _, processing_stats = \
+                        self.anti_naive_lock_processor.process_sliding_windows(
+                            temp_window, temp_window, temp_window,  # Same data for all splits in this call
+                            feature_names_list,
+                            config
+                        )
+                    
+                    # Extract the processed data and convert back to DataFrame
+                    processed_matrix = processed_temp[0, :, :]  # Remove batch dimension (1, time_steps, features) -> (time_steps, features)
+                    processed_df = pd.DataFrame(processed_matrix, columns=feature_names_list, index=x_df_denorm.index)
+                    processed_data[f'x_{split}_df'] = processed_df
+                    
+                    print(f"    Applied transformations to {len(feature_names_list)} features")
+                else:
+                    print(f"    Warning: No data found for {split}")
+                    processed_data[f'x_{split}_df'] = x_df_denorm
         else:
-            print("Anti-naive-lock disabled - using existing raw sliding windows")
+            print("Anti-naive-lock disabled - using original denormalized data")
+            processed_data = aligned_denorm_data
         
-        # --- STEP 9: Truncate Windowed Data to Match Target Lengths ---
-        print("\n--- STEP 9: Truncate Windowed Data to Match Target Lengths ---")
+        # --- STEP 7: Create final sliding windows from processed datasets ---
+        print("\n--- STEP 7: Create final sliding windows from processed datasets ---")
+        
+        # Update baseline_data with processed datasets
+        final_baseline_data = self._prepare_baseline_data(processed_data, config)
+        final_baseline_data['norm_json'] = norm_json
+        
+        # Create final sliding windows from processed data
+        windowed_data_final = self.sliding_windows_processor.generate_windowed_features(final_baseline_data, config)
         self._truncate_to_match_targets(windowed_data_final, target_data)
         
         # Extract baselines from target_data (they're included in the result)
@@ -374,7 +437,7 @@ class PreprocessorPlugin:
             "target_returns_stds": target_data['target_returns_stds'],
             "predicted_horizons": predicted_horizons,
             "training_norm_params": {},  # No normalization applied
-            "normalization_json": baseline_data_denorm.get('norm_json', {}),  # Original normalization for denormalization
+            "normalization_json": self.denorm_params,  # Original normalization for denormalization
         }
         
         print("\n" + "="*15 + " Preprocessing Finished - FOOL-PROOF PLAN " + "="*15)

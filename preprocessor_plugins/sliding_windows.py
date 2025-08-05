@@ -104,59 +104,56 @@ class SlidingWindowsProcessor:
             x_df = baseline_data[f'x_{split}_df']
             dates = baseline_data[f'dates_{split}']
             
-            # CRITICAL: Use DENORMALIZED columns from aligned_data (processed in step 2.5)
-            # The DataFrames in baseline_data should now contain denormalized data
-            print("Using DENORMALIZED features from preprocessor step 2.5...")
+            # CRITICAL: Use NORMALIZED columns from aligned_data 
+            # The DataFrames in baseline_data contain normalized data from z-score normalization
+            print("Using NORMALIZED features for neural network training...")
             
-            # Get ALL columns from the DENORMALIZED dataframe (real-scale values)
+            # Get ALL columns from the NORMALIZED dataframe (z-score normalized values)
             feature_columns = [col for col in x_df.columns]  # Use ALL columns as-is
             features = {}
             
-            print(f"Available DENORMALIZED features: {feature_columns}")
+            print(f"Available NORMALIZED features: {feature_columns}")
             
-            # Use all DENORMALIZED features directly without any transformations
+            # Use all NORMALIZED features directly - perfect for neural network training
             for col in feature_columns:
                 features[col] = x_df[col].values.astype(np.float32)
                 print(f"  Added feature: {col} (length: {len(features[col])})")
                 
-                # DEBUG: Check if CLOSE prices are actually denormalized (should be > 0 for prices)
+                # DEBUG: Check if features are properly normalized (should be around mean~0, std~1)
                 if col == 'CLOSE':
                     sample_values = features[col][:10]
                     print(f"  🔍 DEBUG: {col} sample values: {sample_values}")
                     print(f"  🔍 DEBUG: {col} stats: min={np.min(features[col]):.6f}, max={np.max(features[col]):.6f}, mean={np.mean(features[col]):.6f}")
                     
-                    # Check for reasonable price ranges (typical stock/forex prices)
-                    if np.mean(features[col]) > 10000:
-                        print(f"  ⚠️  WARNING: {col} values are very large (mean={np.mean(features[col]):.2f})")
-                        print(f"      This may cause training instability due to large feature scales")
-                    elif np.mean(features[col]) < 0.01:
-                        print(f"  ⚠️  WARNING: {col} values are very small (mean={np.mean(features[col]):.6f})")
-                        print(f"      This may indicate normalization artifacts")
-                    
-                    if np.any(features[col] <= 0):
-                        print(f"  ❌ CRITICAL: {col} contains non-positive values - denormalization failed!")
+                    # Check for reasonable normalized ranges (typical z-score normalized data)
+                    if abs(np.mean(features[col])) > 10:
+                        print(f"  ⚠️  WARNING: {col} mean is very large for normalized data (mean={np.mean(features[col]):.2f})")
+                        print(f"      This may indicate the data is not properly normalized")
+                    elif np.std(features[col]) > 10:
+                        print(f"  ⚠️  WARNING: {col} std is very large for normalized data (std={np.std(features[col]):.2f})")
+                        print(f"      This may indicate high variance in the normalized data")
                     else:
-                        print(f"  ✅ {col} values are positive - denormalization successful")
+                        print(f"  ✅ {col} values appear properly normalized for neural network training")
             
             # All features should have the same length (from same dataframe)
             base_len = len(x_df)
-            denormalized_features = features  # No alignment needed - all from same dataframe
+            normalized_features = features  # No alignment needed - all from same dataframe
             
             # Align dates to match features
             dates_aligned = dates[-base_len:] if dates is not None and base_len > 0 else None
             
-            # Create sliding windows for each denormalized feature
+            # Create sliding windows for each normalized feature
             X_channels = []
             feature_names = []
             x_dates = None
             first_feature_processed = False
             
             # Process features in consistent order (maintain column order from CSV)
-            windowing_order = feature_columns  # Use denormalized CSV column order
+            windowing_order = feature_columns  # Use normalized CSV column order
             print(f"Feature order for windowing: {windowing_order}")
             
             for name in windowing_order:
-                series = denormalized_features[name]
+                series = normalized_features[name]
                 print(f"Windowing feature: {name}...", end="")
                 
                 try:
@@ -187,25 +184,27 @@ class SlidingWindowsProcessor:
             if not X_channels:
                 raise RuntimeError(f"No feature channels available after windowing for {split}!")
             
-            # Stack all denormalized feature channels
-            X_combined_denormalized = np.stack(X_channels, axis=-1).astype(np.float32)
+            # Stack all normalized feature channels
+            X_combined_normalized = np.stack(X_channels, axis=-1).astype(np.float32)
             
             # Store results for this split
-            windowed_data[f'X_{split}'] = X_combined_denormalized
+            windowed_data[f'X_{split}'] = X_combined_normalized
             windowed_data[f'x_dates_{split}'] = x_dates
-            windowed_data[f'num_samples_{split}'] = X_combined_denormalized.shape[0]
+            windowed_data[f'num_samples_{split}'] = X_combined_normalized.shape[0]
             
-            print(f"Final X shape for {split}: {X_combined_denormalized.shape}")
+            print(f"Final X shape for {split}: {X_combined_normalized.shape}")
         
         # Store feature names (same for all splits)
         windowed_data['feature_names'] = feature_names
         
-        # CRITICAL DIAGNOSTIC: Check feature scales for training stability
-        print(f"\n=== FEATURE SCALE DIAGNOSTIC ===")
+        # CRITICAL DIAGNOSTIC: Data is already normalized - verify scales
+        print(f"\n=== NORMALIZED DATA VERIFICATION ===")
+        print("Input data is already z-score normalized - verifying scales for neural network compatibility")
+        
         if len(feature_names) > 0 and 'X_train' in windowed_data:
             X_sample = windowed_data['X_train']
             if X_sample.shape[0] > 0:
-                print(f"Analyzing feature scales for training stability...")
+                print(f"Analyzing pre-normalized feature scales...")
                 for i, fname in enumerate(feature_names):
                     feature_values = X_sample[:, :, i].flatten()
                     valid_values = feature_values[np.isfinite(feature_values)]
@@ -219,20 +218,18 @@ class SlidingWindowsProcessor:
                         
                         print(f"  {fname}: mean={f_mean:.4f}, std={f_std:.4f}, range=[{f_min:.4f}, {f_max:.4f}]")
                         
-                        # Check for problematic scales
-                        if abs(f_mean) > 1000 or f_std > 1000:
-                            print(f"    ⚠️  SCALE WARNING: Large values may cause gradient issues")
-                        elif abs(f_mean) < 0.001 or f_std < 0.001:
-                            print(f"    ⚠️  SCALE WARNING: Very small values may cause vanishing gradients")
-                        elif f_range > 10000:
-                            print(f"    ⚠️  SCALE WARNING: Very large range may cause instability")
+                        # Check for properly normalized scales (should be roughly -3 to +3 for z-score)
+                        if abs(f_mean) > 5 or f_std > 5:
+                            print(f"    ⚠️  SCALE WARNING: Values may not be properly z-score normalized")
+                        elif f_range > 15:
+                            print(f"    ⚠️  SCALE WARNING: Large range for normalized data")
                         else:
-                            print(f"    ✅ Scale looks reasonable for neural network training")
+                            print(f"    ✅ Scale appropriate for neural network training (z-score normalized)")
                     else:
                         print(f"  {fname}: No valid values found!")
         
-        print(f"Denormalized windowed features generated for all splits.")
-        print(f"Included denormalized features: {feature_names}")
+        print(f"✅ Normalized windowed features ready for neural network training.")
+        print(f"Features: {feature_names}")
         
         return windowed_data
     

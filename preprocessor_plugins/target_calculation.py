@@ -198,45 +198,61 @@ class TargetCalculationProcessor:
             # Extract baselines directly from sliding windows matrix
             X_key = f'X_{split}'
             if X_key not in windowed_data:
-                print(f"WARN: No sliding window data for {split}")
+                print(f"❌ WARNING: No sliding windows data found for {split}")
                 denorm_targets[split] = np.array([])
                 baseline_targets[split] = np.array([])
                 baseline_dates[split] = np.array([])
                 continue
-            
+                
+            # Get sliding windows matrix: shape (num_windows, window_size, num_features)
             X_matrix = windowed_data[X_key]
+            print(f"  📈 Sliding windows matrix shape: {X_matrix.shape}")
+            
             if X_matrix.shape[0] == 0:
-                print(f"WARN: Empty sliding windows matrix for {split}")
+                print(f"  ❌ WARNING: Empty sliding windows matrix for {split}")
                 denorm_targets[split] = np.array([])
                 baseline_targets[split] = np.array([])
                 baseline_dates[split] = np.array([])
                 continue
             
-            # Extract baselines from sliding windows (last value of each window for target column)
+            # Extract baselines from sliding windows matrix (these are ALREADY DENORMALIZED)
+            # The sliding windows contain DENORMALIZED features from our preprocessing
+            print(f"  🎯 Extracting baselines from DENORMALIZED sliding windows matrix...")
             target_windows = X_matrix[:, :, target_feature_index]  # Shape: (num_windows, window_size)
-            sliding_baselines = target_windows[:, -1]  # Last value of each window: (num_windows,)
+            baselines_from_windows = target_windows[:, -1]  # Last value of each window: (num_windows,)
             
-            print(f"✅ {split}: {len(sliding_baselines)} sliding window baselines extracted")
-            print(f"    Baseline sample: {sliding_baselines[:3] if len(sliding_baselines) >= 3 else sliding_baselines}")
+            print(f"    ✅ Extracted {len(baselines_from_windows)} baselines from sliding windows")
+            print(f"    📊 Baseline stats: mean=${np.mean(baselines_from_windows):.2f}, std=${np.std(baselines_from_windows):.2f}")
             
-            # STRICT VALIDATION: Baselines must be positive prices (denormalized)
-            if np.any(sliding_baselines <= 0):
-                negative_count = np.sum(sliding_baselines <= 0)
-                print(f"❌ CRITICAL ERROR: Found {negative_count} NON-POSITIVE values in baselines!")
-                print(f"    This indicates sliding windows contain NORMALIZED data instead of DENORMALIZED prices!")
-                raise ValueError(f"CRITICAL: Non-positive baselines indicate denormalization failed!")
+            # NO DENORMALIZATION NEEDED - sliding windows already contain denormalized data
+            # The baselines are already in real price scale (e.g., $4000-$5000)
+            baselines_denormalized = baselines_from_windows  # These are already denormalized
             
-            # Store baselines for this split
-            denorm_targets[split] = sliding_baselines
-            baseline_targets[split] = sliding_baselines
+            # STRICT VALIDATION: Ensure baselines are valid for log returns
+            nan_count = np.sum(np.isnan(baselines_denormalized))
+            if nan_count > 0:
+                raise ValueError(f"CRITICAL: {nan_count} NaN values in baselines for {split}")
+                
+            zero_negative_count = np.sum(baselines_denormalized <= 0)
+            if zero_negative_count > 0:
+                print(f"❌ CRITICAL: Found {zero_negative_count} non-positive values in baselines!")
+                print(f"    Sample baselines: {baselines_denormalized[:10]}")
+                raise ValueError(f"CRITICAL: {zero_negative_count} non-positive values in baselines for {split}")
             
-            # Get dates from windowed data
+            # Store the baselines for target calculation (already denormalized)
+            denorm_targets[split] = baselines_denormalized
+            baseline_targets[split] = baselines_denormalized
+            
+            # Get dates for this split
             dates_key = f'x_dates_{split}'
-            baseline_dates[split] = windowed_data.get(dates_key, None)
-            
-            print(f"✅ {split}: {len(sliding_baselines)} sliding window baselines ready for target calculation")
+            if dates_key in windowed_data:
+                baseline_dates[split] = windowed_data[dates_key]
+            else:
+                baseline_dates[split] = None
+                
+            print(f"✅ {split}: {len(baselines_denormalized)} denormalized baselines ready for target calculation")
         
-        # NOW CALCULATE FUTURE VALUES FROM SLIDING WINDOW BASELINES ONLY
+        # NOW CALCULATE FUTURE VALUES FROM DENORMALIZED BASELINES
         # We calculate targets entirely from the sliding window dataset
         
         # Now calculate targets for each horizon

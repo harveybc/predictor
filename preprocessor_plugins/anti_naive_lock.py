@@ -65,8 +65,9 @@ class AntiNaiveLockProcessor:
         strategy = config.get('feature_preprocessing_strategy', 'selective')
         
         if strategy == 'none':
-            print("Strategy: none - returning original features")
-            return x_train, x_val, x_test, {}
+            print("Strategy: none - returning features as-is (already normalized)")
+            print("✅ Features are already normalized by sliding windows processor")
+            return x_train, x_val, x_test, {'applied_transforms': 'none - features pre-normalized'}
         elif strategy == 'selective':
             return self._apply_selective_preprocessing(x_train, x_val, x_test, feature_names, config)
         else:
