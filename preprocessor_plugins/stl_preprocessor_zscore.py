@@ -218,34 +218,47 @@ class PreprocessorPlugin:
         
         target_data = {'y_train': {}, 'y_val': {}, 'y_test': {}}
         
+        # Find minimum sample count across all horizons to ensure consistent lengths
+        min_samples = {}
         for split in ['train', 'val', 'test']:
             baselines = baselines_denorm[f'baseline_{split}']
             if len(baselines) == 0:
+                min_samples[split] = 0
+            else:
+                # Maximum horizon determines minimum samples
+                max_horizon = max(predicted_horizons)
+                min_samples[split] = max(0, len(baselines) - max_horizon)
+        
+        print(f"Minimum sample counts: {min_samples}")
+        
+        for split in ['train', 'val', 'test']:
+            baselines = baselines_denorm[f'baseline_{split}']
+            if len(baselines) == 0 or min_samples[split] == 0:
                 for h in predicted_horizons:
                     target_data[f'y_{split}'][f'output_horizon_{h}'] = np.array([])
                 continue
             
+            # Use consistent sample count for all horizons
+            target_length = min_samples[split]
+            
             for h in predicted_horizons:
-                if len(baselines) > h:
-                    baseline_values = baselines[:-h]
-                    future_values = baselines[h:]
-                    
-                    # Calculate log returns: log(future/baseline)
-                    ratios = future_values / baseline_values
-                    
-                    # Check for invalid ratios
-                    invalid_mask = (ratios <= 0) | np.isnan(ratios) | np.isinf(ratios)
-                    if np.any(invalid_mask):
-                        invalid_count = np.sum(invalid_mask)
-                        print(f"WARNING: {invalid_count} invalid ratios in {split} H{h}")
-                        # Replace invalid values with small positive number
-                        ratios[invalid_mask] = 1e-8
-                    
-                    log_returns = np.log(ratios)
-                    target_data[f'y_{split}'][f'output_horizon_{h}'] = log_returns.astype(np.float32)
-                    print(f"  {split} H{h}: {len(log_returns)} targets")
-                else:
-                    target_data[f'y_{split}'][f'output_horizon_{h}'] = np.array([])
+                baseline_values = baselines[:target_length]
+                future_values = baselines[h:h+target_length]
+                
+                # Calculate log returns: log(future/baseline)
+                ratios = future_values / baseline_values
+                
+                # Check for invalid ratios
+                invalid_mask = (ratios <= 0) | np.isnan(ratios) | np.isinf(ratios)
+                if np.any(invalid_mask):
+                    invalid_count = np.sum(invalid_mask)
+                    print(f"WARNING: {invalid_count} invalid ratios in {split} H{h}")
+                    # Replace invalid values with small positive number
+                    ratios[invalid_mask] = 1e-8
+                
+                log_returns = np.log(ratios)
+                target_data[f'y_{split}'][f'output_horizon_{h}'] = log_returns.astype(np.float32)
+                print(f"  {split} H{h}: {len(log_returns)} targets (aligned)")
         
         # Return unnormalized target stats (mean=0, std=1 for all horizons)
         target_data['target_returns_means'] = [0.0] * len(predicted_horizons)
@@ -331,6 +344,11 @@ class PreprocessorPlugin:
                 # Get the length from the first horizon
                 first_horizon_key = list(target_data[f'y_{split}'].keys())[0]
                 target_length = len(target_data[f'y_{split}'][first_horizon_key])
+                
+                # Verify all horizons have the same length
+                for horizon_key, horizon_data in target_data[f'y_{split}'].items():
+                    if len(horizon_data) != target_length:
+                        print(f"WARNING: Inconsistent target lengths in {split}: {horizon_key} has {len(horizon_data)}, expected {target_length}")
                 
                 # Truncate windowed features to match target length
                 X_key = f'X_{split}'
