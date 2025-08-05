@@ -173,8 +173,36 @@ class STLPipelinePlugin:
                 x_val=X_val, y_val=y_val_dict, config=config
             )
 
+            # --- STEP 10: DE-TRANSFORM PREDICTIONS IMMEDIATELY AFTER TRAIN METHOD ---
+            print("\n--- STEP 10: De-transforming predictions immediately after training ---")
+            
+            # De-transform log return predictions to full price predictions
+            list_train_full_preds = []
+            list_val_full_preds = []
+            
+            for idx, h in enumerate(predicted_horizons):
+                # Train predictions: baseline * exp(log_return_prediction)
+                train_log_returns = list_train_preds[idx].flatten()
+                train_baselines = baseline_train[:len(train_log_returns)]
+                train_full_prices = train_baselines * np.exp(train_log_returns)
+                list_train_full_preds.append(train_full_prices)
+                
+                # Val predictions: baseline * exp(log_return_prediction)
+                val_log_returns = list_val_preds[idx].flatten()
+                val_baselines = baseline_val[:len(val_log_returns)]
+                val_full_prices = val_baselines * np.exp(val_log_returns)
+                list_val_full_preds.append(val_full_prices)
+                
+                print(f"  H{h}: Train {len(train_full_prices)} -> Full prices, Val {len(val_full_prices)} -> Full prices")
+            
+            # Replace predictions with de-transformed full price predictions
+            list_train_preds = list_train_full_preds
+            list_val_preds = list_val_full_preds
+            
+            print("✅ All predictions are now FULL PRICE PREDICTIONS (not log returns)")
+
             # POST-PROCESSING SECTION OF PREDICTION PIPELINE
-            # NOTE: Model predicts log returns, final prices calculated as: baseline * exp(predicted_log_return)
+            # NOTE: Predictions are now FULL PRICES after de-transformation above
             # END OF POST-PROCESSING SECTION
 
 
@@ -287,6 +315,26 @@ class STLPipelinePlugin:
             if not all(len(lst) == num_outputs for lst in [list_test_preds, list_test_unc]): 
                 raise ValueError("Predictor predict mismatch outputs.")
             
+            # Step 11: De-transform test predictions from log returns to prices
+            print("De-transforming test predictions...")
+            if use_returns and baseline_test is not None:
+                for idx in range(len(list_test_preds)):
+                    # Get prediction, uncertainty and baseline
+                    pred_log_returns = list_test_preds[idx].flatten()
+                    unc_log_returns = list_test_unc[idx].flatten()
+                    baseline_values = baseline_test[:len(pred_log_returns)]
+                    
+                    # Convert log returns to prices: price = baseline * exp(log_return)
+                    pred_log_returns_clipped = np.clip(pred_log_returns, -10, 10)  # Prevent overflow
+                    pred_prices = baseline_values * np.exp(pred_log_returns_clipped)
+                    
+                    # Convert uncertainties proportionally
+                    unc_prices = unc_log_returns * baseline_values
+                    
+                    # Update lists with de-transformed values
+                    list_test_preds[idx] = pred_prices.reshape(list_test_preds[idx].shape)
+                    list_test_unc[idx] = unc_prices.reshape(list_test_unc[idx].shape)
+            
             for idx, h in enumerate(predicted_horizons):
                 try:
                     # --- Ensure inputs are flattened BEFORE potential addition ---
@@ -300,33 +348,28 @@ class STLPipelinePlugin:
                     test_unc_h = test_unc_h[:num_test_pts]
                     baseline_test_h = baseline_test[:num_test_pts].flatten()  # Flatten baseline too
                     
-                    # Calculate metrics in NORMALIZED space (same scale as training)
-                    # MAE should be calculated on the normalized log returns (y_true scale during training)
-                    test_mae_h = np.mean(np.abs(test_preds_h - test_target_h))
-                    
-                    # Predictions and targets are already denormalized log returns - use directly
-                    test_preds_denorm = test_preds_h.copy()  # Already denormalized log returns
-                    test_target_denorm = test_target_h.copy()  # Already denormalized log returns
-                    
-                    # Baseline is already denormalized, use directly
-                    baseline_test_denorm = baseline_test_h.copy()
-                    
-                    # Calculate final prices (baseline * exp(log_returns) if use_returns)
+                    # Convert targets to prices if using returns (targets are still log returns)
                     if use_returns:
-                        # Clip log returns to prevent overflow in exp() (typical log returns are < 1.0)
-                        test_target_clipped = np.clip(test_target_denorm, -10, 10)
-                        test_preds_clipped = np.clip(test_preds_denorm, -10, 10)
+                        # Test targets are log returns, convert to prices for comparison
+                        test_target_clipped = np.clip(test_target_h, -10, 10)
+                        test_target_price = baseline_test_h * np.exp(test_target_clipped)
                         
-                        test_target_price = baseline_test_denorm * np.exp(test_target_clipped)
-                        test_pred_price = baseline_test_denorm * np.exp(test_preds_clipped)
+                        # Predictions are already de-transformed to prices
+                        test_pred_price = test_preds_h.copy()
+                        
+                        # Calculate MAE in log return space for consistency with training
+                        # Convert prediction prices back to log returns for MAE calculation
+                        pred_log_returns = np.log(test_pred_price / baseline_test_h)
+                        test_mae_h = np.mean(np.abs(pred_log_returns - test_target_h))
                     else:
-                        test_target_price = test_target_denorm
-                        test_pred_price = test_preds_denorm
+                        test_target_price = test_target_h
+                        test_pred_price = test_preds_h
+                        test_mae_h = np.mean(np.abs(test_preds_h - test_target_h))
                     
-                    # Uncertainties are also already denormalized - use directly
-                    test_unc_denorm = test_unc_h.copy()  # Already denormalized uncertainties
+                    # Uncertainties are already de-transformed
+                    test_unc_denorm = test_unc_h.copy()
                     
-                    # Metrics: MAE in normalized space, R² in price space
+                    # Metrics: MAE in log return space, R² in price space
                     test_r2_h = r2_score(test_target_price, test_pred_price)
                     test_unc_mean_h = np.mean(np.abs(test_unc_denorm))
                     test_snr_h = np.mean(test_pred_price) / (test_unc_mean_h + 1e-9)
@@ -661,6 +704,22 @@ class STLPipelinePlugin:
             mc_samples = config.get("mc_samples", 100)
             list_predictions, _ = predictor_plugin.predict_with_uncertainty(x_val, mc_samples=mc_samples)
             print(f"Preds list length: {len(list_predictions)}")
+            
+            # De-transform validation predictions from log returns to prices
+            use_returns_eval = config.get("use_returns", False)
+            if use_returns_eval and baseline_val_eval is not None:
+                print("De-transforming validation predictions...")
+                for idx in range(len(list_predictions)):
+                    pred_log_returns = list_predictions[idx].flatten()
+                    baseline_values = baseline_val_eval[:len(pred_log_returns)]
+                    
+                    # Convert log returns to prices
+                    pred_log_returns_clipped = np.clip(pred_log_returns, -10, 10)
+                    pred_prices = baseline_values * np.exp(pred_log_returns_clipped)
+                    
+                    # Update list with de-transformed values
+                    list_predictions[idx] = pred_prices.reshape(list_predictions[idx].shape)
+                    
         except Exception as e: 
             print(f"Failed predictions: {e}")
             return
@@ -674,19 +733,14 @@ class STLPipelinePlugin:
             if use_returns_eval and baseline_val_eval is None: 
                 raise ValueError("Baseline needed.")
             
-            baseline_val_eval_sliced = baseline_val_eval[:num_val_points].flatten() if baseline_val_eval is not None else None  # Flatten baseline
-            
             for idx, h in enumerate(config['predicted_horizons']):
                 preds_raw = list_predictions[idx][:num_val_points].flatten()  # Flatten preds
                 
-                # Predictions are already denormalized log returns - use directly
-                preds_denorm = preds_raw.copy()  # Already denormalized log returns
-                
+                # Predictions are already de-transformed to prices if use_returns
                 if use_returns_eval:
-                    # Baseline is already denormalized from target calculation, use directly
-                    pred_price = baseline_val_eval_sliced * np.exp(preds_denorm)
+                    pred_price = preds_raw.copy()  # Already converted to prices
                 else:
-                    pred_price = preds_denorm
+                    pred_price = preds_raw  # Direct values
                 
                 output_data[f"Prediction_H{h}"] = pred_price.flatten()
             

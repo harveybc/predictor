@@ -212,6 +212,114 @@ class PreprocessorPlugin:
         
         return baseline_data
 
+    def _calculate_log_return_targets(self, baselines_denorm, predicted_horizons, config):
+        """Calculate log return targets from denormalized baselines."""
+        print("Calculating log return targets from denormalized baselines...")
+        
+        target_data = {'y_train': {}, 'y_val': {}, 'y_test': {}}
+        
+        for split in ['train', 'val', 'test']:
+            baselines = baselines_denorm[f'baseline_{split}']
+            if len(baselines) == 0:
+                for h in predicted_horizons:
+                    target_data[f'y_{split}'][f'output_horizon_{h}'] = np.array([])
+                continue
+            
+            for h in predicted_horizons:
+                if len(baselines) > h:
+                    baseline_values = baselines[:-h]
+                    future_values = baselines[h:]
+                    
+                    # Calculate log returns: log(future/baseline)
+                    ratios = future_values / baseline_values
+                    
+                    # Check for invalid ratios
+                    invalid_mask = (ratios <= 0) | np.isnan(ratios) | np.isinf(ratios)
+                    if np.any(invalid_mask):
+                        invalid_count = np.sum(invalid_mask)
+                        print(f"WARNING: {invalid_count} invalid ratios in {split} H{h}")
+                        # Replace invalid values with small positive number
+                        ratios[invalid_mask] = 1e-8
+                    
+                    log_returns = np.log(ratios)
+                    target_data[f'y_{split}'][f'output_horizon_{h}'] = log_returns.astype(np.float32)
+                    print(f"  {split} H{h}: {len(log_returns)} targets")
+                else:
+                    target_data[f'y_{split}'][f'output_horizon_{h}'] = np.array([])
+        
+        # Return unnormalized target stats (mean=0, std=1 for all horizons)
+        target_data['target_returns_means'] = [0.0] * len(predicted_horizons)
+        target_data['target_returns_stds'] = [1.0] * len(predicted_horizons)
+        
+        return target_data
+
+    def _apply_selective_preprocessing(self, aligned_denorm_data, config):
+        """Apply selective preprocessing to input data (NOT sliding windows)."""
+        print("Applying selective preprocessing to input data...")
+        
+        # Apply anti-naive-lock preprocessing to the raw denormalized data
+        preprocessed_data = {}
+        
+        for split in ['train', 'val', 'test']:
+            x_df = aligned_denorm_data[f'x_{split}_df']
+            y_df = aligned_denorm_data[f'y_{split}_df']
+            
+            # Apply selective preprocessing to each dataframe
+            x_preprocessed = self.anti_naive_lock_processor.preprocess_dataframe(x_df, config, split)
+            
+            preprocessed_data[f'x_{split}_df'] = x_preprocessed
+            preprocessed_data[f'y_{split}_df'] = y_df  # Y data doesn't need preprocessing
+            
+            print(f"  {split}: {x_df.shape} -> {x_preprocessed.shape}")
+        
+        return preprocessed_data
+
+    def _normalize_with_training_params(self, preprocessed_data):
+        """Z-score normalize using training set parameters."""
+        print("Z-score normalizing using training set parameters...")
+        
+        # Calculate normalization parameters from training set
+        x_train_df = preprocessed_data['x_train_df']
+        training_norm_params = {}
+        
+        for column in x_train_df.columns:
+            col_data = x_train_df[column].values
+            mean_val = np.mean(col_data)
+            std_val = np.std(col_data)
+            training_norm_params[column] = {'mean': mean_val, 'std': std_val}
+        
+        print(f"Calculated normalization parameters for {len(training_norm_params)} features")
+        
+        # Apply normalization to all splits
+        normalized_data = {}
+        
+        for split in ['train', 'val', 'test']:
+            x_df = preprocessed_data[f'x_{split}_df'].copy()
+            y_df = preprocessed_data[f'y_{split}_df'].copy()
+            
+            # Normalize X data using training parameters
+            for column in x_df.columns:
+                if column in training_norm_params:
+                    params = training_norm_params[column]
+                    if params['std'] > 0:
+                        x_df[column] = (x_df[column] - params['mean']) / params['std']
+                    else:
+                        x_df[column] = 0  # Handle constant columns
+            
+            # Y data normalization (for target column only, if needed)
+            target_column = 'CLOSE'  # Assuming CLOSE is in Y data
+            if target_column in y_df.columns and target_column in training_norm_params:
+                params = training_norm_params[target_column]
+                if params['std'] > 0:
+                    y_df[target_column] = (y_df[target_column] - params['mean']) / params['std']
+            
+            normalized_data[f'x_{split}_df'] = x_df
+            normalized_data[f'y_{split}_df'] = y_df
+            
+            print(f"  {split}: Applied normalization")
+        
+        return normalized_data, training_norm_params
+
     def _truncate_to_match_targets(self, windowed_data, target_data):
         """Truncate windowed data to match target data lengths."""
         print("\n--- Final Length Alignment ---")
@@ -242,8 +350,8 @@ class PreprocessorPlugin:
                 print(f"No target data found for {split} split")
 
     def process_data(self, config):
-        """Main processing pipeline."""
-        print("\n" + "="*15 + " Starting Preprocessing " + "="*15)
+        """Main processing pipeline - FOOL-PROOF PLAN IMPLEMENTATION."""
+        print("\n" + "="*15 + " Starting Preprocessing - FOOL-PROOF PLAN " + "="*15)
         self.set_params(**config)
         config = self.params
         self.scalers = {}  # Reset scalers
@@ -253,145 +361,98 @@ class PreprocessorPlugin:
         if not isinstance(predicted_horizons, list) or not predicted_horizons: 
             raise ValueError("'predicted_horizons' must be a non-empty list.")
         
-        # --- 1. Load Data AND DENORMALIZE IMMEDIATELY ---
-        print("\n--- 1. Loading Data AND DENORMALIZING IMMEDIATELY ---")
-        x_train_df = self._load_data(config["x_train_file"], config.get("max_steps_train"), config.get("headers"), config)
-        x_val_df = self._load_data(config["x_validation_file"], config.get("max_steps_val"), config.get("headers"), config)
-        x_test_df = self._load_data(config["x_test_file"], config.get("max_steps_test"), config.get("headers"), config)
-        y_train_df = self._load_data(config["y_train_file"], config.get("max_steps_train"), config.get("headers"), config)
-        y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"), config)
-        y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"), config)
+        # --- STEP 1: Load Data AND DENORMALIZE IMMEDIATELY ---
+        print("\n--- STEP 1: Loading Data AND DENORMALIZING IMMEDIATELY ---")
+        x_train_df_denorm = self._load_data(config["x_train_file"], config.get("max_steps_train"), config.get("headers"), config)
+        x_val_df_denorm = self._load_data(config["x_validation_file"], config.get("max_steps_val"), config.get("headers"), config)
+        x_test_df_denorm = self._load_data(config["x_test_file"], config.get("max_steps_test"), config.get("headers"), config)
+        y_train_df_denorm = self._load_data(config["y_train_file"], config.get("max_steps_train"), config.get("headers"), config)
+        y_val_df_denorm = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"), config)
+        y_test_df_denorm = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"), config)
         
-        # --- 2. Align Indices ---
-        aligned_data = self._align_indices(x_train_df, y_train_df, x_val_df, y_val_df, x_test_df, y_test_df)
+        # Align indices
+        aligned_denorm_data = self._align_indices(x_train_df_denorm, y_train_df_denorm, x_val_df_denorm, y_val_df_denorm, x_test_df_denorm, y_test_df_denorm)
         
-        # Data is already denormalized during loading, so skip denormalization step
-        print("\n✅ All data already denormalized during loading - proceeding to baseline preparation")
+        # --- STEP 2: Calculate Sliding Windows with DENORMALIZED Data ---
+        print("\n--- STEP 2: Calculate Sliding Windows with DENORMALIZED Data ---")
+        baseline_data_denorm = self._prepare_baseline_data(aligned_denorm_data, config)
+        windowed_data_denorm = self.sliding_windows_processor.generate_windowed_features(baseline_data_denorm, config)
         
-        # --- 3. Prepare Baseline Data ---
-        baseline_data = self._prepare_baseline_data(aligned_data, config)
+        # --- STEP 3: Extract Baselines (last element of each window for target_column) ---
+        print("\n--- STEP 3: Extract Baselines from Denormalized Sliding Windows ---")
+        target_column = config.get("target_column", "CLOSE")
+        feature_names = windowed_data_denorm.get('feature_names', [])
         
-        # --- 4. Generate Windowed Features (required for baseline extraction) ---
-        windowed_data = self.sliding_windows_processor.generate_windowed_features(baseline_data, config)
+        if target_column not in feature_names:
+            raise ValueError(f"Target column '{target_column}' not found in features: {feature_names}")
         
-        # --- 5. Apply Anti-Naive-Lock Preprocessing to Sliding Windows ---
-        print("\n--- Applying Anti-Naive-Lock Preprocessing to Sliding Windows ---")
-        x_train_orig = windowed_data.get('X_train')
-        x_val_orig = windowed_data.get('X_val') 
-        x_test_orig = windowed_data.get('X_test')
-        feature_names = windowed_data.get('feature_names', [])
+        target_feature_index = feature_names.index(target_column)
+        baselines_denorm = {}
         
-        if x_train_orig is not None and x_val_orig is not None and x_test_orig is not None:
-            print(f"Original sliding window shapes: Train={x_train_orig.shape}, Val={x_val_orig.shape}, Test={x_test_orig.shape}")
-            print(f"Feature names: {feature_names}")
-            
-            # Apply anti-naive-lock preprocessing
-            x_train_processed, x_val_processed, x_test_processed, processing_stats = (
-                self.anti_naive_lock_processor.process_sliding_windows(
-                    x_train_orig, x_val_orig, x_test_orig, feature_names, config
-                )
-            )
-            
-            # Update windowed_data with processed matrices
-            windowed_data['X_train'] = x_train_processed
-            windowed_data['X_val'] = x_val_processed
-            windowed_data['X_test'] = x_test_processed
-            windowed_data['anti_naive_lock_stats'] = processing_stats
-            
-            print(f"Processed sliding window shapes: Train={x_train_processed.shape}, Val={x_val_processed.shape}, Test={x_test_processed.shape}")
-            print("Anti-naive-lock preprocessing completed successfully")
-        else:
-            print("WARNING: Could not apply anti-naive-lock preprocessing - missing sliding window data")
+        for split in ['train', 'val', 'test']:
+            X_matrix = windowed_data_denorm[f'X_{split}']
+            if X_matrix.shape[0] > 0:
+                target_windows = X_matrix[:, :, target_feature_index]
+                baselines_denorm[f'baseline_{split}'] = target_windows[:, -1]  # Last element of each window
+                print(f"  {split}: Extracted {len(baselines_denorm[f'baseline_{split}'])} baselines")
+            else:
+                baselines_denorm[f'baseline_{split}'] = np.array([])
         
-        # --- 6. Calculate Sliding Windows Baselines FROM the windowed matrix ---
-        sliding_windows_data = self.target_calculation_processor.calculate_sliding_window_baselines(windowed_data, aligned_data, config)
+        # --- STEP 4: Calculate Targets using Log Returns from Baselines ---
+        print("\n--- STEP 4: Calculate Targets using Log Returns from Baselines ---")
+        target_data = self._calculate_log_return_targets(baselines_denorm, predicted_horizons, config)
         
-        # --- 7. Add sliding window baselines to baseline_data ---
-        baseline_data.update(sliding_windows_data)
+        # --- STEP 5: Apply Selective Preprocessing to INPUT DATA (NOT sliding windows) ---
+        print("\n--- STEP 5: Apply Selective Preprocessing to INPUT DATA ---")
+        preprocessed_data = self._apply_selective_preprocessing(aligned_denorm_data, config)
         
-        # --- 8. Calculate Targets ---
-        target_data = self.target_calculation_processor.calculate_targets(baseline_data, windowed_data, config)
+        # --- STEP 6: Z-score Normalize using TRAINING SET parameters ---
+        print("\n--- STEP 6: Z-score Normalize using TRAINING SET parameters ---")
+        normalized_data, training_norm_params = self._normalize_with_training_params(preprocessed_data)
         
-        # --- 9. Final Alignment ---
-        self._truncate_to_match_targets(windowed_data, target_data)
+        # --- STEP 7: Normalize Val/Test using Training Normalization Parameters ---
+        print("\n--- STEP 7: Already done in step 6 ---")
         
-        # --- 10. Update params with individual normalization stats ---
-        self.params['target_returns_means'] = target_data['target_returns_means']
-        self.params['target_returns_stds'] = target_data['target_returns_stds']
+        # --- STEP 8: Create Sliding Windows Matrix with Normalized Preprocessed Data ---
+        print("\n--- STEP 8: Create Sliding Windows Matrix with Normalized Preprocessed Data ---")
+        baseline_data_norm = self._prepare_baseline_data(normalized_data, config)
+        windowed_data_final = self.sliding_windows_processor.generate_windowed_features(baseline_data_norm, config)
         
-        # --- 11. Final Date Consistency Check ---
-        print("\n--- Final Date Consistency Checks ---")
-        splits = ['train', 'val', 'test']
-        for split in splits:
-            x_dates = windowed_data.get(f'x_dates_{split}')
-            baseline_dates = target_data.get(f'baseline_{split}_dates')
-            verify_date_consistency([
-                list(x_dates) if x_dates is not None else None,
-                list(baseline_dates) if baseline_dates is not None else None
-            ], f"{split.capitalize()} X/Y Dates")
-        
-        # --- 12. Prepare Final Output ---
+        # --- Prepare Final Output ---
         print("\n--- Preparing Final Output ---")
         ret = {
-            # Windowed features
-            "x_train": windowed_data['X_train'],
-            "x_val": windowed_data['X_val'],
-            "x_test": windowed_data['X_test'],
+            # Final sliding windows for training (normalized preprocessed data)
+            "x_train": windowed_data_final['X_train'],
+            "x_val": windowed_data_final['X_val'],
+            "x_test": windowed_data_final['X_test'],
             
-            # Targets
+            # Targets (calculated from denormalized baselines)
             "y_train": target_data['y_train'],
             "y_val": target_data['y_val'],
             "y_test": target_data['y_test'],
             
-            # Dates for windowed data
-            "x_train_dates": windowed_data['x_dates_train'],
-            "y_train_dates": windowed_data['x_dates_train'],  # Same as x_dates
-            "x_val_dates": windowed_data['x_dates_val'],
-            "y_val_dates": windowed_data['x_dates_val'],  # Same as x_dates
-            "x_test_dates": windowed_data['x_dates_test'],
-            "y_test_dates": windowed_data['x_dates_test'],  # Same as x_dates
+            # Dates
+            "x_train_dates": windowed_data_final['x_dates_train'],
+            "y_train_dates": windowed_data_final['x_dates_train'],
+            "x_val_dates": windowed_data_final['x_dates_val'],
+            "y_val_dates": windowed_data_final['x_dates_val'],
+            "x_test_dates": windowed_data_final['x_dates_test'],
+            "y_test_dates": windowed_data_final['x_dates_test'],
             
-            # Baseline data (denormalized target column, trimmed and aligned)
-            "baseline_train": target_data['baseline_train'],
-            "baseline_val": target_data['baseline_val'],
-            "baseline_test": target_data['baseline_test'],
-            
-            # Baseline dates
-            "baseline_train_dates": target_data['baseline_train_dates'],
-            "baseline_val_dates": target_data['baseline_val_dates'],
-            "baseline_test_dates": target_data['baseline_test_dates'],
-            
-            # Additional data for evaluation
-            "test_close_prices": target_data['test_close_prices'],
-            "y_test_raw": target_data['y_test_raw'],
+            # Baselines (denormalized for prediction reconstruction)
+            "baseline_train": baselines_denorm['baseline_train'],
+            "baseline_val": baselines_denorm['baseline_val'],
+            "baseline_test": baselines_denorm['baseline_test'],
             
             # Metadata
-            "feature_names": windowed_data['feature_names'],
+            "feature_names": windowed_data_final['feature_names'],
             "target_returns_means": target_data['target_returns_means'],
             "target_returns_stds": target_data['target_returns_stds'],
-            "predicted_horizons": target_data['predicted_horizons'],
+            "predicted_horizons": predicted_horizons,
+            "training_norm_params": training_norm_params,  # For de-transformation
         }
         
-        # Print final summary
-        print(f"Final shapes:")
-        predicted_horizons = config['predicted_horizons']
-        if ret['y_train']:
-            first_horizon = predicted_horizons[0]
-            print(f"  X: Train={ret['x_train'].shape}, Val={ret['x_val'].shape}, Test={ret['x_test'].shape}")
-            print(f"  Y: {len(predicted_horizons)} horizons, "
-                  f"Train={len(ret['y_train'][f'output_horizon_{first_horizon}'])}, "
-                  f"Val={len(ret['y_val'][f'output_horizon_{first_horizon}'])}, "
-                  f"Test={len(ret['y_test'][f'output_horizon_{first_horizon}'])}")
-        print(f"  Baselines: Train={len(ret['baseline_train'])}, Val={len(ret['baseline_val'])}, Test={len(ret['baseline_test'])}")
-        print(f"  Horizons: {predicted_horizons}")
-        print(f"  Features ({len(ret['feature_names'])}): {ret['feature_names']}")
-        print(f"  Target normalization per horizon:")
-        for i, h in enumerate(predicted_horizons):
-            mean_h = ret['target_returns_means'][i]
-            std_h = ret['target_returns_stds'][i]
-            print(f"    Horizon {h}: mean={mean_h:.6f}, std={std_h:.6f}")
-        
-        print("\n" + "="*15 + " Preprocessing Finished " + "="*15)
+        print("\n" + "="*15 + " Preprocessing Finished - FOOL-PROOF PLAN " + "="*15)
         return ret
 
     def run_preprocessing(self, config):

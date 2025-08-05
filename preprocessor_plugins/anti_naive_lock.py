@@ -16,6 +16,7 @@ Date: 2025-08-03
 """
 
 import numpy as np
+import pandas as pd
 from typing import Dict, List, Tuple, Any
 import logging
 
@@ -463,3 +464,67 @@ class AntiNaiveLockProcessor:
                 norm_stats[feature_names[i]] = {'mean': 0.0, 'std': 1.0}
         
         return x_train, x_val, x_test, norm_stats
+    
+    def preprocess_dataframe(self, data_df: pd.DataFrame, config: Dict[str, Any], split: str = 'train') -> pd.DataFrame:
+        """
+        Apply anti-naive-lock preprocessing to raw DataFrame data before sliding windows.
+        
+        This method applies selective transformations to features before they are converted
+        to sliding windows, focusing on preventing naive copying behavior.
+        
+        Args:
+            data_df: Input DataFrame with features as columns
+            config: Configuration dictionary
+            split: Dataset split ('train', 'val', 'test')
+            
+        Returns:
+            Preprocessed DataFrame
+        """
+        print(f"Applying anti-naive-lock preprocessing to {split} data...")
+        
+        # Create a copy to avoid modifying the original
+        processed_df = data_df.copy()
+        
+        # Get feature categories from config
+        temporal_features = config.get('temporal_features', ['day_of_week', 'hour_of_day', 'day_of_month'])
+        price_features = config.get('price_features', ['OPEN', 'LOW', 'HIGH', 'CLOSE'])
+        stationary_indicators = config.get('stationary_indicators', ['RSI', 'MACD', 'EMA'])
+        
+        transforms_applied = 0
+        
+        # Apply transformations column by column
+        for column in processed_df.columns:
+            try:
+                if column in temporal_features and config.get('use_cyclic_encoding', True):
+                    # Apply cyclic encoding to temporal features
+                    period = 24 if 'hour' in column else (7 if 'week' in column else 31)
+                    processed_df[column] = np.sin(2 * np.pi * processed_df[column] / period)
+                    transforms_applied += 1
+                    print(f"  Applied cyclic encoding to {column}")
+                    
+                elif column in price_features and config.get('use_log_returns', True):
+                    # Apply log returns to price features
+                    safe_values = np.where(processed_df[column] <= 0, 1e-8, processed_df[column])
+                    log_returns = np.zeros_like(safe_values)
+                    log_returns[1:] = np.log(safe_values[1:] / safe_values[:-1])
+                    processed_df[column] = log_returns
+                    transforms_applied += 1
+                    print(f"  Applied log returns to {column}")
+                    
+                elif column in stationary_indicators:
+                    # Preserve stationary indicators as they are already processed
+                    print(f"  Preserved stationary indicator {column}")
+                    
+                else:
+                    # Preserve other features
+                    print(f"  Preserved feature {column}")
+                    
+            except Exception as e:
+                print(f"  ERROR processing {column}: {e}")
+        
+        print(f"Applied {transforms_applied} transformations to {split} data")
+        
+        # Handle any NaN values that might have been introduced
+        processed_df = processed_df.fillna(0)
+        
+        return processed_df
