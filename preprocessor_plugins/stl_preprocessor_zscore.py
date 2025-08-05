@@ -455,9 +455,10 @@ class PreprocessorPlugin:
         print("\n--- STEP 4: Calculate Targets using Log Returns from Baselines ---")
         target_data = self._calculate_log_return_targets(baselines_denorm, predicted_horizons, config)
         
-        # --- STEP 5: Apply Selective Preprocessing to INPUT DATA (NOT sliding windows) ---
-        print("\n--- STEP 5: Apply Selective Preprocessing to INPUT DATA ---")
-        preprocessed_data = self._apply_selective_preprocessing(aligned_denorm_data, config)
+        # --- STEP 5: Skip Selective Preprocessing (will be applied to sliding windows in Step 8) ---
+        print("\n--- STEP 5: Skip Selective Preprocessing (will be applied to sliding windows in Step 8) ---")
+        print("Skipping input data preprocessing - will apply anti-naive-lock to sliding windows instead")
+        preprocessed_data = aligned_denorm_data  # Use aligned denormalized data directly
         
         # --- STEP 6: CONDITIONAL Z-score Normalize using TRAINING SET parameters ---
         print("\n--- STEP 6: CONDITIONAL Z-score Normalize using TRAINING SET parameters ---")
@@ -469,17 +470,61 @@ class PreprocessorPlugin:
             print("Config enables post-preprocessing normalization - applying z-score normalization")
             normalized_data, training_norm_params = self._normalize_with_training_params(preprocessed_data)
         else:
-            print("Config disables post-preprocessing normalization - skipping normalization step")
+            print("Config disables post-preprocessing normalization - using preprocessed data directly")
             normalized_data = preprocessed_data  # Use preprocessed data as-is
             training_norm_params = {}  # No normalization parameters
+            
+        # CRITICAL FIX: Ensure CLOSE column remains denormalized in normalized_data
+        print("CRITICAL FIX: Ensuring CLOSE column remains denormalized for target alignment...")
+        target_column = config.get("target_column", "CLOSE")
+        for split in ['train', 'val', 'test']:
+            if target_column in aligned_denorm_data[f'x_{split}_df'].columns:
+                # Force CLOSE to remain denormalized (from Step 1) regardless of normalization
+                original_close = aligned_denorm_data[f'x_{split}_df'][target_column].values
+                normalized_data[f'x_{split}_df'][target_column] = original_close
+                print(f"  {split}: Restored denormalized {target_column} values")
+            if target_column in aligned_denorm_data[f'y_{split}_df'].columns:
+                # Force Y target to remain denormalized too
+                original_target = aligned_denorm_data[f'y_{split}_df'][target_column].values
+                normalized_data[f'y_{split}_df'][target_column] = original_target
+                print(f"  {split}: Restored denormalized Y {target_column} values")
         
         # --- STEP 7: Already handled in step 6 based on configuration ---
         print("\n--- STEP 7: Post-processing normalization handled in step 6 ---")
         
-        # --- STEP 8: Create Sliding Windows Matrix with Normalized Preprocessed Data ---
-        print("\n--- STEP 8: Create Sliding Windows Matrix with Normalized Preprocessed Data ---")
-        baseline_data_norm = self._prepare_baseline_data(normalized_data, config)
-        windowed_data_final = self.sliding_windows_processor.generate_windowed_features(baseline_data_norm, config)
+        # --- STEP 8: Create Sliding Windows Matrix with Processed Data ---
+        print("\n--- STEP 8: Create Sliding Windows Matrix with Processed Data ---")
+        
+        # CRITICAL FIX: Use the SAME preprocessing as baselines for consistency
+        # For target calculation we used denormalized sliding windows (Step 2)
+        # For training, we should use the same denormalized data to ensure consistency
+        print("CRITICAL FIX: Using DENORMALIZED data for sliding windows to match target calculation...")
+        baseline_data_for_training = self._prepare_baseline_data(aligned_denorm_data, config)
+        windowed_data_final = self.sliding_windows_processor.generate_windowed_features(baseline_data_for_training, config)
+        
+        # Apply anti-naive-lock to sliding windows AFTER creation (not to input data)
+        if config.get("anti_naive_lock_enabled", True):
+            print("Applying anti-naive-lock to sliding windows matrices...")
+            feature_names = windowed_data_final.get('feature_names', [])
+            
+            # Apply anti-naive-lock to sliding window matrices
+            x_train_processed, x_val_processed, x_test_processed, processing_stats = \
+                self.anti_naive_lock_processor.process_sliding_windows(
+                    windowed_data_final['X_train'],
+                    windowed_data_final['X_val'], 
+                    windowed_data_final['X_test'],
+                    feature_names,
+                    config
+                )
+            
+            # Update windowed data with anti-naive-lock processed matrices
+            windowed_data_final['X_train'] = x_train_processed
+            windowed_data_final['X_val'] = x_val_processed
+            windowed_data_final['X_test'] = x_test_processed
+            
+            print("Anti-naive-lock applied to sliding window matrices")
+        else:
+            print("Anti-naive-lock disabled - using raw sliding windows")
         
         # --- STEP 9: Truncate Windowed Data to Match Target Lengths ---
         print("\n--- STEP 9: Truncate Windowed Data to Match Target Lengths ---")
@@ -526,7 +571,8 @@ class PreprocessorPlugin:
             "target_returns_means": target_data['target_returns_means'],
             "target_returns_stds": target_data['target_returns_stds'],
             "predicted_horizons": predicted_horizons,
-            "training_norm_params": training_norm_params,  # For de-transformation
+            "training_norm_params": {},  # No normalization applied
+            "normalization_json": baseline_data_denorm.get('norm_json', {}),  # Original normalization for denormalization
         }
         
         print("\n" + "="*15 + " Preprocessing Finished - FOOL-PROOF PLAN " + "="*15)
@@ -544,7 +590,8 @@ class PreprocessorPlugin:
         params_with_targets.update({
             "target_returns_means": processed_data.get("target_returns_means", []),
             "target_returns_stds": processed_data.get("target_returns_stds", []),
-            "training_norm_params": processed_data.get("training_norm_params", {})
+            "training_norm_params": {},  # No additional normalization applied
+            "normalization_json": processed_data.get("normalization_json", {})  # Original normalization
         })
         
         return processed_data, params_with_targets

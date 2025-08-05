@@ -201,12 +201,23 @@ class AntiNaiveLockProcessor:
                     print(f"  Applied cyclic encoding to {feature_name}")
                     
                 elif feature_name in price_features and config.get('use_log_returns', True):
-                    # Apply log returns to price features
-                    x_train_processed[:, :, i] = self._apply_log_returns(x_train_processed[:, :, i])
-                    x_val_processed[:, :, i] = self._apply_log_returns(x_val_processed[:, :, i])
-                    x_test_processed[:, :, i] = self._apply_log_returns(x_test_processed[:, :, i])
-                    processing_stats['applied_transforms'][feature_name] = 'log_returns'
-                    print(f"  Applied log returns to {feature_name}")
+                    # CRITICAL: Never apply log returns to target column in sliding windows
+                    target_column = config.get('target_column', 'CLOSE')
+                    excluded_columns = config.get('excluded_columns', [])
+                    
+                    if feature_name != target_column and feature_name not in excluded_columns:
+                        # Apply log returns to price features (not target, not excluded)
+                        x_train_processed[:, :, i] = self._apply_log_returns(x_train_processed[:, :, i])
+                        x_val_processed[:, :, i] = self._apply_log_returns(x_val_processed[:, :, i])
+                        x_test_processed[:, :, i] = self._apply_log_returns(x_test_processed[:, :, i])
+                        processing_stats['applied_transforms'][feature_name] = 'log_returns'
+                        print(f"  Applied log returns to {feature_name}")
+                    else:
+                        processing_stats['applied_transforms'][feature_name] = 'preserved_target'
+                        if feature_name == target_column:
+                            print(f"  Preserved target column {feature_name} (no log returns)")
+                        if feature_name in excluded_columns:
+                            print(f"  Preserved excluded column {feature_name} (no log returns)")
                     
                 elif feature_name in trend_features and config.get('use_first_differences', True):
                     # Apply first differences to trend features
@@ -505,8 +516,11 @@ class AntiNaiveLockProcessor:
                 elif column in price_features and config.get('use_log_returns', True):
                     # Only apply log returns to price features if they're NOT the target column
                     target_column = config.get('target_column', 'CLOSE')
-                    if column != target_column:
-                        # Apply log returns to price features (not target)
+                    excluded_columns = config.get('excluded_columns', [])
+                    
+                    # CRITICAL FIX: Check both target column AND excluded columns
+                    if column != target_column and column not in excluded_columns:
+                        # Apply log returns to price features (not target, not excluded)
                         safe_values = np.where(processed_df[column] <= 0, 1e-8, processed_df[column])
                         log_returns = np.zeros_like(safe_values)
                         log_returns[1:] = np.log(safe_values[1:] / safe_values[:-1])
@@ -514,7 +528,12 @@ class AntiNaiveLockProcessor:
                         transforms_applied += 1
                         print(f"  Applied log returns to {column}")
                     else:
-                        print(f"  Preserved target column {column} (no log returns)")
+                        if column == target_column:
+                            print(f"  Preserved target column {column} (no log returns)")
+                        if column in excluded_columns:
+                            print(f"  Preserved excluded column {column} (no log returns)")
+                        if column == target_column and column in excluded_columns:
+                            print(f"  Preserved target+excluded column {column} (no log returns)")
                     
                 elif column in stationary_indicators:
                     # Preserve stationary indicators as they are already processed

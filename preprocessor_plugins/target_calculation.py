@@ -223,8 +223,8 @@ class TargetCalculationProcessor:
         print(f"Processing targets for horizons: {predicted_horizons} (Use Log Returns={use_returns})...")
         
         if use_returns:
-            # UNNORMALIZED LOG RETURNS: Use raw denormalized log returns as targets
-            print("\nCalculating UNNORMALIZED log returns as targets...")
+            # CRITICAL FIX: Calculate proper LOG RETURNS, not differences!
+            print("\nCalculating LOG RETURNS as targets (not differences)...")
             
             # Calculate targets for each horizon
             for split in splits:
@@ -234,10 +234,24 @@ class TargetCalculationProcessor:
                 
                 for h in predicted_horizons:
                     if len(baselines) > h:
-                        # target<t,h> = baseline<t+h> - baseline<t>
-                        targets = baselines[h:] - baselines[:-h]
-                        target_data.setdefault(split, {})[f'output_horizon_{h}'] = targets.astype(np.float32)
-                        print(f"  {split.capitalize()} H{h}: {len(targets)} targets calculated.")
+                        # CORRECT: Calculate log returns: log(future_price / baseline_price)
+                        baseline_values = baselines[:-h]  # Current baselines
+                        future_values = baselines[h:]     # Future baselines
+                        
+                        # Calculate log returns: log(future/baseline)
+                        ratios = future_values / baseline_values
+                        
+                        # Check for invalid ratios
+                        invalid_mask = (ratios <= 0) | np.isnan(ratios) | np.isinf(ratios)
+                        if np.any(invalid_mask):
+                            invalid_count = np.sum(invalid_mask)
+                            print(f"WARNING: {invalid_count} invalid ratios in {split} H{h}")
+                            # Replace invalid values with small positive number
+                            ratios[invalid_mask] = 1e-8
+                        
+                        targets = np.log(ratios).astype(np.float32)
+                        target_data.setdefault(split, {})[f'output_horizon_{h}'] = targets
+                        print(f"  {split.capitalize()} H{h}: {len(targets)} LOG RETURN targets calculated.")
                     else:
                         print(f"  WARN: Not enough baselines for H{h} in {split}.")
                         target_data.setdefault(split, {})[f'output_horizon_{h}'] = np.array([])
@@ -270,9 +284,44 @@ class TargetCalculationProcessor:
         
         print(f"\nData alignment: Max horizon={max_horizon}, Min samples per split: {min_samples_per_split}")
         
-        # Initialize normalization stats for all horizons (unnormalized: mean=0, std=1)
+        # Initialize normalization stats - we WILL normalize log returns for stable training
         if use_returns:
-            # For unnormalized returns, all horizons have mean=0.0, std=1.0
+            print("Will normalize log return targets using training data statistics...")
+            
+            # Calculate normalization stats from ALL training targets
+            train_all_targets = []
+            for split in ['train']:
+                if split in target_data:
+                    for horizon_key in target_data[split]:
+                        if len(target_data[split][horizon_key]) > 0:
+                            train_all_targets.extend(target_data[split][horizon_key])
+            
+            if len(train_all_targets) > 0:
+                target_mean = np.mean(train_all_targets)
+                target_std = np.std(train_all_targets)
+                target_std = max(target_std, 1e-8)  # Prevent division by zero
+                
+                self.target_returns_means = [target_mean] * len(predicted_horizons)
+                self.target_returns_stds = [target_std] * len(predicted_horizons)
+                
+                print(f"Target normalization stats: mean={target_mean:.6f}, std={target_std:.6f}")
+                
+                # Apply normalization to all targets
+                for split in ['train', 'val', 'test']:
+                    if split in target_data:
+                        for horizon_key in target_data[split]:
+                            if len(target_data[split][horizon_key]) > 0:
+                                original_targets = target_data[split][horizon_key]
+                                normalized_targets = (original_targets - target_mean) / target_std
+                                target_data[split][horizon_key] = normalized_targets.astype(np.float32)
+                
+                print("Applied normalization to all target data")
+            else:
+                print("WARNING: No training targets found for normalization")
+                self.target_returns_means = [0.0] * len(predicted_horizons)
+                self.target_returns_stds = [1.0] * len(predicted_horizons)
+        else:
+            # For non-returns, no normalization
             self.target_returns_means = [0.0] * len(predicted_horizons)
             self.target_returns_stds = [1.0] * len(predicted_horizons)
         
@@ -463,11 +512,11 @@ class TargetCalculationProcessor:
         # Print processing summary
         if use_returns:
             print("\nTarget processing summary:")
-            print("  ✅ TARGETS: Raw denormalized returns (NO normalization)")
+            print("  ✅ TARGETS: Log returns calculated and NORMALIZED for stable training")
             print("  ✅ BASELINE: Unnormalized denormalized values")
-            print("  ✅ PREDICTION: Add predicted returns to baseline for final prediction")
-            print("  Target means (all 0.0):", self.target_returns_means)
-            print("  Target stds (all 1.0):", self.target_returns_stds)
+            print("  ✅ PREDICTION: Denormalize predicted returns, then add to baseline for final prediction")
+            print("  Target means:", self.target_returns_means)
+            print("  Target stds:", self.target_returns_stds)
         else:
             print("Target normalization skipped (use_returns=False). Using raw values.")
         
@@ -477,10 +526,10 @@ class TargetCalculationProcessor:
             'y_val': target_data.get('val', {}),
             'y_test': target_data.get('test', {}),
             **baseline_info,
-            'target_returns_means': self.target_returns_means,  # All 0.0 (no normalization)
-            'target_returns_stds': self.target_returns_stds,    # All 1.0 (no normalization)
+            'target_returns_means': self.target_returns_means,  # Normalization means for denormalization
+            'target_returns_stds': self.target_returns_stds,    # Normalization stds for denormalization
             'predicted_horizons': predicted_horizons,           # For reference
-            'use_unnormalized_targets': True,                   # Flag for prediction processing
+            'use_unnormalized_targets': False,                  # Flag: targets ARE normalized
         }
         
         # Add raw test data for evaluation (denormalized, full length)
