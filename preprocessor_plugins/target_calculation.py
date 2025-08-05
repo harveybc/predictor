@@ -66,16 +66,26 @@ class TargetCalculationProcessor:
             x_df = baseline_data[f'x_{split}_df']  # Use x_df since it contains the target column
             price_series = x_df[target_column].values.astype(np.float32)
             
+            # CRITICAL FIX: Calculate max horizon to ensure all horizons have same length
+            max_horizon = max(predicted_horizons)
+            max_samples = len(baselines)
+            
+            # Find maximum number of targets we can create for ALL horizons
+            for j in range(len(baselines)):
+                baseline_time_idx = j + window_size - 1
+                future_time_idx = baseline_time_idx + max_horizon
+                if future_time_idx >= len(price_series):
+                    max_samples = j
+                    break
+            
+            print(f"  {split}: Using {max_samples} samples for ALL horizons (limited by H{max_horizon})")
+            
             # Calculate targets for each horizon with CORRECT temporal alignment
             for i, horizon in enumerate(predicted_horizons):
                 horizon_targets = []
                 
-                # CRITICAL FIX: Correct temporal alignment between baselines and future prices
-                # baseline[j] comes from sliding window j, which spans indices [j, j+window_size-1]
-                # baseline[j] is the LAST element of window j, so it's at index j+window_size-1
-                # For target: target[j] = log(price[baseline_time + horizon] / baseline[j])
-                
-                for j in range(len(baselines)):
+                # CRITICAL FIX: Use max_samples to ensure all horizons have same length
+                for j in range(max_samples):
                     # CORRECT TEMPORAL MAPPING:
                     # Sliding window j spans: [j, j+1, ..., j+window_size-1]
                     # baseline[j] = price_series[j + window_size - 1]
@@ -84,20 +94,16 @@ class TargetCalculationProcessor:
                     # The future time index for the target
                     future_time_idx = baseline_time_idx + horizon
                     
-                    # Check if we have the future price data
-                    if future_time_idx < len(price_series):
-                        baseline_price = baselines[j]
-                        future_price = price_series[future_time_idx]
-                        
-                        # Calculate log return: log(price[t+h] / baseline[t])
-                        if baseline_price > 0 and future_price > 0:
-                            log_return = np.log(future_price / baseline_price)
-                            horizon_targets.append(log_return)
-                        else:
-                            horizon_targets.append(np.nan)
+                    # We already verified this is safe in max_samples calculation
+                    baseline_price = baselines[j]
+                    future_price = price_series[future_time_idx]
+                    
+                    # Calculate log return: log(price[t+h] / baseline[t])
+                    if baseline_price > 0 and future_price > 0:
+                        log_return = np.log(future_price / baseline_price)
+                        horizon_targets.append(log_return)
                     else:
-                        # Not enough future data - stop creating targets
-                        break
+                        horizon_targets.append(np.nan)
                 
                 # Store targets for this horizon
                 if horizon_targets:
