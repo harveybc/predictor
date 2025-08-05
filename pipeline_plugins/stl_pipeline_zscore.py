@@ -220,6 +220,51 @@ class STLPipelinePlugin:
             
             print("✅ All predictions are now FULL PRICE PREDICTIONS (not log returns)")
 
+            # --- STEP 10B: DENORMALIZE TARGETS TO MATCH DENORMALIZED PREDICTIONS ---
+            print("\n--- STEP 10B: Denormalizing targets to match predictions ---")
+            
+            # First: Denormalize targets from normalized space back to log returns
+            list_train_denorm_targets = []
+            list_val_denorm_targets = []
+            
+            for idx, h in enumerate(predicted_horizons):
+                # Train targets: denormalize from normalized space back to log returns
+                train_normalized_targets = y_train_list[idx].flatten()
+                train_log_return_targets = train_normalized_targets * target_std + target_mean
+                list_train_denorm_targets.append(train_log_return_targets)
+                
+                # Val targets: denormalize from normalized space back to log returns
+                val_normalized_targets = y_val_list[idx].flatten()
+                val_log_return_targets = val_normalized_targets * target_std + target_mean
+                list_val_denorm_targets.append(val_log_return_targets)
+                
+                print(f"  H{h}: Denormalized targets from normalized space to log returns")
+            
+            # Second: De-transform log return targets to full price targets
+            list_train_full_targets = []
+            list_val_full_targets = []
+            
+            for idx, h in enumerate(predicted_horizons):
+                # Train targets: baseline * exp(log_return_target)
+                train_log_return_targets = list_train_denorm_targets[idx]
+                train_baselines = baseline_train[:len(train_log_return_targets)]
+                train_full_price_targets = train_baselines * np.exp(train_log_return_targets)
+                list_train_full_targets.append(train_full_price_targets)
+                
+                # Val targets: baseline * exp(log_return_target)
+                val_log_return_targets = list_val_denorm_targets[idx]
+                val_baselines = baseline_val[:len(val_log_return_targets)]
+                val_full_price_targets = val_baselines * np.exp(val_log_return_targets)
+                list_val_full_targets.append(val_full_price_targets)
+                
+                print(f"  H{h}: Train {len(train_full_price_targets)} -> Full price targets, Val {len(val_full_price_targets)} -> Full price targets")
+            
+            # Replace targets with de-transformed full price targets
+            y_train_list = list_train_full_targets
+            y_val_list = list_val_full_targets
+            
+            print("✅ All targets are now FULL PRICE TARGETS (matching predictions)")
+
             # POST-PROCESSING SECTION OF PREDICTION PIPELINE
             # NOTE: Predictions are now FULL PRICES after de-transformation above
             # END OF POST-PROCESSING SECTION
