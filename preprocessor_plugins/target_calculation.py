@@ -61,10 +61,29 @@ class TargetCalculationProcessor:
                 print(f"Empty baselines for {split}")
                 continue
             
-            # CRITICAL FIX: Use the correct data source for target calculation
-            # Get the original denormalized data that aligns with sliding window creation
+            # Get the denormalized data and baseline dates for this split
             x_df = baseline_data[f'x_{split}_df']  # Use x_df since it contains the target column
             price_series = x_df[target_column].values.astype(np.float32)
+            
+            # Get baseline dates - these correspond to the time when each baseline was extracted
+            baseline_dates_key = f'baseline_{split}_dates'
+            if baseline_dates_key in baseline_data and baseline_data[baseline_dates_key] is not None:
+                baseline_dates = baseline_data[baseline_dates_key]
+                # Convert baseline dates to indices in the original time series
+                time_index = pd.Index(x_df.index)
+                baseline_indices = []
+                for date in baseline_dates:
+                    try:
+                        idx = time_index.get_loc(date)
+                        baseline_indices.append(idx)
+                    except KeyError:
+                        print(f"  WARNING: Baseline date {date} not found in time series")
+                        baseline_indices.append(-1)
+                baseline_indices = np.array(baseline_indices)
+            else:
+                # Fallback: assume baselines correspond to consecutive time indices
+                print(f"  WARNING: No baseline dates found for {split}, using sequential indices")
+                baseline_indices = np.arange(len(baselines))
             
             # CRITICAL FIX: Calculate max horizon to ensure all horizons have same length
             max_horizon = max(predicted_horizons)
@@ -72,7 +91,10 @@ class TargetCalculationProcessor:
             
             # Find maximum number of targets we can create for ALL horizons
             for j in range(len(baselines)):
-                baseline_time_idx = j + window_size - 1
+                if baseline_indices[j] == -1:  # Skip invalid baseline dates
+                    max_samples = j
+                    break
+                baseline_time_idx = baseline_indices[j] 
                 future_time_idx = baseline_time_idx + max_horizon
                 if future_time_idx >= len(price_series):
                     max_samples = j
@@ -86,10 +108,12 @@ class TargetCalculationProcessor:
                 
                 # CRITICAL FIX: Use max_samples to ensure all horizons have same length
                 for j in range(max_samples):
-                    # CORRECT TEMPORAL MAPPING:
-                    # Sliding window j spans: [j, j+1, ..., j+window_size-1]
-                    # baseline[j] = price_series[j + window_size - 1]
-                    baseline_time_idx = j + window_size - 1
+                    # Get baseline time index from the extracted baseline dates
+                    if baseline_indices[j] == -1:  # Skip invalid baseline dates
+                        horizon_targets.append(np.nan)
+                        continue
+                        
+                    baseline_time_idx = baseline_indices[j]
                     
                     # The future time index for the target
                     future_time_idx = baseline_time_idx + horizon
