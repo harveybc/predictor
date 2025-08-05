@@ -65,8 +65,8 @@ class PreprocessorPlugin:
     def add_debug_info(self, debug_info):
         debug_info.update(self.get_debug_info())
 
-    def _load_data(self, file_path, max_rows, headers):
-        """Load and validate data from CSV file."""
+    def _load_data(self, file_path, max_rows, headers, config):
+        """Load and validate data from CSV file, then IMMEDIATELY denormalize."""
         print(f"Loading data: {file_path} (Max rows: {max_rows})...", end="")
         try:
             df = load_csv(file_path, headers=headers, max_rows=max_rows)
@@ -99,6 +99,31 @@ class PreprocessorPlugin:
             missing_cols = [c for c in required_cols if c not in df.columns]
             if missing_cols: 
                 raise ValueError(f"Missing cols in {file_path}: {missing_cols}")
+            
+            # 🔑 CRITICAL: DENORMALIZE DATA IMMEDIATELY AFTER LOADING
+            print(f"🔍 IMMEDIATE DENORMALIZATION: Processing {file_path}...")
+            norm_json = load_normalization_json(config)
+            
+            # Denormalize each column that has normalization parameters
+            denormalized_count = 0
+            for column in df.columns:
+                if column in norm_json:
+                    original_data = df[column].values
+                    denormalized_data = denormalize(original_data, norm_json, column)
+                    df[column] = denormalized_data
+                    denormalized_count += 1
+                    
+                    # DEBUG: Check denormalization for CLOSE prices
+                    if column == 'CLOSE':
+                        print(f"  🔍 {column}: NORMALIZED -> DENORMALIZED")
+                        print(f"    Before: min={np.min(original_data):.6f}, max={np.max(original_data):.6f}, mean={np.mean(original_data):.6f}")
+                        print(f"    After:  min={np.min(denormalized_data):.6f}, max={np.max(denormalized_data):.6f}, mean={np.mean(denormalized_data):.6f}")
+                        if np.all(denormalized_data > 0):
+                            print(f"    ✅ {column} successfully denormalized - all values positive")
+                        else:
+                            print(f"    ❌ {column} denormalization failed - some values non-positive")
+            
+            print(f"  ✅ Denormalized {denormalized_count} columns in {file_path}")
             return df
             
         except FileNotFoundError: 
@@ -228,72 +253,28 @@ class PreprocessorPlugin:
         if not isinstance(predicted_horizons, list) or not predicted_horizons: 
             raise ValueError("'predicted_horizons' must be a non-empty list.")
         
-        # --- 1. Load Data ---
-        print("\n--- 1. Loading Data ---")
-        x_train_df = self._load_data(config["x_train_file"], config.get("max_steps_train"), config.get("headers"))
-        x_val_df = self._load_data(config["x_validation_file"], config.get("max_steps_val"), config.get("headers"))
-        x_test_df = self._load_data(config["x_test_file"], config.get("max_steps_test"), config.get("headers"))
-        y_train_df = self._load_data(config["y_train_file"], config.get("max_steps_train"), config.get("headers"))
-        y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"))
-        y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"))
+        # --- 1. Load Data AND DENORMALIZE IMMEDIATELY ---
+        print("\n--- 1. Loading Data AND DENORMALIZING IMMEDIATELY ---")
+        x_train_df = self._load_data(config["x_train_file"], config.get("max_steps_train"), config.get("headers"), config)
+        x_val_df = self._load_data(config["x_validation_file"], config.get("max_steps_val"), config.get("headers"), config)
+        x_test_df = self._load_data(config["x_test_file"], config.get("max_steps_test"), config.get("headers"), config)
+        y_train_df = self._load_data(config["y_train_file"], config.get("max_steps_train"), config.get("headers"), config)
+        y_val_df = self._load_data(config["y_validation_file"], config.get("max_steps_val"), config.get("headers"), config)
+        y_test_df = self._load_data(config["y_test_file"], config.get("max_steps_test"), config.get("headers"), config)
         
         # --- 2. Align Indices ---
         aligned_data = self._align_indices(x_train_df, y_train_df, x_val_df, y_val_df, x_test_df, y_test_df)
         
-        # --- 2.5. DENORMALIZE ALL FEATURES BEFORE BASELINE DATA PREPARATION ---
-        print("\n--- 2.5. Denormalizing ALL Features Before Baseline Data ---")
-        print("🔍 DENORMALIZATION DEBUG: Starting denormalization process...")
-        
-        norm_json = load_normalization_json(config)
-        print(f"🔍 DENORMALIZATION DEBUG: Loaded normalization JSON with {len(norm_json)} features")
-        
-        # Denormalize all splits BEFORE storing in baseline_data
-        for split in ['train', 'val', 'test']:
-            x_key = f'x_{split}_df'
-            print(f"🔍 DENORMALIZATION DEBUG: Processing {split} split with key {x_key}")
-            
-            if x_key in aligned_data:
-                df = aligned_data[x_key]
-                print(f"  Denormalizing {split} features...")
-                print(f"  🔍 DEBUG: DataFrame shape: {df.shape}, columns: {list(df.columns)}")
-                
-                # Create a copy to avoid modifying original
-                df_denormalized = df.copy()
-                
-                # Denormalize each column
-                for column in df_denormalized.columns:
-                    if column in norm_json:
-                        original_data = df_denormalized[column].values
-                        denormalized_data = denormalize(original_data, norm_json, column)
-                        df_denormalized[column] = denormalized_data
-                        
-                        # DEBUG: Verify denormalization worked
-                        if column == 'CLOSE':
-                            print(f"    🔍 {column} DENORMALIZATION CHECK:")
-                            print(f"      Original (normalized): min={np.min(original_data):.6f}, max={np.max(original_data):.6f}, mean={np.mean(original_data):.6f}")
-                            print(f"      Denormalized: min={np.min(denormalized_data):.6f}, max={np.max(denormalized_data):.6f}, mean={np.mean(denormalized_data):.6f}")
-                            print(f"      Should be positive prices: {np.all(denormalized_data > 0)}")
-                        
-                        print(f"    ✅ {column}: {len(denormalized_data)} values denormalized")
-                    else:
-                        print(f"    ⚠️  {column}: No normalization params found, keeping original")
-                
-                # Replace the original with denormalized version
-                aligned_data[x_key] = df_denormalized
-                print(f"  ✅ {split}: All features denormalized and stored")
-            else:
-                print(f"  ❌ ERROR: Key {x_key} not found in aligned_data!")
-                print(f"     Available keys: {list(aligned_data.keys())}")
-        
-        print("✅ All features denormalized - sliding windows will contain real-scale data")
+        # Data is already denormalized during loading, so skip denormalization step
+        print("\n✅ All data already denormalized during loading - proceeding to baseline preparation")
         
         # --- 3. Prepare Baseline Data ---
         baseline_data = self._prepare_baseline_data(aligned_data, config)
         
-        # --- 4. Generate Windowed Features FIRST (required for baseline extraction) ---
+        # --- 4. Generate Windowed Features (required for baseline extraction) ---
         windowed_data = self.sliding_windows_processor.generate_windowed_features(baseline_data, config)
         
-        # --- 4.5. Apply Anti-Naive-Lock Preprocessing to Sliding Windows ---
+        # --- 5. Apply Anti-Naive-Lock Preprocessing to Sliding Windows ---
         print("\n--- Applying Anti-Naive-Lock Preprocessing to Sliding Windows ---")
         x_train_orig = windowed_data.get('X_train')
         x_val_orig = windowed_data.get('X_val') 
@@ -322,24 +303,23 @@ class PreprocessorPlugin:
         else:
             print("WARNING: Could not apply anti-naive-lock preprocessing - missing sliding window data")
         
-        # --- 5. Calculate Sliding Windows Baselines FROM the windowed matrix ---
-        # --- 5. Calculate Sliding Windows Baselines FROM the windowed matrix ---
+        # --- 6. Calculate Sliding Windows Baselines FROM the windowed matrix ---
         sliding_windows_data = self.target_calculation_processor.calculate_sliding_window_baselines(windowed_data, aligned_data, config)
         
-        # --- 6. Add sliding window baselines to baseline_data ---
+        # --- 7. Add sliding window baselines to baseline_data ---
         baseline_data.update(sliding_windows_data)
         
-        # --- 7. Calculate Targets ---
+        # --- 8. Calculate Targets ---
         target_data = self.target_calculation_processor.calculate_targets(baseline_data, windowed_data, config)
         
-        # --- 8. Final Alignment ---
+        # --- 9. Final Alignment ---
         self._truncate_to_match_targets(windowed_data, target_data)
         
-        # --- 9. Update params with individual normalization stats ---
+        # --- 10. Update params with individual normalization stats ---
         self.params['target_returns_means'] = target_data['target_returns_means']
         self.params['target_returns_stds'] = target_data['target_returns_stds']
         
-        # --- 10. Final Date Consistency Check ---
+        # --- 11. Final Date Consistency Check ---
         print("\n--- Final Date Consistency Checks ---")
         splits = ['train', 'val', 'test']
         for split in splits:
@@ -350,7 +330,7 @@ class PreprocessorPlugin:
                 list(baseline_dates) if baseline_dates is not None else None
             ], f"{split.capitalize()} X/Y Dates")
         
-        # --- 11. Prepare Final Output ---
+        # --- 12. Prepare Final Output ---
         print("\n--- Preparing Final Output ---")
         ret = {
             # Windowed features
