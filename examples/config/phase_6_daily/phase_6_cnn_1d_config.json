@@ -75,7 +75,8 @@
     "price_features": [
         "OPEN",
         "LOW",
-        "HIGH"
+        "HIGH",
+        "CLOSE"
     ],
     "temporal_features": [
         "day_of_week",
