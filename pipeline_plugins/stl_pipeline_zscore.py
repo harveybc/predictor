@@ -358,31 +358,65 @@ class STLPipelinePlugin:
             if not all(len(lst) == num_outputs for lst in [list_test_preds, list_test_unc]): 
                 raise ValueError("Predictor predict mismatch outputs.")
             
-            # Step 11: De-transform test predictions from log returns to prices
-            print("De-transforming test predictions...")
-            if use_returns and baseline_test is not None:
-                # Get target normalization stats
-                target_mean = target_returns_means[0]
-                target_std = target_returns_stds[0]
+            # --- STEP 11: DE-TRANSFORM TEST PREDICTIONS USING SAME LOGIC AS TRAINING/VALIDATION ---
+            print("\n--- STEP 11: De-transforming test predictions using consistent logic ---")
+            
+            # First: Denormalize test predictions from normalized space back to log returns
+            target_mean = target_returns_means[0]
+            target_std = target_returns_stds[0]
+            
+            list_test_denorm_preds = []
+            for idx, h in enumerate(predicted_horizons):
+                # Denormalize predictions from normalized space back to log returns
+                test_normalized_preds = list_test_preds[idx].flatten()
+                test_log_returns = test_normalized_preds * target_std + target_mean
+                list_test_denorm_preds.append(test_log_returns)
+                print(f"  H{h}: Denormalized test predictions from normalized space to log returns")
+            
+            # --- STEP 11B: DENORMALIZE TEST TARGETS TO MATCH PREDICTIONS ---
+            print("\n--- STEP 11B: Denormalizing test targets to match predictions ---")
+            
+            list_test_denorm_targets = []
+            for idx, h in enumerate(predicted_horizons):
+                # Test targets: denormalize from normalized space back to log returns
+                test_normalized_targets = y_test_list[idx].flatten()
+                test_log_return_targets = test_normalized_targets * target_std + target_mean
+                list_test_denorm_targets.append(test_log_return_targets)
+                print(f"  H{h}: Denormalized test targets from normalized space to log returns")
+            
+            # --- STEP 11C: CONSISTENT BASELINE ALIGNMENT FOR TEST DATA ---
+            print("\n--- STEP 11C: Ensuring consistent baseline alignment for test predictions and targets ---")
+            
+            list_test_full_preds = []
+            list_test_full_targets = []
+            
+            for idx, h in enumerate(predicted_horizons):
+                # Get denormalized log returns
+                test_log_returns = list_test_denorm_preds[idx]
+                test_log_return_targets = list_test_denorm_targets[idx]
                 
-                for idx in range(len(list_test_preds)):
-                    # First denormalize from normalized space to log returns
-                    pred_normalized = list_test_preds[idx].flatten()
-                    pred_log_returns = pred_normalized * target_std + target_mean
-                    
-                    # Then convert log returns to prices
-                    baseline_values = baseline_test[:len(pred_log_returns)]
-                    pred_log_returns_clipped = np.clip(pred_log_returns, -10, 10)  # Prevent overflow
-                    pred_prices = baseline_values * np.exp(pred_log_returns_clipped)
-                    
-                    # Convert uncertainties proportionally
-                    unc_normalized = list_test_unc[idx].flatten()
-                    unc_log_returns = unc_normalized * target_std
-                    unc_prices = unc_log_returns * baseline_values
-                    
-                    # Update lists with de-transformed values
-                    list_test_preds[idx] = pred_prices.reshape(list_test_preds[idx].shape)
-                    list_test_unc[idx] = unc_prices.reshape(list_test_unc[idx].shape)
+                # CRITICAL: Use the minimum length across predictions, targets, and baselines
+                num_test_pts = min(len(test_log_returns), len(test_log_return_targets), len(baseline_test))
+                
+                # Slice ALL arrays to the same consistent length
+                test_log_returns = test_log_returns[:num_test_pts]
+                test_log_return_targets = test_log_return_targets[:num_test_pts]
+                test_baselines = baseline_test[:num_test_pts]
+                
+                # Transform to full prices using SAME baseline slice for both predictions and targets
+                test_full_prices = test_baselines * np.exp(test_log_returns)
+                test_full_price_targets = test_baselines * np.exp(test_log_return_targets)
+                
+                list_test_full_preds.append(test_full_prices)
+                list_test_full_targets.append(test_full_price_targets)
+                
+                print(f"  H{h}: Test {num_test_pts} aligned points -> Full prices")
+            
+            # Replace test predictions and targets with de-transformed full price versions
+            list_test_preds = list_test_full_preds
+            y_test_list = list_test_full_targets
+            
+            print("✅ All test predictions and targets are now FULL PRICES with consistent baseline alignment")
             
             for idx, h in enumerate(predicted_horizons):
                 try:
@@ -397,28 +431,20 @@ class STLPipelinePlugin:
                     test_unc_h = test_unc_h[:num_test_pts]
                     baseline_test_h = baseline_test[:num_test_pts].flatten()  # Flatten baseline too
                     
-                    # Convert targets to prices if using returns (targets are still log returns)
-                    if use_returns:
-                        # Test targets are log returns, convert to prices for comparison
-                        test_target_clipped = np.clip(test_target_h, -10, 10)
-                        test_target_price = baseline_test_h * np.exp(test_target_clipped)
-                        
-                        # Predictions are already de-transformed to prices
-                        test_pred_price = test_preds_h.copy()
-                        
-                        # Calculate MAE in log return space for consistency with training
-                        # Convert prediction prices back to log returns for MAE calculation
-                        pred_log_returns = np.log(test_pred_price / baseline_test_h)
-                        test_mae_h = np.mean(np.abs(pred_log_returns - test_target_h))
-                    else:
-                        test_target_price = test_target_h
-                        test_pred_price = test_preds_h
-                        test_mae_h = np.mean(np.abs(test_preds_h - test_target_h))
+                    # Predictions and targets are already FULL PRICES from Step 11C denormalization
+                    # No additional denormalization needed - use directly for all metrics
+                    test_target_price = test_target_h  # Already full prices
+                    test_pred_price = test_preds_h     # Already full prices
                     
-                    # Uncertainties are already de-transformed
-                    test_unc_denorm = test_unc_h.copy()
+                    # Uncertainties need to be converted to price scale proportionally
+                    unc_normalized = test_unc_h
+                    unc_prices = unc_normalized * target_std * baseline_test_h  # Convert to price scale
+                    test_unc_denorm = unc_prices
                     
-                    # Metrics: MAE in log return space, R² in price space
+                    # MAE should be calculated on the full prices (consistent with training/validation)
+                    test_mae_h = np.mean(np.abs(test_pred_price - test_target_price))
+                    
+                    # Metrics: MAE and R² in price space (consistent with training/validation)
                     test_r2_h = r2_score(test_target_price, test_pred_price)
                     test_unc_mean_h = np.mean(np.abs(test_unc_denorm))
                     test_snr_h = np.mean(test_pred_price) / (test_unc_mean_h + 1e-9)
@@ -551,24 +577,13 @@ class STLPipelinePlugin:
                 unc_denorm = np.full(num_test_points, np.nan)
                 
                 try:
-                    # Data from preprocessor is ALREADY DENORMALIZED - use directly
-                    # Based on target_calculation.py: outputs "raw denormalized log returns" and "unnormalized baselines"
-                    preds_denorm = preds_raw.copy()  # Already denormalized log returns
-                    target_denorm = target_raw.copy()  # Already denormalized log returns
+                    # Predictions and targets are already FULL PRICES from Step 11C
+                    # No additional transformation needed - use directly
+                    pred_price_denorm = preds_raw.copy()  # Already full prices
+                    target_price_denorm = target_raw.copy()  # Already full prices
                     
-                    # --- Apply FIX: Ensure baseline and denormalized log returns are 1D before exponential ---
-                    if use_returns:
-                        if final_baseline is None: 
-                            raise ValueError("Baseline missing.")
-                        # Baseline is already denormalized from target calculation, use directly
-                        pred_price_denorm = final_baseline * np.exp(preds_denorm)  # (N,) * exp((N,)) -> (N,)
-                        target_price_denorm = final_baseline * np.exp(target_denorm)  # (N,) * exp((N,)) -> (N,)
-                    else:
-                        pred_price_denorm = preds_denorm
-                        target_price_denorm = target_denorm
-
-                    # Uncertainties are already denormalized - use directly
-                    unc_denorm = unc_raw.copy()  # Already denormalized uncertainties
+                    # Uncertainties are already converted to price scale in metrics calculation
+                    unc_denorm = unc_raw.copy()  # Already price-scale uncertainties
                     
                 except Exception as e: 
                     print(f"WARN: Error denorm H={h}: {e}")
@@ -632,19 +647,11 @@ class STLPipelinePlugin:
             unc_plot_raw = list_test_unc[plotted_index][:num_test_points]  # Shape (num_test_points,) or (num_test_points, 1)
             baseline_plot = final_baseline  # Already sliced, shape (num_test_points,)
 
-            # Data from preprocessor is ALREADY DENORMALIZED - use directly!
-            # Based on target_calculation.py: "UNNORMALIZED LOG RETURNS: Use raw denormalized log returns as targets"
-            # No denormalization needed - preprocessor outputs already denormalized data
-            if use_returns:
-                # Predictions and targets are already denormalized log returns, baseline is already denormalized
-                pred_plot_price_flat = (baseline_plot * np.exp(preds_plot_raw.flatten())).flatten()
-                target_plot_price_flat = (baseline_plot * np.exp(target_plot_raw.flatten())).flatten()
-            else:
-                # Raw predictions/targets are already denormalized
-                pred_plot_price_flat = preds_plot_raw.flatten()
-                target_plot_price_flat = target_plot_raw.flatten()
+            # Data is already FULL PRICES from Step 11C - no additional transformation needed!
+            pred_plot_price_flat = preds_plot_raw.flatten()  # Already full prices
+            target_plot_price_flat = target_plot_raw.flatten()  # Already full prices
             
-            # Uncertainties and baseline are already denormalized - use directly
+            # Uncertainties and baseline are already in correct scale
             unc_plot_denorm_flat = unc_plot_raw.flatten()
             true_plot_price_flat = baseline_plot.flatten()
 
