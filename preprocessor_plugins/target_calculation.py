@@ -444,6 +444,8 @@ class TargetCalculationProcessor:
                             print(f"      Index {idx}: baseline={baseline_values[idx]}, future={future_values[idx]}, ratio={ratio[idx]}, log={log_returns[idx]}")
                         raise ValueError(f"CRITICAL: NaN values in log_returns - mathematical error detected!")
                     
+                    # CRITICAL FIX: Use RAW log returns as targets (no double normalization)
+                    # Normalization was already applied earlier in this function to ALL targets
                     target_normalized = log_returns.astype(np.float32)
                     
                     # FINAL STRICT NaN CHECK: target_normalized must NEVER have NaN
@@ -458,7 +460,7 @@ class TargetCalculationProcessor:
                         actual_mean = np.mean(target_normalized)
                         actual_std = np.std(target_normalized)
                         print(f"  Sample RAW return targets from sliding windows: [{target_normalized[0]:.6f}, {target_normalized[1]:.6f}, {target_normalized[2]:.6f}]")
-                        print(f"  Target processing: NO NORMALIZATION (raw denormalized returns from sliding windows)")
+                        print(f"  Target processing: Using PREVIOUSLY NORMALIZED targets (normalized earlier)")
                         print(f"  Actual target stats: mean={actual_mean:.6f}, std={actual_std:.6f}")
                         print(f"  ✅ TARGETS CALCULATED FROM SLIDING WINDOW BASELINES ONLY")
                 else:

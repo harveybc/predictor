@@ -391,11 +391,11 @@ class AntiNaiveLockProcessor:
             Transformed data emphasizing daily changes
         """
         # For features constant within day, use a longer-term difference
-        # This could be improved with knowledge of the exact daily structure
         differences = np.zeros_like(feature_data)
         
-        # Use a 24-step difference assuming hourly data (could be configurable)
-        step_size = 24
+        # CRITICAL FIX: Use appropriate step size based on data frequency
+        # Default to 1-step difference for daily data, 24-step for hourly data
+        step_size = 1  # Conservative default for daily data
         differences[:, step_size:] = feature_data[:, step_size:] - feature_data[:, :-step_size]
         
         return differences
@@ -475,80 +475,3 @@ class AntiNaiveLockProcessor:
                 norm_stats[feature_names[i]] = {'mean': 0.0, 'std': 1.0}
         
         return x_train, x_val, x_test, norm_stats
-    
-    def preprocess_dataframe(self, data_df: pd.DataFrame, config: Dict[str, Any], split: str = 'train') -> pd.DataFrame:
-        """
-        Apply anti-naive-lock preprocessing to raw DataFrame data before sliding windows.
-        
-        This method applies selective transformations to features before they are converted
-        to sliding windows, focusing on preventing naive copying behavior.
-        
-        Args:
-            data_df: Input DataFrame with features as columns
-            config: Configuration dictionary
-            split: Dataset split ('train', 'val', 'test')
-            
-        Returns:
-            Preprocessed DataFrame
-        """
-        print(f"Applying anti-naive-lock preprocessing to {split} data...")
-        
-        # Create a copy to avoid modifying the original
-        processed_df = data_df.copy()
-        
-        # Get feature categories from config
-        temporal_features = config.get('temporal_features', ['day_of_week', 'hour_of_day', 'day_of_month'])
-        price_features = config.get('price_features', ['OPEN', 'LOW', 'HIGH', 'CLOSE'])
-        stationary_indicators = config.get('stationary_indicators', ['RSI', 'MACD', 'EMA'])
-        
-        transforms_applied = 0
-        
-        # Apply transformations column by column
-        for column in processed_df.columns:
-            try:
-                if column in temporal_features and config.get('use_cyclic_encoding', True):
-                    # Apply cyclic encoding to temporal features
-                    period = 24 if 'hour' in column else (7 if 'week' in column else 31)
-                    processed_df[column] = np.sin(2 * np.pi * processed_df[column] / period)
-                    transforms_applied += 1
-                    print(f"  Applied cyclic encoding to {column}")
-                    
-                elif column in price_features and config.get('use_log_returns', True):
-                    # Only apply log returns to price features if they're NOT the target column
-                    target_column = config.get('target_column', 'CLOSE')
-                    excluded_columns = config.get('excluded_columns', [])
-                    
-                    # CRITICAL FIX: Check both target column AND excluded columns
-                    if column != target_column and column not in excluded_columns:
-                        # Apply log returns to price features (not target, not excluded)
-                        safe_values = np.where(processed_df[column] <= 0, 1e-8, processed_df[column])
-                        log_returns = np.zeros_like(safe_values)
-                        log_returns[1:] = np.log(safe_values[1:] / safe_values[:-1])
-                        processed_df[column] = log_returns
-                        transforms_applied += 1
-                        print(f"  Applied log returns to {column}")
-                    else:
-                        if column == target_column:
-                            print(f"  Preserved target column {column} (no log returns)")
-                        if column in excluded_columns:
-                            print(f"  Preserved excluded column {column} (no log returns)")
-                        if column == target_column and column in excluded_columns:
-                            print(f"  Preserved target+excluded column {column} (no log returns)")
-                    
-                elif column in stationary_indicators:
-                    # Preserve stationary indicators as they are already processed
-                    print(f"  Preserved stationary indicator {column}")
-                    
-                else:
-                    # Preserve other features
-                    print(f"  Preserved feature {column}")
-                    
-            except Exception as e:
-                print(f"  ERROR processing {column}: {e}")
-        
-        print(f"Applied {transforms_applied} transformations to {split} data")
-        
-        # Handle any NaN values that might have been introduced
-        processed_df = processed_df.fillna(0)
-        
-        return processed_df

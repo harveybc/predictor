@@ -16,7 +16,14 @@ from .anti_naive_lock import AntiNaiveLockProcessor
 
 class PreprocessorPlugin:
     """
-    Modular preprocessor that orchestrates data loading, windowing, and target calculation.
+    Modular preprocessor implementing the fool-proof 11-step plan:
+    1. Load and immediately denormalize all CSV data
+    2. Create sliding windows from denormalized data
+    3. Extract baselines from sliding windows for target calculation  
+    4. Calculate log return targets with normalization
+    5-7. REMOVED - Streamlined processing
+    8. Apply anti-naive-lock to existing sliding windows
+    9. Truncate data for final alignment
     """
     
     plugin_params = {
@@ -298,75 +305,7 @@ class PreprocessorPlugin:
         # Update target_data with normalized targets
         target_data.update(normalized_targets)
         target_data['target_normalization_stats'] = target_stats
-        
         return target_data
-
-    def _apply_selective_preprocessing(self, aligned_denorm_data, config):
-        """Apply selective preprocessing to input data (NOT sliding windows)."""
-        print("Applying selective preprocessing to input data...")
-        
-        # Apply anti-naive-lock preprocessing to the raw denormalized data
-        preprocessed_data = {}
-        
-        for split in ['train', 'val', 'test']:
-            x_df = aligned_denorm_data[f'x_{split}_df']
-            y_df = aligned_denorm_data[f'y_{split}_df']
-            
-            # Apply selective preprocessing to each dataframe
-            x_preprocessed = self.anti_naive_lock_processor.preprocess_dataframe(x_df, config, split)
-            
-            preprocessed_data[f'x_{split}_df'] = x_preprocessed
-            preprocessed_data[f'y_{split}_df'] = y_df  # Y data doesn't need preprocessing
-            
-            print(f"  {split}: {x_df.shape} -> {x_preprocessed.shape}")
-        
-        return preprocessed_data
-
-    def _normalize_with_training_params(self, preprocessed_data):
-        """Z-score normalize using training set parameters."""
-        print("Z-score normalizing using training set parameters...")
-        
-        # Calculate normalization parameters from training set
-        x_train_df = preprocessed_data['x_train_df']
-        training_norm_params = {}
-        
-        for column in x_train_df.columns:
-            col_data = x_train_df[column].values
-            mean_val = np.mean(col_data)
-            std_val = np.std(col_data)
-            training_norm_params[column] = {'mean': mean_val, 'std': std_val}
-        
-        print(f"Calculated normalization parameters for {len(training_norm_params)} features")
-        
-        # Apply normalization to all splits
-        normalized_data = {}
-        
-        for split in ['train', 'val', 'test']:
-            x_df = preprocessed_data[f'x_{split}_df'].copy()
-            y_df = preprocessed_data[f'y_{split}_df'].copy()
-            
-            # Normalize X data using training parameters
-            for column in x_df.columns:
-                if column in training_norm_params:
-                    params = training_norm_params[column]
-                    if params['std'] > 0:
-                        x_df[column] = (x_df[column] - params['mean']) / params['std']
-                    else:
-                        x_df[column] = 0  # Handle constant columns
-            
-            # Y data normalization (for target column only, if needed)
-            target_column = 'CLOSE'  # Assuming CLOSE is in Y data
-            if target_column in y_df.columns and target_column in training_norm_params:
-                params = training_norm_params[target_column]
-                if params['std'] > 0:
-                    y_df[target_column] = (y_df[target_column] - params['mean']) / params['std']
-            
-            normalized_data[f'x_{split}_df'] = x_df
-            normalized_data[f'y_{split}_df'] = y_df
-            
-            print(f"  {split}: Applied normalization")
-        
-        return normalized_data, training_norm_params
 
     def _truncate_to_match_targets(self, windowed_data, target_data):
         """Truncate windowed data to match target data lengths."""
@@ -455,56 +394,28 @@ class PreprocessorPlugin:
         print("\n--- STEP 4: Calculate Targets using Log Returns from Baselines ---")
         target_data = self._calculate_log_return_targets(baselines_denorm, predicted_horizons, config)
         
-        # --- STEP 5: Skip Selective Preprocessing (will be applied to sliding windows in Step 8) ---
-        print("\n--- STEP 5: Skip Selective Preprocessing (will be applied to sliding windows in Step 8) ---")
-        print("Skipping input data preprocessing - will apply anti-naive-lock to sliding windows instead")
-        preprocessed_data = aligned_denorm_data  # Use aligned denormalized data directly
+        # --- STEP 5: REMOVED - Skip Selective Preprocessing Step (anti-naive-lock applied to sliding windows instead) ---
+        print("\n--- STEP 5: REMOVED - Skip Selective Preprocessing Step ---")
+        print("Anti-naive-lock will be applied to sliding windows matrices instead of input data")
         
-        # --- STEP 6: CONDITIONAL Z-score Normalize using TRAINING SET parameters ---
-        print("\n--- STEP 6: CONDITIONAL Z-score Normalize using TRAINING SET parameters ---")
+        # --- STEP 6: REMOVED - Skip Z-score Normalization Step (anti-naive-lock handles feature scaling) ---
+        print("\n--- STEP 6: REMOVED - Skip Z-score Normalization Step ---")
+        print("Feature scaling will be handled by anti-naive-lock post-processing normalization")
         
-        # Check if normalization should be applied after preprocessing
-        should_normalize = config.get("normalize_after_preprocessing", False)
+        # --- STEP 7: REMOVED - Skip Additional Processing Step ---
+        print("\n--- STEP 7: REMOVED - Skip Additional Processing Step ---")
         
-        if should_normalize:
-            print("Config enables post-preprocessing normalization - applying z-score normalization")
-            normalized_data, training_norm_params = self._normalize_with_training_params(preprocessed_data)
-        else:
-            print("Config disables post-preprocessing normalization - using preprocessed data directly")
-            normalized_data = preprocessed_data  # Use preprocessed data as-is
-            training_norm_params = {}  # No normalization parameters
-            
-        # CRITICAL FIX: Ensure CLOSE column remains denormalized in normalized_data
-        print("CRITICAL FIX: Ensuring CLOSE column remains denormalized for target alignment...")
-        target_column = config.get("target_column", "CLOSE")
-        for split in ['train', 'val', 'test']:
-            if target_column in aligned_denorm_data[f'x_{split}_df'].columns:
-                # Force CLOSE to remain denormalized (from Step 1) regardless of normalization
-                original_close = aligned_denorm_data[f'x_{split}_df'][target_column].values
-                normalized_data[f'x_{split}_df'][target_column] = original_close
-                print(f"  {split}: Restored denormalized {target_column} values")
-            if target_column in aligned_denorm_data[f'y_{split}_df'].columns:
-                # Force Y target to remain denormalized too
-                original_target = aligned_denorm_data[f'y_{split}_df'][target_column].values
-                normalized_data[f'y_{split}_df'][target_column] = original_target
-                print(f"  {split}: Restored denormalized Y {target_column} values")
+        # --- STEP 8: Use EXISTING DENORMALIZED Sliding Windows Matrix (calculated in Step 2) ---
+        print("\n--- STEP 8: Use EXISTING DENORMALIZED Sliding Windows Matrix (calculated in Step 2) ---")
         
-        # --- STEP 7: Already handled in step 6 based on configuration ---
-        print("\n--- STEP 7: Post-processing normalization handled in step 6 ---")
+        # CRITICAL FIX: Use the SAME sliding windows calculated in Step 2 for consistency
+        # The windowed_data_denorm already contains the correct denormalized sliding windows
+        print("CRITICAL FIX: Using EXISTING denormalized sliding windows from Step 2 for consistency...")
+        windowed_data_final = windowed_data_denorm  # Use existing windows from Step 2
         
-        # --- STEP 8: Create Sliding Windows Matrix with Processed Data ---
-        print("\n--- STEP 8: Create Sliding Windows Matrix with Processed Data ---")
-        
-        # CRITICAL FIX: Use the SAME preprocessing as baselines for consistency
-        # For target calculation we used denormalized sliding windows (Step 2)
-        # For training, we should use the same denormalized data to ensure consistency
-        print("CRITICAL FIX: Using DENORMALIZED data for sliding windows to match target calculation...")
-        baseline_data_for_training = self._prepare_baseline_data(aligned_denorm_data, config)
-        windowed_data_final = self.sliding_windows_processor.generate_windowed_features(baseline_data_for_training, config)
-        
-        # Apply anti-naive-lock to sliding windows AFTER creation (not to input data)
+        # Apply anti-naive-lock to sliding windows AFTER they're already created (not to input data)
         if config.get("anti_naive_lock_enabled", True):
-            print("Applying anti-naive-lock to sliding windows matrices...")
+            print("Applying anti-naive-lock to existing sliding windows matrices...")
             feature_names = windowed_data_final.get('feature_names', [])
             
             # Apply anti-naive-lock to sliding window matrices
@@ -522,9 +433,9 @@ class PreprocessorPlugin:
             windowed_data_final['X_val'] = x_val_processed
             windowed_data_final['X_test'] = x_test_processed
             
-            print("Anti-naive-lock applied to sliding window matrices")
+            print("Anti-naive-lock applied to existing sliding window matrices")
         else:
-            print("Anti-naive-lock disabled - using raw sliding windows")
+            print("Anti-naive-lock disabled - using existing raw sliding windows")
         
         # --- STEP 9: Truncate Windowed Data to Match Target Lengths ---
         print("\n--- STEP 9: Truncate Windowed Data to Match Target Lengths ---")

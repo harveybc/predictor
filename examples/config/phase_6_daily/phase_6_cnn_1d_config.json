@@ -66,7 +66,7 @@
     "normalize_after_preprocessing": false,
     
     "_comment_feature_categories": "SMART ANTI-NAIVE-LOCK: Transform price features to preserve info while eliminating naive lock",
-    "price_features": ["OPEN", "LOW", "HIGH", "CLOSE"],
+    "price_features": ["OPEN", "LOW", "HIGH"],
     "temporal_features": ["day_of_week", "hour_of_day", "day_of_month"],
     "trend_features": ["stl_trend"],
     "stationary_indicators": ["RSI", "MACD", "MACD_Histogram", "MACD_Signal", "EMA", 
