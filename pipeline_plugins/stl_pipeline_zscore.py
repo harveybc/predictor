@@ -227,31 +227,22 @@ class STLPipelinePlugin:
                 train_unc_log_returns = train_log_normalized_unc * target_std
                 val_unc_log_returns = val_log_normalized_unc * target_std
                 
-                # CRITICAL FIX: Correct temporal alignment between baselines and predictions
-                # The predictions/targets correspond to the sliding windows, not the full baseline array
-                # We need to use the baselines that correspond to the same time windows as the predictions
+                # Use consistent array lengths
+                num_train = min(len(train_log_returns), len(baseline_train))
+                num_val = min(len(val_log_returns), len(baseline_val))
                 
-                # Get the minimum length - predictions are shorter due to sliding window constraints
-                num_train = len(train_log_returns)
-                num_val = len(val_log_returns)
+                # Convert log returns to real prices using baselines
+                train_baselines = baseline_train[:num_train]
+                val_baselines = baseline_val[:num_val]
                 
-                # CRITICAL: Use the LAST num_train/num_val baselines since sliding windows 
-                # create predictions from the most recent windows
-                train_baselines = baseline_train[-num_train:] if len(baseline_train) >= num_train else baseline_train
-                val_baselines = baseline_val[-num_val:] if len(baseline_val) >= num_val else baseline_val
+                train_prices = train_baselines * np.exp(train_log_returns[:num_train])
+                val_prices = val_baselines * np.exp(val_log_returns[:num_val])
+                train_target_prices = train_baselines * np.exp(train_target_log_returns[:num_train])
+                val_target_prices = val_baselines * np.exp(val_target_log_returns[:num_val])
                 
-                # Ensure we have exactly the right number
-                train_baselines = train_baselines[:num_train]
-                val_baselines = val_baselines[:num_val]
-                
-                train_prices = train_baselines * np.exp(train_log_returns)
-                val_prices = val_baselines * np.exp(val_log_returns)
-                train_target_prices = train_baselines * np.exp(train_target_log_returns)
-                val_target_prices = val_baselines * np.exp(val_target_log_returns)
-                
-                # CRITICAL FIX: Same temporal alignment fix for uncertainties
-                train_price_uncertainties = train_baselines * np.abs(train_unc_log_returns)
-                val_price_uncertainties = val_baselines * np.abs(val_unc_log_returns)
+                # Convert uncertainty to price scale
+                train_price_uncertainties = train_baselines * np.abs(train_unc_log_returns[:num_train])
+                val_price_uncertainties = val_baselines * np.abs(val_unc_log_returns[:num_val])
                 
                 real_train_price_preds.append(train_prices)
                 real_val_price_preds.append(val_prices)
