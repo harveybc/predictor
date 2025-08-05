@@ -11,35 +11,32 @@ class SlidingWindowsProcessor:
     def __init__(self, scalers=None):
         self.scalers = scalers or {}
     
-    def create_sliding_windows(self, data, window_size, time_horizon, date_times=None):
+    def create_sliding_windows(self, data, window_size, date_times=None):
         """
-        Creates sliding windows with correct temporal alignment for target calculation.
+        Creates sliding windows for feature processing (not limited by horizon).
         
         CRITICAL: Each window contains data[t-window_size+1:t+1] where t is the current tick.
         The baseline is data[t] (last element of window).
-        Target calculation uses baseline[t] to predict price[t+horizon].
         
         Args:
             data: 1D array of values
             window_size: Size of each window  
-            time_horizon: Maximum time horizon for predictions
             date_times: Optional datetime index for the data
             
         Returns:
             Tuple of (windows_array, date_windows_array)
         """
-        print(f"Creating sliding windows (Size={window_size}, Horizon={time_horizon})...", end="")
+        print(f"Creating sliding windows (Size={window_size})...", end="")
         windows = []
         date_windows = []
         n = len(data)
         
-        # Calculate usable range: need window_size + time_horizon data points total
-        # First window baseline at index window_size-1, last baseline at n-time_horizon-1
+        # Calculate usable range: can create windows from index window_size-1 to n-1
         min_baseline_idx = window_size - 1
-        max_baseline_idx = n - time_horizon - 1
+        max_baseline_idx = n - 1
         
         if max_baseline_idx < min_baseline_idx:
-            print(f" WARN: Insufficient data ({n}) for Win={window_size}+Horizon={time_horizon}. Need {window_size + time_horizon}.")
+            print(f" WARN: Insufficient data ({n}) for window size {window_size}. Need at least {window_size}.")
             return np.array(windows, dtype=np.float32), np.array(date_windows, dtype=object)
         
         # Create windows: each window ends at baseline time t
@@ -76,7 +73,7 @@ class SlidingWindowsProcessor:
         
         window_size = config['window_size']
         predicted_horizons = config['predicted_horizons']
-        max_horizon = max(predicted_horizons)
+        # FIXED: Use individual horizon processing instead of max_horizon
         
         windowed_data = {}
         
@@ -104,7 +101,7 @@ class SlidingWindowsProcessor:
                 
                 try:
                     windows, date_windows = self.create_sliding_windows(
-                        series, window_size, max_horizon, dates
+                        series, window_size, dates
                     )
                     
                     if windows.shape[0] > 0:

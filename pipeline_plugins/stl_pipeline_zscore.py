@@ -227,22 +227,31 @@ class STLPipelinePlugin:
                 train_unc_log_returns = train_log_normalized_unc * target_std
                 val_unc_log_returns = val_log_normalized_unc * target_std
                 
-                # Ensure consistent array lengths using preprocessor baselines
-                num_train = min(len(train_log_returns), len(baseline_train))
-                num_val = min(len(val_log_returns), len(baseline_val))
+                # CRITICAL FIX: Correct temporal alignment between baselines and predictions
+                # The predictions/targets correspond to the sliding windows, not the full baseline array
+                # We need to use the baselines that correspond to the same time windows as the predictions
                 
-                # Convert log returns to real prices using baselines
-                train_baselines = baseline_train[:num_train]
-                val_baselines = baseline_val[:num_val]
+                # Get the minimum length - predictions are shorter due to sliding window constraints
+                num_train = len(train_log_returns)
+                num_val = len(val_log_returns)
                 
-                train_prices = train_baselines * np.exp(train_log_returns[:num_train])
-                val_prices = val_baselines * np.exp(val_log_returns[:num_val])
-                train_target_prices = train_baselines * np.exp(train_target_log_returns[:num_train])
-                val_target_prices = val_baselines * np.exp(val_target_log_returns[:num_val])
+                # CRITICAL: Use the LAST num_train/num_val baselines since sliding windows 
+                # create predictions from the most recent windows
+                train_baselines = baseline_train[-num_train:] if len(baseline_train) >= num_train else baseline_train
+                val_baselines = baseline_val[-num_val:] if len(baseline_val) >= num_val else baseline_val
                 
-                # Convert uncertainty to price scale: σ_price ≈ price * σ_log_return
-                train_price_uncertainties = train_baselines * np.abs(train_unc_log_returns[:num_train])
-                val_price_uncertainties = val_baselines * np.abs(val_unc_log_returns[:num_val])
+                # Ensure we have exactly the right number
+                train_baselines = train_baselines[:num_train]
+                val_baselines = val_baselines[:num_val]
+                
+                train_prices = train_baselines * np.exp(train_log_returns)
+                val_prices = val_baselines * np.exp(val_log_returns)
+                train_target_prices = train_baselines * np.exp(train_target_log_returns)
+                val_target_prices = val_baselines * np.exp(val_target_log_returns)
+                
+                # CRITICAL FIX: Same temporal alignment fix for uncertainties
+                train_price_uncertainties = train_baselines * np.abs(train_unc_log_returns)
+                val_price_uncertainties = val_baselines * np.abs(val_unc_log_returns)
                 
                 real_train_price_preds.append(train_prices)
                 real_val_price_preds.append(val_prices)
@@ -251,7 +260,7 @@ class STLPipelinePlugin:
                 real_train_price_uncertainties.append(train_price_uncertainties)
                 real_val_price_uncertainties.append(val_price_uncertainties)
                 
-                print(f"  H{h}: Converted {num_train} train, {num_val} val points to real prices")
+                print(f"  H{h}: Converted {num_train} train, {num_val} val points to real prices (ALIGNED)")
             
             print("✅ All data converted to real-world prices for evaluation")
 
@@ -363,22 +372,27 @@ class STLPipelinePlugin:
                 test_log_normalized_unc = list_test_unc[idx].flatten()
                 test_unc_log_returns = test_log_normalized_unc * target_std
                 
-                # Ensure consistent array lengths using preprocessor baselines
-                num_test = min(len(test_log_returns), len(baseline_test))
+                # CRITICAL FIX: Correct temporal alignment for test data
+                # Same principle: use the last N baselines that correspond to the sliding windows
+                num_test = len(test_log_returns)
                 
-                # Convert log returns to real prices using baselines
-                test_prices = baseline_test[:num_test] * np.exp(test_log_returns[:num_test])
-                test_target_prices = baseline_test[:num_test] * np.exp(test_target_log_returns[:num_test])
+                # CRITICAL: Use the LAST num_test baselines since sliding windows 
+                # create predictions from the most recent windows
+                test_baselines = baseline_test[-num_test:] if len(baseline_test) >= num_test else baseline_test
+                test_baselines = test_baselines[:num_test]  # Ensure exact length
                 
-                # Convert uncertainty to price scale (price uncertainty = baseline * exp(log_return) * log_return_uncertainty)
-                # Approximation for small uncertainties: price_unc ≈ baseline * uncertainty_in_log_returns
-                test_price_unc = baseline_test[:num_test] * np.abs(test_unc_log_returns[:num_test])
+                # Convert log returns to real prices using aligned baselines
+                test_prices = test_baselines * np.exp(test_log_returns)
+                test_target_prices = test_baselines * np.exp(test_target_log_returns)
+                
+                # Convert uncertainty to price scale with aligned baselines
+                test_price_unc = test_baselines * np.abs(test_unc_log_returns)
                 
                 real_test_price_preds.append(test_prices)
                 real_test_price_targets.append(test_target_prices)
                 real_test_price_uncertainties.append(test_price_unc)
                 
-                print(f"  H{h}: Converted {num_test} test points to real prices")
+                print(f"  H{h}: Converted {num_test} test points to real prices (ALIGNED)")
             
             print("✅ Test predictions and targets converted to real-world prices")
 
@@ -490,7 +504,13 @@ class STLPipelinePlugin:
                 print("ERROR: No test_dates from preprocessor! Using fallback indices.")
                 final_dates = list(range(num_test_points))
                 
-            final_baseline = baseline_test[:num_test_points].flatten()
+            # CRITICAL FIX: Use aligned baseline for output 
+            # The final baseline should correspond to the test predictions temporally
+            num_test_points = min(len(final_predictions[0]), len(baseline_test))
+            
+            # Use the last N baselines that align with the sliding window predictions
+            final_baseline = baseline_test[-num_test_points:] if len(baseline_test) >= num_test_points else baseline_test
+            final_baseline = final_baseline[:num_test_points].flatten()
 
             # Validate baseline data
             if len(final_baseline) == 0:
@@ -630,12 +650,6 @@ class STLPipelinePlugin:
 
         print(f"\n=== Pipeline Complete (Total: {time.time() - start_time:.2f}s) ===")
         return {}
-
-    def load_and_evaluate_model(self, config, predictor_plugin, preprocessor_plugin):
-
-        print(f"\nTotal Pipeline Execution Time: {time.time() - start_time:.2f} seconds")
-
-    # --- load_and_evaluate_model (Updated for z-score) ---
     def load_and_evaluate_model(self, config, predictor_plugin, preprocessor_plugin):
         from tensorflow.keras.models import load_model
         print(f"Loading pre-trained model from {config['load_model']}...")
@@ -677,11 +691,15 @@ class STLPipelinePlugin:
                 pred_normalized = list_predictions[idx].flatten()
                 pred_log_returns = pred_normalized * target_std + target_mean
                 
-                # Ensure consistent array lengths using preprocessor baselines
-                num_val = min(len(pred_log_returns), len(baseline_val_eval))
+                # CRITICAL FIX: Use aligned baselines for evaluation
+                num_val = len(pred_log_returns)
                 
-                # Convert log returns to real prices using baselines
-                pred_prices = baseline_val_eval[:num_val] * np.exp(pred_log_returns[:num_val])
+                # Use the last N baselines that align with sliding window predictions
+                val_baselines = baseline_val_eval[-num_val:] if len(baseline_val_eval) >= num_val else baseline_val_eval
+                val_baselines = val_baselines[:num_val]
+                
+                # Convert log returns to real prices using aligned baselines
+                pred_prices = val_baselines * np.exp(pred_log_returns)
                 
                 # Update predictions with real prices
                 list_predictions[idx] = pred_prices.reshape(-1, 1)

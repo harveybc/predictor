@@ -67,13 +67,9 @@ class STLPreprocessorZScore:
         print("Step 3: Create sliding windows from denormalized data")
         denorm_sliding_windows = self._create_sliding_windows_from_denormalized(denormalized_data, config)
         
-        # 4. Extract baselines (last elements of each window for target column)
-        print("Step 4: Extract baselines from sliding windows")
-        baselines = self._extract_baselines_from_windows(denorm_sliding_windows, config)
+        # 4. SKIP baseline extraction here - we'll do it after anti-naive-lock
         
-        # 5. Calculate log return targets with those baselines
-        print("Step 5: Calculate log return targets")
-        targets = self._calculate_targets_with_baselines(baselines, denormalized_data, config)
+        # 5. SKIP target calculation here - we'll do it after we have final baselines
         
         # 6. Apply anti-naive-lock transformations to denormalized input datasets
         print("Step 6: Apply anti-naive-lock to denormalized datasets")
@@ -83,7 +79,15 @@ class STLPreprocessorZScore:
         print("Step 7: Create final sliding windows from processed datasets")
         final_sliding_windows = self._create_final_sliding_windows(processed_data, config)
         
-        # Align final sliding windows with targets
+        # 4. Extract baselines from FINAL sliding windows (CRITICAL FIX)
+        print("Step 4: Extract baselines from FINAL sliding windows")
+        baselines = self._extract_baselines_from_windows(final_sliding_windows, config)
+        
+        # 5. Calculate log return targets with FINAL baselines
+        print("Step 5: Calculate log return targets with FINAL baselines")
+        targets = self._calculate_targets_with_baselines(baselines, denormalized_data, config)
+        
+        # Align final sliding windows with targets (both are now from the same matrix)
         self._align_sliding_windows_with_targets(final_sliding_windows, targets)
         
         # Return final results

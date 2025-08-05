@@ -66,20 +66,25 @@ class TargetCalculationProcessor:
             x_df = baseline_data[f'x_{split}_df']  # Use x_df since it contains the target column
             price_series = x_df[target_column].values.astype(np.float32)
             
-            # Calculate targets for each horizon with correct temporal alignment
+            # Calculate targets for each horizon with CORRECT temporal alignment
             for i, horizon in enumerate(predicted_horizons):
                 horizon_targets = []
                 
-                # CRITICAL FIX: Correct temporal alignment
-                # Baselines are extracted from sliding windows ending at time t
-                # Each baseline j corresponds to window ending at time (window_size-1+j)  
-                # For horizon h, we want log(price[t+h] / baseline[t])
+                # CRITICAL FIX: Correct temporal alignment between baselines and future prices
+                # baseline[j] comes from sliding window j, which spans indices [j, j+window_size-1]
+                # baseline[j] is the LAST element of window j, so it's at index j+window_size-1
+                # For target: target[j] = log(price[baseline_time + horizon] / baseline[j])
                 
                 for j in range(len(baselines)):
-                    # Baseline j is from sliding window ending at time (window_size-1+j)
-                    baseline_time_idx = window_size - 1 + j
+                    # CORRECT TEMPORAL MAPPING:
+                    # Sliding window j spans: [j, j+1, ..., j+window_size-1]
+                    # baseline[j] = price_series[j + window_size - 1]
+                    baseline_time_idx = j + window_size - 1
+                    
+                    # The future time index for the target
                     future_time_idx = baseline_time_idx + horizon
                     
+                    # Check if we have the future price data
                     if future_time_idx < len(price_series):
                         baseline_price = baselines[j]
                         future_price = price_series[future_time_idx]
@@ -91,7 +96,7 @@ class TargetCalculationProcessor:
                         else:
                             horizon_targets.append(np.nan)
                     else:
-                        # Not enough future data - stop here
+                        # Not enough future data - stop creating targets
                         break
                 
                 # Store targets for this horizon
