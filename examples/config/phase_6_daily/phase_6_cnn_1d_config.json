@@ -69,7 +69,7 @@
     "use_first_differences": true,
     "preserve_stationary_indicators": true,
     "handle_constant_daily_features": true,
-    "feature_preprocessing_strategy": "none",
+    "feature_preprocessing_strategy": "selective",
     "normalize_after_preprocessing": false,
     "_comment_feature_categories": "SMART ANTI-NAIVE-LOCK: Transform price features to preserve info while eliminating naive lock",
     "price_features": [

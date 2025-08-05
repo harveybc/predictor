@@ -16,14 +16,17 @@ from .anti_naive_lock import AntiNaiveLockProcessor
 
 class PreprocessorPlugin:
     """
-    Modular preprocessor implementing the fool-proof 11-step plan:
-    1. Load and immediately denormalize all CSV data
-    2. Create sliding windows from denormalized data
-    3. Extract baselines from sliding windows for target calculation  
-    4. Calculate log return targets with normalization
-    5-7. REMOVED - Streamlined processing
-    8. Apply anti-naive-lock to existing sliding windows
-    9. Truncate data for final alignment
+    Modular preprocessor implementing the correct data flow:
+    1. Load normalized CSV data (already z-score normalized)
+    2. Denormalize all data for sliding windows creation 
+    3. Create sliding windows from denormalized data
+    4. Extract baselines from sliding windows for target calculation
+    5. Calculate log return targets with proper normalization
+    6. Apply anti-naive-lock transformations to denormalized input datasets
+    7. Create final sliding windows from transformed datasets  
+    8. Truncate data for final alignment
+    
+    Key principle: Baselines MUST come from the same sliding windows that feed the model.
     """
     
     plugin_params = {
@@ -172,7 +175,7 @@ class PreprocessorPlugin:
         return aligned_data
 
     def _prepare_baseline_data(self, aligned_data, config):
-        """Prepare baseline data from aligned dataframes."""
+        """Prepare baseline data from aligned normalized dataframes."""
         print("\n--- 3. Preparing Baseline Data ---")
         
         norm_json = load_normalization_json(config)
@@ -186,19 +189,19 @@ class PreprocessorPlugin:
             x_df = aligned_data[f'x_{split}_df']
             y_df = aligned_data[f'y_{split}_df']
             
-            # Store DENORMALIZED dataframes (aligned_data was denormalized in step 1)
-            baseline_data[f'x_{split}_df'] = x_df  # These are now denormalized
-            baseline_data[f'y_{split}_df'] = y_df  # These are now denormalized
+            # Store NORMALIZED dataframes (input data is z-score normalized)
+            baseline_data[f'x_{split}_df'] = x_df  # These are normalized
+            baseline_data[f'y_{split}_df'] = y_df  # These are normalized
             
-            # CLOSE prices are now DENORMALIZED (from step 1) - sliding windows will contain real prices
-            close_denormalized = x_df["CLOSE"].astype(np.float32).values
-            baseline_data[f'close_{split}'] = close_denormalized  # Store denormalized for consistency
+            # CLOSE prices are NORMALIZED (from input CSV) - will be denormalized for sliding windows
+            close_normalized = x_df["CLOSE"].astype(np.float32).values
+            baseline_data[f'close_{split}'] = close_normalized  # Store normalized data
             
-            # Extract target column - ALREADY DENORMALIZED in step 1, no need to denormalize again
-            target_from_y_denormalized = y_df[target_column].astype(np.float32).values
+            # Extract target column - NORMALIZED from input CSV
+            target_from_y_normalized = y_df[target_column].astype(np.float32).values
             
             # Trim first window_size-1 elements to align with sliding windows
-            target_from_y_trimmed = target_from_y_denormalized[window_size-1:]
+            target_from_y_trimmed = target_from_y_normalized[window_size-1:]
             baseline_data[f'target_baseline_{split}'] = target_from_y_trimmed
             
             # Extract and trim dates
@@ -209,7 +212,7 @@ class PreprocessorPlugin:
             else:
                 baseline_data[f'dates_{split}'] = None
             
-            print(f"{split.capitalize()} baseline prepared: {len(close_denormalized)} samples (now denormalized), target baseline: {len(target_from_y_trimmed)} samples (denormalized)")
+            print(f"{split.capitalize()} baseline prepared: {len(close_normalized)} samples (normalized), target baseline: {len(target_from_y_trimmed)} samples (normalized)")
         
         return baseline_data
 
