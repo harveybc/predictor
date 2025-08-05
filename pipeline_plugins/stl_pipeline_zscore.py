@@ -182,10 +182,10 @@ class STLPipelinePlugin:
                 x_val=X_val, y_val=y_val_dict, config=config
             )
 
-            # --- Convert predictions to real-world prices for metrics and plotting ---
-            print("\n--- Converting predictions to real-world prices for evaluation ---")
+            # --- Convert log-normalized predictions to real-world prices for metrics and plotting ---
+            print("\n--- Converting log-normalized predictions to real-world prices for evaluation ---")
             
-            # Convert normalized log return predictions to real prices using baselines
+            # Convert log-normalized predictions to real prices using baselines
             list_train_price_preds = []
             list_val_price_preds = []
             list_train_price_targets = []
@@ -196,19 +196,21 @@ class STLPipelinePlugin:
                 target_mean = target_returns_means[idx]
                 target_std = target_returns_stds[idx]
                 
-                # Convert predictions: normalized -> log returns -> prices
-                train_normalized_preds = list_train_preds[idx].flatten()
-                val_normalized_preds = list_val_preds[idx].flatten()
+                # Convert predictions: log-normalized -> log returns -> prices
+                # Note: train method returns predictions in same scale as targets (log-normalized)
+                train_log_normalized_preds = list_train_preds[idx].flatten()
+                val_log_normalized_preds = list_val_preds[idx].flatten()
                 
-                train_log_returns = train_normalized_preds * target_std + target_mean
-                val_log_returns = val_normalized_preds * target_std + target_mean
+                # Denormalize to log returns
+                train_log_returns = train_log_normalized_preds * target_std + target_mean
+                val_log_returns = val_log_normalized_preds * target_std + target_mean
                 
-                # Convert targets: normalized -> log returns -> prices  
-                train_normalized_targets = y_train_list[idx].flatten()
-                val_normalized_targets = y_val_list[idx].flatten()
+                # Convert targets: log-normalized -> log returns -> prices  
+                train_log_normalized_targets = y_train_list[idx].flatten()
+                val_log_normalized_targets = y_val_list[idx].flatten()
                 
-                train_target_log_returns = train_normalized_targets * target_std + target_mean
-                val_target_log_returns = val_normalized_targets * target_std + target_mean
+                train_target_log_returns = train_log_normalized_targets * target_std + target_mean
+                val_target_log_returns = val_log_normalized_targets * target_std + target_mean
                 
                 # Ensure consistent array lengths using preprocessor baselines
                 num_train = min(len(train_log_returns), len(baseline_train))
@@ -235,37 +237,7 @@ class STLPipelinePlugin:
             
             print("✅ All predictions and targets converted to real-world prices")
 
-            # Convert to target processing section
-            
-            list_train_denorm_targets = []
-            list_val_denorm_targets = []
-            
-            for idx, h in enumerate(predicted_horizons):
-                # Use horizon-specific normalization stats for targets too
-                target_mean = target_returns_means[idx]
-                target_std = target_returns_stds[idx]
-                
-                # Train targets: denormalize from normalized space back to log returns
-                train_normalized_targets = y_train_list[idx].flatten()
-                train_log_return_targets = train_normalized_targets * target_std + target_mean
-                list_train_denorm_targets.append(train_log_return_targets)
-                
-                # Val targets: denormalize from normalized space back to log returns
-                val_normalized_targets = y_val_list[idx].flatten()
-                val_log_return_targets = val_normalized_targets * target_std + target_mean
-                list_val_denorm_targets.append(val_log_return_targets)
-                
-                print(f"  H{h}: Denormalized targets using mean={target_mean:.6f}, std={target_std:.6f}")
-            
 
-            
-            # Use converted real-world price versions for all downstream processing
-            list_train_preds = list_train_price_preds
-            list_val_preds = list_val_price_preds
-            y_train_list = list_train_price_targets
-            y_val_list = list_val_price_targets
-            
-            print("✅ All predictions and targets are now real-world prices")
 
             # POST-PROCESSING SECTION OF PREDICTION PIPELINE
             # NOTE: Predictions are now FULL PRICES after de-transformation above
@@ -303,8 +275,9 @@ class STLPipelinePlugin:
                         val_target_price = val_target_h
                         val_pred_price = val_preds_h
                         
-                        # Convert uncertainty from normalized space to log return scale
+                        # Convert uncertainty from log-normalized space to log return scale
                         horizon_target_std = target_returns_stds[idx]
+                        # Uncertainty is also in log-normalized scale, convert to log returns scale
                         train_unc_log_returns = train_unc_h * horizon_target_std
                         val_unc_log_returns = val_unc_h * horizon_target_std
                         
@@ -370,13 +343,14 @@ class STLPipelinePlugin:
                 target_mean = target_returns_means[idx]
                 target_std = target_returns_stds[idx]
                 
-                # Convert predictions: normalized -> log returns -> prices
-                test_normalized_preds = list_test_preds[idx].flatten()
-                test_log_returns = test_normalized_preds * target_std + target_mean
+                # Convert predictions: log-normalized -> log returns -> prices
+                # Note: predict_with_uncertainty returns predictions in same scale as targets (log-normalized)
+                test_log_normalized_preds = list_test_preds[idx].flatten()
+                test_log_returns = test_log_normalized_preds * target_std + target_mean
                 
-                # Convert targets: normalized -> log returns -> prices
-                test_normalized_targets = y_test_list[idx].flatten()
-                test_target_log_returns = test_normalized_targets * target_std + target_mean
+                # Convert targets: log-normalized -> log returns -> prices
+                test_log_normalized_targets = y_test_list[idx].flatten()
+                test_target_log_returns = test_log_normalized_targets * target_std + target_mean
                 
                 # Ensure consistent array lengths using preprocessor baselines
                 num_test = min(len(test_log_returns), len(baseline_test))
@@ -415,10 +389,11 @@ class STLPipelinePlugin:
                     test_target_price = test_target_h
                     test_pred_price = test_preds_h
                     
-                    # Convert uncertainty from normalized space to real price scale
+                    # Convert uncertainty from log-normalized space to real price scale
                     horizon_target_std = target_returns_stds[idx]
-                    unc_normalized = test_unc_h
-                    test_unc_log_returns = unc_normalized * horizon_target_std
+                    # Uncertainty is also in log-normalized scale, convert to log returns scale
+                    unc_log_normalized = test_unc_h
+                    test_unc_log_returns = unc_log_normalized * horizon_target_std
                     
                     # Calculate metrics using real-world prices
                     test_mae_h = np.mean(np.abs(test_pred_price - test_target_price))
