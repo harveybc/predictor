@@ -260,9 +260,45 @@ class PreprocessorPlugin:
                 target_data[f'y_{split}'][f'output_horizon_{h}'] = log_returns.astype(np.float32)
                 print(f"  {split} H{h}: {len(log_returns)} targets (aligned)")
         
-        # Return unnormalized target stats (mean=0, std=1 for all horizons)
-        target_data['target_returns_means'] = [0.0] * len(predicted_horizons)
-        target_data['target_returns_stds'] = [1.0] * len(predicted_horizons)
+        # Normalize targets for stable training (z-score normalization)
+        target_stats = {}
+        normalized_targets = {'y_train': {}, 'y_val': {}, 'y_test': {}}
+        
+        # Calculate normalization stats from training data only
+        train_all_targets = []
+        for horizon_key in target_data['y_train']:
+            train_all_targets.extend(target_data['y_train'][horizon_key])
+        
+        if len(train_all_targets) > 0:
+            target_mean = np.mean(train_all_targets)
+            target_std = np.std(train_all_targets)
+            target_std = max(target_std, 1e-8)  # Prevent division by zero
+            
+            target_stats = {
+                'mean': float(target_mean),
+                'std': float(target_std)
+            }
+            
+            print(f"Target normalization stats: mean={target_mean:.6f}, std={target_std:.6f}")
+            
+            # Apply normalization to all splits and horizons
+            for split in ['train', 'val', 'test']:
+                for horizon_key in target_data[f'y_{split}']:
+                    original_targets = target_data[f'y_{split}'][horizon_key]
+                    normalized = (original_targets - target_mean) / target_std
+                    normalized_targets[f'y_{split}'][horizon_key] = normalized.astype(np.float32)
+            
+            # Update target stats for denormalization
+            target_data['target_returns_means'] = [target_mean] * len(predicted_horizons)
+            target_data['target_returns_stds'] = [target_std] * len(predicted_horizons)
+        else:
+            print("WARNING: No training targets found for normalization")
+            normalized_targets = target_data
+            target_stats = {'mean': 0.0, 'std': 1.0}
+        
+        # Update target_data with normalized targets
+        target_data.update(normalized_targets)
+        target_data['target_normalization_stats'] = target_stats
         
         return target_data
 

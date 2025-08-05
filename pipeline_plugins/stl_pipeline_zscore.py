@@ -176,19 +176,38 @@ class STLPipelinePlugin:
             # --- STEP 10: DE-TRANSFORM PREDICTIONS IMMEDIATELY AFTER TRAIN METHOD ---
             print("\n--- STEP 10: De-transforming predictions immediately after training ---")
             
-            # De-transform log return predictions to full price predictions
+            # First: Denormalize target predictions back to log returns
+            target_mean = target_returns_means[0]  # All horizons use same normalization
+            target_std = target_returns_stds[0]
+            
+            list_train_denorm_preds = []
+            list_val_denorm_preds = []
+            
+            for idx, h in enumerate(predicted_horizons):
+                # Denormalize predictions from normalized space back to log returns
+                train_normalized_preds = list_train_preds[idx].flatten()
+                train_log_returns = train_normalized_preds * target_std + target_mean
+                list_train_denorm_preds.append(train_log_returns)
+                
+                val_normalized_preds = list_val_preds[idx].flatten()
+                val_log_returns = val_normalized_preds * target_std + target_mean
+                list_val_denorm_preds.append(val_log_returns)
+                
+                print(f"  H{h}: Denormalized predictions from normalized space to log returns")
+            
+            # Second: De-transform log return predictions to full price predictions
             list_train_full_preds = []
             list_val_full_preds = []
             
             for idx, h in enumerate(predicted_horizons):
                 # Train predictions: baseline * exp(log_return_prediction)
-                train_log_returns = list_train_preds[idx].flatten()
+                train_log_returns = list_train_denorm_preds[idx]
                 train_baselines = baseline_train[:len(train_log_returns)]
                 train_full_prices = train_baselines * np.exp(train_log_returns)
                 list_train_full_preds.append(train_full_prices)
                 
                 # Val predictions: baseline * exp(log_return_prediction)
-                val_log_returns = list_val_preds[idx].flatten()
+                val_log_returns = list_val_denorm_preds[idx]
                 val_baselines = baseline_val[:len(val_log_returns)]
                 val_full_prices = val_baselines * np.exp(val_log_returns)
                 list_val_full_preds.append(val_full_prices)
@@ -318,17 +337,23 @@ class STLPipelinePlugin:
             # Step 11: De-transform test predictions from log returns to prices
             print("De-transforming test predictions...")
             if use_returns and baseline_test is not None:
+                # Get target normalization stats
+                target_mean = target_returns_means[0]
+                target_std = target_returns_stds[0]
+                
                 for idx in range(len(list_test_preds)):
-                    # Get prediction, uncertainty and baseline
-                    pred_log_returns = list_test_preds[idx].flatten()
-                    unc_log_returns = list_test_unc[idx].flatten()
-                    baseline_values = baseline_test[:len(pred_log_returns)]
+                    # First denormalize from normalized space to log returns
+                    pred_normalized = list_test_preds[idx].flatten()
+                    pred_log_returns = pred_normalized * target_std + target_mean
                     
-                    # Convert log returns to prices: price = baseline * exp(log_return)
+                    # Then convert log returns to prices
+                    baseline_values = baseline_test[:len(pred_log_returns)]
                     pred_log_returns_clipped = np.clip(pred_log_returns, -10, 10)  # Prevent overflow
                     pred_prices = baseline_values * np.exp(pred_log_returns_clipped)
                     
                     # Convert uncertainties proportionally
+                    unc_normalized = list_test_unc[idx].flatten()
+                    unc_log_returns = unc_normalized * target_std
                     unc_prices = unc_log_returns * baseline_values
                     
                     # Update lists with de-transformed values
