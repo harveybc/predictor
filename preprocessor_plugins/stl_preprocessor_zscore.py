@@ -262,3 +262,7 @@ class STLPreprocessorZScore:
         })
         
         return processed_data, params_with_targets
+
+
+# Plugin interface alias for the system
+PreprocessorPlugin = STLPreprocessorZScore
