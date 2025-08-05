@@ -304,9 +304,10 @@ class STLPipelinePlugin:
                         val_target_price = val_target_h      # Already full prices
                         val_pred_price = val_preds_h         # Already full prices
                         
-                        # Uncertainties are also already denormalized - use directly
-                        train_unc_denorm = train_unc_h.copy()  # Already denormalized uncertainties
-                        val_unc_denorm = val_unc_h.copy()  # Already denormalized uncertainties
+                        # CRITICAL FIX: Make uncertainty processing consistent across all splits
+                        # Uncertainties represent log return std, only scale by target_std (same as test)
+                        train_unc_denorm = train_unc_h * target_std  # Convert from normalized to log return scale
+                        val_unc_denorm = val_unc_h * target_std    # Convert from normalized to log return scale
                         
                         # MAE should be calculated on the full prices (not log returns)
                         train_mae_h = np.mean(np.abs(train_pred_price - train_target_price))
@@ -436,10 +437,10 @@ class STLPipelinePlugin:
                     test_target_price = test_target_h  # Already full prices
                     test_pred_price = test_preds_h     # Already full prices
                     
-                    # Uncertainties need to be converted to price scale proportionally
+                    # CRITICAL FIX: Uncertainties represent log return std, only scale by target_std
+                    # Do NOT multiply by baseline (price level) - that was causing massive uncertainty inflation
                     unc_normalized = test_unc_h
-                    unc_prices = unc_normalized * target_std * baseline_test_h  # Convert to price scale
-                    test_unc_denorm = unc_prices
+                    test_unc_denorm = unc_normalized * target_std  # Convert from normalized to log return scale
                     
                     # MAE should be calculated on the full prices (consistent with training/validation)
                     test_mae_h = np.mean(np.abs(test_pred_price - test_target_price))
