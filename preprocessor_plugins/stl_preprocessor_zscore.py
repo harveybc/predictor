@@ -159,6 +159,9 @@ class STLPreprocessorZScore:
         # Extract baselines from sliding windows
         baselines = self._extract_baselines_from_windows(sliding_windows, config)
         
+        # Store extracted baselines for final output
+        self.extracted_baselines = baselines
+        
         # Prepare data for target calculation - use the original denormalized data
         baseline_data = {'norm_json': load_normalization_json(config)}
         baseline_data.update(self.denormalized_data)  # Use denormalized data for price lookups
@@ -354,11 +357,16 @@ class STLPreprocessorZScore:
     
     def _prepare_final_output(self, sliding_windows, targets, config):
         """Prepare final output structure."""
-        # Extract baselines from the original first sliding windows for output
+        # We need to preserve the baselines that were calculated during target computation
+        # They are available in the target calculation processor's state
         baseline_data = {}
         for split in ['train', 'val', 'test']:
-            # We don't have access to the original baselines here, so create empty arrays
-            baseline_data[f'baseline_{split}'] = np.array([])
+            # Extract baseline data from targets structure if available
+            baseline_key = f'baseline_{split}'
+            if hasattr(self, 'extracted_baselines') and baseline_key in self.extracted_baselines:
+                baseline_data[baseline_key] = self.extracted_baselines[baseline_key]
+            else:
+                baseline_data[baseline_key] = np.array([])
         
         return {
             # Final sliding windows for model (SECOND sliding windows after anti-naive-lock)
@@ -379,7 +387,7 @@ class STLPreprocessorZScore:
             "x_test_dates": sliding_windows.get('x_dates_test'),
             "y_test_dates": sliding_windows.get('x_dates_test'),
             
-            # Baselines for prediction reconstruction (empty for now)
+            # Baselines for prediction reconstruction
             "baseline_train": baseline_data.get('baseline_train', np.array([])),
             "baseline_val": baseline_data.get('baseline_val', np.array([])),
             "baseline_test": baseline_data.get('baseline_test', np.array([])),
