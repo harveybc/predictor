@@ -297,41 +297,20 @@ class STLPipelinePlugin:
                         val_unc_h = val_unc_h[:num_val_pts]
                         baseline_val_h = baseline_val[:num_val_pts].flatten()  # Flatten baseline too
                         
-                        # MAE should be calculated on the denormalized log returns 
-                        train_mae_h = np.mean(np.abs(train_preds_h - train_target_h))
-                        val_mae_h = np.mean(np.abs(val_preds_h - val_target_h))
-                        
-                        # For R² and price-based metrics, predictions and targets are already denormalized
-                        train_preds_denorm = train_preds_h  # Already denormalized log returns
-                        train_target_denorm = train_target_h  # Already denormalized log returns
-                        val_preds_denorm = val_preds_h  # Already denormalized log returns
-                        val_target_denorm = val_target_h  # Already denormalized log returns
-                        
-                        # Baselines are already denormalized from sliding windows - use directly
-                        baseline_train_denorm = baseline_train_h.copy()  # Already denormalized
-                        baseline_val_denorm = baseline_val_h.copy()  # Already denormalized
-                        
-                        # Calculate final prices (baseline * exp(log_returns) if use_returns)
-                        if use_returns:
-                            # Clip log returns to prevent overflow in exp() (typical log returns are < 1.0)
-                            train_target_clipped = np.clip(train_target_denorm, -10, 10)
-                            train_preds_clipped = np.clip(train_preds_denorm, -10, 10)
-                            val_target_clipped = np.clip(val_target_denorm, -10, 10)
-                            val_preds_clipped = np.clip(val_preds_denorm, -10, 10)
-                            
-                            train_target_price = baseline_train_denorm * np.exp(train_target_clipped)
-                            train_pred_price = baseline_train_denorm * np.exp(train_preds_clipped)
-                            val_target_price = baseline_val_denorm * np.exp(val_target_clipped)
-                            val_pred_price = baseline_val_denorm * np.exp(val_preds_clipped)
-                        else:
-                            train_target_price = train_target_denorm
-                            train_pred_price = train_preds_denorm
-                            val_target_price = val_target_denorm
-                            val_pred_price = val_preds_denorm
+                        # Predictions and targets are already FULL PRICES from Step 10B denormalization
+                        # No additional denormalization needed - use directly for all metrics
+                        train_target_price = train_target_h  # Already full prices
+                        train_pred_price = train_preds_h     # Already full prices
+                        val_target_price = val_target_h      # Already full prices
+                        val_pred_price = val_preds_h         # Already full prices
                         
                         # Uncertainties are also already denormalized - use directly
                         train_unc_denorm = train_unc_h.copy()  # Already denormalized uncertainties
                         val_unc_denorm = val_unc_h.copy()  # Already denormalized uncertainties
+                        
+                        # MAE should be calculated on the full prices (not log returns)
+                        train_mae_h = np.mean(np.abs(train_pred_price - train_target_price))
+                        val_mae_h = np.mean(np.abs(val_pred_price - val_target_price))
                         
                         # Metrics: MAE , R² in price space
                         train_r2_h = r2_score(train_target_price, train_pred_price)
