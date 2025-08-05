@@ -195,31 +195,6 @@ class STLPipelinePlugin:
                 
                 print(f"  H{h}: Denormalized predictions from normalized space to log returns")
             
-            # Second: De-transform log return predictions to full price predictions
-            list_train_full_preds = []
-            list_val_full_preds = []
-            
-            for idx, h in enumerate(predicted_horizons):
-                # Train predictions: baseline * exp(log_return_prediction)
-                train_log_returns = list_train_denorm_preds[idx]
-                train_baselines = baseline_train[:len(train_log_returns)]
-                train_full_prices = train_baselines * np.exp(train_log_returns)
-                list_train_full_preds.append(train_full_prices)
-                
-                # Val predictions: baseline * exp(log_return_prediction)
-                val_log_returns = list_val_denorm_preds[idx]
-                val_baselines = baseline_val[:len(val_log_returns)]
-                val_full_prices = val_baselines * np.exp(val_log_returns)
-                list_val_full_preds.append(val_full_prices)
-                
-                print(f"  H{h}: Train {len(train_full_prices)} -> Full prices, Val {len(val_full_prices)} -> Full prices")
-            
-            # Replace predictions with de-transformed full price predictions
-            list_train_preds = list_train_full_preds
-            list_val_preds = list_val_full_preds
-            
-            print("✅ All predictions are now FULL PRICE PREDICTIONS (not log returns)")
-
             # --- STEP 10B: DENORMALIZE TARGETS TO MATCH DENORMALIZED PREDICTIONS ---
             print("\n--- STEP 10B: Denormalizing targets to match predictions ---")
             
@@ -240,30 +215,55 @@ class STLPipelinePlugin:
                 
                 print(f"  H{h}: Denormalized targets from normalized space to log returns")
             
-            # Second: De-transform log return targets to full price targets
+            # --- CRITICAL FIX: Use consistent length and baseline slicing for both predictions and targets ---
+            print("\n--- STEP 10C: Ensuring consistent baseline alignment for predictions and targets ---")
+            
+            list_train_full_preds = []
+            list_val_full_preds = []
             list_train_full_targets = []
             list_val_full_targets = []
             
             for idx, h in enumerate(predicted_horizons):
-                # Train targets: baseline * exp(log_return_target)
+                # Get denormalized log returns
+                train_log_returns = list_train_denorm_preds[idx]
+                val_log_returns = list_val_denorm_preds[idx]
                 train_log_return_targets = list_train_denorm_targets[idx]
-                train_baselines = baseline_train[:len(train_log_return_targets)]
-                train_full_price_targets = train_baselines * np.exp(train_log_return_targets)
-                list_train_full_targets.append(train_full_price_targets)
-                
-                # Val targets: baseline * exp(log_return_target)
                 val_log_return_targets = list_val_denorm_targets[idx]
-                val_baselines = baseline_val[:len(val_log_return_targets)]
+                
+                # CRITICAL: Use the minimum length across predictions, targets, and baselines
+                num_train_pts = min(len(train_log_returns), len(train_log_return_targets), len(baseline_train))
+                num_val_pts = min(len(val_log_returns), len(val_log_return_targets), len(baseline_val))
+                
+                # Slice ALL arrays to the same consistent length
+                train_log_returns = train_log_returns[:num_train_pts]
+                train_log_return_targets = train_log_return_targets[:num_train_pts]
+                train_baselines = baseline_train[:num_train_pts]
+                
+                val_log_returns = val_log_returns[:num_val_pts]
+                val_log_return_targets = val_log_return_targets[:num_val_pts]
+                val_baselines = baseline_val[:num_val_pts]
+                
+                # Transform to full prices using SAME baseline slice for both predictions and targets
+                train_full_prices = train_baselines * np.exp(train_log_returns)
+                train_full_price_targets = train_baselines * np.exp(train_log_return_targets)
+                
+                val_full_prices = val_baselines * np.exp(val_log_returns)
                 val_full_price_targets = val_baselines * np.exp(val_log_return_targets)
+                
+                list_train_full_preds.append(train_full_prices)
+                list_train_full_targets.append(train_full_price_targets)
+                list_val_full_preds.append(val_full_prices)
                 list_val_full_targets.append(val_full_price_targets)
                 
-                print(f"  H{h}: Train {len(train_full_price_targets)} -> Full price targets, Val {len(val_full_price_targets)} -> Full price targets")
+                print(f"  H{h}: Train {num_train_pts} aligned points -> Full prices, Val {num_val_pts} aligned points -> Full prices")
             
-            # Replace targets with de-transformed full price targets
+            # Replace predictions and targets with de-transformed full price versions
+            list_train_preds = list_train_full_preds
+            list_val_preds = list_val_full_preds
             y_train_list = list_train_full_targets
             y_val_list = list_val_full_targets
             
-            print("✅ All targets are now FULL PRICE TARGETS (matching predictions)")
+            print("✅ All predictions and targets are now FULL PRICES with consistent baseline alignment")
 
             # POST-PROCESSING SECTION OF PREDICTION PIPELINE
             # NOTE: Predictions are now FULL PRICES after de-transformation above
