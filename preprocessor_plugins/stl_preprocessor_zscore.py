@@ -80,11 +80,7 @@ class STLPreprocessorZScore:
         
         # 7. Create SECOND sliding windows matrix from processed datasets (for model input only)
         print("Step 7: Create second sliding windows from processed datasets")
-        second_sliding_windows = self._create_final_sliding_windows(processed_data, config)
-        
-        # 8. Apply anti-naive-lock transformations to SECOND sliding windows (correct way)
-        print("Step 8: Apply anti-naive-lock to second sliding windows")
-        final_sliding_windows = self._apply_anti_naive_lock_to_sliding_windows(second_sliding_windows, config)
+        final_sliding_windows = self._create_final_sliding_windows(processed_data, config)
         
         # Align final sliding windows with targets
         self._align_sliding_windows_with_targets(final_sliding_windows, targets)
