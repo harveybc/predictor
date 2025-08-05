@@ -461,4 +461,13 @@ class PreprocessorPlugin:
         run_config.update(config)
         self.set_params(**run_config)
         processed_data = self.process_data(self.params)
-        return processed_data, self.params
+        
+        # Include target normalization parameters in returned params
+        params_with_targets = self.params.copy()
+        params_with_targets.update({
+            "target_returns_means": processed_data.get("target_returns_means", []),
+            "target_returns_stds": processed_data.get("target_returns_stds", []),
+            "training_norm_params": processed_data.get("training_norm_params", {})
+        })
+        
+        return processed_data, params_with_targets
