@@ -436,6 +436,20 @@ class PreprocessorPlugin:
         baseline_data_norm = self._prepare_baseline_data(normalized_data, config)
         windowed_data_final = self.sliding_windows_processor.generate_windowed_features(baseline_data_norm, config)
         
+        # --- STEP 9: Truncate Windowed Data to Match Target Lengths ---
+        print("\n--- STEP 9: Truncate Windowed Data to Match Target Lengths ---")
+        self._truncate_to_match_targets(windowed_data_final, target_data)
+        
+        # Also truncate baselines to match target lengths
+        for split in ['train', 'val', 'test']:
+            if f'y_{split}' in target_data and target_data[f'y_{split}']:
+                first_horizon_key = list(target_data[f'y_{split}'].keys())[0]
+                target_length = len(target_data[f'y_{split}'][first_horizon_key])
+                baseline_key = f'baseline_{split}'
+                if len(baselines_denorm[baseline_key]) > target_length:
+                    print(f"Truncating {baseline_key} from {len(baselines_denorm[baseline_key])} to {target_length}")
+                    baselines_denorm[baseline_key] = baselines_denorm[baseline_key][:target_length]
+        
         # --- Prepare Final Output ---
         print("\n--- Preparing Final Output ---")
         ret = {
