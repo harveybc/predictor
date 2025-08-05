@@ -183,14 +183,24 @@ class STLPipelinePlugin:
                 x_val=X_val, y_val=y_val_dict, config=config
             )
 
-            # --- Convert log-normalized predictions to real-world prices for metrics and plotting ---
+            # --- Convert predictions and targets to real-world prices for evaluation ---
             print("\n--- Converting log-normalized predictions to real-world prices for evaluation ---")
             
-            # Convert log-normalized predictions to real prices using baselines
-            list_train_price_preds = []
-            list_val_price_preds = []
-            list_train_price_targets = []
-            list_val_price_targets = []
+            # Store original predictions and targets for later reference
+            original_train_preds = [pred.copy() for pred in list_train_preds]
+            original_val_preds = [pred.copy() for pred in list_val_preds]
+            original_train_targets = [target.copy() for target in y_train_list]
+            original_val_targets = [target.copy() for target in y_val_list]
+            original_train_unc = [unc.copy() for unc in list_train_unc]
+            original_val_unc = [unc.copy() for unc in list_val_unc]
+            
+            # Convert to real-world prices for metrics calculation
+            real_train_price_preds = []
+            real_val_price_preds = []
+            real_train_price_targets = []
+            real_val_price_targets = []
+            real_train_price_uncertainties = []
+            real_val_price_uncertainties = []
             
             for idx, h in enumerate(predicted_horizons):
                 # Get horizon-specific normalization stats
@@ -198,45 +208,53 @@ class STLPipelinePlugin:
                 target_std = target_returns_stds[idx]
                 
                 # Convert predictions: log-normalized -> log returns -> prices
-                # Note: train method returns predictions in same scale as targets (log-normalized)
-                train_log_normalized_preds = list_train_preds[idx].flatten()
-                val_log_normalized_preds = list_val_preds[idx].flatten()
+                train_log_normalized_preds = original_train_preds[idx].flatten()
+                val_log_normalized_preds = original_val_preds[idx].flatten()
                 
-                # Denormalize to log returns
                 train_log_returns = train_log_normalized_preds * target_std + target_mean
                 val_log_returns = val_log_normalized_preds * target_std + target_mean
                 
                 # Convert targets: log-normalized -> log returns -> prices  
-                train_log_normalized_targets = y_train_list[idx].flatten()
-                val_log_normalized_targets = y_val_list[idx].flatten()
+                train_log_normalized_targets = original_train_targets[idx].flatten()
+                val_log_normalized_targets = original_val_targets[idx].flatten()
                 
                 train_target_log_returns = train_log_normalized_targets * target_std + target_mean
                 val_target_log_returns = val_log_normalized_targets * target_std + target_mean
+                
+                # Convert uncertainties: log-normalized -> log returns -> price uncertainty
+                train_log_normalized_unc = original_train_unc[idx].flatten()
+                val_log_normalized_unc = original_val_unc[idx].flatten()
+                
+                train_unc_log_returns = train_log_normalized_unc * target_std
+                val_unc_log_returns = val_log_normalized_unc * target_std
                 
                 # Ensure consistent array lengths using preprocessor baselines
                 num_train = min(len(train_log_returns), len(baseline_train))
                 num_val = min(len(val_log_returns), len(baseline_val))
                 
                 # Convert log returns to real prices using baselines
-                train_prices = baseline_train[:num_train] * np.exp(train_log_returns[:num_train])
-                val_prices = baseline_val[:num_val] * np.exp(val_log_returns[:num_val])
-                train_target_prices = baseline_train[:num_train] * np.exp(train_target_log_returns[:num_train])
-                val_target_prices = baseline_val[:num_val] * np.exp(val_target_log_returns[:num_val])
+                train_baselines = baseline_train[:num_train]
+                val_baselines = baseline_val[:num_val]
                 
-                list_train_price_preds.append(train_prices)
-                list_val_price_preds.append(val_prices)
-                list_train_price_targets.append(train_target_prices)
-                list_val_price_targets.append(val_target_prices)
+                train_prices = train_baselines * np.exp(train_log_returns[:num_train])
+                val_prices = val_baselines * np.exp(val_log_returns[:num_val])
+                train_target_prices = train_baselines * np.exp(train_target_log_returns[:num_train])
+                val_target_prices = val_baselines * np.exp(val_target_log_returns[:num_val])
+                
+                # Convert uncertainty to price scale: σ_price ≈ price * σ_log_return
+                train_price_uncertainties = train_baselines * np.abs(train_unc_log_returns[:num_train])
+                val_price_uncertainties = val_baselines * np.abs(val_unc_log_returns[:num_val])
+                
+                real_train_price_preds.append(train_prices)
+                real_val_price_preds.append(val_prices)
+                real_train_price_targets.append(train_target_prices)
+                real_val_price_targets.append(val_target_prices)
+                real_train_price_uncertainties.append(train_price_uncertainties)
+                real_val_price_uncertainties.append(val_price_uncertainties)
                 
                 print(f"  H{h}: Converted {num_train} train, {num_val} val points to real prices")
             
-            # Replace with real-world price versions for metrics calculation
-            list_train_preds = list_train_price_preds
-            list_val_preds = list_val_price_preds
-            y_train_list = list_train_price_targets
-            y_val_list = list_val_price_targets
-            
-            print("✅ All predictions and targets converted to real-world prices")
+            print("✅ All data converted to real-world prices for evaluation")
 
 
 
@@ -245,55 +263,46 @@ class STLPipelinePlugin:
             # END OF POST-PROCESSING SECTION
 
 
-            # Check outputs & Calc Train/Val Metrics (All Horizons)
-            can_calc_train_stats = all(len(lst) == num_outputs for lst in [list_train_preds, list_train_unc])
+            # Calculate Train/Validation metrics using real-world prices
+            can_calc_train_stats = all(len(lst) == num_outputs for lst in [real_train_price_preds, real_train_price_uncertainties])
             if can_calc_train_stats:
                 print("Calculating Train/Validation metrics (all horizons)...")
                 for idx, h in enumerate(predicted_horizons):
                     try:
-                        # Use real-world price predictions and targets
-                        train_preds_h = list_train_preds[idx].flatten()
-                        train_target_h = y_train_list[idx].flatten()
-                        train_unc_h = list_train_unc[idx].flatten()
-                        val_preds_h = list_val_preds[idx].flatten()
-                        val_target_h = y_val_list[idx].flatten()
-                        val_unc_h = list_val_unc[idx].flatten()
+                        # Use real-world price data for metrics
+                        train_preds_h = real_train_price_preds[idx].flatten()
+                        train_target_h = real_train_price_targets[idx].flatten()
+                        train_unc_h = real_train_price_uncertainties[idx].flatten()
+                        val_preds_h = real_val_price_preds[idx].flatten()
+                        val_target_h = real_val_price_targets[idx].flatten()
+                        val_unc_h = real_val_price_uncertainties[idx].flatten()
                         
-                        num_train_pts = min(len(train_preds_h), len(train_target_h), len(baseline_train))
-                        num_val_pts = min(len(val_preds_h), len(val_target_h), len(baseline_val))
+                        # Ensure consistent lengths
+                        min_train_len = min(len(train_preds_h), len(train_target_h), len(train_unc_h))
+                        min_val_len = min(len(val_preds_h), len(val_target_h), len(val_unc_h))
                         
-                        train_preds_h = train_preds_h[:num_train_pts]
-                        train_target_h = train_target_h[:num_train_pts]
-                        train_unc_h = train_unc_h[:num_train_pts]
+                        train_preds_h = train_preds_h[:min_train_len]
+                        train_target_h = train_target_h[:min_train_len]
+                        train_unc_h = train_unc_h[:min_train_len]
                         
-                        val_preds_h = val_preds_h[:num_val_pts]
-                        val_target_h = val_target_h[:num_val_pts]
-                        val_unc_h = val_unc_h[:num_val_pts]
+                        val_preds_h = val_preds_h[:min_val_len]
+                        val_target_h = val_target_h[:min_val_len]
+                        val_unc_h = val_unc_h[:min_val_len]
                         
-                        # Predictions and targets are already real-world prices
-                        train_target_price = train_target_h
-                        train_pred_price = train_preds_h
-                        val_target_price = val_target_h
-                        val_pred_price = val_preds_h
+                        # Calculate metrics in real-world price scale
+                        train_mae_h = np.mean(np.abs(train_preds_h - train_target_h))
+                        val_mae_h = np.mean(np.abs(val_preds_h - val_target_h))
                         
-                        # Convert uncertainty from log-normalized space to log return scale
-                        horizon_target_std = target_returns_stds[idx]
-                        # Uncertainty is also in log-normalized scale, convert to log returns scale
-                        train_unc_log_returns = train_unc_h * horizon_target_std
-                        val_unc_log_returns = val_unc_h * horizon_target_std
+                        train_r2_h = r2_score(train_target_h, train_preds_h)
+                        val_r2_h = r2_score(val_target_h, val_preds_h)
                         
-                        # Calculate metrics using real-world prices
-                        train_mae_h = np.mean(np.abs(train_pred_price - train_target_price))
-                        val_mae_h = np.mean(np.abs(val_pred_price - val_target_price))
+                        # Uncertainty metrics (already in price scale)
+                        train_unc_mean_h = np.mean(train_unc_h)
+                        val_unc_mean_h = np.mean(val_unc_h)
                         
-                        # Calculate R2 and uncertainty metrics
-                        train_r2_h = r2_score(train_target_price, train_pred_price)
-                        train_unc_mean_h = np.mean(np.abs(train_unc_log_returns))
-                        train_snr_h = np.mean(train_pred_price) / (train_unc_mean_h + 1e-9)
-                        
-                        val_r2_h = r2_score(val_target_price, val_pred_price)
-                        val_unc_mean_h = np.mean(np.abs(val_unc_log_returns))
-                        val_snr_h = np.mean(val_pred_price) / (val_unc_mean_h + 1e-9)
+                        # SNR: signal (price level) to noise (uncertainty) ratio
+                        train_snr_h = np.mean(train_preds_h) / (train_unc_mean_h + 1e-9)
+                        val_snr_h = np.mean(val_preds_h) / (val_unc_mean_h + 1e-9)
                         
                         metrics_results["Train"]["MAE"][h].append(train_mae_h)
                         metrics_results["Train"]["R2"][h].append(train_r2_h)
@@ -339,6 +348,11 @@ class STLPipelinePlugin:
             list_test_price_preds = []
             list_test_price_targets = []
             
+            # Create separate real-world price arrays for test data
+            real_test_price_preds = []
+            real_test_price_targets = []
+            real_test_price_uncertainties = []
+            
             for idx, h in enumerate(predicted_horizons):
                 # Get horizon-specific normalization stats
                 target_mean = target_returns_means[idx]
@@ -353,6 +367,10 @@ class STLPipelinePlugin:
                 test_log_normalized_targets = y_test_list[idx].flatten()
                 test_target_log_returns = test_log_normalized_targets * target_std + target_mean
                 
+                # Convert uncertainties: log-normalized -> log returns -> price uncertainty
+                test_log_normalized_unc = list_test_unc[idx].flatten()
+                test_unc_log_returns = test_log_normalized_unc * target_std
+                
                 # Ensure consistent array lengths using preprocessor baselines
                 num_test = min(len(test_log_returns), len(baseline_test))
                 
@@ -360,47 +378,37 @@ class STLPipelinePlugin:
                 test_prices = baseline_test[:num_test] * np.exp(test_log_returns[:num_test])
                 test_target_prices = baseline_test[:num_test] * np.exp(test_target_log_returns[:num_test])
                 
-                list_test_price_preds.append(test_prices)
-                list_test_price_targets.append(test_target_prices)
+                # Convert uncertainty to price scale (price uncertainty = baseline * exp(log_return) * log_return_uncertainty)
+                # Approximation for small uncertainties: price_unc ≈ baseline * uncertainty_in_log_returns
+                test_price_unc = baseline_test[:num_test] * np.abs(test_unc_log_returns[:num_test])
+                
+                real_test_price_preds.append(test_prices)
+                real_test_price_targets.append(test_target_prices)
+                real_test_price_uncertainties.append(test_price_unc)
                 
                 print(f"  H{h}: Converted {num_test} test points to real prices")
             
-            # Use real-world price versions for all test processing
-            list_test_preds = list_test_price_preds
-            y_test_list = list_test_price_targets
-            
             print("✅ Test predictions and targets converted to real-world prices")
 
-            # Continue with metrics calculation
-            
+            # Calculate test metrics using real-world price data
             for idx, h in enumerate(predicted_horizons):
                 try:
-                    # Use real-world price predictions and targets for metrics
-                    test_preds_h = list_test_preds[idx].flatten()
-                    test_target_h = y_test_list[idx].flatten()
-                    test_unc_h = list_test_unc[idx].flatten()
+                    # Use real-world price data for test metrics
+                    test_preds_h = real_test_price_preds[idx].flatten()
+                    test_target_h = real_test_price_targets[idx].flatten()
+                    test_unc_h = real_test_price_uncertainties[idx].flatten()
                     
-                    num_test_pts = min(len(test_preds_h), len(test_target_h), len(baseline_test))
-                    test_preds_h = test_preds_h[:num_test_pts]
-                    test_target_h = test_target_h[:num_test_pts]
-                    test_unc_h = test_unc_h[:num_test_pts]
-                    baseline_test_h = baseline_test[:num_test_pts].flatten()
+                    # Ensure consistent lengths
+                    min_test_len = min(len(test_preds_h), len(test_target_h), len(test_unc_h))
+                    test_preds_h = test_preds_h[:min_test_len]
+                    test_target_h = test_target_h[:min_test_len]
+                    test_unc_h = test_unc_h[:min_test_len]
                     
-                    # Predictions and targets are already real-world prices
-                    test_target_price = test_target_h
-                    test_pred_price = test_preds_h
-                    
-                    # Convert uncertainty from log-normalized space to real price scale
-                    horizon_target_std = target_returns_stds[idx]
-                    # Uncertainty is also in log-normalized scale, convert to log returns scale
-                    unc_log_normalized = test_unc_h
-                    test_unc_log_returns = unc_log_normalized * horizon_target_std
-                    
-                    # Calculate metrics using real-world prices
-                    test_mae_h = np.mean(np.abs(test_pred_price - test_target_price))
-                    test_r2_h = r2_score(test_target_price, test_pred_price)
-                    test_unc_mean_h = np.mean(np.abs(test_unc_log_returns))
-                    test_snr_h = np.mean(test_pred_price) / (test_unc_mean_h + 1e-9)
+                    # Calculate metrics in real-world price scale
+                    test_mae_h = np.mean(np.abs(test_preds_h - test_target_h))
+                    test_r2_h = r2_score(test_target_h, test_preds_h)
+                    test_unc_mean_h = np.mean(test_unc_h)
+                    test_snr_h = np.mean(test_preds_h) / (test_unc_mean_h + 1e-9)
                     
                     metrics_results["Test"]["MAE"][h].append(test_mae_h)
                     metrics_results["Test"]["R2"][h].append(test_r2_h)
@@ -518,28 +526,17 @@ class STLPipelinePlugin:
                 denorm_test_close = np.full(num_test_points, np.nan)
             output_data["test_CLOSE"] = denorm_test_close.flatten()
 
-            # Process each horizon
+            # Process each horizon using real-world price data
             for idx, h in enumerate(predicted_horizons):
-                # Get raw results (sliced) & FLATTEN for correct addition
-                preds_raw = final_predictions[idx][:num_test_points].flatten()
-                target_raw = y_test_list[idx][:num_test_points].flatten()
-                unc_raw = final_uncertainties[idx][:num_test_points].flatten()
+                # Get real-world price data (already converted)
+                preds_raw = real_test_price_preds[idx][:num_test_points].flatten()
+                target_raw = real_test_price_targets[idx][:num_test_points].flatten()
+                unc_raw = real_test_price_uncertainties[idx][:num_test_points].flatten()
 
-                pred_price_denorm = np.full(num_test_points, np.nan)
-                target_price_denorm = np.full(num_test_points, np.nan)
-                unc_denorm = np.full(num_test_points, np.nan)
-                
-                try:
-                    # Predictions and targets are already FULL PRICES from Step 11C
-                    # No additional transformation needed - use directly
-                    pred_price_denorm = preds_raw.copy()  # Already full prices
-                    target_price_denorm = target_raw.copy()  # Already full prices
-                    
-                    # Uncertainties are already converted to price scale in metrics calculation
-                    unc_denorm = unc_raw.copy()  # Already price-scale uncertainties
-                    
-                except Exception as e: 
-                    print(f"WARN: Error denorm H={h}: {e}")
+                # Data is already in real-world price scale - use directly
+                pred_price_denorm = preds_raw.copy()
+                target_price_denorm = target_raw.copy()
+                unc_denorm = unc_raw.copy()
                 
                 # Add flattened results
                 output_data[f"Target_H{h}"] = target_price_denorm
@@ -591,20 +588,20 @@ class STLPipelinePlugin:
         except Exception as e: 
             print(f"ERROR during final CSV saving: {e}")
 
-        # --- Plot Predictions for 'plotted_horizon' (CORRECTED - Using EXACT working code from stl_pipeline.py) ---
+        # --- Plot Predictions for 'plotted_horizon' (Using real-world price data) ---
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
-            # Use test predictions and targets (already converted to real-world prices)
-            preds_plot_raw = list_test_preds[plotted_index][:num_test_points]
-            target_plot_raw = y_test_list[plotted_index][:num_test_points]
-            unc_plot_raw = list_test_unc[plotted_index][:num_test_points]
+            # Use real-world price data for plotting
+            preds_plot_raw = real_test_price_preds[plotted_index][:num_test_points]
+            target_plot_raw = real_test_price_targets[plotted_index][:num_test_points]
+            unc_plot_raw = real_test_price_uncertainties[plotted_index][:num_test_points]
             baseline_plot = final_baseline
 
             # Data is already real-world prices - use directly for plotting
             pred_plot_price_flat = preds_plot_raw.flatten()
             target_plot_price_flat = target_plot_raw.flatten()
             
-            # Use uncertainty and baseline as-is
+            # Use price-scale uncertainty and baseline
             unc_plot_denorm_flat = unc_plot_raw.flatten()
             true_plot_price_flat = baseline_plot.flatten()
 
