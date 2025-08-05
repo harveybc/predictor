@@ -72,9 +72,18 @@ class STLPipelinePlugin:
         X_train = datasets["x_train"]
         X_val = datasets["x_val"]
         X_test = datasets["x_test"]
-        y_train_list = [datasets["y_train"][f"output_horizon_{h}"] for h in predicted_horizons]
-        y_val_list = [datasets["y_val"][f"output_horizon_{h}"] for h in predicted_horizons]
-        y_test_list = [datasets["y_test"][f"output_horizon_{h}"] for h in predicted_horizons]
+        
+        # Extract targets from multi-horizon arrays (clean preprocessor output)
+        y_train_list = []
+        y_val_list = []
+        y_test_list = []
+        
+        for idx, h in enumerate(predicted_horizons):
+            # Use normalized log return targets directly from preprocessor
+            y_train_list.append(datasets["y_train"][:, idx] if datasets["y_train"].ndim > 1 else datasets["y_train"])
+            y_val_list.append(datasets["y_val"][:, idx] if datasets["y_val"].ndim > 1 else datasets["y_val"])
+            y_test_list.append(datasets["y_test"][:, idx] if datasets["y_test"].ndim > 1 else datasets["y_test"])
+        
         train_dates = datasets.get("y_train_dates")
         val_dates = datasets.get("y_val_dates")
         test_dates = datasets.get("y_test_dates")
@@ -173,31 +182,60 @@ class STLPipelinePlugin:
                 x_val=X_val, y_val=y_val_dict, config=config
             )
 
-            # --- STEP 10: DE-TRANSFORM PREDICTIONS IMMEDIATELY AFTER TRAIN METHOD ---
-            print("\n--- STEP 10: De-transforming predictions immediately after training ---")
+            # --- Convert predictions to real-world prices for metrics and plotting ---
+            print("\n--- Converting predictions to real-world prices for evaluation ---")
             
-            # CRITICAL FIX: Use per-horizon normalization stats for proper denormalization
-            list_train_denorm_preds = []
-            list_val_denorm_preds = []
+            # Convert normalized log return predictions to real prices using baselines
+            list_train_price_preds = []
+            list_val_price_preds = []
+            list_train_price_targets = []
+            list_val_price_targets = []
             
             for idx, h in enumerate(predicted_horizons):
-                # Use horizon-specific normalization stats
+                # Get horizon-specific normalization stats
                 target_mean = target_returns_means[idx]
                 target_std = target_returns_stds[idx]
                 
-                # Denormalize predictions from normalized space back to log returns
+                # Convert predictions: normalized -> log returns -> prices
                 train_normalized_preds = list_train_preds[idx].flatten()
-                train_log_returns = train_normalized_preds * target_std + target_mean
-                list_train_denorm_preds.append(train_log_returns)
-                
                 val_normalized_preds = list_val_preds[idx].flatten()
-                val_log_returns = val_normalized_preds * target_std + target_mean
-                list_val_denorm_preds.append(val_log_returns)
                 
-                print(f"  H{h}: Denormalized predictions using mean={target_mean:.6f}, std={target_std:.6f}")
+                train_log_returns = train_normalized_preds * target_std + target_mean
+                val_log_returns = val_normalized_preds * target_std + target_mean
+                
+                # Convert targets: normalized -> log returns -> prices  
+                train_normalized_targets = y_train_list[idx].flatten()
+                val_normalized_targets = y_val_list[idx].flatten()
+                
+                train_target_log_returns = train_normalized_targets * target_std + target_mean
+                val_target_log_returns = val_normalized_targets * target_std + target_mean
+                
+                # Ensure consistent array lengths using preprocessor baselines
+                num_train = min(len(train_log_returns), len(baseline_train))
+                num_val = min(len(val_log_returns), len(baseline_val))
+                
+                # Convert log returns to real prices using baselines
+                train_prices = baseline_train[:num_train] * np.exp(train_log_returns[:num_train])
+                val_prices = baseline_val[:num_val] * np.exp(val_log_returns[:num_val])
+                train_target_prices = baseline_train[:num_train] * np.exp(train_target_log_returns[:num_train])
+                val_target_prices = baseline_val[:num_val] * np.exp(val_target_log_returns[:num_val])
+                
+                list_train_price_preds.append(train_prices)
+                list_val_price_preds.append(val_prices)
+                list_train_price_targets.append(train_target_prices)
+                list_val_price_targets.append(val_target_prices)
+                
+                print(f"  H{h}: Converted {num_train} train, {num_val} val points to real prices")
             
-            # --- STEP 10B: DENORMALIZE TARGETS TO MATCH DENORMALIZED PREDICTIONS ---
-            print("\n--- STEP 10B: Denormalizing targets to match predictions ---")
+            # Replace with real-world price versions for metrics calculation
+            list_train_preds = list_train_price_preds
+            list_val_preds = list_val_price_preds
+            y_train_list = list_train_price_targets
+            y_val_list = list_val_price_targets
+            
+            print("✅ All predictions and targets converted to real-world prices")
+
+            # Convert to target processing section
             
             list_train_denorm_targets = []
             list_val_denorm_targets = []
@@ -219,55 +257,15 @@ class STLPipelinePlugin:
                 
                 print(f"  H{h}: Denormalized targets using mean={target_mean:.6f}, std={target_std:.6f}")
             
-            # --- CRITICAL FIX: Use consistent length and baseline slicing for both predictions and targets ---
-            print("\n--- STEP 10C: Ensuring consistent baseline alignment for predictions and targets ---")
+
             
-            list_train_full_preds = []
-            list_val_full_preds = []
-            list_train_full_targets = []
-            list_val_full_targets = []
+            # Use converted real-world price versions for all downstream processing
+            list_train_preds = list_train_price_preds
+            list_val_preds = list_val_price_preds
+            y_train_list = list_train_price_targets
+            y_val_list = list_val_price_targets
             
-            for idx, h in enumerate(predicted_horizons):
-                # Get denormalized log returns
-                train_log_returns = list_train_denorm_preds[idx]
-                val_log_returns = list_val_denorm_preds[idx]
-                train_log_return_targets = list_train_denorm_targets[idx]
-                val_log_return_targets = list_val_denorm_targets[idx]
-                
-                # CRITICAL: Use the minimum length across predictions, targets, and baselines
-                num_train_pts = min(len(train_log_returns), len(train_log_return_targets), len(baseline_train))
-                num_val_pts = min(len(val_log_returns), len(val_log_return_targets), len(baseline_val))
-                
-                # Slice ALL arrays to the same consistent length
-                train_log_returns = train_log_returns[:num_train_pts]
-                train_log_return_targets = train_log_return_targets[:num_train_pts]
-                train_baselines = baseline_train[:num_train_pts]
-                
-                val_log_returns = val_log_returns[:num_val_pts]
-                val_log_return_targets = val_log_return_targets[:num_val_pts]
-                val_baselines = baseline_val[:num_val_pts]
-                
-                # Transform to full prices using SAME baseline slice for both predictions and targets
-                train_full_prices = train_baselines * np.exp(train_log_returns)
-                train_full_price_targets = train_baselines * np.exp(train_log_return_targets)
-                
-                val_full_prices = val_baselines * np.exp(val_log_returns)
-                val_full_price_targets = val_baselines * np.exp(val_log_return_targets)
-                
-                list_train_full_preds.append(train_full_prices)
-                list_train_full_targets.append(train_full_price_targets)
-                list_val_full_preds.append(val_full_prices)
-                list_val_full_targets.append(val_full_price_targets)
-                
-                print(f"  H{h}: Train {num_train_pts} aligned points -> Full prices, Val {num_val_pts} aligned points -> Full prices")
-            
-            # Replace predictions and targets with de-transformed full price versions
-            list_train_preds = list_train_full_preds
-            list_val_preds = list_val_full_preds
-            y_train_list = list_train_full_targets
-            y_val_list = list_val_full_targets
-            
-            print("✅ All predictions and targets are now FULL PRICES with consistent baseline alignment")
+            print("✅ All predictions and targets are now real-world prices")
 
             # POST-PROCESSING SECTION OF PREDICTION PIPELINE
             # NOTE: Predictions are now FULL PRICES after de-transformation above
@@ -280,7 +278,7 @@ class STLPipelinePlugin:
                 print("Calculating Train/Validation metrics (all horizons)...")
                 for idx, h in enumerate(predicted_horizons):
                     try:
-                        # --- Ensure inputs are flattened BEFORE potential addition ---
+                        # Use real-world price predictions and targets
                         train_preds_h = list_train_preds[idx].flatten()
                         train_target_h = y_train_list[idx].flatten()
                         train_unc_h = list_train_unc[idx].flatten()
@@ -294,39 +292,33 @@ class STLPipelinePlugin:
                         train_preds_h = train_preds_h[:num_train_pts]
                         train_target_h = train_target_h[:num_train_pts]
                         train_unc_h = train_unc_h[:num_train_pts]
-                        baseline_train_h = baseline_train[:num_train_pts].flatten()  # Flatten baseline too
                         
                         val_preds_h = val_preds_h[:num_val_pts]
                         val_target_h = val_target_h[:num_val_pts]
                         val_unc_h = val_unc_h[:num_val_pts]
-                        baseline_val_h = baseline_val[:num_val_pts].flatten()  # Flatten baseline too
                         
-                        # Predictions and targets are already FULL PRICES from Step 10B denormalization
-                        # No additional denormalization needed - use directly for all metrics
-                        train_target_price = train_target_h  # Already full prices
-                        train_pred_price = train_preds_h     # Already full prices
-                        val_target_price = val_target_h      # Already full prices
-                        val_pred_price = val_preds_h         # Already full prices
+                        # Predictions and targets are already real-world prices
+                        train_target_price = train_target_h
+                        train_pred_price = train_preds_h
+                        val_target_price = val_target_h
+                        val_pred_price = val_preds_h
                         
-                        # CRITICAL FIX: Use horizon-specific uncertainty denormalization
-                        # Get the horizon-specific target std for this horizon
+                        # Convert uncertainty from normalized space to log return scale
                         horizon_target_std = target_returns_stds[idx]
+                        train_unc_log_returns = train_unc_h * horizon_target_std
+                        val_unc_log_returns = val_unc_h * horizon_target_std
                         
-                        # Uncertainties represent log return std, scale by horizon-specific target_std
-                        train_unc_denorm = train_unc_h * horizon_target_std  # Convert from normalized to log return scale
-                        val_unc_denorm = val_unc_h * horizon_target_std    # Convert from normalized to log return scale
-                        
-                        # MAE should be calculated on the full prices (not log returns)
+                        # Calculate metrics using real-world prices
                         train_mae_h = np.mean(np.abs(train_pred_price - train_target_price))
                         val_mae_h = np.mean(np.abs(val_pred_price - val_target_price))
                         
-                        # Metrics: MAE , R² in price space
+                        # Calculate R2 and uncertainty metrics
                         train_r2_h = r2_score(train_target_price, train_pred_price)
-                        train_unc_mean_h = np.mean(np.abs(train_unc_denorm))
+                        train_unc_mean_h = np.mean(np.abs(train_unc_log_returns))
                         train_snr_h = np.mean(train_pred_price) / (train_unc_mean_h + 1e-9)
                         
                         val_r2_h = r2_score(val_target_price, val_pred_price)
-                        val_unc_mean_h = np.mean(np.abs(val_unc_denorm))
+                        val_unc_mean_h = np.mean(np.abs(val_unc_log_returns))
                         val_snr_h = np.mean(val_pred_price) / (val_unc_mean_h + 1e-9)
                         
                         metrics_results["Train"]["MAE"][h].append(train_mae_h)
@@ -366,74 +358,49 @@ class STLPipelinePlugin:
             if not all(len(lst) == num_outputs for lst in [list_test_preds, list_test_unc]): 
                 raise ValueError("Predictor predict mismatch outputs.")
             
-            # --- STEP 11: DE-TRANSFORM TEST PREDICTIONS USING SAME LOGIC AS TRAINING/VALIDATION ---
-            print("\n--- STEP 11: De-transforming test predictions using consistent logic ---")
+            # --- Convert test predictions to real-world prices ---
+            print("\n--- Converting test predictions to real-world prices ---")
             
-            # CRITICAL FIX: Use per-horizon normalization stats for test predictions
-            list_test_denorm_preds = []
+            # Convert test predictions using same logic as training/validation
+            list_test_price_preds = []
+            list_test_price_targets = []
+            
             for idx, h in enumerate(predicted_horizons):
-                # Use horizon-specific normalization stats
+                # Get horizon-specific normalization stats
                 target_mean = target_returns_means[idx]
                 target_std = target_returns_stds[idx]
                 
-                # Denormalize predictions from normalized space back to log returns
+                # Convert predictions: normalized -> log returns -> prices
                 test_normalized_preds = list_test_preds[idx].flatten()
                 test_log_returns = test_normalized_preds * target_std + target_mean
-                list_test_denorm_preds.append(test_log_returns)
-                print(f"  H{h}: Denormalized test predictions using mean={target_mean:.6f}, std={target_std:.6f}")
-            
-            # --- STEP 11B: DENORMALIZE TEST TARGETS TO MATCH PREDICTIONS ---
-            print("\n--- STEP 11B: Denormalizing test targets to match predictions ---")
-            
-            list_test_denorm_targets = []
-            for idx, h in enumerate(predicted_horizons):
-                # Use horizon-specific normalization stats for test targets too
-                target_mean = target_returns_means[idx]
-                target_std = target_returns_stds[idx]
                 
-                # Test targets: denormalize from normalized space back to log returns
+                # Convert targets: normalized -> log returns -> prices
                 test_normalized_targets = y_test_list[idx].flatten()
-                test_log_return_targets = test_normalized_targets * target_std + target_mean
-                list_test_denorm_targets.append(test_log_return_targets)
-                print(f"  H{h}: Denormalized test targets using mean={target_mean:.6f}, std={target_std:.6f}")
-            
-            # --- STEP 11C: CONSISTENT BASELINE ALIGNMENT FOR TEST DATA ---
-            print("\n--- STEP 11C: Ensuring consistent baseline alignment for test predictions and targets ---")
-            
-            list_test_full_preds = []
-            list_test_full_targets = []
-            
-            for idx, h in enumerate(predicted_horizons):
-                # Get denormalized log returns
-                test_log_returns = list_test_denorm_preds[idx]
-                test_log_return_targets = list_test_denorm_targets[idx]
+                test_target_log_returns = test_normalized_targets * target_std + target_mean
                 
-                # CRITICAL: Use the minimum length across predictions, targets, and baselines
-                num_test_pts = min(len(test_log_returns), len(test_log_return_targets), len(baseline_test))
+                # Ensure consistent array lengths using preprocessor baselines
+                num_test = min(len(test_log_returns), len(baseline_test))
                 
-                # Slice ALL arrays to the same consistent length
-                test_log_returns = test_log_returns[:num_test_pts]
-                test_log_return_targets = test_log_return_targets[:num_test_pts]
-                test_baselines = baseline_test[:num_test_pts]
+                # Convert log returns to real prices using baselines
+                test_prices = baseline_test[:num_test] * np.exp(test_log_returns[:num_test])
+                test_target_prices = baseline_test[:num_test] * np.exp(test_target_log_returns[:num_test])
                 
-                # Transform to full prices using SAME baseline slice for both predictions and targets
-                test_full_prices = test_baselines * np.exp(test_log_returns)
-                test_full_price_targets = test_baselines * np.exp(test_log_return_targets)
+                list_test_price_preds.append(test_prices)
+                list_test_price_targets.append(test_target_prices)
                 
-                list_test_full_preds.append(test_full_prices)
-                list_test_full_targets.append(test_full_price_targets)
-                
-                print(f"  H{h}: Test {num_test_pts} aligned points -> Full prices")
+                print(f"  H{h}: Converted {num_test} test points to real prices")
             
-            # Replace test predictions and targets with de-transformed full price versions
-            list_test_preds = list_test_full_preds
-            y_test_list = list_test_full_targets
+            # Use real-world price versions for all test processing
+            list_test_preds = list_test_price_preds
+            y_test_list = list_test_price_targets
             
-            print("✅ All test predictions and targets are now FULL PRICES with consistent baseline alignment")
+            print("✅ Test predictions and targets converted to real-world prices")
+
+            # Continue with metrics calculation
             
             for idx, h in enumerate(predicted_horizons):
                 try:
-                    # --- Ensure inputs are flattened BEFORE potential addition ---
+                    # Use real-world price predictions and targets for metrics
                     test_preds_h = list_test_preds[idx].flatten()
                     test_target_h = y_test_list[idx].flatten()
                     test_unc_h = list_test_unc[idx].flatten()
@@ -442,28 +409,21 @@ class STLPipelinePlugin:
                     test_preds_h = test_preds_h[:num_test_pts]
                     test_target_h = test_target_h[:num_test_pts]
                     test_unc_h = test_unc_h[:num_test_pts]
-                    baseline_test_h = baseline_test[:num_test_pts].flatten()  # Flatten baseline too
+                    baseline_test_h = baseline_test[:num_test_pts].flatten()
                     
-                    # Predictions and targets are already FULL PRICES from Step 11C denormalization
-                    # No additional denormalization needed - use directly for all metrics
-                    test_target_price = test_target_h  # Already full prices
-                    test_pred_price = test_preds_h     # Already full prices
+                    # Predictions and targets are already real-world prices
+                    test_target_price = test_target_h
+                    test_pred_price = test_preds_h
                     
-                    # CRITICAL FIX: Use horizon-specific uncertainty denormalization for test
-                    # Get the horizon-specific target std for this horizon
+                    # Convert uncertainty from normalized space to real price scale
                     horizon_target_std = target_returns_stds[idx]
-                    
-                    # Uncertainties represent log return std, scale by horizon-specific target_std
-                    # Do NOT multiply by baseline (price level) - that was causing massive uncertainty inflation
                     unc_normalized = test_unc_h
-                    test_unc_denorm = unc_normalized * horizon_target_std  # Convert from normalized to log return scale
+                    test_unc_log_returns = unc_normalized * horizon_target_std
                     
-                    # MAE should be calculated on the full prices (consistent with training/validation)
+                    # Calculate metrics using real-world prices
                     test_mae_h = np.mean(np.abs(test_pred_price - test_target_price))
-                    
-                    # Metrics: MAE and R² in price space (consistent with training/validation)
                     test_r2_h = r2_score(test_target_price, test_pred_price)
-                    test_unc_mean_h = np.mean(np.abs(test_unc_denorm))
+                    test_unc_mean_h = np.mean(np.abs(test_unc_log_returns))
                     test_snr_h = np.mean(test_pred_price) / (test_unc_mean_h + 1e-9)
                     
                     metrics_results["Test"]["MAE"][h].append(test_mae_h)
@@ -658,17 +618,17 @@ class STLPipelinePlugin:
         # --- Plot Predictions for 'plotted_horizon' (CORRECTED - Using EXACT working code from stl_pipeline.py) ---
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
-            # Use CORRECT variable names from last iteration, sliced
-            preds_plot_raw = list_test_preds[plotted_index][:num_test_points]  # Shape (num_test_points,) or (num_test_points, 1)
-            target_plot_raw = y_test_list[plotted_index][:num_test_points]  # Shape (num_test_points,) or (num_test_points, 1)
-            unc_plot_raw = list_test_unc[plotted_index][:num_test_points]  # Shape (num_test_points,) or (num_test_points, 1)
-            baseline_plot = final_baseline  # Already sliced, shape (num_test_points,)
+            # Use test predictions and targets (already converted to real-world prices)
+            preds_plot_raw = list_test_preds[plotted_index][:num_test_points]
+            target_plot_raw = y_test_list[plotted_index][:num_test_points]
+            unc_plot_raw = list_test_unc[plotted_index][:num_test_points]
+            baseline_plot = final_baseline
 
-            # Data is already FULL PRICES from Step 11C - no additional transformation needed!
-            pred_plot_price_flat = preds_plot_raw.flatten()  # Already full prices
-            target_plot_price_flat = target_plot_raw.flatten()  # Already full prices
+            # Data is already real-world prices - use directly for plotting
+            pred_plot_price_flat = preds_plot_raw.flatten()
+            target_plot_price_flat = target_plot_raw.flatten()
             
-            # Uncertainties and baseline are already in correct scale
+            # Use uncertainty and baseline as-is
             unc_plot_denorm_flat = unc_plot_raw.flatten()
             true_plot_price_flat = baseline_plot.flatten()
 
@@ -778,20 +738,27 @@ class STLPipelinePlugin:
             list_predictions, _ = predictor_plugin.predict_with_uncertainty(x_val, mc_samples=mc_samples)
             print(f"Preds list length: {len(list_predictions)}")
             
-            # De-transform validation predictions from log returns to prices
-            use_returns_eval = config.get("use_returns", False)
-            if use_returns_eval and baseline_val_eval is not None:
-                print("De-transforming validation predictions...")
-                for idx in range(len(list_predictions)):
-                    pred_log_returns = list_predictions[idx].flatten()
-                    baseline_values = baseline_val_eval[:len(pred_log_returns)]
-                    
-                    # Convert log returns to prices
-                    pred_log_returns_clipped = np.clip(pred_log_returns, -10, 10)
-                    pred_prices = baseline_values * np.exp(pred_log_returns_clipped)
-                    
-                    # Update list with de-transformed values
-                    list_predictions[idx] = pred_prices.reshape(list_predictions[idx].shape)
+            # Convert predictions to real-world prices using same logic as main pipeline
+            print("Converting validation predictions to real-world prices...")
+            for idx, h in enumerate(config['predicted_horizons']):
+                # Get horizon-specific normalization stats
+                target_mean = target_returns_means[idx]
+                target_std = target_returns_stds[idx]
+                
+                # Convert predictions: normalized -> log returns -> prices
+                pred_normalized = list_predictions[idx].flatten()
+                pred_log_returns = pred_normalized * target_std + target_mean
+                
+                # Ensure consistent array lengths using preprocessor baselines
+                num_val = min(len(pred_log_returns), len(baseline_val_eval))
+                
+                # Convert log returns to real prices using baselines
+                pred_prices = baseline_val_eval[:num_val] * np.exp(pred_log_returns[:num_val])
+                
+                # Update predictions with real prices
+                list_predictions[idx] = pred_prices.reshape(-1, 1)
+                
+                print(f"  H{h}: Converted {num_val} validation points to real prices")
                     
         except Exception as e: 
             print(f"Failed predictions: {e}")
@@ -801,21 +768,11 @@ class STLPipelinePlugin:
             num_val_points = len(list_predictions[0])
             final_dates = list(val_dates[:num_val_points]) if val_dates is not None else list(range(num_val_points))
             output_data = {"DATE_TIME": final_dates}
-            use_returns_eval = config.get("use_returns", False)
-            
-            if use_returns_eval and baseline_val_eval is None: 
-                raise ValueError("Baseline needed.")
             
             for idx, h in enumerate(config['predicted_horizons']):
-                preds_raw = list_predictions[idx][:num_val_points].flatten()  # Flatten preds
-                
-                # Predictions are already de-transformed to prices if use_returns
-                if use_returns_eval:
-                    pred_price = preds_raw.copy()  # Already converted to prices
-                else:
-                    pred_price = preds_raw  # Direct values
-                
-                output_data[f"Prediction_H{h}"] = pred_price.flatten()
+                # Predictions are already real-world prices
+                pred_prices = list_predictions[idx][:num_val_points].flatten()
+                output_data[f"Prediction_H{h}"] = pred_prices
             
             evaluate_df = pd.DataFrame(output_data)
             evaluate_filename = config.get('output_file', 'eval_predictions.csv')
