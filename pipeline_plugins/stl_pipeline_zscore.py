@@ -73,16 +73,17 @@ class STLPipelinePlugin:
         X_val = datasets["x_val"]
         X_test = datasets["x_test"]
         
-        # Extract targets from multi-horizon arrays (clean preprocessor output)
+        # Extract targets from target dictionaries (clean preprocessor output)
         y_train_list = []
         y_val_list = []
         y_test_list = []
         
         for idx, h in enumerate(predicted_horizons):
-            # Use normalized log return targets directly from preprocessor
-            y_train_list.append(datasets["y_train"][:, idx] if datasets["y_train"].ndim > 1 else datasets["y_train"])
-            y_val_list.append(datasets["y_val"][:, idx] if datasets["y_val"].ndim > 1 else datasets["y_val"])
-            y_test_list.append(datasets["y_test"][:, idx] if datasets["y_test"].ndim > 1 else datasets["y_test"])
+            # Target data is returned as dictionaries with horizon keys
+            horizon_key = f'output_horizon_{h}'
+            y_train_list.append(datasets["y_train"][horizon_key])
+            y_val_list.append(datasets["y_val"][horizon_key])
+            y_test_list.append(datasets["y_test"][horizon_key])
         
         train_dates = datasets.get("y_train_dates")
         val_dates = datasets.get("y_val_dates")
