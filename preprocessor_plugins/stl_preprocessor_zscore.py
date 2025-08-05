@@ -80,7 +80,11 @@ class STLPreprocessorZScore:
         
         # 7. Create SECOND sliding windows matrix from processed datasets (for model input only)
         print("Step 7: Create second sliding windows from processed datasets")
-        final_sliding_windows = self._create_final_sliding_windows(processed_data, config)
+        second_sliding_windows = self._create_final_sliding_windows(processed_data, config)
+        
+        # 8. Apply anti-naive-lock transformations to SECOND sliding windows (correct way)
+        print("Step 8: Apply anti-naive-lock to second sliding windows")
+        final_sliding_windows = self._apply_anti_naive_lock_to_sliding_windows(second_sliding_windows, config)
         
         # Align final sliding windows with targets
         self._align_sliding_windows_with_targets(final_sliding_windows, targets)
@@ -206,43 +210,38 @@ class STLPreprocessorZScore:
         return baselines
     
     def _apply_anti_naive_lock_to_datasets(self, denormalized_data, config):
-        """Step 6: Apply anti-naive-lock transformations to denormalized datasets to create 'processed data'."""
+        """Step 6: Skip anti-naive-lock on datasets - apply it to sliding windows instead."""
+        # Don't apply anti-naive-lock to raw datasets, apply it to sliding windows
+        return denormalized_data
+    
+    def _apply_anti_naive_lock_to_sliding_windows(self, sliding_windows, config):
+        """Step 8: Apply anti-naive-lock transformations to sliding windows matrices (CORRECT WAY)."""
         if not config.get("anti_naive_lock_enabled", True):
-            return denormalized_data
+            return sliding_windows
         
-        print("  Applying anti-naive-lock transformations to denormalized datasets...")
-        processed = {}
+        print("  Applying anti-naive-lock to sliding windows matrices...")
         
-        for split in ['train', 'val', 'test']:
-            x_key = f'x_{split}_df'
-            y_key = f'y_{split}_df'
-            
-            if x_key in denormalized_data:
-                x_df = denormalized_data[x_key]
-                feature_names = list(x_df.columns)
-                
-                # Apply anti-naive-lock transformations to the dataframe values
-                # Convert dataframe to matrix format for anti-naive-lock processor
-                x_matrix = x_df.values.reshape(1, len(x_df), len(feature_names))
-                
-                # Apply transformations
-                processed_matrix, _, _, _ = self.anti_naive_lock_processor.process_sliding_windows(
-                    x_matrix, x_matrix, x_matrix, feature_names, config
-                )
-                
-                # Convert back to DataFrame (processed data)
-                processed[x_key] = pd.DataFrame(
-                    processed_matrix[0], 
-                    index=x_df.index, 
-                    columns=feature_names
-                )
-                print(f"    Processed {split} data with anti-naive-lock")
-            
-            # Y data unchanged
-            if y_key in denormalized_data:
-                processed[y_key] = denormalized_data[y_key]
+        # Extract sliding window matrices
+        X_train = sliding_windows.get('X_train', np.array([]))
+        X_val = sliding_windows.get('X_val', np.array([]))
+        X_test = sliding_windows.get('X_test', np.array([]))
+        feature_names = sliding_windows['feature_names']
         
-        return processed
+        # Apply anti-naive-lock transformations to sliding windows (correct format)
+        X_train_processed, X_val_processed, X_test_processed, stats = \
+            self.anti_naive_lock_processor.process_sliding_windows(
+                X_train, X_val, X_test, feature_names, config
+            )
+        
+        # Update sliding windows with processed matrices
+        processed_sliding_windows = sliding_windows.copy()
+        processed_sliding_windows['X_train'] = X_train_processed
+        processed_sliding_windows['X_val'] = X_val_processed
+        processed_sliding_windows['X_test'] = X_test_processed
+        
+        print(f"    Applied anti-naive-lock to sliding windows: {stats.get('summary', {})}")
+        
+        return processed_sliding_windows
     
     def _create_final_sliding_windows(self, processed_data, config):
         """Step 7: Create SECOND sliding windows from processed datasets (anti-naive-lock applied data)."""
