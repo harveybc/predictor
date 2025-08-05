@@ -29,7 +29,7 @@ class TargetCalculationProcessor:
         predicted_horizons = config['predicted_horizons']
         target_column = config.get('target_column', 'CLOSE')
         use_returns = config.get('use_returns', True)
-        window_size = config.get('window_size', 48)
+        window_size = config.get('window_size', 48)  # CRITICAL FIX: Get window_size from config
         
         # Load normalization parameters
         norm_json = load_normalization_json(config)
@@ -61,29 +61,37 @@ class TargetCalculationProcessor:
                 print(f"Empty baselines for {split}")
                 continue
             
-            # Get future prices for target calculation
-            y_df = baseline_data[f'y_{split}_df']
-            future_prices = y_df[target_column].values.astype(np.float32)
+            # CRITICAL FIX: Use the correct data source for target calculation
+            # Get the original denormalized data that aligns with sliding window creation
+            x_df = baseline_data[f'x_{split}_df']  # Use x_df since it contains the target column
+            price_series = x_df[target_column].values.astype(np.float32)
             
-            # Calculate targets for each horizon
+            # Calculate targets for each horizon with correct temporal alignment
             for i, horizon in enumerate(predicted_horizons):
                 horizon_targets = []
                 
+                # CRITICAL FIX: Correct temporal alignment
+                # Baselines are extracted from sliding windows ending at time t
+                # Each baseline j corresponds to window ending at time (window_size-1+j)  
+                # For horizon h, we want log(price[t+h] / baseline[t])
+                
                 for j in range(len(baselines)):
-                    future_idx = j + horizon
-                    if future_idx < len(future_prices):
+                    # Baseline j is from sliding window ending at time (window_size-1+j)
+                    baseline_time_idx = window_size - 1 + j
+                    future_time_idx = baseline_time_idx + horizon
+                    
+                    if future_time_idx < len(price_series):
                         baseline_price = baselines[j]
-                        future_price = future_prices[future_idx]
+                        future_price = price_series[future_time_idx]
                         
-                        # Calculate log return
+                        # Calculate log return: log(price[t+h] / baseline[t])
                         if baseline_price > 0 and future_price > 0:
                             log_return = np.log(future_price / baseline_price)
                             horizon_targets.append(log_return)
                         else:
-                            # Skip invalid prices
                             horizon_targets.append(np.nan)
                     else:
-                        # Not enough future data
+                        # Not enough future data - stop here
                         break
                 
                 # Store targets for this horizon

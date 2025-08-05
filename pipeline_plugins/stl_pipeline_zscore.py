@@ -73,13 +73,13 @@ class STLPipelinePlugin:
         X_val = datasets["x_val"]
         X_test = datasets["x_test"]
         
-        # Extract targets from target dictionaries (clean preprocessor output)
+        # Extract targets from target dictionaries (structured by horizon)
         y_train_list = []
         y_val_list = []
         y_test_list = []
         
         for idx, h in enumerate(predicted_horizons):
-            # Target data is returned as dictionaries with horizon keys
+            # Target data is structured as dictionaries with horizon keys
             horizon_key = f'output_horizon_{h}'
             y_train_list.append(datasets["y_train"][horizon_key])
             y_val_list.append(datasets["y_val"][horizon_key])
@@ -134,21 +134,20 @@ class STLPipelinePlugin:
         baseline_train = datasets.get("baseline_train")
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
-        test_close_prices = datasets.get("test_close_prices")  # Future prices for target calculation
         
-        # Verify test dates are available for output
-        if test_dates is None or len(test_dates) == 0:
-            print(f"WARNING: test_dates not available from preprocessor - using indices for output")
-        
-        # Get target normalization stats from preprocessor_params (now lists per horizon)
+        # Get target normalization stats from preprocessor (lists per horizon)
         if "target_returns_means" not in preprocessor_params or "target_returns_stds" not in preprocessor_params:
-            raise ValueError("Preprocessor did not return 'target_returns_means' or 'target_returns_stds'. Check preprocessor configuration and execution.")
+            raise ValueError("Preprocessor did not return target normalization stats. Check preprocessor execution.")
         target_returns_means = preprocessor_params["target_returns_means"]
         target_returns_stds = preprocessor_params["target_returns_stds"]
         
         use_returns = config.get("use_returns", False)
         if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None): 
-            raise ValueError("Baselines required when use_returns=True.")
+            raise ValueError("Baselines required for log return calculation when use_returns=True.")
+        
+        # Verify test dates are available for output
+        if test_dates is None or len(test_dates) == 0:
+            print(f"WARNING: test_dates not available from preprocessor - using indices for output")
 
         # Config Validation & Setup
         plotted_horizon = config.get('plotted_horizon')
@@ -255,13 +254,6 @@ class STLPipelinePlugin:
                 print(f"  H{h}: Converted {num_train} train, {num_val} val points to real prices")
             
             print("✅ All data converted to real-world prices for evaluation")
-
-
-
-            # POST-PROCESSING SECTION OF PREDICTION PIPELINE
-            # NOTE: Predictions are now FULL PRICES after de-transformation above
-            # END OF POST-PROCESSING SECTION
-
 
             # Calculate Train/Validation metrics using real-world prices
             can_calc_train_stats = all(len(lst) == num_outputs for lst in [real_train_price_preds, real_train_price_uncertainties])
@@ -475,172 +467,134 @@ class STLPipelinePlugin:
         except Exception as e: 
             print(f"ERROR saving results: {e}")
 
-        # --- Save Final Test Outputs (Separate Files - CORRECTED & VERIFIED) ---
-        print("\n--- Saving Final Test Outputs (Predictions & Uncertainties Separately) ---")
+        # --- Save Final Test Outputs (Predictions & Uncertainties) ---
+        print("\n--- Saving Final Test Outputs ---")
         try:
-            # Use last iteration's results stored in loop-scoped variables
+            # Use last iteration's results
             if list_test_preds is None or list_test_unc is None: 
-                raise ValueError("Test preds/unc from last iter unavailable.")
+                raise ValueError("Test predictions/uncertainties unavailable from last iteration.")
             final_predictions = list_test_preds
             final_uncertainties = list_test_unc
 
-            # Determine consistent length
-            arrays_to_check_len = [final_predictions[0], baseline_test]
+            # Determine consistent length for output
+            num_test_points = min(len(final_predictions[0]), len(baseline_test))
             if test_dates is not None:
-                arrays_to_check_len.append(test_dates)
-            num_test_points = min(len(arr) for arr in arrays_to_check_len if arr is not None)
-            print(f"Determined consistent output length: {num_test_points}")
+                num_test_points = min(num_test_points, len(test_dates))
+            print(f"Output length: {num_test_points}")
             
-            # Use proper dates from preprocessor (last element timestamps from sliding windows)
+            # Prepare output dates
             if test_dates is not None and len(test_dates) > 0:
                 final_dates = list(test_dates[:num_test_points])
-                print(f"Using proper dates from preprocessor: {len(final_dates)} dates")
-                print(f"Sample preprocessor dates: {final_dates[:3] if len(final_dates) >= 3 else final_dates}")
+                print(f"Using {len(final_dates)} dates from preprocessor")
             else:
-                print("ERROR: No test_dates from preprocessor! Preprocessor should return last element timestamps from sliding windows.")
-                print("This indicates a problem in the preprocessor - dates should be extracted from DATE_TIME column")
-                print("Creating fallback range as last resort...")
+                print("ERROR: No test_dates from preprocessor! Using fallback indices.")
                 final_dates = list(range(num_test_points))
-            final_baseline = baseline_test[:num_test_points].flatten() if baseline_test is not None else None  # Flatten baseline here
+                
+            final_baseline = baseline_test[:num_test_points].flatten()
 
-            # Check if final_baseline is valid
-            if final_baseline is None or len(final_baseline) == 0:
-                print(f"ERROR: baseline_test is empty - plotting may fail!")
-                # Try to create a fallback baseline from predictions
+            # Validate baseline data
+            if len(final_baseline) == 0:
+                print(f"ERROR: Empty baseline_test - cannot generate outputs!")
                 if len(list_test_preds[0]) > 0:
                     fallback_value = np.mean(list_test_preds[0][:10]) if len(list_test_preds[0]) > 10 else 1000.0
                     final_baseline = np.full(num_test_points, fallback_value)
-                    print(f"  Using fallback baseline with value: {fallback_value}")
+                    print(f"Using fallback baseline value: {fallback_value}")
                 else:
-                    raise ValueError("No baseline data available for plotting and no fallback possible")
+                    raise ValueError("No baseline data available and no fallback possible")
 
-            # Prepare dictionaries
+            # Prepare output dictionaries
             output_data = {"DATE_TIME": final_dates}
             uncertainty_data = {"DATE_TIME": final_dates}
 
-            # Add denormalized test CLOSE price (baseline is already denormalized)
-            try: 
-                denorm_test_close = final_baseline if final_baseline is not None else np.full(num_test_points, np.nan)
-            except Exception as e: 
-                print(f"WARN: Error using test_CLOSE: {e}")
-                denorm_test_close = np.full(num_test_points, np.nan)
-            output_data["test_CLOSE"] = denorm_test_close.flatten()
+            # Add baseline price column
+            output_data["test_CLOSE"] = final_baseline.flatten()
 
-            # Process each horizon using real-world price data
+            # Process each horizon - add real-world price data to output
             for idx, h in enumerate(predicted_horizons):
-                # Get real-world price data (already converted)
-                preds_raw = real_test_price_preds[idx][:num_test_points].flatten()
-                target_raw = real_test_price_targets[idx][:num_test_points].flatten()
-                unc_raw = real_test_price_uncertainties[idx][:num_test_points].flatten()
-
-                # Data is already in real-world price scale - use directly
-                pred_price_denorm = preds_raw.copy()
-                target_price_denorm = target_raw.copy()
-                unc_denorm = unc_raw.copy()
+                # Use real-world price data (already converted correctly)
+                pred_prices = real_test_price_preds[idx][:num_test_points].flatten()
+                target_prices = real_test_price_targets[idx][:num_test_points].flatten()
+                price_uncertainties = real_test_price_uncertainties[idx][:num_test_points].flatten()
                 
-                # Add flattened results
-                output_data[f"Target_H{h}"] = target_price_denorm
-                output_data[f"Prediction_H{h}"] = pred_price_denorm
-                uncertainty_data[f"Uncertainty_H{h}"] = unc_denorm
+                # Add to output dictionaries
+                output_data[f"Target_H{h}"] = target_prices
+                output_data[f"Prediction_H{h}"] = pred_prices
+                uncertainty_data[f"Uncertainty_H{h}"] = price_uncertainties
 
-            # --- Save Predictions DataFrame (output_file) ---
+            # --- Save Predictions CSV ---
             output_file = config.get("output_file", self.params["output_file"])
             try:
-                if len(set(len(v) for v in output_data.values())) > 1: 
-                    raise ValueError("Length mismatch (Predictions).")
+                # Validate consistent lengths
+                lengths = [len(v) for v in output_data.values()]
+                if len(set(lengths)) > 1: 
+                    raise ValueError(f"Length mismatch in output data: {dict(zip(output_data.keys(), lengths))}")
                 
+                # Create and save DataFrame
                 output_df = pd.DataFrame(output_data)
-                cols_order = ['DATE_TIME', 'test_CLOSE'] if 'test_CLOSE' in output_df else ['DATE_TIME']
-                [cols_order.extend([f"Target_H{h}", f"Prediction_H{h}"]) for h in predicted_horizons]
+                cols_order = ['DATE_TIME', 'test_CLOSE']
+                for h in predicted_horizons:
+                    cols_order.extend([f"Target_H{h}", f"Prediction_H{h}"])
                 output_df = output_df.reindex(columns=[c for c in cols_order if c in output_df.columns])
                 
                 write_csv(file_path=output_file, data=output_df, include_date=False, headers=True)
-                print(f"Predictions/Targets saved: {output_file} ({len(output_df)} rows)")
-            except ImportError: 
-                print(f"WARN: write_csv not found. Skip save: {output_file}.")
-            except ValueError as ve: 
-                print(f"ERROR creating/saving predictions CSV: {ve}")
+                print(f"Predictions saved: {output_file} ({len(output_df)} rows)")
             except Exception as e: 
                 print(f"ERROR saving predictions CSV: {e}")
 
-            # --- Save Uncertainties DataFrame (uncertainties_file) ---
+            # --- Save Uncertainties CSV ---
             uncertainties_file = config.get("uncertainties_file", self.params.get("uncertainties_file"))
             if uncertainties_file:
                 try:
-                    if len(set(len(v) for v in uncertainty_data.values())) > 1: 
-                        raise ValueError("Length mismatch (Uncertainty).")
+                    # Validate consistent lengths
+                    lengths = [len(v) for v in uncertainty_data.values()]
+                    if len(set(lengths)) > 1: 
+                        raise ValueError(f"Length mismatch in uncertainty data: {dict(zip(uncertainty_data.keys(), lengths))}")
                     
+                    # Create and save DataFrame
                     uncertainty_df = pd.DataFrame(uncertainty_data)
-                    cols_order = ['DATE_TIME']
-                    [cols_order.append(f"Uncertainty_H{h}") for h in predicted_horizons]
+                    cols_order = ['DATE_TIME'] + [f"Uncertainty_H{h}" for h in predicted_horizons]
                     uncertainty_df = uncertainty_df.reindex(columns=[c for c in cols_order if c in uncertainty_df.columns])
                     
                     write_csv(file_path=uncertainties_file, data=uncertainty_df, include_date=False, headers=True)
                     print(f"Uncertainties saved: {uncertainties_file} ({len(uncertainty_df)} rows)")
-                except ImportError: 
-                    print(f"WARN: write_csv not found. Skip save: {uncertainties_file}.")
-                except ValueError as ve: 
-                    print(f"ERROR creating/saving uncertainties CSV: {ve}")
                 except Exception as e: 
                     print(f"ERROR saving uncertainties CSV: {e}")
             else: 
-                print("INFO: No 'uncertainties_file' specified.")
+                print("No uncertainties_file specified - skipping uncertainty output.")
         except Exception as e: 
-            print(f"ERROR during final CSV saving: {e}")
+            print(f"ERROR during final output saving: {e}")
 
-        # --- Plot Predictions for 'plotted_horizon' (Using real-world price data) ---
+        # --- Generate Prediction Plot for plotted_horizon ---
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
-            # Use real-world price data for plotting
-            preds_plot_raw = real_test_price_preds[plotted_index][:num_test_points]
-            target_plot_raw = real_test_price_targets[plotted_index][:num_test_points]
-            unc_plot_raw = real_test_price_uncertainties[plotted_index][:num_test_points]
-            baseline_plot = final_baseline
+            # Use real-world price data for plotting (already correctly converted)
+            pred_prices_plot = real_test_price_preds[plotted_index][:num_test_points].flatten()
+            target_prices_plot = real_test_price_targets[plotted_index][:num_test_points].flatten()
+            price_uncertainties_plot = real_test_price_uncertainties[plotted_index][:num_test_points].flatten()
+            baseline_prices_plot = final_baseline.flatten()
 
-            # Data is already real-world prices - use directly for plotting
-            pred_plot_price_flat = preds_plot_raw.flatten()
-            target_plot_price_flat = target_plot_raw.flatten()
-            
-            # Use price-scale uncertainty and baseline
-            unc_plot_denorm_flat = unc_plot_raw.flatten()
-            true_plot_price_flat = baseline_plot.flatten()
-
-            # Determine plot points and slice FLATTENED arrays
+            # Prepare plot data with proper slicing
             n_plot = config.get("plot_points", self.params["plot_points"])
-            num_avail_plot = len(pred_plot_price_flat)  # Length of data available for plot
-            plot_slice = slice(max(0, num_avail_plot - n_plot), num_avail_plot)
+            plot_start = max(0, len(pred_prices_plot) - n_plot)
+            plot_slice = slice(plot_start, len(pred_prices_plot))
 
-            # Handle pandas Timestamp objects properly for plotting
-            if len(final_dates) > 0 and hasattr(final_dates[0], 'to_pydatetime'):
-                try:
-                    dates_for_plot = [d.to_pydatetime() if hasattr(d, 'to_pydatetime') else d for d in final_dates]
-                    # Check for large time gaps that might cause plotting issues
-                    if len(dates_for_plot) > 2:
-                        gap1 = dates_for_plot[1] - dates_for_plot[0]
-                        gap2 = dates_for_plot[2] - dates_for_plot[1]
-                        if abs(gap2.total_seconds() - gap1.total_seconds()) > 3600:  # More than 1 hour difference
-                            dates_for_plot = list(range(len(final_dates)))
-                except Exception:
-                    dates_for_plot = list(range(len(final_dates)))
-            else:
-                dates_for_plot = list(range(len(final_dates)))
-            
-            dates_plot_final = dates_for_plot[plot_slice]
-            pred_plot_final = pred_plot_price_flat[plot_slice]
-            target_plot_final = target_plot_price_flat[plot_slice]
-            true_plot_final = true_plot_price_flat[plot_slice]
-            unc_plot_final = unc_plot_denorm_flat[plot_slice]  # This is now 1D
+            # Extract plot data
+            dates_plot = final_dates[plot_slice] if final_dates else list(range(len(pred_prices_plot)))[plot_slice]
+            pred_plot = pred_prices_plot[plot_slice]
+            target_plot = target_prices_plot[plot_slice]
+            baseline_plot = baseline_prices_plot[plot_slice]
+            uncertainty_plot = price_uncertainties_plot[plot_slice]
 
-            # Plotting
+            # Create plot
             plt.figure(figsize=(14, 7))
             
-            plt.plot(dates_plot_final, pred_plot_final, label=f"Pred Price H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
-            plt.plot(dates_plot_final, target_plot_final, label=f"Target Price H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
-            plt.plot(dates_plot_final, true_plot_final, label="Actual Price", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
-            plt.fill_between(dates_plot_final, pred_plot_final - abs(unc_plot_final), pred_plot_final + abs(unc_plot_final),
+            plt.plot(dates_plot, pred_plot, label=f"Pred Price H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
+            plt.plot(dates_plot, target_plot, label=f"Target Price H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
+            plt.plot(dates_plot, baseline_plot, label="Actual Price", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
+            plt.fill_between(dates_plot, pred_plot - np.abs(uncertainty_plot), pred_plot + np.abs(uncertainty_plot),
                              color=config.get("plot_color_uncertainty", "green"), alpha=0.2, label=f"Uncertainty H{plotted_horizon}", zorder=0)
             plt.title(f"Predictions vs Target/Actual (H={plotted_horizon})")
-            plt.xlabel("Time Steps")  # Changed from "Time" since we're using indices
+            plt.xlabel("Time Steps")
             plt.ylabel("Price")
             plt.legend()
             plt.grid(True, alpha=0.6)
@@ -656,7 +610,7 @@ class STLPipelinePlugin:
             traceback.print_exc()
             plt.close()
 
-        # --- Plot/Save Model --- (Keep as is)
+                # --- Save Model Plot (if available) ---
         if plot_model is not None and hasattr(predictor_plugin, 'model') and predictor_plugin.model is not None:
             try: 
                 model_plot_file = config.get('model_plot_file', 'model_plot.png')
@@ -664,10 +618,8 @@ class STLPipelinePlugin:
                 print(f"Model plot saved: {model_plot_file}")
             except Exception as e: 
                 print(f"WARN: Failed model plot: {e}")
-        else: 
-            print("INFO: Skipping model plot.")
 
-        # --- Save Model --- (Keep as is)
+        # --- Save Model ---
         if hasattr(predictor_plugin, 'save') and callable(predictor_plugin.save):
             save_model_file = config.get("save_model", "pretrained_model.keras")
             try: 
@@ -675,8 +627,11 @@ class STLPipelinePlugin:
                 print(f"Model saved: {save_model_file}")
             except Exception as e: 
                 print(f"ERROR saving model: {e}")
-        else: 
-            print("WARN: Predictor has no save method.")
+
+        print(f"\n=== Pipeline Complete (Total: {time.time() - start_time:.2f}s) ===")
+        return {}
+
+    def load_and_evaluate_model(self, config, predictor_plugin, preprocessor_plugin):
 
         print(f"\nTotal Pipeline Execution Time: {time.time() - start_time:.2f} seconds")
 

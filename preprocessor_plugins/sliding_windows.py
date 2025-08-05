@@ -13,16 +13,16 @@ class SlidingWindowsProcessor:
     
     def create_sliding_windows(self, data, window_size, time_horizon, date_times=None):
         """
-        Creates sliding windows from data with proper temporal alignment.
+        Creates sliding windows with correct temporal alignment for target calculation.
         
-        CRITICAL: First window starts at t=window_size to ensure complete windows only.
-        Each window contains data[t-window_size+1:t+1] where t is the current tick.
-        The baseline for each window is the LAST value in the window (data[t]).
+        CRITICAL: Each window contains data[t-window_size+1:t+1] where t is the current tick.
+        The baseline is data[t] (last element of window).
+        Target calculation uses baseline[t] to predict price[t+horizon].
         
         Args:
             data: 1D array of values
             window_size: Size of each window  
-            time_horizon: Maximum time horizon for predictions (affects available windows)
+            time_horizon: Maximum time horizon for predictions
             date_times: Optional datetime index for the data
             
         Returns:
@@ -33,44 +33,30 @@ class SlidingWindowsProcessor:
         date_windows = []
         n = len(data)
         
-        # CRITICAL FIX: Calculate available windows correctly
-        # We need at least window_size + time_horizon data points
-        # First window starts at index window_size-1 (0-based), last usable data at n-time_horizon-1
-        max_start_index = n - time_horizon - 1  # Last index where we can place a window baseline
-        min_start_index = window_size - 1      # First index where we can have a complete window
+        # Calculate usable range: need window_size + time_horizon data points total
+        # First window baseline at index window_size-1, last baseline at n-time_horizon-1
+        min_baseline_idx = window_size - 1
+        max_baseline_idx = n - time_horizon - 1
         
-        if max_start_index < min_start_index:
-            print(f" WARN: Insufficient data ({n}) for Win={window_size}+Horizon={time_horizon}. Need at least {window_size + time_horizon}.")
+        if max_baseline_idx < min_baseline_idx:
+            print(f" WARN: Insufficient data ({n}) for Win={window_size}+Horizon={time_horizon}. Need {window_size + time_horizon}.")
             return np.array(windows, dtype=np.float32), np.array(date_windows, dtype=object)
         
-        num_possible_windows = max_start_index - min_start_index + 1
-        
-        # Create windows: each window ends at current tick t, contains [t-window_size+1:t+1]
-        for t in range(min_start_index, max_start_index + 1):
-            window_start = t - window_size + 1
-            window_end = t + 1
+        # Create windows: each window ends at baseline time t
+        for baseline_idx in range(min_baseline_idx, max_baseline_idx + 1):
+            window_start = baseline_idx - window_size + 1
+            window_end = baseline_idx + 1
             window = data[window_start:window_end]
             windows.append(window)
             
-            # Date corresponds to the current tick (end of window) - this is the baseline time
-            if date_times is not None:
-                if t < len(date_times): 
-                    date_windows.append(date_times[t])
-                else: 
-                    date_windows.append(None)
-        
-        if date_times is not None:
-            date_windows_arr = np.array(date_windows, dtype=object)
-            # CRITICAL FIX: Don't convert to numpy.datetime64 - keep as pandas Timestamp objects for matplotlib compatibility
-            # The numpy.datetime64 format with gaps causes matplotlib plotting issues
-            if all(isinstance(d, pd.Timestamp) for d in date_windows if d is not None):
-                print(f"  Keeping {len(date_windows)} dates as pandas Timestamp objects for plotting compatibility")
-                # Keep as object array with pandas Timestamps - matplotlib handles these better
-                pass  # date_windows_arr already set as object array above
+            # Date corresponds to baseline time (last element of window)
+            if date_times is not None and baseline_idx < len(date_times):
+                date_windows.append(date_times[baseline_idx])
             else:
-                print(f"  Warning: Some dates are not pandas Timestamps: {[type(d) for d in date_windows[:3]]}")
-        else: 
-            date_windows_arr = np.array(date_windows, dtype=object)
+                date_windows.append(None)
+        
+        # Keep dates as pandas Timestamps for matplotlib compatibility
+        date_windows_arr = np.array(date_windows, dtype=object)
         
         print(f" Done ({len(windows)} windows).")
         return np.array(windows, dtype=np.float32), date_windows_arr

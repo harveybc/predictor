@@ -156,7 +156,7 @@ class STLPreprocessorZScore:
         return self.sliding_windows_processor.generate_windowed_features(prepared_data, config)
     
     def _extract_baselines_from_windows(self, sliding_windows, config):
-        """Step 4: Extract baselines (last elements of each window for target column)."""
+        """Step 4: Extract baselines (last elements of each window for target column) with correct temporal alignment."""
         target_column = config['target_column']
         feature_names = sliding_windows['feature_names']
         
@@ -168,15 +168,27 @@ class STLPreprocessorZScore:
         
         for split in ['train', 'val', 'test']:
             X_key = f'X_{split}'
+            dates_key = f'x_dates_{split}'
             if X_key in sliding_windows:
                 X_matrix = sliding_windows[X_key]
                 if X_matrix.shape[0] > 0:
-                    # Extract last element of each window for target column
-                    baselines[f'baseline_{split}'] = X_matrix[:, -1, target_index]
-                    baselines[f'baseline_{split}_dates'] = sliding_windows.get(f'x_dates_{split}')
+                    # Extract last element of each window for target column (this is the baseline at time t)
+                    baseline_prices = X_matrix[:, -1, target_index]
+                    baselines[f'baseline_{split}'] = baseline_prices
+                    
+                    # Baseline dates correspond to the time when the baseline price occurs
+                    # This should be the date of the last element in each sliding window
+                    if dates_key in sliding_windows:
+                        baseline_dates = sliding_windows[dates_key]
+                        baselines[f'baseline_{split}_dates'] = baseline_dates
+                    else:
+                        baselines[f'baseline_{split}_dates'] = None
+                        
+                    print(f"  Extracted {len(baseline_prices)} baselines for {split}")
                 else:
                     baselines[f'baseline_{split}'] = np.array([])
                     baselines[f'baseline_{split}_dates'] = np.array([])
+                    print(f"  No data for {split} baseline extraction")
         
         return baselines
     
