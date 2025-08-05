@@ -32,7 +32,7 @@
     "kl_weight": 1e-4,
     "kl_anneal_epochs": 40,
     "early_patience": 120,
-    "start_from_epoch": 15,
+    "start_from_epoch": 5,
     "use_returns": true,
     "mc_samples":20,
     "plotted_horizon": 6,
@@ -53,7 +53,7 @@
     "use_stl": false,
     "use_wavelets": false,
     "excluded_columns": [],
-    "target_factor": 10,
+    "target_factor": 100,
     "loss_factor": 1,
     "use_multi_tapper": false,
     "_comment_anti_naive_lock": "Anti-naive-lock preprocessing configuration",
@@ -63,27 +63,81 @@
     "use_first_differences": true,
     "preserve_stationary_indicators": true,
     "handle_constant_daily_features": true,
-    "feature_preprocessing_strategy": "selective",
+    "feature_preprocessing_strategy": "none",
     "normalize_after_preprocessing": false,
-    
     "_comment_feature_categories": "SMART ANTI-NAIVE-LOCK: Transform price features to preserve info while eliminating naive lock",
-    "price_features": ["OPEN", "LOW", "HIGH"],
-    "temporal_features": ["day_of_week", "hour_of_day", "day_of_month"],
-    "trend_features": ["stl_trend"],
-    "stationary_indicators": ["RSI", "MACD", "MACD_Histogram", "MACD_Signal", "EMA", 
-                              "Stochastic_%K", "Stochastic_%D", "ADX", "DI+", "DI-", 
-                              "ATR", "CCI", "WilliamsR", "Momentum", "ROC"],
-    "candlestick_patterns": ["BC-BO", "BH-BL", "BH-BO", "BO-BL"],
-    "constant_daily_features": ["S&P500_Close", "vix_close"],
-    "decomposed_features": ["stl_seasonal", "stl_residual"],
-    "wavelet_features": ["CLOSE_wav_detail_L1", "CLOSE_wav_detail_L2", "CLOSE_wav_approx_L2"],
-    "mtm_features": ["CLOSE_mtm_band_1_0.000_0.010", "CLOSE_mtm_band_2_0.010_0.060", 
-                     "CLOSE_mtm_band_3_0.060_0.200", "CLOSE_mtm_band_4_0.200_0.500"],
-    "subperiodicity_features": ["CLOSE_15m_tick_1", "CLOSE_15m_tick_2", "CLOSE_15m_tick_3", 
-                                "CLOSE_15m_tick_4", "CLOSE_15m_tick_5", "CLOSE_15m_tick_6",
-                                "CLOSE_15m_tick_7", "CLOSE_15m_tick_8", "CLOSE_30m_tick_1",
-                                "CLOSE_30m_tick_2", "CLOSE_30m_tick_3", "CLOSE_30m_tick_4",
-                                "CLOSE_30m_tick_5", "CLOSE_30m_tick_6", "CLOSE_30m_tick_7",
-                                "CLOSE_30m_tick_8"]
-
+    "price_features": [
+        "OPEN",
+        "LOW",
+        "HIGH"
+    ],
+    "temporal_features": [
+        "day_of_week",
+        "hour_of_day",
+        "day_of_month"
+    ],
+    "trend_features": [
+        "stl_trend"
+    ],
+    "stationary_indicators": [
+        "RSI",
+        "MACD",
+        "MACD_Histogram",
+        "MACD_Signal",
+        "EMA",
+        "Stochastic_%K",
+        "Stochastic_%D",
+        "ADX",
+        "DI+",
+        "DI-",
+        "ATR",
+        "CCI",
+        "WilliamsR",
+        "Momentum",
+        "ROC"
+    ],
+    "candlestick_patterns": [
+        "BC-BO",
+        "BH-BL",
+        "BH-BO",
+        "BO-BL"
+    ],
+    "constant_daily_features": [
+        "S&P500_Close",
+        "vix_close"
+    ],
+    "decomposed_features": [
+        "stl_seasonal",
+        "stl_residual"
+    ],
+    "wavelet_features": [
+        "CLOSE_wav_detail_L1",
+        "CLOSE_wav_detail_L2",
+        "CLOSE_wav_approx_L2"
+    ],
+    "mtm_features": [
+        "CLOSE_mtm_band_1_0.000_0.010",
+        "CLOSE_mtm_band_2_0.010_0.060",
+        "CLOSE_mtm_band_3_0.060_0.200",
+        "CLOSE_mtm_band_4_0.200_0.500"
+    ],
+    "subperiodicity_features": [
+        "CLOSE_15m_tick_1",
+        "CLOSE_15m_tick_2",
+        "CLOSE_15m_tick_3",
+        "CLOSE_15m_tick_4",
+        "CLOSE_15m_tick_5",
+        "CLOSE_15m_tick_6",
+        "CLOSE_15m_tick_7",
+        "CLOSE_15m_tick_8",
+        "CLOSE_30m_tick_1",
+        "CLOSE_30m_tick_2",
+        "CLOSE_30m_tick_3",
+        "CLOSE_30m_tick_4",
+        "CLOSE_30m_tick_5",
+        "CLOSE_30m_tick_6",
+        "CLOSE_30m_tick_7",
+        "CLOSE_30m_tick_8"
+    ],
+    "callback_weighting_strategy": "uniform"
 }
