@@ -503,13 +503,18 @@ class AntiNaiveLockProcessor:
                     print(f"  Applied cyclic encoding to {column}")
                     
                 elif column in price_features and config.get('use_log_returns', True):
-                    # Apply log returns to price features
-                    safe_values = np.where(processed_df[column] <= 0, 1e-8, processed_df[column])
-                    log_returns = np.zeros_like(safe_values)
-                    log_returns[1:] = np.log(safe_values[1:] / safe_values[:-1])
-                    processed_df[column] = log_returns
-                    transforms_applied += 1
-                    print(f"  Applied log returns to {column}")
+                    # Only apply log returns to price features if they're NOT the target column
+                    target_column = config.get('target_column', 'CLOSE')
+                    if column != target_column:
+                        # Apply log returns to price features (not target)
+                        safe_values = np.where(processed_df[column] <= 0, 1e-8, processed_df[column])
+                        log_returns = np.zeros_like(safe_values)
+                        log_returns[1:] = np.log(safe_values[1:] / safe_values[:-1])
+                        processed_df[column] = log_returns
+                        transforms_applied += 1
+                        print(f"  Applied log returns to {column}")
+                    else:
+                        print(f"  Preserved target column {column} (no log returns)")
                     
                 elif column in stationary_indicators:
                     # Preserve stationary indicators as they are already processed

@@ -184,17 +184,16 @@ class PreprocessorPlugin:
             x_df = aligned_data[f'x_{split}_df']
             y_df = aligned_data[f'y_{split}_df']
             
-            # Store DENORMALIZED dataframes (aligned_data was denormalized in step 2.5)
+            # Store DENORMALIZED dataframes (aligned_data was denormalized in step 1)
             baseline_data[f'x_{split}_df'] = x_df  # These are now denormalized
             baseline_data[f'y_{split}_df'] = y_df  # These are now denormalized
             
-            # CLOSE prices are now DENORMALIZED (from step 2.5) - sliding windows will contain real prices
+            # CLOSE prices are now DENORMALIZED (from step 1) - sliding windows will contain real prices
             close_denormalized = x_df["CLOSE"].astype(np.float32).values
             baseline_data[f'close_{split}'] = close_denormalized  # Store denormalized for consistency
             
-            # Extract, denormalize and trim target column for baseline usage
-            target_from_y_normalized = y_df[target_column].astype(np.float32).values
-            target_from_y_denormalized = denormalize(target_from_y_normalized, norm_json, target_column)
+            # Extract target column - ALREADY DENORMALIZED in step 1, no need to denormalize again
+            target_from_y_denormalized = y_df[target_column].astype(np.float32).values
             
             # Trim first window_size-1 elements to align with sliding windows
             target_from_y_trimmed = target_from_y_denormalized[window_size-1:]
@@ -460,12 +459,22 @@ class PreprocessorPlugin:
         print("\n--- STEP 5: Apply Selective Preprocessing to INPUT DATA ---")
         preprocessed_data = self._apply_selective_preprocessing(aligned_denorm_data, config)
         
-        # --- STEP 6: Z-score Normalize using TRAINING SET parameters ---
-        print("\n--- STEP 6: Z-score Normalize using TRAINING SET parameters ---")
-        normalized_data, training_norm_params = self._normalize_with_training_params(preprocessed_data)
+        # --- STEP 6: CONDITIONAL Z-score Normalize using TRAINING SET parameters ---
+        print("\n--- STEP 6: CONDITIONAL Z-score Normalize using TRAINING SET parameters ---")
         
-        # --- STEP 7: Normalize Val/Test using Training Normalization Parameters ---
-        print("\n--- STEP 7: Already done in step 6 ---")
+        # Check if normalization should be applied after preprocessing
+        should_normalize = config.get("normalize_after_preprocessing", False)
+        
+        if should_normalize:
+            print("Config enables post-preprocessing normalization - applying z-score normalization")
+            normalized_data, training_norm_params = self._normalize_with_training_params(preprocessed_data)
+        else:
+            print("Config disables post-preprocessing normalization - skipping normalization step")
+            normalized_data = preprocessed_data  # Use preprocessed data as-is
+            training_norm_params = {}  # No normalization parameters
+        
+        # --- STEP 7: Already handled in step 6 based on configuration ---
+        print("\n--- STEP 7: Post-processing normalization handled in step 6 ---")
         
         # --- STEP 8: Create Sliding Windows Matrix with Normalized Preprocessed Data ---
         print("\n--- STEP 8: Create Sliding Windows Matrix with Normalized Preprocessed Data ---")
