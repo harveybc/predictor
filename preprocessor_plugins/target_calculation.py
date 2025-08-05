@@ -215,18 +215,32 @@ class TargetCalculationProcessor:
                 baseline_dates[split] = np.array([])
                 continue
             
-            # Extract baselines from sliding windows matrix (these are ALREADY DENORMALIZED)
-            # The sliding windows contain DENORMALIZED features from our preprocessing
-            print(f"  🎯 Extracting baselines from DENORMALIZED sliding windows matrix...")
+            # Extract baselines from sliding windows matrix 
+            # CRITICAL: These baselines come from the PROCESSED sliding windows 
+            # (after anti-naive-lock transformations) that will feed the model
+            print(f"  🎯 Extracting baselines from PROCESSED sliding windows matrix...")
             target_windows = X_matrix[:, :, target_feature_index]  # Shape: (num_windows, window_size)
             baselines_from_windows = target_windows[:, -1]  # Last value of each window: (num_windows,)
             
-            print(f"    ✅ Extracted {len(baselines_from_windows)} baselines from sliding windows")
-            print(f"    📊 Baseline stats: mean=${np.mean(baselines_from_windows):.2f}, std=${np.std(baselines_from_windows):.2f}")
+            print(f"    ✅ Extracted {len(baselines_from_windows)} baselines from processed sliding windows")
             
-            # NO DENORMALIZATION NEEDED - sliding windows already contain denormalized data
-            # The baselines are already in real price scale (e.g., $4000-$5000)
-            baselines_denormalized = baselines_from_windows  # These are already denormalized
+            # CRITICAL: These baselines may be in various scales depending on anti-naive-lock processing
+            # We need to denormalize them to real price scale for target calculation
+            print(f"    🔄 DENORMALIZING baselines to real price scale for target calculation...")
+            
+            if target_column in norm_json:
+                # Get original normalization parameters from JSON
+                original_mean = norm_json[target_column]['mean']
+                original_std = norm_json[target_column]['std']
+                
+                # Denormalize: value = normalized * std + mean
+                baselines_denormalized = baselines_from_windows * original_std + original_mean
+                
+                print(f"    ✅ Used JSON params: mean={original_mean:.6f}, std={original_std:.6f}")
+                print(f"    📊 DENORMALIZED baseline stats: mean=${np.mean(baselines_denormalized):.2f}, std=${np.std(baselines_denormalized):.2f}")
+            else:
+                print(f"    ❌ CRITICAL: Target column '{target_column}' not found in normalization JSON!")
+                raise ValueError(f"Missing normalization parameters for target column '{target_column}' in JSON")
             
             # STRICT VALIDATION: Ensure baselines are valid for log returns
             nan_count = np.sum(np.isnan(baselines_denormalized))
