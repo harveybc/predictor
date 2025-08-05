@@ -288,47 +288,64 @@ class TargetCalculationProcessor:
         if use_returns:
             print("Will normalize log return targets using training data statistics...")
             
-            # Calculate normalization stats from ALL training targets
-            train_all_targets = []
-            for split in ['train']:
-                if split in target_data:
-                    for horizon_key in target_data[split]:
-                        if len(target_data[split][horizon_key]) > 0:
-                            train_all_targets.extend(target_data[split][horizon_key])
-            
-            if len(train_all_targets) > 0:
-                target_mean = np.mean(train_all_targets)
-                target_std = np.std(train_all_targets)
-                target_std = max(target_std, 1e-8)  # Prevent division by zero
-                
-                self.target_returns_means = [target_mean] * len(predicted_horizons)
-                self.target_returns_stds = [target_std] * len(predicted_horizons)
-                
-                print(f"Target normalization stats: mean={target_mean:.6f}, std={target_std:.6f}")
-                
-                # Apply normalization to all targets
-                for split in ['train', 'val', 'test']:
-                    if split in target_data:
-                        for horizon_key in target_data[split]:
-                            if len(target_data[split][horizon_key]) > 0:
-                                original_targets = target_data[split][horizon_key]
-                                normalized_targets = (original_targets - target_mean) / target_std
-                                target_data[split][horizon_key] = normalized_targets.astype(np.float32)
-                
-                print("Applied normalization to all target data")
-            else:
-                print("WARNING: No training targets found for normalization")
-                self.target_returns_means = [0.0] * len(predicted_horizons)
-                self.target_returns_stds = [1.0] * len(predicted_horizons)
+            # CRITICAL FIX: Skip early normalization - will be done later in the per-horizon loop
+            # Just initialize the stats arrays
+            self.target_returns_means = [0.0] * len(predicted_horizons)
+            self.target_returns_stds = [1.0] * len(predicted_horizons)
         else:
             # For non-returns, no normalization
             self.target_returns_means = [0.0] * len(predicted_horizons)
             self.target_returns_stds = [1.0] * len(predicted_horizons)
         
-        # Now process all horizons with the SAME normalization AND SAME SAMPLE COUNT
+        # Now process all horizons with PROPER normalization (calculated per horizon from training data)
+        print("\nCalculating normalization statistics from training data and applying to all targets...")
+        
+        # First pass: collect all training targets to calculate global normalization stats
+        all_training_targets = []
+        for i, h in enumerate(predicted_horizons):
+            for split in ['train']:
+                sliding_baselines = denorm_targets[split]
+                if len(sliding_baselines) == 0:
+                    continue
+                
+                max_valid_samples = min_samples_per_split[split]
+                if max_valid_samples <= 0:
+                    continue
+                
+                baseline_values = sliding_baselines[:max_valid_samples]
+                future_values = sliding_baselines[h:h+max_valid_samples]
+                
+                if len(baseline_values) != len(future_values) or len(baseline_values) == 0:
+                    continue
+                
+                if use_returns:
+                    ratio = future_values / baseline_values
+                    if np.any((ratio <= 0) | np.isnan(ratio) | np.isinf(ratio)):
+                        continue
+                    log_returns = np.log(ratio)
+                    all_training_targets.extend(log_returns)
+        
+        # Calculate global normalization stats from all training targets
+        if len(all_training_targets) > 0 and use_returns:
+            global_mean = np.mean(all_training_targets)
+            global_std = np.std(all_training_targets)
+            global_std = max(global_std, 1e-8)  # Prevent division by zero
+            
+            # Use the same stats for all horizons
+            self.target_returns_means = [global_mean] * len(predicted_horizons)
+            self.target_returns_stds = [global_std] * len(predicted_horizons)
+            
+            print(f"Global target normalization stats: mean={global_mean:.6f}, std={global_std:.6f}")
+        else:
+            print("WARNING: No valid training targets found for normalization")
+            self.target_returns_means = [0.0] * len(predicted_horizons)
+            self.target_returns_stds = [1.0] * len(predicted_horizons)
+        
+        # Second pass: process all horizons with consistent normalization
         for i, h in enumerate(predicted_horizons):
             print(f"\nCalculating targets for horizon {h}...")
             
+            # Get normalization stats for this horizon (same for all horizons now)
             mean_h = self.target_returns_means[i]
             std_h = self.target_returns_stds[i]
             
@@ -444,9 +461,14 @@ class TargetCalculationProcessor:
                             print(f"      Index {idx}: baseline={baseline_values[idx]}, future={future_values[idx]}, ratio={ratio[idx]}, log={log_returns[idx]}")
                         raise ValueError(f"CRITICAL: NaN values in log_returns - mathematical error detected!")
                     
-                    # CRITICAL FIX: Use RAW log returns as targets (no double normalization)
-                    # Normalization was already applied earlier in this function to ALL targets
-                    target_normalized = log_returns.astype(np.float32)
+                    # CRITICAL FIX: Apply normalization using global stats (calculated from all training data)
+                    # This ensures consistent normalization across all horizons and splits
+                    if use_returns and len(all_training_targets) > 0:
+                        target_normalized = (log_returns - mean_h) / std_h
+                    else:
+                        target_normalized = log_returns  # No normalization if no training data
+                    
+                    target_normalized = target_normalized.astype(np.float32)
                     
                     # FINAL STRICT NaN CHECK: target_normalized must NEVER have NaN
                     nan_count_final = np.sum(np.isnan(target_normalized))
@@ -460,11 +482,12 @@ class TargetCalculationProcessor:
                         actual_mean = np.mean(target_normalized)
                         actual_std = np.std(target_normalized)
                         print(f"  Sample RAW return targets from sliding windows: [{target_normalized[0]:.6f}, {target_normalized[1]:.6f}, {target_normalized[2]:.6f}]")
-                        print(f"  Target processing: Using PREVIOUSLY NORMALIZED targets (normalized earlier)")
+                        print(f"  Target processing: NORMALIZED using global training stats (mean={mean_h:.6f}, std={std_h:.6f})")
                         print(f"  Actual target stats: mean={actual_mean:.6f}, std={actual_std:.6f}")
-                        print(f"  ✅ TARGETS CALCULATED FROM SLIDING WINDOW BASELINES ONLY")
+                        print(f"  ✅ TARGETS CALCULATED FROM SLIDING WINDOW BASELINES AND PROPERLY NORMALIZED")
                 else:
-                    target_normalized = future_values
+                    # For non-returns case, use future values directly (no normalization typically)
+                    target_normalized = future_values.astype(np.float32)
                 
                 # Store target for this split and horizon
                 horizon_key = f"output_horizon_{h}"

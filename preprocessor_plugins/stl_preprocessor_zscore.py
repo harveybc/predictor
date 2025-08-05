@@ -218,95 +218,6 @@ class PreprocessorPlugin:
         
         return baseline_data
 
-    def _calculate_log_return_targets(self, baselines_denorm, predicted_horizons, config):
-        """Calculate log return targets from denormalized baselines."""
-        print("Calculating log return targets from denormalized baselines...")
-        
-        target_data = {'y_train': {}, 'y_val': {}, 'y_test': {}}
-        
-        # Find minimum sample count across all horizons to ensure consistent lengths
-        min_samples = {}
-        for split in ['train', 'val', 'test']:
-            baselines = baselines_denorm[f'baseline_{split}']
-            if len(baselines) == 0:
-                min_samples[split] = 0
-            else:
-                # Maximum horizon determines minimum samples
-                max_horizon = max(predicted_horizons)
-                min_samples[split] = max(0, len(baselines) - max_horizon)
-        
-        print(f"Minimum sample counts: {min_samples}")
-        
-        for split in ['train', 'val', 'test']:
-            baselines = baselines_denorm[f'baseline_{split}']
-            if len(baselines) == 0 or min_samples[split] == 0:
-                for h in predicted_horizons:
-                    target_data[f'y_{split}'][f'output_horizon_{h}'] = np.array([])
-                continue
-            
-            # Use consistent sample count for all horizons
-            target_length = min_samples[split]
-            
-            for h in predicted_horizons:
-                baseline_values = baselines[:target_length]
-                future_values = baselines[h:h+target_length]
-                
-                # Calculate log returns: log(future/baseline)
-                ratios = future_values / baseline_values
-                
-                # Check for invalid ratios
-                invalid_mask = (ratios <= 0) | np.isnan(ratios) | np.isinf(ratios)
-                if np.any(invalid_mask):
-                    invalid_count = np.sum(invalid_mask)
-                    print(f"WARNING: {invalid_count} invalid ratios in {split} H{h}")
-                    # Replace invalid values with small positive number
-                    ratios[invalid_mask] = 1e-8
-                
-                log_returns = np.log(ratios)
-                target_data[f'y_{split}'][f'output_horizon_{h}'] = log_returns.astype(np.float32)
-                print(f"  {split} H{h}: {len(log_returns)} targets (aligned)")
-        
-        # Normalize targets for stable training (z-score normalization)
-        target_stats = {}
-        normalized_targets = {'y_train': {}, 'y_val': {}, 'y_test': {}}
-        
-        # Calculate normalization stats from training data only
-        train_all_targets = []
-        for horizon_key in target_data['y_train']:
-            train_all_targets.extend(target_data['y_train'][horizon_key])
-        
-        if len(train_all_targets) > 0:
-            target_mean = np.mean(train_all_targets)
-            target_std = np.std(train_all_targets)
-            target_std = max(target_std, 1e-8)  # Prevent division by zero
-            
-            target_stats = {
-                'mean': float(target_mean),
-                'std': float(target_std)
-            }
-            
-            print(f"Target normalization stats: mean={target_mean:.6f}, std={target_std:.6f}")
-            
-            # Apply normalization to all splits and horizons
-            for split in ['train', 'val', 'test']:
-                for horizon_key in target_data[f'y_{split}']:
-                    original_targets = target_data[f'y_{split}'][horizon_key]
-                    normalized = (original_targets - target_mean) / target_std
-                    normalized_targets[f'y_{split}'][horizon_key] = normalized.astype(np.float32)
-            
-            # Update target stats for denormalization
-            target_data['target_returns_means'] = [target_mean] * len(predicted_horizons)
-            target_data['target_returns_stds'] = [target_std] * len(predicted_horizons)
-        else:
-            print("WARNING: No training targets found for normalization")
-            normalized_targets = target_data
-            target_stats = {'mean': 0.0, 'std': 1.0}
-        
-        # Update target_data with normalized targets
-        target_data.update(normalized_targets)
-        target_data['target_normalization_stats'] = target_stats
-        return target_data
-
     def _truncate_to_match_targets(self, windowed_data, target_data):
         """Truncate windowed data to match target data lengths."""
         print("\n--- Final Length Alignment ---")
@@ -390,9 +301,20 @@ class PreprocessorPlugin:
             else:
                 baselines_denorm[f'baseline_{split}'] = np.array([])
         
-        # --- STEP 4: Calculate Targets using Log Returns from Baselines ---
-        print("\n--- STEP 4: Calculate Targets using Log Returns from Baselines ---")
-        target_data = self._calculate_log_return_targets(baselines_denorm, predicted_horizons, config)
+        # --- STEP 4: Calculate Targets using Target Calculation Processor ---
+        print("\n--- STEP 4: Calculate Targets using Target Calculation Processor ---")
+        
+        # Use the target calculation processor to compute targets from sliding window baselines
+        # First prepare baseline data with sliding window baselines
+        baseline_data_denorm['sliding_baseline_train'] = baselines_denorm['baseline_train']
+        baseline_data_denorm['sliding_baseline_val'] = baselines_denorm['baseline_val'] 
+        baseline_data_denorm['sliding_baseline_test'] = baselines_denorm['baseline_test']
+        baseline_data_denorm['sliding_baseline_train_dates'] = windowed_data_denorm.get('x_dates_train')
+        baseline_data_denorm['sliding_baseline_val_dates'] = windowed_data_denorm.get('x_dates_val')
+        baseline_data_denorm['sliding_baseline_test_dates'] = windowed_data_denorm.get('x_dates_test')
+        
+        # Calculate targets using the proper target calculation processor
+        target_data = self.target_calculation_processor.calculate_targets(baseline_data_denorm, windowed_data_denorm, config)
         
         # --- STEP 5: REMOVED - Skip Selective Preprocessing Step (anti-naive-lock applied to sliding windows instead) ---
         print("\n--- STEP 5: REMOVED - Skip Selective Preprocessing Step ---")
@@ -441,15 +363,12 @@ class PreprocessorPlugin:
         print("\n--- STEP 9: Truncate Windowed Data to Match Target Lengths ---")
         self._truncate_to_match_targets(windowed_data_final, target_data)
         
-        # Also truncate baselines to match target lengths
-        for split in ['train', 'val', 'test']:
-            if f'y_{split}' in target_data and target_data[f'y_{split}']:
-                first_horizon_key = list(target_data[f'y_{split}'].keys())[0]
-                target_length = len(target_data[f'y_{split}'][first_horizon_key])
-                baseline_key = f'baseline_{split}'
-                if len(baselines_denorm[baseline_key]) > target_length:
-                    print(f"Truncating {baseline_key} from {len(baselines_denorm[baseline_key])} to {target_length}")
-                    baselines_denorm[baseline_key] = baselines_denorm[baseline_key][:target_length]
+        # Extract baselines from target_data (they're included in the result)
+        baselines_final = {
+            'baseline_train': target_data.get('baseline_train', np.array([])),
+            'baseline_val': target_data.get('baseline_val', np.array([])),
+            'baseline_test': target_data.get('baseline_test', np.array([]))
+        }
         
         # --- Prepare Final Output ---
         print("\n--- Preparing Final Output ---")
@@ -473,9 +392,9 @@ class PreprocessorPlugin:
             "y_test_dates": windowed_data_final['x_dates_test'],
             
             # Baselines (denormalized for prediction reconstruction)
-            "baseline_train": baselines_denorm['baseline_train'],
-            "baseline_val": baselines_denorm['baseline_val'],
-            "baseline_test": baselines_denorm['baseline_test'],
+            "baseline_train": baselines_final['baseline_train'],
+            "baseline_val": baselines_final['baseline_val'],
+            "baseline_test": baselines_final['baseline_test'],
             
             # Metadata
             "feature_names": windowed_data_final['feature_names'],
