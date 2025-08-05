@@ -74,7 +74,7 @@ class STLPreprocessorZScore:
         print("Step 4-5: Calculate targets from first sliding windows")
         targets = self._calculate_targets_from_sliding_windows(denorm_sliding_windows, config)
         
-        # 6. Apply anti-naive-lock transformations to denormalized input datasets
+        # 6. Apply anti-naive-lock transformations to denormalized input datasets (creates "processed data")
         print("Step 6: Apply anti-naive-lock to denormalized datasets")
         processed_data = self._apply_anti_naive_lock_to_datasets(denormalized_data, config)
         
@@ -206,10 +206,11 @@ class STLPreprocessorZScore:
         return baselines
     
     def _apply_anti_naive_lock_to_datasets(self, denormalized_data, config):
-        """Step 6: Apply anti-naive-lock transformations to denormalized datasets."""
+        """Step 6: Apply anti-naive-lock transformations to denormalized datasets to create 'processed data'."""
         if not config.get("anti_naive_lock_enabled", True):
             return denormalized_data
         
+        print("  Applying anti-naive-lock transformations to denormalized datasets...")
         processed = {}
         
         for split in ['train', 'val', 'test']:
@@ -220,7 +221,8 @@ class STLPreprocessorZScore:
                 x_df = denormalized_data[x_key]
                 feature_names = list(x_df.columns)
                 
-                # Convert to format expected by anti-naive-lock processor
+                # Apply anti-naive-lock transformations to the dataframe values
+                # Convert dataframe to matrix format for anti-naive-lock processor
                 x_matrix = x_df.values.reshape(1, len(x_df), len(feature_names))
                 
                 # Apply transformations
@@ -228,12 +230,13 @@ class STLPreprocessorZScore:
                     x_matrix, x_matrix, x_matrix, feature_names, config
                 )
                 
-                # Convert back to DataFrame
+                # Convert back to DataFrame (processed data)
                 processed[x_key] = pd.DataFrame(
                     processed_matrix[0], 
                     index=x_df.index, 
                     columns=feature_names
                 )
+                print(f"    Processed {split} data with anti-naive-lock")
             
             # Y data unchanged
             if y_key in denormalized_data:
@@ -242,7 +245,7 @@ class STLPreprocessorZScore:
         return processed
     
     def _create_final_sliding_windows(self, processed_data, config):
-        """Step 7: Create SECOND sliding windows from processed datasets (for model input only)."""
+        """Step 7: Create SECOND sliding windows from processed datasets (anti-naive-lock applied data)."""
         prepared_data = {'norm_json': load_normalization_json(config)}
         prepared_data.update(processed_data)
         
