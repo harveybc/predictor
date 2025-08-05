@@ -294,23 +294,27 @@ class AntiNaiveLockProcessor:
         Apply log returns transformation: ln(x_t / x_{t-1})
         
         Args:
-            feature_data: 2D array (samples, time_steps)
+            feature_data: 2D array (samples, time_steps) containing denormalized price data
             
         Returns:
             Transformed data with same shape
         """
-        # Avoid log(0) and negative values
-        feature_data_safe = np.where(feature_data <= 0, 1e-8, feature_data)
+        processed_data = feature_data.copy()
         
-        # Calculate log returns along time axis
-        log_returns = np.zeros_like(feature_data_safe)
-        log_returns[:, 1:] = np.log(feature_data_safe[:, 1:] / feature_data_safe[:, :-1])
-        log_returns[:, 0] = 0  # First time step has no previous value
-        
-        # Handle any remaining NaN/inf values
-        log_returns = np.where(np.isfinite(log_returns), log_returns, 0)
-        
-        return log_returns
+        for sample_idx in range(processed_data.shape[0]):
+            series = processed_data[sample_idx, :]
+            
+            # Apply log returns: ln(P_t / P_{t-1})
+            for t in range(1, len(series)):
+                if series[t-1] > 0 and series[t] > 0:  # Valid prices
+                    processed_data[sample_idx, t] = np.log(series[t] / series[t-1])
+                else:
+                    processed_data[sample_idx, t] = 0.0  # Fallback for invalid prices
+            
+            # First value gets zero change
+            processed_data[sample_idx, 0] = 0.0
+            
+        return processed_data
     
     def _apply_mild_standardization(self, feature_data: np.ndarray) -> np.ndarray:
         """
