@@ -241,9 +241,13 @@ class STLPipelinePlugin:
                 train_target_prices = train_baselines * np.exp(train_target_log_returns)
                 val_target_prices = val_baselines * np.exp(val_target_log_returns)
                 
-                # Convert uncertainty to price scale
-                train_price_uncertainties = train_baselines * np.abs(train_unc_log_returns)
-                val_price_uncertainties = val_baselines * np.abs(val_unc_log_returns)
+                # Convert uncertainty to price scale: uncertainty = baseline * (exp(log_return + unc) - exp(log_return))
+                # For small uncertainties: ≈ baseline * exp(log_return) * unc = price * unc
+                # Convert uncertainty to price scale: uncertainty represents range around prediction
+                # Since prediction_price = baseline * exp(log_return), uncertainty in price scale is:
+                # uncertainty_price = prediction_price * uncertainty_log_returns (for small uncertainties)
+                train_price_uncertainties = train_prices * np.abs(train_unc_log_returns)
+                val_price_uncertainties = val_prices * np.abs(val_unc_log_returns)
                 
                 real_train_price_preds.append(train_prices)
                 real_val_price_preds.append(val_prices)
@@ -370,8 +374,9 @@ class STLPipelinePlugin:
                 test_prices = test_baselines * np.exp(test_log_returns)
                 test_target_prices = test_baselines * np.exp(test_target_log_returns)
                 
-                # Convert uncertainty to price scale
-                test_price_unc = test_baselines * np.abs(test_unc_log_returns)
+                # Convert uncertainty to price scale: uncertainty represents range around prediction
+                # uncertainty_price = prediction_price * uncertainty_log_returns (for small uncertainties)
+                test_price_unc = test_prices * np.abs(test_unc_log_returns)
                 
                 real_test_price_preds.append(test_prices)
                 real_test_price_targets.append(test_target_prices)
