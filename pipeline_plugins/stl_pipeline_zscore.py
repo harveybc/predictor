@@ -4,21 +4,19 @@ STL Pipeline Plugin - Z-Score Version
 
 1. Get from preprocessor the train, validation and test datasets(sliding windows matrixes), 
    normalized targets and target normalization stats and denormalized baselines per horizon.
-2. Perform selective column exclusion from datasets.
-4. Prepare datasets for training.
-5. Perform training (generate training and validation predictions and uncertainties).
-6. Denormalize predictions, targets and uncertainties per horizon with the target normalization stats per horizon.
-7. Detransform (inverse logreturns) predictions, targets and uncertainties to real-world scale.
-8. Calculate final predictions by adding detransformed predictions to baselines.
-9. Calculate final targets by adding detransformed targets to baselines.
-10. Calculate metrics for the final predictions vs final targets (MAE, R2, SNR).
-11. Save metrics to output result csv file.
-12. Save predictions and uncertainties to output csv files.
-13. Save plots of model architecture and loss curve.
-14. Save predictions(true, predicted, uncertainty) plot for the specified horizon.
-15. Save predictor keras trained model
-16. Save debug info json.
-17. Save output config json.
+2. Prepare datasets for training.
+3. Perform training (generate training and validation predictions and uncertainties).
+4. Denormalize predictions, targets and uncertainties per horizon with the target normalization stats per horizon.
+5. Detransform (inverse logreturns) predictions, targets and uncertainties to real-world scale.
+6. Calculate final predictions, uncertainties and targets by adding detransformed predictions to baselines.
+7. Calculate metrics for the final predictions vs final targets (MAE, R2, SNR).
+8. Save metrics to output result csv file.
+9. Save predictions and uncertainties to output csv files.
+10. Save plots of model architecture and loss curve.
+11. Save predictions(true, predicted, uncertainty) plot for the specified horizon.
+12. Save predictor keras trained model
+13. Save debug info json.
+14. Save output config json.
 """
 
 import time
@@ -104,11 +102,10 @@ class STLPipelinePlugin:
         val_dates = datasets.get("y_val_dates")
         test_dates = datasets.get("y_test_dates")
         
-        #
         baseline_train = datasets.get("baseline_train")
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
-        
+
         # Get target normalization stats from preprocessor (lists per horizon)
         if "target_returns_means" not in preprocessor_params or "target_returns_stds" not in preprocessor_params:
             raise ValueError("Preprocessor did not return target normalization stats. Check preprocessor execution.")
@@ -128,7 +125,8 @@ class STLPipelinePlugin:
         plotted_index = predicted_horizons.index(plotted_horizon)
         output_names = [f"output_horizon_{h}" for h in predicted_horizons]
 
-        # Prepare Target Dicts for Training
+        # 2. Prepare datasets for training.
+        print("Preparing datasets for training...")
         y_train_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_train_list)}
         y_val_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_val_list)}
 
@@ -145,151 +143,194 @@ class STLPipelinePlugin:
             print(f"\n=== Iteration {iteration}/{iterations} ===")
             iter_start = time.time()
 
-            # Build & Train
+            # 3. Perform training (generate training, validation and test predictions and uncertainties).
+            print("Building and training model with training and validation datasets...")
             input_shape = (X_train.shape[1], X_train.shape[2]) if X_train.ndim == 3 else (X_train.shape[1],)
             predictor_plugin.build_model(input_shape=input_shape, x_train=X_train, config=config)
-
 
             history, list_train_preds, list_train_unc, list_val_preds, list_val_unc = predictor_plugin.train(
                 X_train, y_train_dict, epochs=epochs, batch_size=batch_size, 
                 threshold_error=config.get("threshold_error", 0.001),
                 x_val=X_val, y_val=y_val_dict, config=config
             )
-
-            # --- Convert predictions and targets to real-world prices for evaluation ---
+            # Evaluate Test & Calc Metrics (All Horizons)
+            print("Evaluating test set...")
+            mc_samples = config.get("mc_samples", 100)
+            list_test_preds, list_test_unc = predictor_plugin.predict_with_uncertainty(X_test, mc_samples=mc_samples)  # Assign results
+            if not all(len(lst) == num_outputs for lst in [list_test_preds, list_test_unc]): 
+                raise ValueError("Predictor predict mismatch outputs.")
+            
+            # 4. Denormalize predictions, targets and uncertainties for all datasets.
             print("\n--- Converting z-score normalized predictions to real-world prices for evaluation ---")
             
             # Store original predictions and targets for later reference
             original_train_preds = [pred.copy() for pred in list_train_preds]
             original_val_preds = [pred.copy() for pred in list_val_preds]
+            original_test_preds = [pred.copy() for pred in list_test_preds]
+            
             original_train_targets = [target.copy() for target in y_train_list]
             original_val_targets = [target.copy() for target in y_val_list]
+            original_test_targets = [target.copy() for target in y_test_list]
+
             original_train_unc = [unc.copy() for unc in list_train_unc]
             original_val_unc = [unc.copy() for unc in list_val_unc]
+            original_test_unc = [unc.copy() for unc in list_test_unc]
             
             # Convert to real-world prices for metrics calculation
-            real_train_price_preds = []
-            real_val_price_preds = []
-            real_train_price_targets = []
-            real_val_price_targets = []
-            real_train_price_uncertainties = []
-            real_val_price_uncertainties = []
+            real_train_price_preds, real_val_price_preds, real_test_price_preds = [], [], []
+            real_train_price_targets, real_val_price_targets, real_test_price_targets = [], [], []
+            real_train_price_uncertainties, real_val_price_uncertainties, real_test_price_uncertainties = [], [], []
             
             for idx, h in enumerate(predicted_horizons):
                 # Get horizon-specific normalization stats
                 target_mean = target_returns_means[idx]
                 target_std = target_returns_stds[idx]
                 
-                # Convert predictions: z-score normalized -> log returns -> prices
-                train_log_normalized_preds = original_train_preds[idx].flatten()
-                val_log_normalized_preds = original_val_preds[idx].flatten()
+                # --- Process Predictions (z-score normalized -> log returns) ---
+                train_log_returns = original_train_preds[idx].flatten() * target_std + target_mean
+                val_log_returns = original_val_preds[idx].flatten() * target_std + target_mean
+                test_log_returns = original_test_preds[idx].flatten() * target_std + target_mean
                 
-                train_log_returns = train_log_normalized_preds * target_std + target_mean
-                val_log_returns = val_log_normalized_preds * target_std + target_mean
+                # --- Process Targets (z-score normalized -> log returns) ---
+                train_target_log_returns = original_train_targets[idx].flatten() * target_std + target_mean
+                val_target_log_returns = original_val_targets[idx].flatten() * target_std + target_mean
+                test_target_log_returns = original_test_targets[idx].flatten() * target_std + target_mean
                 
-                # Convert targets: z-score normalized -> log returns -> prices  
-                train_log_normalized_targets = original_train_targets[idx].flatten()
-                val_log_normalized_targets = original_val_targets[idx].flatten()
+                # --- Process Uncertainties (z-score normalized -> log returns scale) ---
+                train_unc_log_returns = original_train_unc[idx].flatten() * target_std
+                val_unc_log_returns = original_val_unc[idx].flatten() * target_std
+                test_unc_log_returns = original_test_unc[idx].flatten() * target_std
                 
-                train_target_log_returns = train_log_normalized_targets * target_std + target_mean
-                val_target_log_returns = val_log_normalized_targets * target_std + target_mean
+                # --- Convert to Real-World Prices using Baselines ---
+                # Baselines and predictions are aligned by the sliding window process.
+                num_train, num_val, num_test = len(train_log_returns), len(val_log_returns), len(test_log_returns)
                 
-                # Convert uncertainties: z-score normalized -> log returns -> price uncertainty
-                train_log_normalized_unc = original_train_unc[idx].flatten()
-                val_log_normalized_unc = original_val_unc[idx].flatten()
-                
-                train_unc_log_returns = train_log_normalized_unc * target_std
-                val_unc_log_returns = val_log_normalized_unc * target_std
-                
-                # CRITICAL FIX: Baselines and predictions are perfectly aligned
-                # Both come from the same sliding windows matrix, so use them directly
-                num_train = len(train_log_returns)
-                num_val = len(val_log_returns)
-                
-                # Use the corresponding baselines (perfectly aligned with predictions)
                 train_baselines = baseline_train[:num_train]
                 val_baselines = baseline_val[:num_val]
+                test_baselines = baseline_test[:num_test]
+
+                # 5. Detransform (inverse logreturns) predictions, targets and uncertainties to real-world scale.
+
+                # Predicted Price Returns
+                train_price_returns = np.exp(train_log_returns)
+                val_price_returns =  np.exp(val_log_returns)
+                test_price_returns =  np.exp(test_log_returns)
+
+                # Target Price Returns
+                train_target_price_returns = np.exp(train_target_log_returns)
+                val_target_price_returns = np.exp(val_target_log_returns)
+                test_target_price_returns = np.exp(test_target_log_returns)
+
+                # Uncertainties returns
+                train_unc_returns = np.exp(train_unc_log_returns)
+                val_unc_returns = np.exp(val_unc_log_returns)
+                test_unc_returns = np.exp(test_unc_log_returns)
+
+                # 6. Calculate final predictions, uncertainties and targets by adding detransformed predictions to baselines.
                 
-                train_prices = train_baselines * np.exp(train_log_returns)
-                val_prices = val_baselines * np.exp(val_log_returns)
-                train_target_prices = train_baselines * np.exp(train_target_log_returns)
-                val_target_prices = val_baselines * np.exp(val_target_log_returns)
-                
-                # Convert uncertainty to price scale: uncertainty = baseline * (exp(log_return + unc) - exp(log_return))
-                # For small uncertainties: ≈ baseline * exp(log_return) * unc = price * unc
-                # Convert uncertainty to price scale: uncertainty represents range around prediction
-                # Since prediction_price = baseline * exp(log_return), uncertainty in price scale is:
-                # uncertainty_price = prediction_price * uncertainty_log_returns (for small uncertainties)
-                train_price_uncertainties = train_prices * np.abs(train_unc_log_returns)
-                val_price_uncertainties = val_prices * np.abs(val_unc_log_returns)
-                
+                # Predicted Prices
+                train_prices = train_baselines + train_price_returns
+                val_prices = val_baselines + val_price_returns
+                test_prices = test_baselines + test_price_returns
+
+                # Target Prices
+                train_target_prices = train_baselines + train_target_price_returns
+                val_target_prices = val_baselines + val_target_price_returns
+                test_target_prices = test_baselines + test_target_price_returns 
+
+                # Uncertainties Prices
+                train_price_uncertainties = train_baselines * train_unc_returns
+                val_price_uncertainties = val_baselines * val_unc_returns
+                test_price_uncertainties = test_baselines * test_unc_returns
+
+                # --- Append results for the current horizon ---
                 real_train_price_preds.append(train_prices)
                 real_val_price_preds.append(val_prices)
+                real_test_price_preds.append(test_prices)
+                
                 real_train_price_targets.append(train_target_prices)
                 real_val_price_targets.append(val_target_prices)
+                real_test_price_targets.append(test_target_prices)
+                
                 real_train_price_uncertainties.append(train_price_uncertainties)
                 real_val_price_uncertainties.append(val_price_uncertainties)
+                real_test_price_uncertainties.append(test_price_uncertainties)
                 
-                print(f"  H{h}: Converted {num_train} train, {num_val} val points to real prices")
+                print(f"  H{h}: Converted {num_train} train, {num_val} val, {num_test} test points to real prices")
             
-            print("✅ All data converted to real-world prices for evaluation")
+            print("✅ All train, validation and test data converted to real-world prices for evaluation")
 
-            # Calculate Train/Validation metrics using real-world prices
-            can_calc_train_stats = all(len(lst) == num_outputs for lst in [real_train_price_preds, real_train_price_uncertainties])
-            if can_calc_train_stats:
-                print("Calculating Train/Validation metrics (all horizons)...")
+            # 7. Calculate metrics for the final predictions vs final targets (MAE, R2, SNR).
+            # Calculate Train/Validation/Test metrics using real-world prices
+            can_calc_all_stats = all(len(lst) == num_outputs for lst in [real_train_price_preds, real_train_price_uncertainties, real_test_price_preds, real_test_price_uncertainties])
+            if can_calc_all_stats:
+                print("Calculating Train/Validation/Test metrics (all horizons)...")
                 for idx, h in enumerate(predicted_horizons):
                     try:
                         # Use real-world price data for metrics
                         train_preds_h = real_train_price_preds[idx].flatten()
                         train_target_h = real_train_price_targets[idx].flatten()
                         train_unc_h = real_train_price_uncertainties[idx].flatten()
+                        
                         val_preds_h = real_val_price_preds[idx].flatten()
                         val_target_h = real_val_price_targets[idx].flatten()
                         val_unc_h = real_val_price_uncertainties[idx].flatten()
+
+                        test_preds_h = real_test_price_preds[idx].flatten()
+                        test_target_h = real_test_price_targets[idx].flatten()
+                        test_unc_h = real_test_price_uncertainties[idx].flatten()
                         
                         # Ensure consistent lengths
                         min_train_len = min(len(train_preds_h), len(train_target_h), len(train_unc_h))
                         min_val_len = min(len(val_preds_h), len(val_target_h), len(val_unc_h))
+                        min_test_len = min(len(test_preds_h), len(test_target_h), len(test_unc_h))
                         
-                        train_preds_h = train_preds_h[:min_train_len]
-                        train_target_h = train_target_h[:min_train_len]
-                        train_unc_h = train_unc_h[:min_train_len]
-                        
-                        val_preds_h = val_preds_h[:min_val_len]
-                        val_target_h = val_target_h[:min_val_len]
-                        val_unc_h = val_unc_h[:min_val_len]
+                        train_preds_h, train_target_h, train_unc_h = train_preds_h[:min_train_len], train_target_h[:min_train_len], train_unc_h[:min_train_len]
+                        val_preds_h, val_target_h, val_unc_h = val_preds_h[:min_val_len], val_target_h[:min_val_len], val_unc_h[:min_val_len]
+                        test_preds_h, test_target_h, test_unc_h = test_preds_h[:min_test_len], test_target_h[:min_test_len], test_unc_h[:min_test_len]
                         
                         # Calculate metrics in real-world price scale
                         train_mae_h = np.mean(np.abs(train_preds_h - train_target_h))
                         val_mae_h = np.mean(np.abs(val_preds_h - val_target_h))
+                        test_mae_h = np.mean(np.abs(test_preds_h - test_target_h))
                         
                         train_r2_h = r2_score(train_target_h, train_preds_h)
                         val_r2_h = r2_score(val_target_h, val_preds_h)
+                        test_r2_h = r2_score(test_target_h, test_preds_h)
                         
                         # Uncertainty metrics (already in price scale)
                         train_unc_mean_h = np.mean(train_unc_h)
                         val_unc_mean_h = np.mean(val_unc_h)
+                        test_unc_mean_h = np.mean(test_unc_h)
                         
                         # SNR: signal (price level) to noise (uncertainty) ratio
                         train_snr_h = np.mean(train_preds_h) / (train_unc_mean_h + 1e-9)
                         val_snr_h = np.mean(val_preds_h) / (val_unc_mean_h + 1e-9)
+                        test_snr_h = np.mean(test_preds_h) / (test_unc_mean_h + 1e-9)
                         
+                        # Append Train metrics
                         metrics_results["Train"]["MAE"][h].append(train_mae_h)
                         metrics_results["Train"]["R2"][h].append(train_r2_h)
                         metrics_results["Train"]["Uncertainty"][h].append(train_unc_mean_h)
                         metrics_results["Train"]["SNR"][h].append(train_snr_h)
                         
+                        # Append Validation metrics
                         metrics_results["Validation"]["MAE"][h].append(val_mae_h)
                         metrics_results["Validation"]["R2"][h].append(val_r2_h)
                         metrics_results["Validation"]["Uncertainty"][h].append(val_unc_mean_h)
                         metrics_results["Validation"]["SNR"][h].append(val_snr_h)
+
+                        # Append Test metrics
+                        metrics_results["Test"]["MAE"][h].append(test_mae_h)
+                        metrics_results["Test"]["R2"][h].append(test_r2_h)
+                        metrics_results["Test"]["Uncertainty"][h].append(test_unc_mean_h)
+                        metrics_results["Test"]["SNR"][h].append(test_snr_h)
                         
                     except Exception as e: 
-                        print(f"WARN: Error Train/Val metrics H={h}: {e}")
-                        [metrics_results[ds][m][h].append(np.nan) for ds in ["Train", "Validation"] for m in metric_names]
+                        print(f"WARN: Error calculating metrics for H={h}: {e}")
+                        [metrics_results[ds][m][h].append(np.nan) for ds in ["Train", "Validation", "Test"] for m in metric_names]
             else: 
-                print("WARN: Skipping Train/Val stats calculation.")
+                print("WARN: Skipping Train/Val/Test stats calculation due to data mismatch.")
 
             # Save Loss Plot
             loss_plot_file = config.get("loss_plot_file")
@@ -305,12 +346,7 @@ class STLPipelinePlugin:
             plt.close()
             print(f"Loss plot saved: {loss_plot_file}")
 
-            # Evaluate Test & Calc Metrics (All Horizons)
-            print("Evaluating test set & calculating metrics...")
-            mc_samples = config.get("mc_samples", 100)
-            list_test_preds, list_test_unc = predictor_plugin.predict_with_uncertainty(X_test, mc_samples=mc_samples)  # Assign results
-            if not all(len(lst) == num_outputs for lst in [list_test_preds, list_test_unc]): 
-                raise ValueError("Predictor predict mismatch outputs.")
+            
             
             # --- Convert test predictions to real-world prices ---
             print("\n--- Converting test predictions to real-world prices ---")
