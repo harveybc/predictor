@@ -20,463 +20,209 @@ import pandas as pd
 from typing import Dict, List, Tuple, Any
 import logging
 
-class AntiNaiveLockProcessor:
-    """
-    Processor for applying selective preprocessing to prevent naive lock.
+
+#TODO: move to anti_naive_lock.py
+def apply_anti_naive_lock_to_datasets(self, denormalized_data, config):
+    """Step 6: Apply anti-naive-lock transformations to FULL denormalized datasets to create processed data."""
+    if not config.get("anti_naive_lock_enabled", True):
+        return denormalized_data
     
-    Implements different transformation strategies based on feature characteristics
-    to ensure model learns meaningful patterns rather than simple input copying.
-    """
+    print("  Applying anti-naive-lock transformations to full denormalized datasets...")
+    processed = {}
     
-    def __init__(self):
-        self.logger = logging.getLogger(__name__)
-        self.feature_stats = {}  # Store statistics for inverse transforms if needed
+    for split in ['train', 'val', 'test']:
+        x_key = f'x_{split}_df'
+        y_key = f'y_{split}_df'
         
-    def process_sliding_windows(self, 
-                               x_train: np.ndarray, 
-                               x_val: np.ndarray, 
-                               x_test: np.ndarray,
-                               feature_names: List[str],
-                               config: Dict[str, Any]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
-        """
-        Apply anti-naive-lock preprocessing to sliding window matrices.
-        
-        CONSERVATIVE APPROACH: Only apply minimal transformations that enhance
-        feature diversity without destroying the predictive signal.
-        
-        Args:
-            x_train: Training sliding windows (samples, time_steps, features)
-            x_val: Validation sliding windows (samples, time_steps, features)  
-            x_test: Test sliding windows (samples, time_steps, features)
-            feature_names: List of feature column names
-            config: Configuration dictionary
+        if x_key in denormalized_data:
+            x_df = denormalized_data[x_key]
+            feature_names = list(x_df.columns)
             
-        Returns:
-            Tuple of (processed_x_train, processed_x_val, processed_x_test, processing_stats)
-        """
-        if not config.get('anti_naive_lock_enabled', False):
-            print("Anti-naive-lock preprocessing disabled")
-            return x_train, x_val, x_test, {}
-            
-        print("=== CONSERVATIVE ANTI-NAIVE-LOCK PREPROCESSING ===")
-        print("Strategy: Enhance feature diversity without destroying predictive signal")
+            # Apply anti-naive-lock transformations directly to the time series data
+            processed_df = self._apply_anti_naive_lock_to_time_series(x_df, feature_names, config)
+            processed[x_key] = processed_df
+            print(f"    Processed {split} dataset with anti-naive-lock (shape: {processed_df.shape})")
         
-        # Get preprocessing strategy
-        strategy = config.get('feature_preprocessing_strategy', 'selective')
-        
-        if strategy == 'none':
-            print("Strategy: none - returning features as-is (already normalized)")
-            print("✅ Features are already normalized by sliding windows processor")
-            return x_train, x_val, x_test, {'applied_transforms': 'none - features pre-normalized'}
-        elif strategy == 'selective':
-            return self._apply_selective_preprocessing(x_train, x_val, x_test, feature_names, config)
-        else:
-            print(f"WARNING: Unknown strategy '{strategy}', using conservative approach")
-            return self._apply_conservative_preprocessing(x_train, x_val, x_test, feature_names, config)
+        # Y data unchanged
+        if y_key in denormalized_data:
+            processed[y_key] = denormalized_data[y_key]
     
-    def _apply_conservative_preprocessing(self, 
-                                        x_train: np.ndarray,
-                                        x_val: np.ndarray, 
-                                        x_test: np.ndarray,
-                                        feature_names: List[str],
-                                        config: Dict[str, Any]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
-        """Apply conservative preprocessing that enhances diversity without over-processing."""
-        
-        # Copy arrays to avoid modifying originals
-        x_train_processed = x_train.copy()
-        x_val_processed = x_val.copy() 
-        x_test_processed = x_test.copy()
-        
-        processing_stats = {'applied_transforms': {}, 'feature_analysis': {}}
-        
-        # Analyze feature characteristics
-        print("\nAnalyzing feature characteristics...")
-        for i, feature_name in enumerate(feature_names):
-            train_feature = x_train[:, :, i].flatten()
-            valid_data = train_feature[np.isfinite(train_feature)]
+    return processed
+
+#TODO: move to anti_naive_lock.py
+def apply_anti_naive_lock_to_time_series(self, df, feature_names, config):
+    """Apply anti-naive-lock transformations to a full time series DataFrame."""
+    processed_df = df.copy()
+    
+    # Get feature categories from config with comprehensive defaults
+    price_features = config.get('price_features', ['OPEN', 'LOW', 'HIGH', 'CLOSE', 'open', 'low', 'high', 'close'])
+    temporal_features = config.get('temporal_features', [
+        'day_of_week', 'hour_of_day', 'day_of_month', 'month_of_year',
+        'dayofweek', 'hourofday', 'dayofmonth', 'monthofyear'
+    ])
+    trend_features = config.get('trend_features', [
+        'stl_trend', 'trend', 'STL_trend', 'STL_Trend', 'TREND'
+    ])
+    stationary_indicators = config.get('stationary_indicators', [
+        'RSI', 'MACD', 'MACD_Histogram', 'MACD_Signal', 'EMA', 'SMA', 'BB_upper', 'BB_lower',
+        'rsi', 'macd', 'macd_histogram', 'macd_signal', 'ema', 'sma', 'bb_upper', 'bb_lower'
+    ])
+    target_column = config.get('target_column', 'CLOSE')
+    excluded_columns = config.get('excluded_columns', [])
+    
+    print(f"      Applying anti-naive-lock to {len(feature_names)} features...")
+    
+    for feature_name in feature_names:
+        try:
+            # Check if feature name matches any category (case-insensitive)
+            feature_lower = feature_name.lower()
             
-            if len(valid_data) > 0:
-                mean_val = np.mean(valid_data)
-                std_val = np.std(valid_data)
-                range_val = np.max(valid_data) - np.min(valid_data)
-                unique_ratio = len(np.unique(valid_data)) / len(valid_data)
+            if any(tf.lower() in feature_lower for tf in temporal_features) and config.get('use_cyclic_encoding', True):
+                # Apply cyclic encoding to temporal features
+                processed_df[feature_name] = self._apply_cyclic_encoding_to_series(
+                    processed_df[feature_name], feature_name
+                )
+                print(f"        Applied cyclic encoding to {feature_name}")
                 
-                processing_stats['feature_analysis'][feature_name] = {
-                    'mean': float(mean_val),
-                    'std': float(std_val), 
-                    'range': float(range_val),
-                    'unique_ratio': float(unique_ratio)
-                }
+            elif (any(pf.lower() in feature_lower for pf in price_features) and 
+                    config.get('use_log_returns', True) and 
+                    feature_name != target_column and 
+                    feature_name not in excluded_columns):
+                # Apply log returns to price features (except target)
+                processed_df[feature_name] = self._apply_log_returns_to_series(
+                    processed_df[feature_name]
+                )
+                print(f"        Applied log returns to {feature_name}")
                 
-                print(f"  {feature_name}: mean={mean_val:.4f}, std={std_val:.4f}, range={range_val:.4f}, unique_ratio={unique_ratio:.3f}")
-        
-        # Get feature categories from config
-        temporal_features = config.get('temporal_features', ['day_of_week', 'hour_of_day', 'day_of_month'])
-        
-        print(f"\nApplying conservative transformations to {len(feature_names)} features...")
-        transforms_applied = 0
-        
-        for i, feature_name in enumerate(feature_names):
-            try:
-                if feature_name in temporal_features and config.get('use_cyclic_encoding', True):
-                    # Only transform temporal features (most important for avoiding naive lock)
-                    print(f"  Applying cyclic encoding to {feature_name}")
-                    x_train_processed[:, :, i] = self._apply_cyclic_encoding_simplified(x_train_processed[:, :, i], feature_name)
-                    x_val_processed[:, :, i] = self._apply_cyclic_encoding_simplified(x_val_processed[:, :, i], feature_name)
-                    x_test_processed[:, :, i] = self._apply_cyclic_encoding_simplified(x_test_processed[:, :, i], feature_name)
-                    processing_stats['applied_transforms'][feature_name] = 'cyclic_encoding'
-                    transforms_applied += 1
-                else:
-                    # Preserve all other features to maintain their predictive power
-                    processing_stats['applied_transforms'][feature_name] = 'preserved'
-                    
-            except Exception as e:
-                print(f"  ERROR processing {feature_name}: {e}")
-                processing_stats['applied_transforms'][feature_name] = f'error: {str(e)}'
-        
-        # Add feature diversity metrics
-        print(f"\nProcessing completed:")
-        print(f"  - Transformed features: {transforms_applied}")
-        print(f"  - Preserved features: {len(feature_names) - transforms_applied}")
-        print(f"  - Feature diversity maintained: {(len(feature_names) - transforms_applied) / len(feature_names) * 100:.1f}%")
-        
-        processing_stats['summary'] = {
-            'total_features': len(feature_names),
-            'transformed_features': transforms_applied,
-            'preserved_features': len(feature_names) - transforms_applied,
-            'diversity_ratio': (len(feature_names) - transforms_applied) / len(feature_names)
-        }
-        
-        return x_train_processed, x_val_processed, x_test_processed, processing_stats
-    
-    def _apply_selective_preprocessing(self, 
-                                     x_train: np.ndarray,
-                                     x_val: np.ndarray, 
-                                     x_test: np.ndarray,
-                                     feature_names: List[str],
-                                     config: Dict[str, Any]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
-        """Apply selective preprocessing based on feature categories."""
-        
-        # Copy arrays to avoid modifying originals
-        x_train_processed = x_train.copy()
-        x_val_processed = x_val.copy() 
-        x_test_processed = x_test.copy()
-        
-        processing_stats = {'applied_transforms': {}}
-        
-        # Get feature categories from config with defaults
-        price_features = config.get('price_features', ['OPEN', 'LOW', 'HIGH'])
-        temporal_features = config.get('temporal_features', ['day_of_week', 'hour_of_day', 'day_of_month'])
-        trend_features = config.get('trend_features', ['stl_trend'])
-        stationary_indicators = config.get('stationary_indicators', ['RSI', 'MACD', 'MACD_Histogram', 'MACD_Signal', 'EMA', 
-                                          'Stochastic_%K', 'Stochastic_%D', 'ADX', 'DI+', 'DI-', 
-                                          'ATR', 'CCI', 'WilliamsR', 'Momentum', 'ROC'])
-        candlestick_patterns = config.get('candlestick_patterns', ['BC-BO', 'BH-BL', 'BH-BO', 'BO-BL'])
-        constant_daily_features = config.get('constant_daily_features', ['S&P500_Close', 'vix_close'])
-        decomposed_features = config.get('decomposed_features', ['stl_seasonal', 'stl_residual'])
-        wavelet_features = config.get('wavelet_features', ['CLOSE_wav_detail_L1', 'CLOSE_wav_detail_L2', 'CLOSE_wav_approx_L2'])
-        mtm_features = config.get('mtm_features', ['CLOSE_mtm_band_1_0.000_0.010', 'CLOSE_mtm_band_2_0.010_0.060', 
-                                 'CLOSE_mtm_band_3_0.060_0.200', 'CLOSE_mtm_band_4_0.200_0.500'])
-        subperiodicity_features = config.get('subperiodicity_features', [
-            'CLOSE_15m_tick_1', 'CLOSE_15m_tick_2', 'CLOSE_15m_tick_3', 'CLOSE_15m_tick_4',
-            'CLOSE_15m_tick_5', 'CLOSE_15m_tick_6', 'CLOSE_15m_tick_7', 'CLOSE_15m_tick_8',
-            'CLOSE_30m_tick_1', 'CLOSE_30m_tick_2', 'CLOSE_30m_tick_3', 'CLOSE_30m_tick_4',
-            'CLOSE_30m_tick_5', 'CLOSE_30m_tick_6', 'CLOSE_30m_tick_7', 'CLOSE_30m_tick_8'
-        ])
-        
-        print(f"SMART ANTI-NAIVE-LOCK: Processing {len(feature_names)} features with selective strategy...")
-        print(f"Configuration: log_returns={config.get('use_log_returns', False)}, "
-              f"cyclic_encoding={config.get('use_cyclic_encoding', False)}, "
-              f"first_differences={config.get('use_first_differences', False)}, "
-              f"handle_daily={config.get('handle_constant_daily_features', False)}")
-        
-        # Apply transformations based on feature categories and configuration
-        for i, feature_name in enumerate(feature_names):
-            try:
-                if feature_name in temporal_features and config.get('use_cyclic_encoding', True):
-                    # Apply cyclic encoding to temporal features
-                    x_train_processed[:, :, i] = self._apply_cyclic_encoding_simplified(x_train_processed[:, :, i], feature_name)
-                    x_val_processed[:, :, i] = self._apply_cyclic_encoding_simplified(x_val_processed[:, :, i], feature_name)
-                    x_test_processed[:, :, i] = self._apply_cyclic_encoding_simplified(x_test_processed[:, :, i], feature_name)
-                    processing_stats['applied_transforms'][feature_name] = 'cyclic_encoding'
-                    print(f"  Applied cyclic encoding to {feature_name}")
-                    
-                elif feature_name in price_features and config.get('use_log_returns', True):
-                    # CRITICAL: Never apply log returns to target column in sliding windows
-                    target_column = config.get('target_column', 'CLOSE')
-                    excluded_columns = config.get('excluded_columns', [])
-                    
-                    if feature_name != target_column and feature_name not in excluded_columns:
-                        # Apply log returns to price features (not target, not excluded)
-                        x_train_processed[:, :, i] = self._apply_log_returns(x_train_processed[:, :, i])
-                        x_val_processed[:, :, i] = self._apply_log_returns(x_val_processed[:, :, i])
-                        x_test_processed[:, :, i] = self._apply_log_returns(x_test_processed[:, :, i])
-                        processing_stats['applied_transforms'][feature_name] = 'log_returns'
-                        print(f"  Applied log returns to {feature_name}")
-                    else:
-                        processing_stats['applied_transforms'][feature_name] = 'preserved_target'
-                        if feature_name == target_column:
-                            print(f"  Preserved target column {feature_name} (no log returns)")
-                        if feature_name in excluded_columns:
-                            print(f"  Preserved excluded column {feature_name} (no log returns)")
-                    
-                elif feature_name in trend_features and config.get('use_first_differences', True):
-                    # Apply first differences to trend features
-                    x_train_processed[:, :, i] = self._apply_first_differences(x_train_processed[:, :, i])
-                    x_val_processed[:, :, i] = self._apply_first_differences(x_val_processed[:, :, i])
-                    x_test_processed[:, :, i] = self._apply_first_differences(x_test_processed[:, :, i])
-                    processing_stats['applied_transforms'][feature_name] = 'first_differences'
-                    print(f"  Applied first differences to {feature_name}")
-                    
-                elif feature_name in subperiodicity_features and config.get('use_log_returns', True):
-                    # Apply log returns to sub-periodicity features
-                    x_train_processed[:, :, i] = self._apply_log_returns(x_train_processed[:, :, i])
-                    x_val_processed[:, :, i] = self._apply_log_returns(x_val_processed[:, :, i])
-                    x_test_processed[:, :, i] = self._apply_log_returns(x_test_processed[:, :, i])
-                    processing_stats['applied_transforms'][feature_name] = 'log_returns'
-                    print(f"  Applied log returns to sub-periodicity {feature_name}")
-                    
-                elif feature_name in wavelet_features and config.get('use_log_returns', True):
-                    # Apply log returns to wavelet features
-                    x_train_processed[:, :, i] = self._apply_log_returns(x_train_processed[:, :, i])
-                    x_val_processed[:, :, i] = self._apply_log_returns(x_val_processed[:, :, i])
-                    x_test_processed[:, :, i] = self._apply_log_returns(x_test_processed[:, :, i])
-                    processing_stats['applied_transforms'][feature_name] = 'log_returns'
-                    print(f"  Applied log returns to wavelet {feature_name}")
-                    
-                elif feature_name in mtm_features and config.get('use_log_returns', True):
-                    # Apply log returns to MTM features
-                    x_train_processed[:, :, i] = self._apply_log_returns(x_train_processed[:, :, i])
-                    x_val_processed[:, :, i] = self._apply_log_returns(x_val_processed[:, :, i])
-                    x_test_processed[:, :, i] = self._apply_log_returns(x_test_processed[:, :, i])
-                    processing_stats['applied_transforms'][feature_name] = 'log_returns'
-                    print(f"  Applied log returns to MTM {feature_name}")
-                    
-                elif feature_name in constant_daily_features and config.get('handle_constant_daily_features', True):
-                    # Apply daily differences to constant daily features
-                    x_train_processed[:, :, i] = self._handle_constant_daily_feature(x_train_processed[:, :, i])
-                    x_val_processed[:, :, i] = self._handle_constant_daily_feature(x_val_processed[:, :, i])
-                    x_test_processed[:, :, i] = self._handle_constant_daily_feature(x_test_processed[:, :, i])
-                    processing_stats['applied_transforms'][feature_name] = 'daily_differences'
-                    print(f"  Applied daily differences to {feature_name}")
-                    
-                elif (feature_name in stationary_indicators or 
-                      feature_name in candlestick_patterns or 
-                      feature_name in decomposed_features) and config.get('preserve_stationary_indicators', True):
-                    # Preserve stationary indicators, candlestick patterns, and decomposed features
-                    processing_stats['applied_transforms'][feature_name] = 'preserved'
-                    print(f"  Preserved stationary feature {feature_name}")
-                    
-                else:
-                    # Default: preserve unknown features
-                    processing_stats['applied_transforms'][feature_name] = 'preserved'
-                    print(f"  Preserved unknown feature {feature_name}")
-                    
-            except Exception as e:
-                print(f"ERROR processing feature {feature_name}: {e}")
-                processing_stats['applied_transforms'][feature_name] = f'error: {str(e)}'
-        
-        # Apply post-processing normalization if requested
-        if config.get('normalize_after_preprocessing', True):
-            print("Applying post-processing feature normalization...")
-            x_train_processed, x_val_processed, x_test_processed, norm_stats = self._apply_feature_normalization(
-                x_train_processed, x_val_processed, x_test_processed, feature_names
-            )
-            processing_stats['normalization_stats'] = norm_stats
-        
-        transforms_applied = len([k for k, v in processing_stats['applied_transforms'].items() if v not in ['preserved', 'error']])
-        print(f"SELECTIVE ANTI-NAIVE-LOCK: Applied {transforms_applied} transforms, preserved {len(feature_names) - transforms_applied} features")
-        
-        return x_train_processed, x_val_processed, x_test_processed, processing_stats
-    
-    def _apply_log_returns(self, feature_data: np.ndarray) -> np.ndarray:
-        """
-        Apply log returns transformation: ln(x_t / x_{t-1})
-        
-        Args:
-            feature_data: 2D array (samples, time_steps) containing denormalized price data
-            
-        Returns:
-            Transformed data with same shape
-        """
-        processed_data = feature_data.copy()
-        
-        for sample_idx in range(processed_data.shape[0]):
-            series = processed_data[sample_idx, :]
-            
-            # Apply log returns: ln(P_t / P_{t-1})
-            for t in range(1, len(series)):
-                if series[t-1] > 0 and series[t] > 0:  # Valid prices
-                    processed_data[sample_idx, t] = np.log(series[t] / series[t-1])
-                else:
-                    processed_data[sample_idx, t] = 0.0  # Fallback for invalid prices
-            
-            # First value gets zero change
-            processed_data[sample_idx, 0] = 0.0
-            
-        return processed_data
-    
-    def _apply_mild_standardization(self, feature_data: np.ndarray) -> np.ndarray:
-        """
-        Apply mild standardization: (x - median) / (std + epsilon)
-        Less aggressive than z-score normalization.
-        
-        Args:
-            feature_data: 2D array (samples, time_steps)
-            
-        Returns:
-            Mildly standardized data
-        """
-        # Use median instead of mean for robustness
-        median_val = np.median(feature_data)
-        std_val = np.std(feature_data)
-        
-        # Add epsilon to prevent division by very small numbers
-        epsilon = 1e-6
-        standardized = (feature_data - median_val) / (std_val + epsilon)
-        
-        # Clip extreme values to prevent outliers from dominating
-        standardized = np.clip(standardized, -3, 3)
-        
-        return standardized
-    
-    def _apply_cyclic_encoding_simplified(self, feature_data: np.ndarray, feature_name: str) -> np.ndarray:
-        """
-        Apply simplified cyclic encoding: sin(2π * x / period)
-        Only returns sin component to keep same dimensionality.
-        
-        Args:
-            feature_data: 2D array (samples, time_steps)
-            feature_name: Name of feature to determine period
-            
-        Returns:
-            Sin-encoded data with same shape
-        """
-        # Determine period based on feature name
-        if 'hour_of_day' in feature_name:
-            period = 24
-        elif 'day_of_week' in feature_name:
-            period = 7
-        elif 'day_of_month' in feature_name:
-            period = 31  # Approximate, could be made more sophisticated
-        else:
-            period = np.max(feature_data) + 1  # Fallback: use data range
-        
-        # Apply cyclic encoding (sin component only)
-        angle = 2 * np.pi * feature_data / period
-        sin_encoded = np.sin(angle)
-        
-        return sin_encoded
-    
-    def _apply_first_differences(self, feature_data: np.ndarray) -> np.ndarray:
-        """
-        Apply first differences transformation: x_t - x_{t-1}
-        
-        Args:
-            feature_data: 2D array (samples, time_steps)
-            
-        Returns:
-            Transformed data with same shape
-        """
-        differences = np.zeros_like(feature_data)
-        differences[:, 1:] = feature_data[:, 1:] - feature_data[:, :-1]
-        differences[:, 0] = 0  # First time step has no previous value
-        
-        return differences
-    
-    def _handle_constant_daily_feature(self, feature_data: np.ndarray) -> np.ndarray:
-        """
-        Handle features that are constant within each day (like S&P500, VIX).
-        Use differences between days instead of returns.
-        
-        Args:
-            feature_data: 2D array (samples, time_steps)
-            
-        Returns:
-            Transformed data emphasizing daily changes
-        """
-        # For features constant within day, use a longer-term difference
-        differences = np.zeros_like(feature_data)
-        
-        # CRITICAL FIX: Use appropriate step size based on data frequency
-        # Default to 1-step difference for daily data, 24-step for hourly data
-        step_size = 1  # Conservative default for daily data
-        differences[:, step_size:] = feature_data[:, step_size:] - feature_data[:, :-step_size]
-        
-        return differences
-    
-    def _apply_uniform_log_returns(self, 
-                                  x_train: np.ndarray,
-                                  x_val: np.ndarray,
-                                  x_test: np.ndarray,
-                                  feature_names: List[str],
-                                  config: Dict[str, Any]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
-        """Apply log returns to all features uniformly."""
-        
-        x_train_processed = x_train.copy()
-        x_val_processed = x_val.copy()
-        x_test_processed = x_test.copy()
-        
-        processing_stats = {'applied_transforms': {}}
-        
-        print(f"Applying uniform log returns to all {len(feature_names)} features...")
-        
-        for i, feature_name in enumerate(feature_names):
-            try:
-                x_train_processed[:, :, i] = self._apply_log_returns(x_train_processed[:, :, i])
-                x_val_processed[:, :, i] = self._apply_log_returns(x_val_processed[:, :, i])
-                x_test_processed[:, :, i] = self._apply_log_returns(x_test_processed[:, :, i])
-                processing_stats['applied_transforms'][feature_name] = 'log_returns'
-            except Exception as e:
-                print(f"ERROR applying uniform log returns to {feature_name}: {e}")
-                processing_stats['applied_transforms'][feature_name] = f'error: {str(e)}'
-        
-        print("Applied uniform log returns to all features")
-        return x_train_processed, x_val_processed, x_test_processed, processing_stats
-    
-    def _apply_feature_normalization(self, 
-                                   x_train: np.ndarray,
-                                   x_val: np.ndarray, 
-                                   x_test: np.ndarray,
-                                   feature_names: List[str]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
-        """
-        Apply feature-wise z-score normalization after preprocessing.
-        
-        Args:
-            x_train, x_val, x_test: Sliding window matrices
-            feature_names: Feature names for logging
-            
-        Returns:
-            Normalized matrices and normalization statistics
-        """
-        norm_stats = {}
-        
-        print("Applying post-processing normalization...")
-        
-        # Calculate statistics from training data only
-        for i in range(x_train.shape[2]):
-            # Flatten across samples and time steps for each feature
-            train_feature_flat = x_train[:, :, i].flatten()
-            
-            # Remove any NaN or infinite values for statistics calculation
-            valid_mask = np.isfinite(train_feature_flat)
-            if np.any(valid_mask):
-                train_feature_clean = train_feature_flat[valid_mask]
-                feature_mean = np.mean(train_feature_clean)
-                feature_std = np.std(train_feature_clean)
+            elif any(tf.lower() in feature_lower for tf in trend_features) and config.get('use_first_differences', True):
+                # Apply first differences to trend features
+                processed_df[feature_name] = self._apply_first_differences_to_series(
+                    processed_df[feature_name]
+                )
+                print(f"        Applied first differences to {feature_name}")
                 
-                # Avoid division by zero
-                if feature_std < 1e-8:
-                    feature_std = 1.0
-                    
-                # Apply normalization to all datasets
-                x_train[:, :, i] = (x_train[:, :, i] - feature_mean) / feature_std
-                x_val[:, :, i] = (x_val[:, :, i] - feature_mean) / feature_std
-                x_test[:, :, i] = (x_test[:, :, i] - feature_mean) / feature_std
-                
-                norm_stats[feature_names[i]] = {'mean': feature_mean, 'std': feature_std}
             else:
-                print(f"WARNING: Feature {feature_names[i]} has no valid values for normalization")
-                norm_stats[feature_names[i]] = {'mean': 0.0, 'std': 1.0}
+                # Preserve other features (stationary indicators, target column, etc.)
+                print(f"        Preserved {feature_name}")
+                
+        except Exception as e:
+            print(f"        ERROR processing {feature_name}: {e}")
+            # In case of error, preserve the original feature
+            processed_df[feature_name] = df[feature_name]
+    
+    return processed_df
+
+def apply_cyclic_encoding_to_series(self, series, feature_name):
+    """Apply cyclic encoding to a pandas Series."""
+    # Determine period based on feature name (case-insensitive)
+    feature_lower = feature_name.lower()
+    
+    if 'hour' in feature_lower:
+        period = 24
+    elif 'day_of_week' in feature_lower or 'dayofweek' in feature_lower:
+        period = 7
+    elif 'day_of_month' in feature_lower or 'dayofmonth' in feature_lower:
+        period = 31
+    elif 'month' in feature_lower:
+        period = 12
+    else:
+        # Fallback: use the range of the data
+        period = max(series) - min(series) + 1 if len(series) > 0 else 1
+    
+    # Apply cyclic encoding (sin component only) with safe handling
+    try:
+        angle = 2 * np.pi * series / period
+        return np.sin(angle)
+    except Exception as e:
+        print(f"        Warning: Cyclic encoding failed for {feature_name}: {e}")
+        return series  # Return original if encoding fails
+
+def apply_log_returns_to_series(self, series):
+    """Apply log returns to a pandas Series: ln(x_t / x_{t-1})."""
+    log_returns = series.copy()
+    
+    # Calculate log returns with safe handling
+    try:
+        for i in range(1, len(series)):
+            if pd.notna(series.iloc[i-1]) and pd.notna(series.iloc[i]) and series.iloc[i-1] > 0 and series.iloc[i] > 0:
+                log_returns.iloc[i] = np.log(series.iloc[i] / series.iloc[i-1])
+            else:
+                log_returns.iloc[i] = 0.0
         
-        return x_train, x_val, x_test, norm_stats
+        # First value gets zero change
+        log_returns.iloc[0] = 0.0
+        
+        # Replace any inf or nan values with 0
+        log_returns = log_returns.replace([np.inf, -np.inf, np.nan], 0.0)
+        
+    except Exception as e:
+        print(f"        Warning: Log returns calculation failed: {e}")
+        return series  # Return original if calculation fails
+    
+    return log_returns
+
+def apply_first_differences_to_series(self, series):
+    """Apply first differences to a pandas Series: x_t - x_{t-1}."""
+    differences = series.copy()
+    
+    try:
+        # Calculate first differences with safe handling
+        differences.iloc[1:] = series.iloc[1:].values - series.iloc[:-1].values
+        differences.iloc[0] = 0.0  # First value gets zero change
+        
+        # Replace any inf or nan values with 0
+        differences = differences.replace([np.inf, -np.inf, np.nan], 0.0)
+        
+    except Exception as e:
+        print(f"        Warning: First differences calculation failed: {e}")
+        return series  # Return original if calculation fails
+    
+    return differences
+
+
+def apply_feature_normalization(self, 
+                                x_train: np.ndarray,
+                                x_val: np.ndarray, 
+                                x_test: np.ndarray,
+                                feature_names: List[str]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
+    """
+    Apply feature-wise z-score normalization after preprocessing.
+    
+    Args:
+        x_train, x_val, x_test: Sliding window matrices
+        feature_names: Feature names for logging
+        
+    Returns:
+        Normalized matrices and normalization statistics
+    """
+    norm_stats = {}
+    
+    print("Applying post-processing normalization...")
+    
+    # Calculate statistics from training data only
+    for i in range(x_train.shape[2]):
+        # Flatten across samples and time steps for each feature
+        train_feature_flat = x_train[:, :, i].flatten()
+        
+        # Remove any NaN or infinite values for statistics calculation
+        valid_mask = np.isfinite(train_feature_flat)
+        if np.any(valid_mask):
+            train_feature_clean = train_feature_flat[valid_mask]
+            feature_mean = np.mean(train_feature_clean)
+            feature_std = np.std(train_feature_clean)
+            
+            # Avoid division by zero
+            if feature_std < 1e-8:
+                feature_std = 1.0
+                
+            # Apply normalization to all datasets
+            x_train[:, :, i] = (x_train[:, :, i] - feature_mean) / feature_std
+            x_val[:, :, i] = (x_val[:, :, i] - feature_mean) / feature_std
+            x_test[:, :, i] = (x_test[:, :, i] - feature_mean) / feature_std
+            
+            norm_stats[feature_names[i]] = {'mean': feature_mean, 'std': feature_std}
+        else:
+            print(f"WARNING: Feature {feature_names[i]} has no valid values for normalization")
+            norm_stats[feature_names[i]] = {'mean': 0.0, 'std': 1.0}
+    
+    return x_train, x_val, x_test, norm_stats

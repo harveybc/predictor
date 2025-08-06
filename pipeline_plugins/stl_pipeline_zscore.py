@@ -2,9 +2,23 @@
 """
 STL Pipeline Plugin - Z-Score Version 
 
-Updated to work with the modular preprocessor that uses z-score normalization.
-Properly handles target_returns_means and target_returns_stds for each horizon.
-Maintains all original functionality, outputs, and printed messages.
+1. Get from preprocessor the train, validation and test datasets(sliding windows matrixes), 
+   normalized targets and target normalization stats and denormalized baselines per horizon.
+2. Perform selective column exclusion from datasets.
+4. Prepare datasets for training.
+5. Perform training (generate training and validation predictions and uncertainties).
+6. Denormalize predictions, targets and uncertainties per horizon with the target normalization stats per horizon.
+7. Detransform (inverse logreturns) predictions, targets and uncertainties to real-world scale.
+8. Calculate final predictions by adding detransformed predictions to baselines.
+9. Calculate final targets by adding detransformed targets to baselines.
+10. Calculate metrics for the final predictions vs final targets (MAE, R2, SNR).
+11. Save metrics to output result csv file.
+12. Save predictions and uncertainties to output csv files.
+13. Save plots of model architecture and loss curve.
+14. Save predictions(true, predicted, uncertainty) plot for the specified horizon.
+15. Save predictor keras trained model
+16. Save debug info json.
+17. Save output config json.
 """
 
 import time
@@ -64,7 +78,8 @@ class STLPipelinePlugin:
         data_sets = ["Train", "Validation", "Test"]
         metrics_results = {ds: {mn: {h: [] for h in predicted_horizons} for mn in metric_names} for ds in data_sets}
 
-        # 1. Get datasets from preprocessor
+        # 1. Get from preprocessor the train, validation and test datasets(sliding windows matrixes), 
+        #    normalized targets and target normalization stats and denormalized baselines per horizon.
         print("Loading/processing datasets via Preprocessor...")
         datasets, preprocessor_params = preprocessor_plugin.run_preprocessing(config)
         print("Preprocessor finished.")
@@ -89,48 +104,7 @@ class STLPipelinePlugin:
         val_dates = datasets.get("y_val_dates")
         test_dates = datasets.get("y_test_dates")
         
-        # --- COLUMN EXCLUSION: Remove specified columns from sliding windows AFTER targets are calculated ---
-        excluded_columns = config.get("excluded_columns", [])
-        if excluded_columns:
-            print(f"\n--- Removing excluded columns from sliding windows: {excluded_columns} ---")
-            
-            # Get column names from datasets (returned by preprocessor as feature_names)
-            column_names = datasets.get("feature_names", None)
-            if column_names is None:
-                print("WARNING: No feature_names available from preprocessor, cannot exclude columns by name")
-            else:
-                print(f"Available columns: {column_names}")
-                
-                # Find indices of columns to exclude
-                excluded_indices = []
-                for col_name in excluded_columns:
-                    if col_name in column_names:
-                        excluded_indices.append(column_names.index(col_name))
-                        print(f"  Excluding column '{col_name}' at index {column_names.index(col_name)}")
-                    else:
-                        print(f"  WARNING: Column '{col_name}' not found in dataset columns")
-                
-                if excluded_indices:
-                    # Remove excluded columns from all datasets (last dimension = features)
-                    remaining_indices = [i for i in range(len(column_names)) if i not in excluded_indices]
-                    print(f"  Keeping {len(remaining_indices)} columns out of {len(column_names)} original columns")
-                    
-                    print(f"  Original shapes: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
-                    X_train = X_train[:, :, remaining_indices]
-                    X_val = X_val[:, :, remaining_indices]
-                    X_test = X_test[:, :, remaining_indices]
-                    print(f"  New shapes after exclusion: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
-                    
-                    # Update column names in datasets and preprocessor_params for reference
-                    new_column_names = [column_names[i] for i in remaining_indices]
-                    datasets["feature_names"] = new_column_names
-                    preprocessor_params["feature_names"] = new_column_names
-                    print(f"  Updated column names: {new_column_names}")
-                else:
-                    print("  No valid columns to exclude")
-        else:
-            print("No columns specified for exclusion")
-        
+        #
         baseline_train = datasets.get("baseline_train")
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")

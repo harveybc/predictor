@@ -3,6 +3,37 @@ import pandas as pd
 import json
 from sklearn.preprocessing import StandardScaler
 
+def load_normalized_csv(config):
+        """Step 1: Load normalized CSV data as-is, limiting rows to max_steps_ configurations."""
+        data = {}
+        
+        file_mappings = [
+            ('x_train_df', 'x_train_file', 'max_steps_train'),
+            ('y_train_df', 'y_train_file', 'max_steps_train'),
+            ('x_val_df', 'x_validation_file', 'max_steps_val'),
+            ('y_val_df', 'y_validation_file', 'max_steps_val'),
+            ('x_test_df', 'x_test_file', 'max_steps_test'),
+            ('y_test_df', 'y_test_file', 'max_steps_test')
+        ]
+        
+        for data_key, file_key, max_steps_key in file_mappings:
+            if file_key in config and config[file_key]:
+                try:
+                    df = pd.read_csv(config[file_key], parse_dates=True, index_col=0)
+                    if config.get(max_steps_key):
+                        df = df.head(config[max_steps_key])
+                    if len(df) == 0:
+                        print(f"WARNING: Empty dataframe loaded from {config[file_key]}")
+                    else:
+                        print(f"  Loaded {data_key}: {df.shape}")
+                    data[data_key] = df
+                except Exception as e:
+                    print(f"ERROR loading {config[file_key]}: {e}")
+                    # Continue processing other files
+        if not data:
+            raise ValueError("No data files could be loaded - check file paths in config")
+        return data
+
 def load_normalization_json(config):
     """Loads normalization parameters from JSON file."""
     if config.get("use_normalization_json"):
@@ -35,74 +66,20 @@ def denormalize(data, norm_json, column_name="CLOSE"):
             return data
     return data
 
-def verify_date_consistency(date_lists, dataset_name):
-    """
-    Verifies that all date arrays in date_lists have the same first and last elements.
-    Prints a warning if any array does not match.
-    """
-    if not date_lists: 
-        return
-    valid_date_lists = [d for d in date_lists if d is not None and len(d) > 0]
-    if not valid_date_lists: 
-        return
-    first_len = len(valid_date_lists[0])
-    if not all(len(d) == first_len for d in valid_date_lists):
-         print(f"WARN: Length mismatch in {dataset_name} dates: {[len(d) for d in valid_date_lists]}")
-         return
-    try: 
-        first = valid_date_lists[0][0]
-        last = valid_date_lists[0][-1]
-    except IndexError: 
-        print(f"WARN: Could not access first/last element in {dataset_name} dates.")
-        return
-    consistent = True
-    for i, d in enumerate(valid_date_lists):
-        try:
-            if len(d) > 0:
-                if d[0] != first or d[-1] != last:
-                    print(f"Warning: Date array {i} in {dataset_name} range ({d[0]} to {d[-1]}) does not match first array ({first} to {last}).")
-                    consistent = False
-            else: 
-                print(f"Warning: Date array {i} in {dataset_name} is empty.")
-                consistent = False
-        except Exception as e: 
-            print(f"Warning: Could not compare dates in {dataset_name} for array {i}. Error: {e}.")
-            consistent = False
-
-def normalize_series(series, name, scalers, fit=False, normalize_features=True):
-    """Normalizes a series using StandardScaler."""
-    if not normalize_features: 
-        return series.astype(np.float32)
+def denormalize_all_datasets(normalized_data, config):
+    """Step 2: Denormalize all datasets using JSON parameters."""
+    norm_json = load_normalization_json(config)
+    denormalized = {}
+        
+    for data_key, normalized_df in normalized_data.items():
+        denorm_df = normalized_df.copy()
+        for column in denorm_df.columns:
+            if column in norm_json:
+                denorm_df[column] = denormalize(normalized_df[column].values, norm_json, column)
+        denormalized[data_key] = denorm_df
+        
+    return denormalized
     
-    series = series.astype(np.float32)
-    if np.any(np.isnan(series)) or np.any(np.isinf(series)):
-        print(f"WARN: NaNs/Infs in '{name}' pre-norm. Filling...", end="")
-        series = pd.Series(series).fillna(method='ffill').fillna(method='bfill').values
-        if np.any(np.isnan(series)) or np.any(np.isinf(series)):
-            print(f" FAILED. Filling with 0.", end="")
-            series = np.nan_to_num(series, nan=0.0, posinf=0.0, neginf=0.0)
-        print(" OK.")
-    
-    data_reshaped = series.reshape(-1, 1)
-    if fit:
-        scaler = StandardScaler()
-        if np.std(data_reshaped) < 1e-9:
-            print(f"WARN: '{name}' constant. Dummy scaler.")
-            class DummyScaler:
-                def fit(self, X): pass
-                def transform(self, X): return X.astype(np.float32)
-                def inverse_transform(self, X): return X.astype(np.float32)
-            scaler = DummyScaler()
-        else: 
-            scaler.fit(data_reshaped)
-        scalers[name] = scaler
-    else:
-        if name not in scalers: 
-            raise RuntimeError(f"Scaler '{name}' not fitted.")
-        scaler = scalers[name]
-    
-    normalized_data = scaler.transform(data_reshaped)
-    return normalized_data.flatten()
 
 def align_features(feature_dict, base_length):
     """Aligns features to a common base length."""
@@ -137,3 +114,46 @@ def align_features(feature_dict, base_length):
     if len(unique_lengths) > 1: 
         raise RuntimeError(f"Alignment FAILED! Inconsistent lengths: {final_lengths}")
     return aligned_features, min_len
+
+def exclude_columns_from_datasets(datasets, preprocessor_params, config):
+    # Perform selective column exclusion from datasets.
+    excluded_columns = config.get("excluded_columns", [])
+    if excluded_columns:
+        print(f"\n--- Removing excluded columns from datasets: {excluded_columns} ---")
+        # Get column names from datasets (returned by preprocessor as feature_names)
+        column_names = datasets.get("feature_names", None)
+        if column_names is None:
+            print("WARNING: No feature_names available from preprocessor, cannot exclude columns by name")
+        else:
+            print(f"Available columns: {column_names}")
+            
+            # Find indices of columns to exclude
+            excluded_indices = []
+            for col_name in excluded_columns:
+                if col_name in column_names:
+                    excluded_indices.append(column_names.index(col_name))
+                    print(f"  Excluding column '{col_name}' at index {column_names.index(col_name)}")
+                else:
+                    print(f"  WARNING: Column '{col_name}' not found in dataset columns")
+            
+            if excluded_indices:
+                # Remove excluded columns from all datasets (last dimension = features)
+                remaining_indices = [i for i in range(len(column_names)) if i not in excluded_indices]
+                print(f"  Keeping {len(remaining_indices)} columns out of {len(column_names)} original columns")
+                
+                print(f"  Original shapes: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
+                X_train = X_train[:, :, remaining_indices]
+                X_val = X_val[:, :, remaining_indices]
+                X_test = X_test[:, :, remaining_indices]
+                print(f"  New shapes after exclusion: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
+                
+                # Update column names in datasets and preprocessor_params for reference
+                new_column_names = [column_names[i] for i in remaining_indices]
+                datasets["feature_names"] = new_column_names
+                preprocessor_params["feature_names"] = new_column_names
+                print(f"  Updated column names: {new_column_names}")
+            else:
+                print("  No valid columns to exclude")
+    else:
+        print("No columns specified for exclusion")
+    return datasets, preprocessor_params

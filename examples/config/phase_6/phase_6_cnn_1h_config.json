@@ -22,6 +22,7 @@
     "preprocessor_plugin": "stl_preprocessor_zscore",
     "use_daily": false,
     "max_steps_train": 25200,
+    "max_steps_val": 6300,
     "max_steps_test": 6300,
     "intermediate_layers": 2,
     "initial_layer_size": 48,
