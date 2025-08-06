@@ -332,98 +332,6 @@ class STLPipelinePlugin:
             else: 
                 print("WARN: Skipping Train/Val/Test stats calculation due to data mismatch.")
 
-            # Save Loss Plot
-            loss_plot_file = config.get("loss_plot_file")
-            plt.figure(figsize=(10, 5))
-            plt.plot(history.history['loss'], label='Train')
-            plt.plot(history.history['val_loss'], label='Val')
-            plt.title(f"Loss-Iter {iteration}")
-            plt.ylabel("Loss")
-            plt.xlabel("Epoch")
-            plt.legend()
-            plt.grid(True, alpha=0.6)
-            plt.savefig(loss_plot_file)
-            plt.close()
-            print(f"Loss plot saved: {loss_plot_file}")
-
-            
-            
-            # --- Convert test predictions to real-world prices ---
-            print("\n--- Converting test predictions to real-world prices ---")
-            
-            # Convert test predictions to real-world prices
-            real_test_price_preds = []
-            real_test_price_targets = []
-            real_test_price_uncertainties = []
-            
-            for idx, h in enumerate(predicted_horizons):
-                # Get horizon-specific normalization stats
-                target_mean = target_returns_means[idx]
-                target_std = target_returns_stds[idx]
-                
-                # Convert predictions: z-score normalized -> log returns -> prices
-                # Note: predict_with_uncertainty returns predictions in same scale as targets (z-score normalized)
-                test_log_normalized_preds = list_test_preds[idx].flatten()
-                test_log_returns = test_log_normalized_preds * target_std + target_mean
-                
-                # Convert targets: z-score normalized -> log returns -> prices
-                test_log_normalized_targets = y_test_list[idx].flatten()
-                test_target_log_returns = test_log_normalized_targets * target_std + target_mean
-                
-                # Convert uncertainties: z-score normalized -> log returns -> price uncertainty
-                test_log_normalized_unc = list_test_unc[idx].flatten()
-                test_unc_log_returns = test_log_normalized_unc * target_std
-                
-                # CRITICAL FIX: Baselines and predictions are perfectly aligned  
-                num_test = len(test_log_returns)
-                
-                # Use the corresponding baselines (perfectly aligned with predictions)
-                test_baselines = baseline_test[:num_test]
-                
-                # Convert log returns to real prices using aligned baselines
-                test_prices = test_baselines * np.exp(test_log_returns)
-                test_target_prices = test_baselines * np.exp(test_target_log_returns)
-                
-                # Convert uncertainty to price scale: uncertainty represents range around prediction
-                # uncertainty_price = prediction_price * uncertainty_log_returns (for small uncertainties)
-                test_price_unc = test_prices * np.abs(test_unc_log_returns)
-                
-                real_test_price_preds.append(test_prices)
-                real_test_price_targets.append(test_target_prices)
-                real_test_price_uncertainties.append(test_price_unc)
-                
-                print(f"  H{h}: Converted {num_test} test points to real prices")
-            
-            print("✅ Test predictions and targets converted to real-world prices")
-
-            # Calculate test metrics using real-world price data
-            for idx, h in enumerate(predicted_horizons):
-                try:
-                    # Use real-world price data for test metrics
-                    test_preds_h = real_test_price_preds[idx].flatten()
-                    test_target_h = real_test_price_targets[idx].flatten()
-                    test_unc_h = real_test_price_uncertainties[idx].flatten()
-                    
-                    # Ensure consistent lengths
-                    min_test_len = min(len(test_preds_h), len(test_target_h), len(test_unc_h))
-                    test_preds_h = test_preds_h[:min_test_len]
-                    test_target_h = test_target_h[:min_test_len]
-                    test_unc_h = test_unc_h[:min_test_len]
-                    
-                    # Calculate metrics in real-world price scale
-                    test_mae_h = np.mean(np.abs(test_preds_h - test_target_h))
-                    test_r2_h = r2_score(test_target_h, test_preds_h)
-                    test_unc_mean_h = np.mean(test_unc_h)
-                    test_snr_h = np.mean(test_preds_h) / (test_unc_mean_h + 1e-9)
-                    
-                    metrics_results["Test"]["MAE"][h].append(test_mae_h)
-                    metrics_results["Test"]["R2"][h].append(test_r2_h)
-                    metrics_results["Test"]["Uncertainty"][h].append(test_unc_mean_h)
-                    metrics_results["Test"]["SNR"][h].append(test_snr_h)
-                    
-                except Exception as e: 
-                    print(f"WARN: Error Test metrics H={h}: {e}")
-                    [metrics_results["Test"][m][h].append(np.nan) for m in metric_names]
 
             # Print Iteration Summary (using PLOTTED horizon)
             try:
@@ -444,11 +352,14 @@ class STLPipelinePlugin:
                 print("*" * 72)
             except Exception as e: 
                 print(f"WARN: Error printing iter summary: {e}")
+        
             # --- End of Iteration Loop ---
 
         # --- Consolidate results across iterations FOR ALL HORIZONS (Avg/Std/Min/Max) ---
+
         print("\n--- Aggregating Results Across Iterations (All Horizons) ---")
         results_list = []
+
         # (Logic confirmed correct and includes Min/Max)
         for ds in data_sets:
             for mn in metric_names:
@@ -471,7 +382,10 @@ class STLPipelinePlugin:
                             "Min": np.nan, 
                             "Max": np.nan
                         })
-        
+
+        # 8. Save metrics to output result csv file.
+        print("Saving metrics to output results CSV file...")
+
         results_df = pd.DataFrame(results_list)
         results_file = config.get("results_file", self.params["results_file"])
         try: 
@@ -481,104 +395,73 @@ class STLPipelinePlugin:
         except Exception as e: 
             print(f"ERROR saving results: {e}")
 
-        # --- Save Final Test Outputs (Predictions & Uncertainties) ---
-        print("\n--- Saving Final Test Outputs ---")
+        # 9. Save predictions and uncertainties to output csv files.
+        # --- Save Predictions CSV ---
+        output_file = config.get("output_file", self.params["output_file"])
         try:
-            # Use last iteration's results
-            if list_test_preds is None or list_test_unc is None: 
-                raise ValueError("Test predictions/uncertainties unavailable from last iteration.")
-            final_predictions = list_test_preds
-            final_uncertainties = list_test_unc
-
-            # Determine consistent length for output
-            num_test_points = min(len(final_predictions[0]), len(baseline_test))
-            if test_dates is not None:
-                num_test_points = min(num_test_points, len(test_dates))
-            print(f"Output length: {num_test_points}")
+            # Validate consistent lengths
+            lengths = [len(v) for v in output_data.values()]
+            if len(set(lengths)) > 1: 
+                raise ValueError(f"Length mismatch in output data: {dict(zip(output_data.keys(), lengths))}")
             
-            # Prepare output dates
-            if test_dates is not None and len(test_dates) > 0:
-                final_dates = list(test_dates[:num_test_points])
-                print(f"Using {len(final_dates)} dates from preprocessor")
-            else:
-                print("ERROR: No test_dates from preprocessor! Using fallback indices.")
-                final_dates = list(range(num_test_points))
-                
-            # CRITICAL FIX: Baselines and predictions are perfectly aligned
-            final_baseline = baseline_test[:num_test_points].flatten()
+            # Create and save DataFrame
+            output_df = pd.DataFrame(output_data)
+            cols_order = ['DATE_TIME', 'test_CLOSE']
+            for h in predicted_horizons:
+                cols_order.extend([f"Target_H{h}", f"Prediction_H{h}"])
+            output_df = output_df.reindex(columns=[c for c in cols_order if c in output_df.columns])
+            
+            write_csv(file_path=output_file, data=output_df, include_date=False, headers=True)
+            print(f"Predictions saved: {output_file} ({len(output_df)} rows)")
+        except Exception as e: 
+            print(f"ERROR saving predictions CSV: {e}")
 
-            # Validate baseline data
-            if len(final_baseline) == 0:
-                print(f"ERROR: Empty baseline_test - cannot generate outputs!")
-                if len(list_test_preds[0]) > 0:
-                    fallback_value = np.mean(list_test_preds[0][:10]) if len(list_test_preds[0]) > 10 else 1000.0
-                    final_baseline = np.full(num_test_points, fallback_value)
-                    print(f"Using fallback baseline value: {fallback_value}")
-                else:
-                    raise ValueError("No baseline data available and no fallback possible")
-
-            # Prepare output dictionaries
-            output_data = {"DATE_TIME": final_dates}
-            uncertainty_data = {"DATE_TIME": final_dates}
-
-            # Add baseline price column
-            output_data["test_CLOSE"] = final_baseline.flatten()
-
-            # Process each horizon - add real-world price data to output
-            for idx, h in enumerate(predicted_horizons):
-                # Use real-world price data (already converted correctly)
-                pred_prices = real_test_price_preds[idx][:num_test_points].flatten()
-                target_prices = real_test_price_targets[idx][:num_test_points].flatten()
-                price_uncertainties = real_test_price_uncertainties[idx][:num_test_points].flatten()
-                
-                # Add to output dictionaries
-                output_data[f"Target_H{h}"] = target_prices
-                output_data[f"Prediction_H{h}"] = pred_prices
-                uncertainty_data[f"Uncertainty_H{h}"] = price_uncertainties
-
-            # --- Save Predictions CSV ---
-            output_file = config.get("output_file", self.params["output_file"])
+        # --- Save Uncertainties CSV ---
+        uncertainties_file = config.get("uncertainties_file", self.params.get("uncertainties_file"))
+        if uncertainties_file:
             try:
                 # Validate consistent lengths
-                lengths = [len(v) for v in output_data.values()]
+                lengths = [len(v) for v in uncertainty_data.values()]
                 if len(set(lengths)) > 1: 
-                    raise ValueError(f"Length mismatch in output data: {dict(zip(output_data.keys(), lengths))}")
+                    raise ValueError(f"Length mismatch in uncertainty data: {dict(zip(uncertainty_data.keys(), lengths))}")
                 
                 # Create and save DataFrame
-                output_df = pd.DataFrame(output_data)
-                cols_order = ['DATE_TIME', 'test_CLOSE']
-                for h in predicted_horizons:
-                    cols_order.extend([f"Target_H{h}", f"Prediction_H{h}"])
-                output_df = output_df.reindex(columns=[c for c in cols_order if c in output_df.columns])
+                uncertainty_df = pd.DataFrame(uncertainty_data)
+                cols_order = ['DATE_TIME'] + [f"Uncertainty_H{h}" for h in predicted_horizons]
+                uncertainty_df = uncertainty_df.reindex(columns=[c for c in cols_order if c in uncertainty_df.columns])
                 
-                write_csv(file_path=output_file, data=output_df, include_date=False, headers=True)
-                print(f"Predictions saved: {output_file} ({len(output_df)} rows)")
+                write_csv(file_path=uncertainties_file, data=uncertainty_df, include_date=False, headers=True)
+                print(f"Uncertainties saved: {uncertainties_file} ({len(uncertainty_df)} rows)")
             except Exception as e: 
-                print(f"ERROR saving predictions CSV: {e}")
+                print(f"ERROR saving uncertainties CSV: {e}")
+        else: 
+            print("No uncertainties_file specified - skipping uncertainty output.")
 
-            # --- Save Uncertainties CSV ---
-            uncertainties_file = config.get("uncertainties_file", self.params.get("uncertainties_file"))
-            if uncertainties_file:
-                try:
-                    # Validate consistent lengths
-                    lengths = [len(v) for v in uncertainty_data.values()]
-                    if len(set(lengths)) > 1: 
-                        raise ValueError(f"Length mismatch in uncertainty data: {dict(zip(uncertainty_data.keys(), lengths))}")
-                    
-                    # Create and save DataFrame
-                    uncertainty_df = pd.DataFrame(uncertainty_data)
-                    cols_order = ['DATE_TIME'] + [f"Uncertainty_H{h}" for h in predicted_horizons]
-                    uncertainty_df = uncertainty_df.reindex(columns=[c for c in cols_order if c in uncertainty_df.columns])
-                    
-                    write_csv(file_path=uncertainties_file, data=uncertainty_df, include_date=False, headers=True)
-                    print(f"Uncertainties saved: {uncertainties_file} ({len(uncertainty_df)} rows)")
-                except Exception as e: 
-                    print(f"ERROR saving uncertainties CSV: {e}")
-            else: 
-                print("No uncertainties_file specified - skipping uncertainty output.")
-        except Exception as e: 
-            print(f"ERROR during final output saving: {e}")
+        # 10. Save plots of model architecture and loss curve.
+        # Save Loss Plot
+        loss_plot_file = config.get("loss_plot_file")
+        plt.figure(figsize=(10, 5))
+        plt.plot(history.history['loss'], label='Train')
+        plt.plot(history.history['val_loss'], label='Val')
+        plt.title(f"Loss-Iter {iteration}")
+        plt.ylabel("Loss")
+        plt.xlabel("Epoch")
+        plt.legend()
+        plt.grid(True, alpha=0.6)
+        plt.savefig(loss_plot_file)
+        plt.close()
+        print(f"Loss plot saved: {loss_plot_file}")
 
+        # --- Save Model Plot (if available) ---
+        if plot_model is not None and hasattr(predictor_plugin, 'model') and predictor_plugin.model is not None:
+            try: 
+                model_plot_file = config.get('model_plot_file', 'model_plot.png')
+                plot_model(predictor_plugin.model, to_file=model_plot_file, show_shapes=True, show_layer_names=True, dpi=300)
+                print(f"Model plot saved: {model_plot_file}")
+            except Exception as e: 
+                print(f"WARN: Failed model plot: {e}")
+
+        # 11. Save plot of predictions(true, predicted, uncertainty) for the specified horizon.
         # --- Generate Prediction Plot for plotted_horizon ---
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
@@ -625,15 +508,7 @@ class STLPipelinePlugin:
             traceback.print_exc()
             plt.close()
 
-                # --- Save Model Plot (if available) ---
-        if plot_model is not None and hasattr(predictor_plugin, 'model') and predictor_plugin.model is not None:
-            try: 
-                model_plot_file = config.get('model_plot_file', 'model_plot.png')
-                plot_model(predictor_plugin.model, to_file=model_plot_file, show_shapes=True, show_layer_names=True, dpi=300)
-                print(f"Model plot saved: {model_plot_file}")
-            except Exception as e: 
-                print(f"WARN: Failed model plot: {e}")
-
+        # 12. Save predictor keras trained model
         # --- Save Model ---
         if hasattr(predictor_plugin, 'save') and callable(predictor_plugin.save):
             save_model_file = config.get("save_model", "pretrained_model.keras")
@@ -642,9 +517,32 @@ class STLPipelinePlugin:
                 print(f"Model saved: {save_model_file}")
             except Exception as e: 
                 print(f"ERROR saving model: {e}")
+        
+        #13. Save debug info json.
+        debug_info = self.get_debug_info()
+        self.add_debug_info(debug_info)
+        debug_info_file = config.get("debug_info_file", "debug_info.json")
+        try:
+            with open(debug_info_file, 'w') as f:
+                json.dump(debug_info, f, indent=4)
+            print(f"Debug info saved: {debug_info_file}")
+        except Exception as e: 
+            print(f"ERROR saving debug info: {e}")
+
+        # 14. Save output config json dump the config variable as json.
+        output_config_file = config.get("output_config_file", "output_config.json")
+        try:
+            with open(output_config_file, 'w') as f:
+                json.dump(config, f, indent=4)
+            print(f"Output config saved: {output_config_file}")
+        except Exception as e:
+            print(f"ERROR saving output config: {e}")
 
         print(f"\n=== Pipeline Complete (Total: {time.time() - start_time:.2f}s) ===")
         return {}
+
+
+
     def load_and_evaluate_model(self, config, predictor_plugin, preprocessor_plugin):
         from tensorflow.keras.models import load_model
         print(f"Loading pre-trained model from {config['load_model']}...")

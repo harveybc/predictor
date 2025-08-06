@@ -15,6 +15,8 @@
     "stl_plot_file": "examples/results/phase_6/phase_6_25200_1h_stl_decomposition_plot.png",
     "wavelet_plot_file": "examples/results/phase_6/phase_6_25200_1h_wavelet_decomposition_plot.png",
     "tapper_plot_file": "examples/results/phase_6/phase_6_25200_1h_multi_tapper_decomposition_plot.png",
+    "debug_info_file": "examples/results/phase_6/phase_6_cnn_25200_1h_debug_info.json",
+    "output_config_file": "examples/results/phase_6/phase_6_cnn_25200_1h_output_config.json",
     "target_column": "CLOSE",
     "predictor_plugin": "cnn",
     "optimizer_plugin": "default_optimizer",
