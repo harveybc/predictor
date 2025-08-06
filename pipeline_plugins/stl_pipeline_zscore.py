@@ -396,24 +396,39 @@ class STLPipelinePlugin:
             print(f"ERROR saving results: {e}")
 
         # 9. Save predictions and uncertainties to output csv files.
+        # --- Prepare data for CSV output ---
+        num_test_points = len(real_test_price_preds[0])
+        final_dates = list(test_dates[:num_test_points]) if test_dates is not None else list(range(num_test_points))
+        final_baseline = baseline_test[:num_test_points]
+
+        output_data = {"DATE_TIME": final_dates, "Actual_Price": final_baseline}
+        uncertainty_data = {"DATE_TIME": final_dates}
+
+        for idx, h in enumerate(predicted_horizons):
+            output_data[f"Prediction_H{h}"] = real_test_price_preds[idx][:num_test_points].flatten()
+            output_data[f"Target_H{h}"] = real_test_price_targets[idx][:num_test_points].flatten()
+            uncertainty_data[f"Uncertainty_H{h}"] = real_test_price_uncertainties[idx][:num_test_points].flatten()
+
         # --- Save Predictions CSV ---
         output_file = config.get("output_file", self.params["output_file"])
         try:
             # Validate consistent lengths
             lengths = [len(v) for v in output_data.values()]
-            if len(set(lengths)) > 1: 
-                raise ValueError(f"Length mismatch in output data: {dict(zip(output_data.keys(), lengths))}")
-            
+            if len(set(lengths)) > 1:
+                min_len = min(lengths)
+                output_data = {k: v[:min_len] for k, v in output_data.items()}
+                print(f"WARN: Length mismatch in output data, truncating to {min_len} rows.")
+
             # Create and save DataFrame
             output_df = pd.DataFrame(output_data)
-            cols_order = ['DATE_TIME', 'test_CLOSE']
+            cols_order = ['DATE_TIME', 'Actual_Price']
             for h in predicted_horizons:
                 cols_order.extend([f"Target_H{h}", f"Prediction_H{h}"])
             output_df = output_df.reindex(columns=[c for c in cols_order if c in output_df.columns])
-            
+
             write_csv(file_path=output_file, data=output_df, include_date=False, headers=True)
             print(f"Predictions saved: {output_file} ({len(output_df)} rows)")
-        except Exception as e: 
+        except Exception as e:
             print(f"ERROR saving predictions CSV: {e}")
 
         # --- Save Uncertainties CSV ---
@@ -422,19 +437,21 @@ class STLPipelinePlugin:
             try:
                 # Validate consistent lengths
                 lengths = [len(v) for v in uncertainty_data.values()]
-                if len(set(lengths)) > 1: 
-                    raise ValueError(f"Length mismatch in uncertainty data: {dict(zip(uncertainty_data.keys(), lengths))}")
-                
+                if len(set(lengths)) > 1:
+                    min_len = min(lengths)
+                    uncertainty_data = {k: v[:min_len] for k, v in uncertainty_data.items()}
+                    print(f"WARN: Length mismatch in uncertainty data, truncating to {min_len} rows.")
+
                 # Create and save DataFrame
                 uncertainty_df = pd.DataFrame(uncertainty_data)
                 cols_order = ['DATE_TIME'] + [f"Uncertainty_H{h}" for h in predicted_horizons]
                 uncertainty_df = uncertainty_df.reindex(columns=[c for c in cols_order if c in uncertainty_df.columns])
-                
+
                 write_csv(file_path=uncertainties_file, data=uncertainty_df, include_date=False, headers=True)
                 print(f"Uncertainties saved: {uncertainties_file} ({len(uncertainty_df)} rows)")
-            except Exception as e: 
+            except Exception as e:
                 print(f"ERROR saving uncertainties CSV: {e}")
-        else: 
+        else:
             print("No uncertainties_file specified - skipping uncertainty output.")
 
         # 10. Save plots of model architecture and loss curve.
@@ -442,8 +459,9 @@ class STLPipelinePlugin:
         loss_plot_file = config.get("loss_plot_file")
         plt.figure(figsize=(10, 5))
         plt.plot(history.history['loss'], label='Train')
-        plt.plot(history.history['val_loss'], label='Val')
-        plt.title(f"Loss-Iter {iteration}")
+        if 'val_loss' in history.history:
+            plt.plot(history.history['val_loss'], label='Val')
+        plt.title(f"Loss - Iteration {iteration}")
         plt.ylabel("Loss")
         plt.xlabel("Epoch")
         plt.legend()
@@ -454,18 +472,18 @@ class STLPipelinePlugin:
 
         # --- Save Model Plot (if available) ---
         if plot_model is not None and hasattr(predictor_plugin, 'model') and predictor_plugin.model is not None:
-            try: 
+            try:
                 model_plot_file = config.get('model_plot_file', 'model_plot.png')
                 plot_model(predictor_plugin.model, to_file=model_plot_file, show_shapes=True, show_layer_names=True, dpi=300)
                 print(f"Model plot saved: {model_plot_file}")
-            except Exception as e: 
-                print(f"WARN: Failed model plot: {e}")
+            except Exception as e:
+                print(f"WARN: Failed to save model plot: {e}")
 
         # 11. Save plot of predictions(true, predicted, uncertainty) for the specified horizon.
         # --- Generate Prediction Plot for plotted_horizon ---
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
-            # Use real-world price data for plotting (already correctly converted)
+            # Use real-world price data for plotting
             pred_prices_plot = real_test_price_preds[plotted_index][:num_test_points].flatten()
             target_prices_plot = real_test_price_targets[plotted_index][:num_test_points].flatten()
             price_uncertainties_plot = real_test_price_uncertainties[plotted_index][:num_test_points].flatten()
