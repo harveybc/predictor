@@ -4,7 +4,7 @@ import pandas as pd
 
 
 
-def create_sliding_windows(data, window_size, date_times=None):
+def create_sliding_windows(data, config):
     """
     Creates sliding windows for feature processing (not limited by horizon).
     
@@ -19,6 +19,8 @@ def create_sliding_windows(data, window_size, date_times=None):
     Returns:
         Tuple of (windows_array, date_windows_array)
     """
+
+    window_size = config.get("window_size", 48)  # Default to 48 if not specified
     print(f"Creating sliding windows (Size={window_size})...", end="")
     windows = []
     date_windows = []
