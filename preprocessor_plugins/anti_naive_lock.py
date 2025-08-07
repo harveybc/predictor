@@ -22,7 +22,7 @@ import logging
 
 
 #TODO: move to anti_naive_lock.py
-def apply_anti_naive_lock_to_datasets(self, denormalized_data, config):
+def apply_anti_naive_lock_to_datasets(denormalized_data, config):
     """Step 6: Apply anti-naive-lock transformations to FULL denormalized datasets to create processed data."""
     if not config.get("anti_naive_lock_enabled", True):
         return denormalized_data
@@ -50,7 +50,7 @@ def apply_anti_naive_lock_to_datasets(self, denormalized_data, config):
     return processed
 
 #TODO: move to anti_naive_lock.py
-def apply_anti_naive_lock_to_time_series(self, df, feature_names, config):
+def apply_anti_naive_lock_to_time_series(df, feature_names, config):
     """Apply anti-naive-lock transformations to a full time series DataFrame."""
     processed_df = df.copy()
     
