@@ -85,11 +85,14 @@ class STLPreprocessorZScore:
             #TODO: verify this method is correct
             processed_data = apply_anti_naive_lock_to_datasets(denormalized_data, config)
             
-            
+
             # 7. Create SECOND sliding windows matrix from processed datasets (for model input only)
-            #TODO: why its using a different methiod for sliding windows creation
             print("Step 7: Create second sliding windows from processed datasets")
             final_sliding_windows = create_sliding_windows(processed_data, config)
+            
+            # 8. Align final sliding windows with target data length 
+            print("Step 8: Align sliding windows with target data")
+            final_sliding_windows = self._align_sliding_windows_with_targets(final_sliding_windows, targets, config)
             
             # Return final results
             #TODO: verify this method is correct and required
@@ -104,6 +107,46 @@ class STLPreprocessorZScore:
         except Exception as e:
             print(f"ERROR in process_data: {e}")
             raise
+
+    def _align_sliding_windows_with_targets(self, sliding_windows, targets, config):
+        """Align sliding windows with target data to ensure same number of samples."""
+        print("  Aligning sliding windows with target data...")
+        
+        # Get the first target to determine the target length
+        predicted_horizons = config['predicted_horizons']
+        first_horizon = predicted_horizons[0]
+        
+        # Find target lengths for each split
+        target_lengths = {}
+        for split in ['train', 'val', 'test']:
+            target_key = f'y_{split}'
+            if target_key in targets and f'output_horizon_{first_horizon}' in targets[target_key]:
+                target_length = len(targets[target_key][f'output_horizon_{first_horizon}'])
+                target_lengths[split] = target_length
+                print(f"    {split} target length: {target_length}")
+            else:
+                target_lengths[split] = 0
+        
+        # Trim sliding windows to match target lengths
+        aligned_windows = {}
+        for key, windows in sliding_windows.items():
+            if key.startswith('X_'):
+                # Extract split name (train, val, test)
+                split = key.split('_')[1]
+                if split in target_lengths and target_lengths[split] > 0:
+                    target_length = target_lengths[split]
+                    if hasattr(windows, 'shape') and len(windows) > target_length:
+                        aligned_windows[key] = windows[:target_length]
+                        print(f"    Trimmed {key} from {len(windows)} to {target_length} samples")
+                    else:
+                        aligned_windows[key] = windows
+                else:
+                    aligned_windows[key] = windows
+            else:
+                # Keep non-window data as is
+                aligned_windows[key] = windows
+        
+        return aligned_windows
 
     def _prepare_final_output(self, sliding_windows, targets, baselines, config):
         """Prepare final output structure."""
