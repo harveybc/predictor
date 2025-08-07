@@ -70,7 +70,7 @@ class STLPreprocessorZScore:
             #TODO: verify this method is correct
             denorm_sliding_windows = create_sliding_windows(denormalized_data, config)
 
-            # 4. Extract baselines from the denorm_sliding_windows (last elements of each window per tick for target column)
+            # 4. Extract baselines from the sliding windows (last elements of each window for target column)
             print("Step 4: Extract baselines from sliding windows")
             #TODO: verify this method is correct
             baselines = extract_baselines_from_sliding_windows(denorm_sliding_windows, config)
@@ -93,6 +93,10 @@ class STLPreprocessorZScore:
             # Return final results
             #TODO: verify this method is correct and required
             output, preprocessor_params = self._prepare_final_output(final_sliding_windows, targets, baselines, config)
+            
+            # Store baselines for access in output preparation
+            self.extracted_baselines = baselines
+            
             self.params.update(preprocessor_params)
             return output
 
@@ -102,15 +106,15 @@ class STLPreprocessorZScore:
 
     def _prepare_final_output(self, sliding_windows, targets, baselines, config):
         """Prepare final output structure."""
-        # We need to preserve the baselines that were calculated during target computation
-        # They are available in the target calculation processor's state
+        # Use the baselines passed as parameter (extracted from denormalized data)
         baseline_data = {}
-        for split in ['train', 'val', 'test']:
-            # Extract baseline data from targets structure if available
-            baseline_key = f'baseline_{split}'
-            if hasattr(self, 'extracted_baselines') and baseline_key in self.extracted_baselines:
-                baseline_data[baseline_key] = self.extracted_baselines[baseline_key]
-            else:
+        if isinstance(baselines, dict):
+            # baselines is already in the correct format
+            baseline_data = baselines
+        else:
+            # Handle legacy format
+            for split in ['train', 'val', 'test']:
+                baseline_key = f'baseline_{split}'
                 baseline_data[baseline_key] = np.array([])
         
         # Validate that we have the required data structures
@@ -167,6 +171,9 @@ class STLPreprocessorZScore:
         print(f"  Feature names: {len(output['feature_names'])}")
         print(f"  Predicted horizons: {output['predicted_horizons']}")
         print(f"  Target normalization parameters available: {len(output['target_returns_means'])}")
+        print(f"  Baseline train length: {len(output['baseline_train'])}")
+        print(f"  Baseline val length: {len(output['baseline_val'])}")
+        print(f"  Baseline test length: {len(output['baseline_test'])}")
 
         output, preprocessor_params = exclude_columns_from_datasets(output, self.params, config)
 
