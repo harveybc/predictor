@@ -79,7 +79,7 @@ def apply_anti_naive_lock_to_time_series(df, feature_names, config):
             
             if any(tf.lower() in feature_lower for tf in temporal_features) and config.get('use_cyclic_encoding', True):
                 # Apply cyclic encoding to temporal features
-                processed_df[feature_name] = self._apply_cyclic_encoding_to_series(
+                processed_df[feature_name] = apply_cyclic_encoding_to_series(
                     processed_df[feature_name], feature_name
                 )
                 print(f"        Applied cyclic encoding to {feature_name}")
@@ -89,14 +89,14 @@ def apply_anti_naive_lock_to_time_series(df, feature_names, config):
                     feature_name != target_column and 
                     feature_name not in excluded_columns):
                 # Apply log returns to price features (except target)
-                processed_df[feature_name] = self._apply_log_returns_to_series(
+                processed_df[feature_name] = apply_log_returns_to_series(
                     processed_df[feature_name]
                 )
                 print(f"        Applied log returns to {feature_name}")
                 
             elif any(tf.lower() in feature_lower for tf in trend_features) and config.get('use_first_differences', True):
                 # Apply first differences to trend features
-                processed_df[feature_name] = self._apply_first_differences_to_series(
+                processed_df[feature_name] = apply_first_differences_to_series(
                     processed_df[feature_name]
                 )
                 print(f"        Applied first differences to {feature_name}")
@@ -112,7 +112,7 @@ def apply_anti_naive_lock_to_time_series(df, feature_names, config):
     
     return processed_df
 
-def apply_cyclic_encoding_to_series(self, series, feature_name):
+def apply_cyclic_encoding_to_series( series, feature_name):
     """Apply cyclic encoding to a pandas Series."""
     # Determine period based on feature name (case-insensitive)
     feature_lower = feature_name.lower()
@@ -137,7 +137,7 @@ def apply_cyclic_encoding_to_series(self, series, feature_name):
         print(f"        Warning: Cyclic encoding failed for {feature_name}: {e}")
         return series  # Return original if encoding fails
 
-def apply_log_returns_to_series(self, series):
+def apply_log_returns_to_series( series):
     """Apply log returns to a pandas Series: ln(x_t / x_{t-1})."""
     log_returns = series.copy()
     
@@ -161,7 +161,7 @@ def apply_log_returns_to_series(self, series):
     
     return log_returns
 
-def apply_first_differences_to_series(self, series):
+def apply_first_differences_to_series( series):
     """Apply first differences to a pandas Series: x_t - x_{t-1}."""
     differences = series.copy()
     
@@ -180,7 +180,7 @@ def apply_first_differences_to_series(self, series):
     return differences
 
 
-def apply_feature_normalization(self, 
+def apply_feature_normalization( 
                                 x_train: np.ndarray,
                                 x_val: np.ndarray, 
                                 x_test: np.ndarray,
