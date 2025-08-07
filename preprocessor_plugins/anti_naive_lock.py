@@ -39,7 +39,7 @@ def apply_anti_naive_lock_to_datasets(self, denormalized_data, config):
             feature_names = list(x_df.columns)
             
             # Apply anti-naive-lock transformations directly to the time series data
-            processed_df = self._apply_anti_naive_lock_to_time_series(x_df, feature_names, config)
+            processed_df = apply_anti_naive_lock_to_time_series(x_df, feature_names, config)
             processed[x_key] = processed_df
             print(f"    Processed {split} dataset with anti-naive-lock (shape: {processed_df.shape})")
         
