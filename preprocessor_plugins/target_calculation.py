@@ -5,11 +5,17 @@ from .helpers import denormalize, load_normalization_json
 
 def calculate_targets_from_baselines(baseline_data, config):
     """
-    Calculate targets using provided baselines from sliding windows.
+    Target Calculation Module - Step-by-Step Process:
+    
+    1. Extract baselines from each dataset split (train, val, test)
+    2. For each horizon, calculate targets using ONLY baselines:
+       - target[t] = log(baseline[t+horizon] / baseline[t])
+    3. Normalize targets using training statistics
+    4. Return structured target data by horizon and split
     
     Args:
         baseline_data: Dict containing baselines extracted from sliding windows
-        windowed_data: Windowed data (not used in this simplified version)
+                      Format: {'baseline_train': array, 'baseline_val': array, 'baseline_test': array}
         config: Configuration dictionary
         
     Returns:
@@ -20,10 +26,6 @@ def calculate_targets_from_baselines(baseline_data, config):
     predicted_horizons = config['predicted_horizons']
     target_column = config.get('target_column', 'CLOSE')
     use_returns = config.get('use_returns', True)
-    window_size = config.get('window_size', 48)  # CRITICAL FIX: Get window_size from config
-    
-    # Load normalization parameters
-    norm_json = load_normalization_json(config)
     
     target_data = {'train': {}, 'val': {}, 'test': {}}
     baseline_info = {}
@@ -34,12 +36,11 @@ def calculate_targets_from_baselines(baseline_data, config):
     
     if not use_returns:
         print("Using direct target values (not returns)")
-        # Implementation for direct values if needed
         raise NotImplementedError("Direct target calculation not implemented")
     
     print("Calculating log return targets...")
     
-    # Calculate targets for each split using provided baselines
+    # Calculate targets for each split using ONLY baselines
     for split in ['train', 'val', 'test']:
         baseline_key = f'baseline_{split}'
         
@@ -52,70 +53,30 @@ def calculate_targets_from_baselines(baseline_data, config):
             print(f"Empty baselines for {split}")
             continue
         
-        # Get the denormalized data and baseline dates for this split
-        x_df = baseline_data[f'x_{split}_df']  # Use x_df since it contains the target column
-        price_series = x_df[target_column].values.astype(np.float32)
-        
-        # Get baseline dates - these correspond to the time when each baseline was extracted
-        baseline_dates_key = f'baseline_{split}_dates'
-        if baseline_dates_key in baseline_data and baseline_data[baseline_dates_key] is not None:
-            baseline_dates = baseline_data[baseline_dates_key]
-            # Convert baseline dates to indices in the original time series
-            time_index = pd.Index(x_df.index)
-            baseline_indices = []
-            for date in baseline_dates:
-                try:
-                    idx = time_index.get_loc(date)
-                    baseline_indices.append(idx)
-                except KeyError:
-                    print(f"  WARNING: Baseline date {date} not found in time series")
-                    baseline_indices.append(-1)
-            baseline_indices = np.array(baseline_indices)
-        else:
-            # Fallback: assume baselines correspond to consecutive time indices
-            print(f"  WARNING: No baseline dates found for {split}, using sequential indices")
-            baseline_indices = np.arange(len(baselines))
-        
-        # CRITICAL FIX: Calculate max horizon to ensure all horizons have same length
+        # Calculate max horizon to ensure all horizons have same length
         max_horizon = max(predicted_horizons)
-        max_samples = len(baselines)
+        max_samples = len(baselines) - max_horizon  # Ensure we can look ahead max_horizon steps
         
-        # Find maximum number of targets we can create for ALL horizons
-        for j in range(len(baselines)):
-            if baseline_indices[j] == -1:  # Skip invalid baseline dates
-                max_samples = j
-                break
-            baseline_time_idx = baseline_indices[j] 
-            future_time_idx = baseline_time_idx + max_horizon
-            if future_time_idx >= len(price_series):
-                max_samples = j
-                break
+        if max_samples <= 0:
+            print(f"  {split}: Insufficient baselines ({len(baselines)}) for max horizon {max_horizon}")
+            for horizon in predicted_horizons:
+                target_data[split][f'output_horizon_{horizon}'] = np.array([])
+            continue
         
         print(f"  {split}: Using {max_samples} samples for ALL horizons (limited by H{max_horizon})")
         
-        # Calculate targets for each horizon with CORRECT temporal alignment
+        # Calculate targets for each horizon using ONLY baselines
         for i, horizon in enumerate(predicted_horizons):
             horizon_targets = []
             
-            # CRITICAL FIX: Use max_samples to ensure all horizons have same length
-            for j in range(max_samples):
-                # Get baseline time index from the extracted baseline dates
-                if baseline_indices[j] == -1:  # Skip invalid baseline dates
-                    horizon_targets.append(np.nan)
-                    continue
-                    
-                baseline_time_idx = baseline_indices[j]
+            # Calculate targets: log(baseline[t+horizon] / baseline[t])
+            for t in range(max_samples):
+                baseline_current = baselines[t]
+                baseline_future = baselines[t + horizon]
                 
-                # The future time index for the target
-                future_time_idx = baseline_time_idx + horizon
-                
-                # We already verified this is safe in max_samples calculation
-                baseline_price = baselines[j]
-                future_price = price_series[future_time_idx]
-                
-                # Calculate log return: log(price[t+h] / baseline[t])
-                if baseline_price > 0 and future_price > 0:
-                    log_return = np.log(future_price / baseline_price)
+                # Calculate log return using only baselines
+                if baseline_current > 0 and baseline_future > 0:
+                    log_return = np.log(baseline_future / baseline_current)
                     horizon_targets.append(log_return)
                 else:
                     horizon_targets.append(np.nan)
@@ -162,7 +123,6 @@ def calculate_targets_from_baselines(baseline_data, config):
         baseline_key = f'baseline_{split}'
         if baseline_key in baseline_data:
             baseline_info[baseline_key] = baseline_data[baseline_key]
-            baseline_info[f'{baseline_key}_dates'] = baseline_data.get(f'{baseline_key}_dates')
     
     # Prepare final result
     result = {
