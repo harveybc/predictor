@@ -29,8 +29,8 @@ def calculate_targets_from_baselines(baseline_data, config):
     baseline_info = {}
     
     # Reset normalization stats for this calculation
-    self.target_returns_means = []
-    self.target_returns_stds = []
+    target_returns_means = []
+    target_returns_stds = []
     
     if not use_returns:
         print("Using direct target values (not returns)")
@@ -131,13 +131,13 @@ def calculate_targets_from_baselines(baseline_data, config):
                     if split == 'train':  # Only use training data for normalization
                         target_mean = np.mean(valid_targets)
                         target_std = np.std(valid_targets)
-                        self.target_returns_means.append(target_mean)
-                        self.target_returns_stds.append(target_std)
+                        target_returns_means.append(target_mean)
+                        target_returns_stds.append(target_std)
                     else:
                         # Use training stats for other splits
-                        if i < len(self.target_returns_means):
-                            target_mean = self.target_returns_means[i]
-                            target_std = self.target_returns_stds[i]
+                        if i < len(target_returns_means):
+                            target_mean = target_returns_means[i]
+                            target_std = target_returns_stds[i]
                         else:
                             target_mean = 0.0
                             target_std = 1.0
@@ -170,13 +170,13 @@ def calculate_targets_from_baselines(baseline_data, config):
         'y_val': target_data['val'],
         'y_test': target_data['test'],
         **baseline_info,
-        'target_returns_means': self.target_returns_means,
-        'target_returns_stds': self.target_returns_stds,
+        'target_returns_means': target_returns_means,
+        'target_returns_stds': target_returns_stds,
         'predicted_horizons': predicted_horizons,
     }
     
     print(f"Target calculation complete. Horizons: {predicted_horizons}")
-    print(f"Normalization means: {self.target_returns_means}")
-    print(f"Normalization stds: {self.target_returns_stds}")
+    print(f"Normalization means: {target_returns_means}")
+    print(f"Normalization stds: {target_returns_stds}")
     
     return result
