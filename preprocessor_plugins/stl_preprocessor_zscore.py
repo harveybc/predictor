@@ -89,7 +89,7 @@ class STLPreprocessorZScore:
 
             # 8. Align final sliding windows with target data length
             print("Step 8: Align sliding windows with target data")
-            final_sliding_windows, final_dates = self._align_sliding_windows_with_targets(final_sliding_windows, targets, config)
+            final_sliding_windows = self._align_sliding_windows_with_targets(final_sliding_windows, targets, config)
             
             # Return final results
             #TODO: verify this method is correct and required
@@ -105,7 +105,7 @@ class STLPreprocessorZScore:
             print(f"ERROR in process_data: {e}")
             raise
 
-    def _align_sliding_windows_with_targets(self, sliding_windows, targets, config, dates):
+    def _align_sliding_windows_with_targets(self, sliding_windows, targets, config):
         """Align sliding windows with target data to ensure same number of samples."""
         print("  Aligning sliding windows with target data...")
         
@@ -135,18 +135,17 @@ class STLPreprocessorZScore:
                     target_length = target_lengths[split]
                     if hasattr(windows, 'shape') and len(windows) > target_length:
                         aligned_windows[key] = windows[:target_length]
-                        aligned_dates[key] = dates.get(key, None)[:target_length]
                         print(f"    Trimmed {key} from {len(windows)} to {target_length} samples")
                     else:
                         aligned_windows[key] = windows
-                        aligned_dates[key] = dates.get(key, None)
+                        
                 else:
                     aligned_windows[key] = windows
-                    aligned_dates[key] = dates.get(key, None)
+                    
             else:
                 # Keep non-window data as is
                 aligned_windows[key] = windows
-                aligned_dates[key] = dates.get(key, None)
+                
 
         return aligned_windows, aligned_dates
 
