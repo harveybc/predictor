@@ -629,12 +629,10 @@ class STLPipelinePlugin:
             print("Converting validation predictions to real-world prices...")
             for idx, h in enumerate(config['predicted_horizons']):
                 # Get horizon-specific normalization stats
-                target_mean = target_returns_means[idx]
-                target_std = target_returns_stds[idx]
                 
                 # Convert predictions: z-score normalized -> log returns -> prices
                 pred_normalized = list_predictions[idx].flatten()
-                pred_returns = pred_normalized * target_std + target_mean
+                pred_returns = pred_normalized
                 
                 # CRITICAL FIX: Baselines and predictions are perfectly aligned
                 num_val = len(pred_returns)

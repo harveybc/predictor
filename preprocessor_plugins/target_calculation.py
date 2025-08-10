@@ -85,27 +85,7 @@ def calculate_targets_from_baselines(baseline_data, config):
                 valid_targets = horizon_targets[~np.isnan(horizon_targets)]
                 
                 if len(valid_targets) > 0:
-                    # Calculate normalization stats for this horizon
-                    if split == 'train':  # Only use training data for normalization
-                        target_mean = np.mean(valid_targets)
-                        target_std = np.std(valid_targets)
-                        target_returns_means.append(target_mean)
-                        target_returns_stds.append(target_std)
-                    else:
-                        # Use training stats for other splits
-                        if i < len(target_returns_means):
-                            target_mean = target_returns_means[i]
-                            target_std = target_returns_stds[i]
-                        else:
-                            target_mean = 0.0
-                            target_std = 1.0
-                    
-                    # Normalize targets
-                    if target_std > 0:
-                        normalized_targets = (valid_targets - target_mean) / target_std
-                    else:
-                        normalized_targets = valid_targets - target_mean
-                    
+                    normalized_targets = valid_targets
                     target_data[split][f'output_horizon_{horizon}'] = normalized_targets
                     print(f"  {split} H{horizon}: {len(normalized_targets)} targets")
                 else:
