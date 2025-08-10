@@ -7,7 +7,7 @@ def load_normalized_csv(config):
     """Step 1: Load normalized CSV data as-is, limiting rows to max_steps_ configurations.
                also returns the corresponding dates.
     """
-    
+
     data = {}
     dates = {}        
     file_mappings = [
@@ -30,11 +30,18 @@ def load_normalized_csv(config):
                 else:
                     print(f"  Loaded {data_key}: {df.shape}")
                 data[data_key] = df
-                # Extract DATE_TIME column if present
+                # Extract DATE_TIME column if present; otherwise use index values
                 if "DATE_TIME" in df.columns:
                     dates[data_key] = df["DATE_TIME"].values
                 else:
-                    dates[data_key] = None
+                    # Use index values as datetime array if index is datetime-like; otherwise keep raw index
+                    try:
+                        if isinstance(df.index, pd.DatetimeIndex):
+                            dates[data_key] = df.index.values
+                        else:
+                            dates[data_key] = df.index.values
+                    except Exception:
+                        dates[data_key] = None
             except Exception as e:
                 print(f"ERROR loading {config[file_key]}: {e}")
                 # Continue processing other files

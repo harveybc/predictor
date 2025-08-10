@@ -229,14 +229,14 @@ class STLPipelinePlugin:
                 # 6. Calculate final predictions, uncertainties and targets by adding detransformed predictions to baselines.
                 
                 # Predicted Prices
-                train_prices = train_baselines + train_price_returns
-                val_prices = val_baselines + val_price_returns
-                test_prices = test_baselines + test_price_returns
+                train_prices = train_baselines * train_price_returns
+                val_prices = val_baselines * val_price_returns
+                test_prices = test_baselines * test_price_returns
 
                 # Target Prices
-                train_target_prices = train_baselines + train_target_price_returns
-                val_target_prices = val_baselines + val_target_price_returns
-                test_target_prices = test_baselines + test_target_price_returns 
+                train_target_prices = train_baselines * train_target_price_returns
+                val_target_prices = val_baselines * val_target_price_returns
+                test_target_prices = test_baselines * test_target_price_returns 
 
                 # Uncertainties Prices
                 train_price_uncertainties = train_baselines * train_unc_returns
@@ -504,10 +504,44 @@ class STLPipelinePlugin:
             # Create plot
             plt.figure(figsize=(14, 7))
             
+            # Ensure numeric dtype for y-values to avoid np.isfinite dtype errors
+            def _to_float_array(arr):
+                try:
+                    return np.asarray(arr, dtype=np.float64)
+                except (ValueError, TypeError):
+                    # Fallback: best-effort elementwise conversion
+                    return np.array([
+                        (np.nan if (v is None) else float(v))
+                        for v in list(arr)
+                    ], dtype=np.float64)
+
+            pred_plot = _to_float_array(pred_plot)
+            target_plot = _to_float_array(target_plot)
+            baseline_plot = _to_float_array(baseline_plot)
+            uncertainty_plot = _to_float_array(uncertainty_plot)
+
+            # Length safety: align arrays if any mismatch occurs
+            min_len = min(len(pred_plot), len(target_plot), len(baseline_plot), len(uncertainty_plot), len(dates_plot))
+            if min_len <= 0:
+                raise ValueError("No data points available for plotting after alignment.")
+            if len(pred_plot) != min_len:
+                pred_plot = pred_plot[:min_len]
+            if len(target_plot) != min_len:
+                target_plot = target_plot[:min_len]
+            if len(baseline_plot) != min_len:
+                baseline_plot = baseline_plot[:min_len]
+            if len(uncertainty_plot) != min_len:
+                uncertainty_plot = uncertainty_plot[:min_len]
+            if len(dates_plot) != min_len:
+                dates_plot = dates_plot[:min_len]
+
+            lower = pred_plot - np.abs(uncertainty_plot)
+            upper = pred_plot + np.abs(uncertainty_plot)
+
             plt.plot(dates_plot, pred_plot, label=f"Pred Price H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
             plt.plot(dates_plot, target_plot, label=f"Target Price H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
             plt.plot(dates_plot, baseline_plot, label="Actual Price", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
-            plt.fill_between(dates_plot, pred_plot - np.abs(uncertainty_plot), pred_plot + np.abs(uncertainty_plot),
+            plt.fill_between(dates_plot, lower, upper,
                              color=config.get("plot_color_uncertainty", "green"), alpha=0.2, label=f"Uncertainty H{plotted_horizon}", zorder=0)
             plt.title(f"Predictions vs Target/Actual (H={plotted_horizon})")
             plt.xlabel("Time Steps")
