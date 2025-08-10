@@ -93,6 +93,16 @@ def apply_anti_naive_lock_to_time_series(df, feature_names, config):
                     processed_df[feature_name]
                 )
                 print(f"        Applied log returns to {feature_name}")
+
+            elif (any(pf.lower() in feature_lower for pf in stationary_indicators) and 
+                    config.get('use_log_returns', True) and 
+                    feature_name != target_column and 
+                    feature_name not in excluded_columns):
+                # Apply log returns to stationary indicators (except target)
+                processed_df[feature_name] = apply_log_returns_to_series(
+                    processed_df[feature_name]
+                )
+                print(f"        Applied log returns to {feature_name}")
                 
             elif any(tf.lower() in feature_lower for tf in trend_features) and config.get('use_first_differences', True):
                 # Apply first differences to trend features
