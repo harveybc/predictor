@@ -237,9 +237,9 @@ class STLPipelinePlugin:
                 test_target_prices = test_baselines + test_target_price_returns
 
                 # Uncertainties Prices
-                train_price_uncertainties = train_baselines + train_unc_returns
-                val_price_uncertainties = val_baselines + val_unc_returns
-                test_price_uncertainties = test_baselines + test_unc_returns
+                train_price_uncertainties = train_unc_returns
+                val_price_uncertainties = val_unc_returns
+                test_price_uncertainties = test_unc_returns
 
                 # --- Append results for the current horizon ---
                 real_train_price_preds.append(train_prices)
