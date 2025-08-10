@@ -89,21 +89,7 @@
         "stl_trend"
     ],
     "stationary_indicators": [
-        "RSI",
-        "MACD",
-        "MACD_Histogram",
-        "MACD_Signal",
-        "EMA",
-        "Stochastic_%K",
-        "Stochastic_%D",
-        "ADX",
-        "DI+",
-        "DI-",
-        "ATR",
-        "CCI",
-        "WilliamsR",
-        "Momentum",
-        "ROC"
+
     ],
     "candlestick_patterns": [
         "BC-BO",
