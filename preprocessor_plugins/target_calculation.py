@@ -73,14 +73,11 @@ def calculate_targets_from_baselines(baseline_data, config):
             for t in range(max_samples):
                 baseline_current = baselines[t]
                 baseline_future = baselines[t + horizon]
-                
-                # Calculate log return using only baselines
-                if baseline_current > 0 and baseline_future > 0:
-                    log_return = np.log(baseline_future / baseline_current)
-                    horizon_targets.append(log_return)
-                else:
-                    horizon_targets.append(np.nan)
-            
+
+                # Calculate return using only baselines
+                return_value = baseline_future - baseline_current
+                horizon_targets.append(return_value)
+
             # Store targets for this horizon
             if horizon_targets:
                 horizon_targets = np.array(horizon_targets, dtype=np.float32)

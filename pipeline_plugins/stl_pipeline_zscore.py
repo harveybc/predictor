@@ -187,23 +187,23 @@ class STLPipelinePlugin:
                 target_std = target_returns_stds[idx]
                 
                 # --- Process Predictions (z-score normalized -> log returns) ---
-                train_log_returns = original_train_preds[idx].flatten() * target_std + target_mean
-                val_log_returns = original_val_preds[idx].flatten() * target_std + target_mean
-                test_log_returns = original_test_preds[idx].flatten() * target_std + target_mean
+                train_returns = original_train_preds[idx].flatten() * target_std + target_mean
+                val_returns = original_val_preds[idx].flatten() * target_std + target_mean
+                test_returns = original_test_preds[idx].flatten() * target_std + target_mean
                 
                 # --- Process Targets (z-score normalized -> log returns) ---
-                train_target_log_returns = original_train_targets[idx].flatten() * target_std + target_mean
-                val_target_log_returns = original_val_targets[idx].flatten() * target_std + target_mean
-                test_target_log_returns = original_test_targets[idx].flatten() * target_std + target_mean
+                train_target_returns = original_train_targets[idx].flatten() * target_std + target_mean
+                val_target_returns = original_val_targets[idx].flatten() * target_std + target_mean
+                test_target_returns = original_test_targets[idx].flatten() * target_std + target_mean
                 
                 # --- Process Uncertainties (z-score normalized -> log returns scale) ---
-                train_unc_log_returns = original_train_unc[idx].flatten() * target_std
-                val_unc_log_returns = original_val_unc[idx].flatten() * target_std
-                test_unc_log_returns = original_test_unc[idx].flatten() * target_std
+                train_unc_returns = original_train_unc[idx].flatten() * target_std
+                val_unc_returns = original_val_unc[idx].flatten() * target_std
+                test_unc_returns = original_test_unc[idx].flatten() * target_std
                 
                 # --- Convert to Real-World Prices using Baselines ---
                 # Baselines and predictions are aligned by the sliding window process.
-                num_train, num_val, num_test = len(train_log_returns), len(val_log_returns), len(test_log_returns)
+                num_train, num_val, num_test = len(train_returns), len(val_returns), len(test_returns)
                 
                 train_baselines = baseline_train[:num_train]
                 val_baselines = baseline_val[:num_val]
@@ -212,19 +212,19 @@ class STLPipelinePlugin:
                 # 5. Detransform (inverse logreturns) predictions, targets and uncertainties to real-world scale.
 
                 # Predicted Price Returns
-                train_price_returns = np.exp(train_log_returns)
-                val_price_returns =  np.exp(val_log_returns)
-                test_price_returns =  np.exp(test_log_returns)
+                train_price_returns = train_returns
+                val_price_returns =  val_returns
+                test_price_returns =  test_returns
 
                 # Target Price Returns
-                train_target_price_returns = np.exp(train_target_log_returns)
-                val_target_price_returns = np.exp(val_target_log_returns)
-                test_target_price_returns = np.exp(test_target_log_returns)
+                train_target_price_returns = train_target_returns
+                val_target_price_returns = val_target_returns
+                test_target_price_returns = test_target_returns
 
                 # Uncertainties returns
-                train_unc_returns = np.exp(train_unc_log_returns)
-                val_unc_returns = np.exp(val_unc_log_returns)
-                test_unc_returns = np.exp(test_unc_log_returns)
+                train_unc_returns = train_unc_returns
+                val_unc_returns = val_unc_returns
+                test_unc_returns = test_unc_returns
 
                 # 6. Calculate final predictions, uncertainties and targets by adding detransformed predictions to baselines.
                 
@@ -634,16 +634,16 @@ class STLPipelinePlugin:
                 
                 # Convert predictions: z-score normalized -> log returns -> prices
                 pred_normalized = list_predictions[idx].flatten()
-                pred_log_returns = pred_normalized * target_std + target_mean
+                pred_returns = pred_normalized * target_std + target_mean
                 
                 # CRITICAL FIX: Baselines and predictions are perfectly aligned
-                num_val = len(pred_log_returns)
+                num_val = len(pred_returns)
                 
                 # Use the corresponding baselines (perfectly aligned with predictions)
                 val_baselines = baseline_val_eval[:num_val]
                 
                 # Convert log returns to real prices using aligned baselines
-                pred_prices = val_baselines * np.exp(pred_log_returns)
+                pred_prices = val_baselines + pred_returns
                 
                 # Update predictions with real prices
                 list_predictions[idx] = pred_prices.reshape(-1, 1)
