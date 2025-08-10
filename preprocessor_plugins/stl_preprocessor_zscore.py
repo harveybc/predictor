@@ -126,7 +126,7 @@ class STLPreprocessorZScore:
         
         # Trim sliding windows to match target lengths
         aligned_windows = {}
-        aligned_dates = {}
+
         for key, windows in sliding_windows.items():
             if key.startswith('X_'):
                 # Extract split name (train, val, test)
@@ -147,7 +147,7 @@ class STLPreprocessorZScore:
                 aligned_windows[key] = windows
                 
 
-        return aligned_windows, aligned_dates
+        return aligned_windows
 
     def _prepare_final_output(self, sliding_windows, targets, baselines, config):
         """Prepare final output structure."""
