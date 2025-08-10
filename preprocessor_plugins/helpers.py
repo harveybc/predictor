@@ -4,35 +4,43 @@ import json
 from sklearn.preprocessing import StandardScaler
 
 def load_normalized_csv(config):
-        """Step 1: Load normalized CSV data as-is, limiting rows to max_steps_ configurations."""
-        data = {}
-        
-        file_mappings = [
-            ('x_train_df', 'x_train_file', 'max_steps_train'),
-            ('y_train_df', 'y_train_file', 'max_steps_train'),
-            ('x_val_df', 'x_validation_file', 'max_steps_val'),
-            ('y_val_df', 'y_validation_file', 'max_steps_val'),
-            ('x_test_df', 'x_test_file', 'max_steps_test'),
-            ('y_test_df', 'y_test_file', 'max_steps_test')
-        ]
-        
-        for data_key, file_key, max_steps_key in file_mappings:
-            if file_key in config and config[file_key]:
-                try:
-                    df = pd.read_csv(config[file_key], parse_dates=True, index_col=0)
-                    if config.get(max_steps_key):
-                        df = df.head(config[max_steps_key])
-                    if len(df) == 0:
-                        print(f"WARNING: Empty dataframe loaded from {config[file_key]}")
-                    else:
-                        print(f"  Loaded {data_key}: {df.shape}")
-                    data[data_key] = df
-                except Exception as e:
-                    print(f"ERROR loading {config[file_key]}: {e}")
-                    # Continue processing other files
-        if not data:
-            raise ValueError("No data files could be loaded - check file paths in config")
-        return data
+    """Step 1: Load normalized CSV data as-is, limiting rows to max_steps_ configurations.
+               also returns the corresponding dates.
+    """
+    
+    data = {}
+    dates = {}        
+    file_mappings = [
+        ('x_train_df', 'x_train_file', 'max_steps_train'),
+        ('y_train_df', 'y_train_file', 'max_steps_train'),
+        ('x_val_df', 'x_validation_file', 'max_steps_val'),
+        ('y_val_df', 'y_validation_file', 'max_steps_val'),
+        ('x_test_df', 'x_test_file', 'max_steps_test'),
+        ('y_test_df', 'y_test_file', 'max_steps_test')
+    ]
+    
+    for data_key, file_key, max_steps_key in file_mappings:
+        if file_key in config and config[file_key]:
+            try:
+                df = pd.read_csv(config[file_key], parse_dates=True, index_col=0)
+                if config.get(max_steps_key):
+                    df = df.head(config[max_steps_key])
+                if len(df) == 0:
+                    print(f"WARNING: Empty dataframe loaded from {config[file_key]}")
+                else:
+                    print(f"  Loaded {data_key}: {df.shape}")
+                data[data_key] = df
+                # Extract DATE_TIME column if present
+                if "DATE_TIME" in df.columns:
+                    dates[data_key] = df["DATE_TIME"].values
+                else:
+                    dates[data_key] = None
+            except Exception as e:
+                print(f"ERROR loading {config[file_key]}: {e}")
+                # Continue processing other files
+    if not data:
+        raise ValueError("No data files could be loaded - check file paths in config")
+    return data, dates
 
 def load_normalization_json(config):
     """Loads normalization parameters from JSON file."""
@@ -80,41 +88,6 @@ def denormalize_all_datasets(normalized_data, config):
         
     return denormalized
     
-
-def align_features(feature_dict, base_length):
-    """Aligns features to a common base length."""
-    aligned_features = {}
-    min_len = base_length
-    feature_lengths = {'base': base_length}
-    valid_keys = [k for k, v in feature_dict.items() if v is not None]
-    if not valid_keys: 
-        return {}, 0
-    
-    for name in valid_keys: 
-        feature_lengths[name] = len(feature_dict[name])
-        min_len = min(min_len, feature_lengths[name])
-    
-    needs_alignment = any(l != min_len for l in feature_lengths.values() if l > 0)
-    if needs_alignment:
-        for name in valid_keys:
-            series = feature_dict[name]
-            current_len = len(series)
-            if current_len > min_len: 
-                aligned_features[name] = series[current_len - min_len:]
-            elif current_len == min_len: 
-                aligned_features[name] = series
-            else: 
-                print(f"WARN: Feature '{name}' len({current_len})<target({min_len}).")
-                aligned_features[name] = None
-    else: 
-        aligned_features = {k: feature_dict[k] for k in valid_keys}
-    
-    final_lengths = {name: len(s) for name, s in aligned_features.items() if s is not None}
-    unique_lengths = set(final_lengths.values())
-    if len(unique_lengths) > 1: 
-        raise RuntimeError(f"Alignment FAILED! Inconsistent lengths: {final_lengths}")
-    return aligned_features, min_len
-
 def exclude_columns_from_datasets(datasets, preprocessor_params, config):
     # Perform selective column exclusion from datasets.
     excluded_columns = config.get("excluded_columns", [])

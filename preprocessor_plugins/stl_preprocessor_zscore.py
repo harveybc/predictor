@@ -57,7 +57,7 @@ class STLPreprocessorZScore:
             
             # 1. Load already normalized CSV data
             print("Step 1: Load normalized CSV data")
-            normalized_data = load_normalized_csv(config)
+            normalized_data, dates = load_normalized_csv(config)
             if not normalized_data:
                 raise ValueError("No data loaded - check file paths in config")
             
@@ -67,12 +67,10 @@ class STLPreprocessorZScore:
             
             # 3. Create FIRST sliding windows from denormalized data used only and only for baseline extraction
             print("Step 3: Create first sliding windows from denormalized data")
-            #TODO: verify this method is correct
-            denorm_sliding_windows = create_sliding_windows(denormalized_data, config)
+            denorm_sliding_windows = create_sliding_windows(denormalized_data, config, dates)
 
             # 4. Extract baselines from the sliding windows (last elements of each window for target column)
             print("Step 4: Extract baselines from sliding windows")
-            #TODO: verify this method is correct
             baselines = extract_baselines_from_sliding_windows(denorm_sliding_windows, config)
 
             # 5. Calculate targets directly from baselines
@@ -85,14 +83,13 @@ class STLPreprocessorZScore:
             #TODO: verify this method is correct
             processed_data = apply_anti_naive_lock_to_datasets(denormalized_data, config)
             
-
             # 7. Create SECOND sliding windows matrix from processed datasets (for model input only)
             print("Step 7: Create second sliding windows from processed datasets")
-            final_sliding_windows = create_sliding_windows(processed_data, config)
-            
-            # 8. Align final sliding windows with target data length 
+            final_sliding_windows = create_sliding_windows(processed_data, config, dates)
+
+            # 8. Align final sliding windows with target data length
             print("Step 8: Align sliding windows with target data")
-            final_sliding_windows = self._align_sliding_windows_with_targets(final_sliding_windows, targets, config)
+            final_sliding_windows, final_dates = self._align_sliding_windows_with_targets(final_sliding_windows, targets, config)
             
             # Return final results
             #TODO: verify this method is correct and required
@@ -108,7 +105,7 @@ class STLPreprocessorZScore:
             print(f"ERROR in process_data: {e}")
             raise
 
-    def _align_sliding_windows_with_targets(self, sliding_windows, targets, config):
+    def _align_sliding_windows_with_targets(self, sliding_windows, targets, config, dates):
         """Align sliding windows with target data to ensure same number of samples."""
         print("  Aligning sliding windows with target data...")
         
@@ -129,6 +126,7 @@ class STLPreprocessorZScore:
         
         # Trim sliding windows to match target lengths
         aligned_windows = {}
+        aligned_dates = {}
         for key, windows in sliding_windows.items():
             if key.startswith('X_'):
                 # Extract split name (train, val, test)
@@ -137,16 +135,20 @@ class STLPreprocessorZScore:
                     target_length = target_lengths[split]
                     if hasattr(windows, 'shape') and len(windows) > target_length:
                         aligned_windows[key] = windows[:target_length]
+                        aligned_dates[key] = dates.get(key, None)[:target_length]
                         print(f"    Trimmed {key} from {len(windows)} to {target_length} samples")
                     else:
                         aligned_windows[key] = windows
+                        aligned_dates[key] = dates.get(key, None)
                 else:
                     aligned_windows[key] = windows
+                    aligned_dates[key] = dates.get(key, None)
             else:
                 # Keep non-window data as is
                 aligned_windows[key] = windows
-        
-        return aligned_windows
+                aligned_dates[key] = dates.get(key, None)
+
+        return aligned_windows, aligned_dates
 
     def _prepare_final_output(self, sliding_windows, targets, baselines, config):
         """Prepare final output structure."""

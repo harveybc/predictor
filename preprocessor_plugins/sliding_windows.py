@@ -21,10 +21,6 @@ def create_sliding_windows(data, config, date_times=None):
     window_size = config.get("window_size", 48)
     print(f"Creating sliding windows (Size={window_size})...", end="")
     
-    # Handle single DataFrame input (backward compatibility)
-    if isinstance(data, pd.DataFrame):
-        return _create_sliding_windows_single_df(data, window_size, date_times)
-    
     # Handle dictionary of DataFrames (main use case)
     if not isinstance(data, dict):
         raise ValueError("Data must be either a DataFrame or a dictionary of DataFrames")
@@ -44,9 +40,20 @@ def create_sliding_windows(data, config, date_times=None):
             print(f" WARN: Insufficient data ({n}) for {data_key} with window size {window_size}. Need at least {window_size}.")
             continue
         
+        # Determine date_times for this dataset
+        current_dates = None
+        if date_times is not None:
+            # If date_times is a dict, get the dates for this dataset
+            if isinstance(date_times, dict):
+                current_dates = date_times.get(data_key, None)
+            else:
+                current_dates = date_times
+        else:
+            # Raise error since DATE_TIME is required
+            raise ValueError(f"DATE_TIME is required for {data_key}")
+
         # Create sliding windows for this dataset
-        windows, window_dates = _create_sliding_windows_single_df(df, window_size, df.index if hasattr(df, 'index') else None)
-        
+        windows, window_dates = _create_sliding_windows_single_df(df, window_size, current_dates)
         # Store results with proper naming convention
         results[f'X_{dataset_type}'] = windows
         results[f'x_dates_{dataset_type}'] = window_dates
