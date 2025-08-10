@@ -55,207 +55,26 @@ local_feedback=[] # local feedback values for the model
 
 
 class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
-    """Custom ReduceLROnPlateau callback that monitors the sum of validation losses and resets counter if it improves."""
-    def __init__(self, output_names=None, **kwargs):
-        # Don't call super().__init__ yet, we need to set up custom monitoring
-        self.output_names = output_names or []
-        self.patience = kwargs.get('patience', 10)
-        self.factor = kwargs.get('factor', 0.1)
-        self.min_delta = kwargs.get('min_delta', 1e-4)
-        self.cooldown = kwargs.get('cooldown', 0)
-        self.min_lr = kwargs.get('min_lr', 0)
-        self.verbose = kwargs.get('verbose', 0)
-        
-        self.wait = 0
-        self.cooldown_counter = 0
-        self.best = None
-        self.mode = 'min'  # We want to minimize the sum of losses
-        self.monitor_op = lambda a, b: a < (b - self.min_delta)
+    """Custom ReduceLROnPlateau callback that prints the patience counter."""
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.patience_counter = 0
-        
-        
-        
+
     def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
-        
-        # Calculate weighted sum of validation losses for all outputs
-        current_sum_val_loss = 0
-        found_losses = 0
-        individual_losses = []
-        # Use uniform weights (no adaptive weighting)
-        weights = [1.0] * len(self.output_names)
-        
-        for i, output_name in enumerate(self.output_names):
-            loss_key = f"val_{output_name}_loss"
-            if loss_key in logs:
-                loss_value = logs[loss_key]
-                weight = weights[i] if i < len(weights) else 1.0
-                weighted_loss = loss_value * weight
-                current_sum_val_loss += weighted_loss
-                individual_losses.append(f"{output_name}: {loss_value:.6f} (w: {weight:.3f}, wl: {weighted_loss:.6f})")
-                found_losses += 1
-        
-        if found_losses == 0:
-            print("WARNING: No validation losses found for sum calculation")
-            print(f"Available keys in logs: {list(logs.keys())}")
-            return
-            
-        # Debug: Print individual losses with weights
-        print(f"DEBUG: Weighted validation losses - {', '.join(individual_losses)}")
-        print(f"DEBUG: Weighted Sum = {current_sum_val_loss:.6f}")
-            
-        # Initialize best if first epoch
-        if self.best is None:
-            self.best = current_sum_val_loss
-            print(f"DEBUG: ReduceLROnPlateau - INITIALIZED best to {self.best:.6f}")
-            
-        # Check for improvement
-        improvement_threshold = self.best - self.min_delta
-        print(f"DEBUG: ReduceLROnPlateau - current: {current_sum_val_loss:.6f}, best: {self.best:.6f}, threshold for improvement: {improvement_threshold:.6f}")
-        
-        if self.monitor_op(current_sum_val_loss, self.best):
-            print(f"DEBUG: ReduceLROnPlateau - IMPROVEMENT DETECTED! Updating best from {self.best:.6f} to {current_sum_val_loss:.6f}")
-            self.best = current_sum_val_loss
-            self.wait = 0
-            self.cooldown_counter = 0
-            any_improved = True
-        else:
-            self.wait += 1
-            any_improved = False
-            
-        # Handle cooldown
-        if self.cooldown_counter > 0:
-            self.cooldown_counter -= 1
-            self.wait = 0
-            
-        # Reduce learning rate if needed
-        if self.wait >= self.patience and self.cooldown_counter == 0:
-            old_lr = self._get_lr()
-            if old_lr > self.min_lr:
-                new_lr = old_lr * self.factor
-                new_lr = max(new_lr, self.min_lr)
-                self._set_lr(new_lr)
-                if self.verbose > 0:
-                    print(f'\nEpoch {epoch + 1}: ReduceLROnPlateau reducing learning rate to {new_lr}.')
-                self.cooldown_counter = self.cooldown
-                self.wait = 0
-        
-        self.patience_counter = self.wait
-        
-        print(f"DEBUG: ReduceLROnPlateau sum_val_loss: {current_sum_val_loss:.6f}, best: {self.best:.6f}, patience: {self.patience_counter}/{self.patience}, cooldown: {self.cooldown_counter}, improved: {any_improved}")
-
-    def _get_lr(self):
-        try:
-            return float(self.model.optimizer.learning_rate.numpy())
-        except (AttributeError, TypeError):
-            try:
-                return float(K.get_value(self.model.optimizer.learning_rate))
-            except Exception as e:
-                print(f"WARNING: Could not get learning rate: {e}")
-                return 0.0
-
-    def _set_lr(self, new_lr):
-        try:
-            if hasattr(self.model.optimizer.learning_rate, 'assign'):
-                self.model.optimizer.learning_rate.assign(new_lr)
-            else:
-                K.set_value(self.model.optimizer.learning_rate, new_lr)
-        except Exception as e:
-            print(f"WARNING: Could not set learning rate: {e}")
+        super().on_epoch_end(epoch, logs)
+        self.patience_counter = self.wait if self.wait > 0 else 0
+        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}")
 
 class EarlyStoppingWithPatienceCounter(EarlyStopping):
-    """Custom EarlyStopping callback that monitors the sum of validation losses and resets counter if it improves."""
-    def __init__(self, output_names=None, **kwargs):
-        # Don't call super().__init__ yet, we need to set up custom monitoring
-        self.output_names = output_names or []
-        self.patience = kwargs.get('patience', 0)
-        self.min_delta = kwargs.get('min_delta', 0)
-        self.restore_best_weights = kwargs.get('restore_best_weights', False)
-        self.verbose = kwargs.get('verbose', 0)
-        self.start_from_epoch = kwargs.get('start_from_epoch', 0)
-        
-        self.wait = 0
-        self.stopped_epoch = 0
-        self.best = None
-        self.best_weights = None
-        self.mode = 'min'  # We want to minimize the sum of losses
-        self.monitor_op = lambda a, b: a < (b - self.min_delta)
+    """Custom EarlyStopping callback that prints the patience counter."""
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.patience_counter = 0
-        
-        
 
-        
-    def on_train_begin(self, logs=None):
-        self.wait = 0
-        self.stopped_epoch = 0
-        self.best = float('inf')
-        if self.restore_best_weights:
-            self.best_weights = None
-        
     def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
-        
-        # Skip early stopping logic if we haven't reached start_from_epoch
-        if epoch < self.start_from_epoch:
-            return
-            
-        # Calculate weighted sum of validation losses for all outputs
-        current_sum_val_loss = 0
-        found_losses = 0
-        individual_losses = []
-        # Use uniform weights (no adaptive weighting)
-        weights = [1.0] * len(self.output_names)
-        
-        for i, output_name in enumerate(self.output_names):
-            loss_key = f"val_{output_name}_loss"
-            if loss_key in logs:
-                loss_value = logs[loss_key]
-                weight = weights[i] if i < len(weights) else 1.0
-                weighted_loss = loss_value * weight
-                current_sum_val_loss += weighted_loss
-                individual_losses.append(f"{output_name}: {loss_value:.6f} (w: {weight:.3f}, wl: {weighted_loss:.6f})")
-                found_losses += 1
-        
-        if found_losses == 0:
-            print("WARNING: No validation losses found for sum calculation")
-            print(f"Available keys in logs: {list(logs.keys())}")
-            return
-            
-        # Debug: Print individual losses with weights
-        print(f"DEBUG ES: Weighted validation losses - {', '.join(individual_losses)}")
-        print(f"DEBUG ES: Weighted Sum = {current_sum_val_loss:.6f}")
-            
-        # Check for improvement
-        improvement_threshold = self.best - self.min_delta
-        print(f"DEBUG ES: current: {current_sum_val_loss:.6f}, best: {self.best:.6f}, threshold for improvement: {improvement_threshold:.6f}")
-        
-        if self.monitor_op(current_sum_val_loss, self.best):
-            print(f"DEBUG ES: IMPROVEMENT DETECTED! Updating best from {self.best:.6f} to {current_sum_val_loss:.6f}")
-            self.best = current_sum_val_loss
-            self.wait = 0
-            if self.restore_best_weights:
-                self.best_weights = self.model.get_weights()
-            any_improved = True
-        else:
-            self.wait += 1
-            any_improved = False
-            
-        # Check if we should stop
-        if self.wait >= self.patience:
-            self.stopped_epoch = epoch
-            self.model.stop_training = True
-            if self.restore_best_weights and self.best_weights is not None:
-                if self.verbose > 0:
-                    print('Restoring model weights from the end of the best epoch.')
-                self.model.set_weights(self.best_weights)
-        
-        self.patience_counter = self.wait
-        
-        print(f"DEBUG: EarlyStopping sum_val_loss: {current_sum_val_loss:.6f}, best: {self.best:.6f}, patience: {self.patience_counter}/{self.patience}, improved: {any_improved}")
-        
-    def on_train_end(self, logs=None):
-        if self.stopped_epoch > 0 and self.verbose > 0:
-            print(f'Epoch {self.stopped_epoch + 1}: early stopping')
+        super().on_epoch_end(epoch, logs)
+        self.patience_counter = self.wait if self.wait > 0 else 0
+        print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}")
 
 class ClearMemoryCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
@@ -346,7 +165,7 @@ def composite_loss(y_true, y_pred,
     #mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
     huber_loss_val = Huber(delta=1.0)(mag_true, mag_pred)
     #mse_loss_val = huber_loss_val
-    mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
+    #mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
     #mmd_loss_val = 0.0
 
 
@@ -394,8 +213,8 @@ def composite_loss(y_true, y_pred,
         # Calculate final loss term
         #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
     #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
-    #total_loss = huber_loss_val
+    #total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
+    total_loss = huber_loss_val
     # Return the final scalar loss value
     return total_loss
 
@@ -590,18 +409,6 @@ class Plugin:
         """Add predictor plugin debug information to the given dictionary."""
         debug_info.update(self.get_debug_info())
 
-    def _print_learning_rate(self, epoch):
-        """Safely print the current learning rate."""
-        try:
-            # Try the modern approach first
-            lr = float(self.model.optimizer.learning_rate.numpy())
-        except (AttributeError, TypeError):
-            # Fallback to older Keras backend approach
-            try:
-                lr = float(K.get_value(self.model.optimizer.learning_rate))
-            except Exception:
-                lr = 0.0
-        print(f"Epoch {epoch+1}: LR={lr:.6f}")
 
     # --- Define within your YourPredictorPlugin class ---
     # --- Define within your YourPredictorPlugin class ---
@@ -640,27 +447,35 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
-        merged = inputs
-        
-        merged = Conv1D(
-            filters=merged_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation=activation,
-            name="conv_merged_features_1",
-            kernel_regularizer=l2(l2_reg)
-        )(merged)
+        # Feature Extractor
+        if config.get("feature_extractor_file"):
+            # Load the pretrained feature extractor
+            fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
+            # Enable or disable training of the feature extractor
+            fe_model.trainable = bool(config.get("train_fe", False))
+            # Apply the feature extractor to the inputs
+            merged = fe_model(inputs)
+        else:
+            # Original Conv1D feature-extraction layers
+            merged = Conv1D(
+                filters=merged_units,
+                kernel_size=3,
+                strides=2,
+                padding='same',
+                activation=activation,
+                name="conv_merged_features_1",
+                kernel_regularizer=l2(l2_reg)
+            )(inputs)
 
-        merged = Conv1D(
-            filters=branch_units,
-            kernel_size=3,
-            strides=2, 
-            padding='same',
-            activation=activation,
-            name="conv_merged_features_2",
-            kernel_regularizer=l2(l2_reg)
-        )(merged)
+            merged = Conv1D(
+                filters=branch_units,
+                kernel_size=3,
+                strides=2,
+                padding='same',
+                activation=activation,
+                name="conv_merged_features_2",
+                kernel_regularizer=l2(l2_reg)
+            )(merged)
         
         # --- Build Multiple Output Heads ---
         outputs_list = []
@@ -836,35 +651,19 @@ class Plugin:
         start_from_epoch_es = self.params.get('start_from_epoch', 10)
         patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 4)))
 
-        # Monitor the correct validation metric for the plotted horizon
-        plotted_output_name = f"output_horizon_{plotted_horizon}"
-        val_metric_name = f"val_{plotted_output_name}_mae_magnitude"
-        print(f"Primary monitoring validation metric: {val_metric_name}")
-        
-        # Build list of ALL horizon validation MAE metrics for multi-horizon monitoring
-        predicted_horizons = config['predicted_horizons']
-        all_horizon_val_metrics = []
-        for horizon in predicted_horizons:
-            metric_name = f"val_output_horizon_{horizon}_mae_magnitude"
-            all_horizon_val_metrics.append(metric_name)
-        
-        print(f"Multi-horizon monitoring metrics: {all_horizon_val_metrics}")
-
-    # Instantiate callbacks WITHOUT ClearMemoryCallback
-    # Use sum of individual validation losses (uniform weights)
-        
+        # Instantiate callbacks WITHOUT ClearMemoryCallback
         # Assumes relevant Callback classes are imported/defined
         callbacks = [
             EarlyStoppingWithPatienceCounter(
-                output_names=self.output_names,
-                patience=patience_early_stopping, restore_best_weights=True,
-        verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
+                monitor='val_loss', patience=patience_early_stopping, restore_best_weights=True,
+                verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
             ),
             ReduceLROnPlateauWithCounter(
-                output_names=self.output_names,
-        factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
+                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
             ),
-            LambdaCallback(on_epoch_end=lambda epoch, logs: self._print_learning_rate(epoch)),
+            LambdaCallback(on_epoch_end=lambda epoch, logs:
+                           print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
+            # Removed: ClearMemoryCallback(), # <<< REMOVED THIS LINE
             kl_callback
         ]
 
