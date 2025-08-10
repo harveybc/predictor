@@ -114,7 +114,22 @@
         "CLOSE_mtm_band_1_0.000_0.010",
         "CLOSE_mtm_band_2_0.010_0.060",
         "CLOSE_mtm_band_3_0.060_0.200",
-        "CLOSE_mtm_band_4_0.200_0.500"
+        "CLOSE_mtm_band_4_0.200_0.500",
+        "RSI",
+        "MACD",
+        "MACD_Histogram",
+        "MACD_Signal",
+        "EMA",
+        "Stochastic_%K",
+        "Stochastic_%D",
+        "ADX",
+        "DI+",
+        "DI-",
+        "ATR",
+        "CCI",
+        "WilliamsR",
+        "Momentum",
+        "ROC"
     ],
     "subperiodicity_features": [
         "CLOSE_15m_tick_1",
