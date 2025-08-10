@@ -229,19 +229,19 @@ class STLPipelinePlugin:
                 # 6. Calculate final predictions, uncertainties and targets by adding detransformed predictions to baselines.
                 
                 # Predicted Prices
-                train_prices = train_baselines * train_price_returns
-                val_prices = val_baselines * val_price_returns
-                test_prices = test_baselines * test_price_returns
+                train_prices = train_baselines + train_price_returns
+                val_prices = val_baselines + val_price_returns
+                test_prices = test_baselines + test_price_returns
 
                 # Target Prices
-                train_target_prices = train_baselines * train_target_price_returns
-                val_target_prices = val_baselines * val_target_price_returns
-                test_target_prices = test_baselines * test_target_price_returns 
+                train_target_prices = train_baselines + train_target_price_returns
+                val_target_prices = val_baselines + val_target_price_returns
+                test_target_prices = test_baselines + test_target_price_returns
 
                 # Uncertainties Prices
-                train_price_uncertainties = train_baselines * train_unc_returns
-                val_price_uncertainties = val_baselines * val_unc_returns
-                test_price_uncertainties = test_baselines * test_unc_returns
+                train_price_uncertainties = train_baselines + train_unc_returns
+                val_price_uncertainties = val_baselines + val_unc_returns
+                test_price_uncertainties = test_baselines + test_unc_returns
 
                 # --- Append results for the current horizon ---
                 real_train_price_preds.append(train_prices)
