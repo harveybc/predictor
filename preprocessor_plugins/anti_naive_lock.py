@@ -94,7 +94,7 @@ def apply_anti_naive_lock_to_time_series(df, feature_names, config):
                 )
                 print(f"        Applied log returns to {feature_name}")
 
-            elif (any(pf.lower() in feature_lower for pf in stationary_indicators) and 
+            elif (any(si.lower() in feature_lower for si in stationary_indicators) and 
                     config.get('use_log_returns', True) and 
                     feature_name != target_column and 
                     feature_name not in excluded_columns):
@@ -112,7 +112,7 @@ def apply_anti_naive_lock_to_time_series(df, feature_names, config):
                 print(f"        Applied first differences to {feature_name}")
                 
             else:
-                # Preserve other features (stationary indicators, target column, etc.)
+                # Preserve other features (target column, etc.)
                 print(f"        Preserved {feature_name}")
                 
         except Exception as e:
