@@ -81,12 +81,13 @@ class STLPreprocessorZScore:
             # 6. Apply anti-naive-lock transformations to denormalized input datasets (creates "processed data")
             print("Step 6: Apply anti-naive-lock to denormalized datasets")
             #TODO: verify this method is correct
-            #processed_data = apply_anti_naive_lock_to_datasets(denormalized_data, config)
+            processed_data = apply_anti_naive_lock_to_datasets(denormalized_data, config)
             
 
             # 7. Create SECOND sliding windows matrix from processed datasets (for model input only)
             #print("Step 7: Create second sliding windows from processed datasets")
-            final_sliding_windows = create_sliding_windows(normalized_data, config, dates)
+            #final_sliding_windows = create_sliding_windows(normalized_data, config, dates)
+            final_sliding_windows = create_sliding_windows(processed_data, config, dates)
 
             # 8. Align final sliding windows with target data length
             print("Step 8: Align sliding windows with target data")
