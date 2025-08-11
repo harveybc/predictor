@@ -449,7 +449,7 @@ class Plugin:
 
         # first linear conv1d
         inputs = Conv1D(
-                filters=merged_units,
+                filters=merged_units*2,
                 kernel_size=3,
                 strides=2,
                 padding='same',
