@@ -61,7 +61,7 @@
     "use_stl": false,
     "use_wavelets": false,
     "excluded_columns": [],
-    "target_factor": 100,
+    "target_factor": 1000.0,  
     "loss_factor": 1,
     "use_multi_tapper": false,
     "_comment_anti_naive_lock": "Anti-naive-lock preprocessing configuration",

@@ -180,24 +180,26 @@ class STLPipelinePlugin:
             real_train_price_preds, real_val_price_preds, real_test_price_preds = [], [], []
             real_train_price_targets, real_val_price_targets, real_test_price_targets = [], [], []
             real_train_price_uncertainties, real_val_price_uncertainties, real_test_price_uncertainties = [], [], []
-            
+
+            target_factor = config.get('target_factor', 1000.0)
+
             for idx, h in enumerate(predicted_horizons):
                 # Get horizon-specific normalization stats
                 
-                # --- Process Predictions (z-score normalized -> log returns) ---
-                train_returns = original_train_preds[idx].flatten()
-                val_returns = original_val_preds[idx].flatten()
-                test_returns = original_test_preds[idx].flatten()
-                
-                # --- Process Targets (z-score normalized -> log returns) ---
-                train_target_returns = original_train_targets[idx].flatten()
-                val_target_returns = original_val_targets[idx].flatten()
-                test_target_returns = original_test_targets[idx].flatten()
-                
-                # --- Process Uncertainties (z-score normalized -> log returns scale) ---
-                train_unc_returns = original_train_unc[idx].flatten()
-                val_unc_returns = original_val_unc[idx].flatten()
-                test_unc_returns = original_test_unc[idx].flatten()
+                # --- Process Predictions (divide by target_factor) ---
+                train_returns = original_train_preds[idx].flatten() / target_factor
+                val_returns = original_val_preds[idx].flatten() / target_factor
+                test_returns = original_test_preds[idx].flatten() / target_factor
+
+                # --- Process Targets (divide by target_factor) ---
+                train_target_returns = original_train_targets[idx].flatten() / target_factor
+                val_target_returns = original_val_targets[idx].flatten() / target_factor
+                test_target_returns = original_test_targets[idx].flatten() / target_factor
+
+                # --- Process Uncertainties (divide by target_factor, same as mean) ---
+                train_unc_returns = original_train_unc[idx].flatten() / target_factor
+                val_unc_returns = original_val_unc[idx].flatten() / target_factor
+                test_unc_returns = original_test_unc[idx].flatten() / target_factor
                 
                 # --- Convert to Real-World Prices using Baselines ---
                 # Baselines and predictions are aligned by the sliding window process.

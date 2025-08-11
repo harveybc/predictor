@@ -64,7 +64,9 @@ def calculate_targets_from_baselines(baseline_data, config):
             continue
         
         print(f"  {split}: Using {max_samples} samples for ALL horizons (limited by H{max_horizon})")
-        
+        target_factor = config.get('target_factor', 1000.0)
+
+
         # Calculate targets for each horizon using ONLY baselines
         for i, horizon in enumerate(predicted_horizons):
             horizon_targets = []
@@ -75,7 +77,7 @@ def calculate_targets_from_baselines(baseline_data, config):
                 baseline_future = baselines[t + horizon]
 
                 # Calculate return using only baselines
-                return_value = baseline_future - baseline_current
+                return_value = target_factor * (baseline_future - baseline_current)
                 horizon_targets.append(return_value)
 
             # Store targets for this horizon
