@@ -447,6 +447,16 @@ class Plugin:
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
 
+        # first linear conv1d
+        inputs = Conv1D(
+                filters=merged_units,
+                kernel_size=3,
+                strides=2,
+                padding='same',
+                activation='linear',
+                name="conv_merged_features_0"
+        )(inputs)
+
         # Feature Extractor
         if config.get("feature_extractor_file"):
             # Load the pretrained feature extractor
