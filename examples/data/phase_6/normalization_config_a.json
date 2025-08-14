@@ -1,206 +1,178 @@
 {
-    "BaseFeaturePlugin__OPEN": {
-        "mean": 1.3525094999656098,
-        "std": 0.10989474338295223
+    "OPEN": {
+        "mean": 1.3525767184973683,
+        "std": 0.10989139484079251
     },
-    "BaseFeaturePlugin__HIGH": {
-        "mean": 1.3537311857761882,
-        "std": 0.10999846041541622
+    "LOW": {
+        "mean": 1.3513766982008326,
+        "std": 0.10977636688795517
     },
-    "BaseFeaturePlugin__LOW": {
-        "mean": 1.3513096241144509,
-        "std": 0.10977977091628123
+    "HIGH": {
+        "mean": 1.3537986851972892,
+        "std": 0.10999490090861537
     },
-    "BaseFeaturePlugin__CLOSE": {
-        "mean": 1.3525105330490406,
-        "std": 0.109892795206618
+    "CLOSE": {
+        "mean": 1.3525777790773676,
+        "std": 0.10988925252152966
     },
-    "BaseFeaturePlugin__BC-BO": {
-        "mean": 1.0330834307725598e-06,
-        "std": 0.0018336214989924256
+    "RSI": {
+        "mean": 50.52309180456941,
+        "std": 17.60464324082974
     },
-    "BaseFeaturePlugin__BH-BL": {
-        "mean": 0.0024215616617373516,
-        "std": 0.0019099393538225587
+    "MACD": {
+        "mean": 2.883199532202939e-05,
+        "std": 0.002085186696845382
     },
-    "BaseFeaturePlugin__BH-BO": {
-        "mean": 0.001221685810578402,
-        "std": 0.0014545506464276813
+    "MACD_Histogram": {
+        "mean": 2.937782720721539e-06,
+        "std": 0.0006154003399787556
     },
-    "BaseFeaturePlugin__BO-BL": {
-        "mean": 0.001199875851158909,
-        "std": 0.0014481715984299784
+    "MACD_Signal": {
+        "mean": 2.5894212601307476e-05,
+        "std": 0.0019694666536792358
     },
-    "TechnicalFeaturePlugin__RSI_14": {
-        "mean": 50.52762047281949,
-        "std": 17.594439888896744
+    "EMA": {
+        "mean": 1.3525348959989654,
+        "std": 0.10982116089642789
     },
-    "TechnicalFeaturePlugin__MACD_12_26": {
-        "mean": 2.9168323606813065e-05,
-        "std": 0.0020847424886057267
+    "Stochastic_%K": {
+        "mean": 50.85208083351811,
+        "std": 26.7019381750003
     },
-    "TechnicalFeaturePlugin__MACD_SIGNAL_9": {
-        "mean": 2.6237036024486264e-05,
-        "std": 0.001969096285827185
+    "Stochastic_%D": {
+        "mean": 50.83960349910332,
+        "std": 25.92198889319537
     },
-    "TechnicalFeaturePlugin__MACD_HIST_12_26_9": {
-        "mean": 2.9312875823264624e-06,
-        "std": 0.0006151605694633733
+    "ADX": {
+        "mean": 27.45337706759868,
+        "std": 11.100444446592832
     },
-    "TechnicalFeaturePlugin__EMA_20": {
-        "mean": 1.3524674066321567,
-        "std": 0.10982339054243764
+    "DI+": {
+        "mean": 21.021946896448163,
+        "std": 7.832188325068414
     },
-    "TechnicalFeaturePlugin__STOCH_K_14": {
-        "mean": 50.84790635343998,
-        "std": 26.6978591658536
+    "DI-": {
+        "mean": 20.82350905569312,
+        "std": 7.6305555264942715
     },
-    "TechnicalFeaturePlugin__STOCH_D_3": {
-        "mean": 50.8383088990295,
-        "std": 25.917647347180903
+    "ATR": {
+        "mean": 0.002405084706261075,
+        "std": 0.0012034386267697835
     },
-    "TechnicalFeaturePlugin__ADX_14": {
-        "mean": 27.450934568100674,
-        "std": 11.09905303908081
+    "CCI": {
+        "mean": 2.8536476493021037,
+        "std": 120.0078614053708
     },
-    "TechnicalFeaturePlugin__ATR_14": {
-        "mean": 0.00240469946118033,
-        "std": 0.0012033689683445892
+    "WilliamsR": {
+        "mean": -49.148571779552974,
+        "std": 28.775828455924703
     },
-    "TechnicalFeaturePlugin__CCI_20": {
-        "mean": 2.8568762619366117,
-        "std": 120.02060457671381
+    "Momentum": {
+        "mean": 1.7536550964944796e-05,
+        "std": 0.003639574741169641
     },
-    "TechnicalFeaturePlugin__BB_MID_20_2": {
-        "mean": 1.3524621627347138,
-        "std": 0.10985236494348416
+    "ROC": {
+        "mean": 0.0055238798961806685,
+        "std": 0.4669373138441651
     },
-    "TechnicalFeaturePlugin__BB_UP_20_2": {
-        "mean": 1.3578265760954777,
-        "std": 0.11043198486640365
+    "BC-BO": {
+        "mean": 1.0605799993121048e-06,
+        "std": 0.0018336606765204466
     },
-    "TechnicalFeaturePlugin__BB_LOW_20_2": {
-        "mean": 1.347097749373949,
-        "std": 0.10940752344442363
+    "BH-BL": {
+        "mean": 0.002421986996456662,
+        "std": 0.001909772365545955
     },
-    "TechnicalFeaturePlugin__BB_WIDTH_20_2": {
-        "mean": 0.01072882672152859,
-        "std": 0.007764702238059036
+    "BH-BO": {
+        "mean": 0.0012219666999208358,
+        "std": 0.0014547000864562737
     },
-    "TechnicalFeaturePlugin__WILLR_14": {
-        "mean": -49.15647892383867,
-        "std": 28.774785190089055
+    "BO-BL": {
+        "mean": 0.0012000202965357857,
+        "std": 0.0014479427651926467
     },
-    "TechnicalFeaturePlugin__MOM_4": {
-        "mean": 1.7351949927779764e-05,
-        "std": 0.0036387177145133396
+    "S&P500_Close": {
+        "mean": 1229.9819565206233,
+        "std": 204.19852445623036
     },
-    "TechnicalFeaturePlugin__ROC_12": {
-        "mean": 0.0055327903423351265,
-        "std": 0.46679838337670215
+    "vix_close": {
+        "mean": 21.984741122357892,
+        "std": 12.399144517752186
     },
-    "FundamentalFeaturePlugin__date_time": {
-        "mean": NaN,
-        "std": NaN
+    "CLOSE_15m_tick_1": {
+        "mean": 1.3525881475110941,
+        "std": 0.10985189768330392
     },
-    "FundamentalFeaturePlugin__SP500": {
-        "mean": 1229.936202727182,
-        "std": 204.17505682327047
+    "CLOSE_15m_tick_2": {
+        "mean": 1.3525919484674394,
+        "std": 0.10985392726240834
     },
-    "FundamentalFeaturePlugin__VIX": {
-        "mean": 21.98186222163394,
-        "std": 12.398237589400523
+    "CLOSE_15m_tick_3": {
+        "mean": 1.3525759582372976,
+        "std": 0.10985619022145382
     },
-    "SeasonalFeaturePlugin__datetime": {
-        "mean": NaN,
-        "std": NaN
+    "CLOSE_15m_tick_4": {
+        "mean": 1.3525684715676496,
+        "std": 0.10984667866328325
     },
-    "SeasonalFeaturePlugin__dow_sin": {
-        "mean": 0.3798483753789293,
-        "std": 0.5074725830691551
+    "CLOSE_15m_tick_5": {
+        "mean": 1.3525915655853313,
+        "std": 0.10984858455968569
     },
-    "SeasonalFeaturePlugin__dow_cos": {
-        "mean": -0.07612995953487178,
-        "std": 0.7696884099248753
+    "CLOSE_15m_tick_6": {
+        "mean": 1.3525945550242526,
+        "std": 0.1098508554640037
     },
-    "SeasonalFeaturePlugin__dom_sin": {
-        "mean": 0.007609136412161313,
-        "std": 0.7138667622019756
+    "CLOSE_15m_tick_7": {
+        "mean": 1.3525813732842547,
+        "std": 0.10985459837926109
     },
-    "SeasonalFeaturePlugin__dom_cos": {
-        "mean": -0.029396727914187237,
-        "std": 0.6996474390623302
+    "CLOSE_15m_tick_8": {
+        "mean": 1.3525749891637138,
+        "std": 0.10984600728108058
     },
-    "SeasonalFeaturePlugin__hod_sin": {
-        "mean": 0.010286706226995098,
-        "std": 0.7112508580658687
+    "CLOSE_30m_tick_1": {
+        "mean": 1.3525876720905432,
+        "std": 0.10985707719253933
     },
-    "SeasonalFeaturePlugin__hod_cos": {
-        "mean": -0.019655621235341276,
-        "std": 0.7026125757818044
+    "CLOSE_30m_tick_2": {
+        "mean": 1.352565927620489,
+        "std": 0.10985517063461968
     },
-    "HighFreqFeaturePlugin__M15_LAG_1": {
-        "mean": 1.3525212335786505,
-        "std": 0.10985448716434418
+    "CLOSE_30m_tick_3": {
+        "mean": 1.3525914345178711,
+        "std": 0.10985639123847045
     },
-    "HighFreqFeaturePlugin__M15_LAG_2": {
-        "mean": 1.352524918495082,
-        "std": 0.10985661260324782
+    "CLOSE_30m_tick_4": {
+        "mean": 1.3525670810829407,
+        "std": 0.10985231390384968
     },
-    "HighFreqFeaturePlugin__M15_LAG_3": {
-        "mean": 1.3525090535800262,
-        "std": 0.10985882801799833
+    "CLOSE_30m_tick_5": {
+        "mean": 1.3525919615397848,
+        "std": 0.10985245378847551
     },
-    "HighFreqFeaturePlugin__M15_LAG_4": {
-        "mean": 1.352501471215352,
-        "std": 0.10984947365411245
+    "CLOSE_30m_tick_6": {
+        "mean": 1.3525698252433866,
+        "std": 0.10984944783262592
     },
-    "HighFreqFeaturePlugin__M15_LAG_5": {
-        "mean": 1.3525245869729692,
-        "std": 0.10985138792104535
+    "CLOSE_30m_tick_7": {
+        "mean": 1.3525952609308884,
+        "std": 0.10984962867934644
     },
-    "HighFreqFeaturePlugin__M15_LAG_6": {
-        "mean": 1.3525274891670678,
-        "std": 0.10985374404693209
+    "CLOSE_30m_tick_8": {
+        "mean": 1.3525762451408714,
+        "std": 0.10984874228024198
     },
-    "HighFreqFeaturePlugin__M15_LAG_7": {
-        "mean": 1.3525144425338742,
-        "std": 0.10985744130656107
+    "day_of_month": {
+        "mean": 15.759365647253087,
+        "std": 8.742178408069295
     },
-    "HighFreqFeaturePlugin__M15_LAG_8": {
-        "mean": 1.3525079651282756,
-        "std": 0.109848994521022
+    "hour_of_day": {
+        "mean": 11.263132546699232,
+        "std": 6.808448507039726
     },
-    "HighFreqFeaturePlugin__M30_LAG_1": {
-        "mean": 1.3525207744686705,
-        "std": 0.1098592286174953
-    },
-    "HighFreqFeaturePlugin__M30_LAG_2": {
-        "mean": 1.3524991282068919,
-        "std": 0.10985738183852987
-    },
-    "HighFreqFeaturePlugin__M30_LAG_3": {
-        "mean": 1.3525245845656513,
-        "std": 0.10985875379959155
-    },
-    "HighFreqFeaturePlugin__M30_LAG_4": {
-        "mean": 1.3525002551757341,
-        "std": 0.10985473114113516
-    },
-    "HighFreqFeaturePlugin__M30_LAG_5": {
-        "mean": 1.352525046426852,
-        "std": 0.10985504540683323
-    },
-    "HighFreqFeaturePlugin__M30_LAG_6": {
-        "mean": 1.3525029224843526,
-        "std": 0.10985208414383157
-    },
-    "HighFreqFeaturePlugin__M30_LAG_7": {
-        "mean": 1.3525282811747712,
-        "std": 0.10985243394339642
-    },
-    "HighFreqFeaturePlugin__M30_LAG_8": {
-        "mean": 1.3525093159777148,
-        "std": 0.1098515840480987
+    "day_of_week": {
+        "mean": 1.9802882796105816,
+        "std": 1.3818012694746515
     }
 }
