@@ -71,7 +71,7 @@ def calculate_targets_from_baselines(baseline_data, config):
         for i, horizon in enumerate(predicted_horizons):
             horizon_targets = []
             
-            # Calculate targets: log(baseline[t+horizon] / baseline[t])
+            # Calculate targets:(baseline[t+horizon] - baseline[t])
             for t in range(max_samples):
                 baseline_current = baselines[t]
                 baseline_future = baselines[t + horizon]
