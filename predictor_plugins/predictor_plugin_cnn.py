@@ -753,7 +753,7 @@ class Plugin:
 
         # Get dimensions from a single sample run
         try:
-            first_run_output_tf = self.model(x_test[:1], training=True) # Predict on one sample
+            first_run_output_tf = self.model(x_test[:1], training=False) # Predict on one sample
             if not isinstance(first_run_output_tf, list): first_run_output_tf = [first_run_output_tf]
             num_heads = len(first_run_output_tf)
             if num_heads == 0: return [], []
