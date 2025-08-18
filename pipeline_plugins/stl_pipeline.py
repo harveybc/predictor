@@ -179,11 +179,17 @@ class STLPipelinePlugin:
                         num_train_pts=min(len(train_preds_h),len(train_target_h),len(baseline_train)); num_val_pts=min(len(val_preds_h),len(val_target_h),len(baseline_val))
                         train_preds_h=train_preds_h[:num_train_pts]; train_target_h=train_target_h[:num_train_pts]; train_unc_h=train_unc_h[:num_train_pts]; baseline_train_h=baseline_train[:num_train_pts].flatten() # Flatten baseline too
                         val_preds_h=val_preds_h[:num_val_pts]; val_target_h=val_target_h[:num_val_pts]; val_unc_h=val_unc_h[:num_val_pts]; baseline_val_h=baseline_val[:num_val_pts].flatten() # Flatten baseline too
-                        # Denormalize Price (add baseline first if returns)
-                        train_target_price=denormalize(baseline_train_h+train_target_h if use_returns else train_target_h, config)
-                        train_pred_price=denormalize(baseline_train_h+train_preds_h if use_returns else train_preds_h, config)
-                        val_target_price=denormalize(baseline_val_h+val_target_h if use_returns else val_target_h, config)
-                        val_pred_price=denormalize(baseline_val_h+val_preds_h if use_returns else val_preds_h, config)
+                        # Price reconstruction: if using log-returns, map to prices via P_t * exp(r)
+                        if use_returns:
+                            train_target_price = baseline_train_h * np.exp(train_target_h)
+                            train_pred_price   = baseline_train_h * np.exp(train_preds_h)
+                            val_target_price   = baseline_val_h * np.exp(val_target_h)
+                            val_pred_price     = baseline_val_h * np.exp(val_preds_h)
+                        else:
+                            train_target_price=denormalize(train_target_h, config)
+                            train_pred_price=denormalize(train_preds_h, config)
+                            val_target_price=denormalize(val_target_h, config)
+                            val_pred_price=denormalize(val_preds_h, config)
                         # Metrics
                         train_mae_h=np.mean(np.abs(denormalize_returns(train_preds_h-train_target_h, config))); train_r2_h=r2_score(train_target_price, train_pred_price); train_unc_mean_h=np.mean(np.abs(denormalize_returns(train_unc_h, config))); train_snr_h=np.mean(train_pred_price)/(train_unc_mean_h+1e-9)
                         val_mae_h=np.mean(np.abs(denormalize_returns(val_preds_h-val_target_h, config))); val_r2_h=r2_score(val_target_price, val_pred_price); val_unc_mean_h=np.mean(np.abs(denormalize_returns(val_unc_h, config))); val_snr_h=np.mean(val_pred_price)/(val_unc_mean_h+1e-9)

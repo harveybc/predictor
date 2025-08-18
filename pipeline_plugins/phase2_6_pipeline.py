@@ -13,23 +13,10 @@ Key differences from STL pipeline:
 - Uses existing normalization_config_b.json for denormalization
 - No additional STL decomposition needed
 
-CRITICAL UPDATE: Z-Score Normalization vs Returns Prediction
-============================================================
-The preprocessor now handles the incompatibility between z-score normalization and returns prediction:
-
-1. PREPROCESSOR (phase2_6_preprocessor.py):
-   - Loads z-score normalized features and CLOSE data
-   - DENORMALIZES CLOSE values before calculating returns
-   - Targets = actual returns (denormalized_CLOSE[t+h] - denormalized_CLOSE[t])
-   - Baselines = denormalized CLOSE[t] values (actual prices)
-
-2. PIPELINE (this file):
-   - Receives actual returns as predictions from model
-   - Receives denormalized baselines from preprocessor
-   - Final price = baseline + prediction (no additional denormalization needed)
-   - Only uncertainties need return-style denormalization
-
-This ensures mathematical consistency and maintains compatibility with previous phases.
+CRITICAL UPDATE: Outputs are scaled log-returns; convert prices via P = baseline * exp(return)
+============================================================================================
+Preprocessor provides denormalized baselines (actual prices) and scaled log-returns as targets.
+Pipeline converts model outputs and targets from returns to price via P_t * exp(r), aligning metrics to price scale.
 """
 
 import time
@@ -145,24 +132,35 @@ class Phase26PipelinePlugin:
 
         # 1. Get preprocessed datasets (already normalized with z-score)
         print("Loading preprocessed datasets via Preprocessor...")
-        datasets = preprocessor_plugin.run_preprocessing(config)
+        rp = preprocessor_plugin.run_preprocessing(config)
+        # Support both (datasets, params) and datasets-only return styles
+        datasets = rp[0] if isinstance(rp, tuple) and len(rp) >= 1 else rp
         print("Preprocessor finished.")
         
         X_train = datasets["x_train"]
         X_val = datasets["x_val"]
         X_test = datasets["x_test"]
-        y_train_list = datasets["y_train"]
-        y_val_list = datasets["y_val"]
-        y_test_list = datasets["y_test"]
+        y_train_raw = datasets["y_train"]
+        y_val_raw = datasets["y_val"]
+        y_test_raw = datasets["y_test"]
+        # Normalize to lists ordered by predicted_horizons
+        if isinstance(y_train_raw, dict):
+            y_train_list = [y_train_raw[f"output_horizon_{h}"] for h in predicted_horizons]
+            y_val_list = [y_val_raw[f"output_horizon_{h}"] for h in predicted_horizons]
+            y_test_list = [y_test_raw[f"output_horizon_{h}"] for h in predicted_horizons]
+        else:
+            y_train_list = y_train_raw
+            y_val_list = y_val_raw
+            y_test_list = y_test_raw
         train_dates = datasets.get("y_train_dates")
         val_dates = datasets.get("y_val_dates")
         test_dates = datasets.get("y_test_dates")
         baseline_train = datasets.get("baseline_train")
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
-        
-        # USER REQUIREMENTS: Always use returns (CLOSE[t+horizon] - CLOSE[t])
-        use_returns = True  # Always True per user requirements
+
+        # Always use returns (log-returns)
+        use_returns = True
         if baseline_train is None or baseline_val is None or baseline_test is None:
             raise ValueError("Baselines required for return calculation.")
 
@@ -225,28 +223,24 @@ class Phase26PipelinePlugin:
                         val_unc_h = val_unc_h[:num_val_pts]
                         baseline_val_h = baseline_val[:num_val_pts].flatten()
                         
-                        # CRITICAL FIX: Handle denormalized baselines and actual returns
-                        # Our preprocessor now provides denormalized baselines and actual returns
-                        if use_returns:
-                            # Apply actual returns to denormalized baselines (no additional denormalization needed)
-                            train_target_price = baseline_train_h + train_target_h  # Already denormalized
-                            train_pred_price = baseline_train_h + train_preds_h    # Already denormalized  
-                            val_target_price = baseline_val_h + val_target_h       # Already denormalized
-                            val_pred_price = baseline_val_h + val_preds_h          # Already denormalized
-                        else:
-                            # If not using returns, denormalize directly
-                            train_target_price = denormalize(train_target_h, config)
-                            train_pred_price = denormalize(train_preds_h, config)
-                            val_target_price = denormalize(val_target_h, config)
-                            val_pred_price = denormalize(val_preds_h, config)
+                        # Convert scaled log-returns to prices via P = baseline * exp(r)
+                        tfac = config.get('target_factor', 1000.0)
+                        r_train_t = train_target_h / tfac
+                        r_train_p = train_preds_h / tfac
+                        r_val_t = val_target_h / tfac
+                        r_val_p = val_preds_h / tfac
+                        train_target_price = baseline_train_h * np.exp(r_train_t)
+                        train_pred_price   = baseline_train_h * np.exp(r_train_p)
+                        val_target_price   = baseline_val_h * np.exp(r_val_t)
+                        val_pred_price     = baseline_val_h * np.exp(r_val_p)
                         
-                        # Metrics
-                        train_mae_h = np.mean(np.abs(denormalize_returns(train_preds_h - train_target_h, config)))
+                        # Metrics (compute MAE in return space for comparability) then R2 in price space
+                        train_mae_h = np.mean(np.abs(r_train_p - r_train_t))
                         train_r2_h = r2_score(train_target_price, train_pred_price)
                         train_unc_mean_h = np.mean(np.abs(denormalize_returns(train_unc_h, config)))
                         train_snr_h = np.mean(train_pred_price) / (train_unc_mean_h + 1e-9)
                         
-                        val_mae_h = np.mean(np.abs(denormalize_returns(val_preds_h - val_target_h, config)))
+                        val_mae_h = np.mean(np.abs(r_val_p - r_val_t))
                         val_r2_h = r2_score(val_target_price, val_pred_price)
                         val_unc_mean_h = np.mean(np.abs(denormalize_returns(val_unc_h, config)))
                         val_snr_h = np.mean(val_pred_price) / (val_unc_mean_h + 1e-9)
@@ -304,19 +298,15 @@ class Phase26PipelinePlugin:
                     test_unc_h = test_unc_h[:num_test_pts]
                     baseline_test_h = baseline_test[:num_test_pts].flatten()
                     
-                    # CRITICAL FIX: Handle denormalized baselines and actual returns
-                    # Our preprocessor now provides denormalized baselines and actual returns
-                    if use_returns:
-                        # Apply actual returns to denormalized baselines (no additional denormalization needed)
-                        test_target_price = baseline_test_h + test_target_h  # Already denormalized
-                        test_pred_price = baseline_test_h + test_preds_h     # Already denormalized
-                    else:
-                        # If not using returns, denormalize directly
-                        test_target_price = denormalize(test_target_h, config)
-                        test_pred_price = denormalize(test_preds_h, config)
+                    # Convert scaled log-returns to prices via P = baseline * exp(r)
+                    tfac = config.get('target_factor', 1000.0)
+                    r_test_t = test_target_h / tfac
+                    r_test_p = test_preds_h / tfac
+                    test_target_price = baseline_test_h * np.exp(r_test_t)
+                    test_pred_price   = baseline_test_h * np.exp(r_test_p)
                     
                     # Metrics
-                    test_mae_h = np.mean(np.abs(denormalize_returns(test_preds_h - test_target_h, config)))
+                    test_mae_h = np.mean(np.abs(r_test_p - r_test_t))
                     test_r2_h = r2_score(test_target_price, test_pred_price)
                     test_unc_mean_h = np.mean(np.abs(denormalize_returns(test_unc_h, config)))
                     test_snr_h = np.mean(test_pred_price) / (test_unc_mean_h + 1e-9)
@@ -437,13 +427,11 @@ class Phase26PipelinePlugin:
                     if use_returns:
                         if final_baseline is None:
                             raise ValueError("Baseline missing.")
-                        # Apply returns to denormalized baseline to get final denormalized price
-                        pred_price_denorm = final_baseline + preds_raw  # Already in actual price units
-                        target_price_denorm = final_baseline + target_raw  # Already in actual price units
-                        # NO additional denormalization needed since baseline is denormalized and returns are actual
-                        print(f"    H={h}: Applied actual returns to denormalized baseline")
+                        tfac = config.get('target_factor', 1000.0)
+                        pred_price_denorm = final_baseline * np.exp(preds_raw / tfac)
+                        target_price_denorm = final_baseline * np.exp(target_raw / tfac)
+                        print(f"    H={h}: Converted exp(log-returns) to price using baseline")
                     else:
-                        # If not using returns (shouldn't happen in phase 2.6), denormalize predictions directly
                         pred_price_denorm = denormalize(preds_raw, config)
                         target_price_denorm = denormalize(target_raw, config)
                         
@@ -521,9 +509,10 @@ class Phase26PipelinePlugin:
 
             # CRITICAL FIX: Handle denormalized baselines and actual returns for plotting
             if use_returns:
-                # Apply actual returns to denormalized baselines (no additional denormalization needed)
-                pred_plot_price_flat = (baseline_plot + preds_plot_raw.flatten()).flatten()
-                target_plot_price_flat = (baseline_plot + target_plot_raw.flatten()).flatten()
+                # Convert scaled log-returns to prices
+                tfac = config.get('target_factor', 1000.0)
+                pred_plot_price_flat = (baseline_plot * np.exp((preds_plot_raw.flatten())/tfac)).flatten()
+                target_plot_price_flat = (baseline_plot * np.exp((target_plot_raw.flatten())/tfac)).flatten()
             else:
                 # If not using returns, denormalize directly
                 pred_plot_price_flat = denormalize(preds_plot_raw, config).flatten()

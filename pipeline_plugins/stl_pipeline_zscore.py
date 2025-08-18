@@ -160,8 +160,8 @@ class STLPipelinePlugin:
             if not all(len(lst) == num_outputs for lst in [list_test_preds, list_test_unc]): 
                 raise ValueError("Predictor predict mismatch outputs.")
             
-            # 4. Denormalize predictions, targets and uncertainties for all datasets.
-            print("\n--- Converting z-score normalized predictions to real-world prices for evaluation ---")
+            # 4. Convert model outputs (log-returns scaled by target_factor) to real-world prices for evaluation.
+            print("\n--- Converting scaled log-returns to real-world prices for evaluation ---")
             
             # Store original predictions and targets for later reference
             original_train_preds = [pred.copy() for pred in list_train_preds]
@@ -209,39 +209,21 @@ class STLPipelinePlugin:
                 val_baselines = baseline_val[:num_val]
                 test_baselines = baseline_test[:num_test]
 
-                # 5. Detransform (inverse logreturns) predictions, targets and uncertainties to real-world scale.
+                # 5. Inverse-transform log-returns to price: P_{t+h} = P_t * exp(r_{t->t+h})
+                # Predictions and targets are log-returns; map to absolute price level using the baseline P_t.
+                train_prices = train_baselines * np.exp(train_returns)
+                val_prices = val_baselines * np.exp(val_returns)
+                test_prices = test_baselines * np.exp(test_returns)
 
-                # Predicted Price Returns
-                train_price_returns = train_returns
-                val_price_returns =  val_returns
-                test_price_returns =  test_returns
+                train_target_prices = train_baselines * np.exp(train_target_returns)
+                val_target_prices = val_baselines * np.exp(val_target_returns)
+                test_target_prices = test_baselines * np.exp(test_target_returns)
 
-                # Target Price Returns
-                train_target_price_returns = train_target_returns
-                val_target_price_returns = val_target_returns
-                test_target_price_returns = test_target_returns
-
-                # Uncertainties returns
-                train_unc_returns = train_unc_returns
-                val_unc_returns = val_unc_returns
-                test_unc_returns = test_unc_returns
-
-                # 6. Calculate final predictions, uncertainties and targets by adding detransformed predictions to baselines.
-                
-                # Predicted Prices
-                train_prices = train_baselines + train_price_returns
-                val_prices = val_baselines + val_price_returns
-                test_prices = test_baselines + test_price_returns
-
-                # Target Prices
-                train_target_prices = train_baselines + train_target_price_returns
-                val_target_prices = val_baselines + val_target_price_returns
-                test_target_prices = test_baselines + test_target_price_returns
-
-                # Uncertainties Prices
-                train_price_uncertainties = train_unc_returns
-                val_price_uncertainties = val_unc_returns
-                test_price_uncertainties = test_unc_returns
+                # Uncertainties: map from return space to price space approximately.
+                # For small r, dP ≈ P * dr. Use absolute baseline scaling as a first-order approximation.
+                train_price_uncertainties = np.abs(train_baselines) * np.abs(train_unc_returns)
+                val_price_uncertainties = np.abs(val_baselines) * np.abs(val_unc_returns)
+                test_price_uncertainties = np.abs(test_baselines) * np.abs(test_unc_returns)
 
                 # --- Append results for the current horizon ---
                 real_train_price_preds.append(train_prices)
@@ -258,7 +240,7 @@ class STLPipelinePlugin:
                 
                 print(f"  H{h}: Converted {num_train} train, {num_val} val, {num_test} test points to real prices")
             
-            print("✅ All train, validation and test data converted to real-world prices for evaluation")
+            print("✅ All train, validation and test data converted to real-world prices using exp(log-returns)")
 
             # 7. Calculate metrics for the final predictions vs final targets (MAE, R2, SNR).
             # Calculate Train/Validation/Test metrics using real-world prices
