@@ -3,6 +3,7 @@ import pandas as pd
 from .helpers import load_normalization_json, denormalize_all_datasets, load_normalized_csv, exclude_columns_from_datasets
 from .sliding_windows import create_sliding_windows, extract_baselines_from_sliding_windows
 from .target_calculation import calculate_targets_from_baselines
+from .anti_naive_lock import apply_log_returns_to_series
 
 
 class STLPreprocessorZScore:
@@ -12,8 +13,9 @@ class STLPreprocessorZScore:
     3. Create sliding windows from denormalized data
     4. Extract baselines (last elements of each window for target column)
     5. Calculate log return targets with those baselines (train, validation, test)
-    6. Create SECOND sliding windows matrix directly from the ORIGINAL normalized datasets (no extra transforms)
-    7. Keep baselines and targets unchanged (they're already calculated correctly)
+     6. Create SECOND sliding windows matrix from the ORIGINAL normalized datasets transformed with per-column log-returns
+         (applies to all numeric features). Dates preserved; no change to target pipeline.
+     7. Keep baselines and targets unchanged (they're already calculated correctly)
     """
 
     # Plugin-specific parameters they get overwritten if declared in the config
@@ -76,10 +78,11 @@ class STLPreprocessorZScore:
             #TODO: verify this method is correct
             targets = calculate_targets_from_baselines(baselines, config)
 
-            # 6. Create SECOND sliding windows directly from ORIGINAL normalized datasets (for model input only)
-            #    IMPORTANT: No further transformations applied; honors user's requirement to feed normalized CSVs as-is.
-            print("Step 6: Create second sliding windows from ORIGINAL normalized datasets (no transforms)")
-            final_sliding_windows = create_sliding_windows(normalized_data, config, dates)
+            # 6. Create SECOND sliding windows from ORIGINAL normalized datasets after applying per-feature log-returns
+            #    Apply to all numeric columns; non-numeric (e.g., DATE_TIME) are preserved untouched.
+            print("Step 6: Apply log-returns to normalized X datasets and create second sliding windows")
+            logret_normalized_x = self._build_logreturn_normalized_x(normalized_data, config)
+            final_sliding_windows = create_sliding_windows(logret_normalized_x, config, dates)
 
             # 7. Align final sliding windows with target data length
             print("Step 7: Align sliding windows with target data")
@@ -98,6 +101,44 @@ class STLPreprocessorZScore:
         except Exception as e:
             print(f"ERROR in process_data: {e}")
             raise
+
+    def _build_logreturn_normalized_x(self, normalized_data, config):
+        """Build a dict with x_*_df only, applying log-returns to every numeric feature.
+
+        Notes:
+        - Uses the ORIGINAL normalized datasets loaded from CSVs.
+        - Applies log-returns column-wise: ln(x_t / x_{t-1}); first element set to 0.0 by apply_log_returns_to_series.
+        - Non-numeric columns are left as-is (e.g., datetime-like). Index is preserved; shape stays the same.
+        """
+        import pandas as pd
+
+        out = {}
+        for split in ['train', 'val', 'test']:
+            key = f'x_{split}_df'
+            if key not in normalized_data:
+                continue
+            df = normalized_data[key]
+            if df is None or len(df) == 0:
+                out[key] = df
+                continue
+
+            # Transform numeric columns with log-returns, preserve others
+            df_transformed = df.copy()
+            for col in df.columns:
+                series = df[col]
+                if pd.api.types.is_numeric_dtype(series):
+                    try:
+                        df_transformed[col] = apply_log_returns_to_series(series)
+                    except Exception as e:
+                        print(f"        WARN: log-returns failed for column '{col}' in {key}: {e}; preserving original")
+                        df_transformed[col] = series
+                else:
+                    # Preserve non-numeric columns (e.g., DATE_TIME)
+                    df_transformed[col] = series
+
+            out[key] = df_transformed
+
+        return out
 
     def _align_sliding_windows_with_targets(self, sliding_windows, targets, config):
         """Align sliding windows with target data to ensure same number of samples."""
