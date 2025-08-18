@@ -3,7 +3,7 @@ import pandas as pd
 from .helpers import load_normalization_json, denormalize_all_datasets, load_normalized_csv, exclude_columns_from_datasets
 from .sliding_windows import create_sliding_windows, extract_baselines_from_sliding_windows
 from .target_calculation import calculate_targets_from_baselines
-from .anti_naive_lock import apply_log_returns_to_series
+from .anti_naive_lock import apply_log_returns_to_series, apply_feature_normalization
 
 
 class STLPreprocessorZScore:
@@ -78,11 +78,11 @@ class STLPreprocessorZScore:
             #TODO: verify this method is correct
             targets = calculate_targets_from_baselines(baselines, config)
 
-            # 6. Create SECOND sliding windows from ORIGINAL normalized datasets after applying per-feature log-returns
-            #    Apply to all numeric columns; non-numeric (e.g., DATE_TIME) are preserved untouched.
-            print("Step 6: Apply log-returns to normalized X datasets and create second sliding windows")
-            logret_normalized_x = self._build_logreturn_normalized_x(normalized_data, config)
-            final_sliding_windows = create_sliding_windows(logret_normalized_x, config, dates)
+            # 6. Create SECOND sliding windows from DENORMALIZED datasets after applying price log-returns
+            #    Apply log returns to raw price columns only (OPEN/HIGH/LOW/CLOSE). Preserve other columns.
+            print("Step 6: Apply log-returns to DENORMALIZED price features for X and create second sliding windows")
+            denorm_returns_x = self._build_denorm_price_returns_x(denormalized_data, config)
+            final_sliding_windows = create_sliding_windows(denorm_returns_x, config, dates)
 
             # 7. Align final sliding windows with target data length
             print("Step 7: Align sliding windows with target data")
@@ -141,6 +141,36 @@ class STLPreprocessorZScore:
                             print("DEBUG: Skipping CLOSE/H1 correlation — length mismatch")
                     else:
                         print("DEBUG: CLOSE not found in feature_names_train for X stats")
+
+                # 3) Dates alignment check between FIRST (denorm) and SECOND (final) windows
+                for split in ['train','val','test']:
+                    d1 = denorm_sliding_windows.get(f'x_dates_{split}')
+                    d2 = final_sliding_windows.get(f'x_dates_{split}')
+                    if d1 is None or d2 is None:
+                        print(f"DEBUG: Missing dates for {split}, skip alignment check")
+                        continue
+                    m = min(len(d1), len(d2))
+                    eq = np.array(d1[:m]) == np.array(d2[:m])
+                    mism = int((~eq).sum()) if hasattr(eq, 'sum') else 'NA'
+                    print(f"DEBUG[DATES {split.upper()}]: first {m} dates equal? mismatches={mism}")
+
+                # 4) Sample rows dump: date, baseline[t], baseline[t+1], y1[t], x_last_close_ret[t]
+                for split in ['train','val','test']:
+                    base = baselines.get(f'baseline_{split}')
+                    d2 = final_sliding_windows.get(f'x_dates_{split}')
+                    Xsp = final_sliding_windows.get(f'X_{split}')
+                    fn_sp = final_sliding_windows.get(f'feature_names_{split}', final_sliding_windows.get('feature_names', []))
+                    if base is None or d2 is None or Xsp is None or not isinstance(fn_sp, list) or 'CLOSE' not in fn_sp:
+                        continue
+                    ci = fn_sp.index('CLOSE')
+                    y_h1 = targets.get(f'y_{split}',{}).get('output_horizon_1')
+                    if y_h1 is None:
+                        continue
+                    n = min(5, len(y_h1), len(base)-1, len(d2), len(Xsp))
+                    print(f"DEBUG[SAMPLE {split.upper()}] t, date, base[t], base[t+1], y1[t], x_last_close_ret[t]")
+                    for t in range(n):
+                        x_last = float(Xsp[t,-1,ci]) if Xsp.shape[2] > ci else float('nan')
+                        print(f"  {t}: {d2[t]} | {float(base[t]):.6f} | {float(base[t+1]):.6f} | {float(y_h1[t]):.6f} | {x_last:.6f}")
             except Exception as dbg_e:
                 print(f"WARN: Debug invariant checks failed: {dbg_e}")
 
@@ -158,41 +188,40 @@ class STLPreprocessorZScore:
             print(f"ERROR in process_data: {e}")
             raise
 
-    def _build_logreturn_normalized_x(self, normalized_data, config):
-        """Build a dict with x_*_df only, applying log-returns to every numeric feature.
+    def _build_denorm_price_returns_x(self, denormalized_data, config):
+        """Build a dict with x_*_df only, applying log-returns to price features on DENORMALIZED data.
 
-        Notes:
-        - Uses the ORIGINAL normalized datasets loaded from CSVs.
-        - Applies log-returns column-wise: ln(x_t / x_{t-1}); first element set to 0.0 by apply_log_returns_to_series.
-        - Non-numeric columns are left as-is (e.g., datetime-like). Index is preserved; shape stays the same.
+        - Applies ln(p_t/p_{t-1}) to columns in config['price_features'] that exist in the DataFrame.
+        - Preserves other columns unchanged.
+        - Keeps index/length the same; first row per column becomes 0.0 by design.
+        - Optionally standardizes features post-transform if normalize_after_preprocessing is True.
         """
         import pandas as pd
+        price_features = set([c for c in config.get('price_features', ['OPEN','HIGH','LOW','CLOSE'])])
 
         out = {}
         for split in ['train', 'val', 'test']:
             key = f'x_{split}_df'
-            if key not in normalized_data:
+            if key not in denormalized_data:
                 continue
-            df = normalized_data[key]
+            df = denormalized_data[key]
             if df is None or len(df) == 0:
                 out[key] = df
                 continue
 
-            # Transform numeric columns with log-returns, preserve others
-            df_transformed = df.copy()
-            for col in df.columns:
-                series = df[col]
-                if pd.api.types.is_numeric_dtype(series):
+            df_tx = df.copy()
+            for col in df_tx.columns:
+                series = df_tx[col]
+                if col in price_features and pd.api.types.is_numeric_dtype(series):
                     try:
-                        df_transformed[col] = apply_log_returns_to_series(series)
+                        df_tx[col] = apply_log_returns_to_series(series)
                     except Exception as e:
-                        print(f"        WARN: log-returns failed for column '{col}' in {key}: {e}; preserving original")
-                        df_transformed[col] = series
+                        print(f"        WARN: price log-returns failed for '{col}' in {key}: {e}; preserving original")
+                        df_tx[col] = series
                 else:
-                    # Preserve non-numeric columns (e.g., DATE_TIME)
-                    df_transformed[col] = series
+                    df_tx[col] = series
 
-            out[key] = df_transformed
+            out[key] = df_tx
 
         return out
 
