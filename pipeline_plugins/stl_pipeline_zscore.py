@@ -196,6 +196,23 @@ class STLPipelinePlugin:
                 val_target_returns = original_val_targets[idx].flatten() / target_factor
                 test_target_returns = original_test_targets[idx].flatten() / target_factor
 
+                # If residualized, add back naive last-step CLOSE return (unscaled) before price conversion
+                naive_train = datasets.get('naive_last_close_scaled_train')
+                naive_val = datasets.get('naive_last_close_scaled_val')
+                naive_test = datasets.get('naive_last_close_scaled_test')
+                if naive_train is not None:
+                    mtr = min(len(train_returns), len(naive_train))
+                    train_returns[:mtr] += (naive_train[:mtr] / target_factor)
+                    train_target_returns[:mtr] += (naive_train[:mtr] / target_factor)
+                if naive_val is not None:
+                    mvr = min(len(val_returns), len(naive_val))
+                    val_returns[:mvr] += (naive_val[:mvr] / target_factor)
+                    val_target_returns[:mvr] += (naive_val[:mvr] / target_factor)
+                if naive_test is not None:
+                    mte = min(len(test_returns), len(naive_test))
+                    test_returns[:mte] += (naive_test[:mte] / target_factor)
+                    test_target_returns[:mte] += (naive_test[:mte] / target_factor)
+
                 # --- Process Uncertainties (divide by target_factor, same as mean) ---
                 train_unc_returns = original_train_unc[idx].flatten() / target_factor
                 val_unc_returns = original_val_unc[idx].flatten() / target_factor
@@ -239,6 +256,43 @@ class STLPipelinePlugin:
                 real_test_price_uncertainties.append(test_price_uncertainties)
                 
                 print(f"  H{h}: Converted {num_train} train, {num_val} val, {num_test} test points to real prices")
+
+            # --- Returns-space diagnostics and naive baselines ---
+            try:
+                plotted_idx = plotted_index
+                tfac = target_factor
+                # Recompute returns arrays for plotted horizon only (train/val)
+                r_train_pred = original_train_preds[plotted_idx].flatten() / tfac
+                r_train_true = original_train_targets[plotted_idx].flatten() / tfac
+                r_val_pred = original_val_preds[plotted_idx].flatten() / tfac
+                r_val_true = original_val_targets[plotted_idx].flatten() / tfac
+
+                # Naive baselines (if provided by preprocessor)
+                naive_train_scaled = datasets.get('naive_last_close_scaled_train')
+                naive_val_scaled = datasets.get('naive_last_close_scaled_val')
+                if naive_train_scaled is not None:
+                    naive_train = naive_train_scaled[:len(r_train_true)] / tfac
+                    naive_val = naive_val_scaled[:len(r_val_true)] / tfac
+                else:
+                    naive_train = np.zeros_like(r_train_true)
+                    naive_val = np.zeros_like(r_val_true)
+
+                # Clip lengths
+                ntr = min(len(r_train_pred), len(r_train_true), len(naive_train))
+                nva = min(len(r_val_pred), len(r_val_true), len(naive_val))
+                r_train_pred = r_train_pred[:ntr]; r_train_true = r_train_true[:ntr]; naive_train = naive_train[:ntr]
+                r_val_pred = r_val_pred[:nva]; r_val_true = r_val_true[:nva]; naive_val = naive_val[:nva]
+
+                mae_train_model = float(np.mean(np.abs(r_train_pred - r_train_true)))
+                mae_val_model = float(np.mean(np.abs(r_val_pred - r_val_true)))
+                mae_train_zero = float(np.mean(np.abs(0.0 - r_train_true)))
+                mae_val_zero = float(np.mean(np.abs(0.0 - r_val_true)))
+                mae_train_naive = float(np.mean(np.abs(naive_train - r_train_true)))
+                mae_val_naive = float(np.mean(np.abs(naive_val - r_val_true)))
+
+                print(f"Returns-space MAE (H={predicted_horizons[plotted_idx]}): Model Train={mae_train_model:.6f}, Val={mae_val_model:.6f} | Zero Train={mae_train_zero:.6f}, Val={mae_val_zero:.6f} | LastRet Train={mae_train_naive:.6f}, Val={mae_val_naive:.6f}")
+            except Exception as rd_e:
+                print(f"WARN: returns-space diag failed: {rd_e}")
             
             print("✅ All train, validation and test data converted to real-world prices using exp(log-returns)")
 

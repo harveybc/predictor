@@ -27,7 +27,8 @@ class STLPreprocessorZScore:
         "anti_naive_lock_enabled": True,
     "feature_preprocessing_strategy": "selective",
     "add_window_stats": True,
-    "window_stats_periods": [12, 48]
+    "window_stats_periods": [12, 48],
+    "reverse_time_axis": False
     }
     
     plugin_debug_vars = ["window_size", "predicted_horizons", "target_column"]
@@ -96,6 +97,47 @@ class STLPreprocessorZScore:
                     final_sliding_windows = self._augment_with_window_stats(final_sliding_windows, config)
                 except Exception as aug_e:
                     print(f"WARN: Failed to add window stats: {aug_e}")
+
+            # 7c. Optionally reverse time axis (test model expectation of temporal ordering)
+            if config.get('reverse_time_axis', False):
+                try:
+                    for split in ['train','val','test']:
+                        Xk = f'X_{split}'
+                        if Xk in final_sliding_windows and hasattr(final_sliding_windows[Xk], 'shape'):
+                            final_sliding_windows[Xk] = final_sliding_windows[Xk][:, ::-1, :]
+                    print("  Applied reverse_time_axis: windows reversed along time dimension (axis=1)")
+                except Exception as rev_e:
+                    print(f"WARN: reverse_time_axis failed: {rev_e}")
+
+            # 7d. Optional: residualize targets by subtracting naive last-step CLOSE return
+            naive_info = {}
+            if config.get('residualize_targets_with_last_close', True):
+                try:
+                    target_col = config.get('target_column', 'CLOSE')
+                    tfac = float(config.get('target_factor', 1000.0))
+                    for split in ['train','val','test']:
+                        Xk = f'X_{split}'
+                        fn_sp = final_sliding_windows.get(f'feature_names_{split}', final_sliding_windows.get('feature_names', []))
+                        if Xk not in final_sliding_windows or not isinstance(fn_sp, list) or target_col not in fn_sp:
+                            continue
+                        ci = fn_sp.index(target_col)
+                        Xsp = final_sliding_windows[Xk]
+                        # last-step CLOSE log-return (unscaled)
+                        naive_unscaled = Xsp[:, -1, ci].astype(np.float64)
+                        naive_scaled = (tfac * naive_unscaled).astype(np.float32)
+                        naive_info[f'naive_last_close_scaled_{split}'] = naive_scaled
+                        # Adjust all horizon targets by subtracting naive_scaled
+                        y_split = targets.get(f'y_{split}', {})
+                        for hk, yarr in list(y_split.items()):
+                            if not isinstance(yarr, np.ndarray):
+                                yarr = np.asarray(yarr)
+                            m = min(len(yarr), len(naive_scaled))
+                            y_split[hk] = (yarr[:m].astype(np.float32) - naive_scaled[:m].astype(np.float32))
+                        targets[f'y_{split}'] = y_split
+                    if naive_info:
+                        print("  Residualized targets using last-step CLOSE return; stored naive arrays for pipeline add-back")
+                except Exception as res_e:
+                    print(f"WARN: residualize_targets_with_last_close failed: {res_e}")
             
             # === Debugging & Invariants: Verify targets vs baselines and X statistics ===
             try:
@@ -186,6 +228,9 @@ class STLPreprocessorZScore:
             # Return final results
             #TODO: verify this method is correct and required
             output, preprocessor_params = self._prepare_final_output(final_sliding_windows, targets, baselines, config)
+            # attach naive info if present
+            for k, v in naive_info.items():
+                output[k] = v
             
             # Store baselines for access in output preparation
             self.extracted_baselines = baselines
