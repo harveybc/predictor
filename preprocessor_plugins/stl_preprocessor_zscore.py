@@ -88,6 +88,62 @@ class STLPreprocessorZScore:
             print("Step 7: Align sliding windows with target data")
             final_sliding_windows = self._align_sliding_windows_with_targets(final_sliding_windows, targets, config)
             
+            # === Debugging & Invariants: Verify targets vs baselines and X statistics ===
+            try:
+                tgt_factor = float(config.get('target_factor', 1000.0))
+                target_col = config.get('target_column', 'CLOSE')
+                # Per-split feature names
+                fn_train = final_sliding_windows.get('feature_names_train', final_sliding_windows.get('feature_names', []))
+                fn_val = final_sliding_windows.get('feature_names_val', final_sliding_windows.get('feature_names', []))
+                fn_test = final_sliding_windows.get('feature_names_test', final_sliding_windows.get('feature_names', []))
+
+                # 1) Re-derive H1 targets from baselines and compare
+                for split in ['train', 'val', 'test']:
+                    base = baselines.get(f'baseline_{split}')
+                    if base is None or len(base) < 2:
+                        continue
+                    # Recompute H1 log-returns scaled by target_factor
+                    base = np.asarray(base, dtype=np.float64)
+                    valid = (base[:-1] > 0) & (base[1:] > 0)
+                    recomputed = np.zeros(len(base)-1, dtype=np.float64)
+                    recomputed[valid] = tgt_factor * np.log(base[1:][valid] / base[:-1][valid])
+                    # Truncate to max_samples used in target calc
+                    max_h = max(config['predicted_horizons'])
+                    max_samples = len(base) - max_h
+                    if max_samples > 0:
+                        recomputed = recomputed[:max_samples]
+                        y_split = targets.get(f'y_{split}', {})
+                        y_h1 = y_split.get('output_horizon_1')
+                        if y_h1 is not None and len(y_h1) > 0:
+                            y_h1 = np.asarray(y_h1, dtype=np.float64)
+                            m = min(len(y_h1), len(recomputed))
+                            diff = np.abs(y_h1[:m] - recomputed[:m])
+                            print(f"DEBUG[{split.upper()}]: H1 targets check — mean|diff|={diff.mean():.6f}, max|diff|={diff.max():.6f}, samples={m}")
+
+                # 2) Feature distributions for X (train)
+                Xtr = final_sliding_windows.get('X_train')
+                if Xtr is not None and hasattr(Xtr, 'shape'):
+                    # global stats
+                    print(f"DEBUG[X_train]: shape={Xtr.shape}, global mean={np.mean(Xtr):.6f}, std={np.std(Xtr):.6f}")
+                    # CLOSE last-timestep stats and correlation with H1 target
+                    if isinstance(fn_train, list) and target_col in fn_train:
+                        ci = fn_train.index(target_col)
+                        x_last_close = Xtr[:, -1, ci].astype(np.float64)
+                        y_h1_tr = targets.get('y_train', {}).get('output_horizon_1')
+                        if y_h1_tr is not None and len(y_h1_tr) == len(x_last_close):
+                            y_arr = np.asarray(y_h1_tr, dtype=np.float64)
+                            # Corr can be nan if std is zero; guard
+                            corr = np.nan
+                            if np.std(x_last_close) > 0 and np.std(y_arr) > 0:
+                                corr = np.corrcoef(x_last_close, y_arr)[0,1]
+                            print(f"DEBUG[CLOSE vs H1]: mean(x)={x_last_close.mean():.6f}, std(x)={x_last_close.std():.6f}, mean(y)={y_arr.mean():.6f}, std(y)={y_arr.std():.6f}, corr={corr}")
+                        else:
+                            print("DEBUG: Skipping CLOSE/H1 correlation — length mismatch")
+                    else:
+                        print("DEBUG: CLOSE not found in feature_names_train for X stats")
+            except Exception as dbg_e:
+                print(f"WARN: Debug invariant checks failed: {dbg_e}")
+
             # Return final results
             #TODO: verify this method is correct and required
             output, preprocessor_params = self._prepare_final_output(final_sliding_windows, targets, baselines, config)
@@ -237,6 +293,9 @@ class STLPreprocessorZScore:
             
             # Metadata
             "feature_names": sliding_windows.get('feature_names', []),
+            "feature_names_train": sliding_windows.get('feature_names_train', []),
+            "feature_names_val": sliding_windows.get('feature_names_val', []),
+            "feature_names_test": sliding_windows.get('feature_names_test', []),
             "target_returns_means": targets.get('target_returns_means', []),
             "target_returns_stds": targets.get('target_returns_stds', []),
             "predicted_horizons": config['predicted_horizons'],
