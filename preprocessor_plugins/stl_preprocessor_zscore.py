@@ -3,7 +3,6 @@ import pandas as pd
 from .helpers import load_normalization_json, denormalize_all_datasets, load_normalized_csv, exclude_columns_from_datasets
 from .sliding_windows import create_sliding_windows, extract_baselines_from_sliding_windows
 from .target_calculation import calculate_targets_from_baselines
-from .anti_naive_lock import apply_anti_naive_lock_to_datasets, apply_feature_normalization
 
 
 class STLPreprocessorZScore:
@@ -13,9 +12,8 @@ class STLPreprocessorZScore:
     3. Create sliding windows from denormalized data
     4. Extract baselines (last elements of each window for target column)
     5. Calculate log return targets with those baselines (train, validation, test)
-    6. Apply anti-naive-lock transformations to the denormalized input datasets of step 2
-    7. Create final sliding windows matrix from anti-naive-lock processed datasets
-    8.Keep baselines and targets unchanged (they're already calculated correctly)
+    6. Create SECOND sliding windows matrix directly from the ORIGINAL normalized datasets (no extra transforms)
+    7. Keep baselines and targets unchanged (they're already calculated correctly)
     """
 
     # Plugin-specific parameters they get overwritten if declared in the config
@@ -78,38 +76,14 @@ class STLPreprocessorZScore:
             #TODO: verify this method is correct
             targets = calculate_targets_from_baselines(baselines, config)
 
-            # 6. Apply anti-naive-lock transformations to denormalized input datasets (creates "processed data")
-            print("Step 6: Apply anti-naive-lock to denormalized datasets")
-            #TODO: verify this method is correct
-            processed_data = apply_anti_naive_lock_to_datasets(denormalized_data, config)
-            
+            # 6. Create SECOND sliding windows directly from ORIGINAL normalized datasets (for model input only)
+            #    IMPORTANT: No further transformations applied; honors user's requirement to feed normalized CSVs as-is.
+            print("Step 6: Create second sliding windows from ORIGINAL normalized datasets (no transforms)")
+            final_sliding_windows = create_sliding_windows(normalized_data, config, dates)
 
-            # 7. Create SECOND sliding windows matrix from processed datasets (for model input only)
-            #print("Step 7: Create second sliding windows from processed datasets")
-            #final_sliding_windows = create_sliding_windows(normalized_data, config, dates)
-            final_sliding_windows = create_sliding_windows(processed_data, config, dates)
-
-            # 8. Align final sliding windows with target data length
-            print("Step 8: Align sliding windows with target data")
+            # 7. Align final sliding windows with target data length
+            print("Step 7: Align sliding windows with target data")
             final_sliding_windows = self._align_sliding_windows_with_targets(final_sliding_windows, targets, config)
-
-            # 9. Optionally standardize features after preprocessing using train-only statistics
-            # This improves learning stability by matching X scale to stationary y (returns-like).
-            if config.get('normalize_after_preprocessing', False):
-                print("Step 9: Normalize features after preprocessing (z-score using train stats)")
-                x_tr = final_sliding_windows.get('X_train')
-                x_va = final_sliding_windows.get('X_val')
-                x_te = final_sliding_windows.get('X_test')
-                feature_names = final_sliding_windows.get('feature_names', [])
-                if x_tr is not None and x_va is not None and x_te is not None and len(feature_names) > 0:
-                    x_tr_n, x_va_n, x_te_n, norm_stats = apply_feature_normalization(x_tr, x_va, x_te, feature_names)
-                    final_sliding_windows['X_train'] = x_tr_n
-                    final_sliding_windows['X_val'] = x_va_n
-                    final_sliding_windows['X_test'] = x_te_n
-                    # Persist stats for downstream use/debugging
-                    self.params['feature_norm_stats'] = norm_stats
-                else:
-                    print("WARNING: Skipping feature normalization due to missing data or feature names")
             
             # Return final results
             #TODO: verify this method is correct and required
@@ -118,10 +92,6 @@ class STLPreprocessorZScore:
             # Store baselines for access in output preparation
             self.extracted_baselines = baselines
             
-            # If normalization stats were created, surface them in output for transparency
-            if 'feature_norm_stats' in self.params:
-                output['feature_norm_stats'] = self.params['feature_norm_stats']
-
             self.params.update(preprocessor_params)
             return output
 
