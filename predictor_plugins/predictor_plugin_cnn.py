@@ -446,27 +446,24 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
+        # Linear shortcut from the last timestep features
+        last_timestep = Lambda(lambda t: t[:, -1, :], name="last_timestep_slice")(inputs)
 
-        # first linear conv1d
+        # Feature extractor stack
         merged = Conv1D(
-                filters=merged_units*2,
-                kernel_size=3,
-                strides=2,
-                padding='same',
-                activation='linear',
-                name="conv_merged_features_0"
+            filters=merged_units*2,
+            kernel_size=3,
+            strides=2,
+            padding='same',
+            activation='linear',
+            name="conv_merged_features_0"
         )(inputs)
 
-        # Feature Extractor
         if config.get("feature_extractor_file"):
-            # Load the pretrained feature extractor
             fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
-            # Enable or disable training of the feature extractor
             fe_model.trainable = bool(config.get("train_fe", False))
-            # Apply the feature extractor to the inputs
             merged = fe_model(inputs)
         else:
-            # Original Conv1D feature-extraction layers
             merged = Conv1D(
                 filters=merged_units,
                 kernel_size=3,
@@ -476,7 +473,6 @@ class Plugin:
                 name="conv_merged_features_1",
                 kernel_regularizer=l2(l2_reg)
             )(merged)
-
             merged = Conv1D(
                 filters=branch_units,
                 kernel_size=3,
@@ -486,36 +482,16 @@ class Plugin:
                 name="conv_merged_features_2",
                 kernel_regularizer=l2(l2_reg)
             )(merged)
-        
-        # --- Build Multiple Output Heads ---
+
+        # --- Heads ---
         outputs_list = []
         self.output_names = []
-        # Loop through each predicted horizon
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
+            xh = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(merged)
+            xh = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(xh)
+            lstm_output = Bidirectional(LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}")(xh)
 
-            # --- Head Intermediate Dense Layers ---
-            head_dense_output = merged
-            #for j in range(num_head_intermediate_layers):
-            #     head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
-            #                               name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
-
-            # --- Add BiLSTM Layer ---
-            # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
-            # TODO: probar (batch, merged_units, 1)
-            #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
-            reshaped_for_lstm = head_dense_output
-            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
-            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
-            # Apply Bidirectional LSTM
-            # return_sequences=False gives output shape (batch, 2 * lstm_units)
-            lstm_output = Bidirectional(
-                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
-            )(reshaped_for_lstm)
-          
-
-
-            # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
                 units=1, activation='linear',
@@ -523,28 +499,17 @@ class Plugin:
                 kernel_prior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: prior_fn(dt, sh, bs, tr, nm),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT, name=flipout_layer_name
             )
-            # Apply DenseFlipout layer via Lambda WITH output_shape specified
-            bayesian_output_branch = Lambda(
-                lambda t: flipout_layer_branch(t),
-                output_shape=lambda s: (s[0], 1), # Explicit output shape
-                name=f"bayesian_output{branch_suffix}"
-            )(lstm_output)
+            bayesian_output_branch = Lambda(lambda t: flipout_layer_branch(t), output_shape=lambda s: (s[0], 1), name=f"bayesian_output{branch_suffix}")(lstm_output)
+            bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44, name=f"deterministic_bias{branch_suffix}")(lstm_output)
+            linear_shortcut = Dense(units=1, activation='linear', kernel_regularizer=l2(l2_reg), name=f"linear_shortcut{branch_suffix}")(last_timestep)
 
-            bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44,
-                                      name=f"deterministic_bias{branch_suffix}")(lstm_output)
-
-            # --- Final Head Output ---
             output_name = f"output_horizon_{horizon}"
-            final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
-
+            final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch, linear_shortcut])
             outputs_list.append(final_branch_output)
-            self.output_names.append(output_name) # Store the name
-            # --- End of Head ---
+            self.output_names.append(output_name)
 
-        # --- Model Definition ---
         self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
 
-        # --- Compilation (Using GLOBAL composite_loss) ---
         optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
         mmd_lambda = config.get("mmd_lambda", self.params.get("mmd_lambda", 0.1))
         sigma_mmd = config.get("sigma_mmd", self.params.get("sigma_mmd", 1.0))
