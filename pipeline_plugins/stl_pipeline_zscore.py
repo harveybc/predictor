@@ -20,6 +20,7 @@ STL Pipeline Plugin - Z-Score Version
 """
 
 import time
+import os
 import numpy as np
 import pandas as pd
 import json
@@ -424,6 +425,12 @@ class STLPipelinePlugin:
 
         results_df = pd.DataFrame(results_list)
         results_file = config.get("results_file", self.params["results_file"])
+        # Ensure parent directory exists
+        try:
+            if results_file:
+                os.makedirs(os.path.dirname(results_file), exist_ok=True)
+        except Exception:
+            pass
         try: 
             results_df.to_csv(results_file, index=False, float_format='%.6f')
             print(f"Aggregated results saved: {results_file}")
@@ -447,6 +454,12 @@ class STLPipelinePlugin:
 
         # --- Save Predictions CSV ---
         output_file = config.get("output_file", self.params["output_file"])
+        # Ensure parent directory exists
+        try:
+            if output_file:
+                os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        except Exception:
+            pass
         try:
             # Validate consistent lengths
             lengths = [len(v) for v in output_data.values()]
@@ -470,6 +483,11 @@ class STLPipelinePlugin:
         # --- Save Uncertainties CSV ---
         uncertainties_file = config.get("uncertainties_file", self.params.get("uncertainties_file"))
         if uncertainties_file:
+            # Ensure parent directory exists
+            try:
+                os.makedirs(os.path.dirname(uncertainties_file), exist_ok=True)
+            except Exception:
+                pass
             try:
                 # Validate consistent lengths
                 lengths = [len(v) for v in uncertainty_data.values()]
@@ -493,6 +511,11 @@ class STLPipelinePlugin:
         # 10. Save plots of model architecture and loss curve.
         # Save Loss Plot
         loss_plot_file = config.get("loss_plot_file")
+        try:
+            if loss_plot_file:
+                os.makedirs(os.path.dirname(loss_plot_file), exist_ok=True)
+        except Exception:
+            pass
         plt.figure(figsize=(10, 5))
         plt.plot(history.history['loss'], label='Train')
         if 'val_loss' in history.history:
@@ -510,6 +533,11 @@ class STLPipelinePlugin:
         if plot_model is not None and hasattr(predictor_plugin, 'model') and predictor_plugin.model is not None:
             try:
                 model_plot_file = config.get('model_plot_file', 'model_plot.png')
+                try:
+                    if model_plot_file:
+                        os.makedirs(os.path.dirname(model_plot_file), exist_ok=True)
+                except Exception:
+                    pass
                 plot_model(predictor_plugin.model, to_file=model_plot_file, show_shapes=True, show_layer_names=True, dpi=300)
                 print(f"Model plot saved: {model_plot_file}")
             except Exception as e:
@@ -587,6 +615,11 @@ class STLPipelinePlugin:
             plt.tight_layout()
             
             predictions_plot_file = config.get("predictions_plot_file", self.params["predictions_plot_file"])
+            try:
+                if predictions_plot_file:
+                    os.makedirs(os.path.dirname(predictions_plot_file), exist_ok=True)
+            except Exception:
+                pass
             plt.savefig(predictions_plot_file, dpi=300)
             plt.close()
             print(f"Prediction plot saved: {predictions_plot_file}")
@@ -600,6 +633,11 @@ class STLPipelinePlugin:
         # --- Save Model ---
         if hasattr(predictor_plugin, 'save') and callable(predictor_plugin.save):
             save_model_file = config.get("save_model", "pretrained_model.keras")
+            try:
+                if save_model_file:
+                    os.makedirs(os.path.dirname(save_model_file), exist_ok=True)
+            except Exception:
+                pass
             try: 
                 predictor_plugin.save(save_model_file)
                 print(f"Model saved: {save_model_file}")
@@ -611,6 +649,11 @@ class STLPipelinePlugin:
         self.add_debug_info(debug_info)
         debug_info_file = config.get("debug_info_file", "debug_info.json")
         try:
+            if debug_info_file:
+                os.makedirs(os.path.dirname(debug_info_file), exist_ok=True)
+        except Exception:
+            pass
+        try:
             with open(debug_info_file, 'w') as f:
                 json.dump(debug_info, f, indent=4)
             print(f"Debug info saved: {debug_info_file}")
@@ -619,6 +662,11 @@ class STLPipelinePlugin:
 
         # 14. Save output config json dump the config variable as json.
         output_config_file = config.get("output_config_file", "output_config.json")
+        try:
+            if output_config_file:
+                os.makedirs(os.path.dirname(output_config_file), exist_ok=True)
+        except Exception:
+            pass
         try:
             with open(output_config_file, 'w') as f:
                 json.dump(config, f, indent=4)

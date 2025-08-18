@@ -1,6 +1,7 @@
 import pandas as pd
 from typing import Optional
 from app.reconstruction import unwindow_data
+import os
 
 
 import pandas as pd
@@ -104,6 +105,10 @@ def write_csv(file_path: str, data: pd.DataFrame, include_date: bool = True,
         >>> write_csv("data/output.csv", df, include_date=True, headers=True)
     """
     try:
+        # Ensure parent directory exists
+        parent = os.path.dirname(file_path)
+        if parent and not os.path.exists(parent):
+            os.makedirs(parent, exist_ok=True)
         if include_date and 'date' in data.columns:
             data.to_csv(file_path, index=True, header=headers)
         else:
