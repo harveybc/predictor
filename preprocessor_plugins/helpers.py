@@ -120,12 +120,23 @@ def exclude_columns_from_datasets(datasets, preprocessor_params, config):
                 # Remove excluded columns from all datasets (last dimension = features)
                 remaining_indices = [i for i in range(len(column_names)) if i not in excluded_indices]
                 print(f"  Keeping {len(remaining_indices)} columns out of {len(column_names)} original columns")
-                
-                print(f"  Original shapes: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
-                X_train = X_train[:, :, remaining_indices]
-                X_val = X_val[:, :, remaining_indices]
-                X_test = X_test[:, :, remaining_indices]
-                print(f"  New shapes after exclusion: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
+
+                # Fetch arrays
+                X_train = datasets.get("x_train")
+                X_val = datasets.get("x_val")
+                X_test = datasets.get("x_test")
+                if X_train is None or X_val is None or X_test is None:
+                    print("WARNING: Missing X arrays in datasets; cannot exclude columns")
+                else:
+                    print(f"  Original shapes: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
+                    X_train = X_train[:, :, remaining_indices]
+                    X_val = X_val[:, :, remaining_indices]
+                    X_test = X_test[:, :, remaining_indices]
+                    print(f"  New shapes after exclusion: X_train={X_train.shape}, X_val={X_val.shape}, X_test={X_test.shape}")
+                    # Update datasets
+                    datasets["x_train"] = X_train
+                    datasets["x_val"] = X_val
+                    datasets["x_test"] = X_test
                 
                 # Update column names in datasets and preprocessor_params for reference
                 new_column_names = [column_names[i] for i in remaining_indices]

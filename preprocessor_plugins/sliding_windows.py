@@ -27,8 +27,11 @@ def create_sliding_windows(data, config, date_times=None):
     
     results = {}
     
-    # Process each dataset
+    # Process each dataset (only X sources)
     for data_key, df in data.items():
+        # Only build windows from X datasets to avoid accidental overwrites from y_* keys
+        if not str(data_key).startswith('x_'):
+            continue
         if df is None or len(df) == 0:
             print(f" WARN: Empty data for {data_key}, skipping...")
             continue
@@ -57,7 +60,11 @@ def create_sliding_windows(data, config, date_times=None):
         # Store results with proper naming convention
         results[f'X_{dataset_type}'] = windows
         results[f'x_dates_{dataset_type}'] = window_dates
-        results['feature_names'] = list(df.columns)
+        # Store per-split feature names to avoid cross-split column order mismatches
+        results[f'feature_names_{dataset_type}'] = list(df.columns)
+        # For backward compatibility, set global feature_names from train split if not already set
+        if 'feature_names' not in results and dataset_type == 'train':
+            results['feature_names'] = list(df.columns)
     
     print(f" Done.")
     return results
@@ -130,13 +137,6 @@ def extract_baselines_from_sliding_windows(sliding_windows_dict, config):
     
     print(f"Extracting baselines for target column '{target_column}'...", end="")
     
-    # Get feature names to find target column index
-    feature_names = sliding_windows_dict.get('feature_names', [])
-    if target_column not in feature_names:
-        raise ValueError(f"Target column '{target_column}' not found in feature names: {feature_names}")
-    
-    target_col_idx = feature_names.index(target_column)
-    
     # Extract baselines from each dataset's sliding windows
     for dataset_type in ['train', 'val', 'test']:
         windows_key = f'X_{dataset_type}'
@@ -148,6 +148,11 @@ def extract_baselines_from_sliding_windows(sliding_windows_dict, config):
         if len(windows) == 0:
             baselines[f'baseline_{dataset_type}'] = np.array([])
             continue
+        # Derive feature names for this split
+        split_feature_names = sliding_windows_dict.get(f'feature_names_{dataset_type}', sliding_windows_dict.get('feature_names', []))
+        if target_column not in split_feature_names:
+            raise ValueError(f"Target column '{target_column}' not found in feature names for {dataset_type}: {split_feature_names}")
+        target_col_idx = split_feature_names.index(target_column)
         
         # Extract last element of each window for target column
         # windows shape: (n_windows, window_size, n_features)
