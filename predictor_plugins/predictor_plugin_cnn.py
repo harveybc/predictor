@@ -690,6 +690,7 @@ class Plugin:
              print("WARN: Target data dictionary keys may not perfectly match all model output names.")
 
         # --- Model Training ---
+        # TODO: correct bias problem in validation. Verify that the fit method is receiving the exact correct training and validation data and in the same exact scale, having been preprocessed with the exact same transformations.
         history = self.model.fit(x_train, y_train,
                                  epochs=epochs,
                                  batch_size=batch_size,

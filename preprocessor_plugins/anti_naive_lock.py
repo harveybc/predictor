@@ -112,13 +112,15 @@ def apply_anti_naive_lock_to_time_series(df, feature_names, config):
                 print(f"        Applied first differences to {feature_name}")
                 
             else:
-                # Preserve other features (target column, etc.)
-                print(f"        Preserved {feature_name}, but...")
-                # Apply log returns to stationary indicators (except target)
-                processed_df[feature_name] = apply_log_returns_to_series(
-                    processed_df[feature_name]
-                )
-                print(f"        Applied log returns to {feature_name}, Not preserved at all")
+                # Preserve other features; do NOT transform target or excluded columns
+                if feature_name == target_column or feature_name in excluded_columns:
+                    print(f"        Preserved {feature_name} (target/excluded)")
+                else:
+                    # As a safe default, apply log returns to non-target, non-excluded features
+                    processed_df[feature_name] = apply_log_returns_to_series(
+                        processed_df[feature_name]
+                    )
+                    print(f"        Applied log returns to {feature_name}")
                 
         except Exception as e:
             print(f"        ERROR processing {feature_name}: {e}")

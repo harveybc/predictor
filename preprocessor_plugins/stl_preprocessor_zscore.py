@@ -3,7 +3,7 @@ import pandas as pd
 from .helpers import load_normalization_json, denormalize_all_datasets, load_normalized_csv, exclude_columns_from_datasets
 from .sliding_windows import create_sliding_windows, extract_baselines_from_sliding_windows
 from .target_calculation import calculate_targets_from_baselines
-from .anti_naive_lock import apply_anti_naive_lock_to_datasets
+from .anti_naive_lock import apply_anti_naive_lock_to_datasets, apply_feature_normalization
 
 
 class STLPreprocessorZScore:
@@ -92,6 +92,24 @@ class STLPreprocessorZScore:
             # 8. Align final sliding windows with target data length
             print("Step 8: Align sliding windows with target data")
             final_sliding_windows = self._align_sliding_windows_with_targets(final_sliding_windows, targets, config)
+
+            # 9. Optionally standardize features after preprocessing using train-only statistics
+            # This improves learning stability by matching X scale to stationary y (returns-like).
+            if config.get('normalize_after_preprocessing', False):
+                print("Step 9: Normalize features after preprocessing (z-score using train stats)")
+                x_tr = final_sliding_windows.get('X_train')
+                x_va = final_sliding_windows.get('X_val')
+                x_te = final_sliding_windows.get('X_test')
+                feature_names = final_sliding_windows.get('feature_names', [])
+                if x_tr is not None and x_va is not None and x_te is not None and len(feature_names) > 0:
+                    x_tr_n, x_va_n, x_te_n, norm_stats = apply_feature_normalization(x_tr, x_va, x_te, feature_names)
+                    final_sliding_windows['X_train'] = x_tr_n
+                    final_sliding_windows['X_val'] = x_va_n
+                    final_sliding_windows['X_test'] = x_te_n
+                    # Persist stats for downstream use/debugging
+                    self.params['feature_norm_stats'] = norm_stats
+                else:
+                    print("WARNING: Skipping feature normalization due to missing data or feature names")
             
             # Return final results
             #TODO: verify this method is correct and required
@@ -100,6 +118,10 @@ class STLPreprocessorZScore:
             # Store baselines for access in output preparation
             self.extracted_baselines = baselines
             
+            # If normalization stats were created, surface them in output for transparency
+            if 'feature_norm_stats' in self.params:
+                output['feature_norm_stats'] = self.params['feature_norm_stats']
+
             self.params.update(preprocessor_params)
             return output
 
