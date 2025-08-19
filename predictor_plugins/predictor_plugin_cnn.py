@@ -450,14 +450,16 @@ class Plugin:
         last_timestep = Lambda(lambda t: t[:, -1, :], name="last_timestep_slice")(inputs)
 
         # Feature extractor stack
-        merged = Conv1D(
-            filters=merged_units*2,
-            kernel_size=3,
-            strides=2,
-            padding='same',
-            activation='linear',
-            name="conv_merged_features_0"
-        )(inputs)
+        
+        # Commented first conv1d layer
+        #merged = Conv1D(
+        #    filters=merged_units*2,
+        #    kernel_size=3,
+        #    strides=2,
+        #    padding='same',
+        #    activation='linear',
+        #    name="conv_merged_features_0"
+        #)(inputs)
 
         if config.get("feature_extractor_file"):
             fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
@@ -472,7 +474,7 @@ class Plugin:
                 activation=activation,
                 name="conv_merged_features_1",
                 kernel_regularizer=l2(l2_reg)
-            )(merged)
+            )(inputs)
             merged = Conv1D(
                 filters=branch_units,
                 kernel_size=3,
