@@ -28,7 +28,10 @@ class STLPreprocessorZScore:
     "feature_preprocessing_strategy": "selective",
     "add_window_stats": True,
     "window_stats_periods": [12, 48],
-    "reverse_time_axis": False
+    "reverse_time_axis": False,
+    # New: optional multi-scale returns augmentation (causal, within-window)
+    "add_multi_scale_returns": False,
+    "multi_scale_return_periods": [6, 24, 72]
     }
     
     plugin_debug_vars = ["window_size", "predicted_horizons", "target_column"]
@@ -97,6 +100,13 @@ class STLPreprocessorZScore:
                     final_sliding_windows = self._augment_with_window_stats(final_sliding_windows, config)
                 except Exception as aug_e:
                     print(f"WARN: Failed to add window stats: {aug_e}")
+
+            # 7b.2. Optionally add multi-scale cumulative returns for price columns (causal, tail-only)
+            if config.get('add_multi_scale_returns', False):
+                try:
+                    final_sliding_windows = self._augment_with_multiscale_returns(final_sliding_windows, config)
+                except Exception as aug2_e:
+                    print(f"WARN: Failed to add multi-scale returns: {aug2_e}")
 
             # 7c. Optionally reverse time axis (test model expectation of temporal ordering)
             if config.get('reverse_time_axis', False):
@@ -371,6 +381,54 @@ class STLPreprocessorZScore:
                 if split == 'train':
                     sliding_windows['feature_names'] = updated_names
                 print(f"  Added window stats for {split}: +{len(add_names)} features; new shape {sliding_windows[X_key].shape}")
+        return sliding_windows
+
+    def _augment_with_multiscale_returns(self, sliding_windows, config):
+        """Append multi-scale cumulative returns for price columns as additional channels.
+
+        For each split X_{split} with shape (N, T, F), and for each price column present in
+        config['price_features'], compute cumulative log-returns over the last k timesteps
+        (sum of returns over window tail) for k in multi_scale_return_periods intersecting [2, T].
+
+        The resulting (N, 1) per (col, k) is repeated across time to (N, T, 1) and concatenated
+        as causal features (no future leakage).
+        """
+        periods = config.get('multi_scale_return_periods', [6, 24, 72])
+        price_features = list(config.get('price_features', ['OPEN', 'HIGH', 'LOW', 'CLOSE']))
+        for split in ['train', 'val', 'test']:
+            X_key = f'X_{split}'
+            fn_key = f'feature_names_{split}'
+            if X_key not in sliding_windows:
+                continue
+            X = sliding_windows[X_key]
+            fn = sliding_windows.get(fn_key, sliding_windows.get('feature_names', []))
+            if not isinstance(fn, list) or X is None or not hasattr(X, 'shape'):
+                continue
+            # Identify indices for price columns available in this split
+            price_indices = [(c, fn.index(c)) for c in price_features if c in fn]
+            if not price_indices:
+                continue
+            N, T, F = X.shape
+            add_feats = []
+            add_names = []
+            for col, ci in price_indices:
+                for k in periods:
+                    if k < 2 or k > T:
+                        continue
+                    tail = X[:, -k:, ci]  # (N, k)
+                    cumret = np.sum(tail, axis=1, keepdims=True)  # (N, 1)
+                    cumret_feat = np.repeat(cumret, T, axis=1)[..., None]  # (N, T, 1)
+                    add_feats.append(cumret_feat)
+                    add_names.append(f"{col}_cumret_{k}")
+            if add_feats:
+                extra = np.concatenate(add_feats, axis=2)
+                sliding_windows[X_key] = np.concatenate([X, extra], axis=2)
+                # Update feature names
+                updated_names = fn + add_names
+                sliding_windows[fn_key] = updated_names
+                if split == 'train':
+                    sliding_windows['feature_names'] = updated_names
+                print(f"  Added multi-scale returns for {split}: +{len(add_names)} features; new shape {sliding_windows[X_key].shape}")
         return sliding_windows
 
     def _prepare_final_output(self, sliding_windows, targets, baselines, config):
