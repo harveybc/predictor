@@ -142,6 +142,9 @@ def composite_loss(y_true, y_pred,
                    head_index,
                    mmd_lambda,
                    sigma,
+                   penalty_close_lambda,
+                   penalty_far_lambda,
+                   anti_zero_threshold,
                    p, i, d, # Control parameters for this head (tf.Variable)
                    list_last_signed_error, # List of tf.Variables for metric storage
                    list_last_stddev,       # List of tf.Variables for metric storage
@@ -214,7 +217,25 @@ def composite_loss(y_true, y_pred,
         #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
     #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
     #total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
-    total_loss = huber_loss_val
+    # --- Anti-zero penalty (encourage non-zero predictions in return space) ---
+    # Penalize predictions whose magnitude is below a small threshold in scaled units.
+    # Uses softplus for smoothness; weight controlled by config.
+    if penalty_close_lambda is None:
+        penalty_close_lambda = 0.0
+    if penalty_far_lambda is None:
+        penalty_far_lambda = 0.0
+    if anti_zero_threshold is None:
+        anti_zero_threshold = 0.0
+
+    az_term = tf.nn.softplus(anti_zero_threshold - tf.abs(mag_pred))
+    anti_zero_penalty = penalty_close_lambda * tf.reduce_mean(az_term)
+
+    # Optional sign-consistency penalty: penalize strongly wrong-signed predictions
+    # Only activates when y_true and y_pred have opposite signs.
+    sign_mismatch = tf.nn.relu(-(mag_true * mag_pred))
+    sign_penalty = penalty_far_lambda * tf.reduce_mean(sign_mismatch)
+
+    total_loss = huber_loss_val + anti_zero_penalty + sign_penalty
     # Return the final scalar loss value
     return total_loss
 
@@ -510,11 +531,15 @@ class Plugin:
             outputs_list.append(final_branch_output)
             self.output_names.append(output_name)
 
+        # Build Keras model and compile
         self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
 
         optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
         mmd_lambda = config.get("mmd_lambda", self.params.get("mmd_lambda", 0.1))
         sigma_mmd = config.get("sigma_mmd", self.params.get("sigma_mmd", 1.0))
+        penalty_close_lambda = config.get("penalty_close_lambda", 0.0)
+        penalty_far_lambda = config.get("penalty_far_lambda", 0.0)
+        anti_zero_threshold = config.get("anti_zero_threshold", 0.05)
 
         # Prepare loss dictionary, passing ALL necessary lists and params to GLOBAL composite_loss
         loss_dict = {}
@@ -531,6 +556,7 @@ class Plugin:
                 lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list, lf=lf_list:
                     lambda y_true, y_pred: composite_loss( # Call GLOBAL func
                         y_true, y_pred, head_index=index, mmd_lambda=mmd_lambda, sigma=sigma_mmd,
+                        penalty_close_lambda=penalty_close_lambda, penalty_far_lambda=penalty_far_lambda, anti_zero_threshold=anti_zero_threshold,
                         p=p, i=iv, d=dv, list_last_signed_error=lse, list_last_stddev=lsd,
                         list_last_mmd=lmmd, list_local_feedback=lf
                     )

@@ -119,6 +119,26 @@ class STLPreprocessorZScore:
                 except Exception as rev_e:
                     print(f"WARN: reverse_time_axis failed: {rev_e}")
 
+            # 7c.1 Optionally normalize features post-augmentation using train-only stats
+            if config.get('normalize_after_preprocessing', False):
+                try:
+                    fn_train = final_sliding_windows.get('feature_names_train', final_sliding_windows.get('feature_names', []))
+                    Xtr = final_sliding_windows.get('X_train')
+                    Xva = final_sliding_windows.get('X_val')
+                    Xte = final_sliding_windows.get('X_test')
+                    if Xtr is not None and Xva is not None and Xte is not None and isinstance(fn_train, list):
+                        Xtr_n, Xva_n, Xte_n, norm_stats = apply_feature_normalization(Xtr.copy(), Xva.copy(), Xte.copy(), fn_train)
+                        final_sliding_windows['X_train'] = Xtr_n
+                        final_sliding_windows['X_val'] = Xva_n
+                        final_sliding_windows['X_test'] = Xte_n
+                        # Keep feature names unchanged; store stats into params for reference
+                        self.params['post_feature_norm_stats'] = norm_stats
+                        print(f"  Applied post-augmentation z-score normalization using training stats (features={len(fn_train)})")
+                    else:
+                        print("  Skipped post-augmentation normalization (missing X arrays or feature names)")
+                except Exception as norm_e:
+                    print(f"WARN: post-augmentation normalization failed: {norm_e}")
+
             # 7d. Optional: residualize targets by subtracting naive last-step CLOSE return
             naive_info = {}
             if config.get('residualize_targets_with_last_close', True):
@@ -339,7 +359,7 @@ class STLPreprocessorZScore:
         For each split X_{split} with shape (N, T, F), add for CLOSE:
           - mean over last k timesteps
           - std over last k timesteps
-          - momentum = last/mean - 1 over last k timesteps
+          - momentum = last - mean over last k timesteps (difference; bounded and stable for returns)
         for each k in window_stats_periods intersecting [2, T].
         """
         periods = config.get('window_stats_periods', [12, 48])
@@ -365,7 +385,8 @@ class STLPreprocessorZScore:
                 mean_k = np.mean(window_slice, axis=1, keepdims=True)
                 std_k = np.std(window_slice, axis=1, keepdims=True) + 1e-9
                 last = X[:, -1:, ci]
-                mom_k = (last / (mean_k + 1e-9)) - 1.0
+                # Use difference instead of ratio to avoid exploding values when mean is near zero (returns)
+                mom_k = last - mean_k
                 # Tile along time dimension to match (N, T, 1) using last value repeated
                 mean_feat = np.repeat(mean_k, T, axis=1)
                 std_feat = np.repeat(std_k, T, axis=1)

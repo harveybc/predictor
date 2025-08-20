@@ -75,7 +75,10 @@
     "preserve_stationary_indicators": true,
     "handle_constant_daily_features": true,
     "feature_preprocessing_strategy": "selective",
-    "normalize_after_preprocessing": false,
+    "normalize_after_preprocessing": true,
+    "anti_zero_threshold": 0.05,
+    "penalty_close_lambda": 0.001,
+    "penalty_far_lambda": 0.0005,
     "_comment_feature_categories": "SMART ANTI-NAIVE-LOCK: Transform price features to preserve info while eliminating naive lock",
     "price_features": [
         "OPEN",
