@@ -43,7 +43,6 @@ from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D, GlobalAveragePooling1D
 from tensorflow.keras.layers import MultiHeadAttention
 from tensorflow.keras.layers import LayerNormalization
-from tensorflow.keras.layers import Dropout
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -143,7 +142,6 @@ def composite_loss(y_true, y_pred,
                    head_index,
                    mmd_lambda,
                    sigma,
-                   huber_delta,
                    penalty_close_lambda,
                    penalty_far_lambda,
                    anti_zero_threshold,
@@ -168,9 +166,7 @@ def composite_loss(y_true, y_pred,
 
     # --- Calculate Primary Losses ---
     #mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
-    if huber_delta is None:
-        huber_delta = 1.0
-    huber_loss_val = Huber(delta=huber_delta)(mag_true, mag_pred)
+    huber_loss_val = Huber(delta=1.0)(mag_true, mag_pred)
     #mse_loss_val = huber_loss_val
     #mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
     #mmd_loss_val = 0.0
@@ -500,8 +496,6 @@ class Plugin:
                 name="conv_merged_features_1",
                 kernel_regularizer=l2(l2_reg)
             )(inputs)
-            merged = LayerNormalization(name="ln_merged_1")(merged)
-            merged = Dropout(rate=float(config.get("dropout_rate", 0.1)), name="drop_merged_1")(merged)
             merged = Conv1D(
                 filters=branch_units,
                 kernel_size=3,
@@ -511,8 +505,6 @@ class Plugin:
                 name="conv_merged_features_2",
                 kernel_regularizer=l2(l2_reg)
             )(merged)
-            merged = LayerNormalization(name="ln_merged_2")(merged)
-            merged = Dropout(rate=float(config.get("dropout_rate", 0.1)), name="drop_merged_2")(merged)
 
         # --- Heads ---
         outputs_list = []
@@ -520,12 +512,8 @@ class Plugin:
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
             xh = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(merged)
-            xh = LayerNormalization(name=f"ln_head1{branch_suffix}")(xh)
-            xh = Dropout(rate=float(config.get("dropout_rate", 0.1)), name=f"drop_head1{branch_suffix}")(xh)
             xh = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(xh)
-            xh = LayerNormalization(name=f"ln_head2{branch_suffix}")(xh)
-            xh = Dropout(rate=float(config.get("dropout_rate", 0.1)), name=f"drop_head2{branch_suffix}")(xh)
-            lstm_output = Bidirectional(LSTM(lstm_units, return_sequences=False, dropout=float(config.get("lstm_dropout", 0.1))), name=f"bidir_lstm{branch_suffix}")(xh)
+            lstm_output = Bidirectional(LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}")(xh)
 
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
@@ -552,7 +540,6 @@ class Plugin:
         penalty_close_lambda = config.get("penalty_close_lambda", 0.0)
         penalty_far_lambda = config.get("penalty_far_lambda", 0.0)
         anti_zero_threshold = config.get("anti_zero_threshold", 0.05)
-        huber_delta = config.get("huber_delta", 1.0)
 
         # Prepare loss dictionary, passing ALL necessary lists and params to GLOBAL composite_loss
         loss_dict = {}
@@ -568,7 +555,7 @@ class Plugin:
             loss_fn_for_head = (
                 lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list, lf=lf_list:
                     lambda y_true, y_pred: composite_loss( # Call GLOBAL func
-                        y_true, y_pred, head_index=index, mmd_lambda=mmd_lambda, sigma=sigma_mmd, huber_delta=huber_delta,
+                        y_true, y_pred, head_index=index, mmd_lambda=mmd_lambda, sigma=sigma_mmd,
                         penalty_close_lambda=penalty_close_lambda, penalty_far_lambda=penalty_far_lambda, anti_zero_threshold=anti_zero_threshold,
                         p=p, i=iv, d=dv, list_last_signed_error=lse, list_last_stddev=lsd,
                         list_last_mmd=lmmd, list_local_feedback=lf

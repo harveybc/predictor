@@ -354,16 +354,16 @@ class STLPreprocessorZScore:
         return aligned_windows
 
     def _augment_with_window_stats(self, sliding_windows, config):
-        """Append simple window statistics for price features as additional channels.
+        """Append simple window statistics for CLOSE as additional channels.
 
-        For each split X_{split} with shape (N, T, F), add for each price column present:
+        For each split X_{split} with shape (N, T, F), add for CLOSE:
           - mean over last k timesteps
           - std over last k timesteps
           - momentum = last - mean over last k timesteps (difference; bounded and stable for returns)
         for each k in window_stats_periods intersecting [2, T].
         """
         periods = config.get('window_stats_periods', [12, 48])
-        price_cols = list(config.get('price_features', ['OPEN', 'HIGH', 'LOW', 'CLOSE']))
+        target_col = config.get('target_column', 'CLOSE')
         for split in ['train', 'val', 'test']:
             X_key = f'X_{split}'
             fn_key = f'feature_names_{split}'
@@ -371,30 +371,28 @@ class STLPreprocessorZScore:
                 continue
             X = sliding_windows[X_key]
             fn = sliding_windows.get(fn_key, sliding_windows.get('feature_names', []))
-            if not isinstance(fn, list):
+            if not isinstance(fn, list) or target_col not in fn:
                 continue
+            ci = fn.index(target_col)
             N, T, F = X.shape
             add_feats = []
             add_names = []
-            for col in price_cols:
-                if col not in fn:
+            for k in periods:
+                if k < 2 or k > T:
                     continue
-                ci = fn.index(col)
-                for k in periods:
-                    if k < 2 or k > T:
-                        continue
-                    # Compute over the trailing k timesteps for each sample
-                    window_slice = X[:, -k:, ci]
-                    mean_k = np.mean(window_slice, axis=1, keepdims=True)
-                    std_k = np.std(window_slice, axis=1, keepdims=True) + 1e-9
-                    last = X[:, -1:, ci]
-                    mom_k = last - mean_k
-                    # Tile along time dimension to match (N, T, 1) using last value repeated
-                    mean_feat = np.repeat(mean_k, T, axis=1)
-                    std_feat = np.repeat(std_k, T, axis=1)
-                    mom_feat = np.repeat(mom_k, T, axis=1)
-                    add_feats.extend([mean_feat[..., None], std_feat[..., None], mom_feat[..., None]])
-                    add_names.extend([f'{col}_mean_{k}', f'{col}_std_{k}', f'{col}_mom_{k}'])
+                # Compute over the trailing k timesteps for each sample
+                window_slice = X[:, -k:, ci]
+                mean_k = np.mean(window_slice, axis=1, keepdims=True)
+                std_k = np.std(window_slice, axis=1, keepdims=True) + 1e-9
+                last = X[:, -1:, ci]
+                # Use difference instead of ratio to avoid exploding values when mean is near zero (returns)
+                mom_k = last - mean_k
+                # Tile along time dimension to match (N, T, 1) using last value repeated
+                mean_feat = np.repeat(mean_k, T, axis=1)
+                std_feat = np.repeat(std_k, T, axis=1)
+                mom_feat = np.repeat(mom_k, T, axis=1)
+                add_feats.extend([mean_feat[..., None], std_feat[..., None], mom_feat[..., None]])
+                add_names.extend([f'{target_col}_mean_{k}', f'{target_col}_std_{k}', f'{target_col}_mom_{k}'])
             if add_feats:
                 extra = np.concatenate(add_feats, axis=2)  # (N, T, 3*len(periods_kept))
                 sliding_windows[X_key] = np.concatenate([X, extra], axis=2)
