@@ -491,22 +491,11 @@ class Plugin:
              # Use Keras Identity layer for naming and compatibility
              merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
         elif len(feature_branch_outputs) > 1:
-             # Concatenate is already a Keras layer
-             merged = Concatenate(name="merged_features")(feature_branch_outputs)
-        else:
-             raise ValueError("Model must have at least one input feature channel.")
-
-        # --- Merging Feature Branches ONLY ---
-        if len(feature_branch_outputs) == 1:
-             # Use Keras Identity layer for naming and compatibility
-             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
-        elif len(feature_branch_outputs) > 1:
              # Concatenate trought the feature axis (-1)
              merged = Concatenate(name="merged_features", axis=-1)(feature_branch_outputs)
         else:
              raise ValueError("Model must have at least one input feature channel.")
         # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
-        merged = Flatten(name="merged_features_flatten")(merged)
 
         # --- Heads ---
         outputs_list = []
