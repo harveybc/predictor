@@ -460,53 +460,51 @@ class Plugin:
         branch_units = merged_units//config.get("layer_size_divisor", 2)
         # Add LSTM units parameter (provide a default)
         lstm_units = branch_units//config.get("layer_size_divisor", 2) # New parameter for LSTM size
-
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
         embedding_dim = self.params.get('initial_layer_size', 32)
 
-# --- Input Layer ---
+        # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
-# Linear shortcut from the last timestep features
+        # Linear shortcut from the last timestep features
         last_timestep = Lambda(lambda t: t[:, -1, :], name="last_timestep_slice")(inputs)
-        # --- Parallel Feature Processing Branches ---
-        feature_branch_outputs = []
-        for c in range(num_channels):
-            feature_input = Lambda(lambda x, channel=c: x[:, :, channel:channel+1],
-                                   name=f"feature_{c+1}_input")(inputs)
-            x = Flatten(name=f"feature_{c+1}_flatten")(feature_input)
-            x = Reshape((window_size, 1), name=f"reshape_conv1d_in{c+1}")(x)
-            for i in range(num_intermediate_layers):
-                x = Conv1D(filters=merged_units, kernel_size=1, padding='same', kernel_regularizer=l2(l2_reg),
-                          name=f"feature_{c+1}_conv1d_{i+1}")(x)
-                # Max pooling
-                #x = MaxPooling1D(pool_size=2, strides=2, padding='same', name=f"feature_{c+1}_maxpooling_{i+1}")(x)
-            x = Conv1D(filters=1, kernel_size=3, padding='same', kernel_regularizer=l2(l2_reg),
-                          name=f"feature_{c+1}_last_conv1d")(x)
-            feature_branch_outputs.append(x)
 
-        # --- Merging Feature Branches ONLY ---
-        if len(feature_branch_outputs) == 1:
-             # Use Keras Identity layer for naming and compatibility
-             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
-        elif len(feature_branch_outputs) > 1:
-             # Concatenate is already a Keras layer
-             merged = Concatenate(name="merged_features")(feature_branch_outputs)
-        else:
-             raise ValueError("Model must have at least one input feature channel.")
+        # Feature extractor stack
+        
+        # Commented first conv1d layer
+        #merged = Conv1D(
+        #    filters=merged_units*2,
+        #    kernel_size=3,
+        #    strides=2,
+        #    padding='same',
+        #    activation='linear',
+        #    name="conv_merged_features_0"
+        #)(inputs)
 
-        # --- Merging Feature Branches ONLY ---
-        if len(feature_branch_outputs) == 1:
-             # Use Keras Identity layer for naming and compatibility
-             merged = Identity(name="merged_features")(feature_branch_outputs[0]) # <<< CORRECTED LINE
-        elif len(feature_branch_outputs) > 1:
-             # Concatenate is already a Keras layer
-             merged = Concatenate(name="merged_features")(feature_branch_outputs)
+        if config.get("feature_extractor_file"):
+            fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
+            fe_model.trainable = bool(config.get("train_fe", False))
+            merged = fe_model(inputs)
         else:
-             raise ValueError("Model must have at least one input feature channel.")
-        # print(f"Merged feature branches shape (symbolic): {merged.shape}") # Informative print
-        merged = Flatten(name="merged_features_flatten")(merged)
+            merged = Conv1D(
+                filters=merged_units,
+                kernel_size=3,
+                strides=2,
+                padding='same',
+                activation=activation,
+                name="conv_merged_features_1",
+                kernel_regularizer=l2(l2_reg)
+            )(inputs)
+            merged = Conv1D(
+                filters=branch_units,
+                kernel_size=3,
+                strides=2,
+                padding='same',
+                activation=activation,
+                name="conv_merged_features_2",
+                kernel_regularizer=l2(l2_reg)
+            )(merged)
 
         # --- Heads ---
         outputs_list = []
