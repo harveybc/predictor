@@ -233,9 +233,9 @@ class STLPipelinePlugin:
                 val_prices = val_baselines * np.exp(val_returns)
                 test_prices = test_baselines * np.exp(test_returns)
 
-                train_target_prices = train_baselines * np.exp(train_target_returns)
-                val_target_prices = val_baselines * np.exp(val_target_returns)
-                test_target_prices = test_baselines * np.exp(test_target_returns)
+                train_target_prices = train_baselines * np.exp(train_target_returns-0.5)
+                val_target_prices = val_baselines * np.exp(val_target_returns-0.5)
+                test_target_prices = test_baselines * np.exp(test_target_returns-0.5)
 
                 # Uncertainties: map from return space to price space approximately.
                 # For small r, dP ≈ P * dr. Use absolute baseline scaling as a first-order approximation.

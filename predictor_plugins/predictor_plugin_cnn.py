@@ -470,17 +470,16 @@ class Plugin:
         # Linear shortcut from the last timestep features
         last_timestep = Lambda(lambda t: t[:, -1, :], name="last_timestep_slice")(inputs)
 
-        # Feature extractor stack
-        
+        #       
         # Commented first conv1d layer
-        #merged = Conv1D(
-        #    filters=merged_units*2,
-        #    kernel_size=3,
-        #    strides=2,
-        #    padding='same',
-        #    activation='linear',
-        #    name="conv_merged_features_0"
-        #)(inputs)
+        merged = Conv1D(
+            filters=merged_units,
+            kernel_size=3,
+            strides=2,
+            padding='same',
+            activation='linear',
+            name="conv_merged_features_0"
+        )(inputs)
 
         if config.get("feature_extractor_file"):
             fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
@@ -496,15 +495,15 @@ class Plugin:
                 name="conv_merged_features_1",
                 kernel_regularizer=l2(l2_reg)
             )(inputs)
-            merged = Conv1D(
-                filters=branch_units,
-                kernel_size=3,
-                strides=2,
-                padding='same',
-                activation=activation,
-                name="conv_merged_features_2",
-                kernel_regularizer=l2(l2_reg)
-            )(merged)
+            #merged = Conv1D(
+            #    filters=branch_units,
+            #    kernel_size=3,
+            #    strides=2,
+            #    padding='same',
+            #    activation=activation,
+            #    name="conv_merged_features_2",
+            #    kernel_regularizer=l2(l2_reg)
+            #)(merged)
 
         # --- Heads ---
         outputs_list = []
@@ -512,7 +511,7 @@ class Plugin:
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
             xh = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(merged)
-            xh = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(xh)
+            #xh = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(xh)
             lstm_output = Bidirectional(LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}")(xh)
 
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
@@ -524,10 +523,11 @@ class Plugin:
             )
             bayesian_output_branch = Lambda(lambda t: flipout_layer_branch(t), output_shape=lambda s: (s[0], 1), name=f"bayesian_output{branch_suffix}")(lstm_output)
             bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44, name=f"deterministic_bias{branch_suffix}")(lstm_output)
-            linear_shortcut = Dense(units=1, activation='linear', kernel_regularizer=l2(l2_reg), name=f"linear_shortcut{branch_suffix}")(last_timestep)
+            #linear_shortcut = Dense(units=1, activation='linear', kernel_regularizer=l2(l2_reg), name=f"linear_shortcut{branch_suffix}")(last_timestep)
 
             output_name = f"output_horizon_{horizon}"
-            final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch, linear_shortcut])
+            #final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch, linear_shortcut])
+            final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
             outputs_list.append(final_branch_output)
             self.output_names.append(output_name)
 
