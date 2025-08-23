@@ -198,21 +198,22 @@ class STLPipelinePlugin:
                 test_target_returns = original_test_targets[idx].flatten() / target_factor
 
                 # If residualized, add back naive last-step CLOSE return (unscaled) before price conversion
-                naive_train = datasets.get('naive_last_close_scaled_train')
-                naive_val = datasets.get('naive_last_close_scaled_val')
-                naive_test = datasets.get('naive_last_close_scaled_test')
-                if naive_train is not None:
-                    mtr = min(len(train_returns), len(naive_train))
-                    train_returns[:mtr] += (naive_train[:mtr] / target_factor)
-                    train_target_returns[:mtr] += (naive_train[:mtr] / target_factor)
-                if naive_val is not None:
-                    mvr = min(len(val_returns), len(naive_val))
-                    val_returns[:mvr] += (naive_val[:mvr] / target_factor)
-                    val_target_returns[:mvr] += (naive_val[:mvr] / target_factor)
-                if naive_test is not None:
-                    mte = min(len(test_returns), len(naive_test))
-                    test_returns[:mte] += (naive_test[:mte] / target_factor)
-                    test_target_returns[:mte] += (naive_test[:mte] / target_factor)
+                if config.get('residualize_targets_with_last_close', True):
+                    naive_train = datasets.get('naive_last_close_scaled_train')
+                    naive_val = datasets.get('naive_last_close_scaled_val')
+                    naive_test = datasets.get('naive_last_close_scaled_test')
+                    if naive_train is not None:
+                        mtr = min(len(train_returns), len(naive_train))
+                        train_returns[:mtr] += (naive_train[:mtr] / target_factor)
+                        train_target_returns[:mtr] += (naive_train[:mtr] / target_factor)
+                    if naive_val is not None:
+                        mvr = min(len(val_returns), len(naive_val))
+                        val_returns[:mvr] += (naive_val[:mvr] / target_factor)
+                        val_target_returns[:mvr] += (naive_val[:mvr] / target_factor)
+                    if naive_test is not None:
+                        mte = min(len(test_returns), len(naive_test))
+                        test_returns[:mte] += (naive_test[:mte] / target_factor)
+                        test_target_returns[:mte] += (naive_test[:mte] / target_factor)
 
                 # --- Process Uncertainties (divide by target_factor, same as mean) ---
                 train_unc_returns = original_train_unc[idx].flatten() / target_factor
@@ -318,17 +319,18 @@ class STLPipelinePlugin:
                         test_unc_h = real_test_price_uncertainties[idx].flatten()
 
                         # Naive price baseline: predict no change => price = baseline
-                        train_baselines_h = baseline_train[:len(train_preds_h)]
-                        val_baselines_h = baseline_val[:len(val_preds_h)]
-                        test_baselines_h = baseline_test[:len(test_preds_h)]
+                        # Align naive strictly to target lengths to reflect P(t) vs P(t+H) comparison
+                        train_baselines_h = baseline_train[:len(train_target_h)]
+                        val_baselines_h = baseline_val[:len(val_target_h)]
+                        test_baselines_h = baseline_test[:len(test_target_h)]
                         naive_train_price = train_baselines_h
                         naive_val_price = val_baselines_h
                         naive_test_price = test_baselines_h
                         
-                        # Ensure consistent lengths
-                        min_train_len = min(len(train_preds_h), len(train_target_h), len(train_unc_h))
-                        min_val_len = min(len(val_preds_h), len(val_target_h), len(val_unc_h))
-                        min_test_len = min(len(test_preds_h), len(test_target_h), len(test_unc_h))
+                        # Ensure consistent lengths for metrics
+                        min_train_len = min(len(train_preds_h), len(train_target_h), len(train_unc_h), len(naive_train_price))
+                        min_val_len = min(len(val_preds_h), len(val_target_h), len(val_unc_h), len(naive_val_price))
+                        min_test_len = min(len(test_preds_h), len(test_target_h), len(test_unc_h), len(naive_test_price))
                         
                         train_preds_h, train_target_h, train_unc_h, naive_train_price = (
                             train_preds_h[:min_train_len], train_target_h[:min_train_len], train_unc_h[:min_train_len], naive_train_price[:min_train_len]
@@ -626,12 +628,12 @@ class STLPipelinePlugin:
             lower = pred_plot - np.abs(uncertainty_plot)
             upper = pred_plot + np.abs(uncertainty_plot)
 
-            plt.plot(dates_plot, pred_plot, label=f"Pred Price H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
-            plt.plot(dates_plot, target_plot, label=f"Target Price H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
-            plt.plot(dates_plot, baseline_plot, label="Actual Price", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
+            plt.plot(dates_plot, pred_plot, label=f"Predicted P(t+H) H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
+            plt.plot(dates_plot, target_plot, label=f"Target P(t+H) H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
+            plt.plot(dates_plot, baseline_plot, label="Baseline P(t)", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
             plt.fill_between(dates_plot, lower, upper,
                              color=config.get("plot_color_uncertainty", "green"), alpha=0.2, label=f"Uncertainty H{plotted_horizon}", zorder=0)
-            plt.title(f"Predictions vs Target/Actual (H={plotted_horizon})")
+            plt.title(f"Prediction vs Target and Baseline (H={plotted_horizon})")
             plt.xlabel("Time Steps")
             plt.ylabel("Price")
             plt.legend()
@@ -741,7 +743,7 @@ class STLPipelinePlugin:
                 # --- Returns (divide by target_factor) ---
                 pred_returns = list_predictions[idx].flatten() / target_factor
                 # If residualized, add back naive last-step CLOSE return
-                if naive_val_scaled is not None:
+                if config.get('residualize_targets_with_last_close', True) and (naive_val_scaled is not None):
                     m = min(len(pred_returns), len(naive_val_scaled))
                     pred_returns[:m] += (naive_val_scaled[:m] / target_factor)
 
