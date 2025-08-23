@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from .helpers import denormalize, load_normalization_json
 
+def apply_centered_moving_average(data, window_size=2):
+        return data.rolling(window=window_size, center=True).mean()
 
 def calculate_targets_from_baselines(baseline_data, config):
     """
@@ -46,9 +48,7 @@ def calculate_targets_from_baselines(baseline_data, config):
             if baseline_key in baseline_data:
                 baselines = baseline_data[baseline_key]
                 baseline_data[baseline_key] = apply_centered_moving_average(baselines, window_size=target_softening)
-    
-    def apply_centered_moving_average(data, window_size=2):
-        return data.rolling(window=window_size, center=True).mean()
+       
 
     print("Calculating log return targets...")
     
