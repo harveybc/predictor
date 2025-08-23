@@ -155,5 +155,6 @@
         "CLOSE_30m_tick_7",
         "CLOSE_30m_tick_8"
     ],
-    "callback_weighting_strategy": "uniform"
+    "callback_weighting_strategy": "uniform",
+    "target_softening": 2
 }

@@ -26,7 +26,8 @@ def calculate_targets_from_baselines(baseline_data, config):
     predicted_horizons = config['predicted_horizons']
     target_column = config.get('target_column', 'CLOSE')
     use_returns = config.get('use_returns', True)
-    
+    target_softening = config.get('target_softening', 2)
+
     target_data = {'train': {}, 'val': {}, 'test': {}}
     baseline_info = {}
     
@@ -38,6 +39,17 @@ def calculate_targets_from_baselines(baseline_data, config):
         print("Using direct target values (not returns)")
         raise NotImplementedError("Direct target calculation not implemented")
     
+    # apply centered moving average on all the baseline_data train, val and test datasets
+    if target_softening > 1:
+        for split in ['train', 'val', 'test']:
+            baseline_key = f'baseline_{split}'
+            if baseline_key in baseline_data:
+                baselines = baseline_data[baseline_key]
+                baseline_data[baseline_key] = apply_centered_moving_average(baselines, window_size=target_softening)
+    
+    def apply_centered_moving_average(data, window_size=2):
+        return data.rolling(window=window_size, center=True).mean()
+
     print("Calculating log return targets...")
     
     # Calculate targets for each split using ONLY baselines
