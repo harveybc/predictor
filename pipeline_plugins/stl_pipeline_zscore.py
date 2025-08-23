@@ -317,23 +317,13 @@ class STLPipelinePlugin:
                         test_target_h = real_test_price_targets[idx].flatten()
                         test_unc_h = real_test_price_uncertainties[idx].flatten()
 
-                        # Build naive price predictions using last-close return if provided, else no-change
-                        tfac = config.get('target_factor', 1000.0)
-                        naive_train_scaled = datasets.get('naive_last_close_scaled_train')
-                        naive_val_scaled = datasets.get('naive_last_close_scaled_val')
-                        naive_test_scaled = datasets.get('naive_last_close_scaled_test')
-                        # Baselines aligned to preds length
+                        # Naive price baseline: predict no change => price = baseline
                         train_baselines_h = baseline_train[:len(train_preds_h)]
                         val_baselines_h = baseline_val[:len(val_preds_h)]
                         test_baselines_h = baseline_test[:len(test_preds_h)]
-                        # Returns arrays (divide by target_factor)
-                        naive_train_ret = (naive_train_scaled[:len(train_preds_h)] / tfac) if (naive_train_scaled is not None and len(naive_train_scaled) > 0) else np.zeros_like(train_preds_h)
-                        naive_val_ret = (naive_val_scaled[:len(val_preds_h)] / tfac) if (naive_val_scaled is not None and len(naive_val_scaled) > 0) else np.zeros_like(val_preds_h)
-                        naive_test_ret = (naive_test_scaled[:len(test_preds_h)] / tfac) if (naive_test_scaled is not None and len(naive_test_scaled) > 0) else np.zeros_like(test_preds_h)
-                        # Price mapping
-                        naive_train_price = train_baselines_h * np.exp(naive_train_ret)
-                        naive_val_price = val_baselines_h * np.exp(naive_val_ret)
-                        naive_test_price = test_baselines_h * np.exp(naive_test_ret)
+                        naive_train_price = train_baselines_h
+                        naive_val_price = val_baselines_h
+                        naive_test_price = test_baselines_h
                         
                         # Ensure consistent lengths
                         min_train_len = min(len(train_preds_h), len(train_target_h), len(train_unc_h))
@@ -579,22 +569,25 @@ class STLPipelinePlugin:
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
             # Use real-world price data for plotting
-            pred_prices_plot = real_test_price_preds[plotted_index][:num_test_points].flatten()
-            target_prices_plot = real_test_price_targets[plotted_index][:num_test_points].flatten()
-            price_uncertainties_plot = real_test_price_uncertainties[plotted_index][:num_test_points].flatten()
-            baseline_prices_plot = final_baseline.flatten()
+            # Derive plotting length from the prediction series of the plotted horizon to avoid any mismatch
+            pred_full = real_test_price_preds[plotted_index].flatten()
+            n_plot_full = len(pred_full)
+            target_full = real_test_price_targets[plotted_index][:n_plot_full].flatten()
+            unc_full = real_test_price_uncertainties[plotted_index][:n_plot_full].flatten()
+            baseline_full = baseline_test[:n_plot_full]
+            dates_full = list(test_dates[:n_plot_full]) if test_dates is not None else list(range(n_plot_full))
 
             # Prepare plot data with proper slicing
             n_plot = config.get("plot_points", self.params["plot_points"])
-            plot_start = max(0, len(pred_prices_plot) - n_plot)
-            plot_slice = slice(plot_start, len(pred_prices_plot))
+            plot_start = max(0, n_plot_full - n_plot)
+            plot_slice = slice(plot_start, n_plot_full)
 
             # Extract plot data
-            dates_plot = final_dates[plot_slice] if final_dates else list(range(len(pred_prices_plot)))[plot_slice]
-            pred_plot = pred_prices_plot[plot_slice]
-            target_plot = target_prices_plot[plot_slice]
-            baseline_plot = baseline_prices_plot[plot_slice]
-            uncertainty_plot = price_uncertainties_plot[plot_slice]
+            dates_plot = dates_full[plot_slice] if dates_full else list(range(n_plot_full))[plot_slice]
+            pred_plot = pred_full[plot_slice]
+            target_plot = target_full[plot_slice]
+            baseline_plot = baseline_full[plot_slice]
+            uncertainty_plot = unc_full[plot_slice]
 
             # Create plot
             plt.figure(figsize=(14, 7))
