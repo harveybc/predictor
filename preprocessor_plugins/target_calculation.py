@@ -3,7 +3,25 @@ import pandas as pd
 from .helpers import denormalize, load_normalization_json
 
 def apply_centered_moving_average(data, window_size=2):
-        return data.rolling(window=window_size, center=True).mean()
+    """
+    Apply a centered moving average to 1D data and return a numpy array.
+    Accepts numpy arrays, pandas Series, or single-column DataFrames.
+    """
+    if window_size is None or window_size <= 1:
+        return np.asarray(data)
+
+    # Convert input to a pandas Series for rolling; if DataFrame, use the first column
+    if isinstance(data, pd.DataFrame):
+        if data.shape[1] == 0:
+            return np.array([])
+        series = data.iloc[:, 0]
+    elif isinstance(data, pd.Series):
+        series = data
+    else:
+        series = pd.Series(np.asarray(data))
+
+    smoothed = series.rolling(window=window_size, center=True, min_periods=1).mean()
+    return smoothed.to_numpy()
 
 def calculate_targets_from_baselines(baseline_data, config):
     """
