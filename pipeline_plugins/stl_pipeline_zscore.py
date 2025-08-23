@@ -73,7 +73,7 @@ class STLPipelinePlugin:
         # Init metric storage
         predicted_horizons = config.get('predicted_horizons')
         num_outputs = len(predicted_horizons)
-        metric_names = ["MAE", "R2", "Uncertainty", "SNR"]
+        metric_names = ["MAE", "R2", "Uncertainty", "SNR", "Naive_MAE"]
         data_sets = ["Train", "Validation", "Test"]
         metrics_results = {ds: {mn: {h: [] for h in predicted_horizons} for mn in metric_names} for ds in data_sets}
 
@@ -297,7 +297,7 @@ class STLPipelinePlugin:
             
             print("✅ All train, validation and test data converted to real-world prices using exp(log-returns)")
 
-            # 7. Calculate metrics for the final predictions vs final targets (MAE, R2, SNR).
+            # 7. Calculate metrics for the final predictions vs final targets (MAE, R2, SNR, Naive_MAE).
             # Calculate Train/Validation/Test metrics using real-world prices
             can_calc_all_stats = all(len(lst) == num_outputs for lst in [real_train_price_preds, real_train_price_uncertainties, real_test_price_preds, real_test_price_uncertainties])
             if can_calc_all_stats:
@@ -316,20 +316,48 @@ class STLPipelinePlugin:
                         test_preds_h = real_test_price_preds[idx].flatten()
                         test_target_h = real_test_price_targets[idx].flatten()
                         test_unc_h = real_test_price_uncertainties[idx].flatten()
+
+                        # Build naive price predictions using last-close return if provided, else no-change
+                        tfac = config.get('target_factor', 1000.0)
+                        naive_train_scaled = datasets.get('naive_last_close_scaled_train')
+                        naive_val_scaled = datasets.get('naive_last_close_scaled_val')
+                        naive_test_scaled = datasets.get('naive_last_close_scaled_test')
+                        # Baselines aligned to preds length
+                        train_baselines_h = baseline_train[:len(train_preds_h)]
+                        val_baselines_h = baseline_val[:len(val_preds_h)]
+                        test_baselines_h = baseline_test[:len(test_preds_h)]
+                        # Returns arrays (divide by target_factor)
+                        naive_train_ret = (naive_train_scaled[:len(train_preds_h)] / tfac) if (naive_train_scaled is not None and len(naive_train_scaled) > 0) else np.zeros_like(train_preds_h)
+                        naive_val_ret = (naive_val_scaled[:len(val_preds_h)] / tfac) if (naive_val_scaled is not None and len(naive_val_scaled) > 0) else np.zeros_like(val_preds_h)
+                        naive_test_ret = (naive_test_scaled[:len(test_preds_h)] / tfac) if (naive_test_scaled is not None and len(naive_test_scaled) > 0) else np.zeros_like(test_preds_h)
+                        # Price mapping
+                        naive_train_price = train_baselines_h * np.exp(naive_train_ret)
+                        naive_val_price = val_baselines_h * np.exp(naive_val_ret)
+                        naive_test_price = test_baselines_h * np.exp(naive_test_ret)
                         
                         # Ensure consistent lengths
                         min_train_len = min(len(train_preds_h), len(train_target_h), len(train_unc_h))
                         min_val_len = min(len(val_preds_h), len(val_target_h), len(val_unc_h))
                         min_test_len = min(len(test_preds_h), len(test_target_h), len(test_unc_h))
                         
-                        train_preds_h, train_target_h, train_unc_h = train_preds_h[:min_train_len], train_target_h[:min_train_len], train_unc_h[:min_train_len]
-                        val_preds_h, val_target_h, val_unc_h = val_preds_h[:min_val_len], val_target_h[:min_val_len], val_unc_h[:min_val_len]
-                        test_preds_h, test_target_h, test_unc_h = test_preds_h[:min_test_len], test_target_h[:min_test_len], test_unc_h[:min_test_len]
+                        train_preds_h, train_target_h, train_unc_h, naive_train_price = (
+                            train_preds_h[:min_train_len], train_target_h[:min_train_len], train_unc_h[:min_train_len], naive_train_price[:min_train_len]
+                        )
+                        val_preds_h, val_target_h, val_unc_h, naive_val_price = (
+                            val_preds_h[:min_val_len], val_target_h[:min_val_len], val_unc_h[:min_val_len], naive_val_price[:min_val_len]
+                        )
+                        test_preds_h, test_target_h, test_unc_h, naive_test_price = (
+                            test_preds_h[:min_test_len], test_target_h[:min_test_len], test_unc_h[:min_test_len], naive_test_price[:min_test_len]
+                        )
                         
                         # Calculate metrics in real-world price scale
                         train_mae_h = np.mean(np.abs(train_preds_h - train_target_h))
                         val_mae_h = np.mean(np.abs(val_preds_h - val_target_h))
                         test_mae_h = np.mean(np.abs(test_preds_h - test_target_h))
+                        # Naive MAE in price scale
+                        train_naive_mae_h = np.mean(np.abs(naive_train_price - train_target_h))
+                        val_naive_mae_h = np.mean(np.abs(naive_val_price - val_target_h))
+                        test_naive_mae_h = np.mean(np.abs(naive_test_price - test_target_h))
                         
                         train_r2_h = r2_score(train_target_h, train_preds_h)
                         val_r2_h = r2_score(val_target_h, val_preds_h)
@@ -350,18 +378,21 @@ class STLPipelinePlugin:
                         metrics_results["Train"]["R2"][h].append(train_r2_h)
                         metrics_results["Train"]["Uncertainty"][h].append(train_unc_mean_h)
                         metrics_results["Train"]["SNR"][h].append(train_snr_h)
+                        metrics_results["Train"]["Naive_MAE"][h].append(train_naive_mae_h)
                         
                         # Append Validation metrics
                         metrics_results["Validation"]["MAE"][h].append(val_mae_h)
                         metrics_results["Validation"]["R2"][h].append(val_r2_h)
                         metrics_results["Validation"]["Uncertainty"][h].append(val_unc_mean_h)
                         metrics_results["Validation"]["SNR"][h].append(val_snr_h)
+                        metrics_results["Validation"]["Naive_MAE"][h].append(val_naive_mae_h)
 
                         # Append Test metrics
                         metrics_results["Test"]["MAE"][h].append(test_mae_h)
                         metrics_results["Test"]["R2"][h].append(test_r2_h)
                         metrics_results["Test"]["Uncertainty"][h].append(test_unc_mean_h)
                         metrics_results["Test"]["SNR"][h].append(test_snr_h)
+                        metrics_results["Test"]["Naive_MAE"][h].append(test_naive_mae_h)
                         
                     except Exception as e: 
                         print(f"WARN: Error calculating metrics for H={h}: {e}")
