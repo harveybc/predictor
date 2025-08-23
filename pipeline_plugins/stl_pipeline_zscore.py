@@ -711,22 +711,23 @@ class STLPipelinePlugin:
             
             # Convert predictions to real-world prices using same logic as main pipeline
             print("Converting validation predictions to real-world prices...")
+            target_factor = config.get('target_factor', 1000.0)
+            naive_val_scaled = datasets.get('naive_last_close_scaled_val')
             for idx, h in enumerate(config['predicted_horizons']):
-                # Get horizon-specific normalization stats
-                
-                # Convert predictions: z-score normalized -> log returns -> prices
-                pred_normalized = list_predictions[idx].flatten()
-                pred_returns = pred_normalized
-                
+                # --- Returns (divide by target_factor) ---
+                pred_returns = list_predictions[idx].flatten() / target_factor
+                # If residualized, add back naive last-step CLOSE return
+                if naive_val_scaled is not None:
+                    m = min(len(pred_returns), len(naive_val_scaled))
+                    pred_returns[:m] += (naive_val_scaled[:m] / target_factor)
+
                 # CRITICAL FIX: Baselines and predictions are perfectly aligned
                 num_val = len(pred_returns)
-                
-                # Use the corresponding baselines (perfectly aligned with predictions)
                 val_baselines = baseline_val_eval[:num_val]
-                
-                # Convert log returns to real prices using aligned baselines
-                pred_prices = val_baselines + pred_returns
-                
+
+                # Inverse-transform log-returns to prices: P_{t+h} = P_t * exp(r_{t->t+h})
+                pred_prices = val_baselines * np.exp(pred_returns)
+
                 # Update predictions with real prices
                 list_predictions[idx] = pred_prices.reshape(-1, 1)
                 
@@ -754,5 +755,3 @@ class STLPipelinePlugin:
             print(f"WARN: write_csv not found.")
         except Exception as e: 
             print(f"Failed save validation predictions: {e}")
-
-# --- NO if __name__ == '__main__': block ---

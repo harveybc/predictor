@@ -726,19 +726,6 @@ class Plugin:
         """
         Performs Monte Carlo dropout predictions for the multi-output model
         using an incremental approach to avoid large memory allocation.
-
-        Runs the model multiple times with dropout enabled (training=True)
-        to estimate predictive uncertainty (standard deviation) for each output head.
-
-        Args:
-            x_test (np.ndarray): Input data for prediction.
-            mc_samples (int): Number of Monte Carlo samples to perform.
-
-        Returns:
-            tuple: (list_mean_predictions, list_uncertainty_estimates)
-                   Lists containing numpy arrays (one per output head)
-                   for mean predictions and standard deviations (uncertainty).
-                   Shape of each array: [num_samples, output_dim (usually 1)].
         """
         if self.model is None:
             raise ValueError("Model has not been built or loaded.")
@@ -747,7 +734,7 @@ class Plugin:
 
         # Get dimensions from a single sample run
         try:
-            first_run_output_tf = self.model(x_test[:1], training=False) # Predict on one sample
+            first_run_output_tf = self.model(x_test[:1], training=False)  # shape probe
             if not isinstance(first_run_output_tf, list): first_run_output_tf = [first_run_output_tf]
             num_heads = len(first_run_output_tf)
             if num_heads == 0: return [], []
@@ -758,21 +745,17 @@ class Plugin:
             print(f"ERROR getting model output shape in predict_with_uncertainty: {e}")
             raise ValueError("Could not determine model output structure.") from e
 
-        # Initialize accumulators for mean and variance calculation (Welford's algorithm components)
-        # Using lists to store per-head accumulators
         means = [np.zeros((num_test_samples, output_dim), dtype=np.float32) for _ in range(num_heads)]
         m2s = [np.zeros((num_test_samples, output_dim), dtype=np.float32) for _ in range(num_heads)]
-        counts = [0] * num_heads # Use a single count across heads, assuming samples are drawn together
+        counts = [0] * num_heads
 
-        # print(f"Running {mc_samples} MC samples for uncertainty (incremental)...") # Informative print
-        for i in tqdm(range(mc_samples), desc="MC Samples"):
-            # Get predictions for all heads in this sample
-            batch_size = 256  # ✅ Use safe batch size
-            ## Initialize a list for each output head
+        for sample_idx in tqdm(range(mc_samples), desc="MC Samples"):
+            batch_size = 256
             head_outputs_lists = None
-            for i in range(0, len(x_test), batch_size):
-                batch_x = x_test[i:i + batch_size]
-                preds = self.model(batch_x, training=False)
+            for b in range(0, len(x_test), batch_size):
+                batch_x = x_test[b:b + batch_size]
+                # IMPORTANT: enable stochasticity in Bayesian layers if applicable
+                preds = self.model(batch_x, training=True)
                 if not isinstance(preds, list):
                     preds = [preds]
                 if head_outputs_lists is None:
@@ -780,47 +763,34 @@ class Plugin:
                 for h, pred in enumerate(preds):
                     head_outputs_lists[h].append(pred)
 
-
-            # Concatenate outputs for each head along the batch dimension
             head_outputs_tf = [tf.concat(head_list, axis=0) for head_list in head_outputs_lists]
-
-
 
             if not isinstance(head_outputs_tf, list): head_outputs_tf = [head_outputs_tf]
 
-            # Process each head's output for this sample
             for h in range(num_heads):
                 head_output_np = head_outputs_tf[h].numpy()
-                # Reshape if necessary
                 if head_output_np.ndim == 1:
                     head_output_np = np.expand_dims(head_output_np, axis=-1)
                 if head_output_np.shape != (num_test_samples, output_dim):
-                     raise ValueError(f"Shape mismatch in MC sample {i}, head {h}: Expected {(num_test_samples, output_dim)}, got {head_output_np.shape}")
+                    raise ValueError(f"Shape mismatch in MC sample {sample_idx}, head {h}: Expected {(num_test_samples, output_dim)}, got {head_output_np.shape}")
 
-                # Welford's online algorithm update
                 counts[h] += 1
                 delta = head_output_np - means[h]
                 means[h] += delta / counts[h]
-                delta2 = head_output_np - means[h] # New delta using updated mean
+                delta2 = head_output_np - means[h]
                 m2s[h] += delta * delta2
 
-            # Optional progress print
-            # if (i + 1) % (mc_samples // 10 or 1) == 0: print(f"  MC sample {i+1}/{mc_samples}")
-
-        # Finalize calculations: variance = M2 / (n - 1), stddev = sqrt(variance)
-        list_mean_predictions = means # The mean is already calculated
+        list_mean_predictions = means
         list_uncertainty_estimates = []
         for h in range(num_heads):
-             if counts[h] < 2: # Need at least 2 samples for variance/stddev
-                 variance = np.full((num_test_samples, output_dim), np.nan, dtype=np.float32)
-             else:
-                 variance = m2s[h] / (counts[h] - 1)
-             stddev = np.sqrt(np.maximum(variance, 0)) # Ensure variance isn't negative due to float issues
-             list_uncertainty_estimates.append(stddev.astype(np.float32))
+            if counts[h] < 2:
+                variance = np.full((num_test_samples, output_dim), np.nan, dtype=np.float32)
+            else:
+                variance = m2s[h] / (counts[h] - 1)
+            stddev = np.sqrt(np.maximum(variance, 0))
+            list_uncertainty_estimates.append(stddev.astype(np.float32))
 
-        # print("MC sampling finished.") # Informative print
         return list_mean_predictions, list_uncertainty_estimates
-    
     
     def save(self, file_path):
         self.model.save(file_path)
