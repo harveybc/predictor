@@ -515,11 +515,11 @@ class Plugin:
             #xh = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(xh)
             # optional bidir retunseq=-true layers
             xh = Bidirectional(LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm{branch_suffix}")(xh)
-            lstm_output = Bidirectional(LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}")(xh)
+            # mandatory lstm output layer
             lstm_output = Bidirectional(LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}")(xh)
             # optional output dense layers
-            lstm_output = Dense(units=lstm_units//2, activation=activation, name=f"dense_output{branch_suffix}")(lstm_output)
-
+            lstm_output = Dense(units=lstm_units//2, activation=activation, name=f"dense_o_{branch_suffix}")(lstm_output)
+            # mandatory bayesian layer with bias
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
                 units=1, activation='linear',
@@ -529,10 +529,7 @@ class Plugin:
             )
             bayesian_output_branch = Lambda(lambda t: flipout_layer_branch(t), output_shape=lambda s: (s[0], 1), name=f"bayesian_output{branch_suffix}")(lstm_output)
             bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44, name=f"deterministic_bias{branch_suffix}")(lstm_output)
-            #linear_shortcut = Dense(units=1, activation='linear', kernel_regularizer=l2(l2_reg), name=f"linear_shortcut{branch_suffix}")(last_timestep)
-
             output_name = f"output_horizon_{horizon}"
-            #final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch, linear_shortcut])
             final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
             outputs_list.append(final_branch_output)
             self.output_names.append(output_name)
