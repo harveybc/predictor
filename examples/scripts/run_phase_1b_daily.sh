@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFIG_DIR="examples/config/phase_1b"
+CONFIG_DIR="examples/config/phase_1b_daily"
 
 for file in "$CONFIG_DIR"/*.json; do
     echo "Running preprocessor with configuration: $(basename "$file")"
