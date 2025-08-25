@@ -1,0 +1,16 @@
+{
+    "input_file": "examples/data/phase_1b_candlestick.csv",
+    "output_file": "output_phase_1b_candlestick.csv",
+    "debug_file": "examples/data/phase_1b_candlestick/phase_1b_candlestick_debug_out.json",
+    "load_config": "examples/config/phase_1b_candlestick.json",
+    "save_config": "examples/data/phase_1b_candlestick/preprocessor_config.json",
+    "normalization_config_a": "examples/data/phase_1b_candlestick/normalization_config_a.json",
+    "normalization_config_b": "examples/data/phase_1b_candlestick/normalization_config_b.json",
+    "dataset_prefix": "examples/data/phase_1b_candlestick/base_",
+    "target_prefix": "examples/data/phase_1b_candlestick/normalized_",
+    "feature_eng_plugin_path": "/home/harvyebc/Documents/GitHub/feature-eng/app/plugins",
+    "normalization_range": [
+        0,
+        1
+    ]
+}

@@ -1,1 +1,9 @@
-{}
+{
+    "input_file": "examples/data/phase_1b.csv",
+    "load_config": "examples/config/phase_1b.json",
+    "feature_eng_plugin_path": "/home/harvyebc/Documents/GitHub/feature-eng/app/plugins",
+    "normalization_range": [
+        0,
+        1
+    ]
+}
