@@ -514,7 +514,7 @@ class Plugin:
             xh = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(merged)
             #xh = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(xh)
             # optional bidir retunseq=-true layers
-            xh = Bidirectional(LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm{branch_suffix}")(xh)
+            xh = Bidirectional(LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm_o_{branch_suffix}")(xh)
             # mandatory lstm output layer
             lstm_output = Bidirectional(LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}")(xh)
             # optional output dense layers
