@@ -153,90 +153,39 @@ def composite_loss(y_true, y_pred,
                    ):
     """
     Global composite loss function for a specific head.
-    Calculates metrics (signed_error, stddev, mmd).
-    Calls global dummy_feedback_control with metrics and PID params.
-    Assigns control function output to list_local_feedback[head_index].
-    Also assigns metrics to list_last_xxx[head_index].
-    Returns the scalar loss value (MSE + Asymptote + MMD).
+    Uses Huber loss and applies a single multiplicative penalty based on the
+    relative side of the prediction with respect to the naive return (0).
+
+    We apply the multiplicative penalty when:
+        |y_true - y_pred| < |y_pred - 0|
+    i.e., the prediction is farther from the naive return than it is from the target.
     """
     y_true = tf.reshape(y_true, [-1, 1])
     y_pred = tf.reshape(y_pred, [-1, 1])
     mag_true = y_true
     mag_pred = y_pred
 
-    # --- Calculate Primary Losses ---
-    #mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
-    huber_loss_val = Huber(delta=1.0)(mag_true, mag_pred)
-    #mse_loss_val = huber_loss_val
-    #mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
-    #mmd_loss_val = 0.0
+    # Per-sample Huber loss
+    huber_per_sample = Huber(delta=1.0, reduction=tf.keras.losses.Reduction.NONE)(mag_true, mag_pred)  # shape: (batch,)
 
+    # Side-aware multiplicative penalty condition:
+    # Apply when |target - prediction| < |naive - prediction|, naive = 0
+    cond = tf.less(tf.abs(mag_true - mag_pred), tf.abs(mag_pred))          # shape: (batch, 1)
+    cond_f = tf.cast(cond, tf.float32)
 
-    #mse_min = tf.maximum(huber_loss_val, 1e-10)
-    #mse_min = tf.maximum(mse_loss_val, 1e-10)
+    side_penalty_multiplier = anti_zero_threshold
+    # Ensure multiplier >= 1.0
+    if side_penalty_multiplier is None:
+        side_penalty_multiplier = 1.0
+    side_penalty_multiplier = tf.maximum(tf.cast(side_penalty_multiplier, tf.float32), 1.0)
 
-    # --- Calculate Summary Statistics ---
-    #signed_avg_pred = tf.reduce_mean(mag_pred)
-    #signed_avg_true = tf.reduce_mean(mag_true)
+    # weights = 1 for non-penalized samples, = side_penalty_multiplier for penalized ones
+    weights = 1.0 + (side_penalty_multiplier - 1.0) * cond_f               # shape: (batch, 1)
+    weights = tf.squeeze(weights, axis=-1)                                  # shape: (batch,)
 
-    # --- Calculate Dynamic Asymptote Penalty (Original User Logic) ---
-    #def vertical_dynamic_asymptote(value, center):
-    #    res = tf.cond(tf.greater_equal(value, center),
-    #        lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20,
-    #        lambda: mse_loss_val*1e3 - 1)
-    #    res = tf.cond(tf.greater_equal(center, value),
-    #        lambda: mse_loss_val*1e3 - 1,
-    #        lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20)
-    #    return res
-    #asymptote = vertical_dynamic_asymptote(signed_avg_pred, signed_avg_true)
-    #asymptote = 0.0
+    weighted_huber = huber_per_sample * weights
+    total_loss = tf.reduce_mean(weighted_huber)
 
-    # --- Calculate Feedback Metrics ---
-    #feedback_signed_error = 0.0
-    #feedback_stddev = 0.0
-    #feedback_mmd = 0.0
-
-    # --- Call Control Function ---
-    # Pass feedback metrics and head-specific PID parameters (which are tf.Variables)
-    #local_control_action = dummy_feedback_control(
-    #    feedback_signed_error, feedback_stddev, feedback_mmd, p, i, d
-    #)
-
-    # --- Update Feedback Variables (using control dependencies) ---
-    #update_ops = [
-        # Store calculated metrics
-    #    list_last_signed_error[head_index].assign(signed_avg_true-signed_avg_pred),
-    #    list_last_stddev[head_index].assign(feedback_stddev),
-    #    list_last_mmd[head_index].assign(feedback_mmd),
-        # Store the output of the control function - THIS IS THE FEEDBACK FOR THE MODEL
-        #list_local_feedback[head_index].assign(local_control_action)
-    #]
-
-    #with tf.control_dependencies(update_ops):
-        # Calculate final loss term
-        #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    #total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
-    # --- Anti-zero penalty (encourage non-zero predictions in return space) ---
-    # Penalize predictions whose magnitude is below a small threshold in scaled units.
-    # Uses softplus for smoothness; weight controlled by config.
-    if penalty_close_lambda is None:
-        penalty_close_lambda = 0.0
-    if penalty_far_lambda is None:
-        penalty_far_lambda = 0.0
-    if anti_zero_threshold is None:
-        anti_zero_threshold = 0.0
-
-    az_term = tf.nn.softplus(anti_zero_threshold - tf.abs(mag_pred))
-    anti_zero_penalty = penalty_close_lambda * tf.reduce_mean(az_term)
-
-    # Optional sign-consistency penalty: penalize strongly wrong-signed predictions
-    # Only activates when y_true and y_pred have opposite signs.
-    sign_mismatch = tf.nn.relu(-(mag_true * mag_pred))
-    sign_penalty = penalty_far_lambda * tf.reduce_mean(sign_mismatch)
-
-    total_loss = huber_loss_val + anti_zero_penalty + sign_penalty
-    # Return the final scalar loss value
     return total_loss
 
 
@@ -540,9 +489,9 @@ class Plugin:
         optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
         mmd_lambda = config.get("mmd_lambda", self.params.get("mmd_lambda", 0.1))
         sigma_mmd = config.get("sigma_mmd", self.params.get("sigma_mmd", 1.0))
-        penalty_close_lambda = config.get("penalty_close_lambda", 0.0)
-        penalty_far_lambda = config.get("penalty_far_lambda", 0.0)
-        anti_zero_threshold = config.get("anti_zero_threshold", 0.05)
+
+        # NEW: single multiplicative side penalty factor (>=1.0). Default = 1.0 (no penalty).
+        side_penalty_multiplier = config.get("side_penalty_multiplier", 1.0)
 
         # Prepare loss dictionary, passing ALL necessary lists and params to GLOBAL composite_loss
         loss_dict = {}
@@ -559,7 +508,7 @@ class Plugin:
                 lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list, lf=lf_list:
                     lambda y_true, y_pred: composite_loss( # Call GLOBAL func
                         y_true, y_pred, head_index=index, mmd_lambda=mmd_lambda, sigma=sigma_mmd,
-                        penalty_close_lambda=penalty_close_lambda, penalty_far_lambda=penalty_far_lambda, anti_zero_threshold=anti_zero_threshold,
+                        side_penalty_multiplier=side_penalty_multiplier,
                         p=p, i=iv, d=dv, list_last_signed_error=lse, list_last_stddev=lsd,
                         list_last_mmd=lmmd, list_local_feedback=lf
                     )
