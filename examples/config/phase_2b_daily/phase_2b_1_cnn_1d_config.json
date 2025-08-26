@@ -67,7 +67,7 @@
     "use_wavelets": false,
     "excluded_columns": [],
     "target_factor": 1.0,
-    "loss_factor": 1000.0,
+    "loss_factor": 1.0,
     "use_multi_tapper": false,
     "save_model": "examples/results/phase_2b_1/phase_2b_1_cnn_25200_1h_model.keras",
     "_comment_anti_naive_lock": "Anti-naive-lock preprocessing configuration",
@@ -79,7 +79,7 @@
     "handle_constant_daily_features": true,
     "feature_preprocessing_strategy": "selective",
     "normalize_after_preprocessing": true,
-    "anti_zero_threshold": 100.0,
+    "anti_zero_threshold": 1.0,
     "_comment_feature_categories": "SMART ANTI-NAIVE-LOCK: Transform price features to preserve info while eliminating naive lock",
     "price_features": [
         "OPEN",

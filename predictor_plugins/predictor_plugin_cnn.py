@@ -151,41 +151,32 @@ def composite_loss(y_true, y_pred,
                    list_local_feedback     # List of tf.Variables for control action storage/feedback
                    ):
     """
-    Global composite loss function for a specific head.
-    Uses Huber loss and applies a single multiplicative penalty based on the
-    relative side of the prediction with respect to the naive return (0).
-
-    We apply the multiplicative penalty when:
-        |y_true - y_pred| < |y_pred - 0|
-    i.e., the prediction is farther from the naive return than it is from the target.
+    Global composite loss with a single side-aware multiplicative penalty.
+    Penalty condition (naive return = 0):
+        |y_true - y_pred| < |y_pred|
+    We count how many samples meet the condition and scale the batch loss by:
+        final_factor = 1 + anti_zero_threshold * count
+    Then apply in the same way as the global loss_factor is applied:
+        final_loss = loss_factor * huber_mean * final_factor
     """
     y_true = tf.reshape(y_true, [-1, 1])
     y_pred = tf.reshape(y_pred, [-1, 1])
-    mag_true = y_true
-    mag_pred = y_pred
 
-    # Per-sample Huber loss
-    huber_per_sample = Huber(delta=1.0, reduction=tf.keras.losses.Reduction.NONE)(mag_true, mag_pred)  # shape: (batch,)
+    # Base loss (mean over batch)
+    huber_mean = Huber(delta=1.0, reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE)(y_true, y_pred)
 
-    # Side-aware multiplicative penalty condition:
-    # Apply when |target - prediction| < |naive - prediction|, naive = 0
-    cond = tf.less(tf.abs(mag_true - mag_pred), tf.abs(mag_pred))          # shape: (batch, 1)
-    cond_f = tf.cast(cond, tf.float32)
+    # Condition: farther from naive(0) than from target => penalize
+    cond = tf.less(tf.abs(y_true - y_pred), tf.abs(y_pred))  # shape: (batch, 1)
+    cond_count = tf.reduce_sum(tf.cast(cond, tf.float32))    # scalar
 
-    side_penalty_multiplier = anti_zero_threshold
-    # Ensure multiplier >= 1.0
-    if side_penalty_multiplier is None:
-        side_penalty_multiplier = 100.0
-    side_penalty_multiplier = tf.maximum(tf.cast(side_penalty_multiplier, tf.float32), 1.0)
+    # Compatibility: use anti_zero_threshold as multiplicative side penalty
+    side_penalty_multiplier = tf.maximum(tf.cast(anti_zero_threshold, tf.float32), 0.0)
 
-    # weights = 1 for non-penalized samples, = side_penalty_multiplier for penalized ones
-    weights = 1.0 + (side_penalty_multiplier - 1.0) * cond_f               # shape: (batch, 1)
-    weights = tf.squeeze(weights, axis=-1)                                  # shape: (batch,)
+    # Global multiplicative factor; if no sample meets condition, factor == 1.0 (no change)
+    final_factor = 1.0 + side_penalty_multiplier * cond_count
 
-    weighted_huber = huber_per_sample * weights
-    total_loss = tf.reduce_mean(weighted_huber)
-
-    return loss_factor*total_loss
+    # Apply factors multiplicatively to total loss
+    return tf.cast(loss_factor, tf.float32) * huber_mean * final_factor
 
 
 
