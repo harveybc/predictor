@@ -434,6 +434,9 @@ class Plugin:
                 activation=activation,
                 name="conv_merged_features_1"
             )(inputs)
+            # batch normalization
+            merged = BatchNormalization(name="common_batch_norm")(merged)
+
             merged = Conv1D(
                 filters=branch_units,
                 kernel_size=3,
@@ -442,9 +445,7 @@ class Plugin:
                 activation=activation,
                 name="conv_merged_features_2"
             )(merged)
-            # batch normalization
-            merged = BatchNormalization(name="common_batch_norm")(merged)
-
+            
         # --- Heads ---
         outputs_list = []
         self.output_names = []
