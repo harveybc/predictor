@@ -492,6 +492,9 @@ class Plugin:
 
         # NEW: single multiplicative side penalty factor (>=1.0). Default = 1.0 (no penalty).
         side_penalty_multiplier = config.get("side_penalty_multiplier", 1.0)
+        penalty_close_lambda = config.get("penalty_close_lambda", 0.0)
+        penalty_far_lambda = config.get("penalty_far_lambda", 0.0)
+        anti_zero_threshold = config.get("anti_zero_threshold", 10.0)
 
         # Prepare loss dictionary, passing ALL necessary lists and params to GLOBAL composite_loss
         loss_dict = {}
