@@ -71,14 +71,14 @@
     "use_multi_tapper": false,
     "save_model": "examples/results/phase_2b_1/phase_2b_1_cnn_25200_1h_model.keras",
     "_comment_anti_naive_lock": "Anti-naive-lock preprocessing configuration",
-    "anti_naive_lock_enabled": false,
+    "anti_naive_lock_enabled": true,
     "use_cyclic_encoding": false,
-    "use_log_returns": false,
-    "use_first_differences": false,
+    "use_log_returns": true,
+    "use_first_differences": true,
     "preserve_stationary_indicators": false,
-    "handle_constant_daily_features": false,
+    "handle_constant_daily_features": true,
     "feature_preprocessing_strategy": "selective",
-    "normalize_after_preprocessing": false,
+    "normalize_after_preprocessing": true,
     "anti_zero_threshold": 0.0,
     "penalty_close_lambda": 0.0,
     "penalty_far_lambda": 0.0,
@@ -87,7 +87,16 @@
         "OPEN",
         "LOW",
         "HIGH",
-        "CLOSE"
+        "CLOSE",
+        "RSI",
+        "ADX",
+        "DI+",
+        "DI-",
+        "ATR",
+        "CCI",
+        "WilliamsR",
+        "Momentum",
+        "ROC"
     ],
     "temporal_features": [
         "day_of_week",
@@ -95,7 +104,13 @@
         "day_of_month"
     ],
     "trend_features": [
-        "stl_trend"
+        "stl_trend",
+        "MACD",
+        "MACD_Histogram",
+        "MACD_Signal",
+        "EMA",
+        "Stochastic_%K",
+        "Stochastic_%D"
     ],
     "stationary_indicators": [
 
@@ -123,22 +138,8 @@
         "CLOSE_mtm_band_1_0.000_0.010",
         "CLOSE_mtm_band_2_0.010_0.060",
         "CLOSE_mtm_band_3_0.060_0.200",
-        "CLOSE_mtm_band_4_0.200_0.500",
-        "RSI",
-        "MACD",
-        "MACD_Histogram",
-        "MACD_Signal",
-        "EMA",
-        "Stochastic_%K",
-        "Stochastic_%D",
-        "ADX",
-        "DI+",
-        "DI-",
-        "ATR",
-        "CCI",
-        "WilliamsR",
-        "Momentum",
-        "ROC"
+        "CLOSE_mtm_band_4_0.200_0.500"
+
     ],
     "subperiodicity_features": [
         "CLOSE_15m_tick_1",
