@@ -432,8 +432,7 @@ class Plugin:
                 strides=2,
                 padding='same',
                 activation=activation,
-                name="conv_merged_features_1",
-                kernel_regularizer=l2(l2_reg)
+                name="conv_merged_features_1"
             )(inputs)
             merged = Conv1D(
                 filters=branch_units,
@@ -441,8 +440,7 @@ class Plugin:
                 strides=2,
                 padding='same',
                 activation=activation,
-                name="conv_merged_features_2",
-                kernel_regularizer=l2(l2_reg)
+                name="conv_merged_features_2"
             )(merged)
             # batch normalization
             merged = BatchNormalization(name="common_batch_norm")(merged)
@@ -456,15 +454,15 @@ class Plugin:
             xh = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(merged)
             xh = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(xh)
             # batch normalization
-            xh = BatchNormalization(name=f"batch_norm_1{branch_suffix}")(xh)
+            #xh = BatchNormalization(name=f"batch_norm_1{branch_suffix}")(xh)
             # optional bidir return_sequences=True layers
             xh = Bidirectional(LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm_o_{branch_suffix}")(xh)
             # mandatory lstm output layer
             lstm_output = Bidirectional(LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}")(xh)
             # optional output dense layers
-            lstm_output = Dense(units=lstm_units//2, activation=activation, name=f"dense_o_{branch_suffix}")(lstm_output)
+            #lstm_output = Dense(units=lstm_units//2, activation=activation, name=f"dense_o_{branch_suffix}")(lstm_output)
             # batch normalization
-            lstm_output = BatchNormalization(name=f"batch_norm_2{branch_suffix}")(lstm_output)
+            #lstm_output = BatchNormalization(name=f"batch_norm_2{branch_suffix}")(lstm_output)
             # mandatory bayesian layer with bias
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
