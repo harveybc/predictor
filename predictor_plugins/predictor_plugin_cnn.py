@@ -18,7 +18,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
+from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda, BatchNormalization
 from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback, LambdaCallback
 from tensorflow.keras.losses import Huber
@@ -43,6 +43,7 @@ from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D, GlobalAveragePooling1D
 from tensorflow.keras.layers import MultiHeadAttention
 from tensorflow.keras.layers import LayerNormalization
+
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -443,6 +444,8 @@ class Plugin:
                 name="conv_merged_features_2",
                 kernel_regularizer=l2(l2_reg)
             )(merged)
+            # batch normalization
+            merged = BatchNormalization(name="common_batch_norm")(merged)
 
         # --- Heads ---
         outputs_list = []
@@ -452,12 +455,16 @@ class Plugin:
             #optional conv1d head layers
             xh = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(merged)
             xh = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(xh)
+            # batch normalization
+            xh = BatchNormalization(name=f"batch_norm_1{branch_suffix}")(xh)
             # optional bidir return_sequences=True layers
             xh = Bidirectional(LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm_o_{branch_suffix}")(xh)
             # mandatory lstm output layer
             lstm_output = Bidirectional(LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}")(xh)
             # optional output dense layers
-            #lstm_output = Dense(units=lstm_units//2, activation=activation, name=f"dense_o_{branch_suffix}")(lstm_output)
+            lstm_output = Dense(units=lstm_units//2, activation=activation, name=f"dense_o_{branch_suffix}")(lstm_output)
+            # batch normalization
+            lstm_output = BatchNormalization(name=f"batch_norm_2{branch_suffix}")(lstm_output)
             # mandatory bayesian layer with bias
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
