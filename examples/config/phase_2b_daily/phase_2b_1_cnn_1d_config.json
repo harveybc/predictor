@@ -55,7 +55,7 @@
     "plot_color_target": "orange",
     "uncertainty_color_alpha": 0.01,
     "plot_points": 1728,
-    "min_delta": 1e-07,
+    "min_delta": 1e-08,
     "epochs": 3000,
     "use_strategy": false,
     "stl_period": 24,
