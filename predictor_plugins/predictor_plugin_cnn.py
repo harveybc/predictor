@@ -142,8 +142,7 @@ def composite_loss(y_true, y_pred,
                    head_index,
                    mmd_lambda,
                    sigma,
-                   penalty_close_lambda,
-                   penalty_far_lambda,
+                   loss_factor,
                    anti_zero_threshold,
                    p, i, d, # Control parameters for this head (tf.Variable)
                    list_last_signed_error, # List of tf.Variables for metric storage
@@ -186,7 +185,7 @@ def composite_loss(y_true, y_pred,
     weighted_huber = huber_per_sample * weights
     total_loss = tf.reduce_mean(weighted_huber)
 
-    return total_loss
+    return loss_factor*total_loss
 
 
 
@@ -492,7 +491,7 @@ class Plugin:
 
         # NEW: single multiplicative side penalty factor (>=1.0). Default = 1.0 (no penalty).
         side_penalty_multiplier = config.get("side_penalty_multiplier", 1.0)
-        penalty_close_lambda = config.get("penalty_close_lambda", 0.0)
+        loss_factor = config.get("loss_factor", 0.0)
         penalty_far_lambda = config.get("penalty_far_lambda", 0.0)
         anti_zero_threshold = config.get("anti_zero_threshold", 10.0)
 
@@ -511,7 +510,7 @@ class Plugin:
                 lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list, lf=lf_list:
                     lambda y_true, y_pred: composite_loss( # Call GLOBAL func
                         y_true, y_pred, head_index=index, mmd_lambda=mmd_lambda, sigma=sigma_mmd,
-                        penalty_close_lambda=penalty_close_lambda, penalty_far_lambda=penalty_far_lambda, anti_zero_threshold=anti_zero_threshold,
+                        loss_factor=loss_factor,  anti_zero_threshold=anti_zero_threshold,
                         p=p, i=iv, d=dv, list_last_signed_error=lse, list_last_stddev=lsd,
                         list_last_mmd=lmmd, list_local_feedback=lf
                     )
