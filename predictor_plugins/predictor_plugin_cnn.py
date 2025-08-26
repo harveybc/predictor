@@ -176,7 +176,7 @@ def composite_loss(y_true, y_pred,
     side_penalty_multiplier = anti_zero_threshold
     # Ensure multiplier >= 1.0
     if side_penalty_multiplier is None:
-        side_penalty_multiplier = 1.0
+        side_penalty_multiplier = 100.0
     side_penalty_multiplier = tf.maximum(tf.cast(side_penalty_multiplier, tf.float32), 1.0)
 
     # weights = 1 for non-penalized samples, = side_penalty_multiplier for penalized ones
