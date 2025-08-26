@@ -83,6 +83,22 @@ class ClearMemoryCallback(Callback):
         gc.collect()
 
 
+# NEW: combined metric callback to inject (val_loss + loss) into logs
+class CombinedLossCallback(Callback):
+    """Computes val_plus_train_loss = val_loss + loss and adds it to logs."""
+    def __init__(self, monitor_name="val_plus_train_loss"):
+        super().__init__()
+        self.monitor_name = monitor_name
+
+    def on_epoch_end(self, epoch, logs=None):
+        if not logs:
+            return
+        val_loss = logs.get("val_loss", None)
+        train_loss = logs.get("loss", None)
+        if val_loss is not None and train_loss is not None:
+            logs[self.monitor_name] = float(val_loss) + float(train_loss)
+
+
 # ---------------------------
 # Custom Metrics and Loss Functions
 # ---------------------------
@@ -607,13 +623,15 @@ class Plugin:
 
         # Instantiate callbacks WITHOUT ClearMemoryCallback
         # Assumes relevant Callback classes are imported/defined
+        combined_monitor_name = "val_plus_train_loss"
         callbacks = [
+            CombinedLossCallback(monitor_name=combined_monitor_name),
             EarlyStoppingWithPatienceCounter(
-                monitor='val_loss', patience=patience_early_stopping, restore_best_weights=True,
+                monitor=combined_monitor_name, patience=patience_early_stopping, restore_best_weights=True,
                 verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
             ),
             ReduceLROnPlateauWithCounter(
-                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
+                monitor=combined_monitor_name, factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs:
                            print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
