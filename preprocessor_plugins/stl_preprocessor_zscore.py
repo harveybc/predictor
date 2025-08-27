@@ -87,8 +87,8 @@ class STLPreprocessorZScore:
             # 6. Create SECOND sliding windows from DENORMALIZED datasets after applying price log-returns
             #    Apply log returns to raw price columns only (OPEN/HIGH/LOW/CLOSE). Preserve other columns.
             print("Step 6: Create second sliding windows from denormalized data")
-            #denorm_returns_x = self._build_denorm_price_returns_x(denormalized_data, config)
-            final_sliding_windows = create_sliding_windows(denormalized_data, config, dates)
+            denorm_returns_x = self._build_denorm_price_returns_x(denormalized_data, config)
+            final_sliding_windows = create_sliding_windows(denorm_returns_x, config, dates)
 
             # 7. Align final sliding windows with target data length
             print("Step 7: Align sliding windows with target data")
