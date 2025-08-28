@@ -186,16 +186,18 @@ class STLPipelinePlugin:
 
             for idx, h in enumerate(predicted_horizons):
                 # Get horizon-specific normalization stats
-                
-                # --- Process Predictions (divide by target_factor) ---
-                train_returns = original_train_preds[idx].flatten() / target_factor
-                val_returns = original_val_preds[idx].flatten() / target_factor
-                test_returns = original_test_preds[idx].flatten() / target_factor
+                mu = float(target_returns_means[idx]) if target_returns_means is not None else 0.0
+                sigma = float(target_returns_stds[idx]) if target_returns_stds is not None else 1.0
 
-                # --- Process Targets (divide by target_factor) ---
-                train_target_returns = original_train_targets[idx].flatten() / target_factor
-                val_target_returns = original_val_targets[idx].flatten() / target_factor
-                test_target_returns = original_test_targets[idx].flatten() / target_factor
+                # --- Process Predictions: de-zscore then undo target_factor ---
+                train_returns = (original_train_preds[idx].flatten() * sigma + mu) / target_factor
+                val_returns   = (original_val_preds[idx].flatten()   * sigma + mu) / target_factor
+                test_returns  = (original_test_preds[idx].flatten()  * sigma + mu) / target_factor
+
+                # --- Process Targets: de-zscore then undo target_factor ---
+                train_target_returns = (original_train_targets[idx].flatten() * sigma + mu) / target_factor
+                val_target_returns   = (original_val_targets[idx].flatten()   * sigma + mu) / target_factor
+                test_target_returns  = (original_test_targets[idx].flatten()  * sigma + mu) / target_factor
 
                 # If residualized, add back naive last-step CLOSE return (unscaled) before price conversion
                 if config.get('residualize_targets_with_last_close', True):
@@ -215,10 +217,10 @@ class STLPipelinePlugin:
                         test_returns[:mte] += (naive_test[:mte] / target_factor)
                         test_target_returns[:mte] += (naive_test[:mte] / target_factor)
 
-                # --- Process Uncertainties (divide by target_factor, same as mean) ---
-                train_unc_returns = original_train_unc[idx].flatten() / target_factor
-                val_unc_returns = original_val_unc[idx].flatten() / target_factor
-                test_unc_returns = original_test_unc[idx].flatten() / target_factor
+                # --- Process Uncertainties: scale by sigma only, then undo target_factor ---
+                train_unc_returns = (original_train_unc[idx].flatten() * sigma) / target_factor
+                val_unc_returns   = (original_val_unc[idx].flatten()   * sigma) / target_factor
+                test_unc_returns  = (original_test_unc[idx].flatten()  * sigma) / target_factor
                 
                 # --- Convert to Real-World Prices using Baselines ---
                 # Baselines and predictions are aligned by the sliding window process.
@@ -740,8 +742,12 @@ class STLPipelinePlugin:
             target_factor = config.get('target_factor', 1000.0)
             naive_val_scaled = datasets.get('naive_last_close_scaled_val')
             for idx, h in enumerate(config['predicted_horizons']):
-                # --- Returns (divide by target_factor) ---
-                pred_returns = list_predictions[idx].flatten() / target_factor
+                # Horizon-specific normalization stats
+                mu = float(target_returns_means[idx]) if target_returns_means is not None else 0.0
+                sigma = float(target_returns_stds[idx]) if target_returns_stds is not None else 1.0
+
+                # --- De-zscore then undo target_factor ---
+                pred_returns = (list_predictions[idx].flatten() * sigma + mu) / target_factor
                 # If residualized, add back naive last-step CLOSE return
                 if config.get('residualize_targets_with_last_close', True) and (naive_val_scaled is not None):
                     m = min(len(pred_returns), len(naive_val_scaled))

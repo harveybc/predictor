@@ -451,15 +451,15 @@ class Plugin:
                 name="conv_merged_features_1"
             )(inputs)
             
-            #merged = Conv1D(
-            #    filters=branch_units,
-            #    kernel_size=3,
-            #    strides=2,
-            #    padding='same',
-            #    activation=activation,
-            #    name="conv_merged_features_2"
-            #)(merged)
-            
+            merged = Conv1D(
+                filters=branch_units,
+                kernel_size=3,
+                strides=2,
+                padding='same',
+                activation=activation,
+                name="conv_merged_features_2"
+            )(merged)
+
         # --- Heads ---
         outputs_list = []
         self.output_names = []
@@ -467,7 +467,7 @@ class Plugin:
             branch_suffix = f"_h{horizon}"
             #optional conv1d head layers
             xh = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(merged)
-            #xh = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(xh)
+            xh = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(xh)
             # batch normalization
             #xh = BatchNormalization(name=f"batch_norm_1{branch_suffix}")(xh)
             # optional bidir return_sequences=True layers
