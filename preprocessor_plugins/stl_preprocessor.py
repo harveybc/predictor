@@ -712,8 +712,17 @@ class PreprocessorPlugin:
         windowing_order = generated_feature_order + original_feature_order
         print(f"Final feature order for windowing: {windowing_order}")
 
-        # --- Use max_horizon for windowing function ---
-        time_horizon_for_windowing = max_horizon
+        # --- Use an adjusted horizon for windowing ---
+        # We windowed X with a horizon value that guarantees all per-horizon targets exist after
+        # applying the original offset and per-horizon shifts. If we only use `max_horizon` here,
+        # the later slicing: target_sliced = target[original_offset:][h:] can end up shorter than
+        # the number of X samples for large h (because original_offset > window_size-1).
+        # To ensure consistency, reduce the number of X windows by adding (stl_window-1) to the
+        # effective horizon used for windowing. This makes:
+        #   num_windows = N - window_size - (max_horizon + stl_window - 1) + 1
+        # and guarantees: original_offset + num_windows + h <= N for all h <= max_horizon.
+        # See derivation in error analysis (fix for ValueError on large horizons).
+        time_horizon_for_windowing = max_horizon + max(0, stl_window - 1)
 
         for name in windowing_order:
             # Get the correct aligned series for train, val, test from the combined dictionary
@@ -729,7 +738,7 @@ class PreprocessorPlugin:
 
                 print(f"Windowing feature: {name}...", end="")
                 try:
-                    # Pass max_horizon and the aligned dates
+                    # Pass adjusted horizon and the aligned dates
                     win_train, _, dates_win_train = self.create_sliding_windows(series_train, window_size, time_horizon_for_windowing, dates_train_aligned)
                     win_val, _, dates_win_val   = self.create_sliding_windows(series_val, window_size, time_horizon_for_windowing, dates_val_aligned)
                     win_test, _, dates_win_test = self.create_sliding_windows(series_test, window_size, time_horizon_for_windowing, dates_test_aligned)
@@ -760,9 +769,9 @@ class PreprocessorPlugin:
                                 first_feature_dates_captured = True
                                 print(f"Captured dates from '{name}'. Lengths: T={len(x_dates_train)}, V={len(x_dates_val)}, Ts={len(x_dates_test)}")
                         else:
-                             print(f" Skipping channel '{name}' due to inconsistent sample count after windowing.")
-                             print(f"   Expected T={expected_samples_train}, V={expected_samples_val}, Ts={expected_samples_test}")
-                             print(f"   Got      T={win_train.shape[0]}, V={win_val.shape[0]}, Ts={win_test.shape[0]}")
+                            print(f" Skipping channel '{name}' due to inconsistent sample count after windowing.")
+                            print(f"   Expected T={expected_samples_train}, V={expected_samples_val}, Ts={expected_samples_test}")
+                            print(f"   Got      T={win_train.shape[0]}, V={win_val.shape[0]}, Ts={win_test.shape[0]}")
 
                     else:
                         print(f" Skipping channel '{name}' (windowing produced 0 samples in at least one split).")
@@ -770,7 +779,7 @@ class PreprocessorPlugin:
                     print(f" FAILED windowing '{name}'. Error: {e}. Skipping.")
             else:
                 # This handles cases where original columns might have been missing or had length mismatches earlier
-                 print(f"WARN: Feature '{name}' skipped. Not valid or consistently aligned across train/val/test before windowing.")
+                print(f"WARN: Feature '{name}' skipped. Not valid or consistently aligned across train/val/test before windowing.")
 
         # --- 6. Stack channels ---
         if not X_train_channels: raise RuntimeError("No feature channels available after windowing!")
