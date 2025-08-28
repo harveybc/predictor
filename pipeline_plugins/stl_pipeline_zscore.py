@@ -284,11 +284,19 @@ class STLPipelinePlugin:
                 val_target_prices = val_baselines * np.exp(val_target_returns)
                 test_target_prices = test_baselines * np.exp(test_target_returns)
 
-                # Uncertainties: map from return space to price space approximately.
-                # For small r, dP ≈ P * dr. Use absolute baseline scaling as a first-order approximation.
-                train_price_uncertainties = np.abs(train_baselines) * np.abs(train_unc_returns)
-                val_price_uncertainties = np.abs(val_baselines) * np.abs(val_unc_returns)
-                test_price_uncertainties = np.abs(test_baselines) * np.abs(test_unc_returns)
+                # Uncertainties: MC std is in return space (std of R). Convert to price-space std using lognormal propagation.
+                # If P = B * exp(R), and R ~ N(mu, s^2), then std(P) = (B*exp(mu)) * exp(0.5*s^2) * sqrt(exp(s^2)-1)
+                # Here we use p_hat = B*exp(mean R) as center line; this yields:
+                # std(P) = p_hat * exp(0.5*s^2) * sqrt(expm1(s^2))
+                def _price_std_from_return_std(p_hat, s_r):
+                    s2 = np.square(s_r)
+                    # Numerical safety: cap s^2 to avoid overflow in exp
+                    s2 = np.clip(s2, 0.0, 4.0)
+                    return np.abs(p_hat) * np.exp(0.5 * s2) * np.sqrt(np.expm1(s2))
+
+                train_price_uncertainties = _price_std_from_return_std(train_prices, train_unc_returns)
+                val_price_uncertainties   = _price_std_from_return_std(val_prices,   val_unc_returns)
+                test_price_uncertainties  = _price_std_from_return_std(test_prices,  test_unc_returns)
 
                 # --- Append results for the current horizon ---
                 real_train_price_preds.append(train_prices)
