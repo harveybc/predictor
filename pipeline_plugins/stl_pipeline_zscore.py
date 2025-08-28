@@ -184,10 +184,54 @@ class STLPipelinePlugin:
 
             target_factor = config.get('target_factor', 1000.0)
 
+            # Helper: robustly retrieve normalization stats for a given horizon/index
+            def _get_norm_stats(idx_local, horizon_local):
+                mu_local = 0.0
+                sigma_local = 1.0
+                try:
+                    trm = target_returns_means
+                    trs = target_returns_stds
+                    # Resolve mu
+                    if isinstance(trm, dict):
+                        if horizon_local in trm:
+                            mu_local = float(trm[horizon_local])
+                        elif str(horizon_local) in trm:
+                            mu_local = float(trm[str(horizon_local)])
+                        else:
+                            # fallback to first value
+                            mu_local = float(next(iter(trm.values())))
+                    elif isinstance(trm, (list, tuple, np.ndarray)):
+                        if len(trm) > idx_local:
+                            mu_local = float(trm[idx_local])
+                        elif len(trm) > 0:
+                            mu_local = float(trm[-1])
+                    elif trm is not None:
+                        mu_local = float(trm)
+                    # Resolve sigma
+                    if isinstance(trs, dict):
+                        if horizon_local in trs:
+                            sigma_local = float(trs[horizon_local])
+                        elif str(horizon_local) in trs:
+                            sigma_local = float(trs[str(horizon_local)])
+                        else:
+                            sigma_local = float(next(iter(trs.values())))
+                    elif isinstance(trs, (list, tuple, np.ndarray)):
+                        if len(trs) > idx_local:
+                            sigma_local = float(trs[idx_local])
+                        elif len(trs) > 0:
+                            sigma_local = float(trs[-1])
+                    elif trs is not None:
+                        sigma_local = float(trs)
+                except Exception:
+                    pass
+                # Safety: prevent zero/negative sigma
+                if not np.isfinite(sigma_local) or sigma_local <= 0:
+                    sigma_local = 1.0
+                return mu_local, sigma_local
+
             for idx, h in enumerate(predicted_horizons):
                 # Get horizon-specific normalization stats
-                mu = float(target_returns_means[idx]) if target_returns_means is not None else 0.0
-                sigma = float(target_returns_stds[idx]) if target_returns_stds is not None else 1.0
+                mu, sigma = _get_norm_stats(idx, h)
 
                 # --- Process Predictions: de-zscore then undo target_factor ---
                 train_returns = (original_train_preds[idx].flatten() * sigma + mu) / target_factor
@@ -742,9 +786,18 @@ class STLPipelinePlugin:
             target_factor = config.get('target_factor', 1000.0)
             naive_val_scaled = datasets.get('naive_last_close_scaled_val')
             for idx, h in enumerate(config['predicted_horizons']):
-                # Horizon-specific normalization stats
-                mu = float(target_returns_means[idx]) if target_returns_means is not None else 0.0
-                sigma = float(target_returns_stds[idx]) if target_returns_stds is not None else 1.0
+                # Horizon-specific normalization stats (robust)
+                mu, sigma = (0.0, 1.0)
+                try:
+                    # Reuse helper from run_prediction_pipeline if available in scope
+                    mu, sigma = _get_norm_stats(idx, h)  # type: ignore[name-defined]
+                except Exception:
+                    # Fallback: direct indexing
+                    try:
+                        mu = float(target_returns_means[idx])
+                        sigma = float(target_returns_stds[idx])
+                    except Exception:
+                        pass
 
                 # --- De-zscore then undo target_factor ---
                 pred_returns = (list_predictions[idx].flatten() * sigma + mu) / target_factor
