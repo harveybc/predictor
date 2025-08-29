@@ -713,16 +713,18 @@ class PreprocessorPlugin:
         print(f"Final feature order for windowing: {windowing_order}")
 
         # --- Use an adjusted horizon for windowing ---
-        # We windowed X with a horizon value that guarantees all per-horizon targets exist after
-        # applying the original offset and per-horizon shifts. If we only use `max_horizon` here,
-        # the later slicing: target_sliced = target[original_offset:][h:] can end up shorter than
-        # the number of X samples for large h (because original_offset > window_size-1).
-        # To ensure consistency, reduce the number of X windows by adding (stl_window-1) to the
-        # effective horizon used for windowing. This makes:
-        #   num_windows = N - window_size - (max_horizon + stl_window - 1) + 1
-        # and guarantees: original_offset + num_windows + h <= N for all h <= max_horizon.
-        # See derivation in error analysis (fix for ValueError on large horizons).
-        time_horizon_for_windowing = max_horizon + max(0, stl_window - 1)
+        # We must account for the largest lookback among enabled features when creating X windows.
+        # Otherwise X windows may reference later timestamps than Y/baseline, causing leakage.
+        # Effective feature lookback is the max of STL window and MTM window (if enabled).
+        effective_feature_window = max(
+            stl_window or 0,
+            int(config.get('mtm_window_len', 0)) if config.get('use_multi_tapper') else 0
+        )
+        # Reduce the number of X windows by (effective_feature_window - 1) so that after applying
+        # the original offset and horizon shifts, targets exist for all samples/horizons.
+        # num_windows = N - window_size - (max_horizon + effective_feature_window - 1) + 1
+        time_horizon_for_windowing = max_horizon + max(0, effective_feature_window - 1)
+        print(f"Windowing horizon adjusted for feature lookback. effective_feature_window={effective_feature_window}, time_horizon_for_windowing={time_horizon_for_windowing}")
 
         for name in windowing_order:
             # Get the correct aligned series for train, val, test from the combined dictionary
@@ -799,16 +801,15 @@ class PreprocessorPlugin:
         target_column = config["target_column"]
         use_returns = config.get("use_returns", False) # Original flag name
 
-        # --- Original Offset Calculation ---
-        # Requires stl_window even if STL not used - ensure it's resolved
-        if stl_window is None:
-             print("WARN: stl_window not resolved for Y/Baseline offset. Using window_size as fallback.")
-             effective_stl_window = window_size
-        else:
-             effective_stl_window = stl_window
-        # This offset is relative to the START of the original log_train etc.
-        original_offset = effective_stl_window + window_size - 2
-        print(f"Calculated original logic offset: {original_offset}")
+        # --- Original Offset Calculation (adjusted for maximum feature lookback) ---
+        # The baseline/target indices must align with the end of each X window in original series time.
+        # Offset = (feature lookback - 1) + (window_size - 1)
+        effective_feature_window = max(
+            (stl_window or 0),
+            int(config.get('mtm_window_len', 0)) if config.get('use_multi_tapper') else 0
+        )
+        original_offset = effective_feature_window + window_size - 2
+        print(f"Calculated original logic offset: {original_offset} (effective_feature_window={effective_feature_window}, window_size={window_size})")
 
         # --- Load Raw Target Data ---
         if target_column not in y_train_df.columns: raise ValueError(f"Column '{target_column}' not found in Y train.")
