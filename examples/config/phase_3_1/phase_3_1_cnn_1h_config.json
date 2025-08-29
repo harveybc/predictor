@@ -54,7 +54,8 @@
     "use_wavelets": false,
     "use_multi_tapper": true,
     "use_predicted_decompositions": true,
-    "use_real_decompositions": true
+    "use_real_decompositions": true,
+    "use_ideal_predictions": true
 
 
 }
