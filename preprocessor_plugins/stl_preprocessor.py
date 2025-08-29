@@ -83,6 +83,9 @@ class PreprocessorPlugin:
         "use_multi_tapper": False,
         "use_returns": True, # Original flag name for Y calculation
         "normalize_features": True,
+    # --- Decomposition inclusion flags ---
+    "use_predicted_decompositions": True,
+    "use_real_decompositions": True,
         # --- STL Parameters ---
         "stl_period": 24,
         "stl_window": None, # Default, resolved later if None
@@ -138,6 +141,29 @@ class PreprocessorPlugin:
         debug_info.update(self.get_debug_info())
 
     # --- Helper Methods (Restored working versions) ---
+    def _ewma_causal(self, series: np.ndarray, alpha: float = 0.3) -> np.ndarray:
+        """Compute causal EWMA over series (float64 for stability), return float32."""
+        if series is None or len(series) == 0:
+            return np.array([], dtype=np.float32)
+        x = np.asarray(series, dtype=np.float64)
+        y = np.empty_like(x)
+        y[0] = x[0]
+        a = float(alpha)
+        for i in range(1, len(x)):
+            y[i] = a * x[i] + (1.0 - a) * y[i-1]
+        return y.astype(np.float32)
+
+    def _lag_with_pad(self, series: np.ndarray, lag: int) -> np.ndarray:
+        """Return series shifted right by lag with left pad as first value (causal, no wrap)."""
+        s = np.asarray(series)
+        n = len(s)
+        if n == 0 or lag <= 0:
+            return s.copy()
+        out = np.empty_like(s)
+        out[:lag] = s[0]
+        out[lag:] = s[:-lag]
+        return out
+
     def _load_data(self, file_path, max_rows, headers):
         # (Implementation from previous working version)
         print(f"Loading data: {file_path} (Max rows: {max_rows})...", end="")
@@ -440,6 +466,31 @@ class PreprocessorPlugin:
         print(f" Done ({len(mtm_features)} channels).")
         return mtm_features
 
+    # --- Predicted decomposition helpers (causal, per-horizon) ---
+    def _predict_components_per_horizon(self, comp_dict: dict, horizons: list, name_prefix: str) -> dict:
+        """Given a dict of component arrays comp_dict, build causal forecasts for each horizon.
+        Uses a simple, robust causal baseline: EWMA smoother + lag by h.
+        Returns a flat dict: {f"{name_prefix}_{comp}_h{h}": series}
+        """
+        if not comp_dict:
+            return {}
+        predicted = {}
+        # Use a moderate smoothing to reduce noise while keeping causality
+        alpha = 0.3
+        for comp_name, comp_series in comp_dict.items():
+            if comp_series is None or len(comp_series) == 0:
+                continue
+            # Smooth causally, then lag by horizon as a naive forecast F_t(h) = Smooth_{t}
+            smooth = self._ewma_causal(np.asarray(comp_series, dtype=np.float32), alpha=alpha)
+            for h in horizons:
+                if h <= 0:
+                    continue
+                # Predicted value for timestamp t corresponds to actual comp at t+h; to avoid leakage
+                # we provide the smoothed signal lagged by h, so input at t uses only <= t history
+                lagged = self._lag_with_pad(smooth, h)
+                predicted[f"{name_prefix}_{comp_name}_h{h}"] = lagged.astype(np.float32)
+        return predicted
+
     def _plot_mtm(self, mtm_features, file_path, points_to_plot=500):
         """Plots computed Multitaper features (power bands)."""
         # (Implementation from previous working step - uses points_to_plot)
@@ -570,58 +621,106 @@ class PreprocessorPlugin:
         print("Generated: Log Returns (Normalized)")
         # 3.b. STL (using restored working version of _rolling_stl)
         if config.get('use_stl'):
-             print("Attempting STL features...")
-             stl_period=config['stl_period']; stl_trend=config['stl_trend'] # Use resolved params
-             try:
-                 trend_train,seasonal_train,resid_train=self._rolling_stl(log_train,stl_window,stl_period,stl_trend) # Pass trend explicitly
-                 trend_val,seasonal_val,resid_val=self._rolling_stl(log_val,stl_window,stl_period,stl_trend)
-                 trend_test,seasonal_test,resid_test=self._rolling_stl(log_test,stl_window,stl_period,stl_trend)
-                 if len(trend_train) > 0:
-                      features_train['stl_trend']=self._normalize_series(trend_train,'stl_trend',fit=True); features_train['stl_seasonal']=self._normalize_series(seasonal_train,'stl_seasonal',fit=True); features_train['stl_resid']=self._normalize_series(resid_train,'stl_resid',fit=True)
-                      features_val['stl_trend']=self._normalize_series(trend_val,'stl_trend',fit=False); features_val['stl_seasonal']=self._normalize_series(seasonal_val,'stl_seasonal',fit=False); features_val['stl_resid']=self._normalize_series(resid_val,'stl_resid',fit=False)
-                      features_test['stl_trend']=self._normalize_series(trend_test,'stl_trend',fit=False); features_test['stl_seasonal']=self._normalize_series(seasonal_test,'stl_seasonal',fit=False); features_test['stl_resid']=self._normalize_series(resid_test,'stl_resid',fit=False)
-                      print("Generated: STL Trend, Seasonal, Residual (Normalized)")
-                      stl_plot_file = config.get("stl_plot_file")
-                      if stl_plot_file: self._plot_decomposition(log_train[len(log_train)-len(trend_train):], trend_train, seasonal_train, resid_train, stl_plot_file) # Use restored plot func
-                 else: print("WARN: STL output zero length.")
-             except Exception as e: print(f"ERROR processing STL: {e}. Skipping.")
-        else: print("Skipped: STL features.")
+            print("Attempting STL features...")
+            stl_period = config['stl_period']; stl_trend = config['stl_trend']
+            try:
+                trend_train, seasonal_train, resid_train = self._rolling_stl(log_train, stl_window, stl_period, stl_trend)
+                trend_val, seasonal_val, resid_val = self._rolling_stl(log_val, stl_window, stl_period, stl_trend)
+                trend_test, seasonal_test, resid_test = self._rolling_stl(log_test, stl_window, stl_period, stl_trend)
+                if len(trend_train) > 0:
+                    if config.get('use_real_decompositions', True):
+                        features_train['stl_trend'] = self._normalize_series(trend_train, 'stl_trend', fit=True)
+                        features_train['stl_seasonal'] = self._normalize_series(seasonal_train, 'stl_seasonal', fit=True)
+                        features_train['stl_resid'] = self._normalize_series(resid_train, 'stl_resid', fit=True)
+                        features_val['stl_trend'] = self._normalize_series(trend_val, 'stl_trend', fit=False)
+                        features_val['stl_seasonal'] = self._normalize_series(seasonal_val, 'stl_seasonal', fit=False)
+                        features_val['stl_resid'] = self._normalize_series(resid_val, 'stl_resid', fit=False)
+                        features_test['stl_trend'] = self._normalize_series(trend_test, 'stl_trend', fit=False)
+                        features_test['stl_seasonal'] = self._normalize_series(seasonal_test, 'stl_seasonal', fit=False)
+                        features_test['stl_resid'] = self._normalize_series(resid_test, 'stl_resid', fit=False)
+                        print("Generated: STL Trend, Seasonal, Residual (Normalized)")
+                        stl_plot_file = config.get("stl_plot_file")
+                        if stl_plot_file:
+                            self._plot_decomposition(log_train[len(log_train)-len(trend_train):], trend_train, seasonal_train, resid_train, stl_plot_file)
+                    # Predicted STL components per horizon (causal), if enabled
+                    if config.get('use_predicted_decompositions', True):
+                        stl_comp_train = { 'stl_trend': trend_train, 'stl_seasonal': seasonal_train, 'stl_resid': resid_train }
+                        stl_comp_val   = { 'stl_trend': trend_val,   'stl_seasonal': seasonal_val,   'stl_resid': resid_val }
+                        stl_comp_test  = { 'stl_trend': trend_test,  'stl_seasonal': seasonal_test,  'stl_resid': resid_test }
+                        stl_pred_train = self._predict_components_per_horizon(stl_comp_train, predicted_horizons, 'pred')
+                        stl_pred_val   = self._predict_components_per_horizon(stl_comp_val,   predicted_horizons, 'pred')
+                        stl_pred_test  = self._predict_components_per_horizon(stl_comp_test,  predicted_horizons, 'pred')
+                        for k,v in stl_pred_train.items(): features_train[k] = self._normalize_series(v, k, fit=True)
+                        for k,v in stl_pred_val.items():   features_val[k]   = self._normalize_series(v, k, fit=False)
+                        for k,v in stl_pred_test.items():  features_test[k]  = self._normalize_series(v, k, fit=False)
+                else:
+                    print("WARN: STL output zero length.")
+            except Exception as e:
+                print(f"ERROR processing STL: {e}. Skipping.")
+        else:
+            print("Skipped: STL features.")
         # 3.c. Wavelets (using fixed _compute_wavelet_features)
         if config.get('use_wavelets'):
-             print("Attempting Wavelet features...")
-             try:
-                 wav_features_train = self._compute_wavelet_features(log_train)
-                 if wav_features_train:
-                      wav_features_val = self._compute_wavelet_features(log_val)
-                      wav_features_test = self._compute_wavelet_features(log_test)
-                      for name in wav_features_train.keys():
-                           features_train[f'wav_{name}']=self._normalize_series(wav_features_train[name],f'wav_{name}',fit=True)
-                           if name in wav_features_val: features_val[f'wav_{name}']=self._normalize_series(wav_features_val[name],f'wav_{name}',fit=False)
-                           if name in wav_features_test: features_test[f'wav_{name}']=self._normalize_series(wav_features_test[name],f'wav_{name}',fit=False)
-                      print(f"Generated: {len(wav_features_train)} Wavelet features (Normalized).")
-                      wavelet_plot_file = config.get("wavelet_plot_file")
-                      if wavelet_plot_file: self._plot_wavelets(log_train, wav_features_train, wavelet_plot_file)
-                 else: print("WARN: Wavelet computation for train failed/returned no features.")
-             except Exception as e: print(f"ERROR processing Wavelets: {e}. Skipping.")
-        else: print("Skipped: Wavelet features.")
+            print("Attempting Wavelet features...")
+            try:
+                wav_features_train = self._compute_wavelet_features(log_train)
+                if wav_features_train:
+                    wav_features_val = self._compute_wavelet_features(log_val)
+                    wav_features_test = self._compute_wavelet_features(log_test)
+                    if config.get('use_real_decompositions', True):
+                        for name in wav_features_train.keys():
+                            features_train[f'wav_{name}'] = self._normalize_series(wav_features_train[name], f'wav_{name}', fit=True)
+                            if name in wav_features_val: features_val[f'wav_{name}'] = self._normalize_series(wav_features_val[name], f'wav_{name}', fit=False)
+                            if name in wav_features_test: features_test[f'wav_{name}'] = self._normalize_series(wav_features_test[name], f'wav_{name}', fit=False)
+                        print(f"Generated: {len(wav_features_train)} Wavelet features (Normalized).")
+                        wavelet_plot_file = config.get("wavelet_plot_file")
+                        if wavelet_plot_file:
+                            self._plot_wavelets(log_train, wav_features_train, wavelet_plot_file)
+                    # Predicted Wavelet components (causal), if enabled
+                    if config.get('use_predicted_decompositions', True):
+                        wav_pred_train = self._predict_components_per_horizon(wav_features_train, predicted_horizons, 'pred_wav')
+                        wav_pred_val   = self._predict_components_per_horizon(wav_features_val,   predicted_horizons, 'pred_wav') if wav_features_val else {}
+                        wav_pred_test  = self._predict_components_per_horizon(wav_features_test,  predicted_horizons, 'pred_wav') if wav_features_test else {}
+                        for k,v in wav_pred_train.items(): features_train[k] = self._normalize_series(v, k, fit=True)
+                        for k,v in wav_pred_val.items():   features_val[k]   = self._normalize_series(v, k, fit=False)
+                        for k,v in wav_pred_test.items():  features_test[k]  = self._normalize_series(v, k, fit=False)
+                else:
+                    print("WARN: Wavelet computation for train failed/returned no features.")
+            except Exception as e:
+                print(f"ERROR processing Wavelets: {e}. Skipping.")
+        else:
+            print("Skipped: Wavelet features.")
         # 3.d. Multitaper
         if config.get('use_multi_tapper'):
-             print("Attempting MTM features...")
-             try:
-                 mtm_features_train = self._compute_mtm_features(log_train)
-                 if mtm_features_train:
-                      mtm_features_val = self._compute_mtm_features(log_val)
-                      mtm_features_test = self._compute_mtm_features(log_test)
-                      for name in mtm_features_train.keys():
-                           features_train[f'mtm_{name}']=self._normalize_series(mtm_features_train[name],f'mtm_{name}',fit=True)
-                           if name in mtm_features_val: features_val[f'mtm_{name}']=self._normalize_series(mtm_features_val[name],f'mtm_{name}',fit=False)
-                           if name in mtm_features_test: features_test[f'mtm_{name}']=self._normalize_series(mtm_features_test[name],f'mtm_{name}',fit=False)
-                      print(f"Generated: {len(mtm_features_train)} MTM features (Normalized).")
-                      tapper_plot_file = config.get("tapper_plot_file")
-                      if tapper_plot_file: self._plot_mtm(mtm_features_train, tapper_plot_file, config.get("tapper_plot_points"))
-                 else: print("WARN: MTM computation for train failed/returned no features.")
-             except Exception as e: print(f"ERROR processing MTM: {e}. Skipping.")
-        else: print("Skipped: MTM features.")
+            print("Attempting MTM features...")
+            try:
+                mtm_features_train = self._compute_mtm_features(log_train)
+                if mtm_features_train:
+                    mtm_features_val = self._compute_mtm_features(log_val)
+                    mtm_features_test = self._compute_mtm_features(log_test)
+                    if config.get('use_real_decompositions', True):
+                        for name in mtm_features_train.keys():
+                            features_train[f'mtm_{name}'] = self._normalize_series(mtm_features_train[name], f'mtm_{name}', fit=True)
+                            if name in mtm_features_val:  features_val[f'mtm_{name}']  = self._normalize_series(mtm_features_val[name],  f'mtm_{name}', fit=False)
+                            if name in mtm_features_test: features_test[f'mtm_{name}'] = self._normalize_series(mtm_features_test[name], f'mtm_{name}', fit=False)
+                        print(f"Generated: {len(mtm_features_train)} MTM features (Normalized).")
+                        tapper_plot_file = config.get("tapper_plot_file")
+                        if tapper_plot_file:
+                            self._plot_mtm(mtm_features_train, tapper_plot_file, config.get("tapper_plot_points"))
+                    # Predicted MTM components (causal), if enabled
+                    if config.get('use_predicted_decompositions', True):
+                        mtm_pred_train = self._predict_components_per_horizon(mtm_features_train, predicted_horizons, 'pred_mtm')
+                        mtm_pred_val   = self._predict_components_per_horizon(mtm_features_val,   predicted_horizons, 'pred_mtm') if mtm_features_val else {}
+                        mtm_pred_test  = self._predict_components_per_horizon(mtm_features_test,  predicted_horizons, 'pred_mtm') if mtm_features_test else {}
+                        for k,v in mtm_pred_train.items(): features_train[k] = self._normalize_series(v, k, fit=True)
+                        for k,v in mtm_pred_val.items():   features_val[k]   = self._normalize_series(v, k, fit=False)
+                        for k,v in mtm_pred_test.items():  features_test[k]  = self._normalize_series(v, k, fit=False)
+                else:
+                    print("WARN: MTM computation for train failed/returned no features.")
+            except Exception as e:
+                print(f"ERROR processing MTM: {e}. Skipping.")
+        else:
+            print("Skipped: MTM features.")
 
         # --- 4. Align Feature Lengths ---
         print("\n--- 4. Aligning Feature Lengths ---")
@@ -698,9 +797,16 @@ class PreprocessorPlugin:
 
         # Define the order: generated features first (if they exist), then original columns alphabetically
         generated_feature_order = ['log_return'] # Always include log_return if generated
-        if config.get('use_stl'): generated_feature_order.extend(['stl_trend', 'stl_seasonal', 'stl_resid'])
-        if config.get('use_wavelets'): generated_feature_order.extend(sorted([k for k in features_train if k.startswith('wav_')]))
-        if config.get('use_multi_tapper'): generated_feature_order.extend(sorted([k for k in features_train if k.startswith('mtm_')]))
+        # Real decompositions (only if enabled)
+        if config.get('use_real_decompositions', True) and config.get('use_stl'):
+            generated_feature_order.extend(['stl_trend', 'stl_seasonal', 'stl_resid'])
+        if config.get('use_real_decompositions', True) and config.get('use_wavelets'):
+            generated_feature_order.extend(sorted([k for k in features_train if k.startswith('wav_')]))
+        if config.get('use_real_decompositions', True) and config.get('use_multi_tapper'):
+            generated_feature_order.extend(sorted([k for k in features_train if k.startswith('mtm_')]))
+        # Predicted decompositions (always include if present and flag is enabled)
+        if config.get('use_predicted_decompositions', True):
+            generated_feature_order.extend(sorted([k for k in features_train if k.startswith('pred_')]))
 
         # Filter generated_feature_order to only include features that were actually created and aligned
         generated_feature_order = [f for f in generated_feature_order if f in all_features_train and all_features_train[f] is not None]

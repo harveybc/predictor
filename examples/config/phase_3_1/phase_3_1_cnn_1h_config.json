@@ -52,6 +52,9 @@
     "predicted_horizons": [1,2,3,4,5,6],
     "use_stl": false,
     "use_wavelets": false,
-    "use_multi_tapper": true
+    "use_multi_tapper": true,
+    "use_predicted_decompositions": true,
+    "use_real_decompositions": true
+
 
 }
