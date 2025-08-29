@@ -92,19 +92,8 @@ class PreprocessorPlugin:
     # --- Decomposition inclusion flags ---
     "use_predicted_decompositions": True,
     "use_real_decompositions": True,
-    # --- XGB Predicted decomposition flags/params ---
-    "use_xgb_predicted_decompositions": False,
-    "xgb_max_lag": 64,
-    "xgb_rolling_windows": [12, 24, 48],
-    "xgb_n_estimators": 400,
-    "xgb_learning_rate": 0.05,
-    "xgb_max_depth": 4,
-    "xgb_subsample": 0.8,
-    "xgb_colsample_bytree": 0.8,
-    "xgb_reg_lambda": 1.0,
-    "xgb_reg_alpha": 0.0,
-    "xgb_min_child_weight": 1.0,
-    "xgb_early_stopping_rounds": 50,
+    # --- Ideal predictions (train-only teacher forcing) ---
+    "use_ideal_predictions": True,
         # --- STL Parameters ---
         "stl_period": 24,
         "stl_window": None, # Default, resolved later if None
@@ -129,12 +118,16 @@ class PreprocessorPlugin:
         "window_size", "predicted_horizons", "use_returns", "normalize_features",
         "use_stl", "stl_period", "stl_window", "stl_trend", "stl_plot_file",
         "use_wavelets", "wavelet_name", "wavelet_levels", "wavelet_mode", "wavelet_plot_file",
-        "use_multi_tapper", "mtm_window_len", "mtm_step", "mtm_time_bandwidth", "mtm_num_tapers", "mtm_freq_bands", "tapper_plot_file", "tapper_plot_points"
+        "use_multi_tapper", "mtm_window_len", "mtm_step", "mtm_time_bandwidth", "mtm_num_tapers", "mtm_freq_bands", "tapper_plot_file", "tapper_plot_points",
+        "use_predicted_decompositions", "use_real_decompositions", "use_ideal_predictions"
     ]
 
     def __init__(self):
         self.params = self.plugin_params.copy()
         self.scalers = {}
+        # Cache of fitted XGB models per prefix/component/horizon for val/test reuse
+        self._xgb_models = {}
+
 
     def set_params(self, **kwargs):
         """Update plugin parameters with global configuration."""
@@ -511,27 +504,23 @@ class PreprocessorPlugin:
         return predicted
 
     def _predict_components_per_horizon_xgb(self, comp_dict: dict, horizons: list, name_prefix: str, dates: pd.DatetimeIndex | None = None) -> dict:
-        """XGBoost-based causal forecaster per component & horizon.
-        - Builds per-step features: fixed lags up to xgb_max_lag, rolling stats over xgb_rolling_windows.
-        - Train predictions use k-fold time-ordered CV; val/test predictions fit on full train only.
-        - Returns same flat dict structure as EWMA version.
-        Fallback: if XGBRegressor unavailable, returns empty dict to allow EWMA path.
-        """
+        """XGBoost-based causal forecaster per component & horizon (train-side CV only).
+        Note: superseded by chained helpers below; retained for compatibility. """
         if XGBRegressor is None or not comp_dict:
             return {}
 
-        cfg = self.params
-        max_lag = int(cfg.get('xgb_max_lag', 64))
-        roll_ws = list(cfg.get('xgb_rolling_windows', [12, 24, 48]))
-        n_estimators = int(cfg.get('xgb_n_estimators', 400))
-        lr = float(cfg.get('xgb_learning_rate', 0.05))
-        max_depth = int(cfg.get('xgb_max_depth', 4))
-        subsample = float(cfg.get('xgb_subsample', 0.8))
-        colsample = float(cfg.get('xgb_colsample_bytree', 0.8))
-        reg_lambda = float(cfg.get('xgb_reg_lambda', 1.0))
-        reg_alpha = float(cfg.get('xgb_reg_alpha', 0.0))
-        min_child_weight = float(cfg.get('xgb_min_child_weight', 1.0))
-        early_stopping_rounds = int(cfg.get('xgb_early_stopping_rounds', 50))
+        # Internal defaults
+        max_lag = 64
+        roll_ws = [12, 24, 48]
+        n_estimators = 400
+        lr = 0.05
+        max_depth = 4
+        subsample = 0.8
+        colsample = 0.8
+        reg_lambda = 1.0
+        reg_alpha = 0.0
+        min_child_weight = 1.0
+        early_stopping_rounds = 50
 
         def build_features(y: np.ndarray) -> np.ndarray:
             n = len(y)
@@ -647,6 +636,238 @@ class PreprocessorPlugin:
                 # For training split, we will take cv_pred_train; for val/test we will reuse model_full externally.
                 predicted[key] = pack['cv_pred_train'] if pack['cv_pred_train'] is not None else np.full(len(comp_series), np.nan, dtype=np.float32)
         return predicted
+
+    # --- New: Ideal future-value features (train-only when enabled) ---
+    def _ideal_components_per_horizon(self, comp_dict: dict, horizons: list, name_prefix: str) -> dict:
+        """Return teacher-forced 'ideal' predictions: value at t+h for each horizon.
+        Only to be used for TRAIN split when config['use_ideal_predictions'] is True.
+        Pads tail with last known value to preserve length and avoid NaNs.
+        """
+        if not comp_dict:
+            return {}
+        out = {}
+        for comp_name, series in comp_dict.items():
+            if series is None or len(series) == 0:
+                continue
+            arr = np.asarray(series, dtype=np.float32)
+            n = len(arr)
+            for h in sorted(horizons):
+                pred = np.empty_like(arr)
+                if h < n:
+                    pred[:-h] = arr[h:]
+                    pred[-h:] = arr[-1]
+                else:
+                    # If horizon >= n, fill with last value (degenerate but avoids NaNs)
+                    pred[:] = arr[-1]
+                out[f"{name_prefix}_{comp_name}_h{h}"] = pred
+        return out
+
+    # --- New: Chained XGB with previous-horizon features & reusable models ---
+    def _xgb_train_chain(self, comp_dict: dict, horizons: list, name_prefix: str) -> dict:
+        """Train chained XGB models per component, stacking previous-horizon predictions as features.
+        Returns train CV predictions per feature key and stores fitted models for reuse on val/test.
+        """
+        if XGBRegressor is None or not comp_dict:
+            return {}
+
+        # Internal defaults (kept local to avoid new config surface area)
+        max_lag = 64
+        roll_ws = [12, 24, 48]
+        n_estimators = 400
+        lr = 0.05
+        max_depth = 4
+        subsample = 0.8
+        colsample = 0.8
+        reg_lambda = 1.0
+        reg_alpha = 0.0
+        min_child_weight = 1.0
+        early_stopping_rounds = 50
+
+        def base_features(y: np.ndarray) -> np.ndarray:
+            arr = y.astype(np.float32)
+            feats = []
+            # Lags
+            for lag in range(1, max_lag + 1):
+                feats.append(self._lag_with_pad(arr, lag))
+            # Rolling stats
+            s = pd.Series(arr)
+            for w in roll_ws:
+                if w <= 1:
+                    continue
+                feats.append(s.rolling(window=w, min_periods=1).mean().values.astype(np.float32))
+                feats.append(s.rolling(window=w, min_periods=1).std().fillna(0.0).values.astype(np.float32))
+                feats.append(s.rolling(window=w, min_periods=1).min().values.astype(np.float32))
+                feats.append(s.rolling(window=w, min_periods=1).max().values.astype(np.float32))
+            return np.stack(feats, axis=1) if feats else arr.reshape(-1, 1)
+
+        predicted = {}
+        # Ensure model storage path
+        if name_prefix not in self._xgb_models:
+            self._xgb_models[name_prefix] = {}
+
+        for comp_name, comp_series in comp_dict.items():
+            if comp_series is None or len(comp_series) == 0:
+                continue
+            y = np.asarray(comp_series, dtype=np.float32)
+            n = len(y)
+            X_base = base_features(y)
+            # Store per-horizon predictions for stacking
+            prev_cv_preds = {}  # horizon -> cv preds array (length n)
+            # Prepare model dicts
+            if comp_name not in self._xgb_models[name_prefix]:
+                self._xgb_models[name_prefix][comp_name] = {}
+
+            for h in sorted(horizons):
+                # Target
+                y_target = np.full(n, np.nan, dtype=np.float32)
+                if h < n:
+                    y_target[:n - h] = y[h:]
+                # Assemble features: base + previous horizon predictions as extra columns
+                feat_list = [X_base]
+                for hp in sorted(prev_cv_preds.keys()):
+                    feat_list.append(prev_cv_preds[hp].reshape(-1, 1))
+                X_full = np.concatenate(feat_list, axis=1) if len(feat_list) > 1 else X_base
+
+                # Walk-forward CV to get train OOF predictions
+                y_cv = np.full(n, np.nan, dtype=np.float32)
+                # Define 2 cut points for expanding window
+                cut1 = max(max_lag + 1, int(0.6 * (n - h)))
+                cut2 = max(cut1 + 1, int(0.8 * (n - h)))
+                cut_points = [cut1, cut2]
+                for i, cut in enumerate(cut_points):
+                    train_end = cut  # exclusive end for target availability
+                    if train_end <= max_lag + 1:
+                        continue
+                    X_tr = X_full[:train_end]
+                    y_tr = y_target[:train_end]
+                    # Drop NaN targets (tail)
+                    m = ~np.isnan(y_tr)
+                    X_tr, y_tr = X_tr[m], y_tr[m]
+                    # Validation slice
+                    val_start = train_end
+                    val_end = min(n - h, cut_points[i + 1] if i + 1 < len(cut_points) else n - h)
+                    if val_end <= val_start or len(y_tr) < 20:
+                        continue
+                    X_va = X_full[val_start:val_end]
+                    try:
+                        model = XGBRegressor(
+                            n_estimators=n_estimators,
+                            learning_rate=lr,
+                            max_depth=max_depth,
+                            subsample=subsample,
+                            colsample_bytree=colsample,
+                            reg_lambda=reg_lambda,
+                            reg_alpha=reg_alpha,
+                            min_child_weight=min_child_weight,
+                            objective='reg:squarederror',
+                            tree_method='hist',
+                            n_jobs=0,
+                        )
+                        model.fit(X_tr, y_tr, eval_set=[(X_va, y_target[val_start:val_end])], verbose=False, early_stopping_rounds=early_stopping_rounds)
+                        y_cv[val_start:val_end] = model.predict(X_va).astype(np.float32)
+                    except Exception:
+                        pass
+
+                # Fit final model on all available indices with targets
+                try:
+                    model_full = XGBRegressor(
+                        n_estimators=n_estimators,
+                        learning_rate=lr,
+                        max_depth=max_depth,
+                        subsample=subsample,
+                        colsample_bytree=colsample,
+                        reg_lambda=reg_lambda,
+                        reg_alpha=reg_alpha,
+                        min_child_weight=min_child_weight,
+                        objective='reg:squarederror',
+                        tree_method='hist',
+                        n_jobs=0,
+                    )
+                    # Use last 10% of available targets as eval
+                    avail = np.where(~np.isnan(y_target))[0]
+                    if len(avail) > 30:
+                        es_cut = int(0.9 * len(avail))
+                        idx_tr = avail[:es_cut]
+                        idx_es = avail[es_cut:]
+                        model_full.fit(X_full[idx_tr], y_target[idx_tr], eval_set=[(X_full[idx_es], y_target[idx_es])], verbose=False, early_stopping_rounds=early_stopping_rounds)
+                    else:
+                        idx_tr = avail
+                        model_full.fit(X_full[idx_tr], y_target[idx_tr], verbose=False)
+                except Exception:
+                    model_full = None
+
+                # Store for stacking in later horizons and for reuse on val/test
+                # Ensure CV preds are fully populated to be usable as features for higher horizons
+                if np.any(np.isnan(y_cv)):
+                    # Causal fallback: EWMA + lag(h)
+                    fallback = self._lag_with_pad(self._ewma_causal(y, alpha=0.3), h)
+                    m_nan = np.isnan(y_cv)
+                    y_cv[m_nan] = fallback[m_nan]
+                prev_cv_preds[h] = y_cv
+                self._xgb_models[name_prefix][comp_name][h] = {
+                    'model': model_full,
+                    'max_lag': max_lag,
+                    'roll_ws': roll_ws,
+                    'num_prev': len(prev_cv_preds) - 1,  # number of previous horizons available when training this h
+                }
+                # Save train predictions under final feature key
+                predicted[f"{name_prefix}_{comp_name}_h{h}"] = y_cv
+
+        return predicted
+
+    def _xgb_apply_chain(self, comp_dict: dict, horizons: list, name_prefix: str) -> dict:
+        """Apply stored chained XGB models to produce predictions for new series (val/test).
+        Generates predictions sequentially so that lower-horizon predictions feed higher ones.
+        """
+        if not comp_dict:
+            return {}
+        out = {}
+        for comp_name, series in comp_dict.items():
+            if series is None or len(series) == 0:
+                continue
+            model_pack = self._xgb_models.get(name_prefix, {}).get(comp_name)
+            if not model_pack:
+                # No stored model; skip
+                continue
+            y = np.asarray(series, dtype=np.float32)
+            # Build base features helper consistent with training params per horizon
+            # We'll recompute base features per horizon because roll_ws/max_lag are same across horizons
+            # Stacked predictions holder
+            prev_preds = {}
+            # We must iterate in ascending horizon order
+            for h in sorted(horizons):
+                info = model_pack.get(h)
+                if not info or info.get('model') is None:
+                    # Can't predict this horizon; fill with NaNs (will be handled downstream if needed)
+                    out[f"{name_prefix}_{comp_name}_h{h}"] = np.full(len(y), np.nan, dtype=np.float32)
+                    continue
+                max_lag = info['max_lag']
+                roll_ws = info['roll_ws']
+                # Base features
+                arr = y.astype(np.float32)
+                feats = []
+                for lag in range(1, max_lag + 1):
+                    feats.append(self._lag_with_pad(arr, lag))
+                s = pd.Series(arr)
+                for w in roll_ws:
+                    if w <= 1:
+                        continue
+                    feats.append(s.rolling(window=w, min_periods=1).mean().values.astype(np.float32))
+                    feats.append(s.rolling(window=w, min_periods=1).std().fillna(0.0).values.astype(np.float32))
+                    feats.append(s.rolling(window=w, min_periods=1).min().values.astype(np.float32))
+                    feats.append(s.rolling(window=w, min_periods=1).max().values.astype(np.float32))
+                X_full = np.stack(feats, axis=1) if feats else arr.reshape(-1, 1)
+                # Append previous horizon predictions as features
+                for hp in sorted(prev_preds.keys()):
+                    X_full = np.concatenate([X_full, prev_preds[hp].reshape(-1, 1)], axis=1)
+                # Predict
+                try:
+                    pred = info['model'].predict(X_full).astype(np.float32)
+                except Exception:
+                    pred = np.full(len(y), np.nan, dtype=np.float32)
+                out[f"{name_prefix}_{comp_name}_h{h}"] = pred
+                prev_preds[h] = pred
+        return out
 
     def _plot_mtm(self, mtm_features, file_path, points_to_plot=500):
         """Plots computed Multitaper features (power bands)."""
@@ -799,29 +1020,29 @@ class PreprocessorPlugin:
                         stl_plot_file = config.get("stl_plot_file")
                         if stl_plot_file:
                             self._plot_decomposition(log_train[len(log_train)-len(trend_train):], trend_train, seasonal_train, resid_train, stl_plot_file)
-                    # Predicted STL components per horizon (causal), if enabled
+                    # Predicted STL components per horizon (causal or ideal), if enabled
                     if config.get('use_predicted_decompositions', True):
                         stl_comp_train = { 'stl_trend': trend_train, 'stl_seasonal': seasonal_train, 'stl_resid': resid_train }
                         stl_comp_val   = { 'stl_trend': trend_val,   'stl_seasonal': seasonal_val,   'stl_resid': resid_val }
                         stl_comp_test  = { 'stl_trend': trend_test,  'stl_seasonal': seasonal_test,  'stl_resid': resid_test }
-                        if config.get('use_xgb_predicted_decompositions', False) and XGBRegressor is not None:
-                            # Train-side CV predictions
-                            stl_pred_train = self._predict_components_per_horizon_xgb(stl_comp_train, predicted_horizons, 'pred')
-                            # For val/test, fit fresh models using the train data only
-                            stl_pred_val, stl_pred_test = {}, {}
-                            for comp_name, series_train in stl_comp_train.items():
-                                res_map = self._predict_components_per_horizon_xgb({comp_name: series_train}, predicted_horizons, 'pred')
-                                # Retrieve the stored model by re-running to get model_full; to keep code simple here we reuse EWMA for val/test if model is not retained—alternative is to refactor to return models.
-                                # For now, fallback to EWMA for val/test with same horizon keys to guarantee causality and no leakage.
-                                pass
-                            # Fallback EWMA for all splits to ensure completeness
-                            stl_pred_val = self._predict_components_per_horizon(stl_comp_val, predicted_horizons, 'pred')
-                            stl_pred_test = self._predict_components_per_horizon(stl_comp_test, predicted_horizons, 'pred')
+                        # Train split: ideal -> chained XGB -> EWMA fallback
+                        if config.get('use_ideal_predictions', True):
+                            stl_pred_train = self._ideal_components_per_horizon(stl_comp_train, predicted_horizons, 'pred')
+                            # Optionally fit XGB models for val/test use without overriding train ideal features
+                            if XGBRegressor is not None:
+                                _ = self._xgb_train_chain(stl_comp_train, predicted_horizons, 'pred')
+                        elif XGBRegressor is not None:
+                            stl_pred_train = self._xgb_train_chain(stl_comp_train, predicted_horizons, 'pred')
                         else:
-                            # EWMA baseline for all splits
                             stl_pred_train = self._predict_components_per_horizon(stl_comp_train, predicted_horizons, 'pred')
-                            stl_pred_val   = self._predict_components_per_horizon(stl_comp_val,   predicted_horizons, 'pred')
-                            stl_pred_test  = self._predict_components_per_horizon(stl_comp_test,  predicted_horizons, 'pred')
+
+                        # Val/Test: prefer applying chained XGB models if available; else EWMA
+                        if XGBRegressor is not None and self._xgb_models.get('pred'):
+                            stl_pred_val  = self._xgb_apply_chain(stl_comp_val,  predicted_horizons, 'pred') if stl_comp_val else {}
+                            stl_pred_test = self._xgb_apply_chain(stl_comp_test, predicted_horizons, 'pred') if stl_comp_test else {}
+                        else:
+                            stl_pred_val   = self._predict_components_per_horizon(stl_comp_val,   predicted_horizons, 'pred') if stl_comp_val else {}
+                            stl_pred_test  = self._predict_components_per_horizon(stl_comp_test,  predicted_horizons, 'pred') if stl_comp_test else {}
                         for k,v in stl_pred_train.items(): features_train[k] = self._normalize_series(v, k, fit=True)
                         for k,v in stl_pred_val.items():   features_val[k]   = self._normalize_series(v, k, fit=False)
                         for k,v in stl_pred_test.items():  features_test[k]  = self._normalize_series(v, k, fit=False)
@@ -848,15 +1069,21 @@ class PreprocessorPlugin:
                         wavelet_plot_file = config.get("wavelet_plot_file")
                         if wavelet_plot_file:
                             self._plot_wavelets(log_train, wav_features_train, wavelet_plot_file)
-                    # Predicted Wavelet components (causal), if enabled
+                    # Predicted Wavelet components (causal or ideal), if enabled
                     if config.get('use_predicted_decompositions', True):
-                        if config.get('use_xgb_predicted_decompositions', False) and XGBRegressor is not None:
-                            wav_pred_train = self._predict_components_per_horizon_xgb(wav_features_train, predicted_horizons, 'pred_wav')
-                            # Fallback EWMA for val/test to avoid refactoring for retaining models in this pass
-                            wav_pred_val   = self._predict_components_per_horizon(wav_features_val,   predicted_horizons, 'pred_wav') if wav_features_val else {}
-                            wav_pred_test  = self._predict_components_per_horizon(wav_features_test,  predicted_horizons, 'pred_wav') if wav_features_test else {}
+                        if config.get('use_ideal_predictions', True):
+                            wav_pred_train = self._ideal_components_per_horizon(wav_features_train, predicted_horizons, 'pred_wav')
+                            if XGBRegressor is not None:
+                                _ = self._xgb_train_chain(wav_features_train, predicted_horizons, 'pred_wav')
+                        elif XGBRegressor is not None:
+                            wav_pred_train = self._xgb_train_chain(wav_features_train, predicted_horizons, 'pred_wav')
                         else:
                             wav_pred_train = self._predict_components_per_horizon(wav_features_train, predicted_horizons, 'pred_wav')
+
+                        if XGBRegressor is not None and self._xgb_models.get('pred_wav'):
+                            wav_pred_val  = self._xgb_apply_chain(wav_features_val,  predicted_horizons, 'pred_wav') if wav_features_val else {}
+                            wav_pred_test = self._xgb_apply_chain(wav_features_test, predicted_horizons, 'pred_wav') if wav_features_test else {}
+                        else:
                             wav_pred_val   = self._predict_components_per_horizon(wav_features_val,   predicted_horizons, 'pred_wav') if wav_features_val else {}
                             wav_pred_test  = self._predict_components_per_horizon(wav_features_test,  predicted_horizons, 'pred_wav') if wav_features_test else {}
                         for k,v in wav_pred_train.items(): features_train[k] = self._normalize_series(v, k, fit=True)
@@ -885,15 +1112,21 @@ class PreprocessorPlugin:
                         tapper_plot_file = config.get("tapper_plot_file")
                         if tapper_plot_file:
                             self._plot_mtm(mtm_features_train, tapper_plot_file, config.get("tapper_plot_points"))
-                    # Predicted MTM components (causal), if enabled
+                    # Predicted MTM components (causal or ideal), if enabled
                     if config.get('use_predicted_decompositions', True):
-                        if config.get('use_xgb_predicted_decompositions', False) and XGBRegressor is not None:
-                            mtm_pred_train = self._predict_components_per_horizon_xgb(mtm_features_train, predicted_horizons, 'pred_mtm')
-                            # Fallback EWMA for val/test in this pass
-                            mtm_pred_val   = self._predict_components_per_horizon(mtm_features_val,   predicted_horizons, 'pred_mtm') if mtm_features_val else {}
-                            mtm_pred_test  = self._predict_components_per_horizon(mtm_features_test,  predicted_horizons, 'pred_mtm') if mtm_features_test else {}
+                        if config.get('use_ideal_predictions', True):
+                            mtm_pred_train = self._ideal_components_per_horizon(mtm_features_train, predicted_horizons, 'pred_mtm')
+                            if XGBRegressor is not None:
+                                _ = self._xgb_train_chain(mtm_features_train, predicted_horizons, 'pred_mtm')
+                        elif XGBRegressor is not None:
+                            mtm_pred_train = self._xgb_train_chain(mtm_features_train, predicted_horizons, 'pred_mtm')
                         else:
                             mtm_pred_train = self._predict_components_per_horizon(mtm_features_train, predicted_horizons, 'pred_mtm')
+
+                        if XGBRegressor is not None and self._xgb_models.get('pred_mtm'):
+                            mtm_pred_val  = self._xgb_apply_chain(mtm_features_val,  predicted_horizons, 'pred_mtm') if mtm_features_val else {}
+                            mtm_pred_test = self._xgb_apply_chain(mtm_features_test, predicted_horizons, 'pred_mtm') if mtm_features_test else {}
+                        else:
                             mtm_pred_val   = self._predict_components_per_horizon(mtm_features_val,   predicted_horizons, 'pred_mtm') if mtm_features_val else {}
                             mtm_pred_test  = self._predict_components_per_horizon(mtm_features_test,  predicted_horizons, 'pred_mtm') if mtm_features_test else {}
                         for k,v in mtm_pred_train.items(): features_train[k] = self._normalize_series(v, k, fit=True)
