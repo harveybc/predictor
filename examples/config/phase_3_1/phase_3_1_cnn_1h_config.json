@@ -52,7 +52,7 @@
     "predicted_horizons": [1,2,3,4,5,6],
     "use_stl": true,
     "use_wavelets": true,
-    "use_multi_tapper": true,
+    "use_multi_tapper": false,
     "use_predicted_decompositions": false,
     "use_real_decompositions": false,
     "use_ideal_predictions": false
