@@ -31,7 +31,7 @@ for config_file in "$CONFIG_DIR"/*.json; do
     echo "=========================================================="
 
     # Run ETL (skip optional files if not found)
-    cmd=(python etl_migrate_v2.py
+    cmd=(python olap/etl_migrate_v2.py
         --project-key "$PROJECT_KEY"
         --phase-key "$PHASE_KEY"
         --experiment-key "$experiment_key"
