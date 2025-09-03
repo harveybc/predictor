@@ -13,9 +13,13 @@ declare -a failed_items=()
 
 for config_file in "$CONFIG_DIR"/*.json; do
   experiment_key=$(basename "$config_file" .json)
-  results_file="$RESULTS_DIR/${experiment_key}_results.csv"
-  predictions_file="$RESULTS_DIR/${experiment_key}_predictions.csv"
-  uncertainties_file="$RESULTS_DIR/${experiment_key}_uncertainties.csv"
+
+  # Remove "_config" suffix for result file naming
+  experiment_base="${experiment_key%_config}"
+
+  results_file="$RESULTS_DIR/${experiment_base}_results.csv"
+  predictions_file="$RESULTS_DIR/${experiment_base}_predictions.csv"
+  uncertainties_file="$RESULTS_DIR/${experiment_base}_uncertainties.csv"
 
   echo "=========================================================="
   echo " Loading experiment: $experiment_key"
@@ -31,6 +35,7 @@ for config_file in "$CONFIG_DIR"/*.json; do
        --experiment-key "$experiment_key"
        --experiment-config "$config_file"
        --results-csv "$results_file")
+
 
   if [[ -f "$predictions_file" && -f "$uncertainties_file" ]]; then
     cmd+=(--predictions-csv "$predictions_file" --uncertainties-csv "$uncertainties_file")
