@@ -61,7 +61,7 @@ def _build_engine_from_pg_env():
     """
     host = os.getenv("PGHOST", "127.0.0.1")                      # default host
     port = int(os.getenv("PGPORT", "5432"))                      # default port
-    dbname = os.getenv("PGDATABASE", "metabase_db")                       # DB name must be set
+    dbname = os.getenv("PGDATABASE", "predictor_olap")                       # DB name must be set
     user = os.getenv("PGUSER", "metabase")                             # DB user must be set
     password = os.getenv("PGPASSWORD", "metabase_pass")                       # optional password
 
