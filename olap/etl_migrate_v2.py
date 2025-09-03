@@ -165,6 +165,13 @@ def upsert_experiment(engine, project_key: str, phase_key: str,
         "use_stl": config_json.get("use_stl"),
         "use_wavelets": config_json.get("use_wavelets"),
         "use_multi_tapper": config_json.get("use_multi_tapper"),
+        "predictor_plugin": config_json.get("predictor_plugin"),
+        "optimizer_plugin": config_json.get("optimizer_plugin"),
+        "pipeline_plugin": config_json.get("pipeline_plugin"),
+        "preprocessor_plugin": config_json.get("preprocessor_plugin"),
+        "use_strategy": config_json.get("use_strategy"),
+        "use_daily": config_json.get("use_daily"),
+        "mc_samples": config_json.get("mc_samples"),
     }
 
     sql = f"""

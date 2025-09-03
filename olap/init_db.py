@@ -58,7 +58,14 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_experiment (
   predicted_horizons JSONB,
   use_stl            BOOLEAN,
   use_wavelets       BOOLEAN,
-  use_multi_tapper   BOOLEAN
+  use_multi_tapper   BOOLEAN,
+  predictor_plugin   TEXT,
+  optimizer_plugin   TEXT,
+  pipeline_plugin    TEXT,
+  preprocessor_plugin TEXT,
+  use_strategy       BOOLEAN,
+  use_daily          BOOLEAN,
+  mc_samples         INTEGER
 );
 
 -- Dataset split dimension
