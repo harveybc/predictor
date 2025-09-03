@@ -8,7 +8,6 @@
 """
 
 import os
-import sys
 import logging
 from sqlalchemy import create_engine
 
@@ -140,13 +139,14 @@ def build_engine_from_pg_env():
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    engine = build_engine()
-    logging.info("Creating schema and tables in database '%s'...", os.getenv("PGDATABASE"))
+    engine = build_engine_from_pg_env()
+    logging.info("Creating schema and tables in database (see DSN above)...")
     with engine.begin() as conn:
         conn.exec_driver_sql(DDL)
         conn.exec_driver_sql(SEED)
 
     logging.info("Database initialization complete.")
+
 
 if __name__ == "__main__":
     main()
