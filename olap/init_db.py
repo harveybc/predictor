@@ -123,7 +123,7 @@ def build_engine():
     """Construct SQLAlchemy engine from PG* env vars."""
     host = os.getenv("PGHOST", "127.0.0.1")
     port = int(os.getenv("PGPORT", "5432"))
-    dbname = os.getenv("PGDATABASE", "metabase_db")
+    dbname = os.getenv("PGDATABASE", "predictor_olap")
     user = os.getenv("PGUSER", "metabase")
     password = os.getenv("PGPASSWORD", "metabase_pass")
 
