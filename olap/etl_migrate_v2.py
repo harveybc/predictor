@@ -56,21 +56,22 @@ _COL_REGEX = re.compile(r"^([^_]+)_([^_]+)_h(\d+)$", flags=re.IGNORECASE)
 # === Utility: Build SQLAlchemy engine from PG* env ===
 def _build_engine_from_pg_env():
     """
-    Construct a SQLAlchemy engine from PG* environment variables
-    with sane defaults for local dev.
+    Construct a SQLAlchemy engine from PG* environment variables.
+    Exits the process with code 2 if required vars are missing.
     """
-    host = os.getenv("PGHOST", "127.0.0.1")
-    port = int(os.getenv("PGPORT", "5432"))
-    dbname = os.getenv("PGDATABASE", "predictor_olap")   # default fallback
-    user = os.getenv("PGUSER", "metabase")
-    password = os.getenv("PGPASSWORD", "metabase_pass")
+    host = os.getenv("PGHOST", "127.0.0.1")                      # default host
+    port = int(os.getenv("PGPORT", "5432"))                      # default port
+    dbname = os.getenv("PGDATABASE", "predictor_olap")                       # DB name must be set
+    user = os.getenv("PGUSER", "metabase")                             # DB user must be set
+    password = os.getenv("PGPASSWORD", "metabase_pass")                       # optional password
 
-    dsn = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
-    engine = create_engine(dsn, pool_pre_ping=True, future=True)
+    if not dbname or not user:
+        logging.error("PGDATABASE and PGUSER must be set in environment.")
+        sys.exit(2)
 
-    logging.info("Connected to PostgreSQL at %s:%s, database=%s, user=%s",
-                 host, port, dbname, user)
-    return engine
+    dsn = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"  # DSN for SQLAlchemy
+    # create_engine with pool_pre_ping to avoid stale connections in long runners
+    return create_engine(dsn, pool_pre_ping=True, future=True)
 
 
 # === Ensure schema and tables (idempotent DDL + seed) ===
