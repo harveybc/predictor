@@ -119,20 +119,24 @@ ON CONFLICT DO NOTHING;
 """
 
 
-def build_engine():
-    """Construct SQLAlchemy engine from PG* env vars."""
+def build_engine_from_pg_env():
+    """
+    Construct a SQLAlchemy engine from PG* environment variables
+    with sane defaults for local dev.
+    """
     host = os.getenv("PGHOST", "127.0.0.1")
     port = int(os.getenv("PGPORT", "5432"))
-    dbname = os.getenv("PGDATABASE", "predictor_olap")
+    dbname = os.getenv("PGDATABASE", "predictor_olap")   # default fallback
     user = os.getenv("PGUSER", "metabase")
     password = os.getenv("PGPASSWORD", "metabase_pass")
 
-    if not dbname or not user:
-        sys.stderr.write("ERROR: PGDATABASE and PGUSER must be set in env.\n")
-        sys.exit(2)
-
     dsn = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
-    return create_engine(dsn, pool_pre_ping=True, future=True)
+    engine = create_engine(dsn, pool_pre_ping=True, future=True)
+
+    logging.info("Connected to PostgreSQL at %s:%s, database=%s, user=%s",
+                 host, port, dbname, user)
+    return engine
+
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
