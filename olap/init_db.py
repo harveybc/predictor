@@ -91,13 +91,15 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_metric (
 CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_performance (
   id             BIGSERIAL PRIMARY KEY,
   experiment_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_experiment(experiment_key) ON DELETE CASCADE,
+  phase_key      TEXT NOT NULL REFERENCES {SCHEMA}.dim_phase(phase_key) ON DELETE CASCADE,
   split_key      TEXT NOT NULL REFERENCES {SCHEMA}.dim_dataset_split(split_key),
   horizon_key    INTEGER NOT NULL REFERENCES {SCHEMA}.dim_horizon(horizon_key),
   metric_key     TEXT NOT NULL REFERENCES {SCHEMA}.dim_metric(metric_key),
   metric_value   DOUBLE PRECISION NOT NULL,
   loaded_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (experiment_key, split_key, horizon_key, metric_key)
+  UNIQUE (experiment_key, phase_key, split_key, horizon_key, metric_key)
 );
+
 
 -- Useful indexes
 CREATE INDEX IF NOT EXISTS idx_fact_perf_experiment

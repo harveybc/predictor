@@ -228,7 +228,7 @@ def upsert_experiment(engine, project_key: str, phase_key: str,
     logging.info("Upserted experiment: %s", experiment_key)
 
 # ==== Load results summary CSV ====
-def load_results_summary(engine, experiment_key: str, results_csv: str) -> int:
+def load_results_summary(engine, project_key: str, phase_key: str, experiment_key: str, results_csv: str) -> int:
     try:
         df = pd.read_csv(results_csv)
         # Normalize headers: strip spaces, replace with underscores
@@ -248,9 +248,9 @@ def load_results_summary(engine, experiment_key: str, results_csv: str) -> int:
 
     sql = f"""
     INSERT INTO {SCHEMA}.fact_results_summary
-      (experiment_key, metric, avg_value, std_dev, min_value, max_value)
+      (experiment_key, phase_key, metric, avg_value, std_dev, min_value, max_value)
     VALUES
-      (:experiment_key, :metric, :avg, :std, :minv, :maxv)
+      (:experiment_key, :phase_key, :metric, :avg, :std, :minv, :maxv)
     ON CONFLICT (experiment_key, metric) DO UPDATE
       SET avg_value = EXCLUDED.avg_value,
           std_dev   = EXCLUDED.std_dev,
@@ -264,6 +264,7 @@ def load_results_summary(engine, experiment_key: str, results_csv: str) -> int:
         for rec in df.itertuples(index=False):
             params = {
                 "experiment_key": experiment_key,
+                "phase_key": phase_key,
                 "metric": rec.Metric,
                 "avg":   rec.Average,
                 "std":   rec.Std_Dev,
@@ -273,7 +274,7 @@ def load_results_summary(engine, experiment_key: str, results_csv: str) -> int:
             conn.execute(text(sql), params)
             rows += 1
 
-    logging.info("Loaded results summary rows: %d (experiment=%s)", rows, experiment_key)
+    logging.info("Loaded results summary rows: %d (experiment=%s, phase=%s)", rows, experiment_key, phase_key)
     return rows
 
 
@@ -304,7 +305,8 @@ def main():
     upsert_experiment(engine, args.project_key, args.phase_key, args.experiment_key, cfg)
 
     try:
-        _ = load_results_summary(engine, args.experiment_key, args.results_csv)
+        _ = load_results_summary(engine, args.project_key, args.phase_key, args.experiment_key, args.results_csv)
+
     except Exception as exc:
         logging.error("Failed to load results: %s", exc, exc_info=True)
         sys.exit(5)
