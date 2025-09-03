@@ -58,11 +58,11 @@ def _build_engine_from_pg_env():
     # @var port Read PGPORT or default to 5432
     port = int(os.getenv("PGPORT", "5432"))
     # @var dbname Read PGDATABASE; fail early if missing
-    dbname = os.getenv("PGDATABASE", None)
+    dbname = os.getenv("PGDATABASE", "metabase_db")
     # @var user Read PGUSER; fail early if missing
-    user = os.getenv("PGUSER", None)
+    user = os.getenv("PGUSER", "metabase")
     # @var password Read PGPASSWORD; may be required by server auth
-    password = os.getenv("PGPASSWORD", "")
+    password = os.getenv("PGPASSWORD", "metabase_pass")
 
     # @check Validate required env vars
     if not dbname or not user:
