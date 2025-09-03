@@ -224,17 +224,19 @@ def upsert_experiment(engine, project_key: str, phase_key: str,
 def load_results_summary(engine, experiment_key: str, results_csv: str) -> int:
     try:
         df = pd.read_csv(results_csv)
+        # Normalize headers: strip spaces, replace with underscores
+        df.columns = [c.strip().replace(" ", "_") for c in df.columns]
     except Exception as exc:
         logging.error("Failed to read results CSV '%s': %s", results_csv, exc, exc_info=True)
         raise
 
-    required = ["Metric", "Average", "Std Dev", "Min", "Max"]
+    required = ["Metric", "Average", "Std_Dev", "Min", "Max"]
     missing = [c for c in required if c not in df.columns]
     if missing:
         logging.error("Results CSV missing required columns: %s (file=%s)", missing, results_csv)
         raise ValueError(f"Missing columns: {missing}")
 
-    for col in ["Average", "Std Dev", "Min", "Max"]:
+    for col in ["Average", "Std_Dev", "Min", "Max"]:
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
     sql = f"""
@@ -255,17 +257,18 @@ def load_results_summary(engine, experiment_key: str, results_csv: str) -> int:
         for rec in df.itertuples(index=False):
             params = {
                 "experiment_key": experiment_key,
-                "metric": getattr(rec, "Metric"),
-                "avg": getattr(rec, "Average"),
-                "std": getattr(rec, "Std_Dev"),
-                "minv": getattr(rec, "Min"),
-                "maxv": getattr(rec, "Max"),
+                "metric": rec.Metric,
+                "avg":   rec.Average,
+                "std":   rec.Std_Dev,
+                "minv":  rec.Min,
+                "maxv":  rec.Max,
             }
             conn.execute(text(sql), params)
             rows += 1
 
     logging.info("Loaded results summary rows: %d (experiment=%s)", rows, experiment_key)
     return rows
+
 
 # ==== Main ====
 def main():
