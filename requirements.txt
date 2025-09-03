@@ -20,3 +20,4 @@ keras.utils
 tf-keras
 tqdm
 PyWavelets
+psycopg2
