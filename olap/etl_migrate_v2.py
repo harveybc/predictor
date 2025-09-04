@@ -54,138 +54,219 @@ def build_engine_from_pg_env():
 # Ensure schema + tables + seeds
 # -----------------------------
 def ensure_schema_and_tables(engine):
-    """
-    Idempotent DDL for required tables and basic seed data (splits/horizons/metrics).
-    This function is safe to run many times.
-    """
-    ddl = f"""
-    CREATE SCHEMA IF NOT EXISTS {SCHEMA};
+        """
+        Idempotent DDL for required tables and basic seed data (splits/horizons/metrics).
+        This function is safe to run many times.
+        """
+        ddl = f"""
+        CREATE SCHEMA IF NOT EXISTS {SCHEMA};
 
-    CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_project (
-      project_key TEXT PRIMARY KEY
-    );
+        CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_project (
+            project_key TEXT PRIMARY KEY
+        );
 
-    CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_phase (
-      phase_key   TEXT PRIMARY KEY,
-      project_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_project(project_key) ON DELETE CASCADE
-    );
+        CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_phase (
+            phase_key   TEXT PRIMARY KEY,
+            project_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_project(project_key) ON DELETE CASCADE
+        );
 
-    CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_experiment (
-      experiment_key TEXT PRIMARY KEY,
-      project_key    TEXT NOT NULL REFERENCES {SCHEMA}.dim_project(project_key) ON DELETE CASCADE,
-      phase_key      TEXT NOT NULL REFERENCES {SCHEMA}.dim_phase(phase_key)   ON DELETE CASCADE,
-      config_json    JSONB,
-      created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      -- extracted numeric/filter fields
-      max_steps_train    INTEGER,
-      max_steps_test     INTEGER,
-      intermediate_layers INTEGER,
-      initial_layer_size INTEGER,
-      layer_size_divisor INTEGER,
-      learning_rate      DOUBLE PRECISION,
-      activation         TEXT,
-      l2_reg             DOUBLE PRECISION,
-      kl_weight          DOUBLE PRECISION,
-      kl_anneal_epochs   INTEGER,
-      early_patience     INTEGER,
-      start_from_epoch   INTEGER,
-      use_returns        BOOLEAN,
-      mmd_lambda         DOUBLE PRECISION,
-      window_size        INTEGER,
-      batch_size         INTEGER,
-      min_delta          DOUBLE PRECISION,
-      epochs             INTEGER,
-      stl_period         INTEGER,
-      predicted_horizons JSONB,
-      use_stl            BOOLEAN,
-      use_wavelets       BOOLEAN,
-      use_multi_tapper   BOOLEAN,
-      -- categorical/boolean fields (Metabase GUI friendly)
-      predictor_plugin   TEXT,
-      optimizer_plugin   TEXT,
-      pipeline_plugin    TEXT,
-      preprocessor_plugin TEXT,
-      use_strategy       BOOLEAN,
-      use_daily          BOOLEAN,
-      mc_samples         INTEGER
-    );
+        CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_experiment (
+            experiment_key TEXT PRIMARY KEY,
+            project_key    TEXT NOT NULL REFERENCES {SCHEMA}.dim_project(project_key) ON DELETE CASCADE,
+            phase_key      TEXT NOT NULL REFERENCES {SCHEMA}.dim_phase(phase_key)   ON DELETE CASCADE,
+            config_json    JSONB,
+            created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            -- extracted numeric/filter fields
+            max_steps_train    INTEGER,
+            max_steps_test     INTEGER,
+            intermediate_layers INTEGER,
+            initial_layer_size INTEGER,
+            layer_size_divisor INTEGER,
+            learning_rate      DOUBLE PRECISION,
+            activation         TEXT,
+            l2_reg             DOUBLE PRECISION,
+            kl_weight          DOUBLE PRECISION,
+            kl_anneal_epochs   INTEGER,
+            early_patience     INTEGER,
+            start_from_epoch   INTEGER,
+            use_returns        BOOLEAN,
+            mmd_lambda         DOUBLE PRECISION,
+            window_size        INTEGER,
+            batch_size         INTEGER,
+            min_delta          DOUBLE PRECISION,
+            epochs             INTEGER,
+            stl_period         INTEGER,
+            predicted_horizons JSONB,
+            use_stl            BOOLEAN,
+            use_wavelets       BOOLEAN,
+            use_multi_tapper   BOOLEAN,
+            -- categorical/boolean fields (Metabase GUI friendly)
+            predictor_plugin   TEXT,
+            optimizer_plugin   TEXT,
+            pipeline_plugin    TEXT,
+            preprocessor_plugin TEXT,
+            use_strategy       BOOLEAN,
+            use_daily          BOOLEAN,
+            mc_samples         INTEGER
+        );
 
-    CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_dataset_split (
-      split_key TEXT PRIMARY KEY,
-      description TEXT
-    );
+        CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_dataset_split (
+            split_key TEXT PRIMARY KEY,
+            description TEXT
+        );
 
-    CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_horizon (
-      horizon_key INTEGER PRIMARY KEY,
-      description TEXT
-    );
+        CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_horizon (
+            horizon_key INTEGER PRIMARY KEY,
+            description TEXT
+        );
 
-    CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_metric (
-      metric_key TEXT PRIMARY KEY,
-      metric_type TEXT,
-      direction   TEXT
-    );
+        CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_metric (
+            metric_key TEXT PRIMARY KEY,
+            metric_type TEXT,
+            direction   TEXT
+        );
 
-    CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_performance (
-      id             BIGSERIAL PRIMARY KEY,
-      experiment_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_experiment(experiment_key) ON DELETE CASCADE,
-      phase_key      TEXT NOT NULL REFERENCES {SCHEMA}.dim_phase(phase_key) ON DELETE CASCADE,
-      split_key      TEXT NOT NULL REFERENCES {SCHEMA}.dim_dataset_split(split_key),
-      horizon_key    INTEGER NOT NULL REFERENCES {SCHEMA}.dim_horizon(horizon_key),
-      metric_key     TEXT NOT NULL REFERENCES {SCHEMA}.dim_metric(metric_key),
-      avg_value      DOUBLE PRECISION,
-      std_dev        DOUBLE PRECISION,
-      min_value      DOUBLE PRECISION,
-      max_value      DOUBLE PRECISION,
-      loaded_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      UNIQUE (experiment_key, phase_key, split_key, horizon_key, metric_key)
-    );
+        CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_performance (
+            id             BIGSERIAL PRIMARY KEY,
+            experiment_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_experiment(experiment_key) ON DELETE CASCADE,
+            phase_key      TEXT NOT NULL REFERENCES {SCHEMA}.dim_phase(phase_key) ON DELETE CASCADE,
+            split_key      TEXT NOT NULL REFERENCES {SCHEMA}.dim_dataset_split(split_key),
+            horizon_key    INTEGER NOT NULL REFERENCES {SCHEMA}.dim_horizon(horizon_key),
+            metric_key     TEXT NOT NULL REFERENCES {SCHEMA}.dim_metric(metric_key),
+            avg_value      DOUBLE PRECISION,
+            std_dev        DOUBLE PRECISION,
+            min_value      DOUBLE PRECISION,
+            max_value      DOUBLE PRECISION,
+            loaded_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            UNIQUE (experiment_key, phase_key, split_key, horizon_key, metric_key)
+        );
 
-    CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_results_summary (
-      id             BIGSERIAL PRIMARY KEY,
-      experiment_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_experiment(experiment_key) ON DELETE CASCADE,
-      phase_key      TEXT,
-      metric         TEXT NOT NULL,
-      avg_value      DOUBLE PRECISION,
-      std_dev        DOUBLE PRECISION,
-      min_value      DOUBLE PRECISION,
-      max_value      DOUBLE PRECISION,
-      loaded_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      UNIQUE (experiment_key, metric)
-    );
+        CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_results_summary (
+            id             BIGSERIAL PRIMARY KEY,
+            experiment_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_experiment(experiment_key) ON DELETE CASCADE,
+            phase_key      TEXT,
+            metric         TEXT NOT NULL,
+            avg_value      DOUBLE PRECISION,
+            std_dev        DOUBLE PRECISION,
+            min_value      DOUBLE PRECISION,
+            max_value      DOUBLE PRECISION,
+            loaded_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            UNIQUE (experiment_key, metric)
+        );
 
-    CREATE INDEX IF NOT EXISTS idx_fact_perf_experiment
-      ON {SCHEMA}.fact_performance (experiment_key);
+        CREATE INDEX IF NOT EXISTS idx_fact_perf_experiment
+            ON {SCHEMA}.fact_performance (experiment_key);
 
-    CREATE INDEX IF NOT EXISTS idx_fact_perf_metric
-      ON {SCHEMA}.fact_performance (metric_key);
+        CREATE INDEX IF NOT EXISTS idx_fact_perf_metric
+            ON {SCHEMA}.fact_performance (metric_key);
 
-    CREATE INDEX IF NOT EXISTS idx_dim_experiment_cfg_gin
-      ON {SCHEMA}.dim_experiment USING gin (config_json);
-    """
-    with engine.begin() as conn:
-        conn.exec_driver_sql(ddl)
-        # seed splits / horizons / canonical metrics
-        conn.exec_driver_sql(f"""
-            INSERT INTO {SCHEMA}.dim_dataset_split (split_key, description) VALUES
-              ('train','Training set'), ('validation','Validation set'), ('test','Test set')
-            ON CONFLICT DO NOTHING;
-        """)
-        conn.exec_driver_sql(f"""
-            INSERT INTO {SCHEMA}.dim_horizon (horizon_key, description) VALUES
-              (1,'Horizon 1'), (2,'Horizon 2'), (3,'Horizon 3'),
-              (4,'Horizon 4'), (5,'Horizon 5'), (6,'Horizon 6')
-            ON CONFLICT DO NOTHING;
-        """)
-        conn.exec_driver_sql(f"""
-            INSERT INTO {SCHEMA}.dim_metric (metric_key, metric_type, direction) VALUES
-              ('MAE','error','lower_is_better'),
-              ('R2','fit','higher_is_better'),
-              ('SNR','signal_to_noise','higher_is_better'),
-              ('Uncertainty','uncertainty','lower_is_better'),
-              ('Naive_MAE','baseline','lower_is_better')
-            ON CONFLICT DO NOTHING;
-        """)
+        CREATE INDEX IF NOT EXISTS idx_dim_experiment_cfg_gin
+            ON {SCHEMA}.dim_experiment USING gin (config_json);
+        """
+        with engine.begin() as conn:
+                conn.exec_driver_sql(ddl)
+                # Backfill/migrate existing tables that may predate new columns
+                # These are safe, idempotent ALTERs for older databases.
+                try:
+                        conn.exec_driver_sql(f"""
+                                ALTER TABLE {SCHEMA}.fact_performance
+                                    ADD COLUMN IF NOT EXISTS avg_value   DOUBLE PRECISION,
+                                    ADD COLUMN IF NOT EXISTS std_dev     DOUBLE PRECISION,
+                                    ADD COLUMN IF NOT EXISTS min_value   DOUBLE PRECISION,
+                                    ADD COLUMN IF NOT EXISTS max_value   DOUBLE PRECISION,
+                                    ADD COLUMN IF NOT EXISTS loaded_at   TIMESTAMPTZ NOT NULL DEFAULT NOW();
+                        """)
+                except Exception as exc:
+                        logging.warning("Schema migrate (fact_performance columns) skipped or failed: %s", exc)
+
+                # Legacy column: metric_value (older schema used a single value column)
+                # - Allow NULL to prevent insert failures when not provided
+                # - Backfill from avg_value when available
+                try:
+                        # Drop NOT NULL if present (idempotent using information_schema)
+                        conn.exec_driver_sql(f"""
+                                DO $$
+                                BEGIN
+                                    IF EXISTS (
+                                        SELECT 1
+                                        FROM information_schema.columns
+                                        WHERE table_schema = '{SCHEMA}'
+                                            AND table_name   = 'fact_performance'
+                                            AND column_name  = 'metric_value'
+                                            AND is_nullable  = 'NO'
+                                    ) THEN
+                                        EXECUTE 'ALTER TABLE {SCHEMA}.fact_performance ALTER COLUMN metric_value DROP NOT NULL';
+                                    END IF;
+                                END$$;
+                        """)
+                        # Backfill metric_value from avg_value when missing
+                        conn.exec_driver_sql(f"""
+                                UPDATE {SCHEMA}.fact_performance
+                                     SET metric_value = avg_value
+                                 WHERE metric_value IS NULL AND avg_value IS NOT NULL;
+                        """)
+                except Exception as exc:
+                        logging.warning("Schema migrate (metric_value relax/backfill) skipped or failed: %s", exc)
+
+                # Ensure a unique index exists for the ON CONFLICT clause used by the loader.
+                # Older databases may miss the UNIQUE constraint even if the table exists.
+                # First, remove duplicates that would block unique index creation.
+                try:
+                        conn.exec_driver_sql(f"""
+                                DELETE FROM {SCHEMA}.fact_performance t
+                                USING {SCHEMA}.fact_performance t2
+                                WHERE t.id > t2.id
+                                    AND t.experiment_key = t2.experiment_key
+                                    AND t.phase_key = t2.phase_key
+                                    AND t.split_key = t2.split_key
+                                    AND t.horizon_key = t2.horizon_key
+                                    AND t.metric_key = t2.metric_key;
+                        """)
+                except Exception as exc:
+                        logging.warning("Duplicate cleanup for fact_performance skipped or failed: %s", exc)
+
+                # Create a unique index if it does not exist (supports ON CONFLICT by column list)
+                try:
+                        conn.exec_driver_sql(f"""
+                                DO $$
+                                BEGIN
+                                    IF NOT EXISTS (
+                                        SELECT 1 FROM pg_class c
+                                        JOIN pg_namespace n ON n.oid = c.relnamespace
+                                        WHERE c.relkind = 'i'
+                                            AND c.relname = 'ux_fact_performance_keys'
+                                            AND n.nspname = '{SCHEMA}'
+                                    ) THEN
+                                        EXECUTE 'CREATE UNIQUE INDEX ux_fact_performance_keys ON {SCHEMA}.fact_performance (
+                                                            experiment_key, phase_key, split_key, horizon_key, metric_key)';
+                                    END IF;
+                                END$$;
+                        """)
+                except Exception as exc:
+                        logging.warning("Creating unique index for fact_performance failed: %s", exc)
+
+                # seed splits / horizons / canonical metrics
+                conn.exec_driver_sql(f"""
+                        INSERT INTO {SCHEMA}.dim_dataset_split (split_key, description) VALUES
+                            ('train','Training set'), ('validation','Validation set'), ('test','Test set')
+                        ON CONFLICT DO NOTHING;
+                """)
+                conn.exec_driver_sql(f"""
+                        INSERT INTO {SCHEMA}.dim_horizon (horizon_key, description) VALUES
+                            (1,'Horizon 1'), (2,'Horizon 2'), (3,'Horizon 3'),
+                            (4,'Horizon 4'), (5,'Horizon 5'), (6,'Horizon 6')
+                        ON CONFLICT DO NOTHING;
+                """)
+                conn.exec_driver_sql(f"""
+                        INSERT INTO {SCHEMA}.dim_metric (metric_key, metric_type, direction) VALUES
+                            ('MAE','error','lower_is_better'),
+                            ('R2','fit','higher_is_better'),
+                            ('SNR','signal_to_noise','higher_is_better'),
+                            ('Uncertainty','uncertainty','lower_is_better'),
+                            ('Naive_MAE','baseline','lower_is_better'),
+                            ('Naive MAE','baseline','lower_is_better')
+                        ON CONFLICT DO NOTHING;
+                """)
 
 # -----------------------------
 # Upsert helpers
@@ -388,20 +469,48 @@ def load_performance_metrics(engine, project_key: str, phase_key: str, experimen
     if "Metric" not in df.columns:
         raise ValueError("Results CSV missing 'Metric' column")
 
-    # Upsert SQL for fact_performance (we will execute many times inside single txn)
-    upsert_sql = f"""
-    INSERT INTO {SCHEMA}.fact_performance
-      (experiment_key, phase_key, split_key, horizon_key, metric_key, avg_value, std_dev, min_value, max_value)
-    VALUES
-      (:experiment_key, :phase_key, :split_key, :horizon_key, :metric_key, :avg, :std, :minv, :maxv)
-    ON CONFLICT (experiment_key, phase_key, split_key, horizon_key, metric_key) DO UPDATE
-      SET avg_value = EXCLUDED.avg_value,
-          std_dev = EXCLUDED.std_dev,
-          min_value = EXCLUDED.min_value,
-          max_value = EXCLUDED.max_value,
-          loaded_at = NOW();
-    """
+    # Determine if legacy column metric_value exists; if so, include it to satisfy NOT NULL legacy schemas
+    include_metric_value = False
+    try:
+        with engine.connect() as conn_check:
+            res = conn_check.execute(text(
+                """
+                SELECT 1 FROM information_schema.columns
+                 WHERE table_schema = :schema AND table_name = 'fact_performance' AND column_name = 'metric_value'
+                """
+            ), {"schema": SCHEMA}).fetchone()
+            include_metric_value = res is not None
+    except Exception as exc:
+        logging.debug("Could not determine presence of metric_value column: %s", exc)
 
+    # Upsert SQL for fact_performance (we will execute many times inside single txn)
+    if include_metric_value:
+        upsert_sql = f"""
+        INSERT INTO {SCHEMA}.fact_performance
+            (experiment_key, phase_key, split_key, horizon_key, metric_key, metric_value, avg_value, std_dev, min_value, max_value)
+        VALUES
+            (:experiment_key, :phase_key, :split_key, :horizon_key, :metric_key, :metric_value, :avg, :std, :minv, :maxv)
+        ON CONFLICT (experiment_key, phase_key, split_key, horizon_key, metric_key) DO UPDATE
+            SET metric_value = EXCLUDED.metric_value,
+                avg_value   = EXCLUDED.avg_value,
+                std_dev     = EXCLUDED.std_dev,
+                min_value   = EXCLUDED.min_value,
+                max_value   = EXCLUDED.max_value,
+                loaded_at   = NOW();
+        """
+    else:
+        upsert_sql = f"""
+        INSERT INTO {SCHEMA}.fact_performance
+            (experiment_key, phase_key, split_key, horizon_key, metric_key, avg_value, std_dev, min_value, max_value)
+        VALUES
+            (:experiment_key, :phase_key, :split_key, :horizon_key, :metric_key, :avg, :std, :minv, :maxv)
+        ON CONFLICT (experiment_key, phase_key, split_key, horizon_key, metric_key) DO UPDATE
+            SET avg_value = EXCLUDED.avg_value,
+                std_dev   = EXCLUDED.std_dev,
+                min_value = EXCLUDED.min_value,
+                max_value = EXCLUDED.max_value,
+                loaded_at = NOW();
+        """
     # helper to canonicalize metric name to keys used in dim_metric
     def canonical_metric_key(raw_metric_name: str) -> str:
         rn = raw_metric_name.strip().lower().replace("_", " ")
@@ -421,8 +530,9 @@ def load_performance_metrics(engine, project_key: str, phase_key: str, experimen
     rows_written = 0
     skipped = 0
 
-    # We'll do a single transaction per-experiment for speed and atomicity
+    # We'll do a single transaction per-experiment; use per-row SAVEPOINTs to avoid aborting the whole txn
     with engine.begin() as conn:
+        # include_metric_value and upsert_sql were computed above; ensure they are available here
         for idx, row in df.iterrows():
             raw_metric = str(row.get("Metric", "")).strip()
             m = _METRIC_RE.match(raw_metric)
@@ -444,10 +554,11 @@ def load_performance_metrics(engine, project_key: str, phase_key: str, experimen
 
             # ensure metric exists in dim_metric (auto-create conservative entry)
             try:
-                conn.execute(text(f"""
-                    INSERT INTO {SCHEMA}.dim_metric (metric_key, metric_type, direction)
-                    VALUES (:mk, 'unknown', 'unknown') ON CONFLICT (metric_key) DO NOTHING;
-                """), {"mk": metric_key})
+                with conn.begin_nested():  # savepoint
+                    conn.execute(text(f"""
+                        INSERT INTO {SCHEMA}.dim_metric (metric_key, metric_type, direction)
+                        VALUES (:mk, 'unknown', 'unknown') ON CONFLICT (metric_key) DO NOTHING;
+                    """), {"mk": metric_key})
             except Exception as exc:
                 logging.warning("Failed to ensure dim_metric for %s: %s", metric_key, exc)
 
@@ -469,19 +580,24 @@ def load_performance_metrics(engine, project_key: str, phase_key: str, experimen
                 skipped += 1
                 continue
 
-            # upsert to fact_performance
+            # upsert to fact_performance within a savepoint to isolate row failures
             try:
-                conn.execute(text(upsert_sql), {
-                    "experiment_key": experiment_key,
-                    "phase_key": phase_key,
-                    "split_key": split_key,
-                    "horizon_key": horizon_key,
-                    "metric_key": metric_key,
-                    "avg": avg,
-                    "std": std,
-                    "minv": minv,
-                    "maxv": maxv
-                })
+                with conn.begin_nested():  # savepoint
+                    params = {
+                        "experiment_key": experiment_key,
+                        "phase_key": phase_key,
+                        "split_key": split_key,
+                        "horizon_key": horizon_key,
+                        "metric_key": metric_key,
+                        "avg": avg,
+                        "std": std,
+                        "minv": minv,
+                        "maxv": maxv
+                    }
+                    if include_metric_value:
+                        # Mirror avg into legacy metric_value
+                        params["metric_value"] = avg
+                    conn.execute(text(upsert_sql), params)
                 rows_written += 1
             except Exception as exc:
                 logging.error("Failed to upsert fact_performance for %s / %s / H%s / %s: %s",
