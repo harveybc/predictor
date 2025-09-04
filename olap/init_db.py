@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 """
-@file init_db.py
-@brief Initialize PostgreSQL schema and tables required for OLAP cube.
-       Safe to run multiple times (idempotent).
+init_db.py
+Idempotent initialization for OLAP schema used by the ETL.
+Creates dims: dim_project, dim_phase, dim_experiment, dim_dataset_split, dim_horizon, dim_metric
+and facts: fact_performance, fact_results_summary.
 """
 
 import os
@@ -16,18 +16,15 @@ SCHEMA = "public"
 DDL = f"""
 CREATE SCHEMA IF NOT EXISTS {SCHEMA};
 
--- Project dimension
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_project (
   project_key TEXT PRIMARY KEY
 );
 
--- Phase dimension
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_phase (
   phase_key   TEXT PRIMARY KEY,
   project_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_project(project_key) ON DELETE CASCADE
 );
 
--- Experiment dimension (config & extracted params)
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_experiment (
   experiment_key TEXT PRIMARY KEY,
   project_key    TEXT NOT NULL REFERENCES {SCHEMA}.dim_project(project_key) ON DELETE CASCADE,
@@ -59,6 +56,8 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_experiment (
   use_stl            BOOLEAN,
   use_wavelets       BOOLEAN,
   use_multi_tapper   BOOLEAN,
+
+  -- categorical and boolean fields made available to Metabase GUI
   predictor_plugin   TEXT,
   optimizer_plugin   TEXT,
   pipeline_plugin    TEXT,
@@ -68,26 +67,22 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_experiment (
   mc_samples         INTEGER
 );
 
--- Dataset split dimension
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_dataset_split (
   split_key TEXT PRIMARY KEY,
   description TEXT
 );
 
--- Horizon dimension
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_horizon (
   horizon_key INTEGER PRIMARY KEY,
   description TEXT
 );
 
--- Metric dimension
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_metric (
   metric_key TEXT PRIMARY KEY,
   metric_type TEXT,
-  direction   TEXT  -- "lower_is_better" or "higher_is_better"
+  direction   TEXT
 );
 
--- Fact table: experiment × split × horizon × metric
 CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_performance (
   id             BIGSERIAL PRIMARY KEY,
   experiment_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_experiment(experiment_key) ON DELETE CASCADE,
@@ -95,13 +90,28 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_performance (
   split_key      TEXT NOT NULL REFERENCES {SCHEMA}.dim_dataset_split(split_key),
   horizon_key    INTEGER NOT NULL REFERENCES {SCHEMA}.dim_horizon(horizon_key),
   metric_key     TEXT NOT NULL REFERENCES {SCHEMA}.dim_metric(metric_key),
-  metric_value   DOUBLE PRECISION NOT NULL,
+  avg_value      DOUBLE PRECISION,
+  std_dev        DOUBLE PRECISION,
+  min_value      DOUBLE PRECISION,
+  max_value      DOUBLE PRECISION,
   loaded_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (experiment_key, phase_key, split_key, horizon_key, metric_key)
 );
 
+CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_results_summary (
+  id             BIGSERIAL PRIMARY KEY,
+  experiment_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_experiment(experiment_key) ON DELETE CASCADE,
+  phase_key      TEXT,
+  metric         TEXT NOT NULL,
+  avg_value      DOUBLE PRECISION,
+  std_dev        DOUBLE PRECISION,
+  min_value      DOUBLE PRECISION,
+  max_value      DOUBLE PRECISION,
+  loaded_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (experiment_key, metric)
+);
 
--- Useful indexes
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_fact_perf_experiment
   ON {SCHEMA}.fact_performance (experiment_key);
 
@@ -113,10 +123,18 @@ CREATE INDEX IF NOT EXISTS idx_dim_experiment_cfg_gin
 """
 
 SEED = f"""
+-- dataset splits
 INSERT INTO {SCHEMA}.dim_dataset_split (split_key, description) VALUES
   ('train','Training set'), ('validation','Validation set'), ('test','Test set')
 ON CONFLICT DO NOTHING;
 
+-- horizons 1..6
+INSERT INTO {SCHEMA}.dim_horizon (horizon_key, description) VALUES
+  (1,'Horizon 1'), (2,'Horizon 2'), (3,'Horizon 3'),
+  (4,'Horizon 4'), (5,'Horizon 5'), (6,'Horizon 6')
+ON CONFLICT DO NOTHING;
+
+-- canonical metrics
 INSERT INTO {SCHEMA}.dim_metric (metric_key, metric_type, direction) VALUES
   ('MAE','error','lower_is_better'),
   ('R2','fit','higher_is_better'),
@@ -126,36 +144,25 @@ INSERT INTO {SCHEMA}.dim_metric (metric_key, metric_type, direction) VALUES
 ON CONFLICT DO NOTHING;
 """
 
-
 def build_engine_from_pg_env():
-    """
-    Construct a SQLAlchemy engine from PG* environment variables
-    with sane defaults for local dev.
-    """
     host = os.getenv("PGHOST", "127.0.0.1")
     port = int(os.getenv("PGPORT", "5432"))
-    dbname = os.getenv("PGDATABASE", "predictor_olap")   # default fallback
+    dbname = os.getenv("PGDATABASE", "predictor_olap")
     user = os.getenv("PGUSER", "metabase")
     password = os.getenv("PGPASSWORD", "metabase_pass")
-
     dsn = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
     engine = create_engine(dsn, pool_pre_ping=True, future=True)
-
-    logging.info("Connected to PostgreSQL at %s:%s, database=%s, user=%s",
-                 host, port, dbname, user)
+    logging.info("Connected to PostgreSQL at %s:%s database=%s user=%s", host, port, dbname, user)
     return engine
-
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     engine = build_engine_from_pg_env()
-    logging.info("Creating schema and tables in database (see DSN above)...")
+    logging.info("Creating schema and tables (SCHEMA=%s)...", SCHEMA)
     with engine.begin() as conn:
         conn.exec_driver_sql(DDL)
         conn.exec_driver_sql(SEED)
-
     logging.info("Database initialization complete.")
-
 
 if __name__ == "__main__":
     main()
