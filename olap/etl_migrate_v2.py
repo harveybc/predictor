@@ -552,6 +552,17 @@ def load_performance_metrics(engine, project_key: str, phase_key: str, experimen
 
             metric_key = canonical_metric_key(metric_name_raw)
 
+            # ensure horizon exists in dim_horizon
+            try:
+                with conn.begin_nested():  # savepoint
+                    conn.execute(text(f"""
+                        INSERT INTO {SCHEMA}.dim_horizon (horizon_key, description)
+                        VALUES (:hk, :desc)
+                        ON CONFLICT (horizon_key) DO NOTHING;
+                    """), {"hk": horizon_key, "desc": f"Horizon {horizon_key}"})
+            except Exception as exc:
+                logging.warning("Failed to ensure dim_horizon for H%s: %s", horizon_key, exc)
+
             # ensure metric exists in dim_metric (auto-create conservative entry)
             try:
                 with conn.begin_nested():  # savepoint
