@@ -2,11 +2,16 @@
 # -*- coding: utf-8 -*-
 """
 init_db.py
-Idempotent initialization for OLAP schema used by the ETL.
-Creates dims: dim_project, dim_phase, dim_experiment, dim_dataset_split, dim_horizon, dim_metric
-and facts: fact_performance, fact_results_summary.
-"""
 
+Idempotent initialization for OLAP schema used by the ETL.
+
+Creates:
+  - dim_project, dim_phase, dim_experiment
+  - dim_dataset_split, dim_horizon, dim_metric
+  - fact_performance, fact_results_summary
+
+This file is safe to run repeatedly (idempotent).
+"""
 import os
 import logging
 from sqlalchemy import create_engine
@@ -16,15 +21,18 @@ SCHEMA = "public"
 DDL = f"""
 CREATE SCHEMA IF NOT EXISTS {SCHEMA};
 
+-- Projects
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_project (
   project_key TEXT PRIMARY KEY
 );
 
+-- Phases
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_phase (
   phase_key   TEXT PRIMARY KEY,
   project_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_project(project_key) ON DELETE CASCADE
 );
 
+-- Experiments (config JSON + extracted columns for Metabase filtering)
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_experiment (
   experiment_key TEXT PRIMARY KEY,
   project_key    TEXT NOT NULL REFERENCES {SCHEMA}.dim_project(project_key) ON DELETE CASCADE,
@@ -32,7 +40,7 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_experiment (
   config_json    JSONB,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-  -- Extracted fields for filtering
+  -- Extracted numeric / filterable fields
   max_steps_train    INTEGER,
   max_steps_test     INTEGER,
   intermediate_layers INTEGER,
@@ -57,32 +65,36 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_experiment (
   use_wavelets       BOOLEAN,
   use_multi_tapper   BOOLEAN,
 
-  -- categorical and boolean fields made available to Metabase GUI
-  predictor_plugin   TEXT,
-  optimizer_plugin   TEXT,
-  pipeline_plugin    TEXT,
+  -- Categorical/boolean fields for Metabase GUI filters
+  predictor_plugin    TEXT,
+  optimizer_plugin    TEXT,
+  pipeline_plugin     TEXT,
   preprocessor_plugin TEXT,
-  use_strategy       BOOLEAN,
-  use_daily          BOOLEAN,
-  mc_samples         INTEGER
+  use_strategy        BOOLEAN,
+  use_daily           BOOLEAN,
+  mc_samples          INTEGER
 );
 
+-- Dataset splits
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_dataset_split (
   split_key TEXT PRIMARY KEY,
   description TEXT
 );
 
+-- Horizons (1..N)
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_horizon (
   horizon_key INTEGER PRIMARY KEY,
   description TEXT
 );
 
+-- Metrics (canonical set; loader may add more entries as needed)
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_metric (
   metric_key TEXT PRIMARY KEY,
   metric_type TEXT,
   direction   TEXT
 );
 
+-- Fact: per-experiment × split × horizon × metric
 CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_performance (
   id             BIGSERIAL PRIMARY KEY,
   experiment_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_experiment(experiment_key) ON DELETE CASCADE,
@@ -98,10 +110,11 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_performance (
   UNIQUE (experiment_key, phase_key, split_key, horizon_key, metric_key)
 );
 
+-- Fact: per-experiment summary (kept for high-level views)
 CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_results_summary (
   id             BIGSERIAL PRIMARY KEY,
   experiment_key TEXT NOT NULL REFERENCES {SCHEMA}.dim_experiment(experiment_key) ON DELETE CASCADE,
-  phase_key      TEXT,
+  phase_key      TEXT REFERENCES {SCHEMA}.dim_phase(phase_key) ON DELETE CASCADE,
   metric         TEXT NOT NULL,
   avg_value      DOUBLE PRECISION,
   std_dev        DOUBLE PRECISION,
@@ -111,35 +124,31 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_results_summary (
   UNIQUE (experiment_key, metric)
 );
 
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_fact_perf_experiment
-  ON {SCHEMA}.fact_performance (experiment_key);
-
-CREATE INDEX IF NOT EXISTS idx_fact_perf_metric
-  ON {SCHEMA}.fact_performance (metric_key);
-
-CREATE INDEX IF NOT EXISTS idx_dim_experiment_cfg_gin
-  ON {SCHEMA}.dim_experiment USING gin (config_json);
+-- Indexes to speed common access patterns
+CREATE INDEX IF NOT EXISTS idx_fact_perf_experiment ON {SCHEMA}.fact_performance (experiment_key);
+CREATE INDEX IF NOT EXISTS idx_fact_perf_metric     ON {SCHEMA}.fact_performance (metric_key);
+CREATE INDEX IF NOT EXISTS idx_dim_experiment_cfg_gin ON {SCHEMA}.dim_experiment USING gin (config_json);
 """
 
+# Seed data: splits, horizons, canonical metrics
+# Note: include both "Naive MAE" and "Naive_MAE" variants to tolerate CSV differences.
 SEED = f"""
--- dataset splits
 INSERT INTO {SCHEMA}.dim_dataset_split (split_key, description) VALUES
   ('train','Training set'), ('validation','Validation set'), ('test','Test set')
 ON CONFLICT DO NOTHING;
 
--- horizons 1..6
 INSERT INTO {SCHEMA}.dim_horizon (horizon_key, description) VALUES
   (1,'Horizon 1'), (2,'Horizon 2'), (3,'Horizon 3'),
   (4,'Horizon 4'), (5,'Horizon 5'), (6,'Horizon 6')
 ON CONFLICT DO NOTHING;
 
--- canonical metrics
+-- Insert canonical metric keys. We add both spaced and underscore variants for Naive MAE
 INSERT INTO {SCHEMA}.dim_metric (metric_key, metric_type, direction) VALUES
   ('MAE','error','lower_is_better'),
   ('R2','fit','higher_is_better'),
   ('SNR','signal_to_noise','higher_is_better'),
   ('Uncertainty','uncertainty','lower_is_better'),
+  ('Naive MAE','baseline','lower_is_better'),
   ('Naive_MAE','baseline','lower_is_better')
 ON CONFLICT DO NOTHING;
 """
