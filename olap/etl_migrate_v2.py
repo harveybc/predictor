@@ -404,10 +404,10 @@ def load_performance_metrics(engine, project_key: str, phase_key: str, experimen
 
     # helper to canonicalize metric name to keys used in dim_metric
     def canonical_metric_key(raw_metric_name: str) -> str:
-        rn = raw_metric_name.strip().lower()
-        if "naive" in rn:
+        rn = raw_metric_name.strip().lower().replace("_", " ")
+        if rn in ("naive mae", "naive_mae"):
             return "Naive_MAE"
-        if rn == "mae" or rn.endswith(" mae") or (" mae" in rn and "naive" not in rn):
+        if rn == "mae" or rn.endswith(" mae"):
             return "MAE"
         if rn in ("r2", "r^2") or "r2" in rn:
             return "R2"
@@ -415,8 +415,8 @@ def load_performance_metrics(engine, project_key: str, phase_key: str, experimen
             return "SNR"
         if "uncertainty" in rn:
             return "Uncertainty"
-        # fallback: uppercase with underscores
         return raw_metric_name.strip().replace(" ", "_")
+
 
     rows_written = 0
     skipped = 0
