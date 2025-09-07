@@ -47,9 +47,18 @@ def denormalize(data, config):
             except Exception as e: print(f"WARN: Failed load norm JSON {norm_json}: {e}"); return data
         if isinstance(norm_json, dict) and "CLOSE" in norm_json:
             try:
-                close_min = norm_json["CLOSE"]["min"]; close_max = norm_json["CLOSE"]["max"]; diff = close_max - close_min
-                if diff == 0: return data + close_min
-                return data * diff + close_min
+                close_info = norm_json["CLOSE"]
+                # Auto-select method based on available keys: prefer min/max, else mean/std
+                if "min" in close_info and "max" in close_info:
+                    close_min = close_info["min"]; close_max = close_info["max"]; diff = close_max - close_min
+                    if diff == 0: return data + close_min
+                    return data * diff + close_min
+                elif "mean" in close_info and "std" in close_info:
+                    mean = close_info["mean"]; std = close_info["std"]
+                    return data * std + mean
+                else:
+                    # Fallback: if keys are missing, just return data
+                    return data
             except KeyError as e: print(f"WARN: Missing key in norm JSON: {e}"); return data
             except Exception as e: print(f"WARN: Error during denormalize: {e}"); return data
     return data
@@ -65,9 +74,17 @@ def denormalize_returns(data, config):
             except Exception as e: print(f"WARN: Failed load norm JSON {norm_json}: {e}"); return data
         if isinstance(norm_json, dict) and "CLOSE" in norm_json:
             try:
-                close_min=norm_json["CLOSE"]["min"]; close_max=norm_json["CLOSE"]["max"]; diff=close_max - close_min
-                if diff == 0: return data
-                return data * diff
+                close_info = norm_json["CLOSE"]
+                # Auto-select method: min/max scales by range; mean/std scales by std only (delta has no mean shift)
+                if "min" in close_info and "max" in close_info:
+                    close_min = close_info["min"]; close_max = close_info["max"]; diff = close_max - close_min
+                    if diff == 0: return data
+                    return data * diff
+                elif "mean" in close_info and "std" in close_info:
+                    std = close_info["std"]
+                    return data * std
+                else:
+                    return data
             except KeyError as e: print(f"WARN: Missing key in norm JSON: {e}"); return data
             except Exception as e: print(f"WARN: Error during denormalize_returns: {e}"); return data
     return data
