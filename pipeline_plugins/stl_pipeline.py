@@ -121,9 +121,9 @@ class STLPipelinePlugin:
         start_time = time.time(); run_config = self.params.copy(); run_config.update(config); config = run_config
         iterations = config.get("iterations", 1); print(f"Iterations: {iterations}")
 
-        # Init metric storage
-        predicted_horizons = config.get('predicted_horizons'); num_outputs = len(predicted_horizons)
-        metric_names=["MAE","R2","Uncertainty","SNR"]; data_sets=["Train","Validation","Test"]
+    # Init metric storage
+    predicted_horizons = config.get('predicted_horizons'); num_outputs = len(predicted_horizons)
+    metric_names=["MAE","Naive MAE","R2","Uncertainty","SNR"]; data_sets=["Train","Validation","Test"]
         metrics_results = {ds:{mn:{h:[] for h in predicted_horizons} for mn in metric_names} for ds in data_sets}
 
         # 1. Get datasets
@@ -181,10 +181,21 @@ class STLPipelinePlugin:
                         val_target_price=denormalize(baseline_val_h+val_target_h if use_returns else val_target_h, config)
                         val_pred_price=denormalize(baseline_val_h+val_preds_h if use_returns else val_preds_h, config)
                         # Metrics
-                        train_mae_h=np.mean(np.abs(denormalize_returns(train_preds_h-train_target_h, config))); train_r2_h=r2_score(train_target_price, train_pred_price); train_unc_mean_h=np.mean(np.abs(denormalize_returns(train_unc_h, config))); train_snr_h=np.mean(train_pred_price)/(train_unc_mean_h+1e-9)
-                        val_mae_h=np.mean(np.abs(denormalize_returns(val_preds_h-val_target_h, config))); val_r2_h=r2_score(val_target_price, val_pred_price); val_unc_mean_h=np.mean(np.abs(denormalize_returns(val_unc_h, config))); val_snr_h=np.mean(val_pred_price)/(val_unc_mean_h+1e-9)
-                        metrics_results["Train"]["MAE"][h].append(train_mae_h); metrics_results["Train"]["R2"][h].append(train_r2_h); metrics_results["Train"]["Uncertainty"][h].append(train_unc_mean_h); metrics_results["Train"]["SNR"][h].append(train_snr_h)
-                        metrics_results["Validation"]["MAE"][h].append(val_mae_h); metrics_results["Validation"]["R2"][h].append(val_r2_h); metrics_results["Validation"]["Uncertainty"][h].append(val_unc_mean_h); metrics_results["Validation"]["SNR"][h].append(val_snr_h)
+                        train_mae_h=np.mean(np.abs(denormalize_returns(train_preds_h-train_target_h, config)))
+                        train_r2_h=r2_score(train_target_price, train_pred_price)
+                        train_unc_mean_h=np.mean(np.abs(denormalize_returns(train_unc_h, config)))
+                        train_snr_h=np.mean(train_pred_price)/(train_unc_mean_h+1e-9)
+                        # Naive MAE: baseline vs target price (both in real-world scale)
+                        train_naive_mae_h=np.mean(np.abs(denormalize(baseline_train_h, config) - train_target_price))
+
+                        val_mae_h=np.mean(np.abs(denormalize_returns(val_preds_h-val_target_h, config)))
+                        val_r2_h=r2_score(val_target_price, val_pred_price)
+                        val_unc_mean_h=np.mean(np.abs(denormalize_returns(val_unc_h, config)))
+                        val_snr_h=np.mean(val_pred_price)/(val_unc_mean_h+1e-9)
+                        val_naive_mae_h=np.mean(np.abs(denormalize(baseline_val_h, config) - val_target_price))
+
+                        metrics_results["Train"]["MAE"][h].append(train_mae_h); metrics_results["Train"]["Naive MAE"][h].append(train_naive_mae_h); metrics_results["Train"]["R2"][h].append(train_r2_h); metrics_results["Train"]["Uncertainty"][h].append(train_unc_mean_h); metrics_results["Train"]["SNR"][h].append(train_snr_h)
+                        metrics_results["Validation"]["MAE"][h].append(val_mae_h); metrics_results["Validation"]["Naive MAE"][h].append(val_naive_mae_h); metrics_results["Validation"]["R2"][h].append(val_r2_h); metrics_results["Validation"]["Uncertainty"][h].append(val_unc_mean_h); metrics_results["Validation"]["SNR"][h].append(val_snr_h)
                     except Exception as e: print(f"WARN: Error Train/Val metrics H={h}: {e}"); [metrics_results[ds][m][h].append(np.nan) for ds in ["Train","Validation"] for m in metric_names]
             else: print("WARN: Skipping Train/Val stats calculation.")
 
@@ -208,19 +219,31 @@ class STLPipelinePlugin:
                      test_target_price=denormalize(baseline_test_h+test_target_h if use_returns else test_target_h, config)
                      test_pred_price=denormalize(baseline_test_h+test_preds_h if use_returns else test_preds_h, config)
                      # Metrics
-                     test_mae_h=np.mean(np.abs(denormalize_returns(test_preds_h-test_target_h, config))); test_r2_h=r2_score(test_target_price, test_pred_price); test_unc_mean_h=np.mean(np.abs(denormalize_returns(test_unc_h, config))); test_snr_h=np.mean(test_pred_price)/(test_unc_mean_h+1e-9)
-                     metrics_results["Test"]["MAE"][h].append(test_mae_h); metrics_results["Test"]["R2"][h].append(test_r2_h); metrics_results["Test"]["Uncertainty"][h].append(test_unc_mean_h); metrics_results["Test"]["SNR"][h].append(test_snr_h)
+                     test_mae_h=np.mean(np.abs(denormalize_returns(test_preds_h-test_target_h, config)))
+                     test_r2_h=r2_score(test_target_price, test_pred_price)
+                     test_unc_mean_h=np.mean(np.abs(denormalize_returns(test_unc_h, config)))
+                     test_snr_h=np.mean(test_pred_price)/(test_unc_mean_h+1e-9)
+                     test_naive_mae_h=np.mean(np.abs(denormalize(baseline_test_h, config) - test_target_price))
+                     metrics_results["Test"]["MAE"][h].append(test_mae_h); metrics_results["Test"]["Naive MAE"][h].append(test_naive_mae_h); metrics_results["Test"]["R2"][h].append(test_r2_h); metrics_results["Test"]["Uncertainty"][h].append(test_unc_mean_h); metrics_results["Test"]["SNR"][h].append(test_snr_h)
                  except Exception as e: print(f"WARN: Error Test metrics H={h}: {e}"); [metrics_results["Test"][m][h].append(np.nan) for m in metric_names]
 
             # Print Iteration Summary (using PLOTTED horizon)
             try:
                  can_calc_train_val_stats = all(len(lst) == num_outputs for lst in [list_val_preds, list_val_unc])
-                 train_mae_plot=metrics_results["Train"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan; train_r2_plot=metrics_results["Train"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
-                 val_mae_plot=metrics_results["Validation"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan; val_r2_plot=metrics_results["Validation"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
-                 test_mae_plot=metrics_results["Test"]["MAE"][plotted_horizon][-1]; test_r2_plot=metrics_results["Test"]["R2"][plotted_horizon][-1]; test_unc_plot=metrics_results["Test"]["Uncertainty"][plotted_horizon][-1]; test_snr_plot=metrics_results["Test"]["SNR"][plotted_horizon][-1]
+                 train_mae_plot=metrics_results["Train"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
+                 train_naive_mae_plot=metrics_results["Train"]["Naive MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
+                 train_r2_plot=metrics_results["Train"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
+                 val_mae_plot=metrics_results["Validation"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
+                 val_naive_mae_plot=metrics_results["Validation"]["Naive MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
+                 val_r2_plot=metrics_results["Validation"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
+                 test_mae_plot=metrics_results["Test"]["MAE"][plotted_horizon][-1]
+                 test_naive_mae_plot=metrics_results["Test"]["Naive MAE"][plotted_horizon][-1]
+                 test_r2_plot=metrics_results["Test"]["R2"][plotted_horizon][-1]
+                 test_unc_plot=metrics_results["Test"]["Uncertainty"][plotted_horizon][-1]
+                 test_snr_plot=metrics_results["Test"]["SNR"][plotted_horizon][-1]
                  print("*"*72); print(f"Iter {iteration} Done|Time:{time.time()-iter_start:.2f}s|Plot H:{plotted_horizon}")
-                 print(f"  Train MAE:{train_mae_plot:.6f}|R²:{train_r2_plot:.4f} -- Valid MAE:{val_mae_plot:.6f}|R²:{val_r2_plot:.4f}")
-                 print(f"  Test  MAE:{test_mae_plot:.6f}|R²:{test_r2_plot:.4f}|Unc:{test_unc_plot:.6f}|SNR:{test_snr_plot:.2f}"); print("*"*72)
+                 print(f"  Train MAE:{train_mae_plot:.6f}|NMAE:{train_naive_mae_plot:.6f}|R²:{train_r2_plot:.4f} -- Valid MAE:{val_mae_plot:.6f}|NMAE:{val_naive_mae_plot:.6f}|R²:{val_r2_plot:.4f}")
+                 print(f"  Test  MAE:{test_mae_plot:.6f}|NMAE:{test_naive_mae_plot:.6f}|R²:{test_r2_plot:.4f}|Unc:{test_unc_plot:.6f}|SNR:{test_snr_plot:.2f}"); print("*"*72)
             except Exception as e: print(f"WARN: Error printing iter summary: {e}")
             # --- End of Iteration Loop ---
 
