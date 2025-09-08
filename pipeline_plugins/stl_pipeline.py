@@ -121,9 +121,9 @@ class STLPipelinePlugin:
         start_time = time.time(); run_config = self.params.copy(); run_config.update(config); config = run_config
         iterations = config.get("iterations", 1); print(f"Iterations: {iterations}")
 
-    # Init metric storage
-    predicted_horizons = config.get('predicted_horizons'); num_outputs = len(predicted_horizons)
-    metric_names=["MAE","Naive MAE","R2","Uncertainty","SNR"]; data_sets=["Train","Validation","Test"]
+        # Init metric storage
+        predicted_horizons = config.get('predicted_horizons'); num_outputs = len(predicted_horizons)
+        metric_names=["MAE","Naive MAE","R2","Uncertainty","SNR"]; data_sets=["Train","Validation","Test"]
         metrics_results = {ds:{mn:{h:[] for h in predicted_horizons} for mn in metric_names} for ds in data_sets}
 
         # 1. Get datasets
