@@ -77,41 +77,38 @@ class STLPipelinePlugin:
         data_sets = ["Train", "Validation", "Test"]
         metrics_results = {ds: {mn: {h: [] for h in predicted_horizons} for mn in metric_names} for ds in data_sets}
 
-        # 1. Get from preprocessor the train, validation and test datasets(sliding windows matrixes), 
-        #    normalized targets and target normalization stats and denormalized baselines per horizon.
+        # 1. Get from preprocessor the train, validation and test datasets (sliding windows matrices)
         print("Loading/processing datasets via Preprocessor...")
-        datasets, preprocessor_params = preprocessor_plugin.run_preprocessing(config)
+        _prep_result = preprocessor_plugin.run_preprocessing(config)
+        # Support both (datasets, params) and datasets-only returns
+        if isinstance(_prep_result, tuple) and len(_prep_result) >= 1:
+            datasets = _prep_result[0]
+            preprocessor_params = (_prep_result[1] if len(_prep_result) > 1 and isinstance(_prep_result[1], dict) else {})
+        else:
+            datasets = _prep_result
+            preprocessor_params = {}
         print("Preprocessor finished.")
-        
+
         X_train = datasets["x_train"]
         X_val = datasets["x_val"]
         X_test = datasets["x_test"]
-        
-        # Extract targets from target dictionaries (structured by horizon)
-        y_train_list = []
-        y_val_list = []
-        y_test_list = []
-        
-        for idx, h in enumerate(predicted_horizons):
-            # Target data is structured as dictionaries with horizon keys
-            horizon_key = f'output_horizon_{h}'
-            y_train_list.append(datasets["y_train"][horizon_key])
-            y_val_list.append(datasets["y_val"][horizon_key])
-            y_test_list.append(datasets["y_test"][horizon_key])
-        
+
+        # Extract targets as lists (aligned with main STL pipeline)
+        y_train_list = datasets["y_train"]
+        y_val_list = datasets["y_val"]
+        y_test_list = datasets["y_test"]
+
         train_dates = datasets.get("y_train_dates")
         val_dates = datasets.get("y_val_dates")
         test_dates = datasets.get("y_test_dates")
-        
+
         baseline_train = datasets.get("baseline_train")
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
 
-        # Get target normalization stats from preprocessor (lists per horizon)
-        if "target_returns_means" not in preprocessor_params or "target_returns_stds" not in preprocessor_params:
-            raise ValueError("Preprocessor did not return target normalization stats. Check preprocessor execution.")
-        target_returns_means = preprocessor_params["target_returns_means"]
-        target_returns_stds = preprocessor_params["target_returns_stds"]
+        # Get target normalization stats from preprocessor if available (lists per horizon); fallback to defaults
+        target_returns_means = preprocessor_params.get("target_returns_means")
+        target_returns_stds = preprocessor_params.get("target_returns_stds")
         
         use_returns = config.get("use_returns", False)
         if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None): 
