@@ -274,29 +274,30 @@ class STLPipelinePlugin:
                 val_baselines = baseline_val[:num_val]
                 test_baselines = baseline_test[:num_test]
 
-                # 5. Inverse-transform log-returns to price: P_{t+h} = P_t * exp(r_{t->t+h})
-                # Predictions and targets are log-returns; map to absolute price level using the baseline P_t.
-                train_prices = train_baselines * np.exp(train_returns)
-                val_prices = val_baselines * np.exp(val_returns)
-                test_prices = test_baselines * np.exp(test_returns)
+                # 5. Inverse-transform to price using updated target definition:
+                #    P_{t+h} = P_t * (exp(r_{t->t+h}) - 1)
+                train_prices = train_baselines * (np.exp(train_returns) - 1.0)
+                val_prices = val_baselines * (np.exp(val_returns) - 1.0)
+                test_prices = test_baselines * (np.exp(test_returns) - 1.0)
 
-                train_target_prices = train_baselines * np.exp(train_target_returns)
-                val_target_prices = val_baselines * np.exp(val_target_returns)
-                test_target_prices = test_baselines * np.exp(test_target_returns)
+                train_target_prices = train_baselines * (np.exp(train_target_returns) - 1.0)
+                val_target_prices = val_baselines * (np.exp(val_target_returns) - 1.0)
+                test_target_prices = test_baselines * (np.exp(test_target_returns) - 1.0)
 
-                # Uncertainties: MC std is in return space (std of R). Convert to price-space std using lognormal propagation.
-                # If P = B * exp(R), and R ~ N(mu, s^2), then std(P) = (B*exp(mu)) * exp(0.5*s^2) * sqrt(exp(s^2)-1)
-                # Here we use p_hat = B*exp(mean R) as center line; this yields:
-                # std(P) = p_hat * exp(0.5*s^2) * sqrt(expm1(s^2))
-                def _price_std_from_return_std(p_hat, s_r):
+                # Uncertainties: MC std is in return space (std of R). Convert to price-space std for
+                # P = B * (exp(R) - 1). If R ~ N(mu, s^2), then std(P) = B * exp(mu + 0.5*s^2) * sqrt(exp(s^2)-1)
+                # Using p_hat = B * (exp(mu) - 1), note B*exp(mu) = p_hat + B, hence:
+                # std(P) = (p_hat + B) * exp(0.5*s^2) * sqrt(expm1(s^2))
+                def _price_std_from_return_std(p_hat, baseline, s_r):
                     s2 = np.square(s_r)
                     # Numerical safety: cap s^2 to avoid overflow in exp
                     s2 = np.clip(s2, 0.0, 4.0)
-                    return np.abs(p_hat) * np.exp(0.5 * s2) * np.sqrt(np.expm1(s2))
+                    scale = (np.asarray(p_hat) + np.asarray(baseline))
+                    return np.abs(scale) * np.exp(0.5 * s2) * np.sqrt(np.expm1(s2))
 
-                train_price_uncertainties = _price_std_from_return_std(train_prices, train_unc_returns)
-                val_price_uncertainties   = _price_std_from_return_std(val_prices,   val_unc_returns)
-                test_price_uncertainties  = _price_std_from_return_std(test_prices,  test_unc_returns)
+                train_price_uncertainties = _price_std_from_return_std(train_prices, train_baselines, train_unc_returns)
+                val_price_uncertainties   = _price_std_from_return_std(val_prices,   val_baselines,   val_unc_returns)
+                test_price_uncertainties  = _price_std_from_return_std(test_prices,  test_baselines,  test_unc_returns)
 
                 # --- Append results for the current horizon ---
                 real_train_price_preds.append(train_prices)
@@ -317,11 +318,13 @@ class STLPipelinePlugin:
             try:
                 plotted_idx = plotted_index
                 tfac = target_factor
-                # Recompute returns arrays for plotted horizon only (train/val)
-                r_train_pred = original_train_preds[plotted_idx].flatten() / tfac
-                r_train_true = original_train_targets[plotted_idx].flatten() / tfac
-                r_val_pred = original_val_preds[plotted_idx].flatten() / tfac
-                r_val_true = original_val_targets[plotted_idx].flatten() / tfac
+                # Horizon-specific normalization stats
+                mu_diag, sigma_diag = _get_norm_stats(plotted_idx, predicted_horizons[plotted_idx])
+                # Recompute returns arrays for plotted horizon only (train/val) with de-zscoring
+                r_train_pred = (original_train_preds[plotted_idx].flatten() * sigma_diag + mu_diag) / tfac
+                r_train_true = (original_train_targets[plotted_idx].flatten() * sigma_diag + mu_diag) / tfac
+                r_val_pred = (original_val_preds[plotted_idx].flatten() * sigma_diag + mu_diag) / tfac
+                r_val_true = (original_val_targets[plotted_idx].flatten() * sigma_diag + mu_diag) / tfac
 
                 # Naive baselines (if provided by preprocessor)
                 naive_train_scaled = datasets.get('naive_last_close_scaled_train')
@@ -793,19 +796,50 @@ class STLPipelinePlugin:
             print("Converting validation predictions to real-world prices...")
             target_factor = config.get('target_factor', 1000.0)
             naive_val_scaled = datasets.get('naive_last_close_scaled_val')
+            # Local helper to resolve mu and sigma by index or horizon
+            def _resolve_mu_sigma(idx_local, horizon_local):
+                mu_local, sigma_local = 0.0, 1.0
+                try:
+                    trm = target_returns_means
+                    trs = target_returns_stds
+                    # Resolve mu
+                    if isinstance(trm, dict):
+                        if horizon_local in trm:
+                            mu_local = float(trm[horizon_local])
+                        elif str(horizon_local) in trm:
+                            mu_local = float(trm[str(horizon_local)])
+                        else:
+                            mu_local = float(next(iter(trm.values())))
+                    elif isinstance(trm, (list, tuple, np.ndarray)):
+                        if len(trm) > idx_local:
+                            mu_local = float(trm[idx_local])
+                        elif len(trm) > 0:
+                            mu_local = float(trm[-1])
+                    elif trm is not None:
+                        mu_local = float(trm)
+                    # Resolve sigma
+                    if isinstance(trs, dict):
+                        if horizon_local in trs:
+                            sigma_local = float(trs[horizon_local])
+                        elif str(horizon_local) in trs:
+                            sigma_local = float(trs[str(horizon_local)])
+                        else:
+                            sigma_local = float(next(iter(trs.values())))
+                    elif isinstance(trs, (list, tuple, np.ndarray)):
+                        if len(trs) > idx_local:
+                            sigma_local = float(trs[idx_local])
+                        elif len(trs) > 0:
+                            sigma_local = float(trs[-1])
+                    elif trs is not None:
+                        sigma_local = float(trs)
+                except Exception:
+                    pass
+                if not np.isfinite(sigma_local) or sigma_local <= 0:
+                    sigma_local = 1.0
+                return mu_local, sigma_local
             for idx, h in enumerate(config['predicted_horizons']):
                 # Horizon-specific normalization stats (robust)
-                mu, sigma = (0.0, 1.0)
-                try:
-                    # Reuse helper from run_prediction_pipeline if available in scope
-                    mu, sigma = _get_norm_stats(idx, h)  # type: ignore[name-defined]
-                except Exception:
-                    # Fallback: direct indexing
-                    try:
-                        mu = float(target_returns_means[idx])
-                        sigma = float(target_returns_stds[idx])
-                    except Exception:
-                        pass
+                mu, sigma = _resolve_mu_sigma(idx, h)
 
                 # --- De-zscore then undo target_factor ---
                 pred_returns = (list_predictions[idx].flatten() * sigma + mu) / target_factor
@@ -818,8 +852,8 @@ class STLPipelinePlugin:
                 num_val = len(pred_returns)
                 val_baselines = baseline_val_eval[:num_val]
 
-                # Inverse-transform log-returns to prices: P_{t+h} = P_t * exp(r_{t->t+h})
-                pred_prices = val_baselines * np.exp(pred_returns)
+                # Inverse-transform log-returns to prices: P_{t+h} = P_t * (exp(r_{t->t+h}) - 1)
+                pred_prices = val_baselines * (np.exp(pred_returns) - 1.0)
 
                 # Update predictions with real prices
                 list_predictions[idx] = pred_prices.reshape(-1, 1)
