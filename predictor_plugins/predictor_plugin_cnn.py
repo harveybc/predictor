@@ -18,7 +18,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda, BatchNormalization
+from tensorflow.keras.layers import Input, Dense, Flatten, Concatenate, Lambda
 from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback, LambdaCallback
 from tensorflow.keras.losses import Huber
@@ -43,7 +43,6 @@ from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D, GlobalAveragePooling1D
 from tensorflow.keras.layers import MultiHeadAttention
 from tensorflow.keras.layers import LayerNormalization
-
 
 # Define TensorFlow local header output feedback variables(used from the composite loss function):
 local_p_control=[]
@@ -81,22 +80,6 @@ class ClearMemoryCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
         K.clear_session()
         gc.collect()
-
-
-# NEW: combined metric callback to inject (val_loss + loss) into logs
-class CombinedLossCallback(Callback):
-    """Computes val_plus_train_loss = val_loss + loss and adds it to logs."""
-    def __init__(self, monitor_name="val_plus_train_loss"):
-        super().__init__()
-        self.monitor_name = monitor_name
-
-    def on_epoch_end(self, epoch, logs=None):
-        if not logs:
-            return
-        val_loss = logs.get("val_loss", None)
-        train_loss = logs.get("loss", None)
-        if val_loss is not None and train_loss is not None:
-            logs[self.monitor_name] = float(val_loss) + float(train_loss)
 
 
 # ---------------------------
@@ -159,8 +142,6 @@ def composite_loss(y_true, y_pred,
                    head_index,
                    mmd_lambda,
                    sigma,
-                   loss_factor,
-                   anti_zero_threshold,
                    p, i, d, # Control parameters for this head (tf.Variable)
                    list_last_signed_error, # List of tf.Variables for metric storage
                    list_last_stddev,       # List of tf.Variables for metric storage
@@ -168,32 +149,74 @@ def composite_loss(y_true, y_pred,
                    list_local_feedback     # List of tf.Variables for control action storage/feedback
                    ):
     """
-    Global composite loss with a single side-aware multiplicative penalty.
-    Penalty condition (naive return = 0):
-        |y_true - y_pred| < |y_pred|
-    We count how many samples meet the condition and scale the batch loss by:
-        final_factor = 1 + anti_zero_threshold * count
-    Then apply in the same way as the global loss_factor is applied:
-        final_loss = loss_factor * huber_mean * final_factor
+    Global composite loss function for a specific head.
+    Calculates metrics (signed_error, stddev, mmd).
+    Calls global dummy_feedback_control with metrics and PID params.
+    Assigns control function output to list_local_feedback[head_index].
+    Also assigns metrics to list_last_xxx[head_index].
+    Returns the scalar loss value (MSE + Asymptote + MMD).
     """
     y_true = tf.reshape(y_true, [-1, 1])
     y_pred = tf.reshape(y_pred, [-1, 1])
+    mag_true = y_true
+    mag_pred = y_pred
 
-    # Base loss (mean over batch)
-    huber_mean = Huber(delta=1.0, reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE)(y_true, y_pred)
+    # --- Calculate Primary Losses ---
+    #mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
+    huber_loss_val = Huber(delta=1.0)(mag_true, mag_pred)
+    #mse_loss_val = huber_loss_val
+    #mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
+    #mmd_loss_val = 0.0
 
-    # Condition: farther from naive(0) than from target => penalize
-    cond = tf.less(tf.abs(y_true - y_pred), tf.abs(y_pred))  # shape: (batch, 1)
-    cond_count = tf.reduce_sum(tf.cast(cond, tf.float32))    # scalar
 
-    # Compatibility: use anti_zero_threshold as multiplicative side penalty
-    side_penalty_multiplier = tf.maximum(tf.cast(anti_zero_threshold, tf.float32), 0.0)
+    #mse_min = tf.maximum(huber_loss_val, 1e-10)
+    #mse_min = tf.maximum(mse_loss_val, 1e-10)
 
-    # Global multiplicative factor; if no sample meets condition, factor == 1.0 (no change)
-    final_factor = 1.0 + side_penalty_multiplier * cond_count
+    # --- Calculate Summary Statistics ---
+    #signed_avg_pred = tf.reduce_mean(mag_pred)
+    #signed_avg_true = tf.reduce_mean(mag_true)
 
-    # Apply factors multiplicatively to total loss
-    return tf.cast(loss_factor, tf.float32) * huber_mean * final_factor
+    # --- Calculate Dynamic Asymptote Penalty (Original User Logic) ---
+    #def vertical_dynamic_asymptote(value, center):
+    #    res = tf.cond(tf.greater_equal(value, center),
+    #        lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20,
+    #        lambda: mse_loss_val*1e3 - 1)
+    #    res = tf.cond(tf.greater_equal(center, value),
+    #        lambda: mse_loss_val*1e3 - 1,
+    #        lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20)
+    #    return res
+    #asymptote = vertical_dynamic_asymptote(signed_avg_pred, signed_avg_true)
+    #asymptote = 0.0
+
+    # --- Calculate Feedback Metrics ---
+    #feedback_signed_error = 0.0
+    #feedback_stddev = 0.0
+    #feedback_mmd = 0.0
+
+    # --- Call Control Function ---
+    # Pass feedback metrics and head-specific PID parameters (which are tf.Variables)
+    #local_control_action = dummy_feedback_control(
+    #    feedback_signed_error, feedback_stddev, feedback_mmd, p, i, d
+    #)
+
+    # --- Update Feedback Variables (using control dependencies) ---
+    #update_ops = [
+        # Store calculated metrics
+    #    list_last_signed_error[head_index].assign(signed_avg_true-signed_avg_pred),
+    #    list_last_stddev[head_index].assign(feedback_stddev),
+    #    list_last_mmd[head_index].assign(feedback_mmd),
+        # Store the output of the control function - THIS IS THE FEEDBACK FOR THE MODEL
+        #list_local_feedback[head_index].assign(local_control_action)
+    #]
+
+    #with tf.control_dependencies(update_ops):
+        # Calculate final loss term
+        #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
+    #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
+    #total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
+    total_loss = huber_loss_val
+    # Return the final scalar loss value
+    return total_loss
 
 
 
@@ -423,62 +446,56 @@ class Plugin:
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
-        # Linear shortcut from the last timestep features
-        last_timestep = Lambda(lambda t: t[:, -1, :], name="last_timestep_slice")(inputs)
 
-        #       
-        # optional conv1d root layers
         merged = Conv1D(
             filters=merged_units,
             kernel_size=3,
-            strides=2,
+            strides=2, 
             padding='same',
-            activation='linear',
-            name="conv_merged_features_0"
+            activation=activation,
+            name="conv_merged_features_1",
+            kernel_regularizer=l2(l2_reg)
         )(inputs)
 
-        if config.get("feature_extractor_file"):
-            fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
-            fe_model.trainable = bool(config.get("train_fe", False))
-            merged = fe_model(inputs)
-        else:
-            merged = Conv1D(
-                filters=merged_units,
-                kernel_size=3,
-                strides=2,
-                padding='same',
-                activation=activation,
-                name="conv_merged_features_1"
-            )(inputs)
-            
-            merged = Conv1D(
-                filters=branch_units,
-                kernel_size=3,
-                strides=2,
-                padding='same',
-                activation=activation,
-                name="conv_merged_features_2"
-            )(merged)
-
-        # --- Heads ---
+        merged = Conv1D(
+            filters=branch_units,
+            kernel_size=3,
+            strides=2, 
+            padding='same',
+            activation=activation,
+            name="conv_merged_features_2",
+            kernel_regularizer=l2(l2_reg)
+        )(merged)
+        
+        # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
+        # Loop through each predicted horizon
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
-            #optional conv1d head layers
-            xh = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(merged)
-            xh = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(xh)
-            # batch normalization
-            #xh = BatchNormalization(name=f"batch_norm_1{branch_suffix}")(xh)
-            # optional bidir return_sequences=True layers
-            #xh = Bidirectional(LSTM(lstm_units, return_sequences=True), name=f"bidir_lstm_o_{branch_suffix}")(xh)
-            # mandatory lstm output layer
-            lstm_output = Bidirectional(LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}")(xh)
-            # optional output dense layers
-            #lstm_output = Dense(units=lstm_units//2, activation=activation, name=f"dense_o_{branch_suffix}")(lstm_output)
-            # batch normalization
-            #lstm_output = BatchNormalization(name=f"batch_norm_2{branch_suffix}")(lstm_output)
-            # mandatory bayesian layer with bias
+
+            # --- Head Intermediate Dense Layers ---
+            head_dense_output = merged
+            #for j in range(num_head_intermediate_layers):
+            #     head_dense_output = Dense(merged_units, activation=activation, kernel_regularizer=l2(l2_reg),
+            #                               name=f"head_dense_{j+1}{branch_suffix}")(head_dense_output)
+
+            # --- Add BiLSTM Layer ---
+            # Reshape Dense output to add time step dimension: (batch, 1, merged_units) (BEST ONE)
+            # TODO: probar (batch, merged_units, 1)
+            #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
+            reshaped_for_lstm = head_dense_output
+            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
+            # Apply Bidirectional LSTM
+            # return_sequences=False gives output shape (batch, 2 * lstm_units)
+            lstm_output = Bidirectional(
+                LSTM(lstm_units, return_sequences=False), name=f"bidir_lstm{branch_suffix}"
+            )(reshaped_for_lstm)
+          
+
+
+            # --- Bayesian / Bias Layers ---
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
                 units=1, activation='linear',
@@ -486,25 +503,31 @@ class Plugin:
                 kernel_prior_fn=lambda dt, sh, bs, tr, nm=flipout_layer_name: prior_fn(dt, sh, bs, tr, nm),
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT, name=flipout_layer_name
             )
-            bayesian_output_branch = Lambda(lambda t: flipout_layer_branch(t), output_shape=lambda s: (s[0], 1), name=f"bayesian_output{branch_suffix}")(lstm_output)
-            bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44, name=f"deterministic_bias{branch_suffix}")(lstm_output)
+            # Apply DenseFlipout layer via Lambda WITH output_shape specified
+            bayesian_output_branch = Lambda(
+                lambda t: flipout_layer_branch(t),
+                output_shape=lambda s: (s[0], 1), # Explicit output shape
+                name=f"bayesian_output{branch_suffix}"
+            )(lstm_output)
+
+            bias_layer_branch = Dense(units=1, activation='linear', kernel_initializer=random_normal_initializer_44,
+                                      name=f"deterministic_bias{branch_suffix}")(lstm_output)
+
+            # --- Final Head Output ---
             output_name = f"output_horizon_{horizon}"
             final_branch_output = Add(name=output_name)([bayesian_output_branch, bias_layer_branch])
-            outputs_list.append(final_branch_output)
-            self.output_names.append(output_name)
 
-        # Build Keras model and compile
+            outputs_list.append(final_branch_output)
+            self.output_names.append(output_name) # Store the name
+            # --- End of Head ---
+
+        # --- Model Definition ---
         self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
 
+        # --- Compilation (Using GLOBAL composite_loss) ---
         optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
         mmd_lambda = config.get("mmd_lambda", self.params.get("mmd_lambda", 0.1))
         sigma_mmd = config.get("sigma_mmd", self.params.get("sigma_mmd", 1.0))
-
-        # NEW: single multiplicative side penalty factor (>=1.0). Default = 1.0 (no penalty).
-        side_penalty_multiplier = config.get("side_penalty_multiplier", 1.0)
-        loss_factor = config.get("loss_factor", 0.0)
-        penalty_far_lambda = config.get("penalty_far_lambda", 0.0)
-        anti_zero_threshold = config.get("anti_zero_threshold", 10.0)
 
         # Prepare loss dictionary, passing ALL necessary lists and params to GLOBAL composite_loss
         loss_dict = {}
@@ -521,7 +544,6 @@ class Plugin:
                 lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list, lf=lf_list:
                     lambda y_true, y_pred: composite_loss( # Call GLOBAL func
                         y_true, y_pred, head_index=index, mmd_lambda=mmd_lambda, sigma=sigma_mmd,
-                        loss_factor=loss_factor,  anti_zero_threshold=anti_zero_threshold,
                         p=p, i=iv, d=dv, list_last_signed_error=lse, list_last_stddev=lsd,
                         list_last_mmd=lmmd, list_local_feedback=lf
                     )
@@ -621,17 +643,13 @@ class Plugin:
 
         # Instantiate callbacks WITHOUT ClearMemoryCallback
         # Assumes relevant Callback classes are imported/defined
-        combined_monitor_name = "val_plus_train_loss"
         callbacks = [
-            CombinedLossCallback(monitor_name=combined_monitor_name),
             EarlyStoppingWithPatienceCounter(
-                monitor=combined_monitor_name, patience=patience_early_stopping, restore_best_weights=True,
-                mode='min',
+                monitor='val_loss', patience=patience_early_stopping, restore_best_weights=True,
                 verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
             ),
             ReduceLROnPlateauWithCounter(
-                monitor=combined_monitor_name, factor=0.5, patience=patience_reduce_lr, cooldown=5,
-                min_delta=min_delta_early_stopping, verbose=1, mode='min'
+                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
             ),
             LambdaCallback(on_epoch_end=lambda epoch, logs:
                            print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
@@ -652,7 +670,6 @@ class Plugin:
              print("WARN: Target data dictionary keys may not perfectly match all model output names.")
 
         # --- Model Training ---
-        # TODO: correct bias problem in validation. Verify that the fit method is receiving the exact correct training and validation data and in the same exact scale, having been preprocessed with the exact same transformations.
         history = self.model.fit(x_train, y_train,
                                  epochs=epochs,
                                  batch_size=batch_size,
@@ -695,6 +712,19 @@ class Plugin:
         """
         Performs Monte Carlo dropout predictions for the multi-output model
         using an incremental approach to avoid large memory allocation.
+
+        Runs the model multiple times with dropout enabled (training=True)
+        to estimate predictive uncertainty (standard deviation) for each output head.
+
+        Args:
+            x_test (np.ndarray): Input data for prediction.
+            mc_samples (int): Number of Monte Carlo samples to perform.
+
+        Returns:
+            tuple: (list_mean_predictions, list_uncertainty_estimates)
+                   Lists containing numpy arrays (one per output head)
+                   for mean predictions and standard deviations (uncertainty).
+                   Shape of each array: [num_samples, output_dim (usually 1)].
         """
         if self.model is None:
             raise ValueError("Model has not been built or loaded.")
@@ -703,7 +733,7 @@ class Plugin:
 
         # Get dimensions from a single sample run
         try:
-            first_run_output_tf = self.model(x_test[:1], training=False)  # shape probe
+            first_run_output_tf = self.model(x_test[:1], training=True) # Predict on one sample
             if not isinstance(first_run_output_tf, list): first_run_output_tf = [first_run_output_tf]
             num_heads = len(first_run_output_tf)
             if num_heads == 0: return [], []
@@ -714,17 +744,21 @@ class Plugin:
             print(f"ERROR getting model output shape in predict_with_uncertainty: {e}")
             raise ValueError("Could not determine model output structure.") from e
 
+        # Initialize accumulators for mean and variance calculation (Welford's algorithm components)
+        # Using lists to store per-head accumulators
         means = [np.zeros((num_test_samples, output_dim), dtype=np.float32) for _ in range(num_heads)]
         m2s = [np.zeros((num_test_samples, output_dim), dtype=np.float32) for _ in range(num_heads)]
-        counts = [0] * num_heads
+        counts = [0] * num_heads # Use a single count across heads, assuming samples are drawn together
 
-        for sample_idx in tqdm(range(mc_samples), desc="MC Samples"):
-            batch_size = 256
+        # print(f"Running {mc_samples} MC samples for uncertainty (incremental)...") # Informative print
+        for i in tqdm(range(mc_samples), desc="MC Samples"):
+            # Get predictions for all heads in this sample
+            batch_size = 256  # ✅ Use safe batch size
+            ## Initialize a list for each output head
             head_outputs_lists = None
-            for b in range(0, len(x_test), batch_size):
-                batch_x = x_test[b:b + batch_size]
-                # IMPORTANT: enable stochasticity in Bayesian layers if applicable
-                preds = self.model(batch_x, training=True)
+            for i in range(0, len(x_test), batch_size):
+                batch_x = x_test[i:i + batch_size]
+                preds = self.model(batch_x, training=False)
                 if not isinstance(preds, list):
                     preds = [preds]
                 if head_outputs_lists is None:
@@ -732,34 +766,47 @@ class Plugin:
                 for h, pred in enumerate(preds):
                     head_outputs_lists[h].append(pred)
 
+
+            # Concatenate outputs for each head along the batch dimension
             head_outputs_tf = [tf.concat(head_list, axis=0) for head_list in head_outputs_lists]
+
+
 
             if not isinstance(head_outputs_tf, list): head_outputs_tf = [head_outputs_tf]
 
+            # Process each head's output for this sample
             for h in range(num_heads):
                 head_output_np = head_outputs_tf[h].numpy()
+                # Reshape if necessary
                 if head_output_np.ndim == 1:
                     head_output_np = np.expand_dims(head_output_np, axis=-1)
                 if head_output_np.shape != (num_test_samples, output_dim):
-                    raise ValueError(f"Shape mismatch in MC sample {sample_idx}, head {h}: Expected {(num_test_samples, output_dim)}, got {head_output_np.shape}")
+                     raise ValueError(f"Shape mismatch in MC sample {i}, head {h}: Expected {(num_test_samples, output_dim)}, got {head_output_np.shape}")
 
+                # Welford's online algorithm update
                 counts[h] += 1
                 delta = head_output_np - means[h]
                 means[h] += delta / counts[h]
-                delta2 = head_output_np - means[h]
+                delta2 = head_output_np - means[h] # New delta using updated mean
                 m2s[h] += delta * delta2
 
-        list_mean_predictions = means
+            # Optional progress print
+            # if (i + 1) % (mc_samples // 10 or 1) == 0: print(f"  MC sample {i+1}/{mc_samples}")
+
+        # Finalize calculations: variance = M2 / (n - 1), stddev = sqrt(variance)
+        list_mean_predictions = means # The mean is already calculated
         list_uncertainty_estimates = []
         for h in range(num_heads):
-            if counts[h] < 2:
-                variance = np.full((num_test_samples, output_dim), np.nan, dtype=np.float32)
-            else:
-                variance = m2s[h] / (counts[h] - 1)
-            stddev = np.sqrt(np.maximum(variance, 0))
-            list_uncertainty_estimates.append(stddev.astype(np.float32))
+             if counts[h] < 2: # Need at least 2 samples for variance/stddev
+                 variance = np.full((num_test_samples, output_dim), np.nan, dtype=np.float32)
+             else:
+                 variance = m2s[h] / (counts[h] - 1)
+             stddev = np.sqrt(np.maximum(variance, 0)) # Ensure variance isn't negative due to float issues
+             list_uncertainty_estimates.append(stddev.astype(np.float32))
 
+        # print("MC sampling finished.") # Informative print
         return list_mean_predictions, list_uncertainty_estimates
+    
     
     def save(self, file_path):
         self.model.save(file_path)

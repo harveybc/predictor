@@ -109,7 +109,7 @@ def calculate_targets_from_baselines(baseline_data, config):
                 # Calculate log return using only baselines
                 # Guard against non-positive values
                 if baseline_current > 0 and baseline_future > 0:
-                    return_value = target_factor * np.log(baseline_future / baseline_current)
+                    return_value = target_factor * np.log(1 + (baseline_future / baseline_current))
                 else:
                     return_value = 0.0
                 horizon_targets.append(return_value)

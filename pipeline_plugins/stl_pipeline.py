@@ -37,7 +37,7 @@ from app.data_handler import write_csv
 
 # --- Denormalization Functions (Assumed Correct as provided) ---
 def denormalize(data, config):
-    """Denormalizes price or price delta. Supports both min-max and z-score normalization."""
+    """Denormalizes price or price delta."""
     data = np.asarray(data)
     if config.get("use_normalization_json"):
         norm_json = config["use_normalization_json"]
@@ -47,26 +47,24 @@ def denormalize(data, config):
             except Exception as e: print(f"WARN: Failed load norm JSON {norm_json}: {e}"); return data
         if isinstance(norm_json, dict) and "CLOSE" in norm_json:
             try:
-                # Check if it's z-score normalization (has mean/std) or min-max (has min/max)
-                if "mean" in norm_json["CLOSE"] and "std" in norm_json["CLOSE"]:
-                    # Z-score denormalization: value = (normalized * std) + mean
-                    close_mean = norm_json["CLOSE"]["mean"]
-                    close_std = norm_json["CLOSE"]["std"]
-                    return (data * close_std) + close_mean
-                elif "min" in norm_json["CLOSE"] and "max" in norm_json["CLOSE"]:
-                    # Min-max denormalization: value = (normalized * (max-min)) + min
-                    close_min = norm_json["CLOSE"]["min"]; close_max = norm_json["CLOSE"]["max"]; diff = close_max - close_min
+                close_info = norm_json["CLOSE"]
+                # Auto-select method based on available keys: prefer min/max, else mean/std
+                if "min" in close_info and "max" in close_info:
+                    close_min = close_info["min"]; close_max = close_info["max"]; diff = close_max - close_min
                     if diff == 0: return data + close_min
                     return data * diff + close_min
+                elif "mean" in close_info and "std" in close_info:
+                    mean = close_info["mean"]; std = close_info["std"]
+                    return data * std + mean
                 else:
-                    print(f"WARN: Unknown normalization format in JSON. Expected 'mean'/'std' or 'min'/'max' keys")
+                    # Fallback: if keys are missing, just return data
                     return data
             except KeyError as e: print(f"WARN: Missing key in norm JSON: {e}"); return data
             except Exception as e: print(f"WARN: Error during denormalize: {e}"); return data
     return data
 
 def denormalize_returns(data, config):
-    """Denormalizes return values (deltas). Supports both min-max and z-score normalization."""
+    """Denormalizes return values (deltas) - only scales by range."""
     data = np.asarray(data)
     if config.get("use_normalization_json"):
         norm_json = config["use_normalization_json"]
@@ -76,18 +74,16 @@ def denormalize_returns(data, config):
             except Exception as e: print(f"WARN: Failed load norm JSON {norm_json}: {e}"); return data
         if isinstance(norm_json, dict) and "CLOSE" in norm_json:
             try:
-                # Check if it's z-score normalization (has mean/std) or min-max (has min/max)
-                if "mean" in norm_json["CLOSE"] and "std" in norm_json["CLOSE"]:
-                    # Z-score denormalization for returns: only scale by std (no mean shift)
-                    close_std = norm_json["CLOSE"]["std"]
-                    return data * close_std
-                elif "min" in norm_json["CLOSE"] and "max" in norm_json["CLOSE"]:
-                    # Min-max denormalization for returns: only scale by range
-                    close_min=norm_json["CLOSE"]["min"]; close_max=norm_json["CLOSE"]["max"]; diff=close_max - close_min
+                close_info = norm_json["CLOSE"]
+                # Auto-select method: min/max scales by range; mean/std scales by std only (delta has no mean shift)
+                if "min" in close_info and "max" in close_info:
+                    close_min = close_info["min"]; close_max = close_info["max"]; diff = close_max - close_min
                     if diff == 0: return data
                     return data * diff
+                elif "mean" in close_info and "std" in close_info:
+                    std = close_info["std"]
+                    return data * std
                 else:
-                    print(f"WARN: Unknown normalization format in JSON for returns. Expected 'mean'/'std' or 'min'/'max' keys")
                     return data
             except KeyError as e: print(f"WARN: Missing key in norm JSON: {e}"); return data
             except Exception as e: print(f"WARN: Error during denormalize_returns: {e}"); return data
@@ -179,17 +175,11 @@ class STLPipelinePlugin:
                         num_train_pts=min(len(train_preds_h),len(train_target_h),len(baseline_train)); num_val_pts=min(len(val_preds_h),len(val_target_h),len(baseline_val))
                         train_preds_h=train_preds_h[:num_train_pts]; train_target_h=train_target_h[:num_train_pts]; train_unc_h=train_unc_h[:num_train_pts]; baseline_train_h=baseline_train[:num_train_pts].flatten() # Flatten baseline too
                         val_preds_h=val_preds_h[:num_val_pts]; val_target_h=val_target_h[:num_val_pts]; val_unc_h=val_unc_h[:num_val_pts]; baseline_val_h=baseline_val[:num_val_pts].flatten() # Flatten baseline too
-                        # Price reconstruction: if using log-returns, map to prices via P_t * exp(r)
-                        if use_returns:
-                            train_target_price = baseline_train_h * np.exp(train_target_h)
-                            train_pred_price   = baseline_train_h * np.exp(train_preds_h)
-                            val_target_price   = baseline_val_h * np.exp(val_target_h)
-                            val_pred_price     = baseline_val_h * np.exp(val_preds_h)
-                        else:
-                            train_target_price=denormalize(train_target_h, config)
-                            train_pred_price=denormalize(train_preds_h, config)
-                            val_target_price=denormalize(val_target_h, config)
-                            val_pred_price=denormalize(val_preds_h, config)
+                        # Denormalize Price (add baseline first if returns)
+                        train_target_price=denormalize(baseline_train_h+train_target_h if use_returns else train_target_h, config)
+                        train_pred_price=denormalize(baseline_train_h+train_preds_h if use_returns else train_preds_h, config)
+                        val_target_price=denormalize(baseline_val_h+val_target_h if use_returns else val_target_h, config)
+                        val_pred_price=denormalize(baseline_val_h+val_preds_h if use_returns else val_preds_h, config)
                         # Metrics
                         train_mae_h=np.mean(np.abs(denormalize_returns(train_preds_h-train_target_h, config))); train_r2_h=r2_score(train_target_price, train_pred_price); train_unc_mean_h=np.mean(np.abs(denormalize_returns(train_unc_h, config))); train_snr_h=np.mean(train_pred_price)/(train_unc_mean_h+1e-9)
                         val_mae_h=np.mean(np.abs(denormalize_returns(val_preds_h-val_target_h, config))); val_r2_h=r2_score(val_target_price, val_pred_price); val_unc_mean_h=np.mean(np.abs(denormalize_returns(val_unc_h, config))); val_snr_h=np.mean(val_pred_price)/(val_unc_mean_h+1e-9)
