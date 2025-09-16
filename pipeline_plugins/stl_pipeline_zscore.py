@@ -93,10 +93,14 @@ class STLPipelinePlugin:
         X_val = datasets["x_val"]
         X_test = datasets["x_test"]
 
-        # Extract targets as lists (aligned with main STL pipeline)
-        y_train_list = datasets["y_train"]
-        y_val_list = datasets["y_val"]
-        y_test_list = datasets["y_test"]
+        # Extract targets in the correct order per predicted_horizons
+        def _extract_targets(d):
+            if isinstance(d, dict):
+                return [d[f"output_horizon_{h}"] for h in predicted_horizons]
+            return d
+        y_train_list = _extract_targets(datasets["y_train"])
+        y_val_list = _extract_targets(datasets["y_val"])
+        y_test_list = _extract_targets(datasets["y_test"])
 
         train_dates = datasets.get("y_train_dates")
         val_dates = datasets.get("y_val_dates")
@@ -125,8 +129,19 @@ class STLPipelinePlugin:
 
         # 2. Prepare datasets for training.
         print("Preparing datasets for training...")
-        y_train_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_train_list)}
-        y_val_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_val_list)}
+        def _to_2d_float(y):
+            if y is None:
+                return np.empty((0, 1), dtype=np.float32)
+            y_arr = np.asarray(y)
+            # If an array of objects comes through, force float cast elementwise
+            try:
+                y_arr = y_arr.astype(np.float32)
+            except Exception:
+                y_arr = np.array([float(v) for v in list(y_arr)], dtype=np.float32)
+            return y_arr.reshape(-1, 1)
+
+        y_train_dict = {name: _to_2d_float(y) for name, y in zip(output_names, y_train_list)}
+        y_val_dict = {name: _to_2d_float(y) for name, y in zip(output_names, y_val_list)}
 
         print(f"Input shapes: Train:{X_train.shape}, Val:{X_val.shape}, Test:{X_test.shape}")
         print(f"Target shapes(H={predicted_horizons[0]}): Train:{y_train_list[0].shape}, Val:{y_val_list[0].shape}, Test:{y_test_list[0].shape}")
