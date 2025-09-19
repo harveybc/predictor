@@ -87,17 +87,38 @@ class STLPipelinePlugin:
         X_val = datasets["x_val"]
         X_test = datasets["x_test"]
         
-        # Extract targets from target dictionaries (structured by horizon)
+        # Robust target extraction supporting original list form or dict form
+        def _extract(series_container, idx, h):
+            # If dict, try several key patterns
+            if isinstance(series_container, dict):
+                key_patterns = [f"output_horizon_{h}", h, str(h)]
+                for kp in key_patterns:
+                    if kp in series_container:
+                        return series_container[kp]
+                # Fallback: positional by idx
+                keys = list(series_container.keys())
+                if idx < len(keys):
+                    return series_container[keys[idx]]
+                raise KeyError(f"Missing target for horizon {h}; available keys: {keys}")
+            # If list/tuple/array assume ordering matches predicted_horizons
+            if isinstance(series_container, (list, tuple)):
+                if idx < len(series_container):
+                    return series_container[idx]
+                raise IndexError(f"Target list length {len(series_container)} < required index {idx} for horizon {h}")
+            # Unsupported type
+            raise TypeError(f"Unsupported target container type: {type(series_container)}")
+
+        raw_y_train = datasets["y_train"]
+        raw_y_val = datasets["y_val"]
+        raw_y_test = datasets["y_test"]
+
         y_train_list = []
         y_val_list = []
         y_test_list = []
-        
         for idx, h in enumerate(predicted_horizons):
-            # Target data is structured as dictionaries with horizon keys
-            horizon_key = f'output_horizon_{h}'
-            y_train_list.append(datasets["y_train"][horizon_key])
-            y_val_list.append(datasets["y_val"][horizon_key])
-            y_test_list.append(datasets["y_test"][horizon_key])
+            y_train_list.append(_extract(raw_y_train, idx, h))
+            y_val_list.append(_extract(raw_y_val, idx, h))
+            y_test_list.append(_extract(raw_y_test, idx, h))
         
         train_dates = datasets.get("y_train_dates")
         val_dates = datasets.get("y_val_dates")
@@ -161,8 +182,12 @@ class STLPipelinePlugin:
             if not all(len(lst) == num_outputs for lst in [list_test_preds, list_test_unc]): 
                 raise ValueError("Predictor predict mismatch outputs.")
             
-            # 4. Convert model outputs (log-returns scaled by target_factor) to real-world prices for evaluation.
-            print("\n--- Converting scaled log-returns to real-world prices for evaluation ---")
+            # 4. Convert model outputs (scaled transformed returns) to real-world prices for evaluation.
+            #    Current target formula (from target_calculation):
+            #        scaled_r = target_factor * log(1 + baseline_future / baseline_current)
+            #        => r = scaled_r / target_factor
+            #        => baseline_future = baseline_current * (exp(r) - 1)
+            print("\n--- Converting scaled transformed returns to real-world prices for evaluation ---")
             
             # Store original predictions and targets for later reference
             original_train_preds = [pred.copy() for pred in list_train_preds]
@@ -274,29 +299,28 @@ class STLPipelinePlugin:
                 val_baselines = baseline_val[:num_val]
                 test_baselines = baseline_test[:num_test]
 
-                # 5. Inverse-transform log-returns to price: P_{t+h} = P_t * exp(r_{t->t+h})
-                # Predictions and targets are log-returns; map to absolute price level using the baseline P_t.
-                train_prices = train_baselines * np.exp(train_returns)
-                val_prices = val_baselines * np.exp(val_returns)
-                test_prices = test_baselines * np.exp(test_returns)
+                # 5. Inverse-transform to price using new target definition:
+                #    r = scaled_r / target_factor ;  P_{t+h} = B_t * (exp(r) - 1)
+                train_prices = train_baselines * (np.exp(train_returns) - 1.0)
+                val_prices = val_baselines * (np.exp(val_returns) - 1.0)
+                test_prices = test_baselines * (np.exp(test_returns) - 1.0)
 
-                train_target_prices = train_baselines * np.exp(train_target_returns)
-                val_target_prices = val_baselines * np.exp(val_target_returns)
-                test_target_prices = test_baselines * np.exp(test_target_returns)
+                train_target_prices = train_baselines * (np.exp(train_target_returns) - 1.0)
+                val_target_prices = val_baselines * (np.exp(val_target_returns) - 1.0)
+                test_target_prices = test_baselines * (np.exp(test_target_returns) - 1.0)
 
-                # Uncertainties: MC std is in return space (std of R). Convert to price-space std using lognormal propagation.
-                # If P = B * exp(R), and R ~ N(mu, s^2), then std(P) = (B*exp(mu)) * exp(0.5*s^2) * sqrt(exp(s^2)-1)
-                # Here we use p_hat = B*exp(mean R) as center line; this yields:
-                # std(P) = p_hat * exp(0.5*s^2) * sqrt(expm1(s^2))
-                def _price_std_from_return_std(p_hat, s_r):
+                # Uncertainties: if R ~ N(mu, s^2), P = B*(exp(R)-1) => Var(P) = B^2 * exp(2mu + s^2) * (exp(s^2)-1)
+                # Using predicted mean r_pred (in return space) => p_hat = B*(exp(r_pred) - 1)
+                # Also (p_hat + B) = B*exp(r_pred). Then std(P) = (p_hat + B) * exp(0.5*s^2) * sqrt(exp(s^2)-1)
+                def _price_std_from_return_std(baseline_arr, price_pred_arr, s_r):
                     s2 = np.square(s_r)
-                    # Numerical safety: cap s^2 to avoid overflow in exp
-                    s2 = np.clip(s2, 0.0, 4.0)
-                    return np.abs(p_hat) * np.exp(0.5 * s2) * np.sqrt(np.expm1(s2))
+                    s2 = np.clip(s2, 0.0, 4.0)  # numerical safety
+                    core = (price_pred_arr + baseline_arr) * np.exp(0.5 * s2) * np.sqrt(np.expm1(s2))
+                    return np.abs(core)
 
-                train_price_uncertainties = _price_std_from_return_std(train_prices, train_unc_returns)
-                val_price_uncertainties   = _price_std_from_return_std(val_prices,   val_unc_returns)
-                test_price_uncertainties  = _price_std_from_return_std(test_prices,  test_unc_returns)
+                train_price_uncertainties = _price_std_from_return_std(train_baselines[:num_train], train_prices, train_unc_returns)
+                val_price_uncertainties   = _price_std_from_return_std(val_baselines[:num_val],   val_prices,   val_unc_returns)
+                test_price_uncertainties  = _price_std_from_return_std(test_baselines[:num_test],  test_prices,  test_unc_returns)
 
                 # --- Append results for the current horizon ---
                 real_train_price_preds.append(train_prices)
@@ -350,7 +374,7 @@ class STLPipelinePlugin:
             except Exception as rd_e:
                 print(f"WARN: returns-space diag failed: {rd_e}")
             
-            print("✅ All train, validation and test data converted to real-world prices using exp(log-returns)")
+            print("✅ All train, validation and test data converted to real-world prices using baseline * (exp(r) - 1)")
 
             # 7. Calculate metrics for the final predictions vs final targets (MAE, R2, SNR, Naive_MAE).
             # Calculate Train/Validation/Test metrics using real-world prices

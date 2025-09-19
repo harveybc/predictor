@@ -187,7 +187,9 @@ class STLPreprocessorZScore:
                     base = np.asarray(base, dtype=np.float64)
                     valid = (base[:-1] > 0) & (base[1:] > 0)
                     recomputed = np.zeros(len(base)-1, dtype=np.float64)
-                    recomputed[valid] = tgt_factor * np.log(base[1:][valid] / base[:-1][valid])
+                    # NOTE: Target formula currently: scaled = tf * log(1 + future/current)
+                    # Align recomputation with that (adds +1 term compared to classic log-return)
+                    recomputed[valid] = tgt_factor * np.log(1.0 + base[1:][valid] / base[:-1][valid])
                     # Truncate to max_samples used in target calc
                     max_h = max(config['predicted_horizons'])
                     max_samples = len(base) - max_h
