@@ -185,10 +185,10 @@ class STLPipelinePlugin:
             if not all(len(lst) == num_outputs for lst in [list_test_preds, list_test_unc]): 
                 raise ValueError("Predictor predict mismatch outputs.")
             
-            # 4. Convert model outputs (scaled r = target_factor * log(1 + P_future / P_current)) to real-world prices.
-            print("\n--- Converting scaled log(1 + ratio) targets to real-world prices for evaluation ---")
+            # 4. Convert model outputs (log-returns scaled by target_factor) to real-world prices for evaluation.
+            print("\n--- Converting scaled log-returns to real-world prices for evaluation ---")
             
-            # Store originals
+            # Store original predictions and targets for later reference
             original_train_preds = [pred.copy() for pred in list_train_preds]
             original_val_preds = [pred.copy() for pred in list_val_preds]
             original_test_preds = [pred.copy() for pred in list_test_preds]
@@ -201,160 +201,180 @@ class STLPipelinePlugin:
             original_val_unc = [unc.copy() for unc in list_val_unc]
             original_test_unc = [unc.copy() for unc in list_test_unc]
             
-            # Containers for price-space values
+            # Convert to real-world prices for metrics calculation
             real_train_price_preds, real_val_price_preds, real_test_price_preds = [], [], []
             real_train_price_targets, real_val_price_targets, real_test_price_targets = [], [], []
             real_train_price_uncertainties, real_val_price_uncertainties, real_test_price_uncertainties = [], [], []
 
             target_factor = config.get('target_factor', 1000.0)
 
-            # Helper: robust horizon stats
+            # Helper: robustly retrieve normalization stats for a given horizon/index
             def _get_norm_stats(idx_local, horizon_local):
                 mu_local = 0.0
                 sigma_local = 1.0
                 try:
                     trm = target_returns_means
                     trs = target_returns_stds
-                    # mu
+                    # Resolve mu
                     if isinstance(trm, dict):
-                        if horizon_local in trm: mu_local = float(trm[horizon_local])
-                        elif str(horizon_local) in trm: mu_local = float(trm[str(horizon_local)])
-                        else: mu_local = float(next(iter(trm.values())))
+                        if horizon_local in trm:
+                            mu_local = float(trm[horizon_local])
+                        elif str(horizon_local) in trm:
+                            mu_local = float(trm[str(horizon_local)])
+                        else:
+                            # fallback to first value
+                            mu_local = float(next(iter(trm.values())))
                     elif isinstance(trm, (list, tuple, np.ndarray)):
-                        if len(trm) > idx_local: mu_local = float(trm[idx_local])
-                        elif len(trm) > 0: mu_local = float(trm[-1])
+                        if len(trm) > idx_local:
+                            mu_local = float(trm[idx_local])
+                        elif len(trm) > 0:
+                            mu_local = float(trm[-1])
                     elif trm is not None:
                         mu_local = float(trm)
-                    # sigma
+                    # Resolve sigma
                     if isinstance(trs, dict):
-                        if horizon_local in trs: sigma_local = float(trs[horizon_local])
-                        elif str(horizon_local) in trs: sigma_local = float(trs[str(horizon_local)])
-                        else: sigma_local = float(next(iter(trs.values())))
+                        if horizon_local in trs:
+                            sigma_local = float(trs[horizon_local])
+                        elif str(horizon_local) in trs:
+                            sigma_local = float(trs[str(horizon_local)])
+                        else:
+                            sigma_local = float(next(iter(trs.values())))
                     elif isinstance(trs, (list, tuple, np.ndarray)):
-                        if len(trs) > idx_local: sigma_local = float(trs[idx_local])
-                        elif len(trs) > 0: sigma_local = float(trs[-1])
+                        if len(trs) > idx_local:
+                            sigma_local = float(trs[idx_local])
+                        elif len(trs) > 0:
+                            sigma_local = float(trs[-1])
                     elif trs is not None:
                         sigma_local = float(trs)
                 except Exception:
                     pass
+                # Safety: prevent zero/negative sigma
                 if not np.isfinite(sigma_local) or sigma_local <= 0:
                     sigma_local = 1.0
                 return mu_local, sigma_local
 
             for idx, h in enumerate(predicted_horizons):
+                # Get horizon-specific normalization stats
                 mu, sigma = _get_norm_stats(idx, h)
 
-                # De-zscore & undo target_factor: r = log(1 + P_future/P_current)
-                train_r = (original_train_preds[idx].flatten() * sigma + mu) / target_factor
-                val_r   = (original_val_preds[idx].flatten()   * sigma + mu) / target_factor
-                test_r  = (original_test_preds[idx].flatten()  * sigma + mu) / target_factor
+                # --- Process Predictions: de-zscore then undo target_factor ---
+                train_returns = (original_train_preds[idx].flatten() * sigma + mu) / target_factor
+                val_returns   = (original_val_preds[idx].flatten()   * sigma + mu) / target_factor
+                test_returns  = (original_test_preds[idx].flatten()  * sigma + mu) / target_factor
 
-                train_r_t = (original_train_targets[idx].flatten() * sigma + mu) / target_factor
-                val_r_t   = (original_val_targets[idx].flatten()   * sigma + mu) / target_factor
-                test_r_t  = (original_test_targets[idx].flatten()  * sigma + mu) / target_factor
+                # --- Process Targets: de-zscore then undo target_factor ---
+                train_target_returns = (original_train_targets[idx].flatten() * sigma + mu) / target_factor
+                val_target_returns   = (original_val_targets[idx].flatten()   * sigma + mu) / target_factor
+                test_target_returns  = (original_test_targets[idx].flatten()  * sigma + mu) / target_factor
 
-                # Residual add-back (already scaled the same way)
+                # If residualized, add back naive last-step CLOSE return (unscaled) before price conversion
                 if config.get('residualize_targets_with_last_close', True):
                     naive_train = datasets.get('naive_last_close_scaled_train')
                     naive_val = datasets.get('naive_last_close_scaled_val')
                     naive_test = datasets.get('naive_last_close_scaled_test')
                     if naive_train is not None:
-                        m = min(len(train_r), len(naive_train))
-                        train_r[:m] += (naive_train[:m] / target_factor)
-                        train_r_t[:m] += (naive_train[:m] / target_factor)
+                        mtr = min(len(train_returns), len(naive_train))
+                        train_returns[:mtr] += (naive_train[:mtr] / target_factor)
+                        train_target_returns[:mtr] += (naive_train[:mtr] / target_factor)
                     if naive_val is not None:
-                        m = min(len(val_r), len(naive_val))
-                        val_r[:m] += (naive_val[:m] / target_factor)
-                        val_r_t[:m] += (naive_val[:m] / target_factor)
+                        mvr = min(len(val_returns), len(naive_val))
+                        val_returns[:mvr] += (naive_val[:mvr] / target_factor)
+                        val_target_returns[:mvr] += (naive_val[:mvr] / target_factor)
                     if naive_test is not None:
-                        m = min(len(test_r), len(naive_test))
-                        test_r[:m] += (naive_test[:m] / target_factor)
-                        test_r_t[:m] += (naive_test[:m] / target_factor)
+                        mte = min(len(test_returns), len(naive_test))
+                        test_returns[:mte] += (naive_test[:mte] / target_factor)
+                        test_target_returns[:mte] += (naive_test[:mte] / target_factor)
 
-                # Uncertainties in r-space (std of r)
-                train_r_std = (original_train_unc[idx].flatten() * sigma) / target_factor
-                val_r_std   = (original_val_unc[idx].flatten()   * sigma) / target_factor
-                test_r_std  = (original_test_unc[idx].flatten()  * sigma) / target_factor
+                # --- Process Uncertainties: scale by sigma only, then undo target_factor ---
+                train_unc_returns = (original_train_unc[idx].flatten() * sigma) / target_factor
+                val_unc_returns   = (original_val_unc[idx].flatten()   * sigma) / target_factor
+                test_unc_returns  = (original_test_unc[idx].flatten()  * sigma) / target_factor
+                
+                # --- Convert to Real-World Prices using Baselines ---
+                # Baselines and predictions are aligned by the sliding window process.
+                num_train, num_val, num_test = len(train_returns), len(val_returns), len(test_returns)
+                
+                train_baselines = baseline_train[:num_train]
+                val_baselines = baseline_val[:num_val]
+                test_baselines = baseline_test[:num_test]
 
-                # Align baselines
-                n_tr, n_va, n_te = len(train_r), len(val_r), len(test_r)
-                train_baselines = baseline_train[:n_tr]
-                val_baselines   = baseline_val[:n_va]
-                test_baselines  = baseline_test[:n_te]
+                # 5. Inverse-transform log-returns to price: P_{t+h} = P_t * exp(r_{t->t+h})
+                # Predictions and targets are log-returns; map to absolute price level using the baseline P_t.
+                train_prices = train_baselines * np.exp(train_returns)
+                val_prices = val_baselines * np.exp(val_returns)
+                test_prices = test_baselines * np.exp(test_returns)
 
-                # 5. Inverse new transform:
-                # r = log(1 + P_future / P_current)  =>  P_future = P_current * (exp(r) - 1)
-                # (Assumes model outputs r; no clipping here, but negative r would imply invalid ratio)
-                train_prices = train_baselines * (np.exp(train_r) - 1.0)
-                val_prices   = val_baselines * (np.exp(val_r) - 1.0)
-                test_prices  = test_baselines * (np.exp(test_r) - 1.0)
+                train_target_prices = train_baselines * np.exp(train_target_returns)
+                val_target_prices = val_baselines * np.exp(val_target_returns)
+                test_target_prices = test_baselines * np.exp(test_target_returns)
 
-                train_target_prices = train_baselines * (np.exp(train_r_t) - 1.0)
-                val_target_prices   = val_baselines * (np.exp(val_r_t) - 1.0)
-                test_target_prices  = test_baselines * (np.exp(test_r_t) - 1.0)
-
-                # Uncertainty propagation:
-                # P = B * (exp(R) - 1). If R ~ N(mu, s^2):
-                # std(P) = B * exp(mu + 0.5 s^2) * sqrt(exp(s^2) - 1)
-                # Also exp(mu) = (P/B) + 1  => std(P) = (P + B) * exp(0.5 s^2) * sqrt(expm1(s^2))
-                def _price_std_from_return_std(baseline_arr, price_hat_arr, s_r):
+                # Uncertainties: MC std is in return space (std of R). Convert to price-space std using lognormal propagation.
+                # If P = B * exp(R), and R ~ N(mu, s^2), then std(P) = (B*exp(mu)) * exp(0.5*s^2) * sqrt(exp(s^2)-1)
+                # Here we use p_hat = B*exp(mean R) as center line; this yields:
+                # std(P) = p_hat * exp(0.5*s^2) * sqrt(expm1(s^2))
+                def _price_std_from_return_std(p_hat, s_r):
                     s2 = np.square(s_r)
+                    # Numerical safety: cap s^2 to avoid overflow in exp
                     s2 = np.clip(s2, 0.0, 4.0)
-                    return (price_hat_arr + baseline_arr) * np.exp(0.5 * s2) * np.sqrt(np.expm1(s2))
+                    return np.abs(p_hat) * np.exp(0.5 * s2) * np.sqrt(np.expm1(s2))
 
-                train_price_unc = _price_std_from_return_std(train_baselines, train_prices, train_r_std)
-                val_price_unc   = _price_std_from_return_std(val_baselines,   val_prices,   val_r_std)
-                test_price_unc  = _price_std_from_return_std(test_baselines,  test_prices,  test_r_std)
+                train_price_uncertainties = _price_std_from_return_std(train_prices, train_unc_returns)
+                val_price_uncertainties   = _price_std_from_return_std(val_prices,   val_unc_returns)
+                test_price_uncertainties  = _price_std_from_return_std(test_prices,  test_unc_returns)
 
-                # Append
+                # --- Append results for the current horizon ---
                 real_train_price_preds.append(train_prices)
                 real_val_price_preds.append(val_prices)
                 real_test_price_preds.append(test_prices)
-
+                
                 real_train_price_targets.append(train_target_prices)
                 real_val_price_targets.append(val_target_prices)
                 real_test_price_targets.append(test_target_prices)
+                
+                real_train_price_uncertainties.append(train_price_uncertainties)
+                real_val_price_uncertainties.append(val_price_uncertainties)
+                real_test_price_uncertainties.append(test_price_uncertainties)
+                
+                print(f"  H{h}: Converted {num_train} train, {num_val} val, {num_test} test points to real prices")
 
-                real_train_price_uncertainties.append(train_price_unc)
-                real_val_price_uncertainties.append(val_price_unc)
-                real_test_price_uncertainties.append(test_price_unc)
-
-                print(f"  H{h}: Converted {n_tr} train, {n_va} val, {n_te} test points (P = B*(exp(r)-1))")
-
-            # Diagnostics in r-space for plotted horizon
+            # --- Returns-space diagnostics and naive baselines ---
             try:
                 plotted_idx = plotted_index
                 tfac = target_factor
-                r_train_pred_raw = original_train_preds[plotted_idx].flatten() / tfac
-                r_train_true_raw = original_train_targets[plotted_idx].flatten() / tfac
-                r_val_pred_raw   = original_val_preds[plotted_idx].flatten() / tfac
-                r_val_true_raw   = original_val_targets[plotted_idx].flatten() / tfac
+                # Recompute returns arrays for plotted horizon only (train/val)
+                r_train_pred = original_train_preds[plotted_idx].flatten() / tfac
+                r_train_true = original_train_targets[plotted_idx].flatten() / tfac
+                r_val_pred = original_val_preds[plotted_idx].flatten() / tfac
+                r_val_true = original_val_targets[plotted_idx].flatten() / tfac
 
+                # Naive baselines (if provided by preprocessor)
                 naive_train_scaled = datasets.get('naive_last_close_scaled_train')
                 naive_val_scaled = datasets.get('naive_last_close_scaled_val')
                 if naive_train_scaled is not None:
-                    naive_train_r = naive_train_scaled[:len(r_train_true_raw)] / tfac
-                    naive_val_r   = naive_val_scaled[:len(r_val_true_raw)] / tfac
+                    naive_train = naive_train_scaled[:len(r_train_true)] / tfac
+                    naive_val = naive_val_scaled[:len(r_val_true)] / tfac
                 else:
-                    naive_train_r = np.zeros_like(r_train_true_raw)
-                    naive_val_r   = np.zeros_like(r_val_true_raw)
+                    naive_train = np.zeros_like(r_train_true)
+                    naive_val = np.zeros_like(r_val_true)
 
-                ntr = min(len(r_train_pred_raw), len(r_train_true_raw), len(naive_train_r))
-                nva = min(len(r_val_pred_raw), len(r_val_true_raw), len(naive_val_r))
-                r_train_pred_raw = r_train_pred_raw[:ntr]; r_train_true_raw = r_train_true_raw[:ntr]; naive_train_r = naive_train_r[:ntr]
-                r_val_pred_raw = r_val_pred_raw[:nva]; r_val_true_raw = r_val_true_raw[:nva]; naive_val_r = naive_val_r[:nva]
+                # Clip lengths
+                ntr = min(len(r_train_pred), len(r_train_true), len(naive_train))
+                nva = min(len(r_val_pred), len(r_val_true), len(naive_val))
+                r_train_pred = r_train_pred[:ntr]; r_train_true = r_train_true[:ntr]; naive_train = naive_train[:ntr]
+                r_val_pred = r_val_pred[:nva]; r_val_true = r_val_true[:nva]; naive_val = naive_val[:nva]
 
-                mae_train_model = float(np.mean(np.abs(r_train_pred_raw - r_train_true_raw)))
-                mae_val_model = float(np.mean(np.abs(r_val_pred_raw - r_val_true_raw)))
-                mae_train_zero = float(np.mean(np.abs(0.0 - r_train_true_raw)))
-                mae_val_zero = float(np.mean(np.abs(0.0 - r_val_true_raw)))
-                mae_train_naive = float(np.mean(np.abs(naive_train_r - r_train_true_raw)))
-                mae_val_naive = float(np.mean(np.abs(naive_val_r - r_val_true_raw)))
-                print(f"r-space MAE (H={predicted_horizons[plotted_idx]}): Model Train={mae_train_model:.6f}, Val={mae_val_model:.6f} | Zero Train={mae_train_zero:.6f}, Val={mae_val_zero:.6f} | LastRet Train={mae_train_naive:.6f}, Val={mae_val_naive:.6f}")
+                mae_train_model = float(np.mean(np.abs(r_train_pred - r_train_true)))
+                mae_val_model = float(np.mean(np.abs(r_val_pred - r_val_true)))
+                mae_train_zero = float(np.mean(np.abs(0.0 - r_train_true)))
+                mae_val_zero = float(np.mean(np.abs(0.0 - r_val_true)))
+                mae_train_naive = float(np.mean(np.abs(naive_train - r_train_true)))
+                mae_val_naive = float(np.mean(np.abs(naive_val - r_val_true)))
+
+                print(f"Returns-space MAE (H={predicted_horizons[plotted_idx]}): Model Train={mae_train_model:.6f}, Val={mae_val_model:.6f} | Zero Train={mae_train_zero:.6f}, Val={mae_val_zero:.6f} | LastRet Train={mae_train_naive:.6f}, Val={mae_val_naive:.6f}")
             except Exception as rd_e:
-                print(f"WARN: r-space diag failed: {rd_e}")
-
-            print("✅ All datasets converted to prices using P_future = baseline * (exp(r) - 1)")
+                print(f"WARN: returns-space diag failed: {rd_e}")
+            
+            print("✅ All train, validation and test data converted to real-world prices using exp(log-returns)")
 
             # 7. Calculate metrics for the final predictions vs final targets (MAE, R2, SNR, Naive_MAE).
             # Calculate Train/Validation/Test metrics using real-world prices
