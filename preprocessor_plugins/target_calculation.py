@@ -80,7 +80,13 @@ def calculate_targets_from_baselines(baseline_data, config):
             
         baselines = baseline_data[baseline_key]
         if len(baselines) == 0:
-            print(f"Empty baselines for {split}")
+            # ROOT CAUSE OF LATER PIPELINE KeyError:
+            # Previous code just 'continue'd leaving target_data[split] empty (no 'output_horizon_X' keys),
+            # so pipeline _extract() raised KeyError when trying to access first horizon.
+            # Fix: explicitly create empty arrays for each requested horizon so structure is present.
+            print(f"Empty baselines for {split} -> creating empty target arrays for horizons {predicted_horizons}")
+            for horizon in predicted_horizons:
+                target_data[split][f'output_horizon_{horizon}'] = np.array([])
             continue
         
         # Calculate max horizon to ensure all horizons have same length

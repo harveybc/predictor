@@ -74,6 +74,8 @@ class STLPreprocessorZScore:
             # 3. Create FIRST sliding windows from denormalized data used only and only for baseline extraction
             print("Step 3: Create first sliding windows from denormalized data")
             denorm_sliding_windows = create_sliding_windows(denormalized_data, config, dates)
+            if 'X_train' not in denorm_sliding_windows or denorm_sliding_windows.get('X_train') is None or len(denorm_sliding_windows.get('X_train')) == 0:
+                print("CRITICAL: First-pass sliding windows missing or empty for TRAIN split before baseline extraction. This leads to empty baseline_train and missing y_train targets.")
 
             # 4. Extract baselines from the sliding windows (last elements of each window for target column)
             print("Step 4: Extract baselines from sliding windows")

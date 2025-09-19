@@ -112,6 +112,15 @@ class STLPipelinePlugin:
         raw_y_val = datasets["y_val"]
         raw_y_test = datasets["y_test"]
 
+        # --- Root-cause guard: empty training targets (upstream baselines or target calc produced none) ---
+        if isinstance(raw_y_train, dict) and len(raw_y_train) == 0:
+            bt = datasets.get("baseline_train")
+            bt_len = (len(bt) if bt is not None else 0)
+            raise ValueError(
+                "Empty training targets: no horizon keys present in y_train. Upstream cause: baseline_train length="
+                f"{bt_len} leading to no computed targets in target_calculation (see target_calculation.py conditional that sets empty arrays when baselines are empty)."
+            )
+
         y_train_list = []
         y_val_list = []
         y_test_list = []
