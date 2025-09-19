@@ -82,22 +82,38 @@ class STLPipelinePlugin:
         print("Loading/processing datasets via Preprocessor...")
         datasets, preprocessor_params = preprocessor_plugin.run_preprocessing(config)
         print("Preprocessor finished.")
-        
+
+        # Features
         X_train = datasets["x_train"]
         X_val = datasets["x_val"]
         X_test = datasets["x_test"]
-        
-        # Extract targets from target dictionaries (structured by horizon)
-        y_train_list = []
-        y_val_list = []
-        y_test_list = []
-        
-        for idx, h in enumerate(predicted_horizons):
-            # Target data is structured as dictionaries with horizon keys
-            horizon_key = f'output_horizon_{h}'
-            y_train_list.append(datasets["y_train"][horizon_key])
-            y_val_list.append(datasets["y_val"][horizon_key])
-            y_test_list.append(datasets["y_test"][horizon_key])
+
+        # Extract targets robustly (supports dicts or lists)
+        def _extract_targets(d):
+            if isinstance(d, dict):
+                out = []
+                keys = list(d.keys())
+                for idx_h, h in enumerate(predicted_horizons):
+                    key1 = f"output_horizon_{h}"
+                    if key1 in d:
+                        out.append(d[key1]); continue
+                    if h in d:
+                        out.append(d[h]); continue
+                    sh = str(h)
+                    if sh in d:
+                        out.append(d[sh]); continue
+                    if idx_h < len(keys):
+                        out.append(d[keys[idx_h]]); continue
+                    raise KeyError(f"Missing target for horizon {h}. Available keys: {keys}")
+                return out
+            elif isinstance(d, (list, tuple)):
+                return list(d)[:len(predicted_horizons)]
+            else:
+                raise TypeError(f"Unsupported targets container type: {type(d)}")
+
+        y_train_list = _extract_targets(datasets["y_train"])
+        y_val_list = _extract_targets(datasets["y_val"])
+        y_test_list = _extract_targets(datasets["y_test"])
         
         train_dates = datasets.get("y_train_dates")
         val_dates = datasets.get("y_val_dates")
@@ -128,8 +144,16 @@ class STLPipelinePlugin:
 
         # 2. Prepare datasets for training.
         print("Preparing datasets for training...")
-        y_train_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_train_list)}
-        y_val_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_val_list)}
+        def _to_2d_float(y):
+            y_arr = np.asarray(y)
+            try:
+                y_arr = y_arr.astype(np.float32)
+            except Exception:
+                y_arr = np.array([float(v) for v in list(y_arr)], dtype=np.float32)
+            return y_arr.reshape(-1, 1)
+
+        y_train_dict = {name: _to_2d_float(y) for name, y in zip(output_names, y_train_list)}
+        y_val_dict = {name: _to_2d_float(y) for name, y in zip(output_names, y_val_list)}
 
         print(f"Input shapes: Train:{X_train.shape}, Val:{X_val.shape}, Test:{X_test.shape}")
         print(f"Target shapes(H={predicted_horizons[0]}): Train:{y_train_list[0].shape}, Val:{y_val_list[0].shape}, Test:{y_test_list[0].shape}")
