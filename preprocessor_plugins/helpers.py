@@ -19,32 +19,41 @@ def load_normalized_csv(config):
         ('y_test_df', 'y_test_file', 'max_steps_test')
     ]
     
+    import os
     for data_key, file_key, max_steps_key in file_mappings:
-        if file_key in config and config[file_key]:
-            try:
-                df = pd.read_csv(config[file_key], parse_dates=True, index_col=0)
-                if config.get(max_steps_key):
-                    df = df.head(config[max_steps_key])
-                if len(df) == 0:
-                    print(f"WARNING: Empty dataframe loaded from {config[file_key]}")
-                else:
-                    print(f"  Loaded {data_key}: {df.shape}")
-                data[data_key] = df
-                # Extract DATE_TIME column if present; otherwise use index values
-                if "DATE_TIME" in df.columns:
-                    dates[data_key] = df["DATE_TIME"].values
-                else:
-                    # Use index values as datetime array if index is datetime-like; otherwise keep raw index
-                    try:
-                        if isinstance(df.index, pd.DatetimeIndex):
-                            dates[data_key] = df.index.values
-                        else:
-                            dates[data_key] = df.index.values
-                    except Exception:
-                        dates[data_key] = None
-            except Exception as e:
-                print(f"ERROR loading {config[file_key]}: {e}")
-                # Continue processing other files
+        path = config.get(file_key)
+        if not path:
+            continue
+        # Guard: skip normalization JSON or any .json file (those are not data matrices)
+        if path.lower().endswith('.json'):
+            print(f"SKIP: {file_key} points to JSON ({path}); expected CSV; ignoring for sliding windows")
+            continue
+        if not os.path.exists(path):
+            print(f"ERROR: File not found for {file_key}: {path}")
+            continue
+        try:
+            df = pd.read_csv(path, parse_dates=True, index_col=0)
+            if config.get(max_steps_key):
+                df = df.head(config[max_steps_key])
+            if len(df) == 0:
+                print(f"WARNING: Empty dataframe loaded from {path}")
+            else:
+                print(f"  Loaded {data_key}: {df.shape}")
+            data[data_key] = df
+            # Extract DATE_TIME column if present; otherwise use index values
+            if "DATE_TIME" in df.columns:
+                dates[data_key] = df["DATE_TIME"].values
+            else:
+                try:
+                    if isinstance(df.index, pd.DatetimeIndex):
+                        dates[data_key] = df.index.values
+                    else:
+                        dates[data_key] = df.index.values
+                except Exception:
+                    dates[data_key] = None
+        except Exception as e:
+            print(f"ERROR loading {path}: {e}")
+            continue
     if not data:
         raise ValueError("No data files could be loaded - check file paths in config")
     return data, dates
