@@ -20,39 +20,66 @@ def load_normalized_csv(config):
     ]
     
     import os
+    allowed_exts = {'.csv', '.tsv', '.txt'}
     for data_key, file_key, max_steps_key in file_mappings:
         path = config.get(file_key)
         if not path:
             continue
-        # Guard: skip normalization JSON or any .json file (those are not data matrices)
-        if path.lower().endswith('.json'):
-            print(f"SKIP: {file_key} points to JSON ({path}); expected CSV; ignoring for sliding windows")
+        path = str(path).strip()
+        lower = path.lower()
+        root, ext = os.path.splitext(lower)
+
+        # Auto-recovery: if a dataset key mistakenly points to a CONFIG/JSON file, try to extract the real CSV path from inside.
+        if ext == '.json':
+            try:
+                with open(path, 'r') as f:
+                    embedded_cfg = json.load(f)
+                embedded = embedded_cfg.get(file_key)
+                if embedded and isinstance(embedded, str):
+                    emb_ext = os.path.splitext(embedded.lower())[1]
+                    if emb_ext in allowed_exts and os.path.exists(embedded):
+                        print(f"AUTO-RECOVER: {file_key} incorrectly pointed to config JSON {path}; using embedded CSV {embedded}")
+                        path = embedded
+                        lower = path.lower()
+                        root, ext = os.path.splitext(lower)
+                    else:
+                        print(f"SKIP: {file_key} points to JSON ({path}); embedded value invalid or missing; skipping")
+                        continue
+                else:
+                    print(f"SKIP: {file_key} points to JSON ({path}); no embedded replacement; skipping")
+                    continue
+            except Exception as rec_e:
+                print(f"SKIP: {file_key} JSON recovery failed ({path}): {rec_e}; skipping")
+                continue
+
+        # Enforce extension whitelist
+        if ext not in allowed_exts:
+            print(f"SKIP: {file_key} has unsupported extension '{ext}' (allowed: {sorted(allowed_exts)})")
             continue
+
         if not os.path.exists(path):
             print(f"ERROR: File not found for {file_key}: {path}")
             continue
         try:
             df = pd.read_csv(path, parse_dates=True, index_col=0)
-            if config.get(max_steps_key):
-                df = df.head(config[max_steps_key])
-            if len(df) == 0:
+            max_steps_val = config.get(max_steps_key)
+            if isinstance(max_steps_val, int) and max_steps_val > 0:
+                df = df.head(max_steps_val)
+            if df.empty:
                 print(f"WARNING: Empty dataframe loaded from {path}")
             else:
                 print(f"  Loaded {data_key}: {df.shape}")
             data[data_key] = df
-            # Extract DATE_TIME column if present; otherwise use index values
+            # Extract DATE_TIME column if present; otherwise use index
             if "DATE_TIME" in df.columns:
                 dates[data_key] = df["DATE_TIME"].values
             else:
                 try:
-                    if isinstance(df.index, pd.DatetimeIndex):
-                        dates[data_key] = df.index.values
-                    else:
-                        dates[data_key] = df.index.values
+                    dates[data_key] = df.index.values
                 except Exception:
                     dates[data_key] = None
         except Exception as e:
-            print(f"ERROR loading {path}: {e}")
+            print(f"ERROR loading {file_key} ({path}): {e}")
             continue
     if not data:
         raise ValueError("No data files could be loaded - check file paths in config")
