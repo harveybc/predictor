@@ -149,56 +149,7 @@ def composite_loss(y_true, y_pred,
     # --- Calculate Primary Losses ---
     #mse_loss_val = tf.keras.losses.MeanSquaredError()(mag_true, mag_pred)
     huber_loss_val = Huber(delta=1.0)(mag_true, mag_pred)
-    #mse_loss_val = huber_loss_val
-    #mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
-    #mmd_loss_val = 0.0
-
-
-    #mse_min = tf.maximum(huber_loss_val, 1e-10)
-    #mse_min = tf.maximum(mse_loss_val, 1e-10)
-
-    # --- Calculate Summary Statistics ---
-    #signed_avg_pred = tf.reduce_mean(mag_pred)
-    #signed_avg_true = tf.reduce_mean(mag_true)
-
-    # --- Calculate Dynamic Asymptote Penalty (Original User Logic) ---
-    #def vertical_dynamic_asymptote(value, center):
-    #    res = tf.cond(tf.greater_equal(value, center),
-    #        lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20,
-    #        lambda: mse_loss_val*1e3 - 1)
-    #    res = tf.cond(tf.greater_equal(center, value),
-    #        lambda: mse_loss_val*1e3 - 1,
-    #        lambda: 3*tf.math.log(tf.abs(value - center) + 1e-9)+20)
-    #    return res
-    #asymptote = vertical_dynamic_asymptote(signed_avg_pred, signed_avg_true)
-    #asymptote = 0.0
-
-    # --- Calculate Feedback Metrics ---
-    #feedback_signed_error = 0.0
-    #feedback_stddev = 0.0
-    #feedback_mmd = 0.0
-
-    # --- Call Control Function ---
-    # Pass feedback metrics and head-specific PID parameters (which are tf.Variables)
-    #local_control_action = dummy_feedback_control(
-    #    feedback_signed_error, feedback_stddev, feedback_mmd, p, i, d
-    #)
-
-    # --- Update Feedback Variables (using control dependencies) ---
-    #update_ops = [
-        # Store calculated metrics
-    #    list_last_signed_error[head_index].assign(signed_avg_true-signed_avg_pred),
-    #    list_last_stddev[head_index].assign(feedback_stddev),
-    #    list_last_mmd[head_index].assign(feedback_mmd),
-        # Store the output of the control function - THIS IS THE FEEDBACK FOR THE MODEL
-        #list_local_feedback[head_index].assign(local_control_action)
-    #]
-
-    #with tf.control_dependencies(update_ops):
-        # Calculate final loss term
-        #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    #total_loss = 1e4 * mse_min + asymptote + mmd_lambda * mmd_loss_val
-    #total_loss = huber_loss_val+ mmd_lambda * mmd_loss_val
+    
     total_loss = huber_loss_val
     # Return the final scalar loss value
     return total_loss
