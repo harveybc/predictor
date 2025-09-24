@@ -487,12 +487,10 @@ class Plugin:
         x = AveragePooling1D(pool_size=3, strides=2, padding='valid', name=f"average_pooling_2")(x)
 
         merged = x
-
   
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
-
 
         for i, horizon in enumerate(predicted_horizons):
             branch_suffix = f"_h{horizon}"
