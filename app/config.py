@@ -74,5 +74,6 @@ DEFAULT_VALUES = {
     "penalty_close_lambda":0.0001, # penalty in thel loss function for the predicted value being 0 (Naive)
     "penalty_far_lambda":0.0001,    # penalty in thel loss function for the predicted value being far from the target value in the opposite dicection of the 0 (Naive)
     "feature_extractor_file": None,
-    "train_fe" : False
+    "train_fe" : False,
+    "loss_incentive" : 3.0
 }

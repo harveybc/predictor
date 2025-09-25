@@ -56,17 +56,59 @@ def compute_mmd(x, y, sigma=1.0, sample_size=256):
 # --- Composite Loss Variants ---
 
 def composite_loss_basic(y_true, y_pred, mmd_lambda=0.0, sigma=1.0):
-    """Huber + optional MMD on magnitude column."""
-    if y_true.shape.ndims == 1 or (y_true.shape.ndims == 2 and y_true.shape[1] == 1):
-        y_true = tf.reshape(y_true, [-1, 1])
-    mag_true = y_true[:, 0:1]
-    mag_pred = y_pred[:, 0:1]
-    huber_loss_val = Huber()(mag_true, mag_pred)
-    if mmd_lambda != 0.0:
-        mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
-    else:
-        mmd_loss_val = 0.0
-    return huber_loss_val + mmd_lambda * mmd_loss_val
+        """Composite loss = (Huber / incentive) + mmd_lambda * MMD.
+
+        Incentive logic (applied ONLY on the Huber term):
+            predicted_error = mean(|y_true - y_pred|)
+            naive_error     = mean(|y_true|)           (error of predicting 0 returns)
+
+        If predicted_error > naive_error: incentive = 1 (no change).
+        If predicted_error <= naive_error: incentive follows a linear scale
+            predicted_error = naive_error  -> incentive = 1
+            predicted_error = 0            -> incentive = 10
+            Linear interpolation in between.
+
+        This rewards models outperforming the naive zero-return predictor by
+        shrinking the effective Huber loss (division by incentive in [1,10]).
+        Edge case: if naive_error == 0 (all-zero targets), incentive = 10.
+        """
+        if y_true.shape.ndims == 1 or (y_true.shape.ndims == 2 and y_true.shape[1] == 1):
+                y_true = tf.reshape(y_true, [-1, 1])
+
+        mag_true = y_true[:, 0:1]
+        mag_pred = y_pred[:, 0:1]
+
+        # Base Huber loss on magnitude.
+        huber_loss_val = Huber()(mag_true, mag_pred)
+
+        # Predicted vs naive errors (scalar tensors)
+        eps = tf.keras.backend.epsilon()
+        predicted_error = tf.reduce_mean(tf.abs(mag_true - mag_pred))
+        naive_error = tf.reduce_mean(tf.abs(mag_true))
+
+        # Condition where incentive applies (better or equal to naive baseline)
+        cond = tf.less_equal(predicted_error, naive_error)
+
+        # Linear incentive: 1 at predicted_error==naive_error, 10 at 0 error.
+        # incentive = 10 - 9 * (pred_err / naive_err)
+        # Safe handling when naive_error ~ 0: force incentive=10.
+        ratio = predicted_error / (naive_error + eps)
+        ratio = tf.clip_by_value(ratio, 0.0, 1.0)
+        linear_incentive = 10.0 - 9.0 * ratio
+        incentive = tf.where(cond, linear_incentive, 1.0)
+
+        # If naive_error is (near) zero, override to max incentive (all targets zero case)
+        incentive = tf.where(tf.less_equal(naive_error, eps), 10.0, incentive)
+
+        # Apply incentive only to huber component.
+        adjusted_huber = huber_loss_val / incentive
+
+        if mmd_lambda != 0.0:
+                mmd_loss_val = compute_mmd(mag_pred, mag_true, sigma=sigma)
+        else:
+                mmd_loss_val = 0.0
+
+        return adjusted_huber + mmd_lambda * mmd_loss_val
 
 # Legacy signature adapter for multi-head plugins
 
