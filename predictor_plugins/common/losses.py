@@ -94,11 +94,11 @@ def composite_loss_basic(y_true, y_pred, mmd_lambda=0.0, sigma=1.0):
         # Safe handling when naive_error ~ 0: force incentive=10.
         ratio = predicted_error / (naive_error + eps)
         ratio = tf.clip_by_value(ratio, 0.0, 1.0)
-        linear_incentive = 10.0 - 9.0 * ratio
+        linear_incentive = 100.0 - 99.0 * ratio
         incentive = tf.where(cond, linear_incentive, 1.0)
 
         # If naive_error is (near) zero, override to max incentive (all targets zero case)
-        incentive = tf.where(tf.less_equal(naive_error, eps), 10.0, incentive)
+        incentive = tf.where(tf.less_equal(naive_error, eps), 100.0, incentive)
 
         # Apply incentive only to huber component.
         adjusted_huber = huber_loss_val / incentive
