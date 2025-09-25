@@ -13,6 +13,7 @@ from tensorflow.keras.optimizers import AdamW
 from .common.losses import mae_magnitude, composite_loss_multihead as composite_loss, random_normal_initializer_44
 from .common.bayesian import posterior_mean_field, prior_fn
 from .common.base import BaseBayesianKerasPredictor
+from .common.positional_encoding import positional_encoding
 
 
 class Plugin(BaseBayesianKerasPredictor):
@@ -30,9 +31,10 @@ class Plugin(BaseBayesianKerasPredictor):
         "kl_anneal_epochs": 10,
         "early_patience": 10,
         "mc_samples": 50,
+    "positional_encoding": False,
     }
     plugin_debug_vars = [
-        "batch_size","branch_units","merged_units","learning_rate","l2_reg","mmd_lambda","sigma_mmd","predicted_horizons","kl_weight","early_patience","mc_samples"
+        "batch_size","branch_units","merged_units","learning_rate","l2_reg","mmd_lambda","sigma_mmd","predicted_horizons","kl_weight","early_patience","mc_samples","positional_encoding"
     ]
 
     def build_model(self, input_shape, x_train, config):
@@ -46,7 +48,13 @@ class Plugin(BaseBayesianKerasPredictor):
         branch_units = self.params.get("branch_units", 64)
         lstm_units = max(8, branch_units // 2)
         inputs = Input(shape=(w, c), name="input_layer")
-        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding="same", activation=act, kernel_regularizer=l2(l2_reg_v), name="conv_1")(inputs)
+        # Optional positional encoding
+        if self.params.get("positional_encoding", False):
+            pe = positional_encoding(w, c)
+            x_in = Lambda(lambda t, pe=pe: t + pe, name="add_positional_encoding")(inputs)
+        else:
+            x_in = inputs
+        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding="same", activation=act, kernel_regularizer=l2(l2_reg_v), name="conv_1")(x_in)
         x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding="same", activation=act, kernel_regularizer=l2(l2_reg_v), name="conv_2")(x)
         merged = x
         outputs = []

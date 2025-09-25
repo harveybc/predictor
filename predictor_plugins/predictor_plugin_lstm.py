@@ -9,6 +9,7 @@ from tensorflow.keras.optimizers import AdamW
 from .common.losses import mae_magnitude, composite_loss_multihead as composite_loss, random_normal_initializer_44
 from .common.bayesian import posterior_mean_field, prior_fn
 from .common.base import BaseBayesianKerasPredictor
+from .common.positional_encoding import positional_encoding
 
 
 class Plugin(BaseBayesianKerasPredictor):
@@ -28,9 +29,10 @@ class Plugin(BaseBayesianKerasPredictor):
         "conv_filters": 64,
         "mc_samples": 50,
         "early_patience": 10,
+    "positional_encoding": False,
     }
     plugin_debug_vars = [
-        "batch_size","trunk_lstm_units","trunk_layers","head_lstm_units","learning_rate","l2_reg","mmd_lambda","sigma_mmd","predicted_horizons","conv_filters","mc_samples"
+        "batch_size","trunk_lstm_units","trunk_layers","head_lstm_units","learning_rate","l2_reg","mmd_lambda","sigma_mmd","predicted_horizons","conv_filters","mc_samples","positional_encoding"
     ]
 
     def build_model(self, input_shape, x_train, config):
@@ -45,7 +47,12 @@ class Plugin(BaseBayesianKerasPredictor):
         act = self.params.get("activation", "relu")
         conv_filters = self.params.get("conv_filters", 64)
         inputs = Input(shape=(w, c), name="input_layer")
-        x = Conv1D(filters=conv_filters, kernel_size=3, padding='same', activation=act, kernel_regularizer=l2(l2_reg_v), name='trunk_conv')(inputs)
+        if self.params.get("positional_encoding", False):
+            pe = positional_encoding(w, c)
+            x_in = Lambda(lambda t, pe=pe: t + pe, name="add_positional_encoding")(inputs)
+        else:
+            x_in = inputs
+        x = Conv1D(filters=conv_filters, kernel_size=3, padding='same', activation=act, kernel_regularizer=l2(l2_reg_v), name='trunk_conv')(x_in)
         for i in range(trunk_layers):
             x = Bidirectional(LSTM(trunk_units, return_sequences=(i < trunk_layers - 1), kernel_regularizer=l2(l2_reg_v)), name=f"trunk_bilstm_{i+1}")(x)
         trunk_out = x

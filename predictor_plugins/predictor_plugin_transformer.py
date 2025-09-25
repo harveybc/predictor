@@ -9,6 +9,7 @@ from tensorflow.keras.optimizers import AdamW
 from .common.losses import mae_magnitude, composite_loss_multihead as composite_loss, random_normal_initializer_44
 from .common.bayesian import posterior_mean_field, prior_fn
 from .common.base import BaseBayesianKerasPredictor
+from .common.positional_encoding import positional_encoding
 
 def _get_angles(pos, i, d_model):
     angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
@@ -39,9 +40,10 @@ class Plugin(BaseBayesianKerasPredictor):
         "kl_anneal_epochs": 10,
         "mc_samples": 50,
         "early_patience": 10,
+    "positional_encoding": True,
     }
     plugin_debug_vars = [
-        "batch_size","merged_units","branch_units","activation","l2_reg","learning_rate","mmd_lambda","sigma_mmd","predicted_horizons","num_attention_heads","mc_samples"
+        "batch_size","merged_units","branch_units","activation","l2_reg","learning_rate","mmd_lambda","sigma_mmd","predicted_horizons","num_attention_heads","mc_samples","positional_encoding"
     ]
 
     def build_model(self, input_shape, x_train, config):
@@ -55,7 +57,11 @@ class Plugin(BaseBayesianKerasPredictor):
         branch_units = self.params.get("branch_units", 64)
         lstm_units = max(8, branch_units // 2)
         inputs = Input(shape=(w, c), name="input_layer")
-        x = inputs + _positional_encoding(w, c)
+        if self.params.get("positional_encoding", True):  # default True for transformer
+            pe = positional_encoding(w, c)
+            x = Lambda(lambda t, pe=pe: t + pe, name="add_positional_encoding")(inputs)
+        else:
+            x = inputs
         heads = self.params.get("num_attention_heads", 2)
         key_dim = max(1, c // heads)
         attn = MultiHeadAttention(num_heads=heads, key_dim=key_dim, kernel_regularizer=l2(l2_reg_v), name="mh_attention")(x, x)

@@ -76,6 +76,7 @@ DEFAULT_VALUES = {
     "feature_extractor_file": None,
     "train_fe": False,
     "incentive_loss": 10.0,
-    "use_log1p_targets": True
+    "use_log1p_targets": True,
+    "positional_encoding": True
 
 }
