@@ -280,9 +280,15 @@ class PipelinePlugin:
             with open(norm_json, 'r') as f:
                 norm_json = json.load(f)
         if "CLOSE" in norm_json:
-            close_min = norm_json["CLOSE"]["min"]
-            close_max = norm_json["CLOSE"]["max"]
-            denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
+            close_info = norm_json["CLOSE"]
+            if "min" in close_info and "max" in close_info:
+                close_min = close_info["min"]; close_max = close_info["max"]
+                denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
+            elif "mean" in close_info and "std" in close_info:
+                mean = close_info["mean"]; std = close_info["std"]
+                denorm_test_close_prices = test_close_prices * std + mean
+            else:
+                denorm_test_close_prices = test_close_prices
         else:
             denorm_test_close_prices = test_close_prices
 
@@ -293,13 +299,20 @@ class PipelinePlugin:
                     norm_json = json.load(f)
             if config.get("use_returns", False):
                 if "CLOSE" in norm_json:
-                    close_min = norm_json["CLOSE"]["min"]
-                    close_max = norm_json["CLOSE"]["max"]
-                    diff = close_max - close_min
+                    close_info = norm_json["CLOSE"]
                     if baseline_test is not None:
-                        test_predictions = (test_predictions + baseline_test) * diff + close_min
-                        y_test_array = np.stack(y_test, axis=1)
-                        denorm_y_test = (y_test_array + baseline_test) * diff + close_min
+                        if "min" in close_info and "max" in close_info:
+                            diff = close_info["max"] - close_info["min"]
+                            test_predictions = (test_predictions + baseline_test) * diff + close_info["min"]
+                            y_test_array = np.stack(y_test, axis=1)
+                            denorm_y_test = (y_test_array + baseline_test) * diff + close_info["min"]
+                        elif "mean" in close_info and "std" in close_info:
+                            std = close_info["std"]; mean = close_info["mean"]
+                            test_predictions = (test_predictions + baseline_test) * std + mean
+                            y_test_array = np.stack(y_test, axis=1)
+                            denorm_y_test = (y_test_array + baseline_test) * std + mean
+                        else:
+                            denorm_y_test = np.stack(y_test, axis=1)
                     else:
                         print("Warning: Baseline test values not found; skipping returns denormalization.")
                         denorm_y_test = np.stack(y_test, axis=1)
@@ -308,17 +321,43 @@ class PipelinePlugin:
                     denorm_y_test = np.stack(y_test, axis=1)
             else:
                 if "CLOSE" in norm_json:
-                    close_min = norm_json["CLOSE"]["min"]
-                    close_max = norm_json["CLOSE"]["max"]
-                    test_predictions = test_predictions * (close_max - close_min) + close_min
-                    denorm_y_test = np.stack(y_test, axis=1) * (close_max - close_min) + close_min
+                    close_info = norm_json["CLOSE"]
+                    if "min" in close_info and "max" in close_info:
+                        test_predictions = test_predictions * (close_info["max"] - close_info["min"]) + close_info["min"]
+                        denorm_y_test = np.stack(y_test, axis=1) * (close_info["max"] - close_info["min"]) + close_info["min"]
+                    elif "mean" in close_info and "std" in close_info:
+                        test_predictions = test_predictions * close_info["std"] + close_info["mean"]
+                        denorm_y_test = np.stack(y_test, axis=1) * close_info["std"] + close_info["mean"]
+                    else:
+                        print("Warning: 'CLOSE' not found; skipping denormalization for non-returns mode.")
+                        denorm_y_test = np.stack(y_test, axis=1)
                 else:
                     print("Warning: 'CLOSE' not found; skipping denormalization for non-returns mode.")
                     denorm_y_test = np.stack(y_test, axis=1)
         else:
             denorm_y_test = np.stack(y_test, axis=1)
 
-        denorm_test_close_prices = test_close_prices * (close_max - close_min) + close_min
+        # Recompute denorm_test_close_prices using the same auto-detection logic for consistency
+        try:
+            norm_json_tmp = config.get("use_normalization_json")
+            if norm_json_tmp is None:
+                denorm_test_close_prices = test_close_prices
+            else:
+                if isinstance(norm_json_tmp, str):
+                    with open(norm_json_tmp, 'r') as f:
+                        norm_json_tmp = json.load(f)
+                if isinstance(norm_json_tmp, dict) and "CLOSE" in norm_json_tmp:
+                    ci = norm_json_tmp["CLOSE"]
+                    if "min" in ci and "max" in ci:
+                        denorm_test_close_prices = test_close_prices * (ci["max"] - ci["min"]) + ci["min"]
+                    elif "mean" in ci and "std" in ci:
+                        denorm_test_close_prices = test_close_prices * ci["std"] + ci["mean"]
+                    else:
+                        denorm_test_close_prices = test_close_prices
+                else:
+                    denorm_test_close_prices = test_close_prices
+        except Exception:
+            denorm_test_close_prices = test_close_prices
 
         # Guardar predicciones finales en CSV.
         final_test_file = config.get("output_file", "test_predictions.csv")
@@ -349,8 +388,15 @@ class PipelinePlugin:
                     with open(norm_json, 'r') as f:
                         norm_json = json.load(f)
                 if "CLOSE" in norm_json:
-                    diff = norm_json["CLOSE"]["max"] - norm_json["CLOSE"]["min"]
-                    denorm_uncertainty = uncertainty_estimates * diff
+                    close_info = norm_json["CLOSE"]
+                    if "min" in close_info and "max" in close_info:
+                        diff = close_info["max"] - close_info["min"]
+                        denorm_uncertainty = uncertainty_estimates * diff
+                    elif "mean" in close_info and "std" in close_info:
+                        denorm_uncertainty = uncertainty_estimates * close_info["std"]
+                    else:
+                        print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
+                        denorm_uncertainty = uncertainty_estimates
                 else:
                     print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
                     denorm_uncertainty = uncertainty_estimates
