@@ -2,7 +2,7 @@
 """Deterministic N-BEATS style predictor using shared base plus optional positional encoding."""
 from __future__ import annotations
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Dense, Lambda
+from tensorflow.keras.layers import Input, Dense, Lambda, Flatten, Add
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import AdamW
 from .common.losses import mae_magnitude
@@ -42,23 +42,34 @@ class Plugin(BaseDeterministicKerasPredictor):
             inp_pe = Lambda(lambda t, pe=pe: t + pe, name="add_positional_encoding")(inp)
         else:
             inp_pe = inp
-        flat = tf.reshape(inp_pe, (-1, time_steps * channels))
-        residual = flat
-        forecast_heads = {h: [] for h in ph}
+        # Flatten input (Keras native) for fully-connected blocks
+        flat = Flatten(name="flatten_inputs")(inp_pe)
+        residual = flat  # initial residual (backcast target)
+        # Collect per-horizon forecast components from each block
+        per_horizon_components = {h: [] for h in ph}
+
         for b in range(blocks):
-            x = residual
+            x_block = residual
             for l in range(layers):
-                x = Dense(units, activation=act, name=f"b{b}_dense{l}")(x)
-            theta_f = Dense(units, activation=act, name=f"b{b}_theta_f")(x)
-            backcast = Dense(time_steps * channels, activation='linear', name=f"b{b}_backcast")(theta_f)
-            residual = tf.keras.layers.subtract([residual, backcast], name=f"b{b}_residual")
+                x_block = Dense(units, activation=act, name=f"b{b}_dense{l}")(x_block)
+            # Produce backcast to update residual
+            backcast = Dense(time_steps * channels, activation='linear', name=f"b{b}_backcast")(x_block)
+            # Subtract backcast (reshape back to same flat size already)
+            residual = Lambda(lambda t: t[0] - t[1], name=f"b{b}_residual")([residual, backcast])
+            # Forecast components per horizon
             for h in ph:
-                fh = Dense(1, activation='linear', name=f"b{b}_h{h}_forecast")(theta_f)
-                forecast_heads[h].append(fh)
+                comp = Dense(1, activation='linear', name=f"b{b}_h{h}_forecast")(x_block)
+                per_horizon_components[h].append(comp)
+
         outputs = []
         self.output_names = []
         for h in ph:
-            agg = Lambda(lambda tensors: tf.add_n(tensors), name=f"agg_h{h}")(forecast_heads[h])
+            # Sum all components for this horizon
+            if len(per_horizon_components[h]) == 1:
+                agg = per_horizon_components[h][0]
+            else:
+                agg = Add(name=f"agg_h{h}")(per_horizon_components[h])
+            # Identity Lambda just to keep naming convention consistent
             out = Lambda(lambda t: t, name=f"output_horizon_{h}")(agg)
             outputs.append(out)
             self.output_names.append(f"output_horizon_{h}")
