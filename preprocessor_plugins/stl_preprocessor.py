@@ -1319,7 +1319,8 @@ class PreprocessorPlugin:
         # --- 7. Baseline & Target Processing (REVERTED TO USER'S ORIGINAL LOGIC - ALIGNED) ---
         print("\n--- 7. Baseline and Target Processing (Original Logic - Aligned) ---")
         target_column = config["target_column"]
-        use_returns = config.get("use_returns", False) # Original flag name
+        use_returns = config.get("use_returns", True) # Original flag name
+        use_log1p_targets = config.get("use_log1p_targets", True)
 
         # --- Original Offset Calculation (adjusted for maximum feature lookback) ---
         # The baseline/target indices must align with the end of each X window in original series time.
@@ -1382,6 +1383,11 @@ class PreprocessorPlugin:
                 target_train_h = target_train_h - baseline_train
                 target_val_h = target_val_h - baseline_val
                 target_test_h = target_test_h - baseline_test
+
+            if use_log1p_targets:
+                target_train_h = np.log1p(target_train_h)
+                target_val_h = np.log1p(target_val_h)
+                target_test_h = np.log1p(target_test_h)
 
             y_train_final_list.append(target_train_h.astype(np.float32))
             y_val_final_list.append(target_val_h.astype(np.float32))
