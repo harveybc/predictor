@@ -35,6 +35,7 @@
     "early_patience": 120,
     "start_from_epoch": 15,
     "use_returns": false,
+    "use_log1p_targets": false,
     "mc_samples":20,
     "plotted_horizon": 6,
     "mmd_lambda": 0.0,
