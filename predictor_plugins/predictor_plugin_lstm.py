@@ -20,7 +20,7 @@ class Plugin(BaseBayesianKerasPredictor):
         "head_lstm_units": 32,
         "learning_rate": 1e-3,
         "activation": "relu",
-        "l2_reg": 1e-4,
+        "l2_reg": 1e-7,
         "mmd_lambda": 0.1,
         "sigma_mmd": 1.0,
         "predicted_horizons": [1],

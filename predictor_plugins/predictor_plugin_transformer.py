@@ -30,7 +30,7 @@ class Plugin(BaseBayesianKerasPredictor):
         "merged_units": 128,
         "branch_units": 64,
         "activation": "relu",
-        "l2_reg": 1e-4,
+        "l2_reg": 1e-7,
         "learning_rate": 0.001,
         "mmd_lambda": 0.1,
         "sigma_mmd": 1.0,

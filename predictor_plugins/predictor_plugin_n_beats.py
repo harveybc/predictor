@@ -37,7 +37,7 @@ class Plugin(BaseBayesianKerasPredictor):
         "bilstm_units": 64,
         # General / regularization
         "activation": "relu",
-        "l2_reg": 1e-4,
+        "l2_reg": 1e-7,
         # Training / optimization
         "learning_rate": 1e-3,
         "early_patience": 15,

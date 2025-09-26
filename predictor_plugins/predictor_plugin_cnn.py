@@ -23,7 +23,7 @@ class Plugin(BaseBayesianKerasPredictor):
         "merged_units": 128,
         "learning_rate": 0.001,
         "activation": "relu",
-        "l2_reg": 1e-4,
+        "l2_reg": 1e-7,
         "mmd_lambda": 0.1,
         "sigma_mmd": 1.0,
         "predicted_horizons": [1],

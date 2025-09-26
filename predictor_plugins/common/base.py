@@ -124,13 +124,13 @@ class BaseKerasPredictor(BasePredictorPlugin):
                 monitor='val_loss',
                 patience=self.params.get('early_patience', 10),
                 restore_best_weights=True,
-                min_delta=1e-8,
+                min_delta=1e-10,
                 verbose=1
             ),
             ReduceLROnPlateauWithCounter(
                 monitor='val_loss',
                 factor=0.3,
-                min_delta=1e-8,
+                min_delta=1e-10,
                 patience=max(1, self.params.get('early_patience', 10) // 4),
                 verbose=1
             ),
