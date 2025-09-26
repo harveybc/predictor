@@ -37,7 +37,7 @@ import tensorflow.keras.backend as K
 
 from .losses import (
     mae_magnitude, r2_metric, composite_loss_multihead as composite_loss,
-    compute_mmd
+    compute_mmd, composite_loss_noreturns
 )
 from .callbacks import (
     ReduceLROnPlateauWithCounter, EarlyStoppingWithPatienceCounter
@@ -110,12 +110,22 @@ class BaseKerasPredictor(BasePredictorPlugin):
 
     # --- Custom objects reused across all models ---
     def get_custom_objects(self):
-        return {
-            'composite_loss': composite_loss,
-            'compute_mmd': compute_mmd,
-            'r2_metric': r2_metric,
-            'mae_magnitude': mae_magnitude,
-        }
+        use_returns = self.params.get('use_returns', False)
+        if use_returns:
+            return {
+                'composite_loss': composite_loss,
+                'compute_mmd': compute_mmd,
+                'r2_metric': r2_metric,
+                'mae_magnitude': mae_magnitude,
+            }
+        else:
+            return {
+                'composite_loss': composite_loss_noreturns,
+                'compute_mmd': compute_mmd,
+                'r2_metric': r2_metric,
+                'mae_magnitude': mae_magnitude,
+            }
+        
 
     # --- Callbacks factory (Bayesian variant will extend) ---
     def _build_callbacks(self):

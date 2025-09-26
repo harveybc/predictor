@@ -84,7 +84,7 @@ def composite_loss_basic(y_true, y_pred, mmd_lambda=0.0, sigma=1.0):
         # Predicted vs naive errors (scalar tensors)
         eps = tf.keras.backend.epsilon()
         predicted_error = tf.reduce_mean(tf.abs(mag_true - mag_pred))
-        naive_error = tf.reduce_mean(tf.abs(2*mag_true))
+        naive_error = tf.reduce_mean(tf.abs(mag_true))
 
         # Condition where incentive applies (better or equal to naive baseline)
         cond = tf.less_equal(predicted_error, naive_error)
@@ -123,6 +123,19 @@ def composite_loss_multihead(y_true, y_pred, head_index, mmd_lambda, sigma,
     for interface compatibility.
     """
     return composite_loss_basic(y_true, y_pred, mmd_lambda=mmd_lambda, sigma=sigma)
+
+def composite_loss_noreturns(y_true, y_pred, head_index, mmd_lambda, sigma,
+                             p, i, d,
+                             list_last_signed_error,
+                             list_last_stddev,
+                             list_last_mmd,
+                             list_local_feedback):
+    """Adapter wrapping composite_loss_basic keeping legacy callable shape.
+    Currently ignores control feedback lists (placeholders) but keeps them
+    for interface compatibility.
+    """
+    return Huber()(y_true, y_pred)
+
 
 def random_normal_initializer_44(shape, dtype=None):
     return tf.random.normal(shape, mean=0.0, stddev=0.05, dtype=dtype, seed=44)
