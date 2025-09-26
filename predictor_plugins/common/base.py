@@ -124,13 +124,15 @@ class BaseKerasPredictor(BasePredictorPlugin):
                 monitor='val_loss',
                 patience=self.params.get('early_patience', 10),
                 restore_best_weights=True,
-                verbose=1,
+                min_delta=1e-8,
+                verbose=1
             ),
             ReduceLROnPlateauWithCounter(
                 monitor='val_loss',
                 factor=0.5,
+                min_delta=1e-8,
                 patience=max(1, self.params.get('early_patience', 10) // 4),
-                verbose=1,
+                verbose=1
             ),
             LambdaCallback(on_epoch_end=lambda e, l: print(
                 f"Epoch {e+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
