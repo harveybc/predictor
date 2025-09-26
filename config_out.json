@@ -55,7 +55,7 @@
     "tapper_plot_file": "examples/results/phase_1/phase_1_25200_1h_multi_tapper_decomposition_plot.png",
     "tapper_plot_points": 480,
     "batch_size": 128,
-    "epochs": 200,
+    "epochs": 2000,
     "loss_plot_file": "examples/results/phase_1/phase_1_transformer_25200_1h_loss_plot.png",
     "output_file": "examples/results/phase_1/phase_1_transformer_25200_1h_prediction.csv",
     "uncertainties_file": "examples/results/phase_1/phase_1_transformer_25200_1h_uncertanties.csv",

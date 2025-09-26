@@ -52,7 +52,7 @@
     "key_config_parameters_logged": {
         "learning_rate": 0.0005,
         "batch_size": 32,
-        "epochs": 1000,
+        "epochs": 10000,
         "window_size": 144,
         "num_features_input": 54,
         "num_features_output": 23,
