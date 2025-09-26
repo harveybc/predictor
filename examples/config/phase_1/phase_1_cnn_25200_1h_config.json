@@ -34,7 +34,7 @@
     "kl_anneal_epochs": 40,
     "early_patience": 120,
     "start_from_epoch": 15,
-    "use_returns": false,
+    "use_returns": true,
     "use_log1p_targets": false,
     "mc_samples":20,
     "plotted_horizon": 6,
