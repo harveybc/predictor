@@ -1384,10 +1384,10 @@ class PreprocessorPlugin:
                 target_val_h = target_val_h - baseline_val
                 target_test_h = target_test_h - baseline_test
             
-            if use_log1p_targets:
-                target_train_h = np.log1p(target_train_h)
-                target_val_h = np.log1p(target_val_h)
-                target_test_h = np.log1p(target_test_h)
+                if use_log1p_targets:
+                    target_train_h = np.log1p(target_train_h)
+                    target_val_h = np.log1p(target_val_h)
+                    target_test_h = np.log1p(target_test_h)
 
 
             y_train_final_list.append(target_train_h.astype(np.float32))
