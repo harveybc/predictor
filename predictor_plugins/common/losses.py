@@ -84,7 +84,7 @@ def composite_loss_basic(y_true, y_pred, mmd_lambda=0.0, sigma=1.0):
         # Predicted vs naive errors (scalar tensors)
         eps = tf.keras.backend.epsilon()
         predicted_error = tf.reduce_mean(tf.abs(mag_true - mag_pred))
-        naive_error = tf.reduce_mean(tf.abs(mag_true))
+        naive_error = tf.reduce_mean(tf.abs(2*mag_true))
 
         # Condition where incentive applies (better or equal to naive baseline)
         cond = tf.less_equal(predicted_error, naive_error)
