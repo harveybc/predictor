@@ -90,7 +90,6 @@ def denormalize_returns(data, config):
     return data
 # --- End Denormalization Functions ---
 
-
 class STLPipelinePlugin:
     # Default parameters (kept from previous correct version)
     plugin_params = {
@@ -176,6 +175,7 @@ class STLPipelinePlugin:
                         train_preds_h=train_preds_h[:num_train_pts]; train_target_h=train_target_h[:num_train_pts]; train_unc_h=train_unc_h[:num_train_pts]; baseline_train_h=baseline_train[:num_train_pts].flatten() # Flatten baseline too
                         val_preds_h=val_preds_h[:num_val_pts]; val_target_h=val_target_h[:num_val_pts]; val_unc_h=val_unc_h[:num_val_pts]; baseline_val_h=baseline_val[:num_val_pts].flatten() # Flatten baseline too
                         # Denormalize Price (add baseline first if returns)
+                        #TODO: verify that the same calculus are made on test set as train/val set
                         train_target_price=denormalize(baseline_train_h+train_target_h if use_returns else train_target_h, config)
                         train_pred_price=denormalize(baseline_train_h+train_preds_h if use_returns else train_preds_h, config)
                         val_target_price=denormalize(baseline_val_h+val_target_h if use_returns else val_target_h, config)
