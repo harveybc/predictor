@@ -10,7 +10,7 @@ from tensorflow.keras.layers import Input, Dense, Lambda, Bidirectional, LSTM, A
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import AdamW
-from .common.losses import mae_magnitude, composite_loss_multihead as composite_loss, random_normal_initializer_44, composite_loss_multihead_noreturns as composite_loss_noreturns, r2_metric
+from .common.losses import mae_magnitude, composite_loss_multihead as composite_loss, random_normal_initializer_44, composite_loss_noreturns, r2_metric
 from .common.bayesian import posterior_mean_field, prior_fn
 from .common.base import BaseBayesianKerasPredictor
 from .common.positional_encoding import positional_encoding
