@@ -23,6 +23,7 @@
     "pipeline_plugin": "stl_pipeline_zscore",
     "preprocessor_plugin": "stl_preprocessor_zscore",
     "use_returns": false,
+    "use_log1p_targets": false,
     "residualize_targets_with_last_close": true,
     "add_window_stats": true,
     "window_stats_periods": [12, 48],

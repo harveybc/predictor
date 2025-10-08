@@ -87,7 +87,8 @@ class PreprocessorPlugin:
         "use_stl": False,
         "use_wavelets": True,
         "use_multi_tapper": False,
-        "use_returns": false, # Original flag name for Y calculation
+        "use_returns": false,
+    "use_log1p_targets": false, # Original flag name for Y calculation
         "normalize_features": True,
     # --- Decomposition inclusion flags ---
     "use_predicted_decompositions": True,
