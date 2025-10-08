@@ -52,7 +52,7 @@ DEFAULT_VALUES = {
     "kl_anneal_epochs": 100,        
     "mmd_lambda": 0.1,
     "overfitting_penalty": 0.1,
-    "use_returns": True,
+    "use_returns": false,
     "mc_samples":100,
     "plotted_horizon": 6,
     "min_delta": 1e-4,

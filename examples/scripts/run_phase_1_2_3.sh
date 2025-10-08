@@ -35,7 +35,7 @@ for file in "$CONFIG_DIR"/*.json; do
     sh ./predictor.sh --load_config "$file"
 done
 
-CONFIG_DIR="examples/config/phase_3"
+CONFIG_DIR="examples/config/phase_3_1"
 
 for file in "$CONFIG_DIR"/*.json; do
     echo "Running preprocessor with configuration: $(basename "$file")"
