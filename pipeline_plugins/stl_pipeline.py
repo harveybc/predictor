@@ -98,7 +98,7 @@ class STLPipelinePlugin:
         "uncertainties_file": "test_uncertainties.csv", "model_plot_file": "model_plot.png",
         "predictions_plot_file": "predictions_plot.png", "results_file": "results.csv",
         "plot_points": 480, "plotted_horizon": 6, "use_strategy": False,
-        "predicted_horizons": [1, 6, 12, 24], "use_returns": True, "normalize_features": True,
+        "predicted_horizons": [1, 6, 12, 24], "use_returns": False, "normalize_features": True,
         "window_size": 48, "target_column": "TARGET", "use_normalization_json": None,
         "mc_samples": 100,
     }
