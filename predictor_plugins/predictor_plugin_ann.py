@@ -2,10 +2,15 @@
 """ANN multi-horizon predictor using BaseBayesianKerasPredictor with optional positional encoding."""
 from __future__ import annotations
 import tensorflow as tf, tensorflow_probability as tfp
-from tensorflow.keras.layers import Input, Dense, Dropout, Lambda, Add
+from tensorflow.keras.layers import Input, Dense, Dropout, Lambda, Add, Flatten
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import AdamW
-from .common.losses import mae_magnitude, composite_loss_multihead as composite_loss, random_normal_initializer_44
+from .common.losses import (
+    mae_magnitude,
+    composite_loss_multihead as composite_loss,
+    composite_loss_noreturns,
+    random_normal_initializer_44,
+)
 from .common.bayesian import posterior_mean_field, prior_fn
 from .common.base import BaseBayesianKerasPredictor
 from .common.positional_encoding import positional_encoding
@@ -47,7 +52,8 @@ class Plugin(BaseBayesianKerasPredictor):
             enc = Lambda(lambda t, pe=pe: t + pe, name="add_positional_encoding")(inputs)
         else:
             enc = inputs
-        x = tf.reshape(enc, (-1, window * channels))
+        # NOTE: Using Keras Flatten layer instead of tf.reshape to avoid the KerasTensor error.
+        x = Flatten(name="flatten_inputs")(enc)
         for i in range(n_layers):
             x = Dense(hidden, activation=act, name=f"shared_dense_{i}")(x)
             if dr > 0:
@@ -81,8 +87,33 @@ class Plugin(BaseBayesianKerasPredictor):
         self.model = Model(inputs=inputs, outputs=outputs, name=f"ANNPredictor_{len(ph)}H")
         optimizer = AdamW(learning_rate=self.params.get("learning_rate", 1e-3))
         loss_dict = {}
+        # Mirror CNN plugin logic: choose loss variant depending on use_returns flag.
+        use_returns = self.params.get("use_returns", False)
         for i, nm in enumerate(self.output_names):
-            loss_dict[nm] = (lambda idx=i: (lambda yt, yp: composite_loss(yt, yp, head_index=idx, mmd_lambda=mmd_lambda, sigma=sigma_mmd, p=0, i=0, d=0, list_last_signed_error=[], list_last_stddev=[], list_last_mmd=[], list_local_feedback=[])))()
+            if use_returns:
+                loss_dict[nm] = (lambda idx=i: (lambda yt, yp: composite_loss(
+                    yt, yp,
+                    head_index=idx,
+                    mmd_lambda=mmd_lambda,
+                    sigma=sigma_mmd,
+                    p=0, i=0, d=0,
+                    list_last_signed_error=[],
+                    list_last_stddev=[],
+                    list_last_mmd=[],
+                    list_local_feedback=[]
+                )))()
+            else:
+                loss_dict[nm] = (lambda idx=i: (lambda yt, yp: composite_loss_noreturns(
+                    yt, yp,
+                    head_index=idx,
+                    mmd_lambda=mmd_lambda,
+                    sigma=sigma_mmd,
+                    p=0, i=0, d=0,
+                    list_last_signed_error=[],
+                    list_last_stddev=[],
+                    list_last_mmd=[],
+                    list_local_feedback=[]
+                )))()
         metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
         self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)
         self.model.summary(line_length=140)
