@@ -190,12 +190,9 @@ class STLPipelinePlugin:
                             np.mean(np.abs(train_pred_price - train_target_price))
                         )
                         train_r2_h=r2_score(train_target_price, train_pred_price)
-                        # Uncertainty is in the same model-output scale: convert accordingly for reporting.
-                        train_unc_mean_h = (
-                            np.mean(np.abs(denormalize_returns(train_unc_h, config)))
-                            if use_returns else
-                            np.mean(np.abs(denormalize(train_unc_h, config)))
-                        )
+                        # Uncertainty should be SCALE-ONLY (std) in all cases (no mean/min shift).
+                        # Use the returns-style denormalization which multiplies by range/std only.
+                        train_unc_mean_h = np.mean(np.abs(denormalize_returns(train_unc_h, config)))
                         train_snr_h=np.mean(train_pred_price)/(train_unc_mean_h+1e-9)
                         # Naive MAE: baseline vs target price (both in real-world scale)
                         train_naive_mae_h=np.mean(np.abs(denormalize(baseline_train_h, config) - train_target_price))
@@ -206,11 +203,8 @@ class STLPipelinePlugin:
                             np.mean(np.abs(val_pred_price - val_target_price))
                         )
                         val_r2_h=r2_score(val_target_price, val_pred_price)
-                        val_unc_mean_h = (
-                            np.mean(np.abs(denormalize_returns(val_unc_h, config)))
-                            if use_returns else
-                            np.mean(np.abs(denormalize(val_unc_h, config)))
-                        )
+                        # Same for validation: scale-only for uncertainty.
+                        val_unc_mean_h = np.mean(np.abs(denormalize_returns(val_unc_h, config)))
                         val_snr_h=np.mean(val_pred_price)/(val_unc_mean_h+1e-9)
                         val_naive_mae_h=np.mean(np.abs(denormalize(baseline_val_h, config) - val_target_price))
 
@@ -246,11 +240,8 @@ class STLPipelinePlugin:
                          np.mean(np.abs(test_pred_price - test_target_price))
                      )
                      test_r2_h=r2_score(test_target_price, test_pred_price)
-                     test_unc_mean_h = (
-                         np.mean(np.abs(denormalize_returns(test_unc_h, config)))
-                         if use_returns else
-                         np.mean(np.abs(denormalize(test_unc_h, config)))
-                     )
+                     # And for test uncertainty: always scale-only.
+                     test_unc_mean_h = np.mean(np.abs(denormalize_returns(test_unc_h, config)))
                      test_snr_h=np.mean(test_pred_price)/(test_unc_mean_h+1e-9)
                      test_naive_mae_h=np.mean(np.abs(denormalize(baseline_test_h, config) - test_target_price))
                      metrics_results["Test"]["MAE"][h].append(test_mae_h); metrics_results["Test"]["Naive MAE"][h].append(test_naive_mae_h); metrics_results["Test"]["R2"][h].append(test_r2_h); metrics_results["Test"]["Uncertainty"][h].append(test_unc_mean_h); metrics_results["Test"]["SNR"][h].append(test_snr_h)
@@ -332,8 +323,8 @@ class STLPipelinePlugin:
 
                     pred_price_denorm = denormalize(pred_price_before, config)
                     target_price_denorm = denormalize(target_price_before, config)
-                    # Uncertainty denormalization must match the model output scale
-                    unc_denorm = denormalize_returns(unc_raw, config) if use_returns else denormalize(unc_raw, config)
+                    # Uncertainty must be denormalized with SCALE ONLY (no shift), regardless of use_returns
+                    unc_denorm = denormalize_returns(unc_raw, config)
                 except Exception as e: print(f"WARN: Error denorm H={h}: {e}")
                 # Add flattened results (denorm functions return 1D)
                 output_data[f"Target_H{h}"]=target_price_denorm; output_data[f"Prediction_H{h}"]=pred_price_denorm; uncertainty_data[f"Uncertainty_H{h}"]=unc_denorm
@@ -381,10 +372,8 @@ class STLPipelinePlugin:
             else:
                 pred_plot_price_flat = denormalize(preds_plot_raw, config).flatten()
                 target_plot_price_flat = denormalize(target_plot_raw, config).flatten()
-            # Match uncertainty scale to plotting scale
-            unc_plot_denorm_flat = (
-                denormalize_returns(unc_plot_raw, config) if use_returns else denormalize(unc_plot_raw, config)
-            ).flatten()
+            # Uncertainty band must be SCALE-ONLY (std); never apply mean/min shift
+            unc_plot_denorm_flat = denormalize_returns(unc_plot_raw, config).flatten()
             true_plot_price_flat = denormalize(baseline_plot, config).flatten()
 
             # Determine plot points and slice FLATTENED arrays
