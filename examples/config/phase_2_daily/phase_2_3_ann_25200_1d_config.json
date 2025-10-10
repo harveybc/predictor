@@ -55,5 +55,5 @@
     "use_multi_tapper": false,
     "use_predicted_decompositions": false,
     "use_real_decompositions": false,
-    "use_ideal_predictions": false
+    "use_ideal_predictions": false,
 }
