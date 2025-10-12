@@ -122,6 +122,11 @@ class STLPreprocessorZScore:
                     print(f"WARN: reverse_time_axis failed: {rev_e}")
 
             # 7c.1 Optionally normalize features post-augmentation using train-only stats
+            # Interpret normalize_features=True as a request to normalize after preprocessing (alias for compatibility)
+            if config.get('normalize_features', False) and not config.get('normalize_after_preprocessing', False):
+                config['normalize_after_preprocessing'] = True
+                self.params['normalize_after_preprocessing'] = True
+                print("  normalize_features=True -> enabling normalize_after_preprocessing")
             if config.get('normalize_after_preprocessing', False):
                 try:
                     fn_train = final_sliding_windows.get('feature_names_train', final_sliding_windows.get('feature_names', []))
@@ -185,30 +190,37 @@ class STLPreprocessorZScore:
                 fn_val = final_sliding_windows.get('feature_names_val', final_sliding_windows.get('feature_names', []))
                 fn_test = final_sliding_windows.get('feature_names_test', final_sliding_windows.get('feature_names', []))
 
-                # 1) Re-derive H1 targets from baselines and compare
+                # 1) Re-derive H1 targets for a quick sanity check
                 for split in ['train', 'val', 'test']:
                     base = baselines.get(f'baseline_{split}')
                     if base is None or len(base) < 2:
                         continue
-                    # Recompute H1 log-returns scaled by target_factor
                     base = np.asarray(base, dtype=np.float64)
-                    valid = (base[:-1] > 0) & (base[1:] > 0)
-                    recomputed = np.zeros(len(base)-1, dtype=np.float64)
-                    # NOTE: Target formula currently: scaled = tf * log(1 + future/current)
-                    # Align recomputation with that (adds +1 term compared to classic log-return)
-                    recomputed[valid] = tgt_factor * np.log(1.0 + base[1:][valid] / base[:-1][valid])
-                    # Truncate to max_samples used in target calc
                     max_h = max(config['predicted_horizons'])
                     max_samples = len(base) - max_h
-                    if max_samples > 0:
+                    if max_samples <= 0:
+                        continue
+                    y_split = targets.get(f'y_{split}', {})
+                    y_h1 = y_split.get('output_horizon_1')
+                    if y_h1 is None or len(y_h1) == 0:
+                        continue
+                    y_h1 = np.asarray(y_h1, dtype=np.float64)
+                    if config.get('use_returns', True):
+                        # Returns-mode: compare scaled log-returns against targets
+                        valid = (base[:-1] > 0) & (base[1:] > 0)
+                        recomputed = np.zeros(len(base)-1, dtype=np.float64)
+                        # Use classic log-return; target calculation module uses that formula
+                        recomputed[valid] = tgt_factor * np.log(base[1:][valid] / base[:-1][valid])
                         recomputed = recomputed[:max_samples]
-                        y_split = targets.get(f'y_{split}', {})
-                        y_h1 = y_split.get('output_horizon_1')
-                        if y_h1 is not None and len(y_h1) > 0:
-                            y_h1 = np.asarray(y_h1, dtype=np.float64)
-                            m = min(len(y_h1), len(recomputed))
-                            diff = np.abs(y_h1[:m] - recomputed[:m])
-                            print(f"DEBUG[{split.upper()}]: H1 targets check — mean|diff|={diff.mean():.6f}, max|diff|={diff.max():.6f}, samples={m}")
+                        m = min(len(y_h1), len(recomputed))
+                        diff = np.abs(y_h1[:m] - recomputed[:m])
+                        print(f"DEBUG[{split.upper()}]: H1 returns-targets check — mean|diff|={diff.mean():.6f}, max|diff|={diff.max():.6f}, samples={m}")
+                    else:
+                        # Direct-price mode: target should match baseline[t+1]
+                        recomputed = base[1:1+max_samples]
+                        m = min(len(y_h1), len(recomputed))
+                        diff = np.abs(y_h1[:m] - recomputed[:m])
+                        print(f"DEBUG[{split.upper()}]: H1 direct-price targets check — mean|diff|={diff.mean():.9f}, max|diff|={diff.max():.9f}, samples={m}")
 
                 # 2) Feature distributions for X (train)
                 Xtr = final_sliding_windows.get('X_train')
@@ -313,6 +325,14 @@ class STLPreprocessorZScore:
                         df_tx[col] = series
                 else:
                     df_tx[col] = series
+
+            # For direct-price targets, include absolute CLOSE level as an extra causal feature to anchor price scale
+            try:
+                if not config.get('use_returns', True) and 'CLOSE' in df.columns:
+                    # Add a new column with the denormalized absolute CLOSE (not returns)
+                    df_tx['CLOSE_LEVEL'] = df['CLOSE'].values
+            except Exception as add_base_e:
+                print(f"        WARN: failed to add CLOSE_LEVEL for {key}: {add_base_e}")
 
             out[key] = df_tx
 
