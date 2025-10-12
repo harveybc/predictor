@@ -198,7 +198,8 @@ class STLPipelinePlugin:
             # 3. Perform training (generate training, validation and test predictions and uncertainties).
             print("Building and training model with training and validation datasets...")
             input_shape = (X_train.shape[1], X_train.shape[2]) if X_train.ndim == 3 else (X_train.shape[1],)
-            predictor_plugin.build_model(input_shape=input_shape, x_train=X_train, config=config)
+            # Ensure predictor receives the use_returns flag for selecting proper loss
+            predictor_plugin.build_model(input_shape=input_shape, x_train=X_train, config={**config, 'use_returns': use_returns})
 
             history, list_train_preds, list_train_unc, list_val_preds, list_val_unc = predictor_plugin.train(
                 X_train, y_train_dict, epochs=epochs, batch_size=batch_size, 

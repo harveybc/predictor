@@ -60,16 +60,26 @@ def calculate_targets_from_baselines(baseline_data, config):
         # Note: We continue with the same pipeline below; the only difference will be
         # how each per-horizon value is computed (using baseline_future directly).
     
-    # apply centered moving average on all the baseline_data train, val and test datasets
+    # Optional smoothing of baselines before target computation
+    # IMPORTANT:
+    # - For use_returns=True we keep the previous centered moving average (symmetrical) to reduce high-frequency noise.
+    # - For use_returns=False (direct-price targets), a centered MA would leak future information into the current baseline.
+    #   To avoid leakage that harms training/validation, we switch to a causal (trailing) moving average.
     if target_softening > 1:
         for split in ['train', 'val', 'test']:
             baseline_key = f'baseline_{split}'
             if baseline_key in baseline_data:
                 baselines = baseline_data[baseline_key]
-                baseline_data[baseline_key] = apply_centered_moving_average(baselines, window_size=target_softening)
+                if use_returns:
+                    # Symmetric smoothing acceptable in returns-space target derivation
+                    baseline_data[baseline_key] = apply_centered_moving_average(baselines, window_size=target_softening)
+                else:
+                    # Causal (trailing) smoothing to prevent future leakage when predicting absolute prices
+                    ser = pd.Series(np.asarray(baselines))
+                    baseline_data[baseline_key] = ser.rolling(window=target_softening, center=False, min_periods=1).mean().to_numpy()
        
 
-    print("Calculating log return targets...")
+    print("Calculating targets (returns or direct price depending on use_returns)...")
     
     # Calculate targets for each split using ONLY baselines
     for split in ['train', 'val', 'test']:
@@ -114,10 +124,11 @@ def calculate_targets_from_baselines(baseline_data, config):
                 baseline_future = baselines[t + horizon]
 
                 if use_returns:  # Branch: compute returns-based target
-                    # Calculate log return using only baselines
+                    # Calculate scaled log-return using only baselines
                     # Guard against non-positive values to avoid invalid log operations
                     if baseline_current > 0 and baseline_future > 0:  # Ensure both values are positive
-                        return_value = target_factor * np.log(1 + (baseline_future / baseline_current))  # Scaled log-return target
+                        # Correct formula: log(future/current); previous version used log(1 + future/current) which biased magnitudes
+                        return_value = target_factor * np.log(baseline_future / baseline_current)
                     else:  # If any value is non-positive
                         return_value = 0.0  # Fallback to 0.0 for stability
                 else:  # Branch: compute direct-value target (no returns)
