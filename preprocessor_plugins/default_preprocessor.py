@@ -33,8 +33,7 @@ class PreprocessorPlugin:
         "max_steps_test": None,
         "window_size": 24,
         "time_horizon": 1,
-        "use_returns": false,
-    "use_log1p_targets": false,
+        "use_returns": False,
         "pos_encoding_dim": 16  # Dimensión para la codificación posicional.
     }
     # Variables de debug (pueden ser extendidas según se requiera)
