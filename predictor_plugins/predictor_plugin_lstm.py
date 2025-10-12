@@ -446,7 +446,8 @@ class Plugin:
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
-
+        mmd_lambda = self.params.get("mmd_lambda", 0.0)
+        sigma_mmd = self.params.get("sigma_mmd", 1.0)
 
         # --- Input Layer ---
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
