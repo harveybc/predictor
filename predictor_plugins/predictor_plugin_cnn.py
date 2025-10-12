@@ -105,7 +105,7 @@ class Plugin(BaseBayesianKerasPredictor):
                     filters=f_j,
                     kernel_size=3,
                     strides=2,
-                    padding="valid",
+                    padding="same",
                     activation=act,
                     kernel_regularizer=l2(l2_reg_v),
                     name=f"head_conv{j+1}{suf}",
