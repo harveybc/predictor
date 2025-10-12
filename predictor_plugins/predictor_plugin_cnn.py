@@ -19,7 +19,7 @@ from .common.positional_encoding import positional_encoding
 class Plugin(BaseBayesianKerasPredictor):
     plugin_params = {
         "batch_size": 32,
-        "branch_units": 64,
+        "branch_units": 32,
         "merged_units": 128,
         "learning_rate": 0.001,
         "activation": "relu",
@@ -44,10 +44,11 @@ class Plugin(BaseBayesianKerasPredictor):
         ph = self.params["predicted_horizons"]
         act = self.params.get("activation", "relu")
         l2_reg_v = self.params.get("l2_reg", 1e-4)
-        merged_units = self.params.get("merged_units", 128)
-        branch_units = self.params.get("branch_units", 64)
+        initial_layer_size = self.params.get("initial_layer_size", 128)
+        layer_size_divisor = self.params.get("layer_size_divisor", 2)
+        intermediate_layers = self.params.get("intermediate_layers", 2)
         use_returns = self.params.get("use_returns", False) 
-        lstm_units = max(8, branch_units // 2)
+        lstm_units = max(8, initial_layer_size // (layer_size_divisor ** intermediate_layers))
         inputs = Input(shape=(w, c), name="input_layer")
         # Optional positional encoding
         if self.params.get("positional_encoding", False):
