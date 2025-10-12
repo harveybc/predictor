@@ -55,9 +55,10 @@ def calculate_targets_from_baselines(baseline_data, config):
     target_returns_means = []
     target_returns_stds = []
     
-    if not use_returns:
-        print("Using direct target values (not returns)")
-        raise NotImplementedError("Direct target calculation not implemented")
+    if not use_returns:  # If configured to use direct target values instead of returns
+        print("Using direct target values (not returns)")  # Log the selected target calculation mode
+        # Note: We continue with the same pipeline below; the only difference will be
+        # how each per-horizon value is computed (using baseline_future directly).
     
     # apply centered moving average on all the baseline_data train, val and test datasets
     if target_softening > 1:
@@ -112,13 +113,21 @@ def calculate_targets_from_baselines(baseline_data, config):
                 baseline_current = baselines[t]
                 baseline_future = baselines[t + horizon]
 
-                # Calculate log return using only baselines
-                # Guard against non-positive values
-                if baseline_current > 0 and baseline_future > 0:
-                    return_value = target_factor * np.log(1 + (baseline_future / baseline_current))
-                else:
-                    return_value = 0.0
-                horizon_targets.append(return_value)
+                if use_returns:  # Branch: compute returns-based target
+                    # Calculate log return using only baselines
+                    # Guard against non-positive values to avoid invalid log operations
+                    if baseline_current > 0 and baseline_future > 0:  # Ensure both values are positive
+                        return_value = target_factor * np.log(1 + (baseline_future / baseline_current))  # Scaled log-return target
+                    else:  # If any value is non-positive
+                        return_value = 0.0  # Fallback to 0.0 for stability
+                else:  # Branch: compute direct-value target (no returns)
+                    # Direct target: use the baseline_future value as the target without ratio/log transform
+                    if np.isfinite(baseline_future):  # Guard against NaN/Inf values
+                        return_value = float(baseline_future)  # Use the raw future baseline value as target
+                    else:  # If invalid number
+                        return_value = 0.0  # Fallback to 0.0 for stability
+
+                horizon_targets.append(return_value)  # Accumulate per-timestep target for this horizon
 
             # Store targets for this horizon
             if horizon_targets:
