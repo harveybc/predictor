@@ -142,8 +142,10 @@ class STLPreprocessorZScore:
                     print(f"WARN: post-augmentation normalization failed: {norm_e}")
 
             # 7d. Optional: residualize targets by subtracting naive last-step CLOSE return
+            # IMPORTANT: This adjustment is only valid when targets are returns-based.
+            # If use_returns=False (direct price targets), do NOT residualize to avoid mixing units.
             naive_info = {}
-            if config.get('residualize_targets_with_last_close', True):
+            if config.get('use_returns', True) and config.get('residualize_targets_with_last_close', True):
                 try:
                     target_col = config.get('target_column', 'CLOSE')
                     tfac = float(config.get('target_factor', 1000.0))
@@ -167,9 +169,12 @@ class STLPreprocessorZScore:
                             y_split[hk] = (yarr[:m].astype(np.float32) - naive_scaled[:m].astype(np.float32))
                         targets[f'y_{split}'] = y_split
                     if naive_info:
-                        print("  Residualized targets using last-step CLOSE return; stored naive arrays for pipeline add-back")
+                        print("  Residualized returns-targets using last-step CLOSE return; stored naive arrays for pipeline add-back")
                 except Exception as res_e:
                     print(f"WARN: residualize_targets_with_last_close failed: {res_e}")
+            else:
+                if not config.get('use_returns', True) and config.get('residualize_targets_with_last_close', True):
+                    print("  Skipping residualization: use_returns=False (targets are direct prices)")
             
             # === Debugging & Invariants: Verify targets vs baselines and X statistics ===
             try:
