@@ -17,12 +17,10 @@ from tensorflow.keras.layers import (
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.regularizers import l2
-
-from .common.base import BaseBayesianKerasPredictor
-from .common.losses import mae_magnitude, composite_loss_multihead as composite_loss, random_normal_initializer_44
+from .common.losses import mae_magnitude, composite_loss_multihead as composite_loss, random_normal_initializer_44, composite_loss_noreturns, r2_metric
 from .common.bayesian import posterior_mean_field, prior_fn
+from .common.base import BaseBayesianKerasPredictor
 from .common.positional_encoding import positional_encoding
-
 
 class Plugin(BaseBayesianKerasPredictor):
     plugin_params = {
@@ -169,25 +167,18 @@ class Plugin(BaseBayesianKerasPredictor):
 
         self.model = Model(inputs=inputs, outputs=outputs, name=f"NBEATSHybrid_{len(ph)}H")
         optimizer = AdamW(learning_rate=self.params.get("learning_rate", 1e-3))
-
         loss_dict = {}
-        for i, nm in enumerate(self.output_names):
-            loss_dict[nm] = (lambda idx=i: (
-                lambda yt, yp: composite_loss(
-                    yt, yp,
-                    head_index=idx,
-                    mmd_lambda=mmd_lambda,
-                    sigma=sigma_mmd,
-                    p=0, i=0, d=0,
-                    list_last_signed_error=[],
-                    list_last_stddev=[],
-                    list_last_mmd=[],
-                    list_local_feedback=[]
-                )
-            ))()
+        use_returns = self.params.get("use_returns", False)
+        if use_returns:
+            for i, nm in enumerate(self.output_names):
+                loss_dict[nm] = (lambda idx=i: (lambda yt, yp: composite_loss(yt, yp, head_index=idx, mmd_lambda=mmd_lambda, sigma=sigma_mmd, p=0, i=0, d=0, list_last_signed_error=[], list_last_stddev=[], list_last_mmd=[], list_local_feedback=[])))()
+        else:
+            for i, nm in enumerate(self.output_names):
+                loss_dict[nm] = (lambda idx=i: (lambda yt, yp: composite_loss_noreturns(yt, yp, head_index=idx, mmd_lambda=mmd_lambda, sigma=sigma_mmd, p=0, i=0, d=0, list_last_signed_error=[], list_last_stddev=[], list_last_mmd=[], list_local_feedback=[])))()
         metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
         self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)
-        self.model.summary(line_length=160)
+        self.model.summary(line_length=140)
+
 
 
 if __name__ == '__main__':

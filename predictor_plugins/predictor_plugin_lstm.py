@@ -42,7 +42,12 @@ from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D
 from tensorflow.keras.layers import MultiHeadAttention
-from tensorflow.keras.layers import LayerNormalization
+from tensorflow.keras.layers import LayerNormalization\
+
+from .common.losses import mae_magnitude, composite_loss_multihead as composite_loss, random_normal_initializer_44, composite_loss_noreturns, r2_metric
+from .common.bayesian import posterior_mean_field, prior_fn
+from .common.base import BaseBayesianKerasPredictor
+from .common.positional_encoding import positional_encoding
 
 
 
@@ -546,40 +551,19 @@ class Plugin:
         self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
 
         # --- Compilation (Using GLOBAL composite_loss) ---
-        optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
-        mmd_lambda = config.get("mmd_lambda", self.params.get("mmd_lambda", 0.1))
-        sigma_mmd = config.get("sigma_mmd", self.params.get("sigma_mmd", 1.0))
-
-        # Prepare loss dictionary, passing ALL necessary lists and params to GLOBAL composite_loss
+        optimizer = AdamW(learning_rate=self.params.get("learning_rate", 1e-3))
         loss_dict = {}
-        for i, name in enumerate(self.output_names):
-            p_val = 0
-            i_val = 0
-            d_val = 0
-            lse_list = []
-            lsd_list = []
-            lmmd_list = []
-            lf_list = []
+        use_returns = self.params.get("use_returns", False)
+        if use_returns:
+            for i, nm in enumerate(self.output_names):
+                loss_dict[nm] = (lambda idx=i: (lambda yt, yp: composite_loss(yt, yp, head_index=idx, mmd_lambda=mmd_lambda, sigma=sigma_mmd, p=0, i=0, d=0, list_last_signed_error=[], list_last_stddev=[], list_last_mmd=[], list_local_feedback=[])))()
+        else:
+            for i, nm in enumerate(self.output_names):
+                loss_dict[nm] = (lambda idx=i: (lambda yt, yp: composite_loss_noreturns(yt, yp, head_index=idx, mmd_lambda=mmd_lambda, sigma=sigma_mmd, p=0, i=0, d=0, list_last_signed_error=[], list_last_stddev=[], list_last_mmd=[], list_local_feedback=[])))()
+        metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
+        self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)
+        self.model.summary(line_length=140)
 
-            loss_fn_for_head = (
-                lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list, lf=lf_list:
-                    lambda y_true, y_pred: composite_loss( # Call GLOBAL func
-                        y_true, y_pred, head_index=index, mmd_lambda=mmd_lambda, sigma=sigma_mmd,
-                        p=p, i=iv, d=dv, list_last_signed_error=lse, list_last_stddev=lsd,
-                        list_last_mmd=lmmd, list_local_feedback=lf
-                    )
-            )(i)
-            loss_dict[name] = loss_fn_for_head
-
-        # Prepare metrics dictionary
-        metrics_dict = {name: [mae_magnitude] for name in self.output_names}
-
-        self.model.compile(optimizer=optimizer,
-                           loss=loss_dict,
-                           metrics=metrics_dict)
-
-        print(f"Control-Feedback Predictor model built successfully for {num_outputs} horizons.")
-        self.model.summary(line_length=150)
 
     # --- Method within YourPredictorPlugin class ---
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
