@@ -78,9 +78,8 @@ class Plugin(BaseBayesianKerasPredictor):
             name=f"conv_{i+1}",
             )(x)
 
-        # Derive head sizes from the continuation of the same sequence
-        branch_units = max(8, initial_layer_size // (layer_size_divisor ** num_layers))
-        lstm_units = max(8, initial_layer_size // (layer_size_divisor ** (num_layers + 1)))
+        # Per-head dynamic Conv1D stack derived from the last root layer
+        last_root_filters = sizes[-1]
         merged = x
         outputs = []
         self.output_names = []
@@ -90,9 +89,35 @@ class Plugin(BaseBayesianKerasPredictor):
         sigma_mmd = self.params.get("sigma_mmd", 1.0)
         for horizon in ph:
             suf = f"_h{horizon}"
-            h_in = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding="valid", activation=act, kernel_regularizer=l2(l2_reg_v), name=f"head_conv1{suf}")(merged)
-            h_in = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding="valid", activation=act, kernel_regularizer=l2(l2_reg_v), name=f"head_conv2{suf}")(h_in)
-            lstm_out = Bidirectional(LSTM(lstm_units//2, return_sequences=False), name=f"bilstm{suf}")(h_in)
+
+            # Build head conv sizes:
+            # - first head layer = half of last root layer (>= 8)
+            # - subsequent layers use the same layer_size_divisor (>= 8)
+            head_num_layers = max(1, head_layers)
+            base_head_filters = max(8, last_root_filters // 2)
+            head_sizes = [base_head_filters] + [
+            max(8, base_head_filters // (layer_size_divisor ** i)) for i in range(1, head_num_layers)
+            ]
+
+            h_in = merged
+            for j, f_j in enumerate(head_sizes):
+                h_in = Conv1D(
+                    filters=f_j,
+                    kernel_size=3,
+                    strides=2,
+                    padding="valid",
+                    activation=act,
+                    kernel_regularizer=l2(l2_reg_v),
+                    name=f"head_conv{j+1}{suf}",
+                )(h_in)
+
+            # LSTM total units = half of the last head conv filters (>= 8)
+            last_head_filters = head_sizes[-1]
+            lstm_total_units = max(8, last_head_filters // 2)
+            lstm_out = Bidirectional(
+            LSTM(max(1, lstm_total_units // 2), return_sequences=False),
+            name=f"bilstm{suf}",
+            )(h_in)
             flip_name = f"flipout{suf}"
             flip_layer = DenseFlipout(
                 units=1,
