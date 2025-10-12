@@ -58,6 +58,10 @@
     "use_predicted_decompositions": false,
     "use_real_decompositions": false,
     "use_ideal_predictions": false,
-    "positional_encoding": true
+    "positional_encoding": true,
+    "normalize_features": false,
+    "normalize_after_preprocessing": false,
+    "residualize_targets_with_last_close": false
+
 
 }
