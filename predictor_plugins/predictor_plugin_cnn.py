@@ -46,9 +46,10 @@ class Plugin(BaseBayesianKerasPredictor):
         l2_reg_v = self.params.get("l2_reg", 1e-4)
         initial_layer_size = self.params.get("initial_layer_size", 128)
         layer_size_divisor = self.params.get("layer_size_divisor", 2)
-        intermediate_layers = self.params.get("intermediate_layers", 2)
-        use_returns = self.params.get("use_returns", False) 
-        lstm_units = max(8, initial_layer_size // (layer_size_divisor ** intermediate_layers))
+        intermediate_layers = int(self.params.get("intermediate_layers", 2))
+        head_layers = int(self.params.get("head_layers", 2))
+        use_returns = self.params.get("use_returns", False)
+
         inputs = Input(shape=(w, c), name="input_layer")
         # Optional positional encoding
         if self.params.get("positional_encoding", False):
@@ -56,8 +57,30 @@ class Plugin(BaseBayesianKerasPredictor):
             x_in = Lambda(lambda t, pe=pe: t + pe, name="add_positional_encoding")(inputs)
         else:
             x_in = inputs
-        x = Conv1D(filters=merged_units, kernel_size=3, strides=2, padding="same", activation=act, kernel_regularizer=l2(l2_reg_v), name="conv_1")(x_in)
-        x = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding="same", activation=act, kernel_regularizer=l2(l2_reg_v), name="conv_2")(x)
+
+        # Dynamic Conv1D stack with first layer = initial_layer_size
+        x = x_in
+        num_layers = max(1, intermediate_layers)
+
+        # Build channel sizes: first layer exactly initial_layer_size, subsequent layers downscaled
+        sizes = [initial_layer_size] + [
+            max(8, initial_layer_size // (layer_size_divisor ** i)) for i in range(1, num_layers)
+        ]
+
+        for i, filters_i in enumerate(sizes):
+            x = Conv1D(
+            filters=filters_i,
+            kernel_size=3,
+            strides=2,
+            padding="same",
+            activation=act,
+            kernel_regularizer=l2(l2_reg_v),
+            name=f"conv_{i+1}",
+            )(x)
+
+        # Derive head sizes from the continuation of the same sequence
+        branch_units = max(8, initial_layer_size // (layer_size_divisor ** num_layers))
+        lstm_units = max(8, initial_layer_size // (layer_size_divisor ** (num_layers + 1)))
         merged = x
         outputs = []
         self.output_names = []
