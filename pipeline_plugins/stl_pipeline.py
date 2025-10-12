@@ -158,8 +158,29 @@ class STLPipelinePlugin:
 
         # 2. Prepare datasets for training.
         print("Preparing datasets for training...")
-        y_train_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_train_list)}
-        y_val_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_val_list)}
+        # For use_returns=False, normalize targets per horizon (z-score) to stabilize training, then inverse later
+        y_norm_stats = []  # list of (mu, sigma) per horizon for use_returns=False
+        if not use_returns:
+            for idx, h in enumerate(predicted_horizons):
+                ytr = np.asarray(y_train_list[idx], dtype=np.float64)
+                mu = np.nanmean(ytr) if len(ytr) > 0 else 0.0
+                sigma = np.nanstd(ytr) if len(ytr) > 0 else 1.0
+                if not np.isfinite(sigma) or sigma <= 1e-12:
+                    sigma = 1.0
+                y_norm_stats.append((mu, sigma))
+            # Build normalized y dicts for training/validation
+            y_train_dict = {}
+            y_val_dict = {}
+            for (name, ytr, yva), (mu, sigma) in zip(zip(output_names, y_train_list, y_val_list), y_norm_stats):
+                y_train_dict[name] = ((np.asarray(ytr, dtype=np.float64) - mu) / sigma).reshape(-1, 1).astype(np.float32)
+                y_val_dict[name] = ((np.asarray(yva, dtype=np.float64) - mu) / sigma).reshape(-1, 1).astype(np.float32)
+            print("  Applied per-horizon z-score normalization to targets for direct-price mode (use_returns=False)")
+            # Persist stats for later inverse-transform (test/validation)
+            self.params['direct_price_target_norm_stats'] = [{'horizon': h, 'mu': float(m), 'sigma': float(s)} for (h, (m, s)) in zip(predicted_horizons, y_norm_stats)]
+            config['direct_price_target_norm_stats'] = self.params['direct_price_target_norm_stats']
+        else:
+            y_train_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_train_list)}
+            y_val_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_val_list)}
 
         print(f"Input shapes: Train:{X_train.shape}, Val:{X_val.shape}, Test:{X_test.shape}")
         print(f"Target shapes(H={predicted_horizons[0]}): Train:{y_train_list[0].shape}, Val:{y_val_list[0].shape}, Test:{y_test_list[0].shape}")
@@ -340,19 +361,22 @@ class STLPipelinePlugin:
 
                     print(f"  H{h}: Converted returns to prices for {num_train} train, {num_val} val, {num_test} test points")
                 else:
-                    # --- Direct Price Mode: predictions/targets already represent future prices (baseline_future)
-                    train_prices = original_train_preds[idx].flatten()
-                    val_prices   = original_val_preds[idx].flatten()
-                    test_prices  = original_test_preds[idx].flatten()
+                    # --- Direct Price Mode: model trained on z-scored targets; inverse-transform predictions/uncertainty to price space
+                    mu, sigma = y_norm_stats[idx] if len(y_norm_stats) > idx else (0.0, 1.0)
+                    # Inverse z-score for predictions
+                    train_prices = (np.asarray(original_train_preds[idx]).flatten().astype(np.float64) * sigma + mu)
+                    val_prices   = (np.asarray(original_val_preds[idx]).flatten().astype(np.float64)   * sigma + mu)
+                    test_prices  = (np.asarray(original_test_preds[idx]).flatten().astype(np.float64)  * sigma + mu)
 
-                    train_target_prices = original_train_targets[idx].flatten()
-                    val_target_prices   = original_val_targets[idx].flatten()
-                    test_target_prices  = original_test_targets[idx].flatten()
+                    # Targets are already in price space (we didn't mutate y_train_list / y_val_list)
+                    train_target_prices = np.asarray(original_train_targets[idx]).flatten().astype(np.float64)
+                    val_target_prices   = np.asarray(original_val_targets[idx]).flatten().astype(np.float64)
+                    test_target_prices  = np.asarray(original_test_targets[idx]).flatten().astype(np.float64)
 
-                    # Uncertainty already in price units; ensure non-negative and 1D
-                    train_price_uncertainties = np.abs(original_train_unc[idx].flatten())
-                    val_price_uncertainties   = np.abs(original_val_unc[idx].flatten())
-                    test_price_uncertainties  = np.abs(original_test_unc[idx].flatten())
+                    # Uncertainty: scale by sigma (z-space std -> price std); ensure non-negative
+                    train_price_uncertainties = np.abs(np.asarray(original_train_unc[idx]).flatten().astype(np.float64) * sigma)
+                    val_price_uncertainties   = np.abs(np.asarray(original_val_unc[idx]).flatten().astype(np.float64)   * sigma)
+                    test_price_uncertainties  = np.abs(np.asarray(original_test_unc[idx]).flatten().astype(np.float64)  * sigma)
 
                     # Collect results
                     real_train_price_preds.append(train_prices)
@@ -886,11 +910,21 @@ class STLPipelinePlugin:
                     list_predictions[idx] = pred_prices.reshape(-1, 1)
                     print(f"  H{h}: Converted {num_val} validation points to real prices (returns mode)")
             else:
-                # Direct-price mode: predictions already represent future prices; just ensure shape (-1,1)
+                # Direct-price mode: model outputs are z-scored; inverse-transform using stored stats
+                dp_stats = config.get('direct_price_target_norm_stats') or self.params.get('direct_price_target_norm_stats')
+                stats_map = {}
+                if isinstance(dp_stats, list):
+                    for entry in dp_stats:
+                        try:
+                            stats_map[int(entry.get('horizon'))] = (float(entry.get('mu', 0.0)), float(entry.get('sigma', 1.0)))
+                        except Exception:
+                            continue
                 for idx, h in enumerate(config['predicted_horizons']):
-                    pred_prices = np.asarray(list_predictions[idx]).flatten()
+                    mu, sigma = stats_map.get(h, (0.0, 1.0))
+                    z = np.asarray(list_predictions[idx]).flatten().astype(np.float64)
+                    pred_prices = z * sigma + mu
                     list_predictions[idx] = pred_prices.reshape(-1, 1)
-                    print(f"  H{h}: Using direct validation prices (no inverse transform)")
+                    print(f"  H{h}: Inverse-transformed validation predictions using mu={mu:.6f}, sigma={sigma:.6f}")
                     
         except Exception as e: 
             print(f"Failed predictions: {e}")
