@@ -31,7 +31,11 @@ setup(
         'preprocessor.plugins': [
             'default_preprocessor=preprocessor_plugins.default_preprocessor:PreprocessorPlugin',
             'stl_preprocessor=preprocessor_plugins.stl_preprocessor:PreprocessorPlugin'
-        ]
+        ],
+        # Plugins para el Cálculo de Targets y Métricas
+        'target.plugins': [
+            'default_target=target_plugins.default_target:TargetPlugin'
+        ]   
     },
     install_requires=[
         'build'
