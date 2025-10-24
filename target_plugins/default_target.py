@@ -59,7 +59,7 @@ class TargetPlugin:
         smoothed = series.rolling(window=window_size, center=True, min_periods=1).mean()
         return smoothed.to_numpy()
 
-    def process_data(self, baseline_data, config):
+    def calculate_targets_from_baselines(self, baseline_data, config):
         """
         Execute the target calculation using ONLY baselines.
 
