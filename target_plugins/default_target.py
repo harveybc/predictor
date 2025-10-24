@@ -17,8 +17,7 @@ class TargetPlugin:
         "predicted_horizons": [1],
         "target_column": "CLOSE",
         "use_returns": True,
-        "target_softening": 1,  # moving average window; 1 disables smoothing
-        "target_factor": 1000.0,
+        "target_softening": 1  # moving average window; 1 disables smoothing
     }
 
     # Debug variables to surface
@@ -142,7 +141,6 @@ class TargetPlugin:
             print(
                 f"  {split}: Using {max_samples} samples for ALL horizons (limited by H{max_horizon})"
             )
-            target_factor = config.get("target_factor", 1000.0)
 
             # Calculate targets for each horizon using ONLY baselines
             for _, horizon in enumerate(predicted_horizons):
@@ -155,7 +153,7 @@ class TargetPlugin:
 
                     if use_returns:
                         if baseline_current > 0 and baseline_future > 0:
-                            return_value = target_factor * np.log(
+                            return_value = np.log(
                                 baseline_future / baseline_current
                             )
                         else:
