@@ -21,7 +21,7 @@ class STLPreprocessorZScore:
     # Plugin-specific parameters they get overwritten if declared in the config
     plugin_params = {
         "window_size": 48,
-        "predicted_horizons": [1, 6],
+        "predicted_horizons": [1, 2, 3, 4, 5, 6],
         "target_column": "CLOSE",
         "use_returns": True,
         "anti_naive_lock_enabled": True,
@@ -86,11 +86,9 @@ class STLPreprocessorZScore:
             #TODO: verify this method is correct
             targets = target_plugin.calculate_targets_from_baselines(baselines, config)
 
-            # 6. Create SECOND sliding windows from DENORMALIZED datasets after applying price log-returns
-            #    Apply log returns to raw price columns only (OPEN/HIGH/LOW/CLOSE). Preserve other columns.
-            print("Step 6: Create second sliding windows from denormalized data")
-            denorm_returns_x = self._build_denorm_price_returns_x(denormalized_data, config)
-            final_sliding_windows = create_sliding_windows(denorm_returns_x, config, dates)
+            # 6. Create SECOND sliding windows from normalized data
+            print("Step 6: Create second sliding windows from normalized data")
+            final_sliding_windows = create_sliding_windows(normalized_data, config, dates)
 
             # 7. Align final sliding windows with target data length
             print("Step 7: Align sliding windows with target data")
@@ -112,51 +110,6 @@ class STLPreprocessorZScore:
         except Exception as e:
             print(f"ERROR in process_data: {e}")
             raise
-
-    def _build_denorm_price_returns_x(self, denormalized_data, config):
-        """Build a dict with x_*_df only, applying log-returns to price features on DENORMALIZED data.
-
-        - Applies ln(p_t/p_{t-1}) to columns in config['price_features'] that exist in the DataFrame.
-        - Preserves other columns unchanged.
-        - Keeps index/length the same; first row per column becomes 0.0 by design.
-        - Optionally standardizes features post-transform if normalize_after_preprocessing is True.
-        """
-        import pandas as pd
-        price_features = set([c for c in config.get('price_features', ['OPEN','HIGH','LOW','CLOSE'])])
-
-        out = {}
-        for split in ['train', 'val', 'test']:
-            key = f'x_{split}_df'
-            if key not in denormalized_data:
-                continue
-            df = denormalized_data[key]
-            if df is None or len(df) == 0:
-                out[key] = df
-                continue
-
-            df_tx = df.copy()
-            for col in df_tx.columns:
-                series = df_tx[col]
-                if col in price_features and pd.api.types.is_numeric_dtype(series):
-                    try:
-                        df_tx[col] = apply_log_returns_to_series(series)
-                    except Exception as e:
-                        print(f"        WARN: price log-returns failed for '{col}' in {key}: {e}; preserving original")
-                        df_tx[col] = series
-                else:
-                    df_tx[col] = series
-
-            # For direct-price targets, include absolute CLOSE level as an extra causal feature to anchor price scale
-            try:
-                if not config.get('use_returns', True) and 'CLOSE' in df.columns:
-                    # Add a new column with the denormalized absolute CLOSE (not returns)
-                    df_tx['CLOSE_LEVEL'] = df['CLOSE'].values
-            except Exception as add_base_e:
-                print(f"        WARN: failed to add CLOSE_LEVEL for {key}: {add_base_e}")
-
-            out[key] = df_tx
-
-        return out
 
     def _align_sliding_windows_with_targets(self, sliding_windows, targets, config):
         """Align sliding windows with target data to ensure same number of samples."""
@@ -283,19 +236,8 @@ class STLPreprocessorZScore:
 
     def run_preprocessing(self, target_plugin, config):
         """Run preprocessing with configuration."""
-        run_config = self.params.copy()
-        run_config.update(config)
-        self.set_params(**run_config)
-        processed_data = self.process_data(target_plugin, self.params)
-        
-        params_with_targets = self.params.copy()
-        params_with_targets.update({
-            "target_returns_means": processed_data.get("target_returns_means", []),
-            "target_returns_stds": processed_data.get("target_returns_stds", []),
-            "normalization_json": processed_data.get("normalization_json", {})
-        })
-        
-        return processed_data, params_with_targets
+        processed_data = self.process_data(target_plugin, config)
+        return processed_data
 
 
 # Plugin interface alias for the system
