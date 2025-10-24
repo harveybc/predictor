@@ -1,48 +1,104 @@
 #!/usr/bin/env python
 """
-STL Pipeline Plugin - Z-Score Version 
+STL Pipeline Plugin - Corrected Version 6 (Fix Broadcasting Error)
 
-1. Get from preprocessor the train, validation and test datasets(sliding windows matrixes), 
-   normalized targets and target normalization stats and denormalized baselines per horizon.
-2. Prepare datasets for training.
-3. Perform training (generate training and validation predictions and uncertainties).
-4. Denormalize predictions, targets and uncertainties per horizon with the target normalization stats per horizon.
-5. Detransform (inverse logreturns) predictions, targets and uncertainties to real-world scale.
-6. Calculate final predictions, uncertainties and targets by adding detransformed predictions to baselines.
-7. Calculate metrics for the final predictions vs final targets (MAE, R2, SNR).
-8. Save metrics to output result csv file.
-9. Save predictions and uncertainties to output csv files.
-10. Save plots of model architecture and loss curve.
-11. Save predictions(true, predicted, uncertainty) plot for the specified horizon.
-12. Save predictor keras trained model
-13. Save debug info json.
-14. Save output config json.
+Fixes NumPy broadcasting error causing length mismatch during denormalization.
+Ensures preds_raw/target_raw are flattened BEFORE adding baseline.
+Keeps previous fixes: Correct denormalization order, Separate Uncertainty File,
+All Horizon Stats (Avg/Std/Min/Max), Plotting dimension fix.
+ASSUMES PREPROCESSOR IS WORKING PERFECTLY.
 """
 
 import time
-import os
 import numpy as np
 import pandas as pd
 import json
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
+import time
+import numpy as np
+import pandas as pd
+import json
+import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score
+import os # Needed for basename check
+
 # Conditional import for plot_model
 try:
     from tensorflow.keras.utils import plot_model
 except ImportError:
     plot_model = None
+
+import tensorflow as tf
+import tensorflow.keras.backend as K
 # Assuming write_csv is correctly imported
 from app.data_handler import write_csv
 
 
+# --- Denormalization Functions (Assumed Correct as provided) ---
+def denormalize(data, config):
+    """Denormalizes price or price delta."""
+    data = np.asarray(data)
+    if config.get("use_normalization_json"):
+        norm_json = config["use_normalization_json"]
+        if isinstance(norm_json, str):
+            try:
+                with open(norm_json, 'r') as f: norm_json = json.load(f)
+            except Exception as e: print(f"WARN: Failed load norm JSON {norm_json}: {e}"); return data
+        if isinstance(norm_json, dict) and "CLOSE" in norm_json:
+            try:
+                close_info = norm_json["CLOSE"]
+                # Auto-select method based on available keys: prefer min/max, else mean/std
+                if "min" in close_info and "max" in close_info:
+                    close_min = close_info["min"]; close_max = close_info["max"]; diff = close_max - close_min
+                    if diff == 0: return data + close_min
+                    return data * diff + close_min
+                elif "mean" in close_info and "std" in close_info:
+                    mean = close_info["mean"]; std = close_info["std"]
+                    return data * std + mean
+                else:
+                    # Fallback: if keys are missing, just return data
+                    return data
+            except KeyError as e: print(f"WARN: Missing key in norm JSON: {e}"); return data
+            except Exception as e: print(f"WARN: Error during denormalize: {e}"); return data
+    return data
+
+def denormalize_returns(data, config):
+    """Denormalizes return values (deltas) - only scales by range."""
+    data = np.asarray(data)
+    if config.get("use_normalization_json"):
+        norm_json = config["use_normalization_json"]
+        if isinstance(norm_json, str):
+            try:
+                 with open(norm_json, 'r') as f: norm_json = json.load(f)
+            except Exception as e: print(f"WARN: Failed load norm JSON {norm_json}: {e}"); return data
+        if isinstance(norm_json, dict) and "CLOSE" in norm_json:
+            try:
+                close_info = norm_json["CLOSE"]
+                # Auto-select method: min/max scales by range; mean/std scales by std only (delta has no mean shift)
+                if "min" in close_info and "max" in close_info:
+                    close_min = close_info["min"]; close_max = close_info["max"]; diff = close_max - close_min
+                    if diff == 0: return data
+                    return data * diff
+                elif "mean" in close_info and "std" in close_info:
+                    std = close_info["std"]
+                    return data * std
+                else:
+                    return data
+            except KeyError as e: print(f"WARN: Missing key in norm JSON: {e}"); return data
+            except Exception as e: print(f"WARN: Error during denormalize_returns: {e}"); return data
+    return data
+# --- End Denormalization Functions ---
+
+
 class STLPipelinePlugin:
-    # Default parameters (kept from previous version)
+    # Default parameters (kept from previous correct version)
     plugin_params = {
         "iterations": 1, "batch_size": 32, "epochs": 50, "threshold_error": 0.001,
         "loss_plot_file": "loss_plot.png", "output_file": "test_predictions.csv",
         "uncertainties_file": "test_uncertainties.csv", "model_plot_file": "model_plot.png",
         "predictions_plot_file": "predictions_plot.png", "results_file": "results.csv",
-        "plot_points": 480, "plotted_horizon": 6,
+        "plot_points": 480, "plotted_horizon": 6, "use_strategy": False,
         "predicted_horizons": [1, 6, 12, 24], "use_returns": True, "normalize_features": True,
         "window_size": 48, "target_column": "TARGET", "use_normalization_json": None,
         "mc_samples": 100,
@@ -53,899 +109,294 @@ class STLPipelinePlugin:
         self.params = self.plugin_params.copy()
 
     def set_params(self, **kwargs):
-        for key, value in kwargs.items(): 
-            self.params[key] = value
+        for key, value in kwargs.items(): self.params[key] = value
+        config = self.params
+        # Example post-update logic (if needed):
+        # if config.get("stl_period") is not None and config.get("stl_period") > 1: ...
 
-    def get_debug_info(self): 
-        return {var: self.params.get(var) for var in self.plugin_debug_vars}
-    
-    def add_debug_info(self, debug_info): 
-        debug_info.update(self.get_debug_info())
+    def get_debug_info(self): return {var: self.params.get(var) for var in self.plugin_debug_vars}
+    def add_debug_info(self, debug_info): debug_info.update(self.get_debug_info())
 
     def run_prediction_pipeline(self, config, predictor_plugin, preprocessor_plugin, target_plugin):
-        start_time = time.time()
-        run_config = self.params.copy()
-        run_config.update(config)
-        config = run_config
-        iterations = config.get("iterations", 1)
-        print(f"Iterations: {iterations}")
+        start_time = time.time(); run_config = self.params.copy(); run_config.update(config); config = run_config
+        iterations = config.get("iterations", 1); print(f"Iterations: {iterations}")
 
         # Init metric storage
-        predicted_horizons = config.get('predicted_horizons')
-        num_outputs = len(predicted_horizons)
-        metric_names = ["MAE", "R2", "Uncertainty", "SNR", "Naive_MAE"]
-        data_sets = ["Train", "Validation", "Test"]
-        metrics_results = {ds: {mn: {h: [] for h in predicted_horizons} for mn in metric_names} for ds in data_sets}
+        predicted_horizons = config.get('predicted_horizons'); num_outputs = len(predicted_horizons)
+        metric_names=["MAE","R2","Uncertainty","SNR"]; data_sets=["Train","Validation","Test"]
+        metrics_results = {ds:{mn:{h:[] for h in predicted_horizons} for mn in metric_names} for ds in data_sets}
 
-        # 1. Get from preprocessor the train, validation and test datasets(sliding windows matrixes), 
-        #    normalized targets and target normalization stats and denormalized baselines per horizon.
-        print("Loading/processing datasets via Preprocessor...")
-        datasets, preprocessor_params = preprocessor_plugin.run_preprocessing(target_plugin, config)
-        print("Preprocessor finished.")
-        
-        X_train = datasets["x_train"]
-        X_val = datasets["x_val"]
-        X_test = datasets["x_test"]
-        
-        # Robust target extraction supporting original list form or dict form
-        def _extract(series_container, idx, h):
-            # If dict, try several key patterns
-            if isinstance(series_container, dict):
-                key_patterns = [f"output_horizon_{h}", h, str(h)]
-                for kp in key_patterns:
-                    if kp in series_container:
-                        return series_container[kp]
-                # Fallback: positional by idx
-                keys = list(series_container.keys())
-                if idx < len(keys):
-                    return series_container[keys[idx]]
-                raise KeyError(f"Missing target for horizon {h}; available keys: {keys}")
-            # If list/tuple/array assume ordering matches predicted_horizons
-            if isinstance(series_container, (list, tuple)):
-                if idx < len(series_container):
-                    return series_container[idx]
-                raise IndexError(f"Target list length {len(series_container)} < required index {idx} for horizon {h}")
-            # Unsupported type
-            raise TypeError(f"Unsupported target container type: {type(series_container)}")
-
-        raw_y_train = datasets["y_train"]
-        raw_y_val = datasets["y_val"]
-        raw_y_test = datasets["y_test"]
-
-        # --- Root-cause guard: empty training targets (upstream baselines or target calc produced none) ---
-        if isinstance(raw_y_train, dict) and len(raw_y_train) == 0:
-            bt = datasets.get("baseline_train")
-            bt_len = (len(bt) if bt is not None else 0)
-            raise ValueError(
-                "Empty training targets: no horizon keys present in y_train. Upstream cause: baseline_train length="
-                f"{bt_len} leading to no computed targets in target_calculation (see target_calculation.py conditional that sets empty arrays when baselines are empty)."
-            )
-
-        y_train_list = []
-        y_val_list = []
-        y_test_list = []
-        for idx, h in enumerate(predicted_horizons):
-            y_train_list.append(_extract(raw_y_train, idx, h))
-            y_val_list.append(_extract(raw_y_val, idx, h))
-            y_test_list.append(_extract(raw_y_test, idx, h))
-        
-        train_dates = datasets.get("y_train_dates")
-        val_dates = datasets.get("y_val_dates")
-        test_dates = datasets.get("y_test_dates")
-        
-        baseline_train = datasets.get("baseline_train")
-        baseline_val = datasets.get("baseline_val")
-        baseline_test = datasets.get("baseline_test")
-
-        # Get target normalization stats from preprocessor (lists per horizon)
-        if "target_returns_means" not in preprocessor_params or "target_returns_stds" not in preprocessor_params:
-            raise ValueError("Preprocessor did not return target normalization stats. Check preprocessor execution.")
-        target_returns_means = preprocessor_params["target_returns_means"]
-        target_returns_stds = preprocessor_params["target_returns_stds"]
-        
+        # 1. Get datasets
+        print("Loading/processing datasets via Preprocessor..."); datasets = preprocessor_plugin.run_preprocessing(target_plugin, config); print("Preprocessor finished.")
+        X_train=datasets["x_train"]; X_val=datasets["x_val"]; X_test=datasets["x_test"]
+        y_train_list=datasets["y_train"]; y_val_list=datasets["y_val"]; y_test_list=datasets["y_test"]
+        train_dates=datasets.get("y_train_dates"); val_dates=datasets.get("y_val_dates"); test_dates=datasets.get("y_test_dates")
+        baseline_train=datasets.get("baseline_train"); baseline_val=datasets.get("baseline_val"); baseline_test=datasets.get("baseline_test")
         use_returns = config.get("use_returns", False)
-        if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None): 
-            raise ValueError("Baselines required for log return calculation when use_returns=True.")
-        
-        # Verify test dates are available for output
-        if test_dates is None or len(test_dates) == 0:
-            print(f"WARNING: test_dates not available from preprocessor - using indices for output")
+        if use_returns and (baseline_train is None or baseline_val is None or baseline_test is None): raise ValueError("Baselines required when use_returns=True.")
 
         # Config Validation & Setup
-        plotted_horizon = config.get('plotted_horizon')
-        plotted_index = predicted_horizons.index(plotted_horizon)
+        plotted_horizon = config.get('plotted_horizon'); plotted_index = predicted_horizons.index(plotted_horizon)
         output_names = [f"output_horizon_{h}" for h in predicted_horizons]
 
-        # 2. Prepare datasets for training.
-        print("Preparing datasets for training...")
-        # For use_returns=False, normalize targets per horizon (z-score) to stabilize training, then inverse later
-        y_norm_stats = []  # list of (mu, sigma) per horizon for use_returns=False
-        if not use_returns:
-            for idx, h in enumerate(predicted_horizons):
-                ytr = np.asarray(y_train_list[idx], dtype=np.float64)
-                mu = np.nanmean(ytr) if len(ytr) > 0 else 0.0
-                sigma = np.nanstd(ytr) if len(ytr) > 0 else 1.0
-                if not np.isfinite(sigma) or sigma <= 1e-12:
-                    sigma = 1.0
-                y_norm_stats.append((mu, sigma))
-            # Build normalized y dicts for training/validation
-            y_train_dict = {}
-            y_val_dict = {}
-            for (name, ytr, yva), (mu, sigma) in zip(zip(output_names, y_train_list, y_val_list), y_norm_stats):
-                y_train_dict[name] = ((np.asarray(ytr, dtype=np.float64) - mu) / sigma).reshape(-1, 1).astype(np.float32)
-                y_val_dict[name] = ((np.asarray(yva, dtype=np.float64) - mu) / sigma).reshape(-1, 1).astype(np.float32)
-            print("  Applied per-horizon z-score normalization to targets for direct-price mode (use_returns=False)")
-            # Persist stats for later inverse-transform (test/validation)
-            self.params['direct_price_target_norm_stats'] = [{'horizon': h, 'mu': float(m), 'sigma': float(s)} for (h, (m, s)) in zip(predicted_horizons, y_norm_stats)]
-            config['direct_price_target_norm_stats'] = self.params['direct_price_target_norm_stats']
-        else:
-            y_train_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_train_list)}
-            y_val_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_val_list)}
+        # Prepare Target Dicts for Training
+        y_train_dict={name: y.reshape(-1,1).astype(np.float32) for name,y in zip(output_names,y_train_list)}
+        y_val_dict={name: y.reshape(-1,1).astype(np.float32) for name,y in zip(output_names,y_val_list)}
 
         print(f"Input shapes: Train:{X_train.shape}, Val:{X_val.shape}, Test:{X_test.shape}")
         print(f"Target shapes(H={predicted_horizons[0]}): Train:{y_train_list[0].shape}, Val:{y_val_list[0].shape}, Test:{y_test_list[0].shape}")
-        batch_size = config.get("batch_size", 32)
-        epochs = config.get("epochs", 50)
+        batch_size=config.get("batch_size",32); epochs=config.get("epochs",50)
         print(f"Predicting Horizons: {predicted_horizons}, Plotting: H={plotted_horizon}")
 
         # --- Iteration Loop ---
-        list_test_preds = None
-        list_test_unc = None  # For last iteration results
+        list_test_preds = None; list_test_unc = None # For last iteration results
         for iteration in range(1, iterations + 1):
             print(f"\n=== Iteration {iteration}/{iterations} ===")
             iter_start = time.time()
 
-            # 3. Perform training (generate training, validation and test predictions and uncertainties).
-            print("Building and training model with training and validation datasets...")
-            input_shape = (X_train.shape[1], X_train.shape[2]) if X_train.ndim == 3 else (X_train.shape[1],)
-            # Ensure predictor receives the use_returns flag for selecting proper loss
-            predictor_plugin.build_model(input_shape=input_shape, x_train=X_train, config={**config, 'use_returns': use_returns})
-
+            # Build & Train
+            input_shape=(X_train.shape[1], X_train.shape[2]) if X_train.ndim==3 else (X_train.shape[1],)
+            predictor_plugin.build_model(input_shape=input_shape, x_train=X_train, config=config)
             history, list_train_preds, list_train_unc, list_val_preds, list_val_unc = predictor_plugin.train(
-                X_train, y_train_dict, epochs=epochs, batch_size=batch_size, 
-                threshold_error=config.get("threshold_error", 0.001),
+                X_train, y_train_dict, epochs=epochs, batch_size=batch_size, threshold_error=config.get("threshold_error",0.001),
                 x_val=X_val, y_val=y_val_dict, config=config
             )
-            # Evaluate Test & Calc Metrics (All Horizons)
-            print("Evaluating test set...")
-            mc_samples = config.get("mc_samples", 100)
-            list_test_preds, list_test_unc = predictor_plugin.predict_with_uncertainty(X_test, mc_samples=mc_samples)  # Assign results
-            if not all(len(lst) == num_outputs for lst in [list_test_preds, list_test_unc]): 
-                raise ValueError("Predictor predict mismatch outputs.")
+
+            # Check outputs & Calc Train/Val Metrics (All Horizons)
             
-            # 4. Convert model outputs to real-world prices for evaluation.
-            #    Branch on 'use_returns':
-            #      - If True: predictions/targets are scaled returns -> de-zscore, undo target_factor, then convert via baseline * (exp(r) - 1)
-            #      - If False: predictions/targets are direct future prices (baseline_future) -> use as-is (no inverse transform)
-            print("\n--- Preparing outputs for evaluation (returns->price or direct price) ---")
-            
-            # Store original predictions and targets for later reference
-            original_train_preds = [pred.copy() for pred in list_train_preds]
-            original_val_preds = [pred.copy() for pred in list_val_preds]
-            original_test_preds = [pred.copy() for pred in list_test_preds]
-            
-            original_train_targets = [target.copy() for target in y_train_list]
-            original_val_targets = [target.copy() for target in y_val_list]
-            original_test_targets = [target.copy() for target in y_test_list]
-
-            original_train_unc = [unc.copy() for unc in list_train_unc]
-            original_val_unc = [unc.copy() for unc in list_val_unc]
-            original_test_unc = [unc.copy() for unc in list_test_unc]
-            
-            # Convert to real-world prices for metrics calculation
-            real_train_price_preds, real_val_price_preds, real_test_price_preds = [], [], []
-            real_train_price_targets, real_val_price_targets, real_test_price_targets = [], [], []
-            real_train_price_uncertainties, real_val_price_uncertainties, real_test_price_uncertainties = [], [], []
-
-            target_factor = config.get('target_factor', 1000.0)
-
-            # Helper: robustly retrieve normalization stats for a given horizon/index (used only when use_returns=True)
-            def _get_norm_stats(idx_local, horizon_local):
-                mu_local = 0.0  # default mean
-                sigma_local = 1.0  # default std
-                try:
-                    trm = target_returns_means  # training means per horizon or list
-                    trs = target_returns_stds   # training stds per horizon or list
-                    # Resolve mu
-                    if isinstance(trm, dict):
-                        if horizon_local in trm:
-                            mu_local = float(trm[horizon_local])
-                        elif str(horizon_local) in trm:
-                            mu_local = float(trm[str(horizon_local)])
-                        else:
-                            mu_local = float(next(iter(trm.values())))  # fallback first value
-                    elif isinstance(trm, (list, tuple, np.ndarray)):
-                        if len(trm) > idx_local:
-                            mu_local = float(trm[idx_local])
-                        elif len(trm) > 0:
-                            mu_local = float(trm[-1])  # fallback last
-                    elif trm is not None:
-                        mu_local = float(trm)
-                    # Resolve sigma
-                    if isinstance(trs, dict):
-                        if horizon_local in trs:
-                            sigma_local = float(trs[horizon_local])
-                        elif str(horizon_local) in trs:
-                            sigma_local = float(trs[str(horizon_local)])
-                        else:
-                            sigma_local = float(next(iter(trs.values())))
-                    elif isinstance(trs, (list, tuple, np.ndarray)):
-                        if len(trs) > idx_local:
-                            sigma_local = float(trs[idx_local])
-                        elif len(trs) > 0:
-                            sigma_local = float(trs[-1])
-                    elif trs is not None:
-                        sigma_local = float(trs)
-                except Exception:
-                    pass  # keep defaults if any issue
-                # Safety: prevent zero/negative sigma
-                if not np.isfinite(sigma_local) or sigma_local <= 0:
-                    sigma_local = 1.0
-                return mu_local, sigma_local
-
-            for idx, h in enumerate(predicted_horizons):
-                if use_returns:
-                    # --- Returns Mode: de-zscore, undo target_factor, residualize (optional), then convert via baseline * (exp(r) - 1)
-                    mu, sigma = _get_norm_stats(idx, h)  # horizon-specific normalization stats
-
-                    # De-zscore then undo target_factor to get r (returns)
-                    train_returns = (original_train_preds[idx].flatten() * sigma + mu) / target_factor
-                    val_returns   = (original_val_preds[idx].flatten()   * sigma + mu) / target_factor
-                    test_returns  = (original_test_preds[idx].flatten()  * sigma + mu) / target_factor
-
-                    # Targets: same inverse transform
-                    train_target_returns = (original_train_targets[idx].flatten() * sigma + mu) / target_factor
-                    val_target_returns   = (original_val_targets[idx].flatten()   * sigma + mu) / target_factor
-                    test_target_returns  = (original_test_targets[idx].flatten()  * sigma + mu) / target_factor
-
-                    # Residualize with naive last-close returns if configured
-                    if config.get('residualize_targets_with_last_close', True):
-                        naive_train = datasets.get('naive_last_close_scaled_train')
-                        naive_val = datasets.get('naive_last_close_scaled_val')
-                        naive_test = datasets.get('naive_last_close_scaled_test')
-                        if naive_train is not None:
-                            mtr = min(len(train_returns), len(naive_train))
-                            train_returns[:mtr] += (naive_train[:mtr] / target_factor)
-                            train_target_returns[:mtr] += (naive_train[:mtr] / target_factor)
-                        if naive_val is not None:
-                            mvr = min(len(val_returns), len(naive_val))
-                            val_returns[:mvr] += (naive_val[:mvr] / target_factor)
-                            val_target_returns[:mvr] += (naive_val[:mvr] / target_factor)
-                        if naive_test is not None:
-                            mte = min(len(test_returns), len(naive_test))
-                            test_returns[:mte] += (naive_test[:mte] / target_factor)
-                            test_target_returns[:mte] += (naive_test[:mte] / target_factor)
-
-                    # Uncertainty in returns space: scale by sigma and undo target_factor
-                    train_unc_returns = (original_train_unc[idx].flatten() * sigma) / target_factor
-                    val_unc_returns   = (original_val_unc[idx].flatten()   * sigma) / target_factor
-                    test_unc_returns  = (original_test_unc[idx].flatten()  * sigma) / target_factor
-
-                    # Baselines aligned with samples
-                    num_train, num_val, num_test = len(train_returns), len(val_returns), len(test_returns)
-                    train_baselines = baseline_train[:num_train]
-                    val_baselines = baseline_val[:num_val]
-                    test_baselines = baseline_test[:num_test]
-
-                    # Convert returns to price deltas using baseline * (exp(r) - 1)
-                    train_prices = train_baselines * (np.exp(train_returns) - 1.0)
-                    val_prices = val_baselines * (np.exp(val_returns) - 1.0)
-                    test_prices = test_baselines * (np.exp(test_returns) - 1.0)
-
-                    train_target_prices = train_baselines * (np.exp(train_target_returns) - 1.0)
-                    val_target_prices = val_baselines * (np.exp(val_target_returns) - 1.0)
-                    test_target_prices = test_baselines * (np.exp(test_target_returns) - 1.0)
-
-                    # Uncertainty propagation from returns to prices
-                    def _price_std_from_return_std(baseline_arr, price_pred_arr, s_r):
-                        s2 = np.square(s_r)
-                        s2 = np.clip(s2, 0.0, 4.0)  # numerical safety
-                        core = (price_pred_arr + baseline_arr) * np.exp(0.5 * s2) * np.sqrt(np.expm1(s2))
-                        return np.abs(core)
-
-                    train_price_uncertainties = _price_std_from_return_std(train_baselines[:num_train], train_prices, train_unc_returns)
-                    val_price_uncertainties   = _price_std_from_return_std(val_baselines[:num_val],   val_prices,   val_unc_returns)
-                    test_price_uncertainties  = _price_std_from_return_std(test_baselines[:num_test],  test_prices,  test_unc_returns)
-
-                    # Collect results
-                    real_train_price_preds.append(train_prices)
-                    real_val_price_preds.append(val_prices)
-                    real_test_price_preds.append(test_prices)
-
-                    real_train_price_targets.append(train_target_prices)
-                    real_val_price_targets.append(val_target_prices)
-                    real_test_price_targets.append(test_target_prices)
-
-                    real_train_price_uncertainties.append(train_price_uncertainties)
-                    real_val_price_uncertainties.append(val_price_uncertainties)
-                    real_test_price_uncertainties.append(test_price_uncertainties)
-
-                    print(f"  H{h}: Converted returns to prices for {num_train} train, {num_val} val, {num_test} test points")
-                else:
-                    # --- Direct Price Mode: model trained on z-scored targets; inverse-transform predictions/uncertainty to price space
-                    mu, sigma = y_norm_stats[idx] if len(y_norm_stats) > idx else (0.0, 1.0)
-                    # Inverse z-score for predictions
-                    train_prices = (np.asarray(original_train_preds[idx]).flatten().astype(np.float64) * sigma + mu)
-                    val_prices   = (np.asarray(original_val_preds[idx]).flatten().astype(np.float64)   * sigma + mu)
-                    test_prices  = (np.asarray(original_test_preds[idx]).flatten().astype(np.float64)  * sigma + mu)
-
-                    # Targets are already in price space (we didn't mutate y_train_list / y_val_list)
-                    train_target_prices = np.asarray(original_train_targets[idx]).flatten().astype(np.float64)
-                    val_target_prices   = np.asarray(original_val_targets[idx]).flatten().astype(np.float64)
-                    test_target_prices  = np.asarray(original_test_targets[idx]).flatten().astype(np.float64)
-
-                    # Uncertainty: scale by sigma (z-space std -> price std); ensure non-negative
-                    train_price_uncertainties = np.abs(np.asarray(original_train_unc[idx]).flatten().astype(np.float64) * sigma)
-                    val_price_uncertainties   = np.abs(np.asarray(original_val_unc[idx]).flatten().astype(np.float64)   * sigma)
-                    test_price_uncertainties  = np.abs(np.asarray(original_test_unc[idx]).flatten().astype(np.float64)  * sigma)
-
-                    # Collect results
-                    real_train_price_preds.append(train_prices)
-                    real_val_price_preds.append(val_prices)
-                    real_test_price_preds.append(test_prices)
-
-                    real_train_price_targets.append(train_target_prices)
-                    real_val_price_targets.append(val_target_prices)
-                    real_test_price_targets.append(test_target_prices)
-
-                    real_train_price_uncertainties.append(train_price_uncertainties)
-                    real_val_price_uncertainties.append(val_price_uncertainties)
-                    real_test_price_uncertainties.append(test_price_uncertainties)
-
-                    print(f"  H{h}: Using direct prices (no inverse transform) for train/val/test")
-
-            # --- Returns-space diagnostics and naive baselines ---
-            if use_returns:
-                try:
-                    plotted_idx = plotted_index
-                    tfac = target_factor
-                    # Recompute returns arrays for plotted horizon only (train/val)
-                    r_train_pred = original_train_preds[plotted_idx].flatten() / tfac
-                    r_train_true = original_train_targets[plotted_idx].flatten() / tfac
-                    r_val_pred = original_val_preds[plotted_idx].flatten() / tfac
-                    r_val_true = original_val_targets[plotted_idx].flatten() / tfac
-
-                    # Naive baselines (if provided by preprocessor)
-                    naive_train_scaled = datasets.get('naive_last_close_scaled_train')
-                    naive_val_scaled = datasets.get('naive_last_close_scaled_val')
-                    if naive_train_scaled is not None:
-                        naive_train = naive_train_scaled[:len(r_train_true)] / tfac
-                        naive_val = naive_val_scaled[:len(r_val_true)] / tfac
-                    else:
-                        naive_train = np.zeros_like(r_train_true)
-                        naive_val = np.zeros_like(r_val_true)
-
-                    # Clip lengths
-                    ntr = min(len(r_train_pred), len(r_train_true), len(naive_train))
-                    nva = min(len(r_val_pred), len(r_val_true), len(naive_val))
-                    r_train_pred = r_train_pred[:ntr]; r_train_true = r_train_true[:ntr]; naive_train = naive_train[:ntr]
-                    r_val_pred = r_val_pred[:nva]; r_val_true = r_val_true[:nva]; naive_val = naive_val[:nva]
-
-                    mae_train_model = float(np.mean(np.abs(r_train_pred - r_train_true)))
-                    mae_val_model = float(np.mean(np.abs(r_val_pred - r_val_true)))
-                    mae_train_zero = float(np.mean(np.abs(0.0 - r_train_true)))
-                    mae_val_zero = float(np.mean(np.abs(0.0 - r_val_true)))
-                    mae_train_naive = float(np.mean(np.abs(naive_train - r_train_true)))
-                    mae_val_naive = float(np.mean(np.abs(naive_val - r_val_true)))
-
-                    print(f"Returns-space MAE (H={predicted_horizons[plotted_idx]}): Model Train={mae_train_model:.6f}, Val={mae_val_model:.6f} | Zero Train={mae_train_zero:.6f}, Val={mae_val_zero:.6f} | LastRet Train={mae_train_naive:.6f}, Val={mae_val_naive:.6f}")
-                except Exception as rd_e:
-                    print(f"WARN: returns-space diag failed: {rd_e}")
-                print("✅ All train/val/test data converted to real-world price deltas using baseline * (exp(r) - 1)")
-            else:
-                print("✅ All train/val/test data prepared in direct price mode (no inverse transforms)")
-
-            # 7. Calculate metrics for the final predictions vs final targets (MAE, R2, SNR, Naive_MAE).
-            # Calculate Train/Validation/Test metrics using real-world prices
-            can_calc_all_stats = all(len(lst) == num_outputs for lst in [real_train_price_preds, real_train_price_uncertainties, real_test_price_preds, real_test_price_uncertainties])
-            if can_calc_all_stats:
-                print("Calculating Train/Validation/Test metrics (all horizons)...")
+            can_calc_train_stats = all(len(lst) == num_outputs for lst in [list_train_preds, list_train_unc])
+            if can_calc_train_stats:
+                print("Calculating Train/Validation metrics (all horizons)...")
                 for idx, h in enumerate(predicted_horizons):
                     try:
-                        # Use real-world price data for metrics
-                        train_preds_h = real_train_price_preds[idx].flatten()
-                        train_target_h = real_train_price_targets[idx].flatten()
-                        train_unc_h = real_train_price_uncertainties[idx].flatten()
-                        
-                        val_preds_h = real_val_price_preds[idx].flatten()
-                        val_target_h = real_val_price_targets[idx].flatten()
-                        val_unc_h = real_val_price_uncertainties[idx].flatten()
+                        # --- Ensure inputs are flattened BEFORE potential addition ---
+                        train_preds_h=list_train_preds[idx].flatten(); train_target_h=y_train_list[idx].flatten(); train_unc_h=list_train_unc[idx].flatten()
+                        val_preds_h=list_val_preds[idx].flatten(); val_target_h=y_val_list[idx].flatten(); val_unc_h=list_val_unc[idx].flatten()
+                        num_train_pts=min(len(train_preds_h),len(train_target_h),len(baseline_train)); num_val_pts=min(len(val_preds_h),len(val_target_h),len(baseline_val))
+                        train_preds_h=train_preds_h[:num_train_pts]; train_target_h=train_target_h[:num_train_pts]; train_unc_h=train_unc_h[:num_train_pts]; baseline_train_h=baseline_train[:num_train_pts].flatten() # Flatten baseline too
+                        val_preds_h=val_preds_h[:num_val_pts]; val_target_h=val_target_h[:num_val_pts]; val_unc_h=val_unc_h[:num_val_pts]; baseline_val_h=baseline_val[:num_val_pts].flatten() # Flatten baseline too
+                        # Denormalize Price (add baseline first if returns)
+                        train_target_price=denormalize(baseline_train_h+train_target_h if use_returns else train_target_h, config)
+                        train_pred_price=denormalize(baseline_train_h+train_preds_h if use_returns else train_preds_h, config)
+                        val_target_price=denormalize(baseline_val_h+val_target_h if use_returns else val_target_h, config)
+                        val_pred_price=denormalize(baseline_val_h+val_preds_h if use_returns else val_preds_h, config)
+                        # Metrics
+                        train_mae_h=np.mean(np.abs(denormalize_returns(train_preds_h-train_target_h, config))); train_r2_h=r2_score(train_target_price, train_pred_price); train_unc_mean_h=np.mean(np.abs(denormalize_returns(train_unc_h, config))); train_snr_h=np.mean(train_pred_price)/(train_unc_mean_h+1e-9)
+                        val_mae_h=np.mean(np.abs(denormalize_returns(val_preds_h-val_target_h, config))); val_r2_h=r2_score(val_target_price, val_pred_price); val_unc_mean_h=np.mean(np.abs(denormalize_returns(val_unc_h, config))); val_snr_h=np.mean(val_pred_price)/(val_unc_mean_h+1e-9)
+                        metrics_results["Train"]["MAE"][h].append(train_mae_h); metrics_results["Train"]["R2"][h].append(train_r2_h); metrics_results["Train"]["Uncertainty"][h].append(train_unc_mean_h); metrics_results["Train"]["SNR"][h].append(train_snr_h)
+                        metrics_results["Validation"]["MAE"][h].append(val_mae_h); metrics_results["Validation"]["R2"][h].append(val_r2_h); metrics_results["Validation"]["Uncertainty"][h].append(val_unc_mean_h); metrics_results["Validation"]["SNR"][h].append(val_snr_h)
+                    except Exception as e: print(f"WARN: Error Train/Val metrics H={h}: {e}"); [metrics_results[ds][m][h].append(np.nan) for ds in ["Train","Validation"] for m in metric_names]
+            else: print("WARN: Skipping Train/Val stats calculation.")
 
-                        test_preds_h = real_test_price_preds[idx].flatten()
-                        test_target_h = real_test_price_targets[idx].flatten()
-                        test_unc_h = real_test_price_uncertainties[idx].flatten()
 
-                        # Naive price baseline: predict no change => price = baseline
-                        # Align naive strictly to target lengths to reflect P(t) vs P(t+H) comparison
-                        # Baselines may be optional in direct-price mode; handle None safely
-                        train_baselines_h = baseline_train[:len(train_target_h)] if baseline_train is not None else None
-                        val_baselines_h = baseline_val[:len(val_target_h)] if baseline_val is not None else None
-                        test_baselines_h = baseline_test[:len(test_target_h)] if baseline_test is not None else None
-                        naive_train_price = train_baselines_h if train_baselines_h is not None else np.full_like(train_target_h, np.nan, dtype=float)
-                        naive_val_price   = val_baselines_h   if val_baselines_h   is not None else np.full_like(val_target_h,   np.nan, dtype=float)
-                        naive_test_price  = test_baselines_h  if test_baselines_h  is not None else np.full_like(test_target_h,  np.nan, dtype=float)
-                        
-                        # Ensure consistent lengths for metrics
-                        min_train_len = min(len(train_preds_h), len(train_target_h), len(train_unc_h), len(naive_train_price))
-                        min_val_len = min(len(val_preds_h), len(val_target_h), len(val_unc_h), len(naive_val_price))
-                        min_test_len = min(len(test_preds_h), len(test_target_h), len(test_unc_h), len(naive_test_price))
-                        
-                        train_preds_h, train_target_h, train_unc_h, naive_train_price = (
-                            train_preds_h[:min_train_len], train_target_h[:min_train_len], train_unc_h[:min_train_len], naive_train_price[:min_train_len]
-                        )
-                        val_preds_h, val_target_h, val_unc_h, naive_val_price = (
-                            val_preds_h[:min_val_len], val_target_h[:min_val_len], val_unc_h[:min_val_len], naive_val_price[:min_val_len]
-                        )
-                        test_preds_h, test_target_h, test_unc_h, naive_test_price = (
-                            test_preds_h[:min_test_len], test_target_h[:min_test_len], test_unc_h[:min_test_len], naive_test_price[:min_test_len]
-                        )
-                        
-                        # Calculate metrics in real-world price scale
-                        train_mae_h = np.mean(np.abs(train_preds_h - train_target_h))
-                        val_mae_h = np.mean(np.abs(val_preds_h - val_target_h))
-                        test_mae_h = np.mean(np.abs(test_preds_h - test_target_h))
-                        # Naive MAE in price scale
-                        train_naive_mae_h = np.mean(np.abs(naive_train_price - train_target_h))
-                        val_naive_mae_h = np.mean(np.abs(naive_val_price - val_target_h))
-                        test_naive_mae_h = np.mean(np.abs(naive_test_price - test_target_h))
-                        
-                        train_r2_h = r2_score(train_target_h, train_preds_h)
-                        val_r2_h = r2_score(val_target_h, val_preds_h)
-                        test_r2_h = r2_score(test_target_h, test_preds_h)
-                        
-                        # Uncertainty metrics (already in price scale)
-                        train_unc_mean_h = np.mean(train_unc_h)
-                        val_unc_mean_h = np.mean(val_unc_h)
-                        test_unc_mean_h = np.mean(test_unc_h)
-                        
-                        # SNR: signal (price level) to noise (uncertainty) ratio
-                        train_snr_h = np.mean(train_preds_h) / (train_unc_mean_h + 1e-9)
-                        val_snr_h = np.mean(val_preds_h) / (val_unc_mean_h + 1e-9)
-                        test_snr_h = np.mean(test_preds_h) / (test_unc_mean_h + 1e-9)
-                        
-                        # Append Train metrics
-                        metrics_results["Train"]["MAE"][h].append(train_mae_h)
-                        metrics_results["Train"]["R2"][h].append(train_r2_h)
-                        metrics_results["Train"]["Uncertainty"][h].append(train_unc_mean_h)
-                        metrics_results["Train"]["SNR"][h].append(train_snr_h)
-                        metrics_results["Train"]["Naive_MAE"][h].append(train_naive_mae_h)
-                        
-                        # Append Validation metrics
-                        metrics_results["Validation"]["MAE"][h].append(val_mae_h)
-                        metrics_results["Validation"]["R2"][h].append(val_r2_h)
-                        metrics_results["Validation"]["Uncertainty"][h].append(val_unc_mean_h)
-                        metrics_results["Validation"]["SNR"][h].append(val_snr_h)
-                        metrics_results["Validation"]["Naive_MAE"][h].append(val_naive_mae_h)
 
-                        # Append Test metrics
-                        metrics_results["Test"]["MAE"][h].append(test_mae_h)
-                        metrics_results["Test"]["R2"][h].append(test_r2_h)
-                        metrics_results["Test"]["Uncertainty"][h].append(test_unc_mean_h)
-                        metrics_results["Test"]["SNR"][h].append(test_snr_h)
-                        metrics_results["Test"]["Naive_MAE"][h].append(test_naive_mae_h)
-                        
-                    except Exception as e: 
-                        print(f"WARN: Error calculating metrics for H={h}: {e}")
-                        [metrics_results[ds][m][h].append(np.nan) for ds in ["Train", "Validation", "Test"] for m in metric_names]
-            else: 
-                print("WARN: Skipping Train/Val/Test stats calculation due to data mismatch.")
+            # Save Loss Plot
+            loss_plot_file=config.get("loss_plot_file"); plt.figure(figsize=(10,5)); plt.plot(history.history['loss'],label='Train'); plt.plot(history.history['val_loss'],label='Val'); plt.title(f"Loss-Iter {iteration}"); plt.ylabel("Loss"); plt.xlabel("Epoch"); plt.legend(); plt.grid(True,alpha=0.6); plt.savefig(loss_plot_file); plt.close(); print(f"Loss plot saved: {loss_plot_file}")
 
+            # Evaluate Test & Calc Metrics (All Horizons)
+            print("Evaluating test set & calculating metrics...")
+            mc_samples = config.get("mc_samples", 100)
+            list_test_preds, list_test_unc = predictor_plugin.predict_with_uncertainty(X_test, mc_samples=mc_samples) # Assign results
+            if not all(len(lst)==num_outputs for lst in [list_test_preds, list_test_unc]): raise ValueError("Predictor predict mismatch outputs.")
+            for idx, h in enumerate(predicted_horizons):
+                 try:
+                     # --- Ensure inputs are flattened BEFORE potential addition ---
+                     test_preds_h=list_test_preds[idx].flatten(); test_target_h=y_test_list[idx].flatten(); test_unc_h=list_test_unc[idx].flatten()
+                     num_test_pts=min(len(test_preds_h),len(test_target_h),len(baseline_test))
+                     test_preds_h=test_preds_h[:num_test_pts]; test_target_h=test_target_h[:num_test_pts]; test_unc_h=test_unc_h[:num_test_pts]; baseline_test_h=baseline_test[:num_test_pts].flatten() # Flatten baseline too
+                     # Denormalize Price (add baseline first if returns)
+                     test_target_price=denormalize(baseline_test_h+test_target_h if use_returns else test_target_h, config)
+                     test_pred_price=denormalize(baseline_test_h+test_preds_h if use_returns else test_preds_h, config)
+                     # Metrics
+                     test_mae_h=np.mean(np.abs(denormalize_returns(test_preds_h-test_target_h, config))); test_r2_h=r2_score(test_target_price, test_pred_price); test_unc_mean_h=np.mean(np.abs(denormalize_returns(test_unc_h, config))); test_snr_h=np.mean(test_pred_price)/(test_unc_mean_h+1e-9)
+                     metrics_results["Test"]["MAE"][h].append(test_mae_h); metrics_results["Test"]["R2"][h].append(test_r2_h); metrics_results["Test"]["Uncertainty"][h].append(test_unc_mean_h); metrics_results["Test"]["SNR"][h].append(test_snr_h)
+                 except Exception as e: print(f"WARN: Error Test metrics H={h}: {e}"); [metrics_results["Test"][m][h].append(np.nan) for m in metric_names]
 
             # Print Iteration Summary (using PLOTTED horizon)
             try:
-                can_calc_train_val_stats = all(len(lst) == num_outputs for lst in [list_val_preds, list_val_unc])
-                train_mae_plot = metrics_results["Train"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
-                train_r2_plot = metrics_results["Train"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
-                val_mae_plot = metrics_results["Validation"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
-                val_r2_plot = metrics_results["Validation"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
-                test_mae_plot = metrics_results["Test"]["MAE"][plotted_horizon][-1]
-                test_r2_plot = metrics_results["Test"]["R2"][plotted_horizon][-1]
-                test_unc_plot = metrics_results["Test"]["Uncertainty"][plotted_horizon][-1]
-                test_snr_plot = metrics_results["Test"]["SNR"][plotted_horizon][-1]
-                
-                print("*" * 72)
-                print(f"Iter {iteration} Done|Time:{time.time() - iter_start:.2f}s|Plot H:{plotted_horizon}")
-                print(f"  Train MAE:{train_mae_plot:.6f}|R²:{train_r2_plot:.4f} -- Valid MAE:{val_mae_plot:.6f}|R²:{val_r2_plot:.4f}")
-                print(f"  Test  MAE:{test_mae_plot:.6f}|R²:{test_r2_plot:.4f}|Unc:{test_unc_plot:.6f}|SNR:{test_snr_plot:.2f}")
-                print("*" * 72)
-            except Exception as e: 
-                print(f"WARN: Error printing iter summary: {e}")
-        
+                 can_calc_train_val_stats = all(len(lst) == num_outputs for lst in [list_val_preds, list_val_unc])
+                 train_mae_plot=metrics_results["Train"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan; train_r2_plot=metrics_results["Train"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
+                 val_mae_plot=metrics_results["Validation"]["MAE"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan; val_r2_plot=metrics_results["Validation"]["R2"][plotted_horizon][-1] if can_calc_train_val_stats else np.nan
+                 test_mae_plot=metrics_results["Test"]["MAE"][plotted_horizon][-1]; test_r2_plot=metrics_results["Test"]["R2"][plotted_horizon][-1]; test_unc_plot=metrics_results["Test"]["Uncertainty"][plotted_horizon][-1]; test_snr_plot=metrics_results["Test"]["SNR"][plotted_horizon][-1]
+                 print("*"*72); print(f"Iter {iteration} Done|Time:{time.time()-iter_start:.2f}s|Plot H:{plotted_horizon}")
+                 print(f"  Train MAE:{train_mae_plot:.6f}|R²:{train_r2_plot:.4f} -- Valid MAE:{val_mae_plot:.6f}|R²:{val_r2_plot:.4f}")
+                 print(f"  Test  MAE:{test_mae_plot:.6f}|R²:{test_r2_plot:.4f}|Unc:{test_unc_plot:.6f}|SNR:{test_snr_plot:.2f}"); print("*"*72)
+            except Exception as e: print(f"WARN: Error printing iter summary: {e}")
             # --- End of Iteration Loop ---
 
-        # --- Consolidate results across iterations FOR ALL HORIZONS (Avg/Std/Min/Max) ---
 
+        # --- Consolidate results across iterations FOR ALL HORIZONS (Avg/Std/Min/Max) ---
         print("\n--- Aggregating Results Across Iterations (All Horizons) ---")
         results_list = []
-
         # (Logic confirmed correct and includes Min/Max)
         for ds in data_sets:
-            for mn in metric_names:
-                for h in predicted_horizons:
-                    values = metrics_results[ds][mn][h]
-                    valid_values = [v for v in values if not np.isnan(v)]
-                    if valid_values: 
-                        results_list.append({
-                            "Metric": f"{ds} {mn} H{h}", 
-                            "Average": np.mean(valid_values), 
-                            "Std Dev": np.std(valid_values), 
-                            "Min": np.min(valid_values), 
-                            "Max": np.max(valid_values)
-                        })
-                    else: 
-                        results_list.append({
-                            "Metric": f"{ds} {mn} H{h}", 
-                            "Average": np.nan, 
-                            "Std Dev": np.nan, 
-                            "Min": np.nan, 
-                            "Max": np.nan
-                        })
+             for mn in metric_names:
+                 for h in predicted_horizons:
+                      values=metrics_results[ds][mn][h]; valid_values=[v for v in values if not np.isnan(v)]
+                      if valid_values: results_list.append({"Metric": f"{ds} {mn} H{h}", "Average": np.mean(valid_values), "Std Dev": np.std(valid_values), "Min": np.min(valid_values), "Max": np.max(valid_values)})
+                      else: results_list.append({"Metric": f"{ds} {mn} H{h}", "Average": np.nan, "Std Dev": np.nan, "Min": np.nan, "Max": np.nan})
+        results_df = pd.DataFrame(results_list); results_file = config.get("results_file", self.params["results_file"])
+        try: results_df.to_csv(results_file, index=False, float_format='%.6f'); print(f"Aggregated results saved: {results_file}"); print(results_df.to_string())
+        except Exception as e: print(f"ERROR saving results: {e}")
 
-        # 8. Save metrics to output result csv file.
-        print("Saving metrics to output results CSV file...")
 
-        results_df = pd.DataFrame(results_list)
-        results_file = config.get("results_file", self.params["results_file"])
-        # Ensure parent directory exists
+        # --- Save Final Test Outputs (Separate Files - CORRECTED & VERIFIED) ---
+        print("\n--- Saving Final Test Outputs (Predictions & Uncertainties Separately) ---")
         try:
-            if results_file:
-                os.makedirs(os.path.dirname(results_file), exist_ok=True)
-        except Exception:
-            pass
-        try: 
-            results_df.to_csv(results_file, index=False, float_format='%.6f')
-            print(f"Aggregated results saved: {results_file}")
-            print(results_df.to_string())
-        except Exception as e: 
-            print(f"ERROR saving results: {e}")
+            # Use last iteration's results stored in loop-scoped variables
+            if list_test_preds is None or list_test_unc is None: raise ValueError("Test preds/unc from last iter unavailable.")
+            final_predictions = list_test_preds; final_uncertainties = list_test_unc
 
-        # 9. Save predictions and uncertainties to output csv files.
-        # --- Prepare data for CSV output ---
-        num_test_points = len(real_test_price_preds[0])
-        final_dates = list(test_dates[:num_test_points]) if test_dates is not None else list(range(num_test_points))
-        final_baseline = baseline_test[:num_test_points]
+            # Determine consistent length
+            arrays_to_check_len = [final_predictions[0], baseline_test, test_dates]; num_test_points = min(len(arr) for arr in arrays_to_check_len if arr is not None); print(f"Determined consistent output length: {num_test_points}")
+            final_dates = list(test_dates[:num_test_points]) if test_dates is not None else list(range(num_test_points)); final_baseline = baseline_test[:num_test_points].flatten() if baseline_test is not None else None # Flatten baseline here
 
-        output_data = {"DATE_TIME": final_dates, "Actual_Price": final_baseline}
-        uncertainty_data = {"DATE_TIME": final_dates}
+            # Prepare dictionaries
+            output_data = {"DATE_TIME": final_dates}; uncertainty_data = {"DATE_TIME": final_dates}
 
-        for idx, h in enumerate(predicted_horizons):
-            output_data[f"Prediction_H{h}"] = real_test_price_preds[idx][:num_test_points].flatten()
-            output_data[f"Target_H{h}"] = real_test_price_targets[idx][:num_test_points].flatten()
-            uncertainty_data[f"Uncertainty_H{h}"] = real_test_price_uncertainties[idx][:num_test_points].flatten()
+            # Add denormalized test CLOSE price
+            try: denorm_test_close=denormalize(final_baseline, config) if final_baseline is not None else np.full(num_test_points, np.nan)
+            except Exception as e: print(f"WARN: Error denorm test_CLOSE: {e}"); denorm_test_close = np.full(num_test_points, np.nan)
+            output_data["test_CLOSE"] = denorm_test_close.flatten()
 
-        # --- Save Predictions CSV ---
-        output_file = config.get("output_file", self.params["output_file"])
-        # Ensure parent directory exists
-        try:
-            if output_file:
-                os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        except Exception:
-            pass
-        try:
-            # Validate consistent lengths
-            lengths = [len(v) for v in output_data.values()]
-            if len(set(lengths)) > 1:
-                min_len = min(lengths)
-                output_data = {k: v[:min_len] for k, v in output_data.items()}
-                print(f"WARN: Length mismatch in output data, truncating to {min_len} rows.")
+            # Process each horizon
+            for idx, h in enumerate(predicted_horizons):
+                # Get raw results (sliced) & FLATTEN for correct addition
+                preds_raw=final_predictions[idx][:num_test_points].flatten()
+                target_raw=y_test_list[idx][:num_test_points].flatten()
+                unc_raw=final_uncertainties[idx][:num_test_points].flatten()
 
-            # Create and save DataFrame
-            output_df = pd.DataFrame(output_data)
-            cols_order = ['DATE_TIME', 'Actual_Price']
-            for h in predicted_horizons:
-                cols_order.extend([f"Target_H{h}", f"Prediction_H{h}"])
-            output_df = output_df.reindex(columns=[c for c in cols_order if c in output_df.columns])
-
-            write_csv(file_path=output_file, data=output_df, include_date=False, headers=True)
-            print(f"Predictions saved: {output_file} ({len(output_df)} rows)")
-        except Exception as e:
-            print(f"ERROR saving predictions CSV: {e}")
-
-        # --- Save Uncertainties CSV ---
-        uncertainties_file = config.get("uncertainties_file", self.params.get("uncertainties_file"))
-        if uncertainties_file:
-            # Ensure parent directory exists
-            try:
-                os.makedirs(os.path.dirname(uncertainties_file), exist_ok=True)
-            except Exception:
-                pass
-            try:
-                # Validate consistent lengths
-                lengths = [len(v) for v in uncertainty_data.values()]
-                if len(set(lengths)) > 1:
-                    min_len = min(lengths)
-                    uncertainty_data = {k: v[:min_len] for k, v in uncertainty_data.items()}
-                    print(f"WARN: Length mismatch in uncertainty data, truncating to {min_len} rows.")
-
-                # Create and save DataFrame
-                uncertainty_df = pd.DataFrame(uncertainty_data)
-                cols_order = ['DATE_TIME'] + [f"Uncertainty_H{h}" for h in predicted_horizons]
-                uncertainty_df = uncertainty_df.reindex(columns=[c for c in cols_order if c in uncertainty_df.columns])
-
-                write_csv(file_path=uncertainties_file, data=uncertainty_df, include_date=False, headers=True)
-                print(f"Uncertainties saved: {uncertainties_file} ({len(uncertainty_df)} rows)")
-            except Exception as e:
-                print(f"ERROR saving uncertainties CSV: {e}")
-        else:
-            print("No uncertainties_file specified - skipping uncertainty output.")
-
-        # 10. Save plots of model architecture and loss curve.
-        # Save Loss Plot
-        loss_plot_file = config.get("loss_plot_file")
-        try:
-            if loss_plot_file:
-                os.makedirs(os.path.dirname(loss_plot_file), exist_ok=True)
-        except Exception:
-            pass
-        plt.figure(figsize=(10, 5))
-        plt.plot(history.history['loss'], label='Train')
-        if 'val_loss' in history.history:
-            plt.plot(history.history['val_loss'], label='Val')
-        plt.title(f"Loss - Iteration {iteration}")
-        plt.ylabel("Loss")
-        plt.xlabel("Epoch")
-        plt.legend()
-        plt.grid(True, alpha=0.6)
-        plt.savefig(loss_plot_file)
-        plt.close()
-        print(f"Loss plot saved: {loss_plot_file}")
-
-        # --- Save Model Plot (if available) ---
-        if plot_model is not None and hasattr(predictor_plugin, 'model') and predictor_plugin.model is not None:
-            try:
-                model_plot_file = config.get('model_plot_file', 'model_plot.png')
+                pred_price_denorm=np.full(num_test_points,np.nan); target_price_denorm=np.full(num_test_points,np.nan); unc_denorm=np.full(num_test_points,np.nan)
                 try:
-                    if model_plot_file:
-                        os.makedirs(os.path.dirname(model_plot_file), exist_ok=True)
-                except Exception:
-                    pass
-                plot_model(predictor_plugin.model, to_file=model_plot_file, show_shapes=True, show_layer_names=True, dpi=300)
-                print(f"Model plot saved: {model_plot_file}")
-            except Exception as e:
-                print(f"WARN: Failed to save model plot: {e}")
+                    # --- Apply FIX: Ensure baseline and raw are 1D before adding ---
+                    if use_returns:
+                         if final_baseline is None: raise ValueError("Baseline missing.")
+                         # Ensure baseline is 1D (already flattened above)
+                         pred_price_before = final_baseline + preds_raw # (N,) + (N,) -> (N,)
+                         target_price_before = final_baseline + target_raw # (N,) + (N,) -> (N,)
+                    else:
+                         pred_price_before = preds_raw
+                         target_price_before = target_raw
 
-        # 11. Save plot of predictions(true, predicted, uncertainty) for the specified horizon.
-        # --- Generate Prediction Plot for plotted_horizon ---
+                    pred_price_denorm = denormalize(pred_price_before, config)
+                    target_price_denorm = denormalize(target_price_before, config)
+                    unc_denorm = denormalize_returns(unc_raw, config)
+                except Exception as e: print(f"WARN: Error denorm H={h}: {e}")
+                # Add flattened results (denorm functions return 1D)
+                output_data[f"Target_H{h}"]=target_price_denorm; output_data[f"Prediction_H{h}"]=pred_price_denorm; uncertainty_data[f"Uncertainty_H{h}"]=unc_denorm
+
+            # --- Save Predictions DataFrame (output_file) ---
+            output_file = config.get("output_file", self.params["output_file"])
+            try:
+                print("\nChecking final lengths for Predictions DataFrame:"); [print(f"  - {k}: {len(v)}") for k, v in output_data.items()]
+                if len(set(len(v) for v in output_data.values())) > 1: raise ValueError("Length mismatch (Predictions).")
+                output_df = pd.DataFrame(output_data); cols_order=['DATE_TIME','test_CLOSE'] if 'test_CLOSE' in output_df else ['DATE_TIME']; [cols_order.extend([f"Target_H{h}", f"Prediction_H{h}"]) for h in predicted_horizons]; output_df = output_df.reindex(columns=[c for c in cols_order if c in output_df.columns])
+                write_csv(file_path=output_file, data=output_df, include_date=False, headers=True); print(f"Predictions/Targets saved: {output_file} ({len(output_df)} rows)")
+            except ImportError: print(f"WARN: write_csv not found. Skip save: {output_file}.")
+            except ValueError as ve: print(f"ERROR creating/saving predictions CSV: {ve}")
+            except Exception as e: print(f"ERROR saving predictions CSV: {e}")
+
+            # --- Save Uncertainties DataFrame (uncertainties_file) ---
+            uncertainties_file = config.get("uncertainties_file", self.params.get("uncertainties_file"))
+            if uncertainties_file:
+                try:
+                    print("\nChecking final lengths for Uncertainty DataFrame:"); [print(f"  - {k}: {len(v)}") for k, v in uncertainty_data.items()]
+                    if len(set(len(v) for v in uncertainty_data.values())) > 1: raise ValueError("Length mismatch (Uncertainty).")
+                    uncertainty_df = pd.DataFrame(uncertainty_data); cols_order=['DATE_TIME']; [cols_order.append(f"Uncertainty_H{h}") for h in predicted_horizons]; uncertainty_df = uncertainty_df.reindex(columns=[c for c in cols_order if c in uncertainty_df.columns])
+                    write_csv(file_path=uncertainties_file, data=uncertainty_df, include_date=False, headers=True); print(f"Uncertainties saved: {uncertainties_file} ({len(uncertainty_df)} rows)")
+                except ImportError: print(f"WARN: write_csv not found. Skip save: {uncertainties_file}.")
+                except ValueError as ve: print(f"ERROR creating/saving uncertainties CSV: {ve}")
+                except Exception as e: print(f"ERROR saving uncertainties CSV: {e}")
+            else: print("INFO: No 'uncertainties_file' specified.")
+        except Exception as e: print(f"ERROR during final CSV saving: {e}")
+
+
+        # --- Plot Predictions for 'plotted_horizon' (CORRECTED - Flattening & Variable Names) ---
         print(f"\nGenerating prediction plot for H={plotted_horizon}...")
         try:
-            # Use real-world price data for plotting
-            # Derive plotting length from the prediction series of the plotted horizon to avoid any mismatch
-            pred_full = real_test_price_preds[plotted_index].flatten()
-            n_plot_full = len(pred_full)
-            target_full = real_test_price_targets[plotted_index][:n_plot_full].flatten()
-            unc_full = real_test_price_uncertainties[plotted_index][:n_plot_full].flatten()
-            baseline_full = baseline_test[:n_plot_full]
-            dates_full = list(test_dates[:n_plot_full]) if test_dates is not None else list(range(n_plot_full))
+            # Use CORRECT variable names from last iteration, sliced
+            preds_plot_raw = list_test_preds[plotted_index][:num_test_points] # Shape (num_test_points,) or (num_test_points, 1)
+            target_plot_raw = y_test_list[plotted_index][:num_test_points] # Shape (num_test_points,) or (num_test_points, 1)
+            unc_plot_raw = list_test_unc[plotted_index][:num_test_points] # Shape (num_test_points,) or (num_test_points, 1)
+            baseline_plot = final_baseline # Already sliced, shape (num_test_points,)
 
-            # Prepare plot data with proper slicing
+            # Denormalize correctly and FLATTEN *before* slicing for plot
+            if use_returns:
+                # --- Apply FIX: Ensure inputs to addition are flattened ---
+                pred_plot_price_flat = denormalize(baseline_plot + preds_plot_raw.flatten(), config).flatten()
+                target_plot_price_flat = denormalize(baseline_plot + target_plot_raw.flatten(), config).flatten()
+            else:
+                pred_plot_price_flat = denormalize(preds_plot_raw, config).flatten()
+                target_plot_price_flat = denormalize(target_plot_raw, config).flatten()
+            unc_plot_denorm_flat = denormalize_returns(unc_plot_raw, config).flatten()
+            true_plot_price_flat = denormalize(baseline_plot, config).flatten()
+
+            # Determine plot points and slice FLATTENED arrays
             n_plot = config.get("plot_points", self.params["plot_points"])
-            plot_start = max(0, n_plot_full - n_plot)
-            plot_slice = slice(plot_start, n_plot_full)
+            num_avail_plot = len(pred_plot_price_flat) # Length of data available for plot
+            plot_slice = slice(max(0, num_avail_plot - n_plot), num_avail_plot)
 
-            # Extract plot data
-            dates_plot = dates_full[plot_slice] if dates_full else list(range(n_plot_full))[plot_slice]
-            pred_plot = pred_full[plot_slice]
-            target_plot = target_full[plot_slice]
-            baseline_plot = baseline_full[plot_slice]
-            uncertainty_plot = unc_full[plot_slice]
+            dates_plot_final = final_dates[plot_slice]
+            pred_plot_final = pred_plot_price_flat[plot_slice]
+            target_plot_final = target_plot_price_flat[plot_slice]
+            true_plot_final = true_plot_price_flat[plot_slice]
+            unc_plot_final = unc_plot_denorm_flat[plot_slice] # This is now 1D
 
-            # Create plot
+            # Plotting
             plt.figure(figsize=(14, 7))
-            
-            # Ensure numeric dtype for y-values to avoid np.isfinite dtype errors
-            def _to_float_array(arr):
-                try:
-                    return np.asarray(arr, dtype=np.float64)
-                except (ValueError, TypeError):
-                    # Fallback: best-effort elementwise conversion
-                    return np.array([
-                        (np.nan if (v is None) else float(v))
-                        for v in list(arr)
-                    ], dtype=np.float64)
-
-            pred_plot = _to_float_array(pred_plot)
-            target_plot = _to_float_array(target_plot)
-            baseline_plot = _to_float_array(baseline_plot)
-            uncertainty_plot = _to_float_array(uncertainty_plot)
-
-            # Length safety: align arrays if any mismatch occurs
-            min_len = min(len(pred_plot), len(target_plot), len(baseline_plot), len(uncertainty_plot), len(dates_plot))
-            if min_len <= 0:
-                raise ValueError("No data points available for plotting after alignment.")
-            if len(pred_plot) != min_len:
-                pred_plot = pred_plot[:min_len]
-            if len(target_plot) != min_len:
-                target_plot = target_plot[:min_len]
-            if len(baseline_plot) != min_len:
-                baseline_plot = baseline_plot[:min_len]
-            if len(uncertainty_plot) != min_len:
-                uncertainty_plot = uncertainty_plot[:min_len]
-            if len(dates_plot) != min_len:
-                dates_plot = dates_plot[:min_len]
-
-            lower = pred_plot - np.abs(uncertainty_plot)
-            upper = pred_plot + np.abs(uncertainty_plot)
-
-            plt.plot(dates_plot, pred_plot, label=f"Predicted P(t+H) H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
-            plt.plot(dates_plot, target_plot, label=f"Target P(t+H) H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
-            plt.plot(dates_plot, baseline_plot, label="Baseline P(t)", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
-            plt.fill_between(dates_plot, lower, upper,
+            plt.plot(dates_plot_final, pred_plot_final, label=f"Pred Price H{plotted_horizon}", color=config.get("plot_color_predicted", "red"), lw=1.5, zorder=3)
+            plt.plot(dates_plot_final, target_plot_final, label=f"Target Price H{plotted_horizon}", color=config.get("plot_color_target", "orange"), lw=1.5, zorder=2)
+            plt.plot(dates_plot_final, true_plot_final, label="Actual Price", color=config.get("plot_color_true", "blue"), lw=1, ls='--', alpha=0.7, zorder=1)
+            plt.fill_between(dates_plot_final, pred_plot_final - abs(unc_plot_final), pred_plot_final + abs(unc_plot_final),
                              color=config.get("plot_color_uncertainty", "green"), alpha=0.2, label=f"Uncertainty H{plotted_horizon}", zorder=0)
-            plt.title(f"Prediction vs Target and Baseline (H={plotted_horizon})")
-            plt.xlabel("Time Steps")
-            plt.ylabel("Price")
-            plt.legend()
-            plt.grid(True, alpha=0.6)
-            plt.tight_layout()
-            
+            plt.title(f"Predictions vs Target/Actual (H={plotted_horizon})"); plt.xlabel("Time"); plt.ylabel("Price"); plt.legend(); plt.grid(True, alpha=0.6); plt.tight_layout()
             predictions_plot_file = config.get("predictions_plot_file", self.params["predictions_plot_file"])
-            try:
-                if predictions_plot_file:
-                    os.makedirs(os.path.dirname(predictions_plot_file), exist_ok=True)
-            except Exception:
-                pass
-            plt.savefig(predictions_plot_file, dpi=300)
-            plt.close()
-            print(f"Prediction plot saved: {predictions_plot_file}")
-        except Exception as e: 
-            print(f"ERROR generating prediction plot: {e}")
-            import traceback
-            traceback.print_exc()
-            plt.close()
+            plt.savefig(predictions_plot_file, dpi=300); plt.close(); print(f"Prediction plot saved: {predictions_plot_file}")
+        except Exception as e: print(f"ERROR generating prediction plot: {e}"); import traceback; traceback.print_exc(); plt.close()
 
-        # 12. Save predictor keras trained model
-        # --- Save Model ---
+
+        # --- Plot/Save Model --- (Keep as is)
+        if plot_model is not None and hasattr(predictor_plugin, 'model') and predictor_plugin.model is not None:
+            try: model_plot_file=config.get('model_plot_file','model_plot.png'); plot_model(predictor_plugin.model,to_file=model_plot_file,show_shapes=True,show_layer_names=True,dpi=300); print(f"Model plot saved: {model_plot_file}")
+            except Exception as e: print(f"WARN: Failed model plot: {e}")
+        else: print("INFO: Skipping model plot.")
+
+        # --- Save Model --- (Keep as is)
         if hasattr(predictor_plugin, 'save') and callable(predictor_plugin.save):
             save_model_file = config.get("save_model", "pretrained_model.keras")
-            try:
-                if save_model_file:
-                    os.makedirs(os.path.dirname(save_model_file), exist_ok=True)
-            except Exception:
-                pass
-            try: 
-                predictor_plugin.save(save_model_file)
-                print(f"Model saved: {save_model_file}")
-            except Exception as e: 
-                print(f"ERROR saving model: {e}")
-        
-        #13. Save debug info json.
-        debug_info = self.get_debug_info()
-        self.add_debug_info(debug_info)
-        debug_info_file = config.get("debug_info_file", "debug_info.json")
-        try:
-            if debug_info_file:
-                os.makedirs(os.path.dirname(debug_info_file), exist_ok=True)
-        except Exception:
-            pass
-        try:
-            with open(debug_info_file, 'w') as f:
-                json.dump(debug_info, f, indent=4)
-            print(f"Debug info saved: {debug_info_file}")
-        except Exception as e: 
-            print(f"ERROR saving debug info: {e}")
+            try: predictor_plugin.save(save_model_file); print(f"Model saved: {save_model_file}")
+            except Exception as e: print(f"ERROR saving model: {e}")
+        else: print("WARN: Predictor has no save method.")
 
-        # 14. Save output config json dump the config variable as json.
-        output_config_file = config.get("output_config_file", "output_config.json")
-        try:
-            if output_config_file:
-                os.makedirs(os.path.dirname(output_config_file), exist_ok=True)
-        except Exception:
-            pass
-        try:
-            with open(output_config_file, 'w') as f:
-                json.dump(config, f, indent=4)
-            print(f"Output config saved: {output_config_file}")
-        except Exception as e:
-            print(f"ERROR saving output config: {e}")
-
-        print(f"\n=== Pipeline Complete (Total: {time.time() - start_time:.2f}s) ===")
-        return {}
+        print(f"\nTotal Pipeline Execution Time: {time.time() - start_time:.2f} seconds")
 
 
-
+    # --- load_and_evaluate_model (Keep as is from previous fix) ---
     def load_and_evaluate_model(self, config, predictor_plugin, preprocessor_plugin, target_plugin):
         from tensorflow.keras.models import load_model
         print(f"Loading pre-trained model from {config['load_model']}...")
-        try: 
-            custom_objects = {}
-            predictor_plugin.model = load_model(config['load_model'], custom_objects=custom_objects)
-            print("Model loaded.")
-        except Exception as e: 
-            print(f"Failed load model: {e}")
-            return
-        
+        try: custom_objects={}; predictor_plugin.model = load_model(config['load_model'], custom_objects=custom_objects); print("Model loaded.")
+        except Exception as e: print(f"Failed load model: {e}"); return
         print("Loading/processing validation data for evaluation...")
-        datasets, preprocessor_params = preprocessor_plugin.run_preprocessing(target_plugin, config)
-        x_val = datasets["x_val"]
-        val_dates = datasets.get("y_val_dates")
-        baseline_val_eval = datasets.get("baseline_val")
-        
-        # Get target normalization stats from preprocessor_params
-        if "target_returns_means" not in preprocessor_params or "target_returns_stds" not in preprocessor_params:
-            raise ValueError("Preprocessor did not return 'target_returns_means' or 'target_returns_stds' for evaluation. Check preprocessor configuration and execution.")
-        target_returns_means = preprocessor_params["target_returns_means"]
-        target_returns_stds = preprocessor_params["target_returns_stds"]
-        
+        datasets = preprocessor_plugin.run_preprocessing(target_plugin, config)
+        x_val=datasets["x_val"]; val_dates=datasets.get("y_val_dates"); baseline_val_eval=datasets.get("baseline_val")
         print(f"Validation data X shape: {x_val.shape}")
         print("Making predictions on validation data...")
-        try: 
-            mc_samples = config.get("mc_samples", 100)
-            list_predictions, _ = predictor_plugin.predict_with_uncertainty(x_val, mc_samples=mc_samples)
-            print(f"Preds list length: {len(list_predictions)}")
-            
-            # Convert predictions to real-world prices using same logic as main pipeline
-            print("Converting/formatting validation predictions for output...")
-            use_returns = config.get('use_returns', False)
-            if use_returns:
-                target_factor = config.get('target_factor', 1000.0)
-                naive_val_scaled = datasets.get('naive_last_close_scaled_val')
-                for idx, h in enumerate(config['predicted_horizons']):
-                    # Horizon-specific normalization stats (robust)
-                    mu, sigma = (0.0, 1.0)
-                    try:
-                        # Reuse helper from run_prediction_pipeline if available in scope
-                        mu, sigma = _get_norm_stats(idx, h)  # type: ignore[name-defined]
-                    except Exception:
-                        # Fallback: direct indexing
-                        try:
-                            mu = float(target_returns_means[idx])
-                            sigma = float(target_returns_stds[idx])
-                        except Exception:
-                            pass
-
-                    # --- De-zscore then undo target_factor ---
-                    pred_returns = (list_predictions[idx].flatten() * sigma + mu) / target_factor
-                    # If residualized, add back naive last-step CLOSE return
-                    if config.get('residualize_targets_with_last_close', True) and (naive_val_scaled is not None):
-                        m = min(len(pred_returns), len(naive_val_scaled))
-                        pred_returns[:m] += (naive_val_scaled[:m] / target_factor)
-
-                    # CRITICAL FIX: Baselines and predictions are perfectly aligned
-                    num_val = len(pred_returns)
-                    val_baselines = baseline_val_eval[:num_val]
-
-                    # Inverse-transform log-returns to prices: P_{t+h} = P_t * (exp(r) - 1)
-                    pred_prices = val_baselines * (np.exp(pred_returns) - 1.0)
-
-                    # Update predictions with real prices
-                    list_predictions[idx] = pred_prices.reshape(-1, 1)
-                    print(f"  H{h}: Converted {num_val} validation points to real prices (returns mode)")
-            else:
-                # Direct-price mode: model outputs are z-scored; inverse-transform using stored stats
-                dp_stats = config.get('direct_price_target_norm_stats') or self.params.get('direct_price_target_norm_stats')
-                stats_map = {}
-                if isinstance(dp_stats, list):
-                    for entry in dp_stats:
-                        try:
-                            stats_map[int(entry.get('horizon'))] = (float(entry.get('mu', 0.0)), float(entry.get('sigma', 1.0)))
-                        except Exception:
-                            continue
-                for idx, h in enumerate(config['predicted_horizons']):
-                    mu, sigma = stats_map.get(h, (0.0, 1.0))
-                    z = np.asarray(list_predictions[idx]).flatten().astype(np.float64)
-                    pred_prices = z * sigma + mu
-                    list_predictions[idx] = pred_prices.reshape(-1, 1)
-                    print(f"  H{h}: Inverse-transformed validation predictions using mu={mu:.6f}, sigma={sigma:.6f}")
-                    
-        except Exception as e: 
-            print(f"Failed predictions: {e}")
-            return
-        
+        try: mc_samples=config.get("mc_samples",100); list_predictions,_=predictor_plugin.predict_with_uncertainty(x_val,mc_samples=mc_samples); print(f"Preds list length: {len(list_predictions)}")
+        except Exception as e: print(f"Failed predictions: {e}"); return
         try:
-            num_val_points = len(list_predictions[0])
-            final_dates = list(val_dates[:num_val_points]) if val_dates is not None else list(range(num_val_points))
-            output_data = {"DATE_TIME": final_dates}
-            
+            num_val_points=len(list_predictions[0]); final_dates=list(val_dates[:num_val_points]) if val_dates is not None else list(range(num_val_points))
+            output_data={"DATE_TIME": final_dates}; use_returns_eval=config.get("use_returns", False)
+            if use_returns_eval and baseline_val_eval is None: raise ValueError("Baseline needed.")
+            baseline_val_eval_sliced = baseline_val_eval[:num_val_points].flatten() if baseline_val_eval is not None else None # Flatten baseline
             for idx, h in enumerate(config['predicted_horizons']):
-                # Predictions are already real-world prices
-                pred_prices = list_predictions[idx][:num_val_points].flatten()
-                output_data[f"Prediction_H{h}"] = pred_prices
-            
-            evaluate_df = pd.DataFrame(output_data)
-            evaluate_filename = config.get('output_file', 'eval_predictions.csv')
-            write_csv(file_path=evaluate_filename, data=evaluate_df, include_date=False, headers=True)
-            print(f"Validation predictions saved: {evaluate_filename}")
-        except ImportError: 
-            print(f"WARN: write_csv not found.")
-        except Exception as e: 
-            print(f"Failed save validation predictions: {e}")
+                preds_raw = list_predictions[idx][:num_val_points].flatten() # Flatten preds
+                pred_price = baseline_val_eval_sliced + preds_raw if use_returns_eval else preds_raw
+                denorm_pred_price = denormalize(pred_price, config)
+                output_data[f"Prediction_H{h}"] = denorm_pred_price.flatten()
+            evaluate_df = pd.DataFrame(output_data); evaluate_filename = config.get('output_file', 'eval_predictions.csv')
+            write_csv(file_path=evaluate_filename, data=evaluate_df, include_date=False, headers=True); print(f"Validation predictions saved: {evaluate_filename}")
+        except ImportError: print(f"WARN: write_csv not found.")
+        except Exception as e: print(f"Failed save validation predictions: {e}")
+
+# --- NO if __name__ == '__main__': block ---
