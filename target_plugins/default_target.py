@@ -17,7 +17,7 @@ class TargetPlugin:
         "predicted_horizons": [1],
         "target_column": "CLOSE",
         "use_returns": True,
-        "target_softening": 2,  # moving average window; 1 disables smoothing
+        "target_softening": 1,  # moving average window; 1 disables smoothing
         "target_factor": 1000.0,
     }
 
