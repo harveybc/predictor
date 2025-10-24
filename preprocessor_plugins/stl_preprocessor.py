@@ -51,7 +51,7 @@ class STLPreprocessorZScore:
         debug_info.update(self.get_debug_info())
     # End of plugin interface methods
 
-    def process_data(self, config):
+    def process_data(self, target_plugin, config):
         # Main process orchestration
         try:
             self.set_params(**config)
@@ -84,7 +84,7 @@ class STLPreprocessorZScore:
             # 5. Calculate targets directly from baselines
             print("Step 5: Calculate targets from baselines")
             #TODO: verify this method is correct
-            targets = calculate_targets_from_baselines(baselines, config)
+            targets = target_plugin.calculate_targets_from_baselines(baselines, config)
 
             # 6. Create SECOND sliding windows from DENORMALIZED datasets after applying price log-returns
             #    Apply log returns to raw price columns only (OPEN/HIGH/LOW/CLOSE). Preserve other columns.
@@ -280,13 +280,13 @@ class STLPreprocessorZScore:
         output, preprocessor_params = exclude_columns_from_datasets(output, self.params, config)
 
         return output, preprocessor_params
-    
-    def run_preprocessing(self, config):
+
+    def run_preprocessing(self, target_plugin, config):
         """Run preprocessing with configuration."""
         run_config = self.params.copy()
         run_config.update(config)
         self.set_params(**run_config)
-        processed_data = self.process_data(self.params)
+        processed_data = self.process_data(target_plugin, self.params)
         
         params_with_targets = self.params.copy()
         params_with_targets.update({

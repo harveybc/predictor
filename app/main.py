@@ -149,7 +149,7 @@ def main():
         print("Loading and evaluating existing model...")
         try:
             # Usar el predictor plugin para cargar y evaluar el modelo (método ya existente)
-            predictor_plugin.load_and_evaluate_model(config)
+            predictor_plugin.load_and_evaluate_model(config, predictor_plugin, preprocessor_plugin, target_plugin)
         except Exception as e:
             print(f"Model evaluation failed: {e}")
             sys.exit(1)
@@ -179,7 +179,8 @@ def main():
             pipeline_plugin.run_prediction_pipeline(
                 config,
                 predictor_plugin,
-                preprocessor_plugin
+                preprocessor_plugin,
+                target_plugin
             )
         
     # Guardado de la configuración local y remota

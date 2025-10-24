@@ -62,7 +62,7 @@ class STLPipelinePlugin:
     def add_debug_info(self, debug_info): 
         debug_info.update(self.get_debug_info())
 
-    def run_prediction_pipeline(self, config, predictor_plugin, preprocessor_plugin):
+    def run_prediction_pipeline(self, config, predictor_plugin, preprocessor_plugin, target_plugin):
         start_time = time.time()
         run_config = self.params.copy()
         run_config.update(config)
@@ -80,7 +80,7 @@ class STLPipelinePlugin:
         # 1. Get from preprocessor the train, validation and test datasets(sliding windows matrixes), 
         #    normalized targets and target normalization stats and denormalized baselines per horizon.
         print("Loading/processing datasets via Preprocessor...")
-        datasets, preprocessor_params = preprocessor_plugin.run_preprocessing(config)
+        datasets, preprocessor_params = preprocessor_plugin.run_preprocessing(target_plugin, config)
         print("Preprocessor finished.")
         
         X_train = datasets["x_train"]
@@ -843,7 +843,7 @@ class STLPipelinePlugin:
 
 
 
-    def load_and_evaluate_model(self, config, predictor_plugin, preprocessor_plugin):
+    def load_and_evaluate_model(self, config, predictor_plugin, preprocessor_plugin, target_plugin):
         from tensorflow.keras.models import load_model
         print(f"Loading pre-trained model from {config['load_model']}...")
         try: 
@@ -855,7 +855,7 @@ class STLPipelinePlugin:
             return
         
         print("Loading/processing validation data for evaluation...")
-        datasets, preprocessor_params = preprocessor_plugin.run_preprocessing(config)
+        datasets, preprocessor_params = preprocessor_plugin.run_preprocessing(target_plugin, config)
         x_val = datasets["x_val"]
         val_dates = datasets.get("y_val_dates")
         baseline_val_eval = datasets.get("baseline_val")

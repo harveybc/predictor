@@ -16,12 +16,10 @@ class TargetPlugin:
     plugin_params = {
         "predicted_horizons": [1],
         "target_column": "CLOSE",
-        "use_returns": True,
-        "target_softening": 1  # moving average window; 1 disables smoothing
     }
 
     # Debug variables to surface
-    plugin_debug_vars = ["predicted_horizons", "target_column", "use_returns", "target_softening"]
+    plugin_debug_vars = ["predicted_horizons", "target_column"]
 
     def __init__(self):
         self.params = self.plugin_params.copy()
@@ -60,166 +58,53 @@ class TargetPlugin:
 
     def calculate_targets_from_baselines(self, baseline_data, config):
         """
-        Execute the target calculation using ONLY baselines.
-
-        Input:
-          - baseline_data: dict with keys baseline_train/baseline_val/baseline_test
-          - config: configuration dict
-
-        Output:
-          - dict containing y_train/y_val/y_test per horizon, baseline_* echoes, and metadata
+        Execute target calculation using only baselines (direct-price targets), minimal flow.
         """
-        # Standardize/merge params
+        # 1) Merge/lock configuration
         self.set_params(**config)
-        config = self.params
+        cfg = self.params
 
-        print("Calculating targets from provided baselines...")
+        # 2) Read horizons and prepare containers
+        horizons = cfg["predicted_horizons"]
+        targets = {"train": {}, "val": {}, "test": {}}
 
-        predicted_horizons = config["predicted_horizons"]
-        use_returns = config.get("use_returns", True)
-        target_softening = config.get("target_softening", 2)
-
-        target_data = {"train": {}, "val": {}, "test": {}}
-        baseline_info = {}
-
-        # Reset normalization stats (kept for compatibility, currently unused)
-        target_returns_means = []
-        target_returns_stds = []
-
-        if not use_returns:
-            print("Using direct target values (not returns)")
-
-        # Optional smoothing of baselines before target computation
-        if target_softening > 1:
-            for split in ["train", "val", "test"]:
-                baseline_key = f"baseline_{split}"
-                if baseline_key in baseline_data:
-                    baselines = baseline_data[baseline_key]
-                    if use_returns:
-                        baseline_data[baseline_key] = self.apply_centered_moving_average(
-                            baselines, window_size=target_softening
-                        )
-                    else:
-                        ser = pd.Series(np.asarray(baselines))
-                        baseline_data[baseline_key] = (
-                            ser.rolling(window=target_softening, center=False, min_periods=1)
-                            .mean()
-                            .to_numpy()
-                        )
-
-        print("Calculating targets (returns or direct price depending on use_returns)...")
-
-        # Calculate targets for each split using ONLY baselines
-        for split in ["train", "val", "test"]:
-            baseline_key = f"baseline_{split}"
-
-            if baseline_key not in baseline_data:
-                print(f"No baseline data for {split}")
+        # 3) For each split, compute targets
+        for split in ("train", "val", "test"):
+            base_key = f"baseline_{split}"
+            if base_key not in baseline_data:
+                # 3.1) If baseline missing, create empty arrays per horizon
+                for h in horizons:
+                    targets[split][f"output_horizon_{h}"] = np.array([])
                 continue
 
-            baselines = baseline_data[baseline_key]
+            baselines = baseline_data[base_key]
             if len(baselines) == 0:
-                print(
-                    f"Empty baselines for {split} -> creating empty target arrays for horizons {predicted_horizons}"
-                )
-                for horizon in predicted_horizons:
-                    target_data[split][f"output_horizon_{horizon}"] = np.array([])
+                # 3.2) If baseline empty, create empty arrays per horizon
+                for h in horizons:
+                    targets[split][f"output_horizon_{h}"] = np.array([])
                 continue
 
-            # Calculate max horizon to ensure all horizons have same length
-            max_horizon = max(predicted_horizons)
-            max_samples = len(baselines) - max_horizon
-
+            # 3.3) Determine common max_samples bounded by max horizon
+            max_h = max(horizons)
+            max_samples = len(baselines) - max_h
             if max_samples <= 0:
-                print(
-                    f"  {split}: Insufficient baselines ({len(baselines)}) for max horizon {max_horizon}"
-                )
-                for horizon in predicted_horizons:
-                    target_data[split][f"output_horizon_{horizon}"] = np.array([])
+                for h in horizons:
+                    targets[split][f"output_horizon_{h}"] = np.array([])
                 continue
 
-            print(
-                f"  {split}: Using {max_samples} samples for ALL horizons (limited by H{max_horizon})"
-            )
-
-            # Calculate targets for each horizon using ONLY baselines
-            for _, horizon in enumerate(predicted_horizons):
-                horizon_targets = []
-
-                # Calculate targets: log(baseline[t+horizon] / baseline[t]) or direct future value
+            # 3.4) For each horizon, build direct-price targets from future baselines
+            for h in horizons:
+                vals = []
                 for t in range(max_samples):
-                    baseline_current = baselines[t]
-                    baseline_future = baselines[t + horizon]
+                    future_val = baselines[t + h]
+                    vals.append(float(future_val) if np.isfinite(future_val) else 0.0)
+                targets[split][f"output_horizon_{h}"] = np.asarray(vals, dtype=np.float32)
 
-                    if use_returns:
-                        if baseline_current > 0 and baseline_future > 0:
-                            return_value = np.log(
-                                baseline_future / baseline_current
-                            )
-                        else:
-                            return_value = 0.0
-                    else:
-                        if np.isfinite(baseline_future):
-                            return_value = float(baseline_future)
-                        else:
-                            return_value = 0.0
-
-                    horizon_targets.append(return_value)
-
-                # Store targets for this horizon
-                if horizon_targets:
-                    horizon_targets = np.array(horizon_targets, dtype=np.float32)
-                    valid_targets = horizon_targets[~np.isnan(horizon_targets)]
-
-                    if len(valid_targets) > 0:
-                        normalized_targets = valid_targets
-                        target_data[split][f"output_horizon_{horizon}"] = normalized_targets
-                        print(
-                            f"  {split} H{horizon}: {len(normalized_targets)} targets"
-                        )
-                    else:
-                        print(f"  {split} H{horizon}: No valid targets")
-                        target_data[split][f"output_horizon_{horizon}"] = np.array([])
-                else:
-                    print(f"  {split} H{horizon}: No targets calculated")
-                    target_data[split][f"output_horizon_{horizon}"] = np.array([])
-
-        # Store baseline info for output
-        for split in ["train", "val", "test"]:
-            baseline_key = f"baseline_{split}"
-            if baseline_key in baseline_data:
-                baseline_info[baseline_key] = baseline_data[baseline_key]
-
-        # Prepare final result
-        result = {
-            "y_train": target_data["train"],
-            "y_val": target_data["val"],
-            "y_test": target_data["test"],
-            **baseline_info,
-            "target_returns_means": target_returns_means,
-            "target_returns_stds": target_returns_stds,
-            "predicted_horizons": predicted_horizons,
+        # 4) Return compact result structure
+        return {
+            "y_train": targets["train"],
+            "y_val": targets["val"],
+            "y_test": targets["test"],
+            "predicted_horizons": horizons,
         }
 
-        print(f"Target calculation complete. Horizons: {predicted_horizons}")
-        print(f"Normalization means: {target_returns_means}")
-        print(f"Normalization stds: {target_returns_stds}")
-
-        return result
-
-    def run_target(self, baseline_data, config):
-        """Convenience runner mirroring other plugins' run_* methods."""
-        run_config = self.params.copy()
-        run_config.update(config)
-        self.set_params(**run_config)
-        processed = self.process_data(baseline_data, self.params)
-
-        params_with_targets = self.params.copy()
-        params_with_targets.update(
-            {
-                "target_returns_means": processed.get("target_returns_means", []),
-                "target_returns_stds": processed.get("target_returns_stds", []),
-            }
-        )
-
-        return processed, params_with_targets
