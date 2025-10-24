@@ -109,6 +109,17 @@ def main():
         print(f"Failed to load or initialize Pipeline Plugin: {e}")
         sys.exit(1)
 
+    # Carga del Target Plugin (para target and metrics calculation)
+    plugin_name = config.get('target_plugin', 'default_target')
+    print(f"Loading Plugin ..{plugin_name}")
+    try:
+        preprocessor_class, _ = load_plugin('target.plugins', plugin_name)
+        preprocessor_plugin = preprocessor_class()
+        preprocessor_plugin.set_params(**config)
+    except Exception as e:
+        print(f"Failed to load or initialize Target Plugin: {e}")
+        sys.exit(1)
+
     # Carga del Preprocessor Plugin (para process_data, ventanas deslizantes y STL)
     plugin_name = config.get('preprocessor_plugin', 'default_preprocessor')
     print(f"Loading Plugin ..{plugin_name}")
@@ -127,6 +138,8 @@ def main():
     config = merge_config(config, optimizer_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
     # fusión de configuración, integrando parámetros específicos de plugin pipeline
     config = merge_config(config, pipeline_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
+    # fusión de configuración, integrando parámetros específicos de plugin target
+    config = merge_config(config, target_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
     # fusión de configuración, integrando parámetros específicos de plugin preprocessor
     config = merge_config(config, preprocessor_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
     
