@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 """
-STL Pipeline Plugin - Corrected Version 6 (Fix Broadcasting Error)
+STL Pipeline Plugin 
 
-Fixes NumPy broadcasting error causing length mismatch during denormalization.
-Ensures preds_raw/target_raw are flattened BEFORE adding baseline.
-Keeps previous fixes: Correct denormalization order, Separate Uncertainty File,
-All Horizon Stats (Avg/Std/Min/Max), Plotting dimension fix.
-ASSUMES PREPROCESSOR IS WORKING PERFECTLY.
 """
 
 import time
