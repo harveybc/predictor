@@ -113,9 +113,9 @@ def main():
     plugin_name = config.get('target_plugin', 'default_target')
     print(f"Loading Plugin ..{plugin_name}")
     try:
-        preprocessor_class, _ = load_plugin('target.plugins', plugin_name)
-        preprocessor_plugin = preprocessor_class()
-        preprocessor_plugin.set_params(**config)
+        target_class, _ = load_plugin('target.plugins', plugin_name)
+        target_plugin = target_class()
+        target_plugin.set_params(**config)
     except Exception as e:
         print(f"Failed to load or initialize Target Plugin: {e}")
         sys.exit(1)
