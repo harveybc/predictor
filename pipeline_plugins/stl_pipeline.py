@@ -207,7 +207,7 @@ class STLPipelinePlugin:
 
         predicted_horizons = config.get("predicted_horizons")
         num_outputs = len(predicted_horizons)
-        metric_names = ["MAE", "R2", "Uncertainty", "SNR"]
+        metric_names = ["MAE", "Naive MAE", "R2", "Uncertainty", "SNR"]
         data_sets = ["Train", "Validation", "Test"]
         metrics_results = {ds: {mn: {h: [] for h in predicted_horizons} for mn in metric_names} for ds in data_sets}
 
@@ -292,20 +292,24 @@ class STLPipelinePlugin:
                 plotted_idx = predicted_horizons.index(plotted_horizon)
                 can_calc_train_val = all(len(lst) == num_outputs for lst in [list_val_preds, list_val_unc])
                 train_mae_plot = metrics_results["Train"]["MAE"][plotted_horizon][-1] if can_calc_train_val else np.nan
+                train_naive_mae_plot = metrics_results["Train"]["Naive MAE"][plotted_horizon][-1] if can_calc_train_val else np.nan
                 train_r2_plot = metrics_results["Train"]["R2"][plotted_horizon][-1] if can_calc_train_val else np.nan
                 val_mae_plot = metrics_results["Validation"]["MAE"][plotted_horizon][-1] if can_calc_train_val else np.nan
+                val_naive_mae_plot = metrics_results["Validation"]["Naive MAE"][plotted_horizon][-1] if can_calc_train_val else np.nan
                 val_r2_plot = metrics_results["Validation"]["R2"][plotted_horizon][-1] if can_calc_train_val else np.nan
                 test_mae_plot = metrics_results["Test"]["MAE"][plotted_horizon][-1]
+                test_naive_mae_plot = metrics_results["Test"]["Naive MAE"][plotted_horizon][-1]
                 test_r2_plot = metrics_results["Test"]["R2"][plotted_horizon][-1]
                 test_unc_plot = metrics_results["Test"]["Uncertainty"][plotted_horizon][-1]
                 test_snr_plot = metrics_results["Test"]["SNR"][plotted_horizon][-1]
                 print("*" * 72)
                 print(f"Iter {iteration} Done|Time:{time.time() - iter_start:.2f}s|Plot H:{plotted_horizon}")
                 print(
-                    f"  Train MAE:{train_mae_plot:.6f}|R²:{train_r2_plot:.4f} -- Valid MAE:{val_mae_plot:.6f}|R²:{val_r2_plot:.4f}"
+                    f"  Train MAE:{train_mae_plot:.6f}|NMAE:{train_naive_mae_plot:.6f}|R²:{train_r2_plot:.4f} -- "
+                    f"Valid MAE:{val_mae_plot:.6f}|NMAE:{val_naive_mae_plot:.6f}|R²:{val_r2_plot:.4f}"
                 )
                 print(
-                    f"  Test  MAE:{test_mae_plot:.6f}|R²:{test_r2_plot:.4f}|Unc:{test_unc_plot:.6f}|SNR:{test_snr_plot:.2f}"
+                    f"  Test  MAE:{test_mae_plot:.6f}|NMAE:{test_naive_mae_plot:.6f}|R²:{test_r2_plot:.4f}|Unc:{test_unc_plot:.6f}|SNR:{test_snr_plot:.2f}"
                 )
                 print("*" * 72)
             except Exception as e:

@@ -74,17 +74,29 @@ def compute_train_val_metrics(
             train_unc_mean_h = np.mean(np.abs(denormalize_returns(train_unc_h, params)))
             train_snr_h = np.mean(train_pred_price) / (train_unc_mean_h + 1e-9)
 
+            # Naive MAE: baseline vs target price (both in real-world scale)
+            train_naive_mae_h = np.nan
+            if baseline_train is not None:
+                baseline_train_h = baseline_train[:num_train_pts].flatten()
+                train_naive_mae_h = np.mean(np.abs(denormalize(baseline_train_h, params) - train_target_price))
+
             val_mae_h = np.mean(np.abs(denormalize_returns(val_preds_h - val_target_h, params)))
             val_r2_h = r2_score(val_target_price, val_pred_price)
             val_unc_mean_h = np.mean(np.abs(denormalize_returns(val_unc_h, params)))
             val_snr_h = np.mean(val_pred_price) / (val_unc_mean_h + 1e-9)
+            val_naive_mae_h = np.nan
+            if baseline_val is not None:
+                baseline_val_h = baseline_val[:num_val_pts].flatten()
+                val_naive_mae_h = np.mean(np.abs(denormalize(baseline_val_h, params) - val_target_price))
 
             metrics_results["Train"]["MAE"][h].append(train_mae_h)
+            metrics_results["Train"]["Naive MAE"][h].append(train_naive_mae_h)
             metrics_results["Train"]["R2"][h].append(train_r2_h)
             metrics_results["Train"]["Uncertainty"][h].append(train_unc_mean_h)
             metrics_results["Train"]["SNR"][h].append(train_snr_h)
 
             metrics_results["Validation"]["MAE"][h].append(val_mae_h)
+            metrics_results["Validation"]["Naive MAE"][h].append(val_naive_mae_h)
             metrics_results["Validation"]["R2"][h].append(val_r2_h)
             metrics_results["Validation"]["Uncertainty"][h].append(val_unc_mean_h)
             metrics_results["Validation"]["SNR"][h].append(val_snr_h)
@@ -133,7 +145,13 @@ def compute_test_metrics(
             test_unc_mean_h = np.mean(np.abs(denormalize_returns(test_unc_h, params)))
             test_snr_h = np.mean(test_pred_price) / (test_unc_mean_h + 1e-9)
 
+            test_naive_mae_h = np.nan
+            if baseline_test is not None:
+                baseline_test_h = baseline_test[:num_test_pts].flatten()
+                test_naive_mae_h = np.mean(np.abs(denormalize(baseline_test_h, params) - test_target_price))
+
             metrics_results["Test"]["MAE"][h].append(test_mae_h)
+            metrics_results["Test"]["Naive MAE"][h].append(test_naive_mae_h)
             metrics_results["Test"]["R2"][h].append(test_r2_h)
             metrics_results["Test"]["Uncertainty"][h].append(test_unc_mean_h)
             metrics_results["Test"]["SNR"][h].append(test_snr_h)
@@ -145,7 +163,7 @@ def compute_test_metrics(
 
 def aggregate_and_save_results(metrics_results: Dict, predicted_horizons: List[int], results_file: str) -> None:
     print("\n--- Aggregating Results Across Iterations (All Horizons) ---")
-    metric_names = ["MAE", "R2", "Uncertainty", "SNR"]
+    metric_names = ["MAE", "Naive MAE", "R2", "Uncertainty", "SNR"]
     data_sets = ["Train", "Validation", "Test"]
 
     results_list = []
