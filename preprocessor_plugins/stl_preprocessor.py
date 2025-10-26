@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from .helpers import load_normalization_json, denormalize_all_datasets, load_normalized_csv, exclude_columns_from_datasets
 from .sliding_windows import create_sliding_windows, extract_baselines_from_sliding_windows
-from .target_calculation import calculate_targets_from_baselines
 from .anti_naive_lock import apply_log_returns_to_series, apply_feature_normalization
 
 
