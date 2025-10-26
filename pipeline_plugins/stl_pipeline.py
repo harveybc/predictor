@@ -109,6 +109,26 @@ class STLPipelinePlugin:
         print("Preprocessor finished.")
         return datasets
 
+    @staticmethod
+    def _targets_to_list(y_targets, predicted_horizons: List[int]) -> List[np.ndarray]:
+        """Normalize targets to a list aligned with predicted_horizons.
+
+        Accepts either a list/tuple of arrays (already ordered), or a dict with
+        keys like 'output_horizon_{h}'. Returns a list of numpy arrays.
+        """
+        if isinstance(y_targets, (list, tuple)):
+            return list(y_targets)
+        if isinstance(y_targets, dict):
+            out = []
+            for h in predicted_horizons:
+                key = f"output_horizon_{h}"
+                arr = y_targets.get(key)
+                if arr is None:
+                    raise KeyError(f"Missing target for horizon {h} under key '{key}'")
+                out.append(np.asarray(arr))
+            return out
+        raise TypeError("y_targets must be a list/tuple or a dict keyed by 'output_horizon_{h}'")
+
     # ---------------------------------------------------------------------
     # 2) Build and train model (per iteration)
     # ---------------------------------------------------------------------
@@ -196,9 +216,10 @@ class STLPipelinePlugin:
         X_train = datasets["x_train"]
         X_val = datasets["x_val"]
         X_test = datasets["x_test"]
-        y_train_list = datasets["y_train"]
-        y_val_list = datasets["y_val"]
-        y_test_list = datasets["y_test"]
+        # Normalize target containers (dict -> list ordered by horizons)
+        y_train_list = self._targets_to_list(datasets["y_train"], predicted_horizons)
+        y_val_list = self._targets_to_list(datasets["y_val"], predicted_horizons)
+        y_test_list = self._targets_to_list(datasets["y_test"], predicted_horizons)
 
         train_dates = datasets.get("y_train_dates")
         val_dates = datasets.get("y_val_dates")
@@ -211,8 +232,8 @@ class STLPipelinePlugin:
         output_names = [f"output_horizon_{h}" for h in predicted_horizons]
 
         # Train/Val target dicts
-        y_train_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_train_list)}
-        y_val_dict = {name: y.reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_val_list)}
+        y_train_dict = {name: np.asarray(y).reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_train_list)}
+        y_val_dict = {name: np.asarray(y).reshape(-1, 1).astype(np.float32) for name, y in zip(output_names, y_val_list)}
 
         print(f"Input shapes: Train:{X_train.shape}, Val:{X_val.shape}, Test:{X_test.shape}")
         print(
