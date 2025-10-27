@@ -162,7 +162,7 @@ class STLPipelinePlugin:
     # ---------------------------------------------------------------------
     # 9) Optionally export model plot and save model
     # ---------------------------------------------------------------------
-    def _maybe_plot_model(self, predictor_plugin, config: Dict) -> None:
+    def _plot_model(self, predictor_plugin, config: Dict) -> None:
         if plot_model is not None and hasattr(predictor_plugin, "model") and predictor_plugin.model is not None:
             try:
                 model_plot_file = config.get("model_plot_file", "model_plot.png")
@@ -179,7 +179,7 @@ class STLPipelinePlugin:
         else:
             print("INFO: Skipping model plot.")
 
-    def _maybe_save_model(self, predictor_plugin, config: Dict) -> None:
+    def _save_model(self, predictor_plugin, config: Dict) -> None:
         if hasattr(predictor_plugin, "save") and callable(predictor_plugin.save):
             save_model_file = config.get("save_model", "pretrained_model.keras")
             try:
@@ -350,8 +350,8 @@ class STLPipelinePlugin:
         )
 
         # 9) Optional model plot and save
-        self._maybe_plot_model(predictor_plugin, config)
-        self._maybe_save_model(predictor_plugin, config)
+        self._plot_model(predictor_plugin, config)
+        self._save_model(predictor_plugin, config)
 
         print(f"\nTotal Pipeline Execution Time: {time.time() - start_time:.2f} seconds")
 
