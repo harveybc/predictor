@@ -56,5 +56,5 @@
     "use_predicted_decompositions": false,
     "use_real_decompositions": false,
     "use_ideal_predictions": false,
-    "positional_encoding": true,
+    "positional_encoding": true
 }
