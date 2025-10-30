@@ -1,8 +1,8 @@
 {
-    "input_file": "examples/data/phase_1.csv",
+    "input_file": "examples/data/phase_3b.csv",
     "output_file": "output_phase_1.csv",
     "debug_file": "examples/data/phase_1/phase_1_debug_out.json",
-    "load_config": "examples/config/phase_1.json",
+    "load_config": "examples/config/phase_1b_candlestick.json",
     "save_config": "examples/data/phase_1/preprocessor_config.json",
     "normalization_config_a": "examples/data/phase_1/normalization_config_a.json",
     "normalization_config_b": "examples/data/phase_1/normalization_config_b.json",
@@ -12,5 +12,11 @@
     "normalization_range": [
         0,
         1
+    ],
+    "anti_naive_lock_enabled": false,
+    "use_log_returns": false,
+    "use_first_differences": false,
+    "features_included": [
+        "base_features"
     ]
 }
