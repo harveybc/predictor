@@ -16,6 +16,7 @@ setup(
             'cnn=predictor_plugins.predictor_plugin_cnn:Plugin',
             'lstm=predictor_plugins.predictor_plugin_lstm:Plugin',
             'transformer=predictor_plugins.predictor_plugin_transformer:Plugin',
+            'composite=predictor_plugins.predictor_plugin_composite:Plugin',
             'base=predictor_plugin.predictor_plugin_base:Plugin'
         ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
