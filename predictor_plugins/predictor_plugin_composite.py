@@ -65,7 +65,7 @@ class Plugin(BaseBayesianKerasPredictor):
         use_returns = self.params.get("use_returns", False)  # loss variant
         use_pe = self.params.get("positional_encoding", False)
 
-        # Flags for the requested behavior
+        # Flags for process each data type in its own branch, close_window, and process hf
         close_window_only = bool(self.params.get("close_window_only", False))
         process_HF        = bool(self.params.get("process_HF", False))
 

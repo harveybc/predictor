@@ -21,6 +21,8 @@
     "pipeline_plugin": "stl_pipeline",
     "preprocessor_plugin": "stl_preprocessor",
     "target_plugin": "default_target",
+    "close_window_only": true,
+    "process_HF": true,
     "use_daily": false,
     "max_steps_train": 25200,
     "max_steps_test": 6300,
