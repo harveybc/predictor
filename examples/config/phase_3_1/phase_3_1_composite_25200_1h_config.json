@@ -65,6 +65,4 @@
     "normalize_features": false,
     "normalize_after_preprocessing": false,
     "residualize_targets_with_last_close": false
-
-
 }
