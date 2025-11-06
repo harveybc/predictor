@@ -40,7 +40,7 @@
     "mc_samples":20,
     "plotted_horizon": 144,
     "mmd_lambda": 1e-3,
-    "window_size": 288,
+    "window_size": 144,
     "batch_size": 32,
     "plot_color_predicted": "red",
     "plot_color_true": "blue",
