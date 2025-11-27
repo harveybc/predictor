@@ -1,0 +1,23 @@
+{
+    "input_file": "examples/data/phase_3b.csv",
+    "output_file": "output_phase_3b.csv",
+    "debug_file": "examples/data/phase_3b/phase_3b_debug_out.json",
+    "load_config": "examples/config/phase_3b.json",
+    "save_config": "examples/data/phase_3b/preprocessor_config.json",
+    "normalization_config_a": "examples/data/phase_3b/normalization_config_a.json",
+    "normalization_config_b": "examples/data/phase_3b/normalization_config_b.json",
+    "dataset_prefix": "examples/data/phase_3b/base_",
+    "target_prefix": "examples/data/phase_3b/normalized_",
+    "feature_eng_plugin_path": "/home/harvyebc/Documents/GitHub/feature-eng/app/plugins",
+    "normalization_range": [
+        0,
+        1
+    ],
+    "features_included": [
+        "base_features",
+        "technical_features",
+        "fundamental_features",
+        "seasonal_features",
+        "high_frequency_features"
+    ]
+}
