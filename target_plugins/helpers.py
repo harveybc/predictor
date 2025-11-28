@@ -100,7 +100,7 @@ def load_normalization_json(config):
         return norm_json
     return {}
 
-def denormalize(data, norm_json, column_name="CLOSE"):
+def denormalize(data, norm_json, column_name="typical_price"):
     """Denormalizes data using JSON normalization parameters."""
     data = np.asarray(data)
     if isinstance(norm_json, dict) and column_name in norm_json:
