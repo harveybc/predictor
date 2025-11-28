@@ -16,7 +16,7 @@
     "stl_plot_file": "examples/results/phase_1_daily/phase_1_1575_1d_stl_decomposition_plot.png",
     "wavelet_plot_file": "examples/results/phase_1_daily/phase_1_1575_1d_wavelet_decomposition_plot.png",
     "tapper_plot_file": "examples/results/phase_1_daily/phase_1_1575_1d_multi_tapper_decomposition_plot.png",
-    "target_column": "CLOSE",
+    "target_column": "typical_price",
     "predictor_plugin": "ann",
     "optimizer_plugin": "default_optimizer",
     "pipeline_plugin": "stl_pipeline",
