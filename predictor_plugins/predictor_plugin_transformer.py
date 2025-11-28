@@ -82,8 +82,8 @@ class Plugin(BaseBayesianKerasPredictor):
         sigma_mmd = self.params.get("sigma_mmd", 1.0)
         for horizon in ph:
             suf = f"_h{horizon}"
-            h_in = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding="valid", activation=act, kernel_regularizer=l2(l2_reg_v), name=f"head_conv1{suf}")(merged)
-            h_in = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding="valid", activation=act, kernel_regularizer=l2(l2_reg_v), name=f"head_conv2{suf}")(h_in)
+            h_in = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding="same", activation=act, kernel_regularizer=l2(l2_reg_v), name=f"head_conv1{suf}")(merged)
+            h_in = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding="same", activation=act, kernel_regularizer=l2(l2_reg_v), name=f"head_conv2{suf}")(h_in)
             lstm_out = Bidirectional(LSTM(lstm_units, return_sequences=False), name=f"bilstm{suf}")(h_in)
             flip_name = f"flipout{suf}"
             flip_layer = DenseFlipout(
