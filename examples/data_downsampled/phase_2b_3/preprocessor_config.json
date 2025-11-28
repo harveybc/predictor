@@ -13,6 +13,14 @@
         0,
         1
     ],
+    "price_features": [
+        "OPEN",
+        "LOW",
+        "HIGH",
+        "CLOSE",
+        "typical_price",
+        "typical_sd"
+    ],
     "features_included": [
         "base_features",
         "seasonal_features"
