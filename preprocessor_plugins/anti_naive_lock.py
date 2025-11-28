@@ -55,7 +55,7 @@ def apply_anti_naive_lock_to_time_series(df, feature_names, config):
     processed_df = df.copy()
     
     # Get feature categories from config with comprehensive defaults
-    price_features = config.get('price_features', ['OPEN', 'LOW', 'HIGH', 'CLOSE', 'open', 'low', 'high', 'close'])
+    price_features = config.get('price_features', ['OPEN', 'LOW', 'HIGH', 'typical_price', 'open', 'low', 'high', 'close'])
     temporal_features = config.get('temporal_features', [
         'day_of_week', 'hour_of_day', 'day_of_month', 'month_of_year',
         'dayofweek', 'hourofday', 'dayofmonth', 'monthofyear'
@@ -67,7 +67,7 @@ def apply_anti_naive_lock_to_time_series(df, feature_names, config):
         'RSI', 'MACD', 'MACD_Histogram', 'MACD_Signal', 'EMA', 'SMA', 'BB_upper', 'BB_lower',
         'rsi', 'macd', 'macd_histogram', 'macd_signal', 'ema', 'sma', 'bb_upper', 'bb_lower'
     ])
-    target_column = config.get('target_column', 'CLOSE')
+    target_column = config.get('target_column', 'typical_price')
     excluded_columns = config.get('excluded_columns', [])
     
     print(f"      Applying anti-naive-lock to {len(feature_names)} features...")

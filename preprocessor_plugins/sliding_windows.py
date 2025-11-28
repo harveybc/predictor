@@ -132,7 +132,7 @@ def extract_baselines_from_sliding_windows(sliding_windows_dict, config):
     Returns:
         Dictionary with baselines for each dataset split
     """
-    target_column = config.get("target_column", "CLOSE")
+    target_column = config.get("target_column", "typical_price")
     baselines = {}
     
     print(f"Extracting baselines for target column '{target_column}'...", end="")
