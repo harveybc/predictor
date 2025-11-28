@@ -46,7 +46,7 @@
     "early_patience": 120,
     "start_from_epoch": 5,
     "mc_samples":20,
-    "plotted_horizon": 6,
+    "plotted_horizon": 24,
     "mmd_lambda": 1e-6,
     "window_size": 24,
     "batch_size": 32,
