@@ -14,7 +14,7 @@ class TargetPlugin:
     # Plugin-specific parameters (kept minimal and aligned with target calculation needs)
     plugin_params = {
         "predicted_horizons": [1],
-        "target_column": "CLOSE",
+        "target_column": "typical_price",
     }
 
     # Debug variables to surface

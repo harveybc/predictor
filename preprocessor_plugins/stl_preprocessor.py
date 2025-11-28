@@ -21,7 +21,7 @@ class STLPreprocessorZScore:
     plugin_params = {
         "window_size": 48,
         "predicted_horizons": [1, 2, 3, 4, 5, 6],
-        "target_column": "CLOSE",
+        "target_column": "typical_price",
         "use_returns": True,
         "anti_naive_lock_enabled": True,
     "feature_preprocessing_strategy": "selective",
