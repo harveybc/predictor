@@ -46,8 +46,8 @@ class Plugin(BaseBayesianKerasPredictor):
         l2_reg_v = self.params.get("l2_reg", 1e-4)
         initial_layer_size = self.params.get("initial_layer_size", 128)
         layer_size_divisor = self.params.get("layer_size_divisor", 2)
-        intermediate_layers = int(self.params.get("intermediate_layers", 2))
-        head_layers = int(self.params.get("head_layers", 2))
+        intermediate_layers = int(self.params.get("intermediate_layers", 1))
+        head_layers = int(self.params.get("head_layers", 1))
         use_returns = self.params.get("use_returns", False)
 
         inputs = Input(shape=(w, c), name="input_layer")
