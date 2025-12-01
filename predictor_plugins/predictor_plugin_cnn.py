@@ -128,18 +128,10 @@ class Plugin(BaseBayesianKerasPredictor):
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=flip_name,
             )
-            flip_layer_2 = DenseFlipout(
-                units=16,
-                activation="relu",
-                kernel_posterior_fn=lambda dt, sh, bs, tr, nm=flip_name: posterior_mean_field(dt, sh, bs, tr, nm),
-                kernel_prior_fn=lambda dt, sh, bs, tr, nm=flip_name: prior_fn(dt, sh, bs, tr, nm),
-                kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
-                name=flip_name_2,
-            )
-            bayes = Lambda(lambda t, fl=flip_layer_2: fl(t), name=f"bayes_out_2{suf}")(lstm_out)
-            bayes = Lambda(lambda t, fl=flip_layer: fl(t), name=f"bayes_out{suf}")(bayes)
+            bayes = Lambda(lambda t, fl=flip_layer: fl(t), name=f"bayes_out{suf}")(lstm_out)
+
             bias = Dense(16, activation="relu", kernel_initializer=random_normal_initializer_44, name=f"bias_0_{suf}")(lstm_out)
-            bias = Dense(1, kernel_initializer=random_normal_initializer_44, name=f"bias{suf}")(bias)
+            bias = Dense(1, activation="linear",kernel_initializer=random_normal_initializer_44, name=f"bias{suf}")(bias)
             out = Add(name=f"output_horizon_{horizon}")([bayes, bias])
             outputs.append(out)
             self.output_names.append(f"output_horizon_{horizon}")
