@@ -120,7 +120,7 @@ class Plugin(BaseBayesianKerasPredictor):
             )(h_in)
             flip_name = f"flipout{suf}"
             flip_layer = DenseFlipout(
-                units=1,
+                units=16,
                 activation="relu",
                 kernel_posterior_fn=lambda dt, sh, bs, tr, nm=flip_name: posterior_mean_field(dt, sh, bs, tr, nm),
                 kernel_prior_fn=lambda dt, sh, bs, tr, nm=flip_name: prior_fn(dt, sh, bs, tr, nm),
@@ -129,7 +129,7 @@ class Plugin(BaseBayesianKerasPredictor):
             )
             bayes = Lambda(lambda t, fl=flip_layer: fl(t), name=f"bayes_out{suf}")(lstm_out)
             bias = Dense(16, activation="relu", kernel_initializer=random_normal_initializer_44, name=f"bias{suf}")(lstm_out)
-            bias = Dense(1, activation="linear", kernel_initializer=random_normal_initializer_44, name=f"bias{suf}")(lstm_out)
+            bias = Dense(1, kernel_initializer=random_normal_initializer_44, name=f"bias{suf}")(bias)
             out = Add(name=f"output_horizon_{horizon}")([bayes, bias])
             outputs.append(out)
             self.output_names.append(f"output_horizon_{horizon}")
