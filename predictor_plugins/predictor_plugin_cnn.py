@@ -131,7 +131,7 @@ class Plugin(BaseBayesianKerasPredictor):
             #bayes = Lambda(lambda t, fl=flip_layer: fl(t), name=f"bayes_out{suf}")(lstm_out)
 
             bias = Dense(16, activation="relu", kernel_initializer=random_normal_initializer_44, name=f"bias_0_{suf}")(lstm_out)
-            bias = Dense(1, activation="linear",kernel_initializer=random_normal_initializer_44, name=f"bias{suf}")(bias)
+            bias = Dense(1, activation="linear",kernel_initializer=random_normal_initializer_44, name=f"output_horizon_{horizon}")(bias)
             #out = Add(name=f"output_horizon_{horizon}")([bayes, bias])
             out = bias
             outputs.append(out)
