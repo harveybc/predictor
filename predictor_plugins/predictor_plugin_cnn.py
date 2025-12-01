@@ -72,7 +72,7 @@ class Plugin(BaseBayesianKerasPredictor):
             filters=filters_i,
             kernel_size=3,
             strides=2,
-            padding="same",
+            padding="causal",
             activation=act,
             kernel_regularizer=l2(l2_reg_v),
             name=f"conv_{i+1}",
