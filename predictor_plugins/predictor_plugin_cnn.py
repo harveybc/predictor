@@ -115,9 +115,9 @@ class Plugin(BaseBayesianKerasPredictor):
             last_head_filters = head_sizes[-1]
             lstm_total_units = max(8, last_head_filters // 2)
             lstm_out = Bidirectional(
-            LSTM(max(1, lstm_total_units // 2), return_sequences=False),
-            name=f"bilstm{suf}",
-            )(h_in)
+                LSTM(max(1, lstm_total_units // 2), return_sequences=False),
+                name=f"bilstm{suf}",
+                )(h_in)
             flip_name = f"flipout{suf}"
             flip_name_2 = f"flipout_2_{suf}"
             flip_layer = DenseFlipout(
@@ -128,11 +128,12 @@ class Plugin(BaseBayesianKerasPredictor):
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=flip_name,
             )
-            bayes = Lambda(lambda t, fl=flip_layer: fl(t), name=f"bayes_out{suf}")(lstm_out)
+            #bayes = Lambda(lambda t, fl=flip_layer: fl(t), name=f"bayes_out{suf}")(lstm_out)
 
             bias = Dense(16, activation="relu", kernel_initializer=random_normal_initializer_44, name=f"bias_0_{suf}")(lstm_out)
             bias = Dense(1, activation="linear",kernel_initializer=random_normal_initializer_44, name=f"bias{suf}")(bias)
-            out = Add(name=f"output_horizon_{horizon}")([bayes, bias])
+            #out = Add(name=f"output_horizon_{horizon}")([bayes, bias])
+            out = bias
             outputs.append(out)
             self.output_names.append(f"output_horizon_{horizon}")
         self.model = Model(inputs=inputs, outputs=outputs, name=f"CNNPredictor_{len(ph)}H")
