@@ -136,7 +136,7 @@ class Plugin(BaseBayesianKerasPredictor):
                 kernel_divergence_fn=lambda q, p, _: tfp.distributions.kl_divergence(q, p) * KL_WEIGHT,
                 name=flip_name_2,
             )
-            bayes = Lambda(lambda t, fl=flip_layer_2: fl(t), name=f"bayes_out{suf}")(lstm_out)
+            bayes = Lambda(lambda t, fl=flip_layer_2: fl(t), name=f"bayes_out_2{suf}")(lstm_out)
             bayes = Lambda(lambda t, fl=flip_layer: fl(t), name=f"bayes_out{suf}")(bayes)
             bias = Dense(16, activation="relu", kernel_initializer=random_normal_initializer_44, name=f"bias_0_{suf}")(lstm_out)
             bias = Dense(1, kernel_initializer=random_normal_initializer_44, name=f"bias{suf}")(bias)
