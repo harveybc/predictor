@@ -120,7 +120,7 @@ class Plugin(BaseBayesianKerasPredictor):
             )(h_in)
             flip_name = f"flipout{suf}"
             flip_layer = DenseFlipout(
-                units=16,
+                units=1,
                 activation="relu",
                 kernel_posterior_fn=lambda dt, sh, bs, tr, nm=flip_name: posterior_mean_field(dt, sh, bs, tr, nm),
                 kernel_prior_fn=lambda dt, sh, bs, tr, nm=flip_name: prior_fn(dt, sh, bs, tr, nm),
