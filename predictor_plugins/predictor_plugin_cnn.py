@@ -5,6 +5,7 @@ Concrete plugin now only implements build_model & parameter lists; all training,
 metrics, persistence, and MC uncertainty logic are inherited.
 """
 from __future__ import annotations
+import sys
 import tensorflow as tf, tensorflow_probability as tfp
 from tensorflow.keras.layers import Input, Dense, Lambda, Bidirectional, LSTM, Add, Conv1D
 from tensorflow.keras.regularizers import l2
@@ -38,6 +39,27 @@ class Plugin(BaseBayesianKerasPredictor):
     ]
 
     def build_model(self, input_shape, x_train, config):
+        # Ensure GPU is available
+        gpus = tf.config.list_physical_devices('GPU')
+        if not gpus:
+            print("\n" + "="*80)
+            print("CRITICAL ERROR: No GPU detected by TensorFlow!")
+            print("="*80)
+            print("The application requires a GPU to run. Please check:")
+            print("1. NVIDIA drivers are installed and up to date.")
+            print("2. CUDA and cuDNN are installed and compatible with TensorFlow.")
+            print("3. The 'tensorflow' or 'tensorflow-gpu' package is correctly installed.")
+            print(f"Current TensorFlow version: {tf.__version__}")
+            print("="*80 + "\n")
+            sys.exit(1)
+        else:
+            print(f"GPU initialized: {len(gpus)} device(s) found.")
+            try:
+                for gpu in gpus:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+            except RuntimeError as e:
+                print(f"Notice: Memory growth setting failed (usually harmless if already initialized): {e}")
+
         if config:
             self.params.update(config)
         w, c = input_shape
