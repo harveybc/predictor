@@ -31,7 +31,7 @@ class STLPreprocessorZScore:
     # New: optional multi-scale returns augmentation (causal, within-window)
     "add_multi_scale_returns": False,
     "multi_scale_return_periods": [6, 24, 72],
-    "use_log1p_features": []
+    "use_log1p_features": ["typical_price"],
     }
     
     plugin_debug_vars = ["window_size", "predicted_horizons", "target_column", "use_log1p_features"]
