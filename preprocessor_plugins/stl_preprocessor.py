@@ -147,16 +147,15 @@ class STLPreprocessorZScore:
                 # Check if data is not empty and has correct dimensions
                 if hasattr(data, 'shape') and len(data.shape) == 3:
                     # data shape: (samples, window_size, features)
-                    # Apply log1p in place
-                    # We use np.log1p which is log(1 + x)
                     
-                    # Check for potential issues
-                    min_val = np.min(data[..., indices])
-                    if min_val <= -1:
-                        print(f"  WARNING: Feature values <= -1 detected (min: {min_val}) for {key} in selected features. np.log1p will produce NaNs/Infs.")
+                    # Use symmetric log1p: sign(x) * log1p(|x|)
+                    # This handles negative values (common in normalized data) without losing information
+                    # or causing NaNs for values <= -1.
                     
-                    sliding_windows[key][..., indices] = np.log1p(data[..., indices])
-                    print(f"  Applied log1p to {key}")
+                    features_data = data[..., indices]
+                    sliding_windows[key][..., indices] = np.sign(features_data) * np.log1p(np.abs(features_data))
+                    
+                    print(f"  Applied symmetric log1p (sign(x)*log1p(|x|)) to {key} to handle negative normalized values")
                 else:
                     print(f"  Skipping {key}: Invalid shape or type")
 
