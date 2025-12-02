@@ -30,10 +30,11 @@ class STLPreprocessorZScore:
     "reverse_time_axis": False,
     # New: optional multi-scale returns augmentation (causal, within-window)
     "add_multi_scale_returns": False,
-    "multi_scale_return_periods": [6, 24, 72]
+    "multi_scale_return_periods": [6, 24, 72],
+    "use_log1p_features": []
     }
     
-    plugin_debug_vars = ["window_size", "predicted_horizons", "target_column"]
+    plugin_debug_vars = ["window_size", "predicted_horizons", "target_column", "use_log1p_features"]
 
     # Start of plugin interface methods    
     def __init__(self):
@@ -89,6 +90,9 @@ class STLPreprocessorZScore:
             print("Step 6: Create second sliding windows from normalized data")
             final_sliding_windows = create_sliding_windows(normalized_data, config, dates)
 
+            # 6b. Apply log1p to specified features
+            self._apply_log1p_to_features(final_sliding_windows, config)
+
             # 7. Align final sliding windows with target data length
             print("Step 7: Align sliding windows with target data")
             final_sliding_windows = self._align_sliding_windows_with_targets(final_sliding_windows, targets, config)
@@ -109,6 +113,52 @@ class STLPreprocessorZScore:
         except Exception as e:
             print(f"ERROR in process_data: {e}")
             raise
+
+    def _apply_log1p_to_features(self, sliding_windows, config):
+        """Apply np.log1p to specified features in the sliding windows."""
+        features_to_log = config.get("use_log1p_features", [])
+        if not features_to_log:
+            return
+
+        print(f"Step 6b: Applying log1p to features: {features_to_log}")
+        
+        feature_names = sliding_windows.get('feature_names', [])
+        if not feature_names:
+            print("  WARNING: No feature names found in sliding windows, cannot apply log1p")
+            return
+
+        # Find indices for the features
+        indices = []
+        found_features = []
+        for i, name in enumerate(feature_names):
+            if name in features_to_log:
+                indices.append(i)
+                found_features.append(name)
+        
+        if not indices:
+            print(f"  WARNING: None of the requested features {features_to_log} found in dataset features")
+            return
+            
+        print(f"  Found features at indices {indices}: {found_features}")
+
+        for key in ['X_train', 'X_val', 'X_test']:
+            if key in sliding_windows:
+                data = sliding_windows[key]
+                # Check if data is not empty and has correct dimensions
+                if hasattr(data, 'shape') and len(data.shape) == 3:
+                    # data shape: (samples, window_size, features)
+                    # Apply log1p in place
+                    # We use np.log1p which is log(1 + x)
+                    
+                    # Check for potential issues
+                    min_val = np.min(data[..., indices])
+                    if min_val <= -1:
+                        print(f"  WARNING: Feature values <= -1 detected (min: {min_val}) for {key} in selected features. np.log1p will produce NaNs/Infs.")
+                    
+                    sliding_windows[key][..., indices] = np.log1p(data[..., indices])
+                    print(f"  Applied log1p to {key}")
+                else:
+                    print(f"  Skipping {key}: Invalid shape or type")
 
     def _align_sliding_windows_with_targets(self, sliding_windows, targets, config):
         """Align sliding windows with target data to ensure same number of samples."""

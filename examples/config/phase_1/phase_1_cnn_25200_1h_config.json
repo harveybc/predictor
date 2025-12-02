@@ -36,6 +36,7 @@
     "start_from_epoch": 15,
     "use_returns": false,
     "use_log1p_targets": true,
+    "use_log1p_features": ["typical_price"],
     "mc_samples":20,
     "plotted_horizon": 24,
     "mmd_lambda": 1e-2,
