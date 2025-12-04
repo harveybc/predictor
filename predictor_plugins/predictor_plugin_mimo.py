@@ -4,328 +4,348 @@
 """
 predictor_plugin_mimo.py
 
-Plugin de predictor MIMO multi-horizonte para el sistema actual.
-
-Arquitectura:
-  - Encoder compartido:
-      * Conv1D stack (causal) + BiLSTM + GlobalAveragePooling1D
-      * produce un embedding global z_global de la ventana
-  - Decoder de horizontes:
-      * Embeddings de horizonte
-      * Concatenación z_global ⊕ embedding_horizonte
-      * Bloque de MultiHeadAttention sobre el eje horizonte
-      * MLP final compartida para producir un escalar por horizonte
-      * Se generan salidas con nombres "output_horizon_{h}" compatibles
-        con el target plugin, preprocesador y pipeline actuales.
-
-Esta clase respeta la interfaz de BaseBayesianKerasPredictor:
-  - plugin_params
-  - plugin_debug_vars
-  - build_model(input_shape, x_train, config)
-
-No modifica el pipeline ni el preprocesador existentes.
+Plugin de predictor MIMO multi-horizonte compatible con tu sistema actual.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # Habilita anotaciones de tipos hacia adelante
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple  # Tipos para anotaciones
 
-import tensorflow as tf
+import tensorflow as tf  # Import principal de TensorFlow
+
+# Import de capas Keras necesarias para la arquitectura
 from tensorflow.keras.layers import (
-    Input,
-    Dense,
-    Lambda,
-    Bidirectional,
-    LSTM,
-    GlobalAveragePooling1D,
-    LayerNormalization,
-    Dropout,
-    Add,
-    Concatenate,
-    MultiHeadAttention,
+    Input,                     # Capa de entrada del modelo
+    Dense,                     # Capa densa estándar
+    Lambda,                    # Capa Lambda para operaciones personalizadas
+    Bidirectional,             # Wrapper para LSTM bidireccional
+    LSTM,                      # Capa LSTM
+    GlobalAveragePooling1D,    # Pooling promedio global sobre eje temporal
+    LayerNormalization,        # Normalización por capas
+    Dropout,                   # Dropout para regularización
+    Add,                       # Suma residual
+    Concatenate,               # Concatenación de tensores
+    MultiHeadAttention,        # Atención multi-cabeza
 )
-from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import AdamW
-from tensorflow.keras.regularizers import l2
+from tensorflow.keras.models import Model            # Clase base de modelos Keras
+from tensorflow.keras.optimizers import AdamW        # Optimizador AdamW
+from tensorflow.keras.regularizers import l2         # Regularizador L2
 
-from .common.base import BaseBayesianKerasPredictor
-from .common.positional_encoding import positional_encoding
-from .common.losses import mae_magnitude
+# Imports de utilidades del propio proyecto
+from .common.base import BaseBayesianKerasPredictor  # Clase base de predictores bayesianos
+from .common.positional_encoding import positional_encoding  # Codificación posicional existente
+from .common.losses import mae_magnitude             # Métrica MAE específica del proyecto
 
 
 class Plugin(BaseBayesianKerasPredictor):
     """
-    Plugin MIMO multi-horizonte para tu sistema de predicción.
+    Plugin MIMO multi-horizonte.
 
-    - Construye un modelo único con un encoder compartido para todas las salidas.
-    - Implementa un decoder de horizontes basado en embeddings de horizonte
-      y un bloque de atención multi-cabeza sobre el eje horizonte.
-    - Genera una salida por horizonte con nombre "output_horizon_{h}" para
-      mantener compatibilidad con el target plugin, preprocesador y pipeline.
+    - Encoder compartido: stack Conv1D + BiLSTM + GlobalAveragePooling1D.
+    - Decoder de horizontes: embeddings de horizonte + MultiHeadAttention + MLP.
+    - Salidas: una por horizonte, con nombre "output_horizon_{h}".
     """
 
+    # Diccionario de parámetros del plugin (pueden sobreescribirse desde config JSON)
     plugin_params: Dict[str, Any] = {
-        # Entrenamiento
-        "batch_size": 32,
-        "learning_rate": 1e-3,
+        # Parámetros de entrenamiento
+        "batch_size": 32,                 # Tamaño de batch por defecto
+        "learning_rate": 1e-3,            # Tasa de aprendizaje para AdamW
 
-        # Encoder
-        "encoder_conv_layers": 2,
-        "encoder_base_filters": 64,
-        "encoder_lstm_units": 64,
+        # Hiperparámetros del encoder
+        "encoder_conv_layers": 2,         # Número de capas Conv1D en el encoder
+        "encoder_base_filters": 64,       # Filtros de la primera capa Conv1D
+        "encoder_lstm_units": 64,         # Unidades de la BiLSTM
 
-        # Decoder de horizontes
-        "horizon_embedding_dim": 16,
-        "horizon_attn_heads": 4,
-        "horizon_attn_key_dim": 32,
-        "decoder_dropout": 0.1,
+        # Hiperparámetros del decoder de horizontes
+        "horizon_embedding_dim": 16,      # Dimensión de los embeddings de horizonte
+        "horizon_attn_heads": 4,          # Nº de cabezas de MultiHeadAttention
+        "horizon_attn_key_dim": 32,       # Dimensión de clave en MultiHeadAttention
+        "decoder_dropout": 0.1,           # Dropout en el bloque de decoder
 
-        # Regularización / activación
-        "activation": "relu",
-        "l2_reg": 1e-6,
+        # Regularización y activación
+        "activation": "relu",             # Nombre de la activación principal
+        "l2_reg": 1e-6,                   # Coeficiente de regularización L2
 
-        # Se sobreescribe desde el JSON
-        "predicted_horizons": [1],
+        # Lista de horizontes (se sobreescribe desde el JSON de config)
+        "predicted_horizons": [1],        # Placeholder, se reemplaza por la lista real
 
-        # Positional encoding opcional (mismo patrón que el CNN)
-        "positional_encoding": False,
+        # Positional encoding opcional (como en el plugin CNN)
+        "positional_encoding": False,     # Si True, se suma encoding posicional a la entrada
     }
 
+    # Variables de depuración que se pueden inspeccionar desde fuera
     plugin_debug_vars: List[str] = [
-        "batch_size",
-        "learning_rate",
-        "encoder_conv_layers",
-        "encoder_base_filters",
-        "encoder_lstm_units",
-        "horizon_embedding_dim",
-        "horizon_attn_heads",
-        "horizon_attn_key_dim",
-        "decoder_dropout",
-        "activation",
-        "l2_reg",
-        "predicted_horizons",
-        "positional_encoding",
+        "batch_size",                     # Tamaño de batch
+        "learning_rate",                  # Tasa de aprendizaje
+        "encoder_conv_layers",            # Nº de capas Conv1D
+        "encoder_base_filters",           # Filtros base de Conv1D
+        "encoder_lstm_units",             # Unidades de BiLSTM
+        "horizon_embedding_dim",          # Dim embeddings de horizonte
+        "horizon_attn_heads",             # Nº cabezas de atención
+        "horizon_attn_key_dim",           # Dimensión de clave atención
+        "decoder_dropout",                # Dropout en decoder
+        "activation",                     # Activación usada
+        "l2_reg",                         # Regularización L2
+        "predicted_horizons",             # Lista de horizontes
+        "positional_encoding",            # Flag de positional encoding
     ]
 
     def build_model(
         self,
-        input_shape: Tuple[int, int],
-        x_train: Any,
-        config: Dict[str, Any],
+        input_shape: Tuple[int, int],     # Forma de entrada: (window_size, num_features)
+        x_train: Any,                     # Datos de entrenamiento (no se usan aquí)
+        config: Dict[str, Any],           # Config global (contiene parámetros de plugin)
     ) -> None:
         """
-        Construye y compila el modelo Keras MIMO para el predictor.
+        Construye y compila el modelo MIMO.
 
         Parameters
         ----------
-        input_shape : Tuple[int, int]
-            (window_size, num_features).
+        input_shape : tuple
+            Tupla (window_size, num_features).
         x_train : Any
-            Datos de entrenamiento (no usado directamente, se mantiene por compatibilidad).
-        config : Dict[str, Any]
-            Configuración global; se mezcla con plugin_params.
+            Datos de entrenamiento (no usados aquí, se mantiene por interfaz).
+        config : dict
+            Configuración global; se mezcla con los parámetros del plugin.
         """
-        # Mezclar parámetros de config con los del plugin (mismo patrón que cnn)
-        if config:
-            self.params.update(config)
+        # Mezcla parámetros de config en self.params (mismo patrón que plugin CNN)
+        if config:  # Si hay config externa
+            self.params.update(config)  # Actualiza diccionario interno de parámetros
 
-        window_size, num_features = input_shape
+        # Desempaqueta la forma de entrada
+        window_size, num_features = input_shape  # Largo de ventana y nº de features
 
-        # Lista de horizontes, ordenada
-        horizons: List[int] = list(self.params.get("predicted_horizons", []))
-        if not horizons:
+        # Obtiene la lista de horizontes desde parámetros
+        horizons: List[int] = list(self.params.get("predicted_horizons", []))  # Copia lista
+        if not horizons:  # Si la lista está vacía, es un error
             raise ValueError(
                 "MIMO predictor: 'predicted_horizons' vacío; "
                 "debes definir al menos un horizonte en la configuración."
             )
-        horizons = sorted(horizons)
+        horizons = sorted(horizons)  # Ordena los horizontes de menor a mayor
 
-        activation_name: str = self.params.get("activation", "relu")
-        l2_reg_value: float = float(self.params.get("l2_reg", 1e-6))
+        # Obtiene nombre de activación principal
+        activation_name: str = self.params.get("activation", "relu")  # Activación
+        # Obtiene valor de regularización L2
+        l2_reg_value: float = float(self.params.get("l2_reg", 1e-6))  # L2
 
         # ------------------------------------------------------------------ #
-        # 1) Entrada                                                        #
+        # 1) Capa de entrada                                                 #
         # ------------------------------------------------------------------ #
-        inputs = Input(shape=(window_size, num_features), name="input_window")
+        inputs = Input(                       # Define capa de entrada
+            shape=(window_size, num_features),  # Forma (T, d)
+            name="input_window",              # Nombre de la capa de entrada
+        )
 
-        # Positional encoding opcional (mismo estilo que cnn)
-        if self.params.get("positional_encoding", False):
-            pe = positional_encoding(window_size, num_features)
-            x = Lambda(
-                lambda t, pe=pe: t + pe,
-                name="add_positional_encoding",
-            )(inputs)
+        # ------------------------------------------------------------------ #
+        # 2) Positional encoding opcional                                   #
+        # ------------------------------------------------------------------ #
+        if self.params.get("positional_encoding", False):  # Si se activa positional encoding
+            pe = positional_encoding(window_size, num_features)  # Obtiene tensor de encoding
+            x = Lambda(                    # Crea capa Lambda para sumar encoding
+                lambda t, pe=pe: t + pe,  # Suma entrada + encoding posicional
+                name="add_positional_encoding",  # Nombre de capa Lambda
+            )(inputs)                      # Aplica a inputs
         else:
-            x = inputs
+            x = inputs                     # Si no se usa encoding, x = inputs
 
         # ------------------------------------------------------------------ #
-        # 2) Encoder compartido: Conv1D stack + BiLSTM + Global Pool        #
+        # 3) Encoder compartido: Conv1D stack + BiLSTM + Global Pool        #
         # ------------------------------------------------------------------ #
-        num_conv_layers: int = int(self.params.get("encoder_conv_layers", 2))
-        base_filters: int = int(self.params.get("encoder_base_filters", 64))
+        num_conv_layers: int = int(self.params.get("encoder_conv_layers", 2))  # Nº capas Conv1D
+        base_filters: int = int(self.params.get("encoder_base_filters", 64))   # Filtros base
 
-        for layer_idx in range(num_conv_layers):
-            filters = max(8, base_filters // (2 ** layer_idx))
-            x = tf.keras.layers.Conv1D(
-                filters=filters,
-                kernel_size=3,
-                padding="causal",
-                activation=activation_name,
-                kernel_regularizer=l2(l2_reg_value),
-                name=f"enc_conv_{layer_idx+1}",
-            )(x)
+        # Bucle de capas Conv1D para capturar patrones locales
+        for layer_idx in range(num_conv_layers):           # Itera sobre capas Conv1D
+            filters = max(8, base_filters // (2 ** layer_idx))  # Filtros decrecientes
+            x = tf.keras.layers.Conv1D(                    # Crea capa Conv1D
+                filters=filters,                           # Nº filtros
+                kernel_size=3,                             # Tamaño de kernel
+                padding="causal",                          # Padding causal (no mira futuro)
+                activation=activation_name,                # Activación elegida
+                kernel_regularizer=l2(l2_reg_value),       # Regularización L2
+                name=f"enc_conv_{layer_idx+1}",            # Nombre con índice
+            )(x)                                           # Aplica la capa a x
 
-        lstm_units: int = int(self.params.get("encoder_lstm_units", 64))
+        lstm_units: int = int(self.params.get("encoder_lstm_units", 64))  # Unidades BiLSTM
 
-        x_seq = Bidirectional(
-            LSTM(
-                lstm_units,
-                return_sequences=True,
-                name="enc_lstm",
+        # Capa BiLSTM para capturar dependencias temporales hacia adelante y atrás
+        x_seq = Bidirectional(               # Wrapper bidireccional
+            LSTM(                            # Capa LSTM interna
+                lstm_units,                  # Nº unidades
+                return_sequences=True,       # Devuelve secuencia completa
+                name="enc_lstm",             # Nombre de LSTM
             ),
-            name="enc_bilstm",
-        )(x)
+            name="enc_bilstm",               # Nombre del wrapper bidireccional
+        )(x)                                 # Aplica a secuencia x
 
-        z_global = GlobalAveragePooling1D(name="enc_global_avg_pool")(x_seq)
+        # Pooling promedio global sobre el eje temporal → embedding global z_global
+        z_global = GlobalAveragePooling1D(   # Capa de pooling promedio global
+            name="enc_global_avg_pool",      # Nombre de la capa
+        )(x_seq)                             # Aplica a secuencia LSTM
 
         # ------------------------------------------------------------------ #
-        # 3) Tokens de horizonte (embeddings + réplica por batch)           #
+        # 4) Tokens de horizonte: embeddings + réplica por batch            #
         # ------------------------------------------------------------------ #
-        num_horizons: int = len(horizons)
-        max_horizon: int = int(max(horizons))
-        horizon_emb_dim: int = int(self.params.get("horizon_embedding_dim", 16))
+        num_horizons: int = len(horizons)    # Nº de horizontes
+        max_horizon: int = int(max(horizons))  # Horizonte máximo
+        horizon_emb_dim: int = int(self.params.get("horizon_embedding_dim", 16))  # Dim embeddings
 
-        # Constante con ids de horizonte, e.g. [4, 8, 12, ...]
-        horizon_ids = tf.constant(horizons, dtype=tf.int32, name="horizon_ids")
+        # Tensor constante con IDs de horizonte (e.g. [4, 8, 12, ...])
+        horizon_ids = tf.constant(
+            horizons,                        # Lista de horizontes
+            dtype=tf.int32,                  # Tipo entero
+            name="horizon_ids",              # Nombre del tensor
+        )
 
+        # Capa Embedding de horizonte: input_dim = max_horizon+1 (seguro)
         horizon_embedding_layer = tf.keras.layers.Embedding(
-            input_dim=max_horizon + 1,
-            output_dim=horizon_emb_dim,
-            name="horizon_embedding",
+            input_dim=max_horizon + 1,       # Rango de posibles horizontes
+            output_dim=horizon_emb_dim,      # Dimensión del embedding
+            name="horizon_embedding",        # Nombre de la capa
         )
 
-        # (num_horizons, horizon_emb_dim)
-        horizon_embs = horizon_embedding_layer(horizon_ids)
+        # Aplica embedding a IDs de horizonte: forma (num_horizons, horizon_emb_dim)
+        horizon_embs = horizon_embedding_layer(horizon_ids)  # Embeddings por horizonte
 
-        # (1, num_horizons, horizon_emb_dim)
+        # Expande dimensión batch: forma (1, num_horizons, horizon_emb_dim)
         horizon_embs_expanded = Lambda(
-            lambda e: tf.expand_dims(e, axis=0),
-            name="expand_horizon_embs",
-        )(horizon_embs)
+            lambda e: tf.expand_dims(e, axis=0),            # Añade dimensión batch=1
+            name="expand_horizon_embs",                     # Nombre capa Lambda
+        )(horizon_embs)                                    # Aplica a embeddings
 
-        # CORRECCIÓN: usar z_global como input de la Lambda para obtener el batch_size
-        # (batch, num_horizons, horizon_emb_dim)
+        # Replica embeddings a lo largo del batch usando z_global para conocer batch_size
         horizon_embs_tiled = Lambda(
-            lambda tensors: tf.tile(
-                tensors[0],
-                [tf.shape(tensors[1])[0], 1, 1],
+            lambda tensors: tf.tile(                        # tile a lo largo del batch
+                tensors[0],                                 # tensor de embeddings expandido
+                [tf.shape(tensors[1])[0], 1, 1],            # [batch_size, num_horizons, emb_dim]
             ),
-            name="tile_horizon_embs",
-        )([horizon_embs_expanded, z_global])
+            name="tile_horizon_embs",                       # Nombre de capa Lambda
+        )([horizon_embs_expanded, z_global])                # Entradas: embeddings y z_global
 
-        # Expansión de z_global a (batch, 1, latent_dim)
+        # Expande z_global a forma (batch, 1, latent_dim)
         z_expanded = Lambda(
-            lambda z: tf.expand_dims(z, axis=1),
-            name="expand_global",
-        )(z_global)
+            lambda z: tf.expand_dims(z, axis=1),            # Inserta eje horizonte
+            name="expand_global",                           # Nombre de capa Lambda
+        )(z_global)                                         # Aplica a z_global
 
-        # Réplica de z_global a lo largo de los horizontes: (batch, num_horizons, latent_dim)
+        # Replica z_global para cada horizonte: (batch, num_horizons, latent_dim)
         z_tiled = Lambda(
-            lambda z: tf.tile(z, [1, num_horizons, 1]),
-            name="tile_global",
-        )(z_expanded)
+            lambda z: tf.tile(                              # tile en eje horizonte
+                z,                                          # tensor expandido
+                [1, num_horizons, 1],                       # [batch, num_horizons, latent_dim]
+            ),
+            name="tile_global",                             # Nombre de capa Lambda
+        )(z_expanded)                                       # Aplica a z_expanded
 
-        # Concatena z_global y el embedding de horizonte en el eje de features
+        # Concatena z_global replicado y embeddings de horizonte en el eje de features
         horizon_tokens = Concatenate(
-            axis=-1,
-            name="concat_global_horizon",
-        )([z_tiled, horizon_embs_tiled])
+            axis=-1,                                        # Concatena en la última dimensión
+            name="concat_global_horizon",                   # Nombre de la capa
+        )([z_tiled, horizon_embs_tiled])                    # Entradas: z_tiled y embeddings
 
         # ------------------------------------------------------------------ #
-        # 4) Bloque de atención multi-cabeza + FFN sobre horizonte          #
+        # 5) Bloque de atención multi-cabeza + FFN sobre horizontes         #
         # ------------------------------------------------------------------ #
-        attn_heads: int = int(self.params.get("horizon_attn_heads", 4))
-        attn_key_dim: int = int(self.params.get("horizon_attn_key_dim", 32))
-        decoder_dropout: float = float(self.params.get("decoder_dropout", 0.1))
+        attn_heads: int = int(self.params.get("horizon_attn_heads", 4))   # Nº cabezas atención
+        attn_key_dim: int = int(self.params.get("horizon_attn_key_dim", 32))  # Dim clave
+        decoder_dropout: float = float(self.params.get("decoder_dropout", 0.1))  # Dropout
 
+        # MultiHeadAttention sobre el eje horizonte: Q=K=V=horizon_tokens
         attn_output = MultiHeadAttention(
-            num_heads=attn_heads,
-            key_dim=attn_key_dim,
-            name="horizon_mha",
-        )(horizon_tokens, horizon_tokens)
+            num_heads=attn_heads,                           # Nº cabezas
+            key_dim=attn_key_dim,                           # Dimensión de clave
+            name="horizon_mha",                             # Nombre de la capa
+        )(horizon_tokens, horizon_tokens)                   # Q y K/V son horizon_tokens
 
-        horizon_tokens_res = Add(name="horizon_attn_residual")(
-            [horizon_tokens, attn_output]
-        )
+        # Conexión residual: tokens originales + salida de atención
+        horizon_tokens_res = Add(
+            name="horizon_attn_residual",                   # Nombre de capa de suma
+        )([horizon_tokens, attn_output])                    # Suma elementos
 
-        horizon_tokens_norm = LayerNormalization(name="horizon_attn_ln")(
-            horizon_tokens_res
-        )
+        # Normalización por capas tras atención
+        horizon_tokens_norm = LayerNormalization(
+            name="horizon_attn_ln",                         # Nombre de la capa
+        )(horizon_tokens_res)                               # Aplica LN
 
+        # Bloque feed-forward (MLP) sobre cada token de horizonte
         ff_dense = Dense(
-            units=horizon_tokens_norm.shape[-1],
-            activation=activation_name,
-            kernel_regularizer=l2(l2_reg_value),
-            name="horizon_ffn_dense",
-        )(horizon_tokens_norm)
+            units=horizon_tokens_norm.shape[-1],            # Igual dim que tokens
+            activation=activation_name,                     # Activación principal
+            kernel_regularizer=l2(l2_reg_value),            # L2 para regularización
+            name="horizon_ffn_dense",                       # Nombre capa densa
+        )(horizon_tokens_norm)                              # Aplica a tokens normalizados
 
-        ff_dense = Dropout(decoder_dropout, name="horizon_ffn_dropout")(ff_dense)
+        # Dropout en el bloque FFN
+        ff_dense = Dropout(
+            decoder_dropout,                                # Probabilidad de dropout
+            name="horizon_ffn_dropout",                     # Nombre de la capa
+        )(ff_dense)                                         # Aplica a salida de densa
 
-        horizon_tokens_ffn_res = Add(name="horizon_ffn_residual")(
-            [horizon_tokens_norm, ff_dense]
-        )
+        # Conexión residual FFN: tokens_norm + salida_ffa
+        horizon_tokens_ffn_res = Add(
+            name="horizon_ffn_residual",                    # Nombre de capa de suma
+        )([horizon_tokens_norm, ff_dense])                  # Suma residual
 
+        # Normalización final tras FFN
         horizon_tokens_final = LayerNormalization(
-            name="horizon_ffn_ln",
-        )(horizon_tokens_ffn_res)
+            name="horizon_ffn_ln",                          # Nombre de LN final
+        )(horizon_tokens_ffn_res)                           # Aplica a residual
 
         # ------------------------------------------------------------------ #
-        # 5) Cabeza de salida MIMO: 1 escalar por horizonte                 #
+        # 6) Cabeza de salida MIMO: 1 escalar por horizonte (batch, 1)      #
         # ------------------------------------------------------------------ #
         horizon_outputs = Dense(
-            units=1,
-            activation=None,
-            name="horizon_output_dense",
-        )(horizon_tokens_final)
+            units=1,                                        # Un valor por horizonte
+            activation=None,                                # Sin activación (regresión)
+            name="horizon_output_dense",                    # Nombre de capa final MIMO
+        )(horizon_tokens_final)                             # Aplica a tokens finales
 
-        outputs: List[tf.Tensor] = []
-        self.output_names: List[str] = []
+        outputs: List[tf.Tensor] = []                       # Lista de salidas por horizonte
+        self.output_names: List[str] = []                   # Lista de nombres de salida
 
-        for idx, h in enumerate(horizons):
+        # Genera una salida por horizonte, manteniendo forma (batch, 1)
+        for idx, h in enumerate(horizons):                  # Itera sobre índices y horizontes
             out_i = Lambda(
-                lambda t, i=idx: tf.squeeze(t[:, i, :], axis=-1),
-                name=f"output_horizon_{h}",
-            )(horizon_outputs)
+                lambda t, i=idx: t[:, i, :],                # Slice: mantiene eje final (batch,1)
+                name=f"output_horizon_{h}",                 # Nombre de capa de salida
+            )(horizon_outputs)                              # Aplica a tensor MIMO
 
-            outputs.append(out_i)
-            self.output_names.append(f"output_horizon_{h}")
+            outputs.append(out_i)                           # Añade salida a la lista
+            self.output_names.append(f"output_horizon_{h}") # Registra nombre de salida
 
         # ------------------------------------------------------------------ #
-        # 6) Modelo y compilación                                           #
+        # 7) Construcción y compilación del modelo                          #
         # ------------------------------------------------------------------ #
-        self.model = Model(
-            inputs=inputs,
-            outputs=outputs,
-            name=f"MIMOPredictor_{len(horizons)}H",
+        self.model = Model(                                 # Crea el modelo Keras
+            inputs=inputs,                                  # Entrada única
+            outputs=outputs,                                # Lista de salidas
+            name=f"MIMOPredictor_{len(horizons)}H",         # Nombre del modelo
         )
 
-        optimizer = AdamW(
-            learning_rate=float(self.params.get("learning_rate", 1e-3))
+        optimizer = AdamW(                                  # Crea optimizador AdamW
+            learning_rate=float(self.params.get("learning_rate", 1e-3)),  # LR
         )
 
+        # Diccionario de pérdidas: MAE por cada salida
         loss_dict: Dict[str, Any] = {
-            name: tf.keras.losses.MeanAbsoluteError()
-            for name in self.output_names
+            name: tf.keras.losses.MeanAbsoluteError()       # MAE estándar
+            for name in self.output_names                   # Para cada salida
         }
 
+        # Diccionario de métricas: mae_magnitude por salida (consistencia con sistema)
         metrics_dict: Dict[str, List[Any]] = {
-            name: [mae_magnitude] for name in self.output_names
+            name: [mae_magnitude]                           # Lista de métricas
+            for name in self.output_names                   # Para cada salida
         }
 
+        # Compila el modelo con optimizador, pérdidas y métricas
         self.model.compile(
-            optimizer=optimizer,
-            loss=loss_dict,
-            metrics=metrics_dict,
+            optimizer=optimizer,                            # Optimizador AdamW
+            loss=loss_dict,                                 # Diccionario de pérdidas
+            metrics=metrics_dict,                           # Diccionario de métricas
         )
 
-        self.model.summary(line_length=140)
+        # Muestra resumen del modelo para depuración
+        self.model.summary(line_length=140)                 # Imprime summary en consola
