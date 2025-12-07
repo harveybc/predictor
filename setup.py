@@ -18,6 +18,7 @@ setup(
             'transformer=predictor_plugins.predictor_plugin_transformer:Plugin',
             'composite=predictor_plugins.predictor_plugin_composite:Plugin',
             'mimo=predictor_plugins.predictor_plugin_mimo:Plugin',
+            'stl_mimo=predictor_plugins.stl_mimo_predictor:Plugin',
             'base=predictor_plugin.predictor_plugin_base:Plugin'
         ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
@@ -27,7 +28,8 @@ setup(
         # Plugins para el Pipeline (orquestación del flujo completo)
         'pipeline.plugins': [
             'default_pipeline=pipeline_plugins.default_pipeline:PipelinePlugin',
-            'stl_pipeline=pipeline_plugins.stl_pipeline:STLPipelinePlugin'
+            'stl_pipeline=pipeline_plugins.stl_pipeline:STLPipelinePlugin',
+            'stl_decomposition_pipeline=pipeline_plugins.stl_decomposition_pipeline:STLPipelinePlugin'
         ],
         # Plugins para el Preprocesamiento (incluye process_data, ventanas deslizantes y STL)
         'preprocessor.plugins': [
@@ -36,7 +38,8 @@ setup(
         ],
         # Plugins para el Cálculo de Targets y Métricas
         'target.plugins': [
-            'default_target=target_plugins.default_target:TargetPlugin'
+            'default_target=target_plugins.default_target:TargetPlugin',
+            'stl_target=target_plugins.stl_target:TargetPlugin'
         ]   
     },
     install_requires=[
