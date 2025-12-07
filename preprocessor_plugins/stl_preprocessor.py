@@ -265,6 +265,11 @@ class STLPreprocessorZScore:
             "predicted_horizons": config['predicted_horizons'],
             "normalization_json": load_normalization_json(config),
         }
+
+        # Inject any additional keys from targets (e.g. decomposed components like y_train_trend)
+        for key, value in targets.items():
+            if key not in output:
+                output[key] = value
         
         # Print summary statistics
         print("\nPreprocessing Summary:")
