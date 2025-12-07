@@ -47,7 +47,7 @@
     ],
 
     "mc_samples": 20,
-    "plotted_horizon": 24,
+    "plotted_horizon": 6,
     "mmd_lambda": 1e-2,
 
     "window_size": 120,
