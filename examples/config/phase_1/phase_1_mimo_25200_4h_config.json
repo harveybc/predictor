@@ -42,7 +42,7 @@
     "start_from_epoch": 15,
 
     "use_returns": false,
-    "use_log1p_targets": true,
+    "use_log1p_targets": false,
     "use_log1p_features": [
         "typical_price"
     ],
