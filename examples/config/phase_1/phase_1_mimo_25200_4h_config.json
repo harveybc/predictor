@@ -24,8 +24,9 @@
     "preprocessor_plugin": "stl_preprocessor",
 
     "use_daily": false,
-    "max_steps_train": 50000,
-    "max_steps_test": 6300,
+    "max_steps_train": 7300,
+    "max_steps_val": 1575,
+    "max_steps_test": 1575,
 
     "intermediate_layers": 1,
     "initial_layer_size": 64,
