@@ -76,10 +76,10 @@
     "positional_encoding": true,
 
     "encoder_conv_layers": 1,
-    "encoder_base_filters": 32,
-    "encoder_lstm_units": 16,
-    "horizon_embedding_dim": 16,
+    "encoder_base_filters": 64,
+    "encoder_lstm_units": 32,
+    "horizon_embedding_dim": 32,
     "horizon_attn_heads": 2,
-    "horizon_attn_key_dim": 16,
+    "horizon_attn_key_dim": 32,
     "decoder_dropout": 0.0
 }
