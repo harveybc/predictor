@@ -34,14 +34,14 @@
 
     "learning_rate": 1e-3,
     "activation": "relu",
-    "l2_reg": 1e-4,
+    "l2_reg": 1e-6,
 
     "kl_weight": 1e-3,
     "kl_anneal_epochs": 40,
     "early_patience": 120,
     "start_from_epoch": 15,
 
-    "use_returns": false,
+    "use_returns": true,
     "use_log1p_targets": true,
     "use_log1p_features": [],
 

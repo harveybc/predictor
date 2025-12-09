@@ -110,7 +110,7 @@ class BaseKerasPredictor(BasePredictorPlugin):
 
     # --- Custom objects reused across all models ---
     def get_custom_objects(self):
-        use_returns = self.params.get('use_returns', False)
+        use_returns = self.params.get('use_log1p_targets', False)
         if use_returns:
             return {
                 'composite_loss': composite_loss,
