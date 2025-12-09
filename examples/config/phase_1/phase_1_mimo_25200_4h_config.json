@@ -49,7 +49,7 @@
     "plotted_horizon": 6,
     "mmd_lambda": 1e-2,
 
-    "window_size": 48,
+    "window_size": 12,
     "batch_size": 32,
 
     "plot_color_predicted": "red",
