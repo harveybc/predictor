@@ -42,7 +42,7 @@
     "start_from_epoch": 15,
 
     "use_returns": false,
-    "use_log1p_targets": false,
+    "use_log1p_targets": true,
     "use_log1p_features": [],
 
     "mc_samples": 20,
@@ -76,10 +76,10 @@
     "positional_encoding": true,
 
     "encoder_conv_layers": 2,
-    "encoder_base_filters": 128,
-    "encoder_lstm_units": 128,
+    "encoder_base_filters": 64,
+    "encoder_lstm_units": 32,
     "horizon_embedding_dim": 32,
-    "horizon_attn_heads": 4,
+    "horizon_attn_heads": 2,
     "horizon_attn_key_dim": 64,
-    "decoder_dropout": 0.1
+    "decoder_dropout": 0.01
 }
