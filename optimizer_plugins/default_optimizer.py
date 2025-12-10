@@ -136,7 +136,16 @@ class Plugin:
 
         # Función de evaluación: construye y entrena el modelo con los hiperparámetros dados,
         # devolviendo la pérdida de validación del último epoch.
+        
+        # Global counters for progress tracking
+        self.eval_counter = 0
+        self.current_gen = 0
+        self.best_fitness_so_far = float("inf")
+        self.patience_counter = 0
+        
         def eval_individual(individual):
+            self.eval_counter += 1
+            
             # Mapear el individuo a un diccionario de hiperparámetros.
             hyper_dict = {}
             for i, key in enumerate(hyper_keys):
@@ -156,7 +165,8 @@ class Plugin:
                 else:
                     hyper_dict[key] = value
 
-            print(f"Evaluating individual: {hyper_dict}")
+            print(f"\n--- Evaluating Candidate {self.eval_counter}/{population_size} (Gen {self.current_gen + 1}/{n_generations}) ---")
+            print(f"Params: {hyper_dict}")
 
             # Combinar los hiperparámetros con la configuración actual.
             new_config = config.copy()
@@ -185,9 +195,18 @@ class Plugin:
                     x_val=x_val, y_val=y_val, config=new_config
                 )
                 fitness = history.history["val_loss"][-1]
+                train_loss = history.history["loss"][-1]
+                print(f"Candidate Result -> Val Loss (MAE): {fitness:.6f} | Train Loss: {train_loss:.6f}")
             except Exception as e:
                 print(f"Training failed for individual {hyper_dict}: {e}")
                 fitness = float("inf")
+            
+            # Print optimization state
+            print(f"Optimization State:")
+            print(f"  Current Best Val Loss to Beat: {self.best_fitness_so_far:.6f}")
+            print(f"  Patience Counter: {self.patience_counter}/{patience}")
+            print(f"------------------------------------------------------------")
+            
             return (fitness,)
 
         # Custom mutation function to handle mixed types
@@ -224,6 +243,9 @@ class Plugin:
         
         # Custom optimization loop with early stopping
         # Evaluate the entire population
+        self.current_gen = 0
+        self.eval_counter = 0 # Reset for initial population
+        
         invalid_ind = [ind for ind in population if not ind.fitness.valid]
         fitnesses = map(toolbox.evaluate, invalid_ind)
         for ind, fit in zip(invalid_ind, fitnesses):
@@ -231,13 +253,15 @@ class Plugin:
             
         hof.update(population)
         
-        best_fitness = float("inf")
         if hof:
-            best_fitness = hof[0].fitness.values[0]
+            self.best_fitness_so_far = hof[0].fitness.values[0]
             
         no_improve_counter = 0
+        self.patience_counter = 0 # Sync with local var
         
         for gen in range(n_generations):
+            self.current_gen = gen + 1 # Update for logging
+            self.eval_counter = 0 # Reset per generation
             print(f"-- Generation {gen + 1}/{n_generations} --")
             
             # Select the next generation individuals
@@ -273,12 +297,14 @@ class Plugin:
             current_best = hof[0].fitness.values[0]
             print(f"  Best Val Loss: {current_best}")
             
-            if current_best < best_fitness:
-                best_fitness = current_best
+            if current_best < self.best_fitness_so_far:
+                self.best_fitness_so_far = current_best
                 no_improve_counter = 0
+                self.patience_counter = 0
                 print(f"  New best found!")
             else:
                 no_improve_counter += 1
+                self.patience_counter = no_improve_counter
                 print(f"  No improvement for {no_improve_counter} generations.")
                 
             if no_improve_counter >= patience:
