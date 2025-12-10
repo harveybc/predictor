@@ -17,6 +17,7 @@ import random
 import numpy as np
 import time
 from deap import base, creator, tools, algorithms
+from app.plugin_loader import load_plugin
 
 class Plugin:
     # Parámetros por defecto del optimizador.
@@ -75,6 +76,16 @@ class Plugin:
         # Fix: Ensure 'plugin' key exists for predictor building
         if "plugin" not in config:
             config["plugin"] = config.get("predictor_plugin", "default_predictor")
+
+        # Load Target Plugin to pass to preprocessor
+        target_plugin_name = config.get('target_plugin', 'default_target')
+        try:
+            target_class, _ = load_plugin('target.plugins', target_plugin_name)
+            target_plugin = target_class()
+            target_plugin.set_params(**config)
+        except Exception as e:
+            print(f"Failed to load Target Plugin inside optimizer: {e}")
+            raise e
 
         # Extraer el espacio de búsqueda de hiperparámetros.
         bounds = self.params["hyperparameter_bounds"]
@@ -152,7 +163,7 @@ class Plugin:
             new_config.update(hyper_dict)
 
             # Obtener los datos de entrenamiento y validación usando el Preprocessor Plugin.
-            datasets = preprocessor_plugin.run_preprocessing(new_config)
+            datasets = preprocessor_plugin.run_preprocessing(target_plugin, new_config)
             x_train, y_train = datasets["x_train"], datasets["y_train"]
             x_val, y_val = datasets["x_val"], datasets["y_val"]
 
