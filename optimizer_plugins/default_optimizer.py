@@ -16,6 +16,7 @@ Nota: Se utiliza un número reducido de epochs para la evaluación en el proceso
 import random
 import numpy as np
 import time
+import json
 from deap import base, creator, tools, algorithms
 from app.plugin_loader import load_plugin
 
@@ -259,7 +260,11 @@ class Plugin:
         no_improve_counter = 0
         self.patience_counter = 0 # Sync with local var
         
+        # Statistics tracking
+        stats_history = []
+        
         for gen in range(n_generations):
+            gen_start_time = time.time()
             self.current_gen = gen + 1 # Update for logging
             self.eval_counter = 0 # Reset per generation
             print(f"-- Generation {gen + 1}/{n_generations} --")
@@ -306,7 +311,68 @@ class Plugin:
                 no_improve_counter += 1
                 self.patience_counter = no_improve_counter
                 print(f"  No improvement for {no_improve_counter} generations.")
-                
+            
+            # --- Save Statistics and Champion Parameters ---
+            gen_end_time = time.time()
+            elapsed_time = gen_end_time - start_opt
+            gen_duration = gen_end_time - gen_start_time
+            
+            # Calculate average MAE for this generation
+            valid_fitnesses = [ind.fitness.values[0] for ind in population if ind.fitness.valid and ind.fitness.values[0] != float("inf")]
+            avg_mae = sum(valid_fitnesses) / len(valid_fitnesses) if valid_fitnesses else float("inf")
+            
+            stats_history.append({
+                "generation": self.current_gen,
+                "duration": gen_duration,
+                "avg_mae": avg_mae
+            })
+            
+            avg_time_per_epoch = sum(s["duration"] for s in stats_history) / len(stats_history)
+            total_candidates = (gen + 1) * population_size # Approximate
+            
+            stats_data = {
+                "total_time_elapsed": elapsed_time,
+                "average_time_per_epoch": avg_time_per_epoch,
+                "candidates_evaluated_so_far": total_candidates, # Or track exactly with self.eval_counter accumulator
+                "champion_validation_mae": self.best_fitness_so_far,
+                "average_mae_per_epoch": [s["avg_mae"] for s in stats_history],
+                "history": stats_history
+            }
+            
+            # Save Statistics
+            stats_file = config.get("optimization_statistics", "optimization_stats.json")
+            try:
+                with open(stats_file, "w") as f:
+                    json.dump(stats_data, f, indent=4)
+                print(f"  Statistics saved to {stats_file}")
+            except Exception as e:
+                print(f"  Failed to save statistics: {e}")
+
+            # Save Champion Parameters
+            best_ind_so_far = hof[0]
+            best_hyper_so_far = {}
+            for i, key in enumerate(hyper_keys):
+                value = best_ind_so_far[i]
+                ptype = param_types[key]
+                if key == "use_log1p_features":
+                    val_int = int(round(value))
+                    best_hyper_so_far[key] = ["typical_price"] if val_int == 1 else None
+                elif key == "positional_encoding":
+                    val_int = int(round(value))
+                    best_hyper_so_far[key] = bool(val_int)
+                elif ptype == 'int':
+                    best_hyper_so_far[key] = int(round(value))
+                else:
+                    best_hyper_so_far[key] = value
+            
+            params_file = config.get("optimization_parameters_file", "optimization_parameters.json")
+            try:
+                with open(params_file, "w") as f:
+                    json.dump(best_hyper_so_far, f, indent=4)
+                print(f"  Champion parameters saved to {params_file}")
+            except Exception as e:
+                print(f"  Failed to save champion parameters: {e}")
+
             if no_improve_counter >= patience:
                 print(f"Early stopping triggered after {gen + 1} generations.")
                 break
