@@ -22,6 +22,22 @@
     "optimizer_plugin": "default_optimizer",
     "pipeline_plugin": "stl_pipeline",
     "preprocessor_plugin": "stl_preprocessor",
+    "plugin": "mimo",
+
+    "use_optimizer": true,
+    "population_size": 20,
+    "n_generations": 25,
+    "optimization_patience": 3,
+    "hyperparameter_bounds": {
+        "use_log1p_features": [0, 1],
+        "window_size": [24, 96],
+        "positional_encoding": [0, 1],
+        "encoder_conv_layers": [1, 5],
+        "encoder_base_filters": [8, 128],
+        "encoder_lstm_units": [8, 32],
+        "horizon_embedding_dim": [8, 32],
+        "horizon_attn_key_dim": [8, 32]
+    },
 
     "use_daily": false,
     "max_steps_train": 7300,

@@ -25,6 +25,7 @@ class Plugin:
         "n_generations": 10,
         "cxpb": 0.5,      # Probabilidad de cruce.
         "mutpb": 0.2,     # Probabilidad de mutación.
+        "optimization_patience": 3, # Paciencia para early stopping
         # Espacio de hiperparámetros a optimizar, con sus límites.
         "hyperparameter_bounds": {
             "learning_rate": (1e-5, 1e-2),
@@ -35,7 +36,7 @@ class Plugin:
             "early_patience": (10, 100)
         }
     }
-    plugin_debug_vars = ["population_size", "n_generations", "cxpb", "mutpb"]
+    plugin_debug_vars = ["population_size", "n_generations", "cxpb", "mutpb", "optimization_patience"]
 
     def __init__(self):
         self.params = self.plugin_params.copy()
@@ -71,30 +72,51 @@ class Plugin:
         Returns:
             dict: Diccionario con los hiperparámetros óptimos.
         """
+        # Fix: Ensure 'plugin' key exists for predictor building
+        if "plugin" not in config:
+            config["plugin"] = config.get("predictor_plugin", "default_predictor")
+
         # Extraer el espacio de búsqueda de hiperparámetros.
         bounds = self.params["hyperparameter_bounds"]
         hyper_keys = list(bounds.keys())
-        lower_bounds = [bounds[key][0] for key in hyper_keys]
-        upper_bounds = [bounds[key][1] for key in hyper_keys]
-
-        # Especificar qué parámetros se deben tratar como enteros.
-        int_params = {"num_layers", "early_patience"}
+        
+        # Determine parameter types based on bounds (int vs float)
+        param_types = {}
+        lower_bounds = []
+        upper_bounds = []
+        
+        for key in hyper_keys:
+            low, up = bounds[key]
+            lower_bounds.append(low)
+            upper_bounds.append(up)
+            # Heuristic: if both bounds are int, treat as int
+            if isinstance(low, int) and isinstance(up, int):
+                param_types[key] = 'int'
+            else:
+                param_types[key] = 'float'
 
         # Configuración de DEAP: se define el individuo y la función objetivo.
-        creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-        creator.create("Individual", list, fitness=creator.FitnessMin)
+        # Fix: Check if classes already exist to avoid RuntimeError on re-run
+        if not hasattr(creator, "FitnessMin"):
+            creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+        if not hasattr(creator, "Individual"):
+            creator.create("Individual", list, fitness=creator.FitnessMin)
 
         toolbox = base.Toolbox()
 
-        # Generador de atributo: un número aleatorio entre el límite inferior y superior.
-        def random_param(low, up):
-            return random.uniform(low, up)
+        # Generador de atributo: maneja int y float
+        def make_attr(low, up, ptype):
+            if ptype == 'int':
+                return random.randint(low, up)
+            else:
+                return random.uniform(low, up)
 
         # Registrar atributos para cada hiperparámetro.
         for i, key in enumerate(hyper_keys):
             low = lower_bounds[i]
             up = upper_bounds[i]
-            toolbox.register(f"attr_{key}", random_param, low, up)
+            ptype = param_types[key]
+            toolbox.register(f"attr_{key}", make_attr, low, up, ptype)
 
         # Definir el individuo como una lista de hiperparámetros.
         toolbox.register("individual", tools.initCycle, creator.Individual,
@@ -108,9 +130,20 @@ class Plugin:
             hyper_dict = {}
             for i, key in enumerate(hyper_keys):
                 value = individual[i]
-                if key in int_params:
-                    value = int(round(value))
-                hyper_dict[key] = value
+                ptype = param_types[key]
+                
+                # Specific handling for requested parameters
+                if key == "use_log1p_features":
+                    # 0 -> None, 1 -> ["typical_price"]
+                    val_int = int(round(value))
+                    hyper_dict[key] = ["typical_price"] if val_int == 1 else None
+                elif key == "positional_encoding":
+                    val_int = int(round(value))
+                    hyper_dict[key] = bool(val_int)
+                elif ptype == 'int':
+                    hyper_dict[key] = int(round(value))
+                else:
+                    hyper_dict[key] = value
 
             print(f"Evaluating individual: {hyper_dict}")
 
@@ -125,8 +158,10 @@ class Plugin:
 
             # Construir y entrenar el modelo utilizando el Predictor Plugin.
             window_size = new_config.get("window_size")
-            if new_config["plugin"] in ["lstm", "cnn", "transformer", "ann"]:
-                predictor_plugin.build_model(input_shape=(window_size, x_train.shape[2]), x_train=x_train, config=new_config)
+            if new_config["plugin"] in ["lstm", "cnn", "transformer", "ann", "mimo"]:
+                # Handle 3D input for sequence models
+                input_shape = (window_size, x_train.shape[2]) if len(x_train.shape) == 3 else (x_train.shape[1],)
+                predictor_plugin.build_model(input_shape=input_shape, x_train=x_train, config=new_config)
             else:
                 predictor_plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=new_config)
             try:
@@ -144,35 +179,122 @@ class Plugin:
                 fitness = float("inf")
             return (fitness,)
 
+        # Custom mutation function to handle mixed types
+        def mutate(individual, indpb):
+            for i, key in enumerate(hyper_keys):
+                if random.random() < indpb:
+                    low = lower_bounds[i]
+                    up = upper_bounds[i]
+                    ptype = param_types[key]
+                    
+                    if ptype == 'int':
+                        individual[i] = random.randint(low, up)
+                    else:
+                        # Gaussian mutation for floats
+                        sigma = (up - low) * 0.1
+                        val = individual[i] + random.gauss(0, sigma)
+                        individual[i] = max(low, min(up, val))
+            return individual,
+
         toolbox.register("evaluate", eval_individual)
         toolbox.register("mate", tools.cxBlend, alpha=0.5)
-        toolbox.register("mutate", tools.mutUniformInt, low=lower_bounds, up=upper_bounds, indpb=0.2)
+        toolbox.register("mutate", mutate, indpb=self.params.get("mutpb", 0.2))
         toolbox.register("select", tools.selTournament, tournsize=3)
 
         population_size = self.params.get("population_size", 20)
         n_generations = self.params.get("n_generations", 10)
+        patience = self.params.get("optimization_patience", 3)
+        
         population = toolbox.population(n=population_size)
+        hof = tools.HallOfFame(1)
 
-        print("Starting hyperparameter optimization...")
+        print("Starting hyperparameter optimization with early stopping...")
         start_opt = time.time()
-        # Ejecutar el algoritmo genético (utilizando eaSimple).
-        population, logbook = algorithms.eaSimple(
-            population, toolbox,
-            cxpb=self.params.get("cxpb", 0.5),
-            mutpb=self.params.get("mutpb", 0.2),
-            ngen=n_generations, verbose=True
-        )
+        
+        # Custom optimization loop with early stopping
+        # Evaluate the entire population
+        invalid_ind = [ind for ind in population if not ind.fitness.valid]
+        fitnesses = map(toolbox.evaluate, invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+            
+        hof.update(population)
+        
+        best_fitness = float("inf")
+        if hof:
+            best_fitness = hof[0].fitness.values[0]
+            
+        no_improve_counter = 0
+        
+        for gen in range(n_generations):
+            print(f"-- Generation {gen + 1}/{n_generations} --")
+            
+            # Select the next generation individuals
+            offspring = toolbox.select(population, len(population))
+            # Clone the selected individuals
+            offspring = list(map(toolbox.clone, offspring))
+            
+            # Apply crossover and mutation on the offspring
+            for child1, child2 in zip(offspring[::2], offspring[1::2]):
+                if random.random() < self.params.get("cxpb", 0.5):
+                    toolbox.mate(child1, child2)
+                    del child1.fitness.values
+                    del child2.fitness.values
+
+            for mutant in offspring:
+                if random.random() < self.params.get("mutpb", 0.2):
+                    toolbox.mutate(mutant)
+                    del mutant.fitness.values
+            
+            # Evaluate the individuals with an invalid fitness
+            invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+            fitnesses = map(toolbox.evaluate, invalid_ind)
+            for ind, fit in zip(invalid_ind, fitnesses):
+                ind.fitness.values = fit
+            
+            # Replace the old population by the offspring
+            population[:] = offspring
+            
+            # Update HallOfFame
+            hof.update(population)
+            
+            # Check for improvement
+            current_best = hof[0].fitness.values[0]
+            print(f"  Best Val Loss: {current_best}")
+            
+            if current_best < best_fitness:
+                best_fitness = current_best
+                no_improve_counter = 0
+                print(f"  New best found!")
+            else:
+                no_improve_counter += 1
+                print(f"  No improvement for {no_improve_counter} generations.")
+                
+            if no_improve_counter >= patience:
+                print(f"Early stopping triggered after {gen + 1} generations.")
+                break
+
         end_opt = time.time()
         print(f"Optimization completed in {end_opt - start_opt:.2f} seconds.")
 
         # Seleccionar el mejor individuo.
-        best_ind = tools.selBest(population, k=1)[0]
+        best_ind = hof[0]
         best_hyper = {}
         for i, key in enumerate(hyper_keys):
             value = best_ind[i]
-            if key in int_params:
-                value = int(round(value))
-            best_hyper[key] = value
+            ptype = param_types[key]
+            
+            if key == "use_log1p_features":
+                val_int = int(round(value))
+                best_hyper[key] = ["typical_price"] if val_int == 1 else None
+            elif key == "positional_encoding":
+                val_int = int(round(value))
+                best_hyper[key] = bool(val_int)
+            elif ptype == 'int':
+                best_hyper[key] = int(round(value))
+            else:
+                best_hyper[key] = value
+                
         print(f"Best hyperparameters found: {best_hyper}")
         return best_hyper
 
