@@ -247,6 +247,13 @@ class Plugin:
         self.current_gen = 0
         self.eval_counter = 0 # Reset for initial population
         
+        # Enforce bounds on initial population (just in case)
+        for ind in population:
+            for i, val in enumerate(ind):
+                low = lower_bounds[i]
+                up = upper_bounds[i]
+                ind[i] = max(low, min(up, val))
+
         invalid_ind = [ind for ind in population if not ind.fitness.valid]
         fitnesses = map(toolbox.evaluate, invalid_ind)
         for ind, fit in zip(invalid_ind, fitnesses):
