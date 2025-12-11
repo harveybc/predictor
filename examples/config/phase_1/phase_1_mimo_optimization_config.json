@@ -29,7 +29,7 @@
     "use_optimizer": true,
     "population_size": 20,
     "n_generations": 25,
-    "optimization_patience": 3,
+    "optimization_patience": 5,
     "hyperparameter_bounds": {
         "use_log1p_features": [0, 1],
         "window_size": [24, 96],
