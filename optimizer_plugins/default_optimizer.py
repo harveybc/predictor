@@ -186,6 +186,63 @@ class Plugin:
                 predictor_plugin.build_model(input_shape=input_shape, x_train=x_train, config=new_config)
             else:
                 predictor_plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=new_config)
+            
+            # Calculate Naive MAE for the highest horizon
+            # Naive prediction: use the last known value (t-1) as prediction for all future steps
+            # For normalized data, this is often just 0 if using returns, or the last value if using prices.
+            # Assuming standard time series where x_val contains history.
+            # We need to know the target column index or assume it's the last one or specific one.
+            # However, a simpler robust way for "Naive" in this context (often used in this repo) 
+            # is Mean Absolute Error of (y_true[1:] - y_true[:-1]) for 1-step, but for N-step it varies.
+            # The user defined Naive MAE as "using the current value as prediction".
+            # We will calculate it using the last value of the input window vs the target.
+            
+            naive_mae = float("inf")
+            try:
+                # Get the highest horizon index
+                predicted_horizons = new_config.get("predicted_horizons", [1])
+                max_horizon = max(predicted_horizons)
+                max_h_idx = predicted_horizons.index(max_horizon)
+                
+                # y_val is a dict for MIMO or list/array. Preprocessor usually returns dict for MIMO.
+                # If it's a dict: {'output_horizon_1': ..., 'output_horizon_6': ...}
+                # We need the target for the max horizon.
+                
+                y_true_max_h = None
+                if isinstance(y_val, dict):
+                    key = f"output_horizon_{max_horizon}"
+                    if key in y_val:
+                        y_true_max_h = y_val[key]
+                elif isinstance(y_val, list):
+                     if len(y_val) > max_h_idx:
+                        y_true_max_h = y_val[max_h_idx]
+                elif isinstance(y_val, np.ndarray):
+                    # If single output or stacked
+                    y_true_max_h = y_val
+                
+                if y_true_max_h is not None:
+                    # Naive prediction: The last value in the input sequence x_val.
+                    # x_val shape: (samples, window_size, features)
+                    # We assume the target feature is at index 0 or we need to know which one.
+                    # Config has "target_column". But x_val is numpy array.
+                    # We'll assume the target is the first column (index 0) of the input if not specified,
+                    # OR better, we use the "baseline" if available from preprocessor, but preprocessor returns x/y.
+                    # Let's use the last value of the input window (index -1) of the first feature (index 0).
+                    # This is a standard heuristic if we don't have column mapping here.
+                    
+                    # x_val[:, -1, 0] is the most recent value for each sample.
+                    # We compare this against y_true_max_h.
+                    
+                    # Ensure shapes match
+                    preds_naive = x_val[:, -1, 0].reshape(-1, 1)
+                    
+                    # Calculate MAE
+                    naive_errors = np.abs(y_true_max_h - preds_naive)
+                    naive_mae = np.mean(naive_errors)
+            except Exception as e:
+                print(f"Warning: Could not calculate Naive MAE: {e}")
+                naive_mae = float("inf")
+
             try:
                 # Para optimización, usar menos epochs.
                 history, _, _, val_preds, _ = predictor_plugin.train(
@@ -197,7 +254,7 @@ class Plugin:
                 )
                 fitness = history.history["val_loss"][-1]
                 train_loss = history.history["loss"][-1]
-                print(f"Candidate Result -> Val Loss (MAE): {fitness:.6f} | Train Loss: {train_loss:.6f}")
+                print(f"Candidate Result -> Val Loss (MAE): {fitness:.6f} | Naive MAE (Max H): {naive_mae:.6f} | Train Loss: {train_loss:.6f}")
             except Exception as e:
                 print(f"Training failed for individual {hyper_dict}: {e}")
                 fitness = float("inf")
@@ -207,6 +264,9 @@ class Plugin:
             print(f"  Current Best Val Loss to Beat: {self.best_fitness_so_far:.6f}")
             print(f"  Patience Counter: {self.patience_counter}/{patience}")
             print(f"------------------------------------------------------------")
+            
+            # Store naive_mae in individual for stats later (hacky but effective)
+            individual.naive_mae = naive_mae
             
             return (fitness,)
 
@@ -335,10 +395,16 @@ class Plugin:
             valid_fitnesses = [ind.fitness.values[0] for ind in population if ind.fitness.valid and ind.fitness.values[0] != float("inf")]
             avg_mae = sum(valid_fitnesses) / len(valid_fitnesses) if valid_fitnesses else float("inf")
             
+            # Get Naive MAE from the best individual (or average, but usually we want the benchmark)
+            # We stored it in individual.naive_mae during evaluation
+            best_ind_gen = tools.selBest(population, 1)[0]
+            champion_naive_mae = getattr(best_ind_gen, "naive_mae", None)
+            
             stats_history.append({
                 "generation": self.current_gen,
                 "duration": gen_duration,
-                "avg_mae": avg_mae
+                "avg_mae": avg_mae,
+                "champion_naive_mae": champion_naive_mae
             })
             
             avg_time_per_epoch = sum(s["duration"] for s in stats_history) / len(stats_history)
@@ -349,6 +415,7 @@ class Plugin:
                 "average_time_per_epoch": avg_time_per_epoch,
                 "candidates_evaluated_so_far": total_candidates, # Or track exactly with self.eval_counter accumulator
                 "champion_validation_mae": self.best_fitness_so_far,
+                "champion_naive_mae_max_horizon": champion_naive_mae,
                 "average_mae_per_epoch": [s["avg_mae"] for s in stats_history],
                 "history": stats_history
             }
