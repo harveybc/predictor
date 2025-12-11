@@ -64,7 +64,7 @@
     "use_log1p_features": ["typical_price"],
 
     "mc_samples": 20,
-    "plotted_horizon": 6,
+    "plotted_horizon": 24,
     "mmd_lambda": 0.0,
 
     "window_size": 96,
