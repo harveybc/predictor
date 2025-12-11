@@ -1,0 +1,13 @@
+i HAD THIS ERROR IN CANDIDATE 10 in the generatioon 3:[Preprocessing Summary:
+  X_train shape: (7245, 32, 1)
+  X_val shape: (1520, 32, 1)
+  X_test shape: (1520, 32, 1)
+  Feature names: 1
+  Predicted horizons: [9, 12, 15, 18, 21, 24]
+  Target normalization parameters available: 0
+  Baseline train length: 7269
+  Baseline val length: 1544
+  Baseline test length: 1544
+No columns specified for exclusion
+Hyperparameter optimization failed: Received an invalid value for argument `units`, expected a positive integer, got -11.
+]
