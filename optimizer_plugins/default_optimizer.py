@@ -286,6 +286,13 @@ class Plugin:
                     toolbox.mutate(mutant)
                     del mutant.fitness.values
             
+            # Enforce bounds on all offspring (fix for cxBlend producing out-of-bounds values)
+            for child in offspring:
+                for i, val in enumerate(child):
+                    low = lower_bounds[i]
+                    up = upper_bounds[i]
+                    child[i] = max(low, min(up, val))
+            
             # Evaluate the individuals with an invalid fitness
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
             fitnesses = map(toolbox.evaluate, invalid_ind)
