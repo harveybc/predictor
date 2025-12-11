@@ -80,7 +80,7 @@
     "use_strategy": false,
     "stl_period": 24,
 
-    "predicted_horizons": [1, 2, 3, 4, 5, 6],
+    "predicted_horizons": [9,12,15,18,21,24],
 
     "use_stl": false,
     "use_wavelets": false,

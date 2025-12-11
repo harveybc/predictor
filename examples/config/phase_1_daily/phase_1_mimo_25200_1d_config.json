@@ -52,7 +52,7 @@
     "min_delta": 1e-8,
     "epochs": 2000,
     "use_strategy": false,
-    "stl_period":24,#TODO: corregir para 2 dias unicamente, no 4
+    "stl_period":24,
     "predicted_horizons": [9,12,15,18,21,24],
     "use_stl": false,
     "use_wavelets": false,
