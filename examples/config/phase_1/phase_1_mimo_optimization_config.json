@@ -16,6 +16,8 @@
     "stl_plot_file": "examples/results/phase_1/phase_1_25200_4h_stl_decomposition_plot.png",
     "wavelet_plot_file": "examples/results/phase_1/phase_1_25200_4h_wavelet_decomposition_plot.png",
     "tapper_plot_file": "examples/results/phase_1/phase_1_25200_4h_multi_tapper_decomposition_plot.png",
+    "optimization_parameters_file": "examples/results/phase_1/phase_1_mimo_25200_4h_optimization_parameters.json",
+    "optimization_statistics": "examples/results/phase_1/phase_1_mimo_25200_4h_optimization_stats.json",
 
     "target_column": "typical_price",
     "predictor_plugin": "mimo",
