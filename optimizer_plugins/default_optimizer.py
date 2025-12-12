@@ -17,6 +17,8 @@ import random
 import numpy as np
 import time
 import json
+import gc
+import tensorflow as tf
 from deap import base, creator, tools, algorithms
 from app.plugin_loader import load_plugin
 
@@ -145,6 +147,12 @@ class Plugin:
         self.patience_counter = 0
         
         def eval_individual(individual):
+            # CRITICAL FIX: Clear Keras session and garbage collect to prevent OOM
+            if hasattr(predictor_plugin, 'model'):
+                del predictor_plugin.model
+            tf.keras.backend.clear_session()
+            gc.collect()
+
             self.eval_counter += 1
             
             # Mapear el individuo a un diccionario de hiperparámetros.
