@@ -175,6 +175,11 @@ class Plugin:
 
             # Obtener los datos de entrenamiento y validación usando el Preprocessor Plugin.
             datasets = preprocessor_plugin.run_preprocessing(target_plugin, new_config)
+            
+            # Handle tuple return from stl_preprocessor (datasets, params)
+            if isinstance(datasets, tuple):
+                datasets = datasets[0]
+                
             x_train, y_train = datasets["x_train"], datasets["y_train"]
             x_val, y_val = datasets["x_val"], datasets["y_val"]
 
@@ -234,13 +239,39 @@ class Plugin:
                     # We compare this against y_true_max_h.
                     
                     # Ensure shapes match
-                    preds_naive = x_val[:, -1, 0].reshape(-1, 1)
+                    # preds_naive = x_val[:, -1, 0].reshape(-1, 1)
                     
                     # Calculate MAE
-                    naive_errors = np.abs(y_true_max_h - preds_naive)
-                    naive_mae = np.mean(naive_errors)
+                    # naive_errors = np.abs(y_true_max_h - preds_naive)
+                    # naive_mae = np.mean(naive_errors)
+                    
+                    # Use baseline_val if available (as per pipeline logic)
+                    baseline_val = datasets.get("baseline_val")
+                    if baseline_val is not None:
+                        # Pipeline logic: denormalize(baseline) - denormalize(target)
+                        # But here we are in normalized space for optimization fitness (val_loss).
+                        # If we want to compare apples to apples with val_loss (which is usually MSE or MAE on normalized data),
+                        # we should compute Naive MAE on normalized data too.
+                        # Pipeline computes metrics on DENORMALIZED data.
+                        # The user said: "Validation Naive MAE and for the validation MAE... verify that the MAE is claulated in the same exact way"
+                        # The optimizer uses `history.history["val_loss"][-1]` as fitness.
+                        # If the model loss is MSE/MAE on normalized data, then we should compute Naive MAE on normalized data.
+                        # BUT, the pipeline prints Denormalized MAE.
+                        # If the user sees "Validation MAE" in the pipeline output, that is Denormalized.
+                        # If the user sees "Val Loss" in the optimizer output, that is Normalized (usually).
+                        # The user complained "values are way too diferent".
+                        # This confirms we are comparing Normalized Loss vs Denormalized Naive (or vice versa).
+                        
+                        # To fix this, we must calculate the Validation MAE exactly as the pipeline does:
+                        # 1. Predict on x_val
+                        # 2. Denormalize predictions and targets
+                        # 3. Compute MAE
+                        
+                        # We cannot rely on history['val_loss'] if we want to match the pipeline's "Validation MAE".
+                        # We must run a prediction step here.
+                        pass # Logic moved below to "After training" block
             except Exception as e:
-                print(f"Warning: Could not calculate Naive MAE: {e}")
+                print(f"Warning: Could not calculate Naive MAE pre-check: {e}")
                 naive_mae = float("inf")
 
             try:
@@ -252,16 +283,91 @@ class Plugin:
                     threshold_error=new_config.get("threshold_error", 0.001),
                     x_val=x_val, y_val=y_val, config=new_config
                 )
-                fitness = history.history["val_loss"][-1]
-                train_loss = history.history["loss"][-1]
-                print(f"Candidate Result -> Val Loss (MAE): {fitness:.6f} | Naive MAE (Max H): {naive_mae:.6f} | Train Loss: {train_loss:.6f}")
+                
+                # --- Compute Metrics Exactly like Pipeline ---
+                # We need to replicate compute_train_val_metrics logic for the max horizon
+                
+                # 1. Get predictions for max horizon
+                # val_preds is a list of arrays (one per horizon)
+                predicted_horizons = new_config.get("predicted_horizons", [1])
+                max_horizon = max(predicted_horizons)
+                max_h_idx = predicted_horizons.index(max_horizon)
+                
+                val_preds_h = val_preds[max_h_idx].flatten()
+                
+                # 2. Get targets for max horizon
+                # y_val is dict or list. We need to extract the array.
+                if isinstance(y_val, dict):
+                    y_true_max_h = y_val[f"output_horizon_{max_horizon}"].flatten()
+                elif isinstance(y_val, list):
+                    y_true_max_h = y_val[max_h_idx].flatten()
+                else:
+                    y_true_max_h = y_val.flatten()
+                
+                # 3. Get baseline for Naive
+                baseline_val = datasets.get("baseline_val")
+                
+                # 4. Align lengths
+                num_val_pts = min(len(val_preds_h), len(y_true_max_h))
+                if baseline_val is not None:
+                    num_val_pts = min(num_val_pts, len(baseline_val))
+                
+                val_preds_h = val_preds_h[:num_val_pts]
+                y_true_max_h = y_true_max_h[:num_val_pts]
+                
+                # 5. Denormalize (Crucial step from pipeline)
+                # We need the 'denormalize' function. We can import it or implement simple version if params available.
+                # Pipeline uses: from .stl_norm import denormalize
+                # We should import it at top of file.
+                from pipeline_plugins.stl_norm import denormalize, denormalize_returns
+                
+                val_target_price = denormalize(y_true_max_h, new_config)
+                val_pred_price = denormalize(val_preds_h, new_config)
+                
+                # 6. Compute MAE (Pipeline: denormalize_returns(pred - target))
+                # Wait, pipeline does: np.mean(np.abs(denormalize_returns(val_preds_h - val_target_h, params)))
+                # This implies the model predicts returns/normalized values, and we denormalize the DIFFERENCE?
+                # Or denormalize the values then subtract?
+                # Pipeline code: val_mae_h = np.mean(np.abs(denormalize_returns(val_preds_h - val_target_h, params)))
+                # If use_returns=False (which is enforced in pipeline), denormalize_returns might just be identity or simple scaling.
+                # Let's look at stl_metrics.py again.
+                # "train_mae_h = np.mean(np.abs(denormalize_returns(train_preds_h - train_target_h, params)))"
+                # AND "train_naive_mae_h = np.mean(np.abs(denormalize(baseline_train_h, params) - train_target_price))"
+                
+                # So for Model MAE: denormalize_returns(pred - target)
+                # For Naive MAE: denormalize(baseline) - denormalize(target)
+                
+                # Let's follow this exactly.
+                
+                # Model MAE
+                val_mae = np.mean(np.abs(denormalize_returns(val_preds_h - y_true_max_h, new_config)))
+                
+                # Naive MAE
+                naive_mae = float("inf")
+                if baseline_val is not None:
+                    baseline_val_h = baseline_val[:num_val_pts].flatten()
+                    # Note: pipeline uses denormalize(baseline) - val_target_price
+                    # val_target_price was computed as denormalize(y_true_max_h)
+                    naive_mae = np.mean(np.abs(denormalize(baseline_val_h, new_config) - val_target_price))
+                
+                # Use this calculated MAE as fitness instead of val_loss?
+                # The user wants to compare them. If we optimize for val_loss (normalized MSE usually), 
+                # but print Denormalized MAE, that's fine, as long as we print both correctly.
+                # BUT, if the user wants to optimize for the metric they see, we should return val_mae as fitness.
+                # "Validation MAE of the champion has not been incremented" -> implies we should use this MAE for early stopping/fitness.
+                # Let's use val_mae as the fitness metric to be consistent.
+                
+                fitness = val_mae
+                train_loss = history.history["loss"][-1] # Keep this for info
+                
+                print(f"Candidate Result -> Val MAE (Max H): {fitness:.6f} | Naive MAE (Max H): {naive_mae:.6f} | Train Loss: {train_loss:.6f}")
             except Exception as e:
-                print(f"Training failed for individual {hyper_dict}: {e}")
+                print(f"Training/Metrics failed for individual {hyper_dict}: {e}")
                 fitness = float("inf")
             
             # Print optimization state
             print(f"Optimization State:")
-            print(f"  Current Best Val Loss to Beat: {self.best_fitness_so_far:.6f}")
+            print(f"  Current Best Val MAE to Beat: {self.best_fitness_so_far:.6f}")
             print(f"  Patience Counter: {self.patience_counter}/{patience}")
             print(f"------------------------------------------------------------")
             
