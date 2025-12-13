@@ -21,8 +21,8 @@
     "optimizer_plugin": "default_optimizer",
     "pipeline_plugin": "stl_pipeline",
     "preprocessor_plugin": "stl_preprocessor",
-    
-    "p[lugion": "cnn",
+
+    "plugin": "cnn",
     "use_optimizer": true,
     "population_size": 20,
     "n_generations": 25,

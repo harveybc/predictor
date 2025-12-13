@@ -46,6 +46,12 @@ DEFAULT_VALUES = {
     'epochs': 1000,
     'uncertainty_file': 'prediction_uncertainties.csv',
     'batch_size': 32,
+    # Safety: keep inference batched to avoid memory spikes.
+    # (Used by BaseBayesianKerasPredictor.predict_with_uncertainty and the MC codepath.)
+    'predict_batch_size': 256,
+    # When True, BaseKerasPredictor.train skips post-fit MC uncertainty passes.
+    # Optimizer forces this on; pipeline keeps it off by default.
+    'disable_postfit_uncertainty': False,
     "kl_weight": 1e-6,
     "kl_anneal_epochs": 100,        
     "mmd_lambda": 0.1,
