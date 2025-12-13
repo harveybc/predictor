@@ -200,6 +200,14 @@ class STLPipelinePlugin:
         run_config = self.params.copy()
         run_config.update(config)
         run_config["use_returns"] = False  # Explicitly enforced
+        # Safety: always run inference in bounded batches.
+        if "predict_batch_size" not in run_config or not run_config.get("predict_batch_size"):
+            bs = run_config.get("batch_size", 32)
+            try:
+                bs = int(bs)
+            except Exception:
+                bs = 32
+            run_config["predict_batch_size"] = max(64, bs)
         config = run_config
 
         iterations = config.get("iterations", 1)

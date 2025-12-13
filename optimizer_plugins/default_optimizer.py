@@ -181,6 +181,13 @@ class Plugin:
             new_config = config.copy()
             new_config.update(hyper_dict)
 
+            # CRITICAL: During GA optimization, avoid post-fit MC uncertainty passes.
+            # The default BaseBayesianKerasPredictor does MC prediction over full train+val
+            # after every fit, which can explode memory/time on large datasets.
+            new_config.setdefault("disable_postfit_uncertainty", True)
+            new_config.setdefault("mc_samples", 1)
+            new_config.setdefault("predict_batch_size", new_config.get("batch_size", 32))
+
             # Obtener los datos de entrenamiento y validación usando el Preprocessor Plugin.
             datasets = preprocessor_plugin.run_preprocessing(target_plugin, new_config)
             
@@ -372,6 +379,15 @@ class Plugin:
             except Exception as e:
                 print(f"Training/Metrics failed for individual {hyper_dict}: {e}")
                 fitness = float("inf")
+
+            # Hard cleanup after each candidate as well (prevents long-run accumulation)
+            try:
+                if hasattr(predictor_plugin, 'model'):
+                    del predictor_plugin.model
+            except Exception:
+                pass
+            tf.keras.backend.clear_session()
+            gc.collect()
             
             # Print optimization state
             print(f"Optimization State:")

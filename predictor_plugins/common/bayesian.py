@@ -67,29 +67,53 @@ def build_kl_anneal_callback(plugin, target_kl: float, anneal_epochs: int):
 # Monte Carlo predictive mean & std (Welford incremental)
 # ---------------------------------------------------------------------------
 
-def predict_mc_welford(model, x_test, mc_samples: int = 50):
+def predict_mc_welford(model, x_test, mc_samples: int = 50, batch_size: int | None = None, training: bool = False):
+    """Monte-Carlo predictive mean/std with strict batching.
+
+    Why this exists:
+      Calling `model(x_test)` on the full validation/train tensor can create an
+      enormous implicit batch (e.g., 25k samples) which spikes memory.
+      During GA optimization this is repeated thousands of times and can lead
+      to host OOM (and/or GPU OOM) even with small models.
+    """
     if model is None:
         raise ValueError("Model not built.")
-    sample = model(x_test[:1], training=True)
+
+    x_test = np.asarray(x_test)
+    n = int(x_test.shape[0])
+    if n == 0:
+        return [], []
+
+    # Default to a conservative inference batch to avoid memory spikes.
+    if batch_size is None or batch_size <= 0:
+        batch_size = 512
+
+    # Probe output structure/dims.
+    sample = model(x_test[:1], training=training)
     sample = [sample] if not isinstance(sample, list) else sample
     heads = len(sample)
-    n = x_test.shape[0]
-    d = sample[0].shape[-1]
+    d = int(sample[0].shape[-1]) if getattr(sample[0], "shape", None) is not None else 1
+
     means = [np.zeros((n, d), dtype=np.float32) for _ in range(heads)]
     m2 = [np.zeros_like(means[0]) for _ in range(heads)]
     counts = [0] * heads
-    for _ in range(mc_samples):
-        preds = model(x_test, training=False)
-        preds = [preds] if not isinstance(preds, list) else preds
-        for h in range(heads):
-            arr = preds[h].numpy()
-            if arr.ndim == 1:
-                arr = np.expand_dims(arr, -1)
-            counts[h] += 1
-            delta = arr - means[h]
-            means[h] += delta / counts[h]
-            delta2 = arr - means[h]
-            m2[h] += delta * delta2
+
+    for _ in range(int(mc_samples)):
+        for start in range(0, n, batch_size):
+            end = min(n, start + batch_size)
+            xb = x_test[start:end]
+            preds = model(xb, training=training)
+            preds = [preds] if not isinstance(preds, list) else preds
+            for h in range(heads):
+                arr = preds[h].numpy()
+                if arr.ndim == 1:
+                    arr = np.expand_dims(arr, -1)
+                counts[h] += 1
+                delta = arr - means[h][start:end]
+                means[h][start:end] += delta / counts[h]
+                delta2 = arr - means[h][start:end]
+                m2[h][start:end] += delta * delta2
+
     stds = []
     for h in range(heads):
         var = np.full_like(means[h], np.nan) if counts[h] < 2 else m2[h] / (counts[h] - 1)

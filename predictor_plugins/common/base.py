@@ -171,9 +171,25 @@ class BaseKerasPredictor(BasePredictorPlugin):
             callbacks=callbacks,
             verbose=1,
         )
-        mc = self.params.get('mc_samples', 50)
-        train_preds, train_unc = self.predict_with_uncertainty(x_train, mc)
-        val_preds, val_unc = self.predict_with_uncertainty(x_val, mc)
+
+        # Post-fit predictions/uncertainty can dominate memory/time during GA optimization.
+        # When disabled, we only run a single batched deterministic predict.
+        disable_postfit_uncertainty = bool(self.params.get('disable_postfit_uncertainty', False))
+        pred_bs = int(self.params.get('predict_batch_size', 0) or 0)
+        if pred_bs <= 0:
+            pred_bs = int(batch_size) if isinstance(batch_size, int) and batch_size > 0 else 256
+
+        if disable_postfit_uncertainty:
+            train_preds = self.model.predict(x_train, batch_size=pred_bs, verbose=0)
+            val_preds = self.model.predict(x_val, batch_size=pred_bs, verbose=0)
+            train_preds = [train_preds] if isinstance(train_preds, np.ndarray) else train_preds
+            val_preds = [val_preds] if isinstance(val_preds, np.ndarray) else val_preds
+            train_unc = [np.zeros_like(p) for p in train_preds]
+            val_unc = [np.zeros_like(p) for p in val_preds]
+        else:
+            mc = int(self.params.get('mc_samples', 50))
+            train_preds, train_unc = self.predict_with_uncertainty(x_train, mc)
+            val_preds, val_unc = self.predict_with_uncertainty(x_val, mc)
         try:
             self.calculate_mae(y_train[self.output_names[plotted_index]], train_preds[plotted_index])
             self.calculate_r2(y_train[self.output_names[plotted_index]], train_preds[plotted_index])
@@ -208,7 +224,8 @@ class BaseBayesianKerasPredictor(BaseKerasPredictor):
         return base
 
     def predict_with_uncertainty(self, x_test, mc_samples: int = 50):
-        return predict_mc_welford(self.model, x_test, mc_samples)
+        pred_bs = int(self.params.get('predict_batch_size', 0) or self.params.get('batch_size', 0) or 0)
+        return predict_mc_welford(self.model, x_test, mc_samples, batch_size=pred_bs, training=False)
 
 
 class BaseDeterministicKerasPredictor(BaseKerasPredictor):
