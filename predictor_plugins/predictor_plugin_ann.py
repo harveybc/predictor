@@ -5,10 +5,12 @@ import tensorflow as tf, tensorflow_probability as tfp
 from tensorflow.keras.layers import Input, Dense, Dropout, Lambda, Add, Flatten
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import AdamW
+from tensorflow.keras.losses import Huber
 from .common.losses import (
     mae_magnitude,
     composite_loss_multihead as composite_loss,
     composite_loss_noreturns,
+    composite_loss_basic,
     random_normal_initializer_44,
 )
 from .common.bayesian import posterior_mean_field, prior_fn
@@ -89,31 +91,16 @@ class Plugin(BaseBayesianKerasPredictor):
         loss_dict = {}
         # Mirror CNN plugin logic: choose loss variant depending on use_returns flag.
         use_returns = self.params.get("use_returns", False)
-        for i, nm in enumerate(self.output_names):
-            if use_returns:
-                loss_dict[nm] = (lambda idx=i: (lambda yt, yp: composite_loss(
-                    yt, yp,
-                    head_index=idx,
-                    mmd_lambda=mmd_lambda,
-                    sigma=sigma_mmd,
-                    p=0, i=0, d=0,
-                    list_last_signed_error=[],
-                    list_last_stddev=[],
-                    list_last_mmd=[],
-                    list_local_feedback=[]
-                )))()
-            else:
-                loss_dict[nm] = (lambda idx=i: (lambda yt, yp: composite_loss_noreturns(
-                    yt, yp,
-                    head_index=idx,
-                    mmd_lambda=mmd_lambda,
-                    sigma=sigma_mmd,
-                    p=0, i=0, d=0,
-                    list_last_signed_error=[],
-                    list_last_stddev=[],
-                    list_last_mmd=[],
-                    list_local_feedback=[]
-                )))()
+        # CRITICAL: keep losses pure TF; do not create Python objects per batch.
+        if use_returns:
+            def _loss_fn(y_true, y_pred):
+                return composite_loss_basic(y_true, y_pred, mmd_lambda=mmd_lambda, sigma=sigma_mmd)
+            for nm in self.output_names:
+                loss_dict[nm] = _loss_fn
+        else:
+            huber = Huber()
+            for nm in self.output_names:
+                loss_dict[nm] = huber
         metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
         self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)
         self.model.summary(line_length=140)

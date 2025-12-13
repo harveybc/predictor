@@ -10,6 +10,7 @@ Punto de entrada de la aplicación de predicción de EUR/USD. Este script orques
 """
 
 import sys
+import os
 import json
 import pandas as pd
 from typing import Any, Dict
@@ -40,6 +41,29 @@ def main():
     print("Parsing initial arguments...")
     args, unknown_args = parse_args()
     cli_args: Dict[str, Any] = vars(args)
+
+    # ------------------------------------------------------------------
+    # TensorFlow memory safety (must run BEFORE any TF import in plugins)
+    # ------------------------------------------------------------------
+    # Helps prevent long-run fragmentation and makes GPU allocation behavior
+    # consistent across plugins (CNN was attempting this too late).
+    os.environ.setdefault("TF_FORCE_GPU_ALLOW_GROWTH", "true")
+    os.environ.setdefault("TF_GPU_ALLOCATOR", "cuda_malloc_async")
+    try:
+        import tensorflow as tf  # noqa: WPS433 (runtime import intentional)
+
+        gpus = tf.config.list_physical_devices('GPU')
+        for gpu in gpus:
+            try:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            except Exception:
+                # If TF already initialized somewhere, we can't change this.
+                # Keep going; env var above still helps in many setups.
+                pass
+        if gpus:
+            print(f"TensorFlow GPU memory growth configured for {len(gpus)} GPU(s).")
+    except Exception as e:
+        print(f"INFO: TensorFlow memory configuration skipped: {e}")
 
     print("Loading default configuration...")
     config: Dict[str, Any] = DEFAULT_VALUES.copy()

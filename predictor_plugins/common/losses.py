@@ -8,6 +8,9 @@ from __future__ import annotations
 import tensorflow as tf
 from tensorflow.keras.losses import Huber
 
+# Reuse one loss instance to avoid per-step object churn during long trainings.
+_HUBER = Huber()
+
 # --- Metrics ---
 
 def mae_magnitude(y_true, y_pred):
@@ -79,7 +82,7 @@ def composite_loss_basic(y_true, y_pred, mmd_lambda=0.0, sigma=1.0):
         mag_pred = y_pred[:, 0:1]
 
         # Base Huber loss on magnitude.
-        huber_loss_val = Huber()(mag_true, mag_pred)
+        huber_loss_val = _HUBER(mag_true, mag_pred)
 
         # Predicted vs naive errors (scalar tensors)
         eps = tf.keras.backend.epsilon()
@@ -134,7 +137,7 @@ def composite_loss_noreturns(y_true, y_pred, head_index, mmd_lambda, sigma,
     Currently ignores control feedback lists (placeholders) but keeps them
     for interface compatibility.
     """
-    return Huber()(y_true, y_pred)
+    return _HUBER(y_true, y_pred)
 
 
 def random_normal_initializer_44(shape, dtype=None):
@@ -143,5 +146,6 @@ def random_normal_initializer_44(shape, dtype=None):
 __all__ = [
     'mae_magnitude', 'r2_metric', 'compute_mmd',
     'composite_loss_basic', 'composite_loss_multihead',
+    'composite_loss_noreturns',
     'random_normal_initializer_44'
 ]

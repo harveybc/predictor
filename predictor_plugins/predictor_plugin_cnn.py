@@ -11,7 +11,8 @@ from tensorflow.keras.layers import Input, Dense, Lambda, Bidirectional, LSTM, A
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import AdamW
-from .common.losses import mae_magnitude, composite_loss_multihead as composite_loss, random_normal_initializer_44, composite_loss_noreturns, r2_metric
+from tensorflow.keras.losses import Huber
+from .common.losses import mae_magnitude, composite_loss_basic, random_normal_initializer_44, r2_metric
 from .common.bayesian import posterior_mean_field, prior_fn
 from .common.base import BaseBayesianKerasPredictor
 from .common.positional_encoding import positional_encoding
@@ -54,11 +55,9 @@ class Plugin(BaseBayesianKerasPredictor):
             sys.exit(1)
         else:
             print(f"GPU initialized: {len(gpus)} device(s) found.")
-            try:
-                for gpu in gpus:
-                    tf.config.experimental.set_memory_growth(gpu, True)
-            except RuntimeError as e:
-                print(f"Notice: Memory growth setting failed (usually harmless if already initialized): {e}")
+            # IMPORTANT: Do not call set_memory_growth() here.
+            # GPU allocator/memory growth must be configured before TF initializes the device.
+            # This is handled centrally in `app/main.py` to avoid late-init warnings.
 
         if config:
             self.params.update(config)
@@ -161,12 +160,18 @@ class Plugin(BaseBayesianKerasPredictor):
         self.model = Model(inputs=inputs, outputs=outputs, name=f"CNNPredictor_{len(ph)}H")
         optimizer = AdamW(learning_rate=self.params.get("learning_rate", 1e-3))
         loss_dict = {}
+        # CRITICAL: Keep losses pure-TensorFlow and free of per-batch Python object creation.
+        # Creating new Python lists inside the loss call path can cause tf.function retracing
+        # and unbounded host-RAM growth across long trainings.
         if use_returns:
-            for i, nm in enumerate(self.output_names):
-                loss_dict[nm] = (lambda idx=i: (lambda yt, yp: composite_loss(yt, yp, head_index=idx, mmd_lambda=mmd_lambda, sigma=sigma_mmd, p=0, i=0, d=0, list_last_signed_error=[], list_last_stddev=[], list_last_mmd=[], list_local_feedback=[])))()
+            def _loss_fn(y_true, y_pred):
+                return composite_loss_basic(y_true, y_pred, mmd_lambda=mmd_lambda, sigma=sigma_mmd)
+            for nm in self.output_names:
+                loss_dict[nm] = _loss_fn
         else:
-            for i, nm in enumerate(self.output_names):
-                loss_dict[nm] = (lambda idx=i: (lambda yt, yp: composite_loss_noreturns(yt, yp, head_index=idx, mmd_lambda=mmd_lambda, sigma=sigma_mmd, p=0, i=0, d=0, list_last_signed_error=[], list_last_stddev=[], list_last_mmd=[], list_local_feedback=[])))()
+            huber = Huber()
+            for nm in self.output_names:
+                loss_dict[nm] = huber
         metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
         self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)
         self.model.summary(line_length=140)

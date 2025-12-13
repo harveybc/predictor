@@ -40,7 +40,7 @@ from .losses import (
     compute_mmd, composite_loss_noreturns
 )
 from .callbacks import (
-    ReduceLROnPlateauWithCounter, EarlyStoppingWithPatienceCounter
+    ReduceLROnPlateauWithCounter, EarlyStoppingWithPatienceCounter, MemoryUsageLogger
 )
 from .bayesian import build_kl_anneal_callback, predict_mc_welford
 
@@ -129,7 +129,7 @@ class BaseKerasPredictor(BasePredictorPlugin):
 
     # --- Callbacks factory (Bayesian variant will extend) ---
     def _build_callbacks(self):
-        return [
+        callbacks = [
             EarlyStoppingWithPatienceCounter(
                 monitor='val_loss',
                 patience=self.params.get('early_patience', 10),
@@ -147,6 +147,16 @@ class BaseKerasPredictor(BasePredictorPlugin):
             LambdaCallback(on_epoch_end=lambda e, l: print(
                 f"Epoch {e+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
         ]
+
+        mem_log = self.params.get('memory_log_file')
+        if mem_log:
+            try:
+                callbacks.append(MemoryUsageLogger(str(mem_log), flush_every=1))
+                print(f"Memory usage logging enabled: {mem_log}")
+            except Exception as e:
+                print(f"WARN: Failed to enable memory logging: {e}")
+
+        return callbacks
 
     # --- Generic train loop ---
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
