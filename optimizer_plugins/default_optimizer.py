@@ -19,6 +19,7 @@ import time
 import json
 import gc
 import tensorflow as tf
+import os
 from deap import base, creator, tools, algorithms
 from app.plugin_loader import load_plugin
 
@@ -145,6 +146,42 @@ class Plugin:
         self.current_gen = 0
         self.best_fitness_so_far = float("inf")
         self.patience_counter = 0
+        self.best_naive_mae_so_far = None
+
+        def _json_sanitize(obj):
+            """Recursively convert numpy/tensor types into JSON-serializable Python types."""
+            # TensorFlow tensors
+            try:
+                if isinstance(obj, tf.Tensor):
+                    obj = obj.numpy()
+            except Exception:
+                pass
+
+            # Numpy scalars
+            if isinstance(obj, np.generic):
+                return obj.item()
+
+            # Numpy arrays
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+
+            if isinstance(obj, dict):
+                return {str(k): _json_sanitize(v) for k, v in obj.items()}
+            if isinstance(obj, (list, tuple)):
+                return [_json_sanitize(v) for v in obj]
+
+            # Plain Python types are fine (including None)
+            return obj
+
+        def _atomic_json_dump(path: str, payload: dict) -> None:
+            """Write JSON atomically to avoid corrupt/truncated files on crashes/OOM."""
+            tmp_path = f"{path}.tmp"
+            os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+            with open(tmp_path, "w") as f:
+                json.dump(_json_sanitize(payload), f, indent=4)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_path, path)
         
         def eval_individual(individual):
             # CRITICAL FIX: Clear Keras session and garbage collect to prevent OOM
@@ -511,6 +548,12 @@ class Plugin:
                 no_improve_counter = 0
                 self.patience_counter = 0
                 print(f"  New best found!")
+
+                # Capture champion naive MAE at the moment the global champion improves
+                try:
+                    self.best_naive_mae_so_far = getattr(hof[0], "naive_mae", self.best_naive_mae_so_far)
+                except Exception:
+                    pass
             else:
                 no_improve_counter += 1
                 self.patience_counter = no_improve_counter
@@ -528,24 +571,29 @@ class Plugin:
             # Get Naive MAE from the best individual (or average, but usually we want the benchmark)
             # We stored it in individual.naive_mae during evaluation
             best_ind_gen = tools.selBest(population, 1)[0]
-            champion_naive_mae = getattr(best_ind_gen, "naive_mae", None)
+            champion_naive_mae_gen = getattr(best_ind_gen, "naive_mae", None)
+
+            # Global champion naive MAE (HallOfFame) for top-level stats
+            champion_naive_mae_global = getattr(hof[0], "naive_mae", None) if hof else None
+            if champion_naive_mae_global is None:
+                champion_naive_mae_global = self.best_naive_mae_so_far
             
             stats_history.append({
                 "generation": self.current_gen,
                 "duration": gen_duration,
                 "avg_mae": avg_mae,
-                "champion_naive_mae": champion_naive_mae
+                "champion_naive_mae": champion_naive_mae_gen
             })
             
             avg_time_per_epoch = sum(s["duration"] for s in stats_history) / len(stats_history)
-            total_candidates = (gen + 1) * population_size # Approximate
+            total_candidates = int(self.eval_counter)
             
             stats_data = {
                 "total_time_elapsed": elapsed_time,
                 "average_time_per_epoch": avg_time_per_epoch,
                 "candidates_evaluated_so_far": total_candidates, # Or track exactly with self.eval_counter accumulator
-                "champion_validation_mae": self.best_fitness_so_far,
-                "champion_naive_mae_max_horizon": champion_naive_mae,
+                "champion_validation_mae": float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else None,
+                "champion_naive_mae_max_horizon": champion_naive_mae_global,
                 "average_mae_per_epoch": [s["avg_mae"] for s in stats_history],
                 "history": stats_history
             }
@@ -553,8 +601,7 @@ class Plugin:
             # Save Statistics
             stats_file = config.get("optimization_statistics", "optimization_stats.json")
             try:
-                with open(stats_file, "w") as f:
-                    json.dump(stats_data, f, indent=4)
+                _atomic_json_dump(stats_file, stats_data)
                 print(f"  Statistics saved to {stats_file}")
             except Exception as e:
                 print(f"  Failed to save statistics: {e}")
@@ -578,8 +625,7 @@ class Plugin:
             
             params_file = config.get("optimization_parameters_file", "optimization_parameters.json")
             try:
-                with open(params_file, "w") as f:
-                    json.dump(best_hyper_so_far, f, indent=4)
+                _atomic_json_dump(params_file, best_hyper_so_far)
                 print(f"  Champion parameters saved to {params_file}")
             except Exception as e:
                 print(f"  Failed to save champion parameters: {e}")
