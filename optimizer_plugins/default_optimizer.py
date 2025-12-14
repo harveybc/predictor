@@ -23,6 +23,8 @@ import os
 from deap import base, creator, tools, algorithms
 from app.plugin_loader import load_plugin
 
+from predictor_plugins.common.callbacks import capture_resource_snapshot
+
 class Plugin:
     # Parámetros por defecto del optimizador.
     plugin_params = {
@@ -182,13 +184,54 @@ class Plugin:
                 f.flush()
                 os.fsync(f.fileno())
             os.replace(tmp_path, path)
+
+        def _append_resource_row(stage: str, gen: int | None = None, cand: int | None = None, extra: dict | None = None) -> None:
+            log_path = config.get("optimizer_resource_log_file")
+            if not log_path:
+                return
+            try:
+                snap = capture_resource_snapshot(include_gpu=bool(config.get("memory_log_gpu", True)), include_gc=bool(config.get("memory_log_gc", False)))
+                os.makedirs(os.path.dirname(str(log_path)) or ".", exist_ok=True)
+                new_file = not os.path.exists(str(log_path))
+                with open(str(log_path), "a", encoding="utf-8") as f:
+                    if new_file:
+                        f.write(
+                            "ts,stage,generation,candidate,VmRSS_kB,VmHWM_kB,gpu_current_B,gpu_peak_B,extra\n"
+                        )
+                    extra_json = ""
+                    if extra:
+                        try:
+                            extra_json = json.dumps(_json_sanitize(extra), separators=(",", ":"))
+                        except Exception:
+                            extra_json = ""
+                    f.write(
+                        f"{snap.ts:.3f},{stage},{gen if gen is not None else ''},{cand if cand is not None else ''},"
+                        f"{snap.rss_kb if snap.rss_kb is not None else ''},{snap.hwm_kb if snap.hwm_kb is not None else ''},"
+                        f"{snap.gpu_current_bytes if snap.gpu_current_bytes is not None else ''},{snap.gpu_peak_bytes if snap.gpu_peak_bytes is not None else ''},"
+                        f"{extra_json}\n"
+                    )
+                    f.flush()
+            except Exception as e:
+                print(f"WARN: optimizer resource logging failed: {e}")
         
         def eval_individual(individual):
+            _append_resource_row("candidate_start", gen=int(self.current_gen or 0), cand=int(self.eval_counter + 1))
+
             # CRITICAL FIX: Clear Keras session and garbage collect to prevent OOM
             if hasattr(predictor_plugin, 'model'):
                 del predictor_plugin.model
             tf.keras.backend.clear_session()
             gc.collect()
+
+            # Optional: recreate predictor plugin per candidate to avoid hidden state accumulation
+            predictor_for_eval = predictor_plugin
+            if bool(config.get("optimizer_recreate_predictor_each_eval", False)):
+                try:
+                    predictor_for_eval = predictor_plugin.__class__(config)
+                    predictor_for_eval.set_params(**config)
+                except Exception as e:
+                    print(f"WARN: could not recreate predictor plugin; using shared instance: {e}")
+                    predictor_for_eval = predictor_plugin
 
             self.eval_counter += 1
             
@@ -218,6 +261,9 @@ class Plugin:
             new_config = config.copy()
             new_config.update(hyper_dict)
 
+            # Tag epoch-level resource logs so we can correlate with GA generation/candidate.
+            new_config.setdefault("memory_log_tag", f"ga_gen{int(self.current_gen or 0)}_cand{int(self.eval_counter)}")
+
             # CRITICAL: During GA optimization, avoid post-fit MC uncertainty passes.
             # The default BaseBayesianKerasPredictor does MC prediction over full train+val
             # after every fit, which can explode memory/time on large datasets.
@@ -240,9 +286,9 @@ class Plugin:
             if new_config["plugin"] in ["lstm", "cnn", "transformer", "ann", "mimo"]:
                 # Handle 3D input for sequence models
                 input_shape = (window_size, x_train.shape[2]) if len(x_train.shape) == 3 else (x_train.shape[1],)
-                predictor_plugin.build_model(input_shape=input_shape, x_train=x_train, config=new_config)
+                predictor_for_eval.build_model(input_shape=input_shape, x_train=x_train, config=new_config)
             else:
-                predictor_plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=new_config)
+                predictor_for_eval.build_model(input_shape=x_train.shape[1], x_train=x_train, config=new_config)
             
             # Calculate Naive MAE for the highest horizon
             # Naive prediction: use the last known value (t-1) as prediction for all future steps
@@ -328,13 +374,15 @@ class Plugin:
 
             try:
                 # Para optimización, usar menos epochs.
-                history, _, _, val_preds, _ = predictor_plugin.train(
+                _append_resource_row("before_fit", gen=int(self.current_gen or 0), cand=int(self.eval_counter), extra={"params": hyper_dict})
+                history, _, _, val_preds, _ = predictor_for_eval.train(
                     x_train, y_train,
                     epochs=new_config.get("epochs", 10),
                     batch_size=new_config.get("batch_size", 32),
                     threshold_error=new_config.get("threshold_error", 0.001),
                     x_val=x_val, y_val=y_val, config=new_config
                 )
+                _append_resource_row("after_fit", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
                 
                 # --- Compute Metrics Exactly like Pipeline ---
                 # We need to replicate compute_train_val_metrics logic for the max horizon
@@ -419,12 +467,14 @@ class Plugin:
 
             # Hard cleanup after each candidate as well (prevents long-run accumulation)
             try:
-                if hasattr(predictor_plugin, 'model'):
-                    del predictor_plugin.model
+                if hasattr(predictor_for_eval, 'model'):
+                    del predictor_for_eval.model
             except Exception:
                 pass
             tf.keras.backend.clear_session()
             gc.collect()
+
+            _append_resource_row("candidate_end", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
             
             # Print optimization state
             print(f"Optimization State:")

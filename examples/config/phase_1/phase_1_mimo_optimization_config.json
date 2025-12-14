@@ -26,6 +26,13 @@
     "preprocessor_plugin": "stl_preprocessor",
     "plugin": "mimo",
 
+    "memory_log_file": "/home/harveybc/Documents/GitHub/predictor/examples/results/phase_1/phase_1_mimo_rss.csv",
+    "memory_log_gpu": true,
+    "memory_log_gc": false,
+    "memory_log_flush_every": 1,
+    "optimizer_resource_log_file": "/home/harveybc/Documents/GitHub/predictor/examples/results/phase_1/phase_1_mimo_optimizer_resources.csv",
+    "optimizer_recreate_predictor_each_eval": false,
+
     "use_optimizer": true,
     "population_size": 20,
     "n_generations": 25,
@@ -64,6 +71,8 @@
     "use_log1p_features": ["typical_price"],
 
     "mc_samples": 20,
+    "disable_postfit_uncertainty": true,
+    "predict_batch_size": 256,
     "plotted_horizon": 6,
     "mmd_lambda": 0.0,
 

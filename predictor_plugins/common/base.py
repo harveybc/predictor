@@ -40,7 +40,12 @@ from .losses import (
     compute_mmd, composite_loss_noreturns
 )
 from .callbacks import (
-    ReduceLROnPlateauWithCounter, EarlyStoppingWithPatienceCounter, MemoryUsageLogger
+    ReduceLROnPlateauWithCounter,
+    EarlyStoppingWithPatienceCounter,
+    MemoryUsageLogger,
+    ResourceUsageLogger,
+    ResourceGuard,
+    capture_resource_snapshot,
 )
 from .bayesian import build_kl_anneal_callback, predict_mc_welford
 
@@ -149,12 +154,48 @@ class BaseKerasPredictor(BasePredictorPlugin):
         ]
 
         mem_log = self.params.get('memory_log_file')
+        mem_tag = self.params.get('memory_log_tag')
+        mem_flush = int(self.params.get('memory_log_flush_every', 1) or 1)
+        mem_gpu = bool(self.params.get('memory_log_gpu', True))
+        mem_gc = bool(self.params.get('memory_log_gc', False))
+
+        # Prefer the richer logger if enabled; keep the old one for backward compatibility.
         if mem_log:
             try:
-                callbacks.append(MemoryUsageLogger(str(mem_log), flush_every=1))
-                print(f"Memory usage logging enabled: {mem_log}")
+                callbacks.append(
+                    ResourceUsageLogger(
+                        str(mem_log),
+                        tag=str(mem_tag) if mem_tag is not None else None,
+                        flush_every=mem_flush,
+                        include_gpu=mem_gpu,
+                        include_gc=mem_gc,
+                    )
+                )
+                print(f"Resource logging enabled: file={mem_log} tag={mem_tag} gpu={mem_gpu} gc={mem_gc}")
             except Exception as e:
-                print(f"WARN: Failed to enable memory logging: {e}")
+                print(f"WARN: Failed to enable ResourceUsageLogger: {e}")
+                try:
+                    callbacks.append(MemoryUsageLogger(str(mem_log), flush_every=mem_flush, tag=str(mem_tag) if mem_tag else None))
+                    print(f"Fallback memory logging enabled: file={mem_log} tag={mem_tag}")
+                except Exception as e2:
+                    print(f"WARN: Failed to enable fallback MemoryUsageLogger: {e2}")
+
+        # Optional pre-OOM guard to stop the run with a Python exception + logs.
+        max_rss_mb = self.params.get('max_rss_mb')
+        max_rss_gb = self.params.get('max_rss_gb')
+        if max_rss_mb or max_rss_gb:
+            try:
+                callbacks.append(
+                    ResourceGuard(
+                        max_rss_mb=int(max_rss_mb) if max_rss_mb else None,
+                        max_rss_gb=float(max_rss_gb) if max_rss_gb else None,
+                        include_gpu=mem_gpu,
+                        print_every=int(self.params.get('resource_guard_print_every', 1) or 1),
+                    )
+                )
+                print(f"ResourceGuard enabled: max_rss_mb={max_rss_mb} max_rss_gb={max_rss_gb}")
+            except Exception as e:
+                print(f"WARN: Failed to enable ResourceGuard: {e}")
 
         return callbacks
 
@@ -172,6 +213,20 @@ class BaseKerasPredictor(BasePredictorPlugin):
         if not isinstance(y_train, dict) or not isinstance(y_val, dict):
             raise TypeError('y_train/y_val must be dicts mapping output names -> arrays')
         callbacks = self._build_callbacks()
+
+        # One-shot resource snapshot at fit start (printed and optionally logged by callbacks later).
+        try:
+            snap = capture_resource_snapshot(
+                include_gpu=bool(self.params.get('memory_log_gpu', True)),
+                include_gc=bool(self.params.get('memory_log_gc', False)),
+            )
+            print(
+                f"[RESOURCE] fit_start ts={snap.ts:.3f} VmRSS_kB={snap.rss_kb} VmHWM_kB={snap.hwm_kb} "
+                f"gpu_current_B={snap.gpu_current_bytes} gpu_peak_B={snap.gpu_peak_bytes} gc={snap.gc_counts}"
+            )
+        except Exception as e:
+            print(f"[RESOURCE] fit_start snapshot failed: {e}")
+
         history = self.model.fit(
             x_train,
             y_train,
