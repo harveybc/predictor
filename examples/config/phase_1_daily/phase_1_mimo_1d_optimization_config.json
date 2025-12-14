@@ -22,7 +22,8 @@
     "pipeline_plugin": "stl_pipeline",
     "preprocessor_plugin": "stl_preprocessor",
     
-    "p[lugion": "cnn",
+    "plugin": "cnn",
+    "memory_log_file": "/home/harveybc/Documents/GitHub/predictor/examples/results/phase_1_daily/phase_1_cnn_1d_rss.csv",
     "use_optimizer": true,
     "population_size": 20,
     "n_generations": 25,
