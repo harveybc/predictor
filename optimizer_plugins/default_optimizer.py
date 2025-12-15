@@ -23,6 +23,7 @@ import os
 import sys
 import subprocess
 import tempfile
+from collections import deque
 from pathlib import Path
 from deap import base, creator, tools, algorithms
 from app.plugin_loader import load_plugin
@@ -350,9 +351,11 @@ class Plugin:
                     env = os.environ.copy()
                     env.setdefault("TF_FORCE_GPU_ALLOW_GROWTH", "1")
                     env.setdefault("TF_GPU_ALLOCATOR", "cuda_malloc_async")
+                    env.setdefault("PYTHONUNBUFFERED", "1")
 
                     cmd = [
                         sys.executable,
+                        "-u",
                         "-m",
                         "optimizer_plugins.candidate_worker",
                         "--input",
@@ -362,7 +365,28 @@ class Plugin:
                     ]
 
                     try:
-                        proc = subprocess.run(cmd, env=env, capture_output=True, text=True)
+                        # Stream worker output live so long trainings don't look hung.
+                        # Merge stderr into stdout to avoid pipe deadlocks.
+                        p = subprocess.Popen(
+                            cmd,
+                            env=env,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            text=True,
+                            bufsize=1,
+                            universal_newlines=True,
+                        )
+                        assert p.stdout is not None
+                        tail_lines: deque[str] = deque(maxlen=400)  # ~ last few KB of logs
+                        for line in p.stdout:
+                            # Preserve worker's original messages.
+                            try:
+                                sys.stdout.write(line)
+                                sys.stdout.flush()
+                            except Exception:
+                                pass
+                            tail_lines.append(line)
+                        returncode = p.wait()
                     except Exception as e:
                         _append_resource_row(
                             "subprocess_spawn_failed",
@@ -375,14 +399,13 @@ class Plugin:
                         return (float("inf"),)
 
                     # Worker failure (including OOM-kill) must not kill the optimizer.
-                    if proc.returncode != 0:
-                        stderr_tail = (proc.stderr or "")[-2000:]
-                        stdout_tail = (proc.stdout or "")[-2000:]
+                    if returncode != 0:
+                        stdout_tail = "".join(list(tail_lines))[-4000:]
                         _append_resource_row(
                             "subprocess_failed",
                             gen=int(self.current_gen or 0),
                             cand=int(self.eval_counter),
-                            extra={"returncode": proc.returncode, "stderr_tail": stderr_tail, "stdout_tail": stdout_tail},
+                            extra={"returncode": returncode, "stdout_tail": stdout_tail},
                         )
                         fitness = float("inf")
                         naive_mae = float("inf")
