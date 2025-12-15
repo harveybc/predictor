@@ -23,6 +23,9 @@ class STLPreprocessorZScore:
         "predicted_horizons": [1, 2, 3, 4, 5, 6],
         "target_column": "typical_price",
         "use_returns": True,
+        # Targets and baselines are derived from *denormalized* baselines (real-world price units).
+        # This prevents downstream metric code from accidentally denormalizing twice.
+        "targets_are_denormalized": True,
         "anti_naive_lock_enabled": True,
     "feature_preprocessing_strategy": "selective",
     "add_window_stats": True,

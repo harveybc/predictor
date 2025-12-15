@@ -163,10 +163,34 @@ class Plugin:
         
         # Global counters for progress tracking
         self.eval_counter = 0
+        self.total_eval_counter = 0
         self.current_gen = 0
         self.best_fitness_so_far = float("inf")
         self.patience_counter = 0
         self.best_naive_mae_so_far = None
+
+        def _ensure_2d_targets(y):
+            """Match the STL pipeline behavior: y arrays are column vectors (N,1)."""
+            if isinstance(y, dict):
+                out = {}
+                for k, v in y.items():
+                    arr = np.asarray(v)
+                    out[k] = arr.reshape(-1, 1).astype(np.float32)
+                return out
+            return y
+
+        def _array_stats(arr):
+            arr = np.asarray(arr).reshape(-1)
+            arr = arr[np.isfinite(arr)]
+            if arr.size == 0:
+                return {"n": 0}
+            return {
+                "n": int(arr.size),
+                "mean": float(np.mean(arr)),
+                "std": float(np.std(arr)),
+                "min": float(np.min(arr)),
+                "max": float(np.max(arr)),
+            }
 
         def _json_sanitize(obj):
             """Recursively convert numpy/tensor types into JSON-serializable Python types."""
@@ -254,6 +278,7 @@ class Plugin:
                     predictor_for_eval = predictor_plugin
 
             self.eval_counter += 1
+            self.total_eval_counter += 1
             
             # Mapear el individuo a un diccionario de hiperparámetros.
             hyper_dict = {}
@@ -318,6 +343,10 @@ class Plugin:
                 
             x_train, y_train = datasets["x_train"], datasets["y_train"]
             x_val, y_val = datasets["x_val"], datasets["y_val"]
+
+            # Match pipeline target shapes (N,1) for Keras.
+            y_train = _ensure_2d_targets(y_train)
+            y_val = _ensure_2d_targets(y_val)
 
             # Construir y entrenar el modelo utilizando el Predictor Plugin.
             window_size = new_config.get("window_size")
@@ -497,10 +526,28 @@ class Plugin:
                 # "Validation MAE of the champion has not been incremented" -> implies we should use this MAE for early stopping/fitness.
                 # Let's use val_mae as the fitness metric to be consistent.
                 
-                fitness = val_mae
-                train_loss = history.history["loss"][-1] # Keep this for info
-                
-                print(f"Candidate Result -> Val MAE (Max H): {fitness:.6f} | Naive MAE (Max H): {naive_mae:.6f} | Train Loss: {train_loss:.6f}")
+                fitness = float(val_mae)
+                train_loss = float(history.history.get("loss", [np.nan])[-1])
+                val_loss = float(history.history.get("val_loss", [np.nan])[-1])
+
+                # Scale diagnostics (catch mixed-unit bugs immediately)
+                try:
+                    diag = {
+                        "y_true_max_h": _array_stats(y_true_max_h),
+                        "val_preds_h": _array_stats(val_preds_h),
+                        "baseline_val": _array_stats(baseline_val[:num_val_pts]) if baseline_val is not None else {"n": 0},
+                    }
+                    print(f"[DIAG] scales: {diag}")
+                except Exception as _e:
+                    print(f"[DIAG] scale stats failed: {_e}")
+
+                print(
+                    "Candidate Result -> "
+                    f"Fitness(Val MAE maxH): {fitness:.6f} | "
+                    f"Naive MAE maxH: {naive_mae:.6f} | "
+                    f"Keras val_loss: {val_loss:.6f} | "
+                    f"Keras train_loss: {train_loss:.6f}"
+                )
             except Exception as e:
                 print(f"Training/Metrics failed for individual {hyper_dict}: {e}")
                 fitness = float("inf")
@@ -563,6 +610,7 @@ class Plugin:
         # Evaluate the entire population
         self.current_gen = 0
         self.eval_counter = 0 # Reset for initial population
+        self.total_eval_counter = 0
         
         # Enforce bounds on initial population (just in case)
         for ind in population:
@@ -676,13 +724,16 @@ class Plugin:
             })
             
             avg_time_per_epoch = sum(s["duration"] for s in stats_history) / len(stats_history)
-            total_candidates = int(self.eval_counter)
+            total_candidates = int(self.total_eval_counter)
             
             stats_data = {
                 "total_time_elapsed": elapsed_time,
                 "average_time_per_epoch": avg_time_per_epoch,
                 "candidates_evaluated_so_far": total_candidates, # Or track exactly with self.eval_counter accumulator
+                # Backward-compatible field name (this is the DEAP fitness: Val MAE on max horizon).
                 "champion_validation_mae": float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else None,
+                # Explicit aliases to avoid future confusion.
+                "champion_fitness_val_mae_max_horizon": float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else None,
                 "champion_naive_mae_max_horizon": champion_naive_mae_global,
                 "average_mae_per_epoch": [s["avg_mae"] for s in stats_history],
                 "history": stats_history
