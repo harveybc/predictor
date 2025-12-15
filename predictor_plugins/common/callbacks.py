@@ -316,9 +316,27 @@ class ResourceGuard(Callback):
         if self.check_every_batches is None:
             return
         self._batch_count += 1
-        if (self._batch_count % self.check_every_batches) != 0:
+        # Use batch index cadence for deterministic sampling within each epoch.
+        if ((int(batch) + 1) % self.check_every_batches) != 0:
             return
         self._check_and_maybe_abort(where="batch_end", batch=int(batch))
+
+    def on_train_begin(self, logs=None):
+        # Catch cases where we already start above the limit.
+        self._check_and_maybe_abort(where="train_begin")
+
+    def on_epoch_begin(self, epoch, logs=None):
+        # Catch large jumps that occur between epochs (e.g., caching / graph build effects).
+        self._check_and_maybe_abort(where="epoch_begin", epoch=int(epoch))
+
+    def on_train_batch_begin(self, batch, logs=None):
+        # Critical: batch 0 often triggers big internal allocations (workspace/autotune).
+        if self.check_every_batches is None:
+            if int(batch) == 0:
+                self._check_and_maybe_abort(where="batch_begin", batch=int(batch))
+            return
+        if int(batch) == 0 or ((int(batch) + 1) % self.check_every_batches) == 0:
+            self._check_and_maybe_abort(where="batch_begin", batch=int(batch))
 
     def on_epoch_end(self, epoch, logs=None):
         self._epoch_count += 1

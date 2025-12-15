@@ -20,6 +20,9 @@ import json
 import gc
 import tensorflow as tf
 import os
+import sys
+import subprocess
+import tempfile
 from pathlib import Path
 from deap import base, creator, tools, algorithms
 from app.plugin_loader import load_plugin
@@ -305,6 +308,113 @@ class Plugin:
             # Combinar los hiperparámetros con la configuración actual.
             new_config = config.copy()
             new_config.update(hyper_dict)
+
+            # -----------------------------------------------------------------
+            # CRITICAL: Optional subprocess isolation per candidate.
+            # This prevents host-RAM accumulation across candidates from killing
+            # the main optimizer process (Linux OOM killer).
+            # -----------------------------------------------------------------
+            if bool(new_config.get("optimizer_isolate_candidate_process", True)):
+                # Resolve log paths deterministically to the predictor repo root.
+                for k in ("memory_log_file", "optimizer_resource_log_file", "batch_memory_log_file"):
+                    if new_config.get(k):
+                        new_config[k] = _resolve_repo_path(new_config.get(k))
+
+                # Tag epoch/batch logs for correlation.
+                new_config.setdefault(
+                    "memory_log_tag",
+                    f"ga_gen{int(self.current_gen or 0)}_cand{int(self.eval_counter)}",
+                )
+
+                _append_resource_row(
+                    "subprocess_start",
+                    gen=int(self.current_gen or 0),
+                    cand=int(self.eval_counter),
+                    extra={"params": hyper_dict},
+                )
+
+                with tempfile.TemporaryDirectory(prefix="ga_cand_") as td:
+                    in_path = os.path.join(td, "input.json")
+                    out_path = os.path.join(td, "output.json")
+                    with open(in_path, "w", encoding="utf-8") as f:
+                        json.dump(
+                            {
+                                "gen": int(self.current_gen or 0),
+                                "cand": int(self.eval_counter),
+                                "config": new_config,
+                                "hyper": hyper_dict,
+                            },
+                            f,
+                        )
+
+                    env = os.environ.copy()
+                    env.setdefault("TF_FORCE_GPU_ALLOW_GROWTH", "1")
+                    env.setdefault("TF_GPU_ALLOCATOR", "cuda_malloc_async")
+
+                    cmd = [
+                        sys.executable,
+                        "-m",
+                        "optimizer_plugins.candidate_worker",
+                        "--input",
+                        in_path,
+                        "--output",
+                        out_path,
+                    ]
+
+                    try:
+                        proc = subprocess.run(cmd, env=env, capture_output=True, text=True)
+                    except Exception as e:
+                        _append_resource_row(
+                            "subprocess_spawn_failed",
+                            gen=int(self.current_gen or 0),
+                            cand=int(self.eval_counter),
+                            extra={"error": str(e)},
+                        )
+                        individual.naive_mae = float("inf")
+                        _append_resource_row("candidate_end", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
+                        return (float("inf"),)
+
+                    # Worker failure (including OOM-kill) must not kill the optimizer.
+                    if proc.returncode != 0:
+                        stderr_tail = (proc.stderr or "")[-2000:]
+                        stdout_tail = (proc.stdout or "")[-2000:]
+                        _append_resource_row(
+                            "subprocess_failed",
+                            gen=int(self.current_gen or 0),
+                            cand=int(self.eval_counter),
+                            extra={"returncode": proc.returncode, "stderr_tail": stderr_tail, "stdout_tail": stdout_tail},
+                        )
+                        fitness = float("inf")
+                        naive_mae = float("inf")
+                        try:
+                            if os.path.exists(out_path):
+                                payload = json.load(open(out_path, "r", encoding="utf-8"))
+                                fitness = float(payload.get("fitness", float("inf")))
+                                nm = payload.get("naive_mae")
+                                naive_mae = float(nm) if nm is not None else float("inf")
+                        except Exception:
+                            pass
+                        individual.naive_mae = naive_mae
+                        _append_resource_row("candidate_end", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
+                        return (fitness,)
+
+                    payload = json.load(open(out_path, "r", encoding="utf-8"))
+                    fitness = float(payload.get("fitness", float("inf")))
+                    nm = payload.get("naive_mae")
+                    naive_mae = float(nm) if nm is not None else float("inf")
+                    individual.naive_mae = naive_mae
+                    _append_resource_row(
+                        "subprocess_ok",
+                        gen=int(self.current_gen or 0),
+                        cand=int(self.eval_counter),
+                        extra={"fitness": fitness, "naive_mae": naive_mae},
+                    )
+                    _append_resource_row("candidate_end", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
+                    print(
+                        f"Candidate Result -> Val MAE (Max H): {fitness:.6f} | "
+                        f"Naive MAE (Max H): {naive_mae:.6f} | (isolated subprocess)"
+                    )
+                    return (fitness,)
 
             # Tag epoch-level resource logs so we can correlate with GA generation/candidate.
             new_config.setdefault("memory_log_tag", f"ga_gen{int(self.current_gen or 0)}_cand{int(self.eval_counter)}")
