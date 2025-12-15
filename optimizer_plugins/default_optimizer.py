@@ -24,6 +24,8 @@ import sys
 import subprocess
 import tempfile
 from collections import deque
+import pty
+import select
 from pathlib import Path
 from deap import base, creator, tools, algorithms
 from app.plugin_loader import load_plugin
@@ -365,28 +367,45 @@ class Plugin:
                     ]
 
                     try:
-                        # Stream worker output live so long trainings don't look hung.
-                        # Merge stderr into stdout to avoid pipe deadlocks.
+                        # Run worker under a pseudo-terminal so tqdm/progress-bars render correctly.
+                        master_fd, slave_fd = pty.openpty()
                         p = subprocess.Popen(
                             cmd,
                             env=env,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT,
-                            text=True,
-                            bufsize=1,
-                            universal_newlines=True,
+                            stdin=slave_fd,
+                            stdout=slave_fd,
+                            stderr=slave_fd,
+                            close_fds=True,
                         )
-                        assert p.stdout is not None
-                        tail_lines: deque[str] = deque(maxlen=400)  # ~ last few KB of logs
-                        for line in p.stdout:
-                            # Preserve worker's original messages.
-                            try:
-                                sys.stdout.write(line)
-                                sys.stdout.flush()
-                            except Exception:
-                                pass
-                            tail_lines.append(line)
+                        os.close(slave_fd)
+
+                        tail_chunks: deque[bytes] = deque(maxlen=256)
+                        while True:
+                            # Read available output without blocking indefinitely.
+                            r, _, _ = select.select([master_fd], [], [], 0.2)
+                            if master_fd in r:
+                                try:
+                                    data = os.read(master_fd, 4096)
+                                except OSError:
+                                    data = b""
+                                if not data:
+                                    break
+                                try:
+                                    sys.stdout.buffer.write(data)
+                                    sys.stdout.buffer.flush()
+                                except Exception:
+                                    pass
+                                tail_chunks.append(data)
+
+                            if p.poll() is not None:
+                                # Drain remaining PTY output.
+                                continue
+
                         returncode = p.wait()
+                        try:
+                            os.close(master_fd)
+                        except Exception:
+                            pass
                     except Exception as e:
                         _append_resource_row(
                             "subprocess_spawn_failed",
@@ -400,7 +419,7 @@ class Plugin:
 
                     # Worker failure (including OOM-kill) must not kill the optimizer.
                     if returncode != 0:
-                        stdout_tail = "".join(list(tail_lines))[-4000:]
+                        stdout_tail = b"".join(list(tail_chunks))[-8000:].decode(errors="replace")
                         _append_resource_row(
                             "subprocess_failed",
                             gen=int(self.current_gen or 0),
