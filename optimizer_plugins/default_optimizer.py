@@ -20,10 +20,28 @@ import json
 import gc
 import tensorflow as tf
 import os
+from pathlib import Path
 from deap import base, creator, tools, algorithms
 from app.plugin_loader import load_plugin
 
 from predictor_plugins.common.callbacks import capture_resource_snapshot
+
+
+def _repo_root() -> Path:
+    # default_optimizer.py -> optimizer_plugins/ -> <repo_root>
+    return Path(__file__).resolve().parents[1]
+
+
+def _resolve_repo_path(p: str | None) -> str | None:
+    if not p:
+        return None
+    try:
+        pp = Path(str(p))
+        if pp.is_absolute():
+            return str(pp)
+        return str((_repo_root() / pp).resolve())
+    except Exception:
+        return str(p)
 
 class Plugin:
     # Parámetros por defecto del optimizador.
@@ -186,7 +204,7 @@ class Plugin:
             os.replace(tmp_path, path)
 
         def _append_resource_row(stage: str, gen: int | None = None, cand: int | None = None, extra: dict | None = None) -> None:
-            log_path = config.get("optimizer_resource_log_file")
+            log_path = _resolve_repo_path(config.get("optimizer_resource_log_file"))
             if not log_path:
                 return
             try:
@@ -215,7 +233,9 @@ class Plugin:
                 print(f"WARN: optimizer resource logging failed: {e}")
         
         def eval_individual(individual):
-            _append_resource_row("candidate_start", gen=int(self.current_gen or 0), cand=int(self.eval_counter + 1))
+            # Note: eval_counter is incremented just below; use a stable candidate id for printing/logging.
+            candidate_id = int(self.eval_counter + 1)
+            _append_resource_row("candidate_start", gen=int(self.current_gen or 0), cand=candidate_id)
 
             # CRITICAL FIX: Clear Keras session and garbage collect to prevent OOM
             if hasattr(predictor_plugin, 'model'):
@@ -264,6 +284,22 @@ class Plugin:
             # Tag epoch-level resource logs so we can correlate with GA generation/candidate.
             new_config.setdefault("memory_log_tag", f"ga_gen{int(self.current_gen or 0)}_cand{int(self.eval_counter)}")
 
+            # Resolve log paths deterministically to the predictor repo root.
+            if new_config.get("memory_log_file"):
+                new_config["memory_log_file"] = _resolve_repo_path(new_config.get("memory_log_file"))
+            if new_config.get("optimizer_resource_log_file"):
+                new_config["optimizer_resource_log_file"] = _resolve_repo_path(new_config.get("optimizer_resource_log_file"))
+
+            # Print the effective logging destinations every candidate (critical for remote debugging).
+            print(
+                "[LOGGING] "
+                f"memory_log_file={new_config.get('memory_log_file')} "
+                f"optimizer_resource_log_file={new_config.get('optimizer_resource_log_file')} "
+                f"memory_log_tag={new_config.get('memory_log_tag')} "
+                f"max_rss_gb={new_config.get('max_rss_gb')} max_rss_mb={new_config.get('max_rss_mb')} "
+                f"predict_batch_size={new_config.get('predict_batch_size')} disable_postfit_uncertainty={new_config.get('disable_postfit_uncertainty')}"
+            )
+
             # CRITICAL: During GA optimization, avoid post-fit MC uncertainty passes.
             # The default BaseBayesianKerasPredictor does MC prediction over full train+val
             # after every fit, which can explode memory/time on large datasets.
@@ -272,7 +308,9 @@ class Plugin:
             new_config.setdefault("predict_batch_size", new_config.get("batch_size", 32))
 
             # Obtener los datos de entrenamiento y validación usando el Preprocessor Plugin.
+            _append_resource_row("before_preprocess", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
             datasets = preprocessor_plugin.run_preprocessing(target_plugin, new_config)
+            _append_resource_row("after_preprocess", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
             
             # Handle tuple return from stl_preprocessor (datasets, params)
             if isinstance(datasets, tuple):
@@ -283,12 +321,14 @@ class Plugin:
 
             # Construir y entrenar el modelo utilizando el Predictor Plugin.
             window_size = new_config.get("window_size")
+            _append_resource_row("before_build_model", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
             if new_config["plugin"] in ["lstm", "cnn", "transformer", "ann", "mimo"]:
                 # Handle 3D input for sequence models
                 input_shape = (window_size, x_train.shape[2]) if len(x_train.shape) == 3 else (x_train.shape[1],)
                 predictor_for_eval.build_model(input_shape=input_shape, x_train=x_train, config=new_config)
             else:
                 predictor_for_eval.build_model(input_shape=x_train.shape[1], x_train=x_train, config=new_config)
+            _append_resource_row("after_build_model", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
             
             # Calculate Naive MAE for the highest horizon
             # Naive prediction: use the last known value (t-1) as prediction for all future steps

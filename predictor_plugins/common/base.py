@@ -28,6 +28,7 @@ All other behaviors inherited, drastically reducing code duplication.
 """
 from __future__ import annotations
 from typing import Dict, List, Any, Tuple
+from pathlib import Path
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -44,10 +45,28 @@ from .callbacks import (
     EarlyStoppingWithPatienceCounter,
     MemoryUsageLogger,
     ResourceUsageLogger,
+    BatchResourceUsageLogger,
     ResourceGuard,
     capture_resource_snapshot,
 )
 from .bayesian import build_kl_anneal_callback, predict_mc_welford
+
+
+def _repo_root() -> Path:
+    # base.py -> common/ -> predictor_plugins/ -> <repo_root>
+    return Path(__file__).resolve().parents[2]
+
+
+def _resolve_repo_path(p: str | None) -> str | None:
+    if not p:
+        return None
+    try:
+        pp = Path(str(p))
+        if pp.is_absolute():
+            return str(pp)
+        return str((_repo_root() / pp).resolve())
+    except Exception:
+        return str(p)
 
 # ---------------------------------------------------------------------------
 # Base classes
@@ -153,11 +172,15 @@ class BaseKerasPredictor(BasePredictorPlugin):
                 f"Epoch {e+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
         ]
 
-        mem_log = self.params.get('memory_log_file')
+        mem_log = _resolve_repo_path(self.params.get('memory_log_file'))
         mem_tag = self.params.get('memory_log_tag')
         mem_flush = int(self.params.get('memory_log_flush_every', 1) or 1)
         mem_gpu = bool(self.params.get('memory_log_gpu', True))
         mem_gc = bool(self.params.get('memory_log_gc', False))
+
+        batch_mem_log = _resolve_repo_path(self.params.get('batch_memory_log_file'))
+        batch_every = self.params.get('batch_memory_log_every')
+        batch_flush = int(self.params.get('batch_memory_log_flush_every', mem_flush) or 1)
 
         # Prefer the richer logger if enabled; keep the old one for backward compatibility.
         if mem_log:
@@ -180,20 +203,51 @@ class BaseKerasPredictor(BasePredictorPlugin):
                 except Exception as e2:
                     print(f"WARN: Failed to enable fallback MemoryUsageLogger: {e2}")
 
+        # Optional batch-level logging (use sparingly; can be large files).
+        if batch_mem_log and batch_every:
+            try:
+                callbacks.append(
+                    BatchResourceUsageLogger(
+                        str(batch_mem_log),
+                        tag=str(mem_tag) if mem_tag is not None else None,
+                        every_n_batches=int(batch_every),
+                        flush_every=batch_flush,
+                        include_gpu=mem_gpu,
+                        include_gc=mem_gc,
+                    )
+                )
+                print(
+                    "Batch resource logging enabled: "
+                    f"file={batch_mem_log} tag={mem_tag} every_n_batches={batch_every} flush_every={batch_flush}"
+                )
+            except Exception as e:
+                print(f"WARN: Failed to enable BatchResourceUsageLogger: {e}")
+
         # Optional pre-OOM guard to stop the run with a Python exception + logs.
         max_rss_mb = self.params.get('max_rss_mb')
         max_rss_gb = self.params.get('max_rss_gb')
-        if max_rss_mb or max_rss_gb:
+        max_rss_mib = self.params.get('max_rss_mib')
+        max_rss_gib = self.params.get('max_rss_gib')
+        guard_check_every_batches = self.params.get('resource_guard_check_every_batches')
+        if max_rss_mb or max_rss_gb or max_rss_mib or max_rss_gib:
             try:
                 callbacks.append(
                     ResourceGuard(
                         max_rss_mb=int(max_rss_mb) if max_rss_mb else None,
                         max_rss_gb=float(max_rss_gb) if max_rss_gb else None,
+                        max_rss_mib=int(max_rss_mib) if max_rss_mib else None,
+                        max_rss_gib=float(max_rss_gib) if max_rss_gib else None,
                         include_gpu=mem_gpu,
                         print_every=int(self.params.get('resource_guard_print_every', 1) or 1),
+                        check_every_batches=int(guard_check_every_batches) if guard_check_every_batches else None,
                     )
                 )
-                print(f"ResourceGuard enabled: max_rss_mb={max_rss_mb} max_rss_gb={max_rss_gb}")
+                print(
+                    "ResourceGuard enabled: "
+                    f"max_rss_mb={max_rss_mb} max_rss_gb={max_rss_gb} "
+                    f"max_rss_mib={max_rss_mib} max_rss_gib={max_rss_gib} "
+                    f"resource_guard_check_every_batches={guard_check_every_batches}"
+                )
             except Exception as e:
                 print(f"WARN: Failed to enable ResourceGuard: {e}")
 

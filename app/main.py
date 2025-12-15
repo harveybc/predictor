@@ -14,6 +14,7 @@ import os
 import json
 import pandas as pd
 from typing import Any, Dict
+from pathlib import Path
 
 from app.config_handler import (
     load_config,
@@ -32,6 +33,69 @@ from config_merger import merge_config, process_unknown_args
 # - optimizer.plugins
 # - pipeline.plugins
 # - preprocessor.plugins
+
+
+def _repo_root() -> Path:
+    # main.py -> app/ -> <repo_root>
+    return Path(__file__).resolve().parents[1]
+
+
+def _resolve_repo_path(p: Any) -> str | None:
+    if not p:
+        return None
+    try:
+        pp = Path(str(p))
+        if pp.is_absolute():
+            return str(pp)
+        return str((_repo_root() / pp).resolve())
+    except Exception:
+        return str(p)
+
+
+def _ensure_csv_header(path: str, header_line: str) -> None:
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    if not os.path.exists(path) or os.path.getsize(path) == 0:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(header_line.rstrip("\n") + "\n")
+            f.flush()
+            os.fsync(f.fileno())
+
+
+def _validate_logging_config(config: Dict[str, Any]) -> None:
+    """Fail-fast-ish validation so remote runs never silently produce 'no logs'."""
+    mem_log = _resolve_repo_path(config.get("memory_log_file"))
+    opt_log = _resolve_repo_path(config.get("optimizer_resource_log_file"))
+    if mem_log:
+        config["memory_log_file"] = mem_log
+    if opt_log:
+        config["optimizer_resource_log_file"] = opt_log
+
+    print(
+        "[LOGGING_CONFIG] "
+        f"memory_log_file={config.get('memory_log_file')} "
+        f"optimizer_resource_log_file={config.get('optimizer_resource_log_file')} "
+        f"memory_log_gpu={config.get('memory_log_gpu')} memory_log_gc={config.get('memory_log_gc')} "
+        f"max_rss_gb={config.get('max_rss_gb')} max_rss_mb={config.get('max_rss_mb')}"
+    )
+
+    # Ensure files are writable and have headers (so tail/grep always works).
+    try:
+        if mem_log:
+            _ensure_csv_header(
+                mem_log,
+                "ts,epoch,tag,VmRSS_kB,VmHWM_kB,gpu_current_B,gpu_peak_B,gc0,gc1,gc2",
+            )
+    except Exception as e:
+        print(f"[LOGGING_CONFIG] WARN: cannot initialize memory_log_file: {e}")
+
+    try:
+        if opt_log:
+            _ensure_csv_header(
+                opt_log,
+                "ts,stage,generation,candidate,VmRSS_kB,VmHWM_kB,gpu_current_B,gpu_peak_B,extra",
+            )
+    except Exception as e:
+        print(f"[LOGGING_CONFIG] WARN: cannot initialize optimizer_resource_log_file: {e}")
 
 def main():
     """
@@ -166,6 +230,9 @@ def main():
     config = merge_config(config, target_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
     # fusión de configuración, integrando parámetros específicos de plugin preprocessor
     config = merge_config(config, preprocessor_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
+
+    # Validate logging destinations after final config merge.
+    _validate_logging_config(config)
     
 
     # --- DECISIÓN DE EJECUCIÓN ---
