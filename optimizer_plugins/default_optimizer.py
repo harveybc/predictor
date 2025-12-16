@@ -445,6 +445,13 @@ class Plugin:
                     nm = payload.get("naive_mae")
                     naive_mae = float(nm) if nm is not None else float("inf")
                     individual.naive_mae = naive_mae
+
+                    is_new_champion = False
+                    if np.isfinite(fitness) and fitness < float(self.best_fitness_so_far):
+                        self.best_fitness_so_far = float(fitness)
+                        self.best_naive_mae_so_far = float(naive_mae) if np.isfinite(naive_mae) else self.best_naive_mae_so_far
+                        is_new_champion = True
+
                     _append_resource_row(
                         "subprocess_ok",
                         gen=int(self.current_gen or 0),
@@ -455,6 +462,16 @@ class Plugin:
                     print(
                         f"Candidate Result -> Val MAE (Max H): {fitness:.6f} | "
                         f"Naive MAE (Max H): {naive_mae:.6f} | (isolated subprocess)"
+                    )
+                    champion_mae = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
+                    champion_naive = (
+                        float(self.best_naive_mae_so_far)
+                        if self.best_naive_mae_so_far is not None and np.isfinite(self.best_naive_mae_so_far)
+                        else float("inf")
+                    )
+                    print(
+                        f"Champion so far -> Val MAE (Max H): {champion_mae:.6f} | Naive MAE (Max H): {champion_naive:.6f}"
+                        + (" | NEW CHAMPION" if is_new_champion else "")
                     )
                     return (fitness,)
 
@@ -700,6 +717,23 @@ class Plugin:
                     f"Keras val_loss: {val_loss:.6f} | "
                     f"Keras train_loss: {train_loss:.6f}"
                 )
+
+                is_new_champion = False
+                if np.isfinite(fitness) and fitness < float(self.best_fitness_so_far):
+                    self.best_fitness_so_far = float(fitness)
+                    self.best_naive_mae_so_far = float(naive_mae) if np.isfinite(naive_mae) else self.best_naive_mae_so_far
+                    is_new_champion = True
+
+                champion_mae = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
+                champion_naive = (
+                    float(self.best_naive_mae_so_far)
+                    if self.best_naive_mae_so_far is not None and np.isfinite(self.best_naive_mae_so_far)
+                    else float("inf")
+                )
+                print(
+                    f"Champion so far -> Fitness(Val MAE maxH): {champion_mae:.6f} | Naive MAE maxH: {champion_naive:.6f}"
+                    + (" | NEW CHAMPION" if is_new_champion else "")
+                )
             except Exception as e:
                 print(f"Training/Metrics failed for individual {hyper_dict}: {e}")
                 fitness = float("inf")
@@ -792,6 +826,8 @@ class Plugin:
             self.current_gen = gen + 1 # Update for logging
             self.eval_counter = 0 # Reset per generation
             print(f"-- Generation {gen + 1}/{n_generations} --")
+
+            best_at_gen_start = float(self.best_fitness_so_far)
             
             # Select the next generation individuals
             offspring = toolbox.select(population, len(population))
@@ -833,8 +869,10 @@ class Plugin:
             current_best = hof[0].fitness.values[0]
             print(f"  Best Val Loss: {current_best}")
             
-            if current_best < self.best_fitness_so_far:
-                self.best_fitness_so_far = current_best
+            # Important: we may already update best_fitness_so_far per-candidate.
+            # For early-stopping, detect improvements relative to the start of this generation.
+            if current_best < best_at_gen_start:
+                self.best_fitness_so_far = float(min(self.best_fitness_so_far, current_best))
                 no_improve_counter = 0
                 self.patience_counter = 0
                 print(f"  New best found!")
