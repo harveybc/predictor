@@ -1,0 +1,68 @@
+{
+    "total_time_elapsed": 82169.21034765244,
+    "average_time_per_epoch": 8745.495027512312,
+    "candidates_evaluated_so_far": 121,
+    "champion_validation_mae": 0.004080083221197128,
+    "champion_fitness_val_mae_max_horizon": 0.004080083221197128,
+    "champion_naive_mae_max_horizon": 0.0041273487731814384,
+    "average_mae_per_epoch": [
+        0.004455942404456436,
+        0.004336206708103418,
+        0.004238715604878962,
+        0.0042141373734921215,
+        0.004193115653470159,
+        0.00421505265403539,
+        0.004308065958321094,
+        0.004225150053389371
+    ],
+    "history": [
+        {
+            "generation": 1,
+            "duration": 7455.084310531616,
+            "avg_mae": 0.004455942404456436,
+            "champion_naive_mae": 0.004142466466873884
+        },
+        {
+            "generation": 2,
+            "duration": 10697.950582742691,
+            "avg_mae": 0.004336206708103418,
+            "champion_naive_mae": 0.004130146000534296
+        },
+        {
+            "generation": 3,
+            "duration": 9915.053379774094,
+            "avg_mae": 0.004238715604878962,
+            "champion_naive_mae": 0.0041273487731814384
+        },
+        {
+            "generation": 4,
+            "duration": 11320.865566015244,
+            "avg_mae": 0.0042141373734921215,
+            "champion_naive_mae": 0.0041273487731814384
+        },
+        {
+            "generation": 5,
+            "duration": 7781.680488109589,
+            "avg_mae": 0.004193115653470159,
+            "champion_naive_mae": 0.0041273487731814384
+        },
+        {
+            "generation": 6,
+            "duration": 7177.189970970154,
+            "avg_mae": 0.00421505265403539,
+            "champion_naive_mae": 0.004141850396990776
+        },
+        {
+            "generation": 7,
+            "duration": 7421.321799516678,
+            "avg_mae": 0.004308065958321094,
+            "champion_naive_mae": 0.004141850396990776
+        },
+        {
+            "generation": 8,
+            "duration": 8194.81412243843,
+            "avg_mae": 0.004225150053389371,
+            "champion_naive_mae": 0.004141850396990776
+        }
+    ]
+}

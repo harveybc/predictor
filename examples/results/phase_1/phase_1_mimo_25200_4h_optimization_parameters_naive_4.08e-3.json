@@ -1,0 +1,12 @@
+{
+    "use_log1p_features": [
+        "typical_price"
+    ],
+    "window_size": 26,
+    "positional_encoding": true,
+    "encoder_conv_layers": 1,
+    "encoder_base_filters": 27,
+    "encoder_lstm_units": 16,
+    "horizon_embedding_dim": 11,
+    "horizon_attn_key_dim": 26
+}

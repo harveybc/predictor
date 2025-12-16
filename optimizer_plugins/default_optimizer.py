@@ -174,6 +174,45 @@ class Plugin:
         self.best_fitness_so_far = float("inf")
         self.patience_counter = 0
         self.best_naive_mae_so_far = None
+        self.best_test_mae_so_far = None
+        self.best_test_naive_mae_so_far = None
+        # Tracks the validation MAE to beat for the *current generation* (used by GA early stopping).
+        self.best_at_gen_start = float("inf")
+
+        def _extract_max_horizon_array(y_any, predicted_horizons, max_horizon):
+            if isinstance(y_any, dict):
+                key = f"output_horizon_{max_horizon}"
+                return np.asarray(y_any.get(key))
+            if isinstance(y_any, list):
+                max_h_idx = predicted_horizons.index(max_horizon)
+                return np.asarray(y_any[max_h_idx])
+            return np.asarray(y_any)
+
+        def _compute_split_metrics_max_h(*, split: str, preds_list, y_any, baseline_any, cfg) -> tuple[float, float]:
+            """Return (mae, naive_mae) for max horizon using pipeline-parity formulas."""
+            predicted_horizons = cfg.get("predicted_horizons", [1])
+            max_horizon = max(predicted_horizons) if predicted_horizons else 1
+            max_h_idx = predicted_horizons.index(max_horizon) if predicted_horizons else 0
+            from pipeline_plugins.stl_norm import denormalize, denormalize_returns
+
+            y_h = _extract_max_horizon_array(y_any, predicted_horizons, max_horizon).reshape(-1)
+            p_h = np.asarray(preds_list[max_h_idx]).reshape(-1)
+            n = min(len(y_h), len(p_h))
+            if baseline_any is not None:
+                n = min(n, len(np.asarray(baseline_any).reshape(-1)))
+            if n <= 0:
+                print(f"WARN: {split} metrics could not be computed (empty arrays).")
+                return (float("inf"), float("inf"))
+            y_h = y_h[:n]
+            p_h = p_h[:n]
+            mae = float(np.mean(np.abs(denormalize_returns(p_h - y_h, cfg))))
+
+            naive_mae = float("inf")
+            if baseline_any is not None:
+                baseline_h = np.asarray(baseline_any).reshape(-1)[:n]
+                target_price = denormalize(y_h, cfg)
+                naive_mae = float(np.mean(np.abs(denormalize(baseline_h, cfg) - target_price)))
+            return (mae, naive_mae)
 
         def _ensure_2d_targets(y):
             """Match the STL pipeline behavior: y arrays are column vectors (N,1)."""
@@ -318,6 +357,7 @@ class Plugin:
             # the main optimizer process (Linux OOM killer).
             # -----------------------------------------------------------------
             if bool(new_config.get("optimizer_isolate_candidate_process", True)):
+                # Subprocess worker will compute train/val/test metrics for this candidate.
                 # Resolve log paths deterministically to the predictor repo root.
                 for k in ("memory_log_file", "optimizer_resource_log_file", "batch_memory_log_file"):
                     if new_config.get(k):
@@ -444,12 +484,24 @@ class Plugin:
                     fitness = float(payload.get("fitness", float("inf")))
                     nm = payload.get("naive_mae")
                     naive_mae = float(nm) if nm is not None else float("inf")
+                    test_mae = float(payload.get("test_mae", float("inf")))
+                    tnm = payload.get("test_naive_mae")
+                    test_naive_mae = float(tnm) if tnm is not None else float("inf")
+                    train_mae = float(payload.get("train_mae", float("inf")))
+                    trnm = payload.get("train_naive_mae")
+                    train_naive_mae = float(trnm) if trnm is not None else float("inf")
                     individual.naive_mae = naive_mae
+                    individual.test_mae = test_mae
+                    individual.test_naive_mae = test_naive_mae
+                    individual.train_mae = train_mae
+                    individual.train_naive_mae = train_naive_mae
 
                     is_new_champion = False
                     if np.isfinite(fitness) and fitness < float(self.best_fitness_so_far):
                         self.best_fitness_so_far = float(fitness)
                         self.best_naive_mae_so_far = float(naive_mae) if np.isfinite(naive_mae) else self.best_naive_mae_so_far
+                        self.best_test_mae_so_far = float(test_mae) if np.isfinite(test_mae) else self.best_test_mae_so_far
+                        self.best_test_naive_mae_so_far = float(test_naive_mae) if np.isfinite(test_naive_mae) else self.best_test_naive_mae_so_far
                         is_new_champion = True
 
                     _append_resource_row(
@@ -460,8 +512,10 @@ class Plugin:
                     )
                     _append_resource_row("candidate_end", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
                     print(
-                        f"Candidate Result -> Val MAE (Max H): {fitness:.6f} | "
-                        f"Naive MAE (Max H): {naive_mae:.6f} | (isolated subprocess)"
+                        "Candidate Result -> "
+                        f"TRAINING MAE maxH: {train_mae:.6f} | TRAINING Naive MAE maxH: {train_naive_mae:.6f} || "
+                        f"VALIDATION MAE maxH: {fitness:.6f} | VALIDATION Naive MAE maxH: {naive_mae:.6f} || "
+                        f"TEST MAE maxH: {test_mae:.6f} | TEST Naive MAE maxH: {test_naive_mae:.6f} | (isolated subprocess)"
                     )
                     champion_mae = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
                     champion_naive = (
@@ -469,10 +523,28 @@ class Plugin:
                         if self.best_naive_mae_so_far is not None and np.isfinite(self.best_naive_mae_so_far)
                         else float("inf")
                     )
+                    champion_test_mae = (
+                        float(self.best_test_mae_so_far)
+                        if self.best_test_mae_so_far is not None and np.isfinite(self.best_test_mae_so_far)
+                        else float("inf")
+                    )
+                    champion_test_naive = (
+                        float(self.best_test_naive_mae_so_far)
+                        if self.best_test_naive_mae_so_far is not None and np.isfinite(self.best_test_naive_mae_so_far)
+                        else float("inf")
+                    )
                     print(
-                        f"Champion so far -> Val MAE (Max H): {champion_mae:.6f} | Naive MAE (Max H): {champion_naive:.6f}"
+                        "Champion so far -> "
+                        f"VALIDATION MAE maxH: {champion_mae:.6f} | VALIDATION Naive MAE maxH: {champion_naive:.6f} || "
+                        f"TEST MAE maxH: {champion_test_mae:.6f} | TEST Naive MAE maxH: {champion_test_naive:.6f}"
                         + (" | NEW CHAMPION" if is_new_champion else "")
                     )
+                    print("Optimization State (GA early stopping):")
+                    print(f"  Optimization patience: {patience}")
+                    print(f"  No-improve generations: {self.patience_counter}/{patience}")
+                    print(f"  Gen-start VALIDATION MAE to beat: {float(self.best_at_gen_start):.6f}")
+                    print(f"  Global champion VALIDATION MAE: {float(self.best_fitness_so_far):.6f}")
+                    print(f"------------------------------------------------------------")
                     return (fitness,)
 
             # Tag epoch-level resource logs so we can correlate with GA generation/candidate.
@@ -512,6 +584,10 @@ class Plugin:
                 
             x_train, y_train = datasets["x_train"], datasets["y_train"]
             x_val, y_val = datasets["x_val"], datasets["y_val"]
+            x_test, y_test = datasets.get("x_test"), datasets.get("y_test")
+            baseline_train = datasets.get("baseline_train")
+            baseline_val = datasets.get("baseline_val")
+            baseline_test = datasets.get("baseline_test")
 
             # Match pipeline target shapes (N,1) for Keras.
             y_train = _ensure_2d_targets(y_train)
@@ -613,7 +689,7 @@ class Plugin:
             try:
                 # Para optimización, usar menos epochs.
                 _append_resource_row("before_fit", gen=int(self.current_gen or 0), cand=int(self.eval_counter), extra={"params": hyper_dict})
-                history, _, _, val_preds, _ = predictor_for_eval.train(
+                history, train_preds, _, val_preds, _ = predictor_for_eval.train(
                     x_train, y_train,
                     epochs=new_config.get("epochs", 10),
                     batch_size=new_config.get("batch_size", 32),
@@ -642,10 +718,7 @@ class Plugin:
                 else:
                     y_true_max_h = y_val.flatten()
                 
-                # 3. Get baseline for Naive
-                baseline_val = datasets.get("baseline_val")
-                
-                # 4. Align lengths
+                # 3. Align lengths (VAL)
                 num_val_pts = min(len(val_preds_h), len(y_true_max_h))
                 if baseline_val is not None:
                     num_val_pts = min(num_val_pts, len(baseline_val))
@@ -687,6 +760,29 @@ class Plugin:
                     # Note: pipeline uses denormalize(baseline) - val_target_price
                     # val_target_price was computed as denormalize(y_true_max_h)
                     naive_mae = np.mean(np.abs(denormalize(baseline_val_h, new_config) - val_target_price))
+
+                # TRAIN metrics (max horizon)
+                train_mae, train_naive_mae = _compute_split_metrics_max_h(
+                    split="TRAINING",
+                    preds_list=train_preds,
+                    y_any=y_train,
+                    baseline_any=baseline_train,
+                    cfg=new_config,
+                )
+
+                # TEST metrics (max horizon)
+                test_mae, test_naive_mae = (float("inf"), float("inf"))
+                if x_test is not None and y_test is not None:
+                    pred_bs = int(new_config.get("predict_batch_size", 0) or new_config.get("batch_size", 32) or 256)
+                    test_preds = predictor_for_eval.model.predict(x_test, batch_size=pred_bs, verbose=0)
+                    test_preds = [test_preds] if isinstance(test_preds, np.ndarray) else test_preds
+                    test_mae, test_naive_mae = _compute_split_metrics_max_h(
+                        split="TEST",
+                        preds_list=test_preds,
+                        y_any=y_test,
+                        baseline_any=baseline_test,
+                        cfg=new_config,
+                    )
                 
                 # Use this calculated MAE as fitness instead of val_loss?
                 # The user wants to compare them. If we optimize for val_loss (normalized MSE usually), 
@@ -712,16 +808,18 @@ class Plugin:
 
                 print(
                     "Candidate Result -> "
-                    f"Fitness(Val MAE maxH): {fitness:.6f} | "
-                    f"Naive MAE maxH: {naive_mae:.6f} | "
-                    f"Keras val_loss: {val_loss:.6f} | "
-                    f"Keras train_loss: {train_loss:.6f}"
+                    f"TRAINING MAE maxH: {train_mae:.6f} | TRAINING Naive MAE maxH: {train_naive_mae:.6f} || "
+                    f"VALIDATION MAE maxH (fitness): {fitness:.6f} | VALIDATION Naive MAE maxH: {naive_mae:.6f} || "
+                    f"TEST MAE maxH: {test_mae:.6f} | TEST Naive MAE maxH: {test_naive_mae:.6f} || "
+                    f"Keras VALIDATION loss (val_loss): {val_loss:.6f} | Keras TRAINING loss (loss): {train_loss:.6f}"
                 )
 
                 is_new_champion = False
                 if np.isfinite(fitness) and fitness < float(self.best_fitness_so_far):
                     self.best_fitness_so_far = float(fitness)
                     self.best_naive_mae_so_far = float(naive_mae) if np.isfinite(naive_mae) else self.best_naive_mae_so_far
+                    self.best_test_mae_so_far = float(test_mae) if np.isfinite(test_mae) else self.best_test_mae_so_far
+                    self.best_test_naive_mae_so_far = float(test_naive_mae) if np.isfinite(test_naive_mae) else self.best_test_naive_mae_so_far
                     is_new_champion = True
 
                 champion_mae = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
@@ -730,8 +828,20 @@ class Plugin:
                     if self.best_naive_mae_so_far is not None and np.isfinite(self.best_naive_mae_so_far)
                     else float("inf")
                 )
+                champion_test_mae = (
+                    float(self.best_test_mae_so_far)
+                    if self.best_test_mae_so_far is not None and np.isfinite(self.best_test_mae_so_far)
+                    else float("inf")
+                )
+                champion_test_naive = (
+                    float(self.best_test_naive_mae_so_far)
+                    if self.best_test_naive_mae_so_far is not None and np.isfinite(self.best_test_naive_mae_so_far)
+                    else float("inf")
+                )
                 print(
-                    f"Champion so far -> Fitness(Val MAE maxH): {champion_mae:.6f} | Naive MAE maxH: {champion_naive:.6f}"
+                    "Champion so far -> "
+                    f"VALIDATION MAE maxH: {champion_mae:.6f} | VALIDATION Naive MAE maxH: {champion_naive:.6f} || "
+                    f"TEST MAE maxH: {champion_test_mae:.6f} | TEST Naive MAE maxH: {champion_test_naive:.6f}"
                     + (" | NEW CHAMPION" if is_new_champion else "")
                 )
             except Exception as e:
@@ -750,13 +860,22 @@ class Plugin:
             _append_resource_row("candidate_end", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
             
             # Print optimization state
-            print(f"Optimization State:")
-            print(f"  Current Best Val MAE to Beat: {self.best_fitness_so_far:.6f}")
-            print(f"  Patience Counter: {self.patience_counter}/{patience}")
+            print("Optimization State (GA early stopping):")
+            print(f"  Optimization patience: {patience}")
+            print(f"  No-improve generations: {self.patience_counter}/{patience}")
+            print(f"  Gen-start VALIDATION MAE to beat: {float(self.best_at_gen_start):.6f}")
+            print(f"  Global champion VALIDATION MAE: {float(self.best_fitness_so_far):.6f}")
             print(f"------------------------------------------------------------")
             
             # Store naive_mae in individual for stats later (hacky but effective)
             individual.naive_mae = naive_mae
+            try:
+                individual.test_mae = test_mae
+                individual.test_naive_mae = test_naive_mae
+                individual.train_mae = train_mae
+                individual.train_naive_mae = train_naive_mae
+            except Exception:
+                pass
             
             return (fitness,)
 
@@ -814,6 +933,7 @@ class Plugin:
         
         if hof:
             self.best_fitness_so_far = hof[0].fitness.values[0]
+        self.best_at_gen_start = float(self.best_fitness_so_far)
             
         no_improve_counter = 0
         self.patience_counter = 0 # Sync with local var
@@ -828,6 +948,7 @@ class Plugin:
             print(f"-- Generation {gen + 1}/{n_generations} --")
 
             best_at_gen_start = float(self.best_fitness_so_far)
+            self.best_at_gen_start = best_at_gen_start
             
             # Select the next generation individuals
             offspring = toolbox.select(population, len(population))
@@ -896,10 +1017,13 @@ class Plugin:
             valid_fitnesses = [ind.fitness.values[0] for ind in population if ind.fitness.valid and ind.fitness.values[0] != float("inf")]
             avg_mae = sum(valid_fitnesses) / len(valid_fitnesses) if valid_fitnesses else float("inf")
             
-            # Get Naive MAE from the best individual (or average, but usually we want the benchmark)
-            # We stored it in individual.naive_mae during evaluation
+            # Best individual in this generation (by VALIDATION fitness = Val MAE on max horizon)
             best_ind_gen = tools.selBest(population, 1)[0]
-            champion_naive_mae_gen = getattr(best_ind_gen, "naive_mae", None)
+            best_val_mae_gen = float(best_ind_gen.fitness.values[0]) if best_ind_gen.fitness.valid else float("inf")
+            best_naive_mae_gen = getattr(best_ind_gen, "naive_mae", None)
+
+            # Global champion so far (HallOfFame), also by VALIDATION fitness
+            champion_val_mae_global = float(hof[0].fitness.values[0]) if hof and hof[0].fitness.valid else float("inf")
 
             # Global champion naive MAE (HallOfFame) for top-level stats
             champion_naive_mae_global = getattr(hof[0], "naive_mae", None) if hof else None
@@ -909,8 +1033,16 @@ class Plugin:
             stats_history.append({
                 "generation": self.current_gen,
                 "duration": gen_duration,
+                # NOTE: This avg is over population fitness values, i.e. VALIDATION MAE maxH.
                 "avg_mae": avg_mae,
-                "champion_naive_mae": champion_naive_mae_gen
+                "avg_validation_mae": avg_mae,
+                # Explicit validation metrics (max horizon) for reporting/parity
+                "best_validation_mae_gen": best_val_mae_gen,
+                "champion_validation_mae_global": champion_val_mae_global,
+                "best_validation_naive_mae_gen": best_naive_mae_gen,
+                "champion_validation_naive_mae_global": champion_naive_mae_global,
+                # Backward-compatible legacy key (kept)
+                "champion_naive_mae": best_naive_mae_gen,
             })
             
             avg_time_per_epoch = sum(s["duration"] for s in stats_history) / len(stats_history)
@@ -925,7 +1057,13 @@ class Plugin:
                 # Explicit aliases to avoid future confusion.
                 "champion_fitness_val_mae_max_horizon": float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else None,
                 "champion_naive_mae_max_horizon": champion_naive_mae_global,
+                "champion_test_mae_max_horizon": getattr(hof[0], "test_mae", self.best_test_mae_so_far) if hof else self.best_test_mae_so_far,
+                "champion_test_naive_mae_max_horizon": getattr(hof[0], "test_naive_mae", self.best_test_naive_mae_so_far) if hof else self.best_test_naive_mae_so_far,
+                # NOTE: This list is the average population FITNESS, i.e. VALIDATION MAE maxH.
                 "average_mae_per_epoch": [s["avg_mae"] for s in stats_history],
+                "average_validation_mae_per_epoch": [s["avg_validation_mae"] for s in stats_history],
+                "champion_validation_mae_per_epoch": [s["champion_validation_mae_global"] for s in stats_history],
+                "best_validation_mae_per_epoch": [s["best_validation_mae_gen"] for s in stats_history],
                 "history": stats_history
             }
             

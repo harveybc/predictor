@@ -17,10 +17,14 @@ Input JSON schema:
 
 Output JSON schema:
 {
-  "ok": bool,
-  "fitness": float,
-  "naive_mae": float|null,
-  "error": str|null
+    "ok": bool,
+    "fitness": float,                 # VALIDATION MAE max horizon (pipeline parity)
+    "naive_mae": float|null,          # VALIDATION Naive MAE max horizon
+    "train_mae": float|null,          # TRAINING MAE max horizon
+    "train_naive_mae": float|null,    # TRAINING Naive MAE max horizon
+    "test_mae": float|null,           # TEST MAE max horizon
+    "test_naive_mae": float|null,     # TEST Naive MAE max horizon
+    "error": str|null
 }
 """
 
@@ -158,6 +162,10 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
 
     x_train, y_train = datasets["x_train"], datasets["y_train"]
     x_val, y_val = datasets["x_val"], datasets["y_val"]
+    x_test, y_test = datasets.get("x_test"), datasets.get("y_test")
+    baseline_train = datasets.get("baseline_train")
+    baseline_val = datasets.get("baseline_val")
+    baseline_test = datasets.get("baseline_test")
 
     def _ensure_2d_targets(y):
         if isinstance(y, dict):
@@ -181,7 +189,7 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
     _append_optimizer_resource_row(config, "after_build_model", gen, cand)
 
     _append_optimizer_resource_row(config, "before_fit", gen, cand, extra={"params": hyper})
-    history, _, _, val_preds, _ = predictor_plugin.train(
+    history, train_preds, _, val_preds, _ = predictor_plugin.train(
         x_train,
         y_train,
         epochs=config.get("epochs", 10),
@@ -198,35 +206,48 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
     from pipeline_plugins.stl_norm import denormalize, denormalize_returns
 
     predicted_horizons = config.get("predicted_horizons", [1])
-    max_horizon = max(predicted_horizons)
-    max_h_idx = predicted_horizons.index(max_horizon)
+    max_horizon = max(predicted_horizons) if predicted_horizons else 1
+    max_h_idx = predicted_horizons.index(max_horizon) if predicted_horizons else 0
 
-    val_preds_h = val_preds[max_h_idx].flatten()
+    def _extract_max_h(y_any):
+        if isinstance(y_any, dict):
+            return np.asarray(y_any.get(f"output_horizon_{max_horizon}")).reshape(-1)
+        if isinstance(y_any, list):
+            return np.asarray(y_any[max_h_idx]).reshape(-1)
+        return np.asarray(y_any).reshape(-1)
 
-    if isinstance(y_val, dict):
-        y_true_max_h = y_val[f"output_horizon_{max_horizon}"].flatten()
-    elif isinstance(y_val, list):
-        y_true_max_h = y_val[max_h_idx].flatten()
-    else:
-        y_true_max_h = y_val.flatten()
+    def _split_metrics(preds_list, y_any, baseline_any):
+        y_h = _extract_max_h(y_any)
+        p_h = np.asarray(preds_list[max_h_idx]).reshape(-1)
+        n = min(len(y_h), len(p_h))
+        if baseline_any is not None:
+            n = min(n, len(np.asarray(baseline_any).reshape(-1)))
+        if n <= 0:
+            return (float("inf"), None)
+        y_h = y_h[:n]
+        p_h = p_h[:n]
+        mae = float(np.mean(np.abs(denormalize_returns(p_h - y_h, config))))
+        naive = None
+        if baseline_any is not None:
+            baseline_h = np.asarray(baseline_any).reshape(-1)[:n]
+            target_price = denormalize(y_h, config)
+            naive = float(np.mean(np.abs(denormalize(baseline_h, config) - target_price)))
+        return (mae, naive)
 
-    baseline_val = datasets.get("baseline_val")
+    # TRAIN
+    train_mae, train_naive_mae = _split_metrics(train_preds, y_train, baseline_train)
 
-    n = min(len(val_preds_h), len(y_true_max_h))
-    if baseline_val is not None:
-        n = min(n, len(baseline_val))
+    # VALIDATION (fitness)
+    fitness, naive_mae = _split_metrics(val_preds, y_val, baseline_val)
 
-    val_preds_h = val_preds_h[:n]
-    y_true_max_h = y_true_max_h[:n]
-
-    val_target_price = denormalize(y_true_max_h, config)
-    # Model MAE (pipeline does denormalize_returns(pred - target))
-    fitness = float(np.mean(np.abs(denormalize_returns(val_preds_h - y_true_max_h, config))))
-
-    naive_mae = None
-    if baseline_val is not None:
-        baseline_val_h = baseline_val[:n].flatten()
-        naive_mae = float(np.mean(np.abs(denormalize(baseline_val_h, config) - val_target_price)))
+    # TEST
+    test_mae = None
+    test_naive_mae = None
+    if x_test is not None and y_test is not None:
+        pred_bs = int(config.get("predict_batch_size", 0) or config.get("batch_size", 32) or 256)
+        test_preds = predictor_plugin.model.predict(x_test, batch_size=pred_bs, verbose=0)
+        test_preds = [test_preds] if isinstance(test_preds, np.ndarray) else test_preds
+        test_mae, test_naive_mae = _split_metrics(test_preds, y_test, baseline_test)
 
     # Cleanup best-effort.
     try:
@@ -237,6 +258,13 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
         pass
     gc.collect()
 
+    # Stash extra metrics on the function for parent JSON (kept simple: return tuple plus attrs)
+    evaluate_candidate.last_metrics = {
+        "train_mae": train_mae,
+        "train_naive_mae": train_naive_mae,
+        "test_mae": test_mae,
+        "test_naive_mae": test_naive_mae,
+    }
     return fitness, naive_mae
 
 
@@ -260,10 +288,30 @@ def main() -> int:
     config = dict(config)
     config.update(hyper)
 
-    out = {"ok": False, "fitness": float("inf"), "naive_mae": None, "error": None}
+    out = {
+        "ok": False,
+        "fitness": float("inf"),
+        "naive_mae": None,
+        "train_mae": None,
+        "train_naive_mae": None,
+        "test_mae": None,
+        "test_naive_mae": None,
+        "error": None,
+    }
     try:
         fitness, naive_mae = evaluate_candidate(config=config, hyper=hyper, gen=gen, cand=cand)
-        out.update({"ok": True, "fitness": float(fitness), "naive_mae": naive_mae})
+        extra = getattr(evaluate_candidate, "last_metrics", {}) or {}
+        out.update(
+            {
+                "ok": True,
+                "fitness": float(fitness),
+                "naive_mae": naive_mae,
+                "train_mae": extra.get("train_mae"),
+                "train_naive_mae": extra.get("train_naive_mae"),
+                "test_mae": extra.get("test_mae"),
+                "test_naive_mae": extra.get("test_naive_mae"),
+            }
+        )
     except Exception as e:
         out.update({"ok": False, "fitness": float("inf"), "naive_mae": None, "error": str(e)})
 
