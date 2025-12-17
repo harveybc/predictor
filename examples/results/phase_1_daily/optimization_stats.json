@@ -1,0 +1,75 @@
+{
+    "total_time_elapsed": 172867.6332707405,
+    "average_time_per_epoch": 16910.732400152418,
+    "candidates_evaluated_so_far": 126,
+    "champion_validation_mae": 0.008571194484829903,
+    "champion_fitness_val_mae_max_horizon": 0.008571194484829903,
+    "champion_naive_mae_max_horizon": 0.008697308599948883,
+    "average_mae_per_epoch": [
+        0.011227324930950999,
+        0.009808013727888466,
+        0.00940367509610951,
+        0.009295833064243197,
+        0.008932980708777905,
+        0.008932784665375948,
+        0.008794564474374055,
+        0.009003877453505994,
+        0.009054631320759654
+    ],
+    "history": [
+        {
+            "generation": 1,
+            "duration": 16115.325189113617,
+            "avg_mae": 0.011227324930950999,
+            "champion_naive_mae": 0.008709953166544437
+        },
+        {
+            "generation": 2,
+            "duration": 10442.347450733185,
+            "avg_mae": 0.009808013727888466,
+            "champion_naive_mae": 0.008697308599948883
+        },
+        {
+            "generation": 3,
+            "duration": 15541.432251930237,
+            "avg_mae": 0.00940367509610951,
+            "champion_naive_mae": 0.008697308599948883
+        },
+        {
+            "generation": 4,
+            "duration": 11869.020057916641,
+            "avg_mae": 0.009295833064243197,
+            "champion_naive_mae": 0.008697308599948883
+        },
+        {
+            "generation": 5,
+            "duration": 19945.844933748245,
+            "avg_mae": 0.008932980708777905,
+            "champion_naive_mae": 0.008697308599948883
+        },
+        {
+            "generation": 6,
+            "duration": 18266.16956114769,
+            "avg_mae": 0.008932784665375948,
+            "champion_naive_mae": 0.008697308599948883
+        },
+        {
+            "generation": 7,
+            "duration": 21794.16237139702,
+            "avg_mae": 0.008794564474374055,
+            "champion_naive_mae": 0.008697308599948883
+        },
+        {
+            "generation": 8,
+            "duration": 22034.87290430069,
+            "avg_mae": 0.009003877453505994,
+            "champion_naive_mae": 0.008697308599948883
+        },
+        {
+            "generation": 9,
+            "duration": 16187.416881084442,
+            "avg_mae": 0.009054631320759654,
+            "champion_naive_mae": 0.008697308599948883
+        }
+    ]
+}
