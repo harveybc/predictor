@@ -23,9 +23,9 @@
     "preprocessor_plugin": "stl_preprocessor",
     "max_steps_train": 1575,
     "max_steps_test": 6300,
-    "intermediate_layers": 2,
-    "initial_layer_size": 48,
-    "layer_size_divisor": 2,
+    "intermediate_layers": 4,
+    "initial_layer_size": 78,
+    "layer_size_divisor": 12,
     "learning_rate": 1e-3,
     "activation": "tanh",
     "l2_reg": 2e-5,
@@ -35,10 +35,12 @@
     "start_from_epoch": 15,
     "use_returns": false,
     "use_log1p_targets": false,
+    "use_log1p_features": null,
+    "encoder_lstm_units": 20,
     "mc_samples":20,
     "plotted_horizon": 24,
     "mmd_lambda": 1e-3,
-    "window_size": 96,
+    "window_size": 33,
     "batch_size": 32,
     "plot_color_predicted": "red",
     "plot_color_true": "blue",
@@ -57,5 +59,5 @@
     "use_predicted_decompositions": false,
     "use_real_decompositions": false,
     "use_ideal_predictions": false,
-    "positional_encoding": true
+    "positional_encoding": false
 }
