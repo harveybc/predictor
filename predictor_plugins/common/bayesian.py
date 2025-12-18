@@ -90,34 +90,43 @@ def predict_mc_welford(model, x_test, mc_samples: int = 50, batch_size: int | No
 
     # Probe output structure/dims.
     sample = model(x_test[:1], training=training)
-    sample = [sample] if not isinstance(sample, list) else sample
+    sample = list(sample) if isinstance(sample, (list, tuple)) else [sample]
     heads = len(sample)
-    d = int(sample[0].shape[-1]) if getattr(sample[0], "shape", None) is not None else 1
+    ds = [int(s.shape[-1]) if getattr(s, "shape", None) is not None else 1 for s in sample]
 
-    means = [np.zeros((n, d), dtype=np.float32) for _ in range(heads)]
-    m2 = [np.zeros_like(means[0]) for _ in range(heads)]
-    counts = [0] * heads
+    means = [np.zeros((n, d), dtype=np.float32) for d in ds]
+    m2 = [np.zeros((n, d), dtype=np.float32) for d in ds]
 
-    for _ in range(int(mc_samples)):
+    mc_samples = int(mc_samples)
+    if mc_samples < 1:
+        return means, [np.zeros_like(m) for m in means]
+
+    # Welford update must use the SAME sample count for every slice.
+    # A previous implementation incremented a global count per-batch, which biased
+    # later slices toward zero and produced wildly wrong post-fit metrics.
+    for s in range(mc_samples):
+        k = float(s + 1)
         for start in range(0, n, batch_size):
             end = min(n, start + batch_size)
             xb = x_test[start:end]
             preds = model(xb, training=training)
-            preds = [preds] if not isinstance(preds, list) else preds
+            preds = list(preds) if isinstance(preds, (list, tuple)) else [preds]
             for h in range(heads):
                 arr = preds[h].numpy()
                 if arr.ndim == 1:
                     arr = np.expand_dims(arr, -1)
-                counts[h] += 1
                 delta = arr - means[h][start:end]
-                means[h][start:end] += delta / counts[h]
+                means[h][start:end] += delta / k
                 delta2 = arr - means[h][start:end]
                 m2[h][start:end] += delta * delta2
 
     stds = []
-    for h in range(heads):
-        var = np.full_like(means[h], np.nan) if counts[h] < 2 else m2[h] / (counts[h] - 1)
-        stds.append(np.sqrt(np.maximum(var, 0)))
+    if mc_samples < 2:
+        stds = [np.zeros_like(m) for m in means]
+    else:
+        for h in range(heads):
+            var = m2[h] / float(mc_samples - 1)
+            stds.append(np.sqrt(np.maximum(var, 0.0)))
     return means, stds
 
 __all__ = [
