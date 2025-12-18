@@ -140,3 +140,5 @@ secrets.py
 credentials.ini
 feature_eng-0.1.0/
 
+*.pyc
+
