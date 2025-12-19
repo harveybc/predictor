@@ -34,7 +34,7 @@
 
     "learning_rate": 1e-3,
     "activation": "relu",
-    "l2_reg": 1e-7,
+    "l2_reg": 0.0,
 
     "kl_weight": 1e-3,
     "kl_anneal_epochs": 40,
