@@ -37,8 +37,8 @@
     "resource_guard_print_every": 1,
     "resource_guard_check_every_batches": 1,
     "use_optimizer": true,
-    "population_size": 20,
-    "n_generations": 25,
+    "population_size": 15,
+    "n_generations": 15,
     "optimization_patience": 3,
     "hyperparameter_bounds": {
         "use_log1p_features": [0, 1],
