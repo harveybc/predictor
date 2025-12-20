@@ -81,5 +81,5 @@
     "horizon_embedding_dim": 26,
     "horizon_attn_heads": 2,
     "horizon_attn_key_dim": 30,
-    "decoder_dropout": 0.001
+    "decoder_dropout": 0.1
 }
