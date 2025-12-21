@@ -43,7 +43,7 @@
 
     "use_returns": true,
     "use_log1p_targets": true,
-    "use_log1p_features": ["typical_price"],
+    "use_log1p_features": null,
 
     "mc_samples": 20,
     "plotted_horizon": 6,
@@ -73,7 +73,7 @@
     "use_real_decompositions": false,
     "use_ideal_predictions": false,
 
-    "positional_encoding": false,
+    "positional_encoding": true,
 
     "encoder_conv_layers": 1,
     "encoder_base_filters": 76,
