@@ -43,11 +43,11 @@
 
     "use_returns": true,
     "use_log1p_targets": true,
-    "use_log1p_features": null,
+    "use_log1p_features": ["typical_price"],
 
     "mc_samples": 20,
     "plotted_horizon": 6,
-    "mmd_lambda": 1e-2,
+    "mmd_lambda": 1e-5,
 
     "window_size": 64,
     "batch_size": 32,
