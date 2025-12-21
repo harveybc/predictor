@@ -73,7 +73,7 @@
     "use_real_decompositions": false,
     "use_ideal_predictions": false,
 
-    "positional_encoding": true,
+    "positional_encoding": false,
 
     "encoder_conv_layers": 1,
     "encoder_base_filters": 76,
