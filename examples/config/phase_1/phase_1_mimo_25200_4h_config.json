@@ -47,7 +47,7 @@
 
     "mc_samples": 20,
     "plotted_horizon": 6,
-    "mmd_lambda": 1e-4,
+    "mmd_lambda": 1e-3,
 
     "window_size": 64,
     "batch_size": 32,
@@ -75,7 +75,7 @@
 
     "positional_encoding": true,
 
-    "encoder_conv_layers": 2,
+    "encoder_conv_layers": 1,
     "encoder_base_filters": 76,
     "encoder_lstm_units": 17,
     "horizon_embedding_dim": 26,
