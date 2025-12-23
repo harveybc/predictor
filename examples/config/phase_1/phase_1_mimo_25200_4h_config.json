@@ -37,7 +37,7 @@
     "l2_reg": 1e-6,
 
     "kl_weight": 1e-3,
-    "kl_anneal_epochs": 40,
+    " l_anneal_epochs": 40,
     "early_patience": 120,
     "start_from_epoch": 15,
 
@@ -75,7 +75,7 @@
 
     "positional_encoding": true,
 
-    "encoder_conv_layers": 1,
+    "encoder_conv_layers": 2,
     "encoder_base_filters": 76,
     "encoder_lstm_units": 17,
     "horizon_embedding_dim": 26,
