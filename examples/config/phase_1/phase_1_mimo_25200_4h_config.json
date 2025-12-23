@@ -47,7 +47,7 @@
 
     "mc_samples": 20,
     "plotted_horizon": 6,
-    "mmd_lambda": 1e-3,
+    "mmd_lambda": 1e-4,
 
     "window_size": 64,
     "batch_size": 32,
