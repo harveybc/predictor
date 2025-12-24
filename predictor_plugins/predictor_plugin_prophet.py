@@ -109,18 +109,11 @@ class Plugin(BasePredictorPlugin):
 
         # Prepare regressors if enabled
         regressor_cols = []
+        x_train_reg = None
+        x_val_reg = None
+        
         if use_regressors and len(feature_names) > 0:
             # x_train is (N, W, F). We take the last step of the window: (N, F)
-            # This assumes the last step contains the most recent known values for the regressors
-            # corresponding to the prediction point.
-            # Note: Prophet regressors must be known in the future for prediction.
-            # If x_test contains future values (e.g. known external variables), this is valid.
-            # If x_test contains only past values, this is technically data leakage or invalid for forecasting
-            # unless we are doing 1-step ahead with known next-step inputs.
-            # Given the pipeline structure, x_test usually contains the window leading up to the target.
-            # So we are using the most recent past to predict the future.
-            # Prophet treats regressors as concurrent with 'y'.
-            # So we should align x_train[i, -1] with y_train[i].
             x_train_reg = x_train[:, -1, :]
             regressor_cols = feature_names
             
@@ -139,7 +132,7 @@ class Plugin(BasePredictorPlugin):
                 'y': y.flatten()
             }
             
-            if use_regressors and regressor_cols:
+            if use_regressors and regressor_cols and x_train_reg is not None:
                 for idx, col in enumerate(regressor_cols):
                     if idx < x_train_reg.shape[1]:
                         data[col] = x_train_reg[:, idx]
@@ -149,53 +142,37 @@ class Plugin(BasePredictorPlugin):
             # Initialize and train Prophet
             m = Prophet(
                 interval_width=interval_width,
-    def predict_with_uncertainty(
-        self,
-        x_test: np.ndarray,
-        mc_samples: int = 50
-    ) -> Tuple[List[np.ndarray], List[np.ndarray]]:
-        
-        test_dates = self.params.get("test_dates")
-        if test_dates is None:
-             raise ValueError("Prophet plugin requires 'test_dates' in params.")
-
-        horizons = self.params.get("predicted_horizons", [1])
-        use_regressors = self.params.get("use_regressors", False)
-        feature_names = self.params.get("feature_names", [])
-        
-        preds_list = []
-        unc_list = []
-
-        # Prepare regressors if enabled
-        regressor_cols = []
-        if use_regressors and len(feature_names) > 0:
-            x_test_reg = x_test[:, -1, :]
-            regressor_cols = feature_names
-
-        for h in horizons:
-            m = self.models.get(h)
-            if m is None:
-                preds_list.append(np.zeros((len(x_test), 1)))
-                unc_list.append(np.zeros((len(x_test), 1)))
-                continue
-
-            test_data = {'ds': pd.to_datetime(test_dates)}
+                daily_seasonality=daily_seasonality,
+                weekly_seasonality=weekly_seasonality,
+                yearly_seasonality=yearly_seasonality,
+                **prophet_params
+            )
+            
+            if country_holidays:
+                m.add_country_holidays(country_name=country_holidays)
             
             if use_regressors and regressor_cols:
-                for idx, col in enumerate(regressor_cols):
-                    if idx < x_test_reg.shape[1]:
-                        test_data[col] = x_test_reg[:, idx]
-
-            df_test = pd.DataFrame(test_data)
-            forecast = m.predict(df_test)
+                for col in regressor_cols:
+                    m.add_regressor(col)
             
-            yhat = forecast['yhat'].values.reshape(-1, 1)
-            unc = ((forecast['yhat_upper'] - forecast['yhat_lower']) / 2).values.reshape(-1, 1)
-            
-            preds_list.append(yhat)
-            unc_list.append(unc)
+            m.fit(df)
+            self.models[h] = m
 
-        return preds_list, unc_listnd regressor_cols:
+            # Predict on train
+            forecast_train = m.predict(df)
+            yhat_train = forecast_train['yhat'].values.reshape(-1, 1)
+            unc_train = ((forecast_train['yhat_upper'] - forecast_train['yhat_lower']) / 2).values.reshape(-1, 1)
+            
+            train_preds_list.append(yhat_train)
+            train_unc_list.append(unc_train)
+
+            # Predict on val
+            if val_dates is not None and key in y_val:
+                val_data = {
+                    'ds': pd.to_datetime(val_dates),
+                    'y': y_val[key].flatten()
+                }
+                if use_regressors and regressor_cols and x_val_reg is not None:
                     for idx, col in enumerate(regressor_cols):
                         if idx < x_val_reg.shape[1]:
                             val_data[col] = x_val_reg[:, idx]
@@ -224,8 +201,18 @@ class Plugin(BasePredictorPlugin):
              raise ValueError("Prophet plugin requires 'test_dates' in params.")
 
         horizons = self.params.get("predicted_horizons", [1])
+        use_regressors = self.params.get("use_regressors", False)
+        feature_names = self.params.get("feature_names", [])
+        
         preds_list = []
         unc_list = []
+
+        # Prepare regressors if enabled
+        regressor_cols = []
+        x_test_reg = None
+        if use_regressors and len(feature_names) > 0:
+            x_test_reg = x_test[:, -1, :]
+            regressor_cols = feature_names
 
         for h in horizons:
             m = self.models.get(h)
@@ -234,7 +221,14 @@ class Plugin(BasePredictorPlugin):
                 unc_list.append(np.zeros((len(x_test), 1)))
                 continue
 
-            df_test = pd.DataFrame({'ds': pd.to_datetime(test_dates)})
+            test_data = {'ds': pd.to_datetime(test_dates)}
+            
+            if use_regressors and regressor_cols and x_test_reg is not None:
+                for idx, col in enumerate(regressor_cols):
+                    if idx < x_test_reg.shape[1]:
+                        test_data[col] = x_test_reg[:, idx]
+
+            df_test = pd.DataFrame(test_data)
             forecast = m.predict(df_test)
             
             yhat = forecast['yhat'].values.reshape(-1, 1)
