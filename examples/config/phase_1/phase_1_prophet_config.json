@@ -85,7 +85,14 @@
     
     "prophet_params": {
         "growth": "linear",
-        "seasonality_mode": "additive"
+        "seasonality_mode": "additive",
+        "changepoint_prior_scale": 0.05,
+        "seasonality_prior_scale": 10.0
     },
-    "interval_width": 0.8
+    "interval_width": 0.8,
+    "add_country_holidays": "US",
+    "daily_seasonality": true,
+    "weekly_seasonality": true,
+    "yearly_seasonality": true,
+    "use_regressors": true
 }

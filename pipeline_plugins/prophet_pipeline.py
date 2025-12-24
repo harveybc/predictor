@@ -241,12 +241,14 @@ class ProphetPipelinePlugin:
         if test_dates is not None and len(y_test_list) > 0:
             test_dates = test_dates[:len(y_test_list[0])]
 
-        # Inject dates into predictor plugin params (required for Prophet plugin)
+        # Inject dates and feature names into predictor plugin params
+        feature_names = datasets.get("feature_names", [])
         if hasattr(predictor_plugin, "set_params"):
             predictor_plugin.set_params(
                 train_dates=train_dates,
                 val_dates=val_dates,
-                test_dates=test_dates
+                test_dates=test_dates,
+                feature_names=feature_names
             )
 
         baseline_train = datasets.get("baseline_train")
