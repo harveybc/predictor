@@ -29,19 +29,19 @@ class Plugin(BaseBayesianKerasPredictor):
     plugin_params = {
         # Trunk (N-BEATS style)
         "nbeats_replace": "shared",      # only 'shared' implemented
-        "nbeats_blocks": 3,
-        "nbeats_layers": 4,
-        "nbeats_units": 256,
-        "trunk_projection_channels": 64,  # if None -> input channels
+        "nbeats_blocks": 2,
+        "nbeats_layers": 2,
+        "nbeats_units": 64,
+        "trunk_projection_channels": 32,  # if None -> input channels
         # Head sequence processing
         "head_reduction_channels": None,   # optional Conv1D 1x1 after trunk
-        "bilstm_units": 128,
+        "bilstm_units": 64,
         # General / regularization
         "activation": "swish",
         "l2_reg": 1e-5,
         "dropout_rate": 0.1,
         # Training / optimization
-        "learning_rate": 5e-4,
+        "learning_rate": 1e-3,
         "early_patience": 20,
         "batch_size": 64,
         # Bayesian / uncertainty
