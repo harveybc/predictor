@@ -142,3 +142,5 @@ feature_eng-0.1.0/
 
 *.pyc
 
+*.pyc
+app/__pycache__/config_merger.cpython-312.pyc
