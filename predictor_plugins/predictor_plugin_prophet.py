@@ -98,6 +98,14 @@ class Plugin(BasePredictorPlugin):
         val_dates = self.params.get("val_dates")
 
         if train_dates is None:
+            raise ValueError("Prophet plugin requires 'train_dates' in params. Ensure the pipeline provides them.")
+
+        horizons = self.params.get("predicted_horizons", [1])
+        prophet_params = self.params.get("prophet_params", {})
+        interval_width = self.params.get("interval_width", 0.6827)
+        country_holidays = self.params.get("add_country_holidays")
+        daily_seasonality = self.params.get("daily_seasonality", "auto")
+        weekly_seasonality = self.params.get("weekly_seasonality", "auto")
         yearly_seasonality = self.params.get("yearly_seasonality", "auto")
         use_regressors = self.params.get("use_regressors", False)
         feature_names = self.params.get("feature_names", [])
@@ -107,14 +115,6 @@ class Plugin(BasePredictorPlugin):
         seasonality_prior_scale = self.params.get("seasonality_prior_scale", 10.0)
         holidays_prior_scale = self.params.get("holidays_prior_scale", 10.0)
         regressors_prior_scale = self.params.get("regressors_prior_scale", 10.0)
-
-        train_preds_list = [].params.get("interval_width", 0.6827)
-        country_holidays = self.params.get("add_country_holidays")
-        daily_seasonality = self.params.get("daily_seasonality", "auto")
-        weekly_seasonality = self.params.get("weekly_seasonality", "auto")
-        yearly_seasonality = self.params.get("yearly_seasonality", "auto")
-        use_regressors = self.params.get("use_regressors", False)
-        feature_names = self.params.get("feature_names", [])
 
         train_preds_list = []
         train_unc_list = []
@@ -147,6 +147,12 @@ class Plugin(BasePredictorPlugin):
             }
             
             if use_regressors and regressor_cols and x_train_reg is not None:
+                for idx, col in enumerate(regressor_cols):
+                    if idx < x_train_reg.shape[1]:
+                        data[col] = x_train_reg[:, idx]
+            
+            df = pd.DataFrame(data)
+
             # Initialize and train Prophet
             m = Prophet(
                 interval_width=interval_width,
@@ -165,12 +171,6 @@ class Plugin(BasePredictorPlugin):
             if use_regressors and regressor_cols:
                 for col in regressor_cols:
                     m.add_regressor(col, prior_scale=regressors_prior_scale)
-            
-            m.fit(df)_country_holidays(country_name=country_holidays)
-            
-            if use_regressors and regressor_cols:
-                for col in regressor_cols:
-                    m.add_regressor(col)
             
             m.fit(df)
             self.models[h] = m
