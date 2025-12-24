@@ -3,16 +3,18 @@
 
 Replaces the shared CNN conv trunk with an N-BEATS style fully-connected block stack
 that preserves temporal resolution through learned projections, then feeds a
-shared temporal feature map into per-horizon BiLSTM + Bayesian heads (matching
-the uncertainty / multi-output pattern used by the CNN plugin).
+shared temporal feature map into per-horizon BiLSTM + Bayesian heads.
 
-Implemented mode: nbeats_replace='shared'. Future extension could allow
-per-head micro N-BEATS stacks.
+Improvements:
+- Added LayerNormalization and Dropout for better stability and regularization.
+- Support for 'swish' activation.
+- Configurable trunk projection channels.
 """
 from __future__ import annotations
 import tensorflow as tf, tensorflow_probability as tfp
 from tensorflow.keras.layers import (
-    Input, Dense, Lambda, Add, Concatenate, Bidirectional, LSTM, Conv1D
+    Input, Dense, Lambda, Add, Concatenate, Bidirectional, LSTM, Conv1D, 
+    LayerNormalization, Dropout, Activation
 )
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import AdamW
@@ -27,20 +29,21 @@ class Plugin(BaseBayesianKerasPredictor):
     plugin_params = {
         # Trunk (N-BEATS style)
         "nbeats_replace": "shared",      # only 'shared' implemented
-        "nbeats_blocks": 4,
-        "nbeats_layers": 2,
+        "nbeats_blocks": 3,
+        "nbeats_layers": 4,
         "nbeats_units": 256,
-        "trunk_projection_channels": None,  # if None -> input channels
+        "trunk_projection_channels": 64,  # if None -> input channels
         # Head sequence processing
         "head_reduction_channels": None,   # optional Conv1D 1x1 after trunk
-        "bilstm_units": 64,
+        "bilstm_units": 128,
         # General / regularization
-        "activation": "relu",
-        "l2_reg": 1e-7,
+        "activation": "swish",
+        "l2_reg": 1e-5,
+        "dropout_rate": 0.1,
         # Training / optimization
-        "learning_rate": 1e-3,
-        "early_patience": 15,
-        "batch_size": 32,
+        "learning_rate": 5e-4,
+        "early_patience": 20,
+        "batch_size": 64,
         # Bayesian / uncertainty
         "kl_weight": 1e-3,
         "kl_anneal_epochs": 25,
@@ -56,7 +59,8 @@ class Plugin(BaseBayesianKerasPredictor):
         "nbeats_replace","nbeats_blocks","nbeats_layers","nbeats_units",
         "trunk_projection_channels","head_reduction_channels","bilstm_units",
         "activation","l2_reg","learning_rate","kl_weight","kl_anneal_epochs",
-        "mc_samples","mmd_lambda","sigma_mmd","predicted_horizons","positional_encoding"
+        "mc_samples","mmd_lambda","sigma_mmd","predicted_horizons","positional_encoding",
+        "dropout_rate"
     ]
 
     # Backwards compatibility mapping (old keys -> new)
@@ -78,14 +82,16 @@ class Plugin(BaseBayesianKerasPredictor):
 
         time_steps, channels = input_shape
         ph = self.params["predicted_horizons"]
-        act = self.params.get("activation", "relu")
-        l2_reg_v = self.params.get("l2_reg", 1e-4)
+        act = self.params.get("activation", "swish")
+        l2_reg_v = self.params.get("l2_reg", 1e-5)
+        dropout_rate = self.params.get("dropout_rate", 0.1)
+        
         blocks = self.params["nbeats_blocks"]
         layers = self.params["nbeats_layers"]
         units = self.params["nbeats_units"]
         proj_ch = self.params["trunk_projection_channels"] or channels
         head_red = self.params.get("head_reduction_channels")
-        bilstm_units = self.params.get("bilstm_units", 64)
+        bilstm_units = self.params.get("bilstm_units", 128)
         mmd_lambda = self.params.get("mmd_lambda", 0.0)
         sigma_mmd = self.params.get("sigma_mmd", 1.0)
 
@@ -109,31 +115,45 @@ class Plugin(BaseBayesianKerasPredictor):
             x_block = residual
             for l in range(layers):
                 x_block = Dense(
-                    units, activation=act, kernel_regularizer=l2(l2_reg_v),
+                    units, 
+                    kernel_regularizer=l2(l2_reg_v),
                     name=f"b{b}_dense{l}"
                 )(x_block)
+                x_block = LayerNormalization(name=f"b{b}_ln{l}")(x_block)
+                x_block = Activation(act, name=f"b{b}_act{l}")(x_block)
+                if dropout_rate > 0:
+                    x_block = Dropout(dropout_rate, name=f"b{b}_drop{l}")(x_block)
 
+            # Backcast (reconstruction of input)
             backcast = Dense(
                 time_steps * channels, activation="linear",
                 kernel_regularizer=l2(l2_reg_v), name=f"b{b}_backcast"
             )(x_block)
+            
+            # Update residual (remove what we've explained)
             residual = Lambda(lambda t: t[0] - t[1], name=f"b{b}_residual")([residual, backcast])
 
+            # Forecast/Projection (features for the next stage)
             proj = Dense(
                 time_steps * proj_ch, activation="linear",
                 kernel_regularizer=l2(l2_reg_v), name=f"b{b}_proj"
             )(x_block)
+            
+            # Reshape back to sequence
             proj_seq = Lambda(
                 lambda t, ts=time_steps, pc=proj_ch: tf.reshape(t, (-1, ts, pc)),
                 name=f"b{b}_proj_reshape"
             )(proj)
             block_feature_seqs.append(proj_seq)
 
+        # Combine block outputs
         if len(block_feature_seqs) == 1:
             shared_seq = block_feature_seqs[0]
         else:
+            # Concatenate features from all blocks
             shared_seq = Concatenate(axis=-1, name="trunk_concat")(block_feature_seqs)
 
+        # Optional reduction
         if head_red:
             shared_seq = Conv1D(
                 filters=head_red, kernel_size=1, padding="same", activation=act,
@@ -147,10 +167,12 @@ class Plugin(BaseBayesianKerasPredictor):
 
         for horizon in ph:
             suf = f"_h{horizon}"
+            # BiLSTM for temporal dependencies in the extracted features
             lstm_out = Bidirectional(
-                LSTM(bilstm_units, return_sequences=False),
+                LSTM(bilstm_units, return_sequences=False, dropout=dropout_rate),
                 name=f"bilstm{suf}"
             )(shared_seq)
+            
             flip_name = f"flipout{suf}"
             flip_layer = DenseFlipout(
                 units=1,
@@ -167,10 +189,10 @@ class Plugin(BaseBayesianKerasPredictor):
             self.output_names.append(f"output_horizon_{horizon}")
 
         self.model = Model(inputs=inputs, outputs=outputs, name=f"NBEATSHybrid_{len(ph)}H")
-        optimizer = AdamW(learning_rate=self.params.get("learning_rate", 1e-3))
+        optimizer = AdamW(learning_rate=self.params.get("learning_rate", 5e-4))
         loss_dict = {}
         use_returns = self.params.get("use_returns", False)
-        # Keep losses pure-TensorFlow and free of per-batch Python object creation.
+        
         if use_returns:
             def _loss_fn(y_true, y_pred):
                 return composite_loss_basic(y_true, y_pred, mmd_lambda=mmd_lambda, sigma=sigma_mmd)
@@ -180,13 +202,12 @@ class Plugin(BaseBayesianKerasPredictor):
             huber = Huber()
             for nm in self.output_names:
                 loss_dict[nm] = huber
+                
         metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
         self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)
         self.model.summary(line_length=140)
 
-
-
 if __name__ == '__main__':
     plug = Plugin({"predicted_horizons": [1,3], "positional_encoding": True})
-    plug.build_model((48, 8), None, {})
+    plug.build_model((96, 8), None, {})
     print('Outputs:', plug.output_names)
