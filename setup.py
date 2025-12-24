@@ -19,6 +19,7 @@ setup(
             'composite=predictor_plugins.predictor_plugin_composite:Plugin',
             'mimo=predictor_plugins.predictor_plugin_mimo:Plugin',
             'stl_mimo=predictor_plugins.stl_mimo_predictor:Plugin',
+            'prophet=predictor_plugins.predictor_plugin_prophet:Plugin',
             'base=predictor_plugin.predictor_plugin_base:Plugin'
         ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
@@ -29,6 +30,7 @@ setup(
         'pipeline.plugins': [
             'default_pipeline=pipeline_plugins.default_pipeline:PipelinePlugin',
             'stl_pipeline=pipeline_plugins.stl_pipeline:STLPipelinePlugin',
+            'prophet_pipeline=pipeline_plugins.prophet_pipeline:ProphetPipelinePlugin',
             'stl_decomposition_pipeline=pipeline_plugins.stl_decomposition_pipeline:STLPipelinePlugin'
         ],
         # Plugins para el Preprocesamiento (incluye process_data, ventanas deslizantes y STL)
