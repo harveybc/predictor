@@ -21,3 +21,4 @@ tf-keras
 tqdm
 PyWavelets
 psycopg2-binary
+prophet
