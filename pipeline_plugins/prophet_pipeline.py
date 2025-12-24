@@ -233,6 +233,14 @@ class ProphetPipelinePlugin:
         val_dates = datasets.get("y_val_dates")
         test_dates = datasets.get("y_test_dates")
 
+        # Align dates with targets length (safe slicing)
+        if train_dates is not None and len(y_train_list) > 0:
+            train_dates = train_dates[:len(y_train_list[0])]
+        if val_dates is not None and len(y_val_list) > 0:
+            val_dates = val_dates[:len(y_val_list[0])]
+        if test_dates is not None and len(y_test_list) > 0:
+            test_dates = test_dates[:len(y_test_list[0])]
+
         # Inject dates into predictor plugin params (required for Prophet plugin)
         if hasattr(predictor_plugin, "set_params"):
             predictor_plugin.set_params(

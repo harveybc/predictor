@@ -101,7 +101,7 @@ class Plugin(BasePredictorPlugin):
             # Prepare DataFrame for Prophet
             # y is (samples, 1)
             df = pd.DataFrame({
-                'ds': train_dates,
+                'ds': pd.to_datetime(train_dates),
                 'y': y.flatten()
             })
 
@@ -124,7 +124,7 @@ class Plugin(BasePredictorPlugin):
             # Predict on val
             if val_dates is not None and key in y_val:
                 df_val = pd.DataFrame({
-                    'ds': val_dates,
+                    'ds': pd.to_datetime(val_dates),
                     'y': y_val[key].flatten() # Prophet ignores y in predict, but good for structure
                 })
                 forecast_val = m.predict(df_val)
@@ -160,7 +160,7 @@ class Plugin(BasePredictorPlugin):
                 unc_list.append(np.zeros((len(x_test), 1)))
                 continue
 
-            df_test = pd.DataFrame({'ds': test_dates})
+            df_test = pd.DataFrame({'ds': pd.to_datetime(test_dates)})
             forecast = m.predict(df_test)
             
             yhat = forecast['yhat'].values.reshape(-1, 1)
