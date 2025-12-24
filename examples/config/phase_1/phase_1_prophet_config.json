@@ -85,15 +85,17 @@
     
     "prophet_params": {
         "growth": "linear",
-        "seasonality_mode": "additive",
-        "changepoint_prior_scale": 0.001,
-        "seasonality_prior_scale": 0.01,
-        "holidays_prior_scale": 0.01
+        "seasonality_mode": "additive"
     },
     "interval_width": 0.8,
     "add_country_holidays": "US",
-    "daily_seasonality": false,
+    "daily_seasonality": true,
     "weekly_seasonality": true,
     "yearly_seasonality": true,
-    "use_regressors": true
+    "use_regressors": true,
+    "changepoint_prior_scale": 0.001,
+    "seasonality_prior_scale": 0.01,
+    "holidays_prior_scale": 0.01,
+    "regressors_prior_scale": 0.01
+}
 }
