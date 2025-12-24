@@ -100,6 +100,21 @@ class ProphetPipelinePlugin:
     def add_debug_info(self, debug_info: Dict) -> None:
         debug_info.update(self.get_debug_info())
 
+    def _denormalize_features(self, X: np.ndarray, feature_names: List[str], norm_json: Dict) -> np.ndarray:
+        """Denormalize features in X using normalization_json stats."""
+        if X is None or not feature_names or not norm_json:
+            return X
+        
+        X_denorm = X.copy()
+        # X is (N, W, F)
+        for i, name in enumerate(feature_names):
+            if name in norm_json:
+                stats = norm_json[name]
+                mean = stats.get('mean', 0.0)
+                std = stats.get('std', 1.0)
+                X_denorm[:, :, i] = X[:, :, i] * std + mean
+        return X_denorm
+
     # ---------------------------------------------------------------------
     # 1) Load and prepare datasets
     # ---------------------------------------------------------------------
@@ -243,12 +258,21 @@ class ProphetPipelinePlugin:
 
         # Inject dates and feature names into predictor plugin params
         feature_names = datasets.get("feature_names", [])
+        norm_json = datasets.get("normalization_json", {})
+        
+        # Denormalize features for Prophet (it prefers real values)
+        if norm_json and feature_names:
+            print("Denormalizing features for Prophet...")
+            X_train = self._denormalize_features(X_train, feature_names, norm_json)
+            X_val = self._denormalize_features(X_val, feature_names, norm_json)
+            X_test = self._denormalize_features(X_test, feature_names, norm_json)
+
         if hasattr(predictor_plugin, "set_params"):
             predictor_plugin.set_params(
                 train_dates=train_dates,
                 val_dates=val_dates,
                 test_dates=test_dates,
-                feature_names=feature_names
+                feature_names=feature_names,
             )
 
         baseline_train = datasets.get("baseline_train")

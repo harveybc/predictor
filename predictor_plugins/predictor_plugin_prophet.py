@@ -159,6 +159,7 @@ class Plugin(BasePredictorPlugin):
             self.models[h] = m
 
             # Predict on train
+            # For training prediction, we use the same df we trained on
             forecast_train = m.predict(df)
             yhat_train = forecast_train['yhat'].values.reshape(-1, 1)
             unc_train = ((forecast_train['yhat_upper'] - forecast_train['yhat_lower']) / 2).values.reshape(-1, 1)
