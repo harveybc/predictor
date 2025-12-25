@@ -147,3 +147,5 @@ app/__pycache__/config_merger.cpython-312.pyc
 app/__pycache__/cli.cpython-312.pyc
 app/__pycache__/config.cpython-312.pyc
 app/__pycache__/config_handler.cpython-312.pyc
+app/__pycache__/config_handler.cpython-312.pyc
+*.pyc
