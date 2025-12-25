@@ -1,24 +1,21 @@
 #!/usr/bin/env python
-"""Pure N-BEATS Predictor (Deterministic).
+"""Pure N-BEATS Predictor (Interpretable & Generic).
 
-Implements the standard N-BEATS architecture (Oreshkin et al., 2020).
-- No Bayesian layers.
-- No Recurrent layers (LSTM/GRU).
-- No Convolutional layers.
+Implements the N-BEATS architecture (Oreshkin et al., 2020) with support for:
+- Generic Blocks (Fully Connected)
+- Trend Blocks (Polynomial Basis)
+- Seasonality Blocks (Fourier Basis)
 
 Architecture:
 - Input: Flattened window.
-- Stacks of Blocks:
-  - Each block has a fully connected stack.
-  - Fork into Backcast (reconstruction) and Forecast (prediction).
-  - Doubly Residual Topology:
-    - Input to next block = Input - Backcast.
-    - Final Output = Sum(Forecasts).
+- Stacks of Blocks: Configurable sequence of block types.
+- Doubly Residual Topology.
 """
 from __future__ import annotations
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import (
-    Input, Dense, Lambda, Add, Subtract, Flatten, Activation, Dropout
+    Input, Dense, Lambda, Add, Subtract, Flatten, Activation, Dropout, Concatenate
 )
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import AdamW
@@ -30,27 +27,27 @@ from .common.positional_encoding import positional_encoding
 
 class Plugin(BaseBayesianKerasPredictor):
     plugin_params = {
-        "nbeats_blocks": 8,
-        "nbeats_layers": 4,
-        "nbeats_units": 256,
+        "stack_types": ["trend", "seasonality", "generic"],
+        "nbeats_blocks": 3, # Blocks per stack
+        "nbeats_layers": 4, # Layers per block (for Generic)
+        "nbeats_units": 256, # Hidden units
+        "trend_polynomial_degree": 3,
+        "seasonality_harmonics": 10,
         "activation": "swish",
         "l2_reg": 1e-5,
         "dropout_rate": 0.0,
-        "learning_rate": 5e-4,
-        "early_patience": 50,
+        "learning_rate": 1e-3,
+        "early_patience": 20,
         "batch_size": 64,
         "predicted_horizons": [1],
         "positional_encoding": False,
-        # Legacy/Unused params kept to avoid config errors if present
-        "kl_weight": 0.0,
-        "kl_anneal_epochs": 0,
-        "mc_samples": 1,
-        "mmd_lambda": 0.0,
-        "sigma_mmd": 1.0,
+        # Legacy
+        "kl_weight": 0.0, "kl_anneal_epochs": 0, "mc_samples": 1, "mmd_lambda": 0.0, "sigma_mmd": 1.0,
     }
     
     plugin_debug_vars = [
-        "nbeats_blocks", "nbeats_layers", "nbeats_units",
+        "stack_types", "nbeats_blocks", "nbeats_layers", "nbeats_units",
+        "trend_polynomial_degree", "seasonality_harmonics",
         "activation", "l2_reg", "learning_rate", "predicted_horizons"
     ]
 
@@ -61,15 +58,51 @@ class Plugin(BaseBayesianKerasPredictor):
         time_steps, channels = input_shape
         input_dim = time_steps * channels
         ph = self.params["predicted_horizons"]
+        forecast_length = max(ph)
         
-        blocks = self.params["nbeats_blocks"]
-        layers = self.params["nbeats_layers"]
-        units = self.params["nbeats_units"]
+        stack_types = self.params.get("stack_types", ["generic"])
+        blocks_per_stack = self.params.get("nbeats_blocks", 3)
+        layers = self.params.get("nbeats_layers", 4)
+        units = self.params.get("nbeats_units", 256)
         act = self.params.get("activation", "swish")
         l2_reg_v = self.params.get("l2_reg", 1e-5)
         dropout_rate = self.params.get("dropout_rate", 0.0)
+        
+        trend_degree = self.params.get("trend_polynomial_degree", 3)
+        harmonics = self.params.get("seasonality_harmonics", 10)
 
-        # --- Input ---
+        # --- Basis Functions ---
+        
+        def linspace(length):
+            return tf.cast(tf.linspace(-0.5, 0.5, length), dtype=tf.float32)
+
+        # Trend Basis
+        t_backcast = linspace(input_dim)
+        t_forecast = linspace(forecast_length)
+        
+        # Polynomial matrix: [time_steps, degree+1]
+        T_b = tf.stack([t_backcast ** p for p in range(trend_degree + 1)], axis=1)
+        T_f = tf.stack([t_forecast ** p for p in range(trend_degree + 1)], axis=1)
+        T_b = tf.constant(T_b)
+        T_f = tf.constant(T_f)
+
+        # Seasonality Basis
+        # Fourier series: cos(2pi i t), sin(2pi i t)
+        S_b_list = [tf.ones_like(t_backcast)]
+        S_f_list = [tf.ones_like(t_forecast)]
+        for i in range(1, harmonics + 1):
+            S_b_list.append(tf.cos(2 * np.pi * i * t_backcast))
+            S_b_list.append(tf.sin(2 * np.pi * i * t_backcast))
+            S_f_list.append(tf.cos(2 * np.pi * i * t_forecast))
+            S_f_list.append(tf.sin(2 * np.pi * i * t_forecast))
+        
+        S_b = tf.stack(S_b_list, axis=1)
+        S_f = tf.stack(S_f_list, axis=1)
+        S_b = tf.constant(S_b)
+        S_f = tf.constant(S_f)
+
+        # --- Model Construction ---
+
         inputs = Input(shape=(time_steps, channels), name="input_layer")
         
         if self.params.get("positional_encoding", False):
@@ -78,62 +111,84 @@ class Plugin(BaseBayesianKerasPredictor):
         else:
             seq_in = inputs
 
-        # Flatten
         flat_in = Flatten(name="flatten_input")(seq_in)
-        
-        # --- N-BEATS Stack ---
         residual = flat_in
         forecast_accum = None
 
-        for b in range(blocks):
-            x = residual
-            for l in range(layers):
-                x = Dense(
-                    units, 
-                    activation=act,
-                    kernel_regularizer=l2(l2_reg_v),
-                    name=f"b{b}_dense{l}"
-                )(x)
-                if dropout_rate > 0:
-                    x = Dropout(dropout_rate, name=f"b{b}_drop{l}")(x)
+        # Stack Loop
+        for stack_idx, stack_type in enumerate(stack_types):
+            for b in range(blocks_per_stack):
+                block_name = f"stack{stack_idx}_{stack_type}_b{b}"
+                
+                # FC Stack
+                x = residual
+                for l in range(layers):
+                    x = Dense(
+                        units, 
+                        activation=act,
+                        kernel_regularizer=l2(l2_reg_v),
+                        name=f"{block_name}_dense{l}"
+                    )(x)
+                    if dropout_rate > 0:
+                        x = Dropout(dropout_rate, name=f"{block_name}_drop{l}")(x)
 
-            # Backcast
-            backcast = Dense(
-                input_dim, 
-                activation="linear", 
-                name=f"b{b}_backcast"
-            )(x)
-            
-            # Forecast
-            forecast = Dense(
-                units, 
-                activation="linear", 
-                name=f"b{b}_forecast"
-            )(x)
+                # Basis Projection
+                if stack_type == "trend":
+                    # Predict coefficients theta
+                    theta_dim = trend_degree + 1
+                    theta_b = Dense(theta_dim, activation="linear", name=f"{block_name}_theta_b")(x)
+                    theta_f = Dense(theta_dim, activation="linear", name=f"{block_name}_theta_f")(x)
+                    
+                    # Project to time domain
+                    backcast = Lambda(lambda t: tf.matmul(t, T_b, transpose_b=True), name=f"{block_name}_backcast")(theta_b)
+                    forecast = Lambda(lambda t: tf.matmul(t, T_f, transpose_b=True), name=f"{block_name}_forecast")(theta_f)
 
-            # Update Residual
-            residual = Subtract(name=f"b{b}_residual")([residual, backcast])
-            
-            # Accumulate Forecast
-            if forecast_accum is None:
-                forecast_accum = forecast
-            else:
-                forecast_accum = Add(name=f"b{b}_accum")([forecast_accum, forecast])
+                elif stack_type == "seasonality":
+                    theta_dim = 2 * harmonics + 1
+                    theta_b = Dense(theta_dim, activation="linear", name=f"{block_name}_theta_b")(x)
+                    theta_f = Dense(theta_dim, activation="linear", name=f"{block_name}_theta_f")(x)
+                    
+                    backcast = Lambda(lambda t: tf.matmul(t, S_b, transpose_b=True), name=f"{block_name}_backcast")(theta_b)
+                    forecast = Lambda(lambda t: tf.matmul(t, S_f, transpose_b=True), name=f"{block_name}_forecast")(theta_f)
 
-        # --- Output Heads ---
-        # Map aggregated forecast features to each horizon
+                else: # Generic
+                    backcast = Dense(input_dim, activation="linear", name=f"{block_name}_backcast")(x)
+                    forecast = Dense(forecast_length, activation="linear", name=f"{block_name}_forecast")(x)
+
+                # Update Residuals
+                residual = Subtract(name=f"{block_name}_resid")([residual, backcast])
+                
+                if forecast_accum is None:
+                    forecast_accum = forecast
+                else:
+                    forecast_accum = Add(name=f"{block_name}_accum")([forecast_accum, forecast])
+
+        # --- Output Mapping ---
+        # forecast_accum is [batch, forecast_length]
+        # We need to map this to the specific requested horizons
+        
         outputs = []
         self.output_names = []
 
         for horizon in ph:
-            # Simple linear projection from forecast features to target scalar
-            out = Dense(1, activation="linear", name=f"output_horizon_{horizon}")(forecast_accum)
+            # If horizon is within forecast_length, we can slice it?
+            # But N-BEATS predicts a contiguous vector 1..H.
+            # If predicted_horizons are indices (1-based), we map to 0-based index.
+            
+            idx = horizon - 1
+            if idx < forecast_length:
+                # Slice the specific step
+                out = Lambda(lambda t, i=idx: t[:, i:i+1], name=f"slice_h{horizon}")(forecast_accum)
+            else:
+                # Fallback if horizon > forecast_length (shouldn't happen if configured right)
+                out = Dense(1, activation="linear", name=f"dense_h{horizon}")(forecast_accum)
+                
             outputs.append(out)
             self.output_names.append(f"output_horizon_{horizon}")
 
-        self.model = Model(inputs=inputs, outputs=outputs, name=f"NBEATS_Pure_{len(ph)}H")
+        self.model = Model(inputs=inputs, outputs=outputs, name=f"NBEATS_Interpretable")
         
-        optimizer = AdamW(learning_rate=self.params.get("learning_rate", 5e-4))
+        optimizer = AdamW(learning_rate=self.params.get("learning_rate", 1e-3))
         loss_dict = {nm: Huber() for nm in self.output_names}
         metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
         
