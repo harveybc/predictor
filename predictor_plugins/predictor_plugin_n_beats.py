@@ -2,20 +2,11 @@
 """Pure N-BEATS Predictor (Deterministic).
 
 Implements the standard N-BEATS architecture (Oreshkin et al., 2020).
-- No Bayesian layers.
-- No Recurrent layers (LSTM/GRU).
-- No Convolutional layers.
-
-Architecture:
-- Input: Flattened window.
-- Stacks of Blocks:
-  - Each block has a fully connected stack.
-  - Fork into Backcast (reconstruction) and Forecast (prediction).
-  - Doubly Residual Topology:
-    - Input to next block = Input - Backcast.
-    - Final Output = Sum(Forecasts).
+- Inherits from BaseKerasPredictor (no Bayesian overhead).
+- Deterministic predictions (uncertainty = 0).
 """
 from __future__ import annotations
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import (
     Input, Dense, Lambda, Add, Subtract, Flatten, Activation, Dropout
@@ -25,10 +16,10 @@ from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
 from .common.losses import mae_magnitude
-from .common.base import BaseBayesianKerasPredictor
+from .common.base import BaseKerasPredictor
 from .common.positional_encoding import positional_encoding
 
-class Plugin(BaseBayesianKerasPredictor):
+class Plugin(BaseKerasPredictor):
     plugin_params = {
         "nbeats_blocks": 3,
         "nbeats_layers": 4,
@@ -41,12 +32,6 @@ class Plugin(BaseBayesianKerasPredictor):
         "batch_size": 64,
         "predicted_horizons": [1],
         "positional_encoding": False,
-        # Legacy/Unused params kept to avoid config errors if present
-        "kl_weight": 0.0,
-        "kl_anneal_epochs": 0,
-        "mc_samples": 1,
-        "mmd_lambda": 0.0,
-        "sigma_mmd": 1.0,
     }
     
     plugin_debug_vars = [
@@ -121,12 +106,10 @@ class Plugin(BaseBayesianKerasPredictor):
                 forecast_accum = Add(name=f"b{b}_accum")([forecast_accum, forecast])
 
         # --- Output Heads ---
-        # Map aggregated forecast features to each horizon
         outputs = []
         self.output_names = []
 
         for horizon in ph:
-            # Simple linear projection from forecast features to target scalar
             # Explicitly naming the layer to match output_names
             out = Dense(1, activation="linear", name=f"output_horizon_{horizon}")(forecast_accum)
             outputs.append(out)
@@ -140,6 +123,16 @@ class Plugin(BaseBayesianKerasPredictor):
         
         self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)
         self.model.summary(line_length=140)
+
+    def predict_with_uncertainty(self, x_test, mc_samples: int = 1):
+        """Deterministic prediction (uncertainty = 0)."""
+        preds = self.model.predict(x_test, verbose=0)
+        if not isinstance(preds, list):
+            preds = [preds]
+        
+        # Return predictions and zero uncertainty
+        unc = [np.zeros_like(p) for p in preds]
+        return preds, unc
 
 if __name__ == '__main__':
     plug = Plugin({"predicted_horizons": [1,3], "positional_encoding": True})
