@@ -30,14 +30,14 @@ from .common.positional_encoding import positional_encoding
 
 class Plugin(BaseBayesianKerasPredictor):
     plugin_params = {
-        "nbeats_blocks": 3,
+        "nbeats_blocks": 8,
         "nbeats_layers": 4,
-        "nbeats_units": 128,
+        "nbeats_units": 256,
         "activation": "swish",
         "l2_reg": 1e-5,
         "dropout_rate": 0.0,
-        "learning_rate": 1e-3,
-        "early_patience": 20,
+        "learning_rate": 5e-4,
+        "early_patience": 50,
         "batch_size": 64,
         "predicted_horizons": [1],
         "positional_encoding": False,
@@ -133,7 +133,7 @@ class Plugin(BaseBayesianKerasPredictor):
 
         self.model = Model(inputs=inputs, outputs=outputs, name=f"NBEATS_Pure_{len(ph)}H")
         
-        optimizer = AdamW(learning_rate=self.params.get("learning_rate", 1e-3))
+        optimizer = AdamW(learning_rate=self.params.get("learning_rate", 5e-4))
         loss_dict = {nm: Huber() for nm in self.output_names}
         metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
         
