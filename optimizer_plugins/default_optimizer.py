@@ -788,7 +788,7 @@ class Plugin:
                 
                 # Model MAE
                 # FIX: Use val_mae variable instead of fitness to ensure consistency
-                fitness = np.mean(np.abs(denormalize_returns(val_preds_h - y_true_max_h, new_config)))
+                val_mae = np.mean(np.abs(denormalize_returns(val_preds_h - y_true_max_h, new_config)))
                 
                 # Naive MAE
                 naive_mae = float("inf")
