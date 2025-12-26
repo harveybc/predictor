@@ -33,8 +33,8 @@
     "optimizer_recreate_predictor_each_eval": false,
 
     "use_optimizer": true,
-    "population_size": 15,
-    "n_generations": 15,
+    "population_size": 25,
+    "n_generations": 25,
     "optimization_patience": 5,
     "hyperparameter_bounds": {
         "changepoint_prior_scale": [0.001, 0.5],
