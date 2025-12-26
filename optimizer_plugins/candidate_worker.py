@@ -160,6 +160,16 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
         datasets = datasets[0]
     _append_optimizer_resource_row(config, "after_preprocess", gen, cand)
 
+    # FIX: Extract dates and feature names for Prophet/Time-aware predictors
+    if "x_train_dates" in datasets:
+        config["train_dates"] = datasets["x_train_dates"]
+    if "x_val_dates" in datasets:
+        config["val_dates"] = datasets["x_val_dates"]
+    if "x_test_dates" in datasets:
+        config["test_dates"] = datasets["x_test_dates"]
+    if "feature_names" in datasets:
+        config["feature_names"] = datasets["feature_names"]
+
     x_train, y_train = datasets["x_train"], datasets["y_train"]
     x_val, y_val = datasets["x_val"], datasets["y_val"]
     x_test, y_test = datasets.get("x_test"), datasets.get("y_test")
