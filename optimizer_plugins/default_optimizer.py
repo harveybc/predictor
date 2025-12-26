@@ -458,6 +458,7 @@ class Plugin:
                             cand=int(self.eval_counter),
                             extra={"error": str(e)},
                         )
+                        print(f"CRITICAL: Worker spawn failed: {e}")
                         individual.naive_mae = float("inf")
                         _append_resource_row("candidate_end", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
                         return (float("inf"),)
@@ -465,6 +466,7 @@ class Plugin:
                     # Worker failure (including OOM-kill) must not kill the optimizer.
                     if returncode != 0:
                         stdout_tail = b"".join(list(tail_chunks))[-8000:].decode(errors="replace")
+                        print(f"CRITICAL: Worker failed (returncode={returncode}). Tail of stdout:\n{stdout_tail}\n--- End of worker stdout ---")
                         _append_resource_row(
                             "subprocess_failed",
                             gen=int(self.current_gen or 0),

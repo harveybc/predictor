@@ -163,6 +163,9 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
     # FIX: Extract dates and feature names for Prophet/Time-aware predictors
     if "x_train_dates" in datasets:
         config["train_dates"] = datasets["x_train_dates"]
+    else:
+        print("WARNING: 'x_train_dates' not found in preprocessor output.")
+
     if "x_val_dates" in datasets:
         config["val_dates"] = datasets["x_val_dates"]
     if "x_test_dates" in datasets:
