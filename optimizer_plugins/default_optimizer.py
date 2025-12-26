@@ -118,7 +118,8 @@ class Plugin:
             raise e
 
         # Extraer el espacio de búsqueda de hiperparámetros.
-        bounds = self.params["hyperparameter_bounds"]
+        # Use config directly to ensure we get the merged values from file_config
+        bounds = config.get("hyperparameter_bounds", self.params.get("hyperparameter_bounds"))
         hyper_keys = list(bounds.keys())
         
         # Determine parameter types based on bounds (int vs float)
@@ -898,12 +899,12 @@ class Plugin:
 
         toolbox.register("evaluate", eval_individual)
         toolbox.register("mate", tools.cxBlend, alpha=0.5)
-        toolbox.register("mutate", mutate, indpb=self.params.get("mutpb", 0.2))
+        toolbox.register("mutate", mutate, indpb=config.get("mutpb", self.params.get("mutpb", 0.2)))
         toolbox.register("select", tools.selTournament, tournsize=3)
 
-        population_size = self.params.get("population_size", 20)
-        n_generations = self.params.get("n_generations", 10)
-        patience = self.params.get("optimization_patience", 3)
+        population_size = config.get("population_size", self.params.get("population_size", 20))
+        n_generations = config.get("n_generations", self.params.get("n_generations", 10))
+        patience = config.get("optimization_patience", self.params.get("optimization_patience", 3))
         
         population = toolbox.population(n=population_size)
         hof = tools.HallOfFame(1)
