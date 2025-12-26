@@ -776,16 +776,26 @@ class Plugin:
                 # TEST metrics (max horizon)
                 test_mae, test_naive_mae = (float("inf"), float("inf"))
                 if x_test is not None and y_test is not None:
-                    pred_bs = int(new_config.get("predict_batch_size", 0) or new_config.get("batch_size", 32) or 256)
-                    test_preds = predictor_for_eval.model.predict(x_test, batch_size=pred_bs, verbose=0)
-                    test_preds = [test_preds] if isinstance(test_preds, np.ndarray) else test_preds
-                    test_mae, test_naive_mae = _compute_split_metrics_max_h(
-                        split="TEST",
-                        preds_list=test_preds,
-                        y_any=y_test,
-                        baseline_any=baseline_test,
-                        cfg=new_config,
-                    )
+                    try:
+                        if hasattr(predictor_for_eval, "model") and hasattr(predictor_for_eval.model, "predict"):
+                            pred_bs = int(new_config.get("predict_batch_size", 0) or new_config.get("batch_size", 32) or 256)
+                            test_preds = predictor_for_eval.model.predict(x_test, batch_size=pred_bs, verbose=0)
+                        elif hasattr(predictor_for_eval, "predict_with_uncertainty"):
+                            test_preds, _ = predictor_for_eval.predict_with_uncertainty(x_test, mc_samples=new_config.get("mc_samples", 1))
+                        else:
+                            test_preds = []
+                        
+                        test_preds = [test_preds] if isinstance(test_preds, np.ndarray) else test_preds
+                        test_mae, test_naive_mae = _compute_split_metrics_max_h(
+                            split="TEST",
+                            preds_list=test_preds,
+                            y_any=y_test,
+                            baseline_any=baseline_test,
+                            cfg=new_config,
+                        )
+                    except Exception as e:
+                        print(f"WARN: Test prediction failed: {e}")
+                        test_mae, test_naive_mae = (float("inf"), float("inf"))
                 
                 # Use this calculated MAE as fitness instead of val_loss?
                 # The user wants to compare them. If we optimize for val_loss (normalized MSE usually), 
