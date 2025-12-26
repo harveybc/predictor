@@ -750,12 +750,17 @@ class Plugin:
                     y_true_max_h = y_val.flatten()
                 
                 # 3. Align lengths (VAL)
-                num_val_pts = min(len(val_preds_h), len(y_true_max_h))
-                if baseline_val is not None:
-                    num_val_pts = min(num_val_pts, len(baseline_val))
+                # FIX: Ensure all arrays are the same length before slicing
+                len_preds = len(val_preds_h)
+                len_true = len(y_true_max_h)
+                len_base = len(baseline_val) if baseline_val is not None else float('inf')
+                
+                num_val_pts = min(len_preds, len_true, len_base)
                 
                 val_preds_h = val_preds_h[:num_val_pts]
                 y_true_max_h = y_true_max_h[:num_val_pts]
+                if baseline_val is not None:
+                    baseline_val_h = baseline_val[:num_val_pts].flatten()
                 
                 # 5. Denormalize (Crucial step from pipeline)
                 # We need the 'denormalize' function. We can import it or implement simple version if params available.
@@ -787,7 +792,6 @@ class Plugin:
                 # Naive MAE
                 naive_mae = float("inf")
                 if baseline_val is not None:
-                    baseline_val_h = baseline_val[:num_val_pts].flatten()
                     # Note: pipeline uses denormalize(baseline) - val_target_price
                     # val_target_price was computed as denormalize(y_true_max_h)
                     naive_mae = np.mean(np.abs(denormalize(baseline_val_h, new_config) - val_target_price))
