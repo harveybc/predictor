@@ -624,6 +624,26 @@ class Plugin:
             y_train = _ensure_2d_targets(y_train)
             y_val = _ensure_2d_targets(y_val)
 
+            # FIX: Trim dates to match target lengths (Prophet requires exact length match)
+            def _trim_dates(dates, y_dict):
+                if dates is None or not isinstance(y_dict, dict):
+                    return dates
+                # Find min length of targets
+                min_len = min(len(v) for v in y_dict.values())
+                if len(dates) > min_len:
+                    return dates[:min_len]
+                return dates
+
+            if "train_dates" in new_config:
+                new_config["train_dates"] = _trim_dates(new_config["train_dates"], y_train)
+            if "val_dates" in new_config:
+                new_config["val_dates"] = _trim_dates(new_config["val_dates"], y_val)
+            if "test_dates" in new_config:
+                # y_test might be None or dict
+                if y_test is not None:
+                    y_test_fixed = _ensure_2d_targets(y_test)
+                    new_config["test_dates"] = _trim_dates(new_config["test_dates"], y_test_fixed)
+
             # Construir y entrenar el modelo utilizando el Predictor Plugin.
             window_size = new_config.get("window_size")
             _append_resource_row("before_build_model", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
