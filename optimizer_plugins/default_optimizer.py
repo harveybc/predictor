@@ -602,6 +602,16 @@ class Plugin:
             # Handle tuple return from stl_preprocessor (datasets, params)
             if isinstance(datasets, tuple):
                 datasets = datasets[0]
+
+            # FIX: Extract dates and feature names for Prophet/Time-aware predictors (In-process)
+            if "x_train_dates" in datasets:
+                new_config["train_dates"] = datasets["x_train_dates"]
+            if "x_val_dates" in datasets:
+                new_config["val_dates"] = datasets["x_val_dates"]
+            if "x_test_dates" in datasets:
+                new_config["test_dates"] = datasets["x_test_dates"]
+            if "feature_names" in datasets:
+                new_config["feature_names"] = datasets["feature_names"]
                 
             x_train, y_train = datasets["x_train"], datasets["y_train"]
             x_val, y_val = datasets["x_val"], datasets["y_val"]
