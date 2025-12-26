@@ -250,6 +250,7 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
                 pred_bs = int(config.get("predict_batch_size", 0) or config.get("batch_size", 32) or 256)
                 test_preds = predictor_plugin.model.predict(x_test, batch_size=pred_bs, verbose=0)
             elif hasattr(predictor_plugin, "predict_with_uncertainty"):
+                # FIX: Added Prophet / Bayesian predictors compatibility (Fallback path)
                 # Prophet / Bayesian predictors (Fallback path)
                 test_preds, _ = predictor_plugin.predict_with_uncertainty(x_test, mc_samples=config.get("mc_samples", 1))
             else:

@@ -518,6 +518,7 @@ class Plugin:
                         extra={"fitness": fitness, "naive_mae": naive_mae},
                     )
                     _append_resource_row("candidate_end", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
+                    # FIX: Added detailed metrics printing for Champion tracking
                     print(
                         "Candidate Result -> "
                         f"TRAINING MAE maxH: {train_mae:.6f} | TRAINING Naive MAE maxH: {train_naive_mae:.6f} || "
