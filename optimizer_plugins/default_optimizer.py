@@ -1109,6 +1109,12 @@ class Plugin:
             if champion_naive_mae_global is None:
                 champion_naive_mae_global = self.best_naive_mae_so_far
             
+            # Capture all champion metrics for stats
+            champion_test_mae_global = getattr(hof[0], "test_mae", self.best_test_mae_so_far) if hof else self.best_test_mae_so_far
+            champion_test_naive_mae_global = getattr(hof[0], "test_naive_mae", self.best_test_naive_mae_so_far) if hof else self.best_test_naive_mae_so_far
+            champion_train_mae_global = getattr(hof[0], "train_mae", self.best_train_mae_so_far) if hof else self.best_train_mae_so_far
+            champion_train_naive_mae_global = getattr(hof[0], "train_naive_mae", self.best_train_naive_mae_so_far) if hof else self.best_train_naive_mae_so_far
+
             stats_history.append({
                 "generation": self.current_gen,
                 "duration": gen_duration,
@@ -1136,11 +1142,13 @@ class Plugin:
                 # Explicit aliases to avoid future confusion.
                 "champion_fitness_val_mae_max_horizon": float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else None,
                 "champion_naive_mae_max_horizon": champion_naive_mae_global,
-                "champion_test_mae_max_horizon": getattr(hof[0], "test_mae", self.best_test_mae_so_far) if hof else self.best_test_mae_so_far,
-                "champion_test_naive_mae_max_horizon": getattr(hof[0], "test_naive_mae", self.best_test_naive_mae_so_far) if hof else self.best_test_naive_mae_so_far,
+                "champion_test_mae_max_horizon": champion_test_mae_global,
+                "champion_test_naive_mae_max_horizon": champion_test_naive_mae_global,
+                "champion_train_mae_max_horizon": champion_train_mae_global,
+                "champion_train_naive_mae_max_horizon": champion_train_naive_mae_global,
                 # NOTE: This list is the average population FITNESS, i.e. VALIDATION MAE maxH.
                 "average_mae_per_epoch": [s["avg_mae"] for s in stats_history],
-                "average_validation_mae_per_epoch": [s["avg_validation_mae"] for s in stats_history],
+                "average_validation_mae_per_epoch": [s["average_validation_mae"] for s in stats_history],
                 "champion_validation_mae_per_epoch": [s["champion_validation_mae_global"] for s in stats_history],
                 "best_validation_mae_per_epoch": [s["best_validation_mae_gen"] for s in stats_history],
                 "history": stats_history
