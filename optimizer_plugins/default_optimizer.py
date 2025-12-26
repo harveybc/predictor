@@ -103,9 +103,11 @@ class Plugin:
         Returns:
             dict: Diccionario con los hiperparámetros óptimos.
         """
-        # Fix: Ensure 'plugin' key exists for predictor building
-        if "plugin" not in config:
-            config["plugin"] = config.get("predictor_plugin", "default_predictor")
+        # Fix: Ensure 'plugin' key matches 'predictor_plugin' if present, as 'plugin' might be stale from defaults
+        if "predictor_plugin" in config:
+            config["plugin"] = config["predictor_plugin"]
+        elif "plugin" not in config:
+            config["plugin"] = "default_predictor"
 
         # Load Target Plugin to pass to preprocessor
         target_plugin_name = config.get('target_plugin', 'default_target')
