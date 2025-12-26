@@ -179,6 +179,8 @@ class Plugin:
         self.best_naive_mae_so_far = None
         self.best_test_mae_so_far = None
         self.best_test_naive_mae_so_far = None
+        self.best_train_mae_so_far = None
+        self.best_train_naive_mae_so_far = None
         # Tracks the validation MAE to beat for the *current generation* (used by GA early stopping).
         self.best_at_gen_start = float("inf")
 
@@ -505,6 +507,8 @@ class Plugin:
                         self.best_naive_mae_so_far = float(naive_mae) if np.isfinite(naive_mae) else self.best_naive_mae_so_far
                         self.best_test_mae_so_far = float(test_mae) if np.isfinite(test_mae) else self.best_test_mae_so_far
                         self.best_test_naive_mae_so_far = float(test_naive_mae) if np.isfinite(test_naive_mae) else self.best_test_naive_mae_so_far
+                        self.best_train_mae_so_far = float(train_mae) if np.isfinite(train_mae) else self.best_train_mae_so_far
+                        self.best_train_naive_mae_so_far = float(train_naive_mae) if np.isfinite(train_naive_mae) else self.best_train_naive_mae_so_far
                         is_new_champion = True
 
                     _append_resource_row(
@@ -536,8 +540,19 @@ class Plugin:
                         if self.best_test_naive_mae_so_far is not None and np.isfinite(self.best_test_naive_mae_so_far)
                         else float("inf")
                     )
+                    champion_train_mae = (
+                        float(self.best_train_mae_so_far)
+                        if self.best_train_mae_so_far is not None and np.isfinite(self.best_train_mae_so_far)
+                        else float("inf")
+                    )
+                    champion_train_naive = (
+                        float(self.best_train_naive_mae_so_far)
+                        if self.best_train_naive_mae_so_far is not None and np.isfinite(self.best_train_naive_mae_so_far)
+                        else float("inf")
+                    )
                     print(
                         "Champion so far -> "
+                        f"TRAINING MAE maxH: {champion_train_mae:.6f} | TRAINING Naive MAE maxH: {champion_train_naive:.6f} || "
                         f"VALIDATION MAE maxH: {champion_mae:.6f} | VALIDATION Naive MAE maxH: {champion_naive:.6f} || "
                         f"TEST MAE maxH: {champion_test_mae:.6f} | TEST Naive MAE maxH: {champion_test_naive:.6f}"
                         + (" | NEW CHAMPION" if is_new_champion else "")
