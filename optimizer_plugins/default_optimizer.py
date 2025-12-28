@@ -647,7 +647,7 @@ class Plugin:
             # Construir y entrenar el modelo utilizando el Predictor Plugin.
             window_size = new_config.get("window_size")
             _append_resource_row("before_build_model", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
-            if new_config["plugin"] in ["lstm", "cnn", "transformer", "ann", "mimo", "n_beats", "n_beats_b"]:
+            if new_config["plugin"] in ["lstm", "cnn", "transformer", "ann", "mimo", "n_beats", "n_beats_b", "tft"]:
                 # Handle 3D input for sequence models
                 input_shape = (window_size, x_train.shape[2]) if len(x_train.shape) == 3 else (x_train.shape[1],)
                 predictor_for_eval.build_model(input_shape=input_shape, x_train=x_train, config=new_config)
