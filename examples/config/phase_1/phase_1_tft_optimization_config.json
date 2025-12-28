@@ -25,8 +25,9 @@
     "pipeline_plugin": "stl_pipeline",
     "preprocessor_plugin": "stl_preprocessor",
     "use_daily": false,
-    "max_steps_train": 25200,
-    "max_steps_test": 6300,
+    "max_steps_train": 7300,
+    "max_steps_val": 1575,
+    "max_steps_test": 1575,
     
     "tft_hidden_units": 64,
     "tft_num_heads": 4,
