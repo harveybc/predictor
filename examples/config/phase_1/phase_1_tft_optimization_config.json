@@ -66,6 +66,9 @@
     "positional_encoding": true,
 
     "use_optimizer": true,
+    "population_size": 25,
+    "n_generations": 25,
+    "optimization_patience": 7,
     "optimizer_isolate_candidate_process": false,
     "hyperparameter_bounds": {
         "learning_rate": [1e-5, 1e-2],
