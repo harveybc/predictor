@@ -38,7 +38,7 @@
     "activation": "swish",
     "l2_reg": 1e-5,
     "dropout_rate": 0.0,
-    "early_patience": 20,
+    "early_patience": 100,
     "start_from_epoch": 0,
     "use_returns": false,
     "use_log1p_targets": false,
