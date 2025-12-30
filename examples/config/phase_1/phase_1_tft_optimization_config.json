@@ -66,7 +66,7 @@
     "positional_encoding": true,
 
     "use_optimizer": true,
-    "population_size": 25,
+    "population_size": 20,
     "n_generations": 25,
     "optimization_patience": 7,
     "optimizer_isolate_candidate_process": false,
@@ -75,7 +75,7 @@
         "window_size": [6, 96],
         "tft_hidden_units": [32, 128],
         "tft_dropout": [0.0, 0.3],
-        "batch_size": [32, 64],
+        
         "tft_lstm_layers": [1, 3],
         "tft_num_heads": [1, 4]
     }
