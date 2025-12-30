@@ -513,6 +513,14 @@ class Plugin:
                         self.best_train_naive_mae_so_far = float(train_naive_mae) if np.isfinite(train_naive_mae) else self.best_train_naive_mae_so_far
                         is_new_champion = True
 
+                        # Save Champion Parameters Immediately
+                        params_file = config.get("optimization_parameters_file", "optimization_parameters.json")
+                        try:
+                            _atomic_json_dump(params_file, hyper_dict)
+                            print(f"  [CHAMPION] Parameters saved to {params_file}")
+                        except Exception as e:
+                            print(f"  [CHAMPION] Failed to save parameters: {e}")
+
                     _append_resource_row(
                         "subprocess_ok",
                         gen=int(self.current_gen or 0),
@@ -889,6 +897,14 @@ class Plugin:
                     self.best_train_mae_so_far = float(train_mae) if np.isfinite(train_mae) else self.best_train_mae_so_far
                     self.best_train_naive_mae_so_far = float(train_naive_mae) if np.isfinite(train_naive_mae) else self.best_train_naive_mae_so_far
                     is_new_champion = True
+
+                    # Save Champion Parameters Immediately
+                    params_file = config.get("optimization_parameters_file", "optimization_parameters.json")
+                    try:
+                        _atomic_json_dump(params_file, hyper_dict)
+                        print(f"  [CHAMPION] Parameters saved to {params_file}")
+                    except Exception as e:
+                        print(f"  [CHAMPION] Failed to save parameters: {e}")
 
                 champion_mae = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
                 champion_naive = (
