@@ -1148,7 +1148,7 @@ class Plugin:
                 "champion_train_naive_mae_max_horizon": champion_train_naive_mae_global,
                 # NOTE: This list is the average population FITNESS, i.e. VALIDATION MAE maxH.
                 "average_mae_per_epoch": [s["avg_mae"] for s in stats_history],
-                "average_validation_mae_per_epoch": [s["average_validation_mae"] for s in stats_history],
+                "average_validation_mae_per_epoch": [s["avg_validation_mae"] for s in stats_history],
                 "champion_validation_mae_per_epoch": [s["champion_validation_mae_global"] for s in stats_history],
                 "best_validation_mae_per_epoch": [s["best_validation_mae_gen"] for s in stats_history],
                 "history": stats_history
