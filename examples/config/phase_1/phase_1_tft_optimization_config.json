@@ -68,8 +68,8 @@
     "positional_encoding": true,
 
     "use_optimizer": true,
-    "population_size": 1,
-    "n_generations": 1,
+    "population_size": 20,
+    "n_generations": 25,
     "optimization_patience": 7,
     "optimizer_isolate_candidate_process": false,
     "hyperparameter_bounds": {
