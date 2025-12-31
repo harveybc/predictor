@@ -68,14 +68,14 @@
     "positional_encoding": true,
 
     "use_optimizer": true,
-    "population_size": 20,
-    "n_generations": 25,
+    "population_size": 1,
+    "n_generations": 1,
     "optimization_patience": 7,
     "optimizer_isolate_candidate_process": false,
     "hyperparameter_bounds": {
         "learning_rate": [1e-4, 1e-2],
         "window_size": [6, 96],
-        "tft_hidden_units": [32, 128],
+        "tft_hidden_units": [16, 64],
         "tft_dropout": [0.0, 0.3],
         "mmd_lambda": [0.0, 1e-3],
         "tft_lstm_layers": [1, 3],
