@@ -239,12 +239,18 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
             return (float("inf"), None)
         y_h = y_h[:n]
         p_h = p_h[:n]
-        mae = float(np.mean(np.abs(denormalize_returns(p_h - y_h, config))))
+        
+        # CORRECT MAE CALCULATION (Real Price Space)
+        real_p = denormalize(p_h, config)
+        real_y = denormalize(y_h, config)
+        mae = float(np.mean(np.abs(real_p - real_y)))
+        
         naive = None
         if baseline_any is not None:
             baseline_h = np.asarray(baseline_any).reshape(-1)[:n]
-            target_price = denormalize(y_h, config)
-            naive = float(np.mean(np.abs(denormalize(baseline_h, config) - target_price)))
+            # baseline_h is in same space as y_h
+            real_baseline = denormalize(baseline_h, config)
+            naive = float(np.mean(np.abs(real_baseline - real_y)))
         return (mae, naive)
 
     # TRAIN

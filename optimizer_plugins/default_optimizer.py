@@ -210,13 +210,22 @@ class Plugin:
                 return (float("inf"), float("inf"))
             y_h = y_h[:n]
             p_h = p_h[:n]
-            mae = float(np.mean(np.abs(denormalize_returns(p_h - y_h, cfg))))
+            
+            # CORRECT MAE CALCULATION:
+            # Always denormalize both predictions and targets to REAL PRICE SPACE first.
+            # This handles both linear scaling and log1p (via expm1 in denormalize).
+            # Old method denormalize_returns(p-y) is invalid for log-space differences.
+            real_p = denormalize(p_h, cfg)
+            real_y = denormalize(y_h, cfg)
+            mae = float(np.mean(np.abs(real_p - real_y)))
 
             naive_mae = float("inf")
             if baseline_any is not None:
                 baseline_h = np.asarray(baseline_any).reshape(-1)[:n]
-                target_price = denormalize(y_h, cfg)
-                naive_mae = float(np.mean(np.abs(denormalize(baseline_h, cfg) - target_price)))
+                # baseline_h is in the same space as y_h (normalized/log).
+                # Denormalize it to get real price baseline.
+                real_baseline = denormalize(baseline_h, cfg)
+                naive_mae = float(np.mean(np.abs(real_baseline - real_y)))
             return (mae, naive_mae)
 
         def _ensure_2d_targets(y):

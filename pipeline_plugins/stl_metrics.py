@@ -68,8 +68,8 @@ def compute_train_val_metrics(
             val_target_price = denormalize(val_target_h, params)
             val_pred_price = denormalize(val_preds_h, params)
 
-            # Metrics
-            train_mae_h = np.mean(np.abs(denormalize_returns(train_preds_h - train_target_h, params)))
+            # Metrics (MAE calculated on real prices)
+            train_mae_h = np.mean(np.abs(train_pred_price - train_target_price))
             train_r2_h = r2_score(train_target_price, train_pred_price)
             train_unc_mean_h = np.mean(np.abs(denormalize_returns(train_unc_h, params)))
             train_snr_h = np.mean(train_pred_price) / (train_unc_mean_h + 1e-9)
@@ -80,7 +80,7 @@ def compute_train_val_metrics(
                 baseline_train_h = baseline_train[:num_train_pts].flatten()
                 train_naive_mae_h = np.mean(np.abs(denormalize(baseline_train_h, params) - train_target_price))
 
-            val_mae_h = np.mean(np.abs(denormalize_returns(val_preds_h - val_target_h, params)))
+            val_mae_h = np.mean(np.abs(val_pred_price - val_target_price))
             val_r2_h = r2_score(val_target_price, val_pred_price)
             val_unc_mean_h = np.mean(np.abs(denormalize_returns(val_unc_h, params)))
             val_snr_h = np.mean(val_pred_price) / (val_unc_mean_h + 1e-9)
