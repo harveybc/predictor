@@ -20,7 +20,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.regularizers import l2
-from .common.losses import mae_magnitude
+from .common.losses import mae_magnitude, composite_loss_basic
 from .common.base import BaseKerasPredictor
 
 class Plugin(BaseKerasPredictor):
@@ -120,7 +120,24 @@ class Plugin(BaseKerasPredictor):
         self.model = Model(inputs=inputs, outputs=outputs, name=f"TFT_Simple_{len(ph)}H")
         
         optimizer = AdamW(learning_rate=self.params.get("learning_rate", 1e-3))
-        loss_dict = {nm: Huber() for nm in self.output_names}
+        
+        loss_dict = {}
+        use_returns = self.params.get("use_returns", False)
+        mmd_lambda = self.params.get("mmd_lambda", 0.0)
+        sigma_mmd = self.params.get("sigma_mmd", 1.0)
+
+        if use_returns:
+            # Use the incentivized composite loss that worked well for CNN/Transformer
+            def _loss_fn(y_true, y_pred):
+                return composite_loss_basic(y_true, y_pred, mmd_lambda=mmd_lambda, sigma=sigma_mmd)
+            for nm in self.output_names:
+                loss_dict[nm] = _loss_fn
+        else:
+            # Standard Huber loss
+            huber = Huber()
+            for nm in self.output_names:
+                loss_dict[nm] = huber
+
         metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
         
         self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)
