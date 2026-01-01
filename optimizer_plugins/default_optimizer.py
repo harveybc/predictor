@@ -325,6 +325,13 @@ class Plugin:
                 del predictor_plugin.model
             tf.keras.backend.clear_session()
             gc.collect()
+            
+            # Determinism: Set seeds before every evaluation
+            # This is crucial for "exact same validation MAE" when re-evaluating the champion.
+            seed_val = 42
+            random.seed(seed_val)
+            np.random.seed(seed_val)
+            tf.random.set_seed(seed_val)
 
             # Optional: recreate predictor plugin per candidate to avoid hidden state accumulation
             predictor_for_eval = predictor_plugin
@@ -1016,6 +1023,7 @@ class Plugin:
         resume_path = _resolve_repo_path(config.get("optimization_resume_file"))
         params_path = _resolve_repo_path(config.get("optimization_parameters_file"))
         start_gen = 0
+        loaded_indices = set()
 
         # 1. Try to load full population state
         if resume_path and os.path.exists(resume_path):
@@ -1039,6 +1047,7 @@ class Plugin:
                             for k, val in enumerate(saved_ind):
                                 population[i][k] = val
                             count += 1
+                            loaded_indices.add(i)
                     print(f"[RESUME] SUCCESS: Restored {count} individuals from resume file.")
                     print(f"[RESUME] Resuming from Generation {start_gen}")
                 else:
@@ -1072,6 +1081,7 @@ class Plugin:
                     print(f"[CHAMPION LOAD] SUCCESS: Injecting champion genome into population index 0.")
                     for k, val in enumerate(champ_ind):
                         population[0][k] = val
+                    loaded_indices.add(0)
             except Exception as e:
                 print(f"[CHAMPION LOAD] ERROR: Failed to inject champion: {e}")
 
@@ -1095,11 +1105,32 @@ class Plugin:
         self.total_eval_counter = 0
         
         # Enforce bounds on initial population (just in case)
-        for ind in population:
+        print("[BOUNDS] Checking initial population against hyperparameter bounds...")
+        for idx_ind, ind in enumerate(population):
+            # Skip bounds enforcement if loaded from file (Resume or Champion)
+            if idx_ind in loaded_indices:
+                # Optional: Warn if it IS out of bounds, just for info
+                for i, val in enumerate(ind):
+                    low = lower_bounds[i]
+                    up = upper_bounds[i]
+                    if not (low <= val <= up):
+                         print(f"  [BOUNDS] INFO: Loaded individual {idx_ind} parameter '{hyper_keys[i]}' value {val} is outside bounds [{low}, {up}] (kept as is).")
+                continue
+
             for i, val in enumerate(ind):
                 low = lower_bounds[i]
                 up = upper_bounds[i]
-                ind[i] = max(low, min(up, val))
+                clamped = max(low, min(up, val))
+                if clamped != val:
+                    ind[i] = clamped
+
+        # Print Candidate 0 (Champion) for verification
+        print(f"\n[VERIFY] Candidate 0 (Champion) Parameters to be evaluated:")
+        champ_verify = {}
+        for i, key in enumerate(hyper_keys):
+            champ_verify[key] = population[0][i]
+        print(json.dumps(champ_verify, indent=2))
+        print("-" * 60)
 
         # Only evaluate invalid individuals (resumed ones might need re-eval if we didn't save fitness)
         # For simplicity, we re-evaluate resumed individuals to ensure fitness is consistent with current code/data.
