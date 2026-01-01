@@ -36,7 +36,7 @@
     "use_optimizer": true,
     "population_size": 25,
     "n_generations": 25,
-    "optimization_patience": 5,
+    "optimization_patience": 7,
     "hyperparameter_bounds": {
         "changepoint_prior_scale": [0.001, 0.5],
         "seasonality_prior_scale": [0.01, 10.0],

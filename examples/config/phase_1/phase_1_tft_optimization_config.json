@@ -70,7 +70,7 @@
     "positional_encoding": true,
 
     "use_optimizer": true,
-    "population_size": 20,
+    "population_size": 5,
     "n_generations": 25,
     "optimization_patience": 7,
     "optimizer_isolate_candidate_process": false,
