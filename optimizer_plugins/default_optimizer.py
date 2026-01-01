@@ -1012,12 +1012,75 @@ class Plugin:
         population = toolbox.population(n=population_size)
         hof = tools.HallOfFame(1)
 
-        print("Starting hyperparameter optimization with early stopping...")
+        # --- RESUME / RECOVERY LOGIC ---
+        resume_path = _resolve_repo_path(config.get("optimization_resume_file"))
+        params_path = _resolve_repo_path(config.get("optimization_parameters_file"))
+        start_gen = 0
+
+        # 1. Try to load full population state
+        if resume_path and os.path.exists(resume_path):
+            try:
+                print(f"\n[RESUME] Found resume file at: {resume_path}")
+                print(f"[RESUME] Attempting to load population state...")
+                with open(resume_path, 'r') as f:
+                    resume_data = json.load(f)
+                
+                saved_pop = resume_data.get("population", [])
+                # If we finished gen N, we start N+1. 
+                # If the file says "generation": 5, it means gen 5 completed.
+                start_gen = resume_data.get("generation", -1) + 1
+                
+                if saved_pop:
+                    # Load into DEAP population
+                    count = 0
+                    for i in range(min(len(population), len(saved_pop))):
+                        saved_ind = saved_pop[i]
+                        if len(saved_ind) == len(hyper_keys):
+                            for k, val in enumerate(saved_ind):
+                                population[i][k] = val
+                            count += 1
+                    print(f"[RESUME] SUCCESS: Restored {count} individuals from resume file.")
+                    print(f"[RESUME] Resuming from Generation {start_gen}")
+                else:
+                    print(f"[RESUME] WARN: Resume file found but contained no population data.")
+            except Exception as e:
+                print(f"[RESUME] ERROR: Failed to resume from file: {e}")
+
+        # 2. Inject Champion (Elitism/Continuity)
+        # Even if we resumed, ensuring the best-known parameters are in the population is good practice.
+        # If we didn't resume, this gives us a "warm start" from the last champion.
+        if params_path and os.path.exists(params_path):
+            try:
+                print(f"\n[CHAMPION LOAD] Found champion parameters file at: {params_path}")
+                print(f"[CHAMPION LOAD] Attempting to inject champion genome...")
+                with open(params_path, 'r') as f:
+                    champ_dict = json.load(f)
+                
+                champ_ind = []
+                valid_champ = True
+                for key in hyper_keys:
+                    if key not in champ_dict:
+                        # It's possible the params file has extra keys or missing keys if config changed.
+                        # We only care if we can fill the current hyper_keys.
+                        print(f"[CHAMPION LOAD] WARN: Champion missing key '{key}' - cannot inject full genome.")
+                        valid_champ = False
+                        break
+                    champ_ind.append(champ_dict[key])
+                
+                if valid_champ:
+                    # Inject into the first slot (elitism)
+                    print(f"[CHAMPION LOAD] SUCCESS: Injecting champion genome into population index 0.")
+                    for k, val in enumerate(champ_ind):
+                        population[0][k] = val
+            except Exception as e:
+                print(f"[CHAMPION LOAD] ERROR: Failed to inject champion: {e}")
+
+        print(f"Starting hyperparameter optimization (Gen {start_gen} to {n_generations})...")
         start_opt = time.time()
         
         # Custom optimization loop with early stopping
         # Evaluate the entire population
-        self.current_gen = 0
+        self.current_gen = start_gen
         self.eval_counter = 0 # Reset for initial population
         self.total_eval_counter = 0
         
@@ -1028,6 +1091,9 @@ class Plugin:
                 up = upper_bounds[i]
                 ind[i] = max(low, min(up, val))
 
+        # Only evaluate invalid individuals (resumed ones might need re-eval if we didn't save fitness)
+        # For simplicity, we re-evaluate resumed individuals to ensure fitness is consistent with current code/data.
+        # (Unless we saved fitnesses too, but re-eval is safer for "sudden shutdown" recovery where data might have changed).
         invalid_ind = [ind for ind in population if not ind.fitness.valid]
         fitnesses = map(toolbox.evaluate, invalid_ind)
         for ind, fit in zip(invalid_ind, fitnesses):
@@ -1045,7 +1111,7 @@ class Plugin:
         # Statistics tracking
         stats_history = []
         
-        for gen in range(n_generations):
+        for gen in range(start_gen, n_generations):
             gen_start_time = time.time()
             self.current_gen = gen + 1 # Update for logging
             self.eval_counter = 0 # Reset per generation
@@ -1210,6 +1276,18 @@ class Plugin:
                 print(f"  Champion parameters saved to {params_file}")
             except Exception as e:
                 print(f"  Failed to save champion parameters: {e}")
+
+            # --- Save Resume State ---
+            if resume_path:
+                try:
+                    resume_payload = {
+                        "generation": gen,
+                        "population": [list(ind) for ind in population]
+                    }
+                    _atomic_json_dump(resume_path, resume_payload)
+                    print(f"  Resume state saved to {resume_path}")
+                except Exception as e:
+                    print(f"  Failed to save resume state: {e}")
 
             if no_improve_counter >= patience:
                 print(f"Early stopping triggered after {gen + 1} generations.")
