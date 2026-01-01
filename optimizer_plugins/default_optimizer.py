@@ -1075,6 +1075,16 @@ class Plugin:
             except Exception as e:
                 print(f"[CHAMPION LOAD] ERROR: Failed to inject champion: {e}")
 
+        # Pause if requested and any resume/load happened
+        if config.get("optimization_pause_on_resume", False):
+            if (resume_path and os.path.exists(resume_path)) or (params_path and os.path.exists(params_path)):
+                print("\n[PAUSE] optimization_pause_on_resume is enabled.")
+                print("[PAUSE] Resume/Champion data loaded. Press Enter to continue optimization...")
+                try:
+                    input()
+                except EOFError:
+                    pass
+
         print(f"Starting hyperparameter optimization (Gen {start_gen} to {n_generations})...")
         start_opt = time.time()
         

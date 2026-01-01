@@ -19,6 +19,7 @@
     "optimization_statistics": "examples/results/phase_1/phase_1_tft_optimization_stats.json",
     "optimization_parameters_file": "examples/results/phase_1/phase_1_tft_optimization_parameters.json",
     "optimization_resume_file": "examples/results/phase_1/phase_1_tft_optimization_resume.json",
+    "optimization_pause_on_resume": true,
     
     "target_column": "typical_price",
     "predictor_plugin": "tft",
