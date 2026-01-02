@@ -1077,7 +1077,21 @@ class Plugin:
                         print(f"[CHAMPION LOAD] WARN: Champion missing key '{key}' - cannot inject full genome.")
                         valid_champ = False
                         break
-                    champ_ind.append(champ_dict[key])
+                    
+                    val = champ_dict[key]
+                    
+                    # REVERSE MAPPING: Convert resolved values back to gene encoding
+                    if key == "use_log1p_features":
+                        # 1 -> ["typical_price"], 0 -> None
+                        if val == ["typical_price"]:
+                            champ_ind.append(1)
+                        else:
+                            champ_ind.append(0)
+                    elif key == "positional_encoding":
+                        # 1 -> True, 0 -> False
+                        champ_ind.append(1 if val else 0)
+                    else:
+                        champ_ind.append(val)
                 
                 if valid_champ:
                     # Inject into the first slot (elitism)
