@@ -355,8 +355,11 @@ class Plugin:
                 # Specific handling for requested parameters
                 if key == "use_log1p_features":
                     # 0 -> None, 1 -> ["typical_price"]
-                    val_int = int(round(value))
-                    hyper_dict[key] = ["typical_price"] if val_int == 1 else None
+                    if isinstance(value, list):
+                        hyper_dict[key] = value
+                    else:
+                        val_int = int(round(value))
+                        hyper_dict[key] = ["typical_price"] if val_int == 1 else None
                 elif key == "positional_encoding":
                     val_int = int(round(value))
                     hyper_dict[key] = bool(val_int)
@@ -1008,7 +1011,7 @@ class Plugin:
             return individual,
 
         toolbox.register("evaluate", eval_individual)
-        toolbox.register("mate", tools.cxBlend, alpha=0.5)
+        toolbox.register("mate", tools.cxTwoPoint)
         toolbox.register("mutate", mutate, indpb=config.get("mutpb", self.params.get("mutpb", 0.2)))
         toolbox.register("select", tools.selTournament, tournsize=3)
 
@@ -1113,8 +1116,11 @@ class Plugin:
                 for i, val in enumerate(ind):
                     low = lower_bounds[i]
                     up = upper_bounds[i]
-                    if not (low <= val <= up):
-                         print(f"  [BOUNDS] INFO: Loaded individual {idx_ind} parameter '{hyper_keys[i]}' value {val} is outside bounds [{low}, {up}] (kept as is).")
+                    try:
+                        if not (low <= val <= up):
+                             print(f"  [BOUNDS] INFO: Loaded individual {idx_ind} parameter '{hyper_keys[i]}' value {val} is outside bounds [{low}, {up}] (kept as is).")
+                    except TypeError:
+                        pass
                 continue
 
             for i, val in enumerate(ind):
