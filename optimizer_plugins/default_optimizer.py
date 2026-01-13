@@ -62,6 +62,7 @@ class Plugin:
             "learning_rate": (1e-5, 1e-2),
             "num_layers": (1, 5),
             "layer_size": (16, 256),
+            "positional_encoding": (0, 1),
             "l2_reg": (1e-7, 1e-3),
             "mmd_lambda": (1e-5, 1e-2),
             "early_patience": (10, 100)

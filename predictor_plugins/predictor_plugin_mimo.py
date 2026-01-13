@@ -111,6 +111,25 @@ class Plugin(BaseBayesianKerasPredictor):
         if config:
             self.params.update(config)
 
+        def _as_bool(v: Any, default: bool = False) -> bool:
+            if v is None:
+                return default
+            if isinstance(v, bool):
+                return v
+            if isinstance(v, (int, float)):
+                try:
+                    return bool(int(v))
+                except Exception:
+                    return bool(v)
+            if isinstance(v, str):
+                s = v.strip().lower()
+                if s in ("1", "true", "yes", "y", "on"):
+                    return True
+                if s in ("0", "false", "no", "n", "off", ""):
+                    return False
+                return default
+            return bool(v)
+
         window_size, num_features = input_shape
 
         # Lista de horizontes de salida
@@ -133,7 +152,7 @@ class Plugin(BaseBayesianKerasPredictor):
             name="input_window",
         )
 
-        if self.params.get("positional_encoding", False):
+        if _as_bool(self.params.get("positional_encoding", False), default=False):
             pe = positional_encoding(window_size, num_features)
             x = Lambda(
                 lambda t, pe=pe: t + pe,

@@ -83,6 +83,26 @@ def _read_gpu_mem_bytes() -> tuple[int | None, int | None]:
         return (None, None)
 
 
+def _coerce_bool(v: object | None, *, default: bool = False) -> bool:
+    if v is None:
+        return default
+    if isinstance(v, bool):
+        return v
+    if isinstance(v, (int, float)):
+        try:
+            return bool(int(v))
+        except Exception:
+            return bool(v)
+    if isinstance(v, str):
+        s = v.strip().lower()
+        if s in ("1", "true", "yes", "y", "on"):
+            return True
+        if s in ("0", "false", "no", "n", "off", ""):
+            return False
+        return default
+    return bool(v)
+
+
 def _append_optimizer_resource_row(config: dict, stage: str, gen: int | None, cand: int | None, extra: dict | None = None) -> None:
     log_path = _resolve_repo_path(config.get("optimizer_resource_log_file"))
     if not log_path:
@@ -321,6 +341,10 @@ def main() -> int:
     # Apply hyperparams into config (this must match parent behavior).
     config = dict(config)
     config.update(hyper)
+
+    # Normalize boolean-like params that are commonly encoded as 0/1 by optimizers.
+    if "positional_encoding" in config:
+        config["positional_encoding"] = _coerce_bool(config.get("positional_encoding"), default=False)
 
     out = {
         "ok": False,
