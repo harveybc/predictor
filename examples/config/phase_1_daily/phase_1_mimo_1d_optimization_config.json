@@ -32,10 +32,11 @@
         "use_log1p_features": [0, 1],
         "window_size": [24, 96],
         "positional_encoding": [0, 1],
-        "intermediate_layers": [1, 5],
-        "initial_layer_size": [8, 128],
+        "encoder_conv_layers": [1, 5],
+        "encoder_base_filters": [8, 128],
         "encoder_lstm_units": [8, 32],
-        "layer_size_divisor": [8, 32]
+        "horizon_embedding_dim": [8, 32],
+        "horizon_attn_key_dim": [8, 32]
     },
     
     "use_daily": false,

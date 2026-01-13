@@ -58,7 +58,7 @@ class Plugin(BaseBayesianKerasPredictor):
 
         # Decoder de horizontes
         "horizon_embedding_dim": 32,   # Dimensión de embeddings de horizonte
-        "horizon_attn_heads": 4,       # Nº de cabezas de atención
+        "horizon_attn_heads": 2,       # Nº de cabezas de atención
         "horizon_attn_key_dim": 64,    # Dim de clave en MultiHeadAttention
         "decoder_dropout": 0.1,        # Dropout en FFN del decoder
 
@@ -247,7 +247,7 @@ class Plugin(BaseBayesianKerasPredictor):
         # ------------------------------------------------------------------ #
         # 4) Cross-attention: queries = horizontes, keys/values = x_seq     #
         # ------------------------------------------------------------------ #
-        attn_heads: int = int(self.params.get("horizon_attn_heads", 4))
+        attn_heads: int = int(self.params.get("horizon_attn_heads", 2))
         attn_key_dim: int = int(self.params.get("horizon_attn_key_dim", 64))
         decoder_dropout: float = float(self.params.get("decoder_dropout", 0.1))
 
