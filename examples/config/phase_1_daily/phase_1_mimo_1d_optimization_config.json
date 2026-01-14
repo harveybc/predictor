@@ -29,14 +29,13 @@
     "n_generations": 15,
     "optimization_patience": 5,
     "hyperparameter_bounds": {
-        "use_log1p_features": [0, 1],
-        "window_size": [24, 96],
+        "window_size": [64, 96],
         "positional_encoding": [0, 1],
-        "encoder_conv_layers": [1, 5],
-        "encoder_base_filters": [8, 128],
-        "encoder_lstm_units": [8, 32],
-        "horizon_embedding_dim": [8, 32],
-        "horizon_attn_key_dim": [8, 32]
+        "encoder_conv_layers": [1, 2],
+        "encoder_base_filters": [32, 64],
+        "encoder_lstm_units": [8, 16],
+        "horizon_embedding_dim": [8, 16],
+        "horizon_attn_key_dim": [16, 32]
     },
     
     "use_daily": false,
@@ -55,12 +54,14 @@
     "start_from_epoch": 15,
     "use_returns": false,
     "use_log1p_targets": false,
-    "use_log1p_features": null,
+    "use_log1p_features": [
+        "typical_price"
+    ],
     "encoder_lstm_units": 20,
     "mc_samples":20,
     "plotted_horizon": 24,
     "mmd_lambda": 0.0,
-    "window_size": 33,
+    "window_size": 72,
     "batch_size": 32,
     "plot_color_predicted": "red",
     "plot_color_true": "blue",
@@ -79,5 +80,5 @@
     "use_predicted_decompositions": false,
     "use_real_decompositions": false,
     "use_ideal_predictions": false,
-    "positional_encoding": false
+    "positional_encoding": true
 }

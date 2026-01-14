@@ -878,14 +878,16 @@ class Plugin:
                         print(f"WARN: Test prediction failed: {e}")
                         test_mae, test_naive_mae = (float("inf"), float("inf"))
                 
-                # Use this calculated MAE as fitness instead of val_loss?
-                # The user wants to compare them. If we optimize for val_loss (normalized MSE usually), 
-                # but print Denormalized MAE, that's fine, as long as we print both correctly.
-                # BUT, if the user wants to optimize for the metric they see, we should return val_mae as fitness.
-                # "Validation MAE of the champion has not been incremented" -> implies we should use this MAE for early stopping/fitness.
-                # Let's use val_mae as the fitness metric to be consistent.
+                # FITNESS: Average of (MAE - Naive_MAE) for training and validation
+                # Negative values = beating naive baseline, positive = worse than naive
+                # This balances both splits and normalizes via naive baseline for scale-invariant optimization
                 
-                fitness = float(val_mae)
+                if train_naive_mae is None or naive_mae is None or not np.isfinite(train_naive_mae) or not np.isfinite(naive_mae):
+                    fitness = float("inf")
+                else:
+                    train_delta = float(train_mae - train_naive_mae)
+                    val_delta = float(val_mae - naive_mae)
+                    fitness = 0.5 * train_delta + 0.5 * val_delta
                 train_loss = float(history.history.get("loss", [np.nan])[-1])
                 val_loss = float(history.history.get("val_loss", [np.nan])[-1])
 
