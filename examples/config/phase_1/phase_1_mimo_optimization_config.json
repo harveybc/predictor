@@ -34,18 +34,19 @@
     "optimizer_recreate_predictor_each_eval": false,
 
     "use_optimizer": true,
-    "population_size": 15,
+    "population_size": 20,
     "n_generations": 15,
     "optimization_patience": 5,
     "hyperparameter_bounds": {
-        "use_log1p_features": [0, 1],
-        "window_size": [24, 96],
-        "positional_encoding": [0, 1],
-        "encoder_conv_layers": [1, 5],
-        "encoder_base_filters": [8, 128],
-        "encoder_lstm_units": [8, 32],
-        "horizon_embedding_dim": [8, 32],
-        "horizon_attn_key_dim": [8, 32]
+        "encoder_conv_layers": [1, 2],
+        "encoder_base_filters": [32, 64],
+        "encoder_lstm_units": [8, 16],
+        "horizon_embedding_dim": [8, 16],
+        "horizon_attn_key_dim": [16, 32],
+        "horizon_attn_heads": [1, 4],
+        "decoder_dropout": [0.0, 0.2],
+        "learning_rate": [1e-4, 1e-2],
+        "l2_reg": [1e-8, 1e-4]
     },
 
     "use_daily": false,
@@ -63,7 +64,7 @@
 
     "kl_weight": 1e-3,
     "kl_anneal_epochs": 40,
-    "early_patience": 120,
+    "early_patience": 80,
     "start_from_epoch": 15,
 
     "use_returns": false,
