@@ -34,9 +34,7 @@
     "optimizer_recreate_predictor_each_eval": false,
 
     "use_optimizer": true,
-    "optimization_resume_file": "examples/results/optimization_resume.json",
-    "optimization_pause_on_resume": false,
-    "optimization_resume_file": "examples/results/optimization_resume.json",
+    "optimization_resume_file": "examples/results/phase_1/phase_1_mimo_optimization_resume.json",
     "optimization_pause_on_resume": false,
     "population_size": 20,
     "n_generations": 15,

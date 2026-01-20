@@ -18,9 +18,7 @@
     "tapper_plot_file": "examples/results/phase_1/phase_1_tft_optimization_multi_tapper_decomposition_plot.png",
     "optimization_statistics": "examples/results/phase_1/phase_1_tft_optimization_stats.json",
     "optimization_parameters_file": "examples/results/phase_1/phase_1_tft_optimization_parameters.json",
-    "optimization_resume_file": "examples/results/phase_1/phase_1_tft_optimization_resume.json",
-    "optimization_pause_on_resume": true,
-    
+
     "target_column": "typical_price",
     "predictor_plugin": "tft",
     "optimizer_plugin": "default_optimizer",
@@ -70,7 +68,7 @@
     "positional_encoding": true,
 
     "use_optimizer": true,
-    "optimization_resume_file": "examples/results/optimization_resume.json",
+    "optimization_resume_file": "examples/results/phase_1/phase_1_tft_optimization_resume.json",
     "optimization_pause_on_resume": false,
     "population_size": 5,
     "n_generations": 25,
