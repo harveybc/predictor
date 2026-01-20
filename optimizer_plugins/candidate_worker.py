@@ -214,7 +214,7 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
 
     window_size = config.get("window_size")
     _append_optimizer_resource_row(config, "before_build_model", gen, cand)
-    if predictor_name in ["lstm", "cnn", "transformer", "ann", "mimo"]:
+    if predictor_name in ["lstm", "cnn", "transformer", "ann", "mimo", "n_beats", "tft","prophet"]:
         input_shape = (window_size, x_train.shape[2]) if len(x_train.shape) == 3 else (x_train.shape[1],)
         predictor_plugin.build_model(input_shape=input_shape, x_train=x_train, config=config)
     else:
