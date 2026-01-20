@@ -326,6 +326,7 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
     evaluate_candidate.last_metrics = {
         "train_mae": train_mae,
         "train_naive_mae": train_naive_mae,
+        "val_mae": val_mae,
         "test_mae": test_mae,
         "test_naive_mae": test_naive_mae,
     }
@@ -360,6 +361,7 @@ def main() -> int:
         "ok": False,
         "fitness": float("inf"),
         "naive_mae": None,
+        "val_mae": None,
         "train_mae": None,
         "train_naive_mae": None,
         "test_mae": None,
@@ -374,6 +376,7 @@ def main() -> int:
                 "ok": True,
                 "fitness": float(fitness),
                 "naive_mae": naive_mae,
+                "val_mae": extra.get("val_mae"),
                 "train_mae": extra.get("train_mae"),
                 "train_naive_mae": extra.get("train_naive_mae"),
                 "test_mae": extra.get("test_mae"),

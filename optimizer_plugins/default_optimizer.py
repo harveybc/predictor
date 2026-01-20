@@ -511,6 +511,8 @@ class Plugin:
                     fitness = float(payload.get("fitness", float("inf")))
                     nm = payload.get("naive_mae")
                     naive_mae = float(nm) if nm is not None else float("inf")
+                    vm = payload.get("val_mae")
+                    val_mae = float(vm) if vm is not None else float("inf")
                     test_mae = float(payload.get("test_mae", float("inf")))
                     tnm = payload.get("test_naive_mae")
                     test_naive_mae = float(tnm) if tnm is not None else float("inf")
@@ -518,6 +520,7 @@ class Plugin:
                     trnm = payload.get("train_naive_mae")
                     train_naive_mae = float(trnm) if trnm is not None else float("inf")
                     individual.naive_mae = naive_mae
+                    individual.val_mae = val_mae
                     individual.test_mae = test_mae
                     individual.test_naive_mae = test_naive_mae
                     individual.train_mae = train_mae
@@ -552,8 +555,9 @@ class Plugin:
                     print(
                         "Candidate Result -> "
                         f"TRAINING MAE maxH: {train_mae:.6f} | TRAINING Naive MAE maxH: {train_naive_mae:.6f} || "
-                        f"VALIDATION MAE maxH: {fitness:.6f} | VALIDATION Naive MAE maxH: {naive_mae:.6f} || "
-                        f"TEST MAE maxH: {test_mae:.6f} | TEST Naive MAE maxH: {test_naive_mae:.6f} | (isolated subprocess)"
+                        f"VALIDATION MAE maxH: {val_mae:.6f} | VALIDATION Naive MAE maxH: {naive_mae:.6f} || "
+                        f"TEST MAE maxH: {test_mae:.6f} | TEST Naive MAE maxH: {test_naive_mae:.6f} || "
+                        f"FITNESS (avg delta from naive): {fitness:.6f} | (isolated subprocess)"
                     )
                     champion_mae = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
                     champion_naive = (
@@ -905,8 +909,9 @@ class Plugin:
                 print(
                     "Candidate Result -> "
                     f"TRAINING MAE maxH: {train_mae:.6f} | TRAINING Naive MAE maxH: {train_naive_mae:.6f} || "
-                    f"VALIDATION MAE maxH (fitness): {fitness:.6f} | VALIDATION Naive MAE maxH: {naive_mae:.6f} || "
+                    f"VALIDATION MAE maxH: {val_mae:.6f} | VALIDATION Naive MAE maxH: {naive_mae:.6f} || "
                     f"TEST MAE maxH: {test_mae:.6f} | TEST Naive MAE maxH: {test_naive_mae:.6f} || "
+                    f"FITNESS (avg delta from naive): {fitness:.6f} || "
                     f"Keras VALIDATION loss (val_loss): {val_loss:.6f} | Keras TRAINING loss (loss): {train_loss:.6f}"
                 )
 
@@ -987,6 +992,7 @@ class Plugin:
             # Store naive_mae in individual for stats later (hacky but effective)
             individual.naive_mae = naive_mae
             try:
+                individual.val_mae = val_mae
                 individual.test_mae = test_mae
                 individual.test_naive_mae = test_naive_mae
                 individual.train_mae = train_mae
