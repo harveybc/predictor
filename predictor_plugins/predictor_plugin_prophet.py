@@ -146,9 +146,12 @@ class Plugin(BasePredictorPlugin):
             if train_dates is not None:
                 print(f"  train_dates length={len(train_dates) if hasattr(train_dates, '__len__') else 'N/A'}")
             
+            # Trim train_dates to match y length (preprocessing may have trimmed samples)
+            dates_to_use = train_dates[:len(y)] if train_dates is not None else None
+            
             # Prepare DataFrame for Prophet
             data = {
-                'ds': pd.to_datetime(train_dates),
+                'ds': pd.to_datetime(dates_to_use),
                 'y': y.flatten()
             }
             
@@ -194,8 +197,11 @@ class Plugin(BasePredictorPlugin):
 
             # Predict on val
             if val_dates is not None and key in y_val:
+                # Trim val_dates to match y_val length
+                val_dates_trimmed = val_dates[:len(y_val[key])]
+                
                 val_data = {
-                    'ds': pd.to_datetime(val_dates),
+                    'ds': pd.to_datetime(val_dates_trimmed),
                     'y': y_val[key].flatten()
                 }
                 if use_regressors and regressor_cols and x_val_reg is not None:
@@ -247,7 +253,9 @@ class Plugin(BasePredictorPlugin):
                 unc_list.append(np.zeros((len(x_test), 1)))
                 continue
 
-            test_data = {'ds': pd.to_datetime(test_dates)}
+            # Trim test_dates to match x_test length
+            test_dates_trimmed = test_dates[:len(x_test)]
+            test_data = {'ds': pd.to_datetime(test_dates_trimmed)}
             
             if use_regressors and regressor_cols and x_test_reg is not None:
                 for idx, col in enumerate(regressor_cols):
