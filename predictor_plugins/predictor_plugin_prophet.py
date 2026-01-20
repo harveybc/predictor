@@ -76,7 +76,9 @@ class Plugin(BasePredictorPlugin):
             self.params.update(config)
         
         horizons = self.params.get("predicted_horizons", [1])
+        print(f"Prophet build_model: predicted_horizons = {horizons}")
         self.output_names = [f"output_horizon_{h}" for h in horizons]
+        print(f"Prophet build_model: output_names = {self.output_names}")
         # Models will be created in train
 
     def train(
