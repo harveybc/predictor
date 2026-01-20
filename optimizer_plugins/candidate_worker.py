@@ -238,17 +238,25 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
         print(f"y_train keys: {y_train.keys()}, shapes: {[(k, v.shape) for k, v in y_train.items()]}")
     else:
         print(f"y_train shape: {y_train.shape}")
-    history, train_preds, _, val_preds, _ = predictor_plugin.train(
-        x_train,
-        y_train,
-        epochs=config.get("epochs", 10),
-        batch_size=config.get("batch_size", 32),
-        threshold_error=config.get("threshold_error", 0.001),
-        x_val=x_val,
-        y_val=y_val,
-        config=config,
-    )
-    print("Training completed successfully")
+    
+    try:
+        history, train_preds, _, val_preds, _ = predictor_plugin.train(
+            x_train,
+            y_train,
+            epochs=config.get("epochs", 10),
+            batch_size=config.get("batch_size", 32),
+            threshold_error=config.get("threshold_error", 0.001),
+            x_val=x_val,
+            y_val=y_val,
+            config=config,
+        )
+        print("Training completed successfully")
+    except Exception as e:
+        print(f"ERROR during training: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
+    
     _append_optimizer_resource_row(config, "after_fit", gen, cand)
 
     # --- Pipeline parity metrics (max horizon) ---
