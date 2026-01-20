@@ -218,11 +218,16 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
     # Try tuple input_shape first (for sequence models), fall back to scalar
     input_shape_tuple = (window_size, x_train.shape[2]) if len(x_train.shape) == 3 else (x_train.shape[1],)
     try:
+        print(f"Attempting build_model with tuple input_shape: {input_shape_tuple}")
         predictor_plugin.build_model(input_shape=input_shape_tuple, x_train=x_train, config=config)
+        print("build_model succeeded with tuple input_shape")
     except (ValueError, TypeError) as e:
         # Plugin expects scalar input_shape, try with flattened dimension
+        print(f"Tuple input_shape failed ({type(e).__name__}: {e}), trying scalar...")
         input_shape_scalar = x_train.shape[1]
+        print(f"Attempting build_model with scalar input_shape: {input_shape_scalar}")
         predictor_plugin.build_model(input_shape=input_shape_scalar, x_train=x_train, config=config)
+        print("build_model succeeded with scalar input_shape")
     
     _append_optimizer_resource_row(config, "after_build_model", gen, cand)
 
