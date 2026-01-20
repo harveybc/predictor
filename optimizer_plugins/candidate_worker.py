@@ -232,6 +232,12 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
     _append_optimizer_resource_row(config, "after_build_model", gen, cand)
 
     _append_optimizer_resource_row(config, "before_fit", gen, cand, extra={"params": hyper})
+    print(f"Starting training with epochs={config.get('epochs', 10)}, batch_size={config.get('batch_size', 32)}")
+    print(f"x_train shape: {x_train.shape}, y_train type: {type(y_train)}")
+    if isinstance(y_train, dict):
+        print(f"y_train keys: {y_train.keys()}, shapes: {[(k, v.shape) for k, v in y_train.items()]}")
+    else:
+        print(f"y_train shape: {y_train.shape}")
     history, train_preds, _, val_preds, _ = predictor_plugin.train(
         x_train,
         y_train,
@@ -242,6 +248,7 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
         y_val=y_val,
         config=config,
     )
+    print("Training completed successfully")
     _append_optimizer_resource_row(config, "after_fit", gen, cand)
 
     # --- Pipeline parity metrics (max horizon) ---
