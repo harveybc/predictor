@@ -214,11 +214,16 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
 
     window_size = config.get("window_size")
     _append_optimizer_resource_row(config, "before_build_model", gen, cand)
-    if predictor_name in ["lstm", "cnn", "transformer", "ann", "mimo", "n_beats", "tft","prophet"]:
-        input_shape = (window_size, x_train.shape[2]) if len(x_train.shape) == 3 else (x_train.shape[1],)
-        predictor_plugin.build_model(input_shape=input_shape, x_train=x_train, config=config)
-    else:
-        predictor_plugin.build_model(input_shape=x_train.shape[1], x_train=x_train, config=config)
+    
+    # Try tuple input_shape first (for sequence models), fall back to scalar
+    input_shape_tuple = (window_size, x_train.shape[2]) if len(x_train.shape) == 3 else (x_train.shape[1],)
+    try:
+        predictor_plugin.build_model(input_shape=input_shape_tuple, x_train=x_train, config=config)
+    except (ValueError, TypeError) as e:
+        # Plugin expects scalar input_shape, try with flattened dimension
+        input_shape_scalar = x_train.shape[1]
+        predictor_plugin.build_model(input_shape=input_shape_scalar, x_train=x_train, config=config)
+    
     _append_optimizer_resource_row(config, "after_build_model", gen, cand)
 
     _append_optimizer_resource_row(config, "before_fit", gen, cand, extra={"params": hyper})
