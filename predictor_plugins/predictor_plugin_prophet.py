@@ -142,11 +142,17 @@ class Plugin(BasePredictorPlugin):
             if y is None:
                 continue
             
+            print(f"Prophet training horizon {h}: y shape={y.shape}, train_dates type={type(train_dates)}")
+            if train_dates is not None:
+                print(f"  train_dates length={len(train_dates) if hasattr(train_dates, '__len__') else 'N/A'}")
+            
             # Prepare DataFrame for Prophet
             data = {
                 'ds': pd.to_datetime(train_dates),
                 'y': y.flatten()
             }
+            
+            print(f"  ds length={len(data['ds'])}, y length={len(data['y'])}")
             
             if use_regressors and regressor_cols and x_train_reg is not None:
                 for idx, col in enumerate(regressor_cols):
