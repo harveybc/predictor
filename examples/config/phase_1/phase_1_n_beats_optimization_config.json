@@ -65,6 +65,8 @@
     "positional_encoding": true,
 
     "use_optimizer": true,
+    "optimization_resume_file": "examples/results/optimization_resume.json",
+    "optimization_pause_on_resume": false,
     "optimizer_isolate_candidate_process": false,
     "hyperparameter_bounds": {
         "nbeats_blocks": [1, 5],

@@ -70,6 +70,8 @@
     "positional_encoding": true,
 
     "use_optimizer": true,
+    "optimization_resume_file": "examples/results/optimization_resume.json",
+    "optimization_pause_on_resume": false,
     "population_size": 5,
     "n_generations": 25,
     "optimization_patience": 7,

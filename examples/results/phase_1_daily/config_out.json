@@ -114,6 +114,8 @@
     "resource_guard_print_every": 1,
     "resource_guard_check_every_batches": 1,
     "use_optimizer": true,
+    "optimization_resume_file": "examples/results/optimization_resume.json",
+    "optimization_pause_on_resume": false,
     "intermediate_layers": 4,
     "initial_layer_size": 78,
     "layer_size_divisor": 12,

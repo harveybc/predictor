@@ -37,6 +37,8 @@
     "resource_guard_print_every": 1,
     "resource_guard_check_every_batches": 1,
     "use_optimizer": true,
+    "optimization_resume_file": "examples/results/optimization_resume.json",
+    "optimization_pause_on_resume": false,
     "population_size": 15,
     "n_generations": 15,
     "optimization_patience": 3,

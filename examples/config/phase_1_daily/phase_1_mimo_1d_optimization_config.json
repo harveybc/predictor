@@ -25,6 +25,8 @@
     "plugin": "mimo",
     "memory_log_file": "examples/results/phase_1_daily/phase_1_mimo_1d_rss.csv",
     "use_optimizer": true,
+    "optimization_resume_file": "examples/results/optimization_resume.json",
+    "optimization_pause_on_resume": false,
     "population_size": 20,
     "n_generations": 15,
     "optimization_patience": 5,
