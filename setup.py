@@ -21,7 +21,7 @@ setup(
             'stl_mimo=predictor_plugins.stl_mimo_predictor:Plugin',
             'prophet=predictor_plugins.predictor_plugin_prophet:Plugin',
             'tft=predictor_plugins.predictor_plugin_tft:Plugin',
-            'base=predictor_plugin.predictor_plugin_base:Plugin'
+            'base=predictor_plugins.predictor_plugin_base:Plugin'
         ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
         'optimizer.plugins': [
