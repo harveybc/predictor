@@ -370,7 +370,7 @@ class Plugin:
                 else:
                     hyper_dict[key] = value
 
-            print(f"\n--- Evaluating Candidate {self.eval_counter}/{population_size} (Gen {self.current_gen + 1}/{n_generations}) ---")
+            print(f"\n--- Evaluating Candidate {self.eval_counter}/{population_size} (Gen {self.current_gen}/{self.end_gen - 1}) ---")
             print(f"Params: {hyper_dict}")
 
             # Combinar los hiperparámetros con la configuración actual.
@@ -1141,6 +1141,7 @@ class Plugin:
         # Fresh start: range(0, 0+10) = 10 generations (0-9)
         # Resume from 9: range(10, 10+2) = 2 generations (10-11)
         end_gen = start_gen + n_generations
+        self.end_gen = end_gen  # Store for eval_individual to access
         print(f"Starting hyperparameter optimization (Gen {start_gen} to {end_gen - 1}, running {n_generations} generations)...")
         start_opt = time.time()
         
