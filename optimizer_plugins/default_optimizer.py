@@ -1136,7 +1136,12 @@ class Plugin:
                 except EOFError:
                     pass
 
-        print(f"Starting hyperparameter optimization (Gen {start_gen} to {n_generations})...")
+        # Calculate end generation: start_gen + n_generations
+        # This way n_generations always means "run THIS MANY generations"
+        # Fresh start: range(0, 0+10) = 10 generations (0-9)
+        # Resume from 9: range(10, 10+2) = 2 generations (10-11)
+        end_gen = start_gen + n_generations
+        print(f"Starting hyperparameter optimization (Gen {start_gen} to {end_gen - 1}, running {n_generations} generations)...")
         start_opt = time.time()
         
         # Custom optimization loop with early stopping
@@ -1196,7 +1201,7 @@ class Plugin:
         # Statistics tracking
         stats_history = []
         
-        for gen in range(start_gen, n_generations):
+        for gen in range(start_gen, end_gen):
             gen_start_time = time.time()
             self.current_gen = gen + 1 # Update for logging
             self.eval_counter = 0 # Reset per generation
