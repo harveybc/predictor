@@ -32,7 +32,7 @@
     "hidden_units": 128,
     "num_hidden_layers": 2,
     "dropout_rate": 0.1,
-    "activation": "relu",
+    "activation": "elu",
     "learning_rate": 1e-3,
     "l2_reg": 1e-7,
     "early_patience": 80,

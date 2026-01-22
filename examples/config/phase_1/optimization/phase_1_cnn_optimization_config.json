@@ -34,7 +34,7 @@
     "layer_size_divisor": 2,
     "head_layers": 1,
     "learning_rate": 1e-3,
-    "activation": "relu",
+    "activation": "elu",
     "l2_reg": 1e-7,
     "early_patience": 80,
     "start_from_epoch": 0,
