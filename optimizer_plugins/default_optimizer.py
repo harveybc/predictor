@@ -175,14 +175,15 @@ class Plugin:
         self.eval_counter = 0
         self.total_eval_counter = 0
         self.current_gen = 0
-        self.best_fitness_so_far = float("inf")
+        self.best_fitness_so_far = float("inf")  # FITNESS = avg of train/val deltas from naive
         self.patience_counter = 0
-        self.best_naive_mae_so_far = None
+        self.best_val_mae_so_far = None  # ACTUAL validation MAE
+        self.best_naive_mae_so_far = None  # Validation naive MAE
         self.best_test_mae_so_far = None
         self.best_test_naive_mae_so_far = None
         self.best_train_mae_so_far = None
         self.best_train_naive_mae_so_far = None
-        # Tracks the validation MAE to beat for the *current generation* (used by GA early stopping).
+        # Tracks the FITNESS to beat for the *current generation* (used by GA early stopping).
         self.best_at_gen_start = float("inf")
 
         def _extract_max_horizon_array(y_any, predicted_horizons, max_horizon):
@@ -529,6 +530,7 @@ class Plugin:
                     is_new_champion = False
                     if np.isfinite(fitness) and fitness < float(self.best_fitness_so_far):
                         self.best_fitness_so_far = float(fitness)
+                        self.best_val_mae_so_far = float(val_mae) if np.isfinite(val_mae) else self.best_val_mae_so_far
                         self.best_naive_mae_so_far = float(naive_mae) if np.isfinite(naive_mae) else self.best_naive_mae_so_far
                         self.best_test_mae_so_far = float(test_mae) if np.isfinite(test_mae) else self.best_test_mae_so_far
                         self.best_test_naive_mae_so_far = float(test_naive_mae) if np.isfinite(test_naive_mae) else self.best_test_naive_mae_so_far
@@ -559,7 +561,12 @@ class Plugin:
                         f"TEST MAE maxH: {test_mae:.6f} | TEST Naive MAE maxH: {test_naive_mae:.6f} || "
                         f"FITNESS (avg delta from naive): {fitness:.6f} | (isolated subprocess)"
                     )
-                    champion_mae = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
+                    champion_fitness = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
+                    champion_val_mae = (
+                        float(self.best_val_mae_so_far)
+                        if self.best_val_mae_so_far is not None and np.isfinite(self.best_val_mae_so_far)
+                        else float("inf")
+                    )
                     champion_naive = (
                         float(self.best_naive_mae_so_far)
                         if self.best_naive_mae_so_far is not None and np.isfinite(self.best_naive_mae_so_far)
@@ -588,15 +595,16 @@ class Plugin:
                     print(
                         "Champion so far -> "
                         f"TRAINING MAE maxH: {champion_train_mae:.6f} | TRAINING Naive MAE maxH: {champion_train_naive:.6f} || "
-                        f"VALIDATION MAE maxH: {champion_mae:.6f} | VALIDATION Naive MAE maxH: {champion_naive:.6f} || "
-                        f"TEST MAE maxH: {champion_test_mae:.6f} | TEST Naive MAE maxH: {champion_test_naive:.6f}"
+                        f"VALIDATION MAE maxH: {champion_val_mae:.6f} | VALIDATION Naive MAE maxH: {champion_naive:.6f} || "
+                        f"TEST MAE maxH: {champion_test_mae:.6f} | TEST Naive MAE maxH: {champion_test_naive:.6f} || "
+                        f"FITNESS: {champion_fitness:.6f}"
                         + (" | NEW CHAMPION" if is_new_champion else "")
                     )
                     print("Optimization State (GA early stopping):")
                     print(f"  Optimization patience: {patience}")
                     print(f"  No-improve generations: {self.patience_counter}/{patience}")
-                    print(f"  Gen-start VALIDATION MAE to beat: {float(self.best_at_gen_start):.6f}")
-                    print(f"  Global champion VALIDATION MAE: {float(self.best_fitness_so_far):.6f}")
+                    print(f"  Gen-start FITNESS to beat: {float(self.best_at_gen_start):.6f}")
+                    print(f"  Global champion FITNESS: {float(self.best_fitness_so_far):.6f}")
                     print(f"------------------------------------------------------------")
                     return (fitness,)
 
@@ -918,6 +926,7 @@ class Plugin:
                 is_new_champion = False
                 if np.isfinite(fitness) and fitness < float(self.best_fitness_so_far):
                     self.best_fitness_so_far = float(fitness)
+                    self.best_val_mae_so_far = float(val_mae) if np.isfinite(val_mae) else self.best_val_mae_so_far
                     self.best_naive_mae_so_far = float(naive_mae) if np.isfinite(naive_mae) else self.best_naive_mae_so_far
                     self.best_test_mae_so_far = float(test_mae) if np.isfinite(test_mae) else self.best_test_mae_so_far
                     self.best_test_naive_mae_so_far = float(test_naive_mae) if np.isfinite(test_naive_mae) else self.best_test_naive_mae_so_far
@@ -933,7 +942,12 @@ class Plugin:
                     except Exception as e:
                         print(f"  [CHAMPION] Failed to save parameters: {e}")
 
-                champion_mae = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
+                champion_fitness = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
+                champion_val_mae = (
+                    float(self.best_val_mae_so_far)
+                    if self.best_val_mae_so_far is not None and np.isfinite(self.best_val_mae_so_far)
+                    else float("inf")
+                )
                 champion_naive = (
                     float(self.best_naive_mae_so_far)
                     if self.best_naive_mae_so_far is not None and np.isfinite(self.best_naive_mae_so_far)
@@ -962,8 +976,9 @@ class Plugin:
                 print(
                     "Champion so far -> "
                     f"TRAINING MAE maxH: {champion_train_mae:.6f} | TRAINING Naive MAE maxH: {champion_train_naive:.6f} || "
-                    f"VALIDATION MAE maxH: {champion_mae:.6f} | VALIDATION Naive MAE maxH: {champion_naive:.6f} || "
-                    f"TEST MAE maxH: {champion_test_mae:.6f} | TEST Naive MAE maxH: {champion_test_naive:.6f}"
+                    f"VALIDATION MAE maxH: {champion_val_mae:.6f} | VALIDATION Naive MAE maxH: {champion_naive:.6f} || "
+                    f"TEST MAE maxH: {champion_test_mae:.6f} | TEST Naive MAE maxH: {champion_test_naive:.6f} || "
+                    f"FITNESS: {champion_fitness:.6f}"
                     + (" | NEW CHAMPION" if is_new_champion else "")
                 )
             except Exception as e:
@@ -985,8 +1000,8 @@ class Plugin:
             print("Optimization State (GA early stopping):")
             print(f"  Optimization patience: {patience}")
             print(f"  No-improve generations: {self.patience_counter}/{patience}")
-            print(f"  Gen-start VALIDATION MAE to beat: {float(self.best_at_gen_start):.6f}")
-            print(f"  Global champion VALIDATION MAE: {float(self.best_fitness_so_far):.6f}")
+            print(f"  Gen-start FITNESS to beat: {float(self.best_at_gen_start):.6f}")
+            print(f"  Global champion FITNESS: {float(self.best_fitness_so_far):.6f}")
             print(f"------------------------------------------------------------")
             
             # Store naive_mae in individual for stats later (hacky but effective)
@@ -1262,9 +1277,12 @@ class Plugin:
             best_val_mae_gen = float(best_ind_gen.fitness.values[0]) if best_ind_gen.fitness.valid else float("inf")
             best_naive_mae_gen = getattr(best_ind_gen, "naive_mae", None)
 
-            # Global champion so far (HallOfFame), also by VALIDATION fitness
-            champion_val_mae_global = float(hof[0].fitness.values[0]) if hof and hof[0].fitness.valid else float("inf")
+            # Global champion so far (HallOfFame), also by FITNESS
+            champion_fitness_global = float(hof[0].fitness.values[0]) if hof and hof[0].fitness.valid else float("inf")
 
+            # Global champion ACTUAL validation MAE (not fitness)
+            champion_val_mae_global = getattr(hof[0], "val_mae", self.best_val_mae_so_far) if hof else self.best_val_mae_so_far
+            
             # Global champion naive MAE (HallOfFame) for top-level stats
             champion_naive_mae_global = getattr(hof[0], "naive_mae", None) if hof else None
             if champion_naive_mae_global is None:
@@ -1279,16 +1297,15 @@ class Plugin:
             stats_history.append({
                 "generation": self.current_gen,
                 "duration": gen_duration,
-                # NOTE: This avg is over population fitness values, i.e. VALIDATION MAE maxH.
-                "avg_mae": avg_mae,
-                "avg_validation_mae": avg_mae,
-                # Explicit validation metrics (max horizon) for reporting/parity
-                "best_validation_mae_gen": best_val_mae_gen,
+                # NOTE: avg is over population FITNESS values (avg of train/val deltas from naive)
+                "avg_fitness": avg_mae,
+                # Actual validation MAE from best of generation
+                "best_validation_mae_gen": getattr(best_ind_gen, "val_mae", None) if best_ind_gen else None,
+                "best_fitness_gen": best_val_mae_gen,  # This is actually fitness, not val_mae
+                "champion_fitness_global": champion_fitness_global,
                 "champion_validation_mae_global": champion_val_mae_global,
                 "best_validation_naive_mae_gen": best_naive_mae_gen,
                 "champion_validation_naive_mae_global": champion_naive_mae_global,
-                # Backward-compatible legacy key (kept)
-                "champion_naive_mae": best_naive_mae_gen,
             })
             
             avg_time_per_epoch = sum(s["duration"] for s in stats_history) / len(stats_history)
@@ -1297,20 +1314,20 @@ class Plugin:
             stats_data = {
                 "total_time_elapsed": elapsed_time,
                 "average_time_per_epoch": avg_time_per_epoch,
-                "candidates_evaluated_so_far": total_candidates, # Or track exactly with self.eval_counter accumulator
-                # Backward-compatible field name (this is the DEAP fitness: Val MAE on max horizon).
-                "champion_validation_mae": float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else None,
-                # Explicit aliases to avoid future confusion.
-                "champion_fitness_val_mae_max_horizon": float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else None,
-                "champion_naive_mae_max_horizon": champion_naive_mae_global,
-                "champion_test_mae_max_horizon": champion_test_mae_global,
-                "champion_test_naive_mae_max_horizon": champion_test_naive_mae_global,
-                "champion_train_mae_max_horizon": champion_train_mae_global,
-                "champion_train_naive_mae_max_horizon": champion_train_naive_mae_global,
-                # NOTE: This list is the average population FITNESS, i.e. VALIDATION MAE maxH.
-                "average_mae_per_epoch": [s["avg_mae"] for s in stats_history],
-                "average_validation_mae_per_epoch": [s["avg_validation_mae"] for s in stats_history],
+                "candidates_evaluated_so_far": total_candidates,
+                # CORRECT LABELS: Fitness vs Actual Metrics
+                "champion_fitness": float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else None,
+                "champion_validation_mae": float(self.best_val_mae_so_far) if self.best_val_mae_so_far is not None else None,
+                "champion_validation_naive_mae": champion_naive_mae_global,
+                "champion_test_mae": champion_test_mae_global,
+                "champion_test_naive_mae": champion_test_naive_mae_global,
+                "champion_train_mae": champion_train_mae_global,
+                "champion_train_naive_mae": champion_train_naive_mae_global,
+                # Per-epoch lists (correctly labeled)
+                "average_fitness_per_epoch": [s["avg_fitness"] for s in stats_history],
+                "champion_fitness_per_epoch": [s["champion_fitness_global"] for s in stats_history],
                 "champion_validation_mae_per_epoch": [s["champion_validation_mae_global"] for s in stats_history],
+                "best_fitness_per_epoch": [s["best_fitness_gen"] for s in stats_history],
                 "best_validation_mae_per_epoch": [s["best_validation_mae_gen"] for s in stats_history],
                 "history": stats_history
             }
