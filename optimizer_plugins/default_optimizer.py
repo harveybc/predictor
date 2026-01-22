@@ -1204,9 +1204,9 @@ class Plugin:
         
         for gen in range(start_gen, end_gen):
             gen_start_time = time.time()
-            self.current_gen = gen + 1 # Update for logging
+            self.current_gen = gen  # Current generation number (absolute)
             self.eval_counter = 0 # Reset per generation
-            print(f"-- Generation {gen + 1}/{n_generations} --")
+            print(f"-- Generation {gen}/{end_gen - 1} --")
 
             best_at_gen_start = float(self.best_fitness_so_far)
             self.best_at_gen_start = best_at_gen_start
@@ -1216,14 +1216,27 @@ class Plugin:
             # Clone the selected individuals
             offspring = list(map(toolbox.clone, offspring))
             
+            # PRESERVE CHAMPION: In first generation after resume, ensure champion stays in position 0
+            # without any genetic operators applied, to enable exact reproducibility check
+            is_first_gen_after_resume = (gen == start_gen and start_gen > 0)
+            if is_first_gen_after_resume:
+                # Force the loaded champion into offspring[0] (it should already be there from selection)
+                # but we clone from population[0] to be absolutely sure
+                offspring[0] = toolbox.clone(population[0])
+                print(f"  [RESUME] Preserving loaded champion at offspring[0] for exact reproducibility")
+            
             # Apply crossover and mutation on the offspring
-            for child1, child2 in zip(offspring[::2], offspring[1::2]):
+            # Skip position 0 in first generation after resume to preserve champion
+            start_idx = 1 if is_first_gen_after_resume else 0
+            for child1, child2 in zip(offspring[start_idx::2], offspring[start_idx+1::2]):
                 if random.random() < self.params.get("cxpb", 0.5):
                     toolbox.mate(child1, child2)
                     del child1.fitness.values
                     del child2.fitness.values
 
-            for mutant in offspring:
+            for i, mutant in enumerate(offspring):
+                if i == 0 and is_first_gen_after_resume:
+                    continue  # Skip mutation for champion in first gen after resume
                 if random.random() < self.params.get("mutpb", 0.2):
                     toolbox.mutate(mutant)
                     del mutant.fitness.values
