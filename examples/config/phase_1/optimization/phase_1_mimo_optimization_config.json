@@ -36,8 +36,8 @@
     "use_optimizer": true,
     "optimization_resume_file": "examples/results/phase_1/phase_1_mimo_optimization_resume.json",
     "optimization_pause_on_resume": false,
-    "population_size": 20,
-    "n_generations": 15,
+    "population_size": 3,
+    "n_generations": 2,
     "optimization_patience": 5,
     "hyperparameter_bounds": {
         "encoder_conv_layers": [1, 2],
