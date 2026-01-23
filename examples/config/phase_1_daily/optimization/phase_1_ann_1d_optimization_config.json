@@ -68,7 +68,7 @@
     "population_size": 20,
     "n_generations": 25,
     "optimization_patience": 7,
-    "optimizer_isolate_candidate_process": false,
+    "optimizer_isolate_candidate_process": true,
     "hyperparameter_bounds": {
         "learning_rate": [1e-4, 1e-2],
         "window_size": [48, 96],

@@ -67,7 +67,7 @@
     "use_optimizer": true,
     "optimization_resume_file": "examples/results/phase_1/phase_1_n_beats_optimization_resume.json",
     "optimization_pause_on_resume": false,
-    "optimizer_isolate_candidate_process": false,
+    "optimizer_isolate_candidate_process": true,
     "hyperparameter_bounds": {
         "nbeats_blocks": [1, 5],
         "nbeats_layers": [2, 8],

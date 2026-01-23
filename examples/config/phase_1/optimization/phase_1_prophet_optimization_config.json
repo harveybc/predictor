@@ -31,7 +31,7 @@
     "memory_log_flush_every": 1,
     "optimizer_resource_log_file": "examples/results/phase_1/phase_1_prophet_optimizer_resources.csv",
     "optimizer_recreate_predictor_each_eval": false,
-    "optimizer_isolate_candidate_process": false,
+    "optimizer_isolate_candidate_process": true,
 
     "use_optimizer": true,
     "optimization_resume_file": "examples/results/phase_1/phase_1_prophet_optimization_resume.json",
