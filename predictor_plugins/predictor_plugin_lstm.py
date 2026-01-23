@@ -491,7 +491,7 @@ class Plugin:
         x = Add()([x, attention_output])
         x = LayerNormalization()(x)
         #AveragePooling1D
-        x = AveragePooling1D(pool_size=3, strides=2, padding='valid', name=f"average_pooling_1")(x)
+        x = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"average_pooling_1")(x)
         print("DEBUG: Self-Attention Block 1 done", flush=True)
 
         # --- End Self-Attention Block ---
@@ -502,7 +502,7 @@ class Plugin:
         x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
                     name=f"feature_lstm_2"))(x)
         
-        x = AveragePooling1D(pool_size=3, strides=2, padding='valid', name=f"average_pooling_2")(x)
+        x = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"average_pooling_2")(x)
 
         merged = x
         print("DEBUG: Merged features ready", flush=True)
@@ -526,8 +526,8 @@ class Plugin:
             # TODO: probar (batch, merged_units, 1)
             #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
             reshaped_for_lstm = head_dense_output
-            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
-            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='same', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='same', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
