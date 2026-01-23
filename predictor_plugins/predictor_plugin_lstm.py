@@ -424,6 +424,7 @@ class Plugin:
         """
         Build model: processes features, merges, feeds into heads.
         """
+        print(f"DEBUG: Entering build_model with input_shape={input_shape}", flush=True)
         # --- Pre-checks ---
         if self.local_feedback is None or self.local_p_control is None:
              raise RuntimeError("Feedback/Control lists were not initialized in __init__.")
@@ -451,6 +452,7 @@ class Plugin:
         sigma_mmd = self.params.get("sigma_mmd", 1.0)
 
         # --- Input Layer ---
+        print("DEBUG: Create Input Layer", flush=True)
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
         
@@ -462,6 +464,7 @@ class Plugin:
         seq_length = last_layer_shape[1]
         pos_enc = positional_encoding(seq_length, feature_dim)
         x = x + pos_enc
+        print("DEBUG: Positional encoding added", flush=True)
 
         # --- Self-Attention Block 1 ---
         num_attention_heads = 2
@@ -482,6 +485,7 @@ class Plugin:
         x = LayerNormalization()(x)
         #AveragePooling1D
         x = AveragePooling1D(pool_size=3, strides=2, padding='valid', name=f"average_pooling_1")(x)
+        print("DEBUG: Self-Attention Block 1 done", flush=True)
 
         # --- End Self-Attention Block ---
         x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
@@ -494,12 +498,14 @@ class Plugin:
         x = AveragePooling1D(pool_size=3, strides=2, padding='valid', name=f"average_pooling_2")(x)
 
         merged = x
-  
+        print("DEBUG: Merged features ready", flush=True)
+
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
 
         for i, horizon in enumerate(predicted_horizons):
+            print(f"DEBUG: Building head for horizon {horizon}", flush=True)
             branch_suffix = f"_h{horizon}"
 
             # --- Head Intermediate Dense Layers ---
@@ -524,6 +530,7 @@ class Plugin:
 
           
             # --- Bayesian / Bias Layers ---
+            print(f"DEBUG: Building Flipout layer {horizon}", flush=True)
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
                 units=1, activation='linear',
@@ -548,6 +555,7 @@ class Plugin:
             outputs_list.append(final_branch_output)
             self.output_names.append(output_name) # Store the name
             # --- End of Head ---
+        print("DEBUG: All heads built", flush=True)
 
         # --- Model Definition ---
         self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
@@ -567,8 +575,11 @@ class Plugin:
             for nm in self.output_names:
                 loss_dict[nm] = huber
         metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
+        print("DEBUG: Compiling model...", flush=True)
         self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)
+        print("DEBUG: Model compiled. Printing summary...", flush=True)
         self.model.summary(line_length=140)
+        print("DEBUG: build_model completed.", flush=True)
 
 
     # --- Method within YourPredictorPlugin class ---
