@@ -472,8 +472,15 @@ class Plugin:
         last_layer_shape = K.int_shape(x)
         # get the feature dimension from the last layer shape as the last component of the shape tuple
         feature_dim = last_layer_shape[-1]
+        print(f"DEBUG: feature_dim={feature_dim}, num_attention_heads={num_attention_heads}", flush=True)
+
         # define key dimension for attention    
         attention_key_dim = feature_dim//num_attention_heads
+        print(f"DEBUG: attention_key_dim={attention_key_dim}", flush=True)
+        if attention_key_dim == 0:
+             print("DEBUG: attention_key_dim is 0, forcing to 1", flush=True)
+             attention_key_dim = 1
+
         # Apply MultiHeadAttention
         attention_output = MultiHeadAttention(
             num_heads=num_attention_heads, # Assumed to be defined
