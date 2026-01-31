@@ -1047,13 +1047,14 @@ class Plugin:
         hof = tools.HallOfFame(1)
 
         # --- RESUME / RECOVERY LOGIC ---
+        resume_enabled = config.get("optimization_resume", False)
         resume_path = _resolve_repo_path(config.get("optimization_resume_file"))
         params_path = _resolve_repo_path(config.get("optimization_parameters_file"))
         start_gen = 0
         loaded_indices = set()
 
-        # 1. Try to load full population state
-        if resume_path and os.path.exists(resume_path):
+        # 1. Try to load full population state ONLY if resume is explicitly enabled
+        if resume_enabled and resume_path and os.path.exists(resume_path):
             try:
                 print(f"\n[RESUME] Found resume file at: {resume_path}")
                 print(f"[RESUME] Attempting to load population state...")
@@ -1066,16 +1067,28 @@ class Plugin:
                 start_gen = resume_data.get("generation", -1) + 1
                 
                 if saved_pop:
-                    # Load into DEAP population
+                    # Load into DEAP population with bounds validation
                     count = 0
+                    invalid_count = 0
                     for i in range(min(len(population), len(saved_pop))):
                         saved_ind = saved_pop[i]
                         if len(saved_ind) == len(hyper_keys):
+                            # Validate bounds before loading
+                            valid = True
                             for k, val in enumerate(saved_ind):
-                                population[i][k] = val
-                            count += 1
-                            loaded_indices.add(i)
-                    print(f"[RESUME] SUCCESS: Restored {count} individuals from resume file.")
+                                low = lower_bounds[k]
+                                up = upper_bounds[k]
+                                if not (low <= val <= up):
+                                    print(f"[RESUME] WARN: Individual {i} parameter '{hyper_keys[k]}' value {val} out of bounds [{low}, {up}] - skipping")
+                                    valid = False
+                                    invalid_count += 1
+                                    break
+                            if valid:
+                                for k, val in enumerate(saved_ind):
+                                    population[i][k] = val
+                                count += 1
+                                loaded_indices.add(i)
+                    print(f"[RESUME] SUCCESS: Restored {count} individuals from resume file ({invalid_count} skipped due to bounds).")
                     print(f"[RESUME] Resuming from Generation {start_gen}")
                 else:
                     print(f"[RESUME] WARN: Resume file found but contained no population data.")
@@ -1359,29 +1372,9 @@ class Plugin:
             except Exception as e:
                 print(f"  Failed to save statistics: {e}")
 
-            # Save Champion Parameters
-            best_ind_so_far = hof[0]
-            best_hyper_so_far = {}
-            for i, key in enumerate(hyper_keys):
-                value = best_ind_so_far[i]
-                ptype = param_types[key]
-                if key == "use_log1p_features":
-                    val_int = int(round(value))
-                    best_hyper_so_far[key] = ["typical_price"] if val_int == 1 else None
-                elif key == "positional_encoding":
-                    val_int = int(round(value))
-                    best_hyper_so_far[key] = bool(val_int)
-                elif ptype == 'int':
-                    best_hyper_so_far[key] = int(round(value))
-                else:
-                    best_hyper_so_far[key] = value
-            
-            params_file = config.get("optimization_parameters_file", "optimization_parameters.json")
-            try:
-                _atomic_json_dump(params_file, best_hyper_so_far)
-                print(f"  Champion parameters saved to {params_file}")
-            except Exception as e:
-                print(f"  Failed to save champion parameters: {e}")
+            # REMOVED: Duplicate parameter saving that could overwrite correct champion
+            # Parameters are saved at line 543 when new champion is found during evaluation
+            # Saving again here from hof[0] can overwrite with wrong candidate if hof[0] != best_fitness_so_far
 
             # --- Save Resume State ---
             if resume_path:

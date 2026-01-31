@@ -143,6 +143,18 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
     Fitness is the denormalized MAE for the max horizon (pipeline parity).
     """
 
+    # Set deterministic seeds if enabled (default: True for reproducibility)
+    if config.get("deterministic_training", True):
+        import random
+        import numpy as np
+        import tensorflow as tf
+        seed = config.get("random_seed", 42)
+        random.seed(seed)
+        np.random.seed(seed)
+        tf.random.set_seed(seed)
+        # Enable TensorFlow deterministic operations
+        tf.config.experimental.enable_op_determinism()
+
     # Resolve log paths to repo root for consistency.
     for k in ("memory_log_file", "optimizer_resource_log_file", "batch_memory_log_file"):
         if config.get(k):
