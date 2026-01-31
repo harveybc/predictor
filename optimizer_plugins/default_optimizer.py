@@ -1098,7 +1098,8 @@ class Plugin:
         # 2. Inject Champion (Elitism/Continuity)
         # Even if we resumed, ensuring the best-known parameters are in the population is good practice.
         # If we didn't resume, this gives us a "warm start" from the last champion.
-        if params_path and os.path.exists(params_path):
+        # ONLY load champion if resume is enabled (respects optimization_resume flag)
+        if resume_enabled and params_path and os.path.exists(params_path):
             try:
                 print(f"\n[CHAMPION LOAD] Found champion parameters file at: {params_path}")
                 print(f"[CHAMPION LOAD] Attempting to inject champion genome...")
@@ -1139,8 +1140,8 @@ class Plugin:
             except Exception as e:
                 print(f"[CHAMPION LOAD] ERROR: Failed to inject champion: {e}")
 
-        # Pause if requested and any resume/load happened
-        if config.get("optimization_pause_on_resume", False):
+        # Pause if requested and any resume/load ACTUALLY happened (only if resume_enabled)
+        if config.get("optimization_pause_on_resume", False) and resume_enabled:
             if (resume_path and os.path.exists(resume_path)) or (params_path and os.path.exists(params_path)):
                 print("\n[PAUSE] optimization_pause_on_resume is enabled.")
                 print("[PAUSE] Resume/Champion data loaded. Press Enter to continue optimization...")
