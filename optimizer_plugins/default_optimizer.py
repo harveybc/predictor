@@ -1192,8 +1192,16 @@ class Plugin:
             
         hof.update(population)
         
-        if hof:
+        # CRITICAL FIX: Initialize ALL best_*_so_far consistently from hof[0]
+        if hof and hof[0].fitness.valid:
             self.best_fitness_so_far = hof[0].fitness.values[0]
+            # Initialize all MAE values from the same champion individual
+            self.best_val_mae_so_far = getattr(hof[0], "val_mae", None)
+            self.best_naive_mae_so_far = getattr(hof[0], "naive_mae", None)
+            self.best_test_mae_so_far = getattr(hof[0], "test_mae", None)
+            self.best_test_naive_mae_so_far = getattr(hof[0], "test_naive_mae", None)
+            self.best_train_mae_so_far = getattr(hof[0], "train_mae", None)
+            self.best_train_naive_mae_so_far = getattr(hof[0], "train_naive_mae", None)
         self.best_at_gen_start = float(self.best_fitness_so_far)
             
         no_improve_counter = 0
@@ -1264,19 +1272,15 @@ class Plugin:
             current_best = hof[0].fitness.values[0]
             print(f"  Best Val Loss: {current_best}")
             
-            # Important: we may already update best_fitness_so_far per-candidate.
+            # CRITICAL FIX: Do NOT update best_fitness_so_far here!
+            # It's already updated correctly in lines 531-538 when evaluating each candidate.
+            # Updating it here from hof[0] causes data inconsistency because hof[0] 
+            # might be a different candidate than the one that achieved best_fitness_so_far.
             # For early-stopping, detect improvements relative to the start of this generation.
             if current_best < best_at_gen_start:
-                self.best_fitness_so_far = float(min(self.best_fitness_so_far, current_best))
                 no_improve_counter = 0
                 self.patience_counter = 0
                 print(f"  New best found!")
-
-                # Capture champion naive MAE at the moment the global champion improves
-                try:
-                    self.best_naive_mae_so_far = getattr(hof[0], "naive_mae", self.best_naive_mae_so_far)
-                except Exception:
-                    pass
             else:
                 no_improve_counter += 1
                 self.patience_counter = no_improve_counter
@@ -1299,19 +1303,15 @@ class Plugin:
             # Global champion so far (HallOfFame), also by FITNESS
             champion_fitness_global = float(hof[0].fitness.values[0]) if hof and hof[0].fitness.valid else float("inf")
 
-            # Global champion ACTUAL validation MAE (not fitness)
-            champion_val_mae_global = getattr(hof[0], "val_mae", self.best_val_mae_so_far) if hof else self.best_val_mae_so_far
-            
-            # Global champion naive MAE (HallOfFame) for top-level stats
-            champion_naive_mae_global = getattr(hof[0], "naive_mae", None) if hof else None
-            if champion_naive_mae_global is None:
-                champion_naive_mae_global = self.best_naive_mae_so_far
-            
-            # Capture all champion metrics for stats
-            champion_test_mae_global = getattr(hof[0], "test_mae", self.best_test_mae_so_far) if hof else self.best_test_mae_so_far
-            champion_test_naive_mae_global = getattr(hof[0], "test_naive_mae", self.best_test_naive_mae_so_far) if hof else self.best_test_naive_mae_so_far
-            champion_train_mae_global = getattr(hof[0], "train_mae", self.best_train_mae_so_far) if hof else self.best_train_mae_so_far
-            champion_train_naive_mae_global = getattr(hof[0], "train_naive_mae", self.best_train_naive_mae_so_far) if hof else self.best_train_naive_mae_so_far
+            # FIX: ALL champion metrics must come from self.best_*_so_far to match best_fitness_so_far
+            # Using hof[0] mixes data from different candidates because HoF tracks current best, 
+            # but self.best_fitness_so_far tracks absolute best ever seen
+            champion_val_mae_global = self.best_val_mae_so_far
+            champion_naive_mae_global = self.best_naive_mae_so_far
+            champion_test_mae_global = self.best_test_mae_so_far
+            champion_test_naive_mae_global = self.best_test_naive_mae_so_far
+            champion_train_mae_global = self.best_train_mae_so_far
+            champion_train_naive_mae_global = self.best_train_naive_mae_so_far
 
             stats_history.append({
                 "generation": self.current_gen,
