@@ -1,0 +1,9 @@
+{
+    "learning_rate": 0.008298208236804177,
+    "window_size": 85,
+    "merged_units": 237,
+    "branch_units": 67,
+    "num_attention_heads": 1,
+    "l2_reg": 1.3563031621631261e-06,
+    "positional_encoding": false
+}

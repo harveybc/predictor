@@ -1,0 +1,104 @@
+{
+    "total_time_elapsed": 7609.721827507019,
+    "average_time_per_epoch": 1032.8790312767028,
+    "candidates_evaluated_so_far": 64,
+    "champion_fitness": 0.00019556982442736626,
+    "champion_validation_mae": 0.008765049278736115,
+    "champion_validation_naive_mae": 0.008674359880387783,
+    "champion_test_mae": 0.005820113234221935,
+    "champion_test_naive_mae": 0.005699817556887865,
+    "champion_train_mae": 0.009952206164598465,
+    "champion_train_naive_mae": 0.009613711386919022,
+    "average_fitness_per_epoch": [
+        0.0004733717767521739,
+        0.00035501504316926,
+        0.0003450393909588456,
+        0.0003045413177460432,
+        0.0003505601081997156
+    ],
+    "champion_fitness_per_epoch": [
+        0.0002060532569885254,
+        0.0002060532569885254,
+        0.0002060532569885254,
+        0.0002060532569885254,
+        0.0002060532569885254
+    ],
+    "champion_validation_mae_per_epoch": [
+        0.00874797161668539,
+        0.00874797161668539,
+        0.00874797161668539,
+        0.00874797161668539,
+        0.00874797161668539
+    ],
+    "best_fitness_per_epoch": [
+        0.0002060532569885254,
+        0.0002060532569885254,
+        0.0002060532569885254,
+        0.00019556982442736626,
+        0.00019556982442736626
+    ],
+    "best_validation_mae_per_epoch": [
+        0.00874797161668539,
+        0.00874797161668539,
+        0.00874797161668539,
+        0.008765049278736115,
+        0.008765049278736115
+    ],
+    "history": [
+        {
+            "generation": 13,
+            "duration": 995.6139097213745,
+            "avg_fitness": 0.0004733717767521739,
+            "best_validation_mae_gen": 0.00874797161668539,
+            "best_fitness_gen": 0.0002060532569885254,
+            "champion_fitness_global": 0.0002060532569885254,
+            "champion_validation_mae_global": 0.00874797161668539,
+            "best_validation_naive_mae_gen": 0.008674359880387783,
+            "champion_validation_naive_mae_global": 0.008674359880387783
+        },
+        {
+            "generation": 14,
+            "duration": 1074.4827060699463,
+            "avg_fitness": 0.00035501504316926,
+            "best_validation_mae_gen": 0.00874797161668539,
+            "best_fitness_gen": 0.0002060532569885254,
+            "champion_fitness_global": 0.0002060532569885254,
+            "champion_validation_mae_global": 0.00874797161668539,
+            "best_validation_naive_mae_gen": 0.008674359880387783,
+            "champion_validation_naive_mae_global": 0.008674359880387783
+        },
+        {
+            "generation": 15,
+            "duration": 1070.5832991600037,
+            "avg_fitness": 0.0003450393909588456,
+            "best_validation_mae_gen": 0.00874797161668539,
+            "best_fitness_gen": 0.0002060532569885254,
+            "champion_fitness_global": 0.0002060532569885254,
+            "champion_validation_mae_global": 0.00874797161668539,
+            "best_validation_naive_mae_gen": 0.008674359880387783,
+            "champion_validation_naive_mae_global": 0.008674359880387783
+        },
+        {
+            "generation": 16,
+            "duration": 1036.4937064647675,
+            "avg_fitness": 0.0003045413177460432,
+            "best_validation_mae_gen": 0.008765049278736115,
+            "best_fitness_gen": 0.00019556982442736626,
+            "champion_fitness_global": 0.0002060532569885254,
+            "champion_validation_mae_global": 0.00874797161668539,
+            "best_validation_naive_mae_gen": 0.008674359880387783,
+            "champion_validation_naive_mae_global": 0.008674359880387783
+        },
+        {
+            "generation": 17,
+            "duration": 987.2215349674225,
+            "avg_fitness": 0.0003505601081997156,
+            "best_validation_mae_gen": 0.008765049278736115,
+            "best_fitness_gen": 0.00019556982442736626,
+            "champion_fitness_global": 0.0002060532569885254,
+            "champion_validation_mae_global": 0.00874797161668539,
+            "best_validation_naive_mae_gen": 0.008674359880387783,
+            "champion_validation_naive_mae_global": 0.008674359880387783
+        }
+    ]
+}

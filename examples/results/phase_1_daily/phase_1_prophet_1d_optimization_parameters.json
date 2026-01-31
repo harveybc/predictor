@@ -1,0 +1,8 @@
+{
+    "changepoint_prior_scale": 0.0169323659190439,
+    "seasonality_prior_scale": 4.175957867050099,
+    "holidays_prior_scale": 7.8350801069426845,
+    "regressors_prior_scale": 3.518358492789602,
+    "window_size": 34,
+    "positional_encoding": true
+}

@@ -1,9 +1,0 @@
-{
-    "use_log1p_features": null,
-    "window_size": 33,
-    "positional_encoding": false,
-    "intermediate_layers": 4,
-    "initial_layer_size": 78,
-    "encoder_lstm_units": 20,
-    "layer_size_divisor": 12
-}

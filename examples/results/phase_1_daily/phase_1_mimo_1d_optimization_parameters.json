@@ -1,0 +1,12 @@
+{
+    "window_size": 79,
+    "encoder_conv_layers": 1,
+    "encoder_base_filters": 57,
+    "encoder_lstm_units": 10,
+    "horizon_embedding_dim": 8,
+    "horizon_attn_key_dim": 30,
+    "horizon_attn_heads": 4,
+    "decoder_dropout": 0.030797223922799735,
+    "learning_rate": 0.005719807884114421,
+    "l2_reg": 5.431378820117508e-05
+}

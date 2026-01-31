@@ -1,0 +1,11 @@
+{
+    "nbeats_blocks": 1,
+    "nbeats_layers": 7,
+    "nbeats_units": 68,
+    "learning_rate": 0.0011642122202333866,
+    "l2_reg": 1.439614239667805e-06,
+    "dropout_rate": 0.11609816521985816,
+    "batch_size": 46,
+    "early_patience": 73,
+    "positional_encoding": true
+}

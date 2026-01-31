@@ -1,0 +1,9 @@
+{
+    "learning_rate": 0.0017730294192668953,
+    "window_size": 70,
+    "tft_hidden_units": 21,
+    "tft_dropout": 0.20154683397210202,
+    "mmd_lambda": 0.0004993706248367463,
+    "tft_lstm_layers": 1,
+    "positional_encoding": false
+}

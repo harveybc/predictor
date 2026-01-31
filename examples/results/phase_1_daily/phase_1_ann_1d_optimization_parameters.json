@@ -1,0 +1,8 @@
+{
+    "learning_rate": 0.01,
+    "window_size": 89,
+    "hidden_units": 128,
+    "num_hidden_layers": 4,
+    "dropout_rate": 0.015405258742119664,
+    "positional_encoding": false
+}
