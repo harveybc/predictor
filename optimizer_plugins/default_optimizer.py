@@ -28,6 +28,12 @@ import pty
 import select
 from pathlib import Path
 from deap import base, creator, tools, algorithms
+
+# Import optimizer helper modules
+from .modules.incremental_logic import setup_incremental_optimization, adjust_params_for_resume
+from .modules.resume_operations import load_resume_checkpoint, load_champion_parameters, save_resume_checkpoint
+from .modules.genome_operations import validate_genome_bounds
+from .modules.meta_logger import initialize_meta_log, log_candidate_evaluation, get_meta_log_path
 from app.plugin_loader import load_plugin
 
 from predictor_plugins.common.callbacks import capture_resource_snapshot
@@ -122,8 +128,21 @@ class Plugin:
 
         # Extraer el espacio de búsqueda de hiperparámetros.
         # Use config directly to ensure we get the merged values from file_config
-        bounds = config.get("hyperparameter_bounds", self.params.get("hyperparameter_bounds"))
-        hyper_keys = list(bounds.keys())
+        full_bounds = config.get("hyperparameter_bounds", self.params.get("hyperparameter_bounds"))
+        
+        # --- INCREMENTAL OPTIMIZATION SETUP ---
+        incremental_enabled, increment_size, all_param_keys, hyper_keys, total_stages, meta_mode = setup_incremental_optimization(full_bounds, config)
+        
+        # Initialize meta-training log if meta mode is enabled
+        if meta_mode:
+            meta_log_path = get_meta_log_path(config)
+            initialize_meta_log(meta_log_path)
+            print(f"[META-OPTIMIZATION] Initialized meta-training log at: {meta_log_path}")
+            current_meta_stage = 1
+        else:
+            current_meta_stage = None
+        
+        bounds = {k: full_bounds[k] for k in hyper_keys}
         
         # Determine parameter types based on bounds (int vs float)
         param_types = {}
@@ -1015,6 +1034,40 @@ class Plugin:
             except Exception:
                 pass
             
+            # Log to meta-training CSV if meta-mode is enabled
+            if meta_mode:
+                try:
+                    # Gather all metrics for logging
+                    metrics_dict = {
+                        'train_mae': train_mae,
+                        'train_rmse': float('inf'),  # Not computed in current code
+                        'train_permutation_ok': 0,  # Not computed
+                        'train_directional_accuracy': 0.0,  # Not computed
+                        'train_naive_mae': train_naive_mae,
+                        'val_mae': val_mae,
+                        'val_rmse': float('inf'),  # Not computed
+                        'val_permutation_ok': 0,  # Not computed
+                        'val_directional_accuracy': 0.0,  # Not computed
+                        'val_naive_mae': naive_mae,
+                        'test_mae': test_mae,
+                        'test_rmse': float('inf'),  # Not computed
+                        'test_permutation_ok': 0,  # Not computed
+                        'test_directional_accuracy': 0.0,  # Not computed
+                        'test_naive_mae': test_naive_mae,
+                        'stage': current_meta_stage,
+                        'generation': int(self.current_gen or 0),
+                        'candidate_id': int(self.eval_counter),
+                        'fitness': fitness
+                    }
+                    
+                    log_candidate_evaluation(
+                        meta_log_path=get_meta_log_path(config),
+                        params=hyper_dict,
+                        metrics=metrics_dict
+                    )
+                except Exception as log_error:
+                    print(f"[META-LOG] Warning: Failed to log candidate: {log_error}")
+            
             return (fitness,)
 
         # Custom mutation function to handle mixed types
@@ -1043,6 +1096,33 @@ class Plugin:
         n_generations = config.get("n_generations", self.params.get("n_generations", 10))
         patience = config.get("optimization_patience", self.params.get("optimization_patience", 3))
         
+        # --- INCREMENTAL OPTIMIZATION OUTER LOOP ---
+        # This wraps the entire GA optimization to progressively add parameters
+        incremental_stage = 1
+        total_stages = (len(all_param_keys) + increment_size - 1) // increment_size if incremental_enabled else 1
+        
+        while True:
+            print(f"\n{'='*80}")
+            if incremental_enabled:
+                print(f"[INCREMENTAL] STAGE {incremental_stage}/{total_stages}")
+                print(f"[INCREMENTAL] Optimizing parameters: {hyper_keys}")
+            print(f"{'='*80}\n")
+            
+            # Update bounds and param_types for current stage
+            bounds = {k: full_bounds[k] for k in hyper_keys}
+            param_types = {}
+            lower_bounds = []
+            upper_bounds = []
+            
+            for key in hyper_keys:
+                low, up = bounds[key]
+                lower_bounds.append(low)
+                upper_bounds.append(up)
+                if isinstance(low, int) and isinstance(up, int):
+                    param_types[key] = 'int'
+                else:
+                    param_types[key] = 'float'
+        
         population = toolbox.population(n=population_size)
         hof = tools.HallOfFame(1)
 
@@ -1052,95 +1132,40 @@ class Plugin:
         params_path = _resolve_repo_path(config.get("optimization_parameters_file"))
         start_gen = 0
         loaded_indices = set()
+        actual_genome_size = len(hyper_keys)
 
         # 1. Try to load full population state ONLY if resume is explicitly enabled
         if resume_enabled and resume_path and os.path.exists(resume_path):
-            try:
-                print(f"\n[RESUME] Found resume file at: {resume_path}")
-                print(f"[RESUME] Attempting to load population state...")
-                with open(resume_path, 'r') as f:
-                    resume_data = json.load(f)
+            start_gen, loaded_count, loaded_indices, actual_genome_size = load_resume_checkpoint(
+                resume_path, population, hyper_keys, full_bounds, incremental_enabled
+            )
+            
+            # Adjust hyper_keys if resume loaded smaller genome and incremental is enabled
+            if loaded_count > 0:
+                hyper_keys = adjust_params_for_resume(hyper_keys, all_param_keys, actual_genome_size, incremental_enabled)
                 
-                saved_pop = resume_data.get("population", [])
-                # If we finished gen N, we start N+1. 
-                # If the file says "generation": 5, it means gen 5 completed.
-                start_gen = resume_data.get("generation", -1) + 1
-                
-                if saved_pop:
-                    # Load into DEAP population with bounds validation
-                    count = 0
-                    invalid_count = 0
-                    for i in range(min(len(population), len(saved_pop))):
-                        saved_ind = saved_pop[i]
-                        if len(saved_ind) == len(hyper_keys):
-                            # Validate bounds before loading
-                            valid = True
-                            for k, val in enumerate(saved_ind):
-                                low = lower_bounds[k]
-                                up = upper_bounds[k]
-                                if not (low <= val <= up):
-                                    print(f"[RESUME] WARN: Individual {i} parameter '{hyper_keys[k]}' value {val} out of bounds [{low}, {up}] - skipping")
-                                    valid = False
-                                    invalid_count += 1
-                                    break
-                            if valid:
-                                for k, val in enumerate(saved_ind):
-                                    population[i][k] = val
-                                count += 1
-                                loaded_indices.add(i)
-                    print(f"[RESUME] SUCCESS: Restored {count} individuals from resume file ({invalid_count} skipped due to bounds).")
-                    print(f"[RESUME] Resuming from Generation {start_gen}")
-                else:
-                    print(f"[RESUME] WARN: Resume file found but contained no population data.")
-            except Exception as e:
-                print(f"[RESUME] ERROR: Failed to resume from file: {e}")
+                # Update bounds and param_types to match adjusted hyper_keys
+                bounds = {k: full_bounds[k] for k in hyper_keys}
+                lower_bounds = [full_bounds[k][0] for k in hyper_keys]
+                upper_bounds = [full_bounds[k][1] for k in hyper_keys]
+                param_types = {}
+                for key in hyper_keys:
+                    low, up = full_bounds[key]
+                    param_types[key] = 'int' if isinstance(low, int) and isinstance(up, int) else 'float'
 
         # 2. Inject Champion (Elitism/Continuity)
-        # Even if we resumed, ensuring the best-known parameters are in the population is good practice.
-        # If we didn't resume, this gives us a "warm start" from the last champion.
-        # ONLY load champion if resume is enabled (respects optimization_resume flag)
-        if resume_enabled and params_path and os.path.exists(params_path):
-            try:
-                print(f"\n[CHAMPION LOAD] Found champion parameters file at: {params_path}")
-                print(f"[CHAMPION LOAD] Attempting to inject champion genome...")
-                with open(params_path, 'r') as f:
-                    champ_dict = json.load(f)
-                
-                champ_ind = []
-                valid_champ = True
-                for key in hyper_keys:
-                    if key not in champ_dict:
-                        # It's possible the params file has extra keys or missing keys if config changed.
-                        # We only care if we can fill the current hyper_keys.
-                        print(f"[CHAMPION LOAD] WARN: Champion missing key '{key}' - cannot inject full genome.")
-                        valid_champ = False
-                        break
-                    
-                    val = champ_dict[key]
-                    
-                    # REVERSE MAPPING: Convert resolved values back to gene encoding
-                    if key == "use_log1p_features":
-                        # 1 -> ["typical_price"], 0 -> None
-                        if val == ["typical_price"]:
-                            champ_ind.append(1)
-                        else:
-                            champ_ind.append(0)
-                    elif key == "positional_encoding":
-                        # 1 -> True, 0 -> False
-                        champ_ind.append(1 if val else 0)
-                    else:
-                        champ_ind.append(val)
-                
-                if valid_champ:
-                    # Inject into the first slot (elitism)
-                    print(f"[CHAMPION LOAD] SUCCESS: Injecting champion genome into population index 0.")
-                    for k, val in enumerate(champ_ind):
-                        population[0][k] = val
-                    loaded_indices.add(0)
-            except Exception as e:
-                print(f"[CHAMPION LOAD] ERROR: Failed to inject champion: {e}")
+        # ONLY load champion if resume is enabled BUT resume file was NOT found
+        # This avoids duplication (resume file already contains champion in population)
+        resume_file_loaded = resume_enabled and resume_path and os.path.exists(resume_path)
+        if resume_enabled and params_path and os.path.exists(params_path) and not resume_file_loaded:
+            champ_ind = load_champion_parameters(params_path, hyper_keys, full_bounds)
+            if champ_ind:
+                print(f"[CHAMPION LOAD] Injecting champion into population index 0")
+                for k, val in enumerate(champ_ind):
+                    population[0][k] = val
+                loaded_indices.add(0)
 
-        # Pause if requested and any resume/load ACTUALLY happened (only if resume_enabled)
+        # Pause if requested and any resume/load ACTUALLY happened
         if config.get("optimization_pause_on_resume", False) and resume_enabled:
             if (resume_path and os.path.exists(resume_path)) or (params_path and os.path.exists(params_path)):
                 print("\n[PAUSE] optimization_pause_on_resume is enabled.")
@@ -1379,24 +1404,72 @@ class Plugin:
 
             # --- Save Resume State ---
             if resume_path:
-                try:
-                    resume_payload = {
-                        "generation": gen,
-                        "population": [list(ind) for ind in population]
-                    }
-                    _atomic_json_dump(resume_path, resume_payload)
-                    print(f"  Resume state saved to {resume_path}")
-                except Exception as e:
-                    print(f"  Failed to save resume state: {e}")
+                save_resume_checkpoint(resume_path, gen, population)
 
             if no_improve_counter >= patience:
                 print(f"Early stopping triggered after {gen + 1} generations.")
                 break
 
-        end_opt = time.time()
-        print(f"Optimization completed in {end_opt - start_opt:.2f} seconds.")
+            end_opt = time.time()
+            print(f"Optimization stage completed in {end_opt - start_opt:.2f} seconds.")
 
-        # Seleccionar el mejor individuo.
+            # --- INCREMENTAL: Check if we need to add more parameters ---
+            from .modules.incremental_logic import should_add_more_parameters, get_next_parameter_batch
+            from .modules.genome_operations import expand_population_with_new_params
+            
+            if should_add_more_parameters(hyper_keys, all_param_keys, incremental_enabled):
+                # Get next batch of parameters (meta-mode aware)
+                new_params, hyper_keys = get_next_parameter_batch(
+                    hyper_keys, 
+                    all_param_keys, 
+                    increment_size,
+                    current_stage=current_meta_stage,
+                    meta_mode=meta_mode
+                )
+                
+                # Update meta stage counter if in meta mode
+                if meta_mode:
+                    current_meta_stage += 1
+                
+                print(f"\n[INCREMENTAL] Stage {incremental_stage} complete!")
+                print(f"[INCREMENTAL] Adding {len(new_params)} new parameters: {new_params}")
+                print(f"[INCREMENTAL] Total active parameters now: {len(hyper_keys)}")
+                
+                # Expand entire population with new parameters
+                expanded_count = expand_population_with_new_params(population, new_params, full_bounds, config)
+                print(f"[INCREMENTAL] Expanded {expanded_count} individuals in population")
+                
+                # Update bounds and param_types for expanded genome
+                bounds = {k: full_bounds[k] for k in hyper_keys}
+                lower_bounds = [full_bounds[k][0] for k in hyper_keys]
+                upper_bounds = [full_bounds[k][1] for k in hyper_keys]
+                param_types = {}
+                for key in hyper_keys:
+                    low, up = full_bounds[key]
+                    param_types[key] = 'int' if isinstance(low, int) and isinstance(up, int) else 'float'
+                
+                # Reset optimization tracking for next stage
+                self.best_fitness_so_far = float("inf")
+                self.best_val_mae_so_far = None
+                self.best_naive_mae_so_far = None
+                self.best_test_mae_so_far = None
+                self.best_test_naive_mae_so_far = None
+                self.best_train_mae_so_far = None
+                self.best_train_naive_mae_so_far = None
+                self.patience_counter = 0
+                self.best_at_gen_start = float("inf")
+                
+                incremental_stage += 1
+                print(f"[INCREMENTAL] Starting stage {incremental_stage}...\n")
+                # Continue to next optimization stage
+                continue
+            else:
+                # All parameters optimized
+                if incremental_enabled:
+                    print(f"\n[INCREMENTAL] All {len(all_param_keys)} parameters optimized!")
+                break
+
+        # Seleccionar el mejor individuo (outside while loop)
         best_ind = hof[0]
         best_hyper = {}
         for i, key in enumerate(hyper_keys):
@@ -1413,7 +1486,7 @@ class Plugin:
                 best_hyper[key] = int(round(value))
             else:
                 best_hyper[key] = value
-                
+                    
         print(f"Best hyperparameters found: {best_hyper}")
         return best_hyper
 
