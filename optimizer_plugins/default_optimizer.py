@@ -151,7 +151,7 @@ class Plugin:
         
         # Initialize meta-training log if meta mode is enabled
         if meta_mode:
-            meta_log_path = get_meta_log_path(config)
+            meta_log_path = _resolve_repo_path(get_meta_log_path(config))
             initialize_meta_log(meta_log_path, config)
             print(f"[META-OPTIMIZATION] Initialized meta-training log at: {meta_log_path}")
         
@@ -1097,8 +1097,9 @@ class Plugin:
                         'fitness': fitness
                     }
                     
+                    resolved_log_path = _resolve_repo_path(get_meta_log_path(config))
                     log_candidate_evaluation(
-                        log_path=get_meta_log_path(config),
+                        log_path=resolved_log_path,
                         params_dict=hyper_dict,
                         metrics_dict=metrics_dict,
                         stage=current_meta_stage,
@@ -1107,7 +1108,9 @@ class Plugin:
                         config=config
                     )
                 except Exception as log_error:
+                    import traceback
                     print(f"[META-LOG] Warning: Failed to log candidate: {log_error}")
+                    traceback.print_exc()
             
             return (fitness,)
 
