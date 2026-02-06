@@ -385,6 +385,10 @@ class Plugin:
                 elif key == "positional_encoding":
                     val_int = int(round(value))
                     hyper_dict[key] = bool(val_int)
+                elif key == "activation":
+                    act_idx = int(round(value))
+                    act_idx = max(0, min(act_idx, len(ACTIVATION_INDEX_TO_NAME) - 1))
+                    hyper_dict[key] = ACTIVATION_INDEX_TO_NAME[act_idx]
                 elif ptype == 'int':
                     hyper_dict[key] = int(round(value))
                 else:
@@ -1528,6 +1532,10 @@ class Plugin:
             elif key == "positional_encoding":
                 val_int = int(round(value))
                 best_hyper[key] = bool(val_int)
+            elif key == "activation":
+                act_idx = int(round(value))
+                act_idx = max(0, min(act_idx, len(ACTIVATION_INDEX_TO_NAME) - 1))
+                best_hyper[key] = ACTIVATION_INDEX_TO_NAME[act_idx]
             elif ptype == 'int':
                 best_hyper[key] = int(round(value))
             else:

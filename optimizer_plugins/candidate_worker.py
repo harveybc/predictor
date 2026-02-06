@@ -4,6 +4,18 @@
 Runs a single (gen,candidate) evaluation in a fresh Python process to avoid
 in-process TensorFlow / CUDA / allocator cache growth across GA candidates.
 
+# Reverse mapping: GA encodes activation as int [0..7], model needs string.
+ACTIVATION_INDEX_TO_NAME = [
+    "relu",         # 0
+    "elu",          # 1
+    "selu",         # 2
+    "tanh",         # 3
+    "sigmoid",      # 4
+    "swish",        # 5
+    "gelu",         # 6
+    "leaky_relu",   # 7
+]
+
 This module is invoked by `optimizer_plugins/default_optimizer.py` via:
   python -m optimizer_plugins.candidate_worker --input <json> --output <json>
 
@@ -393,6 +405,14 @@ def main() -> int:
     # Normalize boolean-like params that are commonly encoded as 0/1 by optimizers.
     if "positional_encoding" in config:
         config["positional_encoding"] = _coerce_bool(config.get("positional_encoding"), default=False)
+
+    # Convert activation from GA integer encoding [0..7] to string name.
+    if "activation" in config:
+        act_val = config["activation"]
+        if isinstance(act_val, (int, float)):
+            act_idx = int(round(act_val))
+            act_idx = max(0, min(act_idx, len(ACTIVATION_INDEX_TO_NAME) - 1))
+            config["activation"] = ACTIVATION_INDEX_TO_NAME[act_idx]
 
     out = {
         "ok": False,
