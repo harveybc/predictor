@@ -1,6 +1,18 @@
 """Genome expansion and manipulation operations."""
 import random
 
+# Activation string to integer mapping (must match optimizer's ACTIVATION_INDEX_TO_NAME)
+ACTIVATION_NAME_TO_INDEX = {
+    "relu": 0,
+    "elu": 1,
+    "selu": 2,
+    "tanh": 3,
+    "sigmoid": 4,
+    "swish": 5,
+    "gelu": 6,
+    "leaky_relu": 7
+}
+
 
 def expand_genome_with_new_params(individual, new_params, full_bounds, config):
     """
@@ -21,11 +33,15 @@ def expand_genome_with_new_params(individual, new_params, full_bounds, config):
         # Try to use config value if available
         if param_name in config:
             val = config[param_name]
-            # Handle special cases
+            # Handle special categorical/boolean encodings
             if param_name == "use_log1p_features":
                 val = 1 if val == ["typical_price"] else 0
             elif param_name == "positional_encoding":
                 val = 1 if val else 0
+            elif param_name == "activation":
+                # Convert string activation back to integer for GA
+                if isinstance(val, str):
+                    val = ACTIVATION_NAME_TO_INDEX.get(val, 0)
             individual.append(val)
         else:
             # Initialize at midpoint of bounds (safe neutral value)
