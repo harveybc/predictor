@@ -34,7 +34,7 @@
     "optimization_incremental": true,
     "optimization_increment_size": 2,
     "optimization_meta_mode": true,
-    "meta_training_log": "examples/results/phase_1/meta_training_data.csv",
+    "meta_training_log": "examples/results/phase_1/mimo_optimization_meta_training_data.csv",
     "optimization_stages": [
         {
             "stage": 1,
