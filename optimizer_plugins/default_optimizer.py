@@ -1151,369 +1151,369 @@ class Plugin:
                     param_types[key] = 'int'
                 else:
                     param_types[key] = 'float'
-        
-        population = toolbox.population(n=population_size)
-        hof = tools.HallOfFame(1)
-
-        # --- RESUME / RECOVERY LOGIC ---
-        resume_enabled = config.get("optimization_resume", False)
-        resume_path = _resolve_repo_path(config.get("optimization_resume_file"))
-        params_path = _resolve_repo_path(config.get("optimization_parameters_file"))
-        start_gen = 0
-        loaded_indices = set()
-        actual_genome_size = len(hyper_keys)
-
-        # 1. Try to load full population state ONLY if resume is explicitly enabled
-        if resume_enabled and resume_path and os.path.exists(resume_path):
-            start_gen, loaded_count, loaded_indices, actual_genome_size, resumed_stage, resumed_params = load_resume_checkpoint(
-                resume_path, population, hyper_keys, full_bounds, incremental_enabled, config
-            )
             
-            # Restore stage if meta-mode
-            if meta_mode and resumed_stage:
-                current_meta_stage = resumed_stage
-                print(f"[RESUME] Restored meta-mode stage {current_meta_stage}")
-            
-            # Adjust hyper_keys if resume loaded smaller genome and incremental is enabled
-            if loaded_count > 0:
-                if resumed_params and len(resumed_params) < len(hyper_keys):
-                    print(f"[RESUME] Using resumed parameters ({len(resumed_params)}), will add new ones incrementally")
-                    hyper_keys = resumed_params
-                else:
-                    hyper_keys = adjust_params_for_resume(hyper_keys, all_param_keys, actual_genome_size, incremental_enabled)
-                
-                # Update bounds and param_types to match adjusted hyper_keys
-                bounds = {k: full_bounds[k] for k in hyper_keys}
-                lower_bounds = [full_bounds[k][0] for k in hyper_keys]
-                upper_bounds = [full_bounds[k][1] for k in hyper_keys]
-                param_types = {}
-                for key in hyper_keys:
-                    low, up = full_bounds[key]
-                    param_types[key] = 'int' if isinstance(low, int) and isinstance(up, int) else 'float'
+            population = toolbox.population(n=population_size)
+            hof = tools.HallOfFame(1)
 
-        # 2. Inject Champion (Elitism/Continuity)
-        # ONLY load champion if resume is enabled BUT resume file was NOT found
-        # This avoids duplication (resume file already contains champion in population)
-        resume_file_loaded = resume_enabled and resume_path and os.path.exists(resume_path)
-        if resume_enabled and params_path and os.path.exists(params_path) and not resume_file_loaded:
-            champ_ind = load_champion_parameters(params_path, hyper_keys, full_bounds)
-            if champ_ind:
-                print(f"[CHAMPION LOAD] Injecting champion into population index 0")
-                for k, val in enumerate(champ_ind):
-                    population[0][k] = val
-                loaded_indices.add(0)
+            # --- RESUME / RECOVERY LOGIC ---
+            resume_enabled = config.get("optimization_resume", False)
+            resume_path = _resolve_repo_path(config.get("optimization_resume_file"))
+            params_path = _resolve_repo_path(config.get("optimization_parameters_file"))
+            start_gen = 0
+            loaded_indices = set()
+            actual_genome_size = len(hyper_keys)
 
-        # Pause if requested and any resume/load ACTUALLY happened
-        if config.get("optimization_pause_on_resume", False) and resume_enabled:
-            if (resume_path and os.path.exists(resume_path)) or (params_path and os.path.exists(params_path)):
-                print("\n[PAUSE] optimization_pause_on_resume is enabled.")
-                print("[PAUSE] Resume/Champion data loaded. Press Enter to continue optimization...")
-                try:
-                    input()
-                except EOFError:
-                    pass
+            # 1. Try to load full population state ONLY if resume is explicitly enabled
+            if resume_enabled and resume_path and os.path.exists(resume_path):
+                start_gen, loaded_count, loaded_indices, actual_genome_size, resumed_stage, resumed_params = load_resume_checkpoint(
+                    resume_path, population, hyper_keys, full_bounds, incremental_enabled, config
+                )
 
-        # Calculate end generation: start_gen + n_generations
-        # This way n_generations always means "run THIS MANY generations"
-        # Fresh start: range(0, 0+10) = 10 generations (0-9)
-        # Resume from 9: range(10, 10+2) = 2 generations (10-11)
-        end_gen = start_gen + n_generations
-        self.end_gen = end_gen  # Store for eval_individual to access
-        print(f"Starting hyperparameter optimization (Gen {start_gen} to {end_gen - 1}, running {n_generations} generations)...")
-        start_opt = time.time()
-        
-        # Custom optimization loop with early stopping
-        # Evaluate the entire population
-        self.current_gen = start_gen
-        self.eval_counter = 0 # Reset for initial population
-        self.total_eval_counter = 0
-        
-        # Enforce bounds on initial population (just in case)
-        print("[BOUNDS] Checking initial population against hyperparameter bounds...")
-        for idx_ind, ind in enumerate(population):
-            # Skip bounds enforcement if loaded from file (Resume or Champion)
-            if idx_ind in loaded_indices:
-                # Optional: Warn if it IS out of bounds, just for info
+                # Restore stage if meta-mode
+                if meta_mode and resumed_stage:
+                    current_meta_stage = resumed_stage
+                    print(f"[RESUME] Restored meta-mode stage {current_meta_stage}")
+
+                # Adjust hyper_keys if resume loaded smaller genome and incremental is enabled
+                if loaded_count > 0:
+                    if resumed_params and len(resumed_params) < len(hyper_keys):
+                        print(f"[RESUME] Using resumed parameters ({len(resumed_params)}), will add new ones incrementally")
+                        hyper_keys = resumed_params
+                    else:
+                        hyper_keys = adjust_params_for_resume(hyper_keys, all_param_keys, actual_genome_size, incremental_enabled)
+
+                    # Update bounds and param_types to match adjusted hyper_keys
+                    bounds = {k: full_bounds[k] for k in hyper_keys}
+                    lower_bounds = [full_bounds[k][0] for k in hyper_keys]
+                    upper_bounds = [full_bounds[k][1] for k in hyper_keys]
+                    param_types = {}
+                    for key in hyper_keys:
+                        low, up = full_bounds[key]
+                        param_types[key] = 'int' if isinstance(low, int) and isinstance(up, int) else 'float'
+
+            # 2. Inject Champion (Elitism/Continuity)
+            # ONLY load champion if resume is enabled BUT resume file was NOT found
+            # This avoids duplication (resume file already contains champion in population)
+            resume_file_loaded = resume_enabled and resume_path and os.path.exists(resume_path)
+            if resume_enabled and params_path and os.path.exists(params_path) and not resume_file_loaded:
+                champ_ind = load_champion_parameters(params_path, hyper_keys, full_bounds)
+                if champ_ind:
+                    print(f"[CHAMPION LOAD] Injecting champion into population index 0")
+                    for k, val in enumerate(champ_ind):
+                        population[0][k] = val
+                    loaded_indices.add(0)
+
+            # Pause if requested and any resume/load ACTUALLY happened
+            if config.get("optimization_pause_on_resume", False) and resume_enabled:
+                if (resume_path and os.path.exists(resume_path)) or (params_path and os.path.exists(params_path)):
+                    print("\n[PAUSE] optimization_pause_on_resume is enabled.")
+                    print("[PAUSE] Resume/Champion data loaded. Press Enter to continue optimization...")
+                    try:
+                        input()
+                    except EOFError:
+                        pass
+
+            # Calculate end generation: start_gen + n_generations
+            # This way n_generations always means "run THIS MANY generations"
+            # Fresh start: range(0, 0+10) = 10 generations (0-9)
+            # Resume from 9: range(10, 10+2) = 2 generations (10-11)
+            end_gen = start_gen + n_generations
+            self.end_gen = end_gen  # Store for eval_individual to access
+            print(f"Starting hyperparameter optimization (Gen {start_gen} to {end_gen - 1}, running {n_generations} generations)...")
+            start_opt = time.time()
+
+            # Custom optimization loop with early stopping
+            # Evaluate the entire population
+            self.current_gen = start_gen
+            self.eval_counter = 0 # Reset for initial population
+            self.total_eval_counter = 0
+
+            # Enforce bounds on initial population (just in case)
+            print("[BOUNDS] Checking initial population against hyperparameter bounds...")
+            for idx_ind, ind in enumerate(population):
+                # Skip bounds enforcement if loaded from file (Resume or Champion)
+                if idx_ind in loaded_indices:
+                    # Optional: Warn if it IS out of bounds, just for info
+                    for i, val in enumerate(ind):
+                        low = lower_bounds[i]
+                        up = upper_bounds[i]
+                        try:
+                            if not (low <= val <= up):
+                                 print(f"  [BOUNDS] INFO: Loaded individual {idx_ind} parameter '{hyper_keys[i]}' value {val} is outside bounds [{low}, {up}] (kept as is).")
+                        except TypeError:
+                            pass
+                    continue
+
                 for i, val in enumerate(ind):
                     low = lower_bounds[i]
                     up = upper_bounds[i]
-                    try:
-                        if not (low <= val <= up):
-                             print(f"  [BOUNDS] INFO: Loaded individual {idx_ind} parameter '{hyper_keys[i]}' value {val} is outside bounds [{low}, {up}] (kept as is).")
-                    except TypeError:
-                        pass
-                continue
+                    clamped = max(low, min(up, val))
+                    if clamped != val:
+                        ind[i] = clamped
 
-            for i, val in enumerate(ind):
-                low = lower_bounds[i]
-                up = upper_bounds[i]
-                clamped = max(low, min(up, val))
-                if clamped != val:
-                    ind[i] = clamped
+            # Print Candidate 0 (Champion) for verification
+            print(f"\n[VERIFY] Candidate 0 (Champion) Parameters to be evaluated:")
+            champ_verify = {}
+            for i, key in enumerate(hyper_keys):
+                champ_verify[key] = population[0][i]
+            print(json.dumps(champ_verify, indent=2))
+            print("-" * 60)
 
-        # Print Candidate 0 (Champion) for verification
-        print(f"\n[VERIFY] Candidate 0 (Champion) Parameters to be evaluated:")
-        champ_verify = {}
-        for i, key in enumerate(hyper_keys):
-            champ_verify[key] = population[0][i]
-        print(json.dumps(champ_verify, indent=2))
-        print("-" * 60)
-
-        # Only evaluate invalid individuals (resumed ones might need re-eval if we didn't save fitness)
-        # For simplicity, we re-evaluate resumed individuals to ensure fitness is consistent with current code/data.
-        # (Unless we saved fitnesses too, but re-eval is safer for "sudden shutdown" recovery where data might have changed).
-        invalid_ind = [ind for ind in population if not ind.fitness.valid]
-        fitnesses = map(toolbox.evaluate, invalid_ind)
-        for ind, fit in zip(invalid_ind, fitnesses):
-            ind.fitness.values = fit
-            
-        hof.update(population)
-        
-        # CRITICAL FIX: Initialize ALL best_*_so_far consistently from hof[0]
-        if hof and hof[0].fitness.valid:
-            self.best_fitness_so_far = hof[0].fitness.values[0]
-            # Initialize all MAE values from the same champion individual
-            self.best_val_mae_so_far = getattr(hof[0], "val_mae", None)
-            self.best_naive_mae_so_far = getattr(hof[0], "naive_mae", None)
-            self.best_test_mae_so_far = getattr(hof[0], "test_mae", None)
-            self.best_test_naive_mae_so_far = getattr(hof[0], "test_naive_mae", None)
-            self.best_train_mae_so_far = getattr(hof[0], "train_mae", None)
-            self.best_train_naive_mae_so_far = getattr(hof[0], "train_naive_mae", None)
-        self.best_at_gen_start = float(self.best_fitness_so_far)
-            
-        no_improve_counter = 0
-        self.patience_counter = 0 # Sync with local var
-        
-        # Statistics tracking
-        stats_history = []
-        
-        for gen in range(start_gen, end_gen):
-            gen_start_time = time.time()
-            self.current_gen = gen  # Current generation number (absolute)
-            self.eval_counter = 0 # Reset per generation
-            print(f"-- Generation {gen}/{end_gen - 1} --")
-
-            best_at_gen_start = float(self.best_fitness_so_far)
-            self.best_at_gen_start = best_at_gen_start
-            
-            # Select the next generation individuals
-            offspring = toolbox.select(population, len(population))
-            # Clone the selected individuals
-            offspring = list(map(toolbox.clone, offspring))
-            
-            # PRESERVE CHAMPION: In first generation after resume, ensure champion stays in position 0
-            # without any genetic operators applied, to enable exact reproducibility check
-            is_first_gen_after_resume = (gen == start_gen and start_gen > 0)
-            if is_first_gen_after_resume:
-                # Force the loaded champion into offspring[0] (it should already be there from selection)
-                # but we clone from population[0] to be absolutely sure
-                offspring[0] = toolbox.clone(population[0])
-                print(f"  [RESUME] Preserving loaded champion at offspring[0] for exact reproducibility")
-            
-            # Apply crossover and mutation on the offspring
-            # Skip position 0 in first generation after resume to preserve champion
-            start_idx = 1 if is_first_gen_after_resume else 0
-            for child1, child2 in zip(offspring[start_idx::2], offspring[start_idx+1::2]):
-                if random.random() < self.params.get("cxpb", 0.5):
-                    toolbox.mate(child1, child2)
-                    del child1.fitness.values
-                    del child2.fitness.values
-
-            for i, mutant in enumerate(offspring):
-                if i == 0 and is_first_gen_after_resume:
-                    continue  # Skip mutation for champion in first gen after resume
-                if random.random() < self.params.get("mutpb", 0.2):
-                    toolbox.mutate(mutant)
-                    del mutant.fitness.values
-            
-            # Enforce bounds on all offspring (fix for cxBlend producing out-of-bounds values)
-            for child in offspring:
-                for i, val in enumerate(child):
-                    low = lower_bounds[i]
-                    up = upper_bounds[i]
-                    child[i] = max(low, min(up, val))
-            
-            # Evaluate the individuals with an invalid fitness
-            invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+            # Only evaluate invalid individuals (resumed ones might need re-eval if we didn't save fitness)
+            # For simplicity, we re-evaluate resumed individuals to ensure fitness is consistent with current code/data.
+            # (Unless we saved fitnesses too, but re-eval is safer for "sudden shutdown" recovery where data might have changed).
+            invalid_ind = [ind for ind in population if not ind.fitness.valid]
             fitnesses = map(toolbox.evaluate, invalid_ind)
             for ind, fit in zip(invalid_ind, fitnesses):
                 ind.fitness.values = fit
-            
-            # Replace the old population by the offspring
-            population[:] = offspring
-            
-            # Update HallOfFame
+
             hof.update(population)
-            
-            # Check for improvement
-            current_best = hof[0].fitness.values[0]
-            print(f"  Best Val Loss: {current_best}")
-            
-            # CRITICAL FIX: Do NOT update best_fitness_so_far here!
-            # It's already updated correctly in lines 531-538 when evaluating each candidate.
-            # Updating it here from hof[0] causes data inconsistency because hof[0] 
-            # might be a different candidate than the one that achieved best_fitness_so_far.
-            # For early-stopping, detect improvements relative to the start of this generation.
-            if current_best < best_at_gen_start:
-                no_improve_counter = 0
-                self.patience_counter = 0
-                print(f"  New best found!")
-            else:
-                no_improve_counter += 1
-                self.patience_counter = no_improve_counter
-                print(f"  No improvement for {no_improve_counter} generations.")
-            
-            # --- Save Statistics and Champion Parameters ---
-            gen_end_time = time.time()
-            elapsed_time = gen_end_time - start_opt
-            gen_duration = gen_end_time - gen_start_time
-            
-            # Calculate average MAE for this generation
-            valid_fitnesses = [ind.fitness.values[0] for ind in population if ind.fitness.valid and ind.fitness.values[0] != float("inf")]
-            avg_mae = sum(valid_fitnesses) / len(valid_fitnesses) if valid_fitnesses else float("inf")
-            
-            # Best individual in this generation (by VALIDATION fitness = Val MAE on max horizon)
-            best_ind_gen = tools.selBest(population, 1)[0]
-            best_val_mae_gen = float(best_ind_gen.fitness.values[0]) if best_ind_gen.fitness.valid else float("inf")
-            best_naive_mae_gen = getattr(best_ind_gen, "naive_mae", None)
 
-            # Global champion so far (HallOfFame), also by FITNESS
-            champion_fitness_global = float(hof[0].fitness.values[0]) if hof and hof[0].fitness.valid else float("inf")
+            # CRITICAL FIX: Initialize ALL best_*_so_far consistently from hof[0]
+            if hof and hof[0].fitness.valid:
+                self.best_fitness_so_far = hof[0].fitness.values[0]
+                # Initialize all MAE values from the same champion individual
+                self.best_val_mae_so_far = getattr(hof[0], "val_mae", None)
+                self.best_naive_mae_so_far = getattr(hof[0], "naive_mae", None)
+                self.best_test_mae_so_far = getattr(hof[0], "test_mae", None)
+                self.best_test_naive_mae_so_far = getattr(hof[0], "test_naive_mae", None)
+                self.best_train_mae_so_far = getattr(hof[0], "train_mae", None)
+                self.best_train_naive_mae_so_far = getattr(hof[0], "train_naive_mae", None)
+            self.best_at_gen_start = float(self.best_fitness_so_far)
 
-            # FIX: ALL champion metrics must come from self.best_*_so_far to match best_fitness_so_far
-            # Using hof[0] mixes data from different candidates because HoF tracks current best, 
-            # but self.best_fitness_so_far tracks absolute best ever seen
-            champion_val_mae_global = self.best_val_mae_so_far
-            champion_naive_mae_global = self.best_naive_mae_so_far
-            champion_test_mae_global = self.best_test_mae_so_far
-            champion_test_naive_mae_global = self.best_test_naive_mae_so_far
-            champion_train_mae_global = self.best_train_mae_so_far
-            champion_train_naive_mae_global = self.best_train_naive_mae_so_far
+            no_improve_counter = 0
+            self.patience_counter = 0 # Sync with local var
 
-            stats_history.append({
-                "generation": self.current_gen,
-                "duration": gen_duration,
-                # NOTE: avg is over population FITNESS values (avg of train/val deltas from naive)
-                "avg_fitness": avg_mae,
-                # Actual validation MAE from best of generation
-                "best_validation_mae_gen": getattr(best_ind_gen, "val_mae", None) if best_ind_gen else None,
-                "best_fitness_gen": best_val_mae_gen,  # This is actually fitness, not val_mae
-                "champion_fitness_global": champion_fitness_global,
-                "champion_validation_mae_global": champion_val_mae_global,
-                "best_validation_naive_mae_gen": best_naive_mae_gen,
-                "champion_validation_naive_mae_global": champion_naive_mae_global,
-            })
-            
-            avg_time_per_epoch = sum(s["duration"] for s in stats_history) / len(stats_history)
-            total_candidates = int(self.total_eval_counter)
-            
-            stats_data = {
-                "total_time_elapsed": elapsed_time,
-                "average_time_per_epoch": avg_time_per_epoch,
-                "candidates_evaluated_so_far": total_candidates,
-                # CORRECT LABELS: Fitness vs Actual Metrics
-                "champion_fitness": float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else None,
-                "champion_validation_mae": float(self.best_val_mae_so_far) if self.best_val_mae_so_far is not None else None,
-                "champion_validation_naive_mae": champion_naive_mae_global,
-                "champion_test_mae": champion_test_mae_global,
-                "champion_test_naive_mae": champion_test_naive_mae_global,
-                "champion_train_mae": champion_train_mae_global,
-                "champion_train_naive_mae": champion_train_naive_mae_global,
-                # Per-epoch lists (correctly labeled)
-                "average_fitness_per_epoch": [s["avg_fitness"] for s in stats_history],
-                "champion_fitness_per_epoch": [s["champion_fitness_global"] for s in stats_history],
-                "champion_validation_mae_per_epoch": [s["champion_validation_mae_global"] for s in stats_history],
-                "best_fitness_per_epoch": [s["best_fitness_gen"] for s in stats_history],
-                "best_validation_mae_per_epoch": [s["best_validation_mae_gen"] for s in stats_history],
-                "history": stats_history
-            }
-            
-            # Save Statistics
-            stats_file = config.get("optimization_statistics", "optimization_stats.json")
-            try:
-                _atomic_json_dump(stats_file, stats_data)
-                print(f"  Statistics saved to {stats_file}")
-            except Exception as e:
-                print(f"  Failed to save statistics: {e}")
+            # Statistics tracking
+            stats_history = []
 
-            # REMOVED: Duplicate parameter saving that could overwrite correct champion
-            # Parameters are saved at line 543 when new champion is found during evaluation
-            # Saving again here from hof[0] can overwrite with wrong candidate if hof[0] != best_fitness_so_far
+            for gen in range(start_gen, end_gen):
+                gen_start_time = time.time()
+                self.current_gen = gen  # Current generation number (absolute)
+                self.eval_counter = 0 # Reset per generation
+                print(f"-- Generation {gen}/{end_gen - 1} --")
 
-            # --- Save Resume State ---
-            if resume_path:
-                save_resume_checkpoint(
-                    resume_path, 
-                    gen, 
-                    population,
-                    current_stage=current_meta_stage,
-                    active_parameters=hyper_keys,
-                    meta_mode=meta_mode
-                )
+                best_at_gen_start = float(self.best_fitness_so_far)
+                self.best_at_gen_start = best_at_gen_start
 
-            if no_improve_counter >= patience:
-                print(f"Early stopping triggered after {gen + 1} generations.")
-                break
+                # Select the next generation individuals
+                offspring = toolbox.select(population, len(population))
+                # Clone the selected individuals
+                offspring = list(map(toolbox.clone, offspring))
 
-            end_opt = time.time()
-            print(f"Optimization stage completed in {end_opt - start_opt:.2f} seconds.")
+                # PRESERVE CHAMPION: In first generation after resume, ensure champion stays in position 0
+                # without any genetic operators applied, to enable exact reproducibility check
+                is_first_gen_after_resume = (gen == start_gen and start_gen > 0)
+                if is_first_gen_after_resume:
+                    # Force the loaded champion into offspring[0] (it should already be there from selection)
+                    # but we clone from population[0] to be absolutely sure
+                    offspring[0] = toolbox.clone(population[0])
+                    print(f"  [RESUME] Preserving loaded champion at offspring[0] for exact reproducibility")
 
-            # --- INCREMENTAL: Check if we need to add more parameters ---
-            from .modules.incremental_logic import should_add_more_parameters, get_next_parameter_batch
-            from .modules.genome_operations import expand_population_with_new_params
-            
-            if should_add_more_parameters(hyper_keys, all_param_keys, incremental_enabled):
-                # Get next batch of parameters (meta-mode aware)
-                new_params, hyper_keys = get_next_parameter_batch(
-                    hyper_keys, 
-                    all_param_keys, 
-                    increment_size,
-                    current_stage=current_meta_stage,
-                    meta_mode=meta_mode,
-                    config=config
-                )
-                
-                # Update meta stage counter if in meta mode
-                if meta_mode:
-                    current_meta_stage += 1
-                
-                print(f"\n[INCREMENTAL] Stage {incremental_stage} complete!")
-                print(f"[INCREMENTAL] Adding {len(new_params)} new parameters: {new_params}")
-                print(f"[INCREMENTAL] Total active parameters now: {len(hyper_keys)}")
-                
-                # Expand entire population with new parameters
-                expanded_count = expand_population_with_new_params(population, new_params, full_bounds, config)
-                print(f"[INCREMENTAL] Expanded {expanded_count} individuals in population")
-                
-                # Update bounds and param_types for expanded genome
-                bounds = {k: full_bounds[k] for k in hyper_keys}
-                lower_bounds = [full_bounds[k][0] for k in hyper_keys]
-                upper_bounds = [full_bounds[k][1] for k in hyper_keys]
-                param_types = {}
-                for key in hyper_keys:
-                    low, up = full_bounds[key]
-                    param_types[key] = 'int' if isinstance(low, int) and isinstance(up, int) else 'float'
-                
-                # Reset optimization tracking for next stage
-                self.best_fitness_so_far = float("inf")
-                self.best_val_mae_so_far = None
-                self.best_naive_mae_so_far = None
-                self.best_test_mae_so_far = None
-                self.best_test_naive_mae_so_far = None
-                self.best_train_mae_so_far = None
-                self.best_train_naive_mae_so_far = None
-                self.patience_counter = 0
-                self.best_at_gen_start = float("inf")
-                
-                incremental_stage += 1
-                print(f"[INCREMENTAL] Starting stage {incremental_stage}...\n")
-                # Continue to next optimization stage
-                continue
-            else:
-                # All parameters optimized
-                if incremental_enabled:
-                    print(f"\n[INCREMENTAL] All {len(all_param_keys)} parameters optimized!")
-                break
+                # Apply crossover and mutation on the offspring
+                # Skip position 0 in first generation after resume to preserve champion
+                start_idx = 1 if is_first_gen_after_resume else 0
+                for child1, child2 in zip(offspring[start_idx::2], offspring[start_idx+1::2]):
+                    if random.random() < self.params.get("cxpb", 0.5):
+                        toolbox.mate(child1, child2)
+                        del child1.fitness.values
+                        del child2.fitness.values
+
+                for i, mutant in enumerate(offspring):
+                    if i == 0 and is_first_gen_after_resume:
+                        continue  # Skip mutation for champion in first gen after resume
+                    if random.random() < self.params.get("mutpb", 0.2):
+                        toolbox.mutate(mutant)
+                        del mutant.fitness.values
+
+                # Enforce bounds on all offspring (fix for cxBlend producing out-of-bounds values)
+                for child in offspring:
+                    for i, val in enumerate(child):
+                        low = lower_bounds[i]
+                        up = upper_bounds[i]
+                        child[i] = max(low, min(up, val))
+
+                # Evaluate the individuals with an invalid fitness
+                invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+                fitnesses = map(toolbox.evaluate, invalid_ind)
+                for ind, fit in zip(invalid_ind, fitnesses):
+                    ind.fitness.values = fit
+
+                # Replace the old population by the offspring
+                population[:] = offspring
+
+                # Update HallOfFame
+                hof.update(population)
+
+                # Check for improvement
+                current_best = hof[0].fitness.values[0]
+                print(f"  Best Val Loss: {current_best}")
+
+                # CRITICAL FIX: Do NOT update best_fitness_so_far here!
+                # It's already updated correctly in lines 531-538 when evaluating each candidate.
+                # Updating it here from hof[0] causes data inconsistency because hof[0] 
+                # might be a different candidate than the one that achieved best_fitness_so_far.
+                # For early-stopping, detect improvements relative to the start of this generation.
+                if current_best < best_at_gen_start:
+                    no_improve_counter = 0
+                    self.patience_counter = 0
+                    print(f"  New best found!")
+                else:
+                    no_improve_counter += 1
+                    self.patience_counter = no_improve_counter
+                    print(f"  No improvement for {no_improve_counter} generations.")
+
+                # --- Save Statistics and Champion Parameters ---
+                gen_end_time = time.time()
+                elapsed_time = gen_end_time - start_opt
+                gen_duration = gen_end_time - gen_start_time
+
+                # Calculate average MAE for this generation
+                valid_fitnesses = [ind.fitness.values[0] for ind in population if ind.fitness.valid and ind.fitness.values[0] != float("inf")]
+                avg_mae = sum(valid_fitnesses) / len(valid_fitnesses) if valid_fitnesses else float("inf")
+
+                # Best individual in this generation (by VALIDATION fitness = Val MAE on max horizon)
+                best_ind_gen = tools.selBest(population, 1)[0]
+                best_val_mae_gen = float(best_ind_gen.fitness.values[0]) if best_ind_gen.fitness.valid else float("inf")
+                best_naive_mae_gen = getattr(best_ind_gen, "naive_mae", None)
+
+                # Global champion so far (HallOfFame), also by FITNESS
+                champion_fitness_global = float(hof[0].fitness.values[0]) if hof and hof[0].fitness.valid else float("inf")
+
+                # FIX: ALL champion metrics must come from self.best_*_so_far to match best_fitness_so_far
+                # Using hof[0] mixes data from different candidates because HoF tracks current best, 
+                # but self.best_fitness_so_far tracks absolute best ever seen
+                champion_val_mae_global = self.best_val_mae_so_far
+                champion_naive_mae_global = self.best_naive_mae_so_far
+                champion_test_mae_global = self.best_test_mae_so_far
+                champion_test_naive_mae_global = self.best_test_naive_mae_so_far
+                champion_train_mae_global = self.best_train_mae_so_far
+                champion_train_naive_mae_global = self.best_train_naive_mae_so_far
+
+                stats_history.append({
+                    "generation": self.current_gen,
+                    "duration": gen_duration,
+                    # NOTE: avg is over population FITNESS values (avg of train/val deltas from naive)
+                    "avg_fitness": avg_mae,
+                    # Actual validation MAE from best of generation
+                    "best_validation_mae_gen": getattr(best_ind_gen, "val_mae", None) if best_ind_gen else None,
+                    "best_fitness_gen": best_val_mae_gen,  # This is actually fitness, not val_mae
+                    "champion_fitness_global": champion_fitness_global,
+                    "champion_validation_mae_global": champion_val_mae_global,
+                    "best_validation_naive_mae_gen": best_naive_mae_gen,
+                    "champion_validation_naive_mae_global": champion_naive_mae_global,
+                })
+
+                avg_time_per_epoch = sum(s["duration"] for s in stats_history) / len(stats_history)
+                total_candidates = int(self.total_eval_counter)
+
+                stats_data = {
+                    "total_time_elapsed": elapsed_time,
+                    "average_time_per_epoch": avg_time_per_epoch,
+                    "candidates_evaluated_so_far": total_candidates,
+                    # CORRECT LABELS: Fitness vs Actual Metrics
+                    "champion_fitness": float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else None,
+                    "champion_validation_mae": float(self.best_val_mae_so_far) if self.best_val_mae_so_far is not None else None,
+                    "champion_validation_naive_mae": champion_naive_mae_global,
+                    "champion_test_mae": champion_test_mae_global,
+                    "champion_test_naive_mae": champion_test_naive_mae_global,
+                    "champion_train_mae": champion_train_mae_global,
+                    "champion_train_naive_mae": champion_train_naive_mae_global,
+                    # Per-epoch lists (correctly labeled)
+                    "average_fitness_per_epoch": [s["avg_fitness"] for s in stats_history],
+                    "champion_fitness_per_epoch": [s["champion_fitness_global"] for s in stats_history],
+                    "champion_validation_mae_per_epoch": [s["champion_validation_mae_global"] for s in stats_history],
+                    "best_fitness_per_epoch": [s["best_fitness_gen"] for s in stats_history],
+                    "best_validation_mae_per_epoch": [s["best_validation_mae_gen"] for s in stats_history],
+                    "history": stats_history
+                }
+
+                # Save Statistics
+                stats_file = config.get("optimization_statistics", "optimization_stats.json")
+                try:
+                    _atomic_json_dump(stats_file, stats_data)
+                    print(f"  Statistics saved to {stats_file}")
+                except Exception as e:
+                    print(f"  Failed to save statistics: {e}")
+
+                # REMOVED: Duplicate parameter saving that could overwrite correct champion
+                # Parameters are saved at line 543 when new champion is found during evaluation
+                # Saving again here from hof[0] can overwrite with wrong candidate if hof[0] != best_fitness_so_far
+
+                # --- Save Resume State ---
+                if resume_path:
+                    save_resume_checkpoint(
+                        resume_path, 
+                        gen, 
+                        population,
+                        current_stage=current_meta_stage,
+                        active_parameters=hyper_keys,
+                        meta_mode=meta_mode
+                    )
+
+                if no_improve_counter >= patience:
+                    print(f"Early stopping triggered after {gen + 1} generations.")
+                    break
+
+                end_opt = time.time()
+                print(f"Optimization stage completed in {end_opt - start_opt:.2f} seconds.")
+
+                # --- INCREMENTAL: Check if we need to add more parameters ---
+                from .modules.incremental_logic import should_add_more_parameters, get_next_parameter_batch
+                from .modules.genome_operations import expand_population_with_new_params
+
+                if should_add_more_parameters(hyper_keys, all_param_keys, incremental_enabled):
+                    # Get next batch of parameters (meta-mode aware)
+                    new_params, hyper_keys = get_next_parameter_batch(
+                        hyper_keys, 
+                        all_param_keys, 
+                        increment_size,
+                        current_stage=current_meta_stage,
+                        meta_mode=meta_mode,
+                        config=config
+                    )
+
+                    # Update meta stage counter if in meta mode
+                    if meta_mode:
+                        current_meta_stage += 1
+
+                    print(f"\n[INCREMENTAL] Stage {incremental_stage} complete!")
+                    print(f"[INCREMENTAL] Adding {len(new_params)} new parameters: {new_params}")
+                    print(f"[INCREMENTAL] Total active parameters now: {len(hyper_keys)}")
+
+                    # Expand entire population with new parameters
+                    expanded_count = expand_population_with_new_params(population, new_params, full_bounds, config)
+                    print(f"[INCREMENTAL] Expanded {expanded_count} individuals in population")
+
+                    # Update bounds and param_types for expanded genome
+                    bounds = {k: full_bounds[k] for k in hyper_keys}
+                    lower_bounds = [full_bounds[k][0] for k in hyper_keys]
+                    upper_bounds = [full_bounds[k][1] for k in hyper_keys]
+                    param_types = {}
+                    for key in hyper_keys:
+                        low, up = full_bounds[key]
+                        param_types[key] = 'int' if isinstance(low, int) and isinstance(up, int) else 'float'
+
+                    # Reset optimization tracking for next stage
+                    self.best_fitness_so_far = float("inf")
+                    self.best_val_mae_so_far = None
+                    self.best_naive_mae_so_far = None
+                    self.best_test_mae_so_far = None
+                    self.best_test_naive_mae_so_far = None
+                    self.best_train_mae_so_far = None
+                    self.best_train_naive_mae_so_far = None
+                    self.patience_counter = 0
+                    self.best_at_gen_start = float("inf")
+
+                    incremental_stage += 1
+                    print(f"[INCREMENTAL] Starting stage {incremental_stage}...\n")
+                    # Continue to next optimization stage
+                    continue
+                else:
+                    # All parameters optimized
+                    if incremental_enabled:
+                        print(f"\n[INCREMENTAL] All {len(all_param_keys)} parameters optimized!")
+                    break
 
         # Seleccionar el mejor individuo (outside while loop)
         best_ind = hof[0]
