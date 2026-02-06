@@ -133,14 +133,15 @@ class Plugin:
         # --- INCREMENTAL OPTIMIZATION SETUP ---
         incremental_enabled, increment_size, all_param_keys, hyper_keys, total_stages, meta_mode = setup_incremental_optimization(full_bounds, config)
         
+        # Initialize stage tracking variables (used for progress display)
+        incremental_stage = 1
+        current_meta_stage = 1 if meta_mode else None
+        
         # Initialize meta-training log if meta mode is enabled
         if meta_mode:
             meta_log_path = get_meta_log_path(config)
             initialize_meta_log(meta_log_path, config)
             print(f"[META-OPTIMIZATION] Initialized meta-training log at: {meta_log_path}")
-            current_meta_stage = 1
-        else:
-            current_meta_stage = None
         
         bounds = {k: full_bounds[k] for k in hyper_keys}
         
@@ -1122,8 +1123,9 @@ class Plugin:
         
         # --- INCREMENTAL OPTIMIZATION OUTER LOOP ---
         # This wraps the entire GA optimization to progressively add parameters
-        incremental_stage = 1
-        total_stages = (len(all_param_keys) + increment_size - 1) // increment_size if incremental_enabled else 1
+        # Note: incremental_stage and current_meta_stage already initialized above
+        if not incremental_enabled and not meta_mode:
+            total_stages = 1  # Single stage for standard optimization
         
         while True:
             print(f"\n{'='*80}")
@@ -1131,6 +1133,9 @@ class Plugin:
                 print(f"[INCREMENTAL] STAGE {incremental_stage}/{total_stages}")
                 print(f"[INCREMENTAL] Optimizing parameters: {hyper_keys}")
             print(f"{'='*80}\n")
+            
+            print(f"[DEBUG] Creating population of size {population_size} with {len(hyper_keys)} parameters...")
+            print(f"[DEBUG] Parameters: {hyper_keys}")
             
             # Update bounds and param_types for current stage
             bounds = {k: full_bounds[k] for k in hyper_keys}
