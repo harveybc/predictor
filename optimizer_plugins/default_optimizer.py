@@ -38,6 +38,18 @@ from app.plugin_loader import load_plugin
 
 from predictor_plugins.common.callbacks import capture_resource_snapshot
 
+# Reverse mapping: GA encodes activation as int [0..7], model needs string.
+ACTIVATION_INDEX_TO_NAME = [
+    "relu",         # 0
+    "elu",          # 1
+    "selu",         # 2
+    "tanh",         # 3
+    "sigmoid",      # 4
+    "swish",        # 5
+    "gelu",         # 6
+    "leaky_relu",   # 7
+]
+
 
 def _repo_root() -> Path:
     # default_optimizer.py -> optimizer_plugins/ -> <repo_root>
