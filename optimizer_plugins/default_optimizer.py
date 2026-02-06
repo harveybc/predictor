@@ -1015,13 +1015,33 @@ class Plugin:
 
             _append_resource_row("candidate_end", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
             
-            # Print optimization state
-            print("Optimization State (GA early stopping):")
-            print(f"  Optimization patience: {patience}")
-            print(f"  No-improve generations: {self.patience_counter}/{patience}")
+            # Print optimization progress and state (ALWAYS, not just meta-mode)
+            print("\n" + "="*80)
+            print(f"OPTIMIZATION PROGRESS")
+            print("="*80)
+            if incremental_enabled or meta_mode:
+                if meta_mode and current_meta_stage:
+                    stage_name, stage_desc = "", ""
+                    try:
+                        from .modules.meta_stages import get_stage_info, get_total_stages
+                        stage_name, stage_desc = get_stage_info(current_meta_stage, config)
+                        total_meta_stages = get_total_stages(config)
+                        print(f"Meta-Optimization Stage: {current_meta_stage}/{total_meta_stages} - {stage_name}")
+                        print(f"  Description: {stage_desc}")
+                    except Exception:
+                        print(f"Stage: {current_meta_stage}")
+                else:
+                    print(f"Incremental Stage: {incremental_stage}/{total_stages}")
+                print(f"Active Parameters ({len(hyper_keys)}): {', '.join(hyper_keys)}")
+            print(f"Generation: {self.current_gen}/{self.end_gen - 1}")
+            print(f"Candidate: {self.eval_counter}/{population_size}")
+            print(f"Total Evaluations: {self.total_eval_counter}")
+            print(f"\nGA Early Stopping:")
+            print(f"  Patience: {patience} generations")
+            print(f"  No-improve counter: {self.patience_counter}/{patience}")
             print(f"  Gen-start FITNESS to beat: {float(self.best_at_gen_start):.6f}")
             print(f"  Global champion FITNESS: {float(self.best_fitness_so_far):.6f}")
-            print(f"------------------------------------------------------------")
+            print("="*80 + "\n")
             
             # Store naive_mae in individual for stats later (hacky but effective)
             individual.naive_mae = naive_mae

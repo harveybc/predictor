@@ -33,11 +33,15 @@ def load_resume_checkpoint(resume_path, population, hyper_keys, full_bounds, inc
         with open(resume_path, 'r') as f:
             resume_data = json.load(f)
         
+        print(f"[RESUME] Successfully loaded JSON from resume file")
+        
         saved_pop = resume_data.get("population", [])
         start_gen = resume_data.get("generation", -1) + 1
         saved_active_params = resume_data.get("active_parameters", [])
         resumed_stage = resume_data.get("current_stage", 1)
         saved_meta_mode = resume_data.get("meta_mode", False)
+        
+        print(f"[RESUME] Resume data: generation={start_gen-1}, population_size={len(saved_pop)}, stage={resumed_stage}, meta_mode={saved_meta_mode}")
         
         if not saved_pop:
             print(f"[RESUME] WARN: Resume file found but contained no population data.")
@@ -127,6 +131,9 @@ def load_resume_checkpoint(resume_path, population, hyper_keys, full_bounds, inc
         
     except Exception as e:
         print(f"[RESUME] ERROR: Failed to load resume file: {e}")
+        import traceback
+        traceback.print_exc()
+        print(f"[RESUME] Continuing with fresh population")
     
     return start_gen, loaded_count, loaded_indices, actual_genome_size, resumed_stage, resumed_params
 
