@@ -1136,13 +1136,22 @@ class Plugin:
 
         # 1. Try to load full population state ONLY if resume is explicitly enabled
         if resume_enabled and resume_path and os.path.exists(resume_path):
-            start_gen, loaded_count, loaded_indices, actual_genome_size = load_resume_checkpoint(
-                resume_path, population, hyper_keys, full_bounds, incremental_enabled
+            start_gen, loaded_count, loaded_indices, actual_genome_size, resumed_stage, resumed_params = load_resume_checkpoint(
+                resume_path, population, hyper_keys, full_bounds, incremental_enabled, config
             )
+            
+            # Restore stage if meta-mode
+            if meta_mode and resumed_stage:
+                current_meta_stage = resumed_stage
+                print(f"[RESUME] Restored meta-mode stage {current_meta_stage}")
             
             # Adjust hyper_keys if resume loaded smaller genome and incremental is enabled
             if loaded_count > 0:
-                hyper_keys = adjust_params_for_resume(hyper_keys, all_param_keys, actual_genome_size, incremental_enabled)
+                if resumed_params and len(resumed_params) < len(hyper_keys):
+                    print(f"[RESUME] Using resumed parameters ({len(resumed_params)}), will add new ones incrementally")
+                    hyper_keys = resumed_params
+                else:
+                    hyper_keys = adjust_params_for_resume(hyper_keys, all_param_keys, actual_genome_size, incremental_enabled)
                 
                 # Update bounds and param_types to match adjusted hyper_keys
                 bounds = {k: full_bounds[k] for k in hyper_keys}
@@ -1404,7 +1413,14 @@ class Plugin:
 
             # --- Save Resume State ---
             if resume_path:
-                save_resume_checkpoint(resume_path, gen, population)
+                save_resume_checkpoint(
+                    resume_path, 
+                    gen, 
+                    population,
+                    current_stage=current_meta_stage,
+                    active_parameters=hyper_keys,
+                    meta_mode=meta_mode
+                )
 
             if no_improve_counter >= patience:
                 print(f"Early stopping triggered after {gen + 1} generations.")
@@ -1424,7 +1440,8 @@ class Plugin:
                     all_param_keys, 
                     increment_size,
                     current_stage=current_meta_stage,
-                    meta_mode=meta_mode
+                    meta_mode=meta_mode,
+                    config=config
                 )
                 
                 # Update meta stage counter if in meta mode

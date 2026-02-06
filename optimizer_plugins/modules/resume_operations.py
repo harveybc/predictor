@@ -3,24 +3,28 @@ import json
 import os
 
 
-def load_resume_checkpoint(resume_path, population, hyper_keys, full_bounds, incremental_enabled):
+def load_resume_checkpoint(resume_path, population, hyper_keys, full_bounds, incremental_enabled, config=None):
     """
-    Load population state from resume checkpoint.
+    Load population state from resume checkpoint with stage awareness.
     
     Args:
         resume_path: Path to resume JSON file
         population: DEAP population to load into
-        hyper_keys: Current list of active parameter names
+        hyper_keys: Current list of active parameter names from config
         full_bounds: Dict of all parameter bounds
         incremental_enabled: Whether incremental optimization is active
+        config: Configuration dict (for detecting new parameters)
     
     Returns:
-        (start_gen: int, loaded_count: int, loaded_indices: set, actual_genome_size: int)
+        (start_gen: int, loaded_count: int, loaded_indices: set, actual_genome_size: int,
+         resumed_stage: int, resumed_params: list)
     """
     loaded_indices = set()
     start_gen = 0
     loaded_count = 0
     actual_genome_size = len(hyper_keys)
+    resumed_stage = 1
+    resumed_params = hyper_keys.copy()
     
     try:
         print(f"\n[RESUME] Found resume file at: {resume_path}")
@@ -31,16 +35,33 @@ def load_resume_checkpoint(resume_path, population, hyper_keys, full_bounds, inc
         
         saved_pop = resume_data.get("population", [])
         start_gen = resume_data.get("generation", -1) + 1
+        saved_active_params = resume_data.get("active_parameters", [])
+        resumed_stage = resume_data.get("current_stage", 1)
+        saved_meta_mode = resume_data.get("meta_mode", False)
         
         if not saved_pop:
             print(f"[RESUME] WARN: Resume file found but contained no population data.")
-            return start_gen, 0, loaded_indices, actual_genome_size
+            return start_gen, 0, loaded_indices, actual_genome_size, resumed_stage, resumed_params
         
         # Detect genome size from saved population
         saved_genome_size = len(saved_pop[0]) if saved_pop else 0
         actual_genome_size = saved_genome_size
         
         print(f"[RESUME] Saved genome size: {saved_genome_size}, Current config expects: {len(hyper_keys)}")
+        print(f"[RESUME] Saved stage: {resumed_stage}, Meta-mode: {saved_meta_mode}")
+        print(f"[RESUME] Saved active parameters: {saved_active_params}")
+        
+        # Detect NEW parameters in config that weren't in resume
+        if saved_active_params:
+            new_params_in_config = [p for p in hyper_keys if p not in saved_active_params]
+            if new_params_in_config:
+                print(f"[RESUME] Config has {len(new_params_in_config)} NEW parameters not in resume:")
+                print(f"[RESUME]   New parameters: {new_params_in_config}")
+                if incremental_enabled:
+                    print(f"[RESUME] Will add new parameters incrementally starting from stage {resumed_stage}")
+                    # Use saved parameters initially, will add new ones per-stage
+                    resumed_params = saved_active_params
+                    actual_genome_size = len(saved_active_params)
         
         # Load individuals
         invalid_count = 0
@@ -107,7 +128,7 @@ def load_resume_checkpoint(resume_path, population, hyper_keys, full_bounds, inc
     except Exception as e:
         print(f"[RESUME] ERROR: Failed to load resume file: {e}")
     
-    return start_gen, loaded_count, loaded_indices, actual_genome_size
+    return start_gen, loaded_count, loaded_indices, actual_genome_size, resumed_stage, resumed_params
 
 
 def load_champion_parameters(params_path, hyper_keys, full_bounds):
@@ -152,12 +173,26 @@ def load_champion_parameters(params_path, hyper_keys, full_bounds):
         return None
 
 
-def save_resume_checkpoint(resume_path, generation, population):
-    """Save current population state to resume file."""
+def save_resume_checkpoint(resume_path, generation, population, current_stage=None, active_parameters=None, meta_mode=False):
+    """
+    Save current population state to resume file with stage tracking.
+    
+    Args:
+        resume_path: Path to save resume JSON
+        generation: Current generation number
+        population: DEAP population
+        current_stage: Current stage number (for incremental/meta mode)
+        active_parameters: List of currently active parameter names
+        meta_mode: Whether in meta-optimization mode
+    """
     try:
         resume_payload = {
             "generation": generation,
-            "population": [list(ind) for ind in population]
+            "population": [list(ind) for ind in population],
+            "genome_size": len(population[0]) if population else 0,
+            "active_parameters": active_parameters if active_parameters else [],
+            "current_stage": current_stage if current_stage is not None else 1,
+            "meta_mode": meta_mode
         }
         
         # Atomic save
@@ -167,5 +202,7 @@ def save_resume_checkpoint(resume_path, generation, population):
         os.replace(temp_path, resume_path)
         
         print(f"  Resume state saved to {resume_path}")
+        if meta_mode and current_stage:
+            print(f"  Meta-mode stage {current_stage} with {len(active_parameters)} active parameters")
     except Exception as e:
         print(f"  Failed to save resume state: {e}")

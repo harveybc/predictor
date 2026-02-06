@@ -27,16 +27,16 @@ def setup_incremental_optimization(full_bounds, config):
     meta_mode = config.get("optimization_meta_mode", False)
     
     if meta_mode:
-        # META-OPTIMIZATION MODE: Use predefined 8 stages
-        print(f"\n[META-OPTIMIZATION] Hierarchical 8-stage parameter deployment enabled")
+        # META-OPTIMIZATION MODE: Use config-defined stages
+        print(f"\n[META-OPTIMIZATION] Hierarchical staged parameter deployment enabled")
         all_params = list(full_bounds.keys())
         
-        # Stage 1: Base Architecture
-        initial_params = get_active_parameters_for_stage(1)
-        total_stages = get_total_stages()
+        # Stage 1: Get initial parameters from config
+        initial_params = get_active_parameters_for_stage(1, config)
+        total_stages = get_total_stages(config)
         increment_size = 0  # Not used in meta mode
         
-        stage_name, stage_desc = get_stage_info(1)
+        stage_name, stage_desc = get_stage_info(1, config)
         print(f"[META-OPTIMIZATION] Stage 1/{total_stages}: {stage_name}")
         print(f"[META-OPTIMIZATION] Description: {stage_desc}")
         print(f"[META-OPTIMIZATION] Starting parameters: {initial_params}")
@@ -84,7 +84,7 @@ def should_add_more_parameters(current_params, all_params, incremental_enabled):
     return len(current_params) < len(all_params)
 
 
-def get_next_parameter_batch(current_params, all_params, increment_size, current_stage=None, meta_mode=False):
+def get_next_parameter_batch(current_params, all_params, increment_size, current_stage=None, meta_mode=False, config=None):
     """
     Get the next batch of parameters to add.
     
@@ -94,18 +94,22 @@ def get_next_parameter_batch(current_params, all_params, increment_size, current
         increment_size: Number of parameters to add per stage (standard mode)
         current_stage: Current stage number (meta mode)
         meta_mode: Whether using meta-optimization mode
+        config: Configuration dict (required for meta mode)
     
     Returns:
         (new_params: list, updated_params: list): New params to add and full updated list
     """
     if meta_mode and current_stage is not None:
         # META MODE: Get parameters for next stage
-        next_stage = current_stage + 1
-        new_params = get_new_parameters_in_stage(next_stage)
-        updated_params = get_active_parameters_for_stage(next_stage)
+        if config is None:
+            raise ValueError("get_next_parameter_batch in meta_mode requires config parameter")
         
-        stage_name, stage_desc = get_stage_info(next_stage)
-        print(f"[META-OPTIMIZATION] Advancing to Stage {next_stage}/{get_total_stages()}: {stage_name}")
+        next_stage = current_stage + 1
+        new_params = get_new_parameters_in_stage(next_stage, config)
+        updated_params = get_active_parameters_for_stage(next_stage, config)
+        
+        stage_name, stage_desc = get_stage_info(next_stage, config)
+        print(f"[META-OPTIMIZATION] Advancing to Stage {next_stage}/{get_total_stages(config)}: {stage_name}")
         print(f"[META-OPTIMIZATION] Description: {stage_desc}")
         print(f"[META-OPTIMIZATION] Adding parameters: {new_params}")
         
