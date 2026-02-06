@@ -64,7 +64,7 @@
             "stage": 5,
             "name": "Bayesian Uncertainty",
             "description": "Uncertainty quantification parameters",
-            "parameters": ["kl_weight", "kl_anneal_epochs", "mc_samples"]
+            "parameters": ["kl_weight", "kl_anneal_epochs"]
         }
     ],
     "deterministic_training": true,
@@ -88,8 +88,7 @@
         "min_delta": [1e-10, 1e-6],
         "early_patience": [10, 100],
         "kl_weight": [1e-5, 1e-1],
-        "kl_anneal_epochs": [5, 50],
-        "mc_samples": [10, 100]
+        "kl_anneal_epochs": [5, 50]
     },
     "window_size": 79,
     "encoder_lstm_units": 10,
