@@ -406,7 +406,20 @@ class Plugin:
                 else:
                     hyper_dict[key] = value
 
-            print(f"\n--- Evaluating Candidate {self.eval_counter}/{population_size} (Gen {self.current_gen}/{self.end_gen - 1}) ---")
+            # Build stage context string for display
+            if meta_mode and current_meta_stage:
+                try:
+                    from .modules.meta_stages import get_stage_info, get_total_stages
+                    _stage_name, _ = get_stage_info(current_meta_stage, config)
+                    _stage_ctx = f"Stage {current_meta_stage}/{get_total_stages(config)} [{_stage_name}] | "
+                except Exception:
+                    _stage_ctx = f"Stage {current_meta_stage} | "
+            elif incremental_enabled:
+                _stage_ctx = f"Stage {incremental_stage}/{total_stages} | "
+            else:
+                _stage_ctx = ""
+
+            print(f"\n--- Evaluating Candidate {self.eval_counter}/{population_size} | {_stage_ctx}Gen {self.current_gen}/{self.end_gen - 1} | Params: {len(hyper_keys)} | Total Evals: {self.total_eval_counter} ---")
             print(f"Params: {hyper_dict}")
 
             # Combinar los hiperparámetros con la configuración actual.
@@ -589,13 +602,28 @@ class Plugin:
                         extra={"fitness": fitness, "naive_mae": naive_mae},
                     )
                     _append_resource_row("candidate_end", gen=int(self.current_gen or 0), cand=int(self.eval_counter))
-                    # FIX: Added detailed metrics printing for Champion tracking
+                    # Build stage context for result display
+                    if meta_mode and current_meta_stage:
+                        try:
+                            from .modules.meta_stages import get_stage_info, get_total_stages
+                            _rs_name, _rs_desc = get_stage_info(current_meta_stage, config)
+                            _rs_ctx = f"Stage {current_meta_stage}/{get_total_stages(config)} [{_rs_name}]"
+                        except Exception:
+                            _rs_ctx = f"Stage {current_meta_stage}"
+                    elif incremental_enabled:
+                        _rs_ctx = f"Stage {incremental_stage}/{total_stages}"
+                    else:
+                        _rs_ctx = "Standard"
+
+                    print(f"\n{'='*80}")
+                    print(f"CANDIDATE RESULT | {_rs_ctx} | Gen {self.current_gen}/{self.end_gen - 1} | Candidate {self.eval_counter}/{population_size} | Total Evals: {self.total_eval_counter}")
+                    print(f"Active Parameters ({len(hyper_keys)}): {', '.join(hyper_keys)}")
+                    print(f"{'-'*80}")
                     print(
-                        "Candidate Result -> "
-                        f"TRAINING MAE maxH: {train_mae:.6f} | TRAINING Naive MAE maxH: {train_naive_mae:.6f} || "
-                        f"VALIDATION MAE maxH: {val_mae:.6f} | VALIDATION Naive MAE maxH: {naive_mae:.6f} || "
-                        f"TEST MAE maxH: {test_mae:.6f} | TEST Naive MAE maxH: {test_naive_mae:.6f} || "
-                        f"FITNESS (avg delta from naive): {fitness:.6f} | (isolated subprocess)"
+                        f"  TRAINING   -> MAE maxH: {train_mae:.6f} | Naive MAE maxH: {train_naive_mae:.6f}\n"
+                        f"  VALIDATION -> MAE maxH: {val_mae:.6f} | Naive MAE maxH: {naive_mae:.6f}\n"
+                        f"  TEST       -> MAE maxH: {test_mae:.6f} | Naive MAE maxH: {test_naive_mae:.6f}\n"
+                        f"  FITNESS (avg delta from naive): {fitness:.6f}"
                     )
                     champion_fitness = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
                     champion_val_mae = (
@@ -628,20 +656,17 @@ class Plugin:
                         if self.best_train_naive_mae_so_far is not None and np.isfinite(self.best_train_naive_mae_so_far)
                         else float("inf")
                     )
+                    print(f"{'-'*80}")
+                    print(f"CHAMPION SO FAR{' | *** NEW CHAMPION ***' if is_new_champion else ''}")
                     print(
-                        "Champion so far -> "
-                        f"TRAINING MAE maxH: {champion_train_mae:.6f} | TRAINING Naive MAE maxH: {champion_train_naive:.6f} || "
-                        f"VALIDATION MAE maxH: {champion_val_mae:.6f} | VALIDATION Naive MAE maxH: {champion_naive:.6f} || "
-                        f"TEST MAE maxH: {champion_test_mae:.6f} | TEST Naive MAE maxH: {champion_test_naive:.6f} || "
-                        f"FITNESS: {champion_fitness:.6f}"
-                        + (" | NEW CHAMPION" if is_new_champion else "")
+                        f"  TRAINING   -> MAE maxH: {champion_train_mae:.6f} | Naive MAE maxH: {champion_train_naive:.6f}\n"
+                        f"  VALIDATION -> MAE maxH: {champion_val_mae:.6f} | Naive MAE maxH: {champion_naive:.6f}\n"
+                        f"  TEST       -> MAE maxH: {champion_test_mae:.6f} | Naive MAE maxH: {champion_test_naive:.6f}\n"
+                        f"  FITNESS: {champion_fitness:.6f}"
                     )
-                    print("Optimization State (GA early stopping):")
-                    print(f"  Optimization patience: {patience}")
-                    print(f"  No-improve generations: {self.patience_counter}/{patience}")
-                    print(f"  Gen-start FITNESS to beat: {float(self.best_at_gen_start):.6f}")
-                    print(f"  Global champion FITNESS: {float(self.best_fitness_so_far):.6f}")
-                    print(f"------------------------------------------------------------")
+                    print(f"{'-'*80}")
+                    print(f"GA EARLY STOPPING: No-improve {self.patience_counter}/{patience} | Gen-start fitness to beat: {float(self.best_at_gen_start):.6f} | Global best: {float(self.best_fitness_so_far):.6f}")
+                    print(f"{'='*80}")
                     return (fitness,)
 
             # Tag epoch-level resource logs so we can correlate with GA generation/candidate.
