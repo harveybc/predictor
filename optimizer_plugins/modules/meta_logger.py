@@ -54,12 +54,13 @@ def _encode_categorical(param_name, value):
         return value
 
 
-def initialize_meta_log(log_path, overwrite=False):
+def initialize_meta_log(log_path, config, overwrite=False):
     """
     Initialize the meta_training_data.csv file with headers.
     
     Args:
         log_path: Path to CSV file
+        config: Configuration dict with optimization_stages
         overwrite: If True, creates new file even if exists
         
     Returns:
@@ -72,8 +73,8 @@ def initialize_meta_log(log_path, overwrite=False):
     if os.path.exists(log_path) and not overwrite:
         return True
     
-    # Get all 27 parameters in order
-    input_params = get_all_meta_parameters()
+    # Get all parameters from config stages (dynamic count)
+    input_params = get_all_meta_parameters(config)
     
     # Define output metrics (targets for Level 3)
     output_metrics = [
@@ -113,20 +114,21 @@ def initialize_meta_log(log_path, overwrite=False):
     return True
 
 
-def log_candidate_evaluation(log_path, params_dict, metrics_dict, stage, generation, candidate_id):
+def log_candidate_evaluation(log_path, params_dict, metrics_dict, stage, generation, candidate_id, config):
     """
     Log a single candidate evaluation to the meta-training CSV.
     
     Args:
         log_path: Path to CSV file
-        params_dict: Dictionary with all 27 parameter values
+        params_dict: Dictionary with all parameter values
         metrics_dict: Dictionary with training/val/test metrics
-        stage: Current meta-optimization stage (1-8)
+        stage: Current meta-optimization stage
         generation: Current generation number
         candidate_id: Unique candidate identifier
+        config: Configuration dict with optimization_stages
     """
-    # Get ordered parameter list
-    input_params = get_all_meta_parameters()
+    # Get ordered parameter list from config
+    input_params = get_all_meta_parameters(config)
     
     # Extract and encode input values
     input_values = []
