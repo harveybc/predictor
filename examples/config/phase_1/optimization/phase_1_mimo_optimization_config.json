@@ -28,7 +28,7 @@
     "plugin": "mimo",
     "memory_log_file": "examples/results/phase_1/phase_1_mimo_4h_rss.csv",
     "use_optimizer": true,
-    "optimization_resume": true,
+    "optimization_resume": false,
     "optimization_resume_file": "examples/results/phase_1/phase_1_mimo_4h_optimization_resume.json",
     "optimization_pause_on_resume": true,
     "optimization_incremental": true,
