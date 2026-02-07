@@ -74,8 +74,8 @@
     "optimization_patience": 4,
     "hyperparameter_bounds": {
         "encoder_conv_layers": [1, 3],
-        "encoder_base_filters": [32, 256],
-        "encoder_lstm_units": [16, 128],
+        "encoder_base_filters": [32, 128],
+        "encoder_lstm_units": [16, 64],
         "positional_encoding": [0, 1],
         "horizon_attn_heads": [1, 8],
         "horizon_attn_key_dim": [16, 128],
