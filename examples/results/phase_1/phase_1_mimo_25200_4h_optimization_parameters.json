@@ -1,12 +1,11 @@
 {
-    "use_log1p_features": [
-        "typical_price"
-    ],
-    "window_size": 64,
-    "positional_encoding": true,
     "encoder_conv_layers": 1,
-    "encoder_base_filters": 76,
-    "encoder_lstm_units": 17,
-    "horizon_embedding_dim": 26,
-    "horizon_attn_key_dim": 30
+    "encoder_base_filters": 42,
+    "encoder_lstm_units": 11,
+    "horizon_embedding_dim": 8,
+    "horizon_attn_key_dim": 19,
+    "horizon_attn_heads": 1,
+    "decoder_dropout": 0.03163042114282404,
+    "learning_rate": 0.005900172529728969,
+    "l2_reg": 2.489679026419267e-05
 }

@@ -1,0 +1,9 @@
+{
+    "learning_rate": 0.00047432262522182847,
+    "window_size": 30,
+    "initial_layer_size": 88,
+    "intermediate_layers": 1,
+    "layer_size_divisor": 3,
+    "l2_reg": 2.835037286586266e-06,
+    "positional_encoding": true
+}

@@ -1,0 +1,20 @@
+{
+    "encoder_conv_layers": 3,
+    "encoder_base_filters": 49,
+    "encoder_lstm_units": 24,
+    "window_size": 35,
+    "use_log1p_features": null,
+    "positional_encoding": true,
+    "horizon_attn_heads": 2,
+    "horizon_attn_key_dim": 30,
+    "horizon_embedding_dim": 18,
+    "learning_rate": 0.001,
+    "activation": "swish",
+    "batch_size": 32,
+    "l2_reg": 1e-05,
+    "decoder_dropout": 0.03,
+    "min_delta": 1.140681073065315e-07,
+    "early_patience": 80,
+    "kl_weight": 0.001,
+    "kl_anneal_epochs": 20
+}
