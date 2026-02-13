@@ -1,12 +1,21 @@
 {
-    "window_size": 79,
-    "encoder_conv_layers": 1,
-    "encoder_base_filters": 57,
-    "encoder_lstm_units": 10,
-    "horizon_embedding_dim": 8,
-    "horizon_attn_key_dim": 30,
-    "horizon_attn_heads": 4,
-    "decoder_dropout": 0.030797223922799735,
-    "learning_rate": 0.005719807884114421,
-    "l2_reg": 5.431378820117508e-05
+    "encoder_conv_layers": 2,
+    "encoder_base_filters": 17,
+    "encoder_lstm_units": 28,
+    "use_log1p_features": [
+        "typical_price"
+    ],
+    "positional_encoding": true,
+    "horizon_attn_heads": 1,
+    "horizon_attn_key_dim": 31,
+    "horizon_embedding_dim": 32,
+    "learning_rate": 0.001,
+    "activation": "elu",
+    "batch_size": 22,
+    "l2_reg": 1e-05,
+    "decoder_dropout": 0.03,
+    "min_delta": 1e-08,
+    "early_patience": 80,
+    "kl_weight": 0.001,
+    "kl_anneal_epochs": 20
 }
