@@ -149,3 +149,8 @@ app/__pycache__/config.cpython-312.pyc
 app/__pycache__/config_handler.cpython-312.pyc
 app/__pycache__/config_handler.cpython-312.pyc
 *.pyc
+*.db
+*.db-wal
+*.db-shm
+*.keras
+node_modules/
