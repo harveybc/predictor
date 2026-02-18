@@ -1347,9 +1347,6 @@ class Plugin:
                     if clamped != val:
                         ind[i] = clamped
 
-            # --- DOIN CALLBACK HOOKS (island model migration) ---
-            _opt_callbacks = config.get("optimization_callbacks", {})
-
             # Print Candidate 0 (Champion) for verification
             print(f"\n[VERIFY] Candidate 0 (Champion) Parameters to be evaluated:")
             champ_verify = {}
