@@ -1187,6 +1187,9 @@ class Plugin:
         first_iteration = True  # Gate resume/recovery to first iteration only
         stats_history = []  # Persist across stages
         
+        # --- DOIN CALLBACK HOOKS (must be defined before initial population eval) ---
+        _opt_callbacks = config.get("optimization_callbacks", {})
+
         while True:
             print(f"\n{'='*80}")
             if incremental_enabled:
@@ -1344,6 +1347,9 @@ class Plugin:
                     if clamped != val:
                         ind[i] = clamped
 
+            # --- DOIN CALLBACK HOOKS (island model migration) ---
+            _opt_callbacks = config.get("optimization_callbacks", {})
+
             # Print Candidate 0 (Champion) for verification
             print(f"\n[VERIFY] Candidate 0 (Champion) Parameters to be evaluated:")
             champ_verify = {}
@@ -1395,14 +1401,6 @@ class Plugin:
 
             # Mark first iteration complete (resume/recovery won't run again)
             first_iteration = False
-
-            # --- DOIN CALLBACK HOOKS (island model migration) ---
-            # config['optimization_callbacks'] dict can have:
-            #   on_generation_start(pop, hof, hyper_keys, gen, stage_info) → migrant params dict or None
-            #   on_new_champion(champion_params, fitness, metrics, gen, stage_info) → None
-            #   on_between_candidates(gen, candidate_num, stage_info) → None (process 1 pending eval)
-            #   on_generation_end(pop, hof, hyper_keys, gen, stage_info, stats) → None
-            _opt_callbacks = config.get("optimization_callbacks", {})
 
             for gen in range(start_gen, end_gen):
                 gen_start_time = time.time()
