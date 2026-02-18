@@ -294,6 +294,12 @@ class Plugin:
             except Exception:
                 pass
 
+            # Skip non-serializable types (callables, sets, etc.)
+            if callable(obj) and not isinstance(obj, type):
+                return None
+            if isinstance(obj, set):
+                return list(obj)
+
             # Numpy scalars
             if isinstance(obj, np.generic):
                 return obj.item()
@@ -303,13 +309,11 @@ class Plugin:
                 return obj.tolist()
 
             if isinstance(obj, dict):
-                return {str(k): _json_sanitize(v) for k, v in obj.items()}
+                # Skip keys with non-serializable values
+                return {str(k): _json_sanitize(v) for k, v in obj.items()
+                        if k != "optimization_callbacks" and k != "_non_serializable_keys"}
             if isinstance(obj, (list, tuple)):
                 return [_json_sanitize(v) for v in obj]
-
-            # Skip non-serializable types (callables, etc.)
-            if callable(obj):
-                return None
 
             # Plain Python types are fine (including None)
             return obj
@@ -460,7 +464,7 @@ class Plugin:
                     out_path = os.path.join(td, "output.json")
                     with open(in_path, "w", encoding="utf-8") as f:
                         # Strip non-serializable keys (e.g. DOIN callbacks)
-                        _serial_config = {k: v for k, v in new_config.items() if not callable(v) and k != "optimization_callbacks"}
+                        _serial_config = _json_sanitize(new_config)
                         json.dump(
                             {
                                 "gen": int(self.current_gen or 0),
