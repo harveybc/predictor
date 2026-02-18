@@ -32,6 +32,15 @@ setup(
         'preprocessor.plugins': [
             'default_preprocessor=preprocessor_plugins.default_preprocessor:PreprocessorPlugin',
             'stl_preprocessor=preprocessor_plugins.stl_preprocessor:PreprocessorPlugin'
+        ],
+        'target.plugins': [
+            'default_target=target_plugins.default_target:TargetPlugin',
+            'stl_target=target_plugins.stl_target:TargetPlugin'
+        ],
+        # Target plugins
+        'target.plugins': [
+            'default_target=target_plugins.default_target:TargetPlugin',
+            'stl_target=target_plugins.stl_target:TargetPlugin'
         ]
     },
     install_requires=[
