@@ -1,0 +1,56 @@
+{
+    "total_time_elapsed": 2227.078648328781,
+    "average_time_per_epoch": 442.6393576860428,
+    "candidates_evaluated_so_far": 16,
+    "champion_fitness": 0.0037749451585114002,
+    "champion_validation_mae": 0.010667934082448483,
+    "champion_validation_naive_mae": 0.003874493297189474,
+    "champion_test_mae": 0.07775712013244629,
+    "champion_test_naive_mae": 0.003033747198060155,
+    "champion_train_mae": 0.0054606967605650425,
+    "champion_train_naive_mae": 0.0047042472288012505,
+    "average_fitness_per_epoch": [
+        0.017738301469944418,
+        0.0071811241330578925
+    ],
+    "champion_fitness_per_epoch": [
+        0.0037749451585114002,
+        0.0037749451585114002
+    ],
+    "champion_validation_mae_per_epoch": [
+        0.010667934082448483,
+        0.010667934082448483
+    ],
+    "best_fitness_per_epoch": [
+        0.0037749451585114002,
+        0.0037749451585114002
+    ],
+    "best_validation_mae_per_epoch": [
+        0.010667934082448483,
+        0.010667934082448483
+    ],
+    "history": [
+        {
+            "generation": 0,
+            "duration": 418.94759583473206,
+            "avg_fitness": 0.017738301469944418,
+            "best_validation_mae_gen": 0.010667934082448483,
+            "best_fitness_gen": 0.0037749451585114002,
+            "champion_fitness_global": 0.0037749451585114002,
+            "champion_validation_mae_global": 0.010667934082448483,
+            "best_validation_naive_mae_gen": 0.003874493297189474,
+            "champion_validation_naive_mae_global": 0.003874493297189474
+        },
+        {
+            "generation": 1,
+            "duration": 466.3311195373535,
+            "avg_fitness": 0.0071811241330578925,
+            "best_validation_mae_gen": 0.010667934082448483,
+            "best_fitness_gen": 0.0037749451585114002,
+            "champion_fitness_global": 0.0037749451585114002,
+            "champion_validation_mae_global": 0.010667934082448483,
+            "best_validation_naive_mae_gen": 0.003874493297189474,
+            "champion_validation_naive_mae_global": 0.003874493297189474
+        }
+    ]
+}

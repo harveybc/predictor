@@ -1,0 +1,14 @@
+{
+  "predictor-timeseries-4h": {
+    "experiment_id": "3339d8f71e364015b78321d980810f77",
+    "domain_id": "predictor-timeseries-4h",
+    "rounds": 0,
+    "best_performance": null,
+    "target_performance": 999.0,
+    "converged": false,
+    "time_to_target_seconds": null,
+    "elapsed_seconds": 87.86,
+    "optimizer_plugin": "predictor"
+  },
+  "finalized_utc": "2026-02-18T11:29:58.415911+00:00"
+}

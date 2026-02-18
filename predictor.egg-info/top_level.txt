@@ -3,4 +3,5 @@ optimizer_plugins
 pipeline_plugins
 predictor_plugins
 preprocessor_plugins
+target_plugins
 tests

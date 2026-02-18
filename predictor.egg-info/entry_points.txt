@@ -14,9 +14,14 @@ base = predictor_plugin.predictor_plugin_base:Plugin
 cnn = predictor_plugins.predictor_plugin_cnn:Plugin
 default_predictor = predictor_plugins.predictor_plugin_ann:Plugin
 lstm = predictor_plugins.predictor_plugin_lstm:Plugin
+mimo = predictor_plugins.predictor_plugin_mimo:Plugin
 n_beats = predictor_plugins.predictor_plugin_n_beats:Plugin
 transformer = predictor_plugins.predictor_plugin_transformer:Plugin
 
 [preprocessor.plugins]
 default_preprocessor = preprocessor_plugins.default_preprocessor:PreprocessorPlugin
 stl_preprocessor = preprocessor_plugins.stl_preprocessor:PreprocessorPlugin
+
+[target.plugins]
+default_target = target_plugins.default_target:TargetPlugin
+stl_target = target_plugins.stl_target:TargetPlugin

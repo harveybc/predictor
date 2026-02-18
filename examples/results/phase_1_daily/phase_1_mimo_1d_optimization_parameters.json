@@ -1,0 +1,5 @@
+{
+    "encoder_conv_layers": 1,
+    "encoder_base_filters": 55,
+    "encoder_lstm_units": 91
+}
