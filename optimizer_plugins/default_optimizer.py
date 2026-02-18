@@ -307,6 +307,10 @@ class Plugin:
             if isinstance(obj, (list, tuple)):
                 return [_json_sanitize(v) for v in obj]
 
+            # Skip non-serializable types (callables, etc.)
+            if callable(obj):
+                return None
+
             # Plain Python types are fine (including None)
             return obj
 
@@ -455,11 +459,13 @@ class Plugin:
                     in_path = os.path.join(td, "input.json")
                     out_path = os.path.join(td, "output.json")
                     with open(in_path, "w", encoding="utf-8") as f:
+                        # Strip non-serializable keys (e.g. DOIN callbacks)
+                        _serial_config = {k: v for k, v in new_config.items() if not callable(v) and k != "optimization_callbacks"}
                         json.dump(
                             {
                                 "gen": int(self.current_gen or 0),
                                 "cand": int(self.eval_counter),
-                                "config": new_config,
+                                "config": _serial_config,
                                 "hyper": hyper_dict,
                             },
                             f,
