@@ -42,7 +42,18 @@ from tensorflow.keras.layers import Reshape
 from tqdm import tqdm
 from tensorflow.keras.layers import Conv1D
 from tensorflow.keras.layers import MultiHeadAttention
-from tensorflow.keras.layers import LayerNormalization
+from tensorflow.keras.layers import LayerNormalization\
+
+from tensorflow.keras.losses import Huber
+from .common.losses import mae_magnitude, composite_loss_multihead as composite_loss, composite_loss_basic, random_normal_initializer_44, composite_loss_noreturns, r2_metric
+from .common.bayesian import posterior_mean_field, prior_fn
+from .common.base import BaseBayesianKerasPredictor
+
+# Module-level quiet flag (set via env or overridden at runtime)
+import os as _os
+_QUIET = _os.environ.get('PREDICTOR_QUIET', '0') == '1'
+
+from .common.positional_encoding import positional_encoding
 
 
 
@@ -65,7 +76,8 @@ class ReduceLROnPlateauWithCounter(ReduceLROnPlateau):
     def on_epoch_end(self, epoch, logs=None):
         super().on_epoch_end(epoch, logs)
         self.patience_counter = self.wait if self.wait > 0 else 0
-        print(f"DEBUG: ReduceLROnPlateau patience counter: {self.patience_counter}")
+        if self.verbose:
+            print(f"ReduceLROnPlateau patience counter: {self.patience_counter}")
 
 class EarlyStoppingWithPatienceCounter(EarlyStopping):
     """Custom EarlyStopping callback that prints the patience counter."""
@@ -76,7 +88,8 @@ class EarlyStoppingWithPatienceCounter(EarlyStopping):
     def on_epoch_end(self, epoch, logs=None):
         super().on_epoch_end(epoch, logs)
         self.patience_counter = self.wait if self.wait > 0 else 0
-        print(f"DEBUG: EarlyStopping patience counter: {self.patience_counter}")
+        if self.verbose:
+            print(f"EarlyStopping patience counter: {self.patience_counter}")
 
 class ClearMemoryCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
@@ -267,8 +280,8 @@ def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name)
 
     # --- CORRECTED PRINT STATEMENTS ---
     # Removed access to .name attribute
-    print(f"DEBUG: posterior: created loc shape: {loc.shape}")
-    print(f"DEBUG: posterior: created scale shape: {scale.shape}")
+    if not _QUIET: print(f"DEBUG: posterior: created loc shape: {loc.shape}")
+    if not _QUIET: print(f"DEBUG: posterior: created scale shape: {scale.shape}")
     # --- END CORRECTION ---
 
     try:
@@ -290,20 +303,20 @@ def posterior_mean_field_custom(dtype, kernel_shape, bias_size, trainable, name)
 
 def prior_fn(dtype, kernel_shape, bias_size, trainable, name):
     """Custom prior distribution function for DenseFlipout kernel."""
-    print(f"DEBUG: prior_fn (name={name}):")
-    print(f"       dtype={dtype}, kernel_shape={kernel_shape}, bias_size={bias_size} (overridden to 0), trainable={trainable}")
+    if not _QUIET: print(f"DEBUG: prior_fn (name={name}):")
+    if not _QUIET: print(f"       dtype={dtype}, kernel_shape={kernel_shape}, bias_size={bias_size} (overridden to 0), trainable={trainable}")
     if not isinstance(name, str): name = None # Ensure name is string or None
     bias_size = 0 # Force bias size to 0 for kernel prior
     n = int(np.prod(kernel_shape)) + bias_size
     loc = tf.zeros([n], dtype=dtype)
     scale = tf.ones([n], dtype=dtype)
-    print(f"DEBUG: prior_fn: computed n={n}")
+    if not _QUIET: print(f"DEBUG: prior_fn: computed n={n}")
     try:
         loc_reshaped = tf.reshape(loc, kernel_shape)
         scale_reshaped = tf.reshape(scale, kernel_shape)
-        print(f"DEBUG: prior_fn: reshaped loc to {loc_reshaped.shape} and scale to {scale_reshaped.shape}")
+        if not _QUIET: print(f"DEBUG: prior_fn: reshaped loc to {loc_reshaped.shape} and scale to {scale_reshaped.shape}")
     except Exception as e:
-        print(f"DEBUG: Exception during reshape in prior_fn (name={name}):", e)
+        if not _QUIET: print(f"DEBUG: Exception during reshape in prior_fn (name={name}):", e)
         raise e
     # Ensure reinterpreted_batch_ndims matches the rank of the kernel shape
     return tfp.distributions.Independent(
@@ -358,6 +371,7 @@ class Plugin:
         self.params = self.plugin_params.copy()
         if config:
            self.params.update(config)
+        self.quiet = self.params.get('quiet', False)
 
         # Ensure predicted_horizons exists after potential update
         if 'predicted_horizons' not in self.params:
@@ -385,7 +399,7 @@ class Plugin:
         # Shape depends on output of dummy_feedback_control. If it returns scalar P, shape is scalar.
         self.local_feedback = [tf.Variable(0.0, trainable=False, dtype=tf.float32, name=f"local_feedback_{i}") for i in range(num_outputs)]
 
-        print("Control/Feedback lists initialized.")
+        if not _QUIET: print("Control/Feedback lists initialized.")
 
         # --- Apply DenseFlipout Patch ---
         if not hasattr(tfp.layers.DenseFlipout, '_already_patched_add_variable'):
@@ -393,9 +407,9 @@ class Plugin:
                 return layer_instance.add_weight(name=name, shape=shape, dtype=dtype, initializer=initializer, trainable=trainable, **kwargs)
             tfp.layers.DenseFlipout.add_variable = _patched_add_variable
             tfp.layers.DenseFlipout._already_patched_add_variable = True
-            print("DEBUG: DenseFlipout patched successfully in __init__.")
+            if not self.quiet: print("DEBUG: DenseFlipout patched successfully in __init__.")
         else:
-            print("DEBUG: DenseFlipout already patched.")
+            if not self.quiet: print("DEBUG: DenseFlipout already patched.")
 
 
     def set_params(self, **kwargs):
@@ -418,6 +432,7 @@ class Plugin:
         """
         Build model: processes features, merges, feeds into heads.
         """
+        if not _QUIET: print(f"DEBUG: Entering build_model with input_shape={input_shape}", flush=True)
         # --- Pre-checks ---
         if self.local_feedback is None or self.local_p_control is None:
              raise RuntimeError("Feedback/Control lists were not initialized in __init__.")
@@ -441,70 +456,71 @@ class Plugin:
         # --- Define Bayesian Layer Components ---
         KL_WEIGHT = self.kl_weight_var
         DenseFlipout = tfp.layers.DenseFlipout
-
+        mmd_lambda = self.params.get("mmd_lambda", 0.0)
+        sigma_mmd = self.params.get("sigma_mmd", 1.0)
 
         # --- Input Layer ---
+        if not _QUIET: print("DEBUG: Create Input Layer", flush=True)
         inputs = Input(shape=(window_size, num_channels), name="input_layer")
         x = inputs
         
-        # Feature Extractor
-        if config.get("feature_extractor_file"):
-            # Load the pretrained feature extractor
-            fe_model = tf.keras.models.load_model(config["feature_extractor_file"])
-            # Enable or disable training of the feature extractor
-            fe_model.trainable = bool(config.get("train_fe", False))
-            # Apply the feature extractor to the inputs
-            merged = fe_model(inputs)
-        else:
-               
-            # Add positional encoding to capture temporal order
-            # get static shape tuple via Keras backend
-            last_layer_shape = K.int_shape(x)
-            feature_dim = last_layer_shape[-1]
-            # get the sequence length from the last layer shape
-            seq_length = last_layer_shape[1]
-            pos_enc = positional_encoding(seq_length, feature_dim)
-            x = x + pos_enc
+                # Add positional encoding to capture temporal order
+        # get static shape tuple via Keras backend
+        last_layer_shape = K.int_shape(x)
+        feature_dim = last_layer_shape[-1]
+        # get the sequence length from the last layer shape
+        seq_length = last_layer_shape[1]
+        pos_enc = positional_encoding(seq_length, feature_dim)
+        x = x + pos_enc
+        if not _QUIET: print("DEBUG: Positional encoding added", flush=True)
 
-            # --- Self-Attention Block 1 ---
-            num_attention_heads = 2
-            # get the last layer shape from the merged tensor
-            last_layer_shape = K.int_shape(x)
-            # get the feature dimension from the last layer shape as the last component of the shape tuple
-            feature_dim = last_layer_shape[-1]
-            # define key dimension for attention    
-            attention_key_dim = feature_dim//num_attention_heads
-            # Apply MultiHeadAttention
-            attention_output = MultiHeadAttention(
-                num_heads=num_attention_heads, # Assumed to be defined
-                key_dim=attention_key_dim,      # Assumed to be defined
-                kernel_regularizer=l2(l2_reg),
-                name=f"multihead_attention_1"
-            )(query=x, value=x, key=x)
-            x = Add()([x, attention_output])
-            x = LayerNormalization()(x)
-            #AveragePooling1D
-            x = AveragePooling1D(pool_size=3, strides=2, padding='valid', name=f"average_pooling_1")(x)
+        # --- Self-Attention Block 1 ---
+        num_attention_heads = 2
+        # get the last layer shape from the merged tensor
+        last_layer_shape = K.int_shape(x)
+        # get the feature dimension from the last layer shape as the last component of the shape tuple
+        feature_dim = last_layer_shape[-1]
+        if not _QUIET: print(f"DEBUG: feature_dim={feature_dim}, num_attention_heads={num_attention_heads}", flush=True)
 
-            # --- End Self-Attention Block ---
-            x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
-                        name=f"feature_lstm_1"))(x)
+        # define key dimension for attention    
+        attention_key_dim = feature_dim//num_attention_heads
+        if not _QUIET: print(f"DEBUG: attention_key_dim={attention_key_dim}", flush=True)
+        if attention_key_dim == 0:
+             if not self.quiet: print("DEBUG: attention_key_dim is 0, forcing to 1", flush=True)
+             attention_key_dim = 1
 
-            # --- End Self-Attention Block ---
-            x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
-                        name=f"feature_lstm_2"))(x)
-            
-            x = AveragePooling1D(pool_size=3, strides=2, padding='valid', name=f"average_pooling_2")(x)
+        # Apply MultiHeadAttention
+        attention_output = MultiHeadAttention(
+            num_heads=num_attention_heads, # Assumed to be defined
+            key_dim=attention_key_dim,      # Assumed to be defined
+            kernel_regularizer=l2(l2_reg),
+            name=f"multihead_attention_1"
+        )(query=x, value=x, key=x)
+        x = Add()([x, attention_output])
+        x = LayerNormalization()(x)
+        #AveragePooling1D
+        x = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"average_pooling_1")(x)
+        if not _QUIET: print("DEBUG: Self-Attention Block 1 done", flush=True)
 
-            merged = x
+        # --- End Self-Attention Block ---
+        x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
+                    name=f"feature_lstm_1"))(x)
 
-  
+        # --- End Self-Attention Block ---
+        x = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_regularizer=l2(l2_reg),
+                    name=f"feature_lstm_2"))(x)
+        
+        x = AveragePooling1D(pool_size=3, strides=2, padding='same', name=f"average_pooling_2")(x)
+
+        merged = x
+        if not _QUIET: print("DEBUG: Merged features ready", flush=True)
+
         # --- Build Multiple Output Heads ---
         outputs_list = []
         self.output_names = []
 
-
         for i, horizon in enumerate(predicted_horizons):
+            if not self.quiet: print(f"DEBUG: Building head for horizon {horizon}", flush=True)
             branch_suffix = f"_h{horizon}"
 
             # --- Head Intermediate Dense Layers ---
@@ -518,8 +534,8 @@ class Plugin:
             # TODO: probar (batch, merged_units, 1)
             #reshaped_for_lstm = Reshape((merged_units, 1), name=f"reshape_lstm{branch_suffix}")(head_dense_output) 
             reshaped_for_lstm = head_dense_output
-            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
-            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='valid', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=branch_units, kernel_size=3, strides=2, padding='same', kernel_regularizer=l2(l2_reg), name=f"conv1d_1{branch_suffix}")(reshaped_for_lstm)
+            reshaped_for_lstm = Conv1D(filters=lstm_units, kernel_size=3, strides=2, padding='same', kernel_regularizer=l2(l2_reg), name=f"conv1d_2{branch_suffix}")(reshaped_for_lstm)
             # Apply Bidirectional LSTM
             # return_sequences=False gives output shape (batch, 2 * lstm_units)
             lstm_output = Bidirectional(
@@ -529,6 +545,7 @@ class Plugin:
 
           
             # --- Bayesian / Bias Layers ---
+            if not self.quiet: print(f"DEBUG: Building Flipout layer {horizon}", flush=True)
             flipout_layer_name = f"bayesian_flipout_layer{branch_suffix}"
             flipout_layer_branch = DenseFlipout(
                 units=1, activation='linear',
@@ -553,45 +570,32 @@ class Plugin:
             outputs_list.append(final_branch_output)
             self.output_names.append(output_name) # Store the name
             # --- End of Head ---
+        if not _QUIET: print("DEBUG: All heads built", flush=True)
 
         # --- Model Definition ---
         self.model = Model(inputs=inputs, outputs=outputs_list, name=f"ControlFeedbackPredictor_{len(predicted_horizons)}H")
 
         # --- Compilation (Using GLOBAL composite_loss) ---
-        optimizer = AdamW(learning_rate=config.get("learning_rate", self.params.get("learning_rate", 0.001)))
-        mmd_lambda = config.get("mmd_lambda", self.params.get("mmd_lambda", 0.1))
-        sigma_mmd = config.get("sigma_mmd", self.params.get("sigma_mmd", 1.0))
-
-        # Prepare loss dictionary, passing ALL necessary lists and params to GLOBAL composite_loss
+        optimizer = AdamW(learning_rate=self.params.get("learning_rate", 1e-3))
         loss_dict = {}
-        for i, name in enumerate(self.output_names):
-            p_val = 0
-            i_val = 0
-            d_val = 0
-            lse_list = []
-            lsd_list = []
-            lmmd_list = []
-            lf_list = []
+        use_returns = self.params.get("use_returns", False)
+        # Keep losses pure-TensorFlow and free of per-batch Python object creation.
+        if use_returns:
+            def _loss_fn(y_true, y_pred):
+                return composite_loss_basic(y_true, y_pred, mmd_lambda=mmd_lambda, sigma=sigma_mmd)
+            for nm in self.output_names:
+                loss_dict[nm] = _loss_fn
+        else:
+            huber = Huber()
+            for nm in self.output_names:
+                loss_dict[nm] = huber
+        metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
+        if not _QUIET: print("DEBUG: Compiling model...", flush=True)
+        self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)
+        if not _QUIET: print("DEBUG: Model compiled. Printing summary...", flush=True)
+        self.model.summary(line_length=140)
+        if not _QUIET: print("DEBUG: build_model completed.", flush=True)
 
-            loss_fn_for_head = (
-                lambda index=i, p=p_val, iv=i_val, dv=d_val, lse=lse_list, lsd=lsd_list, lmmd=lmmd_list, lf=lf_list:
-                    lambda y_true, y_pred: composite_loss( # Call GLOBAL func
-                        y_true, y_pred, head_index=index, mmd_lambda=mmd_lambda, sigma=sigma_mmd,
-                        p=p, i=iv, d=dv, list_last_signed_error=lse, list_last_stddev=lsd,
-                        list_last_mmd=lmmd, list_local_feedback=lf
-                    )
-            )(i)
-            loss_dict[name] = loss_fn_for_head
-
-        # Prepare metrics dictionary
-        metrics_dict = {name: [mae_magnitude] for name in self.output_names}
-
-        self.model.compile(optimizer=optimizer,
-                           loss=loss_dict,
-                           metrics=metrics_dict)
-
-        print(f"Control-Feedback Predictor model built successfully for {num_outputs} horizons.")
-        self.model.summary(line_length=150)
 
     # --- Method within YourPredictorPlugin class ---
     def train(self, x_train, y_train, epochs, batch_size, threshold_error, x_val, y_val, config):
@@ -674,21 +678,26 @@ class Plugin:
         start_from_epoch_es = self.params.get('start_from_epoch', 10)
         patience_reduce_lr = config.get("reduce_lr_patience", max(1, int(patience_early_stopping / 4)))
 
+        # Verbosity: quiet mode suppresses per-step progress bars and per-epoch LR prints
+        quiet_mode = config.get("quiet", self.params.get("quiet", False))
+        fit_verbose = 0 if quiet_mode else 1
+        cb_verbose = 0 if quiet_mode else 1
+
         # Instantiate callbacks WITHOUT ClearMemoryCallback
         # Assumes relevant Callback classes are imported/defined
         callbacks = [
             EarlyStoppingWithPatienceCounter(
                 monitor='val_loss', patience=patience_early_stopping, restore_best_weights=True,
-                verbose=1, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
+                verbose=cb_verbose, start_from_epoch=start_from_epoch_es, min_delta=min_delta_early_stopping
             ),
             ReduceLROnPlateauWithCounter(
-                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=1
+                monitor="val_loss", factor=0.5, patience=patience_reduce_lr, cooldown=5, min_delta=min_delta_early_stopping, verbose=cb_verbose
             ),
-            LambdaCallback(on_epoch_end=lambda epoch, logs:
-                           print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")),
-            # Removed: ClearMemoryCallback(), # <<< REMOVED THIS LINE
             kl_callback
         ]
+        if not quiet_mode:
+            callbacks.append(LambdaCallback(on_epoch_end=lambda epoch, logs:
+                           print(f"Epoch {epoch+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")))
 
         # --- Input Data Verification ---
         if not isinstance(y_train, dict) or not isinstance(y_val, dict):
@@ -700,7 +709,7 @@ class Plugin:
              raise ValueError(f"Target dicts missing key: '{plotted_output_name}'")
         # Optional: Check all keys match
         if set(y_train.keys()) != set(self.output_names) or set(y_val.keys()) != set(self.output_names):
-             print("WARN: Target data dictionary keys may not perfectly match all model output names.")
+             if not self.quiet: print("WARN: Target data dictionary keys may not perfectly match all model output names.")
 
         # --- Model Training ---
         history = self.model.fit(x_train, y_train,
@@ -708,7 +717,7 @@ class Plugin:
                                  batch_size=batch_size,
                                  validation_data=(x_val, y_val),
                                  callbacks=callbacks,
-                                 verbose=1)
+                                 verbose=fit_verbose)
 
         # --- Post-Training Predictions ---
         # Note: Predicting on full train/val sets uses memory. Consider alternatives if needed.
@@ -727,7 +736,7 @@ class Plugin:
         try:
             y_train_plotted = y_train[plotted_output_name]
             train_preds_plotted = list_train_preds[plotted_index] # Use pre-calculated index
-            print(f"Calculating final MAE/R2 for plotted horizon: {plotted_horizon} (Index: {plotted_index})")
+            if not self.quiet: print(f"Calculating final MAE/R2 for plotted horizon: {plotted_horizon} (Index: {plotted_index})")
             if hasattr(self, 'calculate_mae') and callable(self.calculate_mae):
                 self.calculate_mae(y_train_plotted, train_preds_plotted)
             if hasattr(self, 'calculate_r2') and callable(self.calculate_r2):
@@ -843,7 +852,7 @@ class Plugin:
     
     def save(self, file_path):
         self.model.save(file_path)
-        print(f"Model saved to {file_path}")
+        if not self.quiet: print(f"Model saved to {file_path}")
 
     def load(self, file_path):
         self.model = load_model(file_path, custom_objects={
@@ -852,7 +861,7 @@ class Plugin:
             "r2_metric": r2_metric,
             "mae_magnitude": mae_magnitude
         })
-        print(f"Predictor model loaded from {file_path}")
+        if not self.quiet: print(f"Predictor model loaded from {file_path}")
 
     def calculate_mae(self, y_true, y_pred):
         if len(y_true.shape) == 1 or (len(y_true.shape) == 2 and y_true.shape[1] == 1):
@@ -860,10 +869,10 @@ class Plugin:
             y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
         mag_true = y_true[:, 0:1]
         mag_pred = y_pred[:, 0:1]
-        print(f"DEBUG: y_true (sample): {mag_true.flatten()[:5]}")
-        print(f"DEBUG: y_pred (sample): {mag_pred.flatten()[:5]}")
+        if not _QUIET: print(f"DEBUG: y_true (sample): {mag_true.flatten()[:5]}")
+        if not _QUIET: print(f"DEBUG: y_pred (sample): {mag_pred.flatten()[:5]}")
         mae = np.mean(np.abs(mag_true.flatten() - mag_pred.flatten()))
-        print(f"Calculated MAE (magnitude): {mae}")
+        if not self.quiet: print(f"Calculated MAE (magnitude): {mae}")
         return mae
 
     def calculate_r2(self, y_true, y_pred):
@@ -872,12 +881,12 @@ class Plugin:
             y_true = np.concatenate([y_true, np.zeros_like(y_true)], axis=1)
         mag_true = y_true[:, 0:1]
         mag_pred = y_pred[:, 0:1]
-        print(f"Calculating R²: y_true shape={mag_true.shape}, y_pred shape={mag_pred.shape}")
+        if not self.quiet: print(f"Calculating R²: y_true shape={mag_true.shape}, y_pred shape={mag_pred.shape}")
         SS_res = np.sum((mag_true - mag_pred) ** 2, axis=0)
         SS_tot = np.sum((mag_true - np.mean(mag_true, axis=0)) ** 2, axis=0)
         r2_scores = 1 - (SS_res / (SS_tot + np.finfo(float).eps))
         r2 = np.mean(r2_scores)
-        print(f"Calculated R² (magnitude): {r2}")
+        if not self.quiet: print(f"Calculated R² (magnitude): {r2}")
         return r2
 
 # ---------------------------
@@ -889,4 +898,4 @@ if __name__ == "__main__":
     # Example: window_size=24, 3 channels (trend, seasonal, noise).
     plugin.build_model(input_shape=(24, 3), x_train=None, config={})
     debug_info = plugin.get_debug_info()
-    print(f"Debug Info: {debug_info}")
+    if not _QUIET: print(f"Debug Info: {debug_info}")

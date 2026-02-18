@@ -5,7 +5,7 @@ Default Preprocessor Plugin
 Este plugin se encarga del preprocesamiento de datos para la predicción de EUR/USD.
 Implementa el método process_data que:
   1. Carga archivos CSV según las rutas definidas en la configuración.
-  2. Extrae la columna 'CLOSE' como serie univariada.
+  2. Extrae la columna 'typical_price' como serie univariada.
   3. Genera ventanas deslizantes para la predicción de un único paso,
      aplicando opcionalmente la conversión a retornos.
   4. Reestructura los datos para que sean compatibles con los modelos (reshape a 3D para redes recurrentes, CNN, etc.).
@@ -118,7 +118,7 @@ class PreprocessorPlugin:
 
         Pasos:
           1. Carga de archivos CSV definidos en la configuración.
-          2. Conversión de la columna 'CLOSE' a array NumPy (float32).
+          2. Conversión de la columna 'typical_price' a array NumPy (float32).
           3. Creación de ventanas deslizantes para un forecast de un solo paso.
              - Si config["use_returns"] es True, se calcula el target como la diferencia entre el valor futuro y el último valor de la ventana.
           4. Remodelado de las ventanas a (samples, window_size, 1) para inputs univariados.
@@ -153,12 +153,12 @@ class PreprocessorPlugin:
                 except Exception:
                     df.index = None
 
-        # 3. Extraer la columna 'CLOSE'
-        if "CLOSE" not in x_train_df.columns:
-            raise ValueError("Column 'CLOSE' not found in training data.")
-        close_train = x_train_df["CLOSE"].astype(np.float32).values
-        close_val   = x_val_df["CLOSE"].astype(np.float32).values
-        close_test  = x_test_df["CLOSE"].astype(np.float32).values
+        # 3. Extraer la columna 'typical_price'
+        if "typical_price" not in x_train_df.columns:
+            raise ValueError("Column 'typical_price' not found in training data.")
+        close_train = x_train_df["typical_price"].astype(np.float32).values
+        close_val   = x_val_df["typical_price"].astype(np.float32).values
+        close_test  = x_test_df["typical_price"].astype(np.float32).values
 
         train_dates = x_train_df.index if x_train_df.index is not None else None
         val_dates   = x_val_df.index   if x_val_df.index is not None else None

@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
 import json
 from plugin_loader import load_plugin
+import os as _os
+_QUIET = _os.environ.get('PREDICTOR_QUIET', '0') == '1'
 
 # Updated import: use tensorflow.keras instead of keras.
 from tensorflow.keras.utils import plot_model
@@ -164,11 +166,11 @@ def process_data(config):
     test_close_prices = close_test[window_size - 1 : len(close_test) - time_horizon]
     
     # Debug messages
-    print("Processed datasets:")
-    print(" X_train shape:", X_train.shape, " y_train shape:", y_train_array.shape)
-    print(" X_val shape:  ", X_val.shape,   " y_val shape:  ", y_val_array.shape)
-    print(" X_test shape: ", X_test.shape,  " y_test shape: ", y_test_array.shape)
-    print(" Test close prices shape:", test_close_prices.shape)
+    if not _QUIET: print("Processed datasets:")
+    if not _QUIET: print(" X_train shape:", X_train.shape, " y_train shape:", y_train_array.shape)
+    if not _QUIET: print(" X_val shape:  ", X_val.shape,   " y_val shape:  ", y_val_array.shape)
+    if not _QUIET: print(" X_test shape: ", X_test.shape,  " y_test shape: ", y_test_array.shape)
+    if not _QUIET: print(" Test close prices shape:", test_close_prices.shape)
     
     ret = {
         "x_train": X_train,
@@ -208,7 +210,7 @@ def run_prediction_pipeline(config, plugin):
 
     start_time = time.time()
     iterations = config.get("iterations", 1)
-    print(f"Number of iterations: {iterations}")
+    if not _QUIET: print(f"Number of iterations: {iterations}")
 
     # Lists for metrics
     training_mae_list, training_r2_list, training_unc_list, training_snr_list, training_profit_list, training_risk_list = [], [], [], [], [], []
@@ -217,7 +219,7 @@ def run_prediction_pipeline(config, plugin):
 
 
 
-    print("Loading and processing datasets...")
+    if not _QUIET: print("Loading and processing datasets...")
     datasets = process_data(config)
     x_train, y_train = datasets["x_train"], datasets["y_train"]
     x_val, y_val = datasets["x_val"], datasets["y_val"]
@@ -256,9 +258,9 @@ def run_prediction_pipeline(config, plugin):
     if isinstance(x_val, tuple): x_val = x_val[0]
     if isinstance(x_test, tuple): x_test = x_test[0]
 
-    print(f"Training data shapes: x_train: {x_train.shape}, y_train: {[a.shape for a in y_train]}")
-    print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {[a.shape for a in y_val]}")
-    print(f"Test data shapes: x_test: {x_test.shape}, y_test: {[a.shape for a in y_test]}")
+    if not _QUIET: print(f"Training data shapes: x_train: {x_train.shape}, y_train: {[a.shape for a in y_train]}")
+    if not _QUIET: print(f"Validation data shapes: x_val: {x_val.shape}, y_val: {[a.shape for a in y_val]}")
+    if not _QUIET: print(f"Test data shapes: x_test: {x_test.shape}, y_test: {[a.shape for a in y_test]}")
     # --- NEW CODE: Stack multi-output target lists into 2D arrays ---
     # --- NEW CODE: Ensure targets are 2D arrays with a single column if only one output is provided ---
     if isinstance(y_train, list) and len(y_train) == 1:
@@ -273,9 +275,9 @@ def run_prediction_pipeline(config, plugin):
         y_test_array = y_test[0]
     else:
         y_test_array = np.stack(y_test, axis=1)
-    print("DEBUG: y_train_array shape:", y_train_array.shape)
-    print("DEBUG: y_val_array shape:", y_val_array.shape)
-    print("DEBUG: y_test_array shape:", y_test_array.shape)
+    if not _QUIET: print("DEBUG: y_train_array shape:", y_train_array.shape)
+    if not _QUIET: print("DEBUG: y_val_array shape:", y_val_array.shape)
+    if not _QUIET: print("DEBUG: y_test_array shape:", y_test_array.shape)
     # --- END NEW CODE ---
 
     # --- END NEW CODE ---
@@ -284,9 +286,9 @@ def run_prediction_pipeline(config, plugin):
     y_train_stacked = np.stack(y_train, axis=1)  # shape: (samples, time_horizon)
     y_val_stacked   = np.stack(y_val, axis=1)
     y_test_stacked  = np.stack(y_test, axis=1)
-    print("DEBUG: Stacked y_train shape:", y_train_stacked.shape)
-    print("DEBUG: Stacked y_val shape:", y_val_stacked.shape)
-    print("DEBUG: Stacked y_test shape:", y_test_stacked.shape)
+    if not _QUIET: print("DEBUG: Stacked y_train shape:", y_train_stacked.shape)
+    if not _QUIET: print("DEBUG: Stacked y_val shape:", y_val_stacked.shape)
+    if not _QUIET: print("DEBUG: Stacked y_test shape:", y_test_stacked.shape)
     # --- END NEW CODE ---
     # --- CHUNK: Training iterations ---
     time_horizon = config.get("time_horizon")
@@ -295,7 +297,7 @@ def run_prediction_pipeline(config, plugin):
         raise ValueError("`time_horizon` is not defined in the configuration.")
     if config["plugin"] in ["lstm", "cnn", "transformer","ann"] and window_size is None:
         raise ValueError("`window_size` must be defined for CNN, Transformer and LSTM plugins.")
-    print(f"Time Horizon: {time_horizon}")
+    if not _QUIET: print(f"Time Horizon: {time_horizon}")
     batch_size = config["batch_size"]
     epochs = config["epochs"]
     threshold_error = config["threshold_error"]
@@ -309,12 +311,12 @@ def run_prediction_pipeline(config, plugin):
     if config["plugin"] in ["lstm", "cnn", "transformer","ann"]:
         if x_train.ndim != 3:
             raise ValueError(f"For CNN and LSTM, x_train must be 3D. Found: {x_train.shape}")
-        print("Using pre-processed sliding windows for CNN and LSTM.")
+        if not _QUIET: print("Using pre-processed sliding windows for CNN and LSTM.")
     plugin.set_params(time_horizon=time_horizon)
     
     # Training iterations
     for iteration in range(1, iterations + 1):
-        print(f"\n=== Iteration {iteration}/{iterations} ===")
+        if not _QUIET: print(f"\n=== Iteration {iteration}/{iterations} ===")
         iter_start = time.time()
         if config["plugin"] in ["lstm", "cnn", "transformer","ann"]:
             plugin.build_model(input_shape=(window_size, x_train.shape[2]), x_train=x_train, config=config)
@@ -333,7 +335,7 @@ def run_prediction_pipeline(config, plugin):
         # === STEP 7: Inverse-scale the predictions if using returns ===
         if config.get("use_returns", False):
             inv_scale_factor = 1.0 / config.get("target_scaling_factor", 100.0)
-            print(f"DEBUG: Inversely scaling predictions by factor {inv_scale_factor}.")
+            if not _QUIET: print(f"DEBUG: Inversely scaling predictions by factor {inv_scale_factor}.")
             # Multiply the prediction arrays by the inverse scaling factor.
             train_preds = train_preds * inv_scale_factor
             val_preds = val_preds * inv_scale_factor
@@ -365,8 +367,8 @@ def run_prediction_pipeline(config, plugin):
 
         # Debugging statements for verification
 
-        print("DEBUG: baseline_train shape:", baseline_train.shape if config.get("use_returns", False) else "Not using returns")
-        print("DEBUG: y_train_stacked shape:", y_train_stacked.shape)
+        if not _QUIET: print("DEBUG: baseline_train shape:", baseline_train.shape if config.get("use_returns", False) else "Not using returns")
+        if not _QUIET: print("DEBUG: y_train_stacked shape:", y_train_stacked.shape)
 
 
 
@@ -387,9 +389,9 @@ def run_prediction_pipeline(config, plugin):
         plt.legend(["Train", "Val"], loc="upper left")
         plt.savefig(config['loss_plot_file'])
         plt.close()
-        print(f"Loss plot saved to {config['loss_plot_file']}")
+        if not _QUIET: print(f"Loss plot saved to {config['loss_plot_file']}")
 
-        print("\nEvaluating on test dataset...")
+        if not _QUIET: print("\nEvaluating on test dataset...")
         #test_predictions = plugin.predict(x_test)
         mc_samples = config.get("mc_samples", 100)
         test_predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
@@ -401,11 +403,11 @@ def run_prediction_pipeline(config, plugin):
         # Debugging shapes for verification
 
         if config.get("use_returns", False) and "baseline_test" in datasets:
-            print("DEBUG: baseline_test shape:", datasets["baseline_test"].shape)
+            if not _QUIET: print("DEBUG: baseline_test shape:", datasets["baseline_test"].shape)
         else:
-            print("DEBUG: Not using returns or baseline_test not available")
+            if not _QUIET: print("DEBUG: Not using returns or baseline_test not available")
 
-        print("DEBUG: y_test_array shape:", y_test_array.shape)
+        if not _QUIET: print("DEBUG: y_test_array shape:", y_test_array.shape)
 
 
         test_mae = np.mean(np.abs(test_predictions[:, -1] - y_test_array[:n_test, -1]))
@@ -471,13 +473,13 @@ def run_prediction_pipeline(config, plugin):
         test_profit_list.append(test_profit)
         test_risk_list.append(test_risk)
         # print iteration results
-        print("************************************************************************")
-        print(f"Iteration {iteration} completed.")
-        print(f"Training MAE: {train_mae}, Training R²: {train_r2}, Training Uncertainty: {train_unc_last}, Trainign SNR: {train_snr}")
-        print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation Uncertainty: {val_unc_last}, Validation SNR: {val_snr}")
-        print(f"Test MAE: {test_mae}, Test R²: {test_r2}, Test Uncertainty: {test_unc_last}, Test SNR: {test_snr}, Test Profit: {test_profit}, Test Risk: {test_risk}")
-        print("************************************************************************")
-        print(f"Iteration {iteration} completed in {time.time()-iter_start:.2f} seconds")
+        if not _QUIET: print("************************************************************************")
+        if not _QUIET: print(f"Iteration {iteration} completed.")
+        if not _QUIET: print(f"Training MAE: {train_mae}, Training R²: {train_r2}, Training Uncertainty: {train_unc_last}, Trainign SNR: {train_snr}")
+        if not _QUIET: print(f"Validation MAE: {val_mae}, Validation R²: {val_r2}, Validation Uncertainty: {val_unc_last}, Validation SNR: {val_snr}")
+        if not _QUIET: print(f"Test MAE: {test_mae}, Test R²: {test_r2}, Test Uncertainty: {test_unc_last}, Test SNR: {test_snr}, Test Profit: {test_profit}, Test Risk: {test_risk}")
+        if not _QUIET: print("************************************************************************")
+        if not _QUIET: print(f"Iteration {iteration} completed in {time.time()-iter_start:.2f} seconds")
     # Save consolidated results
     if config.get("use_strategy", False): 
         results = {
@@ -518,7 +520,7 @@ def run_prediction_pipeline(config, plugin):
     # Save consolidated results to CSV
     results_file = config.get("results_file", "results.csv")
     pd.DataFrame(results).to_csv(results_file, index=False)
-    print(f"Results saved to {results_file}")
+    if not _QUIET: print(f"Results saved to {results_file}")
 
 
     norm_json = config.get("use_normalization_json")
@@ -554,10 +556,10 @@ def run_prediction_pipeline(config, plugin):
                     y_test_array = np.stack(y_test, axis=1)
                     denorm_y_test = (y_test_array + baseline_test) * diff + close_min
                 else:
-                    print("Warning: Baseline test values not found; skipping returns denormalization.")
+                    if not _QUIET: print("Warning: Baseline test values not found; skipping returns denormalization.")
                     denorm_y_test = np.stack(y_test, axis=1)
             else:
-                print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
+                if not _QUIET: print("Warning: 'CLOSE' not found; skipping denormalization for returns.")
                 denorm_y_test = np.stack(y_test, axis=1)
         else:
             if "CLOSE" in norm_json:
@@ -566,7 +568,7 @@ def run_prediction_pipeline(config, plugin):
                 test_predictions = test_predictions * (close_max - close_min) + close_min
                 denorm_y_test = np.stack(y_test, axis=1) * (close_max - close_min) + close_min
             else:
-                print("Warning: 'CLOSE' not found; skipping denormalization for non-returns mode.")
+                if not _QUIET: print("Warning: 'CLOSE' not found; skipping denormalization for non-returns mode.")
                 denorm_y_test = np.stack(y_test, axis=1)
 
     # Denormalize the test close prices once
@@ -594,10 +596,10 @@ def run_prediction_pipeline(config, plugin):
     # Save the final test predictions to a CSV file
     
     write_csv(file_path=final_test_file, data=test_predictions_df, include_date=False, headers=config.get('headers', True))
-    print(f"Final validation predictions saved to {final_test_file}")
+    if not _QUIET: print(f"Final validation predictions saved to {final_test_file}")
 
     # --- Compute and save uncertainty estimates (denormalized) ---
-    print("Computing uncertainty estimates using MC sampling...")
+    if not _QUIET: print("Computing uncertainty estimates using MC sampling...")
     try:
         mc_samples = config.get("mc_samples", 100)
         _, uncertainty_estimates = plugin.predict_with_uncertainty(x_test, mc_samples=mc_samples)
@@ -611,7 +613,7 @@ def run_prediction_pipeline(config, plugin):
                 diff = norm_json["CLOSE"]["max"] - norm_json["CLOSE"]["min"]
                 denorm_uncertainty = uncertainty_estimates * diff
             else:
-                print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
+                if not _QUIET: print("Warning: 'CLOSE' not found; uncertainties remain normalized.")
                 denorm_uncertainty = uncertainty_estimates
         else:
             denorm_uncertainty = uncertainty_estimates
@@ -626,7 +628,7 @@ def run_prediction_pipeline(config, plugin):
         uncertainty_df = uncertainty_df[cols]
         uncertainties_file = config.get("uncertainties_file", "test_uncertainties.csv")
         uncertainty_df.to_csv(uncertainties_file, index=False)
-        print(f"Uncertainty predictions saved to {uncertainties_file}")
+        if not _QUIET: print(f"Uncertainty predictions saved to {uncertainties_file}")
     except Exception as e:
         print(f"Failed to compute or save uncertainty predictions: {e}")
 
@@ -700,7 +702,7 @@ def run_prediction_pipeline(config, plugin):
         predictions_plot_file = config.get("predictions_plot_file", "predictions_plot.png")
         plt.savefig(predictions_plot_file, dpi=300)
         plt.close()
-        print(f"Prediction plot saved to {predictions_plot_file}")
+        if not _QUIET: print(f"Prediction plot saved to {predictions_plot_file}")
     except Exception as e:
         print(f"Failed to generate prediction plot: {e}")
 
@@ -718,66 +720,66 @@ def run_prediction_pipeline(config, plugin):
             dpi=300,
             show_layer_activations=True
         )
-        print(f"Model plot saved to {config['model_plot_file']}")
+        if not _QUIET: print(f"Model plot saved to {config['model_plot_file']}")
     except Exception as e:
         print(f"Failed to generate model plot: {e}")
-        print("Download Graphviz from https://graphviz.org/download/")
+        if not _QUIET: print("Download Graphviz from https://graphviz.org/download/")
 
     save_model_file = config.get("save_model", "pretrained_model.keras")
     try:
         plugin.save(save_model_file)
-        print(f"Model saved to {save_model_file}")
+        if not _QUIET: print(f"Model saved to {save_model_file}")
     except Exception as e:
         print(f"Failed to save model to {save_model_file}: {e}")
     
     if config.get("use_strategy", False):
-        print("*************************************************")
-        print("Training Statistics:")
-        print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
-        print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
-        print(f"Uncertainty - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
-        print(f"SNR - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
-        print(f"Profit - Avg: {results['Average'][4]:.4f}, Std: {results['Std Dev'][4]:.4f}, Max: {results['Max'][4]:.4f}, Min: {results['Min'][4]:.4f}")
-        print(f"Risk - Avg: {results['Average'][5]:.4f}, Std: {results['Std Dev'][5]:.4f}, Max: {results['Max'][5]:.4f}, Min: {results['Min'][5]:.4f}")
-        print("*************************************************")
-        print("Validation Statistics:")
-        print(f"MAE - Avg: {results['Average'][6]:.4f}, Std: {results['Std Dev'][6]:.4f}, Max: {results['Max'][6]:.4f}, Min: {results['Min'][6]:.4f}")
-        print(f"R²  - Avg: {results['Average'][7]:.4f}, Std: {results['Std Dev'][7]:.4f}, Max: {results['Max'][7]:.4f}, Min: {results['Min'][7]:.4f}")
-        print(f"Uncertainty - Avg: {results['Average'][8]:.4f}, Std: {results['Std Dev'][8]:.4f}, Max: {results['Max'][8]:.4f}, Min: {results['Min'][8]:.4f}")
-        print(f"SNR - Avg: {results['Average'][9]:.4f}, Std: {results['Std Dev'][9]:.4f}, Max: {results['Max'][9]:.4f}, Min: {results['Min'][9]:.4f}")
-        print(f"Profit - Avg: {results['Average'][10]:.4f}, Std: {results['Std Dev'][10]:.4f}, Max: {results['Max'][10]:.4f}, Min: {results['Min'][10]:.4f}")
-        print(f"Risk - Avg: {results['Average'][11]:.4f}, Std: {results['Std Dev'][11]:.4f}, Max: {results['Max'][11]:.4f}, Min: {results['Min'][11]:.4f}")
-        print("*************************************************")
-        print("Test Statistics:")
-        print(f"MAE - Avg: {results['Average'][12]:.4f}, Std: {results['Std Dev'][12]:.4f}, Max: {results['Max'][12]:.4f}, Min: {results['Min'][12]:.4f}")
-        print(f"R²  - Avg: {results['Average'][13]:.4f}, Std: {results['Std Dev'][13]:.4f}, Max: {results['Max'][13]:.4f}, Min: {results['Min'][13]:.4f}")
-        print(f"Uncertainty - Avg: {results['Average'][14]:.4f}, Std: {results['Std Dev'][14]:.4f}, Max: {results['Max'][14]:.4f}, Min: {results['Min'][14]:.4f}")
-        print(f"SNR - Avg: {results['Average'][15]:.4f}, Std: {results['Std Dev'][15]:.4f}, Max: {results['Max'][15]:.4f}, Min: {results['Min'][15]:.4f}")
-        print(f"Profit - Avg: {results['Average'][16]:.4f}, Std: {results['Std Dev'][16]:.4f}, Max: {results['Max'][16]:.4f}, Min: {results['Min'][16]:.4f}")
-        print(f"Risk - Avg: {results['Average'][17]:.4f}, Std: {results['Std Dev'][17]:.4f}, Max: {results['Max'][17]:.4f}, Min: {results['Min'][17]:.4f}")
-        print("*************************************************")
+        if not _QUIET: print("*************************************************")
+        if not _QUIET: print("Training Statistics:")
+        if not _QUIET: print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
+        if not _QUIET: print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
+        if not _QUIET: print(f"Uncertainty - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
+        if not _QUIET: print(f"SNR - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
+        if not _QUIET: print(f"Profit - Avg: {results['Average'][4]:.4f}, Std: {results['Std Dev'][4]:.4f}, Max: {results['Max'][4]:.4f}, Min: {results['Min'][4]:.4f}")
+        if not _QUIET: print(f"Risk - Avg: {results['Average'][5]:.4f}, Std: {results['Std Dev'][5]:.4f}, Max: {results['Max'][5]:.4f}, Min: {results['Min'][5]:.4f}")
+        if not _QUIET: print("*************************************************")
+        if not _QUIET: print("Validation Statistics:")
+        if not _QUIET: print(f"MAE - Avg: {results['Average'][6]:.4f}, Std: {results['Std Dev'][6]:.4f}, Max: {results['Max'][6]:.4f}, Min: {results['Min'][6]:.4f}")
+        if not _QUIET: print(f"R²  - Avg: {results['Average'][7]:.4f}, Std: {results['Std Dev'][7]:.4f}, Max: {results['Max'][7]:.4f}, Min: {results['Min'][7]:.4f}")
+        if not _QUIET: print(f"Uncertainty - Avg: {results['Average'][8]:.4f}, Std: {results['Std Dev'][8]:.4f}, Max: {results['Max'][8]:.4f}, Min: {results['Min'][8]:.4f}")
+        if not _QUIET: print(f"SNR - Avg: {results['Average'][9]:.4f}, Std: {results['Std Dev'][9]:.4f}, Max: {results['Max'][9]:.4f}, Min: {results['Min'][9]:.4f}")
+        if not _QUIET: print(f"Profit - Avg: {results['Average'][10]:.4f}, Std: {results['Std Dev'][10]:.4f}, Max: {results['Max'][10]:.4f}, Min: {results['Min'][10]:.4f}")
+        if not _QUIET: print(f"Risk - Avg: {results['Average'][11]:.4f}, Std: {results['Std Dev'][11]:.4f}, Max: {results['Max'][11]:.4f}, Min: {results['Min'][11]:.4f}")
+        if not _QUIET: print("*************************************************")
+        if not _QUIET: print("Test Statistics:")
+        if not _QUIET: print(f"MAE - Avg: {results['Average'][12]:.4f}, Std: {results['Std Dev'][12]:.4f}, Max: {results['Max'][12]:.4f}, Min: {results['Min'][12]:.4f}")
+        if not _QUIET: print(f"R²  - Avg: {results['Average'][13]:.4f}, Std: {results['Std Dev'][13]:.4f}, Max: {results['Max'][13]:.4f}, Min: {results['Min'][13]:.4f}")
+        if not _QUIET: print(f"Uncertainty - Avg: {results['Average'][14]:.4f}, Std: {results['Std Dev'][14]:.4f}, Max: {results['Max'][14]:.4f}, Min: {results['Min'][14]:.4f}")
+        if not _QUIET: print(f"SNR - Avg: {results['Average'][15]:.4f}, Std: {results['Std Dev'][15]:.4f}, Max: {results['Max'][15]:.4f}, Min: {results['Min'][15]:.4f}")
+        if not _QUIET: print(f"Profit - Avg: {results['Average'][16]:.4f}, Std: {results['Std Dev'][16]:.4f}, Max: {results['Max'][16]:.4f}, Min: {results['Min'][16]:.4f}")
+        if not _QUIET: print(f"Risk - Avg: {results['Average'][17]:.4f}, Std: {results['Std Dev'][17]:.4f}, Max: {results['Max'][17]:.4f}, Min: {results['Min'][17]:.4f}")
+        if not _QUIET: print("*************************************************")
     else:
-        print("*************************************************")
-        print("Training Statistics:")
-        print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
-        print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
-        print(f"Uncertainty - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
-        print(f"SNR - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
-        print("*************************************************")
-        print("Validation Statistics:")
-        print(f"MAE - Avg: {results['Average'][4]:.4f}, Std: {results['Std Dev'][4]:.4f}, Max: {results['Max'][4]:.4f}, Min: {results['Min'][4]:.4f}")
-        print(f"R²  - Avg: {results['Average'][5]:.4f}, Std: {results['Std Dev'][5]:.4f}, Max: {results['Max'][5]:.4f}, Min: {results['Min'][5]:.4f}")
-        print(f"Uncertainty - Avg: {results['Average'][6]:.4f}, Std: {results['Std Dev'][6]:.4f}, Max: {results['Max'][6]:.4f}, Min: {results['Min'][6]:.4f}")
-        print(f"SNR - Avg: {results['Average'][7]:.4f}, Std: {results['Std Dev'][7]:.4f}, Max: {results['Max'][7]:.4f}, Min: {results['Min'][7]:.4f}") 
-        print("*************************************************")
-        print("Test Statistics:")
-        print(f"MAE - Avg: {results['Average'][8]:.4f}, Std: {results['Std Dev'][8]:.4f}, Max: {results['Max'][8]:.4f}, Min: {results['Min'][8]:.4f}")
-        print(f"R²  - Avg: {results['Average'][9]:.4f}, Std: {results['Std Dev'][9]:.4f}, Max: {results['Max'][9]:.4f}, Min: {results['Min'][9]:.4f}")
-        print(f"Uncertainty - Avg: {results['Average'][10]:.4f}, Std: {results['Std Dev'][10]:.4f}, Max: {results['Max'][10]:.4f}, Min: {results['Min'][10]:.4f}")
-        print(f"SNR - Avg: {results['Average'][11]:.4f}, Std: {results['Std Dev'][11]:.4f}, Max: {results['Max'][11]:.4f}, Min: {results['Min'][11]:.4f}")
-        print("*************************************************")
+        if not _QUIET: print("*************************************************")
+        if not _QUIET: print("Training Statistics:")
+        if not _QUIET: print(f"MAE - Avg: {results['Average'][0]:.4f}, Std: {results['Std Dev'][0]:.4f}, Max: {results['Max'][0]:.4f}, Min: {results['Min'][0]:.4f}")
+        if not _QUIET: print(f"R²  - Avg: {results['Average'][1]:.4f}, Std: {results['Std Dev'][1]:.4f}, Max: {results['Max'][1]:.4f}, Min: {results['Min'][1]:.4f}")
+        if not _QUIET: print(f"Uncertainty - Avg: {results['Average'][2]:.4f}, Std: {results['Std Dev'][2]:.4f}, Max: {results['Max'][2]:.4f}, Min: {results['Min'][2]:.4f}")
+        if not _QUIET: print(f"SNR - Avg: {results['Average'][3]:.4f}, Std: {results['Std Dev'][3]:.4f}, Max: {results['Max'][3]:.4f}, Min: {results['Min'][3]:.4f}")
+        if not _QUIET: print("*************************************************")
+        if not _QUIET: print("Validation Statistics:")
+        if not _QUIET: print(f"MAE - Avg: {results['Average'][4]:.4f}, Std: {results['Std Dev'][4]:.4f}, Max: {results['Max'][4]:.4f}, Min: {results['Min'][4]:.4f}")
+        if not _QUIET: print(f"R²  - Avg: {results['Average'][5]:.4f}, Std: {results['Std Dev'][5]:.4f}, Max: {results['Max'][5]:.4f}, Min: {results['Min'][5]:.4f}")
+        if not _QUIET: print(f"Uncertainty - Avg: {results['Average'][6]:.4f}, Std: {results['Std Dev'][6]:.4f}, Max: {results['Max'][6]:.4f}, Min: {results['Min'][6]:.4f}")
+        if not _QUIET: print(f"SNR - Avg: {results['Average'][7]:.4f}, Std: {results['Std Dev'][7]:.4f}, Max: {results['Max'][7]:.4f}, Min: {results['Min'][7]:.4f}") 
+        if not _QUIET: print("*************************************************")
+        if not _QUIET: print("Test Statistics:")
+        if not _QUIET: print(f"MAE - Avg: {results['Average'][8]:.4f}, Std: {results['Std Dev'][8]:.4f}, Max: {results['Max'][8]:.4f}, Min: {results['Min'][8]:.4f}")
+        if not _QUIET: print(f"R²  - Avg: {results['Average'][9]:.4f}, Std: {results['Std Dev'][9]:.4f}, Max: {results['Max'][9]:.4f}, Min: {results['Min'][9]:.4f}")
+        if not _QUIET: print(f"Uncertainty - Avg: {results['Average'][10]:.4f}, Std: {results['Std Dev'][10]:.4f}, Max: {results['Max'][10]:.4f}, Min: {results['Min'][10]:.4f}")
+        if not _QUIET: print(f"SNR - Avg: {results['Average'][11]:.4f}, Std: {results['Std Dev'][11]:.4f}, Max: {results['Max'][11]:.4f}, Min: {results['Min'][11]:.4f}")
+        if not _QUIET: print("*************************************************")
     
-    print(f"\nTotal Execution Time: {time.time() - start_time:.2f} seconds")
+    if not _QUIET: print(f"\nTotal Execution Time: {time.time() - start_time:.2f} seconds")
 
 
 def load_and_evaluate_model(config, plugin):
@@ -790,36 +792,36 @@ def load_and_evaluate_model(config, plugin):
     import sys, numpy as np, pandas as pd, json
     from tensorflow.keras.models import load_model
 
-    print(f"Loading pre-trained model from {config['load_model']}...")
+    if not _QUIET: print(f"Loading pre-trained model from {config['load_model']}...")
     try:
         custom_objects = {"combined_loss": combined_loss, "mmd": mmd_metric, "huber": huber_metric}
         plugin.model = load_model(config['load_model'], custom_objects=custom_objects)
-        print("Model loaded successfully.")
+        if not _QUIET: print("Model loaded successfully.")
     except Exception as e:
         print(f"Failed to load the model from {config['load_model']}: {e}")
         sys.exit(1)
 
-    print("Loading and processing validation data for evaluation...")
+    if not _QUIET: print("Loading and processing validation data for evaluation...")
     try:
         datasets = process_data(config)
         x_val = datasets["x_val"]
         val_dates = datasets.get("dates_val")
         if config["plugin"] in ["lstm", "cnn", "transformer","ann"]:
-            print("Creating sliding windows for CNN...")
+            if not _QUIET: print("Creating sliding windows for CNN...")
             x_val, val_date_windows = create_sliding_windows(
                 x_val, config['window_size'], stride=1, date_times=val_dates
             )
             val_dates = val_date_windows
-            print(f"Sliding windows created: x_val: {x_val.shape}")
+            if not _QUIET: print(f"Sliding windows created: x_val: {x_val.shape}")
             if x_val.ndim != 3:
                 raise ValueError(f"For CNN and LSTM, x_val must be 3D. Found: {x_val.shape}.")
 
-        print(f"Processed validation data: X shape: {x_val.shape}")
+        if not _QUIET: print(f"Processed validation data: X shape: {x_val.shape}")
     except Exception as e:
         print(f"Failed to process validation data: {e}")
         sys.exit(1)
 
-    print("Making predictions on validation data...")
+    if not _QUIET: print("Making predictions on validation data...")
     try:
         x_val_array = x_val if isinstance(x_val, np.ndarray) else x_val.to_numpy()
 
@@ -828,7 +830,7 @@ def load_and_evaluate_model(config, plugin):
         predictions, uncertainty_estimates = plugin.predict_with_uncertainty(x_val_array, mc_samples=mc_samples)
         
         
-        print(f"Predictions shape: {predictions.shape}")
+        if not _QUIET: print(f"Predictions shape: {predictions.shape}")
     except Exception as e:
         print(f"Failed to make predictions: {e}")
         sys.exit(1)
@@ -848,9 +850,9 @@ def load_and_evaluate_model(config, plugin):
                     baseline = datasets["baseline_val"]
                     predictions = (predictions + baseline) * diff + close_min
                 else:
-                    print("Warning: Baseline validation values not found; cannot convert returns to predicted close values.")
+                    if not _QUIET: print("Warning: Baseline validation values not found; cannot convert returns to predicted close values.")
             else:
-                print("Warning: 'CLOSE' not found; skipping proper denormalization for returns.")
+                if not _QUIET: print("Warning: 'CLOSE' not found; skipping proper denormalization for returns.")
         else:
             if "CLOSE" in norm_json:
                 close_min = norm_json["CLOSE"]["min"]
@@ -868,7 +870,7 @@ def load_and_evaluate_model(config, plugin):
         predictions_df['DATE_TIME'] = pd.Series(val_dates[:len(predictions_df)])
     else:
         predictions_df['DATE_TIME'] = pd.NaT
-        print("Warning: DATE_TIME for validation predictions not captured.")
+        if not _QUIET: print("Warning: DATE_TIME for validation predictions not captured.")
 
     cols = ['DATE_TIME'] + [col for col in predictions_df.columns if col != 'DATE_TIME']
     predictions_df = predictions_df[cols]
@@ -876,7 +878,7 @@ def load_and_evaluate_model(config, plugin):
     try:
         write_csv(file_path=evaluate_filename, data=predictions_df,
                   include_date=False, headers=config.get('headers', True))
-        print(f"Validation predictions with DATE_TIME saved to {evaluate_filename}")
+        if not _QUIET: print(f"Validation predictions with DATE_TIME saved to {evaluate_filename}")
     except Exception as e:
         print(f"Failed to save validation predictions to {evaluate_filename}: {e}")
         sys.exit(1)

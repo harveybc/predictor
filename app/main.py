@@ -11,6 +11,32 @@ Punto de entrada de la aplicación de predicción de EUR/USD. Este script orques
 
 import sys
 import os
+
+# ---------------------------------------------------------------------------
+# Quiet mode: suppress verbose output when PREDICTOR_QUIET=1 or --quiet flag
+# Only allows ERROR/WARN/final-metric lines through. Progress bars are killed
+# by setting verbose=0 on model.fit (handled in common/base.py).
+# ---------------------------------------------------------------------------
+import builtins
+_original_print = builtins.print
+
+def _quiet_print(*args, **kwargs):
+    """Filtered print that only passes through important messages."""
+    if args:
+        msg = str(args[0])
+        # Always allow errors, warnings, and final metrics
+        _pass = any(kw in msg.upper() for kw in [
+            'ERROR', 'WARN', 'EXCEPTION', 'TRACEBACK', 'FATAL',
+            'FINAL', 'BEST VAL', 'TEST MAE', 'VAL MAE', 'RESULT',
+            'IMPROVEMENT', 'VERDICT', 'SUMMARY',
+        ])
+        if _pass:
+            _original_print(*args, **kwargs)
+        return
+    _original_print(*args, **kwargs)
+
+if os.environ.get('PREDICTOR_QUIET', '0') == '1' or '--quiet' in sys.argv:
+    builtins.print = _quiet_print
 import json
 import pandas as pd
 from typing import Any, Dict

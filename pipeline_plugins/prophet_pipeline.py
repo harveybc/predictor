@@ -44,8 +44,8 @@ from .stl_plots import plot_and_save_loss, plot_predictions
 from .stl_io import save_final_outputs
 
 
-class STLPipelinePlugin:
-    """Refactored STL pipeline focused on use_returns=False only."""
+class ProphetPipelinePlugin:
+    """Refactored STL pipeline adapted for Prophet (injects dates)."""
 
     # Default parameters (unchanged defaults where applicable)
     plugin_params = {
@@ -99,6 +99,21 @@ class STLPipelinePlugin:
 
     def add_debug_info(self, debug_info: Dict) -> None:
         debug_info.update(self.get_debug_info())
+
+    def _denormalize_features(self, X: np.ndarray, feature_names: List[str], norm_json: Dict) -> np.ndarray:
+        """Denormalize features in X using normalization_json stats."""
+        if X is None or not feature_names or not norm_json:
+            return X
+        
+        X_denorm = X.copy()
+        # X is (N, W, F)
+        for i, name in enumerate(feature_names):
+            if name in norm_json:
+                stats = norm_json[name]
+                mean = stats.get('mean', 0.0)
+                std = stats.get('std', 1.0)
+                X_denorm[:, :, i] = X[:, :, i] * std + mean
+        return X_denorm
 
     # ---------------------------------------------------------------------
     # 1) Load and prepare datasets
@@ -196,18 +211,6 @@ class STLPipelinePlugin:
     def run_prediction_pipeline(self, config, predictor_plugin, preprocessor_plugin, target_plugin):
         start_time = time.time()
 
-        # Set deterministic seeds if enabled (default: True for reproducibility)
-        if config.get("deterministic_training", True):
-            import random
-            import numpy as np
-            import tensorflow as tf
-            seed = config.get("random_seed", 42)
-            random.seed(seed)
-            np.random.seed(seed)
-            tf.random.set_seed(seed)
-            # Enable TensorFlow deterministic operations
-            tf.config.experimental.enable_op_determinism()
-
         # Merge params with provided config and pin use_returns=False
         run_config = self.params.copy()
         run_config.update(config)
@@ -244,6 +247,34 @@ class STLPipelinePlugin:
         train_dates = datasets.get("y_train_dates")
         val_dates = datasets.get("y_val_dates")
         test_dates = datasets.get("y_test_dates")
+
+        # Align dates with targets length (safe slicing)
+        if train_dates is not None and len(y_train_list) > 0:
+            train_dates = train_dates[:len(y_train_list[0])]
+        if val_dates is not None and len(y_val_list) > 0:
+            val_dates = val_dates[:len(y_val_list[0])]
+        if test_dates is not None and len(y_test_list) > 0:
+            test_dates = test_dates[:len(y_test_list[0])]
+
+        # Inject dates and feature names into predictor plugin params
+        feature_names = datasets.get("feature_names", [])
+        norm_json = datasets.get("normalization_json", {})
+        
+        # Denormalize features for Prophet (it prefers real values)
+        if norm_json and feature_names:
+            print("Denormalizing features for Prophet...")
+            X_train = self._denormalize_features(X_train, feature_names, norm_json)
+            X_val = self._denormalize_features(X_val, feature_names, norm_json)
+            X_test = self._denormalize_features(X_test, feature_names, norm_json)
+
+        if hasattr(predictor_plugin, "set_params"):
+            predictor_plugin.set_params(
+                train_dates=train_dates,
+                val_dates=val_dates,
+                test_dates=test_dates,
+                feature_names=feature_names,
+            )
+
         baseline_train = datasets.get("baseline_train")
         baseline_val = datasets.get("baseline_val")
         baseline_test = datasets.get("baseline_test")
