@@ -364,6 +364,14 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
             test_mae = float("inf")
             test_naive_mae = float("inf")
 
+    # Save trained model for DOIN evaluator verification (inference-only)
+    try:
+        model_save_path = config.get("_doin_model_save_path")
+        if model_save_path and hasattr(predictor_plugin, "model"):
+            predictor_plugin.model.save(model_save_path)
+    except Exception:
+        pass
+
     # Cleanup best-effort.
     try:
         import tensorflow as tf

@@ -462,6 +462,8 @@ class Plugin:
                 with tempfile.TemporaryDirectory(prefix="ga_cand_") as td:
                     in_path = os.path.join(td, "input.json")
                     out_path = os.path.join(td, "output.json")
+                    model_path = os.path.join(td, "candidate_model.keras")
+                    new_config["_doin_model_save_path"] = model_path
                     with open(in_path, "w", encoding="utf-8") as f:
                         # Strip non-serializable keys (e.g. DOIN callbacks)
                         _serial_config = _json_sanitize(new_config)
@@ -609,11 +611,18 @@ class Plugin:
                         _cb_new_champ = _opt_callbacks.get("on_new_champion")
                         if _cb_new_champ:
                             try:
+                                # Read trained model for DOIN evaluator verification
+                                _model_b64 = None
+                                if os.path.exists(model_path):
+                                    import base64
+                                    with open(model_path, "rb") as _mf:
+                                        _model_b64 = base64.b64encode(_mf.read()).decode("ascii")
                                 _champ_metrics = {
                                     "fitness": fitness,
                                     "val_mae": val_mae, "val_naive_mae": naive_mae,
                                     "train_mae": train_mae, "train_naive_mae": train_naive_mae,
                                     "test_mae": test_mae, "test_naive_mae": test_naive_mae,
+                                    "_model_b64": _model_b64,
                                 }
                                 _champ_stage = {
                                     "stage": current_meta_stage if meta_mode else incremental_stage,
