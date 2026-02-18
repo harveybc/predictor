@@ -1,0 +1,302 @@
+import numpy as np
+import pandas as pd
+from .helpers import load_normalization_json, denormalize_all_datasets, load_normalized_csv, exclude_columns_from_datasets
+from .sliding_windows import create_sliding_windows, extract_baselines_from_sliding_windows
+from .anti_naive_lock import apply_log_returns_to_series, apply_feature_normalization
+import os as _os
+_QUIET = _os.environ.get('PREDICTOR_QUIET', '0') == '1'
+
+
+class STLPreprocessorZScore:
+    """
+    1. Load already normalized CSV data ✅
+    2. Denormalize all input datasets using JSON parameters
+    3. Create sliding windows from denormalized data
+    4. Extract baselines (last elements of each window for target column)
+    5. Calculate log return targets with those baselines (train, validation, test)
+     6. Create SECOND sliding windows matrix from the ORIGINAL normalized datasets transformed with per-column log-returns
+         (applies to all numeric features). Dates preserved; no change to target pipeline.
+     7. Keep baselines and targets unchanged (they're already calculated correctly)
+    """
+
+    # Plugin-specific parameters they get overwritten if declared in the config
+    plugin_params = {
+        "window_size": 48,
+        "predicted_horizons": [1, 2, 3, 4, 5, 6],
+        "target_column": "typical_price",
+        "use_returns": True,
+        # Targets and baselines are derived from *denormalized* baselines (real-world price units).
+        # This prevents downstream metric code from accidentally denormalizing twice.
+        "targets_are_denormalized": True,
+        "anti_naive_lock_enabled": True,
+    "feature_preprocessing_strategy": "selective",
+    "add_window_stats": True,
+    "window_stats_periods": [12, 48],
+    "reverse_time_axis": False,
+    # New: optional multi-scale returns augmentation (causal, within-window)
+    "add_multi_scale_returns": False,
+    "multi_scale_return_periods": [6, 24, 72],
+    "use_log1p_features": ["typical_price"],
+    }
+    
+    plugin_debug_vars = ["window_size", "predicted_horizons", "target_column", "use_log1p_features"]
+
+    # Start of plugin interface methods    
+    def __init__(self):
+        self.params = self.plugin_params.copy()
+
+    def set_params(self, **kwargs):
+        for key, value in kwargs.items():
+            self.params[key] = value
+    
+    def get_debug_info(self):
+        return {var: self.params.get(var) for var in self.plugin_debug_vars}
+    
+    def add_debug_info(self, debug_info):
+        debug_info.update(self.get_debug_info())
+    # End of plugin interface methods
+
+    def process_data(self, target_plugin, config):
+        # Main process orchestration
+        try:
+            self.set_params(**config)
+            config = self.params
+            
+            predicted_horizons = config['predicted_horizons']
+            if not isinstance(predicted_horizons, list) or not predicted_horizons:
+                raise ValueError("predicted_horizons must be a non-empty list")
+            
+            # 1. Load already normalized CSV data
+            if not _QUIET: print("Step 1: Load normalized CSV data")
+            normalized_data, dates = load_normalized_csv(config)
+            if not normalized_data:
+                raise ValueError("No data loaded - check file paths in config")
+            
+            # 2. Denormalize all input datasets using JSON parameters
+            if not _QUIET: print("Step 2: Denormalize all input datasets")
+            denormalized_data = denormalize_all_datasets(normalized_data, config)
+            
+            # 3. Create FIRST sliding windows from denormalized data used only and only for baseline extraction
+            if not _QUIET: print("Step 3: Create first sliding windows from denormalized data")
+            denorm_sliding_windows = create_sliding_windows(denormalized_data, config, dates)
+            if 'X_train' not in denorm_sliding_windows or denorm_sliding_windows.get('X_train') is None or len(denorm_sliding_windows.get('X_train')) == 0:
+                print("CRITICAL: First-pass sliding windows missing or empty for TRAIN split before baseline extraction. This leads to empty baseline_train and missing y_train targets.")
+
+            # 4. Extract baselines from the sliding windows (last elements of each window for target column)
+            if not _QUIET: print("Step 4: Extract baselines from sliding windows")
+            baselines = extract_baselines_from_sliding_windows(denorm_sliding_windows, config)
+
+            # 5. Calculate targets directly from baselines
+            if not _QUIET: print("Step 5: Calculate targets from baselines")
+            #TODO: verify this method is correct
+            targets = target_plugin.calculate_targets_from_baselines(baselines, config)
+
+            # 6. Create SECOND sliding windows from normalized data
+            if not _QUIET: print("Step 6: Create second sliding windows from normalized data")
+            final_sliding_windows = create_sliding_windows(normalized_data, config, dates)
+
+            # 6b. Apply log1p to specified features
+            self._apply_log1p_to_features(final_sliding_windows, config)
+
+            # 7. Align final sliding windows with target data length
+            if not _QUIET: print("Step 7: Align sliding windows with target data")
+            final_sliding_windows = self._align_sliding_windows_with_targets(final_sliding_windows, targets, config)
+
+            # Return final results
+            #TODO: verify this method is correct and required
+            output, preprocessor_params = self._prepare_final_output(final_sliding_windows, targets, baselines, config)
+            # attach naive info if present
+            #for k, v in naive_info.items():
+            #    output[k] = v
+            
+            # Store baselines for access in output preparation
+            self.extracted_baselines = baselines
+            
+            self.params.update(preprocessor_params)
+            return output
+
+        except Exception as e:
+            print(f"ERROR in process_data: {e}")
+            raise
+
+    def _apply_log1p_to_features(self, sliding_windows, config):
+        """Apply np.log1p to specified features in the sliding windows."""
+        features_to_log = config.get("use_log1p_features", [])
+        if not features_to_log:
+            return
+
+        if not _QUIET: print(f"Step 6b: Applying log1p to features: {features_to_log}")
+        
+        feature_names = sliding_windows.get('feature_names', [])
+        if not feature_names:
+            if not _QUIET: print("  WARNING: No feature names found in sliding windows, cannot apply log1p")
+            return
+
+        # Find indices for the features
+        indices = []
+        found_features = []
+        for i, name in enumerate(feature_names):
+            if name in features_to_log:
+                indices.append(i)
+                found_features.append(name)
+        
+        if not indices:
+            if not _QUIET: print(f"  WARNING: None of the requested features {features_to_log} found in dataset features")
+            return
+            
+        if not _QUIET: print(f"  Found features at indices {indices}: {found_features}")
+
+        for key in ['X_train', 'X_val', 'X_test']:
+            if key in sliding_windows:
+                data = sliding_windows[key]
+                # Check if data is not empty and has correct dimensions
+                if hasattr(data, 'shape') and len(data.shape) == 3:
+                    # data shape: (samples, window_size, features)
+                    
+                    # Use symmetric log1p: sign(x) * log1p(|x|)
+                    # This handles negative values (common in normalized data) without losing information
+                    # or causing NaNs for values <= -1.
+                    
+                    features_data = data[..., indices]
+                    sliding_windows[key][..., indices] = np.sign(features_data) * np.log1p(np.abs(features_data))
+                    
+                    if not _QUIET: print(f"  Applied symmetric log1p (sign(x)*log1p(|x|)) to {key} to handle negative normalized values")
+                else:
+                    if not _QUIET: print(f"  Skipping {key}: Invalid shape or type")
+
+    def _align_sliding_windows_with_targets(self, sliding_windows, targets, config):
+        """Align sliding windows with target data to ensure same number of samples."""
+        if not _QUIET: print("  Aligning sliding windows with target data...")
+        
+        # Get the first target to determine the target length
+        predicted_horizons = config['predicted_horizons']
+        first_horizon = predicted_horizons[0]
+        
+        # Find target lengths for each split
+        target_lengths = {}
+        for split in ['train', 'val', 'test']:
+            target_key = f'y_{split}'
+            if target_key in targets and f'output_horizon_{first_horizon}' in targets[target_key]:
+                target_length = len(targets[target_key][f'output_horizon_{first_horizon}'])
+                target_lengths[split] = target_length
+                if not _QUIET: print(f"    {split} target length: {target_length}")
+            else:
+                target_lengths[split] = 0
+        
+        # Trim sliding windows to match target lengths
+        aligned_windows = {}
+
+        for key, windows in sliding_windows.items():
+            if key.startswith('X_'):
+                # Extract split name (train, val, test)
+                split = key.split('_')[1]
+                if split in target_lengths and target_lengths[split] > 0:
+                    target_length = target_lengths[split]
+                    if hasattr(windows, 'shape') and len(windows) > target_length:
+                        aligned_windows[key] = windows[:target_length]
+                        if not _QUIET: print(f"    Trimmed {key} from {len(windows)} to {target_length} samples")
+                    else:
+                        aligned_windows[key] = windows
+                        
+                else:
+                    aligned_windows[key] = windows
+                    
+            else:
+                # Keep non-window data as is
+                aligned_windows[key] = windows
+                
+
+        return aligned_windows
+
+    
+    def _prepare_final_output(self, sliding_windows, targets, baselines, config):
+        """Prepare final output structure."""
+        # Use the baselines passed as parameter (extracted from denormalized data)
+        baseline_data = {}
+        if isinstance(baselines, dict):
+            # baselines is already in the correct format
+            baseline_data = baselines
+        else:
+            # Handle legacy format
+            for split in ['train', 'val', 'test']:
+                baseline_key = f'baseline_{split}'
+                baseline_data[baseline_key] = np.array([])
+        
+        # Validate that we have the required data structures
+        required_sliding_window_keys = ['X_train', 'X_val', 'X_test']
+        required_target_keys = ['y_train', 'y_val', 'y_test']
+        
+        for key in required_sliding_window_keys:
+            if key not in sliding_windows:
+                if not _QUIET: print(f"WARNING: Missing sliding window data: {key}")
+                sliding_windows[key] = np.array([])
+        
+        for key in required_target_keys:
+            if key not in targets:
+                if not _QUIET: print(f"WARNING: Missing target data: {key}")
+                targets[key] = {}
+        
+        output = {
+            # Final sliding windows for model (SECOND sliding windows after anti-naive-lock)
+            "x_train": sliding_windows['X_train'],
+            "x_val": sliding_windows['X_val'],
+            "x_test": sliding_windows['X_test'],
+            
+            # Targets by horizon (calculated from FIRST sliding windows)
+            "y_train": targets['y_train'],
+            "y_val": targets['y_val'],
+            "y_test": targets['y_test'],
+            
+            # Dates
+            "x_train_dates": sliding_windows.get('x_dates_train'),
+            "y_train_dates": sliding_windows.get('x_dates_train'),
+            "x_val_dates": sliding_windows.get('x_dates_val'),
+            "y_val_dates": sliding_windows.get('x_dates_val'),
+            "x_test_dates": sliding_windows.get('x_dates_test'),
+            "y_test_dates": sliding_windows.get('x_dates_test'),
+            
+            # Baselines for prediction reconstruction
+            "baseline_train": baseline_data.get('baseline_train', np.array([])),
+            "baseline_val": baseline_data.get('baseline_val', np.array([])),
+            "baseline_test": baseline_data.get('baseline_test', np.array([])),
+            
+            # Metadata
+            "feature_names": sliding_windows.get('feature_names', []),
+            "feature_names_train": sliding_windows.get('feature_names_train', []),
+            "feature_names_val": sliding_windows.get('feature_names_val', []),
+            "feature_names_test": sliding_windows.get('feature_names_test', []),
+            "target_returns_means": targets.get('target_returns_means', []),
+            "target_returns_stds": targets.get('target_returns_stds', []),
+            "predicted_horizons": config['predicted_horizons'],
+            "normalization_json": load_normalization_json(config),
+        }
+
+        # Inject any additional keys from targets (e.g. decomposed components like y_train_trend)
+        for key, value in targets.items():
+            if key not in output:
+                output[key] = value
+        
+        # Print summary statistics
+        if not _QUIET: print("\nPreprocessing Summary:")
+        if not _QUIET: print(f"  X_train shape: {output['x_train'].shape if hasattr(output['x_train'], 'shape') else 'N/A'}")
+        if not _QUIET: print(f"  X_val shape: {output['x_val'].shape if hasattr(output['x_val'], 'shape') else 'N/A'}")
+        if not _QUIET: print(f"  X_test shape: {output['x_test'].shape if hasattr(output['x_test'], 'shape') else 'N/A'}")
+        if not _QUIET: print(f"  Feature names: {len(output['feature_names'])}")
+        if not _QUIET: print(f"  Predicted horizons: {output['predicted_horizons']}")
+        if not _QUIET: print(f"  Target normalization parameters available: {len(output['target_returns_means'])}")
+        if not _QUIET: print(f"  Baseline train length: {len(output['baseline_train'])}")
+        if not _QUIET: print(f"  Baseline val length: {len(output['baseline_val'])}")
+        if not _QUIET: print(f"  Baseline test length: {len(output['baseline_test'])}")
+
+        output, preprocessor_params = exclude_columns_from_datasets(output, self.params, config)
+
+        return output, preprocessor_params
+
+    def run_preprocessing(self, target_plugin, config):
+        """Run preprocessing with configuration."""
+        processed_data = self.process_data(target_plugin, config)
+        return processed_data
+
+
+# Plugin interface alias for the system
+PreprocessorPlugin = STLPreprocessorZScore
