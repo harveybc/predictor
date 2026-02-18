@@ -73,10 +73,6 @@ For pasing remote tests, requires an instance of [harveybc/data-logger](https://
         set_env.bat
         pytest
         ```
-
-    - On Linux, run:
-        ```bash
-        sh ./set_env.sh
         pytest
         ```
 
@@ -139,13 +135,9 @@ predictor/
 │   └── unit_tests/                    # Unit test modules
 │
 ├── examples/                           # Example files directory
-│   ├── config/                         # Example configuration files
 │   ├── data/                           # Example training data
-│   ├── results/                        # Example output results
 │   └── scripts/                        # Example execution scripts
-│       └── run_phase_1.bat                 # Phase 1 execution script
 │
-├── concatenate_csv.py                  # CSV file manipulation utility
 ├── setup.py                           # Package installation script
 ├── predictor.bat                      # Windows execution script
 ├── predictor.sh                       # Linux execution script

@@ -10,9 +10,11 @@ Punto de entrada de la aplicación de predicción de EUR/USD. Este script orques
 """
 
 import sys
+import os
 import json
 import pandas as pd
 from typing import Any, Dict
+from pathlib import Path
 
 from app.config_handler import (
     load_config,
@@ -32,6 +34,69 @@ from config_merger import merge_config, process_unknown_args
 # - pipeline.plugins
 # - preprocessor.plugins
 
+
+def _repo_root() -> Path:
+    # main.py -> app/ -> <repo_root>
+    return Path(__file__).resolve().parents[1]
+
+
+def _resolve_repo_path(p: Any) -> str | None:
+    if not p:
+        return None
+    try:
+        pp = Path(str(p))
+        if pp.is_absolute():
+            return str(pp)
+        return str((_repo_root() / pp).resolve())
+    except Exception:
+        return str(p)
+
+
+def _ensure_csv_header(path: str, header_line: str) -> None:
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    if not os.path.exists(path) or os.path.getsize(path) == 0:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(header_line.rstrip("\n") + "\n")
+            f.flush()
+            os.fsync(f.fileno())
+
+
+def _validate_logging_config(config: Dict[str, Any]) -> None:
+    """Fail-fast-ish validation so remote runs never silently produce 'no logs'."""
+    mem_log = _resolve_repo_path(config.get("memory_log_file"))
+    opt_log = _resolve_repo_path(config.get("optimizer_resource_log_file"))
+    if mem_log:
+        config["memory_log_file"] = mem_log
+    if opt_log:
+        config["optimizer_resource_log_file"] = opt_log
+
+    print(
+        "[LOGGING_CONFIG] "
+        f"memory_log_file={config.get('memory_log_file')} "
+        f"optimizer_resource_log_file={config.get('optimizer_resource_log_file')} "
+        f"memory_log_gpu={config.get('memory_log_gpu')} memory_log_gc={config.get('memory_log_gc')} "
+        f"max_rss_gb={config.get('max_rss_gb')} max_rss_mb={config.get('max_rss_mb')}"
+    )
+
+    # Ensure files are writable and have headers (so tail/grep always works).
+    try:
+        if mem_log:
+            _ensure_csv_header(
+                mem_log,
+                "ts,epoch,tag,VmRSS_kB,VmHWM_kB,gpu_current_B,gpu_peak_B,gc0,gc1,gc2",
+            )
+    except Exception as e:
+        print(f"[LOGGING_CONFIG] WARN: cannot initialize memory_log_file: {e}")
+
+    try:
+        if opt_log:
+            _ensure_csv_header(
+                opt_log,
+                "ts,stage,generation,candidate,VmRSS_kB,VmHWM_kB,gpu_current_B,gpu_peak_B,extra",
+            )
+    except Exception as e:
+        print(f"[LOGGING_CONFIG] WARN: cannot initialize optimizer_resource_log_file: {e}")
+
 def main():
     """
     Orquesta la ejecución completa del sistema, incluyendo la optimización (si se configura)
@@ -40,6 +105,29 @@ def main():
     print("Parsing initial arguments...")
     args, unknown_args = parse_args()
     cli_args: Dict[str, Any] = vars(args)
+
+    # ------------------------------------------------------------------
+    # TensorFlow memory safety (must run BEFORE any TF import in plugins)
+    # ------------------------------------------------------------------
+    # Helps prevent long-run fragmentation and makes GPU allocation behavior
+    # consistent across plugins (CNN was attempting this too late).
+    os.environ.setdefault("TF_FORCE_GPU_ALLOW_GROWTH", "true")
+    os.environ.setdefault("TF_GPU_ALLOCATOR", "cuda_malloc_async")
+    try:
+        import tensorflow as tf  # noqa: WPS433 (runtime import intentional)
+
+        gpus = tf.config.list_physical_devices('GPU')
+        for gpu in gpus:
+            try:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            except Exception:
+                # If TF already initialized somewhere, we can't change this.
+                # Keep going; env var above still helps in many setups.
+                pass
+        if gpus:
+            print(f"TensorFlow GPU memory growth configured for {len(gpus)} GPU(s).")
+    except Exception as e:
+        print(f"INFO: TensorFlow memory configuration skipped: {e}")
 
     print("Loading default configuration...")
     config: Dict[str, Any] = DEFAULT_VALUES.copy()
@@ -109,6 +197,17 @@ def main():
         print(f"Failed to load or initialize Pipeline Plugin: {e}")
         sys.exit(1)
 
+    # Carga del Target Plugin (para target and metrics calculation)
+    plugin_name = config.get('target_plugin', 'default_target')
+    print(f"Loading Plugin ..{plugin_name}")
+    try:
+        target_class, _ = load_plugin('target.plugins', plugin_name)
+        target_plugin = target_class()
+        target_plugin.set_params(**config)
+    except Exception as e:
+        print(f"Failed to load or initialize Target Plugin: {e}")
+        sys.exit(1)
+
     # Carga del Preprocessor Plugin (para process_data, ventanas deslizantes y STL)
     plugin_name = config.get('preprocessor_plugin', 'default_preprocessor')
     print(f"Loading Plugin ..{plugin_name}")
@@ -127,8 +226,13 @@ def main():
     config = merge_config(config, optimizer_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
     # fusión de configuración, integrando parámetros específicos de plugin pipeline
     config = merge_config(config, pipeline_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
+    # fusión de configuración, integrando parámetros específicos de plugin target
+    config = merge_config(config, target_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
     # fusión de configuración, integrando parámetros específicos de plugin preprocessor
     config = merge_config(config, preprocessor_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
+
+    # Validate logging destinations after final config merge.
+    _validate_logging_config(config)
     
 
     # --- DECISIÓN DE EJECUCIÓN ---
@@ -136,7 +240,7 @@ def main():
         print("Loading and evaluating existing model...")
         try:
             # Usar el predictor plugin para cargar y evaluar el modelo (método ya existente)
-            predictor_plugin.load_and_evaluate_model(config)
+            predictor_plugin.load_and_evaluate_model(config, predictor_plugin, preprocessor_plugin, target_plugin)
         except Exception as e:
             print(f"Model evaluation failed: {e}")
             sys.exit(1)
@@ -166,7 +270,8 @@ def main():
             pipeline_plugin.run_prediction_pipeline(
                 config,
                 predictor_plugin,
-                preprocessor_plugin
+                preprocessor_plugin,
+                target_plugin
             )
         
     # Guardado de la configuración local y remota

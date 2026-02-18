@@ -42,16 +42,22 @@ DEFAULT_VALUES = {
     'max_steps_train': 6300,
     'max_steps_val': 6300,
     'max_steps_test': 6300,
-    'iterations': 3,
+    'iterations': 1,
     'epochs': 1000,
     'uncertainty_file': 'prediction_uncertainties.csv',
     'batch_size': 32,
-    'use_sliding_window' : False,
+    # Safety: keep inference batched to avoid memory spikes.
+    # (Used by BaseBayesianKerasPredictor.predict_with_uncertainty and the MC codepath.)
+    'predict_batch_size': 256,
+    # When True, BaseKerasPredictor.train skips post-fit MC uncertainty passes.
+    # Optimizer forces this on; pipeline keeps it off by default.
+    'disable_postfit_uncertainty': False,
     "kl_weight": 1e-6,
     "kl_anneal_epochs": 100,        
     "mmd_lambda": 0.1,
     "overfitting_penalty": 0.1,
-    "use_returns": True,
+    "use_returns": False,
+    "use_log1p_targets": False,
     "mc_samples":100,
     "plotted_horizon": 6,
     "min_delta": 1e-4,
@@ -73,6 +79,6 @@ DEFAULT_VALUES = {
     "optimizer_output_file": "optimizer_output.json",
     "penalty_close_lambda":0.0001, # penalty in thel loss function for the predicted value being 0 (Naive)
     "penalty_far_lambda":0.0001,    # penalty in thel loss function for the predicted value being far from the target value in the opposite dicection of the 0 (Naive)
-    "feature_extractor_file": None,
-    "train_fe" : False
+    "incentive_loss": 10.0,
+    "use_log1p_targets": True
 }
