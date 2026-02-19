@@ -1430,15 +1430,31 @@ class Plugin:
                         }
                         _migrant_params = _cb_gen_start(population, hof, hyper_keys, gen, _stage_info)
                         if _migrant_params and isinstance(_migrant_params, dict):
-                            # Replace worst individual in population with network champion
-                            _worst_idx = min(range(len(population)),
-                                             key=lambda i: -population[i].fitness.values[0]
-                                             if population[i].fitness.valid else float("inf"))
+                            # ── Deduplication: skip if this exact candidate already exists ──
+                            _migrant_genome = []
                             for ki, key in enumerate(hyper_keys):
-                                if key in _migrant_params:
-                                    population[_worst_idx][ki] = _migrant_params[key]
-                            del population[_worst_idx].fitness.values  # Mark for re-evaluation
-                            print(f"  [MIGRATION IN] Injected network champion into population[{_worst_idx}]")
+                                _migrant_genome.append(_migrant_params.get(key))
+                            _already_in_pop = False
+                            for _pop_ind in population:
+                                if all(
+                                    _pop_ind[ki] == _migrant_genome[ki]
+                                    for ki in range(len(hyper_keys))
+                                    if _migrant_genome[ki] is not None
+                                ):
+                                    _already_in_pop = True
+                                    break
+                            if _already_in_pop:
+                                print(f"  [MIGRATION IN] Network champion already in population — skipping injection")
+                            else:
+                                # Replace worst individual in population with network champion
+                                _worst_idx = min(range(len(population)),
+                                                 key=lambda i: -population[i].fitness.values[0]
+                                                 if population[i].fitness.valid else float("inf"))
+                                for ki, key in enumerate(hyper_keys):
+                                    if key in _migrant_params:
+                                        population[_worst_idx][ki] = _migrant_params[key]
+                                del population[_worst_idx].fitness.values  # Mark for re-evaluation
+                                print(f"  [MIGRATION IN] Injected network champion into population[{_worst_idx}]")
                     except Exception as _cb_err:
                         print(f"  [MIGRATION IN] Callback error: {_cb_err}")
 
