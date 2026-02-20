@@ -1,5 +1,9 @@
 {
     "encoder_conv_layers": 1,
-    "encoder_base_filters": 118,
-    "encoder_lstm_units": 91
+    "encoder_base_filters": 72,
+    "encoder_lstm_units": 25,
+    "positional_encoding": true,
+    "horizon_attn_heads": 4,
+    "horizon_attn_key_dim": 30,
+    "horizon_embedding_dim": 36
 }
