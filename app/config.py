@@ -14,7 +14,7 @@ DEFAULT_VALUES = {
     #"x_validation_file": "examples\\data\\phase_3\\extracted_features_transformer_va_d2.csv",
     "y_validation_file": "examples\\data\\phase_2\\exp_4\\normalized_d3.csv",
     
-    'target_column': 'CLOSE',
+    'target_column': 'typical_price',
     'output_file': './prediction.csv',
     'results_file': './results.csv',
     'save_model': './predictor_model.keras',
