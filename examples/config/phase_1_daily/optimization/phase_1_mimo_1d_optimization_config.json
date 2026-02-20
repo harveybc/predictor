@@ -28,7 +28,7 @@
     "plugin": "mimo",
     "memory_log_file": "examples/results/phase_1_daily/phase_1_mimo_1d_rss.csv",
     "use_optimizer": true,
-    "optimization_resume": true,
+    "optimization_resume": false,
     "optimization_resume_file": "examples/results/phase_1_daily/phase_1_mimo_1d_optimization_resume.json",
     "optimization_pause_on_resume":  false,
     "optimization_incremental": true,
@@ -76,7 +76,7 @@
     "deterministic_training": true,
     "random_seed": 42,
     "population_size": 20,
-    "n_generations": 20,
+    "n_generations": 15,
     "optimization_patience": 5,
     "hyperparameter_bounds": {
         "window_size": [70, 160],
@@ -113,8 +113,8 @@
     "l2_reg": 1e-05,
     "kl_weight": 1e-3,
     "kl_anneal_epochs": 20,
-    "early_patience": 80,
-    "start_from_epoch": 15,
+    "early_patience": 60,
+    "start_from_epoch": 10,
     "use_log1p_features": [
         "typical_price"
     ],
