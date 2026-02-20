@@ -1271,11 +1271,6 @@ class Plugin:
                         resume_path, population, hyper_keys, full_bounds, incremental_enabled, config
                     )
 
-                    # Restore stage if meta-mode
-                    if meta_mode and resumed_stage:
-                        current_meta_stage = resumed_stage
-                        print(f"[RESUME] Restored meta-mode stage {current_meta_stage}")
-
                     # Adjust hyper_keys if resume loaded smaller genome and incremental is enabled
                     if loaded_count > 0:
                         if resumed_params and len(resumed_params) < len(hyper_keys):
@@ -1283,6 +1278,25 @@ class Plugin:
                             hyper_keys = resumed_params
                         else:
                             hyper_keys = adjust_params_for_resume(hyper_keys, all_param_keys, actual_genome_size, incremental_enabled)
+
+                    # Restore stage if meta-mode, but reconcile with actual genome size
+                    # If genome was truncated (e.g. 14→3 genes), current_meta_stage must
+                    # match the stage whose cumulative params equal the actual genome,
+                    # not the stage from the resume file.
+                    if meta_mode and resumed_stage:
+                        from .modules.meta_stages import get_active_parameters_for_stage, get_total_stages
+                        effective_stage = resumed_stage
+                        n_active = len(hyper_keys)
+                        ts = get_total_stages(config)
+                        for s in range(1, ts + 1):
+                            if len(get_active_parameters_for_stage(s, config)) >= n_active:
+                                effective_stage = s
+                                break
+                        if effective_stage != resumed_stage:
+                            print(f"[RESUME] Reconciled meta-mode stage: resume said {resumed_stage}, but genome has {n_active} params → stage {effective_stage}")
+                        else:
+                            print(f"[RESUME] Restored meta-mode stage {effective_stage}")
+                        current_meta_stage = effective_stage
 
                         # Update bounds and param_types to match adjusted hyper_keys
                         bounds = {k: full_bounds[k] for k in hyper_keys}
