@@ -215,6 +215,7 @@ class Plugin:
         self.best_test_naive_mae_so_far = None
         self.best_train_mae_so_far = None
         self.best_train_naive_mae_so_far = None
+        self.best_params_so_far = {}  # Best champion hyper_dict for stage-end broadcast
         # Tracks the FITNESS to beat for the *current generation* (used by GA early stopping).
         self.best_at_gen_start = float("inf")
 
@@ -598,12 +599,14 @@ class Plugin:
                         self.best_train_mae_so_far = float(train_mae) if np.isfinite(train_mae) else self.best_train_mae_so_far
                         self.best_train_naive_mae_so_far = float(train_naive_mae) if np.isfinite(train_naive_mae) else self.best_train_naive_mae_so_far
                         is_new_champion = True
+                        self.best_params_so_far = hyper_dict.copy()
 
                         # Save Champion Parameters Immediately
                         params_file = config.get("optimization_parameters_file", "optimization_parameters.json")
+                        resolved_params_file = _resolve_repo_path(params_file) or params_file
                         try:
-                            _atomic_json_dump(params_file, hyper_dict)
-                            print(f"  [CHAMPION] Parameters saved to {params_file}")
+                            _atomic_json_dump(resolved_params_file, hyper_dict)
+                            print(f"  [CHAMPION] Parameters saved to {resolved_params_file}")
                         except Exception as e:
                             print(f"  [CHAMPION] Failed to save parameters: {e}")
 
@@ -1034,12 +1037,14 @@ class Plugin:
                     self.best_train_mae_so_far = float(train_mae) if np.isfinite(train_mae) else self.best_train_mae_so_far
                     self.best_train_naive_mae_so_far = float(train_naive_mae) if np.isfinite(train_naive_mae) else self.best_train_naive_mae_so_far
                     is_new_champion = True
+                    self.best_params_so_far = hyper_dict.copy()
 
                     # Save Champion Parameters Immediately
                     params_file = config.get("optimization_parameters_file", "optimization_parameters.json")
+                    resolved_params_file = _resolve_repo_path(params_file) or params_file
                     try:
-                        _atomic_json_dump(params_file, hyper_dict)
-                        print(f"  [CHAMPION] Parameters saved to {params_file}")
+                        _atomic_json_dump(resolved_params_file, hyper_dict)
+                        print(f"  [CHAMPION] Parameters saved to {resolved_params_file}")
                     except Exception as e:
                         print(f"  [CHAMPION] Failed to save parameters: {e}")
 
@@ -1397,6 +1402,12 @@ class Plugin:
                             "candidate_num": _cand_num_init,
                             "total_candidates": len(invalid_ind),
                             "total_candidates_evaluated": int(self.total_eval_counter),
+                            "fitness": float(fit[0]) if fit else None,
+                            "val_mae": getattr(ind, 'val_mae', None),
+                            "train_mae": getattr(ind, 'train_mae', None),
+                            "val_naive_mae": getattr(ind, 'naive_mae', None),
+                            "train_naive_mae": getattr(ind, 'train_naive_mae', None),
+                            "champion_fitness": float(self.best_fitness_so_far) if self.best_fitness_so_far != float('inf') else None,
                         }
                         _cb_between_init(start_gen, _cand_num_init, _bc_stage_init)
                     except Exception as _cb_err:
@@ -1443,6 +1454,10 @@ class Plugin:
                             "population_size": population_size,
                         }
                         _migrant_params = _cb_gen_start(population, hof, hyper_keys, gen, _stage_info)
+                        # Stage-sync: network ordered us to advance to the next stage
+                        if isinstance(_migrant_params, dict) and _migrant_params.get("_force_stage_advance"):
+                            print(f"  [STAGE SYNC] Network signalled stage advance — ending current stage early")
+                            break
                         if _migrant_params and isinstance(_migrant_params, dict):
                             # ── Deduplication: skip if this exact candidate already exists ──
                             _migrant_genome = []
@@ -1528,6 +1543,12 @@ class Plugin:
                                 "candidate_num": _cand_num,
                                 "total_candidates": len(invalid_ind),
                                 "total_candidates_evaluated": int(self.total_eval_counter),
+                                "fitness": float(fit[0]) if fit else None,
+                                "val_mae": getattr(ind, 'val_mae', None),
+                                "train_mae": getattr(ind, 'train_mae', None),
+                                "val_naive_mae": getattr(ind, 'naive_mae', None),
+                                "train_naive_mae": getattr(ind, 'train_naive_mae', None),
+                                "champion_fitness": float(self.best_fitness_so_far) if self.best_fitness_so_far != float('inf') else None,
                             }
                             _cb_between(gen, _cand_num, _bc_stage)
                         except Exception as _cb_err:
@@ -1624,9 +1645,10 @@ class Plugin:
 
                 # Save Statistics
                 stats_file = config.get("optimization_statistics", "optimization_stats.json")
+                resolved_stats_file = _resolve_repo_path(stats_file) or stats_file
                 try:
-                    _atomic_json_dump(stats_file, stats_data)
-                    print(f"  Statistics saved to {stats_file}")
+                    _atomic_json_dump(resolved_stats_file, stats_data)
+                    print(f"  Statistics saved to {resolved_stats_file}")
                 except Exception as e:
                     print(f"  Failed to save statistics: {e}")
 
@@ -1663,6 +1685,7 @@ class Plugin:
                             "champion_naive_mae": float(self.best_naive_mae_so_far) if self.best_naive_mae_so_far is not None else None,
                             "champion_test_mae": float(self.best_test_mae_so_far) if self.best_test_mae_so_far is not None else None,
                             "champion_train_mae": float(self.best_train_mae_so_far) if self.best_train_mae_so_far is not None else None,
+                            "champion_train_naive_mae": float(self.best_train_naive_mae_so_far) if self.best_train_naive_mae_so_far is not None else None,
                             "avg_fitness": avg_mae,
                             "best_fitness_gen": best_val_mae_gen,
                         }
@@ -1683,6 +1706,26 @@ class Plugin:
             from .modules.genome_operations import expand_population_with_new_params
 
             if should_add_more_parameters(hyper_keys, all_param_keys, incremental_enabled):
+                # --- CALLBACK: on_stage_end (broadcast to peers for stage sync) ---
+                _completed_stage = current_meta_stage if meta_mode else incremental_stage
+                _cb_stage_end = _opt_callbacks.get("on_stage_end")
+                if _cb_stage_end:
+                    try:
+                        _stage_end_metrics = {
+                            "champion_fitness": float(self.best_fitness_so_far) if self.best_fitness_so_far != float('inf') else None,
+                            "champion_val_mae": float(self.best_val_mae_so_far) if self.best_val_mae_so_far is not None else None,
+                            "champion_naive_mae": float(self.best_naive_mae_so_far) if self.best_naive_mae_so_far is not None else None,
+                            "champion_train_mae": float(self.best_train_mae_so_far) if self.best_train_mae_so_far is not None else None,
+                            "champion_train_naive_mae": float(self.best_train_naive_mae_so_far) if self.best_train_naive_mae_so_far is not None else None,
+                        }
+                        _cb_stage_end(
+                            _completed_stage, total_stages,
+                            self.best_params_so_far, float(self.best_fitness_so_far),
+                            _stage_end_metrics,
+                        )
+                    except Exception as _cb_err:
+                        print(f"  [STAGE END] Callback error: {_cb_err}")
+
                 # Get next batch of parameters (meta-mode aware)
                 new_params, hyper_keys = get_next_parameter_batch(
                     hyper_keys, 
