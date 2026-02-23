@@ -1,0 +1,49 @@
+Type	Details	Time
+Gen 4 	Stage 6/6 | evals=380 champ_val=0.008810 avg_fit=0.0005 patience=5/5 	6:30:21 AM
+Gen 3 	Stage 6/6 | evals=370 champ_val=0.008810 avg_fit=0.0005 patience=4/5 	5:02:45 AM
+Gen 2 	Stage 6/6 | evals=360 champ_val=0.008810 avg_fit=0.0005 patience=3/5 	3:35:03 AM
+Gen 1 	Stage 6/6 | evals=350 champ_val=0.008810 avg_fit=0.0005 patience=2/5 	2:10:38 AM
+Gen 0 	Stage 6/6 | evals=340 champ_val=0.008810 avg_fit=0.0005 patience=1/5 	1:05:56 AM
+📡 Broadcast 	Gen 0 perf=0.0001 optimae=opt-7bac7980-177 	9:43:09 PM
+🏆 Champion 	Gen 0 Stage 6 | NDA=0.000093 (lower=better) | val: 0.008810-0.008693=0.000116 | train: 0.009690-0.009619=0.000070 | test=0.005737 	9:43:07 PM
+Gen 4 	Stage 5/6 | evals=310 champ_val=0.008810 avg_fit=0.0005 patience=5/5 	9:33:45 PM
+Gen 3 	Stage 5/6 | evals=301 champ_val=0.008810 avg_fit=0.0005 patience=4/5 	8:35:21 PM
+Gen 2 	Stage 5/6 | evals=292 champ_val=0.008810 avg_fit=0.0005 patience=3/5 	7:25:26 PM
+Gen 1 	Stage 5/6 | evals=283 champ_val=0.008810 avg_fit=0.0005 patience=2/5 	6:34:13 PM
+Gen 0 	Stage 5/6 | evals=274 champ_val=0.008810 avg_fit=0.0005 patience=1/5 	5:44:37 PM
+📡 Broadcast 	Gen 0 perf=0.0001 optimae=opt-7bac7980-177 	2:16:53 PM
+🏆 Champion 	Gen 0 Stage 5 | NDA=0.000093 (lower=better) | val: 0.008810-0.008693=0.000116 | train: 0.009690-0.009619=0.000070 | test=0.005737 	2:16:50 PM
+Gen 4 	Stage 4/6 | evals=245 champ_val=0.008810 avg_fit=0.0004 patience=5/5 	2:10:09 PM
+Gen 3 	Stage 4/6 | evals=238 champ_val=0.008810 avg_fit=0.0004 patience=4/5 	1:26:58 PM
+Gen 2 	Stage 4/6 | evals=231 champ_val=0.008810 avg_fit=0.0004 patience=3/5 	12:43:01 PM
+Gen 1 	Stage 4/6 | evals=224 champ_val=0.008810 avg_fit=0.0004 patience=2/5 	11:58:33 AM
+Gen 0 	Stage 4/6 | evals=217 champ_val=0.008810 avg_fit=0.0004 patience=1/5 	11:13:47 AM
+📡 Broadcast 	Gen 0 perf=0.0001 optimae=opt-7bac7980-177 	8:08:32 AM
+🏆 Champion 	Gen 0 Stage 4 | NDA=0.000093 (lower=better) | val: 0.008810-0.008693=0.000116 | train: 0.009690-0.009619=0.000070 | test=0.005737 	8:08:30 AM
+Gen 4 	Stage 3/6 | evals=190 champ_val=0.008810 avg_fit=0.0001 patience=5/5 	8:01:39 AM
+Gen 3 	Stage 3/6 | evals=182 champ_val=0.008810 avg_fit=0.0001 patience=4/5 	6:58:37 AM
+Gen 2 	Stage 3/6 | evals=174 champ_val=0.008810 avg_fit=0.0001 patience=3/5 	6:02:48 AM
+Gen 1 	Stage 3/6 | evals=166 champ_val=0.008810 avg_fit=0.0001 patience=2/5 	4:49:56 AM
+Gen 0 	Stage 3/6 | evals=158 champ_val=0.008810 avg_fit=0.0001 patience=1/5 	3:37:08 AM
+📡 Broadcast 	Gen 0 perf=0.0001 optimae=opt-7bac7980-177 	11:35:40 PM
+🏆 Champion 	Gen 0 Stage 3 | NDA=0.000093 (lower=better) | val: 0.008810-0.008693=0.000116 | train: 0.009690-0.009619=0.000070 | test=0.005737 	11:35:37 PM
+Gen 4 	Stage 2/6 | evals=130 champ_val=0.008810 avg_fit=0.0003 patience=5/5 	11:26:13 PM
+Gen 3 	Stage 2/6 | evals=121 champ_val=0.008810 avg_fit=0.0003 patience=4/5 	10:11:03 PM
+Gen 2 	Stage 2/6 | evals=112 champ_val=0.008810 avg_fit=0.0003 patience=3/5 	8:55:57 PM
+Gen 1 	Stage 2/6 | evals=103 champ_val=0.008810 avg_fit=0.0003 patience=2/5 	7:40:43 PM
+Gen 0 	Stage 2/6 | evals=94 champ_val=0.008810 avg_fit=0.0003 patience=1/5 	6:40:17 PM
+📡 Broadcast 	Gen 0 perf=0.0001 optimae=opt-7bac7980-177 	2:53:09 PM
+🏆 Champion 	Gen 0 Stage 2 | NDA=0.000093 (lower=better) | val: 0.008810-0.008693=0.000116 | train: 0.009690-0.009619=0.000070 | test=0.005737 	2:53:07 PM
+Gen 4 	Stage 1/6 | evals=65 champ_val=0.008489 avg_fit=0.0002 patience=5/5 	2:43:46 PM
+Gen 3 	Stage 1/6 | evals=56 champ_val=0.008489 avg_fit=0.0002 patience=4/5 	1:29:49 PM
+Gen 2 	Stage 1/6 | evals=47 champ_val=0.008489 avg_fit=0.0003 patience=3/5 	12:32:51 PM
+Gen 1 	Stage 1/6 | evals=38 champ_val=0.008489 avg_fit=0.0009 patience=2/5 	11:24:48 AM
+Gen 0 	Stage 1/6 | evals=29 champ_val=0.008489 avg_fit=0.0017 patience=1/5 	10:23:21 AM
+📡 Broadcast 	Gen 0 perf=0.0001 optimae=opt-7bac7980-177 	8:00:59 AM
+🏆 Champion 	Gen 0 Stage 1 | NDA=0.000065 (lower=better) | val: 0.008489-0.008693=-0.000205 | train: 0.009954-0.009619=0.000335 | test=0.006192 ⬆️ 	8:00:56 AM
+📡 Broadcast 	Gen 0 perf=0.0010 optimae=opt-7bac7980-177 	7:49:10 AM
+🏆 Champion 	Gen 0 Stage 1 | NDA=0.001017 (lower=better) | val: 0.009681-0.008693=0.000987 | train: 0.010667-0.009619=0.001048 | test=0.005887 ⬆️ 	7:49:06 AM
+📡 Broadcast 	Gen 0 perf=0.0013 optimae=opt-7bac7980-177 	7:44:44 AM
+🏆 Champion 	Gen 0 Stage 1 | NDA=0.001329 (lower=better) | val: 0.010230-0.008693=0.001537 | train: 0.010741-0.009619=0.001121 | test=0.006313 ⬆️ 	7:44:42 AM
+🔗 Peer 	192.168.0.103:8470 (d4620ff4030f) 	7:40:00 AM
+🔗 Peer 	192.168.0.126:8470 (89adde5e3a38) 	7:40:00 AM

@@ -1,0 +1,62 @@
+Type	Details	Time
+❌ Reject 	NDA=0.001679 does not beat best=-0.000098 (lower=better) from 89adde5e3a38 (peer) 	4:09:43 AM
+📡 Broadcast 	Gen 0 perf=0.0001 optimae=opt-d4620ff4-177 	11:17:43 PM
+🏆 Champion 	Gen 0 Stage 5 | NDA=0.000136 (lower=better) | val: 0.008917-0.008693=0.000223 | train: 0.009667-0.009619=0.000048 | test=0.005788 	11:17:41 PM
+Gen 4 	Stage 4/6 | evals=341 champ_val=0.008917 avg_fit=0.0009 patience=5/5 	11:02:38 PM
+Gen 3 	Stage 4/6 | evals=330 champ_val=0.008917 avg_fit=0.0009 patience=4/5 	8:37:50 PM
+Gen 2 	Stage 4/6 | evals=319 champ_val=0.008917 avg_fit=0.0006 patience=3/5 	6:13:29 PM
+❌ Reject 	NDA=0.001679 does not beat best=-0.000098 (lower=better) from 89adde5e3a38 (peer) 	5:07:42 PM
+Gen 1 	Stage 4/6 | evals=304 champ_val=0.008917 avg_fit=0.0004 patience=2/5 	2:52:21 PM
+Gen 0 	Stage 4/6 | evals=295 champ_val=0.008917 avg_fit=0.0006 patience=1/5 	12:58:47 PM
+📡 Broadcast 	Gen 0 perf=0.0001 optimae=opt-d4620ff4-177 	5:42:11 AM
+🏆 Champion 	Gen 0 Stage 4 | NDA=0.000136 (lower=better) | val: 0.008917-0.008693=0.000223 | train: 0.009667-0.009619=0.000048 | test=0.005788 	5:42:09 AM
+Gen 4 	Stage 3/6 | evals=260 champ_val=0.008917 avg_fit=0.0007 patience=5/5 	5:27:09 AM
+❌ Reject 	NDA=0.001679 does not beat best=-0.000098 (lower=better) from 89adde5e3a38 (peer) 	2:40:23 AM
+Gen 3 	Stage 3/6 | evals=244 champ_val=0.008917 avg_fit=0.0007 patience=4/5 	2:16:34 AM
+❌ Reject 	NDA=0.001778 does not beat best=-0.000098 (lower=better) from 89adde5e3a38 (peer) 	1:33:46 AM
+Gen 2 	Stage 3/6 | evals=228 champ_val=0.008917 avg_fit=0.0005 patience=3/5 	11:05:58 PM
+❌ Reject 	NDA=0.000093 does not beat best=-0.000098 (lower=better) from 7bac7980ca3a (peer) 	9:43:09 PM
+Gen 1 	Stage 3/6 | evals=219 champ_val=0.008917 avg_fit=0.0007 patience=2/5 	9:21:49 PM
+❌ Reject 	NDA=0.002007 does not beat best=-0.000098 (lower=better) from 89adde5e3a38 (peer) 	8:17:27 PM
+Gen 0 	Stage 3/6 | evals=204 champ_val=0.008917 avg_fit=0.0005 patience=1/5 	6:26:44 PM
+❌ Reject 	NDA=0.000093 does not beat best=-0.000098 (lower=better) from 7bac7980ca3a (peer) 	2:16:53 PM
+📡 Broadcast 	Gen 0 perf=0.0001 optimae=opt-d4620ff4-177 	11:44:17 AM
+🏆 Champion 	Gen 0 Stage 3 | NDA=0.000136 (lower=better) | val: 0.008917-0.008693=0.000223 | train: 0.009667-0.009619=0.000048 | test=0.005788 	11:44:15 AM
+Gen 4 	Stage 2/6 | evals=172 champ_val=0.008917 avg_fit=0.0005 patience=5/5 	11:29:14 AM
+Gen 3 	Stage 2/6 | evals=161 champ_val=0.008917 avg_fit=0.0005 patience=4/5 	9:06:53 AM
+❌ Reject 	NDA=0.002007 does not beat best=-0.000098 (lower=better) from 89adde5e3a38 (peer) 	8:16:37 AM
+❌ Reject 	NDA=0.000093 does not beat best=-0.000098 (lower=better) from 7bac7980ca3a (peer) 	8:08:32 AM
+Gen 2 	Stage 2/6 | evals=150 champ_val=0.008917 avg_fit=0.0008 patience=3/5 	6:44:04 AM
+Gen 1 	Stage 2/6 | evals=139 champ_val=0.008917 avg_fit=0.0009 patience=2/5 	4:44:46 AM
+Gen 0 	Stage 2/6 | evals=125 champ_val=0.008917 avg_fit=0.0013 patience=1/5 	2:21:18 AM
+📡 Broadcast 	Gen 0 perf=0.0001 optimae=opt-d4620ff4-177 	11:59:28 PM
+🏆 Champion 	Gen 0 Stage 2 | NDA=0.000136 (lower=better) | val: 0.008917-0.008693=0.000223 | train: 0.009667-0.009619=0.000048 | test=0.005788 	11:59:25 PM
+❌ Reject 	NDA=0.000093 does not beat best=-0.000098 (lower=better) from 7bac7980ca3a (peer) 	11:35:40 PM
+📡 Broadcast 	Gen 0 perf=0.0012 optimae=opt-d4620ff4-177 	9:42:25 PM
+🏆 Champion 	Gen 0 Stage 2 | NDA=0.001196 (lower=better) | val: 0.009531-0.008693=0.000838 | train: 0.011173-0.009619=0.001554 | test=0.006005 	9:42:22 PM
+Gen 5 	Stage 1/6 | evals=89 champ_val=0.008674 avg_fit=0.0001 patience=5/5 	9:35:04 PM
+❌ Reject 	NDA=0.002007 does not beat best=-0.000098 (lower=better) from 89adde5e3a38 (peer) 	8:15:57 PM
+Gen 4 	Stage 1/6 | evals=76 champ_val=0.008674 avg_fit=0.0002 patience=4/5 	6:41:28 PM
+Gen 3 	Stage 1/6 | evals=63 champ_val=0.008674 avg_fit=0.0006 patience=3/5 	4:09:51 PM
+Gen 2 	Stage 1/6 | evals=55 champ_val=0.008674 avg_fit=0.0009 patience=2/5 	2:56:29 PM
+❌ Reject 	NDA=0.000093 does not beat best=-0.000098 (lower=better) from 7bac7980ca3a (peer) 	2:53:09 PM
+Gen 1 	Stage 1/6 | evals=42 champ_val=0.008674 avg_fit=0.0016 patience=1/5 	1:00:59 PM
+Gen 0 	Stage 1/6 | evals=28 champ_val=0.008674 avg_fit=0.0018 patience=0/5 	11:12:01 AM
+📡 Broadcast 	Gen 0 perf=-0.0001 optimae=opt-d4620ff4-177 	10:37:11 AM
+🏆 Champion 	Gen 0 Stage 1 | NDA=-0.000098 (lower=better) | val: 0.008674-0.008693=-0.000019 | train: 0.009443-0.009619=-0.000176 | test=0.005647 ⬆️ 	10:37:09 AM
+❌ Reject 	NDA=0.000120 does not beat best=0.000065 (lower=better) from 89adde5e3a38 (peer) 	9:09:25 AM
+❌ Reject 	NDA=0.000963 does not beat best=0.000065 (lower=better) from 89adde5e3a38 (peer) 	8:53:57 AM
+❌ Reject 	NDA=0.001395 does not beat best=0.000065 (lower=better) from 89adde5e3a38 (peer) 	8:37:02 AM
+📡 Broadcast 	Gen 0 perf=0.0008 optimae=opt-d4620ff4-177 	8:17:05 AM
+🏆 Champion 	Gen 0 Stage 1 | NDA=0.000762 (lower=better) | val: 0.009750-0.008693=0.001056 | train: 0.010087-0.009619=0.000468 | test=0.005807 	8:17:03 AM
+❌ Reject 	NDA=0.001692 does not beat best=0.000065 (lower=better) from 89adde5e3a38 (peer) 	8:07:28 AM
+✅ Accept 	NDA=0.000065 beats prev=0.001017 (lower=better) from 7bac7980ca3a (peer) 	8:00:59 AM
+❌ Reject 	NDA=0.002849 does not beat best=0.001017 (lower=better) from 89adde5e3a38 (peer) 	7:55:21 AM
+📡 Broadcast 	Gen 0 perf=0.0014 optimae=opt-d4620ff4-177 	7:55:08 AM
+🏆 Champion 	Gen 0 Stage 1 | NDA=0.001413 (lower=better) | val: 0.009693-0.008693=0.000999 | train: 0.011446-0.009619=0.001827 | test=0.006021 	7:55:06 AM
+✅ Accept 	NDA=0.001017 beats prev=0.001329 (lower=better) from 7bac7980ca3a (peer) 	7:49:10 AM
+📡 Broadcast 	Gen 0 perf=0.0026 optimae=opt-d4620ff4-177 	7:47:10 AM
+🏆 Champion 	Gen 0 Stage 1 | NDA=0.002636 (lower=better) | val: 0.011217-0.008693=0.002524 | train: 0.012367-0.009619=0.002748 | test=0.006504 	7:47:08 AM
+✅ Accept 	NDA=0.001329 beats prev=-- (lower=better) from 7bac7980ca3a (peer) 	7:44:44 AM
+🔗 Peer 	192.168.0.100:8470 (7bac7980ca3a) 	7:44:44 AM
+🔗 Peer 	192.168.0.126:8470 (89adde5e3a38) 	7:44:44 AM+
