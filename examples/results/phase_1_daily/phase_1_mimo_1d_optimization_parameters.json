@@ -1,9 +1,21 @@
 {
     "encoder_conv_layers": 1,
-    "encoder_base_filters": 72,
-    "encoder_lstm_units": 25,
+    "encoder_base_filters": 26,
+    "encoder_lstm_units": 10,
     "positional_encoding": true,
     "horizon_attn_heads": 4,
     "horizon_attn_key_dim": 30,
-    "horizon_embedding_dim": 36
+    "horizon_embedding_dim": 20,
+    "learning_rate": 0.001,
+    "activation": "elu",
+    "batch_size": 32,
+    "use_log1p_features": [
+        "typical_price"
+    ],
+    "window_size": 79,
+    "l2_reg": 1e-05,
+    "decoder_dropout": 0.03,
+    "min_delta": 1e-08,
+    "kl_weight": 0.001,
+    "kl_anneal_epochs": 20
 }
