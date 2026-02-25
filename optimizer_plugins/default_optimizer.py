@@ -1390,6 +1390,7 @@ class Plugin:
             fitnesses = map(toolbox.evaluate, invalid_ind)
             _cb_between_init = _opt_callbacks.get("on_between_candidates")
             _cand_num_init = 0
+            _force_advance_init = False
             for ind, fit in zip(invalid_ind, fitnesses):
                 ind.fitness.values = fit
                 _cand_num_init += 1
@@ -1409,7 +1410,12 @@ class Plugin:
                             "train_naive_mae": getattr(ind, 'train_naive_mae', None),
                             "champion_fitness": float(self.best_fitness_so_far) if self.best_fitness_so_far != float('inf') else None,
                         }
-                        _cb_between_init(start_gen, _cand_num_init, _bc_stage_init)
+                        _between_init_result = _cb_between_init(start_gen, _cand_num_init, _bc_stage_init)
+                        # Stage-sync: network signalled stage advance during initial evaluation
+                        if isinstance(_between_init_result, dict) and _between_init_result.get("_force_stage_advance"):
+                            print(f"  [STAGE SYNC] Network signalled stage advance during initial eval ({_cand_num_init}/{len(invalid_ind)} evaluated)")
+                            _force_advance_init = True
+                            break
                     except Exception as _cb_err:
                         print(f"  [EVAL SERVICE] Between-candidates callback error: {_cb_err}")
 
@@ -1433,7 +1439,14 @@ class Plugin:
             # Mark first iteration complete (resume/recovery won't run again)
             first_iteration = False
 
-            for gen in range(start_gen, end_gen):
+            # Stage-sync: if force advance signalled during initial eval, skip gen loop
+            if _force_advance_init:
+                print(f"  [STAGE SYNC] Skipping generation loop — advancing to next stage")
+                _gen_range = range(0, 0)  # empty range — skip all generations
+            else:
+                _gen_range = range(start_gen, end_gen)
+
+            for gen in _gen_range:
                 gen_start_time = time.time()
                 self.current_gen = gen  # Current generation number (absolute)
                 self.eval_counter = 0 # Reset per generation
@@ -1529,6 +1542,7 @@ class Plugin:
                 fitnesses = map(toolbox.evaluate, invalid_ind)
                 _cb_between = _opt_callbacks.get("on_between_candidates")
                 _cand_num = 0
+                _force_advance_flag = False
                 for ind, fit in zip(invalid_ind, fitnesses):
                     ind.fitness.values = fit
                     _cand_num += 1
@@ -1550,9 +1564,20 @@ class Plugin:
                                 "train_naive_mae": getattr(ind, 'train_naive_mae', None),
                                 "champion_fitness": float(self.best_fitness_so_far) if self.best_fitness_so_far != float('inf') else None,
                             }
-                            _cb_between(gen, _cand_num, _bc_stage)
+                            _between_result = _cb_between(gen, _cand_num, _bc_stage)
+                            # Stage-sync: network signalled stage advance between candidates
+                            if isinstance(_between_result, dict) and _between_result.get("_force_stage_advance"):
+                                print(f"  [STAGE SYNC] Network signalled stage advance between candidates ({_cand_num}/{len(invalid_ind)} evaluated)")
+                                _force_advance_flag = True
+                                break
                         except Exception as _cb_err:
                             print(f"  [EVAL SERVICE] Between-candidates callback error: {_cb_err}")
+
+                # Stage-sync: if force advance was signalled mid-generation, stop immediately
+                if _force_advance_flag:
+                    population[:] = offspring  # Keep partially evaluated offspring
+                    print(f"  [STAGE SYNC] Breaking generation loop for stage transition")
+                    break
 
                 # Replace the old population by the offspring
                 population[:] = offspring
@@ -1753,6 +1778,16 @@ class Plugin:
                 # If we keep them, hof[0] at final result extraction may have wrong genome size → IndexError.
                 hof.clear()
                 print(f"[INCREMENTAL] Cleared HallOfFame (old individuals had {len(hyper_keys) - len(new_params)} genes, new have {len(hyper_keys)})")
+
+                # STAGE SYNC: Invalidate ALL fitness values so the entire population
+                # is re-evaluated with the new expanded parameter set.
+                # This ensures all individuals are scored with the new parameters active.
+                _invalidated_count = 0
+                for ind in population:
+                    if ind.fitness.valid:
+                        del ind.fitness.values
+                        _invalidated_count += 1
+                print(f"[INCREMENTAL] Invalidated {_invalidated_count} fitness values for full re-evaluation")
 
                 # Update bounds and param_types for expanded genome
                 bounds = {k: full_bounds[k] for k in hyper_keys}
