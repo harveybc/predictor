@@ -18,6 +18,7 @@ setup(
             'transformer=predictor_plugins.predictor_plugin_transformer:Plugin',
             'mimo=predictor_plugins.predictor_plugin_mimo:Plugin',
             'tft=predictor_plugins.predictor_plugin_tft:Plugin',
+            'tcn=predictor_plugins.predictor_plugin_tcn:Plugin',
             'base=predictor_plugin.predictor_plugin_base:Plugin'
         ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
