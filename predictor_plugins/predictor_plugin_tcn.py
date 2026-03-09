@@ -202,6 +202,4 @@ class Plugin(BaseDeterministicKerasPredictor):
         metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
 
         self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)
-
-        if not self.params.get('quiet', False):
-            self.model.summary(line_length=140)
+        self.model.summary(line_length=140)
