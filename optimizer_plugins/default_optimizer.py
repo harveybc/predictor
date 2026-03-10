@@ -588,6 +588,8 @@ class Plugin:
                     individual.test_naive_mae = test_naive_mae
                     individual.train_mae = train_mae
                     individual.train_naive_mae = train_naive_mae
+                    individual.model_summary = payload.get("model_summary") or ""
+                    individual.hyper_dict = hyper_dict
 
                     is_new_champion = False
                     if np.isfinite(fitness) and fitness < float(self.best_fitness_so_far):
@@ -1563,6 +1565,8 @@ class Plugin:
                                 "val_naive_mae": getattr(ind, 'naive_mae', None),
                                 "train_naive_mae": getattr(ind, 'train_naive_mae', None),
                                 "champion_fitness": float(self.best_fitness_so_far) if self.best_fitness_so_far != float('inf') else None,
+                                "candidate_params": getattr(ind, 'hyper_dict', None),
+                                "model_summary": getattr(ind, 'model_summary', None),
                             }
                             _between_result = _cb_between(gen, _cand_num, _bc_stage)
                             # Stage-sync: network signalled stage advance between candidates

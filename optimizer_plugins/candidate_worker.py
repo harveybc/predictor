@@ -254,7 +254,17 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
         if not _QUIET: print(f"Attempting build_model with scalar input_shape: {input_shape_scalar}")
         predictor_plugin.build_model(input_shape=input_shape_scalar, x_train=x_train, config=config)
         if not _QUIET: print("build_model succeeded with scalar input_shape")
-    
+
+    # Capture model summary as a string for dashboard display
+    _model_summary_str = ""
+    try:
+        if hasattr(predictor_plugin, "model") and predictor_plugin.model is not None:
+            _lines = []
+            predictor_plugin.model.summary(line_length=120, print_fn=lambda line: _lines.append(line))
+            _model_summary_str = "\n".join(_lines)
+    except Exception:
+        pass
+
     _append_optimizer_resource_row(config, "after_build_model", gen, cand)
 
     _append_optimizer_resource_row(config, "before_fit", gen, cand, extra={"params": hyper})
@@ -388,6 +398,7 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
         "val_mae": val_mae,
         "test_mae": test_mae,
         "test_naive_mae": test_naive_mae,
+        "model_summary": _model_summary_str,
     }
     return fitness, naive_mae
 
@@ -433,6 +444,7 @@ def main() -> int:
         "train_naive_mae": None,
         "test_mae": None,
         "test_naive_mae": None,
+        "model_summary": None,
         "error": None,
     }
     try:
@@ -448,6 +460,7 @@ def main() -> int:
                 "train_naive_mae": extra.get("train_naive_mae"),
                 "test_mae": extra.get("test_mae"),
                 "test_naive_mae": extra.get("test_naive_mae"),
+                "model_summary": extra.get("model_summary"),
             }
         )
     except Exception as e:
