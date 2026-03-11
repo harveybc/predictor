@@ -1507,6 +1507,11 @@ class Plugin:
                 # Clone the selected individuals
                 offspring = list(map(toolbox.clone, offspring))
 
+                # Save pre-mutation snapshot of the current population so that
+                # failed candidates (OOM, crash) can have their genome reverted
+                # to the parent's version instead of keeping a broken mutant.
+                _prev_population_genes = [list(ind) for ind in population]
+
                 # PRESERVE CHAMPION: In first generation after resume, ensure champion stays in position 0
                 # without any genetic operators applied, to enable exact reproducibility check
                 is_first_gen_after_resume = (gen == start_gen and start_gen > 0)
@@ -1548,6 +1553,19 @@ class Plugin:
                 for ind, fit in zip(invalid_ind, fitnesses):
                     ind.fitness.values = fit
                     _cand_num += 1
+
+                    # Revert genome on evaluation failure: if the candidate crashed
+                    # (OOM, etc.) its fitness is inf.  Replace such broken mutants
+                    # with the corresponding parent genome from the previous
+                    # generation so the population doesn't accumulate dead weight.
+                    if fit[0] == float("inf"):
+                        idx_in_offspring = offspring.index(ind)
+                        if idx_in_offspring < len(_prev_population_genes):
+                            for gi, gv in enumerate(_prev_population_genes[idx_in_offspring]):
+                                ind[gi] = gv
+                            del ind.fitness.values  # mark for re-evaluation next gen
+                            print(f"  [GENOME REVERT] Candidate {_cand_num} failed — reverted genome to parent")
+
                     # --- CALLBACK: on_between_candidates ---
                     # Process max 1 pending evaluation request between candidates
                     if _cb_between:
