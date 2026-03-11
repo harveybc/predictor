@@ -1274,9 +1274,31 @@ class Plugin:
 
                 # 1. Try to load full population state ONLY if resume is explicitly enabled
                 if resume_enabled and resume_path and os.path.exists(resume_path):
-                    start_gen, loaded_count, loaded_indices, actual_genome_size, resumed_stage, resumed_params = load_resume_checkpoint(
+                    start_gen, loaded_count, loaded_indices, actual_genome_size, resumed_stage, resumed_params, _resumed_opt_state = load_resume_checkpoint(
                         resume_path, population, hyper_keys, full_bounds, incremental_enabled, config
                     )
+
+                    # Restore optimizer state from checkpoint
+                    if _resumed_opt_state:
+                        if _resumed_opt_state.get("best_fitness_so_far") is not None:
+                            self.best_fitness_so_far = float(_resumed_opt_state["best_fitness_so_far"])
+                        if _resumed_opt_state.get("best_val_mae_so_far") is not None:
+                            self.best_val_mae_so_far = float(_resumed_opt_state["best_val_mae_so_far"])
+                        if _resumed_opt_state.get("best_naive_mae_so_far") is not None:
+                            self.best_naive_mae_so_far = float(_resumed_opt_state["best_naive_mae_so_far"])
+                        if _resumed_opt_state.get("best_test_mae_so_far") is not None:
+                            self.best_test_mae_so_far = float(_resumed_opt_state["best_test_mae_so_far"])
+                        if _resumed_opt_state.get("best_test_naive_mae_so_far") is not None:
+                            self.best_test_naive_mae_so_far = float(_resumed_opt_state["best_test_naive_mae_so_far"])
+                        if _resumed_opt_state.get("best_train_mae_so_far") is not None:
+                            self.best_train_mae_so_far = float(_resumed_opt_state["best_train_mae_so_far"])
+                        if _resumed_opt_state.get("best_train_naive_mae_so_far") is not None:
+                            self.best_train_naive_mae_so_far = float(_resumed_opt_state["best_train_naive_mae_so_far"])
+                        if _resumed_opt_state.get("total_eval_counter") is not None:
+                            self.total_eval_counter = int(_resumed_opt_state["total_eval_counter"])
+                        if _resumed_opt_state.get("patience_counter") is not None:
+                            self.patience_counter = int(_resumed_opt_state["patience_counter"])
+                        self.best_at_gen_start = float(self.best_fitness_so_far)
 
                     # Adjust hyper_keys if resume loaded smaller genome and incremental is enabled
                     if loaded_count > 0:
@@ -1385,10 +1407,14 @@ class Plugin:
             print(json.dumps(champ_verify, indent=2))
             print("-" * 60)
 
-            # Only evaluate invalid individuals (resumed ones might need re-eval if we didn't save fitness)
-            # For simplicity, we re-evaluate resumed individuals to ensure fitness is consistent with current code/data.
-            # (Unless we saved fitnesses too, but re-eval is safer for "sudden shutdown" recovery where data might have changed).
+            # Only evaluate individuals without valid fitness.
+            # Individuals restored from checkpoint with saved fitness will be skipped.
             invalid_ind = [ind for ind in population if not ind.fitness.valid]
+            valid_from_checkpoint = len(population) - len(invalid_ind)
+            if valid_from_checkpoint > 0:
+                print(f"[RESUME] {valid_from_checkpoint}/{len(population)} individuals have restored fitness — skipping re-evaluation")
+            if invalid_ind:
+                print(f"[EVAL] Evaluating {len(invalid_ind)} individuals without fitness...")
             fitnesses = map(toolbox.evaluate, invalid_ind)
             _cb_between_init = _opt_callbacks.get("on_between_candidates")
             _cand_num_init = 0
@@ -1423,10 +1449,14 @@ class Plugin:
 
             hof.update(population)
 
-            # CRITICAL FIX: Initialize ALL best_*_so_far consistently from hof[0]
-            if hof and hof[0].fitness.valid:
+            # Initialize best_*_so_far from hof[0] ONLY if not already restored
+            # from checkpoint (resume with optimizer_state).  If resumed, the
+            # checkpoint values are authoritative — hof[0] may differ.
+            _resumed_has_state = (resume_enabled and '_resumed_opt_state' in dir() 
+                                  and _resumed_opt_state 
+                                  and _resumed_opt_state.get("best_fitness_so_far") is not None)
+            if hof and hof[0].fitness.valid and not _resumed_has_state:
                 self.best_fitness_so_far = hof[0].fitness.values[0]
-                # Initialize all MAE values from the same champion individual
                 self.best_val_mae_so_far = getattr(hof[0], "val_mae", None)
                 self.best_naive_mae_so_far = getattr(hof[0], "naive_mae", None)
                 self.best_test_mae_so_far = getattr(hof[0], "test_mae", None)
@@ -1435,8 +1465,14 @@ class Plugin:
                 self.best_train_naive_mae_so_far = getattr(hof[0], "train_naive_mae", None)
             self.best_at_gen_start = float(self.best_fitness_so_far)
 
-            no_improve_counter = 0
-            self.patience_counter = 0 # Sync with local var
+            if not _resumed_has_state:
+                no_improve_counter = 0
+                self.patience_counter = 0
+            else:
+                no_improve_counter = int(self.patience_counter)
+                print(f"[RESUME] Restored patience_counter={self.patience_counter}, "
+                      f"best_fitness={self.best_fitness_so_far:.6f}, "
+                      f"total_evals={self.total_eval_counter}")
 
             # Mark first iteration complete (resume/recovery won't run again)
             first_iteration = False
@@ -1705,13 +1741,25 @@ class Plugin:
 
                 # --- Save Resume State ---
                 if resume_path:
+                    _opt_state = {
+                        "best_fitness_so_far": float(self.best_fitness_so_far) if self.best_fitness_so_far != float('inf') else None,
+                        "best_val_mae_so_far": float(self.best_val_mae_so_far) if self.best_val_mae_so_far is not None else None,
+                        "best_naive_mae_so_far": float(self.best_naive_mae_so_far) if self.best_naive_mae_so_far is not None else None,
+                        "best_test_mae_so_far": float(self.best_test_mae_so_far) if self.best_test_mae_so_far is not None else None,
+                        "best_test_naive_mae_so_far": float(self.best_test_naive_mae_so_far) if self.best_test_naive_mae_so_far is not None else None,
+                        "best_train_mae_so_far": float(self.best_train_mae_so_far) if self.best_train_mae_so_far is not None else None,
+                        "best_train_naive_mae_so_far": float(self.best_train_naive_mae_so_far) if self.best_train_naive_mae_so_far is not None else None,
+                        "total_eval_counter": int(self.total_eval_counter),
+                        "patience_counter": int(self.patience_counter),
+                    }
                     save_resume_checkpoint(
                         resume_path, 
                         gen, 
                         population,
                         current_stage=current_meta_stage,
                         active_parameters=hyper_keys,
-                        meta_mode=meta_mode
+                        meta_mode=meta_mode,
+                        optimizer_state=_opt_state
                     )
 
                 # --- CALLBACK: on_generation_end ---

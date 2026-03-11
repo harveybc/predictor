@@ -28,11 +28,11 @@
     "plugin": "tcn",
     "memory_log_file": "examples/results/phase_1_daily/phase_1_tcn_1d_rss.csv",
     "use_optimizer": true,
-    "optimization_resume": false,
+    "optimization_resume": true,
     "optimization_resume_file": "examples/results/phase_1_daily/phase_1_tcn_1d_optimization_resume.json",
     "optimization_pause_on_resume": false,
     "optimization_incremental": true,
-    "optimization_increment_size": 3,
+    "optimization_increment_size": 5,
     "optimization_meta_mode": true,
     "meta_training_log": "examples/results/phase_1_daily/tcn_optimization_meta_training_data.csv",
     "optimization_stages": [

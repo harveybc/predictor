@@ -17,7 +17,7 @@ def load_resume_checkpoint(resume_path, population, hyper_keys, full_bounds, inc
     
     Returns:
         (start_gen: int, loaded_count: int, loaded_indices: set, actual_genome_size: int,
-         resumed_stage: int, resumed_params: list)
+         resumed_stage: int, resumed_params: list, optimizer_state: dict)
     """
     loaded_indices = set()
     start_gen = 0
@@ -25,6 +25,7 @@ def load_resume_checkpoint(resume_path, population, hyper_keys, full_bounds, inc
     actual_genome_size = len(hyper_keys)
     resumed_stage = 1
     resumed_params = hyper_keys.copy()
+    optimizer_state = {}
     
     try:
         print(f"\n[RESUME] Found resume file at: {resume_path}")
@@ -43,9 +44,13 @@ def load_resume_checkpoint(resume_path, population, hyper_keys, full_bounds, inc
         
         print(f"[RESUME] Resume data: generation={start_gen-1}, population_size={len(saved_pop)}, stage={resumed_stage}, meta_mode={saved_meta_mode}")
         
+        saved_fitnesses = resume_data.get("fitnesses", [])
+        saved_ind_metrics = resume_data.get("individual_metrics", [])
+        optimizer_state = resume_data.get("optimizer_state", {})
+
         if not saved_pop:
             print(f"[RESUME] WARN: Resume file found but contained no population data.")
-            return start_gen, 0, loaded_indices, actual_genome_size, resumed_stage, resumed_params
+            return start_gen, 0, loaded_indices, actual_genome_size, resumed_stage, resumed_params, optimizer_state
         
         # Detect genome size from saved population
         saved_genome_size = len(saved_pop[0]) if saved_pop else 0
@@ -119,14 +124,29 @@ def load_resume_checkpoint(resume_path, population, hyper_keys, full_bounds, inc
             if valid:
                 for k in range(genes_to_load):
                     population[i][k] = saved_ind[k]
+                # Restore fitness if available
+                if i < len(saved_fitnesses) and saved_fitnesses[i] is not None:
+                    population[i].fitness.values = tuple(saved_fitnesses[i])
+                # Restore per-individual metrics
+                if i < len(saved_ind_metrics) and saved_ind_metrics[i]:
+                    m = saved_ind_metrics[i]
+                    for attr_name in ("val_mae", "naive_mae", "train_mae", "train_naive_mae", "test_mae", "test_naive_mae"):
+                        if m.get(attr_name) is not None:
+                            setattr(population[i], attr_name, m[attr_name])
                 loaded_count += 1
                 loaded_indices.add(i)
         
-        print(f"[RESUME] SUCCESS: Loaded {loaded_count} individuals")
+        fitness_restored = sum(1 for i in range(min(len(population), len(saved_fitnesses)))
+                               if i in loaded_indices and saved_fitnesses[i] is not None
+                               and population[i].fitness.valid)
+        print(f"[RESUME] SUCCESS: Loaded {loaded_count} individuals ({fitness_restored} with restored fitness)")
         if expanded_count > 0:
             print(f"[RESUME] Expanded {expanded_count} individuals with new parameters")
         if invalid_count > 0:
             print(f"[RESUME] Skipped {invalid_count} invalid individuals")
+        if optimizer_state:
+            print(f"[RESUME] Optimizer state restored: best_fitness={optimizer_state.get('best_fitness_so_far')}, "
+                  f"total_evals={optimizer_state.get('total_eval_counter')}, patience={optimizer_state.get('patience_counter')}")
         print(f"[RESUME] Resuming from generation {start_gen}")
         
     except Exception as e:
@@ -135,7 +155,7 @@ def load_resume_checkpoint(resume_path, population, hyper_keys, full_bounds, inc
         traceback.print_exc()
         print(f"[RESUME] Continuing with fresh population")
     
-    return start_gen, loaded_count, loaded_indices, actual_genome_size, resumed_stage, resumed_params
+    return start_gen, loaded_count, loaded_indices, actual_genome_size, resumed_stage, resumed_params, optimizer_state
 
 
 def load_champion_parameters(params_path, hyper_keys, full_bounds):
@@ -180,7 +200,7 @@ def load_champion_parameters(params_path, hyper_keys, full_bounds):
         return None
 
 
-def save_resume_checkpoint(resume_path, generation, population, current_stage=None, active_parameters=None, meta_mode=False):
+def save_resume_checkpoint(resume_path, generation, population, current_stage=None, active_parameters=None, meta_mode=False, optimizer_state=None):
     """
     Save current population state to resume file with stage tracking.
     
@@ -191,16 +211,38 @@ def save_resume_checkpoint(resume_path, generation, population, current_stage=No
         current_stage: Current stage number (for incremental/meta mode)
         active_parameters: List of currently active parameter names
         meta_mode: Whether in meta-optimization mode
+        optimizer_state: Dict with best_fitness_so_far, MAE metrics, counters, etc.
     """
     try:
+        # Save individual fitness values and per-individual metrics
+        pop_fitnesses = []
+        pop_metrics = []
+        for ind in population:
+            if ind.fitness.valid:
+                pop_fitnesses.append(list(ind.fitness.values))
+            else:
+                pop_fitnesses.append(None)
+            pop_metrics.append({
+                "val_mae": getattr(ind, "val_mae", None),
+                "naive_mae": getattr(ind, "naive_mae", None),
+                "train_mae": getattr(ind, "train_mae", None),
+                "train_naive_mae": getattr(ind, "train_naive_mae", None),
+                "test_mae": getattr(ind, "test_mae", None),
+                "test_naive_mae": getattr(ind, "test_naive_mae", None),
+            })
+
         resume_payload = {
             "generation": generation,
             "population": [list(ind) for ind in population],
+            "fitnesses": pop_fitnesses,
+            "individual_metrics": pop_metrics,
             "genome_size": len(population[0]) if population else 0,
             "active_parameters": active_parameters if active_parameters else [],
             "current_stage": current_stage if current_stage is not None else 1,
-            "meta_mode": meta_mode
+            "meta_mode": meta_mode,
         }
+        if optimizer_state:
+            resume_payload["optimizer_state"] = optimizer_state
         
         # Atomic save
         temp_path = resume_path + ".tmp"
