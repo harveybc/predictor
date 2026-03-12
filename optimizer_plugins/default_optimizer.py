@@ -1476,6 +1476,10 @@ class Plugin:
 
             # Mark first iteration complete (resume/recovery won't run again)
             first_iteration = False
+            # Clear stale resume state so subsequent stages don't think we're resuming.
+            # Without this, _resumed_has_state stays True on stage 2+, preventing
+            # proper no_improve_counter reset and best_fitness_so_far initialization.
+            _resumed_opt_state = None
 
             # Stage-sync: if force advance signalled during initial eval, skip gen loop
             if _force_advance_init:
