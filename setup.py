@@ -23,7 +23,8 @@ setup(
         ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
         'optimizer.plugins': [
-            'default_optimizer=optimizer_plugins.default_optimizer:Plugin'
+            'default_optimizer=optimizer_plugins.default_optimizer:Plugin',
+            'neat_optimizer=optimizer_plugins.neat_optimizer:Plugin'
         ],
         # Plugins para el Pipeline (orquestación del flujo completo)
         'pipeline.plugins': [
