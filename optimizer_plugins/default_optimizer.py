@@ -996,16 +996,23 @@ class Plugin:
                         print(f"WARN: Test prediction failed: {e}")
                         test_mae, test_naive_mae = (float("inf"), float("inf"))
                 
-                # FITNESS: Average of (MAE - Naive_MAE) for training and validation
-                # Negative values = beating naive baseline, positive = worse than naive
-                # This balances both splits and normalizes via naive baseline for scale-invariant optimization
+                # FITNESS: Penalized Asymmetric Delta
+                # Base: weighted average favoring validation (generalization matters more)
+                # Penalty: harsh penalty if either split is ABOVE naive (val penalized 2x)
+                # This prevents overfitting on training from masking poor validation
                 
                 if train_naive_mae is None or naive_mae is None or not np.isfinite(train_naive_mae) or not np.isfinite(naive_mae):
                     fitness = float("inf")
                 else:
                     train_delta = float(train_mae - train_naive_mae)
                     val_delta = float(val_mae - naive_mae)
-                    fitness = 0.5 * train_delta + 0.5 * val_delta
+                    base = 0.4 * train_delta + 0.6 * val_delta
+                    penalty = 0.0
+                    if train_delta > 0:
+                        penalty += train_delta
+                    if val_delta > 0:
+                        penalty += val_delta * 2
+                    fitness = base + penalty
                 train_loss = float(history.history.get("loss", [np.nan])[-1])
                 val_loss = float(history.history.get("val_loss", [np.nan])[-1])
 

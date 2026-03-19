@@ -340,15 +340,22 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
     # VALIDATION
     val_mae, naive_mae = _split_metrics(val_preds, y_val, baseline_val)
 
-    # FITNESS: Average of (MAE - Naive_MAE) for training and validation
-    # Negative values = beating naive, positive = worse than naive
-    # This balances both splits and normalizes via naive baseline
+    # FITNESS: Penalized Asymmetric Delta
+    # Base: weighted average favoring validation (generalization matters more)
+    # Penalty: harsh penalty if either split is ABOVE naive (val penalized 2x)
+    # This prevents overfitting on training from masking poor validation
     if train_naive_mae is None or naive_mae is None or not np.isfinite(train_naive_mae) or not np.isfinite(naive_mae):
         fitness = float("inf")
     else:
         train_delta = train_mae - train_naive_mae
         val_delta = val_mae - naive_mae
-        fitness = 0.5 * train_delta + 0.5 * val_delta
+        base = 0.4 * train_delta + 0.6 * val_delta
+        penalty = 0.0
+        if train_delta > 0:
+            penalty += train_delta
+        if val_delta > 0:
+            penalty += val_delta * 2
+        fitness = base + penalty
 
     # TEST
     test_mae = None
