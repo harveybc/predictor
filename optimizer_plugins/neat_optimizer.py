@@ -539,10 +539,21 @@ class Plugin:
                     self.best_train_mae_so_far = float(opt_state["best_train_mae_so_far"])
                 if opt_state.get("best_train_naive_mae_so_far") is not None:
                     self.best_train_naive_mae_so_far = float(opt_state["best_train_naive_mae_so_far"])
+                if opt_state.get("best_params_so_far"):
+                    self.best_params_so_far = opt_state["best_params_so_far"]
                 if opt_state.get("total_eval_counter") is not None:
                     self.total_eval_counter = int(opt_state["total_eval_counter"])
                 if opt_state.get("patience_counter") is not None:
                     self.patience_counter = int(opt_state["patience_counter"])
+                # Fallback: load best_params from optimization_parameters_file
+                # for checkpoints saved before best_params_so_far was persisted
+                if not self.best_params_so_far and params_path and os.path.exists(params_path):
+                    try:
+                        with open(params_path, "r") as pf:
+                            self.best_params_so_far = json.load(pf)
+                        print(f"[NEAT RESUME] Loaded best_params from {params_path}")
+                    except Exception:
+                        pass
                 self.best_at_gen_start = float(self.best_fitness_so_far)
                 start_gen = checkpoint.get("generation", 0) + 1
                 print(f"[NEAT RESUME] Resuming from generation {start_gen}, "
@@ -1095,6 +1106,7 @@ class Plugin:
                         "best_test_naive_mae_so_far": float(self.best_test_naive_mae_so_far) if self.best_test_naive_mae_so_far is not None else None,
                         "best_train_mae_so_far": float(self.best_train_mae_so_far) if self.best_train_mae_so_far is not None else None,
                         "best_train_naive_mae_so_far": float(self.best_train_naive_mae_so_far) if self.best_train_naive_mae_so_far is not None else None,
+                        "best_params_so_far": self.best_params_so_far if self.best_params_so_far else None,
                         "total_eval_counter": int(self.total_eval_counter),
                         "patience_counter": int(self.patience_counter),
                     },
