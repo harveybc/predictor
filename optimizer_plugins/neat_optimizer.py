@@ -748,6 +748,40 @@ class Plugin:
 
                 return fitness
 
+        # ── Re-broadcast existing champion from checkpoint ────
+        # After a chain reset the NEAT checkpoint may already hold a champion
+        # that the chain has never seen.  Fire the callback immediately so the
+        # chain records it and can start generating blocks.
+        if (np.isfinite(self.best_fitness_so_far)
+                and self.best_params_so_far
+                and self.best_fitness_so_far < float("inf")):
+            _cb_resume = _opt_callbacks.get("on_new_champion")
+            if _cb_resume:
+                try:
+                    _resume_metrics = {
+                        "fitness": self.best_fitness_so_far,
+                        "val_mae": self.best_val_mae_so_far or 0.0,
+                        "val_naive_mae": self.best_naive_mae_so_far or 0.0,
+                        "train_mae": self.best_train_mae_so_far or 0.0,
+                        "train_naive_mae": self.best_train_naive_mae_so_far or 0.0,
+                        "test_mae": self.best_test_mae_so_far or 0.0,
+                        "test_naive_mae": self.best_test_naive_mae_so_far or 0.0,
+                        "_model_b64": None,
+                    }
+                    _resume_stage = {
+                        "stage": 1, "total_stages": 1,
+                        "generation": start_gen,
+                        "candidate": 0,
+                        "total_candidates_evaluated": int(self.total_eval_counter),
+                    }
+                    print(f"[NEAT] Re-broadcasting checkpoint champion "
+                          f"(fitness={self.best_fitness_so_far:.6f}) to chain")
+                    _cb_resume(self.best_params_so_far, self.best_fitness_so_far,
+                               _resume_metrics, start_gen, _resume_stage)
+                    print(f"[NEAT] Checkpoint champion broadcast complete")
+                except Exception as _e:
+                    print(f"[NEAT] Checkpoint champion broadcast error: {_e}")
+
         # ── Main generation loop ─────────────────────────────
         start_opt = time.time()
 
