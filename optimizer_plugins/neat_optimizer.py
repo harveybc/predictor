@@ -479,6 +479,15 @@ class Plugin:
         # ── Callbacks ────────────────────────────────────────
         _opt_callbacks = config.get("optimization_callbacks", {})
 
+        # ── Seed initialization (per-node diversity) ─────────
+        _base_seed = config.get("random_seed", 42)
+        _seed_offset = config.get("node_seed_offset", 0)
+        _effective_seed = _base_seed + _seed_offset
+        if config.get("deterministic_training", False):
+            random.seed(_effective_seed)
+            np.random.seed(_effective_seed)
+            print(f"[NEAT] Seeded RNG: base={_base_seed} + offset={_seed_offset} = {_effective_seed}")
+
         # ── Create initial population ────────────────────────
         def _create_genome(params_list):
             g = NeatGenome()
@@ -885,11 +894,19 @@ class Plugin:
                                     v = ACTIVATION_INDEX_TO_NAME.index(v) if v in ACTIVATION_INDEX_TO_NAME else 0
                                 migrant_genome.genes[inn] = NeatGene(inn, p, float(v))
                         if migrant_genome.genes:
-                            # Replace worst individual
-                            worst_idx = max(range(len(population)),
-                                            key=lambda i: population[i].fitness if population[i].fitness is not None else float("inf"))
-                            population[worst_idx] = migrant_genome
-                            print(f"  [NEAT MIGRATION] Injected network champion ({len(migrant_genome.genes)} params)")
+                            # Dedup: check if migrant is too similar to any existing genome
+                            _min_dist = min(
+                                compatibility_distance(migrant_genome, g, full_bounds)
+                                for g in population
+                            )
+                            if _min_dist < compat_threshold * 0.5:
+                                print(f"  [NEAT MIGRATION] Skipped — too similar to existing genome (dist={_min_dist:.4f}, threshold={compat_threshold * 0.5:.4f})")
+                            else:
+                                # Replace worst individual
+                                worst_idx = max(range(len(population)),
+                                                key=lambda i: population[i].fitness if population[i].fitness is not None else float("inf"))
+                                population[worst_idx] = migrant_genome
+                                print(f"  [NEAT MIGRATION] Injected network champion ({len(migrant_genome.genes)} params, dist={_min_dist:.4f})")
                 except Exception as _cb_err:
                     print(f"  [NEAT] gen_start callback error: {_cb_err}")
 
