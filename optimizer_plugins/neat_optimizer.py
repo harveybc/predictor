@@ -521,6 +521,17 @@ class Plugin:
         params_path = _resolve_repo_path(config.get("optimization_parameters_file"))
         start_gen = 0
 
+        # When resume is disabled, remove stale checkpoint/params files so they
+        # cannot accidentally be picked up by any downstream code path.
+        if not resume_enabled:
+            for _stale in (resume_path, params_path):
+                if _stale and os.path.exists(_stale):
+                    try:
+                        os.remove(_stale)
+                        print(f"[NEAT] Removed stale file (resume=false): {_stale}")
+                    except OSError:
+                        pass
+
         if resume_enabled and resume_path and os.path.exists(resume_path):
             try:
                 with open(resume_path, "r") as f:
