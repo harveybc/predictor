@@ -894,13 +894,13 @@ class Plugin:
                                     v = ACTIVATION_INDEX_TO_NAME.index(v) if v in ACTIVATION_INDEX_TO_NAME else 0
                                 migrant_genome.genes[inn] = NeatGene(inn, p, float(v))
                         if migrant_genome.genes:
-                            # Dedup: check if migrant is too similar to any existing genome
+                            # Dedup: only reject exact duplicate genomes
                             _min_dist = min(
                                 compatibility_distance(migrant_genome, g, full_bounds)
                                 for g in population
                             )
-                            if _min_dist < compat_threshold * 0.5:
-                                print(f"  [NEAT MIGRATION] Skipped — too similar to existing genome (dist={_min_dist:.4f}, threshold={compat_threshold * 0.5:.4f})")
+                            if _min_dist < 1e-10:
+                                print(f"  [NEAT MIGRATION] Skipped — exact duplicate of existing genome (dist={_min_dist:.4f})")
                             else:
                                 # Replace worst individual
                                 worst_idx = max(range(len(population)),
