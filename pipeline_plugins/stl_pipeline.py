@@ -196,11 +196,12 @@ class STLPipelinePlugin:
     def run_prediction_pipeline(self, config, predictor_plugin, preprocessor_plugin, target_plugin):
         start_time = time.time()
 
+        import random
+        import numpy as np
+        import tensorflow as tf
+
         # Set deterministic seeds if enabled (default: True for reproducibility)
         if config.get("deterministic_training", True):
-            import random
-            import numpy as np
-            import tensorflow as tf
             seed = config.get("random_seed", 42)
             random.seed(seed)
             np.random.seed(seed)
