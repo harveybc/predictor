@@ -1,0 +1,515 @@
+{
+    "generation": 6,
+    "population": [
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 67
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                }
+            },
+            "fitness": -7.291175425052642e-05,
+            "species_id": 1
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 84
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                }
+            },
+            "fitness": 0.00013537611812353134,
+            "species_id": 1
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 61
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                }
+            },
+            "fitness": 0.0003060765564441681,
+            "species_id": 1
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 102
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 6.45198359411894e-07
+                }
+            },
+            "fitness": 0.0005670826882123947,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 67
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                }
+            },
+            "fitness": -7.291175425052642e-05,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 112
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                }
+            },
+            "fitness": 0.00020771417766809463,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 112
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 6.328431031511031e-07
+                }
+            },
+            "fitness": 0.00020771417766809463,
+            "species_id": 1
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 54
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                }
+            },
+            "fitness": 0.00014105010777711868,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 102
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                }
+            },
+            "fitness": 0.0005670826882123947,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 84
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                }
+            },
+            "fitness": 0.0010130170732736588,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 112
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                }
+            },
+            "fitness": 0.00020771417766809463,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 84
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                }
+            },
+            "fitness": 0.00013537611812353134,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 100
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 6.45198359411894e-07
+                }
+            },
+            "fitness": 0.0003375431522727013,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 61
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                }
+            },
+            "fitness": 0.0003060765564441681,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 52
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                }
+            },
+            "fitness": -1.4472007751464844e-05,
+            "species_id": 1
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 84
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                }
+            },
+            "fitness": 0.00013537611812353134,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 112
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 5.923104829709283e-07
+                }
+            },
+            "fitness": 0.004404100216925144,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 67
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                }
+            },
+            "fitness": 0.00020757727324962615,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 131
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                }
+            },
+            "fitness": 0.00018778480589389803,
+            "species_id": 1
+        },
+        {
+            "genes": {
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 67
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 0
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 6.45198359411894e-07
+                }
+            },
+            "fitness": -7.291175425052642e-05,
+            "species_id": 1
+        }
+    ],
+    "innovation_tracker": {
+        "counter": 16,
+        "map": {
+            "window_size": 1,
+            "tcn_filters": 2,
+            "tcn_kernel_size": 3,
+            "tcn_stack_layers": 4,
+            "tcn_dilations_per_stack": 5,
+            "tcn_head_layers": 6,
+            "tcn_head_units": 7,
+            "positional_encoding": 8,
+            "learning_rate": 9,
+            "batch_size": 10,
+            "tcn_dropout": 11,
+            "tcn_use_batch_norm": 12,
+            "tcn_use_layer_norm": 13,
+            "l2_reg": 14,
+            "min_delta": 15,
+            "use_log1p_features": 16
+        }
+    },
+    "optimizer_state": {
+        "best_fitness_so_far": -0.00012214798480272293,
+        "best_val_mae_so_far": 0.008532747626304626,
+        "best_naive_mae_so_far": 0.00869325827807188,
+        "best_test_mae_so_far": 0.005419729743152857,
+        "best_test_naive_mae_so_far": 0.005672350060194731,
+        "best_train_mae_so_far": 0.0095546068623662,
+        "best_train_naive_mae_so_far": 0.009619210846722126,
+        "best_params_so_far": {
+            "window_size": 79,
+            "batch_size": 31,
+            "tcn_filters": 19,
+            "use_log1p_features": [
+                "typical_price"
+            ]
+        },
+        "total_eval_counter": 160,
+        "patience_counter": 5
+    }
+}

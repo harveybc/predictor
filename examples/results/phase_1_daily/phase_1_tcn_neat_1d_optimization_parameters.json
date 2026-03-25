@@ -1,0 +1,8 @@
+{
+    "window_size": 79,
+    "batch_size": 31,
+    "tcn_filters": 19,
+    "use_log1p_features": [
+        "typical_price"
+    ]
+}
