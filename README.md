@@ -103,6 +103,35 @@ usage: predictor.bat --load_config examples\config\phase_1\phase_1_ann_6300_1h_c
 
 There are many examples of config files in the **examples\config directory**, also training data of EURUSD and othertimeseries in **examples\data** and the results of the example config files are set to be on **examples\results**, there are some scripts to automate running sequential predictions in **examples\scripts**.
 
+### Optimization Results & Metabase Integration
+
+Optimization results from distributed NEAT runs (via [doin-node](https://github.com/harveybc/doin-node)) are stored in `examples/results/phase_1_daily/`. The TCN+NEAT optimization results include:
+
+| File | Description |
+|------|-------------|
+| `phase_1_tcn_neat_1d_optimization_stats.json` | Per-generation statistics (champion fitness, MAE, species count) |
+| `phase_1_tcn_neat_1d_optimization_parameters.json` | Best champion hyperparameters found |
+| `phase_1_tcn_neat_1d_optimization_resume.json` | Full NEAT population state for resuming optimization |
+| `phase_1_tcn_neat_1d_rss.csv` | Memory usage log per candidate evaluation |
+
+**Phase 1 TCN+NEAT Champion (Block 5):**
+- Fitness: **-1.22e-4** (val_MAE below Naive by 0.016 pct)
+- val_MAE: 0.00853 vs Naive 0.00869 | test_MAE: 0.00542 vs Naive 0.00567
+- Parameters: `window_size=79, batch_size=31, tcn_filters=19, use_log1p_features=["typical_price"]`
+
+**Level 1 Champion Training (no optimization):**
+
+To retrain the best solution found by the distributed optimization as a single candidate:
+
+```bash
+predictor --load_config examples/config/phase_1_daily/phase_1_tcn_neat_champion_1d_training_config.json
+```
+
+This config hardcodes the Block 5 champion hyperparameters and sets `use_optimizer: false`.
+
+**Importing results to Metabase:**
+
+The optimization stats JSON files can be imported via Metabase's [Custom Upload](https://www.metabase.com/docs/latest/databases/uploads) feature, or use the blockchain SQLite database from [doin-node](https://github.com/harveybc/doin-node/tree/master/examples/results/phase_1_daily/blockchain) which contains the full experiment history across all nodes. See the doin-node README for detailed Metabase setup instructions.
 
 ### Directory Structure
 
