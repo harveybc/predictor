@@ -22,7 +22,7 @@ from tensorflow.keras.layers import (
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import AdamW
 from tensorflow.keras.regularizers import l2
-from .common.losses import mae_magnitude
+from .common.losses import mae_magnitude, configurable_time_series_loss
 from .common.positional_encoding import positional_encoding
 from .common.base import BaseDeterministicKerasPredictor
 
@@ -64,6 +64,12 @@ class Plugin(BaseDeterministicKerasPredictor):
         "l2_reg": 1e-6,
         "activation": "elu",
         "positional_encoding": False,
+        # Backward-compatible default: keep historical MAE unless overridden in config.
+        "loss_type": "mae",
+        "trend_sigma_lambda": 0.1,
+        "pearson_alpha": 0.5,
+        "soft_dtw_gamma": 0.1,
+        "morphology_batch_size": 32,
         "predicted_horizons": [1],
     }
 
@@ -74,6 +80,7 @@ class Plugin(BaseDeterministicKerasPredictor):
         "tcn_head_layers", "tcn_head_units",
         "learning_rate", "l2_reg",
         "positional_encoding", "predicted_horizons",
+        "loss_type", "trend_sigma_lambda", "pearson_alpha", "soft_dtw_gamma", "morphology_batch_size",
     ]
 
     def _temporal_block(self, x, filters, kernel_size, dilation_rate,
@@ -197,8 +204,29 @@ class Plugin(BaseDeterministicKerasPredictor):
 
         optimizer = AdamW(learning_rate=float(self.params.get("learning_rate", 1e-3)))
 
-        # MAE loss per horizon (consistent with MIMO/TFT and optimizer fitness)
-        loss_dict = {nm: tf.keras.losses.MeanAbsoluteError() for nm in self.output_names}
+        loss_type = str(self.params.get("loss_type", "mae")).strip().lower()
+        trend_sigma_lambda = float(self.params.get("trend_sigma_lambda", 0.1))
+        pearson_alpha = float(self.params.get("pearson_alpha", 0.5))
+        soft_dtw_gamma = float(self.params.get("soft_dtw_gamma", 0.1))
+        morphology_batch_size = int(self.params.get("morphology_batch_size", self.params.get("batch_size", 32)))
+
+        if loss_type in ("trend_sigma", "pearson_structural", "soft_dtw"):
+            def _loss_fn(y_true, y_pred):
+                return configurable_time_series_loss(
+                    y_true,
+                    y_pred,
+                    loss_type=loss_type,
+                    trend_sigma_lambda=trend_sigma_lambda,
+                    pearson_alpha=pearson_alpha,
+                    soft_dtw_gamma=soft_dtw_gamma,
+                    morphology_batch_size=morphology_batch_size,
+                )
+
+            loss_dict = {nm: _loss_fn for nm in self.output_names}
+        else:
+            # MAE loss per horizon (consistent with prior TCN behavior)
+            loss_dict = {nm: tf.keras.losses.MeanAbsoluteError() for nm in self.output_names}
+
         metrics_dict = {nm: [mae_magnitude] for nm in self.output_names}
 
         self.model.compile(optimizer=optimizer, loss=loss_dict, metrics=metrics_dict)

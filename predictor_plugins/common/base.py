@@ -293,6 +293,7 @@ class BaseKerasPredictor(BasePredictorPlugin):
             validation_data=(x_val, y_val),
             callbacks=callbacks,
             verbose=fit_verbose,
+            shuffle=False,
         )
 
         # Post-fit predictions/uncertainty can dominate memory/time during GA optimization.
