@@ -169,6 +169,41 @@ def _pearson_structural_loss(y_true, y_pred, pearson_alpha=0.5, is_gap_mask=None
     return (mae + tf.cast(pearson_alpha, tf.float32) * (1.0 - corr)) * batch_mask
 
 
+def _combined_diff_loss(y_true, y_pred, diff_weight=1.0, is_gap_mask=None):
+    """Huber on levels + weighted Huber on first temporal differences + variance penalty.
+
+    With shuffle=False, consecutive batch elements are temporally adjacent, so
+    first-differences Δy = y[t+1] - y[t] capture temporal dynamics.  A trivial
+    (constant) predictor has Δŷ ≡ 0, which is heavily penalised when Δy ≠ 0.
+
+    Parameters
+    ----------
+    diff_weight : float
+        Multiplier on the first-difference Huber component (default 1.0).
+    """
+    mag_true, mag_pred, mask = _extract_mag_and_mask(y_true, y_pred, is_gap_mask=is_gap_mask)
+
+    # --- Level component (standard Huber) ---
+    level_loss = _masked_mean(_huber_elementwise(mag_true, mag_pred, delta=1.0), mask)
+
+    # --- First-difference component ---
+    dt = mag_true[1:] - mag_true[:-1]
+    dp = mag_pred[1:] - mag_pred[:-1]
+    mask_diff = mask[1:] * mask[:-1]  # valid only when both neighbours are valid
+    diff_loss = _masked_mean(_huber_elementwise(dt, dp, delta=1.0), mask_diff)
+
+    # --- Variance-ratio penalty: penalise under-variation ---
+    sigma_true = _weighted_std(mag_true, mask)
+    sigma_pred = _weighted_std(mag_pred, mask)
+    var_ratio = sigma_pred / (sigma_true + _EPS)
+    var_penalty = tf.maximum(0.0, 1.0 - var_ratio)  # 0 when pred var >= true var
+
+    batch_mask = tf.reduce_mean(mask)
+    return (level_loss
+            + tf.cast(diff_weight, tf.float32) * diff_loss
+            + 0.1 * var_penalty) * batch_mask
+
+
 def _softmin3(a, b, c, gamma):
     vals = tf.stack([a, b, c], axis=0)
     vmin = tf.reduce_min(vals)
@@ -246,6 +281,7 @@ def _morphological_loss_dispatch(
     trend_sigma_lambda=0.1,
     pearson_alpha=0.5,
     soft_dtw_gamma=0.1,
+    diff_weight=1.0,
     is_gap_mask=None,
 ):
     lt = str(loss_type).strip().lower()
@@ -270,6 +306,13 @@ def _morphological_loss_dispatch(
             soft_dtw_gamma=soft_dtw_gamma,
             is_gap_mask=is_gap_mask,
         )
+    if lt == "combined_diff":
+        return _combined_diff_loss(
+            y_true,
+            y_pred,
+            diff_weight=diff_weight,
+            is_gap_mask=is_gap_mask,
+        )
     # Backward-compatible fallback: preserve original MAE behavior used by TCN.
     return tf.reduce_mean(tf.abs(tf.cast(y_true, tf.float32) - tf.cast(y_pred, tf.float32)))
 
@@ -282,6 +325,7 @@ def configurable_time_series_loss(
     trend_sigma_lambda=0.1,
     pearson_alpha=0.5,
     soft_dtw_gamma=0.1,
+    diff_weight=1.0,
     morphology_batch_size=32,
     is_gap_mask=None,
 ):
@@ -292,6 +336,7 @@ def configurable_time_series_loss(
       - ``trend_sigma``
       - ``pearson_structural``
       - ``soft_dtw``
+      - ``combined_diff``
     """
     return _morphological_loss_dispatch(
         y_true,
@@ -300,6 +345,7 @@ def configurable_time_series_loss(
         trend_sigma_lambda=trend_sigma_lambda,
         pearson_alpha=pearson_alpha,
         soft_dtw_gamma=soft_dtw_gamma,
+        diff_weight=diff_weight,
         is_gap_mask=is_gap_mask,
     )
 
@@ -372,6 +418,7 @@ def composite_loss_multihead(y_true, y_pred, head_index, mmd_lambda, sigma,
                              trend_sigma_lambda=0.1,
                              pearson_alpha=0.5,
                              soft_dtw_gamma=0.1,
+                             diff_weight=1.0,
                              morphology_batch_size=32,
                              is_gap_mask=None):
     """Adapter wrapping composite_loss_basic keeping legacy callable shape.
@@ -385,6 +432,7 @@ def composite_loss_multihead(y_true, y_pred, head_index, mmd_lambda, sigma,
         trend_sigma_lambda=trend_sigma_lambda,
         pearson_alpha=pearson_alpha,
         soft_dtw_gamma=soft_dtw_gamma,
+        diff_weight=diff_weight,
         is_gap_mask=is_gap_mask,
     )
 
@@ -398,6 +446,7 @@ def composite_loss_noreturns(y_true, y_pred, head_index, mmd_lambda, sigma,
                              trend_sigma_lambda=0.1,
                              pearson_alpha=0.5,
                              soft_dtw_gamma=0.1,
+                             diff_weight=1.0,
                              morphology_batch_size=32,
                              is_gap_mask=None):
     """Adapter wrapping composite_loss_basic keeping legacy callable shape.
@@ -411,6 +460,7 @@ def composite_loss_noreturns(y_true, y_pred, head_index, mmd_lambda, sigma,
         trend_sigma_lambda=trend_sigma_lambda,
         pearson_alpha=pearson_alpha,
         soft_dtw_gamma=soft_dtw_gamma,
+        diff_weight=diff_weight,
         is_gap_mask=is_gap_mask,
     )
 
@@ -423,6 +473,7 @@ __all__ = [
     'composite_loss_basic', 'composite_loss_multihead',
     'composite_loss_noreturns',
     '_trend_sigma_loss', '_pearson_structural_loss', '_soft_dtw_loss',
+    '_combined_diff_loss',
     'configurable_time_series_loss',
     'random_normal_initializer_44'
 ]

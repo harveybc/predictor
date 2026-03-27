@@ -69,6 +69,7 @@ class Plugin(BaseDeterministicKerasPredictor):
         "trend_sigma_lambda": 0.1,
         "pearson_alpha": 0.5,
         "soft_dtw_gamma": 0.1,
+        "diff_weight": 1.0,
         "morphology_batch_size": 32,
         "predicted_horizons": [1],
     }
@@ -208,9 +209,10 @@ class Plugin(BaseDeterministicKerasPredictor):
         trend_sigma_lambda = float(self.params.get("trend_sigma_lambda", 0.1))
         pearson_alpha = float(self.params.get("pearson_alpha", 0.5))
         soft_dtw_gamma = float(self.params.get("soft_dtw_gamma", 0.1))
+        diff_weight = float(self.params.get("diff_weight", 1.0))
         morphology_batch_size = int(self.params.get("morphology_batch_size", self.params.get("batch_size", 32)))
 
-        if loss_type in ("trend_sigma", "pearson_structural", "soft_dtw"):
+        if loss_type in ("trend_sigma", "pearson_structural", "soft_dtw", "combined_diff"):
             def _loss_fn(y_true, y_pred):
                 return configurable_time_series_loss(
                     y_true,
@@ -219,6 +221,7 @@ class Plugin(BaseDeterministicKerasPredictor):
                     trend_sigma_lambda=trend_sigma_lambda,
                     pearson_alpha=pearson_alpha,
                     soft_dtw_gamma=soft_dtw_gamma,
+                    diff_weight=diff_weight,
                     morphology_batch_size=morphology_batch_size,
                 )
 
