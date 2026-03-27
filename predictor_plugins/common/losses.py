@@ -221,6 +221,7 @@ def _soft_dtw_loss(y_true, y_pred, soft_dtw_gamma=0.1, is_gap_mask=None):
             inner_body,
             loop_vars=[tf.constant(1, dtype=tf.int32), rmat],
             parallel_iterations=1,
+            maximum_iterations=n,
         )
         return i + 1, rnew
 
@@ -229,6 +230,7 @@ def _soft_dtw_loss(y_true, y_pred, soft_dtw_gamma=0.1, is_gap_mask=None):
         outer_body,
         loop_vars=[tf.constant(1, dtype=tf.int32), r],
         parallel_iterations=1,
+        maximum_iterations=n,
     )
 
     # If a batch is all masked-out, zero out the contribution.
