@@ -77,11 +77,10 @@ def _resolve_external_mask(is_gap_mask, n):
         return tf.fill([n], m)
     m = tf.reshape(m, [-1])
     size = tf.shape(m)[0]
-    return tf.cond(
-        tf.equal(size, n),
-        lambda: m,
-        lambda: tf.ones([n], dtype=tf.float32),
-    )
+    # XLA-friendly shape normalization with no tf.cond branching.
+    pad_len = tf.maximum(n - size, 0)
+    m = tf.pad(m, [[0, pad_len]], constant_values=1.0)
+    return m[:n]
 
 
 def _extract_mag_and_mask(y_true, y_pred, is_gap_mask=None):
@@ -179,60 +178,62 @@ def _softmin3(a, b, c, gamma):
 def _soft_dtw_loss(y_true, y_pred, soft_dtw_gamma=0.1, is_gap_mask=None):
     mag_true, mag_pred, mask = _extract_mag_and_mask(y_true, y_pred, is_gap_mask=is_gap_mask)
 
-    # Keep only valid points; if mask is all-zero this returns a zero loss.
-    valid = tf.greater(mask, 0.5)
-    x = tf.boolean_mask(mag_true, valid)
-    y = tf.boolean_mask(mag_pred, valid)
+    # XLA-safe formulation: keep full sequence length and mask costs instead of
+    # branching on empty tensors with tf.cond/tf.boolean_mask.
+    x = mag_true
+    y = mag_pred
+    n = tf.shape(x)[0]
 
-    nx = tf.shape(x)[0]
-    ny = tf.shape(y)[0]
+    gamma = tf.maximum(tf.cast(soft_dtw_gamma, tf.float32), _EPS)
+    x_col = tf.expand_dims(x, axis=1)
+    y_row = tf.expand_dims(y, axis=0)
+    dmat = tf.square(x_col - y_row)
 
-    def _empty_loss():
-        return tf.constant(0.0, dtype=tf.float32)
+    # Keep alignment focused on valid (non-gap) positions.
+    m_col = tf.expand_dims(tf.cast(mask, tf.float32), axis=1)
+    m_row = tf.expand_dims(tf.cast(mask, tf.float32), axis=0)
+    m2 = m_col * m_row
+    large = tf.constant(1e6, dtype=tf.float32)
+    dmat = dmat * m2 + (1.0 - m2) * large
 
-    def _compute_loss():
-        gamma = tf.maximum(tf.cast(soft_dtw_gamma, tf.float32), _EPS)
-        x_col = tf.expand_dims(x, axis=1)
-        y_row = tf.expand_dims(y, axis=0)
-        dmat = tf.square(x_col - y_row)
+    inf = tf.constant(1e12, dtype=tf.float32)
+    r = tf.fill([n + 1, n + 1], inf)
+    r = tf.tensor_scatter_nd_update(r, [[0, 0]], [0.0])
 
-        inf = tf.constant(1e12, dtype=tf.float32)
-        r = tf.fill([nx + 1, ny + 1], inf)
-        r = tf.tensor_scatter_nd_update(r, [[0, 0]], [0.0])
+    def outer_cond(i, rmat):
+        return tf.less_equal(i, n)
 
-        def outer_cond(i, rmat):
-            return tf.less_equal(i, nx)
+    def outer_body(i, rmat):
+        def inner_cond(j, rinner):
+            return tf.less_equal(j, n)
 
-        def outer_body(i, rmat):
-            def inner_cond(j, rinner):
-                return tf.less_equal(j, ny)
+        def inner_body(j, rinner):
+            a = rinner[i - 1, j]
+            b = rinner[i, j - 1]
+            c = rinner[i - 1, j - 1]
+            sm = _softmin3(a, b, c, gamma)
+            val = dmat[i - 1, j - 1] + sm
+            rnext = tf.tensor_scatter_nd_update(rinner, [[i, j]], [val])
+            return j + 1, rnext
 
-            def inner_body(j, rinner):
-                a = rinner[i - 1, j]
-                b = rinner[i, j - 1]
-                c = rinner[i - 1, j - 1]
-                sm = _softmin3(a, b, c, gamma)
-                val = dmat[i - 1, j - 1] + sm
-                rnext = tf.tensor_scatter_nd_update(rinner, [[i, j]], [val])
-                return j + 1, rnext
-
-            _, rnew = tf.while_loop(
-                inner_cond,
-                inner_body,
-                loop_vars=[tf.constant(1, dtype=tf.int32), rmat],
-                parallel_iterations=1,
-            )
-            return i + 1, rnew
-
-        _, r = tf.while_loop(
-            outer_cond,
-            outer_body,
-            loop_vars=[tf.constant(1, dtype=tf.int32), r],
+        _, rnew = tf.while_loop(
+            inner_cond,
+            inner_body,
+            loop_vars=[tf.constant(1, dtype=tf.int32), rmat],
             parallel_iterations=1,
         )
-        return r[nx, ny]
+        return i + 1, rnew
 
-    return tf.cond(tf.logical_or(tf.equal(nx, 0), tf.equal(ny, 0)), _empty_loss, _compute_loss)
+    _, r = tf.while_loop(
+        outer_cond,
+        outer_body,
+        loop_vars=[tf.constant(1, dtype=tf.int32), r],
+        parallel_iterations=1,
+    )
+
+    # If a batch is all masked-out, zero out the contribution.
+    batch_mask = tf.cast(tf.reduce_any(tf.greater(mask, 0.0)), tf.float32)
+    return r[n, n] * batch_mask
 
 
 def _morphological_loss_dispatch(
