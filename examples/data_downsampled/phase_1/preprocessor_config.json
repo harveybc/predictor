@@ -7,6 +7,7 @@
     "normalization_config_b": "examples/data_downsampled/phase_1b/normalization_config_b.json",
     "dataset_prefix": "examples/data_downsampled/phase_1b/base_",
     "target_prefix": "examples/data_downsampled/phase_1b/normalized_",
+    "use_rolling_features": true,
     "feature_eng_plugin_path": "/home/harvyebc/Documents/GitHub/feature-eng/app/plugins",
     "normalization_range": [
         0,
@@ -21,6 +22,8 @@
         "typical_sd"
     ],
     "features_included": [
-        "base_features"
+        "typical_price_only",
+        "cyclic_features",
+        "rolling_features"
     ]
 }
