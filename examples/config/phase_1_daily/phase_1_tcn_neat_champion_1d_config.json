@@ -28,7 +28,7 @@
 
     "window_size": 79,
     "tcn_filters": 19,
-    "batch_size": 31,
+    "batch_size": 32,
     "use_log1p_features": ["typical_price"],
 
     "tcn_kernel_size": 3,
