@@ -106,6 +106,9 @@ class STLPreprocessorZScore:
             # 6c. Add temporal features (hour-of-day, day-of-week, month-of-year)
             self._add_temporal_features(final_sliding_windows, config)
 
+            # 6d. Add window statistics features (rolling std, ema, price-minus-ema)
+            self._add_window_stats_features(final_sliding_windows, config)
+
             # 7. Align final sliding windows with target data length
             if not _QUIET: print("Step 7: Align sliding windows with target data")
             final_sliding_windows = self._align_sliding_windows_with_targets(final_sliding_windows, targets, config)
@@ -295,6 +298,89 @@ class STLPreprocessorZScore:
 
         # Update feature name lists
         for key in ['feature_names', 'feature_names_train', 'feature_names_val', 'feature_names_test']:
+            if key in sliding_windows:
+                sliding_windows[key] = list(sliding_windows[key]) + new_names
+
+    def _add_window_stats_features(self, sliding_windows, config):
+        """Add rolling window statistics as features (std, ema, price-minus-ema).
+
+        For each window, computes statistics from the target column across the
+        window timesteps for each configured period.  Features are broadcast to
+        all timesteps (constant within a window).
+
+        Controlled by ``add_window_stats`` (bool / 0|1 from NEAT).
+        Periods come from ``window_stats_periods`` (default [12, 48]).
+        """
+        use_stats = config.get("add_window_stats", True)
+        if isinstance(use_stats, (int, float)):
+            use_stats = bool(int(round(use_stats)))
+        if not use_stats:
+            return
+
+        periods = config.get("window_stats_periods", [12, 48])
+        if not periods:
+            return
+
+        target_col = config.get("target_column", "typical_price")
+        feature_names = sliding_windows.get("feature_names", [])
+        if target_col not in feature_names:
+            if not _QUIET:
+                print(f"  WARNING: target '{target_col}' not in feature_names, skipping window stats")
+            return
+        target_idx = feature_names.index(target_col)
+
+        # Build feature names: rolling_std_{p}, rolling_ema_{p}, price_minus_ema_{p}
+        new_names = []
+        for p in periods:
+            new_names += [f"rolling_std_{p}", f"rolling_ema_{p}", f"price_minus_ema_{p}"]
+        n_new = len(new_names)
+
+        if not _QUIET:
+            print(f"Step 6d: Adding {n_new} window stats features: {new_names}")
+
+        for split in ["train", "val", "test"]:
+            X_key = f"X_{split}"
+            if X_key not in sliding_windows:
+                continue
+            X = sliding_windows[X_key]
+            if X is None or not hasattr(X, "shape") or len(X.shape) != 3:
+                continue
+
+            n_windows, window_size, _ = X.shape
+            stats = np.zeros((n_windows, n_new), dtype=np.float32)
+
+            # Extract target column for all windows: (n_windows, window_size)
+            price = X[:, :, target_idx]
+
+            col = 0
+            for p in periods:
+                # Use last `p` timesteps (or all if window < p)
+                span = min(p, window_size)
+                tail = price[:, -span:]  # (n_windows, span)
+
+                # Rolling std over the tail
+                stats[:, col] = np.std(tail, axis=1, dtype=np.float32)
+
+                # EMA over the tail (decay = 2/(span+1))
+                alpha = 2.0 / (span + 1.0)
+                ema = np.copy(tail[:, 0])
+                for t in range(1, tail.shape[1]):
+                    ema = alpha * tail[:, t] + (1.0 - alpha) * ema
+                stats[:, col + 1] = ema.astype(np.float32)
+
+                # Price minus EMA (last timestep price − ema)
+                stats[:, col + 2] = (price[:, -1] - ema).astype(np.float32)
+                col += 3
+
+            # Broadcast to (n_windows, window_size, n_new)
+            stats_3d = np.tile(stats[:, np.newaxis, :], (1, window_size, 1))
+            sliding_windows[X_key] = np.concatenate([X, stats_3d], axis=2)
+
+            if not _QUIET:
+                print(f"  {split}: {X.shape} → {sliding_windows[X_key].shape}")
+
+        # Update feature name lists
+        for key in ["feature_names", "feature_names_train", "feature_names_val", "feature_names_test"]:
             if key in sliding_windows:
                 sliding_windows[key] = list(sliding_windows[key]) + new_names
 

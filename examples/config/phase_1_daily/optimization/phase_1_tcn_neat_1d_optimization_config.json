@@ -65,7 +65,9 @@
         "hod_encoding": [0, 2],
         "dow_encoding": [0, 2],
         "moy_encoding": [0, 2],
-        "loss_type": [0, 4]
+        "loss_type": [0, 4],
+        "add_window_stats": [0, 1],
+        "add_multi_scale_returns": [0, 1]
     },
     "window_size": 72,
     "tcn_filters": 64,

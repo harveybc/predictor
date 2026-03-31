@@ -423,6 +423,10 @@ def main() -> int:
         config["positional_encoding"] = _coerce_bool(config.get("positional_encoding"), default=False)
     if "use_temporal_features" in config:
         config["use_temporal_features"] = _coerce_bool(config.get("use_temporal_features"), default=True)
+    if "add_window_stats" in config:
+        config["add_window_stats"] = _coerce_bool(config.get("add_window_stats"), default=True)
+    if "add_multi_scale_returns" in config:
+        config["add_multi_scale_returns"] = _coerce_bool(config.get("add_multi_scale_returns"), default=False)
 
     # Convert activation from GA integer encoding [0..7] to string name.
     if "activation" in config:

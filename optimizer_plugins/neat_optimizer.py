@@ -141,6 +141,10 @@ class NeatGenome:
                 hyper[key] = bool(int(round(val)))
             elif key == "use_temporal_features":
                 hyper[key] = bool(int(round(val)))
+            elif key == "add_window_stats":
+                hyper[key] = bool(int(round(val)))
+            elif key == "add_multi_scale_returns":
+                hyper[key] = bool(int(round(val)))
             elif key == "activation":
                 act_idx = max(0, min(int(round(val)), len(ACTIVATION_INDEX_TO_NAME) - 1))
                 hyper[key] = ACTIVATION_INDEX_TO_NAME[act_idx]
