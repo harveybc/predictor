@@ -36,6 +36,14 @@ ACTIVATION_INDEX_TO_NAME = [
     "relu", "elu", "selu", "tanh", "sigmoid", "swish", "gelu", "leaky_relu",
 ]
 
+# Encoding type mapping: GA encodes as int [0..2], preprocessor needs string.
+ENCODING_INDEX_TO_NAME = ["none", "sincos", "onehot"]
+
+# Loss type mapping: GA encodes as int [0..4], predictor needs string.
+LOSS_TYPE_INDEX_TO_NAME = [
+    "mae", "trend_sigma", "pearson_structural", "soft_dtw", "combined_diff",
+]
+
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
@@ -131,9 +139,17 @@ class NeatGenome:
                 hyper[key] = ["typical_price"] if int(round(val)) == 1 else None
             elif key == "positional_encoding":
                 hyper[key] = bool(int(round(val)))
+            elif key == "use_temporal_features":
+                hyper[key] = bool(int(round(val)))
             elif key == "activation":
                 act_idx = max(0, min(int(round(val)), len(ACTIVATION_INDEX_TO_NAME) - 1))
                 hyper[key] = ACTIVATION_INDEX_TO_NAME[act_idx]
+            elif key in ("hod_encoding", "dow_encoding", "moy_encoding"):
+                enc_idx = max(0, min(int(round(val)), len(ENCODING_INDEX_TO_NAME) - 1))
+                hyper[key] = ENCODING_INDEX_TO_NAME[enc_idx]
+            elif key == "loss_type":
+                lt_idx = max(0, min(int(round(val)), len(LOSS_TYPE_INDEX_TO_NAME) - 1))
+                hyper[key] = LOSS_TYPE_INDEX_TO_NAME[lt_idx]
             elif param_types.get(key) == "int":
                 hyper[key] = int(round(val))
             else:
@@ -315,7 +331,7 @@ def mutate_remove_param(genome, min_params=2, remove_prob=0.05):
     return True
 
 
-def mutate_values(genome, full_bounds, mutpb=0.2):
+def mutate_values(genome, full_bounds, mutpb=0.2, sigma_scale=0.15):
     """Gaussian mutation on parameter values."""
     mutated = False
     for gene in genome.genes.values():
@@ -324,7 +340,7 @@ def mutate_values(genome, full_bounds, mutpb=0.2):
             if isinstance(low, int) and isinstance(high, int):
                 gene.value = random.randint(low, high)
             else:
-                sigma = (high - low) * 0.1
+                sigma = (high - low) * sigma_scale
                 gene.value = max(low, min(high, gene.value + random.gauss(0, sigma)))
             mutated = True
     return mutated
@@ -595,8 +611,14 @@ class Plugin:
                             v = 1 if v else 0
                         elif p == "positional_encoding":
                             v = 1 if v else 0
+                        elif p == "use_temporal_features":
+                            v = 1 if v else 0
                         elif p == "activation" and isinstance(v, str):
                             v = ACTIVATION_INDEX_TO_NAME.index(v) if v in ACTIVATION_INDEX_TO_NAME else 0
+                        elif p in ("hod_encoding", "dow_encoding", "moy_encoding") and isinstance(v, str):
+                            v = ENCODING_INDEX_TO_NAME.index(v) if v in ENCODING_INDEX_TO_NAME else 0
+                        elif p == "loss_type" and isinstance(v, str):
+                            v = LOSS_TYPE_INDEX_TO_NAME.index(v) if v in LOSS_TYPE_INDEX_TO_NAME else 0
                         champ_genome.genes[inn] = NeatGene(inn, p, float(v))
                 if champ_genome.genes:
                     population[0] = champ_genome
@@ -901,8 +923,14 @@ class Plugin:
                                     v = 1 if v else 0
                                 elif p == "positional_encoding":
                                     v = 1 if v else 0
+                                elif p == "use_temporal_features":
+                                    v = 1 if v else 0
                                 elif p == "activation" and isinstance(v, str):
                                     v = ACTIVATION_INDEX_TO_NAME.index(v) if v in ACTIVATION_INDEX_TO_NAME else 0
+                                elif p in ("hod_encoding", "dow_encoding", "moy_encoding") and isinstance(v, str):
+                                    v = ENCODING_INDEX_TO_NAME.index(v) if v in ENCODING_INDEX_TO_NAME else 0
+                                elif p == "loss_type" and isinstance(v, str):
+                                    v = LOSS_TYPE_INDEX_TO_NAME.index(v) if v in LOSS_TYPE_INDEX_TO_NAME else 0
                                 migrant_genome.genes[inn] = NeatGene(inn, p, float(v))
                         if migrant_genome.genes:
                             # Dedup: only reject exact duplicate genomes
@@ -945,6 +973,15 @@ class Plugin:
                 print(f"  Species {sp.id}: size={sp.size}, best_fitness={best_f:.6f}")
 
             # ── Reproduction ─────────────────────────────────
+            # Adaptive mutation: boost rates when stagnating
+            _adaptive_boost = 1.0
+            if no_improve_counter >= patience // 2:
+                _adaptive_boost = 2.0
+                print(f"  [NEAT] Adaptive mutation boost: 2x (stagnation {no_improve_counter}/{patience})")
+            _eff_mutpb = min(mutpb * _adaptive_boost, 0.8)
+            _eff_add_prob = min(add_param_prob * _adaptive_boost, 0.5)
+            _eff_sigma_scale = min(0.15 * _adaptive_boost, 0.4)
+
             # Calculate offspring allocation per species (proportional to adjusted fitness sum)
             total_adjusted = sum(
                 sum(g.adjusted_fitness for g in sp.members if g.adjusted_fitness is not None and np.isfinite(g.adjusted_fitness))
@@ -1001,9 +1038,9 @@ class Plugin:
                         child = neat_crossover(p1, p2)
 
                     # Mutations
-                    mutate_add_param(child, all_params, full_bounds, innovation_tracker, add_param_prob)
+                    mutate_add_param(child, all_params, full_bounds, innovation_tracker, _eff_add_prob)
                     mutate_remove_param(child, min_params, remove_param_prob)
-                    mutate_values(child, full_bounds, mutpb)
+                    mutate_values(child, full_bounds, _eff_mutpb, _eff_sigma_scale)
                     clamp_genome(child, full_bounds)
                     child.fitness = None  # Mark for evaluation
                     new_population.append(child)
@@ -1070,11 +1107,13 @@ class Plugin:
             if current_best_fitness < best_at_gen_start:
                 no_improve_counter = 0
                 self.patience_counter = 0
-                print(f"  [NEAT] New best found! fitness={current_best_fitness:.6f}")
+                print(f"  [NEAT PATIENCE] RESET — new best {current_best_fitness:.6f} < gen_start {best_at_gen_start:.6f}")
             else:
                 no_improve_counter += 1
                 self.patience_counter = no_improve_counter
-                print(f"  [NEAT] No improvement for {no_improve_counter} generations")
+                print(f"  [NEAT PATIENCE] No improvement: {no_improve_counter}/{patience} "
+                      f"(best_gen={current_best_fitness:.6f}, gen_start={best_at_gen_start:.6f}, "
+                      f"global_best={float(self.best_fitness_so_far):.6f})")
 
             # ── Statistics ───────────────────────────────────
             gen_end_time = time.time()

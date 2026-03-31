@@ -341,22 +341,9 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
     # VALIDATION
     val_mae, naive_mae = _split_metrics(val_preds, y_val, baseline_val)
 
-    # FITNESS: Penalized Asymmetric Delta
-    # Base: weighted average favoring validation (generalization matters more)
-    # Penalty: harsh penalty if either split is ABOVE naive (val penalized 2x)
-    # This prevents overfitting on training from masking poor validation
-    if train_naive_mae is None or naive_mae is None or not np.isfinite(train_naive_mae) or not np.isfinite(naive_mae):
-        fitness = float("inf")
-    else:
-        train_delta = train_mae - train_naive_mae
-        val_delta = val_mae - naive_mae
-        base = 0.4 * train_delta + 0.6 * val_delta
-        penalty = 0.0
-        if train_delta > 0:
-            penalty += train_delta
-        if val_delta > 0:
-            penalty += val_delta * 2
-        fitness = base + penalty
+    # FITNESS: Penalized Asymmetric Delta (shared implementation)
+    from predictor_plugins.common.fitness import compute_fitness
+    fitness = compute_fitness(train_mae, train_naive_mae, val_mae, naive_mae)
 
     # TEST
     test_mae = None
@@ -434,6 +421,8 @@ def main() -> int:
     # Normalize boolean-like params that are commonly encoded as 0/1 by optimizers.
     if "positional_encoding" in config:
         config["positional_encoding"] = _coerce_bool(config.get("positional_encoding"), default=False)
+    if "use_temporal_features" in config:
+        config["use_temporal_features"] = _coerce_bool(config.get("use_temporal_features"), default=True)
 
     # Convert activation from GA integer encoding [0..7] to string name.
     if "activation" in config:
@@ -442,6 +431,19 @@ def main() -> int:
             act_idx = int(round(act_val))
             act_idx = max(0, min(act_idx, len(ACTIVATION_INDEX_TO_NAME) - 1))
             config["activation"] = ACTIVATION_INDEX_TO_NAME[act_idx]
+
+    # Convert encoding params from int to string name (safety: already done by to_hyper_dict).
+    _ENCODING_NAMES = ["none", "sincos", "onehot"]
+    for _enc_key in ("hod_encoding", "dow_encoding", "moy_encoding"):
+        if _enc_key in config and isinstance(config[_enc_key], (int, float)):
+            _ei = max(0, min(int(round(config[_enc_key])), len(_ENCODING_NAMES) - 1))
+            config[_enc_key] = _ENCODING_NAMES[_ei]
+
+    # Convert loss_type from int to string name.
+    _LOSS_NAMES = ["mae", "trend_sigma", "pearson_structural", "soft_dtw", "combined_diff"]
+    if "loss_type" in config and isinstance(config["loss_type"], (int, float)):
+        _li = max(0, min(int(round(config["loss_type"])), len(_LOSS_NAMES) - 1))
+        config["loss_type"] = _LOSS_NAMES[_li]
 
     out = {
         "ok": False,

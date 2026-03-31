@@ -37,6 +37,11 @@ class STLPreprocessorZScore:
     "add_multi_scale_returns": False,
     "multi_scale_return_periods": [6, 24, 72],
     "use_log1p_features": ["typical_price"],
+    # Temporal feature encoding (online generation from DATE_TIME)
+    "use_temporal_features": True,
+    "hod_encoding": "sincos",   # "sincos", "onehot", or "none"
+    "dow_encoding": "sincos",   # "sincos", "onehot", or "none"
+    "moy_encoding": "sincos",   # "sincos", "onehot", or "none"
     }
     
     plugin_debug_vars = ["window_size", "predicted_horizons", "target_column", "use_log1p_features"]
@@ -97,6 +102,9 @@ class STLPreprocessorZScore:
 
             # 6b. Apply log1p to specified features
             self._apply_log1p_to_features(final_sliding_windows, config)
+
+            # 6c. Add temporal features (hour-of-day, day-of-week, month-of-year)
+            self._add_temporal_features(final_sliding_windows, config)
 
             # 7. Align final sliding windows with target data length
             if not _QUIET: print("Step 7: Align sliding windows with target data")
@@ -163,6 +171,132 @@ class STLPreprocessorZScore:
                     if not _QUIET: print(f"  Applied symmetric log1p (sign(x)*log1p(|x|)) to {key} to handle negative normalized values")
                 else:
                     if not _QUIET: print(f"  Skipping {key}: Invalid shape or type")
+
+    # ── Encoding name constants (kept in sync with neat_optimizer.py) ──
+    ENCODING_NAMES = ["none", "sincos", "onehot"]
+
+    def _add_temporal_features(self, sliding_windows, config):
+        """Add temporal features derived from DATE_TIME of each window's baseline tick.
+
+        Encoding per variable is configurable: "sincos", "onehot", or "none".
+        Integer values (from NEAT optimizer) are mapped to strings automatically.
+        Features are constant across all timesteps within a window.
+        """
+        use_temporal = config.get("use_temporal_features", True)
+        if isinstance(use_temporal, (int, float)):
+            use_temporal = bool(int(round(use_temporal)))
+        if not use_temporal:
+            return
+
+        hod_enc = config.get("hod_encoding", "sincos")
+        dow_enc = config.get("dow_encoding", "sincos")
+        moy_enc = config.get("moy_encoding", "sincos")
+
+        # Map int values to strings (for NEAT optimizer which passes ints)
+        for varname in ("hod_enc", "dow_enc", "moy_enc"):
+            val = locals()[varname]
+            if isinstance(val, (int, float)):
+                idx = max(0, min(int(round(val)), len(self.ENCODING_NAMES) - 1))
+                locals()[varname]  # can't reassign locals, use explicit below
+
+        if isinstance(hod_enc, (int, float)):
+            hod_enc = self.ENCODING_NAMES[max(0, min(int(round(hod_enc)), 2))]
+        if isinstance(dow_enc, (int, float)):
+            dow_enc = self.ENCODING_NAMES[max(0, min(int(round(dow_enc)), 2))]
+        if isinstance(moy_enc, (int, float)):
+            moy_enc = self.ENCODING_NAMES[max(0, min(int(round(moy_enc)), 2))]
+
+        if hod_enc == "none" and dow_enc == "none" and moy_enc == "none":
+            return
+
+        # Build feature name list
+        new_names = []
+        if hod_enc == "sincos":
+            new_names += ["hod_sin", "hod_cos"]
+        elif hod_enc == "onehot":
+            new_names += [f"hod_{h}" for h in [0, 4, 8, 12, 16, 20]]
+
+        if dow_enc == "sincos":
+            new_names += ["dow_sin", "dow_cos"]
+        elif dow_enc == "onehot":
+            new_names += [f"dow_{d}" for d in range(5)]
+
+        if moy_enc == "sincos":
+            new_names += ["moy_sin", "moy_cos"]
+        elif moy_enc == "onehot":
+            new_names += [f"moy_{m}" for m in range(1, 13)]
+
+        if not new_names:
+            return
+
+        n_new = len(new_names)
+        if not _QUIET:
+            print(f"Step 6c: Adding {n_new} temporal features: {new_names}")
+
+        for split in ['train', 'val', 'test']:
+            X_key = f'X_{split}'
+            dates_key = f'x_dates_{split}'
+
+            if X_key not in sliding_windows or dates_key not in sliding_windows:
+                continue
+
+            X = sliding_windows[X_key]
+            dates = sliding_windows[dates_key]
+
+            if X is None or not hasattr(X, 'shape') or len(X.shape) != 3:
+                continue
+
+            n_windows, window_size, _ = X.shape
+            dt_index = pd.to_datetime(dates)
+
+            # Build temporal array (n_windows, n_new)
+            temporal = np.zeros((n_windows, n_new), dtype=np.float32)
+            col = 0
+
+            if hod_enc == "sincos":
+                slots = dt_index.hour / 4.0  # 4h bars → slots 0-5
+                temporal[:, col] = np.sin(2 * np.pi * slots / 6.0)
+                temporal[:, col + 1] = np.cos(2 * np.pi * slots / 6.0)
+                col += 2
+            elif hod_enc == "onehot":
+                hours = dt_index.hour
+                for i, h in enumerate([0, 4, 8, 12, 16, 20]):
+                    temporal[:, col + i] = (hours == h).astype(np.float32)
+                col += 6
+
+            if dow_enc == "sincos":
+                dow = dt_index.dayofweek
+                temporal[:, col] = np.sin(2 * np.pi * dow / 5.0)
+                temporal[:, col + 1] = np.cos(2 * np.pi * dow / 5.0)
+                col += 2
+            elif dow_enc == "onehot":
+                dow = dt_index.dayofweek
+                for i in range(5):
+                    temporal[:, col + i] = (dow == i).astype(np.float32)
+                col += 5
+
+            if moy_enc == "sincos":
+                month = dt_index.month
+                temporal[:, col] = np.sin(2 * np.pi * (month - 1) / 12.0)
+                temporal[:, col + 1] = np.cos(2 * np.pi * (month - 1) / 12.0)
+                col += 2
+            elif moy_enc == "onehot":
+                month = dt_index.month
+                for i in range(1, 13):
+                    temporal[:, col + i - 1] = (month == i).astype(np.float32)
+                col += 12
+
+            # Broadcast to (n_windows, window_size, n_new) — constant across timesteps
+            temporal_3d = np.tile(temporal[:, np.newaxis, :], (1, window_size, 1))
+            sliding_windows[X_key] = np.concatenate([X, temporal_3d], axis=2)
+
+            if not _QUIET:
+                print(f"  {split}: {X.shape} → {sliding_windows[X_key].shape}")
+
+        # Update feature name lists
+        for key in ['feature_names', 'feature_names_train', 'feature_names_val', 'feature_names_test']:
+            if key in sliding_windows:
+                sliding_windows[key] = list(sliding_windows[key]) + new_names
 
     def _align_sliding_windows_with_targets(self, sliding_windows, targets, config):
         """Align sliding windows with target data to ensure same number of samples."""

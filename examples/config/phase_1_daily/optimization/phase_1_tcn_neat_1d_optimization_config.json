@@ -60,7 +60,12 @@
         "tcn_use_layer_norm": [0, 1],
         "l2_reg": [1e-7, 1e-3],
         "min_delta": [1e-10, 1e-6],
-        "use_log1p_features": [0, 1]
+        "use_log1p_features": [0, 1],
+        "use_temporal_features": [0, 1],
+        "hod_encoding": [0, 2],
+        "dow_encoding": [0, 2],
+        "moy_encoding": [0, 2],
+        "loss_type": [0, 4]
     },
     "window_size": 72,
     "tcn_filters": 64,
