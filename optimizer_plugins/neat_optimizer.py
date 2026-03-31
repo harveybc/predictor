@@ -642,7 +642,7 @@ class Plugin:
             genome.hyper_dict = hyper_dict
 
             print(f"\n--- [NEAT] Evaluating Candidate {self.eval_counter}/{population_size} | "
-                  f"Gen {gen}/{end_gen - 1} | Active Params: {genome.complexity}/{len(all_params)} | "
+                  f"Gen {gen}/{n_generations} | Active Params: {genome.complexity}/{len(all_params)} | "
                   f"Species: {genome.species_id or '?'} | Total Evals: {self.total_eval_counter} ---")
             print(f"Active: {genome.active_params}")
             print(f"Params: {hyper_dict}")
@@ -790,7 +790,7 @@ class Plugin:
 
                 # Print result summary
                 print(f"\n{'='*80}")
-                print(f"[NEAT] CANDIDATE RESULT | Gen {gen}/{end_gen - 1} | "
+                print(f"[NEAT] CANDIDATE RESULT | Gen {gen}/{n_generations} | "
                       f"Candidate {self.eval_counter}/{population_size} | "
                       f"Complexity: {genome.complexity} params | Total Evals: {self.total_eval_counter}")
                 print(f"Active Parameters: {', '.join(genome.active_params)}")
@@ -885,8 +885,17 @@ class Plugin:
         self.best_at_gen_start = float(self.best_fitness_so_far)
         no_improve_counter = int(self.patience_counter)
 
+        # If initial population was evaluated, that counted as generation start_gen (0).
+        # The reproductive loop should start from the next generation.
+        _initial_pop_evaluated = (self.eval_counter > 0)
+        if _initial_pop_evaluated:
+            _loop_start = start_gen + 1
+            end_gen = _loop_start + n_generations
+        else:
+            _loop_start = start_gen
+
         # Generation loop
-        for gen in range(start_gen, end_gen):
+        for gen in range(_loop_start, end_gen):
             if _force_advance_flag:
                 print(f"[NEAT] Force advance detected — stopping optimization")
                 break
@@ -895,7 +904,7 @@ class Plugin:
             self.current_gen = gen
             self.eval_counter = 0
             print(f"\n{'='*80}")
-            print(f"[NEAT] Generation {gen}/{end_gen - 1}")
+            print(f"[NEAT] Generation {gen}/{n_generations}")
             print(f"{'='*80}")
 
             best_at_gen_start = float(self.best_fitness_so_far)
