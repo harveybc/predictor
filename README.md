@@ -103,9 +103,94 @@ usage: predictor.bat --load_config examples\config\phase_1\phase_1_ann_6300_1h_c
 
 There are many examples of config files in the **examples\config directory**, also training data of EURUSD and othertimeseries in **examples\data** and the results of the example config files are set to be on **examples\results**, there are some scripts to automate running sequential predictions in **examples\scripts**.
 
-### Optimization Results & Metabase Integration
+### Distributed NEAT Optimization (via DOIN Network)
 
-Optimization results from distributed NEAT runs (via [doin-node](https://github.com/harveybc/doin-node)) are stored in `examples/results/phase_1_daily/`. The TCN+NEAT optimization results include:
+The predictor integrates with [doin-node](https://github.com/harveybc/doin-node) for distributed NEAT hyperparameter optimization using an island-model approach. Multiple GPU nodes collaboratively optimize TCN model parameters, sharing champions via blockchain.
+
+#### Data Format
+
+Input CSVs must contain only two columns: `DATE_TIME` and the target column (e.g., `typical_price`). All additional features (temporal encodings, window statistics) are generated online by the `stl_preprocessor` plugin during training, controlled by NEAT-optimizable parameters.
+
+```
+DATE_TIME,typical_price
+2024-01-01 00:00:00,1.10234
+2024-01-01 04:00:00,1.10156
+...
+```
+
+#### NEAT-Optimizable Parameters
+
+The NEAT optimizer can evolve these parameters (defined in `hyperparameter_bounds`):
+
+| Parameter | Range | Description |
+|-----------|-------|-------------|
+| `window_size` | [48, 160] | Input sliding window length |
+| `tcn_filters` | [16, 128] | TCN convolutional filters |
+| `tcn_kernel_size` | [2, 7] | TCN kernel size |
+| `tcn_stack_layers` | [1, 4] | TCN residual stacks |
+| `tcn_dilations_per_stack` | [2, 6] | Dilations per stack |
+| `tcn_head_layers` | [1, 3] | Dense head layers per horizon |
+| `tcn_head_units` | [16, 64] | Units per head layer |
+| `use_temporal_features` | [0, 1] | Enable sincos temporal features (hod/dow/moy) |
+| `hod_encoding` | [0, 2] | Hour-of-day encoding: 0=none, 1=onehot, 2=sincos |
+| `dow_encoding` | [0, 2] | Day-of-week encoding |
+| `moy_encoding` | [0, 2] | Month-of-year encoding |
+| `add_window_stats` | [0, 1] | Enable rolling std/ema/price-minus-ema features |
+| `add_multi_scale_returns` | [0, 1] | Enable multi-scale return features |
+| `loss_type` | [0, 4] | Loss: 0=mae, 1=huber, 2=trend_sigma, 3=pearson, 4=soft_dtw |
+| `use_log1p_features` | [0, 1] | Apply log1p transform to target column |
+| `positional_encoding` | [0, 1] | Sinusoidal positional encoding on input |
+| `learning_rate` | [1e-5, 1e-2] | AdamW learning rate |
+| `batch_size` | [16, 64] | Training batch size |
+| `tcn_dropout` | [0.0, 0.3] | Dropout rate |
+| `l2_reg` | [1e-7, 1e-3] | L2 regularization |
+
+Base model starts with 7 input features: 1 price + 6 temporal sincos (when `use_temporal_features=1` with sincos encodings). NEAT can optionally add 6 more window stats features (rolling_std, rolling_ema, price_minus_ema for 2 periods) by evolving `add_window_stats=1`.
+
+#### GPU Environment
+
+For NVIDIA GPUs, set these environment variables **before** launching to prevent GPU memory pre-allocation:
+
+```bash
+export TF_FORCE_GPU_ALLOW_GROWTH=1
+export TF_GPU_ALLOCATOR=cuda_malloc_async
+```
+
+Without these, the parent process allocates all GPU memory, leaving none for subprocess candidates.
+
+#### Optimization Config
+
+The optimization config file (e.g., `examples/config/phase_1_daily/optimization/phase_1_tcn_neat_1d_optimization_config.json`) defines:
+- Data files (train/val/test CSVs)
+- Plugin selection (tcn, neat_optimizer, stl_preprocessor, stl_pipeline)
+- NEAT parameters (population_size, n_generations, mutation rates)
+- Hyperparameter bounds
+- Default values for non-optimized parameters
+
+#### Running Locally (Single Node)
+
+```bash
+export TF_FORCE_GPU_ALLOW_GROWTH=1
+export TF_GPU_ALLOCATOR=cuda_malloc_async
+
+predictor --load_config examples/config/phase_1_daily/optimization/phase_1_tcn_neat_1d_optimization_config.json
+```
+
+#### Running Distributed (DOIN Network)
+
+See the [doin-node README](https://github.com/harveybc/doin-node#running-a-tcn-neat-experiment) for multi-node deployment instructions.
+
+#### Champion Training (No Optimization)
+
+To retrain the best solution found by the distributed optimization as a standalone candidate:
+
+```bash
+predictor --load_config examples/config/phase_1_daily/phase_1_tcn_neat_champion_1d_training_config.json
+```
+
+#### Optimization Results & Metabase Integration
+
+Results are stored in `examples/results/phase_1_daily/`:
 
 | File | Description |
 |------|-------------|
@@ -114,24 +199,7 @@ Optimization results from distributed NEAT runs (via [doin-node](https://github.
 | `phase_1_tcn_neat_1d_optimization_resume.json` | Full NEAT population state for resuming optimization |
 | `phase_1_tcn_neat_1d_rss.csv` | Memory usage log per candidate evaluation |
 
-**Phase 1 TCN+NEAT Champion (Block 5):**
-- Fitness: **-1.22e-4** (val_MAE below Naive by 0.016 pct)
-- val_MAE: 0.00853 vs Naive 0.00869 | test_MAE: 0.00542 vs Naive 0.00567
-- Parameters: `window_size=79, batch_size=31, tcn_filters=19, use_log1p_features=["typical_price"]`
-
-**Level 1 Champion Training (no optimization):**
-
-To retrain the best solution found by the distributed optimization as a single candidate:
-
-```bash
-predictor --load_config examples/config/phase_1_daily/phase_1_tcn_neat_champion_1d_training_config.json
-```
-
-This config hardcodes the Block 5 champion hyperparameters and sets `use_optimizer: false`.
-
-**Importing results to Metabase:**
-
-The optimization stats JSON files can be imported via Metabase's [Custom Upload](https://www.metabase.com/docs/latest/databases/uploads) feature, or use the blockchain SQLite database from [doin-node](https://github.com/harveybc/doin-node/tree/master/examples/results/phase_1_daily/blockchain) which contains the full experiment history across all nodes. See the doin-node README for detailed Metabase setup instructions.
+The blockchain SQLite database from doin-node contains the full experiment history across all nodes and can be imported into [Metabase](https://www.metabase.com/) for visualization. See the doin-node README for Metabase setup instructions.
 
 ### Directory Structure
 
