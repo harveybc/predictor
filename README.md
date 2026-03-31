@@ -152,11 +152,20 @@ Base model starts with 7 input features: 1 price + 6 temporal sincos (when `use_
 For NVIDIA GPUs, set these environment variables **before** launching to prevent GPU memory pre-allocation:
 
 ```bash
-export TF_FORCE_GPU_ALLOW_GROWTH=1
+export TF_FORCE_GPU_ALLOW_GROWTH=true    # MUST be "true", NOT "1" (TF rejects "1" silently)
 export TF_GPU_ALLOCATOR=cuda_malloc_async
 ```
 
 Without these, the parent process allocates all GPU memory, leaving none for subprocess candidates.
+
+If CUDA was installed via `pip install tensorflow[and-cuda]` (no system `/usr/local/cuda`), you also need:
+
+```bash
+NB=$CONDA_PREFIX/lib/python3.12/site-packages/nvidia
+export LD_LIBRARY_PATH="${NB}/cudnn/lib:${NB}/cublas/lib:${NB}/cuda_runtime/lib:${NB}/cufft/lib:${NB}/curand/lib:${NB}/cusolver/lib:${NB}/cusparse/lib:${NB}/cuda_cupti/lib:${NB}/nvjitlink/lib:${NB}/cuda_nvrtc/lib:${NB}/nccl/lib"
+```
+
+Without `LD_LIBRARY_PATH`, TensorFlow silently falls back to CPU (check with `nvidia-smi` — 0% GPU means it's not working).
 
 #### Optimization Config
 
