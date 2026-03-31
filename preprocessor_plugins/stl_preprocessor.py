@@ -30,7 +30,7 @@ class STLPreprocessorZScore:
         "targets_are_denormalized": True,
         "anti_naive_lock_enabled": True,
     "feature_preprocessing_strategy": "selective",
-    "add_window_stats": True,
+    "add_window_stats": False,
     "window_stats_periods": [12, 48],
     "reverse_time_axis": False,
     # New: optional multi-scale returns augmentation (causal, within-window)
