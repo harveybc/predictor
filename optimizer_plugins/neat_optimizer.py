@@ -318,21 +318,23 @@ def adjust_fitness(species_list):
 # ── Mutation Operators ───────────────────────────────────────
 
 def mutate_add_param(genome, all_params, full_bounds, innovation_tracker, add_prob=0.15):
-    """Structural mutation: add a random new parameter."""
+    """Structural mutation: add 1-3 random new parameters per trigger."""
     if random.random() > add_prob:
         return False
     active = {g.param_name for g in genome.genes.values()}
     candidates = [p for p in all_params if p not in active]
     if not candidates:
         return False
-    new_param = random.choice(candidates)
-    inn = innovation_tracker.get_innovation(new_param)
-    low, high = full_bounds[new_param]
-    if isinstance(low, int) and isinstance(high, int):
-        value = random.randint(low, high)
-    else:
-        value = random.uniform(low, high)
-    genome.genes[inn] = NeatGene(inn, new_param, value)
+    # Add 1-3 params at once (weighted toward 1) to accelerate exploration
+    n_to_add = min(len(candidates), random.choices([1, 2, 3], weights=[0.50, 0.35, 0.15], k=1)[0])
+    for new_param in random.sample(candidates, n_to_add):
+        inn = innovation_tracker.get_innovation(new_param)
+        low, high = full_bounds[new_param]
+        if isinstance(low, int) and isinstance(high, int):
+            value = random.randint(low, high)
+        else:
+            value = random.uniform(low, high)
+        genome.genes[inn] = NeatGene(inn, new_param, value)
     return True
 
 
@@ -411,7 +413,7 @@ class Plugin:
         "neat_add_param_prob": 0.35,       # Probability of adding a parameter
         "neat_remove_param_prob": 0.05,    # Probability of removing a parameter
         "neat_compatibility_threshold": 2.0,  # Speciation distance threshold
-        "neat_min_params": 4,              # Minimum active parameters per genome
+        "neat_min_params": 6,              # Minimum active parameters per genome
         "neat_survival_rate": 0.5,         # Fraction of species that reproduces
         "neat_interspecies_mate_rate": 0.01,  # Cross-species mating probability
         "neat_elitism": 1,                 # Number of elites per species
@@ -956,13 +958,13 @@ class Plugin:
                                     v = LOSS_TYPE_INDEX_TO_NAME.index(v) if v in LOSS_TYPE_INDEX_TO_NAME else 0
                                 migrant_genome.genes[inn] = NeatGene(inn, p, float(v))
                         if migrant_genome.genes:
-                            # Dedup: only reject exact duplicate genomes
+                            # Dedup: reject migrants too similar to existing population
                             _min_dist = min(
                                 compatibility_distance(migrant_genome, g, full_bounds)
                                 for g in population
                             )
-                            if _min_dist < 1e-10:
-                                print(f"  [NEAT MIGRATION] Skipped — exact duplicate of existing genome (dist={_min_dist:.4f})")
+                            if _min_dist < 0.1:
+                                print(f"  [NEAT MIGRATION] Skipped — near-duplicate of existing genome (dist={_min_dist:.4f})")
                             else:
                                 # Replace worst individual
                                 worst_idx = max(range(len(population)),
@@ -1025,9 +1027,16 @@ class Plugin:
                 # Sort members by fitness (lower is better)
                 sp.members.sort(key=lambda g: g.fitness if g.fitness is not None else float("inf"))
 
-                # Elitism: keep best individuals from each species
+                # Elitism: keep best individuals from each species (dedup against already-added elites)
                 for elite in sp.members[:neat_elitism]:
-                    new_population.append(elite.deep_copy())
+                    # Check if a near-duplicate elite is already in new_population
+                    is_dup = False
+                    for existing in new_population:
+                        if compatibility_distance(elite, existing, full_bounds) < 0.1:
+                            is_dup = True
+                            break
+                    if not is_dup:
+                        new_population.append(elite.deep_copy())
 
                 # Calculate how many offspring this species gets (proportional to score)
                 n_offspring = max(0, int(round(
