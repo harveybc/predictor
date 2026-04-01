@@ -172,6 +172,16 @@ class NeatGenome:
         g = NeatGenome()
         g.genes = {k: v.copy() for k, v in self.genes.items()}
         g.species_id = self.species_id
+        g.fitness = self.fitness
+        g.adjusted_fitness = self.adjusted_fitness
+        g.val_mae = self.val_mae
+        g.naive_mae = self.naive_mae
+        g.train_mae = self.train_mae
+        g.train_naive_mae = self.train_naive_mae
+        g.test_mae = self.test_mae
+        g.test_naive_mae = self.test_naive_mae
+        g.model_summary = self.model_summary
+        g.hyper_dict = self.hyper_dict
         return g
 
     def to_serializable(self):
@@ -397,11 +407,11 @@ class Plugin:
             "layer_size": (16, 256),
         },
         # NEAT-specific defaults
-        "neat_initial_params": None,       # List of initial params (None = first 2 from bounds)
-        "neat_add_param_prob": 0.15,       # Probability of adding a parameter
+        "neat_initial_params": None,       # List of initial params (None = first N from bounds)
+        "neat_add_param_prob": 0.35,       # Probability of adding a parameter
         "neat_remove_param_prob": 0.05,    # Probability of removing a parameter
         "neat_compatibility_threshold": 2.0,  # Speciation distance threshold
-        "neat_min_params": 2,              # Minimum active parameters per genome
+        "neat_min_params": 4,              # Minimum active parameters per genome
         "neat_survival_rate": 0.5,         # Fraction of species that reproduces
         "neat_interspecies_mate_rate": 0.01,  # Cross-species mating probability
         "neat_elitism": 1,                 # Number of elites per species
@@ -995,15 +1005,23 @@ class Plugin:
             _eff_add_prob = min(add_param_prob * _adaptive_boost, 0.5)
             _eff_sigma_scale = min(0.15 * _adaptive_boost, 0.4)
 
-            # Calculate offspring allocation per species (proportional to adjusted fitness sum)
-            total_adjusted = sum(
-                sum(g.adjusted_fitness for g in sp.members if g.adjusted_fitness is not None and np.isfinite(g.adjusted_fitness))
-                for sp in species_list
-            )
+            # Calculate offspring allocation per species
+            # Use mean adjusted fitness (per-capita) so species size doesn't bias allocation.
+            # Lower fitness = better, so invert: species_score = 1 / mean_adjusted_fitness.
+            species_scores = []
+            for sp in species_list:
+                finite_adj = [g.adjusted_fitness for g in sp.members
+                              if g.adjusted_fitness is not None and np.isfinite(g.adjusted_fitness)]
+                if finite_adj:
+                    mean_adj = sum(finite_adj) / len(finite_adj)
+                    species_scores.append(1.0 / max(mean_adj, 1e-10))
+                else:
+                    species_scores.append(1.0)
+            total_score = sum(species_scores) or 1.0
 
             new_population = []
 
-            for sp in species_list:
+            for sp_idx, sp in enumerate(species_list):
                 # Sort members by fitness (lower is better)
                 sp.members.sort(key=lambda g: g.fitness if g.fitness is not None else float("inf"))
 
@@ -1011,28 +1029,14 @@ class Plugin:
                 for elite in sp.members[:neat_elitism]:
                     new_population.append(elite.deep_copy())
 
-                # Calculate how many offspring this species gets
-                if total_adjusted > 0 and np.isfinite(total_adjusted):
-                    sp_adjusted = sum(
-                        g.adjusted_fitness for g in sp.members
-                        if g.adjusted_fitness is not None and np.isfinite(g.adjusted_fitness)
-                    )
-                    # Inverted because lower fitness = better, so lower adjusted = better
-                    # Use (1/adjusted_fitness_sum) for proportional allocation
-                    inv_adjusted = 1.0 / max(sp_adjusted, 1e-10)
-                else:
-                    inv_adjusted = 1.0
+                # Calculate how many offspring this species gets (proportional to score)
+                n_offspring = max(0, int(round(
+                    population_size * species_scores[sp_idx] / total_score
+                )) - neat_elitism)
 
                 # Select survival pool
                 survival_count = max(1, int(len(sp.members) * survival_rate))
                 survivors = sp.members[:survival_count]
-
-                # Produce offspring (will be sized correctly after all species processed)
-                n_offspring = max(0, int(round(population_size * inv_adjusted / max(
-                    sum(1.0 / max(
-                        sum(g.adjusted_fitness for g in s.members if g.adjusted_fitness is not None and np.isfinite(g.adjusted_fitness)),
-                        1e-10
-                    ) for s in species_list), 1e-10))) - neat_elitism)
 
                 for _ in range(n_offspring):
                     if len(survivors) < 2 or random.random() < 0.25:
