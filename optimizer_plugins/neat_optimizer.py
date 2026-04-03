@@ -1042,6 +1042,8 @@ class Plugin:
                             "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
                             "stage_name": _current_stage["name"],
                             "n_generations_total": _total_stage_gens,
+                            "n_generations_stage": _current_stage["end_gen"] - _current_stage["start_gen"],
+                            "gen_in_stage": start_gen - _current_stage["start_gen"],
                             "generation": start_gen,
                             "candidate_num": int(self.eval_counter),
                             "total_candidates": population_size,
@@ -1122,7 +1124,9 @@ class Plugin:
             self.eval_counter = 0
             print(f"\n{'='*80}")
             _stage_label = f" [{_current_stage['name']}]" if _staged_mode else ""
-            print(f"[NEAT] Generation {gen}/{_total_stage_gens}{_stage_label}")
+            _gen_in_stage = gen - _current_stage["start_gen"]
+            _gens_this_stage = _current_stage["end_gen"] - _current_stage["start_gen"]
+            print(f"[NEAT] Generation {gen}/{_total_stage_gens} (stage {_gen_in_stage}/{_gens_this_stage}){_stage_label}")
             print(f"{'='*80}")
 
             best_at_gen_start = float(self.best_fitness_so_far)
@@ -1136,6 +1140,8 @@ class Plugin:
                         "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
                         "stage_name": _current_stage["name"],
                         "n_generations_total": _total_stage_gens,
+                        "n_generations_stage": _current_stage["end_gen"] - _current_stage["start_gen"],
+                        "gen_in_stage": gen - _current_stage["start_gen"],
                         "meta_mode": False,
                         "total_candidates_evaluated": int(self.total_eval_counter),
                         "population_size": population_size,
@@ -1306,6 +1312,8 @@ class Plugin:
                                 "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
                                 "stage_name": _current_stage["name"],
                                 "n_generations_total": _total_stage_gens,
+                                "n_generations_stage": _current_stage["end_gen"] - _current_stage["start_gen"],
+                                "gen_in_stage": gen - _current_stage["start_gen"],
                                 "generation": gen,
                                 "candidate_num": int(self.eval_counter),
                                 "total_candidates": sum(1 for g in population if g.fitness is None) + int(self.eval_counter),
@@ -1434,6 +1442,8 @@ class Plugin:
                         "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
                         "stage_name": _current_stage["name"],
                         "n_generations_total": _total_stage_gens,
+                        "n_generations_stage": _current_stage["end_gen"] - _current_stage["start_gen"],
+                        "gen_in_stage": gen - _current_stage["start_gen"],
                         "meta_mode": False,
                         "generation": gen,
                         "total_candidates_evaluated": int(self.total_eval_counter),
@@ -1456,10 +1466,45 @@ class Plugin:
                 except Exception as _cb_err:
                     print(f"  [NEAT] Generation end callback error: {_cb_err}")
 
-            # Early stopping
+            # Early stopping / stage advancement on patience exhaustion
             if no_improve_counter >= patience:
-                print(f"\n[NEAT] Early stopping triggered after {gen + 1} generations (patience={patience})")
-                break
+                if _staged_mode and _current_stage["stage_idx"] < len(_stage_schedule) - 1:
+                    # Not the last stage — advance to the next stage
+                    _next_idx = _current_stage["stage_idx"] + 1
+                    _next_stage = _stage_schedule[_next_idx]
+                    print(f"\n[NEAT] Patience exhausted ({no_improve_counter}/{patience}) "
+                          f"— advancing from stage '{_current_stage['name']}' to '{_next_stage['name']}'")
+                    # Jump the generation counter to the next stage's start
+                    # The stage transition logic at the top of the loop will handle the rest
+                    self.current_gen = _next_stage["start_gen"]
+                    # We need to continue the for-loop but skip to the next stage's start_gen.
+                    # Since Python for-loops don't support changing the counter, we break
+                    # and let the outer stage-handling mechanism re-enter.
+                    # Instead, we directly do the stage transition here:
+                    _prev_stage = _current_stage
+                    _current_stage = _next_stage
+                    _best_numeric = {g.param_name: g.value for g in best_genome.genes.values()} if best_genome else {}
+                    _seed_values = {**_param_defaults, **_best_numeric}
+                    population = _build_stage_population(
+                        set(_current_stage["active_params"]),
+                        _current_stage["frozen_params"],
+                        _seed_values,
+                    )
+                    species_list = []
+                    no_improve_counter = 0
+                    self.patience_counter = 0
+                    print(f"\n{'#'*80}")
+                    print(f"[NEAT] *** STAGE TRANSITION (patience): "
+                          f"'{_prev_stage['name']}' → '{_current_stage['name']}' ***")
+                    print(f"[NEAT] Active params ({len(_current_stage['active_params'])}): "
+                          f"{_current_stage['active_params']}")
+                    print(f"[NEAT] Frozen params ({len(_current_stage['frozen_params'])}): "
+                          f"{sorted(_current_stage['frozen_params'])}")
+                    print(f"{'#'*80}")
+                else:
+                    # Last stage (or non-staged mode) — truly stop
+                    print(f"\n[NEAT] Early stopping triggered after {gen + 1} generations (patience={patience})")
+                    break
 
         # ── Extract best result ──────────────────────────────
         end_opt = time.time()
