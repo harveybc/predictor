@@ -41,22 +41,22 @@
     "optimization_stages": [
         {"name": "features", "params": ["window_size", "use_log1p_features", "positional_encoding",
                                          "use_temporal_features", "add_window_stats", "add_multi_scale_returns"],
-         "generations": 8},
+         "generations": 10},
         {"name": "architecture", "params": ["tcn_filters", "tcn_kernel_size", "tcn_stack_layers",
                                              "tcn_dilations_per_stack", "tcn_head_layers", "tcn_head_units",
                                              "tcn_use_batch_norm", "tcn_use_layer_norm"],
-         "generations": 8},
+         "generations": 10},
         {"name": "training", "params": ["learning_rate", "batch_size", "tcn_dropout", "l2_reg",
                                          "min_delta", "loss_type", "hod_encoding", "dow_encoding", "moy_encoding"],
-         "generations": 8},
-        {"name": "refinement", "params": "all", "generations": 6}
+         "generations": 10},
+        {"name": "refinement", "params": "all", "generations": 10}
     ],
 
     "deterministic_training": true,
     "random_seed": 42,
     "population_size": 20,
-    "n_generations": 30,
-    "optimization_patience": 10,
+    "n_generations": 40,
+    "optimization_patience": 5,
     "mutpb": 0.2,
     "hyperparameter_bounds": {
         "window_size": [48, 160],
