@@ -955,6 +955,8 @@ class Plugin:
                             }
                             _champ_stage = {
                                 "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
+                                "stage_name": _current_stage["name"],
+                                "n_generations_total": _total_stage_gens,
                                 "generation": gen,
                                 "candidate": int(self.eval_counter),
                                 "total_candidates_evaluated": int(self.total_eval_counter),
@@ -1004,6 +1006,8 @@ class Plugin:
                     }
                     _resume_stage = {
                         "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
+                        "stage_name": _current_stage["name"],
+                        "n_generations_total": _total_stage_gens,
                         "generation": start_gen,
                         "candidate": 0,
                         "total_candidates_evaluated": int(self.total_eval_counter),
@@ -1035,6 +1039,8 @@ class Plugin:
                     try:
                         _bc_stage = {
                             "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
+                            "stage_name": _current_stage["name"],
+                            "n_generations_total": _total_stage_gens,
                             "generation": start_gen,
                             "candidate_num": int(self.eval_counter),
                             "total_candidates": population_size,
@@ -1125,6 +1131,8 @@ class Plugin:
                 try:
                     _stage_info = {
                         "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
+                        "stage_name": _current_stage["name"],
+                        "n_generations_total": _total_stage_gens,
                         "meta_mode": False,
                         "total_candidates_evaluated": int(self.total_eval_counter),
                         "population_size": population_size,
@@ -1293,6 +1301,8 @@ class Plugin:
                         try:
                             _bc_stage = {
                                 "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
+                                "stage_name": _current_stage["name"],
+                                "n_generations_total": _total_stage_gens,
                                 "generation": gen,
                                 "candidate_num": int(self.eval_counter),
                                 "total_candidates": sum(1 for g in population if g.fitness is None) + int(self.eval_counter),
@@ -1417,6 +1427,8 @@ class Plugin:
                 try:
                     _gen_end_info = {
                         "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
+                        "stage_name": _current_stage["name"],
+                        "n_generations_total": _total_stage_gens,
                         "meta_mode": False,
                         "generation": gen,
                         "total_candidates_evaluated": int(self.total_eval_counter),
