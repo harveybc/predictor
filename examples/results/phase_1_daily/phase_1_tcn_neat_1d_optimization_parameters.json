@@ -1,4 +1,7 @@
 {
-    "use_log1p_features": null,
-    "window_size": 123
+    "use_log1p_features": [
+        "typical_price"
+    ],
+    "window_size": 123,
+    "use_temporal_features": false
 }

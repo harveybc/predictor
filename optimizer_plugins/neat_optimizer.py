@@ -347,14 +347,38 @@ def mutate_remove_param(genome, min_params=2, remove_prob=0.05):
     return True
 
 
-def mutate_values(genome, full_bounds, mutpb=0.2, sigma_scale=0.15):
-    """Gaussian mutation on parameter values."""
+def mutate_values(genome, full_bounds, mutpb=0.2, sigma_scale=0.15,
+                  frozen_params=None):
+    """Type-aware mutation on parameter values.
+
+    - Boolean [0,1] int params: low-probability bit-flip (10% when triggered)
+    - Categorical int params (range > 1): neighbor step ±1 or ±2
+    - Wide-range int params (range >= 10): Gaussian perturbation rounded to int
+    - Float params: Gaussian perturbation (unchanged)
+
+    *frozen_params*: set of param names to skip during mutation.
+    """
     mutated = False
+    _frozen = frozen_params or set()
     for gene in genome.genes.values():
+        if gene.param_name in _frozen:
+            continue
         if random.random() < mutpb:
             low, high = full_bounds[gene.param_name]
             if isinstance(low, int) and isinstance(high, int):
-                gene.value = random.randint(low, high)
+                span = high - low
+                if span <= 1:
+                    # Boolean: flip with 10% probability (not 50% coin-flip)
+                    if random.random() < 0.1:
+                        gene.value = 1 - int(round(gene.value))
+                elif span <= 5:
+                    # Categorical / small-range int: step ±1 (or ±2 rarely)
+                    step = random.choice([-1, 1]) if random.random() > 0.2 else random.choice([-2, 2])
+                    gene.value = max(low, min(high, int(round(gene.value)) + step))
+                else:
+                    # Wide-range int: Gaussian perturbation rounded to int
+                    sigma = span * sigma_scale
+                    gene.value = max(low, min(high, int(round(gene.value + random.gauss(0, sigma)))))
             else:
                 sigma = (high - low) * sigma_scale
                 gene.value = max(low, min(high, gene.value + random.gauss(0, sigma)))
@@ -391,6 +415,48 @@ def neat_crossover(parent1, parent2):
         child.genes[inn] = parent1.genes[inn].copy()
 
     return child
+
+
+# ── Staged Optimization ──────────────────────────────────────
+
+# Known parameter groups for auto-stage detection
+_FEATURE_PARAMS = {"window_size", "use_log1p_features", "positional_encoding",
+                   "use_temporal_features", "add_window_stats", "add_multi_scale_returns"}
+_ARCH_PARAMS = {"tcn_filters", "tcn_kernel_size", "tcn_stack_layers",
+                "tcn_dilations_per_stack", "tcn_head_layers", "tcn_head_units",
+                "tcn_use_batch_norm", "tcn_use_layer_norm"}
+
+
+def _build_default_stages(all_params, n_gens):
+    """Auto-detect parameter stages from known parameter name patterns."""
+    features = [p for p in all_params if p in _FEATURE_PARAMS]
+    architecture = [p for p in all_params if p in _ARCH_PARAMS]
+    training = [p for p in all_params if p not in _FEATURE_PARAMS and p not in _ARCH_PARAMS]
+
+    stages = []
+    if features:
+        stages.append({"name": "features", "params": features})
+    if architecture:
+        stages.append({"name": "architecture", "params": architecture})
+    if training:
+        stages.append({"name": "training", "params": training})
+    # Always add a refinement stage with all params
+    stages.append({"name": "refinement", "params": "all"})
+
+    # Allocate generations proportionally (refinement gets fewer)
+    n_stages = len(stages)
+    if n_stages <= 1:
+        stages[0]["generations"] = n_gens
+    else:
+        # Refinement gets ~20% of budget, rest split evenly
+        refine_gens = max(3, n_gens // 5)
+        remaining = n_gens - refine_gens
+        per_stage = max(3, remaining // (n_stages - 1))
+        for s in stages[:-1]:
+            s["generations"] = per_stage
+        stages[-1]["generations"] = n_gens - per_stage * (n_stages - 1)
+
+    return stages
 
 
 # ── Plugin Class ─────────────────────────────────────────────
@@ -480,6 +546,54 @@ class Plugin:
         if not initial_params:
             initial_params = all_params[:min(min_params, len(all_params))]
 
+        # ── Stage schedule ───────────────────────────────────
+        _raw_stages = config.get("optimization_stages", None)
+        if _raw_stages is None:
+            _raw_stages = _build_default_stages(all_params, n_generations)
+
+        _stage_schedule = []
+        _gen_cursor = 0
+        for _si, _s in enumerate(_raw_stages):
+            _s_params = ([p for p in _s["params"] if p in full_bounds]
+                         if _s["params"] != "all" else list(all_params))
+            _s_gens = _s.get("generations", max(3, n_generations // len(_raw_stages)))
+            _stage_schedule.append({
+                "name": _s["name"],
+                "stage_idx": _si,
+                "active_params": _s_params,
+                "frozen_params": set(all_params) - set(_s_params),
+                "start_gen": _gen_cursor,
+                "end_gen": _gen_cursor + _s_gens,
+            })
+            _gen_cursor += _s_gens
+        _total_stage_gens = _gen_cursor
+        _staged_mode = len(_stage_schedule) > 1
+        _current_stage = _stage_schedule[0]
+
+        # Extract default values for frozen params from config
+        _param_defaults = {}
+        for p in all_params:
+            if p in config:
+                v = config[p]
+                if p == "use_log1p_features":
+                    v = 1 if v else 0
+                elif p in ("positional_encoding", "use_temporal_features",
+                           "add_window_stats", "add_multi_scale_returns"):
+                    v = 1 if v else 0
+                elif p == "activation" and isinstance(v, str):
+                    v = ACTIVATION_INDEX_TO_NAME.index(v) if v in ACTIVATION_INDEX_TO_NAME else 0
+                elif p in ("hod_encoding", "dow_encoding", "moy_encoding") and isinstance(v, str):
+                    v = ENCODING_INDEX_TO_NAME.index(v) if v in ENCODING_INDEX_TO_NAME else 0
+                elif p == "loss_type" and isinstance(v, str):
+                    v = LOSS_TYPE_INDEX_TO_NAME.index(v) if v in LOSS_TYPE_INDEX_TO_NAME else 0
+                try:
+                    _param_defaults[p] = float(v)
+                except (TypeError, ValueError):
+                    _param_defaults[p] = float((full_bounds[p][0] + full_bounds[p][1]) / 2)
+            else:
+                low, high = full_bounds[p]
+                _param_defaults[p] = float((low + high) / 2)
+
         # ── Innovation tracking ──────────────────────────────
         innovation_tracker = InnovationTracker()
         # Pre-assign innovation numbers for all params (deterministic ordering)
@@ -533,15 +647,66 @@ class Plugin:
                 g.genes[inn] = NeatGene(inn, p, val)
             return g
 
-        population = [_create_genome(initial_params) for _ in range(population_size)]
+        def _create_stage_genome(active_params_set, frozen_set, best_values, randomize_active=True):
+            """Create genome with ALL params; frozen at best_values, active randomized or perturbed."""
+            g = NeatGenome()
+            for p in all_params:
+                inn = innovation_tracker.get_innovation(p)
+                low, high = full_bounds[p]
+                if p in frozen_set:
+                    val = best_values.get(p, _param_defaults[p])
+                elif randomize_active:
+                    if isinstance(low, int) and isinstance(high, int):
+                        val = random.randint(low, high)
+                    else:
+                        val = random.uniform(low, high)
+                else:
+                    # Perturbed copy of best value (for elite seeds)
+                    val = best_values.get(p, _param_defaults[p])
+                    if isinstance(low, int) and isinstance(high, int):
+                        span = high - low
+                        if span > 1:
+                            val = max(low, min(high, int(round(val + random.gauss(0, span * 0.15)))))
+                    else:
+                        val = max(low, min(high, val + random.gauss(0, (high - low) * 0.15)))
+                g.genes[inn] = NeatGene(inn, p, float(val))
+            return g
+
+        def _build_stage_population(active_params_set, frozen_set, best_values):
+            """Build population for a new stage: 25% perturbed elites + 75% random."""
+            pop = []
+            n_elite_seeds = max(2, population_size // 4)
+            for _ in range(n_elite_seeds):
+                pop.append(_create_stage_genome(active_params_set, frozen_set, best_values, randomize_active=False))
+            for _ in range(population_size - n_elite_seeds):
+                pop.append(_create_stage_genome(active_params_set, frozen_set, best_values, randomize_active=True))
+            return pop
+
+        if _staged_mode:
+            # Stage 1: all params present, stage 1 active params randomized, rest at defaults
+            population = _build_stage_population(
+                set(_current_stage["active_params"]),
+                _current_stage["frozen_params"],
+                _param_defaults,
+            )
+        else:
+            population = [_create_genome(initial_params) for _ in range(population_size)]
+
         species_list = []
         best_genome = None
         stats_history = []
 
         print(f"\n{'='*80}")
         print(f"[NEAT] NEAT-style Optimization Starting")
-        print(f"[NEAT] Population: {population_size} | Generations: {n_generations} | Patience: {patience}")
-        print(f"[NEAT] Initial parameters ({len(initial_params)}): {initial_params}")
+        print(f"[NEAT] Population: {population_size} | Generations: {_total_stage_gens} | Patience: {patience}")
+        if _staged_mode:
+            print(f"[NEAT] STAGED MODE: {len(_stage_schedule)} stages")
+            for _ss in _stage_schedule:
+                print(f"  Stage {_ss['stage_idx']+1} '{_ss['name']}': "
+                      f"{len(_ss['active_params'])} params, {_ss['end_gen'] - _ss['start_gen']} gens "
+                      f"(gens {_ss['start_gen']}-{_ss['end_gen']-1})")
+        else:
+            print(f"[NEAT] Initial parameters ({len(initial_params)}): {initial_params}")
         print(f"[NEAT] All available parameters ({len(all_params)}): {all_params}")
         print(f"[NEAT] Compatibility threshold: {compat_threshold}")
         print(f"[NEAT] Add param prob: {add_param_prob} | Remove param prob: {remove_param_prob}")
@@ -654,7 +819,7 @@ class Plugin:
             genome.hyper_dict = hyper_dict
 
             print(f"\n--- [NEAT] Evaluating Candidate {self.eval_counter}/{population_size} | "
-                  f"Gen {gen}/{n_generations} | Active Params: {genome.complexity}/{len(all_params)} | "
+                  f"Gen {gen}/{_total_stage_gens} | Active Params: {genome.complexity}/{len(all_params)} | "
                   f"Species: {genome.species_id or '?'} | Total Evals: {self.total_eval_counter} ---")
             print(f"Active: {genome.active_params}")
             print(f"Params: {hyper_dict}")
@@ -789,7 +954,7 @@ class Plugin:
                                 "_model_b64": _model_b64,
                             }
                             _champ_stage = {
-                                "stage": 1, "total_stages": 1,
+                                "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
                                 "generation": gen,
                                 "candidate": int(self.eval_counter),
                                 "total_candidates_evaluated": int(self.total_eval_counter),
@@ -802,7 +967,7 @@ class Plugin:
 
                 # Print result summary
                 print(f"\n{'='*80}")
-                print(f"[NEAT] CANDIDATE RESULT | Gen {gen}/{n_generations} | "
+                print(f"[NEAT] CANDIDATE RESULT | Gen {gen}/{_total_stage_gens} | "
                       f"Candidate {self.eval_counter}/{population_size} | "
                       f"Complexity: {genome.complexity} params | Total Evals: {self.total_eval_counter}")
                 print(f"Active Parameters: {', '.join(genome.active_params)}")
@@ -838,7 +1003,7 @@ class Plugin:
                         "_model_b64": None,
                     }
                     _resume_stage = {
-                        "stage": 1, "total_stages": 1,
+                        "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
                         "generation": start_gen,
                         "candidate": 0,
                         "total_candidates_evaluated": int(self.total_eval_counter),
@@ -869,7 +1034,7 @@ class Plugin:
                 if _cb_between:
                     try:
                         _bc_stage = {
-                            "stage": 1, "total_stages": 1,
+                            "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
                             "generation": start_gen,
                             "candidate_num": int(self.eval_counter),
                             "total_candidates": population_size,
@@ -902,7 +1067,7 @@ class Plugin:
         _initial_pop_evaluated = (self.eval_counter > 0)
         if _initial_pop_evaluated:
             _loop_start = start_gen + 1
-            end_gen = _loop_start + n_generations
+            end_gen = start_gen + _total_stage_gens
         else:
             _loop_start = start_gen
 
@@ -912,11 +1077,43 @@ class Plugin:
                 print(f"[NEAT] Force advance detected — stopping optimization")
                 break
 
+            # ── Stage transition check ───────────────────────
+            _stage_just_transitioned = False
+            if _staged_mode:
+                for _ss in _stage_schedule:
+                    if _ss["start_gen"] <= gen < _ss["end_gen"]:
+                        if _ss["stage_idx"] != _current_stage["stage_idx"]:
+                            _prev_stage = _current_stage
+                            _current_stage = _ss
+                            _stage_just_transitioned = True
+                            # Extract best numeric values for seeding
+                            _best_numeric = {g.param_name: g.value for g in best_genome.genes.values()} if best_genome else {}
+                            _seed_values = {**_param_defaults, **_best_numeric}
+                            # Rebuild population for new stage
+                            population = _build_stage_population(
+                                set(_current_stage["active_params"]),
+                                _current_stage["frozen_params"],
+                                _seed_values,
+                            )
+                            species_list = []
+                            no_improve_counter = 0
+                            self.patience_counter = 0
+                            print(f"\n{'#'*80}")
+                            print(f"[NEAT] *** STAGE TRANSITION: "
+                                  f"'{_prev_stage['name']}' → '{_current_stage['name']}' ***")
+                            print(f"[NEAT] Active params ({len(_current_stage['active_params'])}): "
+                                  f"{_current_stage['active_params']}")
+                            print(f"[NEAT] Frozen params ({len(_current_stage['frozen_params'])}): "
+                                  f"{sorted(_current_stage['frozen_params'])}")
+                            print(f"{'#'*80}")
+                        break
+
             gen_start_time = time.time()
             self.current_gen = gen
             self.eval_counter = 0
             print(f"\n{'='*80}")
-            print(f"[NEAT] Generation {gen}/{n_generations}")
+            _stage_label = f" [{_current_stage['name']}]" if _staged_mode else ""
+            print(f"[NEAT] Generation {gen}/{_total_stage_gens}{_stage_label}")
             print(f"{'='*80}")
 
             best_at_gen_start = float(self.best_fitness_so_far)
@@ -927,7 +1124,7 @@ class Plugin:
             if _cb_gen_start:
                 try:
                     _stage_info = {
-                        "stage": 1, "total_stages": 1,
+                        "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
                         "meta_mode": False,
                         "total_candidates_evaluated": int(self.total_eval_counter),
                         "population_size": population_size,
@@ -974,110 +1171,115 @@ class Plugin:
                 except Exception as _cb_err:
                     print(f"  [NEAT] gen_start callback error: {_cb_err}")
 
-            # ── Speciation ───────────────────────────────────
-            speciate(population, species_list, full_bounds, compat_threshold)
-            adjust_fitness(species_list)
+            # On stage transitions: population was rebuilt by _build_stage_population,
+            # skip speciation+reproduction and go directly to evaluation.
+            if not _stage_just_transitioned:
 
-            # Update NEAT tracking stats
-            self.neat_species_count = len(species_list)
-            complexities = [g.complexity for g in population]
-            self.neat_avg_complexity = sum(complexities) / len(complexities) if complexities else 0
-            self.neat_max_complexity = max(complexities) if complexities else 0
-            self.neat_min_complexity = min(complexities) if complexities else 0
-            self.neat_species_details = [
-                {"id": sp.id, "size": sp.size,
-                 "best_fitness": min((g.fitness for g in sp.members if g.fitness is not None), default=float("inf")),
-                 "avg_complexity": sum(g.complexity for g in sp.members) / max(sp.size, 1)}
-                for sp in species_list
-            ]
+                # ── Speciation ───────────────────────────────────
+                speciate(population, species_list, full_bounds, compat_threshold)
+                adjust_fitness(species_list)
 
-            print(f"[NEAT] Species: {self.neat_species_count} | "
-                  f"Complexity: avg={self.neat_avg_complexity:.1f} min={self.neat_min_complexity} max={self.neat_max_complexity}")
-            for sp in species_list:
-                best_f = min((g.fitness for g in sp.members if g.fitness is not None), default=float("inf"))
-                print(f"  Species {sp.id}: size={sp.size}, best_fitness={best_f:.6f}")
+                # Update NEAT tracking stats
+                self.neat_species_count = len(species_list)
+                complexities = [g.complexity for g in population]
+                self.neat_avg_complexity = sum(complexities) / len(complexities) if complexities else 0
+                self.neat_max_complexity = max(complexities) if complexities else 0
+                self.neat_min_complexity = min(complexities) if complexities else 0
+                self.neat_species_details = [
+                    {"id": sp.id, "size": sp.size,
+                     "best_fitness": min((g.fitness for g in sp.members if g.fitness is not None), default=float("inf")),
+                     "avg_complexity": sum(g.complexity for g in sp.members) / max(sp.size, 1)}
+                    for sp in species_list
+                ]
 
-            # ── Reproduction ─────────────────────────────────
-            # Adaptive mutation: boost rates when stagnating
-            _adaptive_boost = 1.0
-            if no_improve_counter >= patience // 2:
-                _adaptive_boost = 2.0
-                print(f"  [NEAT] Adaptive mutation boost: 2x (stagnation {no_improve_counter}/{patience})")
-            _eff_mutpb = min(mutpb * _adaptive_boost, 0.8)
-            _eff_add_prob = min(add_param_prob * _adaptive_boost, 0.5)
-            _eff_sigma_scale = min(0.15 * _adaptive_boost, 0.4)
+                print(f"[NEAT] Species: {self.neat_species_count} | "
+                      f"Complexity: avg={self.neat_avg_complexity:.1f} min={self.neat_min_complexity} max={self.neat_max_complexity}")
+                for sp in species_list:
+                    best_f = min((g.fitness for g in sp.members if g.fitness is not None), default=float("inf"))
+                    print(f"  Species {sp.id}: size={sp.size}, best_fitness={best_f:.6f}")
 
-            # Calculate offspring allocation per species
-            # Use mean adjusted fitness (per-capita) so species size doesn't bias allocation.
-            # Lower fitness = better, so invert: species_score = 1 / mean_adjusted_fitness.
-            species_scores = []
-            for sp in species_list:
-                finite_adj = [g.adjusted_fitness for g in sp.members
-                              if g.adjusted_fitness is not None and np.isfinite(g.adjusted_fitness)]
-                if finite_adj:
-                    mean_adj = sum(finite_adj) / len(finite_adj)
-                    species_scores.append(1.0 / max(mean_adj, 1e-10))
-                else:
-                    species_scores.append(1.0)
-            total_score = sum(species_scores) or 1.0
+                # ── Reproduction ─────────────────────────────────
+                # Adaptive mutation: boost rates when stagnating
+                _adaptive_boost = 1.0
+                if no_improve_counter >= patience // 2:
+                    _adaptive_boost = 2.0
+                    print(f"  [NEAT] Adaptive mutation boost: 2x (stagnation {no_improve_counter}/{patience})")
+                _eff_mutpb = min(mutpb * _adaptive_boost, 0.8)
+                _eff_add_prob = min(add_param_prob * _adaptive_boost, 0.5)
+                _eff_sigma_scale = min(0.15 * _adaptive_boost, 0.4)
+                _frozen = _current_stage["frozen_params"] if _staged_mode else set()
 
-            new_population = []
-
-            for sp_idx, sp in enumerate(species_list):
-                # Sort members by fitness (lower is better)
-                sp.members.sort(key=lambda g: g.fitness if g.fitness is not None else float("inf"))
-
-                # Elitism: keep best individuals from each species (dedup against already-added elites)
-                for elite in sp.members[:neat_elitism]:
-                    # Check if a near-duplicate elite is already in new_population
-                    is_dup = False
-                    for existing in new_population:
-                        if compatibility_distance(elite, existing, full_bounds) < 0.1:
-                            is_dup = True
-                            break
-                    if not is_dup:
-                        new_population.append(elite.deep_copy())
-
-                # Calculate how many offspring this species gets (proportional to score)
-                n_offspring = max(0, int(round(
-                    population_size * species_scores[sp_idx] / total_score
-                )) - neat_elitism)
-
-                # Select survival pool
-                survival_count = max(1, int(len(sp.members) * survival_rate))
-                survivors = sp.members[:survival_count]
-
-                for _ in range(n_offspring):
-                    if len(survivors) < 2 or random.random() < 0.25:
-                        # Mutation only
-                        parent = random.choice(survivors)
-                        child = parent.deep_copy()
+                # Calculate offspring allocation per species
+                species_scores = []
+                for sp in species_list:
+                    finite_adj = [g.adjusted_fitness for g in sp.members
+                                  if g.adjusted_fitness is not None and np.isfinite(g.adjusted_fitness)]
+                    if finite_adj:
+                        mean_adj = sum(finite_adj) / len(finite_adj)
+                        species_scores.append(1.0 / max(mean_adj, 1e-10))
                     else:
-                        # Crossover
-                        if random.random() < interspecies_mate_rate and len(species_list) > 1:
-                            # Interspecies mating
-                            other_sp = random.choice([s for s in species_list if s.id != sp.id])
-                            p2 = random.choice(other_sp.members)
+                        species_scores.append(1.0)
+                total_score = sum(species_scores) or 1.0
+
+                new_population = []
+
+                for sp_idx, sp in enumerate(species_list):
+                    sp.members.sort(key=lambda g: g.fitness if g.fitness is not None else float("inf"))
+
+                    # Elitism: keep best individuals from each species (dedup)
+                    for elite in sp.members[:neat_elitism]:
+                        is_dup = False
+                        for existing in new_population:
+                            if compatibility_distance(elite, existing, full_bounds) < 0.1:
+                                is_dup = True
+                                break
+                        if not is_dup:
+                            new_population.append(elite.deep_copy())
+
+                    n_offspring = max(0, int(round(
+                        population_size * species_scores[sp_idx] / total_score
+                    )) - neat_elitism)
+
+                    survival_count = max(1, int(len(sp.members) * survival_rate))
+                    survivors = sp.members[:survival_count]
+
+                    for _ in range(n_offspring):
+                        if len(survivors) < 2 or random.random() < 0.25:
+                            parent = random.choice(survivors)
+                            child = parent.deep_copy()
                         else:
-                            p2 = random.choice(survivors)
-                        p1 = random.choice(survivors)
-                        child = neat_crossover(p1, p2)
+                            if random.random() < interspecies_mate_rate and len(species_list) > 1:
+                                other_sp = random.choice([s for s in species_list if s.id != sp.id])
+                                p2 = random.choice(other_sp.members)
+                            else:
+                                p2 = random.choice(survivors)
+                            p1 = random.choice(survivors)
+                            child = neat_crossover(p1, p2)
 
-                    # Mutations
-                    mutate_add_param(child, all_params, full_bounds, innovation_tracker, _eff_add_prob)
-                    mutate_remove_param(child, min_params, remove_param_prob)
-                    mutate_values(child, full_bounds, _eff_mutpb, _eff_sigma_scale)
-                    clamp_genome(child, full_bounds)
-                    child.fitness = None  # Mark for evaluation
-                    new_population.append(child)
+                        # Mutations — skip structural add/remove in staged mode
+                        if not _staged_mode:
+                            mutate_add_param(child, all_params, full_bounds, innovation_tracker, _eff_add_prob)
+                            mutate_remove_param(child, min_params, remove_param_prob)
+                        mutate_values(child, full_bounds, _eff_mutpb, _eff_sigma_scale,
+                                      frozen_params=_frozen)
+                        clamp_genome(child, full_bounds)
+                        child.fitness = None
+                        new_population.append(child)
 
-            # Ensure population size is maintained
-            while len(new_population) < population_size:
-                # Add random individuals if we're short
-                new_population.append(_create_genome(initial_params))
-            new_population = new_population[:population_size]
+                # Ensure population size is maintained
+                while len(new_population) < population_size:
+                    if _staged_mode:
+                        new_population.append(_create_stage_genome(
+                            set(_current_stage["active_params"]),
+                            _current_stage["frozen_params"],
+                            _param_defaults,
+                            randomize_active=True,
+                        ))
+                    else:
+                        new_population.append(_create_genome(initial_params))
+                new_population = new_population[:population_size]
 
-            population = new_population
+                population = new_population
 
             # ── Evaluate unevaluated genomes ─────────────────
             _force_advance_flag = False
@@ -1090,7 +1292,7 @@ class Plugin:
                     if _cb_between:
                         try:
                             _bc_stage = {
-                                "stage": 1, "total_stages": 1,
+                                "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
                                 "generation": gen,
                                 "candidate_num": int(self.eval_counter),
                                 "total_candidates": sum(1 for g in population if g.fitness is None) + int(self.eval_counter),
@@ -1214,7 +1416,7 @@ class Plugin:
             if _cb_gen_end:
                 try:
                     _gen_end_info = {
-                        "stage": 1, "total_stages": 1,
+                        "stage": _current_stage["stage_idx"] + 1, "total_stages": len(_stage_schedule),
                         "meta_mode": False,
                         "generation": gen,
                         "total_candidates_evaluated": int(self.total_eval_counter),

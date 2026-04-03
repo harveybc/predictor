@@ -29,20 +29,34 @@
     "optimization_resume_file": "examples/results/phase_1_daily/phase_1_tcn_neat_1d_optimization_resume.json",
     "optimization_pause_on_resume": false,
 
-    "neat_initial_params": ["use_log1p_features", "window_size"],
-    "neat_add_param_prob": 0.15,
+    "neat_initial_params": null,
+    "neat_add_param_prob": 0.35,
     "neat_remove_param_prob": 0.05,
     "neat_compatibility_threshold": 2.0,
-    "neat_min_params": 2,
+    "neat_min_params": 6,
     "neat_survival_rate": 0.5,
     "neat_interspecies_mate_rate": 0.01,
     "neat_elitism": 1,
+
+    "optimization_stages": [
+        {"name": "features", "params": ["window_size", "use_log1p_features", "positional_encoding",
+                                         "use_temporal_features", "add_window_stats", "add_multi_scale_returns"],
+         "generations": 8},
+        {"name": "architecture", "params": ["tcn_filters", "tcn_kernel_size", "tcn_stack_layers",
+                                             "tcn_dilations_per_stack", "tcn_head_layers", "tcn_head_units",
+                                             "tcn_use_batch_norm", "tcn_use_layer_norm"],
+         "generations": 8},
+        {"name": "training", "params": ["learning_rate", "batch_size", "tcn_dropout", "l2_reg",
+                                         "min_delta", "loss_type", "hod_encoding", "dow_encoding", "moy_encoding"],
+         "generations": 8},
+        {"name": "refinement", "params": "all", "generations": 6}
+    ],
 
     "deterministic_training": true,
     "random_seed": 42,
     "population_size": 20,
     "n_generations": 30,
-    "optimization_patience": 6,
+    "optimization_patience": 10,
     "mutpb": 0.2,
     "hyperparameter_bounds": {
         "window_size": [48, 160],

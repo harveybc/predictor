@@ -1,0 +1,14 @@
+{
+  "predictor-timeseries-tcn-neat-4h": {
+    "experiment_id": "16270366dc734961b6cad3df28c464e1",
+    "domain_id": "predictor-timeseries-tcn-neat-4h",
+    "rounds": 0,
+    "best_performance": null,
+    "target_performance": 999.0,
+    "converged": false,
+    "time_to_target_seconds": null,
+    "elapsed_seconds": 34570.97,
+    "optimizer_plugin": "predictor"
+  },
+  "finalized_utc": "2026-04-01T06:03:53.437596+00:00"
+}
