@@ -1,0 +1,27 @@
+{
+    "window_size": 70,
+    "tcn_filters": 64,
+    "tcn_kernel_size": 3,
+    "tcn_stack_layers": 3,
+    "tcn_dilations_per_stack": 4,
+    "tcn_head_layers": 1,
+    "tcn_head_units": 32,
+    "positional_encoding": true,
+    "learning_rate": 0.001,
+    "batch_size": 32,
+    "tcn_dropout": 0.1,
+    "tcn_use_batch_norm": 0,
+    "tcn_use_layer_norm": 1,
+    "l2_reg": 1e-06,
+    "min_delta": 1e-08,
+    "use_log1p_features": [
+        "typical_price"
+    ],
+    "use_temporal_features": false,
+    "hod_encoding": "sincos",
+    "dow_encoding": "sincos",
+    "moy_encoding": "sincos",
+    "loss_type": "trend_sigma",
+    "add_window_stats": false,
+    "add_multi_scale_returns": false
+}

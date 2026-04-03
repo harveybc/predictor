@@ -1027,6 +1027,7 @@ class Plugin:
         print(f"\n[NEAT] Evaluating initial population ({population_size} genomes)...")
         self.current_gen = start_gen
         self.eval_counter = 0
+        no_improve_counter = int(self.patience_counter)
         _force_advance_flag = False
 
         for genome in population:
