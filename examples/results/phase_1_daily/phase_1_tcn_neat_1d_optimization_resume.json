@@ -1,0 +1,2491 @@
+{
+    "generation": 3,
+    "population": [
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 84.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0.0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1.0
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0.5
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0.5
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 0.5
+                }
+            },
+            "fitness": 0.0035522686317563056,
+            "species_id": 1
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 75.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 1
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.0065549533814191815,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 106
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 1
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0.5
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 0.5
+                }
+            },
+            "fitness": 0.01087142750620842,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 87
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 0
+                }
+            },
+            "fitness": 0.0032978665083646776,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 75.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 1
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 1
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.007667462900280952,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 116
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.0048772145062685015,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 84.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0.5
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.008928492665290833,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 116
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.0048772145062685015,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 121
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 1
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.019758751057088374,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 116
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.028694911301136015,
+            "species_id": 1
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 65
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.0038809310644865036,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 116
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.0048772145062685015,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 116
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.0048772145062685015,
+            "species_id": 1
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 75.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 1
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.006076626293361187,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 91
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.04270724020898342,
+            "species_id": 1
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 71
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.00836961604654789,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 87
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 1
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 0
+                }
+            },
+            "fitness": 0.00834952425211668,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 84.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0.5
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 1
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 0.5
+                }
+            },
+            "fitness": 0.032386524975299834,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 126
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 1
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 0
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0.5
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 0.5
+                }
+            },
+            "fitness": 0.011575279757380486,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 160
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tcn_filters",
+                    "value": 64.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tcn_kernel_size",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tcn_stack_layers",
+                    "value": 3.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tcn_dilations_per_stack",
+                    "value": 4.0
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "tcn_head_layers",
+                    "value": 1
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "tcn_head_units",
+                    "value": 32.0
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "positional_encoding",
+                    "value": 0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "learning_rate",
+                    "value": 0.001
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "batch_size",
+                    "value": 32.0
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "tcn_dropout",
+                    "value": 0.1
+                },
+                "12": {
+                    "innovation": 12,
+                    "param_name": "tcn_use_batch_norm",
+                    "value": 0
+                },
+                "13": {
+                    "innovation": 13,
+                    "param_name": "tcn_use_layer_norm",
+                    "value": 1
+                },
+                "14": {
+                    "innovation": 14,
+                    "param_name": "l2_reg",
+                    "value": 1e-06
+                },
+                "15": {
+                    "innovation": 15,
+                    "param_name": "min_delta",
+                    "value": 1e-08
+                },
+                "16": {
+                    "innovation": 16,
+                    "param_name": "use_log1p_features",
+                    "value": 1
+                },
+                "17": {
+                    "innovation": 17,
+                    "param_name": "use_temporal_features",
+                    "value": 0
+                },
+                "18": {
+                    "innovation": 18,
+                    "param_name": "hod_encoding",
+                    "value": 1.0
+                },
+                "19": {
+                    "innovation": 19,
+                    "param_name": "dow_encoding",
+                    "value": 1.0
+                },
+                "20": {
+                    "innovation": 20,
+                    "param_name": "moy_encoding",
+                    "value": 1.0
+                },
+                "21": {
+                    "innovation": 21,
+                    "param_name": "loss_type",
+                    "value": 1.0
+                },
+                "22": {
+                    "innovation": 22,
+                    "param_name": "add_window_stats",
+                    "value": 0
+                },
+                "23": {
+                    "innovation": 23,
+                    "param_name": "add_multi_scale_returns",
+                    "value": 1
+                }
+            },
+            "fitness": 0.0043342260643839834,
+            "species_id": 1
+        }
+    ],
+    "innovation_tracker": {
+        "counter": 23,
+        "map": {
+            "window_size": 1,
+            "tcn_filters": 2,
+            "tcn_kernel_size": 3,
+            "tcn_stack_layers": 4,
+            "tcn_dilations_per_stack": 5,
+            "tcn_head_layers": 6,
+            "tcn_head_units": 7,
+            "positional_encoding": 8,
+            "learning_rate": 9,
+            "batch_size": 10,
+            "tcn_dropout": 11,
+            "tcn_use_batch_norm": 12,
+            "tcn_use_layer_norm": 13,
+            "l2_reg": 14,
+            "min_delta": 15,
+            "use_log1p_features": 16,
+            "use_temporal_features": 17,
+            "hod_encoding": 18,
+            "dow_encoding": 19,
+            "moy_encoding": 20,
+            "loss_type": 21,
+            "add_window_stats": 22,
+            "add_multi_scale_returns": 23
+        }
+    },
+    "optimizer_state": {
+        "best_fitness_so_far": 0.0032978665083646776,
+        "best_val_mae_so_far": 0.010079133324325085,
+        "best_naive_mae_so_far": 0.00925516802817583,
+        "best_test_mae_so_far": 0.007298150099813938,
+        "best_test_naive_mae_so_far": 0.0066751278936862946,
+        "best_train_mae_so_far": 0.011239669285714626,
+        "best_train_naive_mae_so_far": 0.010414271615445614,
+        "best_params_so_far": {
+            "window_size": 87,
+            "tcn_filters": 64,
+            "tcn_kernel_size": 3,
+            "tcn_stack_layers": 3,
+            "tcn_dilations_per_stack": 4,
+            "tcn_head_layers": 1,
+            "tcn_head_units": 32,
+            "positional_encoding": false,
+            "learning_rate": 0.001,
+            "batch_size": 32,
+            "tcn_dropout": 0.1,
+            "tcn_use_batch_norm": 0,
+            "tcn_use_layer_norm": 1,
+            "l2_reg": 1e-06,
+            "min_delta": 1e-08,
+            "use_log1p_features": [
+                "typical_price"
+            ],
+            "use_temporal_features": false,
+            "hod_encoding": "sincos",
+            "dow_encoding": "sincos",
+            "moy_encoding": "sincos",
+            "loss_type": "trend_sigma",
+            "add_window_stats": false,
+            "add_multi_scale_returns": false
+        },
+        "total_eval_counter": 77,
+        "patience_counter": 0
+    }
+}
