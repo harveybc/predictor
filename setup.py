@@ -38,7 +38,8 @@ setup(
         # Plugins para el Pipeline (orquestación del flujo completo)
         'pipeline.plugins': [
             'default_pipeline=pipeline_plugins.default_pipeline:PipelinePlugin',
-            'stl_pipeline=pipeline_plugins.stl_pipeline:STLPipelinePlugin'
+            'stl_pipeline=pipeline_plugins.stl_pipeline:STLPipelinePlugin',
+            'binary_pipeline=pipeline_plugins.binary_pipeline:BinaryPipelinePlugin'
         ],
         # Plugins para el Preprocesamiento (incluye process_data, ventanas deslizantes y STL)
         'preprocessor.plugins': [

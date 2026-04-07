@@ -7,7 +7,7 @@
     "x_test_file": "examples/data_downsampled/phase_1_b/normalized_d6.csv",
     "y_test_file": "examples/data_downsampled/phase_1_b/normalized_d6.csv",
     "target_plugin": "binary_target",
-    "pipeline_plugin": "stl_pipeline",
+    "pipeline_plugin": "binary_pipeline",
     "preprocessor_plugin": "stl_preprocessor",
     "use_daily": false,
     "max_steps_train": 7300,
@@ -23,6 +23,10 @@
     "plot_points": 1728,
     "min_delta": 1e-08,
     "epochs": 2000,
+    "predicted_horizons": [
+        1
+    ],
+    "plotted_horizon": 1,
     "use_strategy": false,
     "stl_period": 24,
     "use_stl": false,
@@ -31,6 +35,7 @@
     "use_predicted_decompositions": false,
     "use_real_decompositions": false,
     "use_ideal_predictions": false,
+    "quiet_mode": true,
     "output_file": "examples/results/phase_1b_binary/phase_1b_binary_transformer_sell_exit_1d_prediction.csv",
     "results_file": "examples/results/phase_1b_binary/phase_1b_binary_transformer_sell_exit_1d_results.csv",
     "loss_plot_file": "examples/results/phase_1b_binary/phase_1b_binary_transformer_sell_exit_1d_loss_plot.png",

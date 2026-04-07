@@ -1,20 +1,12 @@
 """Binary target plugin for binary classification predictors.
 
 Maps a single label column to the y_train / y_val / y_test dict format
-expected by the predictor training loop.  The ``signal_type`` parameter
-selects which label column to extract.
+expected by the pipeline.  The ``signal_type`` parameter selects which
+label column to extract.
 
-Usage
------
-The caller must pass a ``baseline_data`` dict containing at least one of::
-
-    labels_train : pd.DataFrame | np.ndarray
-    labels_val   : pd.DataFrame | np.ndarray
-    labels_test  : pd.DataFrame | np.ndarray
-
-If the value is a DataFrame it must contain the label column
-(e.g. ``buy_entry_label``).  If it is already a 1-D ndarray of 0/1
-values it is used directly.
+The preprocessor passes aligned label DataFrames via
+``baselines["labels_{split}"]``.  Output uses the key ``output_horizon_1``
+so the standard stl_pipeline can handle it transparently.
 """
 import numpy as np
 import pandas as pd
@@ -25,6 +17,9 @@ SIGNAL_MAP = {
     "buy_exit":   ("buy_exit_label",   "buy_exit_binary"),
     "sell_exit":  ("sell_exit_label",  "sell_exit_binary"),
 }
+
+# Pipeline-compatible output key (single "horizon")
+_OUTPUT_KEY = "output_horizon_1"
 
 
 class TargetPlugin:
@@ -47,22 +42,21 @@ class TargetPlugin:
         debug_info.update(self.get_debug_info())
 
     def calculate_targets_from_baselines(self, baseline_data, config):
-        """Extract binary labels from the provided data.
+        """Extract binary labels aligned to sliding-window count.
 
         Parameters
         ----------
         baseline_data : dict
-            Must contain ``labels_train``, ``labels_val``, ``labels_test``
-            as :class:`pd.DataFrame` (with label columns) or pre-extracted
-            :class:`np.ndarray` of shape ``(N,)`` or ``(N, 1)``.
+            Contains ``labels_train``, ``labels_val``, ``labels_test``
+            as :class:`pd.DataFrame` (with label columns, already aligned
+            to window count by the preprocessor).
         config : dict
-            Must contain ``signal_type`` — one of ``buy_entry``,
-            ``sell_entry``, ``buy_exit``, ``sell_exit``.
+            Must contain ``signal_type``.
 
         Returns
         -------
         dict
-            ``{"y_train": {out_name: array(N,1)}, "y_val": ..., "y_test": ...}``
+            ``{"y_train": {"output_horizon_1": array}, ...}``
         """
         self.set_params(**config)
         signal_type = self.params.get("signal_type", "buy_entry")
@@ -77,7 +71,7 @@ class TargetPlugin:
         for split in ("train", "val", "test"):
             key = f"labels_{split}"
             if key not in baseline_data:
-                targets[split][output_name] = np.array([], dtype=np.float32)
+                targets[split][_OUTPUT_KEY] = np.array([], dtype=np.float32)
                 continue
 
             data = baseline_data[key]
@@ -92,7 +86,7 @@ class TargetPlugin:
                 labels = np.asarray(data, dtype=np.float32)
 
             labels = labels.astype(np.float32).reshape(-1, 1)
-            targets[split][output_name] = labels
+            targets[split][_OUTPUT_KEY] = labels
 
             pos_rate = float(np.mean(labels))
             print(
@@ -104,4 +98,5 @@ class TargetPlugin:
             "y_train": targets["train"],
             "y_val": targets["val"],
             "y_test": targets["test"],
+            "predicted_horizons": [1],
         }

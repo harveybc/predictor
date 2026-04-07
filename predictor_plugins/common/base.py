@@ -153,7 +153,7 @@ class BaseKerasPredictor(BasePredictorPlugin):
 
     # --- Callbacks factory (Bayesian variant will extend) ---
     def _build_callbacks(self):
-        quiet = self.params.get('quiet', False)
+        quiet = self.params.get('quiet', False) or self.params.get('quiet_mode', False)
         cb_verbose = 0 if quiet else 1
         callbacks = [
             EarlyStoppingWithPatienceCounter(

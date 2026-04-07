@@ -20,7 +20,7 @@ COMMON_BASE = {
     "x_test_file": f"{DATA_DIR}/normalized_d6.csv",
     "y_test_file": f"{DATA_DIR}/normalized_d6.csv",
     "target_plugin": "binary_target",
-    "pipeline_plugin": "stl_pipeline",
+    "pipeline_plugin": "binary_pipeline",
     "preprocessor_plugin": "stl_preprocessor",
     "use_daily": False,
     "max_steps_train": 7300,
@@ -36,6 +36,8 @@ COMMON_BASE = {
     "plot_points": 1728,
     "min_delta": 1e-8,
     "epochs": 2000,
+    "predicted_horizons": [1],
+    "plotted_horizon": 1,
     "use_strategy": False,
     "stl_period": 24,
     "use_stl": False,
@@ -44,6 +46,7 @@ COMMON_BASE = {
     "use_predicted_decompositions": False,
     "use_real_decompositions": False,
     "use_ideal_predictions": False,
+    "quiet_mode": True,
 }
 
 # ── Common optimizer fields (NEAT) shared by optimization configs ────────

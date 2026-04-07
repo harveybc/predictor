@@ -60,6 +60,15 @@ class BinaryMixin:
                 "y_train/y_val must be dicts mapping output names -> arrays"
             )
 
+        # For single-output binary models, extract the array from the dict
+        # to avoid optree/Keras3 tree_map issues with single-key dicts.
+        if len(y_train) == 1:
+            y_train_fit = next(iter(y_train.values()))
+            y_val_fit = next(iter(y_val.values()))
+        else:
+            y_train_fit = y_train
+            y_val_fit = y_val
+
         callbacks = self._build_callbacks()
 
         # Resource snapshot at fit start (same as base class).
@@ -78,13 +87,14 @@ class BinaryMixin:
         except Exception as e:
             print(f"[RESOURCE] fit_start snapshot failed: {e}")
 
-        fit_verbose = 0 if self.params.get("quiet", False) else 1
+        _quiet = self.params.get("quiet", False) or self.params.get("quiet_mode", False)
+        fit_verbose = 0 if _quiet else 1
         history = self.model.fit(
             x_train,
-            y_train,
+            y_train_fit,
             epochs=epochs,
             batch_size=batch_size,
-            validation_data=(x_val, y_val),
+            validation_data=(x_val, y_val_fit),
             callbacks=callbacks,
             verbose=fit_verbose,
             shuffle=False,

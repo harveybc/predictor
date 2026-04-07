@@ -91,6 +91,14 @@ class STLPreprocessorZScore:
             if not _QUIET: print("Step 4: Extract baselines from sliding windows")
             baselines = extract_baselines_from_sliding_windows(denorm_sliding_windows, config)
 
+            # 4b. Pass label DataFrames (aligned to window count) for binary target plugins
+            window_size = config.get('window_size', 72)
+            for split, df_key in [("train", "y_train_df"), ("val", "y_val_df"), ("test", "y_test_df")]:
+                df = normalized_data.get(df_key)
+                n_windows = len(baselines.get(f"baseline_{split}", []))
+                if df is not None and not df.empty and n_windows > 0:
+                    baselines[f"labels_{split}"] = df.iloc[window_size - 1 : window_size - 1 + n_windows].reset_index(drop=True)
+
             # 5. Calculate targets directly from baselines
             if not _QUIET: print("Step 5: Calculate targets from baselines")
             #TODO: verify this method is correct

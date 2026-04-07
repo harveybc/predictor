@@ -50,7 +50,7 @@ class Plugin(BinaryMixin, MIMOPlugin):
         signal_type = self.params.get("signal_type", "buy_entry")
         if signal_type not in VALID_SIGNAL_TYPES:
             raise ValueError(f"Invalid signal_type: {signal_type}")
-        out_name = f"{signal_type}_binary"
+        out_name = "output_horizon_1"
 
         # -- Encoder trunk (identical to regression MIMO encoder) --
         inputs = Input(
