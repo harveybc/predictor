@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Test all 32 binary configs — run each for TIMEOUT seconds, check for errors, kill, move on.
-set -euo pipefail
+set +e  # don't exit on individual config failures
 
 TIMEOUT=${1:-90}   # seconds per config (default 90)
 CONFIG_DIR="examples/config/phase_1b_binary"

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import numpy as np
+from sklearn.utils.class_weight import compute_class_weight
 
 VALID_SIGNAL_TYPES = ("buy_entry", "sell_entry", "buy_exit", "sell_exit")
 
@@ -89,6 +90,15 @@ class BinaryMixin:
 
         _quiet = self.params.get("quiet", False) or self.params.get("quiet_mode", False)
         fit_verbose = 0 if _quiet else 1
+
+        # Compute balanced class weights to counteract class imbalance.
+        # Without this, models converge to predicting the majority class only.
+        y_flat = y_train_fit.flatten().astype(int)
+        classes = np.array([0, 1])
+        weights = compute_class_weight("balanced", classes=classes, y=y_flat)
+        class_weight = {0: float(weights[0]), 1: float(weights[1])}
+        print(f"[BINARY] class_weight: {{0: {class_weight[0]:.4f}, 1: {class_weight[1]:.4f}}}")
+
         history = self.model.fit(
             x_train,
             y_train_fit,
@@ -98,6 +108,7 @@ class BinaryMixin:
             callbacks=callbacks,
             verbose=fit_verbose,
             shuffle=False,
+            class_weight=class_weight,
         )
 
         # Post-fit predictions (identical to base except metrics at the end).

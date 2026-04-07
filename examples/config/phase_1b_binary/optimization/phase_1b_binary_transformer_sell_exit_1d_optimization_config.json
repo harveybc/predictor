@@ -13,7 +13,7 @@
     "max_steps_train": 7300,
     "max_steps_val": 1575,
     "max_steps_test": 1575,
-    "mc_samples": 20,
+    "mc_samples": 10,
     "batch_size": 32,
     "plot_color_predicted": "red",
     "plot_color_true": "blue",
@@ -22,7 +22,7 @@
     "uncertainty_color_alpha": 0.01,
     "plot_points": 1728,
     "min_delta": 1e-08,
-    "epochs": 2000,
+    "epochs": 10,
     "predicted_horizons": [
         1
     ],
@@ -144,9 +144,9 @@
             1
         ]
     },
-    "merged_units": 64,
-    "branch_units": 32,
-    "num_attention_heads": 4,
+    "merged_units": 48,
+    "branch_units": 24,
+    "num_attention_heads": 2,
     "activation": "elu",
     "learning_rate": 0.001,
     "l2_reg": 1e-05,

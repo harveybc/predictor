@@ -296,78 +296,152 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
     
     _append_optimizer_resource_row(config, "after_fit", gen, cand)
 
-    # --- Pipeline parity metrics (max horizon) ---
     import numpy as np
-    from pipeline_plugins.stl_norm import denormalize, denormalize_returns
 
-    predicted_horizons = config.get("predicted_horizons", [1])
-    max_horizon = max(predicted_horizons) if predicted_horizons else 1
-    max_h_idx = predicted_horizons.index(max_horizon) if predicted_horizons else 0
+    # --- Detect binary classification mode ---
+    _is_binary = config.get("target_plugin") == "binary_target"
 
-    def _extract_max_h(y_any):
-        if isinstance(y_any, dict):
-            return np.asarray(y_any.get(f"output_horizon_{max_horizon}")).reshape(-1)
-        if isinstance(y_any, list):
-            return np.asarray(y_any[max_h_idx]).reshape(-1)
-        return np.asarray(y_any).reshape(-1)
+    if _is_binary:
+        # ── BINARY CLASSIFICATION METRICS ─────────────────────────
+        from predictor_plugins.common.binary_fitness import (
+            compute_binary_metrics_for_split,
+            compute_binary_fitness,
+        )
 
-    def _split_metrics(preds_list, y_any, baseline_any):
-        y_h = _extract_max_h(y_any)
-        p_h = np.asarray(preds_list[max_h_idx]).reshape(-1)
-        n = min(len(y_h), len(p_h))
-        if baseline_any is not None:
-            n = min(n, len(np.asarray(baseline_any).reshape(-1)))
-        if n <= 0:
-            return (float("inf"), None)
-        y_h = y_h[:n]
-        p_h = p_h[:n]
-        
-        # CORRECT MAE CALCULATION (Real Price Space)
-        real_p = denormalize(p_h, config)
-        real_y = denormalize(y_h, config)
-        mae = float(np.mean(np.abs(real_p - real_y)))
-        
-        naive = None
-        if baseline_any is not None:
-            baseline_h = np.asarray(baseline_any).reshape(-1)[:n]
-            # baseline_h is in same space as y_h
-            real_baseline = denormalize(baseline_h, config)
-            naive = float(np.mean(np.abs(real_baseline - real_y)))
-        return (mae, naive)
+        predicted_horizons = config.get("predicted_horizons", [1])
+        max_h_idx = 0  # Binary always uses horizon 1
 
-    # TRAIN
-    train_mae, train_naive_mae = _split_metrics(train_preds, y_train, baseline_train)
-
-    # VALIDATION
-    val_mae, naive_mae = _split_metrics(val_preds, y_val, baseline_val)
-
-    # FITNESS: Penalized Asymmetric Delta (shared implementation)
-    from predictor_plugins.common.fitness import compute_fitness
-    fitness = compute_fitness(train_mae, train_naive_mae, val_mae, naive_mae)
-
-    # TEST
-    test_mae = None
-    test_naive_mae = None
-    if x_test is not None and y_test is not None:
-        try:
-            if hasattr(predictor_plugin, "model") and hasattr(predictor_plugin.model, "predict"):
-                # Keras predictors (Fast path)
-                pred_bs = int(config.get("predict_batch_size", 0) or config.get("batch_size", 32) or 256)
-                test_preds = predictor_plugin.model.predict(x_test, batch_size=pred_bs, verbose=0)
-            elif hasattr(predictor_plugin, "predict_with_uncertainty"):
-                # FIX: Added Prophet / Bayesian predictors compatibility (Fallback path)
-                # Prophet / Bayesian predictors (Fallback path)
-                test_preds, _ = predictor_plugin.predict_with_uncertainty(x_test, mc_samples=config.get("mc_samples", 1))
+        def _extract_h(y_any, preds_list):
+            if isinstance(y_any, dict):
+                key = list(y_any.keys())[0]
+                y_h = np.asarray(y_any[key]).flatten()
+            elif isinstance(y_any, list):
+                y_h = np.asarray(y_any[max_h_idx]).flatten()
             else:
-                # Fallback or error
-                test_preds = []
-            
-            test_preds = [test_preds] if isinstance(test_preds, np.ndarray) else test_preds
-            test_mae, test_naive_mae = _split_metrics(test_preds, y_test, baseline_test)
-        except Exception as e:
-            # If test prediction fails, don't fail the whole candidate, just log it
-            test_mae = float("inf")
-            test_naive_mae = float("inf")
+                y_h = np.asarray(y_any).flatten()
+            p_h = np.asarray(preds_list[max_h_idx]).flatten()
+            n = min(len(y_h), len(p_h))
+            return y_h[:n], p_h[:n]
+
+        # TRAIN metrics
+        y_tr, p_tr = _extract_h(y_train, train_preds)
+        train_bin_metrics = compute_binary_metrics_for_split(y_tr, p_tr)
+        if not _QUIET:
+            print(f"  Binary TRAIN: AUC={train_bin_metrics['auc_roc']:.4f} F1={train_bin_metrics['f1']:.4f} "
+                  f"Acc={train_bin_metrics['accuracy']:.4f} MCC={train_bin_metrics['mcc']:.4f}")
+
+        # VALIDATION metrics
+        y_vl, p_vl = _extract_h(y_val, val_preds)
+        val_bin_metrics = compute_binary_metrics_for_split(y_vl, p_vl)
+        if not _QUIET:
+            print(f"  Binary VAL:   AUC={val_bin_metrics['auc_roc']:.4f} F1={val_bin_metrics['f1']:.4f} "
+                  f"Acc={val_bin_metrics['accuracy']:.4f} MCC={val_bin_metrics['mcc']:.4f}")
+
+        # FITNESS: Penalized Asymmetric AUC (binary-specific)
+        fitness = compute_binary_fitness(train_bin_metrics, val_bin_metrics)
+
+        # Map binary metrics into the standard wire-format keys for doin-node compatibility:
+        #   val_mae → val AUC-ROC,  train_mae → train AUC-ROC
+        #   val_naive_mae → val F1, train_naive_mae → train F1
+        #   naive_mae → val AUC-ROC (used as the "baseline" reference)
+        train_mae = train_bin_metrics["auc_roc"]
+        val_mae = val_bin_metrics["auc_roc"]
+        train_naive_mae = train_bin_metrics["f1"]
+        naive_mae = val_bin_metrics["auc_roc"]
+
+        # TEST
+        test_mae = None
+        test_naive_mae = None
+        if x_test is not None and y_test is not None:
+            try:
+                if hasattr(predictor_plugin, "model") and hasattr(predictor_plugin.model, "predict"):
+                    pred_bs = int(config.get("predict_batch_size", 0) or config.get("batch_size", 32) or 256)
+                    test_preds_raw = predictor_plugin.model.predict(x_test, batch_size=pred_bs, verbose=0)
+                elif hasattr(predictor_plugin, "predict_with_uncertainty"):
+                    test_preds_raw, _ = predictor_plugin.predict_with_uncertainty(x_test, mc_samples=config.get("mc_samples", 1))
+                else:
+                    test_preds_raw = None
+
+                if test_preds_raw is not None:
+                    test_preds_list = [test_preds_raw] if isinstance(test_preds_raw, np.ndarray) else test_preds_raw
+                    y_ts, p_ts = _extract_h(y_test, test_preds_list)
+                    test_bin_metrics = compute_binary_metrics_for_split(y_ts, p_ts)
+                    test_mae = test_bin_metrics["auc_roc"]
+                    test_naive_mae = test_bin_metrics["f1"]
+                    if not _QUIET:
+                        print(f"  Binary TEST:  AUC={test_bin_metrics['auc_roc']:.4f} F1={test_bin_metrics['f1']:.4f}")
+            except Exception as e:
+                if not _QUIET:
+                    print(f"  Binary TEST failed: {e}")
+                test_mae = None
+                test_naive_mae = None
+
+    else:
+        # ── REGRESSION METRICS (original path, unchanged) ─────────
+        from pipeline_plugins.stl_norm import denormalize, denormalize_returns
+
+        predicted_horizons = config.get("predicted_horizons", [1])
+        max_horizon = max(predicted_horizons) if predicted_horizons else 1
+        max_h_idx = predicted_horizons.index(max_horizon) if predicted_horizons else 0
+
+        def _extract_max_h(y_any):
+            if isinstance(y_any, dict):
+                return np.asarray(y_any.get(f"output_horizon_{max_horizon}")).reshape(-1)
+            if isinstance(y_any, list):
+                return np.asarray(y_any[max_h_idx]).reshape(-1)
+            return np.asarray(y_any).reshape(-1)
+
+        def _split_metrics(preds_list, y_any, baseline_any):
+            y_h = _extract_max_h(y_any)
+            p_h = np.asarray(preds_list[max_h_idx]).reshape(-1)
+            n = min(len(y_h), len(p_h))
+            if baseline_any is not None:
+                n = min(n, len(np.asarray(baseline_any).reshape(-1)))
+            if n <= 0:
+                return (float("inf"), None)
+            y_h = y_h[:n]
+            p_h = p_h[:n]
+
+            # CORRECT MAE CALCULATION (Real Price Space)
+            real_p = denormalize(p_h, config)
+            real_y = denormalize(y_h, config)
+            mae = float(np.mean(np.abs(real_p - real_y)))
+
+            naive = None
+            if baseline_any is not None:
+                baseline_h = np.asarray(baseline_any).reshape(-1)[:n]
+                real_baseline = denormalize(baseline_h, config)
+                naive = float(np.mean(np.abs(real_baseline - real_y)))
+            return (mae, naive)
+
+        # TRAIN
+        train_mae, train_naive_mae = _split_metrics(train_preds, y_train, baseline_train)
+
+        # VALIDATION
+        val_mae, naive_mae = _split_metrics(val_preds, y_val, baseline_val)
+
+        # FITNESS: Penalized Asymmetric Delta (shared implementation)
+        from predictor_plugins.common.fitness import compute_fitness
+        fitness = compute_fitness(train_mae, train_naive_mae, val_mae, naive_mae)
+
+        # TEST
+        test_mae = None
+        test_naive_mae = None
+        if x_test is not None and y_test is not None:
+            try:
+                if hasattr(predictor_plugin, "model") and hasattr(predictor_plugin.model, "predict"):
+                    pred_bs = int(config.get("predict_batch_size", 0) or config.get("batch_size", 32) or 256)
+                    test_preds = predictor_plugin.model.predict(x_test, batch_size=pred_bs, verbose=0)
+                elif hasattr(predictor_plugin, "predict_with_uncertainty"):
+                    test_preds, _ = predictor_plugin.predict_with_uncertainty(x_test, mc_samples=config.get("mc_samples", 1))
+                else:
+                    test_preds = []
+
+                test_preds = [test_preds] if isinstance(test_preds, np.ndarray) else test_preds
+                test_mae, test_naive_mae = _split_metrics(test_preds, y_test, baseline_test)
+            except Exception as e:
+                test_mae = float("inf")
+                test_naive_mae = float("inf")
 
     # Save trained model for DOIN evaluator verification (inference-only)
     try:

@@ -1,0 +1,70 @@
+{
+    "optimizer_type": "neat",
+    "total_time_elapsed": 30565.917658805847,
+    "candidates_evaluated_so_far": 96,
+    "champion_fitness": -0.5632398843765258,
+    "champion_validation_mae": 0.3836454749107361,
+    "champion_validation_naive_mae": 0.9321824312210083,
+    "champion_test_mae": 0.38301482796669006,
+    "champion_test_naive_mae": 0.8623839616775513,
+    "champion_train_mae": 0.37700530886650085,
+    "champion_train_naive_mae": 0.9622995853424072,
+    "neat_species_count": 1,
+    "neat_avg_complexity": 11.0,
+    "neat_max_complexity": 11,
+    "neat_min_complexity": 11,
+    "neat_species_details": [
+        {
+            "id": 1,
+            "size": 20,
+            "best_fitness": Infinity,
+            "avg_complexity": 11.0
+        }
+    ],
+    "history": [
+        {
+            "generation": 1,
+            "duration": 85.69598269462585,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": Infinity,
+            "champion_validation_mae_global": null,
+            "champion_validation_naive_mae_global": null,
+            "species_count": 1,
+            "avg_complexity": 11.0
+        },
+        {
+            "generation": 2,
+            "duration": 85.80494546890259,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": Infinity,
+            "champion_validation_mae_global": null,
+            "champion_validation_naive_mae_global": null,
+            "species_count": 1,
+            "avg_complexity": 11.0
+        },
+        {
+            "generation": 3,
+            "duration": 86.69369435310364,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": Infinity,
+            "champion_validation_mae_global": null,
+            "champion_validation_naive_mae_global": null,
+            "species_count": 1,
+            "avg_complexity": 11.0
+        },
+        {
+            "generation": 4,
+            "duration": 30216.212592840195,
+            "avg_fitness": -0.4545154594458066,
+            "best_fitness_gen": -0.5632398843765258,
+            "champion_fitness_global": -0.5632398843765258,
+            "champion_validation_mae_global": 0.3836454749107361,
+            "champion_validation_naive_mae_global": 0.9321824312210083,
+            "species_count": 1,
+            "avg_complexity": 11.0
+        }
+    ]
+}

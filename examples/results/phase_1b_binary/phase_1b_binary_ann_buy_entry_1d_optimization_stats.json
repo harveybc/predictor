@@ -1,0 +1,103 @@
+{
+    "optimizer_type": "neat",
+    "total_time_elapsed": 24992.037996292114,
+    "candidates_evaluated_so_far": 154,
+    "champion_fitness": -0.648929762840271,
+    "champion_validation_mae": 0.33707690238952637,
+    "champion_validation_naive_mae": 0.9757898449897766,
+    "champion_test_mae": 0.3291294276714325,
+    "champion_test_naive_mae": 0.9181792140007019,
+    "champion_train_mae": 0.33211299777030945,
+    "champion_train_naive_mae": 0.9963679909706116,
+    "neat_species_count": 1,
+    "neat_avg_complexity": 10.0,
+    "neat_max_complexity": 10,
+    "neat_min_complexity": 10,
+    "neat_species_details": [
+        {
+            "id": 1,
+            "size": 20,
+            "best_fitness": Infinity,
+            "avg_complexity": 10.0
+        }
+    ],
+    "history": [
+        {
+            "generation": 1,
+            "duration": 102.56279134750366,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": Infinity,
+            "champion_validation_mae_global": null,
+            "champion_validation_naive_mae_global": null,
+            "species_count": 1,
+            "avg_complexity": 10.0
+        },
+        {
+            "generation": 2,
+            "duration": 102.26999092102051,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": Infinity,
+            "champion_validation_mae_global": null,
+            "champion_validation_naive_mae_global": null,
+            "species_count": 1,
+            "avg_complexity": 10.0
+        },
+        {
+            "generation": 3,
+            "duration": 102.75645041465759,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": Infinity,
+            "champion_validation_mae_global": null,
+            "champion_validation_naive_mae_global": null,
+            "species_count": 1,
+            "avg_complexity": 10.0
+        },
+        {
+            "generation": 4,
+            "duration": 102.75257134437561,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": Infinity,
+            "champion_validation_mae_global": null,
+            "champion_validation_naive_mae_global": null,
+            "species_count": 1,
+            "avg_complexity": 10.0
+        },
+        {
+            "generation": 5,
+            "duration": 102.75953888893127,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": Infinity,
+            "champion_validation_mae_global": null,
+            "champion_validation_naive_mae_global": null,
+            "species_count": 1,
+            "avg_complexity": 10.0
+        },
+        {
+            "generation": 6,
+            "duration": 108.49950242042542,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": Infinity,
+            "champion_validation_mae_global": null,
+            "champion_validation_naive_mae_global": null,
+            "species_count": 1,
+            "avg_complexity": 10.0
+        },
+        {
+            "generation": 7,
+            "duration": 24262.530314922333,
+            "avg_fitness": -0.5298029407858849,
+            "best_fitness_gen": -0.648929762840271,
+            "champion_fitness_global": -0.648929762840271,
+            "champion_validation_mae_global": 0.33707690238952637,
+            "champion_validation_naive_mae_global": 0.9757898449897766,
+            "species_count": 1,
+            "avg_complexity": 10.0
+        }
+    ]
+}
