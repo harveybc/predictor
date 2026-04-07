@@ -1,3 +1,5 @@
+Please act as a senior software developer, machine learning expert and enemy of the mediocrity, one that hates medicre things like supposing things, guessing or improovising without reading the full involved code first, act as a professional developer instead.
+
 # Predictor Repo: Add Binary Classification Predictor Plugins
 
 ## Context & Goal
@@ -37,19 +39,38 @@ The binary models predict whether a trade's take-profit (TP) will be hit before 
 
 ## What Needs to Be Created
 
-### 1. Binary predictor plugins (one for each existing architecture):
-Each needs a `binary_` version:
-- `binary_ann` — from predictor_plugin_ann.py
-- `binary_cnn` — from predictor_plugin_cnn.py
-- `binary_lstm` — from predictor_plugin_lstm.py
-- `binary_transformer` — from predictor_plugin_transformer.py
-- `binary_n_beats` — from predictor_plugin_n_beats.py
-- `binary_tft` — from predictor_plugin_tft.py
-- `binary_tcn` — from predictor_plugin_tcn.py
-- `binary_mimo` — from predictor_plugin_mimo.py
+### 1. Binary predictor plugins — one per architecture, thin subclass:
+
+Each binary plugin is a **thin subclass** of its regression counterpart. It inherits the full architecture (shared trunk with all layers) and only overrides `build_model()` to replace the multi-head regression output with a **single sigmoid head**.
+
+The `signal_type` config parameter (`buy_entry`, `sell_entry`, `buy_exit`, `sell_exit`) selects which target column to train on. The same plugin file trains 4 separate models by invoking it 4 times with different `signal_type` configs.
+
+**Files to create (8 total, one per architecture):**
+- `predictor_plugin_binary_ann.py` — subclasses ANN Plugin
+- `predictor_plugin_binary_cnn.py` — subclasses CNN Plugin
+- `predictor_plugin_binary_lstm.py` — subclasses LSTM Plugin
+- `predictor_plugin_binary_transformer.py` — subclasses Transformer Plugin
+- `predictor_plugin_binary_n_beats.py` — subclasses N-BEATS Plugin
+- `predictor_plugin_binary_tft.py` — subclasses TFT Plugin
+- `predictor_plugin_binary_tcn.py` — subclasses TCN Plugin
+- `predictor_plugin_binary_mimo.py` — subclasses MIMO Plugin
+
+**What each binary plugin overrides:**
+- `build_model()` — reuses parent's shared trunk, replaces the per-horizon output loop with a single `Dense(1, activation="sigmoid")` head
+- `plugin_params` — adds `signal_type` (default: `"buy_entry"`), removes `predicted_horizons`
+- Loss: `binary_crossentropy` instead of Huber
+- Metrics: accuracy + AUC instead of MAE
+- `self.output_names` — set to `["{signal_type}_binary"]` (e.g. `["buy_entry_binary"]`)
+
+**What each binary plugin inherits unchanged:**
+- All shared layers (Dense, Conv1D, LSTM, Attention, etc.)
+- `train()` — works as-is since it accepts any `y_train` dict
+- `save()` / `load()`
+- `predict_with_uncertainty()` — MC dropout works identically for binary outputs
+- Callbacks (early stopping, LR reduction, KL annealing)
 
 ### 2. Binary target plugin:
-A new target plugin that produces binary labels instead of continuous future values.
+A new target plugin that reads the appropriate label column (based on `signal_type` from config) and returns the standard `y_train`/`y_val`/`y_test` dict format.
 
 ### 3. Register all in setup.py
 
@@ -57,76 +78,110 @@ A new target plugin that produces binary labels instead of continuous future val
 
 ## Required Model Outputs (CRITICAL — must match PP inference plugins)
 
-### Entry model outputs:
-The model must have **exactly 2 output heads** with sigmoid activation:
+### Each binary model has exactly 1 output:
+
+**Buy entry model:**
 ```
-buy_entry_binary  — P(buy TP hit before buy SL within weekly horizon)
+buy_entry_binary — P(buy TP hit before buy SL within weekly horizon)
+```
+
+**Sell entry model:**
+```
 sell_entry_binary — P(sell TP hit before sell SL within weekly horizon)
 ```
-- **Output shape per head:** (batch, 1) float32 in [0, 1]
-- **Output names:** `"buy_entry_binary"`, `"sell_entry_binary"`
-- **Loss:** binary_crossentropy (per head)
+
+**Buy exit model:**
+```
+buy_exit_binary — P(buy TP still reachable from current bar)
+```
+
+**Sell exit model:**
+```
+sell_exit_binary — P(sell TP still reachable from current bar)
+```
+
+For all models:
+- **Output shape:** (batch, 1) float32 in [0, 1]
+- **Loss:** binary_crossentropy
 - **Final activation:** sigmoid
 - **PP thresholds at 0.5** (configurable) to produce the 0/1 signal
 
-### Exit model outputs:
-The model must have **exactly 1 output head** with sigmoid activation:
-```
-exit_binary — P(TP still reachable from current bar)
-```
-- **Output shape:** (batch, 1) float32 in [0, 1]
-- **Output name:** `"exit_binary"`
-- **Loss:** binary_crossentropy
-- **Final activation:** sigmoid
-- **Extra input features** appended to the feature window at inference: `[direction_feat, tp_distance_pips, sl_distance_pips]` (3 extra columns)
+### Exit model extra inputs at inference:
+At PP inference time, exit models get 3 extra columns appended to the feature window: `[direction_feat, tp_distance_pips, sl_distance_pips]`. During training these are not present (the exit model learns purely from market features). PP handles appending them at inference.
 
 ### Confidence/uncertainty (for Bayesian variants):
 PP extracts uncertainty via MC dropout at inference time:
-- `buy_confidence = max(0, 1 - 2*std)` across MC samples
-- `sell_confidence = max(0, 1 - 2*std)` across MC samples
-- `exit_confidence = max(0, 1 - 2*std)` across MC samples
+- `confidence = max(0, 1 - 2*std)` across MC samples
 
-So models with dropout layers will naturally support this — no special training needed.
+Models with dropout layers naturally support this — no special training needed.
 
 ---
 
 ## Required Model Inputs
 
-Inputs are configurable (feature selection is applied upstream), but the labeled training data has:
+### Feature columns (from the normalized training data):
+The model inputs are the **normalized feature columns** from the phase_1_b datasets:
 
-### Feature columns (15 technical indicators from feature-eng):
-RSI, MACD, MACD_Histogram, MACD_Signal, EMA, Stochastic_%K, Stochastic_%D, ADX, DI+, DI-, ATR, CCI, WilliamsR, Momentum, ROC
+| # | Column | Description |
+|---|--------|-------------|
+| 1 | `typical_price` | (HIGH + LOW + CLOSE) / 3, z-score normalized |
+| 2 | `hod_sin` | sin(2π × hour / 24) |
+| 3 | `hod_cos` | cos(2π × hour / 24) |
+| 4 | `dow_sin` | sin(2π × day_of_week / 7) |
+| 5 | `dow_cos` | cos(2π × day_of_week / 7) |
+| 6 | `dom_sin` | sin(2π × (day_of_month - 1) / 31) |
+| 7 | `dom_cos` | cos(2π × (day_of_month - 1) / 31) |
+| 8 | `moy_sin` | sin(2π × (month - 1) / 12) |
+| 9 | `moy_cos` | cos(2π × (month - 1) / 12) |
+| 10 | `rolling_std_24` | 24-bar rolling std of typical_price |
+| 11 | `rolling_ema_24` | 24-bar EMA of typical_price |
+| 12 | `price_minus_ema` | typical_price − rolling_ema_24 |
 
-### OHLC columns:
-OPEN, HIGH, LOW, CLOSE
+**Total: 12 input features** (all z-score normalized using training set params).
 
-### Input shape: `(batch, window_size, n_features)`
-- Entry model default window: 64 bars
-- Exit model default window: 32 bars
-- n_features: configurable, depends on feature selection
+### Input shape: `(batch, window_size, 12)`
+- Default window: 64 bars (configurable)
+- n_features: 12
 
 ---
 
 ## Training Data (Already Generated)
 
 Labeled datasets are at `examples/data_downsampled/phase_1_b/`:
-- `base_d1.csv` — 7,662 rows (train, 2005-06 → 2010-05)
-- `base_d2.csv` — 1,902 rows (validation, 2010-05 → 2011-07)
-- `base_d3.csv` — 1,912 rows (test, 2011-07 → 2012-10)
-- `base_d4.csv` — 7,689 rows (train2, 2012-10 → 2017-09)
-- `base_d5.csv` — 1,922 rows (validation2, 2017-09 → 2018-12)
-- `base_d6.csv` — 2,135 rows (test2, 2018-12 → 2020-04)
 
-Also includes `normalization_config_a.json` (mean/std) and `normalization_config_b.json` (min/max).
+### Base files (un-normalized features + labels):
+- `base_d1.csv` — 7,639 rows (train, 2005-06 → 2010-05)
+- `base_d2.csv` — 1,879 rows (validation, 2010-05 → 2011-07)
+- `base_d3.csv` — 1,889 rows (test, 2011-07 → 2012-10)
+- `base_d4.csv` — 7,666 rows (train2, 2012-10 → 2017-09)
+- `base_d5.csv` — 1,899 rows (validation2, 2017-09 → 2018-12)
+- `base_d6.csv` — 2,112 rows (test2, 2018-12 → 2020-04)
 
-### Columns in the CSVs:
-- `DATE_TIME` — index, datetime
-- `OPEN`, `HIGH`, `LOW`, `CLOSE` — raw 4h OHLC prices
+### Normalized files (z-score normalized features + raw labels):
+- `normalized_d1.csv` through `normalized_d6.csv` (same row counts)
+
+### Normalization configs:
+- `normalization_config_a.json` — z-score params computed from d1 → applied to d1, d2, d3
+- `normalization_config_b.json` — z-score params computed from d4 → applied to d4, d5, d6
+
+### Dataset roles:
+- **d1**: train feature extractor (encoder/representation learning)
+- **d2**: validate feature extractor
+- **d3**: test feature extractor
+- **d4**: train predictor (fine-tune or train head)
+- **d5**: validate predictor
+- **d6**: test predictor
+
+### Columns in each CSV (base and normalized):
+- `DATE_TIME` — datetime index
+- 12 feature columns (see "Required Model Inputs" above)
 - `buy_entry_label` — binary (0/1), ~18-21% positive rate
 - `sell_entry_label` — binary (0/1), ~17-24% positive rate
 - `buy_exit_label` — binary (0/1), ~20-25% positive rate
 - `sell_exit_label` — binary (0/1), ~20-28% positive rate
-- `bars_to_friday` — integer (horizon info, available as feature)
+- `bars_to_friday` — integer (horizon info, available as extra feature)
+
+Labels are **not** normalized (kept as raw 0/1 in normalized files too).
 
 ### Label generation parameters (for reference):
 - TP: 131.325 pipettes (tp_multiplier=5.15 × profit_threshold=25.50)
@@ -139,23 +194,27 @@ Also includes `normalization_config_a.json` (mean/std) and `normalization_config
 
 ## Binary Target Plugin Specification
 
-A new `binary_target` plugin that maps the label columns to the y_train/y_val/y_test dict format the predictor pipeline expects:
+A new `binary_target` plugin that maps a single label column to the y_train/y_val/y_test format. The `signal_type` parameter selects which column:
 
-### For entry training:
+| signal_type | Target column | Output name |
+|-------------|---------------|-------------|
+| `buy_entry` | `buy_entry_label` | `buy_entry_binary` |
+| `sell_entry` | `sell_entry_label` | `sell_entry_binary` |
+| `buy_exit` | `buy_exit_label` | `buy_exit_binary` |
+| `sell_exit` | `sell_exit_label` | `sell_exit_binary` |
+
+### Target dict format:
 ```python
-y_train = {
-    "buy_entry_binary": array(N, 1),   # from buy_entry_label column
-    "sell_entry_binary": array(N, 1),   # from sell_entry_label column
-}
+# For signal_type="buy_entry":
+y_train = {"buy_entry_binary": array(N, 1)}
+
+# For signal_type="sell_entry":
+y_train = {"sell_entry_binary": array(N, 1)}
+
+# etc.
 ```
 
-### For exit training:
-```python
-y_train = {
-    "exit_binary": array(N, 1),   # from buy_exit_label or sell_exit_label
-}
-```
-The exit model is trained on interleaved buy/sell exit labels with direction as extra feature.
+Each model is trained on exactly one target column.
 
 ---
 
@@ -165,31 +224,70 @@ The exit model is trained on interleaved buy/sell exit labels with direction as 
 |--------|---------------------|--------------|
 | Output activation | linear | **sigmoid** |
 | Loss function | huber | **binary_crossentropy** |
-| Output names | output_horizon_{h} | **buy_entry_binary, sell_entry_binary** (entry) or **exit_binary** (exit) |
-| Output shape | (batch, 1) per horizon | (batch, 1) per signal |
+| Output names | output_horizon_{h} | **{signal_type}_binary** (single head) |
+| Output shape | (batch, 1) per horizon | **(batch, 1)** single output |
 | Metrics | MAE, R² | **accuracy, AUC, precision, recall** |
 | Target values | continuous future price | **0 or 1** |
 | De-normalization | yes (mean/std) | **no** (already probabilities) |
-| Number of output heads | len(predicted_horizons) | **2 (entry) or 1 (exit)** |
+| Number of output heads | len(predicted_horizons) | **1** |
+| Models per architecture | 1 | **4** (buy_entry, sell_entry, buy_exit, sell_exit) |
+| Input features | configurable | **12** (typical_price + seasonals + rolling) |
 
 ---
 
 ## Implementation Notes
 
 - **Do NOT modify existing regression plugins** — create new `binary_` files alongside them
-- Each binary plugin inherits from the same base class as its regression counterpart
-- Override `build_model()` to use sigmoid output + binary_crossentropy
-- Override output_names to use the binary naming convention
-- The `train()` method from BaseKerasPredictor should work with the binary target dict unchanged
-- For Bayesian variants, keep DenseFlipout layers — MC dropout uncertainty works the same for binary outputs
+- Each binary plugin is a **thin subclass** (~40-60 lines) of its regression parent
+- One plugin file per architecture (e.g. `predictor_plugin_binary_ann.py`)
+- Override only `build_model()` — reuse the parent's shared trunk construction, replace the output loop
+- `self.output_names` set to `[f"{signal_type}_binary"]` based on config
+- The base `train()` method works unchanged since `y_train[output_name]` is just an array
+- For Bayesian variants (ANN, CNN, LSTM, Transformer, TFT, TCN, MIMO): keep inheriting from parent which uses `BaseBayesianKerasPredictor` — MC dropout works identically for sigmoid outputs
+- For deterministic variant (N-BEATS): inherit from parent which uses `BaseDeterministicKerasPredictor`
 - Save format: same `.keras` + `_metadata.json` convention
-- Metadata must include: `feature_columns`, `window_size`, `model_type: "binary_entry"` or `"binary_exit"`
+- Metadata must include: `feature_columns`, `window_size`, `signal_type`, `model_type: "binary"`
+
+### Example: binary_ann.py (illustrative skeleton)
+```python
+from .predictor_plugin_ann import Plugin as ANNPlugin
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.losses import BinaryCrossentropy
+from tensorflow.keras.metrics import AUC
+
+class Plugin(ANNPlugin):
+    plugin_params = {
+        **ANNPlugin.plugin_params,
+        "signal_type": "buy_entry",        # buy_entry | sell_entry | buy_exit | sell_exit
+    }
+    plugin_params.pop("predicted_horizons", None)  # not used for binary
+
+    def build_model(self, input_shape, x_train, config):
+        # Build ONLY the shared trunk from parent (do NOT call super().build_model)
+        # Replicate parent's trunk layers, then add single binary head:
+        # ... (parent trunk code: Input -> Flatten -> Dense layers -> trunk) ...
+        
+        signal_type = self.params.get("signal_type", "buy_entry")
+        out_name = f"{signal_type}_binary"
+        output = Dense(1, activation="sigmoid", name=out_name)(trunk)
+        
+        self.output_names = [out_name]
+        self.model = Model(inputs=inputs, outputs=[output])
+        self.model.compile(
+            optimizer=...,
+            loss={out_name: BinaryCrossentropy()},
+            metrics={out_name: ["accuracy", AUC(name="auc")]},
+        )
+```
+
+### Note on trunk reuse:
+Since each parent's `build_model()` constructs both trunk AND output heads in one method, the binary subclass must **replicate the trunk construction** from the parent (copy the shared layers code) and then add its own single output. This is unavoidable because the parent doesn't expose the trunk as a separate method. The trunk code is typically 10-20 lines — small enough that copying is acceptable and cleaner than refactoring the parent.
 
 ## Verification
 
-After training, the models must:
+After training, each model must:
 1. Load in PP's `binary_entry_predictor` / `binary_exit_predictor` plugins
-2. Accept input shape `(1, window_size, n_features)`
-3. Output shape `(1, 2)` for entry or `(1, 1)` for exit
-4. All outputs in [0, 1] range (sigmoid)
+2. Accept input shape `(1, window_size, 12)`
+3. Output shape `(1, 1)` — single sigmoid probability
+4. Output in [0, 1] range (sigmoid)
 5. Work with MC dropout for uncertainty when called with `training=True`

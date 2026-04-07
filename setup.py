@@ -19,7 +19,16 @@ setup(
             'mimo=predictor_plugins.predictor_plugin_mimo:Plugin',
             'tft=predictor_plugins.predictor_plugin_tft:Plugin',
             'tcn=predictor_plugins.predictor_plugin_tcn:Plugin',
-            'base=predictor_plugin.predictor_plugin_base:Plugin'
+            'base=predictor_plugin.predictor_plugin_base:Plugin',
+            # Binary classification plugins
+            'binary_ann=predictor_plugins.binary.predictor_plugin_binary_ann:Plugin',
+            'binary_cnn=predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin',
+            'binary_lstm=predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin',
+            'binary_transformer=predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin',
+            'binary_n_beats=predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin',
+            'binary_tft=predictor_plugins.binary.predictor_plugin_binary_tft:Plugin',
+            'binary_tcn=predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin',
+            'binary_mimo=predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin',
         ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
         'optimizer.plugins': [
@@ -38,12 +47,14 @@ setup(
         ],
         'target.plugins': [
             'default_target=target_plugins.default_target:TargetPlugin',
-            'stl_target=target_plugins.stl_target:TargetPlugin'
+            'stl_target=target_plugins.stl_target:TargetPlugin',
+            'binary_target=target_plugins.binary_target:TargetPlugin',
         ],
         # Target plugins
         'target.plugins': [
             'default_target=target_plugins.default_target:TargetPlugin',
-            'stl_target=target_plugins.stl_target:TargetPlugin'
+            'stl_target=target_plugins.stl_target:TargetPlugin',
+            'binary_target=target_plugins.binary_target:TargetPlugin',
         ]
     },
     install_requires=[
