@@ -1,10 +1,10 @@
 {
-    "window_size": 48,
+    "window_size": 69,
     "tft_hidden_units": 32,
     "tft_lstm_layers": 1,
     "tft_num_heads": 2,
     "tft_dropout": 0.15,
-    "positional_encoding": false,
+    "positional_encoding": true,
     "learning_rate": 0.001,
     "batch_size": 32,
     "l2_reg": 1e-06,

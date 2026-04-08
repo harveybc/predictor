@@ -1034,6 +1034,43 @@ class Plugin:
                     except Exception as _csv_err:
                         print(f"  [NEAT] CSV write error: {_csv_err}")
 
+                # ── Callback: on_candidate_evaluated ─────────
+                _cb_candidate = _opt_callbacks.get("on_candidate_evaluated")
+                if _cb_candidate:
+                    try:
+                        _cand_info = {
+                            "total_eval": int(self.total_eval_counter),
+                            "generation": gen,
+                            "candidate_in_gen": int(self.eval_counter),
+                            "stage": _current_stage["stage_idx"] + 1,
+                            "total_stages": len(_stage_schedule),
+                            "stage_name": _current_stage["name"],
+                            "gen_in_stage": gen - _current_stage["start_gen"],
+                            "n_generations_stage": _current_stage["end_gen"] - _current_stage["start_gen"],
+                            "n_generations_total": _total_stage_gens,
+                            "population_size": population_size,
+                            "species_id": genome.species_id or "",
+                            "complexity": genome.complexity,
+                            "is_champion": is_new_champion,
+                            "parameters": hyper_dict.copy(),
+                            "champion_parameters": self.best_params_so_far.copy() if self.best_params_so_far else {},
+                            "fitness": fitness,
+                            "champion_fitness": float(self.best_fitness_so_far),
+                            "train_mae": genome.train_mae,
+                            "train_naive_mae": genome.train_naive_mae,
+                            "val_mae": genome.val_mae,
+                            "val_naive_mae": genome.naive_mae,
+                            "test_mae": genome.test_mae,
+                            "test_naive_mae": genome.test_naive_mae,
+                            "no_improve_counter": self.patience_counter,
+                            "optimization_patience": patience,
+                            "neat_species_count": self.neat_species_count,
+                            "neat_avg_complexity": self.neat_avg_complexity,
+                        }
+                        _cb_candidate(_cand_info)
+                    except Exception as _cb_err:
+                        print(f"  [NEAT] Candidate evaluated callback error: {_cb_err}")
+
                 return fitness
 
         # ── Re-broadcast existing champion from checkpoint ────
@@ -1506,8 +1543,10 @@ class Plugin:
                         "champion_val_mae": float(self.best_val_mae_so_far) if self.best_val_mae_so_far is not None else None,
                         "champion_naive_mae": float(self.best_naive_mae_so_far) if self.best_naive_mae_so_far is not None else None,
                         "champion_test_mae": float(self.best_test_mae_so_far) if self.best_test_mae_so_far is not None else None,
+                        "champion_test_naive_mae": float(self.best_test_naive_mae_so_far) if self.best_test_naive_mae_so_far is not None else None,
                         "champion_train_mae": float(self.best_train_mae_so_far) if self.best_train_mae_so_far is not None else None,
                         "champion_train_naive_mae": float(self.best_train_naive_mae_so_far) if self.best_train_naive_mae_so_far is not None else None,
+                        "champion_parameters": self.best_params_so_far.copy() if self.best_params_so_far else {},
                         "avg_fitness": avg_fitness,
                         "best_fitness_gen": current_best_fitness,
                         "neat_species_count": self.neat_species_count,
