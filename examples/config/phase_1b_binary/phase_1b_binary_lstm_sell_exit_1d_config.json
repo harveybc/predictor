@@ -59,5 +59,11 @@
     "start_from_epoch": 15,
     "use_log1p_features": [
         "typical_price"
+    ],
+    "excluded_columns": [
+        "buy_entry_label",
+        "sell_entry_label",
+        "buy_exit_label",
+        "sell_exit_label"
     ]
 }

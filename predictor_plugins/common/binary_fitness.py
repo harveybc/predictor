@@ -1,13 +1,17 @@
 """Binary classification fitness computation for optimizer and DON evaluator.
 
-Penalized Asymmetric AUC (PAA):
-    base = 0.4 * train_auc + 0.6 * val_auc        (higher is better)
-    fitness = -base + penalty                        (lower is better)
+Composite Binary Fitness (CBF):
+    composite = 0.35*MCC_scaled + 0.25*F1 + 0.20*AUC + 0.20*(1-Brier)
+    base = 0.4 * train_composite + 0.6 * val_composite
+    fitness = -base + penalty
 
-    penalty += (train_auc - val_auc) * 2   if overfitting (train >> val)
-    penalty += (0.5 - val_auc) * 2         if val_auc < 0.5 (worse than random)
+    MCC_scaled maps MCC from [-1,1] to [0,1].
+    Brier score penalises miscalibrated probabilities.
+    MCC is the hardest metric to saturate on imbalanced data, preventing
+    the AUC=1.0 saturation problem that makes pure-AUC fitness useless
+    for optimisation.
 
-Lower fitness is better (more negative = beating random baseline).
+Lower fitness is better (more negative = better model).
 """
 
 import numpy as np
@@ -101,48 +105,56 @@ def compute_binary_metrics_for_split(y_true, y_prob, threshold=0.5):
     }
 
 
-def compute_binary_fitness(train_metrics, val_metrics):
-    """Full penalized asymmetric AUC fitness (lower is better).
+def _composite_score(metrics):
+    """Compute composite binary metric from a metrics dict. Range ~[0, 1]."""
+    mcc_scaled = (metrics.get("mcc", 0.0) + 1.0) / 2.0  # [-1,1] → [0,1]
+    f1 = metrics.get("f1", 0.0)
+    auc = metrics.get("auc_roc", 0.5)
+    brier = metrics.get("brier", 1.0)
+    return 0.35 * mcc_scaled + 0.25 * f1 + 0.20 * auc + 0.20 * (1.0 - brier)
 
-    Used by the optimizer's candidate_worker during training.
+
+def compute_binary_fitness(train_metrics, val_metrics):
+    """Composite binary fitness (lower is better).
+
+    Uses MCC + F1 + AUC + Brier to avoid AUC saturation.
 
     Parameters
     ----------
-    train_metrics : dict with at least 'auc_roc' key
-    val_metrics   : dict with at least 'auc_roc' key
+    train_metrics : dict from compute_binary_metrics_for_split
+    val_metrics   : dict from compute_binary_metrics_for_split
 
     Returns
     -------
-    float : fitness value (lower is better, negative = beating random)
+    float : fitness value (lower is better, negative = good model)
     """
-    train_auc = train_metrics.get("auc_roc", 0.5)
-    val_auc = val_metrics.get("auc_roc", 0.5)
+    train_comp = _composite_score(train_metrics)
+    val_comp = _composite_score(val_metrics)
 
-    if not np.isfinite(train_auc) or not np.isfinite(val_auc):
+    if not np.isfinite(train_comp) or not np.isfinite(val_comp):
         return float("inf")
 
-    # Base: weighted combination (higher AUC = lower fitness via negation)
-    base = 0.4 * train_auc + 0.6 * val_auc
-    fitness = -base
+    # Base: weighted combination (higher composite = lower fitness via negation)
+    fitness = -(0.4 * train_comp + 0.6 * val_comp)
 
-    # Penalty 1: overfitting (train >> val)
-    overfit = train_auc - val_auc
-    if overfit > 0.02:  # Allow small gap; penalize large overfitting
+    # Penalty 1: overfitting (train composite >> val composite)
+    overfit = train_comp - val_comp
+    if overfit > 0.03:
         fitness += overfit * 2.0
 
     # Penalty 2: worse than random on validation
-    if val_auc < 0.5:
-        fitness += (0.5 - val_auc) * 2.0
+    if val_metrics.get("auc_roc", 0.5) < 0.5:
+        fitness += (0.5 - val_metrics["auc_roc"]) * 2.0
 
     return fitness
 
 
 def compute_binary_val_only_fitness(val_metrics):
-    """Val-only fitness for DON evaluator (no training data available).
+    """Val-only composite fitness for DON evaluator (no training data available).
 
-    Returns -val_auc when available, else 0.
+    Returns -composite when available, else 0.
     """
-    val_auc = val_metrics.get("auc_roc", 0.5)
-    if np.isfinite(val_auc):
-        return -val_auc
+    comp = _composite_score(val_metrics)
+    if np.isfinite(comp):
+        return -comp
     return 0.0

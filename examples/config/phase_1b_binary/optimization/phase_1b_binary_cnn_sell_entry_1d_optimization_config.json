@@ -22,7 +22,7 @@
     "uncertainty_color_alpha": 0.01,
     "plot_points": 1728,
     "min_delta": 1e-08,
-    "epochs": 10,
+    "epochs": 2000,
     "predicted_horizons": [
         1
     ],
@@ -157,10 +157,18 @@
     "learning_rate": 0.001,
     "l2_reg": 1e-05,
     "window_size": 72,
-    "early_patience": 80,
+    "early_patience": 40,
     "start_from_epoch": 15,
     "positional_encoding": true,
     "use_log1p_features": [
         "typical_price"
-    ]
+    ],
+    "excluded_columns": [
+        "buy_entry_label",
+        "sell_entry_label",
+        "buy_exit_label",
+        "sell_exit_label",
+        "bars_to_friday"
+    ],
+    "use_temporal_features": false
 }

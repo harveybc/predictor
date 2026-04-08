@@ -1,0 +1,37 @@
+{
+    "optimizer_type": "neat",
+    "total_time_elapsed": 40661.247371673584,
+    "candidates_evaluated_so_far": 39,
+    "champion_fitness": -0.6480666279792786,
+    "champion_validation_mae": 0.33721256256103516,
+    "champion_validation_naive_mae": 0.9770973324775696,
+    "champion_test_mae": 0.35647502541542053,
+    "champion_test_naive_mae": 0.8716095685958862,
+    "champion_train_mae": 0.33555495738983154,
+    "champion_train_naive_mae": 0.9958943724632263,
+    "neat_species_count": 1,
+    "neat_avg_complexity": 10.0,
+    "neat_max_complexity": 10,
+    "neat_min_complexity": 10,
+    "neat_species_details": [
+        {
+            "id": 1,
+            "size": 20,
+            "best_fitness": -0.6480666279792786,
+            "avg_complexity": 10.0
+        }
+    ],
+    "history": [
+        {
+            "generation": 1,
+            "duration": 15788.141871929169,
+            "avg_fitness": -0.4984365684418754,
+            "best_fitness_gen": -0.6480666279792786,
+            "champion_fitness_global": -0.6480666279792786,
+            "champion_validation_mae_global": 0.33721256256103516,
+            "champion_validation_naive_mae_global": 0.9770973324775696,
+            "species_count": 1,
+            "avg_complexity": 10.0
+        }
+    ]
+}

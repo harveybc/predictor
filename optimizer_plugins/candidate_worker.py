@@ -341,13 +341,13 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
         fitness = compute_binary_fitness(train_bin_metrics, val_bin_metrics)
 
         # Map binary metrics into the standard wire-format keys for doin-node compatibility:
-        #   val_mae → val AUC-ROC,  train_mae → train AUC-ROC
+        #   val_mae → val MCC,  train_mae → train MCC
         #   val_naive_mae → val F1, train_naive_mae → train F1
-        #   naive_mae → val AUC-ROC (used as the "baseline" reference)
-        train_mae = train_bin_metrics["auc_roc"]
-        val_mae = val_bin_metrics["auc_roc"]
+        #   naive_mae → val MCC (used as the "baseline" reference)
+        train_mae = train_bin_metrics["mcc"]
+        val_mae = val_bin_metrics["mcc"]
         train_naive_mae = train_bin_metrics["f1"]
-        naive_mae = val_bin_metrics["auc_roc"]
+        naive_mae = val_bin_metrics["mcc"]
 
         # TEST
         test_mae = None
@@ -366,7 +366,7 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
                     test_preds_list = [test_preds_raw] if isinstance(test_preds_raw, np.ndarray) else test_preds_raw
                     y_ts, p_ts = _extract_h(y_test, test_preds_list)
                     test_bin_metrics = compute_binary_metrics_for_split(y_ts, p_ts)
-                    test_mae = test_bin_metrics["auc_roc"]
+                    test_mae = test_bin_metrics["mcc"]
                     test_naive_mae = test_bin_metrics["f1"]
                     if not _QUIET:
                         print(f"  Binary TEST:  AUC={test_bin_metrics['auc_roc']:.4f} F1={test_bin_metrics['f1']:.4f}")
