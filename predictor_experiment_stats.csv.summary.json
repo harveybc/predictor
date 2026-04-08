@@ -1,14 +1,14 @@
 {
   "predictor-binary-tft-neat-1d": {
-    "experiment_id": "cf777d059e9d439095c2c323b465cf0b",
+    "experiment_id": "99533aad0f0144729c55845e16888452",
     "domain_id": "predictor-binary-tft-neat-1d",
     "rounds": 0,
     "best_performance": null,
     "target_performance": 999.0,
     "converged": false,
     "time_to_target_seconds": null,
-    "elapsed_seconds": 1142.34,
+    "elapsed_seconds": 104.26,
     "optimizer_plugin": "binary_predictor"
   },
-  "finalized_utc": "2026-04-08T06:11:58.277566+00:00"
+  "finalized_utc": "2026-04-08T10:40:24.575724+00:00"
 }

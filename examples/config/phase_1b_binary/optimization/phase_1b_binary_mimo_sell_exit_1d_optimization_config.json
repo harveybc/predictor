@@ -170,5 +170,6 @@
         "sell_exit_label",
         "bars_to_friday"
     ],
-    "use_temporal_features": false
+    "use_temporal_features": false,
+    "optimization_candidate_history": "examples/results/phase_1b_binary/phase_1b_binary_mimo_sell_exit_1d_optimization_candidate_history.csv"
 }

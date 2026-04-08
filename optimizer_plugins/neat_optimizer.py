@@ -21,6 +21,7 @@ import random
 import numpy as np
 import time
 import json
+import csv
 import gc
 import os
 import sys
@@ -696,6 +697,29 @@ class Plugin:
         best_genome = None
         stats_history = []
 
+        # ── Candidate history CSV ────────────────────────────
+        _candidate_csv_path = config.get(
+            "optimization_candidate_history",
+            "optimization_candidate_history.csv",
+        )
+        _candidate_csv_path = _resolve_repo_path(_candidate_csv_path) or _candidate_csv_path
+        _csv_columns = (
+            ["total_eval", "generation", "candidate_in_gen", "stage_name",
+             "species_id", "complexity", "is_champion"]
+            + sorted(all_params)
+            + ["fitness", "train_mcc", "train_f1", "val_mcc", "val_f1",
+               "test_mcc", "test_f1", "champion_fitness"]
+        )
+        # Write header (overwrite if exists — resume=false means fresh start)
+        try:
+            os.makedirs(os.path.dirname(os.path.abspath(_candidate_csv_path)), exist_ok=True)
+            with open(_candidate_csv_path, "w", newline="") as _cf:
+                csv.writer(_cf).writerow(_csv_columns)
+            print(f"[NEAT] Candidate history CSV: {_candidate_csv_path}")
+        except Exception as _csv_err:
+            print(f"[NEAT] Warning: could not create candidate CSV: {_csv_err}")
+            _candidate_csv_path = None
+
         print(f"\n{'='*80}")
         print(f"[NEAT] NEAT-style Optimization Starting")
         print(f"[NEAT] Population: {population_size} | Generations: {_total_stage_gens} | Patience: {patience}")
@@ -981,6 +1005,34 @@ class Plugin:
                 print(f"  Champion fitness: {float(self.best_fitness_so_far):.6f} | "
                       f"Patience: {self.patience_counter}/{patience}")
                 print(f"{'='*80}")
+
+                # ── Append to candidate history CSV ──────────
+                if _candidate_csv_path:
+                    try:
+                        _row = {
+                            "total_eval": int(self.total_eval_counter),
+                            "generation": gen,
+                            "candidate_in_gen": int(self.eval_counter),
+                            "stage_name": _current_stage["name"],
+                            "species_id": genome.species_id or "",
+                            "complexity": genome.complexity,
+                            "is_champion": 1 if is_new_champion else 0,
+                            "fitness": f"{fitness:.8f}",
+                            "train_mcc": f"{genome.train_mae:.6f}",
+                            "train_f1": f"{genome.train_naive_mae:.6f}",
+                            "val_mcc": f"{genome.val_mae:.6f}",
+                            "val_f1": f"{genome.naive_mae:.6f}",
+                            "test_mcc": f"{genome.test_mae:.6f}",
+                            "test_f1": f"{genome.test_naive_mae:.6f}",
+                            "champion_fitness": f"{float(self.best_fitness_so_far):.8f}",
+                        }
+                        for _p in sorted(all_params):
+                            _row[_p] = hyper_dict.get(_p, "")
+                        with open(_candidate_csv_path, "a", newline="") as _cf:
+                            w = csv.DictWriter(_cf, fieldnames=_csv_columns)
+                            w.writerow(_row)
+                    except Exception as _csv_err:
+                        print(f"  [NEAT] CSV write error: {_csv_err}")
 
                 return fitness
 

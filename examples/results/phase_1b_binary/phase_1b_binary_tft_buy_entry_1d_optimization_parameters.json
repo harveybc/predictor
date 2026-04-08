@@ -1,5 +1,5 @@
 {
-    "window_size": 123,
+    "window_size": 48,
     "tft_hidden_units": 32,
     "tft_lstm_layers": 1,
     "tft_num_heads": 2,
