@@ -151,7 +151,7 @@
     "learning_rate": 0.001,
     "l2_reg": 1e-05,
     "window_size": 72,
-    "early_patience": 80,
+    "early_patience": 40,
     "start_from_epoch": 15,
     "positional_encoding": true,
     "use_log1p_features": [
