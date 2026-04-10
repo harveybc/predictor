@@ -262,43 +262,30 @@ def main():
     
 
     # --- DECISIÓN DE EJECUCIÓN ---
-    if config.get('load_model', False):
-        print("Loading and evaluating existing model...")
+    if config.get('use_optimizer', False) and not config.get('load_model', False):
+        print("Running hyperparameter optimization with Optimizer Plugin...")
         try:
-            # Usar el predictor plugin para cargar y evaluar el modelo (método ya existente)
-            predictor_plugin.load_and_evaluate_model(config, predictor_plugin, preprocessor_plugin, target_plugin)
+            optimal_params = optimizer_plugin.optimize(predictor_plugin, preprocessor_plugin, config)
+            optimizer_output_file = config.get("optimizer_output_file", "optimizer_output.json")
+            with open(optimizer_output_file, "w") as f:
+                json.dump(optimal_params, f, indent=4)
+            print(f"Optimized parameters saved to {optimizer_output_file}.")
+            config.update(optimal_params)
         except Exception as e:
-            print(f"Model evaluation failed: {e}")
+            print(f"Hyperparameter optimization failed: {e}")
             sys.exit(1)
     else:
-        # Si se activa el optimizador, se ejecuta el proceso de optimización antes del pipeline
-        if config.get('use_optimizer', False):
-            print("Running hyperparameter optimization with Optimizer Plugin...")
-            try:
-                # El optimizador optimiza el modelo (por ejemplo, invoca build_model, train, evaluate internamente)
-                optimal_params = optimizer_plugin.optimize(predictor_plugin, preprocessor_plugin, config)
-                # Se guardan los parámetros óptimos en un archivo JSON
-                optimizer_output_file = config.get("optimizer_output_file", "optimizer_output.json")
-                with open(optimizer_output_file, "w") as f:
-                    json.dump(optimal_params, f, indent=4)
-                print(f"Optimized parameters saved to {optimizer_output_file}.")
-                # Actualizar la configuración con los parámetros optimizados
-                config.update(optimal_params)
-            except Exception as e:
-                print(f"Hyperparameter optimization failed: {e}")
-                sys.exit(1)
-        else:
+        if not config.get('use_optimizer', False):
             print("Skipping hyperparameter optimization.")
-            print("Running prediction pipeline...")
-            # El Pipeline Plugin orquesta:
-            # 1. Preprocesamiento (process_data, descomposición STL, ventanas deslizantes)
-            # 2. Entrenamiento y evaluación usando el Predictor Plugin
-            pipeline_plugin.run_prediction_pipeline(
-                config,
-                predictor_plugin,
-                preprocessor_plugin,
-                target_plugin
-            )
+        print("Running prediction pipeline...")
+
+    # Pipeline Plugin orchestrates preprocessing, training (or model loading), evaluation
+    pipeline_plugin.run_prediction_pipeline(
+        config,
+        predictor_plugin,
+        preprocessor_plugin,
+        target_plugin
+    )
         
     # Guardado de la configuración local y remota
     if config.get('save_config'):

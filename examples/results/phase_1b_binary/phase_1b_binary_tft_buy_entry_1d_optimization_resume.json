@@ -1,5 +1,5 @@
 {
-    "generation": 19,
+    "generation": 20,
     "population": [
         {
             "genes": {
@@ -36,22 +36,22 @@
                 "7": {
                     "innovation": 7,
                     "param_name": "learning_rate",
-                    "value": 0.001
+                    "value": 0.0028446395762734243
                 },
                 "8": {
                     "innovation": 8,
                     "param_name": "batch_size",
-                    "value": 32.0
+                    "value": 33.0
                 },
                 "9": {
                     "innovation": 9,
                     "param_name": "l2_reg",
-                    "value": 1e-06
+                    "value": 1e-07
                 },
                 "10": {
                     "innovation": 10,
                     "param_name": "min_delta",
-                    "value": 1e-08
+                    "value": 8.52078887227875e-08
                 },
                 "11": {
                     "innovation": 11,
@@ -59,68 +59,7 @@
                     "value": 1.0
                 }
             },
-            "fitness": -0.5402239189650319,
-            "species_id": 1
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 32
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 1
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 3.0
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.10065111830060605
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.5003591234485307,
+            "fitness": -0.2332727323267369,
             "species_id": null
         },
         {
@@ -128,68 +67,7 @@
                 "1": {
                     "innovation": 1,
                     "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 24
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 3
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 7.0
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.13113231369390543
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.3712645802084814,
-            "species_id": 1
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
+                    "value": 48.0
                 },
                 "2": {
                     "innovation": 2,
@@ -199,7 +77,7 @@
                 "3": {
                     "innovation": 3,
                     "param_name": "tft_lstm_layers",
-                    "value": 3
+                    "value": 3.0
                 },
                 "4": {
                     "innovation": 4,
@@ -214,35 +92,35 @@
                 "6": {
                     "innovation": 6,
                     "param_name": "positional_encoding",
-                    "value": 0
+                    "value": 0.0
                 },
                 "7": {
                     "innovation": 7,
                     "param_name": "learning_rate",
-                    "value": 0.001
+                    "value": 0.002530749393849998
                 },
                 "8": {
                     "innovation": 8,
                     "param_name": "batch_size",
-                    "value": 32.0
+                    "value": 36.0
                 },
                 "9": {
                     "innovation": 9,
                     "param_name": "l2_reg",
-                    "value": 1e-06
+                    "value": 4.585540588591548e-05
                 },
                 "10": {
                     "innovation": 10,
                     "param_name": "min_delta",
-                    "value": 1e-08
+                    "value": 1.3325269592194186e-07
                 },
                 "11": {
                     "innovation": 11,
                     "param_name": "use_log1p_features",
-                    "value": 1
+                    "value": 1.0
                 }
             },
-            "fitness": -0.5402239189650319,
+            "fitness": -0.4081528147183457,
             "species_id": null
         },
         {
@@ -250,261 +128,17 @@
                 "1": {
                     "innovation": 1,
                     "param_name": "window_size",
-                    "value": 48
+                    "value": 48.0
                 },
                 "2": {
                     "innovation": 2,
                     "param_name": "tft_hidden_units",
-                    "value": 58
+                    "value": 21.0
                 },
                 "3": {
                     "innovation": 3,
                     "param_name": "tft_lstm_layers",
-                    "value": 3
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
                     "value": 3.0
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.09647696577704044
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.2737896837490348,
-            "species_id": 1
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 16
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 3
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 4
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.10006759349405499
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.5025422465825758,
-            "species_id": null
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 27.0
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 3
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 3
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.17888159121573072
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.3668482510968416,
-            "species_id": 1
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 22.0
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 1
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 5.0
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.2506056470968779
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.4625970793248031,
-            "species_id": null
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 21
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 3
                 },
                 "4": {
                     "innovation": 4,
@@ -514,40 +148,40 @@
                 "5": {
                     "innovation": 5,
                     "param_name": "tft_dropout",
-                    "value": 0.2332984912941314
+                    "value": 0.13113231369390543
                 },
                 "6": {
                     "innovation": 6,
                     "param_name": "positional_encoding",
-                    "value": 0
+                    "value": 0.0
                 },
                 "7": {
                     "innovation": 7,
                     "param_name": "learning_rate",
-                    "value": 0.001
+                    "value": 1e-05
                 },
                 "8": {
                     "innovation": 8,
                     "param_name": "batch_size",
-                    "value": 32.0
+                    "value": 21.0
                 },
                 "9": {
                     "innovation": 9,
                     "param_name": "l2_reg",
-                    "value": 1e-06
+                    "value": 0.0001201163331031038
                 },
                 "10": {
                     "innovation": 10,
                     "param_name": "min_delta",
-                    "value": 1e-08
+                    "value": 1e-10
                 },
                 "11": {
                     "innovation": 11,
                     "param_name": "use_log1p_features",
-                    "value": 1
+                    "value": 1.0
                 }
             },
-            "fitness": -0.2797081629185647,
+            "fitness": -0.44451286599947915,
             "species_id": null
         },
         {
@@ -555,121 +189,853 @@
                 "1": {
                     "innovation": 1,
                     "param_name": "window_size",
-                    "value": 48
+                    "value": 48.0
                 },
                 "2": {
                     "innovation": 2,
                     "param_name": "tft_hidden_units",
-                    "value": 16
+                    "value": 21.0
                 },
                 "3": {
                     "innovation": 3,
                     "param_name": "tft_lstm_layers",
-                    "value": 2.0
+                    "value": 3.0
                 },
                 "4": {
                     "innovation": 4,
                     "param_name": "tft_num_heads",
-                    "value": 6
+                    "value": 7.0
                 },
                 "5": {
                     "innovation": 5,
                     "param_name": "tft_dropout",
-                    "value": 0.12789331219641478
+                    "value": 0.13113231369390543
                 },
                 "6": {
                     "innovation": 6,
                     "param_name": "positional_encoding",
-                    "value": 0
+                    "value": 0.0
                 },
                 "7": {
                     "innovation": 7,
                     "param_name": "learning_rate",
-                    "value": 0.001
+                    "value": 0.0027578002822524674
                 },
                 "8": {
                     "innovation": 8,
                     "param_name": "batch_size",
-                    "value": 32.0
+                    "value": 43.0
                 },
                 "9": {
                     "innovation": 9,
                     "param_name": "l2_reg",
-                    "value": 1e-06
+                    "value": 1e-07
                 },
                 "10": {
                     "innovation": 10,
                     "param_name": "min_delta",
-                    "value": 1e-08
+                    "value": 1.1584293032392185e-07
                 },
                 "11": {
                     "innovation": 11,
                     "param_name": "use_log1p_features",
-                    "value": 1
+                    "value": 1.0
                 }
             },
-            "fitness": -0.5037090493098291,
-            "species_id": 1
+            "fitness": -0.21937177312479572,
+            "species_id": null
         },
         {
             "genes": {
                 "1": {
                     "innovation": 1,
                     "param_name": "window_size",
-                    "value": 48
+                    "value": 48.0
                 },
                 "2": {
                     "innovation": 2,
                     "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.0006988369285933099
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 39.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 0.00030341855624271564
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 1e-10
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.3185341083131663,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.0008851103227197713
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 62.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 0.0008878160961097174
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 7.415535237595283e-07
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.3696087625648734,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.004161941657355563
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 44.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 0.00028870515492837096
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 8.056922178248156e-07
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.4253635798974573,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.00970390312528803
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 43.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 0.0007286326549316881
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 4.1425236834178654e-07
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.4251420269832108,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.00835676020798034
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 54.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 8.616936651933877e-05
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 2.0786301232278952e-07
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.39327365858471275,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.00475138516876057
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 49.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 0.0009866396834886312
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 6.620916958868259e-08
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.4997290808188948,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.009601352029225841
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 64.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 0.00037583483255907465
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 6.718205998239576e-09
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.4254815759660805,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.006391671937145
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 33.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 0.00041457256253641484
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 5.558582635803054e-07
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.4251084316256287,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.007105367597665519
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 64.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 0.000914880623699079
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 1.9933763570403913e-07
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.4254707511373517,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.008324514394952935
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 34.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 0.0005539115398178737
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 4.232869114739392e-08
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.42511455510142754,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.008264220570004798
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 53.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 0.000303983987846606
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 5.593251285655948e-07
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.4252735909440539,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.00463988382371483
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
+                    "value": 17.0
+                },
+                "9": {
+                    "innovation": 9,
+                    "param_name": "l2_reg",
+                    "value": 0.0007912404254544259
+                },
+                "10": {
+                    "innovation": 10,
+                    "param_name": "min_delta",
+                    "value": 1.541085672434475e-07
+                },
+                "11": {
+                    "innovation": 11,
+                    "param_name": "use_log1p_features",
+                    "value": 1.0
+                }
+            },
+            "fitness": -0.4250745027712469,
+            "species_id": null
+        },
+        {
+            "genes": {
+                "1": {
+                    "innovation": 1,
+                    "param_name": "window_size",
+                    "value": 48.0
+                },
+                "2": {
+                    "innovation": 2,
+                    "param_name": "tft_hidden_units",
+                    "value": 21.0
+                },
+                "3": {
+                    "innovation": 3,
+                    "param_name": "tft_lstm_layers",
+                    "value": 3.0
+                },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
+                "5": {
+                    "innovation": 5,
+                    "param_name": "tft_dropout",
+                    "value": 0.13113231369390543
+                },
+                "6": {
+                    "innovation": 6,
+                    "param_name": "positional_encoding",
+                    "value": 0.0
+                },
+                "7": {
+                    "innovation": 7,
+                    "param_name": "learning_rate",
+                    "value": 0.003008692385857594
+                },
+                "8": {
+                    "innovation": 8,
+                    "param_name": "batch_size",
                     "value": 56.0
                 },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 3
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 8
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.10006759349405499
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
                 "9": {
                     "innovation": 9,
                     "param_name": "l2_reg",
-                    "value": 1e-06
+                    "value": 0.0008342596470445183
                 },
                 "10": {
                     "innovation": 10,
                     "param_name": "min_delta",
-                    "value": 1e-08
+                    "value": 4.725939151403643e-07
                 },
                 "11": {
                     "innovation": 11,
                     "param_name": "use_log1p_features",
-                    "value": 1
+                    "value": 1.0
                 }
             },
-            "fitness": -0.4525852536293682,
+            "fitness": -0.3625045872770415,
             "species_id": null
         },
         {
@@ -677,7 +1043,7 @@
                 "1": {
                     "innovation": 1,
                     "param_name": "window_size",
-                    "value": 48
+                    "value": 48.0
                 },
                 "2": {
                     "innovation": 2,
@@ -687,172 +1053,50 @@
                 "3": {
                     "innovation": 3,
                     "param_name": "tft_lstm_layers",
-                    "value": 3
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 1
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.17888159121573072
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.4591368477550082,
-            "species_id": null
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 27.0
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 1
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 5
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.12486667266526114
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.3890837410868525,
-            "species_id": null
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 16
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 2.0
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
                     "value": 3.0
                 },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
                 "5": {
                     "innovation": 5,
                     "param_name": "tft_dropout",
-                    "value": 0.12789331219641478
+                    "value": 0.13113231369390543
                 },
                 "6": {
                     "innovation": 6,
                     "param_name": "positional_encoding",
-                    "value": 0
+                    "value": 0.0
                 },
                 "7": {
                     "innovation": 7,
                     "param_name": "learning_rate",
-                    "value": 0.001
+                    "value": 0.0065415915923005
                 },
                 "8": {
                     "innovation": 8,
                     "param_name": "batch_size",
-                    "value": 32.0
+                    "value": 34.0
                 },
                 "9": {
                     "innovation": 9,
                     "param_name": "l2_reg",
-                    "value": 1e-06
+                    "value": 0.0004172150564845976
                 },
                 "10": {
                     "innovation": 10,
                     "param_name": "min_delta",
-                    "value": 1e-08
+                    "value": 4.9193731464969e-07
                 },
                 "11": {
                     "innovation": 11,
                     "param_name": "use_log1p_features",
-                    "value": 1
+                    "value": 1.0
                 }
             },
-            "fitness": -0.2489628808316281,
+            "fitness": -0.425094852146464,
             "species_id": null
         },
         {
@@ -860,60 +1104,60 @@
                 "1": {
                     "innovation": 1,
                     "param_name": "window_size",
-                    "value": 48
+                    "value": 48.0
                 },
                 "2": {
                     "innovation": 2,
                     "param_name": "tft_hidden_units",
-                    "value": 22.0
+                    "value": 21.0
                 },
                 "3": {
                     "innovation": 3,
                     "param_name": "tft_lstm_layers",
-                    "value": 2.0
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
                     "value": 3.0
                 },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
                 "5": {
                     "innovation": 5,
                     "param_name": "tft_dropout",
-                    "value": 0.10006759349405499
+                    "value": 0.13113231369390543
                 },
                 "6": {
                     "innovation": 6,
                     "param_name": "positional_encoding",
-                    "value": 0
+                    "value": 0.0
                 },
                 "7": {
                     "innovation": 7,
                     "param_name": "learning_rate",
-                    "value": 0.001
+                    "value": 0.0068815534281090685
                 },
                 "8": {
                     "innovation": 8,
                     "param_name": "batch_size",
-                    "value": 32.0
+                    "value": 31.0
                 },
                 "9": {
                     "innovation": 9,
                     "param_name": "l2_reg",
-                    "value": 1e-06
+                    "value": 2.8539740608950814e-05
                 },
                 "10": {
                     "innovation": 10,
                     "param_name": "min_delta",
-                    "value": 1e-08
+                    "value": 7.64741883978168e-07
                 },
                 "11": {
                     "innovation": 11,
                     "param_name": "use_log1p_features",
-                    "value": 1
+                    "value": 1.0
                 }
             },
-            "fitness": -0.5131264164568001,
+            "fitness": -0.429469787929662,
             "species_id": null
         },
         {
@@ -921,305 +1165,61 @@
                 "1": {
                     "innovation": 1,
                     "param_name": "window_size",
-                    "value": 48
+                    "value": 48.0
                 },
                 "2": {
                     "innovation": 2,
                     "param_name": "tft_hidden_units",
-                    "value": 16
+                    "value": 21.0
                 },
                 "3": {
                     "innovation": 3,
                     "param_name": "tft_lstm_layers",
-                    "value": 1
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
                     "value": 3.0
                 },
+                "4": {
+                    "innovation": 4,
+                    "param_name": "tft_num_heads",
+                    "value": 7.0
+                },
                 "5": {
                     "innovation": 5,
                     "param_name": "tft_dropout",
-                    "value": 0.24133605927819266
+                    "value": 0.13113231369390543
                 },
                 "6": {
                     "innovation": 6,
                     "param_name": "positional_encoding",
-                    "value": 0
+                    "value": 0.0
                 },
                 "7": {
                     "innovation": 7,
                     "param_name": "learning_rate",
-                    "value": 0.001
+                    "value": 0.004935571748117999
                 },
                 "8": {
                     "innovation": 8,
                     "param_name": "batch_size",
-                    "value": 32.0
+                    "value": 20.0
                 },
                 "9": {
                     "innovation": 9,
                     "param_name": "l2_reg",
-                    "value": 1e-06
+                    "value": 0.0005989314342669472
                 },
                 "10": {
                     "innovation": 10,
                     "param_name": "min_delta",
-                    "value": 1e-08
+                    "value": 3.6182333454420905e-07
                 },
                 "11": {
                     "innovation": 11,
                     "param_name": "use_log1p_features",
-                    "value": 1
+                    "value": 1.0
                 }
             },
-            "fitness": -0.5057565116590396,
+            "fitness": -0.4250692166250907,
             "species_id": null
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 22.0
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 2.0
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 3.0
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.2506056470968779
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.3957002774199806,
-            "species_id": 1
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 40
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 2.0
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 4
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.16635063291639696
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.5036275238656998,
-            "species_id": null
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 16
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 1
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 8
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.0988236639368198
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.37989472785422707,
-            "species_id": null
-        },
-        {
-            "genes": {
-                "1": {
-                    "innovation": 1,
-                    "param_name": "window_size",
-                    "value": 48
-                },
-                "2": {
-                    "innovation": 2,
-                    "param_name": "tft_hidden_units",
-                    "value": 59.0
-                },
-                "3": {
-                    "innovation": 3,
-                    "param_name": "tft_lstm_layers",
-                    "value": 3
-                },
-                "4": {
-                    "innovation": 4,
-                    "param_name": "tft_num_heads",
-                    "value": 3.0
-                },
-                "5": {
-                    "innovation": 5,
-                    "param_name": "tft_dropout",
-                    "value": 0.09647696577704044
-                },
-                "6": {
-                    "innovation": 6,
-                    "param_name": "positional_encoding",
-                    "value": 0
-                },
-                "7": {
-                    "innovation": 7,
-                    "param_name": "learning_rate",
-                    "value": 0.001
-                },
-                "8": {
-                    "innovation": 8,
-                    "param_name": "batch_size",
-                    "value": 32.0
-                },
-                "9": {
-                    "innovation": 9,
-                    "param_name": "l2_reg",
-                    "value": 1e-06
-                },
-                "10": {
-                    "innovation": 10,
-                    "param_name": "min_delta",
-                    "value": 1e-08
-                },
-                "11": {
-                    "innovation": 11,
-                    "param_name": "use_log1p_features",
-                    "value": 1
-                }
-            },
-            "fitness": -0.4973175769106466,
-            "species_id": 1
         }
     ],
     "innovation_tracker": {
@@ -1261,7 +1261,7 @@
                 "typical_price"
             ]
         },
-        "total_eval_counter": 383,
+        "total_eval_counter": 403,
         "patience_counter": 1
     }
 }

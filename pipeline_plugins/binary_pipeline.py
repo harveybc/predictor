@@ -251,10 +251,24 @@ class BinaryPipelinePlugin:
             print(f"{'='*60}")
             iter_start = time.time()
 
-            # 2) Build and train
-            history, list_train_preds, list_train_unc, list_val_preds, list_val_unc = self._build_and_train(
-                predictor_plugin, X_train, y_train_dict, X_val, y_val_dict, config
-            )
+            # 2) Build and train (or load pre-trained model)
+            if config.get("load_model"):
+                from tensorflow.keras.models import load_model as _load_keras
+                import keras
+                keras.config.enable_unsafe_deserialization()
+                print(f"\nLoading pre-trained model from {config['load_model']} …")
+                predictor_plugin.model = _load_keras(config["load_model"])
+                print("Model loaded — skipping training, computing predictions …")
+                history = None
+                pred_bs = int(config.get("predict_batch_size", 256))
+                list_train_preds = [predictor_plugin.model.predict(X_train, batch_size=pred_bs, verbose=0)]
+                list_train_unc = [None]
+                list_val_preds = [predictor_plugin.model.predict(X_val, batch_size=pred_bs, verbose=0)]
+                list_val_unc = [None]
+            else:
+                history, list_train_preds, list_train_unc, list_val_preds, list_val_unc = self._build_and_train(
+                    predictor_plugin, X_train, y_train_dict, X_val, y_val_dict, config
+                )
 
             # 3) Train/Val binary metrics
             print("\nComputing Train/Validation binary metrics …")
@@ -278,7 +292,8 @@ class BinaryPipelinePlugin:
                             metrics_results[ds][m][h].append(np.nan)
 
             # 4) Loss plot
-            plot_and_save_loss(history, config.get("loss_plot_file", "loss_plot.png"), iteration)
+            if history is not None:
+                plot_and_save_loss(history, config.get("loss_plot_file", "loss_plot.png"), iteration)
 
             # 5) Test prediction + binary metrics
             print("\nEvaluating test set with MC uncertainty …")
