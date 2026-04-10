@@ -1,7 +1,7 @@
 {
     "optimizer_type": "neat",
-    "total_time_elapsed": 115873.83153295517,
-    "candidates_evaluated_so_far": 614,
+    "total_time_elapsed": 116157.30833816528,
+    "candidates_evaluated_so_far": 671,
     "champion_fitness": -0.6053966884948232,
     "champion_validation_mae": 0.7820680628272252,
     "champion_validation_naive_mae": 0.0,
@@ -355,6 +355,39 @@
         {
             "generation": 31,
             "duration": 93.32515931129456,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": -0.6053966884948232,
+            "champion_validation_mae_global": 0.7820680628272252,
+            "champion_validation_naive_mae_global": 0.0,
+            "species_count": 1,
+            "avg_complexity": 11.0
+        },
+        {
+            "generation": 32,
+            "duration": 94.68383955955505,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": -0.6053966884948232,
+            "champion_validation_mae_global": 0.7820680628272252,
+            "champion_validation_naive_mae_global": 0.0,
+            "species_count": 1,
+            "avg_complexity": 11.0
+        },
+        {
+            "generation": 33,
+            "duration": 94.7926435470581,
+            "avg_fitness": Infinity,
+            "best_fitness_gen": Infinity,
+            "champion_fitness_global": -0.6053966884948232,
+            "champion_validation_mae_global": 0.7820680628272252,
+            "champion_validation_naive_mae_global": 0.0,
+            "species_count": 1,
+            "avg_complexity": 11.0
+        },
+        {
+            "generation": 34,
+            "duration": 93.9806022644043,
             "avg_fitness": Infinity,
             "best_fitness_gen": Infinity,
             "champion_fitness_global": -0.6053966884948232,

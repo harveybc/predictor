@@ -1,14 +1,14 @@
 {
-    "window_size": 48,
-    "tft_hidden_units": 21,
-    "tft_lstm_layers": 3,
-    "tft_num_heads": 7,
-    "tft_dropout": 0.13113231369390543,
-    "positional_encoding": false,
-    "learning_rate": 0.004161941657355563,
-    "batch_size": 44,
-    "l2_reg": 0.00028870515492837096,
-    "min_delta": 8.056922178248156e-07,
+    "window_size": 76,
+    "tft_hidden_units": 32,
+    "tft_lstm_layers": 1,
+    "tft_num_heads": 2,
+    "tft_dropout": 0.15,
+    "positional_encoding": true,
+    "learning_rate": 0.001,
+    "batch_size": 32,
+    "l2_reg": 1e-06,
+    "min_delta": 1e-08,
     "use_log1p_features": [
         "typical_price"
     ]

@@ -1,12 +1,13 @@
 """Binary classification fitness computation for optimizer and DON evaluator.
 
 Composite Binary Fitness (CBF):
-    composite = 0.50*Accuracy + 0.20*AUC + 0.15*F1 + 0.15*(1-Brier)
+    composite = 0.40*F1 + 0.25*AUC + 0.20*Accuracy + 0.15*(1-Brier)
     base = 0.4 * train_composite + 0.6 * val_composite
     fitness = -base + penalty
 
-    Accuracy is the primary optimisation target.
-    AUC and F1 provide secondary signal.
+    F1 is the primary optimisation target (handles class imbalance).
+    AUC ensures discriminative power across thresholds.
+    Accuracy provides secondary signal.
     Brier score penalises miscalibrated probabilities.
 
 Lower fitness is better (more negative = better model).
@@ -109,13 +110,13 @@ def _composite_score(metrics):
     auc = metrics.get("auc_roc", 0.5)
     f1 = metrics.get("f1", 0.0)
     brier = metrics.get("brier", 1.0)
-    return 0.50 * acc + 0.20 * auc + 0.15 * f1 + 0.15 * (1.0 - brier)
+    return 0.40 * f1 + 0.25 * auc + 0.20 * acc + 0.15 * (1.0 - brier)
 
 
 def compute_binary_fitness(train_metrics, val_metrics):
     """Composite binary fitness (lower is better).
 
-    Uses Accuracy + AUC + F1 + Brier with accuracy heavily weighted.
+    Uses F1 + AUC + Accuracy + Brier with F1 heavily weighted.
 
     Parameters
     ----------
