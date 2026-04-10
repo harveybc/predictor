@@ -58,13 +58,13 @@
     "early_patience": 80,
     "start_from_epoch": 15,
     "positional_encoding": true,
-    "use_log1p_features": [
-        "typical_price"
-    ],
+    "use_log1p_features": [],
     "excluded_columns": [
         "buy_entry_label",
         "sell_entry_label",
         "buy_exit_label",
         "sell_exit_label"
-    ]
+    ],
+    "target_column": "ATR",
+    "anti_naive_lock_enabled": false
 }

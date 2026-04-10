@@ -1,15 +1,13 @@
 """Binary classification fitness computation for optimizer and DON evaluator.
 
 Composite Binary Fitness (CBF):
-    composite = 0.35*MCC_scaled + 0.25*F1 + 0.20*AUC + 0.20*(1-Brier)
+    composite = 0.50*Accuracy + 0.20*AUC + 0.15*F1 + 0.15*(1-Brier)
     base = 0.4 * train_composite + 0.6 * val_composite
     fitness = -base + penalty
 
-    MCC_scaled maps MCC from [-1,1] to [0,1].
+    Accuracy is the primary optimisation target.
+    AUC and F1 provide secondary signal.
     Brier score penalises miscalibrated probabilities.
-    MCC is the hardest metric to saturate on imbalanced data, preventing
-    the AUC=1.0 saturation problem that makes pure-AUC fitness useless
-    for optimisation.
 
 Lower fitness is better (more negative = better model).
 """
@@ -107,17 +105,17 @@ def compute_binary_metrics_for_split(y_true, y_prob, threshold=0.5):
 
 def _composite_score(metrics):
     """Compute composite binary metric from a metrics dict. Range ~[0, 1]."""
-    mcc_scaled = (metrics.get("mcc", 0.0) + 1.0) / 2.0  # [-1,1] → [0,1]
-    f1 = metrics.get("f1", 0.0)
+    acc = metrics.get("accuracy", 0.0)
     auc = metrics.get("auc_roc", 0.5)
+    f1 = metrics.get("f1", 0.0)
     brier = metrics.get("brier", 1.0)
-    return 0.35 * mcc_scaled + 0.25 * f1 + 0.20 * auc + 0.20 * (1.0 - brier)
+    return 0.50 * acc + 0.20 * auc + 0.15 * f1 + 0.15 * (1.0 - brier)
 
 
 def compute_binary_fitness(train_metrics, val_metrics):
     """Composite binary fitness (lower is better).
 
-    Uses MCC + F1 + AUC + Brier to avoid AUC saturation.
+    Uses Accuracy + AUC + F1 + Brier with accuracy heavily weighted.
 
     Parameters
     ----------

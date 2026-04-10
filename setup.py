@@ -29,6 +29,7 @@ setup(
             'binary_tft=predictor_plugins.binary.predictor_plugin_binary_tft:Plugin',
             'binary_tcn=predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin',
             'binary_mimo=predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin',
+            'binary_logistic=predictor_plugins.binary.predictor_plugin_binary_logistic:Plugin',
         ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
         'optimizer.plugins': [

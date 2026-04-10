@@ -16,9 +16,12 @@ from sklearn.utils.class_weight import compute_class_weight
 VALID_SIGNAL_TYPES = ("buy_entry", "sell_entry", "buy_exit", "sell_exit")
 
 FEATURE_COLUMNS = [
-    "typical_price", "hod_sin", "hod_cos", "dow_sin", "dow_cos",
-    "dom_sin", "dom_cos", "moy_sin", "moy_cos",
-    "rolling_std_24", "rolling_ema_24", "price_minus_ema",
+    "ATR", "RSI", "MACD", "MACD_Histogram", "MACD_Signal",
+    "ADX", "DI_plus", "DI_minus", "Stochastic_K", "Stochastic_D",
+    "BB_Width", "CCI", "WilliamsR", "ROC",
+    "ATR_ratio", "BB_position",
+    "rolling_std_24", "price_minus_ema",
+    "hod_sin", "hod_cos", "dow_sin", "dow_cos",
 ]
 
 
