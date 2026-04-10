@@ -660,14 +660,17 @@ class Plugin:
                     else:
                         _rs_ctx = "Standard"
 
+                    _is_binary = config.get("target_plugin") == "binary_target"
+                    _lbl1 = "Accuracy" if _is_binary else "MAE maxH"
+                    _lbl2 = "F1" if _is_binary else "Naive MAE maxH"
                     print(f"\n{'='*80}")
                     print(f"CANDIDATE RESULT | {_rs_ctx} | Gen {self.current_gen}/{self.end_gen - 1} | Candidate {self.eval_counter}/{population_size} | Total Evals: {self.total_eval_counter}")
                     print(f"Active Parameters ({len(hyper_keys)}): {', '.join(hyper_keys)}")
                     print(f"{'-'*80}")
                     print(
-                        f"  TRAINING   -> MAE maxH: {train_mae:.6f} | Naive MAE maxH: {train_naive_mae:.6f}\n"
-                        f"  VALIDATION -> MAE maxH: {val_mae:.6f} | Naive MAE maxH: {naive_mae:.6f}\n"
-                        f"  TEST       -> MAE maxH: {test_mae:.6f} | Naive MAE maxH: {test_naive_mae:.6f}\n"
+                        f"  TRAINING   -> {_lbl1}: {train_mae:.6f} | {_lbl2}: {train_naive_mae:.6f}\n"
+                        f"  VALIDATION -> {_lbl1}: {val_mae:.6f} | {_lbl2}: {naive_mae:.6f}\n"
+                        f"  TEST       -> {_lbl1}: {test_mae:.6f} | {_lbl2}: {test_naive_mae:.6f}\n"
                         f"  FITNESS (avg delta from naive): {fitness:.6f}"
                     )
                     champion_fitness = float(self.best_fitness_so_far) if self.best_fitness_so_far is not None else float("inf")
@@ -704,9 +707,9 @@ class Plugin:
                     print(f"{'-'*80}")
                     print(f"CHAMPION SO FAR{' | *** NEW CHAMPION ***' if is_new_champion else ''}")
                     print(
-                        f"  TRAINING   -> MAE maxH: {champion_train_mae:.6f} | Naive MAE maxH: {champion_train_naive:.6f}\n"
-                        f"  VALIDATION -> MAE maxH: {champion_val_mae:.6f} | Naive MAE maxH: {champion_naive:.6f}\n"
-                        f"  TEST       -> MAE maxH: {champion_test_mae:.6f} | Naive MAE maxH: {champion_test_naive:.6f}\n"
+                        f"  TRAINING   -> {_lbl1}: {champion_train_mae:.6f} | {_lbl2}: {champion_train_naive:.6f}\n"
+                        f"  VALIDATION -> {_lbl1}: {champion_val_mae:.6f} | {_lbl2}: {champion_naive:.6f}\n"
+                        f"  TEST       -> {_lbl1}: {champion_test_mae:.6f} | {_lbl2}: {champion_test_naive:.6f}\n"
                         f"  FITNESS: {champion_fitness:.6f}"
                     )
                     print(f"{'-'*80}")
@@ -1027,11 +1030,14 @@ class Plugin:
                 except Exception as _e:
                     print(f"[DIAG] scale stats failed: {_e}")
 
+                _is_binary2 = new_config.get("target_plugin") == "binary_target"
+                _l1 = "Accuracy" if _is_binary2 else "MAE maxH"
+                _l2 = "F1" if _is_binary2 else "Naive MAE maxH"
                 print(
                     "Candidate Result -> "
-                    f"TRAINING MAE maxH: {train_mae:.6f} | TRAINING Naive MAE maxH: {train_naive_mae:.6f} || "
-                    f"VALIDATION MAE maxH: {val_mae:.6f} | VALIDATION Naive MAE maxH: {naive_mae:.6f} || "
-                    f"TEST MAE maxH: {test_mae:.6f} | TEST Naive MAE maxH: {test_naive_mae:.6f} || "
+                    f"TRAINING {_l1}: {train_mae:.6f} | TRAINING {_l2}: {train_naive_mae:.6f} || "
+                    f"VALIDATION {_l1}: {val_mae:.6f} | VALIDATION {_l2}: {naive_mae:.6f} || "
+                    f"TEST {_l1}: {test_mae:.6f} | TEST {_l2}: {test_naive_mae:.6f} || "
                     f"FITNESS (avg delta from naive): {fitness:.6f} || "
                     f"Keras VALIDATION loss (val_loss): {val_loss:.6f} | Keras TRAINING loss (loss): {train_loss:.6f}"
                 )
@@ -1090,9 +1096,9 @@ class Plugin:
                 )
                 print(
                     "Champion so far -> "
-                    f"TRAINING MAE maxH: {champion_train_mae:.6f} | TRAINING Naive MAE maxH: {champion_train_naive:.6f} || "
-                    f"VALIDATION MAE maxH: {champion_val_mae:.6f} | VALIDATION Naive MAE maxH: {champion_naive:.6f} || "
-                    f"TEST MAE maxH: {champion_test_mae:.6f} | TEST Naive MAE maxH: {champion_test_naive:.6f} || "
+                    f"TRAINING {_l1}: {champion_train_mae:.6f} | TRAINING {_l2}: {champion_train_naive:.6f} || "
+                    f"VALIDATION {_l1}: {champion_val_mae:.6f} | VALIDATION {_l2}: {champion_naive:.6f} || "
+                    f"TEST {_l1}: {champion_test_mae:.6f} | TEST {_l2}: {champion_test_naive:.6f} || "
                     f"FITNESS: {champion_fitness:.6f}"
                     + (" | NEW CHAMPION" if is_new_champion else "")
                 )

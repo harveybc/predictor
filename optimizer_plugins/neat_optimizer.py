@@ -998,9 +998,12 @@ class Plugin:
                       f"Complexity: {genome.complexity} params | Total Evals: {self.total_eval_counter}")
                 print(f"Active Parameters: {', '.join(genome.active_params)}")
                 print(f"{'-'*80}")
-                print(f"  TRAINING   -> MAE: {genome.train_mae:.6f} | Naive: {genome.train_naive_mae:.6f}")
-                print(f"  VALIDATION -> MAE: {genome.val_mae:.6f} | Naive: {genome.naive_mae:.6f}")
-                print(f"  TEST       -> MAE: {genome.test_mae:.6f} | Naive: {genome.test_naive_mae:.6f}")
+                _is_binary = config.get("target_plugin") == "binary_target"
+                _lbl1 = "Accuracy" if _is_binary else "MAE"
+                _lbl2 = "F1" if _is_binary else "Naive"
+                print(f"  TRAINING   -> {_lbl1}: {genome.train_mae:.6f} | {_lbl2}: {genome.train_naive_mae:.6f}")
+                print(f"  VALIDATION -> {_lbl1}: {genome.val_mae:.6f} | {_lbl2}: {genome.naive_mae:.6f}")
+                print(f"  TEST       -> {_lbl1}: {genome.test_mae:.6f} | {_lbl2}: {genome.test_naive_mae:.6f}")
                 print(f"  FITNESS: {fitness:.6f}{'  *** NEW CHAMPION ***' if is_new_champion else ''}")
                 print(f"  Champion fitness: {float(self.best_fitness_so_far):.6f} | "
                       f"Patience: {self.patience_counter}/{patience}")
