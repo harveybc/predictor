@@ -1,0 +1,36 @@
+{
+  "optimae_id": "opt-0577c436-1775733926",
+  "verified_performance": -0.5396346503850428,
+  "effective_increment": 0.2266934274197823,
+  "reward_fraction": 1.0,
+  "quorum_agree_fraction": 1.0,
+  "incentive_reason": "auto_accept_no_synthetic_validation",
+  "val_mae": 0.07660032392997838,
+  "train_mae": 0.08032588362093492,
+  "val_naive_mae": 0.07660032392997838,
+  "train_naive_mae": 0.3506224066390041,
+  "test_mae": 0.011785246711230263,
+  "test_naive_mae": 0.3151515151515151,
+  "experiment_id": "2bfd3d23b74a4ab1a7447fced2e8d85f",
+  "round_number": 0,
+  "time_to_this_result_seconds": 50616.503,
+  "optimization_config_hash": "080c2c0547b3ef0faa0b25bcf115142ee64b8cfc8702c0188507525d7a3500e8",
+  "data_hash": "",
+  "reported_performance": -0.5396346503850428,
+  "previous_best_performance": null,
+  "parameters": {
+    "window_size": 74,
+    "tft_hidden_units": 33,
+    "tft_lstm_layers": 1,
+    "tft_num_heads": 4,
+    "tft_dropout": 0.17736377071358134,
+    "positional_encoding": true,
+    "learning_rate": 0.009166867063701343,
+    "batch_size": 54,
+    "l2_reg": 0.00030550371855371674,
+    "min_delta": 6.56421024402621e-07,
+    "use_log1p_features": [
+      "typical_price"
+    ]
+  }
+}

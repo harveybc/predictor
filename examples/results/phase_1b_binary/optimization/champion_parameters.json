@@ -1,0 +1,15 @@
+{
+  "window_size": 74,
+  "tft_hidden_units": 33,
+  "tft_lstm_layers": 1,
+  "tft_num_heads": 4,
+  "tft_dropout": 0.17736377071358134,
+  "positional_encoding": true,
+  "learning_rate": 0.009166867063701343,
+  "batch_size": 54,
+  "l2_reg": 0.00030550371855371674,
+  "min_delta": 6.56421024402621e-07,
+  "use_log1p_features": [
+    "typical_price"
+  ]
+}

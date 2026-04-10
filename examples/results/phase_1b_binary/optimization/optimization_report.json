@@ -1,0 +1,10 @@
+{
+  "champion_performance": -0.5396346503850428,
+  "champion_peer": "0577c43635cf",
+  "champion_parameters": {},
+  "total_optimae_accepted": 14,
+  "gamma_total_candidates": 393,
+  "gamma_final_generation": 20,
+  "gamma_final_stage": 3,
+  "gamma_final_stage_name": "training"
+}

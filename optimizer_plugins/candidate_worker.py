@@ -343,11 +343,11 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
         # Map binary metrics into the standard wire-format keys for doin-node compatibility:
         #   val_mae → val MCC,  train_mae → train MCC
         #   val_naive_mae → val F1, train_naive_mae → train F1
-        #   naive_mae → val MCC (used as the "baseline" reference)
+        #   naive_mae → val F1 (used as the "baseline" reference in wire format)
         train_mae = train_bin_metrics["mcc"]
         val_mae = val_bin_metrics["mcc"]
         train_naive_mae = train_bin_metrics["f1"]
-        naive_mae = val_bin_metrics["mcc"]
+        naive_mae = val_bin_metrics["f1"]
 
         # TEST
         test_mae = None
