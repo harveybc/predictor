@@ -154,3 +154,20 @@ app/__pycache__/config_handler.cpython-312.pyc
 *.db-shm
 *.keras
 node_modules/
+
+# Generated output files (regenerated on every run)
+config_out.json
+debug_out.json
+predictor_model_metadata.json
+predictor_experiment_stats.csv
+predictor_experiment_stats.csv.summary.json
+confusion_matrix.png
+roc_pr_curves.png
+
+# Resource/memory logs (large, per-epoch monitoring)
+*_rss.csv
+
+# Generated plot images (regenerated on every training run)
+*_model_plot.png
+*_loss_plot.png
+*_predictions_plot.png
