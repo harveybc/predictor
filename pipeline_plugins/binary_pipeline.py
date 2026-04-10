@@ -253,12 +253,21 @@ class BinaryPipelinePlugin:
 
             # 2) Build and train (or load pre-trained model)
             if config.get("load_model"):
-                from tensorflow.keras.models import load_model as _load_keras
-                import keras
-                keras.config.enable_unsafe_deserialization()
-                print(f"\nLoading pre-trained model from {config['load_model']} …")
-                predictor_plugin.model = _load_keras(config["load_model"])
-                print("Model loaded — skipping training, computing predictions …")
+                import zipfile, tempfile, os
+                model_path = config["load_model"]
+                print(f"\nLoading pre-trained weights from {model_path} …")
+                # 1) Build the model architecture (creates Lambda layers fresh)
+                input_shape = (X_train.shape[1], X_train.shape[2]) if X_train.ndim == 3 else (X_train.shape[1],)
+                predictor_plugin.build_model(input_shape=input_shape, x_train=X_train, config=config)
+                # 2) Extract weights from .keras zip and load them
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    with zipfile.ZipFile(model_path, "r") as zf:
+                        zf.extractall(tmpdir)
+                    weights_path = os.path.join(tmpdir, "model.weights.h5")
+                    if not os.path.exists(weights_path):
+                        raise FileNotFoundError(f"No model.weights.h5 inside {model_path}")
+                    predictor_plugin.model.load_weights(weights_path)
+                print("Weights loaded — skipping training, computing predictions …")
                 history = None
                 pred_bs = int(config.get("predict_batch_size", 256))
                 list_train_preds = [predictor_plugin.model.predict(X_train, batch_size=pred_bs, verbose=0)]

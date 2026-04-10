@@ -49,6 +49,7 @@
     "signal_type": "buy_entry",
     "memory_log_file": "examples/results/phase_1b_binary/phase_1b_binary_tft_buy_entry_1d_rss.csv",
     "use_optimizer": false,
+    "load_model": "examples/results/phase_1b_binary/optimization/champion_model.keras",
     "tft_hidden_units": 33,
     "tft_num_heads": 4,
     "tft_lstm_layers": 1,
@@ -60,6 +61,7 @@
     "early_patience": 40,
     "start_from_epoch": 15,
     "positional_encoding": true,
+    "use_temporal_features": false,
     "use_log1p_features": [
         "typical_price"
     ],
@@ -67,6 +69,7 @@
         "buy_entry_label",
         "sell_entry_label",
         "buy_exit_label",
-        "sell_exit_label"
+        "sell_exit_label",
+        "bars_to_friday"
     ]
 }
