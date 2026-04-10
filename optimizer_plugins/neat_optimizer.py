@@ -1614,3 +1614,497 @@ class Plugin:
         print(f"[NEAT] Best fitness: {self.best_fitness_so_far:.6f}")
 
         return best_hyper
+
+    # ── Shared-Population Helpers ────────────────────────────
+    # These methods support the distributed shared-population mode
+    # where multiple nodes share one population via blockchain.
+
+    @staticmethod
+    def _parse_bounds_and_types(config):
+        """Extract full_bounds, all_params, param_types from config."""
+        full_bounds = config.get("hyperparameter_bounds", {})
+        all_params = list(full_bounds.keys())
+        param_types = {}
+        for key in all_params:
+            low, up = full_bounds[key]
+            param_types[key] = "int" if isinstance(low, int) and isinstance(up, int) else "float"
+        return full_bounds, all_params, param_types
+
+    @staticmethod
+    def _build_innovation_tracker(all_params):
+        """Create an InnovationTracker pre-assigned for all params."""
+        tracker = InnovationTracker()
+        for p in all_params:
+            tracker.get_innovation(p)
+        return tracker
+
+    @staticmethod
+    def _extract_param_defaults(all_params, full_bounds, config):
+        """Extract default parameter values from config."""
+        defaults = {}
+        for p in all_params:
+            if p in config:
+                v = config[p]
+                if p == "use_log1p_features":
+                    v = 1 if v else 0
+                elif p in ("positional_encoding", "use_temporal_features",
+                           "add_window_stats", "add_multi_scale_returns"):
+                    v = 1 if v else 0
+                elif p == "activation" and isinstance(v, str):
+                    v = ACTIVATION_INDEX_TO_NAME.index(v) if v in ACTIVATION_INDEX_TO_NAME else 0
+                elif p in ("hod_encoding", "dow_encoding", "moy_encoding") and isinstance(v, str):
+                    v = ENCODING_INDEX_TO_NAME.index(v) if v in ENCODING_INDEX_TO_NAME else 0
+                elif p == "loss_type" and isinstance(v, str):
+                    v = LOSS_TYPE_INDEX_TO_NAME.index(v) if v in LOSS_TYPE_INDEX_TO_NAME else 0
+                try:
+                    defaults[p] = float(v)
+                except (TypeError, ValueError):
+                    defaults[p] = float((full_bounds[p][0] + full_bounds[p][1]) / 2)
+            else:
+                low, high = full_bounds[p]
+                defaults[p] = float((low + high) / 2)
+        return defaults
+
+    @staticmethod
+    def create_shared_population(population_size, config, seed=42):
+        """Create an initial population for shared-population mode.
+
+        Returns a list of serializable genome dicts ready for blockchain storage.
+        Uses a deterministic seed so all nodes create the *same* population
+        from the same genesis block seed.
+        """
+        random.seed(seed)
+        np.random.seed(seed)
+
+        full_bounds, all_params, param_types = Plugin._parse_bounds_and_types(config)
+        innovation_tracker = Plugin._build_innovation_tracker(all_params)
+        _param_defaults = Plugin._extract_param_defaults(all_params, full_bounds, config)
+
+        # Build stage schedule
+        _raw_stages = config.get("optimization_stages", None)
+        if _raw_stages is None:
+            _raw_stages = _build_default_stages(all_params,
+                                                 config.get("n_generations", 10))
+        _stage_schedule = []
+        _gen_cursor = 0
+        for _si, _s in enumerate(_raw_stages):
+            _s_params = ([p for p in _s["params"] if p in full_bounds]
+                         if _s["params"] != "all" else list(all_params))
+            _s_gens = _s.get("generations",
+                             max(3, config.get("n_generations", 10) // len(_raw_stages)))
+            _stage_schedule.append({
+                "name": _s["name"],
+                "stage_idx": _si,
+                "active_params": _s_params,
+                "frozen_params": list(set(all_params) - set(_s_params)),
+                "start_gen": _gen_cursor,
+                "end_gen": _gen_cursor + _s_gens,
+            })
+            _gen_cursor += _s_gens
+        _staged_mode = len(_stage_schedule) > 1
+        _current_stage = _stage_schedule[0]
+
+        # Create genomes
+        def _mk_genome(params_list):
+            g = NeatGenome()
+            for p in params_list:
+                inn = innovation_tracker.get_innovation(p)
+                low, high = full_bounds[p]
+                if isinstance(low, int) and isinstance(high, int):
+                    val = random.randint(low, high)
+                else:
+                    val = random.uniform(low, high)
+                g.genes[inn] = NeatGene(inn, p, float(val))
+            return g
+
+        def _mk_stage_genome(active_set, frozen_set, best_values, randomize_active=True):
+            g = NeatGenome()
+            for p in all_params:
+                inn = innovation_tracker.get_innovation(p)
+                low, high = full_bounds[p]
+                if p in frozen_set:
+                    val = best_values.get(p, _param_defaults[p])
+                elif randomize_active:
+                    if isinstance(low, int) and isinstance(high, int):
+                        val = random.randint(low, high)
+                    else:
+                        val = random.uniform(low, high)
+                else:
+                    val = best_values.get(p, _param_defaults[p])
+                    if isinstance(low, int) and isinstance(high, int):
+                        span = high - low
+                        if span > 1:
+                            val = max(low, min(high, int(round(val + random.gauss(0, span * 0.15)))))
+                    else:
+                        val = max(low, min(high, val + random.gauss(0, (high - low) * 0.15)))
+                g.genes[inn] = NeatGene(inn, p, float(val))
+            return g
+
+        if _staged_mode:
+            n_elite = max(2, population_size // 4)
+            population = []
+            active_set = set(_current_stage["active_params"])
+            frozen_set = set(_current_stage.get("frozen_params", []))
+            for _ in range(n_elite):
+                population.append(_mk_stage_genome(active_set, frozen_set,
+                                                   _param_defaults, randomize_active=False))
+            for _ in range(population_size - n_elite):
+                population.append(_mk_stage_genome(active_set, frozen_set,
+                                                   _param_defaults, randomize_active=True))
+        else:
+            min_params = config.get("neat_min_params", 6)
+            initial_params = config.get("neat_initial_params")
+            if not initial_params:
+                initial_params = all_params[:min(min_params, len(all_params))]
+            population = [_mk_genome(initial_params) for _ in range(population_size)]
+
+        result = {
+            "population": [g.to_serializable() for g in population],
+            "innovation_tracker": innovation_tracker.to_serializable(),
+            "stage_schedule": _stage_schedule,
+            "param_defaults": _param_defaults,
+            "config_snapshot": {
+                "population_size": population_size,
+                "all_params": all_params,
+                "param_types": param_types,
+                "full_bounds": {k: list(v) for k, v in full_bounds.items()},
+            },
+        }
+        return result
+
+    @staticmethod
+    def reproduce_shared(evaluated_pop_serialized, generation, seed, config,
+                         innovation_tracker_data, stage_schedule,
+                         param_defaults, current_stage_idx=0,
+                         no_improve_count=0):
+        """Deterministic reproduction for shared-population mode.
+
+        Given a fully-evaluated population (list of serializable genome dicts
+        with fitness values), produce the next generation using the same
+        evolutionary operators as the island-mode GA.
+
+        All nodes calling this with the same inputs + seed will produce the
+        *identical* next population — this is essential for blockchain consensus.
+
+        Returns dict with next population + updated state.
+        """
+        random.seed(seed)
+        np.random.seed(seed)
+
+        full_bounds, all_params, param_types = Plugin._parse_bounds_and_types(config)
+        innovation_tracker = InnovationTracker.from_serializable(innovation_tracker_data)
+
+        # Restore genomes
+        population = [NeatGenome.from_serializable(gd) for gd in evaluated_pop_serialized]
+        population_size = len(population)
+
+        # Config params
+        patience = config.get("optimization_patience", 6)
+        compat_threshold = config.get("neat_compatibility_threshold", 2.0)
+        min_params = config.get("neat_min_params", 6)
+        survival_rate = config.get("neat_survival_rate", 0.5)
+        interspecies_mate_rate = config.get("neat_interspecies_mate_rate", 0.01)
+        neat_elitism = config.get("neat_elitism", 1)
+        mutpb = config.get("mutpb", 0.2)
+        add_param_prob = config.get("neat_add_param_prob", 0.35)
+        remove_param_prob = config.get("neat_remove_param_prob", 0.05)
+
+        _staged_mode = len(stage_schedule) > 1
+        _current_stage = stage_schedule[current_stage_idx]
+        _frozen = set(_current_stage.get("frozen_params", [])) if _staged_mode else set()
+
+        # Find best genome
+        valid_pop = [g for g in population if g.fitness is not None and np.isfinite(g.fitness)]
+        if not valid_pop:
+            # All failed — regenerate randomly
+            result_pop = Plugin.create_shared_population(population_size, config, seed=seed + 1)
+            return {
+                "population": result_pop["population"],
+                "generation": generation + 1,
+                "best_fitness": float("inf"),
+                "stage_idx": current_stage_idx,
+                "no_improve_count": no_improve_count + 1,
+                "stage_advanced": False,
+            }
+
+        best_genome = min(valid_pop, key=lambda g: g.fitness)
+        best_fitness = best_genome.fitness
+
+        # Check patience / stage advancement
+        stage_advanced = False
+        new_stage_idx = current_stage_idx
+        if no_improve_count >= patience:
+            if _staged_mode and current_stage_idx < len(stage_schedule) - 1:
+                new_stage_idx = current_stage_idx + 1
+                stage_advanced = True
+                no_improve_count = 0
+                _current_stage = stage_schedule[new_stage_idx]
+                _frozen = set(_current_stage.get("frozen_params", []))
+                print(f"[SHARED NEAT] Stage advance: {stage_schedule[current_stage_idx]['name']} "
+                      f"→ {_current_stage['name']} (patience exhausted)")
+            else:
+                # Final stage patience exhausted — signal convergence
+                return {
+                    "population": [g.to_serializable() for g in population],
+                    "generation": generation + 1,
+                    "best_fitness": best_fitness,
+                    "stage_idx": current_stage_idx,
+                    "no_improve_count": no_improve_count,
+                    "converged": True,
+                    "stage_advanced": False,
+                }
+
+        # If stage advanced, rebuild population for new stage
+        if stage_advanced:
+            _best_numeric = {g.param_name: g.value for g in best_genome.genes.values()}
+            _seed_values = {**param_defaults, **_best_numeric}
+            active_set = set(_current_stage["active_params"])
+            frozen_set = set(_current_stage.get("frozen_params", []))
+
+            new_population = []
+            n_elite = max(2, population_size // 4)
+            for i in range(population_size):
+                g = NeatGenome()
+                for p in all_params:
+                    inn = innovation_tracker.get_innovation(p)
+                    low, high = full_bounds[p]
+                    if p in frozen_set:
+                        val = _seed_values.get(p, param_defaults.get(p, (low + high) / 2))
+                    elif i < n_elite:
+                        val = _seed_values.get(p, param_defaults.get(p, (low + high) / 2))
+                        if isinstance(low, int) and isinstance(high, int):
+                            span = high - low
+                            if span > 1:
+                                val = max(low, min(high, int(round(val + random.gauss(0, span * 0.15)))))
+                        else:
+                            val = max(low, min(high, val + random.gauss(0, (high - low) * 0.15)))
+                    else:
+                        if isinstance(low, int) and isinstance(high, int):
+                            val = random.randint(low, high)
+                        else:
+                            val = random.uniform(low, high)
+                    g.genes[inn] = NeatGene(inn, p, float(val))
+                new_population.append(g)
+
+            return {
+                "population": [g.to_serializable() for g in new_population],
+                "generation": generation + 1,
+                "best_fitness": best_fitness,
+                "stage_idx": new_stage_idx,
+                "no_improve_count": 0,
+                "stage_advanced": True,
+            }
+
+        # Normal reproduction (no stage change)
+        species_list = []
+        speciate(population, species_list, full_bounds, compat_threshold)
+        adjust_fitness(species_list)
+
+        # Adaptive mutation boost on stagnation
+        _adaptive_boost = 2.0 if no_improve_count >= patience // 2 else 1.0
+        _eff_mutpb = min(mutpb * _adaptive_boost, 0.8)
+        _eff_add_prob = min(add_param_prob * _adaptive_boost, 0.5)
+        _eff_sigma_scale = min(0.15 * _adaptive_boost, 0.4)
+
+        # Offspring allocation per species
+        species_scores = []
+        for sp in species_list:
+            finite_adj = [g.adjusted_fitness for g in sp.members
+                          if g.adjusted_fitness is not None and np.isfinite(g.adjusted_fitness)]
+            if finite_adj:
+                mean_adj = sum(finite_adj) / len(finite_adj)
+                species_scores.append(1.0 / max(mean_adj, 1e-10))
+            else:
+                species_scores.append(1.0)
+        total_score = sum(species_scores) or 1.0
+
+        new_population = []
+        for sp_idx, sp in enumerate(species_list):
+            sp.members.sort(key=lambda g: g.fitness if g.fitness is not None else float("inf"))
+
+            # Elitism
+            for elite in sp.members[:neat_elitism]:
+                is_dup = False
+                for existing in new_population:
+                    if compatibility_distance(elite, existing, full_bounds) < 0.1:
+                        is_dup = True
+                        break
+                if not is_dup:
+                    e = elite.deep_copy()
+                    e.fitness = None  # Reset for re-evaluation
+                    new_population.append(e)
+
+            n_offspring = max(0, int(round(
+                population_size * species_scores[sp_idx] / total_score
+            )) - neat_elitism)
+
+            survival_count = max(1, int(len(sp.members) * survival_rate))
+            survivors = sp.members[:survival_count]
+
+            for _ in range(n_offspring):
+                if len(survivors) < 2 or random.random() < 0.25:
+                    parent = random.choice(survivors)
+                    child = parent.deep_copy()
+                else:
+                    if random.random() < interspecies_mate_rate and len(species_list) > 1:
+                        other_sp = random.choice([s for s in species_list if s.id != sp.id])
+                        p2 = random.choice(other_sp.members)
+                    else:
+                        p2 = random.choice(survivors)
+                    p1 = random.choice(survivors)
+                    child = neat_crossover(p1, p2)
+
+                if not _staged_mode:
+                    mutate_add_param(child, all_params, full_bounds, innovation_tracker, _eff_add_prob)
+                    mutate_remove_param(child, min_params, remove_param_prob)
+                mutate_values(child, full_bounds, _eff_mutpb, _eff_sigma_scale,
+                              frozen_params=_frozen)
+                clamp_genome(child, full_bounds)
+                child.fitness = None
+                new_population.append(child)
+
+        # Ensure population size
+        while len(new_population) < population_size:
+            if _staged_mode:
+                g = NeatGenome()
+                active_set = set(_current_stage["active_params"])
+                frozen_set_local = set(_current_stage.get("frozen_params", []))
+                for p in all_params:
+                    inn = innovation_tracker.get_innovation(p)
+                    low, high = full_bounds[p]
+                    if p in frozen_set_local:
+                        val = param_defaults.get(p, (low + high) / 2)
+                    else:
+                        val = random.randint(low, high) if isinstance(low, int) and isinstance(high, int) else random.uniform(low, high)
+                    g.genes[inn] = NeatGene(inn, p, float(val))
+                new_population.append(g)
+            else:
+                init_params = config.get("neat_initial_params")
+                if not init_params:
+                    init_params = all_params[:min(min_params, len(all_params))]
+                g = NeatGenome()
+                for p in init_params:
+                    inn = innovation_tracker.get_innovation(p)
+                    low, high = full_bounds[p]
+                    val = random.randint(low, high) if isinstance(low, int) and isinstance(high, int) else random.uniform(low, high)
+                    g.genes[inn] = NeatGene(inn, p, float(val))
+                new_population.append(g)
+        new_population = new_population[:population_size]
+
+        return {
+            "population": [g.to_serializable() for g in new_population],
+            "innovation_tracker": innovation_tracker.to_serializable(),
+            "generation": generation + 1,
+            "best_fitness": best_fitness,
+            "stage_idx": current_stage_idx,
+            "no_improve_count": no_improve_count,
+            "stage_advanced": False,
+        }
+
+    @staticmethod
+    def evaluate_single_genome(genome_serialized, gen, config):
+        """Evaluate a single genome using the subprocess candidate_worker.
+
+        This is the shared-population equivalent of the inner eval_genome()
+        function.  Returns dict with fitness and all metrics.
+        """
+        full_bounds, all_params, param_types = Plugin._parse_bounds_and_types(config)
+        innovation_tracker = Plugin._build_innovation_tracker(all_params)
+        genome = NeatGenome.from_serializable(genome_serialized)
+        hyper_dict = genome.to_hyper_dict(param_types)
+
+        eval_config = config.copy()
+        eval_config.update(hyper_dict)
+        # Remove non-serializable keys
+        eval_config.pop("optimization_callbacks", None)
+        eval_config.pop("_non_serializable_keys", None)
+
+        for k in ("memory_log_file", "optimizer_resource_log_file", "batch_memory_log_file"):
+            if eval_config.get(k):
+                eval_config[k] = _resolve_repo_path(eval_config.get(k))
+        eval_config.setdefault("memory_log_tag", f"shared_gen{gen}")
+
+        with tempfile.TemporaryDirectory(prefix="shared_cand_") as td:
+            in_path = os.path.join(td, "input.json")
+            out_path = os.path.join(td, "output.json")
+            model_path = os.path.join(td, "candidate_model.keras")
+            eval_config["_doin_model_save_path"] = model_path
+            with open(in_path, "w", encoding="utf-8") as f:
+                json.dump({
+                    "gen": gen,
+                    "cand": 0,
+                    "config": _json_sanitize(eval_config),
+                    "hyper": hyper_dict,
+                }, f)
+
+            env = os.environ.copy()
+            env.setdefault("TF_FORCE_GPU_ALLOW_GROWTH", "1")
+            env.setdefault("TF_GPU_ALLOCATOR", "cuda_malloc_async")
+            env.setdefault("PYTHONUNBUFFERED", "1")
+
+            cmd = [sys.executable, "-u", "-m",
+                   "optimizer_plugins.candidate_worker",
+                   "--input", in_path, "--output", out_path]
+
+            try:
+                master_fd, slave_fd = pty.openpty()
+                p = subprocess.Popen(
+                    cmd, env=env, stdin=slave_fd, stdout=slave_fd,
+                    stderr=slave_fd, close_fds=True,
+                )
+                os.close(slave_fd)
+
+                while True:
+                    r, _, _ = select.select([master_fd], [], [], 0.2)
+                    if master_fd in r:
+                        try:
+                            data = os.read(master_fd, 4096)
+                        except OSError:
+                            data = b""
+                        if not data:
+                            break
+                        try:
+                            sys.stdout.buffer.write(data)
+                            sys.stdout.buffer.flush()
+                        except Exception:
+                            pass
+                    if p.poll() is not None:
+                        break
+
+                returncode = p.wait()
+                try:
+                    os.close(master_fd)
+                except Exception:
+                    pass
+            except Exception as e:
+                print(f"[SHARED NEAT] Worker spawn failed: {e}")
+                return {"fitness": float("inf"), "error": str(e)}
+
+            if returncode != 0:
+                print(f"[SHARED NEAT] Worker failed (rc={returncode})")
+                return {"fitness": float("inf"), "error": f"worker_rc_{returncode}"}
+
+            try:
+                with open(out_path, "r", encoding="utf-8") as f:
+                    payload = json.load(f)
+            except Exception:
+                return {"fitness": float("inf"), "error": "output_parse_error"}
+
+            fitness = float(payload.get("fitness", float("inf")))
+            model_b64 = None
+            if os.path.exists(model_path):
+                import base64
+                with open(model_path, "rb") as mf:
+                    model_b64 = base64.b64encode(mf.read()).decode("ascii")
+
+            return {
+                "fitness": fitness,
+                "val_mae": float(payload.get("val_mae", float("inf"))),
+                "val_naive_mae": float(payload.get("naive_mae", float("inf"))),
+                "train_mae": float(payload.get("train_mae", float("inf"))),
+                "train_naive_mae": float(payload.get("train_naive_mae", float("inf"))),
+                "test_mae": float(payload.get("test_mae", float("inf"))),
+                "test_naive_mae": float(payload.get("test_naive_mae", float("inf"))),
+                "hyper_dict": hyper_dict,
+                "_model_b64": model_b64,
+            }
