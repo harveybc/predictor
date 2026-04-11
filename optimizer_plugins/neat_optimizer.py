@@ -422,7 +422,8 @@ def neat_crossover(parent1, parent2):
 
 # Known parameter groups for auto-stage detection
 _FEATURE_PARAMS = {"window_size", "use_log1p_features", "positional_encoding",
-                   "use_temporal_features", "add_window_stats", "add_multi_scale_returns"}
+                   "use_temporal_features", "add_window_stats", "add_multi_scale_returns",
+                   "hod_encoding", "dow_encoding", "moy_encoding"}
 _ARCH_PARAMS = {"tcn_filters", "tcn_kernel_size", "tcn_stack_layers",
                 "tcn_dilations_per_stack", "tcn_head_layers", "tcn_head_units",
                 "tcn_use_batch_norm", "tcn_use_layer_norm"}
@@ -558,14 +559,17 @@ class Plugin:
             _s_params = ([p for p in _s["params"] if p in full_bounds]
                          if _s["params"] != "all" else list(all_params))
             _s_gens = _s.get("generations", max(3, n_generations // len(_raw_stages)))
-            _stage_schedule.append({
+            _stage_entry = {
                 "name": _s["name"],
                 "stage_idx": _si,
                 "active_params": _s_params,
                 "frozen_params": set(all_params) - set(_s_params),
                 "start_gen": _gen_cursor,
                 "end_gen": _gen_cursor + _s_gens,
-            })
+            }
+            if "patience" in _s:
+                _stage_entry["patience"] = _s["patience"]
+            _stage_schedule.append(_stage_entry)
             _gen_cursor += _s_gens
         _total_stage_gens = _gen_cursor
         _staged_mode = len(_stage_schedule) > 1
@@ -726,9 +730,10 @@ class Plugin:
         if _staged_mode:
             print(f"[NEAT] STAGED MODE: {len(_stage_schedule)} stages")
             for _ss in _stage_schedule:
+                _sp = _ss.get('patience', patience)
                 print(f"  Stage {_ss['stage_idx']+1} '{_ss['name']}': "
                       f"{len(_ss['active_params'])} params, {_ss['end_gen'] - _ss['start_gen']} gens "
-                      f"(gens {_ss['start_gen']}-{_ss['end_gen']-1})")
+                      f"(gens {_ss['start_gen']}-{_ss['end_gen']-1}), patience={_sp}")
         else:
             print(f"[NEAT] Initial parameters ({len(initial_params)}): {initial_params}")
         print(f"[NEAT] All available parameters ({len(all_params)}): {all_params}")
@@ -1174,6 +1179,10 @@ class Plugin:
         else:
             _loop_start = start_gen
 
+        # Apply per-stage patience for the initial stage
+        if _staged_mode and "patience" in _current_stage:
+            patience = _current_stage["patience"]
+
         # Generation loop
         for gen in range(_loop_start, end_gen):
             if _force_advance_flag:
@@ -1201,6 +1210,9 @@ class Plugin:
                             species_list = []
                             no_improve_counter = 0
                             self.patience_counter = 0
+                            # Update patience for the new stage (per-stage override)
+                            if "patience" in _current_stage:
+                                patience = _current_stage["patience"]
                             print(f"\n{'#'*80}")
                             print(f"[NEAT] *** STAGE TRANSITION: "
                                   f"'{_prev_stage['name']}' → '{_current_stage['name']}' ***")
@@ -1208,6 +1220,7 @@ class Plugin:
                                   f"{_current_stage['active_params']}")
                             print(f"[NEAT] Frozen params ({len(_current_stage['frozen_params'])}): "
                                   f"{sorted(_current_stage['frozen_params'])}")
+                            print(f"[NEAT] Patience: {patience}")
                             print(f"{'#'*80}")
                         break
 
@@ -1587,6 +1600,9 @@ class Plugin:
                     species_list = []
                     no_improve_counter = 0
                     self.patience_counter = 0
+                    # Update patience for the new stage (per-stage override)
+                    if "patience" in _current_stage:
+                        patience = _current_stage["patience"]
                     print(f"\n{'#'*80}")
                     print(f"[NEAT] *** STAGE TRANSITION (patience): "
                           f"'{_prev_stage['name']}' → '{_current_stage['name']}' ***")
@@ -1594,6 +1610,7 @@ class Plugin:
                           f"{_current_stage['active_params']}")
                     print(f"[NEAT] Frozen params ({len(_current_stage['frozen_params'])}): "
                           f"{sorted(_current_stage['frozen_params'])}")
+                    print(f"[NEAT] Patience: {patience}")
                     print(f"{'#'*80}")
                 else:
                     # Last stage (or non-staged mode) — truly stop
@@ -1692,14 +1709,18 @@ class Plugin:
                          if _s["params"] != "all" else list(all_params))
             _s_gens = _s.get("generations",
                              max(3, config.get("n_generations", 10) // len(_raw_stages)))
-            _stage_schedule.append({
+            _stage_entry = {
                 "name": _s["name"],
                 "stage_idx": _si,
                 "active_params": _s_params,
                 "frozen_params": list(set(all_params) - set(_s_params)),
                 "start_gen": _gen_cursor,
                 "end_gen": _gen_cursor + _s_gens,
-            })
+            }
+            # Preserve per-stage patience if defined
+            if "patience" in _s:
+                _stage_entry["patience"] = _s["patience"]
+            _stage_schedule.append(_stage_entry)
             _gen_cursor += _s_gens
         _staged_mode = len(_stage_schedule) > 1
         _current_stage = _stage_schedule[0]
@@ -1813,6 +1834,10 @@ class Plugin:
         _current_stage = stage_schedule[current_stage_idx]
         _frozen = set(_current_stage.get("frozen_params", [])) if _staged_mode else set()
 
+        # Per-stage patience overrides global patience
+        if "patience" in _current_stage:
+            patience = _current_stage["patience"]
+
         # Find best genome
         valid_pop = [g for g in population if g.fitness is not None and np.isfinite(g.fitness)]
         if not valid_pop:
@@ -1825,6 +1850,7 @@ class Plugin:
                 "stage_idx": current_stage_idx,
                 "no_improve_count": no_improve_count + 1,
                 "stage_advanced": False,
+                "patience": patience,
             }
 
         best_genome = min(valid_pop, key=lambda g: g.fitness)
@@ -1840,8 +1866,11 @@ class Plugin:
                 no_improve_count = 0
                 _current_stage = stage_schedule[new_stage_idx]
                 _frozen = set(_current_stage.get("frozen_params", []))
+                # Update patience for the new stage (per-stage override)
+                if "patience" in _current_stage:
+                    patience = _current_stage["patience"]
                 print(f"[SHARED NEAT] Stage advance: {stage_schedule[current_stage_idx]['name']} "
-                      f"→ {_current_stage['name']} (patience exhausted)")
+                      f"→ {_current_stage['name']} (patience exhausted, new patience={patience})")
             else:
                 # Final stage patience exhausted — signal convergence
                 return {
@@ -1852,6 +1881,7 @@ class Plugin:
                     "no_improve_count": no_improve_count,
                     "converged": True,
                     "stage_advanced": False,
+                    "patience": patience,
                 }
 
         # If stage advanced, rebuild population for new stage
@@ -1893,6 +1923,7 @@ class Plugin:
                 "stage_idx": new_stage_idx,
                 "no_improve_count": 0,
                 "stage_advanced": True,
+                "patience": patience,
             }
 
         # Normal reproduction (no stage change)
@@ -1999,6 +2030,7 @@ class Plugin:
             "stage_idx": current_stage_idx,
             "no_improve_count": no_improve_count,
             "stage_advanced": False,
+            "patience": patience,
         }
 
     @staticmethod
