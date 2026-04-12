@@ -1639,7 +1639,7 @@ class Plugin:
     @staticmethod
     def _parse_bounds_and_types(config):
         """Extract full_bounds, all_params, param_types from config."""
-        full_bounds = config.get("hyperparameter_bounds", {})
+        full_bounds = config.get("hyperparameter_bounds") or config.get("param_bounds", {})
         all_params = list(full_bounds.keys())
         param_types = {}
         for key in all_params:
