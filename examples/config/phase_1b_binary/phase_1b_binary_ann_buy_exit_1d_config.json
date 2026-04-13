@@ -22,7 +22,7 @@
     "uncertainty_color_alpha": 0.01,
     "plot_points": 1728,
     "min_delta": 1e-08,
-    "epochs": 10,
+    "epochs": 2000,
     "predicted_horizons": [
         1
     ],
@@ -35,7 +35,7 @@
     "use_predicted_decompositions": false,
     "use_real_decompositions": false,
     "use_ideal_predictions": false,
-    "quiet_mode": true,
+    "quiet_mode": false,
     "output_file": "examples/results/phase_1b_binary/phase_1b_binary_ann_buy_exit_1d_prediction.csv",
     "results_file": "examples/results/phase_1b_binary/phase_1b_binary_ann_buy_exit_1d_results.csv",
     "loss_plot_file": "examples/results/phase_1b_binary/phase_1b_binary_ann_buy_exit_1d_loss_plot.png",
@@ -53,9 +53,9 @@
     "dropout_rate": 0.1,
     "activation": "elu",
     "learning_rate": 0.001,
-    "l2_reg": 1e-05,
-    "window_size": 72,
-    "early_patience": 80,
+    "l2_reg": 1e-06,
+    "window_size": 91,
+    "early_patience": 40,
     "start_from_epoch": 15,
     "positional_encoding": true,
     "use_log1p_features": [],
@@ -63,8 +63,13 @@
         "buy_entry_label",
         "sell_entry_label",
         "buy_exit_label",
-        "sell_exit_label"
+        "sell_exit_label",
+        "bars_to_friday"
     ],
     "target_column": "ATR",
-    "anti_naive_lock_enabled": false
+    "anti_naive_lock_enabled": false,
+    "deterministic_training": true,
+    "random_seed": 42,
+    "metric_type": "binary",
+    "use_temporal_features": false
 }

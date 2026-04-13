@@ -13,16 +13,16 @@
     "max_steps_train": 7300,
     "max_steps_val": 1575,
     "max_steps_test": 1575,
-    "mc_samples": 1,
-    "batch_size": 64,
+    "mc_samples": 10,
+    "batch_size": 32,
     "plot_color_predicted": "red",
     "plot_color_true": "blue",
     "plot_color_uncertainty": "green",
     "plot_color_target": "orange",
     "uncertainty_color_alpha": 0.01,
     "plot_points": 1728,
-    "min_delta": 1e-06,
-    "epochs": 200,
+    "min_delta": 1e-08,
+    "epochs": 2000,
     "predicted_horizons": [
         1
     ],
@@ -36,7 +36,7 @@
     "use_real_decompositions": false,
     "use_ideal_predictions": false,
     "quiet_mode": false,
-    "deterministic_training": false,
+    "deterministic_training": true,
     "output_file": "examples/results/phase_1b_binary/phase_1b_binary_logistic_buy_entry_1d_prediction.csv",
     "results_file": "examples/results/phase_1b_binary/phase_1b_binary_logistic_buy_entry_1d_results.csv",
     "loss_plot_file": "examples/results/phase_1b_binary/phase_1b_binary_logistic_buy_entry_1d_loss_plot.png",
@@ -50,11 +50,11 @@
     "memory_log_file": "examples/results/phase_1b_binary/phase_1b_binary_logistic_buy_entry_1d_rss.csv",
     "use_optimizer": false,
     "learning_rate": 0.001,
-    "l2_reg": 0.001,
-    "window_size": 74,
-    "early_patience": 15,
-    "start_from_epoch": 5,
-    "positional_encoding": false,
+    "l2_reg": 1e-06,
+    "window_size": 91,
+    "early_patience": 40,
+    "start_from_epoch": 15,
+    "positional_encoding": true,
     "use_temporal_features": false,
     "use_log1p_features": [],
     "excluded_columns": [
@@ -65,5 +65,8 @@
         "bars_to_friday"
     ],
     "target_column": "ATR",
-    "anti_naive_lock_enabled": false
+    "anti_naive_lock_enabled": false,
+    "random_seed": 42,
+    "metric_type": "binary",
+    "activation": "elu"
 }
