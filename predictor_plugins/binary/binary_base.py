@@ -11,7 +11,47 @@ from __future__ import annotations
 
 import json
 import numpy as np
+import tensorflow as tf
 from sklearn.utils.class_weight import compute_class_weight
+from tensorflow.keras.metrics import Metric
+from tensorflow.keras.callbacks import LambdaCallback
+import tensorflow.keras.backend as K
+
+
+class BinaryF1Score(Metric):
+    """Epoch-level binary F1 metric (threshold=0.5).
+
+    Accumulates TP/FP/FN counts across batches and computes F1 at epoch end.
+    """
+
+    def __init__(self, name="f1", threshold=0.5, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.threshold = threshold
+        self.tp = self.add_weight(name="tp", initializer="zeros")
+        self.fp = self.add_weight(name="fp", initializer="zeros")
+        self.fn = self.add_weight(name="fn", initializer="zeros")
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        y_true = tf.cast(tf.reshape(y_true, [-1]), tf.float32)
+        y_pred = tf.cast(tf.reshape(y_pred, [-1]) >= self.threshold, tf.float32)
+        self.tp.assign_add(tf.reduce_sum(y_true * y_pred))
+        self.fp.assign_add(tf.reduce_sum((1 - y_true) * y_pred))
+        self.fn.assign_add(tf.reduce_sum(y_true * (1 - y_pred)))
+
+    def result(self):
+        precision = self.tp / (self.tp + self.fp + K.epsilon())
+        recall = self.tp / (self.tp + self.fn + K.epsilon())
+        return 2 * precision * recall / (precision + recall + K.epsilon())
+
+    def reset_state(self):
+        self.tp.assign(0)
+        self.fp.assign(0)
+        self.fn.assign(0)
+
+    def get_config(self):
+        cfg = super().get_config()
+        cfg["threshold"] = self.threshold
+        return cfg
 
 VALID_SIGNAL_TYPES = ("buy_entry", "sell_entry", "buy_exit", "sell_exit")
 
@@ -54,6 +94,67 @@ class BinaryMixin:
     metrics).  This mixin replaces that with binary-appropriate logic
     (accuracy, positive rate) and drops the horizon requirement.
     """
+
+    def _build_callbacks(self):
+        """Override base callbacks to monitor val F1 (mode=max) for early stopping."""
+        from ..common.callbacks import (
+            EarlyStoppingWithPatienceCounter,
+            ReduceLROnPlateauWithCounter,
+            ResourceUsageLogger,
+        )
+
+        quiet = self.params.get('quiet', False) or self.params.get('quiet_mode', False)
+        cb_verbose = 0 if quiet else 1
+
+        # Determine the val F1 metric name.
+        # With dict-keyed outputs like {out_name: ...}, Keras prefixes metric
+        # names with the output key, e.g. "val_output_horizon_1_f1".
+        out_name = getattr(self, 'output_names', ['output_horizon_1'])[0]
+        val_f1_key = f"val_{out_name}_f1"
+
+        callbacks = [
+            EarlyStoppingWithPatienceCounter(
+                monitor=val_f1_key,
+                mode='max',
+                patience=self.params.get('early_patience', 10),
+                restore_best_weights=True,
+                min_delta=1e-6,
+                verbose=cb_verbose,
+            ),
+            ReduceLROnPlateauWithCounter(
+                monitor=val_f1_key,
+                mode='max',
+                factor=0.3,
+                min_delta=1e-6,
+                patience=max(1, self.params.get('early_patience', 10) // 4),
+                verbose=cb_verbose,
+            ),
+        ]
+        if not quiet:
+            callbacks.append(LambdaCallback(on_epoch_end=lambda e, l: print(
+                f"Epoch {e+1}: LR={K.get_value(self.model.optimizer.learning_rate):.6f}")))
+
+        # Resource logging (reuse from base pattern)
+        mem_log = self.params.get('memory_log_file')
+        if mem_log:
+            try:
+                mem_tag = self.params.get('memory_log_tag')
+                mem_flush = int(self.params.get('memory_log_flush_every', 1) or 1)
+                mem_gpu = bool(self.params.get('memory_log_gpu', True))
+                mem_gc = bool(self.params.get('memory_log_gc', False))
+                callbacks.append(
+                    ResourceUsageLogger(
+                        str(mem_log),
+                        tag=str(mem_tag) if mem_tag is not None else None,
+                        flush_every=mem_flush,
+                        include_gpu=mem_gpu,
+                        include_gc=mem_gc,
+                    )
+                )
+            except Exception:
+                pass
+
+        return callbacks
 
     def train(self, x_train, y_train, epochs, batch_size, threshold_error,
               x_val, y_val, config):
@@ -154,16 +255,34 @@ class BinaryMixin:
 
         # Binary classification metrics (replaces MAE/R²).
         try:
+            from sklearn.metrics import f1_score, accuracy_score
             out_name = self.output_names[0]
-            y_true_arr = y_train[out_name].flatten()
-            y_prob = train_preds[0].flatten()
-            y_hat = (y_prob >= 0.5).astype(int)
-            acc = float(np.mean(y_hat == y_true_arr))
-            pos_rate = float(np.mean(y_true_arr))
-            pred_pos = float(np.mean(y_hat))
+
+            # Train metrics
+            y_tr_true = y_train[out_name].flatten()
+            y_tr_prob = train_preds[0].flatten()
+            y_tr_hat = (y_tr_prob >= 0.5).astype(int)
+            tr_f1 = float(f1_score(y_tr_true, y_tr_hat, zero_division=0))
+            tr_acc = float(accuracy_score(y_tr_true, y_tr_hat))
+            tr_pos = float(np.mean(y_tr_true))
+            tr_pred_pos = float(np.mean(y_tr_hat))
+
+            # Val metrics
+            y_vl_true = y_val[out_name].flatten()
+            y_vl_prob = val_preds[0].flatten()
+            y_vl_hat = (y_vl_prob >= 0.5).astype(int)
+            vl_f1 = float(f1_score(y_vl_true, y_vl_hat, zero_division=0))
+            vl_acc = float(accuracy_score(y_vl_true, y_vl_hat))
+            vl_pos = float(np.mean(y_vl_true))
+            vl_pred_pos = float(np.mean(y_vl_hat))
+
             print(
-                f"Train Accuracy ({out_name}): {acc:.4f}  "
-                f"pos_rate={pos_rate:.3f}  pred_pos={pred_pos:.3f}"
+                f"\n{'='*60}\n"
+                f"  TRAIN  F1={tr_f1:.4f}  Acc={tr_acc:.4f}  "
+                f"pos_rate={tr_pos:.3f}  pred_pos={tr_pred_pos:.3f}\n"
+                f"  VAL    F1={vl_f1:.4f}  Acc={vl_acc:.4f}  "
+                f"pos_rate={vl_pos:.3f}  pred_pos={vl_pred_pos:.3f}\n"
+                f"{'='*60}"
             )
         except Exception as e:
             print(f"Binary metric calculation error: {e}")

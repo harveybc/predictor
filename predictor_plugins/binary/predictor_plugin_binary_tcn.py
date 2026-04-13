@@ -20,7 +20,7 @@ from tensorflow.keras.regularizers import l2
 
 from ..predictor_plugin_tcn import Plugin as TCNPlugin
 from ..common.positional_encoding import positional_encoding
-from .binary_base import BinaryMixin, VALID_SIGNAL_TYPES, _as_bool
+from .binary_base import BinaryMixin, BinaryF1Score, VALID_SIGNAL_TYPES, _as_bool
 
 
 class Plugin(BinaryMixin, TCNPlugin):
@@ -116,6 +116,6 @@ class Plugin(BinaryMixin, TCNPlugin):
                 learning_rate=float(self.params.get("learning_rate", 1e-3))
             ),
             loss={out_name: BinaryCrossentropy()},
-            metrics={out_name: ["accuracy", AUC(name="auc")]},
+            metrics={out_name: ["accuracy", AUC(name="auc"), BinaryF1Score()]},
         )
         self.model.summary(line_length=140)

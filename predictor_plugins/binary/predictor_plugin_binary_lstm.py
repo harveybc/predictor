@@ -25,7 +25,7 @@ from tensorflow.keras.metrics import AUC
 
 from ..common.base import BaseBayesianKerasPredictor
 from ..common.positional_encoding import positional_encoding
-from .binary_base import BinaryMixin, VALID_SIGNAL_TYPES
+from .binary_base import BinaryMixin, BinaryF1Score, VALID_SIGNAL_TYPES
 
 
 class Plugin(BinaryMixin, BaseBayesianKerasPredictor):
@@ -120,6 +120,6 @@ class Plugin(BinaryMixin, BaseBayesianKerasPredictor):
                 learning_rate=self.params.get("learning_rate", 1e-3)
             ),
             loss={out_name: BinaryCrossentropy()},
-            metrics={out_name: ["accuracy", AUC(name="auc")]},
+            metrics={out_name: ["accuracy", AUC(name="auc"), BinaryF1Score()]},
         )
         self.model.summary(line_length=140)

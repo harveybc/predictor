@@ -1,7 +1,7 @@
 {
   "model_type": "binary",
-  "signal_type": "buy_entry",
-  "window_size": 124,
+  "signal_type": "buy_exit",
+  "window_size": 91,
   "output_names": [
     "output_horizon_1"
   ],
