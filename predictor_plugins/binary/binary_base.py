@@ -106,11 +106,9 @@ class BinaryMixin:
         quiet = self.params.get('quiet', False) or self.params.get('quiet_mode', False)
         cb_verbose = 0 if quiet else 1
 
-        # Determine the val F1 metric name.
-        # With dict-keyed outputs like {out_name: ...}, Keras prefixes metric
-        # names with the output key, e.g. "val_output_horizon_1_f1".
-        out_name = getattr(self, 'output_names', ['output_horizon_1'])[0]
-        val_f1_key = f"val_{out_name}_f1"
+        # Keras logs the F1 metric as "val_f1" (no output-name prefix for
+        # single-output models even when metrics are passed as a dict).
+        val_f1_key = "val_f1"
 
         callbacks = [
             EarlyStoppingWithPatienceCounter(
