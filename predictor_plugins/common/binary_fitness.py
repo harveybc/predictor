@@ -1,6 +1,8 @@
 """Binary classification fitness computation for optimizer and DON evaluator.
 
-F1-only fitness:
+F1-only fitness with optimal threshold search:
+    1. Sweep thresholds [0.1 .. 0.9] on validation to find best F1
+    2. Apply that threshold to train/val/test
     fitness = -(0.4 * train_F1 + 0.6 * val_F1) + overfitting_penalty
 
     F1 is the sole optimisation target (handles class imbalance).
@@ -40,6 +42,32 @@ def _safe_f1(y_true, y_prob, threshold=0.5):
         return float(f1_score(y_true, y_hat, zero_division=0))
     except Exception:
         return 0.0
+
+
+def find_best_threshold(y_true, y_prob, thresholds=None):
+    """Sweep thresholds to find the one that maximises F1 on the given split.
+
+    Parameters
+    ----------
+    y_true : array-like — ground-truth binary labels (0/1)
+    y_prob : array-like — predicted probabilities
+    thresholds : list[float] | None — candidates to try (default: 0.10 .. 0.90)
+
+    Returns
+    -------
+    float : best threshold (maximising F1)
+    """
+    if thresholds is None:
+        thresholds = [round(t * 0.05 + 0.10, 2) for t in range(17)]  # 0.10 .. 0.90
+    y_true = np.asarray(y_true).flatten().astype(int)
+    y_prob = np.asarray(y_prob).flatten()
+    best_t, best_f1 = 0.5, 0.0
+    for t in thresholds:
+        f = _safe_f1(y_true, y_prob, t)
+        if f > best_f1:
+            best_f1 = f
+            best_t = t
+    return best_t
 
 
 def compute_binary_metrics_for_split(y_true, y_prob, threshold=0.5):

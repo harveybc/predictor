@@ -306,6 +306,7 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
         from predictor_plugins.common.binary_fitness import (
             compute_binary_metrics_for_split,
             compute_binary_fitness,
+            find_best_threshold,
         )
 
         predicted_horizons = config.get("predicted_horizons", [1])
@@ -323,16 +324,23 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
             n = min(len(y_h), len(p_h))
             return y_h[:n], p_h[:n]
 
-        # TRAIN metrics
+        # Extract raw arrays
         y_tr, p_tr = _extract_h(y_train, train_preds)
-        train_bin_metrics = compute_binary_metrics_for_split(y_tr, p_tr)
+        y_vl, p_vl = _extract_h(y_val, val_preds)
+
+        # Find optimal threshold on validation set (maximises val F1)
+        best_threshold = find_best_threshold(y_vl, p_vl)
+        if not _QUIET:
+            print(f"  Binary threshold search: best_threshold={best_threshold:.2f}")
+
+        # TRAIN metrics (using optimal threshold from val)
+        train_bin_metrics = compute_binary_metrics_for_split(y_tr, p_tr, threshold=best_threshold)
         if not _QUIET:
             print(f"  Binary TRAIN: AUC={train_bin_metrics['auc_roc']:.4f} F1={train_bin_metrics['f1']:.4f} "
                   f"Acc={train_bin_metrics['accuracy']:.4f} MCC={train_bin_metrics['mcc']:.4f}")
 
-        # VALIDATION metrics
-        y_vl, p_vl = _extract_h(y_val, val_preds)
-        val_bin_metrics = compute_binary_metrics_for_split(y_vl, p_vl)
+        # VALIDATION metrics (using optimal threshold)
+        val_bin_metrics = compute_binary_metrics_for_split(y_vl, p_vl, threshold=best_threshold)
         if not _QUIET:
             print(f"  Binary VAL:   AUC={val_bin_metrics['auc_roc']:.4f} F1={val_bin_metrics['f1']:.4f} "
                   f"Acc={val_bin_metrics['accuracy']:.4f} MCC={val_bin_metrics['mcc']:.4f}")
@@ -365,7 +373,7 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
                 if test_preds_raw is not None:
                     test_preds_list = [test_preds_raw] if isinstance(test_preds_raw, np.ndarray) else test_preds_raw
                     y_ts, p_ts = _extract_h(y_test, test_preds_list)
-                    test_bin_metrics = compute_binary_metrics_for_split(y_ts, p_ts)
+                    test_bin_metrics = compute_binary_metrics_for_split(y_ts, p_ts, threshold=best_threshold)
                     test_mae = test_bin_metrics["accuracy"]
                     test_naive_mae = test_bin_metrics["f1"]
                     if not _QUIET:
