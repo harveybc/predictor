@@ -1,14 +1,9 @@
 """Binary classification fitness computation for optimizer and DON evaluator.
 
-Composite Binary Fitness (CBF):
-    composite = 0.40*F1 + 0.25*AUC + 0.20*Accuracy + 0.15*(1-Brier)
-    base = 0.4 * train_composite + 0.6 * val_composite
-    fitness = -base + penalty
+F1-only fitness:
+    fitness = -(0.4 * train_F1 + 0.6 * val_F1) + overfitting_penalty
 
-    F1 is the primary optimisation target (handles class imbalance).
-    AUC ensures discriminative power across thresholds.
-    Accuracy provides secondary signal.
-    Brier score penalises miscalibrated probabilities.
+    F1 is the sole optimisation target (handles class imbalance).
 
 Lower fitness is better (more negative = better model).
 """
@@ -105,18 +100,12 @@ def compute_binary_metrics_for_split(y_true, y_prob, threshold=0.5):
 
 
 def _composite_score(metrics):
-    """Compute composite binary metric from a metrics dict. Range ~[0, 1]."""
-    acc = metrics.get("accuracy", 0.0)
-    auc = metrics.get("auc_roc", 0.5)
-    f1 = metrics.get("f1", 0.0)
-    brier = metrics.get("brier", 1.0)
-    return 0.40 * f1 + 0.25 * auc + 0.20 * acc + 0.15 * (1.0 - brier)
+    """Return F1 score from a metrics dict. Range [0, 1]."""
+    return metrics.get("f1", 0.0)
 
 
 def compute_binary_fitness(train_metrics, val_metrics):
-    """Composite binary fitness (lower is better).
-
-    Uses F1 + AUC + Accuracy + Brier with F1 heavily weighted.
+    """F1-only binary fitness (lower is better).
 
     Parameters
     ----------
@@ -127,33 +116,29 @@ def compute_binary_fitness(train_metrics, val_metrics):
     -------
     float : fitness value (lower is better, negative = good model)
     """
-    train_comp = _composite_score(train_metrics)
-    val_comp = _composite_score(val_metrics)
+    train_f1 = train_metrics.get("f1", 0.0)
+    val_f1 = val_metrics.get("f1", 0.0)
 
-    if not np.isfinite(train_comp) or not np.isfinite(val_comp):
+    if not np.isfinite(train_f1) or not np.isfinite(val_f1):
         return float("inf")
 
-    # Base: weighted combination (higher composite = lower fitness via negation)
-    fitness = -(0.4 * train_comp + 0.6 * val_comp)
+    # Base: weighted F1 (higher F1 = lower fitness via negation)
+    fitness = -(0.4 * train_f1 + 0.6 * val_f1)
 
-    # Penalty 1: overfitting (train composite >> val composite)
-    overfit = train_comp - val_comp
-    if overfit > 0.03:
+    # Penalty: overfitting (train F1 >> val F1)
+    overfit = train_f1 - val_f1
+    if overfit > 0.05:
         fitness += overfit * 2.0
-
-    # Penalty 2: worse than random on validation
-    if val_metrics.get("auc_roc", 0.5) < 0.5:
-        fitness += (0.5 - val_metrics["auc_roc"]) * 2.0
 
     return fitness
 
 
 def compute_binary_val_only_fitness(val_metrics):
-    """Val-only composite fitness for DON evaluator (no training data available).
+    """Val-only F1 fitness for DON evaluator (no training data available).
 
-    Returns -composite when available, else 0.
+    Returns -F1 when available, else 0.
     """
-    comp = _composite_score(val_metrics)
-    if np.isfinite(comp):
-        return -comp
+    f1 = val_metrics.get("f1", 0.0)
+    if np.isfinite(f1):
+        return -f1
     return 0.0
