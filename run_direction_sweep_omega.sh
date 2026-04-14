@@ -7,12 +7,12 @@ set -e
 cd /home/harveybc/Documents/GitHub/predictor
 
 CONFIGS=(
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_ann_direction_long_1d_optimization_config.json"
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_ann_direction_short_1d_optimization_config.json"
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_cnn_direction_long_1d_optimization_config.json"
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_cnn_direction_short_1d_optimization_config.json"
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_logistic_direction_long_1d_optimization_config.json"
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_logistic_direction_short_1d_optimization_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_ann_direction_long_1d_inference_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_ann_direction_short_1d_inference_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_cnn_direction_long_1d_inference_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_cnn_direction_short_1d_inference_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_logistic_direction_long_1d_inference_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_logistic_direction_short_1d_inference_config.json"
 )
 
 echo "=============================================="

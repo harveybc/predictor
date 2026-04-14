@@ -14,12 +14,12 @@ export TF_GPU_ALLOCATOR=cuda_malloc_async
 cd /home/harveybc/Documents/GitHub/predictor
 
 CONFIGS=(
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_tcn_direction_long_1d_optimization_config.json"
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_tcn_direction_short_1d_optimization_config.json"
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_mimo_direction_long_1d_optimization_config.json"
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_mimo_direction_short_1d_optimization_config.json"
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_lstm_direction_long_1d_optimization_config.json"
-    "examples/config/phase_1c_direction/optimization/phase_1c_direction_lstm_direction_short_1d_optimization_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_tcn_direction_long_1d_inference_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_tcn_direction_short_1d_inference_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_mimo_direction_long_1d_inference_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_mimo_direction_short_1d_inference_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_lstm_direction_long_1d_inference_config.json"
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_lstm_direction_short_1d_inference_config.json"
 )
 
 echo "=============================================="
