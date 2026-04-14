@@ -207,7 +207,12 @@ class Plugin:
         self.eval_counter = 0
         self.total_eval_counter = 0
         self.current_gen = 0
-        self.best_fitness_so_far = float("inf")  # FITNESS = avg of train/val deltas from naive
+        # Fitness direction: binary/direction targets use higher-is-better
+        _is_binary = config.get("target_plugin") in ("binary_target", "direction_target")
+        _hib = config.get("higher_is_better", _is_binary)
+        self._higher_is_better = _hib
+        _worst_fitness = float("-inf") if _hib else float("inf")
+        self.best_fitness_so_far = _worst_fitness
         self.patience_counter = 0
         self.best_val_mae_so_far = None  # ACTUAL validation MAE
         self.best_naive_mae_so_far = None  # Validation naive MAE
@@ -217,7 +222,7 @@ class Plugin:
         self.best_train_naive_mae_so_far = None
         self.best_params_so_far = {}  # Best champion hyper_dict for stage-end broadcast
         # Tracks the FITNESS to beat for the *current generation* (used by GA early stopping).
-        self.best_at_gen_start = float("inf")
+        self.best_at_gen_start = _worst_fitness
 
         def _extract_max_horizon_array(y_any, predicted_horizons, max_horizon):
             if isinstance(y_any, dict):
@@ -592,7 +597,8 @@ class Plugin:
                     individual.hyper_dict = hyper_dict
 
                     is_new_champion = False
-                    if np.isfinite(fitness) and fitness < float(self.best_fitness_so_far):
+                    _is_new_best = (fitness > float(self.best_fitness_so_far)) if _hib else (fitness < float(self.best_fitness_so_far))
+                    if np.isfinite(fitness) and _is_new_best:
                         self.best_fitness_so_far = float(fitness)
                         self.best_val_mae_so_far = float(val_mae) if np.isfinite(val_mae) else self.best_val_mae_so_far
                         self.best_naive_mae_so_far = float(naive_mae) if np.isfinite(naive_mae) else self.best_naive_mae_so_far
@@ -660,7 +666,7 @@ class Plugin:
                     else:
                         _rs_ctx = "Standard"
 
-                    _is_binary = config.get("target_plugin") == "binary_target"
+                    _is_binary = config.get("target_plugin") in ("binary_target", "direction_target")
                     _lbl1 = "Accuracy" if _is_binary else "MAE maxH"
                     _lbl2 = "F1" if _is_binary else "Naive MAE maxH"
                     print(f"\n{'='*80}")
@@ -1030,7 +1036,7 @@ class Plugin:
                 except Exception as _e:
                     print(f"[DIAG] scale stats failed: {_e}")
 
-                _is_binary2 = new_config.get("target_plugin") == "binary_target"
+                _is_binary2 = new_config.get("target_plugin") in ("binary_target", "direction_target")
                 _l1 = "Accuracy" if _is_binary2 else "MAE maxH"
                 _l2 = "F1" if _is_binary2 else "Naive MAE maxH"
                 print(
@@ -1043,7 +1049,8 @@ class Plugin:
                 )
 
                 is_new_champion = False
-                if np.isfinite(fitness) and fitness < float(self.best_fitness_so_far):
+                _is_new_best = (fitness > float(self.best_fitness_so_far)) if _hib else (fitness < float(self.best_fitness_so_far))
+                if np.isfinite(fitness) and _is_new_best:
                     self.best_fitness_so_far = float(fitness)
                     self.best_val_mae_so_far = float(val_mae) if np.isfinite(val_mae) else self.best_val_mae_so_far
                     self.best_naive_mae_so_far = float(naive_mae) if np.isfinite(naive_mae) else self.best_naive_mae_so_far

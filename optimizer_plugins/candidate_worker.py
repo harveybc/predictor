@@ -299,7 +299,7 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
     import numpy as np
 
     # --- Detect binary classification mode ---
-    _is_binary = config.get("target_plugin") == "binary_target"
+    _is_binary = config.get("target_plugin") in ("binary_target", "direction_target")
 
     if _is_binary:
         # ── BINARY CLASSIFICATION METRICS ─────────────────────────

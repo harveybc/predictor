@@ -306,14 +306,15 @@ def speciate(population, species_list, full_bounds, threshold):
         sp.representative = random.choice(sp.members).deep_copy()
 
 
-def adjust_fitness(species_list):
+def adjust_fitness(species_list, higher_is_better=False):
     """Fitness sharing: adjusted_fitness = raw_fitness / species_size."""
+    _worst = float("-inf") if higher_is_better else float("inf")
     for sp in species_list:
         for genome in sp.members:
             if genome.fitness is not None and np.isfinite(genome.fitness):
                 genome.adjusted_fitness = genome.fitness / max(sp.size, 1)
             else:
-                genome.adjusted_fitness = float("inf")
+                genome.adjusted_fitness = _worst
 
 
 # ── Mutation Operators ───────────────────────────────────────
@@ -609,7 +610,22 @@ class Plugin:
         self.eval_counter = 0
         self.total_eval_counter = 0
         self.current_gen = 0
-        self.best_fitness_so_far = float("inf")
+        # Fitness direction: binary/direction targets use higher-is-better
+        _is_binary = config.get("target_plugin") in ("binary_target", "direction_target")
+        _hib = config.get("higher_is_better", _is_binary)
+        self._higher_is_better = _hib
+        _worst_fitness = float("-inf") if _hib else float("inf")
+        def _fitness_better(a, b):
+            return a > b if _hib else a < b
+        def _best_of(iterable, default=None):
+            return max(iterable, default=default if default is not None else _worst_fitness) if _hib \
+                else min(iterable, default=default if default is not None else _worst_fitness)
+        def _best_genome_key(g):
+            """Sort key: best fitness first."""
+            if g.fitness is None or not np.isfinite(g.fitness):
+                return _worst_fitness
+            return -g.fitness if _hib else g.fitness
+        self.best_fitness_so_far = _worst_fitness
         self.patience_counter = 0
         self.best_val_mae_so_far = None
         self.best_naive_mae_so_far = None
@@ -618,7 +634,7 @@ class Plugin:
         self.best_train_mae_so_far = None
         self.best_train_naive_mae_so_far = None
         self.best_params_so_far = {}
-        self.best_at_gen_start = float("inf")
+        self.best_at_gen_start = _worst_fitness
 
         # NEAT-specific tracking (exposed to dashboard)
         self.neat_species_count = 0
@@ -946,7 +962,8 @@ class Plugin:
 
                 # Check for new champion
                 is_new_champion = False
-                if np.isfinite(fitness) and fitness < float(self.best_fitness_so_far):
+                _is_new_best = (fitness > float(self.best_fitness_so_far)) if _hib else (fitness < float(self.best_fitness_so_far))
+                if np.isfinite(fitness) and _is_new_best:
                     self.best_fitness_so_far = float(fitness)
                     self.best_val_mae_so_far = genome.val_mae if np.isfinite(genome.val_mae) else self.best_val_mae_so_far
                     self.best_naive_mae_so_far = genome.naive_mae if np.isfinite(genome.naive_mae) else self.best_naive_mae_so_far
@@ -1003,7 +1020,7 @@ class Plugin:
                       f"Complexity: {genome.complexity} params | Total Evals: {self.total_eval_counter}")
                 print(f"Active Parameters: {', '.join(genome.active_params)}")
                 print(f"{'-'*80}")
-                _is_binary = config.get("target_plugin") == "binary_target"
+                _is_binary = config.get("target_plugin") in ("binary_target", "direction_target")
                 _lbl1 = "Accuracy" if _is_binary else "MAE"
                 _lbl2 = "F1" if _is_binary else "Naive"
                 print(f"  TRAINING   -> {_lbl1}: {genome.train_mae:.6f} | {_lbl2}: {genome.train_naive_mae:.6f}")
@@ -1166,7 +1183,7 @@ class Plugin:
                         print(f"  [NEAT] Between-candidates callback error: {_cb_err}")
 
         # Find best genome
-        best_genome = min(population, key=lambda g: g.fitness if g.fitness is not None else float("inf"))
+        best_genome = min(population, key=_best_genome_key)
         self.best_at_gen_start = float(self.best_fitness_so_far)
         no_improve_counter = int(self.patience_counter)
 
@@ -1287,7 +1304,7 @@ class Plugin:
                             else:
                                 # Replace worst individual
                                 worst_idx = max(range(len(population)),
-                                                key=lambda i: population[i].fitness if population[i].fitness is not None else float("inf"))
+                                                key=lambda i: _best_genome_key(population[i]))
                                 population[worst_idx] = migrant_genome
                                 print(f"  [NEAT MIGRATION] Injected network champion ({len(migrant_genome.genes)} params, dist={_min_dist:.4f})")
                 except Exception as _cb_err:
@@ -1299,7 +1316,7 @@ class Plugin:
 
                 # ── Speciation ───────────────────────────────────
                 speciate(population, species_list, full_bounds, compat_threshold)
-                adjust_fitness(species_list)
+                adjust_fitness(species_list, _hib)
 
                 # Update NEAT tracking stats
                 self.neat_species_count = len(species_list)
@@ -1309,7 +1326,7 @@ class Plugin:
                 self.neat_min_complexity = min(complexities) if complexities else 0
                 self.neat_species_details = [
                     {"id": sp.id, "size": sp.size,
-                     "best_fitness": min((g.fitness for g in sp.members if g.fitness is not None), default=float("inf")),
+                     "best_fitness": _best_of((g.fitness for g in sp.members if g.fitness is not None), default=_worst_fitness),
                      "avg_complexity": sum(g.complexity for g in sp.members) / max(sp.size, 1)}
                     for sp in species_list
                 ]
@@ -1317,7 +1334,7 @@ class Plugin:
                 print(f"[NEAT] Species: {self.neat_species_count} | "
                       f"Complexity: avg={self.neat_avg_complexity:.1f} min={self.neat_min_complexity} max={self.neat_max_complexity}")
                 for sp in species_list:
-                    best_f = min((g.fitness for g in sp.members if g.fitness is not None), default=float("inf"))
+                    best_f = _best_of((g.fitness for g in sp.members if g.fitness is not None), default=_worst_fitness)
                     print(f"  Species {sp.id}: size={sp.size}, best_fitness={best_f:.6f}")
 
                 # ── Reproduction ─────────────────────────────────
@@ -1338,7 +1355,10 @@ class Plugin:
                                   if g.adjusted_fitness is not None and np.isfinite(g.adjusted_fitness)]
                     if finite_adj:
                         mean_adj = sum(finite_adj) / len(finite_adj)
-                        species_scores.append(1.0 / max(mean_adj, 1e-10))
+                        if _hib:
+                            species_scores.append(max(mean_adj, 1e-10))
+                        else:
+                            species_scores.append(1.0 / max(mean_adj, 1e-10))
                     else:
                         species_scores.append(1.0)
                 total_score = sum(species_scores) or 1.0
@@ -1346,7 +1366,7 @@ class Plugin:
                 new_population = []
 
                 for sp_idx, sp in enumerate(species_list):
-                    sp.members.sort(key=lambda g: g.fitness if g.fitness is not None else float("inf"))
+                    sp.members.sort(key=_best_genome_key)
 
                     # Elitism: keep best individuals from each species (dedup)
                     for elite in sp.members[:neat_elitism]:
@@ -1449,21 +1469,22 @@ class Plugin:
                 break
 
             # ── Update best genome ───────────────────────────
-            gen_best = min(population, key=lambda g: g.fitness if g.fitness is not None else float("inf"))
-            if gen_best.fitness is not None and (best_genome is None or gen_best.fitness < (best_genome.fitness or float("inf"))):
+            gen_best = min(population, key=_best_genome_key)
+            if gen_best.fitness is not None and (best_genome is None or _fitness_better(gen_best.fitness, best_genome.fitness or _worst_fitness)):
                 best_genome = gen_best.deep_copy()
                 best_genome.fitness = gen_best.fitness
                 best_genome.hyper_dict = gen_best.hyper_dict
 
             # ── Patience check ───────────────────────────────
-            current_best_fitness = min(
+            current_best_fitness = _best_of(
                 (g.fitness for g in population if g.fitness is not None),
-                default=float("inf"),
+                default=_worst_fitness,
             )
-            if current_best_fitness < best_at_gen_start:
+            if _fitness_better(current_best_fitness, best_at_gen_start):
                 no_improve_counter = 0
                 self.patience_counter = 0
-                print(f"  [NEAT PATIENCE] RESET — new best {current_best_fitness:.6f} < gen_start {best_at_gen_start:.6f}")
+                _cmp_sym = ">" if _hib else "<"
+                print(f"  [NEAT PATIENCE] RESET — new best {current_best_fitness:.6f} {_cmp_sym} gen_start {best_at_gen_start:.6f}")
             else:
                 no_improve_counter += 1
                 self.patience_counter = no_improve_counter
@@ -1475,7 +1496,7 @@ class Plugin:
             gen_end_time = time.time()
             gen_duration = gen_end_time - gen_start_time
             valid_fitnesses = [g.fitness for g in population if g.fitness is not None and np.isfinite(g.fitness)]
-            avg_fitness = sum(valid_fitnesses) / len(valid_fitnesses) if valid_fitnesses else float("inf")
+            avg_fitness = sum(valid_fitnesses) / len(valid_fitnesses) if valid_fitnesses else _worst_fitness
 
             stats_history.append({
                 "generation": gen,
@@ -1815,6 +1836,15 @@ class Plugin:
         full_bounds, all_params, param_types = Plugin._parse_bounds_and_types(config)
         innovation_tracker = InnovationTracker.from_serializable(innovation_tracker_data)
 
+        # Fitness direction
+        _is_binary = config.get("target_plugin") in ("binary_target", "direction_target")
+        _hib = config.get("higher_is_better", _is_binary)
+        _worst_fitness = float("-inf") if _hib else float("inf")
+        def _best_key(g):
+            if g.fitness is None or not np.isfinite(g.fitness):
+                return _worst_fitness
+            return -g.fitness if _hib else g.fitness
+
         # Restore genomes
         population = [NeatGenome.from_serializable(gd) for gd in evaluated_pop_serialized]
         population_size = len(population)
@@ -1846,14 +1876,14 @@ class Plugin:
             return {
                 "population": result_pop["population"],
                 "generation": generation + 1,
-                "best_fitness": float("inf"),
+                "best_fitness": _worst_fitness,
                 "stage_idx": current_stage_idx,
                 "no_improve_count": no_improve_count + 1,
                 "stage_advanced": False,
                 "patience": patience,
             }
 
-        best_genome = min(valid_pop, key=lambda g: g.fitness)
+        best_genome = min(valid_pop, key=_best_key)
         best_fitness = best_genome.fitness
 
         # Check patience / stage advancement
@@ -1929,7 +1959,7 @@ class Plugin:
         # Normal reproduction (no stage change)
         species_list = []
         speciate(population, species_list, full_bounds, compat_threshold)
-        adjust_fitness(species_list)
+        adjust_fitness(species_list, _hib)
 
         # Adaptive mutation boost on stagnation
         _adaptive_boost = 2.0 if no_improve_count >= patience // 2 else 1.0
@@ -1944,14 +1974,17 @@ class Plugin:
                           if g.adjusted_fitness is not None and np.isfinite(g.adjusted_fitness)]
             if finite_adj:
                 mean_adj = sum(finite_adj) / len(finite_adj)
-                species_scores.append(1.0 / max(mean_adj, 1e-10))
+                if _hib:
+                    species_scores.append(max(mean_adj, 1e-10))
+                else:
+                    species_scores.append(1.0 / max(mean_adj, 1e-10))
             else:
                 species_scores.append(1.0)
         total_score = sum(species_scores) or 1.0
 
         new_population = []
         for sp_idx, sp in enumerate(species_list):
-            sp.members.sort(key=lambda g: g.fitness if g.fitness is not None else float("inf"))
+            sp.members.sort(key=_best_key)
 
             # Elitism
             for elite in sp.members[:neat_elitism]:

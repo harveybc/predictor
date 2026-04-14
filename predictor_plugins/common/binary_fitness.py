@@ -133,7 +133,7 @@ def _composite_score(metrics):
 
 
 def compute_binary_fitness(train_metrics, val_metrics):
-    """F1-only binary fitness (lower is better).
+    """F1-based binary fitness (higher is better).
 
     Parameters
     ----------
@@ -142,21 +142,21 @@ def compute_binary_fitness(train_metrics, val_metrics):
 
     Returns
     -------
-    float : fitness value (lower is better, negative = good model)
+    float : fitness value (higher is better, positive = good model)
     """
     train_f1 = train_metrics.get("f1", 0.0)
     val_f1 = val_metrics.get("f1", 0.0)
 
     if not np.isfinite(train_f1) or not np.isfinite(val_f1):
-        return float("inf")
+        return float("-inf")
 
-    # Base: weighted F1 (higher F1 = lower fitness via negation)
-    fitness = -(0.4 * train_f1 + 0.6 * val_f1)
+    # Base: weighted F1 (higher F1 = higher fitness)
+    fitness = 0.4 * train_f1 + 0.6 * val_f1
 
     # Penalty: overfitting (train F1 >> val F1)
     overfit = train_f1 - val_f1
     if overfit > 0.05:
-        fitness += overfit * 2.0
+        fitness -= overfit * 2.0
 
     return fitness
 
@@ -164,9 +164,9 @@ def compute_binary_fitness(train_metrics, val_metrics):
 def compute_binary_val_only_fitness(val_metrics):
     """Val-only F1 fitness for DON evaluator (no training data available).
 
-    Returns -F1 when available, else 0.
+    Returns F1 when available, else 0.
     """
     f1 = val_metrics.get("f1", 0.0)
     if np.isfinite(f1):
-        return -f1
+        return f1
     return 0.0
