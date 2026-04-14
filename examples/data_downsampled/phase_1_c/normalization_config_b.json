@@ -1,0 +1,26 @@
+{
+  "OPEN": {
+    "min": 1.16661,
+    "max": 1.5995
+  },
+  "HIGH": {
+    "min": 1.16862,
+    "max": 1.60403
+  },
+  "LOW": {
+    "min": 1.16418,
+    "max": 1.59695
+  },
+  "CLOSE": {
+    "min": 1.1668,
+    "max": 1.59924
+  },
+  "direction_long_label": {
+    "min": 0.0,
+    "max": 1.0
+  },
+  "direction_short_label": {
+    "min": 0.0,
+    "max": 1.0
+  }
+}

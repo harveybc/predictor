@@ -30,6 +30,16 @@ setup(
             'binary_tcn=predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin',
             'binary_mimo=predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin',
             'binary_logistic=predictor_plugins.binary.predictor_plugin_binary_logistic:Plugin',
+            # Direction classification plugins
+            'direction_ann=predictor_plugins.direction.predictor_plugin_direction_ann:Plugin',
+            'direction_cnn=predictor_plugins.direction.predictor_plugin_direction_cnn:Plugin',
+            'direction_lstm=predictor_plugins.direction.predictor_plugin_direction_lstm:Plugin',
+            'direction_transformer=predictor_plugins.direction.predictor_plugin_direction_transformer:Plugin',
+            'direction_n_beats=predictor_plugins.direction.predictor_plugin_direction_n_beats:Plugin',
+            'direction_tft=predictor_plugins.direction.predictor_plugin_direction_tft:Plugin',
+            'direction_tcn=predictor_plugins.direction.predictor_plugin_direction_tcn:Plugin',
+            'direction_mimo=predictor_plugins.direction.predictor_plugin_direction_mimo:Plugin',
+            'direction_logistic=predictor_plugins.direction.predictor_plugin_direction_logistic:Plugin',
         ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
         'optimizer.plugins': [
@@ -40,7 +50,8 @@ setup(
         'pipeline.plugins': [
             'default_pipeline=pipeline_plugins.default_pipeline:PipelinePlugin',
             'stl_pipeline=pipeline_plugins.stl_pipeline:STLPipelinePlugin',
-            'binary_pipeline=pipeline_plugins.binary_pipeline:BinaryPipelinePlugin'
+            'binary_pipeline=pipeline_plugins.binary_pipeline:BinaryPipelinePlugin',
+            'direction_pipeline=pipeline_plugins.direction_pipeline:DirectionPipelinePlugin'
         ],
         # Plugins para el Preprocesamiento (incluye process_data, ventanas deslizantes y STL)
         'preprocessor.plugins': [
@@ -57,6 +68,7 @@ setup(
             'default_target=target_plugins.default_target:TargetPlugin',
             'stl_target=target_plugins.stl_target:TargetPlugin',
             'binary_target=target_plugins.binary_target:TargetPlugin',
+            'direction_target=target_plugins.direction_target:TargetPlugin',
         ]
     },
     install_requires=[
