@@ -64,7 +64,6 @@
     "deterministic_training": true,
     "random_seed": 42,
     "population_size": 20,
-    "n_generations": 40,
     "optimization_patience": 5,
     "mutpb": 0.2,
     "optimization_stages": [
@@ -75,7 +74,7 @@
                 "use_log1p_features",
                 "positional_encoding"
             ],
-            "generations": 10
+            "generations": 5
         },
         {
             "name": "architecture",
@@ -85,7 +84,7 @@
                 "layer_size_divisor",
                 "head_layers"
             ],
-            "generations": 10
+            "generations": 5
         },
         {
             "name": "training",
@@ -95,12 +94,12 @@
                 "l2_reg",
                 "min_delta"
             ],
-            "generations": 10
+            "generations": 5
         },
         {
             "name": "refinement",
             "params": "all",
-            "generations": 10
+            "generations": 5
         }
     ],
     "hyperparameter_bounds": {
