@@ -2073,6 +2073,10 @@ class Plugin:
         This is the shared-population equivalent of the inner eval_genome()
         function.  Returns dict with fitness and all metrics.
         """
+        # Determine worst fitness based on metric_type
+        _metric_type = config.get("metric_type", "regression")
+        _worst = float("-inf") if _metric_type == "binary" else float("inf")
+
         full_bounds, all_params, param_types = Plugin._parse_bounds_and_types(config)
         innovation_tracker = Plugin._build_innovation_tracker(all_params)
         genome = NeatGenome.from_serializable(genome_serialized)
@@ -2143,19 +2147,19 @@ class Plugin:
                     pass
             except Exception as e:
                 print(f"[SHARED NEAT] Worker spawn failed: {e}")
-                return {"fitness": float("inf"), "error": str(e)}
+                return {"fitness": _worst, "error": str(e)}
 
             if returncode != 0:
                 print(f"[SHARED NEAT] Worker failed (rc={returncode})")
-                return {"fitness": float("inf"), "error": f"worker_rc_{returncode}"}
+                return {"fitness": _worst, "error": f"worker_rc_{returncode}"}
 
             try:
                 with open(out_path, "r", encoding="utf-8") as f:
                     payload = json.load(f)
             except Exception:
-                return {"fitness": float("inf"), "error": "output_parse_error"}
+                return {"fitness": _worst, "error": "output_parse_error"}
 
-            fitness = float(payload.get("fitness", float("inf")))
+            fitness = float(payload.get("fitness", _worst))
             model_b64 = None
             if os.path.exists(model_path):
                 import base64
