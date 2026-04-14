@@ -3,11 +3,11 @@
 F1-only fitness with optimal threshold search:
     1. Sweep thresholds [0.1 .. 0.9] on validation to find best F1
     2. Apply that threshold to train/val/test
-    fitness = -(0.4 * train_F1 + 0.6 * val_F1) + overfitting_penalty
+    fitness = 0.4 * train_F1 + 0.6 * val_F1 - overfitting_penalty
 
     F1 is the sole optimisation target (handles class imbalance).
 
-Lower fitness is better (more negative = better model).
+Higher fitness is better (positive = good model).
 """
 
 import numpy as np
