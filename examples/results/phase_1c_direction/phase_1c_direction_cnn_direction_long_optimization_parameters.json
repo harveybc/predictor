@@ -1,0 +1,30 @@
+{
+  "best_fitness": 0.4356686621283374,
+  "metrics": {
+    "train_mae": 0.6721246533738281,
+    "val_mae": 0.6356589147286822,
+    "train_naive_mae": 0.45344486022452124,
+    "val_naive_mae": 0.4238178633975482,
+    "test_mae": 0.6527984150569589,
+    "test_naive_mae": 0.29689067201604813
+  },
+  "parameters": {
+    "window_size": 71,
+    "intermediate_layers": 2,
+    "initial_layer_size": 64,
+    "layer_size_divisor": 16,
+    "head_layers": 2,
+    "positional_encoding": false,
+    "use_temporal_features": false,
+    "add_window_stats": true,
+    "add_multi_scale_returns": false,
+    "hod_encoding": "sincos",
+    "dow_encoding": "sincos",
+    "moy_encoding": "sincos",
+    "learning_rate": 0.004899653288390459,
+    "batch_size": 64,
+    "l2_reg": 1e-07,
+    "min_delta": 7.465577650731436e-07,
+    "use_log1p_features": null
+  }
+}
