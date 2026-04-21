@@ -175,6 +175,12 @@ def evaluate_candidate(*, config: dict, hyper: dict, gen: int, cand: int) -> tup
         if config.get(k):
             config[k] = _resolve_repo_path(config.get(k))
 
+    # Resolve data file paths to repo root for consistency.
+    for k in ("x_train_file", "y_train_file", "x_validation_file", "y_validation_file",
+              "x_test_file", "y_test_file", "use_normalization_json"):
+        if config.get(k):
+            config[k] = _resolve_repo_path(config.get(k))
+
     # Tag for per-epoch/batch logs.
     config.setdefault("memory_log_tag", f"ga_gen{int(gen)}_cand{int(cand)}")
 

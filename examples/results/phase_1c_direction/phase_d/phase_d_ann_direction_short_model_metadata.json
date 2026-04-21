@@ -1,0 +1,32 @@
+{
+  "model_type": "binary",
+  "signal_type": "direction_short",
+  "window_size": 98,
+  "output_names": [
+    "output_horizon_1"
+  ],
+  "feature_columns": [
+    "ATR",
+    "RSI",
+    "MACD",
+    "MACD_Histogram",
+    "MACD_Signal",
+    "ADX",
+    "DI_plus",
+    "DI_minus",
+    "Stochastic_K",
+    "Stochastic_D",
+    "BB_Width",
+    "CCI",
+    "WilliamsR",
+    "ROC",
+    "ATR_ratio",
+    "BB_position",
+    "rolling_std_24",
+    "price_minus_ema",
+    "hod_sin",
+    "hod_cos",
+    "dow_sin",
+    "dow_cos"
+  ]
+}

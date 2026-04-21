@@ -1,0 +1,12 @@
+{
+    "window_size": 98,
+    "positional_encoding": true,
+    "learning_rate": 0.005949408649169718,
+    "batch_size": 33,
+    "l2_reg": 0.0005874518168415772,
+    "min_delta": 1.1472797427175965e-08,
+    "use_log1p_features": null,
+    "hidden_units": 64,
+    "num_hidden_layers": 3,
+    "dropout_rate": 0.2967066051358965
+}
