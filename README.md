@@ -1,310 +1,226 @@
+# predictor
 
-# Predictor
+Phased deep-learning prediction platform for financial time series. predictor
+trains, evaluates and optimizes Keras/TensorFlow forecasting and
+classification models — ANN, CNN, LSTM, Transformer, TCN, TFT, N-BEATS, MIMO
+and binary/direction classifier variants — through a plugin architecture in
+which predictor, optimizer, pipeline, preprocessor and target-calculation
+plugins are selected by name from JSON configs. Experiments are organized as
+numbered phases under [`examples/config/`](examples/config/), each phase a
+reproducible sweep over architectures, dataset sizes and horizons.
 
-## Description
+## Status
 
-The predictor project is a comprehensive tool for timeseries prediction, equipped with a robust plugin architecture. This project allows for both local and remote configuration handling, as well as replicability of experimental results. The system can be extended with custom plugins for various types of neural networks, including artificial neural networks (ANN), convolutional neural networks (CNN), long short-term memory networks (LSTM), and transformer-based models. Examples of the aforementioned models are included alongside with historical EURUSD and other training data in the **examples** directory.
+**Lifecycle: ACTIVE-CORE.** predictor is the model-training side of the
+owner's trading-research stack: its champion models are served by
+[prediction_provider](https://github.com/harveybc/prediction_provider) and its
+binary/direction experiments feed current campaigns.
 
-## Installation Instructions
+> **Disclaimer:** all training and evaluation happens offline on historical
+> data (simulation/backtest). Model outputs are research artifacts, not
+> trading signals; nothing in this repository is financial advice, and no
+> real-capital execution happens here.
 
-To install and set up the predictor application, follow these steps:
+## Role and non-responsibilities
 
-1. **Clone the Repository**:
-    ```bash
-    git clone https://github.com/harveybc/predictor.git
-    cd predictor
-    ```
+**Role:** own model definition, training, evaluation and hyperparameter
+optimization for time-series prediction, plus the phased experiment configs
+and their results.
 
-2. **Add the clonned directory to the Windows or Linux PYTHONPATH environment variable**:
+**Not responsible for:**
 
-In Windows a close of current command line promp may be required for the PYTHONPATH varible to be usable.
-Confirm you added the directory to the PYTHONPATH with the following commands:
+- Serving predictions — [prediction_provider](https://github.com/harveybc/prediction_provider)
+  hosts trained models behind a FastAPI service.
+- Feature/label engineering — [feature-eng](https://github.com/harveybc/feature-eng)
+  generates technical-indicator features and direction/oracle labels;
+  [feature-extractor](https://github.com/harveybc/feature-extractor) trains
+  the autoencoder encoders referenced by some configs.
+- Generic CSV preprocessing — the standalone
+  [preprocessor](https://github.com/harveybc/preprocessor) application.
+- Trading environments or RL agents —
+  [gym-fx](https://github.com/harveybc/gym-fx) and
+  [agent-multi](https://github.com/harveybc/agent-multi).
+- Decentralized optimization infrastructure —
+  [doin-node](https://github.com/harveybc/doin-node) (see below).
 
-- On Windows, run:
-    ```bash
-    echo %PYTHONPATH%
-    ```
-
-- On Linux, run:
-    ```bash
-    echo $PYTHONPATH 
-    ```
-If the clonned repo directory appears in the PYTHONPATH, continue to the next step. 
-
-3. **Create and Activate a Virtual Environment (Anaconda is required)**:
-
-    - **Using `conda`**:
-        ```bash
-        conda create --name predictor-env python=3.9
-        conda activate predictor-env
-        ```
-
-4. **Install Dependencies**:
-    ```bash
-    pip install --upgrade pip
-    pip install -r requirements.txt
-    ```
-
-5. **Build the Package**:
-    ```bash
-    python -m build
-    ```
-
-6. **Install the Package**:
-    ```bash
-    pip install .
-    ```
-
-7. **(Optional) Run the predictor**:
-    - On Windows, run the following command to verify installation (it uses all default valuex, use predictor.bat --help for complete command line arguments description):
-        ```bash
-        predictor.bat --load_config examples\config\phase_1\phase_1_ann_6300_1h_config.json
-        ```
-
-    - On Linux, run:
-        ```bash
-        sh predictor.sh --load_config examples\config\phase_1\phase_1_ann_6300_1h_config.json
-        ```
-
-8. **(Optional) Run Tests**:
-For pasing remote tests, requires an instance of [harveybc/data-logger](https://github.com/harveybc/data-logger)
-    - On Windows, run the following command to run the tests:
-        ```bash
-        set_env.bat
-        pytest
-        ```
-        pytest
-        ```
-
-9. **(Optional) Generate Documentation**:
-    - Run the following command to generate code documentation in HTML format in the docs directory:
-        ```bash
-        pdoc --html -o docs app
-        ```
-10. **(Optional) Install Nvidia CUDA GPU support**:
-
-Please read: [Readme - CUDA](https://github.com/harveybc/predictor/blob/master/README_CUDA.md)
-
-## Usage
-
-Example config json files are located in examples\config, for a list of individual parameters to call via CLI or in a config json file, use: **predictor.bat --help**
-
-After executing the prediction pipeline, the predictor will generate 4 files:
-- **output_file**: csv file, predictions for the selected time_horizon **(see defaults in app\config.py)**
-- **results_file**: csv file, aggregated results for the configured number of iterations of the training with the selected number of training epochs 
-- **loss_plot_file**: png image, the plot of error vs epoch for training and validation in the last iteration 
-- **model_plot_file**: png image, the plot of the used Keras model
- 
-The application supports several command line arguments to control its behavior for example:
+## Architecture
 
 ```
-usage: predictor.bat --load_config examples\config\phase_1\phase_1_ann_6300_1h_config.json --epochs 100 --iterations 5
+JSON config (examples/config/phase_*/...)
+        │
+        ▼
+app/main.py ── app/cli.py / app/config.py / app/config_handler.py
+        │
+        ▼
+pipeline plugin (pipeline_plugins/)
+  ├─ preprocessor plugin (preprocessor_plugins/)  sliding windows, STL, features
+  ├─ target plugin       (target_plugins/)        regression / binary / direction targets
+  ├─ predictor plugin    (predictor_plugins/)     Keras model build/train/predict
+  └─ optimizer plugin    (optimizer_plugins/)     DEAP GA / NEAT hyperparameter search
 ```
 
-There are many examples of config files in the **examples\config directory**, also training data of EURUSD and othertimeseries in **examples\data** and the results of the example config files are set to be on **examples\results**, there are some scripts to automate running sequential predictions in **examples\scripts**.
+### Phased experiment structure
 
-### Distributed NEAT Optimization (via DOIN Network)
+- [`examples/config/phase_1/`](examples/config/phase_1/) — ANN/CNN/LSTM/
+  Transformer sweeps at 1h over dataset sizes from 1 575 to 50 400 bars, with
+  an `optimization/` subdirectory; `phase_1_daily/` repeats the sweep at 1d
+  and adds TCN+NEAT optimization configs.
+- [`examples/config/phase_1b_binary/`](examples/config/phase_1b_binary/) —
+  binary entry/exit classifiers (buy/sell × entry/exit) per architecture,
+  plus champion inference configs.
+- [`examples/config/phase_1c_direction/`](examples/config/phase_1c_direction/)
+  — direction classifiers.
+- `phase_2` … `phase_4_3` (with `_daily` variants) — progressively deeper
+  experiments culminating in Transformer configs at multiple horizons.
 
-The predictor integrates with [doin-node](https://github.com/harveybc/doin-node) for distributed NEAT hyperparameter optimization using an island-model approach. Multiple GPU nodes collaboratively optimize TCN model parameters, sharing champions via blockchain.
+Trained champions are kept as `.keras` models with JSON metadata (e.g.
+[`predictor_model_metadata.json`](predictor_model_metadata.json)) so
+prediction_provider can load them.
 
-#### Data Format
+## Prerequisites
 
-Input CSVs must contain only two columns: `DATE_TIME` and the target column (e.g., `typical_price`). All additional features (temporal encodings, window statistics) are generated online by the `stl_preprocessor` plugin during training, controlled by NEAT-optimizable parameters.
+Runtime dependencies are listed in [`requirements.txt`](requirements.txt)
+(TensorFlow, tf-keras, tensorflow-probability, numpy, pandas, scipy, DEAP,
+pmdarima, PyWavelets, matplotlib, psycopg2-binary, ...).
+[`setup.py`](setup.py) intentionally declares only a minimal
+`install_requires`; treat `requirements.txt` as authoritative. No
+`python_requires` is declared; the platform is exercised in practice on
+Python 3.12 (verified below with Python 3.12.13, TensorFlow 2.21.0). A CUDA
+GPU is optional but strongly recommended for training.
 
-```
-DATE_TIME,typical_price
-2024-01-01 00:00:00,1.10234
-2024-01-01 04:00:00,1.10156
-...
-```
-
-#### NEAT-Optimizable Parameters
-
-The NEAT optimizer can evolve these parameters (defined in `hyperparameter_bounds`):
-
-| Parameter | Range | Description |
-|-----------|-------|-------------|
-| `window_size` | [48, 160] | Input sliding window length |
-| `tcn_filters` | [16, 128] | TCN convolutional filters |
-| `tcn_kernel_size` | [2, 7] | TCN kernel size |
-| `tcn_stack_layers` | [1, 4] | TCN residual stacks |
-| `tcn_dilations_per_stack` | [2, 6] | Dilations per stack |
-| `tcn_head_layers` | [1, 3] | Dense head layers per horizon |
-| `tcn_head_units` | [16, 64] | Units per head layer |
-| `use_temporal_features` | [0, 1] | Enable sincos temporal features (hod/dow/moy) |
-| `hod_encoding` | [0, 2] | Hour-of-day encoding: 0=none, 1=onehot, 2=sincos |
-| `dow_encoding` | [0, 2] | Day-of-week encoding |
-| `moy_encoding` | [0, 2] | Month-of-year encoding |
-| `add_window_stats` | [0, 1] | Enable rolling std/ema/price-minus-ema features |
-| `add_multi_scale_returns` | [0, 1] | Enable multi-scale return features |
-| `loss_type` | [0, 4] | Loss: 0=mae, 1=huber, 2=trend_sigma, 3=pearson, 4=soft_dtw |
-| `use_log1p_features` | [0, 1] | Apply log1p transform to target column |
-| `positional_encoding` | [0, 1] | Sinusoidal positional encoding on input |
-| `learning_rate` | [1e-5, 1e-2] | AdamW learning rate |
-| `batch_size` | [16, 64] | Training batch size |
-| `tcn_dropout` | [0.0, 0.3] | Dropout rate |
-| `l2_reg` | [1e-7, 1e-3] | L2 regularization |
-
-Base model starts with 7 input features: 1 price + 6 temporal sincos (when `use_temporal_features=1` with sincos encodings). NEAT can optionally add 6 more window stats features (rolling_std, rolling_ema, price_minus_ema for 2 periods) by evolving `add_window_stats=1`.
-
-#### GPU Environment
-
-For NVIDIA GPUs, set these environment variables **before** launching to prevent GPU memory pre-allocation:
+## Installation
 
 ```bash
-export TF_FORCE_GPU_ALLOW_GROWTH=true    # MUST be "true", NOT "1" (TF rejects "1" silently)
-export TF_GPU_ALLOCATOR=cuda_malloc_async
+git clone https://github.com/harveybc/predictor.git
+cd predictor
+pip install -r requirements.txt
+pip install -e .        # installs the `predictor` console script
 ```
 
-Without these, the parent process allocates all GPU memory, leaving none for subprocess candidates.
+*Unverified in a clean environment* — the commands above are the standard
+install; they were not re-executed from scratch for this README. The imports
+and CLI below were verified in an existing Python 3.12.13 environment.
 
-If CUDA was installed via `pip install tensorflow[and-cuda]` (no system `/usr/local/cuda`), you also need:
+## Smallest working example
+
+Verified (cheap) — the CLI parses and prints its full usage:
 
 ```bash
-NB=$CONDA_PREFIX/lib/python3.12/site-packages/nvidia
-export LD_LIBRARY_PATH="${NB}/cudnn/lib:${NB}/cublas/lib:${NB}/cuda_runtime/lib:${NB}/cufft/lib:${NB}/curand/lib:${NB}/cusolver/lib:${NB}/cusparse/lib:${NB}/cuda_cupti/lib:${NB}/nvjitlink/lib:${NB}/cuda_nvrtc/lib:${NB}/nccl/lib"
+PYTHONPATH=. python app/main.py --help
+# observed: "usage: main.py [-h] [--x_train_file X_TRAIN_FILE] ..." with the
+# full flag list (plugin, epochs, iterations, load/save config, horizons, ...)
 ```
 
-Without `LD_LIBRARY_PATH`, TensorFlow silently falls back to CPU (check with `nvidia-smi` — 0% GPU means it's not working).
-
-#### Optimization Config
-
-The optimization config file (e.g., `examples/config/phase_1_daily/optimization/phase_1_tcn_neat_1d_optimization_config.json`) defines:
-- Data files (train/val/test CSVs)
-- Plugin selection (tcn, neat_optimizer, stl_preprocessor, stl_pipeline)
-- NEAT parameters (population_size, n_generations, mutation rates)
-- Hyperparameter bounds
-- Default values for non-optimized parameters
-
-#### Running Locally (Single Node)
+Smallest real run (*unverified for this README* — trains a small ANN):
 
 ```bash
-export TF_FORCE_GPU_ALLOW_GROWTH=1
-export TF_GPU_ALLOCATOR=cuda_malloc_async
-
-predictor --load_config examples/config/phase_1_daily/optimization/phase_1_tcn_neat_1d_optimization_config.json
+sh predictor.sh --load_config examples/config/phase_1/phase_1_ann_1575_1h_config.json
 ```
 
-#### Running Distributed (DOIN Network)
+[`predictor.sh`](predictor.sh) simply prepends the checkout to `PYTHONPATH`
+and runs `python app/main.py`. Training data ship under
+[`examples/data/`](examples/data/) (organized by phase) and results are
+written under [`examples/results/`](examples/results/); batch drivers live in
+[`examples/scripts/`](examples/scripts/).
 
-See the [doin-node README](https://github.com/harveybc/doin-node#running-a-tcn-neat-experiment) for multi-node deployment instructions.
+## Distributed / DOIN usage
 
-#### Champion Training (No Optimization)
+predictor is a DOIN *domain*: the external
+[doin-plugins](https://github.com/harveybc/doin-plugins) package registers
+`predictor` and `binary_predictor` optimization/inference entry points that
+wrap this repository, and [doin-node](https://github.com/harveybc/doin-node)
+— the unified participant runtime — runs them collaboratively (candidate
+leasing, deduplication, champion migration and blockchain persistence are
+doin-node's responsibility). predictor always works locally first; DOIN
+extends its optimizers, it does not absorb them. The retired
+`doin-optimizer`/`doin-evaluator` services are not required. OLAP/ETL helpers
+for analyzing experiment databases live under [`olap/`](olap/).
 
-To retrain the best solution found by the distributed optimization as a standalone candidate:
+## Configuration and plugins
+
+Configuration is a flat JSON merged over defaults in
+[`app/config.py`](app/config.py); every key can also be passed as a CLI flag
+([`app/cli.py`](app/cli.py)). Plugins resolve via
+[`app/plugin_loader.py`](app/plugin_loader.py) from entry points declared in
+[`setup.py`](setup.py):
+
+| Entry-point group | Plugins (this package) |
+|---|---|
+| `predictor.plugins` | `ann`, `cnn`, `lstm`, `transformer`, `tcn`, `tft`, `n_beats`, `mimo`, plus `binary_*` and `direction_*` variants of each and `binary_logistic`/`direction_logistic` ([`predictor_plugins/`](predictor_plugins/)) |
+| `optimizer.plugins` | `default_optimizer` (DEAP GA), `neat_optimizer` ([`optimizer_plugins/`](optimizer_plugins/)) |
+| `pipeline.plugins` | `default_pipeline`, `stl_pipeline`, `binary_pipeline`, `direction_pipeline` ([`pipeline_plugins/`](pipeline_plugins/)) |
+| `preprocessor.plugins` | `default_preprocessor`, `stl_preprocessor` ([`preprocessor_plugins/`](preprocessor_plugins/)) |
+| `target.plugins` | `default_target`, `stl_target`, `binary_target`, `direction_target` ([`target_plugins/`](target_plugins/)) |
+
+**Note on `preprocessor.plugins`:** the preprocessors under
+[`preprocessor_plugins/`](preprocessor_plugins/) are local to this repository
+but registered into the *shared* `preprocessor.plugins` entry-point group
+also used by [gym-fx](https://github.com/harveybc/gym-fx) (which registers
+its own `default_preprocessor`) and the standalone
+[preprocessor](https://github.com/harveybc/preprocessor) app. Co-installing
+those packages mixes the group's contents, so prefer one environment per
+application.
+
+## Tests
 
 ```bash
-predictor --load_config examples/config/phase_1_daily/phase_1_tcn_neat_champion_1d_training_config.json
+python -m pytest tests --collect-only -q
+# observed: "3 tests collected, 8 errors in 3.21s"
 ```
 
-#### Optimization Results & Metabase Integration
+Known issue, stated honestly: most of the committed suite predates the
+current plugin architecture and fails at import (e.g.
+`app.autoencoder_manager`, `load_encoder_decoder_plugins`, `merge_config` no
+longer exist). Only 3 tests collect cleanly today; the suite needs a rewrite
+against the current `app/` API. Verified sanity check:
 
-Results are stored in `examples/results/phase_1_daily/`:
-
-| File | Description |
-|------|-------------|
-| `phase_1_tcn_neat_1d_optimization_stats.json` | Per-generation statistics (champion fitness, MAE, species count) |
-| `phase_1_tcn_neat_1d_optimization_parameters.json` | Best champion hyperparameters found |
-| `phase_1_tcn_neat_1d_optimization_resume.json` | Full NEAT population state for resuming optimization |
-| `phase_1_tcn_neat_1d_rss.csv` | Memory usage log per candidate evaluation |
-
-The blockchain SQLite database from doin-node contains the full experiment history across all nodes and can be imported into [Metabase](https://www.metabase.com/) for visualization. See the doin-node README for Metabase setup instructions.
-
-### Directory Structure
-
-```
-predictor/
-│
-├── app/                                 # Main application package
-│   ├── __init__.py                     # Package initialization
-│   ├── cli.py                          # Command-line interface handling
-│   ├── config.py                       # Default configuration values
-│   ├── config_handler.py               # Configuration management
-│   ├── config_merger.py                # Configuration merging logic
-│   ├── data_handler.py                 # Data loading and saving functions
-│   ├── data_processor.py               # Core data processing pipeline
-│   ├── main.py                         # Application entry point
-│   ├── plugin_loader.py                # Dynamic plugin loading system
-│   ├── reconstruction.py               # Data reconstruction utilities
-│   └── plugins/                        # Prediction plugins directory
-│       ├── predictor_plugin_ann.py     # Artificial Neural Network plugin
-│       ├── predictor_plugin_cnn.py     # Convolutional Neural Network plugin
-│       ├── predictor_plugin_lstm.py    # Long Short-Term Memory plugin
-│       └── predictor_plugin_transformer.py # Transformer model plugin
-│
-├── tests/                              # Test suite directory
-│   ├── __init__.py                    # Test package initialization
-│   ├── conftest.py                    # pytest configuration
-│   ├── acceptance_tests/              # User acceptance tests
-│   ├── integration_tests/             # Integration test modules
-│   ├── system_tests/                  # System-wide test cases
-│   └── unit_tests/                    # Unit test modules
-│
-├── examples/                           # Example files directory
-│   ├── data/                           # Example training data
-│   └── scripts/                        # Example execution scripts
-│
-├── setup.py                           # Package installation script
-├── predictor.bat                      # Windows execution script
-├── predictor.sh                       # Linux execution script
-├── set_env.bat                        # Windows environment setup
-├── set_env.sh                         # Linux environment setup
-├── requirements.txt                    # Python dependencies
-├── LICENSE.txt                        # Project license
-└── prompt.txt                         # Project documentation
+```bash
+PYTHONPATH=. python -c "from app.plugin_loader import load_plugin; print('plugin_loader OK')"
+# observed: "plugin_loader OK"
 ```
 
-## Example of plugin model:
-```mermaid
-graph TD
+## Outputs and reproducibility
 
-    subgraph SP_Input ["Input Processing (Features Only)"]
-        I[/"Input (ws, num_channels)"/] --> FS{"Split Features"};
+A run writes: predictions CSV (`output_file`), aggregated metrics
+(`results_file`), training/validation loss plot, optional model plot, the
+trained model (`save_model`, `.keras`) with metadata JSON, and the fully
+merged effective config (`save_config`) from which the run can be reproduced.
+Optimization runs additionally write per-generation statistics, best
+hyperparameters and a resumable population state under
+[`examples/results/`](examples/results/).
 
-        subgraph SP_Branches ["Feature Branches (Parallel)"]
-             FS -- Feature 1 --> F1_FLAT["Flatten"] --> F1_DENSE["Dense x M"];
-             FS -- ... --> F_DOTS["..."];
-             FS -- Feature n --> Fn_FLAT["Flatten"] --> Fn_DENSE["Dense x M"];
-        end
+## Safety and credentials
 
-        F1_DENSE --> M{"Merge Concat Features"};
-        F_DOTS --> M;
-        Fn_DENSE --> M;
-    end
+Training operates on local CSV files and requires no credentials. The CLI
+retains optional remote config/logging flags (`--username`, `--password`,
+`--remote_log`); never embed real credentials in configs or commit them.
+Database helpers under [`olap/`](olap/) connect to locally provisioned
+databases only. Predictions are historical-data research output — not
+financial advice and not a live trading system.
 
-    subgraph SP_Heads ["Output Heads (Parallel)"]
+## Limitations and migration notes
 
-        subgraph Head1 ["Head for Horizon 1"]
-            M --> H1_DENSE["Dense x K"];
-            H1_DENSE --> H1_BAYES{"DenseFlipout (Bayesian)"};
-            H1_DENSE --> H1_BIAS["Dense (Bias)"];
-            H1_BAYES --> H1_ADD{"Add"};
-            H1_BIAS --> H1_ADD;
-            H1_ADD --> O1["Output H1"];
-        end
+- The legacy pytest suite is stale (see Tests) — collection errors are
+  expected until it is rewritten.
+- `setup.py` `install_requires` is minimal; installing without
+  `requirements.txt` yields a non-functional environment.
+- No `python_requires` or dependency version pins are declared.
+- Top-level package names (`app`, `*_plugins`) are shared conventions across
+  sibling repositories; use a dedicated environment or run from the checkout
+  root (as `predictor.sh` does) so local packages win.
+- Some root-level artifacts (champion models, sweep scripts, logs) are
+  working files of ongoing campaigns; treat directories under
+  [`examples/`](examples/) as the stable interface.
 
-         subgraph HeadN ["Head for Horizon N"]
-            M --> HN_DENSE["Dense x K"];
-            HN_DENSE --> HN_BAYES{"DenseFlipout (Bayesian)"};
-            HN_DENSE --> HN_BIAS["Dense (Bias)"];
-            HN_BAYES --> HN_ADD{"Add"};
-            HN_BIAS --> HN_ADD;
-            HN_ADD --> ON["Output HN"];
-        end
+## Related repositories
 
-    end
+- [prediction_provider](https://github.com/harveybc/prediction_provider) — FastAPI service serving models trained here
+- [feature-eng](https://github.com/harveybc/feature-eng) — feature/label generation upstream of training
+- [feature-extractor](https://github.com/harveybc/feature-extractor) — autoencoder encoder/decoder training
+- [preprocessor](https://github.com/harveybc/preprocessor) — standalone CSV preprocessing app
+- [doin-node](https://github.com/harveybc/doin-node) / [doin-plugins](https://github.com/harveybc/doin-plugins) — distributed collaborative optimization around this domain
+- [agent-multi](https://github.com/harveybc/agent-multi) / [gym-fx](https://github.com/harveybc/gym-fx) — RL trading side of the stack
 
-    O1 --> Z((Final Output List));
-    ON --> Z;
+## License
 
-    subgraph Legend
-         NoteM["M = config['intermediate_layers']"];
-         NoteK["K = config['intermediate']"];
-         NoteNoFB["NOTE: Diagram simplified - Feedback loops not shown."];
-    end
-
-    style H1_BAYES,HN_BAYES fill:#556B2F,stroke:#333,color:#fff;
-    style H1_BIAS,HN_BIAS fill:#4682B4,stroke:#333,color:#fff;
-    style NoteM,NoteK,NoteNoFB fill:#8B413,stroke:#333,stroke-dasharray:5 5,color:#fff;
-
-```
+MIT — see [`LICENSE.txt`](LICENSE.txt).
