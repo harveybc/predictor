@@ -86,3 +86,21 @@ def remote_log(config, debug_info, url, username, password):
     except requests.RequestException as e:
         print(f"Failed to log remote information: {e}", file=sys.stderr)
         return False
+
+
+# ---------------------------------------------------------------------------
+# Migration aliases (finding 208). These preserve the historical public import
+# surface of config_handler without changing behavior:
+#   - merge_config moved to app.config_merger (six-argument contract);
+#     re-exported here for legacy importers.
+#   - load_remote_config / save_remote_config were renamed to
+#     remote_load_config / remote_save_config with identical semantics.
+# The historical log_remote_data(debug_info, url, username, password) contract
+# is intentionally NOT aliased: its successor remote_log(config, debug_info,
+# url, username, password) requires the config argument, so a blind alias
+# would silently misbind arguments.
+# ---------------------------------------------------------------------------
+from app.config_merger import merge_config  # noqa: E402,F401  (moved symbol re-export)
+
+load_remote_config = remote_load_config
+save_remote_config = remote_save_config

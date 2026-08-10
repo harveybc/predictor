@@ -52,7 +52,13 @@ from app.config_handler import (
 from app.cli import parse_args
 from app.config import DEFAULT_VALUES
 from app.plugin_loader import load_plugin
-from config_merger import merge_config, process_unknown_args
+# Migration import shim (finding 208): resolve the config merger as a package
+# module first so `import app.main` works; fall back to the bare module name
+# for script-style execution with app/ on sys.path.
+try:
+    from app.config_merger import merge_config, process_unknown_args
+except ImportError:  # pragma: no cover - script-style execution path
+    from config_merger import merge_config, process_unknown_args
 
 # Se asume que los siguientes plugins se cargan desde sus respectivos namespaces:
 # - predictor.plugins

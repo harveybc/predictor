@@ -13,7 +13,13 @@ import contextlib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
 import json
-from plugin_loader import load_plugin
+# Migration import shim (finding 208): resolve the plugin loader as a package
+# module first so `import app.data_processor` works; fall back to the bare
+# module name for script-style execution with app/ on sys.path.
+try:
+    from app.plugin_loader import load_plugin
+except ImportError:  # pragma: no cover - script-style execution path
+    from plugin_loader import load_plugin
 import os as _os
 _QUIET = _os.environ.get('PREDICTOR_QUIET', '0') == '1'
 
