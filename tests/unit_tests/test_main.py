@@ -1,47 +1,36 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from argparse import Namespace
+from unittest.mock import patch
+
 from app.main import main
-from app.config import DEFAULT_VALUES
+
+
+@patch('app.main.load_plugin', side_effect=ImportError('predictor plugin unavailable'))
+@patch('app.main.parse_args')
+def test_main_exits_when_predictor_plugin_fails_to_load(mock_parse_args, mock_load_plugin):
+    """main() must exit with code 1 when the predictor plugin cannot be loaded."""
+    mock_parse_args.return_value = (
+        Namespace(remote_load_config=None, load_config=None, username=None, password=None),
+        [],
+    )
+    with pytest.raises(SystemExit) as excinfo:
+        main()
+    assert excinfo.value.code == 1
+    mock_load_plugin.assert_called_once()
+
 
 @patch('app.main.parse_args')
-@patch('app.main.load_config')
-@patch('app.main.save_config')
-@patch('app.main.process_data')
-@patch('app.main.DEFAULT_VALUES', {
-    'csv_input_path': './csv_input.csv',
-    'csv_output_path': './csv_output.csv',
-    'config_save_path': './config_out.json',
-    'config_load_path': './config_in.json',
-    'encoder_plugin': 'default',
-    'decoder_plugin': 'default',
-    'training_batch_size': 128,
-    'epochs': 10,
-    'plugin_directory': 'app/plugins/',
-    'remote_log_url': None,
-    'remote_config_url': None,
-    'window_size': 128,
-    'initial_encoding_dim': 4,
-    'encoding_step_size': 4,
-    'mse_threshold': 0.3,
-    'quiet_mode': False,
-    'remote_username': 'test',
-    'remote_password': 'pass',
-    'save_encoder_path': './encoder_ann.keras',
-    'save_decoder_path': './decoder_ann.keras',
-    'force_date': False,
-    'headers': False,
-    'incremental_search': True
-})
-def test_main_with_invalid_arguments(mock_process_data, mock_save_config, mock_load_config, mock_parse_args):
-    mock_args = MagicMock()
-    mock_parse_args.return_value = (mock_args, ['--invalid_argument'])
-    mock_process_data.return_value = (MagicMock(), {})
-    mock_load_config.return_value = {}
-
-    mock_args.csv_input_path = 'tests/data/csv_sel_unb_norm_512.csv'
-    mock_args.save_encoder = './encoder_ann.keras'
-    mock_args.save_decoder = './decoder_ann.keras'
-
-    with patch('sys.argv', ['script_name', 'tests/data/csv_sel_unb_norm_512.csv', '--save_encoder', './encoder_ann.keras', '--save_decoder', './encoder_ann.keras', '--invalid_argument']):
-        with pytest.raises(SystemExit):  # Expect SystemExit due to sys.exit(1)
-            main()
+def test_main_exits_when_local_config_load_fails(mock_parse_args):
+    """main() must exit with code 1 when the requested local config cannot be read."""
+    mock_parse_args.return_value = (
+        Namespace(
+            remote_load_config=None,
+            load_config='/nonexistent/config_in.json',
+            username=None,
+            password=None,
+        ),
+        [],
+    )
+    with pytest.raises(SystemExit) as excinfo:
+        main()
+    assert excinfo.value.code == 1

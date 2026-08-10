@@ -1,51 +1,80 @@
-import pytest
-import pandas as pd
 import numpy as np
-from unittest.mock import patch, MagicMock
-from app.data_processor import process_data, train_autoencoder
-from app.data_handler import load_csv, write_csv
-from app.plugin_loader import load_plugin
-from app.reconstruction import unwindow_data
+import pandas as pd
 
-sample_data = pd.DataFrame({
-    'column1': np.random.rand(100),
-    'column2': np.random.rand(100)
-})
+from app.data_processor import process_data, create_sliding_windows_single
 
-@patch('app.plugin_loader.load_plugin')
-@patch('app.data_handler.load_csv')
-@patch('app.data_handler.write_csv')
-@patch('app.reconstruction.unwindow_data')
-def test_process_data(mock_unwindow_data, mock_write_csv, mock_load_csv, mock_load_plugin):
+
+def _write_close_csv(path, n, start=1.0):
+    dates = pd.date_range('2024-01-01', periods=n, freq='h')
+    df = pd.DataFrame({
+        'DATE_TIME': dates,
+        'CLOSE': np.linspace(start, start + n - 1, n),
+    })
+    df.to_csv(path, index=False)
+
+
+def test_create_sliding_windows_single_shapes_and_targets():
+    data = np.arange(10, dtype=np.float32)
+    windows, targets, date_windows = create_sliding_windows_single(
+        data, window_size=4, time_horizon=2
+    )
+    # n - window_size - time_horizon + 1 = 10 - 4 - 2 + 1 = 5 samples
+    assert windows.shape == (5, 4)
+    assert targets.shape == (5,)
+    np.testing.assert_array_equal(windows[0], np.array([0, 1, 2, 3], dtype=np.float32))
+    # target = data[i + window_size + time_horizon - 1] = data[5]
+    assert targets[0] == 5.0
+    assert date_windows == []
+
+
+def test_process_data_single_step(tmp_path):
+    n_rows = 40
+    for name in ('train', 'val', 'test'):
+        _write_close_csv(tmp_path / f'{name}.csv', n_rows)
+
+    window_size = 8
+    time_horizon = 2
     config = {
-        'csv_file': 'tests/data/csv_sel_unb_norm_512.csv',
-        'csv_output_path': './output',
-        'decoder_plugin': 'mock_decoder',
-        'encoder_plugin': 'mock_encoder',
-        'window_size': 10,
-        'headers': False,
-        'force_date': False
+        'x_train_file': str(tmp_path / 'train.csv'),
+        'x_validation_file': str(tmp_path / 'val.csv'),
+        'x_test_file': str(tmp_path / 'test.csv'),
+        'headers': True,
+        'window_size': window_size,
+        'time_horizon': time_horizon,
     }
 
-    mock_load_csv.return_value = sample_data
-    mock_load_plugin.side_effect = [(MagicMock(), []), (MagicMock(), [])]
-    mock_unwindow_data.return_value = pd.DataFrame({'Output': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]})
+    datasets = process_data(config)
 
-    processed_data, debug_info = process_data(config)
+    n_samples = n_rows - window_size - time_horizon + 1
+    assert datasets['x_train'].shape == (n_samples, window_size, 1)
+    assert datasets['x_val'].shape == (n_samples, window_size, 1)
+    assert datasets['x_test'].shape == (n_samples, window_size, 1)
+    assert datasets['y_train_array'].shape == (n_samples, 1)
+    assert datasets['y_test_array'].shape == (n_samples, 1)
+    assert datasets['test_close_prices'].shape == (n_samples,)
+    # Linear series: the target is always window end + horizon.
+    first_window_end = datasets['x_train'][0, -1, 0]
+    assert datasets['y_train_array'][0, 0] == first_window_end + time_horizon
 
-    assert isinstance(processed_data, dict)
-    for value in processed_data.values():
-        assert isinstance(value, np.ndarray)
 
-def test_train_autoencoder():
-    autoencoder_manager = MagicMock()
-    autoencoder_manager.calculate_mse.return_value = 0.05  # Mock the return value of calculate_mse
+def test_process_data_use_returns(tmp_path):
+    n_rows = 30
+    for name in ('train', 'val', 'test'):
+        _write_close_csv(tmp_path / f'{name}.csv', n_rows)
 
-    data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    config = {
+        'x_train_file': str(tmp_path / 'train.csv'),
+        'x_validation_file': str(tmp_path / 'val.csv'),
+        'x_test_file': str(tmp_path / 'test.csv'),
+        'headers': True,
+        'window_size': 6,
+        'time_horizon': 3,
+        'use_returns': True,
+    }
 
-    trained_autoencoder_manager = train_autoencoder(
-        autoencoder_manager=autoencoder_manager, data=data, mse_threshold=0.1, initial_size=4, step_size=2, incremental_search=False, epochs=10
-    )
+    datasets = process_data(config)
 
-    assert trained_autoencoder_manager is not None
-    autoencoder_manager.calculate_mse.assert_called()  # Ensure calculate_mse was called
+    # With a strictly linear close series, every return target equals the horizon.
+    np.testing.assert_allclose(datasets['y_train_array'], 3.0)
+    assert 'baseline_train' in datasets
+    assert 'baseline_test' in datasets

@@ -1,13 +1,31 @@
+"""Focused loading tests for the current predictor plugin architecture.
+
+The active plugin surface is the `predictor.plugins` entry-point group backed
+by the root `predictor_plugins` package (CNN and friends). The historical
+encoder/decoder pair loading belongs to the feature-extractor project and is
+not part of this repository.
+"""
 import pytest
-from app.plugin_loader import load_plugin, load_encoder_decoder_plugins
-from app.config import DEFAULT_VALUES
+from importlib.metadata import entry_points
 
-def test_load_plugin_success():
-    plugin_class, required_params = load_plugin('feature_extractor.encoders', 'default')
-    assert plugin_class.plugin_params == {'epochs': 10, 'batch_size': 256}
-    assert required_params == ['epochs', 'batch_size']
+from app.plugin_loader import load_plugin
 
-def test_load_encoder_decoder_plugins():
-    encoder_plugin, encoder_params, decoder_plugin, decoder_params = load_encoder_decoder_plugins('default', 'default')
-    assert encoder_plugin.plugin_params == {'epochs': 10, 'batch_size': 256}
-    assert decoder_plugin.plugin_params == {'epochs': 10, 'batch_size': 256}
+
+def test_current_cnn_plugin_class_importable():
+    from predictor_plugins.predictor_plugin_cnn import Plugin
+
+    assert isinstance(Plugin.plugin_params, dict)
+    assert len(Plugin.plugin_params) > 0
+
+
+def test_load_plugin_from_installed_entry_points_or_skip():
+    eps = entry_points().select(group='predictor.plugins')
+    names = sorted({ep.name for ep in eps})
+    if not names:
+        pytest.skip(
+            'predictor distribution not installed in this environment; '
+            'predictor.plugins entry points unavailable'
+        )
+    plugin_class, required_params = load_plugin('predictor.plugins', names[0])
+    assert isinstance(plugin_class.plugin_params, dict)
+    assert required_params == list(plugin_class.plugin_params.keys())

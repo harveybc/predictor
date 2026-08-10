@@ -1,17 +1,19 @@
 import pytest
 import json
-import requests
 from unittest.mock import patch, mock_open
-from app.config_handler import load_config, save_config, merge_config, save_debug_info, load_remote_config, save_remote_config, log_remote_data
-from app.config import DEFAULT_VALUES
+from app.config_handler import (
+    load_config,
+    save_config,
+    save_debug_info,
+    load_remote_config,
+    save_remote_config,
+)
 
 # Mock data for tests
 mock_config = {
-    'csv_input_path': './test_input.csv',
-    'csv_output_path': './test_output.csv',
-    'encoder_plugin': 'test_encoder',
-    'decoder_plugin': 'test_decoder',
-    'training_batch_size': 64,
+    'x_train_file': './test_input.csv',
+    'predictor_plugin': 'cnn',
+    'batch_size': 64,
     'epochs': 20
 }
 
@@ -25,15 +27,21 @@ mock_remote_config = {
     'config': mock_config
 }
 
+
 # Test loading configuration from a file
 def test_load_config():
     with patch("builtins.open", mock_open(read_data=json.dumps(mock_config))):
         config = load_config('config.json')
         assert config == mock_config
 
-# Test saving configuration to a file
+
+# Test saving configuration to a file.
+# compose_config is patched to identity because it resolves plugin default
+# parameters through installed entry points, which is environment-dependent;
+# this test targets the save_config file contract only.
 def test_save_config():
-    with patch("builtins.open", mock_open()) as mocked_file:
+    with patch("builtins.open", mock_open()) as mocked_file, \
+         patch("app.config_handler.compose_config", side_effect=lambda c: c):
         config, path = save_config(mock_config, 'config_out.json')
         handle = mocked_file()
         handle.write.assert_called()
@@ -42,13 +50,6 @@ def test_save_config():
         assert config == mock_config
         assert path == 'config_out.json'
 
-# Test merging configuration
-def test_merge_config():
-    cli_args = {'csv_file': './cli_input.csv', 'epochs': 30}
-    plugin_params = {'max_error': 0.1}
-    merged_config = merge_config(mock_config, cli_args, plugin_params)
-    expected_config = {**DEFAULT_VALUES, **mock_config, **cli_args, **plugin_params}
-    assert merged_config == expected_config
 
 # Test saving debug information to a file
 def test_save_debug_info():
@@ -59,7 +60,8 @@ def test_save_debug_info():
         written_content = "".join(call.args[0] for call in handle.write.call_args_list)
         assert json.loads(written_content) == mock_debug_info
 
-# Test loading remote configuration
+
+# Test loading remote configuration (via the load_remote_config migration alias)
 def test_load_remote_config():
     with patch('requests.get') as mocked_get:
         mocked_get.return_value.status_code = 200
@@ -67,19 +69,30 @@ def test_load_remote_config():
         config = load_remote_config('http://example.com/config', 'user', 'pass')
         assert config == mock_remote_config
 
-# Test saving remote configuration
+
+# Test saving remote configuration (via the save_remote_config migration alias)
 def test_save_remote_config():
-    with patch('requests.post') as mocked_post:
+    with patch('requests.post') as mocked_post, \
+         patch("app.config_handler.compose_config", side_effect=lambda c: c):
         mocked_post.return_value.status_code = 200
         result = save_remote_config(mock_config, 'http://example.com/config', 'user', 'pass')
-        assert result == True
+        assert result is True
 
-# Test logging remote data
-def test_log_remote_data():
-    with patch('requests.post') as mocked_post:
-        mocked_post.return_value.status_code = 200
-        result = log_remote_data(mock_debug_info, 'http://example.com/log', 'user', 'pass')
-        assert result == True
+
+# The renamed remote helpers must stay importable under their historical names.
+def test_remote_migration_aliases_point_to_current_functions():
+    from app import config_handler
+    assert config_handler.load_remote_config is config_handler.remote_load_config
+    assert config_handler.save_remote_config is config_handler.remote_save_config
+
+
+# merge_config moved to app.config_merger; config_handler re-exports it so the
+# historical import path keeps working.
+def test_merge_config_alias_points_to_config_merger():
+    from app.config_handler import merge_config as aliased
+    from app.config_merger import merge_config as canonical
+    assert aliased is canonical
+
 
 if __name__ == "__main__":
     pytest.main()
