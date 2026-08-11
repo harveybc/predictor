@@ -73,9 +73,11 @@ pipeline plugin (pipeline_plugins/)
 - `phase_2` … `phase_4_3` (with `_daily` variants) — progressively deeper
   experiments culminating in Transformer configs at multiple horizons.
 
-Trained champions are kept as `.keras` models with JSON metadata (e.g.
-[`predictor_model_metadata.json`](predictor_model_metadata.json)) so
-prediction_provider can load them.
+Trained champions are kept as `.keras` models with JSON metadata (e.g. a
+generated, gitignored `predictor_model_metadata.json` at the repository
+root; committed examples live under
+[`examples/results/`](examples/results/)) so prediction_provider can load
+them.
 
 ## Prerequisites
 
