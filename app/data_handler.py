@@ -35,8 +35,11 @@ def load_csv(file_path: str, headers: bool = False, max_rows: Optional[int] = No
         else:
             data = pd.read_csv(file_path, header=None, sep=',', dtype=str, nrows=max_rows)
 
-        # 2) Detect 'DATE_TIME' column in a case-insensitive manner
-        date_time_cols = [c for c in data.columns if c.strip().lower() == 'date_time']
+        # 2) Detect 'DATE_TIME' column in a case-insensitive manner.
+        # Labels are normalized via str(c): with header=None pandas yields
+        # integer column labels, and calling .strip() on them directly
+        # raised AttributeError (finding 216).
+        date_time_cols = [c for c in data.columns if str(c).strip().lower() == 'date_time']
 
         if date_time_cols:
             # 2a) Use the first detected 'DATE_TIME' column as the index

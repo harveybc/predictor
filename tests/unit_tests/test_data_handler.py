@@ -18,26 +18,55 @@ def test_load_csv_with_headers():
     pd.testing.assert_frame_equal(data, mock_data)
 
 
-# Test loading CSV file without headers: the current contract names the
-# columns col_0..col_N and coerces values to numeric.
-# KNOWN DEFECT (documented, not hidden): load_csv(headers=False) currently
-# always raises AttributeError because pandas yields integer column labels for
-# header=None and app/data_handler.py:39 calls c.strip() on them. Fixing this
-# is a production behavior change, which is out of scope for the finding-208
-# collection-repair branch (alias/import shims only), so the defect is pinned
-# as a strict xfail for reviewer visibility.
-@pytest.mark.xfail(
-    reason="load_csv(headers=False) crashes on integer column labels "
-    "(c.strip() in app/data_handler.py); production fix out of scope for "
-    "finding 208",
-    raises=AttributeError,
-    strict=True,
-)
+# Test loading CSV file without headers: the contract names the columns
+# col_0..col_N and coerces values to numeric. This is the default public API
+# (headers=False); pandas yields integer column labels for header=None, and
+# the finding-216 fix normalizes them via str(c) before detection so this
+# path no longer raises AttributeError.
 def test_load_csv_without_headers():
     csv_text = mock_data.to_csv(index=False, header=False)
     with patch("builtins.open", mock_open(read_data=csv_text)):
         data = load_csv('test.csv', headers=False)
     expected = mock_data.copy()
+    expected.columns = ['col_0', 'col_1']
+    pd.testing.assert_frame_equal(data, expected)
+
+
+# Test the DATE_TIME path: a (case-insensitively, whitespace-tolerantly)
+# detected DATE_TIME column becomes a datetime index and the remaining
+# columns are converted to numeric.
+def test_load_csv_with_date_time_index():
+    csv_text = (
+        " Date_Time ,A,B\n"
+        "2026-01-01 00:00:00,1,5\n"
+        "2026-01-01 04:00:00,2,4\n"
+        "2026-01-01 08:00:00,3,3\n"
+    )
+    with patch("builtins.open", mock_open(read_data=csv_text)):
+        data = load_csv('test.csv', headers=True)
+    assert isinstance(data.index, pd.DatetimeIndex)
+    assert list(data.index) == [
+        pd.Timestamp('2026-01-01 00:00:00'),
+        pd.Timestamp('2026-01-01 04:00:00'),
+        pd.Timestamp('2026-01-01 08:00:00'),
+    ]
+    assert list(data.columns) == ['A', 'B']
+    assert data['A'].tolist() == [1, 2, 3]
+    assert data['B'].tolist() == [5, 4, 3]
+
+
+# Test max_rows limiting on both the headers and the no-headers paths.
+def test_load_csv_max_rows_with_headers():
+    with patch("builtins.open", mock_open(read_data=mock_data.to_csv(index=False))):
+        data = load_csv('test.csv', headers=True, max_rows=2)
+    pd.testing.assert_frame_equal(data, mock_data.iloc[:2])
+
+
+def test_load_csv_max_rows_without_headers():
+    csv_text = mock_data.to_csv(index=False, header=False)
+    with patch("builtins.open", mock_open(read_data=csv_text)):
+        data = load_csv('test.csv', headers=False, max_rows=3)
+    expected = mock_data.iloc[:3].copy()
     expected.columns = ['col_0', 'col_1']
     pd.testing.assert_frame_equal(data, expected)
 
