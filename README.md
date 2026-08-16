@@ -21,6 +21,19 @@ binary/direction experiments feed current campaigns.
 > trading signals; nothing in this repository is financial advice, and no
 > real-capital execution happens here.
 
+## Run this with an AI agent
+
+Paste this into Claude Code, Cursor, Codex, GitHub Copilot or any coding agent
+with shell access:
+
+> Read `AGENTS.md` in this repository and follow the **Agent quickstart**
+> section end to end: set up the environment, run the smoke test, execute the
+> example run, load the results into the OLAP cube, then tell me the exact URL
+> or file paths where I can see the results and one query I should try first.
+
+`AGENTS.md` is the [agents.md](https://agents.md) convention, read natively by
+most coding agents.
+
 ## Role and non-responsibilities
 
 **Role:** own model definition, training, evaluation and hyperparameter
@@ -99,13 +112,12 @@ pip install -r requirements.txt
 pip install -e .        # installs the `predictor` console script
 ```
 
-*Unverified in a clean environment* — the commands above are the standard
-install; they were not re-executed from scratch for this README. The imports
-and CLI below were verified in an existing Python 3.12.13 environment.
+These commands were not re-executed from a clean environment; the imports and
+CLI below were verified in an existing Python 3.12.13 environment.
 
 ## Smallest working example
 
-Verified (cheap) — the CLI parses and prints its full usage:
+The CLI parses and prints its full usage:
 
 ```bash
 PYTHONPATH=. python app/main.py --help
@@ -113,11 +125,19 @@ PYTHONPATH=. python app/main.py --help
 # full flag list (plugin, epochs, iterations, load/save config, horizons, ...)
 ```
 
-Smallest real run (*unverified for this README* — trains a small ANN):
+Smallest real run — a small daily ANN, verified at ~12 s on CPU:
 
 ```bash
-sh predictor.sh --load_config examples/config/phase_1/phase_1_ann_1575_1h_config.json
+CUDA_VISIBLE_DEVICES="" PYTHONPATH=. python app/main.py \
+  --load_config examples/config/phase_1_daily/phase_1_ann_1575_1d_config.json \
+  --epochs 2 --max_steps_train 300 --max_steps_test 300 --mc_samples 2
 ```
+
+Drop the overrides to run the real experiment. Only long-form `--flags`
+override the config file — short flags such as `-e` are silently ignored by
+`app/config_merger.py`. Note that not all configs are runnable from a fresh
+checkout: the `examples/config/phase_1/` (1h) configs reference
+`examples/data/phase_1/normalized_d*.csv`, which are not committed.
 
 [`predictor.sh`](predictor.sh) simply prepends the checkout to `PYTHONPATH`
 and runs `python app/main.py`. Training data ship under
@@ -133,10 +153,9 @@ predictor is a DOIN *domain*: the external
 wrap this repository, and [doin-node](https://github.com/harveybc/doin-node)
 — the unified participant runtime — runs them collaboratively (candidate
 leasing, deduplication, champion migration and blockchain persistence are
-doin-node's responsibility). predictor always works locally first; DOIN
-extends its optimizers, it does not absorb them. The retired
-`doin-optimizer`/`doin-evaluator` services are not required. OLAP/ETL helpers
-for analyzing experiment databases live under [`olap/`](olap/).
+doin-node's responsibility). predictor runs standalone; DOIN is optional. The
+retired `doin-optimizer`/`doin-evaluator` services are not required. OLAP/ETL
+helpers for analyzing experiment databases live under [`olap/`](olap/).
 
 ## Configuration and plugins
 
@@ -170,7 +189,7 @@ python -m pytest tests --collect-only -q
 # observed: "3 tests collected, 8 errors in 3.21s"
 ```
 
-Known issue, stated honestly: most of the committed suite predates the
+Known issue: most of the committed suite predates the
 current plugin architecture and fails at import (e.g.
 `app.autoencoder_manager`, `load_encoder_decoder_plugins`, `merge_config` no
 longer exist). Only 3 tests collect cleanly today; the suite needs a rewrite
