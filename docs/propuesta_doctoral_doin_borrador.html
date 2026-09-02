@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Propuesta doctoral - DOIN</title>
+<style>
+  @page { size: Letter; margin: 0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: #1c282d; font-family: "DejaVu Sans", Arial, sans-serif; background: #e8ecef; }
+  .page { width: 8.5in; height: 11in; margin: 0 auto 8mm; padding: 13mm 15.5mm 13mm; background: #fff; position: relative; page-break-after: always; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+  .rule { width: 36mm; height: 2mm; background: #147d74; margin-bottom: 4mm; }
+  h1 { margin: 0 0 2.8mm; font-family: "DejaVu Serif", Georgia, serif; font-size: 19pt; line-height: 1.08; color: #12383c; }
+  .subtitle { margin: 0 0 4.2mm; color: #526168; font-size: 9.5pt; line-height: 1.24; }
+  h2 { margin: 3.1mm 0 1.35mm; font-size: 11.5pt; line-height: 1.12; color: #0e625d; }
+  h3 { margin: 2mm 0 0.8mm; font-size: 10pt; line-height: 1.15; color: #273b42; }
+  p, li, td, th, .refs { font-size: 9.5pt; line-height: 1.18; }
+  p { margin: 0 0 1.55mm; text-align: justify; }
+  ul, ol { margin: 0.8mm 0 1.6mm 4mm; padding-left: 3.8mm; }
+  li { margin-bottom: 0.6mm; }
+  strong { color: #15383d; }
+  .lead { font-family: "DejaVu Serif", Georgia, serif; font-size: 10.1pt; line-height: 1.28; color: #20373e; }
+  .question { border-left: 2mm solid #147d74; background: #edf6f5; padding: 2.6mm 3.4mm; margin: 2.6mm 0; font-family: "DejaVu Serif", Georgia, serif; font-size: 10pt; line-height: 1.24; }
+  .thesis { border: 0.35mm solid #9bbdb9; padding: 2.3mm 2.8mm; margin: 2.3mm 0; background: #fafcfc; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 4.8mm; }
+  .box { border-top: 0.7mm solid #147d74; background: #f5f8f8; padding: 1.9mm 2.2mm; }
+  .box h3 { margin-top: 0; }
+  .formula { margin: 1.8mm 0; padding: 2mm 2.5mm; text-align: center; background: #f1f4f5; font-family: "DejaVu Serif", Georgia, serif; font-size: 9.7pt; line-height: 1.2; }
+  table { width: 100%; border-collapse: collapse; margin: 1.2mm 0 1.8mm; }
+  th { background: #eaf3f2; color: #153e42; text-align: left; }
+  th, td { border: 0.25mm solid #becbce; padding: 1.2mm 1.45mm; vertical-align: top; }
+  .compact td, .compact th { padding: 1mm 1.25mm; }
+  .cite { white-space: nowrap; }
+  .refs { columns: 2; column-gap: 5mm; }
+  .ref { break-inside: avoid; margin: 0 0 0.8mm; padding-left: 4.8mm; text-indent: -4.8mm; text-align: left; }
+  .footer { position: absolute; bottom: 5.6mm; left: 15.5mm; right: 15.5mm; border-top: 0.25mm solid #c8d0d4; padding-top: 1.4mm; color: #68777d; font-size: 8pt; display: flex; justify-content: space-between; }
+  @media print { body { background: #fff; } .page { margin: 0; } }
+</style>
+</head>
+<body>
+
+<section class="page" id="page-1">
+  <div class="rule"></div>
+  <h1>Validación e incentivos entre pares para mercados descentralizados de inferencia y optimización</h1>
+  <p class="subtitle"><strong>Propuesta doctoral preliminar</strong><br>Harvey Demian Bastidas Caicedo · Doctorado en Inteligencia Artificial · Universidad de La Sabana</p>
+
+  <h2>1. Resumen</h2>
+  <p class="lead">Esta investigación estudiará cómo validar y remunerar trabajo producido por sistemas de inteligencia artificial cuando su calidad es costosa de verificar y, en algunos dominios, no existe una respuesta objetiva disponible para cada tarea. El caso principal es la evaluación confiable de inferencias de modelos de lenguaje y agentes bajo contaminación de pruebas, jueces automáticos imperfectos y participantes estratégicos.</p>
+
+  <p>La contribución central será diseñar y evaluar un protocolo de validación y pago que combine pruebas ejecutables, retos posteriores al compromiso, auditoría parcial y elicitación de información entre pares. Tendrá dos regímenes: uno con oráculo objetivo, usado como control, y otro con verdad parcial. El mercado y el registro distribuido serán el entorno experimental para estudiar incentivos; no sustituirán la evaluación ni constituirán por sí solos la contribución.</p>
+
+  <div class="question"><strong>Pregunta de investigación.</strong> ¿Puede un protocolo que combina auditoría parcial, retos posteriores al compromiso y Correlated Agreement reducir la aceptación de resultados inválidos y hacer menos rentable el reporte de bajo esfuerzo, a presupuesto de validación fijo, de modo que su resultado pueda condicionar pagos en un mercado descentralizado?</div>
+
+  <h2>2. Problema, motivación y alcance</h2>
+  <p>En una red abierta, la capacidad de cómputo, la disponibilidad, la especialización de un modelo y el costo de oportunidad están dispersos entre participantes. El precio puede transmitir parte de ese conocimiento económico, en el sentido acotado por Hayek <span class="cite">[1]</span>; sin embargo, una oferta barata no prueba que una inferencia sea correcta. El diseño de mecanismos permite estudiar reglas de asignación y pago bajo información privada <span class="cite">[2]</span>, mientras que la predicción entre pares aborda el problema distinto de recompensar reportes informativos cuando falta una verdad observable <span class="cite">[3], [4]</span>.</p>
+
+  <p>El escenario permite que una persona venda capacidad ociosa, que un proveedor ofrezca la inferencia de un modelo afinado sin entregar sus pesos, o que varios trabajadores formen un pool para resolver una tarea. La auto-selección de dominio, hardware o pipeline puede ser una estrategia privada del proveedor para maximizar su utilidad; no será aprendida ni controlada por el mecanismo doctoral. La asignación utilizará una subasta inversa sellada sencilla como infraestructura de comparación. El objeto científico comienza después: qué evidencia admite el protocolo, cómo se remunera al evaluador y cuándo esa evidencia permite liberar el pago.</p>
+
+  <div class="thesis"><strong>Tesis de trabajo.</strong> Bajo tareas repetidas, señales correlacionadas y una fracción de auditoría externa aleatoria, un protocolo de validación entre pares puede reducir desviaciones de bajo esfuerzo y pagos por resultados inválidos frente a pago uniforme y mayoría simple. Sin auditoría externa alguna, la validez absoluta no es identificable: solo puede reclamarse acuerdo informado.</div>
+
+  <h2>3. Punto de partida</h2>
+  <p>La tesis de maestría introdujo una prueba de trabajo de optimización y una red para evolución computacional descentralizada <span class="cite">[5]</span>. El prototipo DOIN actual consensa <em>incrementos de optimización</em> <span class="cite">[19]</span>; el doctorado propone un mercado de <em>tareas demandadas</em> y usará DOIN como runtime y banco de pruebas. Por tanto, no se presenta el mercado como una extensión ya resuelta, sino como un cambio de mecanismo cuya contribución doctoral se limita a validación e incentivos.</p>
+
+  <div class="footer"><span>Harvey Demian Bastidas Caicedo · Propuesta doctoral preliminar</span><span>1 / 4</span></div>
+</section>
+
+<section class="page" id="page-2">
+  <h2>4. Modelo del mercado y del pool</h2>
+  <p>Una tarea será <em>T = (d, g, B, τ, P, K, G, w)</em>: dominio <em>d</em>, interfaz ejecutable <em>g</em>, presupuesto <em>B</em>, plazo <em>τ</em>, protocolo de validación <em>P</em>, número de trabajadores <em>K</em>, agregador determinista <em>G</em> y participaciones de pago <em>w</em>, con Σ<em>w</em><sub>i</sub> = 1. Con <em>K</em> = 1 la tarea es atómica. Con <em>K</em> &gt; 1, cada salida se compromete por separado, <em>G</em> combina réplicas o subtareas según una regla publicada y el pago se libera solo si pasan las pruebas locales y el agregado satisface <em>P</em>. La comparación <em>K</em> = 1 frente a <em>K</em> = 3 será una ablación, no una segunda tesis.</p>
+
+  <p><strong>Actores.</strong> Los trabajadores serán agentes simulados y servicios de modelos —LLM u optimizadores—; los evaluadores serán agentes estratégicos programables y jueces LLM sin checkpoint ni proveedor compartido con los trabajadores. Los humanos participarán únicamente como referencia oculta: dos expertos independientes, ciegos al brazo y al proveedor, con un tercero para desacuerdos. Esta separación permite estudiar estrategias automatizadas sin confundir consenso de máquinas con verdad.</p>
+
+  <p>El consumidor deposita <em>B = b<sub>w</sub> + Σb<sub>e</sub> + b<sub>h</sub> + b<sub>r</sub></em>: pagos de trabajadores, evaluadores, auditoría humana y reserva de disputas. Una tarea que no cierre ese presupuesto rehúsa antes de adjudicarse. Los trabajadores presentan ofertas selladas y comprometen el digest de su salida antes de conocer los retos ocultos. El ledger conserva eventos y evita doble liquidación; no decide verdad. Durante la investigación, todos los pagos serán simulados o de testnet, sin token propio ni dinero real.</p>
+
+  <h2>5. Protocolo de aceptación P</h2>
+  <table class="compact">
+    <tr><th>Régimen</th><th>Regla predeclarada y verdad de referencia</th></tr>
+    <tr><td><strong>Oráculo objetivo</strong><br>Control</td><td>Dos evaluadores reproducen <em>q<sub>d</sub></em> sobre retos ocultos. Se acepta si ambos cumplen esquema y plazo, difieren a lo sumo δ y la mediana supera θ. El desacuerdo convoca un tercero. La solución o métrica exacta permite medir aceptación y rechazo falsos.</td></tr>
+    <tr><td><strong>Oráculo parcial</strong><br>Prueba principal</td><td>Tres o más evaluadores aplican una rúbrica pilotada a tareas de LLM/agentes y ejecutan pruebas verificables. Se acepta administrativamente si las pruebas duras pasan y la mediana alcanza θ. Una muestra oculta y estratificada de tareas únicas, compartida entre brazos y semillas, estima por contraste pareado la aceptación y el rechazo falsos mediante auditoría humana; el acuerdo del comité nunca se etiqueta como verdad. <em>n</em><sub>audit</sub> = max(60, ⌈0,30<em>N</em><sub>únicas</sub>⌉).</td></tr>
+  </table>
+
+  <p>Los retos se revelan después del compromiso. El generador sintético operará con presupuesto de consultas y medirá no-memorización, no realismo; una partición oculta no reutilizada limita la adaptación al test, siguiendo la advertencia de la literatura sobre holdouts reutilizados <span class="cite">[6]</span>. En el dominio LLM/agente se medirán además sesgo de posición, verbosidad y auto-preferencia de jueces automáticos <span class="cite">[7]</span>.</p>
+
+  <h2>6. Pago informativo operacional</h2>
+  <p>Cada reporte es una señal categórica <em>e<sub>j</sub><sup>t</sup></em> sobre la tarea <em>t</em>. Se adoptará Correlated Agreement (CA), que recompensa dependencia entre reportes de tareas coincidentes y descuenta la coincidencia espuria obtenida al desemparejarlas <span class="cite">[3]</span>. Para cada celda se predeclaran <em>N</em> ≥ 200 tareas, al menos tres evaluadores por tarea y validación cruzada de cinco pliegues. El aprendizaje fuera de pliegue es una salvaguarda metodológica de esta tesis.</p>
+
+  <div class="formula">Δ<sub>−f</sub>(x,y) = Sign[P<sub>−f</sub>(x,y) − P<sub>−f</sub>(x)P<sub>−f</sub>(y)]<br>S<sub>j</sub> = (1/N) Σ<sub>t</sub> (1/(|E<sub>t</sub>|−1)) Σ<sub>k≠j</sub> [Δ<sub>−f</sub>(e<sub>j</sub><sup>t</sup>,e<sub>k</sub><sup>t</sup>) − Δ<sub>−f</sub>(e<sub>j</sub><sup>t</sup>,e<sub>k</sub><sup>π<sub>f</sub>(t)</sup>)]</div>
+
+  <p><em>π<sub>f</sub></em> permuta tareas dentro del pliegue, <em>E<sub>t</sub></em> es el conjunto de evaluadores asignados a <em>t</em> y <em>Δ<sub>−f</sub></em> es la matriz de signos de <span class="cite">[3]</span>, estimada con los otros cuatro pliegues; para una rúbrica binaria se reduce al signo de la covarianza. <em>S<sub>j</sub></em> promedia todos los pares disponibles. El pago <em>π<sub>j</sub> = c<sub>0</sub> + αS<sub>j</sub></em> estará acotado por <em>B</em>. CA conserva equilibrios no informativos; la auditoría externa ancla las etiquetas <span class="cite">[3], [4]</span>.</p>
+
+  <div class="thesis"><strong>Resultado formal comprometido.</strong> Se demostrarán condiciones suficientes sobre la probabilidad de auditoría <em>p</em>, el bono <em>α</em>, la retención <em>ℓ</em>, el costo de esfuerzo <em>c<sub>i</sub></em> y la ganancia máxima de desviación <em>v<sub>i</sub></em> para que esfuerzo alto y reporte veraz sean mejor respuesta estricta. Si señales laterales baratas lo impiden, se caracterizará la región de imposibilidad, en diálogo directo con <span class="cite">[8], [9]</span>.</div>
+
+  <div class="footer"><span>Harvey Demian Bastidas Caicedo · Propuesta doctoral preliminar</span><span>2 / 4</span></div>
+</section>
+
+<section class="page" id="page-3">
+  <h2>7. Actores y utilidades observables</h2>
+  <p>Para el agente <em>i</em>, <em>U<sub>i</sub>(s) = E[π<sub>i</sub>|s] − c<sub>i</sub>(e<sub>i</sub>) − ℓ<sub>i</sub>(s)</em>. La utilidad de desviación será <em>ΔU<sub>i</sub> = max<sub>s′<sub>i</sub>≠s*<sub>i</sub></sub> U<sub>i</sub>(s′<sub>i</sub>,s<sub>−i</sub>) − U<sub>i</sub>(s*)</em>, con creencias y costos fijados por celda. Precio, costo privado, acuerdo y validez auditada permanecerán separados.</p>
+
+  <h2>8. Objetivo y preguntas contrastables</h2>
+  <p><strong>Objetivo general.</strong> Diseñar y evaluar un protocolo de validación y remuneración entre pares para trabajos descentralizados de inferencia y optimización cuando la verdad es parcial o costosa de observar.</p>
+
+  <h3>Objetivos específicos</h3>
+  <ol>
+    <li>Derivar condiciones suficientes o una frontera de imposibilidad para que esfuerzo alto y reporte veraz sean mejor respuesta estricta.</li>
+    <li>Comparar CA, auditoría parcial y retos post-compromiso contra los baselines bajo adversarios ejecutables.</li>
+    <li>Medir error, utilidad de desviación, costo y throughput, y validar la portabilidad a DOIN.</li>
+  </ol>
+
+  <h2>9. Hipótesis</h2>
+  <table class="compact">
+    <tr><th>Hipótesis</th><th>Criterio que puede refutarla</th></tr>
+    <tr><td><strong>H1 · Reporte</strong></td><td>A presupuesto fijo, auditoría parcial + CA hace no positiva la utilidad de la mejor desviación adaptativa, y la reduce al menos 20% frente a pago uniforme + mayoría, sin aumentar la aceptación falsa auditada en más de 5 puntos porcentuales.</td></tr>
+    <tr><td><strong>H2 · Retos</strong></td><td>Los retos posteriores al compromiso reducen en al menos 20% la aceptación de resultados contaminados o sobreajustados, frente a un test público reutilizado, manteniendo la aceptación de trabajadores honestos dentro de un margen de 5 puntos porcentuales.</td></tr>
+    <tr><td><strong>H3 · Liquidación</strong></td><td>Condicionar el pago al protocolo reduce el gasto en resultados inválidos frente a liquidar por precio y entrega, mientras el throughput de resultados válidos es no inferior bajo un margen predeclarado de 10%.</td></tr>
+  </table>
+
+  <h2>10. Diseño experimental</h2>
+  <p><strong>Dominio de control:</strong> optimización cuadrática o combinatoria, con solución o puntaje verificable. <strong>Dominio principal:</strong> lotes de inferencia de LLM/agentes con pruebas ejecutables, rúbrica categórica y auditoría experta oculta. Las series temporales y dominios adicionales se reservan para validez externa posterior.</p>
+
+  <p>Se compararán cinco brazos: (A) pago por entrega; (B) mayoría + pago uniforme; (C) auditoría aleatoria + mayoría; (D) auditoría aleatoria + CA; y (E) CA sin auditoría, celda crítica para medir sus equilibrios patológicos. Para identificar H2, B y D se cruzarán con {test público reutilizable, retos ocultos post-compromiso}. H2 se respaldará solo si ambos contrastes alcanzan 20% y conservan la aceptación honesta dentro de 5 puntos. Cada celda compartirá tareas, presupuestos y poblaciones.</p>
+
+  <p>Además de ataques fijos, un optimizador evolutivo o RL, con presupuesto retenido, buscará la mejor respuesta contra el protocolo publicado: copia, contaminación, identidades múltiples y colusión con pagos laterales. La unidad primaria será la tarea única; habrá al menos diez poblaciones, bootstrap jerárquico tarea/población y corrección Holm sobre todos los contrastes primarios. El piloto, fuera de confirmación, fijará potencia ≥ 0,80 y traducirá costo y riesgo en diferencias relevantes; 20/5/10 son pisos que solo podrán hacerse más exigentes; de lo contrario, se aumentará <em>N</em>.</p>
+
+  <div class="two">
+    <div class="box"><h3>Métricas primarias</h3><p>Aceptación falsa y rechazo falso sobre la muestra auditada; utilidad de desviación; gasto en resultados inválidos; costo de validación; throughput de resultados válidos.</p></div>
+    <div class="box"><h3>Métricas secundarias</h3><p>Acuerdo experto, calibración por criterio, varianza del pago, participación, concentración, latencia, trabajo duplicado, disputas y sensibilidad al número de identidades.</p></div>
+  </div>
+
+  <h2>11. Límites e imposibilidades</h2>
+  <p>El esfuerzo no observable conserva el problema de riesgo moral en equipos <span class="cite">[10]</span>. CA exige tareas correlacionadas, asignación suficientemente densa y distribución aproximadamente estable; admite permutación, coordinación por señales baratas y colusión <span class="cite">[3], [4], [8]</span>. Las identidades Sybil se modelarán como costosas o limitadas, no como resueltas por el ledger <span class="cite">[11]</span>. Las trayectorias serán evidencia reproducible, no prueba criptográfica de aprendizaje <span class="cite">[12]</span>. Si no existe observación externa, solo podrá concluirse acuerdo informado, no verdad.</p>
+
+  <div class="footer"><span>Harvey Demian Bastidas Caicedo · Propuesta doctoral preliminar</span><span>3 / 4</span></div>
+</section>
+
+<section class="page" id="page-4">
+  <h2>12. Trabajo relacionado y novedad</h2>
+  <p>Dasgupta y Ghosh estudian esfuerzo endógeno; Gao et al. muestran que peer prediction con verdad limitada puede exigir más auditoría <span class="cite">[8], [9]</span>. La novedad es formalizar y atacar el juego completo trabajador–evaluador: producir y comprometer el artefacto antes de retos ocultos, evaluarlo y condicionar su liquidación.</p>
+
+  <p>zkLLM y TOPLOC verifican ejecución o identidad de inferencias, no su calidad semántica <span class="cite">[13], [14]</span>. Bittensor y Gensyn abordan incentivos o cómputo; Akash y Golem, provisión <span class="cite">[15]–[18]</span>. La tesis estudia el residuo: respuestas abiertas bajo verdad parcial y agentes estratégicos.</p>
+
+  <h2>13. Método y plan de trabajo</h2>
+  <p><strong>Año 1:</strong> S1, juego, ética y dominios; S2, proposición, piloto y preregistro. <strong>Año 2:</strong> S3, campaña con oráculo; S4, LLM/agentes, mejor respuesta, colusión y pooling. <strong>Año 3:</strong> S5, MVP firmado e integración DOIN; S6, replicación, publicaciones y tesis.</p>
+
+  <h2>14. Viabilidad, ética y plan de recorte</h2>
+  <p>La auditoría compartida requiere 120 valoraciones y hasta 60 arbitrajes, con reserva inicial de 40–80 horas expertas ajustable por el piloto. Antes de reclutar se solicitarán aval ético, consentimiento, pago por hora, manejo de contenido sensible y minimización de datos. El cómputo CPU/GPU se acotará en el piloto y no exige entrenar modelos fundacionales. Se solicitará dirección en IA confiable/sistemas multiagente y codirección en mecanismos.</p>
+
+  <p>El MVP defendible es el teorema y la evaluación preregistrada sobre un orquestador firmado; si DOIN se retrasa, su integración no bloquea la tesis. Se proyectan un artículo formal (AAMAS/EC), uno experimental y un artefacto reproducible.</p>
+
+  <h2>15. Contribuciones esperadas</h2>
+  <p>(i) Condiciones formales de incentivos o imposibilidad; (ii) evidencia sobre evaluación de IA bajo esfuerzo insuficiente, contaminación, colusión y mejor respuesta; y (iii) un protocolo reproducible y portable a DOIN, para tareas atómicas y pools, sin token propio.</p>
+
+  <h2>Referencias</h2>
+  <div class="refs">
+    <p class="ref">[1] F. A. Hayek, “The Use of Knowledge in Society,” <em>American Economic Review</em>, vol. 35, no. 4, pp. 519–530, 1945.</p>
+    <p class="ref">[2] L. Hurwicz, “The Design of Mechanisms for Resource Allocation,” <em>American Economic Review</em>, vol. 63, no. 2, pp. 1–30, 1973.</p>
+    <p class="ref">[3] V. Shnayder, A. Agarwal, R. M. Frongillo and D. C. Parkes, “Informed Truthfulness in Multi-Task Peer Prediction,” in <em>Proc. ACM EC</em>, pp. 179–196, 2016.</p>
+    <p class="ref">[4] Y. Kong and G. Schoenebeck, “An Information Theoretic Framework for Designing Information Elicitation Mechanisms,” <em>ACM Trans. Econ. Comput.</em>, vol. 7, no. 1, pp. 1–33, 2019.</p>
+    <p class="ref">[5] H. D. Bastidas Caicedo, <em>Computación Evolutiva Descentralizada de Modelo Híbrido usando Blockchain y Prueba de Trabajo de Optimización</em>, tesis de Maestría, Pontificia Universidad Javeriana, 2018.</p>
+    <p class="ref">[6] C. Dwork et al., “Generalization in Adaptive Data Analysis and Holdout Reuse,” in <em>NeurIPS</em>, pp. 2350–2358, 2015.</p>
+    <p class="ref">[7] L. Zheng et al., “Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena,” in <em>NeurIPS</em>, 2023.</p>
+    <p class="ref">[8] X. A. Gao, J. R. Wright and K. Leyton-Brown, “Incentivizing Evaluation with Peer Prediction and Limited Access to Ground Truth,” <em>Artif. Intell.</em>, vol. 275, pp. 618–638, 2019.</p>
+    <p class="ref">[9] A. Dasgupta and A. Ghosh, “Crowdsourced Judgement Elicitation with Endogenous Proficiency,” in <em>Proc. WWW</em>, pp. 319–330, 2013.</p>
+    <p class="ref">[10] B. Holmström, “Moral Hazard in Teams,” <em>Bell Journal of Economics</em>, vol. 13, no. 2, pp. 324–340, 1982.</p>
+    <p class="ref">[11] J. R. Douceur, “The Sybil Attack,” in <em>Peer-to-Peer Systems</em>, LNCS 2429, pp. 251–260, 2002.</p>
+    <p class="ref">[12] C. Fang et al., “Proof-of-Learning is Currently More Broken Than You Think,” in <em>IEEE EuroS&amp;P</em>, pp. 797–816, 2023.</p>
+    <p class="ref">[13] H. Sun, J. Li and H. Zhang, “zkLLM: Zero Knowledge Proofs for Large Language Models,” in <em>Proc. ACM CCS</em>, pp. 4405–4419, 2024.</p>
+    <p class="ref">[14] J. M. Ong et al., “TOPLOC: A Locality Sensitive Hashing Scheme for Trustless Verifiable Inference,” in <em>Proc. ICML</em>, PMLR 267, 2025.</p>
+    <p class="ref">[15] Opentensor Foundation, “Amplifying the Weight-copying Penalty in Bittensor,” technical report, 2024.</p>
+    <p class="ref">[16] Gensyn, “The Gensyn Protocol: Litepaper,” 2022.</p>
+    <p class="ref">[17] Akash Network, “Core Concepts,” documentation. [Online]. Available: akash.network/docs (accessed Sep. 1, 2026).</p>
+    <p class="ref">[18] Golem Network, “Documentation.” [Online]. Available: docs.golem.network (accessed Sep. 1, 2026).</p>
+    <p class="ref">[19] H. D. Bastidas Caicedo, “DOIN Core: Proof-of-Optimization Consensus,” software repository, 2026. [Online]. Available: github.com/harveybc/doin-core.</p>
+  </div>
+
+  <div class="footer"><span>Harvey Demian Bastidas Caicedo · Propuesta doctoral preliminar</span><span>4 / 4</span></div>
+</section>
+
+<script>
+  const renderPage = new URLSearchParams(window.location.search).get("page");
+  if (renderPage) {
+    document.querySelectorAll(".page").forEach((page) => {
+      if (page.id !== `page-${renderPage}`) page.remove();
+    });
+  }
+</script>
+</body>
+</html>
