@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta doctoral - Selección multifidelidad de representaciones para RL</title>
+<style>
+  @page { size: Letter; margin: 0; }
+  * { box-sizing: border-box; }
+  :root {
+    --ink: #20272b;
+    --muted: #59666b;
+    --accent: #176b66;
+    --accent-dark: #17484a;
+    --line: #bcc8cb;
+    --soft: #edf4f3;
+  }
+  html, body { margin: 0; padding: 0; }
+  body { color: var(--ink); font-family: "DejaVu Sans", Arial, sans-serif; background: #e7ebed; }
+  .page {
+    width: 8.5in;
+    height: 11in;
+    margin: 0 auto 8mm;
+    padding: 15.5mm 18mm 15mm;
+    background: #fff;
+    position: relative;
+    page-break-after: always;
+    overflow: hidden;
+  }
+  .page:last-child { page-break-after: auto; }
+  .rule { width: 39mm; height: 1.4mm; margin-bottom: 4.5mm; background: var(--accent); }
+  h1, h2, h3 { letter-spacing: 0; }
+  h1 {
+    margin: 0 0 3.3mm;
+    color: #173b3d;
+    font-family: "DejaVu Serif", Georgia, serif;
+    font-size: 19pt;
+    line-height: 1.13;
+  }
+  h2 { margin: 3.5mm 0 1.7mm; color: var(--accent); font-size: 13.5pt; line-height: 1.2; }
+  h3 { margin: 2.7mm 0 1.1mm; color: #263d42; font-size: 11pt; line-height: 1.22; }
+  p, li, td, th, .refs { font-size: 10pt; line-height: 1.28; }
+  p { margin: 0 0 2mm; text-align: justify; }
+  ul, ol { margin: 1mm 0 2.1mm 4mm; padding-left: 4.2mm; }
+  li { margin-bottom: 0.9mm; }
+  strong { color: #183a3e; }
+  a { color: inherit; text-decoration: none; }
+  .subtitle { margin: 0 0 5mm; color: var(--muted); font-size: 10pt; line-height: 1.3; text-align: left; }
+  .lead { color: #20383d; font-family: "DejaVu Serif", Georgia, serif; font-size: 10pt; line-height: 1.34; }
+  .question { margin: 2.7mm 0; padding: 2.8mm 3.7mm; border-left: 1.4mm solid var(--accent); background: var(--soft); font-family: "DejaVu Serif", Georgia, serif; font-size: 10pt; line-height: 1.32; }
+  .note { margin: 2.5mm 0; padding: 2.2mm 0; border-top: 0.35mm solid var(--line); border-bottom: 0.35mm solid var(--line); }
+  .formula { margin: 2.2mm 0; padding: 2.3mm 3mm; background: #f1f4f4; text-align: center; font-family: "DejaVu Serif", Georgia, serif; font-size: 10pt; line-height: 1.3; }
+  table { width: 100%; margin: 1.6mm 0 2.3mm; border-collapse: collapse; }
+  th { background: #e8f1f0; color: #173d40; text-align: left; }
+  th, td { padding: 1.55mm 1.8mm; border: 0.25mm solid var(--line); vertical-align: top; }
+  .flow { display: grid; grid-template-columns: 1fr 8mm 1fr 8mm 1fr; align-items: stretch; margin: 2.5mm 0; }
+  .flow-step { padding: 2.2mm; border: 0.3mm solid var(--line); background: #f8faf9; font-size: 10pt; line-height: 1.24; }
+  .flow-arrow { align-self: center; color: var(--accent); font-size: 15pt; text-align: center; }
+  .cite { white-space: nowrap; }
+  .refs { margin-top: 1mm; }
+  .ref { margin: 0 0 1.25mm; padding-left: 6mm; text-align: left; text-indent: -6mm; line-height: 1.2; break-inside: avoid; }
+  .footer { position: absolute; right: 18mm; bottom: 6mm; left: 18mm; display: flex; justify-content: space-between; padding-top: 1.5mm; border-top: 0.25mm solid #c8d0d4; color: #68777d; font-size: 8.5pt; }
+  @media print { body { background: #fff; } .page { margin: 0; } }
+  @media screen and (max-width: 8.5in) {
+    body { background: #fff; }
+    .page { width: 100%; height: auto; min-height: 0; margin: 0; padding: 24px 20px; overflow: visible; page-break-after: auto; }
+    p, .lead, .question { text-align: left; }
+    table { display: block; overflow-x: auto; }
+    .flow { grid-template-columns: 1fr; gap: 7px; }
+    .flow-arrow { transform: rotate(90deg); }
+    .footer { position: static; margin-top: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<section class="page" id="page-1">
+  <div class="rule"></div>
+  <h1>Selección multifidelidad de representaciones para aprendizaje por refuerzo bajo cambio de tarea, con abstención calibrada</h1>
+  <p class="subtitle"><strong>Propuesta de investigación doctoral</strong><br>Harvey Demian Bastidas Caicedo · Doctorado en Inteligencia Artificial · Universidad de La Sabana</p>
+
+  <h2>Resumen</h2>
+  <p class="lead">El desempeño de un agente de aprendizaje por refuerzo depende no solo del algoritmo y sus hiperparámetros, sino también de cómo representa su historia de observaciones: qué variables conserva, cuánto pasado usa, cómo combina señales y qué arquitectura extrae el estado. Evaluar una representación hasta el final puede requerir muchas corridas por tarea y semilla. Las alternativas baratas, como entrenamientos cortos, gradientes, medidas de sensibilidad o predictores auxiliares, cuestan menos, pero pueden ordenar bien las opciones en una tarea y fallar en otra.</p>
+
+  <p>Esta investigación estudiará una regla multifidelidad que decida entre tres acciones: recomendar una representación, pedir una evaluación más costosa o abstenerse. El objetivo no será predecir con exactitud el retorno final de toda configuración, sino estimar si la evidencia disponible basta para tomar una decisión sin aumentar de manera inaceptable la frecuencia de selecciones perjudiciales. La regla se desarrollará y evaluará primero en un banco público de RL con tareas y contextos separados. Solo después de congelar el método se realizará una confirmación externa en un agente financiero.</p>
+
+  <p>El aporte buscado combina selección de modelos, AutoRL y aprendizaje con rechazo. Se propondrá una condición bajo la cual la regla selecciona una representación cercana a la mejor o escala su evaluación; cuando la relación entre fidelidades no sea identificable, se caracterizará por qué ninguna regla puede ahorrar evaluaciones completas y conservar al mismo tiempo una cota de daño. La evidencia se comparará contra búsqueda aleatoria, Hyperband/ASHA, BOHB o SMAC-HB y el mismo selector sin abstención.</p>
+
+  <h2>1. Problema</h2>
+  <p>El ajuste de hiperparámetros en RL ya cuenta con métodos formales, y sus decisiones pueden cambiar tanto el desempeño como la eficiencia muestral <span class="cite">[1]</span>. Sin embargo, la selección de representaciones plantea una dificultad adicional: una arquitectura puede aprender rápido al comienzo y terminar peor; una sonda casi gratuita puede correlacionarse con el resultado en una familia y resultar engañosa bajo otro contexto; y un predictor aprendido sobre pocas tareas puede confundir confianza con familiaridad. Los estudios recientes sobre predicción de desempeño en RL muestran precisamente que sus superficies son ruidosas y difíciles de aproximar <span class="cite">[13]</span>.</p>
+
+  <p>La pregunta práctica no es solo cuál representación parece mejor, sino cuánto cuesta saberlo y cuándo la evidencia barata deja de ser suficiente. Sin una regla explícita, se puede gastar el presupuesto completo en opciones débiles o eliminar temprano la que habría ganado.</p>
+
+  <div class="question"><strong>Pregunta de investigación.</strong> ¿Bajo qué condiciones una regla multifidelidad con abstención puede seleccionar representaciones para aprendizaje por refuerzo en tareas o contextos no vistos, reduciendo el costo de evaluaciones completas sin aumentar más allá de un margen predeclarado la frecuencia de selecciones perjudiciales?</div>
+
+  <div class="footer"><span>Propuesta doctoral · Selección multifidelidad para RL</span><span>1 / 8</span></div>
+</section>
+
+<section class="page" id="page-2">
+  <h2>2. Justificación, objetivos e hipótesis</h2>
+  <h3>2.1 Justificación</h3>
+  <p>AutoRL intenta automatizar decisiones que suelen requerir experiencia y cómputo. ARLBench confirma dos hechos útiles para esta tesis: el costo de comparar optimizadores de RL es alto, y todavía existe espacio para estudiar búsqueda de arquitecturas y métodos que usen estados internos del entrenamiento <span class="cite">[2]</span>. A la vez, la búsqueda de arquitectura para RL ya existe <span class="cite">[6]</span> y los métodos multifidelidad ya distribuyen recursos entre configuraciones <span class="cite">[3]–[5]</span>. Por eso la contribución no puede ser “automatizar la arquitectura” ni “detener temprano”.</p>
+
+  <p>La brecha está en la decisión bajo evidencia imperfecta. Si una señal barata es válida solo en ciertas tareas, la regla debe aprender su límite, no convertirla en una verdad general. Esta capacidad es importante para cualquier sistema que ajuste agentes de manera repetida: robótica, simulación, control de recursos o decisiones financieras. También es un problema propiamente de inteligencia artificial: un sistema aprende a dirigir el entrenamiento de otro, representa su incertidumbre y reconoce cuándo no sabe suficiente para decidir.</p>
+
+  <h3>2.2 Objetivo general</h3>
+  <p>Diseñar y evaluar una regla multifidelidad con abstención calibrada para seleccionar representaciones de aprendizaje por refuerzo bajo cambio de tarea o contexto, con costo computacional medido y control explícito de selecciones perjudiciales.</p>
+
+  <h3>2.3 Objetivos específicos</h3>
+  <ol>
+    <li>Formalizar la selección de representaciones como identificación multifidelidad con sesgo dependiente de tarea y configuración, costo conocido y opción de rechazo.</li>
+    <li>Construir una regla que calibre el riesgo de recomendar o eliminar una representación y decida entre actuar, solicitar una fidelidad mayor o abstenerse.</li>
+    <li>Comparar su eficiencia, daño y respuesta al cambio de distribución en un banco público, y reproducir después el protocolo congelado en un dominio financiero separado.</li>
+  </ol>
+
+  <h3>2.4 Hipótesis</h3>
+  <table>
+    <tr><th>Hipótesis</th><th>Criterio de contraste</th></tr>
+    <tr><td><strong>H1 · Eficiencia</strong></td><td>A costo computacional igual y en tareas públicas no vistas, la regla tendrá menor arrepentimiento simple normalizado que búsqueda aleatoria, Hyperband/ASHA y BOHB/SMAC-HB.</td></tr>
+    <tr><td><strong>H2 · Abstención útil</strong></td><td>Frente al mismo selector sin rechazo, reducirá las selecciones perjudiciales y respetará el riesgo calibrado sin caer por debajo de un piso de cobertura fijado en el piloto.</td></tr>
+    <tr><td><strong>H3 · Cambio</strong></td><td>Ante contextos distintos a los de desarrollo, respetará el límite de daño conservando la calibración o reduciendo su cobertura al aumentar la abstención; la regla congelada se someterá luego a la confirmación externa.</td></tr>
+  </table>
+
+  <div class="note"><strong>Falsación.</strong> Abstenerse siempre no valida H2. Excluir el costo de las sondas invalida H1. Reajustar umbrales después de observar la prueba invalida H3.</div>
+
+  <div class="footer"><span>Justificación, objetivos e hipótesis</span><span>2 / 8</span></div>
+</section>
+
+<section class="page" id="page-3">
+  <h2>3. Marco teórico</h2>
+  <h3>3.1 Dos niveles de optimización</h3>
+  <p>En el nivel 1, una configuración <em>c</em> entrena un agente en una tarea <em>t</em> y produce un valor costoso <em>V<sub>t</sub>(c)</em>, estimado con varias semillas. En el nivel 2, una regla decide qué configuraciones evaluar y con cuánto presupuesto. El arrepentimiento simple es la diferencia entre el valor de la mejor configuración disponible y el de la recomendada. La tesis medirá además el costo total consumido para obtener esa recomendación.</p>
+
+  <div class="formula">R<sub>t</sub> = V<sub>t</sub>(c<sup>*</sup>) − V<sub>t</sub>(ĉ), &nbsp; costo = sondas + entrenamientos parciales + evaluaciones completas</div>
+
+  <p>Hyperband asigna recursos y elimina configuraciones a partir de resultados parciales <span class="cite">[3]</span>; ASHA permite hacerlo de manera asíncrona <span class="cite">[4]</span>; BOHB agrega un modelo probabilístico <span class="cite">[5]</span>. En identificación multifidelidad también se estudian observaciones baratas y sesgadas <span class="cite">[7]–[9]</span>. Varias garantías suponen cotas de sesgo conocidas. Aquí esa cota puede depender de la tarea y no ser identificable con la evidencia disponible.</p>
+
+  <h3>3.2 Fidelidades y error dependiente de la tarea</h3>
+  <p>Se usarán tres niveles. La fidelidad 0 reúne medidas sin entrenamiento completo: costo, tamaño, gradientes, sensibilidad temporal y tareas auxiliares. La fidelidad 1 observa una parte inicial de la curva de RL. La fidelidad 2 es la evaluación completa y define el orden final. iMFBO ya modela fuentes cuya fidelidad depende de la entrada <span class="cite">[7]</span>; ProxyBO ajusta la influencia de sondas durante la búsqueda <span class="cite">[11]</span>. La diferencia buscada no es ponderar sondas, sino decidir si el riesgo de una recomendación es aceptable en una tarea no vista.</p>
+
+  <h3>3.3 Abstención y escalamiento</h3>
+  <p>El aprendizaje con abstención permite no emitir una predicción pagando un costo <span class="cite">[15]</span>. En esta investigación la acción será concreta: si los intervalos de dos candidatos no permiten separarlos, la regla paga la siguiente fidelidad; si el presupuesto termina, devuelve “sin recomendación”. Su calidad se medirá con una curva riesgo-cobertura. Un método que evita todo error porque nunca decide tendrá cobertura insuficiente.</p>
+
+  <div class="flow">
+    <div class="flow-step"><strong>Fidelidad 0</strong><br>Sondas baratas y costo medido</div><div class="flow-arrow">›</div>
+    <div class="flow-step"><strong>Fidelidad 1</strong><br>Entrenamiento corto y curva parcial</div><div class="flow-arrow">›</div>
+    <div class="flow-step"><strong>Fidelidad 2</strong><br>Retorno final y semillas independientes</div>
+  </div>
+
+  <h3>3.4 Resultado formal buscado</h3>
+  <p>Se buscará un único resultado de selección con rechazo: dada una envolvente de error calibrada para cada fidelidad y una cota de cambio entre tareas, la regla devuelve con probabilidad al menos 1 − δ una representación cuyo valor está a ε de la mejor, o se abstiene y escala. El mismo resultado incluirá su frontera de imposibilidad: si dos tareas producen el mismo historial barato y tienen distinto mejor candidato en fidelidad 2, ninguna regla que observe solo ese historial puede ahorrar evaluaciones completas y garantizar selección segura.</p>
+
+  <h3>3.5 Teoría de la información como medición, no como respuesta</h3>
+  <p>MacKay deriva aproximadamente dos bits por peso para un clasificador lineal de umbral, con entradas en posición general y una definición precisa de memorización <span class="cite">[19]</span>. Esa demostración no mide la inteligencia de una red profunda. La compresibilidad, MDL o información mutua podrán probarse como descriptores de fidelidad 0, junto con controles simples como parámetros y FLOPs. Si no aportan predicción fuera de muestra, se eliminan.</p>
+
+  <div class="footer"><span>Marco teórico</span><span>3 / 8</span></div>
+</section>
+
+<section class="page" id="page-4">
+  <h2>4. Estado del arte y brecha</h2>
+  <p>La literatura cercana obliga a formular una contribución estrecha. AutoRL ya estudia HPO sistemático y separación de semillas de ajuste y prueba <span class="cite">[1]</span>. ARLBench proporciona un banco público eficiente y un metadataset amplio <span class="cite">[2]</span>. DARTS-RL ya busca arquitecturas para agentes <span class="cite">[6]</span>. Los métodos multifidelidad ya combinan costo, sesgo y modelos probabilísticos <span class="cite">[3]–[9]</span>. Las sondas casi gratuitas y los predictores entre tareas ya aceleran NAS <span class="cite">[10]–[12]</span>.</p>
+
+  <table>
+    <tr><th>Línea</th><th>Qué ya resuelve</th><th>Qué queda por contrastar</th></tr>
+    <tr><td>Hyperband, ASHA y BOHB <span class="cite">[3]–[5]</span></td><td>Asignación de presupuesto y detención temprana.</td><td>Daño de usar evidencia cuya validez cambia entre tareas y decisión de abstenerse.</td></tr>
+    <tr><td>MF-BAI e iMFBO <span class="cite">[7]–[9]</span></td><td>Fidelidades sesgadas, costo y dependencia de la entrada bajo modelos definidos.</td><td>Caso en que la envolvente de error debe calibrarse y puede dejar de ser identificable.</td></tr>
+    <tr><td>Zero-cost, ProxyBO y Multi-Predict <span class="cite">[10]–[12]</span></td><td>Sondas rápidas, ponderación dinámica y transferencia de predictores en NAS.</td><td>Calibración del riesgo de selección en RL y cobertura segura en tareas no vistas.</td></tr>
+    <tr><td>ERAHBO <span class="cite">[14]</span></td><td>Media, heteroscedasticidad y reasignación de repeticiones en AutoRL.</td><td>Rechazo explícito cuando la incertidumbre no permite recomendar una representación.</td></tr>
+  </table>
+
+  <h3>4.1 La objeción más fuerte</h3>
+  <p>Dierkes et al. muestran que los predictores de desempeño pueden desviarse del resultado real incluso cuando se usan solo para entender el paisaje de RL <span class="cite">[13]</span>. Esta propuesta toma ese hallazgo como punto de partida. No presupone que un surrogate funcione. La regla se compara con una variante sin predictor y con métodos de asignación que no intentan anticipar el retorno final. Si las sondas no superan número de parámetros, FLOPs o entrenamiento corto en tareas públicas no vistas, se retiran.</p>
+
+  <h3>4.2 Brecha y novedad provisional</h3>
+  <p>La brecha es la selección de representaciones cuando el error de las fidelidades depende de la configuración y de la tarea, y cuando no recomendar es una salida válida que también tiene costo. Se investigará si una regla selectiva puede ahorrar evaluaciones completas sin aumentar más allá de un margen predeclarado la selección perjudicial; cuando no pueda identificar la relación entre fidelidades, se buscará demostrar que debe escalar o abstenerse.</p>
+
+  <div class="note"><strong>Límite de novedad.</strong> No se afirmará que este sea el primer método hasta completar una revisión sistemática. La propuesta combina y pone a prueba una brecha concreta; no renombra AutoRL, NAS ni optimización multifidelidad.</div>
+
+  <h3>4.3 Disciplina ante el reuso</h3>
+  <p>El análisis adaptativo puede sobreajustar conjuntos reservados <span class="cite">[18]</span>. Se separarán desarrollo, calibración y prueba por entorno base; la prueba final se abrirá una sola vez. Esto es una regla experimental. No se afirmará que las garantías de Thresholdout se transfieren a retornos temporales de RL.</p>
+
+  <div class="footer"><span>Estado del arte y brecha</span><span>4 / 8</span></div>
+</section>
+
+<section class="page" id="page-5">
+  <h2>5. Método propuesto</h2>
+  <h3>5.1 Dominio público principal</h3>
+  <p>El estudio principal usará ARLBench, que implementa DQN, PPO y SAC y selecciona tareas representativas de distintos entornos <span class="cite">[2]</span>. Se añadirá una superficie pequeña y publicada de representaciones. La unidad será una combinación de tarea y contexto, no una semilla. Para estudiar cambio de distribución se usarán contextos controlados de CARL o un protocolo público equivalente, después de comprobar su compatibilidad en el piloto <span class="cite">[17]</span>.</p>
+
+  <h3>5.2 Espacio de representaciones</h3>
+  <p>El espacio inicial tendrá doce configuraciones predeclaradas. Variará únicamente elementos que cambian la representación: acceso instantáneo o a una ventana de estados, extractor denso, convolución temporal causal, unidad recurrente o atención, reducción y un objetivo auxiliar causal cuando sea aplicable. El algoritmo de control, la función de recompensa, el presupuesto y los hiperparámetros que no pertenezcan a la representación permanecerán iguales dentro de cada comparación.</p>
+
+  <p>El piloto verificará que cada opción puede ejecutarse en los tres algoritmos o declarará de antemano los subconjuntos compatibles. No se añadirá una arquitectura después de observar la prueba. Una opción que falla mecánicamente se registra y consume el costo usado.</p>
+
+  <h3>5.3 Regla de decisión</h3>
+  <p>Para una tarea nueva, cada candidato produce un vector de evidencia de fidelidad 0. La regla mantiene una distribución o intervalo para la pérdida de selección, actualizada con resultados de desarrollo. Si un candidato puede separarse de los demás con el riesgo permitido, se recomienda. Si no, la adquisición elige la observación de fidelidad 1 o 2 con mayor reducción esperada de incertidumbre por costo. Cuando el presupuesto se agota sin separación, la salida es abstención.</p>
+
+  <div class="formula">acción = arg min {riesgo esperado de decidir, costo de consultar otra fidelidad, costo de abstenerse}</div>
+
+  <p>La versión final podrá usar regresión probabilística, calibración conforme o intervalos empíricos; el piloto escogerá una familia antes de abrir calibración. La contribución no depende de un estimador particular. Depende de que el riesgo declarado sea comprobable fuera de muestra.</p>
+
+  <h3>5.4 Separación de datos</h3>
+  <table>
+    <tr><th>Partición</th><th>Unidades</th><th>Uso permitido</th></tr>
+    <tr><td>Desarrollo</td><td>12 tareas-contexto</td><td>Diseño del selector, sondas y comparadores.</td></tr>
+    <tr><td>Calibración</td><td>6 tareas-contexto</td><td>Margen de daño, riesgo nominal y piso de cobertura.</td></tr>
+    <tr><td>Prueba</td><td>12 tareas-contexto</td><td>H1, H2 y H3. Sin ajuste posterior.</td></tr>
+  </table>
+
+  <p>Las variantes de un mismo entorno base permanecerán en una sola partición. Las cinco semillas usadas para construir curvas de fidelidad serán distintas de las cinco semillas finales de la configuración recomendada. El número definitivo de unidades y la potencia se fijarán con el piloto; si no se logran al menos treinta unidades distribuidas entre suficientes entornos base, la transferencia se declarará inconclusa.</p>
+
+  <h3>5.5 Confirmación externa</h3>
+  <p>El agente financiero propio será una confirmación posterior. Método, umbrales y análisis llegarán congelados desde el banco público; las ventanas serán causales y los costos de operación se incluirán. Una ganancia financiera no podrá corregir una hipótesis pública fallida, y no se afirmará rentabilidad como resultado doctoral.</p>
+
+  <div class="footer"><span>Método propuesto</span><span>5 / 8</span></div>
+</section>
+
+<section class="page" id="page-6">
+  <h2>6. Diseño experimental y análisis</h2>
+  <h3>6.1 Comparadores</h3>
+  <table>
+    <tr><th>Método</th><th>Función en el experimento</th></tr>
+    <tr><td>Búsqueda aleatoria</td><td>Control sin modelo ni eliminación informada.</td></tr>
+    <tr><td>Hyperband o ASHA</td><td>Multifidelidad basada en desempeño parcial, sin predictor del resultado final.</td></tr>
+    <tr><td>BOHB o SMAC-HB</td><td>Referencia AutoML con modelo y asignación de recursos.</td></tr>
+    <tr><td>iMFBO o ProxyBO</td><td>Vecino directo, incluido solo si la adaptación conserva sus supuestos.</td></tr>
+    <tr><td>Selector sin abstención</td><td>Aísla el efecto de poder rechazar una recomendación.</td></tr>
+    <tr><td>Selector completo</td><td>Método propuesto.</td></tr>
+  </table>
+
+  <p>DARTS-RL será un comparador secundario si la superficie discreta puede traducirse sin darle acceso a un espacio distinto <span class="cite">[6]</span>. La configuración histórica del sistema financiero no será el control principal porque fue informada por el mismo proceso que motiva la tesis.</p>
+
+  <h3>6.2 Medidas</h3>
+  <p>La medida primaria será arrepentimiento simple normalizado en fidelidad 2 a igual costo de cómputo. Las medidas de seguridad serán tasa de selección perjudicial y curva riesgo-cobertura. También se reportarán costo hasta objetivo, evaluaciones completas evitadas, costo de abstención, error de calibración, tiempo de pared y consumo de GPU. Todo el costo de sondas, entrenamiento del selector y corridas fallidas entra al denominador.</p>
+
+  <p>La agregación seguirá prácticas para RL con pocas repeticiones: interquartile mean, perfiles de desempeño e intervalos de bootstrap estratificados por tarea <span class="cite">[16]</span>. Las comparaciones serán pareadas por unidad y usarán corrección de Holm. Las semillas permanecerán anidadas dentro de la tarea.</p>
+
+  <h3>6.3 Protocolo de contraste</h3>
+  <ol>
+    <li>Publicar espacio, fidelidades, tareas, semillas, costo y código antes de generar el corpus final.</li>
+    <li>Usar el desarrollo para construir las sondas y el selector.</li>
+    <li>Fijar en calibración el margen de daño, el riesgo nominal y la cobertura mínima.</li>
+    <li>Ejecutar cada método sobre la tabla de prueba como si solo pudiera observar las consultas que paga.</li>
+    <li>Evaluar la recomendación con semillas independientes que el método nunca observó.</li>
+    <li>Abrir una sola vez el análisis confirmatorio y publicar también fallos e inconclusos.</li>
+  </ol>
+
+  <h3>6.4 Pruebas de daño y cambio</h3>
+  <p>Se crearán cambios controlados de dinámica, escala y ruido de observación. No se programará un único adversario favorable a la regla: se medirá pérdida de calibración bajo grados de cambio fijados antes de la prueba. Las sondas se evaluarán por su contribución incremental sobre parámetros, FLOPs y curvas cortas. La información temporal se comprobará con perturbaciones causales y controles de orden; no se inferirá porque una arquitectura tenga memoria por nombre.</p>
+
+  <h3>6.5 Puertas de abandono</h3>
+  <p>Si las sondas no superan controles simples en tareas públicas no vistas, se elimina el predictor y se conserva, si aún es útil, la asignación multifidelidad. Si la abstención no satisface a la vez riesgo y cobertura, H2 se rechaza. Si el costo de las representaciones supera cuatro veces la referencia pública sin ahorro total, el espacio se reduce antes del prerregistro. La confirmación financiera nunca rescata estos resultados.</p>
+
+  <div class="footer"><span>Diseño experimental y análisis</span><span>6 / 8</span></div>
+</section>
+
+<section class="page" id="page-7">
+  <h2>7. Viabilidad, aportes y plan</h2>
+  <h3>7.1 Evidencia preliminar</h3>
+  <p>El trabajo previo permite formular el problema, no responderlo. Una auditoría interna de cinco familias de señales encontró valor relativo frente a controles en tres, ausencia de habilidad predictiva absoluta demostrada en las cinco, dos familias aún no resueltas y una fusión sospechosa de perder información. Un preflight del extractor fuerte recorrió el pipeline SAC con 2.000 pasos y 1.000 actualizaciones reales; terminó sin un checkpoint promovible, como correspondía a su presupuesto. Estos hechos muestran que las sondas y la evaluación final no producen el mismo orden, pero no prueban ninguna hipótesis doctoral.</p>
+
+  <h3>7.2 Presupuesto computacional</h3>
+  <p>El máximo público será 2.160 equivalentes de corrida completa: 12 representaciones × 30 unidades × 5 semillas para curvas de selección, más hasta 360 evaluaciones con semillas finales independientes. Las fidelidades cortas serán cortes de esas mismas curvas, no corridas contadas dos veces. ARLBench reporta 937 GPU-horas para 4.480 equivalentes en su mezcla de tareas y hardware <span class="cite">[2]</span>. Esa referencia sitúa el diseño en unas 452 GPU-horas, pero se reserva una envolvente de 1.810 horas por el costo adicional de las representaciones. El piloto reemplazará esa cifra con medición local antes de autorizar el corpus. La confirmación externa tendrá un tope separado de 40 corridas.</p>
+
+  <h3>7.3 Contribuciones esperadas</h3>
+  <ol>
+    <li>Una formulación de selección de representaciones de RL con fidelidades de error dependiente de tarea, costo medido y abstención.</li>
+    <li>Una regla de decisión con riesgo y cobertura observables, más una condición de selección o escalamiento y su región de imposibilidad.</li>
+    <li>Un benchmark público reproducible que extienda de manera acotada ARLBench con representaciones y contextos separados.</li>
+    <li>Evidencia sobre cuándo las sondas temporales, de optimización o de información ayudan fuera de muestra y cuándo deben ignorarse.</li>
+  </ol>
+
+  <h3>7.4 Plan de tres años</h3>
+  <table>
+    <tr><th>Periodo</th><th>Trabajo y producto</th></tr>
+    <tr><td><strong>Año 1</strong></td><td>Revisión sistemática; extensión pública; piloto; formalización y prerregistro. Producto: benchmark y artículo de problema.</td></tr>
+    <tr><td><strong>Año 2</strong></td><td>Regla selectiva, calibración, resultado formal y corpus público. Producto: artículo metodológico.</td></tr>
+    <tr><td><strong>Año 3</strong></td><td>Prueba intacta, cambio de contexto, confirmación externa, tesis y liberación de artefactos. Producto: artículo empírico y tesis.</td></tr>
+  </table>
+
+  <h3>7.5 Riesgos, ética y recorte</h3>
+  <p>No se usarán participantes humanos ni datos personales. Se publicarán consumo de cómputo, semillas, licencias, emisiones estimadas cuando sea posible y resultados negativos. Si la integración contextual falla, el núcleo se evalúa con tareas públicas distintas; si el predictor falla, la tesis conserva el resultado negativo y la comparación multifidelidad. La extensión financiera puede eliminarse sin afectar H1, H2 ni el resultado formal.</p>
+
+  <div class="note"><strong>Resultado mínimo defendible.</strong> Una caracterización reproducible de cuándo la evidencia barata permite seleccionar representaciones de RL y cuándo no contiene información suficiente para hacerlo sin daño.</div>
+
+  <div class="footer"><span>Viabilidad, aportes y plan</span><span>7 / 8</span></div>
+</section>
+
+<section class="page" id="page-8">
+  <h2>Referencias</h2>
+  <div class="refs">
+    <p class="ref" id="ref-1">[1] T. Eimer, M. Lindauer y R. Raileanu, <a href="https://proceedings.mlr.press/v202/eimer23a.html">“Hyperparameters in Reinforcement Learning and How To Tune Them,”</a> en <em>Proc. ICML</em>, PMLR 202, pp. 9104–9149, 2023.</p>
+    <p class="ref" id="ref-2">[2] J. Becktepe et al., <a href="https://data.mlr.press/assets/pdf/v03-3.pdf">“ARLBench: Flexible and Efficient Benchmarking for Hyperparameter Optimization in Reinforcement Learning,”</a> <em>Journal of Data-centric Machine Learning Research</em>, 2026.</p>
+    <p class="ref" id="ref-3">[3] L. Li, K. Jamieson, G. DeSalvo, A. Rostamizadeh y A. Talwalkar, <a href="https://www.jmlr.org/papers/v18/16-558.html">“Hyperband: A Novel Bandit-Based Approach to Hyperparameter Optimization,”</a> <em>JMLR</em>, vol. 18, no. 185, pp. 1–52, 2018.</p>
+    <p class="ref" id="ref-4">[4] L. Li et al., <a href="https://proceedings.mlsys.org/paper_files/paper/2020/hash/a06f20b349c6cf09a6b171c71b88bbfc-Abstract.html">“A System for Massively Parallel Hyperparameter Tuning,”</a> en <em>Proc. MLSys</em>, 2020.</p>
+    <p class="ref" id="ref-5">[5] S. Falkner, A. Klein y F. Hutter, <a href="https://proceedings.mlr.press/v80/falkner18a.html">“BOHB: Robust and Efficient Hyperparameter Optimization at Scale,”</a> en <em>Proc. ICML</em>, PMLR 80, pp. 1437–1446, 2018.</p>
+    <p class="ref" id="ref-6">[6] Y. Miao et al., <a href="https://proceedings.mlr.press/v188/miao22a.html">“Differentiable Architecture Search for Reinforcement Learning,”</a> en <em>Proc. AutoML</em>, PMLR 188, pp. 20/1–17, 2022.</p>
+    <p class="ref" id="ref-7">[7] M. Fan et al., <a href="https://proceedings.mlr.press/v244/fan24a.html">“Multi-fidelity Bayesian Optimization with Multiple Information Sources of Input-dependent Fidelity,”</a> en <em>Proc. UAI</em>, PMLR 244, pp. 1271–1293, 2024.</p>
+    <p class="ref" id="ref-8">[8] R. Poiani, A. M. Metelli y M. Restelli, <a href="https://proceedings.neurips.cc/paper_files/paper/2022/hash/71c31ebf577ffdad5f4a74156daad518-Abstract-Conference.html">“Multi-Fidelity Best-Arm Identification,”</a> en <em>Advances in Neural Information Processing Systems</em>, vol. 35, 2022.</p>
+    <p class="ref" id="ref-9">[9] R. Poiani, R. Degenne, E. Kaufmann, A. M. Metelli y M. Restelli, <a href="https://papers.neurips.cc/paper_files/paper/2024/hash/dc9e095f668044e7a0909a4ea3926beb-Abstract-Conference.html">“Optimal Multi-Fidelity Best-Arm Identification,”</a> en <em>Advances in Neural Information Processing Systems</em>, vol. 37, 2024.</p>
+    <p class="ref" id="ref-10">[10] M. S. Abdelfattah, A. Mehrotra, Ł. Dudziak y N. D. Lane, <a href="https://openreview.net/forum?id=0cmMMy8J5q">“Zero-Cost Proxies for Lightweight NAS,”</a> en <em>Proc. ICLR</em>, 2021.</p>
+    <p class="ref" id="ref-11">[11] Y. Shen et al., <a href="https://doi.org/10.1609/aaai.v37i8.26169">“ProxyBO: Accelerating Neural Architecture Search via Bayesian Optimization with Zero-Cost Proxies,”</a> en <em>Proc. AAAI</em>, vol. 37, no. 8, pp. 9792–9801, 2023.</p>
+    <p class="ref" id="ref-12">[12] Y. Akhauri y M. S. Abdelfattah, <a href="https://proceedings.mlr.press/v224/akhauri23a.html">“Multi-Predict: Few Shot Predictors For Efficient Neural Architecture Search,”</a> en <em>Proc. AutoML</em>, PMLR 224, pp. 23/1–23, 2023.</p>
+    <p class="ref" id="ref-13">[13] J. Dierkes, T. Eimer, M. Lindauer y H. Hoos, <a href="https://openreview.net/pdf?id=L9J6Xmta4J">“Performance Prediction in Reinforcement Learning: The Bad and the Ugly,”</a> en <em>18th European Workshop on Reinforcement Learning</em>, 2025.</p>
+    <p class="ref" id="ref-14">[14] M. Che, T.-Y. Tseng, T. Eimer, M. Lindauer y A. von Rohr, <a href="https://arxiv.org/abs/2607.26680">“Efficient Heteroscedastic Bayesian Optimization for Risk-Aware AutoRL,”</a> en <em>Proc. RLC</em>, 2026.</p>
+    <p class="ref" id="ref-15">[15] C. Cortes, G. DeSalvo, C. Gentile, M. Mohri y S. Yang, <a href="https://proceedings.mlr.press/v80/cortes18a.html">“Online Learning with Abstention,”</a> en <em>Proc. ICML</em>, PMLR 80, pp. 1059–1067, 2018.</p>
+    <p class="ref" id="ref-16">[16] R. Agarwal, M. Schwarzer, P. S. Castro, A. Courville y M. Bellemare, <a href="https://proceedings.neurips.cc/paper/2021/hash/f514cec81cb148559cf475e7426eed5e-Abstract.html">“Deep Reinforcement Learning at the Edge of the Statistical Precipice,”</a> en <em>Advances in Neural Information Processing Systems</em>, vol. 34, 2021.</p>
+    <p class="ref" id="ref-17">[17] C. Benjamins et al., <a href="https://openreview.net/forum?id=Y42xVBQusn">“Contextualize Me: The Case for Context in Reinforcement Learning,”</a> <em>Transactions on Machine Learning Research</em>, 2023.</p>
+    <p class="ref" id="ref-18">[18] C. Dwork, V. Feldman, M. Hardt, T. Pitassi, O. Reingold y A. Roth, <a href="https://proceedings.neurips.cc/paper_files/paper/2015/hash/bad5f33780c42f2588878a9d07405083-Abstract.html">“Generalization in Adaptive Data Analysis and Holdout Reuse,”</a> en <em>Advances in Neural Information Processing Systems</em>, vol. 28, 2015.</p>
+    <p class="ref" id="ref-19">[19] D. J. C. MacKay, <a href="https://www.inference.org.uk/itprnn/book.pdf"><em>Information Theory, Inference, and Learning Algorithms</em></a>, cap. 40. Cambridge, Reino Unido: Cambridge University Press, 2003.</p>
+  </div>
+
+  <div class="footer"><span>Referencias</span><span>8 / 8</span></div>
+</section>
+
+<script>
+  const renderPage = new URLSearchParams(window.location.search).get("page");
+  if (renderPage) {
+    document.querySelectorAll(".page").forEach((page) => {
+      if (page.id !== `page-${renderPage}`) page.remove();
+    });
+  }
+</script>
+</body>
+</html>
