@@ -1,0 +1,383 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-tabla,es-noshorthands]{babel}
+\usepackage{lmodern}
+\usepackage[margin=2.15cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.04}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{csquotes}
+\usepackage[style=ieee,backend=biber,sorting=none,maxbibnames=6,minbibnames=1,url=false,doi=true]{biblatex}
+\usepackage[hidelinks]{hyperref}
+
+\DeclareFieldFormat{doi}{DOI: #1}
+\addbibresource{propuesta_doctoral_transformaciones_series_temporales.bib}
+
+\definecolor{accent}{HTML}{176D68}
+\definecolor{ink}{HTML}{20282C}
+\definecolor{soft}{HTML}{EEF5F4}
+
+\hypersetup{
+  pdftitle={Selección automática de transformaciones de entrada para el pronóstico de series temporales},
+  pdfauthor={Harvey Demian Bastidas Caicedo},
+  pdfsubject={Propuesta de investigación doctoral}
+}
+
+\titleformat{\section}{\large\bfseries\color{accent}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\color{ink}}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.0em}{0.35em}
+\titlespacing*{\subsection}{0pt}{0.75em}{0.2em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{gray} Propuesta de investigación doctoral}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\setlength{\parskip}{0.22em}
+\setlength{\parindent}{1.1em}
+\setlist[enumerate]{leftmargin=1.5em,itemsep=0.16em,topsep=0.22em}
+\setlist[itemize]{leftmargin=1.45em,itemsep=0.14em,topsep=0.22em}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries Selección automática de transformaciones de entrada\\[0.15em]
+para el pronóstico de series temporales}\\[0.75em]
+{\large Propuesta de investigación doctoral}\\[0.35em]
+Harvey Demian Bastidas Caicedo
+\end{center}
+
+\vspace{0.25em}
+\noindent\textbf{Palabras clave:}
+series temporales; pronóstico; preprocesamiento automático; aprendizaje por transferencia; ruido; abstención.
+
+\section*{Resumen}
+\addcontentsline{toc}{section}{Resumen}
+
+La calidad de un modelo de pronóstico depende tanto del algoritmo como de la forma en que recibe los datos.
+Una transformación puede atenuar errores de medición, separar escalas o exponer relaciones temporales; también puede borrar cambios útiles, introducir retrasos o aprovechar sin querer información futura.
+La práctica habitual compara algunas recetas escogidas manualmente o entrega su elección a un sistema AutoML.
+Sin embargo, no existe una transformación universal: la opción conveniente depende de la variable, el proceso generador, el horizonte, el nivel de ruido, el cambio de distribución y el modelo que consumirá los datos.
+
+Esta investigación propone aprender a seleccionar, para una tarea temporal nueva, un grafo pequeño de transformaciones de entrada que respete el orden temporal.
+El sistema usará diagnósticos baratos calculados solo con datos disponibles, resultados históricos de tareas anteriores y, cuando sea necesario, evaluaciones parciales del modelo.
+Podrá recomendar la siguiente configuración que conviene probar o abstenerse cuando la evidencia no permita defender una elección.
+La relación señal--ruido se medirá como verdad únicamente en experimentos sintéticos o semisintéticos donde la señal y la perturbación sean conocidas; en datos reales se hablará de indicadores relacionados con ruido, no de una señal limpia supuesta.
+
+La evaluación tendrá tres niveles.
+Primero, señales de referencia y procesos multivariados con perturbaciones controladas permitirán comprobar estimación por variable, eliminación de ruido y conservación de eventos.
+Segundo, bancos públicos de pronóstico medirán utilidad fuera de muestra y transferencia entre tareas completas.
+Tercero, las transformaciones que superen esas pruebas se incorporarán como candidatas, no como valores predeterminados, en DOIN, una infraestructura distribuida de optimización desarrollada previamente y aplicada al dominio de negociación algorítmica.
+El resultado principal será la reducción del costo para alcanzar un desempeño objetivo y del arrepentimiento frente al mejor grafo disponible bajo el mismo presupuesto.
+Un resultado negativo también será concluyente: si los diagnósticos no permiten anticipar qué transformación ayuda, el método deberá pedir más evidencia o conservar la entrada original.
+
+\section{Problema y pregunta de investigación}
+
+Las decisiones sobre limpieza, escala, cuantización, representación espectral, separación de componentes o sincronización suelen tomarse antes de entrenar el modelo.
+Ese orden las hace parecer una preparación neutral, aunque cada decisión modifica el problema de aprendizaje.
+Un suavizado puede reducir el error de reconstrucción y empeorar el pronóstico; una representación en frecuencia puede ser útil para una serie periódica y perjudicial ante eventos breves; una alineación puede corregir un retraso de publicación o fabricar fuga de información si mueve observaciones futuras hacia el pasado.
+
+Los sistemas AutoML ya seleccionan algoritmos, preprocesadores e hiperparámetros y algunos reutilizan resultados de conjuntos de datos anteriores~\cite{feurer2015autosklearn,fusi2018pmf,yang2020tensoroboe}.
+Auto-FP estudia de forma explícita la búsqueda de secuencias de preprocesamiento y muestra, entre otros resultados, que la búsqueda aleatoria puede ser un competidor fuerte~\cite{qi2024autofp}.
+En series temporales, las propuestas automatizadas abarcan distintas partes de la tubería y también combinan selección de arquitectura, hiperparámetros y presupuestos~\cite{meisenbacher2022review,deng2022autodl,zoller2023autosktime}.
+Por tanto, la novedad no puede consistir en afirmar que el preprocesamiento se automatizará.
+
+El vacío que se estudiará es más estrecho.
+Primero, las transformaciones deben tener un contrato temporal verificable: qué datos usan para ajustarse, cuándo queda disponible cada observación y cuánto retraso introducen.
+Segundo, el tratamiento puede variar por variable; aplicar el mismo filtro a canales con perturbaciones y escalas distintas puede destruir información.
+Tercero, la selección debe transferirse a tareas no vistas y reconocer cuando esa transferencia es perjudicial.
+Cuarto, todos los costos de diagnóstico, transformación y entrenamiento deben entrar en la comparación.
+
+\begin{tcolorbox}[colback=soft,colframe=accent,boxrule=0.6pt,arc=1.2pt,left=6pt,right=6pt,top=5pt,bottom=5pt]
+\textbf{Pregunta de investigación.}
+¿Bajo qué condiciones un meta-selector, entrenado con diagnósticos baratos y evaluaciones históricas, puede escoger para una tarea no vista un grafo temporalmente válido de transformaciones de entrada, reducir el costo del pronóstico fuera de muestra frente a búsquedas sin transferencia y abstenerse cuando la recomendación podría causar transferencia negativa?
+\end{tcolorbox}
+
+\section{Objetivos e hipótesis}
+
+\subsection{Objetivo general}
+
+Diseñar y evaluar un método de selección automática de transformaciones de entrada para series temporales que considere diferencias entre variables, validez temporal, costo de evaluación, transferencia entre tareas y abstención ante evidencia insuficiente.
+
+\subsection{Objetivos específicos}
+
+\begin{enumerate}
+  \item Definir un espacio pequeño y tipado de grafos de transformación, junto con un banco que distinga recuperación de una señal conocida, utilidad de pronóstico y preservación de información potencialmente útil.
+  \item Desarrollar un meta-selector que use características de la tarea y resultados parciales para ordenar evaluaciones bajo presupuesto, y que produzca una recomendación solo cuando su incertidumbre lo permita.
+  \item Medir la transferencia a tareas públicas no vistas y, después de superar compuertas predefinidas, evaluar la incorporación de las transformaciones seleccionadas al proceso de optimización distribuida de un dominio aplicado.
+\end{enumerate}
+
+\subsection{Hipótesis falsables}
+
+\noindent\textbf{H1. El efecto de una transformación es condicional y predecible.}
+En procesos con perturbaciones heterogéneas entre variables, los diagnósticos calculados antes del entrenamiento permitirán predecir parte de la ganancia o pérdida fuera de muestra de aplicar una transformación frente a conservar la entrada original.
+La asignación por variable superará al mejor tratamiento global bajo el mismo presupuesto cuando el nivel o el tipo de perturbación difiera entre canales.
+H1 falla si esa ganancia no supera un estimador que solo conoce la identidad del conjunto de datos, si desaparece al dejar familias completas fuera, o si el aparente beneficio proviene de usar información futura.
+
+\noindent\textbf{H2. La transferencia reduce el costo de búsqueda.}
+En tareas públicas no vistas, el meta-selector alcanzará un desempeño objetivo con menor costo o menor arrepentimiento simple que búsqueda aleatoria, Hyperband y BOHB, usando el mismo espacio candidato y el mismo presupuesto~\cite{li2018hyperband,falkner2018bohb}.
+H2 falla si el ahorro desaparece al incluir el costo de los diagnósticos, los intentos fallidos y las evaluaciones parciales, o si no supera al mejor grafo fijo elegido solo con desarrollo.
+
+\noindent\textbf{H3. La abstención reduce la transferencia negativa.}
+Frente al mismo selector obligado a recomendar, una regla calibrada de abstención reducirá la frecuencia y magnitud de recomendaciones perjudiciales bajo cambio entre tareas, manteniendo una cobertura mínima fijada antes de la prueba.
+H3 falla si la reducción se obtiene absteniéndose casi siempre, si requiere reajustar el umbral con la prueba abierta o si el riesgo entre recomendaciones supera el límite predefinido.
+
+\section{Marco teórico y estado del arte}
+
+\subsection{Señal, perturbación y utilidad}
+
+En el laboratorio se observará $X_{t,j}=S_{t,j}+N_{t,j}$, donde $S$ es conocido por construcción y $N$ es una perturbación controlada.
+Para cada variable $j$ se podrá calcular
+\begin{equation}
+  \mathrm{SNR}_j=10\log_{10}\frac{\sum_t S_{t,j}^{2}}{\sum_t N_{t,j}^{2}}.
+\end{equation}
+Esta definición permite evaluar si un estimador recupera el orden correcto entre niveles de ruido y si un filtro reconstruye $S$.
+Las señales Blocks, Bumps, HeaviSine y Doppler ofrecen referencias clásicas con discontinuidades, oscilaciones y regularidad local distinta~\cite{donoho1994ideal,donoho1995denoising}.
+Se añadirán procesos multivariados de espacio de estados, oscilaciones con frecuencia variable y sistemas no lineales para que la conclusión no dependa de una sola forma de señal.
+
+En datos reales, $S$ y $N$ no se observan por separado.
+Por eso no se reportará una ``SNR verdadera'' inferida de una serie natural.
+Se calculará un vector de diagnóstico que puede incluir potencia de innovación, rugosidad local, concentración espectral, estabilidad entre escalas, faltantes, antigüedad de cada fuente y dependencia entre variables.
+Cada componente deberá demostrar calibración en el laboratorio y utilidad incremental en tareas no vistas.
+El criterio definitivo será el pronóstico fuera de muestra, no la apariencia suave de la serie.
+
+Sea $D_j$ una transformación temporalmente admisible de la variable $j$ y $R_j=X_j-D_j(X_j)$ su residuo.
+Se compararán tres entregas al modelo: $X$; $D(X)$; y $[X,D(X),R]$ con presupuesto de parámetros controlado.
+La tercera evita asumir que todo lo removido era inútil.
+Si $R$ conserva capacidad de pronóstico condicional, la transformación no podrá llamarse eliminación de ruido, aunque mejore una métrica de reconstrucción.
+
+\subsection{Selección de pipelines y metaaprendizaje}
+
+La selección de algoritmos parte de que una configuración no domina en todas las tareas.
+Auto-sklearn combina preprocesamiento, modelo e hiperparámetros y usa desempeño previo en conjuntos similares~\cite{feurer2015autosklearn}; la factorización probabilística y TensorOboe reutilizan matrices incompletas de resultados para orientar nuevas evaluaciones~\cite{fusi2018pmf,yang2020tensoroboe}.
+En pronóstico, FFORMA y FFORMPP usan características de las series para combinar modelos o anticipar su desempeño~\cite{montero2020fforma,talagala2022fformpp}, y catch22 ofrece descriptores compactos de dinámica temporal~\cite{lubba2019catch22}.
+
+Esta propuesta no seleccionará el pronosticador completo en su primera etapa.
+Congelará un conjunto pequeño de modelos aguas abajo y estudiará la decisión anterior: qué transformación o combinación de transformaciones conviene evaluar.
+Tampoco supondrá una tubería estrictamente serial.
+El espacio será un grafo condicionado por aplicabilidad: una descomposición común--privada requiere varias variables; una corrección de retraso requiere marcas de disponibilidad; una transformación espectral requiere una ventana histórica suficiente.
+Los grafos inválidos no serán candidatos penalizados: serán configuraciones no admisibles.
+
+\subsection{Abstención y cambio de distribución}
+
+La opción de rechazo formaliza la decisión de no responder cuando el riesgo esperado es demasiado alto~\cite{chow1970reject}.
+Aquí no significa omitir un pronóstico operativo, sino no recomendar una transformación con la evidencia disponible.
+El sistema puede solicitar una evaluación adicional, elegir la identidad como alternativa conservadora o declarar que no existe soporte para transferir.
+El control conforme del riesgo ofrece una referencia para calibrar pérdidas monotónicas bajo supuestos explícitos~\cite{angelopoulos2024crc}; esos supuestos se comprobarán y la validez final se medirá directamente en familias no vistas.
+La no estacionariedad de las series impide tratar observaciones temporales como muestras intercambiables sin justificación~\cite{kuznetsov2016online}.
+
+\subsection{Afirmación de novedad acotada}
+
+AutoML puede buscar un filtro si ese filtro ya está en su espacio; no identifica por sí mismo qué parte de una serie real es ruido.
+Los sistemas existentes cubren selección de preprocesadores, arquitecturas y presupuestos, mientras trabajos recientes estudian incluso la selección de ejemplos ruidosos durante el entrenamiento~\cite{taga2026faf}.
+La contribución propuesta es la combinación verificable de cuatro elementos: asignación de transformaciones por variable; contratos temporales que impiden usar el futuro; transferencia entre tareas sobre un grafo de operadores; y una salida de abstención con costo completo.
+La revisión sistemática del primer semestre deberá confirmar esta intersección o reducir la afirmación antes del prerregistro principal.
+
+\section{Método}
+
+\subsection{Objeto formal}
+
+Una tarea $\tau$ incluye una colección de series, variables objetivo, horizonte, marcas de disponibilidad, particiones temporales y métrica.
+Sea $\mathcal{G}_\tau$ el conjunto finito de grafos admisibles para esa tarea.
+Para $g\in\mathcal{G}_\tau$, $L_\tau(g)$ es la pérdida de pronóstico fuera de muestra con el modelo y presupuesto congelados, y $c_\tau(g)$ es el costo total de construir diagnósticos, transformar, entrenar y evaluar.
+La historia $H$ contiene tareas anteriores con sus configuraciones, costos, fallos y resultados.
+El meta-selector observa descriptores $m_\tau$ disponibles antes de abrir la prueba y recomienda la siguiente evaluación, la identidad o abstención.
+
+Bajo presupuesto $B$, el arrepentimiento simple es
+\begin{equation}
+ r_\tau(B)=L_\tau(\hat g_B)-\min_{g\in\mathcal{G}_\tau} L_\tau(g).
+\end{equation}
+Como el mínimo exige conocer todo el espacio, se calculará solo en el banco donde todas las configuraciones hayan sido evaluadas fuera del proceso de selección.
+La métrica operativa complementaria será el costo hasta alcanzar una pérdida dentro de $\varepsilon$ del mejor grafo conocido.
+
+El resultado formal previsto es una regla de certificación.
+Si para todos los grafos se construyen intervalos simultáneos $[\ell_g,u_g]$ que cubren $L_\tau(g)$ con probabilidad al menos $1-\delta$, una recomendación $\hat g$ será certificable cuando
+\begin{equation}
+  u_{\hat g}-\min_{g\in\mathcal G_\tau}\ell_g\leq\varepsilon.
+\end{equation}
+La tesis estudiará el costo de alcanzar esa condición y caracterizará la región donde no puede alcanzarse con la evidencia barata.
+Si dos clases de tarea producen los mismos diagnósticos observables pero tienen grafos óptimos distintos separados por más de $\varepsilon$, ningún selector limitado a esos diagnósticos puede garantizar ambas decisiones; deberá adquirir más evidencia o abstenerse.
+
+\subsection{Espacio candidato}
+
+La primera versión no contendrá todas las ideas posibles.
+Cada operador tendrá una fase de ajuste limitada al desarrollo, una transformación reproducible, una regla de disponibilidad temporal, un costo, variables aplicables y una identidad de configuración.
+
+\begin{table}[H]
+\centering
+\caption{Familias iniciales de transformaciones y condición de entrada.}
+\begin{tabularx}{\textwidth}{@{}L{3.0cm}L{4.0cm}Y@{}}
+\toprule
+\textbf{Familia} & \textbf{Candidatos iniciales} & \textbf{Condición y control} \\
+\midrule
+Identidad & entrada original & Control obligatorio y alternativa ante abstención. \\
+Ruido por variable & media móvil hacia atrás, mediana robusta, filtro de estado hacia adelante & Nunca se ajusta en prueba; se compara señal filtrada y residuo. \\
+Resolución & cuantización escalar y no uniforme & Entra solo si el banco con ruido conocido muestra una región de resolución útil. \\
+Tiempo--frecuencia & espectro o wavelet calculado sobre ventana pasada & Magnitud, fase y costo se evalúan por separado; sin ventanas centradas. \\
+Común--privada & componentes entrenados en desarrollo y salida $[X,C,U]$ & Solo multivariada; no se elimina el componente común por correlación. \\
+Disponibilidad & antigüedad, faltantes y retraso estimado como metadatos & No se desplazan observaciones futuras hacia el pasado. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Los detectores de patrones, el entrenamiento con corrupción del autoencoder, el enrutamiento por muestra y la asignación dinámica de anchos quedan fuera del núcleo.
+Podrán convertirse en estudios posteriores solo si existen al menos dos modos útiles y una mejora oracular que justifique elegir entre ellos.
+
+\subsection{Bancos de datos}
+
+\textbf{Nivel 1: verdad conocida.}
+Se usarán señales de referencia de denoising y procesos multivariados generados con semillas publicadas.
+La cuadrícula inicial incluirá SNR por variable de $\{\infty,20,10,5,0\}$ dB y perturbaciones gaussiana blanca, temporalmente correlacionada, correlacionada entre variables, heteroscedástica, impulsiva, faltantes y retrasos.
+Los niveles se aplicarán de forma homogénea y heterogénea para distinguir tratamiento global de tratamiento por variable.
+
+\textbf{Nivel 2: datos públicos.}
+El Monash Time Series Forecasting Archive aportará diversidad de dominios, frecuencias, longitudes y faltantes~\cite{godahewa2021monash}; una muestra de M4 servirá como referencia de gran escala y métricas conocidas~\cite{makridakis2020m4}.
+La confirmación multivariada empleará ETT, Electricity, Traffic y Weather, conjuntos ampliamente usados en pronóstico de secuencias largas~\cite{zhou2021informer}.
+La partición externa dejará fuera conjuntos o familias completas, no ventanas aleatorias de la misma serie.
+Una tarea se definirá antes del análisis como una fuente de datos, variable objetivo, frecuencia y horizonte evaluados mediante orígenes temporales comunes.
+Antes del experimento principal se hará un censo para fijar cuántas tareas independientes soporta cada afirmación.
+
+\textbf{Nivel 3: aplicación distribuida.}
+Los datos propios de negociación no elegirán hipótesis ni umbrales.
+Después de cerrar los dos niveles anteriores, los operadores aprobados se empaquetarán como configuraciones versionadas.
+La infraestructura DOIN podrá optimizar su presencia y parámetros dentro del dominio de negociación, conservar todas las evaluaciones y validar los candidatos en periodos retenidos.
+El meta-selector recomendará una población inicial o una lista corta; no podrá declarar un ganador ni evitar la evaluación independiente.
+
+\subsection{Experimentos}
+
+\textbf{E1. Calibración de ruido por variable.}
+Se estimará el perfil de perturbación usando solo el pasado y se comparará con la SNR verdadera.
+Se medirán error de estimación, ordenamiento entre variables y cobertura del intervalo por tipo de ruido.
+Una estimación que funciona solo en ruido gaussiano quedará etiquetada para ese régimen.
+
+\textbf{E2. Recuperación y utilidad.}
+Con el mismo conjunto de pronosticadores se compararán entrada original, filtrada, y original+filtrada+residuo.
+Se medirán ganancia de SNR y error de reconstrucción donde existe $S$, pero la decisión se tomará con pérdida de pronóstico, calibración probabilística, conservación de extremos y utilidad condicional del residuo.
+Se incluirán filtros centrados únicamente como techo diagnóstico con retraso declarado; nunca como alternativa desplegable.
+
+\textbf{E3. Tratamiento global frente a tratamiento por variable.}
+En perturbación heterogénea, un selector local decidirá identidad o transformación para cada canal.
+Se controlará el presupuesto de parámetros y se probará si el beneficio proviene de la decisión por variable o simplemente de aumentar la dimensión de entrada.
+
+\textbf{E4. Matriz tarea--grafo.}
+Se ejecutará el espacio completo en una muestra de tareas públicas con modelos sencillos congelados: estacional ingenuo, regresión lineal sobre rezagos y un modelo neuronal pequeño.
+Después se añadirá un modelo secuencial confirmatorio.
+Cada registro contendrá tarea, grafo, costo, estado, semilla, partición, métricas y versiones.
+Los fallos seguirán siendo observaciones del costo y la factibilidad.
+
+Antes de abrir los resultados retenidos se publicarán el inventario de tareas, la matriz de comparaciones, la pérdida primaria, el margen de relevancia práctica y el presupuesto máximo.
+Un piloto separado estimará la variabilidad y permitirá calcular la potencia mediante simulación, pero no podrá elegir la dirección ni el tamaño del efecto.
+Si el número de tareas independientes no permite distinguir el margen declarado, el resultado confirmatorio será inconcluso y no se reemplazarán tareas por semillas adicionales.
+
+\textbf{E5. Selección bajo presupuesto.}
+Un vecino por características y un modelo de árboles serán los primeros meta-selectores.
+Solo si los superan se ensayará un modelo más complejo.
+Los comparadores serán identidad, mejor grafo fijo de desarrollo, búsqueda aleatoria, Hyperband y BOHB.
+Todos usarán el mismo espacio y reloj de costo.
+
+\textbf{E6. Abstención y cambio.}
+Se calibrará una curva riesgo--cobertura en tareas de desarrollo.
+En familias retenidas se comparará el selector obligado con el selector que puede pedir otra evaluación, usar identidad o abstenerse.
+Se informarán cobertura, magnitud de transferencia negativa y costo adicional.
+
+\textbf{E7. Transferencia al dominio aplicado.}
+Sin cambiar el periodo retenido, se compararán el contrato vigente del dominio, el mejor grafo fijo público y la lista corta recomendada.
+DOIN ejecutará la optimización con presupuesto pareado.
+El resultado no será una afirmación de rentabilidad general: será una prueba de si la mejora metodológica conserva su valor al cambiar de dominio y de modelo.
+
+\subsection{Métricas y análisis estadístico}
+
+Para pronóstico puntual se usarán MASE y una pérdida escalada definida por conjunto~\cite{hyndman2006mase}; para pronóstico probabilístico, CRPS o pinball loss según disponibilidad.
+También se medirán error en extremos, costo total, fallos, tiempo, arrepentimiento, costo hasta objetivo, cobertura y riesgo selectivo.
+Las comparaciones serán pareadas sobre las mismas tareas, orígenes y semillas.
+La tarea o familia retenida será la unidad de generalización; una semilla no se contará como una nueva tarea.
+Se usarán intervalos por bootstrap jerárquico o bloques temporales y corrección de Holm para familias de contrastes predeclaradas.
+Las comparaciones de error temporal respetarán dependencia y horizonte~\cite{diebold1995accuracy,bergmeir2018cv}.
+
+\section{Transferencia al programa aplicado}
+
+La investigación se conecta con el sistema existente sin convertirlo en evidencia circular.
+El banco público y el contrato de operadores serán independientes de un solo pronosticador y de la infraestructura distribuida.
+Los modelos base podrán reemplazarse sin cambiar los datos, las transformaciones ni las particiones.
+La biblioteca de transformaciones producirá artefactos reproducibles con parámetros aprendidos únicamente en desarrollo.
+La integración con DOIN ocurrirá solo después de una decisión basada en los bancos sintético y público.
+El optimizador recibirá identificadores y parámetros de transformaciones aprobadas, pero volverá a evaluarlas dentro del dominio aplicado y conservará la autoridad sobre la selección final.
+
+En el plan vigente, esta línea debe insertarse antes de ampliar búsquedas costosas de representación:
+contrato temporal y banco en CPU; calibración de ruido; censo público tarea--grafo; meta-selector sencillo; abstención; integración distribuida; y solo entonces confirmación aplicada.
+No se reabre una campaña terminada ni se modifica una campaña activa.
+Los módulos de análisis de eventos, detección especializada, enrutamiento por muestra y asignación de capacidad mantienen planes separados.
+
+\section{Contribuciones esperadas}
+
+\begin{enumerate}
+  \item Un banco reproducible que separa recuperación de señal, utilidad de pronóstico y conservación de información residual bajo perturbaciones por variable.
+  \item Un espacio de grafos de transformación con reglas de aplicabilidad y validez temporal comprobables.
+  \item Un meta-selector que ordena evaluaciones bajo presupuesto y abstiene cuando no puede certificar una recomendación dentro de un margen.
+  \item Evidencia de transferencia en datos públicos y una integración condicionada con optimización distribuida en un dominio aplicado.
+  \item Resultados negativos útiles: regímenes donde la identidad, una búsqueda sin transferencia o la abstención son preferibles.
+\end{enumerate}
+
+\section{Riesgos, ética y límites}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{@{}L{4.3cm}Y@{}}
+\toprule
+\textbf{Riesgo} & \textbf{Respuesta metodológica} \\
+\midrule
+Confundir variación real con ruido & SNR verdadera solo con componentes conocidos; en datos reales se reportan indicadores y sensibilidad. \\
+Fuga de futuro & Disponibilidad y ajuste declarados por operador; pruebas que comparan salida incremental con procesamiento por lotes permitido. \\
+Mejor reconstrucción, peor pronóstico & La pérdida fuera de muestra manda; se conserva y prueba el residuo. \\
+AutoML ya resuelve el problema & Comparación directa con Auto-FP, búsquedas sin transferencia y sistemas temporales; novedad limitada a la intersección declarada. \\
+Meta-datos insuficientes & Censo previo; si no existe soporte entre tareas, se publica el banco y no se entrena un selector complejo. \\
+Costo excesivo & CPU y modelos simples primero; promoción por compuertas; límite acumulado de cómputo y energía reportado. \\
+Sobreajuste al dominio financiero & Datos públicos no financieros como prueba principal; negociación algorítmica solo como aplicación posterior. \\
+Impacto financiero & Sin operaciones en vivo durante la tesis experimental; simulación y cuentas de demostración bajo autorización separada. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+No se requieren participantes humanos ni datos personales sensibles en el núcleo experimental.
+Si se incorporan conjuntos con información humana, se usarán versiones públicas bajo sus licencias y se documentarán sus restricciones.
+Los resultados, incluidos fallos y configuraciones descartadas, se publicarán con sus semillas, costos y contratos.
+
+\section{Plan de tres años y productos}
+
+\textbf{Año 1.}
+Revisión sistemática; contrato temporal; generadores y banco de perturbaciones; operadores temporalmente válidos mínimos; estudio de SNR por variable, residual y preservación de eventos.
+Producto: artículo metodológico sobre cuándo la eliminación de ruido ayuda, empata o perjudica el pronóstico.
+
+\textbf{Año 2.}
+Censo de datos públicos; matriz tarea--grafo; modelos base; meta-selector y adquisición bajo presupuesto; validación dejando familias completas fuera.
+Producto: artículo sobre selección automática de transformaciones y transferencia entre tareas.
+
+\textbf{Año 3.}
+Abstención calibrada bajo cambio; confirmación multivariada; integración condicionada con DOIN y dominio aplicado; consolidación de teoría, software y tesis.
+Producto: artículo sobre riesgo--cobertura y transferencia negativa, más demostrador reproducible.
+
+\textbf{Recorte defendible.}
+Si el grafo amplio resulta inabordable, la tesis conserva identidad, denoising por variable y una representación temporal adicional.
+Si el meta-selector no supera modelos simples, estos se mantienen como resultado final.
+Si no existe soporte para transferencia, el trabajo se cierra con el banco, el mapa de regímenes y una caracterización de imposibilidad.
+El enrutamiento por observación, la adaptación continua y la selección conjunta de arquitecturas quedan como trabajo futuro.
+
+\printbibliography[title={Referencias}]
+
+\end{document}
