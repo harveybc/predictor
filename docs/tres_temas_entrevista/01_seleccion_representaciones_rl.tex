@@ -4,9 +4,9 @@
 \usepackage[utf8]{inputenc}
 \usepackage[spanish,es-tabla,es-noshorthands]{babel}
 \usepackage{mathptmx}
-\usepackage[margin=2.35cm]{geometry}
+\usepackage[margin=2.2cm]{geometry}
 \usepackage{setspace}
-\setstretch{1.06}
+\setstretch{1.00}
 \usepackage{microtype}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
@@ -19,26 +19,26 @@
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 \usepackage{csquotes}
-\usepackage[style=ieee,backend=biber,sorting=none,maxbibnames=6,minbibnames=1,url=false,doi=true]{biblatex}
+\usepackage[style=ieee,backend=biber,sorting=none,maxbibnames=3,minbibnames=1,url=false,doi=true]{biblatex}
 \usepackage[hidelinks]{hyperref}
 
 \DeclareFieldFormat{doi}{DOI: #1}
 
 \hypersetup{
-  pdftitle={Selección secuencial de codificadores de memoria para aprendizaje por refuerzo bajo cambio de tarea, con abstención calibrada},
+  pdftitle={Selección secuencial de codificadores de memoria para aprendizaje por refuerzo en tareas no vistas, con abstención calibrada},
   pdfauthor={Harvey Demian Bastidas Caicedo},
   pdfsubject={Propuesta de investigación doctoral}
 }
 
-\addbibresource{propuesta_doctoral_seleccion_multifidelidad_rl.bib}
+\addbibresource{01_seleccion_representaciones_rl.bib}
 \definecolor{sabana}{HTML}{176D68}
 \definecolor{ink}{HTML}{20282C}
 \definecolor{soft}{HTML}{EEF5F4}
 
 \titleformat{\section}{\large\bfseries\color{sabana}}{\thesection.}{0.6em}{}
 \titleformat{\subsection}{\normalsize\bfseries\color{ink}}{\thesubsection.}{0.5em}{}
-\titlespacing*{\section}{0pt}{1.05em}{0.4em}
-\titlespacing*{\subsection}{0pt}{0.8em}{0.25em}
+\titlespacing*{\section}{0pt}{0.95em}{0.35em}
+\titlespacing*{\subsection}{0pt}{0.7em}{0.2em}
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -47,7 +47,7 @@
 \renewcommand{\headrulewidth}{0.3pt}
 \renewcommand{\footrulewidth}{0pt}
 
-\setlength{\parskip}{0.25em}
+\setlength{\parskip}{0.12em}
 \setlength{\parindent}{1.15em}
 \setlist[enumerate]{leftmargin=1.5em,itemsep=0.18em,topsep=0.25em}
 \setlist[itemize]{leftmargin=1.5em,itemsep=0.16em,topsep=0.25em}
@@ -62,7 +62,7 @@
 
 \begin{center}
 {\LARGE\bfseries Selección secuencial de codificadores de memoria para\\[0.2em]
-aprendizaje por refuerzo bajo cambio de tarea,\\[0.2em]
+aprendizaje por refuerzo en tareas no vistas,\\[0.2em]
 con abstención calibrada}\\[0.8em]
 {\large Propuesta de investigación doctoral}\\[0.4em]
 Harvey Demian Bastidas Caicedo\\
@@ -76,28 +76,23 @@ aprendizaje por refuerzo · AutoRL · codificadores de memoria · curvas de apre
 \section*{Resumen}
 \addcontentsline{toc}{section}{Resumen}
 
-En aprendizaje por refuerzo con observabilidad parcial, la observación actual no contiene toda la información necesaria para actuar.
-El agente debe resumir su historia reciente mediante un \emph{codificador de memoria}, por ejemplo una ventana fija, una red recurrente o un mecanismo de atención.
-Ninguna de estas familias domina en todos los problemas y compararlas es costoso: el entrenamiento es ruidoso, una curva que empieza bien puede terminar mal y cada candidato debe evaluarse con varias semillas aleatorias.
+En aprendizaje por refuerzo con observabilidad parcial, el agente debe resumir su historia para actuar.
+Puede hacerlo con una ventana fija, una red recurrente, una convolución temporal o atención, pero ninguna familia domina en todos los problemas y compararlas exige entrenamientos costosos y variables.
+Esta propuesta pregunta si es posible elegir un codificador de memoria para una tarea nueva sin completar siempre el entrenamiento de todos los candidatos.
 
-Esta propuesta estudia si es posible seleccionar un codificador para una tarea nueva sin entrenar siempre todos los candidatos hasta el final.
-Una \emph{fidelidad} será, en este documento, una evaluación del mismo candidato y la misma tarea con distinto presupuesto de entrenamiento.
-Observar la curva al 10\,\% del presupuesto y entrenar hasta el 100\,\% son dos fidelidades: la primera cuesta menos, pero puede ordenar mal a los candidatos.
-El número de parámetros, la memoria usada o un diagnóstico inicial no son fidelidades; son descriptores baratos que pueden o no aportar información.
+Una \emph{fidelidad} será una evaluación del mismo candidato en la misma tarea con diferente presupuesto de entrenamiento.
+Por ejemplo, observar su curva al 10\,\% y al 100\,\% corresponde a dos fidelidades: la primera cuesta menos, pero puede anticipar mal el resultado final.
+El tamaño del modelo y los diagnósticos iniciales serán descriptores, no fidelidades.
+Una \emph{semilla aleatoria} será una repetición completa del entrenamiento bajo aleatoriedad controlada.
 
-Se construirá un selector secuencial que combine descriptores, curvas parciales y evaluaciones completas.
-El selector aprenderá y calibrará sus errores en tareas separadas de las usadas para la prueba.
-Ante una tarea nueva podrá recomendar un codificador, destinar más presupuesto a observar su curva o abstenerse.
-Abstenerse significará devolver \enquote{evidencia insuficiente}; no será una elección encubierta de una arquitectura por defecto.
-Como la evidencia se consultará de manera adaptativa, la incertidumbre deberá permanecer controlada durante toda la secuencia de consultas y no solo en una etapa final fijada de antemano.
+Se construirá un selector que combine descriptores y curvas parciales para recomendar un codificador, comprar una observación adicional o terminar con \enquote{evidencia insuficiente}.
+La regla que ordena sus consultas se fijará antes de calibrar la incertidumbre y se evaluará en tareas no usadas durante el ajuste.
+La validez buscada será simultánea durante la trayectoria de consultas y marginal para una tarea nueva de la población declarada; no se presentará como garantía para cualquier entorno de RL.
 
-El contraste principal usará POPGym, un banco público de problemas parcialmente observables diseñado para estudiar memoria~\cite{morad2023popgym}.
-CARL aportará cambios controlados de contexto y ARLBench orientará el protocolo de automatización del diseño y ajuste de RL, área conocida como AutoRL, y la medición de costos~\cite{benjamins2023carl,becktepe2026arlbench}.
-Se comparará con asignación aleatoria de presupuesto, Hyperband o ASHA, BOHB o SMAC-HB, extrapolación de curvas de aprendizaje y una versión del selector obligada a decidir.
-La unidad independiente de generalización será el entorno base no visto; sus dificultades, contextos y semillas serán observaciones anidadas.
-
-La contribución esperada es una regla reproducible para determinar cuándo la evidencia parcial basta para elegir y cuándo se necesita más entrenamiento o no existe una recomendación defendible con el presupuesto disponible.
-El estudio será igualmente informativo si concluye que las señales tempranas no se transfieren entre tareas: en ese caso delimitará dónde el ahorro deja de ser identificable.
+El estudio usará POPGym como banco principal de problemas de memoria, CARL como contraste separado de cambio de contexto y ARLBench como referencia para el protocolo de AutoRL y la medición de costos~\cite{morad2023popgym,benjamins2023carl,becktepe2026arlbench}.
+El selector se comparará con una elección fija aprendida en desarrollo, asignación aleatoria, métodos de asignación de presupuesto y un competidor completo basado en curvas de aprendizaje.
+La unidad primaria será el entorno base no visto; dificultades, contextos y semillas quedarán anidados.
+El resultado será útil tanto si reduce costo con riesgo controlado como si identifica las condiciones en las que la evidencia parcial no permite recomendar.
 
 \section{Planteamiento del problema}
 
@@ -130,27 +125,29 @@ Diseñar y evaluar un selector secuencial de codificadores de memoria para apren
 
 \begin{enumerate}
   \item Formular la selección como una decisión secuencial en la que cada codificador puede consultarse mediante descriptores, curvas parciales o entrenamiento completo, cada fuente con un costo y un error que pueden variar entre tareas.
-  \item Construir una regla que actualice intervalos de desempeño, elija qué evaluación adicional comprar y recomiende solo cuando el margen frente a los demás candidatos sea suficientemente pequeño; en caso contrario, deberá continuar evaluando o abstenerse.
+  \item Construir una regla que actualice intervalos de desempeño, elija qué evaluación adicional comprar y recomiende solo cuando la cota superior del arrepentimiento normalizado no supere $\varepsilon$; en caso contrario, deberá continuar evaluando o abstenerse.
   \item Comparar el selector con métodos establecidos de AutoRL en bancos públicos, sobre entornos no vistos durante el ajuste, y medir por separado su comportamiento ante cambios controlados de contexto.
 \end{enumerate}
 
 \subsection{Hipótesis falsables}
 
-Los márgenes numéricos, la cobertura mínima y el comparador principal se fijarán con el piloto y la partición de calibración, antes de abrir la prueba.
-El comparador principal de H1 será el método con mejor resultado de desarrollo entre las familias definidas de antemano; esta elección no podrá cambiar después de observar la prueba.
+Los márgenes de relevancia práctica, la cobertura mínima y las familias de comparadores se fijarán después del piloto y antes de calibrar los umbrales del selector.
+El comparador principal de H1 será el método adaptativo con mejor resultado de desarrollo según una regla lexicográfica de arrepentimiento y costo definida de antemano; esta elección no podrá cambiar después de abrir calibración.
+El mejor codificador fijo será un control adicional decisivo: si alcanza el mismo margen de desempeño con menor costo, se concluirá que el selector no aporta valor práctico.
+Cada hipótesis tendrá tres desenlaces: evidencia favorable, evidencia contraria o resultado inconcluso por falta de precisión.
 
 \noindent\textbf{H1. Eficiencia.}
-La versión del selector obligada a recomendar al agotar el presupuesto reducirá el costo marginal por tarea y el número de evaluaciones completas frente al comparador principal, sin superar el margen de no inferioridad fijado para el arrepentimiento simple normalizado sobre todas las tareas de prueba.
-H1 se rechazará si falla cualquiera de las dos partes o si el ahorro depende de excluir tareas difíciles o de omitir el costo de los descriptores, las curvas parciales, la ejecución del selector o las corridas fallidas.
+La versión del selector obligada a recomendar al agotar el presupuesto reducirá el costo marginal por tarea frente al comparador adaptativo principal, sin superar el margen de no inferioridad fijado para el arrepentimiento simple normalizado sobre todas las tareas de prueba.
+H1 tendrá evidencia favorable solo si se cumplen conjuntamente el contraste unilateral de ahorro y el de no inferioridad; tendrá evidencia contraria si alguno incumple su margen con precisión suficiente.
 
 \noindent\textbf{H2. Abstención.}
 Sea $A_t=1$ el evento de emitir una recomendación.
-Frente al mismo selector obligado a decidir, la versión con abstención reducirá el riesgo condicional $\Pr(R_t>\varepsilon\mid A_t=1)$ y, además, su límite superior de confianza no superará $\delta$ mientras la cobertura $\Pr(A_t=1)$ permanezca por encima de $\gamma$.
-H2 se rechazará si incumple cualquiera de los límites, si el soporte independiente no permite estimarlos o si evita el error solicitando siempre todas las evaluaciones completas.
+Frente al mismo selector obligado a decidir en todas las tareas, la versión con abstención reducirá el riesgo entre sus recomendaciones emitidas y su límite superior unilateral no superará $\delta$, mientras el límite inferior de cobertura no sea menor que $\gamma$ y el costo sea inferior al de completar sistemáticamente todos los candidatos.
+H2 tendrá evidencia favorable solo si satisface los cuatro criterios bajo los márgenes registrados; una violación estimada con precisión será evidencia contraria y el soporte insuficiente producirá un resultado inconcluso.
 
 \noindent\textbf{H3. Cambio de contexto.}
 Sin reajustar el selector ni sus umbrales, ante cambios públicos de contexto mantendrá el límite de recomendaciones perjudiciales y la cobertura mínima definidos para este contraste.
-H3 se rechazará si viola cualquiera de los dos límites o si necesita usar resultados de la prueba para recalibrarse.
+H3 usará el mismo contrato de medición de H2 y soporte propio; una violación precisa será evidencia contraria y la falta de soporte se declarará inconclusa.
 
 \section{Marco teórico y estado del arte}
 
@@ -161,17 +158,22 @@ Un \emph{codificador de memoria} $c$ transforma causalmente el historial disponi
 $(o_1,a_1,\ldots,o_i)$, en un vector $z_i$ que usa la política de acción.
 La tesis no intenta elegir cualquier forma de representación aprendida: compara un conjunto finito $C$ de arquitecturas que resumen historia y que comparten una interfaz de salida.
 
-Para cada tarea $t$ y candidato $c$, $\Vt(c)$ denotará el retorno esperado al terminar un presupuesto de entrenamiento fijado de antemano.
+Para cada tarea $t$ y candidato $c$, $\Vt(c)$ denotará el retorno esperado, sobre la aleatoriedad de entrenamiento y evaluación, al terminar un presupuesto fijado de antemano.
 Ese valor no se observa de forma exacta.
 Se estimará con un grupo común de semillas que el selector nunca podrá consultar durante su decisión.
 Por tanto, la \enquote{mejor opción} será la mejor estimación de referencia dentro del conjunto congelado, no una verdad sobre todas las arquitecturas posibles.
-Si $\cstar=\arg\max_{c\in C}\Vt(c)$ y $\chat$ es la recomendación, el error primario será el arrepentimiento simple
+Si $\cstar=\arg\max_{c\in C}\Vt(c)$ y $\chat$ es la recomendación, el error primario será el arrepentimiento simple normalizado
 \begin{equation}
-  R_t=\Vt(\cstar)-\Vt(\chat),
+  R_t^{N}=\frac{\Vt(\cstar)-\Vt(\chat)}{s_t}.
 \end{equation}
-normalizado dentro de cada tarea antes de agregar resultados~\cite{audibert2010bai,agarwal2021precipice}.
-Una recomendación será \emph{perjudicial} cuando $R_t>\varepsilon$, con $\varepsilon$ fijado en calibración.
-La incertidumbre de la estimación de referencia se conservará al clasificar estos casos; un orden que no pueda distinguirse con las semillas disponibles se reportará como inconcluso.
+La escala positiva $s_t$ será la amplitud entre los cuantiles 0.1 y 0.9 de una política de referencia fija, estimada con semillas separadas y limitada por un piso positivo.
+La política, el número de semillas y el piso se fijarán antes de calibración y no dependerán de los resultados finales de los candidatos.
+La misma regla y el mismo umbral $\varepsilon$ se usarán en todas las hipótesis~\cite{audibert2010bai,agarwal2021precipice}.
+
+Las semillas ocultas producirán un intervalo para $R_t^{N}$ que incorpora la incertidumbre de todos los retornos de referencia.
+Un caso será perjudicial si todo el intervalo supera $\varepsilon$, no perjudicial si todo queda por debajo, e inconcluso si lo cruza.
+El ganador exacto puede ser incierto sin que la condición respecto de $\varepsilon$ lo sea.
+Todas las recomendaciones permanecerán en el denominador: H2 informará tanto la fracción definitivamente perjudicial como la cota conservadora que cuenta los casos inconclusos como posibles perjuicios, y usará esta última para certificar el límite $\delta$.
 
 \subsection{Niveles de evaluación y descriptores}
 
@@ -215,16 +217,31 @@ No cambia las acciones del agente ni activa una arquitectura de respaldo.
 Si una aplicación necesita una opción fija para continuar operando, esa política se evaluará por separado y su resultado no se atribuirá al selector.
 El \emph{riesgo selectivo} será la proporción de recomendaciones perjudiciales entre las tareas donde el método sí recomienda; la \emph{cobertura} será la proporción total de tareas cubiertas.
 Un método que nunca recomienda tendrá cobertura cero y no podrá satisfacer H2.
-El riesgo conjunto $\Pr(R_t>\varepsilon,A_t=1)$ y el riesgo condicional $\Pr(R_t>\varepsilon\mid A_t=1)$ se informarán por separado: el primero no sustituye al segundo cuando la cobertura es menor que uno.
+El riesgo conjunto $\Pr(R_t^{N}>\varepsilon,A_t=1)$ y el riesgo condicional $\Pr(R_t^{N}>\varepsilon\mid A_t=1)$ se informarán por separado: el primero no sustituye al segundo cuando la cobertura es menor que uno.
+Si $U_t^R$ es el extremo superior del intervalo de arrepentimiento, la estimación conservadora será
+\[
+  \widehat\rho_{\mathrm{sel}}^+
+  =\frac{\sum_t A_t\,\mathbf{1}\{U_t^R>\varepsilon\}}
+         {\sum_t A_t},
+  \qquad
+  \widehat\gamma=\frac{\sum_t A_t}{n}.
+\]
+La variante obligada usará la misma definición con $A_t=1$ en las $n$ tareas.
+El contraste de reducción se hará sobre $\widehat\rho_{\mathrm{sel}}^+-\widehat\rho_{\mathrm{obl}}^+$, con margen y límite unilateral fijados en el registro inicial, antes de calibrar el umbral.
+Si no se emite ninguna recomendación, el riesgo selectivo quedará indefinido y H2 no podrá recibir evidencia favorable.
 
 El selector producirá intervalos para $\Vt(c)$ mediante un modelo jerárquico entrenado solo con tareas de desarrollo.
-El modelo separará la variación entre tareas, codificadores y semillas, e incorporará las curvas parciales y los descriptores que hayan pasado la validación previa.
-Sus residuos se calibrarán en tareas distintas para obtener intervalos simultáneos sobre los candidatos y los momentos en que la regla puede detenerse.
-Un intervalo válido en una única etapa no conserva por sí solo su cobertura cuando se consulta repetidamente y la evidencia decide cuándo parar.
-El piloto elegirá entre secuencias de confianza con validez uniforme en el tiempo~\cite{howard2021confidence} o un conjunto finito de consultas predefinidas con corrección simultánea; esa elección y sus supuestos quedarán congelados antes de la prueba.
-La calibración conforme permite controlar riesgos a partir de tareas de calibración cuando estas y las tareas de prueba pueden tratarse como intercambiables~\cite{angelopoulos2024crc}; trabajos recientes extienden esta discusión al riesgo entre predicciones seleccionadas~\cite{xu2025selectivecrc}.
-La propuesta no supondrá que esa condición se mantiene automáticamente bajo cambio de contexto.
-Por eso H3 medirá de nuevo la tasa de recomendaciones perjudiciales y la cobertura, sin presentar la garantía de calibración como universal.
+La ruta principal usará una malla finita de presupuestos y una regla de adquisición fijadas antes de calibración.
+Esa regla definirá la trayectoria de consultas que seguiría si no se detuviera.
+Cada tarea de calibración generará un único puntaje: la mayor discrepancia, a lo largo de todos los candidatos y etapas de esa trayectoria, entre la predicción y una referencia que conserva la incertidumbre de las semillas ocultas.
+El umbral calibrado podrá truncar la trayectoria, pero no cambiar el orden subyacente ni la evidencia previa a la parada.
+Así se evita tratar los puntos dependientes de una curva como si fueran muestras independientes.
+
+La cobertura buscada será simultánea a lo largo de esa trayectoria y marginal para una tarea nueva bajo la intercambiabilidad de las tareas de calibración y prueba~\cite{angelopoulos2024crc}.
+La probabilidad integrará el conjunto de calibración, la tarea nueva y la aleatoriedad de entrenamiento; no será una garantía condicional para cada entorno posible.
+El control del riesgo entre recomendaciones se analizará por separado, siguiendo el problema de predicciones seleccionadas~\cite{xu2025selectivecrc}.
+Si el estudio no logra justificar esta construcción frente a la adquisición y la parada adaptativas, reportará calibración empírica y dejará inconcluso el componente de certificación de H2.
+H3 volverá a medir riesgo y cobertura porque la intercambiabilidad no se supondrá bajo cambio de contexto.
 
 \subsection{Trabajos cercanos y brecha de investigación}
 
@@ -233,37 +250,42 @@ Papini et al. seleccionan representaciones de funciones de valor en procesos de 
 Esos trabajos no resuelven el objeto empírico de esta tesis: escoger entre codificadores neuronales de memoria entrenables en problemas parcialmente observables mediante curvas de aprendizaje incompletas.
 
 También existen vecinos directos por cada componente.
-POPGym compara mecanismos de memoria~\cite{morad2023popgym}; Hyperband, ASHA y BOHB asignan presupuesto~\cite{li2018hyperband,li2020asha,falkner2018bohb}; LC-PFN extrapola curvas y demuestra que esa información puede acelerar la selección en otros dominios~\cite{adriaensen2023lcpfn}; y los predictores entre tareas y las sondas sin entrenamiento se han usado en búsqueda de arquitecturas~\cite{abdelfattah2021zerocost,shen2023proxybo,akhauri2023multipredict}.
-Al mismo tiempo, los resultados negativos de predicción de desempeño en RL impiden asumir que una buena extrapolación se trasladará sin más a este dominio~\cite{dierkes2025prediction}.
+Hyperband, ASHA y BOHB asignan presupuesto~\cite{li2018hyperband,li2020asha,falkner2018bohb}; LC-PFN extrapola curvas~\cite{adriaensen2023lcpfn}; DyHPO decide dinámicamente qué configuración continuar~\cite{wistuba2022dyhpo}; e ifBO combina predicción de curvas con una regla completa de adquisición incremental~\cite{rakotoarison2024ifbo}.
+La optimización multifidelidad sensible al costo también ha combinado transferencia de curvas y parada~\cite{lee2024costsensitive}.
+Por ello, ni la adquisición incremental ni la suma de costo, transferencia y parada se reclamarán como novedades aisladas.
+Los predictores entre tareas y las sondas baratas aportan otros antecedentes~\cite{abdelfattah2021zerocost,shen2023proxybo,akhauri2023multipredict}, pero los resultados negativos de predicción en RL impiden suponer que se trasladan sin validación~\cite{dierkes2025prediction}.
 
-La brecha que se someterá a prueba es la combinación de cuatro condiciones: codificadores de memoria como candidatos, evidencia parcial cuyo error cambia entre tareas, contabilidad completa del costo y la posibilidad explícita de no recomendar.
-Los métodos de identificación del mejor brazo con varias fidelidades ya ofrecen resultados de costo bajo modelos explícitos de sesgo~\cite{poiani2022mfbai,poiani2024optimal}.
-La tesis deberá mostrar, y no presuponer, qué parte de esos modelos deja de ser adecuada cuando las curvas de aprendizaje de RL cambian de fiabilidad entre tareas y la regla puede abstenerse.
+La brecha que se someterá a prueba es más estrecha: adquirir evidencia parcial de codificadores de memoria y decidir de manera selectiva bajo generalización entre tareas de RL.
+Los métodos de identificación del mejor brazo con varias fidelidades ofrecen cotas bajo costos y límites de sesgo conocidos~\cite{poiani2022mfbai,poiani2024optimal}.
+Aquí esos errores deberán estimarse entre tareas y las observaciones de una misma curva son dependientes; la tesis deberá establecer cuándo esa evidencia permite una recomendación calibrada y cuándo obliga a continuar o abstenerse.
 No se afirmará que esta combinación es inédita hasta completar la revisión sistemática del primer semestre.
-Si aparece un método equivalente, se adoptará como comparador o se recortará la contribución antes del prerregistro.
+Si aparece un método equivalente, se adoptará como comparador o se recortará la contribución antes del registro confirmatorio.
 
 \subsection{Resultado formal previsto}
 
 El resultado teórico previsto tendrá una sola estructura.
-La evidencia obtenida tras gastar una fracción $\ell$ del presupuesto se modelará como una observación ruidosa de $\Vt(c)$ cuyo sesgo y costo pueden depender de la tarea, del codificador y de $\ell$.
-Sea $s$ el índice de consulta y $\tau$ el momento, elegido a partir de la evidencia, en que el selector recomienda o agota el presupuesto.
-Para un conjunto finito $C$, se buscarán intervalos $[L_{t,s}(c),U_{t,s}(c)]$ que satisfagan
+La evidencia obtenida tras gastar una fracción $\ell$ del presupuesto se modelará como una observación dependiente de $\Vt(c)$ cuyo sesgo y costo pueden variar con la tarea, el codificador y $\ell$.
+La ruta principal fijará una malla finita de fidelidades y una regla de consulta $\pi$ antes de calibración.
+Sea $s$ el índice de una consulta en la trayectoria sin parada de $\pi$ y $\tau$ el momento adaptativo en que el umbral calibrado recomienda o agota el presupuesto.
+Para un conjunto finito $C$, se buscarán intervalos $[L_{t,s}(c),U_{t,s}(c)]$ tales que
 \begin{equation}
-  \Pr\!\left(\forall s\leq\tau,\ \forall c\in C:\
+  \Pr_{\mathcal D_{\mathrm{cal}},\,t,\,\xi}\!\left(\forall s\leq\tau,\ \forall c\in C:\
   \Vt(c)\in[L_{t,s}(c),U_{t,s}(c)]\right)\geq 1-\delta_{\mathrm{int}}.
 \end{equation}
-Sobre ese evento simultáneo, una recomendación $\chat$ en el momento $\tau$ cumple el margen $\varepsilon$ cuando
+La probabilidad se toma sobre las tareas de calibración $\mathcal D_{\mathrm{cal}}$, una tarea nueva $t$ de la población declarada y la aleatoriedad de entrenamiento $\xi$.
+El puntaje de calibración será el máximo error de la trayectoria completa de $\pi$, ampliado para incluir la incertidumbre con la que se estima el retorno final.
+Sobre ese evento simultáneo, una recomendación $\chat$ en el momento $\tau$ cumple el margen normalizado $\varepsilon$ cuando
 \begin{equation}
-  \max_{c\in C} U_{t,\tau}(c)-L_{t,\tau}(\chat)\leq\varepsilon,
+  \frac{\max_{c\in C} U_{t,\tau}(c)-L_{t,\tau}(\chat)}{s_t}\leq\varepsilon,
 \end{equation}
-donde los límites fueron calibrados sin usar la tarea de prueba.
-La tesis buscará una cota del costo necesario para alcanzar esta condición, en función de la separación entre candidatos, la reducción de los intervalos y el costo de cada consulta.
-Esta garantía por tarea no reemplaza el control empírico del riesgo selectivo de H2 sobre tareas nuevas; son dos afirmaciones distintas y ambas conservarán sus supuestos.
+donde los límites se calibraron sin usar la tarea de prueba.
+La tesis buscará una cota del costo de alcanzar esta condición bajo un modelo principal de sesgo y dependencia que se fijará tras el piloto.
+La afirmación será marginal para una tarea nueva bajo los supuestos declarados; no reemplaza la medición del riesgo selectivo de H2 ni promete cobertura condicional para cualquier entorno.
 
 El resultado complementario será una región de imposibilidad.
-Sea $C_{\varepsilon}(t)=\{c\in C:\Vt(\cstar)-\Vt(c)\leq\varepsilon\}$ el conjunto de candidatos suficientemente buenos para la tarea $t$.
-Si dos clases de tarea inducen la misma distribución del historial observable dentro del presupuesto y sus conjuntos $C_{\varepsilon}$ son disjuntos, ninguna regla que use solo ese historial puede reconocer una opción $\varepsilon$-óptima en ambas clases con probabilidad media superior a $1/2$ bajo probabilidades previas iguales.
-La demostración precisará la noción de indistinguibilidad y la probabilidad exigida; en esa región, pagar una evaluación adicional o abstenerse no será prudencia informal, sino una consecuencia del límite de información disponible.
+Sea $C_{\varepsilon}(t)=\{c\in C:[\Vt(\cstar)-\Vt(c)]/s_t\leq\varepsilon\}$ el conjunto de candidatos suficientemente buenos para la tarea $t$.
+Si dos clases de tarea inducen la misma distribución de toda la interacción accesible a una política dentro del presupuesto y sus conjuntos $C_{\varepsilon}$ son disjuntos, ninguna regla que use solo esa interacción puede reconocer una opción $\varepsilon$-óptima en ambas clases con probabilidad media superior a $1/2$ bajo probabilidades previas iguales.
+La demostración precisará la clase de políticas y cuándo una consulta adicional rompe la indistinguibilidad; en la región restante, evaluar por completo o abstenerse será una consecuencia del límite de información disponible.
 
 \section{Metodología}
 
@@ -273,6 +295,8 @@ El estudio será experimental, comparativo y prerregistrado.
 POPGym será el banco principal porque contiene quince entornos parcialmente observables y varios niveles de dificultad diseñados para comparar memoria~\cite{morad2023popgym}.
 CARL se usará como contraste separado de cambio de contexto: se variarán propiedades conocidas de la dinámica, pero el valor del contexto se ocultará al agente~\cite{benjamins2023carl}.
 ARLBench aportará prácticas, interfaces de comparación y una referencia externa para medir el costo de AutoRL~\cite{becktepe2026arlbench}; no sustituirá la prueba de memoria de POPGym.
+Para H3 se congelarán el meta-selector y sus umbrales, mientras cada codificador se entrenará de nuevo con la receta prevista para el caso.
+Ocultar el contexto significará retirar la variable intervenida, no suprimir arbitrariamente las demás observaciones físicas.
 
 El algoritmo principal será Proximal Policy Optimization (PPO), un método de gradiente de política ampliamente usado~\cite{schulman2017ppo}.
 Deep Q-Network (DQN), que aprende valores para las acciones, se conservará como análisis de sensibilidad solo si el piloto demuestra compatibilidad y presupuesto suficiente~\cite{mnih2015dqn}.
@@ -283,15 +307,19 @@ El \emph{entorno base} será la unidad independiente de generalización; el par 
 POPGym permite construir al menos 45 casos a partir de quince entornos y tres niveles de dificultad, pero esos casos no equivalen a 45 unidades independientes.
 Todos los casos de un entorno permanecerán juntos para impedir que una variante de la misma dinámica aparezca a la vez en ajuste y prueba.
 
-Se usarán pliegues externos agrupados por entorno.
-En cada pliegue, el selector y sus umbrales se ajustarán sin observar el entorno reservado, y cada entorno será evaluado fuera de muestra una sola vez.
-Los intervalos y las pruebas estadísticas se calcularán al nivel de los quince entornos base, con dificultades y semillas anidadas.
-El piloto fijará el número de pliegues y hará un análisis de precisión antes del prerregistro.
-POPGym por sí solo no permite defender un riesgo pequeño con alta precisión.
-A modo de referencia, incluso bajo el caso binomial ideal, con cero recomendaciones perjudiciales en quince unidades independientes, el límite superior unilateral exacto al 95~\% es $1-0.05^{1/15}\approx0.181$, equivalente a 18.1~\%; para situarlo por debajo de 5~\% se necesitan al menos 59 recomendaciones independientes sin fallos.
-El tamaño se calculará sobre las tareas donde el selector recomienda, no sobre el total ni sobre las semillas.
-Antes del prerregistro se añadirá un segundo banco público independiente si se pretende usar un límite de 5~\%; de lo contrario se fijará un límite compatible con la precisión disponible o H2 se declarará inconclusa.
-Los bancos se informarán también por separado y solo se combinarán bajo una regla establecida de antemano.
+El protocolo tendrá cuatro roles separados: piloto técnico, desarrollo del modelo, calibración de intervalos y prueba confirmatoria.
+Los pliegues agrupados dentro de desarrollo estimarán el comportamiento del procedimiento; no se tratarán como certificación de un selector fijo porque sus conjuntos de ajuste se solapan.
+Después de desarrollo se congelarán el selector y su regla de consulta; tareas distintas calibrarán el umbral y un último grupo, abierto una sola vez, sostendrá los contrastes confirmatorios.
+La dificultad principal de cada entorno se elegirá mediante una regla del banco fijada antes de desarrollo; las demás dificultades serán análisis anidados de sensibilidad.
+Cada entorno tendrá el mismo peso en el análisis primario.
+
+El piloto hará un censo de bancos públicos compatibles y un análisis conjunto de soporte y recursos antes del registro confirmatorio.
+La población de generalización quedará limitada a tareas públicas de memoria que cumplan criterios de inclusión registrados; POPGym es una colección diseñada, no una muestra aleatoria de todo RL.
+POPGym por sí solo no permite defender un riesgo pequeño con alta precisión: aun en el caso binomial ideal, cero recomendaciones perjudiciales en quince unidades independientes producen un límite superior unilateral exacto al 95~\% de $1-0.05^{1/15}\approx0.181$; se requieren al menos 59 recomendaciones independientes sin fallos para bajar de 5~\%.
+Estas cifras no incluyen desarrollo, calibración, abstenciones, referencias inciertas ni multiplicidad.
+La ampliación a otro banco solo se conservará si aporta tareas comparables dentro del techo total de recursos.
+Sin soporte suficiente, se publicará la curva riesgo--cobertura con su incertidumbre y H2 quedará inconclusa en su componente de certificación.
+Los bancos se informarán por separado y solo se combinarán bajo una regla establecida antes de la prueba.
 CARL será una confirmación separada y no inflará el tamaño de muestra de POPGym.
 
 Un estudio financiero propio podrá usarse, como máximo, como réplica posterior.
@@ -304,10 +332,10 @@ Todos producirán un vector de la misma dimensión y permanecerán dentro de una
 La banda será común al selector y a todos los comparadores; se definirá sin usar los entornos de prueba y su costo de calibración se informará por separado.
 Las diferencias restantes de tiempo, memoria y estabilidad se cobrarán en la decisión.
 El historial incluirá observaciones, acciones anteriores y marcas de inicio de episodio.
-La ventana, el tratamiento de límites y la normalización se publicarán antes de generar el conjunto experimental.
+La ventana disponible, la longitud de atención, el truncamiento del gradiente recurrente, el tratamiento de límites y la normalización se fijarán en el piloto y se publicarán antes de generar la prueba.
 Los objetivos auxiliares de preentrenamiento no formarán parte del contraste principal porque mezclarían la arquitectura con otro objetivo de aprendizaje.
 
-Una opción que no sea compatible con un algoritmo o entorno se excluirá antes del prerregistro y con razón publicada.
+Una opción que no sea compatible con un algoritmo o entorno se excluirá antes del registro confirmatorio y con razón publicada.
 No se sustituirá después de observar resultados.
 El conjunto pequeño permite entrenar todos los candidatos para construir la estimación de referencia con la que se juzgarán los métodos.
 
@@ -319,14 +347,15 @@ También se reportará una sensibilidad con una receta completamente común para
 \subsection{Selector propuesto}
 
 El selector usará un modelo probabilístico jerárquico para relacionar los descriptores de tarea y codificador, junto con los puntos observados de la curva, con el retorno al presupuesto completo.
-La estructura separará variación entre tareas, codificadores y semillas.
-La forma exacta del modelo, sus distribuciones previas y el procedimiento de calibración se escogerán en desarrollo y se congelarán antes de abrir calibración.
+El punto de partida será un proceso gaussiano jerárquico sobre el logaritmo del presupuesto, con efectos de tarea y codificador y una observación robusta para separar la variación entre tareas, arquitecturas y semillas.
+La adquisición inicial elegirá la consulta con mayor reducción esperada de la cota de arrepentimiento por segundo de costo.
+El piloto podrá reemplazar estas elecciones por incompatibilidad o inestabilidad, pero deberá hacerlo durante desarrollo y documentar el criterio; el modelo, la adquisición y la trayectoria consultable quedarán congelados antes de abrir calibración.
 
 Para una tarea nueva, el procedimiento será:
 \begin{enumerate}
   \item calcular los descriptores admitidos de los cinco candidatos y registrar el presupuesto disponible;
-  \item estimar para cada candidato un intervalo de retorno final válido para la secuencia de consultas acordada;
-  \item recomendar solo si un candidato satisface $\max_c U_{t,s}(c)-L_{t,s}(\chat)\leq\varepsilon$;
+  \item estimar para cada candidato un intervalo de retorno final calibrado para la secuencia de consultas acordada;
+  \item recomendar solo si un candidato satisface $[\max_c U_{t,s}(c)-L_{t,s}(\chat)]/s_t\leq\varepsilon$;
   \item si la condición no se cumple, comprar la observación que más reduzca la incertidumbre relevante por unidad de costo;
   \item repetir hasta recomendar o agotar el presupuesto; en este último caso, devolver \enquote{evidencia insuficiente}.
 \end{enumerate}
@@ -336,20 +365,28 @@ La versión sin abstención compartirá el mismo modelo, presupuesto y reglas de
 
 \subsection{Comparadores y protocolo}
 
-Los comparadores obligatorios serán: asignación aleatoria del mismo presupuesto; Hyperband o ASHA; BOHB o SMAC-HB; un extrapolador de curvas elegido antes del prerregistro, con LC-PFN como candidato inicial; y el selector propuesto sin abstención~\cite{adriaensen2023lcpfn}.
-El piloto elegirá una implementación por familia según compatibilidad y congelará esa decisión.
+Los comparadores obligatorios serán: un único codificador fijo, elegido solo en desarrollo y usado en todas las tareas nuevas; asignación aleatoria del mismo presupuesto; Hyperband o ASHA; BOHB; ifBO como método completo de adquisición basado en curvas; y el selector propuesto sin abstención~\cite{li2018hyperband,li2020asha,falkner2018bohb,rakotoarison2024ifbo}.
+El control fijo no observará curvas de la tarea nueva antes de elegir.
+El piloto verificará compatibilidad y congelará una implementación por familia; si ifBO no puede respetar el mismo espacio e información, se sustituirá por otro método completo de curvas y se publicará la razón.
 iMFBO se añadirá solo si su adaptación conserva el mismo espacio de candidatos, niveles de evaluación y presupuesto~\cite{fan2024imfbo}.
 DARTS-RL será un análisis secundario si puede operar sobre los mismos codificadores sin recibir información adicional.
 
 Para comparar muchos métodos de selección sin repetir innecesariamente el entrenamiento, se construirá una matriz de curvas una sola vez.
 Cada método la consultará como si actuara en línea y solo verá los puntos cuyo costo haya pagado.
 Esta reproducción controlada separa el costo real de producir la evidencia del costo que cada método habría consumido.
+Las fidelidades serán fracciones de un número fijo de transiciones del entorno, no porcentajes ambiguos de épocas.
+Cada consulta pagará el tramo adicional de una trayectoria candidato--semilla y los costos de evaluación y recuperación.
+El piloto comprobará que reanudar conserva los estados del modelo, optimizador, generadores aleatorios y entorno necesarios para representar la misma trayectoria.
 Cada candidato y caso tendrá hasta diez semillas completas: cinco generarán curvas consultables y cinco permanecerán ocultas para estimar $\Vt(c)$.
 Los grupos de semillas serán comunes a todos los métodos y se fijarán antes del experimento.
-El costo primario será el cómputo que un método consume para decidir: descriptores, tramos parciales, evaluaciones completas solicitadas, tiempo del selector y ejecuciones fallidas.
+
+El costo primario $C$ será el tiempo de pared, bajo un perfil de recursos fijo y concurrencia uno, desde el inicio de la tarea hasta disponer de la política seleccionada con su entrenamiento completo o emitir una abstención terminal.
+Cuando el método recomiende, incluirá una trayectoria completa del candidato entregado; en ambos desenlaces incluirá todos los tramos exploratorios, descriptores, tiempo del selector, recuperación y ejecuciones fallidas que haya consumido.
+El control fijo pagará una trayectoria completa y no comprará curvas adicionales; en los demás métodos, todo tramo ya observado del candidato final contará como parte de su entrenamiento.
+CPU-horas, GPU-horas, memoria y una comparación asíncrona con igual número de trabajadores se informarán por separado.
 Las semillas ocultas serán un costo experimental común para juzgar a todos los métodos; se informarán por separado y no se presentarán como ahorro.
-La contabilidad distinguirá el costo experimental común, el costo previo de entrenar y calibrar cada método y el costo marginal de aplicarlo a una tarea nueva.
-Todos los comparadores podrán reutilizar el mismo corpus histórico permitido por su algoritmo; no se cobrará experiencia pasada solo al método propuesto.
+La contabilidad distinguirá ese costo común, el costo previo de adquirir la historia y entrenar o calibrar cada método, y el costo marginal esperado de aplicarlo a una tarea nueva con desempeño comparable.
+Se mostrarán dos escenarios: construir el corpus desde cero y disponer de él previamente para todos los métodos compatibles.
 Si $C^{\mathrm{prev}}_m$ y $C^{\mathrm{marg}}_m$ son los costos previo y marginal del método $m$, se informará el punto de equilibrio frente al comparador $b$:
 \begin{equation}
   N^*=\left\lceil
@@ -358,19 +395,20 @@ Si $C^{\mathrm{prev}}_m$ y $C^{\mathrm{marg}}_m$ son los costos previo y margina
   \right\rceil,
 \end{equation}
 cuando el selector tenga menor costo marginal; si no lo tiene, se declarará que la inversión no se amortiza.
-El piloto y la calibración de tamaños serán costos comunes del experimento y se mostrarán fuera del costo marginal.
+La estimación de $N^*$ se presentará con intervalo o por escenarios; no se anunciará un umbral finito si el ahorro marginal no se distingue de cero.
+El presupuesto que define las fidelidades y el presupuesto máximo que cada método puede gastar para decidir se especificarán por separado.
 El número final de semillas y candidatos se fijará antes de abrir la prueba.
 
-H1 evaluará la versión obligada a decidir sobre todas las tareas de prueba: menor costo y menos evaluaciones completas, junto con no inferioridad del arrepentimiento simple normalizado.
-H2 evaluará únicamente el beneficio y el precio de poder abstenerse: riesgo condicional entre recomendaciones, cobertura y costo.
-No se comparará el arrepentimiento de los casos aceptados por el selector con el arrepentimiento de un rival sobre todas las tareas.
-H2 y H3 usarán la tasa de recomendaciones perjudiciales, su límite superior unilateral y la cobertura, con la tarea base como unidad.
+H1 evaluará la versión obligada a decidir sobre todas las tareas de prueba mediante dos contrastes unilaterales agrupados por entorno: superioridad en costo y no inferioridad en arrepentimiento normalizado.
+H2 comparará el riesgo conservador entre recomendaciones emitidas con el riesgo de la variante obligada sobre todas las tareas, e informará conjuntamente cobertura y costo.
+La diferencia de riesgo, el límite $\delta$, el error de intervalos $\delta_{\mathrm{int}}$ y el nivel estadístico $\alpha$ serán cantidades distintas.
+H2 y H3 usarán límites unilaterales con el entorno base como unidad; los casos inconclusos se conservarán como posibles perjuicios en el límite empleado para certificar.
 Como resultados secundarios se reportarán evaluaciones completas consumidas, costo hasta cumplir la condición de recomendación, tiempo de pared, GPU-horas, CPU-horas y memoria máxima.
-GPU y CPU se informarán por separado, sin conversiones inventadas.
 La agregación seguirá recomendaciones para experimentos de RL: promedio del 50\,\% central, perfiles de desempeño e intervalos por remuestreo agrupado por entorno base~\cite{agarwal2021precipice}.
-Las tres pruebas confirmatorias se corregirán por multiplicidad con el método de Holm~\cite{holm1979multiple}.
+El registro confirmatorio repetirá el estadístico, el margen y el sentido de cada contraste de H1--H3 fijados inicialmente; sus valores $p$ se corregirán por multiplicidad con el método de Holm~\cite{holm1979multiple}.
 
-El protocolo tendrá cuatro reglas de separación: espacio y presupuesto publicados antes de generar la prueba; desarrollo sin acceso a calibración ni prueba; umbrales fijados solo en calibración; y apertura única de la prueba.
+Habrá dos hitos públicos: un registro inicial del diseño y las reglas de desarrollo, y un registro confirmatorio después del piloto, desarrollo y calibración, pero antes de abrir la prueba.
+El espacio de candidatos y los márgenes se fijarán antes de calibración; desarrollo no accederá a calibración ni prueba; calibración fijará umbrales sin acceder a la prueba; y la prueba se abrirá una sola vez.
 Una corrida fallida consumirá el recurso gastado y se reportará.
 También se publicarán resultados negativos e inconclusos.
 
@@ -391,18 +429,19 @@ Sí muestra por qué conviene estudiar, con bancos públicos y controles fuertes
 La matriz experimental completa se construirá una sola vez y será compartida por todos los métodos.
 Con cinco candidatos, 45 casos de POPGym y hasta diez semillas por combinación, el componente inicial tiene un techo preliminar de 2\,250 curvas completas.
 Los puntos de entrenamiento parcial serán cortes de esas mismas curvas, no ejecuciones adicionales.
-El segundo banco requerido por la precisión de H2 y la confirmación con CARL se presupuestarán después del piloto, antes del prerregistro; sus tareas base no se sustituirán por un gran número de contextos o semillas dependientes.
-Estas cantidades son límites de diseño, no una afirmación de recursos ya asignados.
+El piloto fijará un techo total que incluya desarrollo, calibración, prueba, la eventual ampliación de tareas, CARL, ajuste por familia, almacenamiento y fallos.
+La ampliación solo se incorporará si alcanza el soporte científico previsto dentro de ese techo; de lo contrario se conservará un alcance empírico menor y no se afirmará una certificación que los datos no permiten.
+Estas cantidades son límites de diseño, no recursos ya asignados.
 
 Durante el primer semestre se ejecutará un piloto pequeño que medirá tiempo, memoria y estabilidad por codificador, algoritmo y entorno.
-El presupuesto final se calculará como el número de curvas aprobado multiplicado por el costo local medido, e incluirá almacenamiento y repeticiones fallidas.
+El presupuesto final se calculará con el costo observado de cada arquitectura y etapa, en lugar de multiplicar todas las curvas por un promedio único.
 Se usarán recursos de cómputo propios para el piloto y se solicitará infraestructura institucional o externa para la matriz definitiva.
-Si el techo disponible no permite el tamaño requerido por el análisis de precisión, el orden de reducción será: retirar la réplica financiera, retirar DQN y los comparadores secundarios, y finalmente reducir el número de codificadores antes del prerregistro.
+Si el techo disponible no permite el diseño completo, se retirarán primero la réplica financiera, DQN y los análisis secundarios; después se reducirá el alcance de la afirmación de riesgo antes que presentar un tamaño insuficiente como certificación.
 No se reducirán las unidades de prueba después de observar resultados ni se reutilizarán sus datos para ajustar el selector.
 
 Los principales riesgos científicos son que las curvas parciales no ordenen los codificadores, que los intervalos no se calibren entre tareas y que la abstención reduzca demasiado la cobertura.
-Los tres tienen una salida interpretable: H1 o H2 se rechaza y se caracteriza la región en la que una evaluación completa es necesaria.
-El riesgo técnico es la compatibilidad desigual de los codificadores con los bancos; se resolverá en el piloto antes del prerregistro.
+Los tres tienen una salida interpretable: evidencia contraria o inconclusa, acompañada por una caracterización de cuándo se necesita evaluar por completo.
+El riesgo técnico es la compatibilidad desigual de los codificadores con los bancos; se resolverá en el piloto antes del registro confirmatorio.
 
 \subsection{Ética, reproducibilidad y alcance}
 
@@ -422,9 +461,9 @@ La infraestructura existente podrá instrumentar experimentos, pero no se presen
 \textbf{Periodo} & \textbf{Hitos verificables} \\
 \midrule
 Año 1 &
-Revisión sistemática y delimitación de novedad; piloto de compatibilidad y costo; definición de particiones y potencia; implementación de comparadores; congelación del protocolo y prerregistro. \\
+Revisión sistemática y delimitación de novedad; censo de tareas; piloto de compatibilidad, costo y precisión; definición de particiones y márgenes; registro inicial; implementación de comparadores. \\
 Año 2 &
-Construcción de la matriz pública de curvas; desarrollo y calibración del selector; ejecución de comparadores; apertura única de H1 y H2; artículo metodológico. \\
+Construcción separada de datos de desarrollo y calibración; desarrollo del selector; calibración; registro confirmatorio; apertura única de H1 y H2; artículo metodológico. \\
 Año 3 &
 Contraste de cambio de contexto para H3; resultado formal y región de imposibilidad; réplica externa condicionada a recursos; publicación de artefactos, artículo empírico y tesis. \\
 \bottomrule
@@ -443,6 +482,10 @@ Contraste de cambio de contexto para H3; resultado formal y región de imposibil
 \noindent\textbf{Resultado mínimo defendible.}
 Determinar, con comparadores fuertes y tareas públicas separadas, cuándo una curva parcial permite seleccionar un codificador de memoria y cuándo es necesario completar el entrenamiento o no recomendar.
 
+\begingroup
+\setlength{\bibitemsep}{0.15\baselineskip}
+\setlength{\emergencystretch}{2em}
 \printbibliography[title={Referencias}]
+\endgroup
 
 \end{document}
