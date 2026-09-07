@@ -1,0 +1,272 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-tabla,es-noshorthands]{babel}
+\usepackage{mathptmx}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.02}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{csquotes}
+\usepackage[style=ieee,backend=biber,sorting=none,maxbibnames=3,minbibnames=1,url=true,doi=true]{biblatex}
+\usepackage[hidelinks]{hyperref}
+\urlstyle{same}
+
+\hypersetup{
+  pdftitle={Diseño y aprendizaje de representaciones temporales modulares},
+  pdfauthor={Harvey Demian Bastidas Caicedo},
+  pdfsubject={Propuesta de investigación doctoral}
+}
+
+\addbibresource{propuesta_doctoral_representaciones_temporales_modulares.bib}
+\definecolor{sabana}{HTML}{176D68}
+\definecolor{ink}{HTML}{20282C}
+\definecolor{soft}{HTML}{EEF5F4}
+
+\titleformat{\section}{\large\bfseries\color{sabana}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries\color{ink}}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{0.95em}{0.35em}
+\titlespacing*{\subsection}{0pt}{0.7em}{0.2em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\setlength{\parskip}{0.15em}
+\setlength{\parindent}{1.15em}
+\setlist[enumerate]{leftmargin=1.5em,itemsep=0.18em,topsep=0.25em}
+\setlist[itemize]{leftmargin=1.5em,itemsep=0.16em,topsep=0.25em}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries Diseño y aprendizaje de representaciones\\[0.2em]
+temporales modulares}\\[0.8em]
+{\large Propuesta de investigación doctoral}\\[0.4em]
+Harvey Demian Bastidas Caicedo\\
+Doctorado en Inteligencia Artificial · Universidad de La Sabana
+\end{center}
+
+\vspace{0.3em}
+\noindent\textbf{Palabras clave:}
+aprendizaje de representaciones · series temporales · arquitectura modular · campos receptivos · pronóstico multivariado · generalización
+
+\section*{Resumen}
+\addcontentsline{toc}{section}{Resumen}
+
+Una serie temporal multivariada reúne señales con escalas, ritmos de cambio y relaciones diferentes. Sin embargo, muchos modelos las procesan con una sola ventana y una misma operación, o incorporan múltiples escalas mediante una arquitectura fijada de antemano. Esta propuesta estudia una alternativa intermedia: diseñar una representación temporal modular a partir de propiedades estimadas exclusivamente en los datos de entrenamiento y aprender sus componentes junto con la tarea final.
+
+Una \emph{representación temporal modular} estará formada por varias ramas. Cada rama recibirá un grupo de variables, conservará un eje temporal explícito y tendrá un campo receptivo definido, es decir, una extensión concreta del pasado que puede usar para producir cada activación. Las salidas se alinearán antes de fusionarse y alimentar un cabezal de pronóstico. El mecanismo central construirá perfiles de dependencia temporal de las variables, los usará para proponer agrupaciones y campos receptivos, y dejará que los pesos de las ramas y de la fusión se aprendan de extremo a extremo. El procedimiento no pretende determinar la arquitectura óptima sin entrenarla: busca reducir decisiones arbitrarias y establecer cuándo esa fundamentación aporta valor.
+
+El estudio combinará señales sintéticas con estructura conocida, bancos públicos de pronóstico multivariado y una aplicación financiera secundaria. Comparará el diseño informado con modelos monolíticos, agrupaciones aleatorias, escalas fijas y métodos multiescala recientes bajo información, capacidad y presupuesto medidos. La evaluación separará desarrollo y confirmación por familias de datos y tendrá como unidad primaria la tarea de pronóstico, no cada ventana solapada. Se espera producir un método reproducible, una caracterización de sus condiciones de utilidad y evidencia igualmente publicable si el acoplamiento propuesto no supera referencias más simples.
+
+\section{Problema y motivación}
+
+El aprendizaje de representaciones busca transformar observaciones en variables que faciliten una tarea posterior~\cite{bengio2013representation,goodfellow2016deep}. En series temporales, la decisión no se limita a escoger una red. También comprende cuánto pasado mostrar, cómo agrupar variables, qué resolución conservar, qué operaciones aplicar y en qué momento combinar la información. Estas decisiones son dependientes: una convolución con un campo receptivo corto no puede usar una regularidad lenta; una reducción temprana puede ocultar desfases entre variables; y una transformación que mejora una medida interna puede eliminar eventos útiles para el pronóstico.
+
+En la práctica coexisten dos extremos. El primero aplica una representación uniforme a todas las variables y confía en que el modelo aprenda las diferencias. El segundo prueba muchas combinaciones de ventanas, transformaciones y arquitecturas. El primero puede imponer un sesgo inadecuado; el segundo consume recursos y puede adaptar el procedimiento al conjunto de validación~\cite{cawley2010overfit}. Entre ambos falta establecer qué decisiones pueden fundamentarse antes del entrenamiento y cuáles deben permanecer como hipótesis experimentales.
+
+El proyecto que motiva esta propuesta dispone de adquisición histórica, generación de variables, preprocesamiento reproducible, modelos supervisados, un entorno de aprendizaje por refuerzo y herramientas de optimización distribuida. Esa infraestructura no es la contribución doctoral. Su función es mostrar un problema real: existen rutas que aplanan todas las variables, rutas que resumen cada rama antes de fusionarla y rutas que conservan secuencias, pero no una metodología validada que relacione las propiedades temporales de los datos con esas decisiones. El dominio financiero servirá como aplicación posterior; no será la única fuente de evidencia ni el criterio que defina la validez general del método.
+
+\begin{tcolorbox}[colback=soft,colframe=sabana,boxrule=0.6pt,arc=1.2pt,left=6pt,right=6pt,top=5pt,bottom=5pt]
+\textbf{Pregunta de investigación.}
+¿Bajo qué condiciones un procedimiento que estima perfiles de dependencia temporal con datos de entrenamiento para agrupar variables y asignar campos receptivos a ramas aprendibles mejora el pronóstico fuera de muestra frente a diseños monolíticos y modulares no informados, bajo presupuestos comparables?
+\end{tcolorbox}
+
+La pregunta no supone que toda serie tenga grupos estables ni que una arquitectura modular siempre sea superior. También admite como resultado que ciertos perfiles no sean identificables, que la asignación informada no mejore una asignación simple o que su costo no se justifique.
+
+\section{Marco teórico y antecedentes}
+
+\subsection{Representación, escala temporal y campo receptivo}
+
+Sea $X_{1:L}\in\mathbb{R}^{L\times p}$ una ventana de $p$ variables observadas hasta el instante de decisión, y sea $Y_{L+1:L+H}$ el horizonte que se desea pronosticar. Una representación aprendida es una transformación parametrizada $Z=f_\theta(X)$ cuyas activaciones se ajustan mediante un objetivo de entrenamiento. En una representación modular, las variables se dividen en grupos $G_1,\ldots,G_B$ y cada rama produce una secuencia
+\begin{equation}
+  Z_b=\phi_{b,\theta_b}(X_{:,G_b})\in\mathbb{R}^{L'\times d_b}.
+\end{equation}
+Las ramas comparten marcas de tiempo o una regla explícita de correspondencia. Una fusión $F_\psi$ combina $Z_1,\ldots,Z_B$ y un cabezal $h_\omega$ produce el pronóstico. Los parámetros $\theta_b$, $\psi$ y $\omega$ se entrenan con la pérdida de la tarea; por tanto, no se necesita un autoencoder para afirmar que existe aprendizaje de representaciones.
+
+El \emph{campo receptivo} de una activación es la porción de la historia que puede afectarla. Puede ampliarse mediante dilataciones, tamaños de parche, recurrencia o atención. La \emph{escala temporal característica} resume cuánto tarda una dependencia en decaer o qué periodicidades aparecen de forma estable. No son conceptos idénticos: detectar una periodicidad no garantiza que usar exactamente esa ventana mejore el pronóstico. La tesis estudia esa relación como una hipótesis, no como una regla universal.
+
+El perfil de dependencia de una variable se estimará solo en el prefijo de entrenamiento e incluirá medidas predeclaradas de decaimiento de autocorrelación, concentración espectral, periodicidades dominantes y estabilidad entre subventanas. No se llamará \enquote{ruido} a todo residuo de una serie real ni se interpretará una transformada como información causal. Las señales sintéticas permitirán comprobar si los diagnósticos recuperan escalas conocidas; los datos públicos decidirán si son útiles para la tarea.
+
+\subsection{Lo que ya resuelven los modelos recientes}
+
+Los modelos lineales DLinear mostraron que una referencia simple puede superar arquitecturas mucho más complejas en varios bancos~\cite{zeng2023dlinear}. PatchTST segmenta la historia en parches y procesa cada variable de manera independiente~\cite{nie2023patchtst}; iTransformer invierte los ejes habituales y usa variables como tokens para aprender relaciones multivariadas~\cite{liu2024itransformer}. Estos resultados obligan a comparar cualquier arquitectura modular con referencias simples y con estrategias de dependencia e independencia entre canales.
+
+La representación multiescala tampoco es nueva. TimesNet organiza variaciones periódicas en tensores bidimensionales~\cite{wu2023timesnet}; MTST utiliza ramas con diferentes resoluciones de parche~\cite{zhang2024mtst}; Pathformer aprende rutas entre escalas~\cite{chen2024pathformer}; y TimeMixer mezcla componentes en resoluciones finas y gruesas~\cite{wang2024timemixer}. CCM aprende agrupaciones de canales a partir de su similitud~\cite{chen2024ccm}, mientras Leddam combina descomposición aprendible con atención entre y dentro de las series~\cite{yu2024leddam}. Por ello, esta investigación no reclamará como aporte el simple uso de ramas, múltiples ventanas, descomposición o atención.
+
+CoST separa componentes estacionales y de tendencia mediante aprendizaje contrastivo~\cite{woo2022cost}; BTSF combina representaciones temporales y espectrales~\cite{yang2022btsf}. Fuera de las series de pronóstico, SincNet y LEAF muestran que operaciones inspiradas en procesamiento de señales pueden parametrizarse y aprenderse con la tarea~\cite{ravanelli2018sincnet,zeghidour2021leaf}. EfficientLEAF encontró que frentes aprendibles más baratos no superaron consistentemente un banco fijo en sus tareas~\cite{schlueter2022efficientleaf}. Ese resultado adverso es importante: incorporar conocimiento de señales no garantiza utilidad.
+
+\subsection{Vecinos directos y brecha provisional}
+
+FFORMA usa características de una serie para ponderar modelos completos de pronóstico~\cite{montero2020fforma}; EMTSF realiza búsqueda evolutiva de módulos espaciales y temporales~\cite{liang2024emtsf}; y REP-Net descompone la tubería de pronóstico en representación, extracción y proyección, evaluando configuraciones de cada etapa~\cite{leppich2025repnet}. Son vecinos más cercanos que una comparación genérica con AutoML: los tres relacionan propiedades o módulos con desempeño.
+
+La revisión inicial no encontró todavía un método que reúna las tres condiciones que aquí se estudiarán: (i) estimar un perfil temporal reutilizable sin observar los resultados de prueba; (ii) usarlo para restringir conjuntamente la agrupación de variables y los campos receptivos internos, en vez de escoger únicamente un modelo terminado; y (iii) evaluar la transferencia de esa regla de composición a familias de datos no usadas para desarrollarla, con controles explícitos de capacidad y costo. Esta es una \emph{brecha provisional}. La revisión sistemática del primer semestre deberá confirmarla, estrecharla o reemplazarla si aparece un método equivalente.
+
+\section{Objetivos e hipótesis}
+
+\subsection{Objetivo general}
+
+Desarrollar y evaluar un procedimiento para diseñar y aprender representaciones temporales modulares que vincule perfiles de dependencia estimados en los datos de entrenamiento con la agrupación de variables y los campos receptivos de sus ramas, y determinar sus condiciones de utilidad para el pronóstico multivariado bajo restricciones explícitas de información y recursos.
+
+\subsection{Objetivos específicos}
+
+\begin{enumerate}
+  \item Formalizar el contrato de una representación temporal modular y caracterizar, sin usar datos futuros, perfiles de dependencia que puedan orientar agrupaciones y campos receptivos.
+  \item Construir una regla reproducible que traduzca esos perfiles en un diseño inicial de ramas, mantenga sus secuencias temporalmente alineadas y aprenda ramas, fusión y cabezal de extremo a extremo.
+  \item Evaluar el procedimiento frente a referencias fuertes y ablaciones en tareas públicas no usadas para desarrollarlo, midiendo desempeño, costo, estabilidad y condiciones de fallo; posteriormente examinar su utilidad en una aplicación financiera separada.
+\end{enumerate}
+
+\subsection{Hipótesis falsables}
+
+La unidad primaria será una tarea de pronóstico definida por conjunto de datos, variables objetivo y horizonte. Las ventanas solapadas y las semillas no se tratarán como observaciones independientes. Los márgenes de equivalencia práctica y el tamaño final del banco se fijarán mediante un piloto anterior a la evaluación confirmatoria.
+
+\noindent\textbf{H1 · Utilidad del diseño informado.}
+En familias públicas no usadas para desarrollar la regla, la representación modular informada por perfiles temporales reducirá el error escalado frente al mejor control congelado entre un modelo monolítico de capacidad comparable y una arquitectura modular con agrupación y campos receptivos no informados, bajo el mismo protocolo de entrenamiento. H1 será contraria si la diferencia confirmatoria favorece al control o si el intervalo incluye efectos materialmente perjudiciales; será inconclusa si la precisión no permite distinguir beneficio, equivalencia o perjuicio.
+
+\noindent\textbf{H2 · Mecanismo de acoplamiento.}
+La ventaja de la regla informada sobre una asignación permutada aumentará con la heterogeneidad predeclarada de escalas temporales. En señales sintéticas, donde escalas y desfases son conocidos, la regla deberá recuperar la dirección de esta interacción. En datos públicos, el contraste se hará con perfiles calculados antes de entrenar. H2 será contraria si la permutación conserva el desempeño o si la interacción aparece también en controles sin heterogeneidad.
+
+\noindent\textbf{H3 · Conservación temporal hasta la fusión.}
+Cuando la tarea contenga dependencias entre variables con desfases identificables, fusionar secuencias alineadas antes del resumen superará una variante que resume cada rama primero, sin aumentar el presupuesto de información. H3 será contraria si el resumen temprano iguala o supera de forma consistente la fusión temporal; ese desenlace delimitaría cuándo la complejidad modular no se justifica.
+
+\section{Método propuesto}
+
+\subsection{Contrato de datos y representación}
+
+Cada conjunto se almacenará con procedencia, frecuencia, zona temporal cuando corresponda, variables observadas, objetivo y marcas de disponibilidad. Todo ajuste de normalización, imputación, agrupación o diagnóstico se realizará con el segmento de entrenamiento. Una transformación será admisible solo si puede aplicarse causalmente en el punto de decisión y si la misma información original está disponible para todos los comparadores. Las operaciones que usan toda una ventana histórica no se considerarán fuga por ese solo hecho; la validez dependerá de que la ventana termine antes del instante pronosticado.
+
+La entrada común será la serie normalizada sin transformaciones específicas. El método calculará por variable un perfil $d_j$ y una medida de estabilidad entre subventanas. Después de normalizar cada componente con estadísticas robustas del entrenamiento, la heterogeneidad de una tarea se resumirá mediante
+\begin{equation}
+  q(X)=\operatorname{mediana}_{j<k}\lVert \widetilde d_j-\widetilde d_k\rVert_2,
+\end{equation}
+donde $q$ no pretende medir dificultad ni causalidad: solo cuantifica cuán distintos son los perfiles usados por la regla. Con esos perfiles, una regla $A_\eta$ producirá una partición $G$ y un conjunto de campos receptivos $R$:
+\begin{equation}
+  (G,R)=A_\eta(d_1,\ldots,d_p).
+\end{equation}
+La primera realización de $A_\eta$ agrupará perfiles mediante agrupamiento jerárquico y asignará a cada grupo el campo receptivo admisible más cercano a sus escalas dominantes. El número máximo de ramas, el umbral de corte y la cuadrícula finita de campos receptivos se fijarán en E1. Esta elección concreta hace refutable el mecanismo sin afirmar que sea la única traducción posible. Si el perfil de una variable no es estable, la regla no inventará una especialización: la asignará a una rama común y registrará el caso como no identificado.
+
+\subsection{Arquitectura y aprendizaje}
+
+El contraste principal usará una familia de bloques convolucionales temporales causales, porque sus campos receptivos pueden calcularse y modificarse sin cambiar la semántica de la entrada~\cite{bai2018tcn}. Cada rama operará sobre la misma grilla temporal y entregará $Z_b\in\mathbb{R}^{L\times d_b}$; se usarán dilataciones y tamaños de núcleo para variar alcance sin reordenar instantes. La fusión concatenará canales correspondientes al mismo tiempo y aplicará mezcla aprendible sobre canales. Un cabezal de pronóstico multi-horizonte resumirá después la secuencia. La comparación de H3 adelantará el resumen dentro de cada rama manteniendo constantes, hasta donde sea posible, parámetros y costo medido.
+
+Los pesos de ramas, fusión y cabezal se aprenderán conjuntamente mediante la pérdida de pronóstico. El estudio principal no dependerá de reconstrucción ni de un autoencoder. Una segunda familia de bloques, probablemente basada en parches, se incorporará solo como análisis de robustez si el piloto demuestra que el presupuesto permite separar el efecto de la regla del efecto del operador.
+
+Las restricciones comprobables ---causalidad, dimensiones, disponibilidad y memoria máxima--- se aplicarán antes de entrenar. Las preferencias heurísticas ---agrupación, escala y ancho--- serán evaluadas, no convertidas en prohibiciones. La optimización existente podrá ajustar tasas de aprendizaje, ancho y regularización dentro de rangos comunes, pero no será presentada como aporte doctoral.
+
+\subsection{Fases experimentales}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Fases y función de cada fuente de evidencia.}
+\label{tab:phases}
+\begin{tabularx}{\textwidth}{@{}L{1.2cm}L{3.2cm}Y L{2.6cm}@{}}
+\toprule
+\textbf{Fase} & \textbf{Datos} & \textbf{Propósito} & \textbf{Autoridad} \\
+\midrule
+E0 & Señales sintéticas multicomponente & Calibrar diagnósticos con escalas, desfases, eventos y ruido aditivo conocidos; detectar fallos de identificación. & Mecánica y mecanismo, no utilidad real. \\
+E1 & Familias públicas de desarrollo & Elegir fórmula de perfil, opciones finitas de la regla, presupuesto y márgenes; descartar componentes inútiles. & Desarrollo, no confirmación. \\
+E2 & Familias públicas reservadas & Probar H1--H3 con regla congelada y reentrenamiento del modelo por tarea. & Evidencia confirmatoria principal. \\
+E3 & Datos financieros históricos & Examinar compatibilidad con el sistema modular y, si procede, una política de aprendizaje por refuerzo. & Aplicación secundaria; no rescata H1--H3. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+E0 combinará procesos autorregresivos, componentes periódicos, tendencias, eventos localizados y relaciones con desfases. El nivel de ruido aditivo será conocido, pero no se extrapolará como una medida de \enquote{señal verdadera} en datos reales. E1 y E2 usarán conjuntos públicos multivariados de energía, clima, tráfico y otros dominios disponibles en TFB, Monash o GIFT-Eval~\cite{qiu2024tfb,godahewa2021monash,aksu2025gifteval}. Las familias, licencias, horizontes y particiones se congelarán antes de puntuar E2. La separación se hará por familia de datos, no repartiendo al azar ventanas del mismo conjunto entre desarrollo y confirmación.
+
+\section{Diseño de evaluación}
+
+\subsection{Comparadores y ablaciones}
+
+El conjunto mínimo incluirá:
+
+\begin{enumerate}
+  \item pronóstico estacional ingenuo y DLinear como pisos de complejidad;
+  \item PatchTST e iTransformer como referencias de independencia y dependencia entre variables;
+  \item un vecino multiescala directo, elegido entre MTST, Pathformer o TimeMixer antes de E2;
+  \item una TCN monolítica y una modular con grupos aleatorios, ambas construidas con el mismo contrato del método;
+  \item ablaciones que permutan los perfiles, fijan un campo receptivo común y adelantan el resumen temporal.
+\end{enumerate}
+
+CCM se incluirá como comparador de agrupación si su interfaz puede integrarse sin alterar la información o el presupuesto. No se ejecutarán todos los modelos publicados ni una búsqueda irrestricta. Cada comparador tendrá una función: establecer un piso, aislar modularidad, aislar la regla informada o enfrentar el vecino directo.
+
+\subsection{Medidas, incertidumbre y costo}
+
+La métrica primaria será el error absoluto medio escalado (MASE), cuyo denominador se calculará únicamente con el entrenamiento~\cite{hyndman2006mase}. MAE y error cuadrático se informarán como secundarios, junto con desempeño por horizonte, estabilidad entre semillas y error en eventos/extremos cuando exista una definición previa. Se registrarán tiempo de diagnóstico, tiempo de entrenamiento, memoria máxima, parámetros y operaciones estimadas. Mejorar por usar más capacidad no se atribuirá al método.
+
+Para cada tarea se calculará el logaritmo de la razón de MASE entre método y comparador. Las semillas se agregarán dentro de la tarea. Un bootstrap jerárquico re-muestreará primero conjuntos de datos y después tareas o series dentro de ellos; cuando se re-muestreen errores en el tiempo, conservará bloques contiguos. H2 estimará además la asociación entre $q(X)$ y la diferencia pareada entre la asignación informada y su permutación. Las comparaciones confirmatorias múltiples se corregirán mediante el procedimiento de Holm~\cite{holm1979multiple}. Se publicarán intervalos y efectos por tarea, no solo promedios.
+
+Las particiones serán cronológicas y la evaluación empleará orígenes rodantes no solapados cuando la longitud lo permita. El ajuste del diseño se repetirá dentro de cada muestra de entrenamiento; no se recalculará con prueba. Estas precauciones siguen la evidencia sobre selección sesgada y evaluación temporal~\cite{cawley2010overfit,bergmeir2018cv}.
+
+\subsection{Criterios de decisión}
+
+H1 se juzgará contra un comparador principal elegido en E1 y congelado. H2 y H3 usarán contrastes pareados dentro de la misma tarea. Un resultado favorable exige dirección correcta, intervalo compatible con relevancia práctica y ausencia de daño concentrado no explicado en una familia. Un promedio favorable que dependa de un único conjunto no bastará. Si el soporte o la precisión son insuficientes, el veredicto será inconcluso; si las referencias simples ganan, la conclusión será negativa y se conservará.
+
+\section{Viabilidad, ética y plan de trabajo}
+
+\subsection{Recursos y relación con el sistema existente}
+
+El trabajo parte de cuatro GPU propias de capacidades diferentes, CPU local, repositorios funcionales para datos, preprocesamiento, modelos y optimización, y experiencia previa con campañas reproducibles. La disponibilidad simultánea no se presupone. E0 y los diagnósticos se ejecutarán en CPU; E1 reducirá el espacio antes de reservar cómputo confirmatorio. El costo se medirá con pilotos y no se estimará multiplicando una sola corrida por toda la tesis.
+
+Las herramientas existentes de optimización distribuida, búsqueda evolutiva, registro de experimentos y análisis de resultados se reutilizarán cuando sea conveniente. Son infraestructura, no hipótesis de esta propuesta. Tampoco se modificará retroactivamente una campaña en curso para incorporar el método. La aplicación financiera usará una identidad experimental nueva y datos históricos; la operación real y la rentabilidad quedan fuera del estudio doctoral.
+
+\subsection{Cronograma de seis semestres}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Plan de trabajo y productos verificables.}
+\label{tab:timeline}
+\begin{tabularx}{\textwidth}{@{}L{1.35cm}Y L{4.5cm}@{}}
+\toprule
+\textbf{Sem.} & \textbf{Trabajo principal} & \textbf{Producto} \\
+\midrule
+1 & Revisión sistemática, contrato formal, banco y piloto de precisión/costo. & Protocolo registrado y artículo de revisión o diseño. \\
+2 & Implementación del perfil, regla y arquitectura; E0 completo. & Software reproducible y estudio de identificabilidad. \\
+3 & E1 en familias públicas; recorte de descriptores y comparadores. & Artículo metodológico y diseño E2 congelado. \\
+4 & E2, análisis confirmatorio y auditoría de reproducibilidad. & Artículo principal con resultados positivos, negativos o inconclusos. \\
+5 & Validación externa y E3 financiera o de aprendizaje por refuerzo si las condiciones previas se cumplen. & Artículo aplicado; si se recorta E3, análisis ampliado de E2. \\
+6 & Integración, réplica independiente, tesis y defensa. & Tesis, artefactos y documentos de reproducibilidad. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+El mínimo defendible comprende contrato, mecanismo, E0, E1 y E2. Si faltan recursos, se retirarán primero la segunda familia de bloques, CCM como integración y E3. No se recortarán el comparador simple, la separación por familias ni la contabilidad de costo.
+
+\subsection{Riesgos y ética}
+
+El mayor riesgo científico es que los perfiles temporales no anticipen qué diseño ayuda. Ese resultado refutaría el mecanismo, pero permitiría identificar condiciones en las que una arquitectura común o una búsqueda directa es preferible. Otro riesgo es que un antecedente equivalente elimine la brecha; en ese caso se adoptará como comparador y se estrechará la pregunta antes de E2. También puede ocurrir que los bancos públicos no contengan suficiente heterogeneidad o que los resultados dependan del dominio; la separación por familias hará visible esa limitación.
+
+Los experimentos principales usarán datos públicos con sus licencias y datos sintéticos sin participantes humanos. No se recopilarán decisiones clínicas, datos personales ni intervenciones sobre usuarios. La validación financiera será histórica y no autorizará operaciones. Se publicarán configuraciones fallidas, consumo computacional y resultados nulos para reducir repetición innecesaria de cómputo.
+
+\section{Contribuciones esperadas}
+
+La investigación busca cuatro contribuciones acotadas:
+
+\begin{enumerate}
+  \item un contrato operacional para describir entradas, ramas, campos receptivos, ejes temporales, fusión y consumidor sin confundir representación con preprocesamiento o modelo completo;
+  \item una regla reproducible que traduzca perfiles de dependencia temporal en restricciones de agrupación y alcance, manteniendo aprendizaje de extremo a extremo;
+  \item evidencia con atribución sobre el valor de la regla, la modularidad y la conservación temporal frente a comparadores directos y presupuestos medidos;
+  \item una caracterización de los regímenes en los que el procedimiento ayuda, no cambia el resultado o perjudica, transferible a nuevas tareas dentro de la población declarada.
+\end{enumerate}
+
+La propuesta no promete una representación universalmente óptima, extraer toda la información de una señal ni reemplazar AutoML. Su aporte dependerá de que el vínculo entre perfiles y diseño sea más informativo que una asignación no informada. Si no lo es, el resultado mínimo será una delimitación reproducible de ese fracaso y una guía sobre qué decisiones no conviene justificar con diagnósticos previos.
+
+\printbibliography[title={Referencias}]
+
+\end{document}
