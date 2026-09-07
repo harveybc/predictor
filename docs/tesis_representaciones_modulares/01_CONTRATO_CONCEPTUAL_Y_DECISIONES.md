@@ -4,7 +4,7 @@
 
 **Fecha:** 2026-09-07
 
-**Estado:** revisión 3 (auditoría Musashi posterior a Takeshi y Retsu, 2026-09-07) para prueba de lectura
+**Estado:** revisión 4 (cierre de la relectura final de Takeshi, 2026-09-07) para prueba de lectura
 
 **Antecedente preservado:** propuesta sobre selección multifidelidad de representaciones para RL
 
@@ -32,7 +32,7 @@ El agrupamiento, su distancia, el número máximo de ramas, el umbral de corte y
 - **Consumidor principal:** pronóstico multivariado y multi-horizonte.
 - **Población principal:** familias públicas de series temporales separadas entre desarrollo y confirmación.
 - **Calibración y mecanismo:** señales sintéticas factoriales con escalas y desfases conocidos, divididas en generadores de desarrollo y generadores reservados.
-- **Aplicación secundaria:** datos financieros históricos y, solo si las compuertas previas pasan, una política de aprendizaje por refuerzo.
+- **Aplicación secundaria:** datos financieros históricos, sin intervenir en la selección del método ni sostener H1--H3.
 
 La unidad primaria es la tarea de pronóstico definida por conjunto, objetivo y horizonte. Las ventanas solapadas y las semillas no se consideran unidades independientes.
 
@@ -62,7 +62,13 @@ La unidad primaria es la tarea de pronóstico definida por conjunto, objetivo y 
 | Detector | Submódulo inicial del extractor, no red obligatoria aparte | Permite preentrenar o sustituir sin tres procesos. |
 | Decodificador | Auxiliar del preentrenamiento; pareja preservada | Evita confundir reconstrucción con la tarea de pronóstico. |
 | H1 | Confirmación en familias públicas reservadas | Es la prueba principal de utilidad fuera de muestra. |
-| H2 | Factorial sintético de heterogeneidad de escalas | Permite probar el mecanismo con estructura conocida. |
-| H3 | Factorial sintético con y sin dependencia cruzada rezagada | Evita inferir mecanismo desde perfiles marginales. |
-| Inferencia | Bootstrap jerárquico con tarea como unidad y Holm para H1--H3 | Respeta familias, series, horizontes y semillas dependientes. |
-| RL/finanzas | Aplicación secundaria condicionada | Evita que la validez doctoral dependa de un único dominio de alto riesgo. |
+| Agregación de H1 | Igual peso entre tareas dentro de conjunto, conjuntos dentro de familia y familias | Evita que una fuente grande decida por sí sola la conclusión de transferencia. |
+| No inferioridad de H1 | Beneficio global y límite superior por familia $U_f\leq\varepsilon$ | Un promedio favorable no puede ocultar perjuicio material en una familia. |
+| H2 | Pendiente de la diferencia informada--permutada frente a heterogeneidad sintética conocida | Prueba el mecanismo relativo; el beneficio absoluto se informa aparte. |
+| H3 | Fusión frente a resumen temprano usando un extractor compartido y congelado | Atribuye el contraste a la fusión y exige beneficio bajo acoplamiento y una interacción con signo definido. |
+| Inferencia | Bootstrap pareado y jerárquico; $K=F+4$ intervalos Bonferroni con $\alpha=0.05$ | Define una única ruta para el efecto global, los efectos por familia y los contrastes mecanísticos. |
+| Control H2 | Permutar variable--perfil conservando ramas, alcances, interfaz y presupuesto | Evita confundir correspondencia informada con capacidad o un simple cambio de nombres. |
+| Control H3 | Realizaciones independientes de los mismos procesos marginales, sin acoplamiento cruzado | Preserva en distribución la estructura temporal marginal que una permutación arbitraria destruiría. |
+| Cronología sintética | Reserva H2/H3 cerrada hasta congelar el procedimiento al final de E1 | Impide que los resultados mecanísticos reservados orienten el diseño que deben evaluar. |
+| Costo principal | Energía en Wh; pared, horas de cómputo y memoria informadas aparte | No suma magnitudes incompatibles y carga toda la búsqueda, fallos y trabajo compartido. |
+| Finanzas | Aplicación histórica secundaria y condicionada | Evita que la validez doctoral dependa de un único dominio de alto riesgo. |

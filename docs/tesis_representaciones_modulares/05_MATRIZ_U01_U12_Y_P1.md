@@ -2,7 +2,7 @@
 
 **Paquete de entrada:** Takeshi, revisión 2 (`PAQUETE_TAKESHI_AUDITORIA_Y_FIGURAS.zip`, 2026-09-07)  
 **Documento evaluado:** `docs/propuesta_doctoral_representaciones_temporales_modulares.tex`  
-**Estado:** revisión 3 posterior a las correcciones de Retsu y a la auditoría de Musashi.
+**Estado:** revisión 4 posterior a la relectura final de Takeshi y al cierre de Musashi.
 
 Esta matriz registra qué llegó al PDF. No concede validez científica por sí misma; los puntos que dependen del piloto o de la revisión sistemática permanecen abiertos de forma expresa.
 
@@ -35,6 +35,8 @@ Esta matriz registra qué llegó al PDF. No concede validez científica por sí 
 | P1-06: ablaciones no aislaban efectos | Cerrada en protocolo: monolítico, modular aleatorio, perfiles permutados, campo común y resumen temprano tienen funciones distintas. | El conjunto mínimo exacto se congela antes de E2. |
 | P1-07: vecinos directos ausentes | Fortalecida: DUET y MSGNet se añaden; DUET pasa a comparador directo y la brecha se declara provisional. | Revisión sistemática del primer semestre. |
 | P1-08: banco, MASE y presupuesto incompletos | Cerrada en contrato: unidades multivariadas elegibles, denominador MASE cero tipado y ecuación de costo completo. | Tamaño final derivado del piloto de precisión. |
+
+La disposición de los ocho P1 y trece P2 de la relectura final se registra por separado en `08_DISPOSICION_RELECTURA_FINAL_TAKESHI_2026_09_07.md`. Esa matriz reemplaza, para la revisión 4, cualquier formulación anterior incompatible, en particular la corrección Holm, el uso de permutación temporal como control causal y la apertura temprana de E0 reservado.
 
 ## Respuestas a las doce preguntas de Takeshi
 

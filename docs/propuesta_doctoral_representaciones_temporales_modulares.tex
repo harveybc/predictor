@@ -4,14 +4,15 @@
 \usepackage[utf8]{inputenc}
 \usepackage[spanish,es-tabla,es-noshorthands]{babel}
 \usepackage{mathptmx}
-\usepackage[margin=2.0cm]{geometry}
+\usepackage[top=1.8cm,bottom=1.8cm,left=1.85cm,right=1.85cm]{geometry}
 \usepackage{setspace}
-\setstretch{1.02}
+\setstretch{1.0}
 \usepackage{microtype}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{array}
+\usepackage{float}
 \usepackage{enumitem}
 \usepackage{xcolor}
 \usepackage[most]{tcolorbox}
@@ -79,7 +80,7 @@ El estudio combinará señales sintéticas con estructura conocida, bancos públ
 
 \section{Problema y motivación}
 
-El aprendizaje de representaciones busca transformar observaciones en variables que faciliten una tarea posterior~\cite{bengio2013representation,goodfellow2016deep}. En series temporales, la decisión no se limita a escoger una red. También comprende cuánto pasado mostrar, cómo agrupar variables, qué resolución conservar, qué operaciones aplicar y en qué momento combinar la información. Estas decisiones son dependientes: una convolución con un campo receptivo corto no puede usar una regularidad lenta; una reducción temprana puede ocultar desfases entre variables; y una transformación que mejora una medida interna puede eliminar eventos útiles para el pronóstico.
+El aprendizaje de representaciones busca transformar observaciones en variables que faciliten una tarea posterior~\cite{bengio2013representation,goodfellow2016deep}. En series temporales, la decisión no se limita a escoger una red. También comprende cuánto pasado mostrar, cómo agrupar variables, qué resolución conservar, qué operaciones aplicar y en qué momento combinar la información. Estas decisiones son dependientes: una activación convolucional no puede depender directamente de observaciones fuera de su campo receptivo, aunque las capas posteriores puedan integrar un contexto mayor; una reducción temprana puede ocultar desfases entre variables; y una transformación que mejora una medida interna puede eliminar eventos útiles para el pronóstico.
 
 En la práctica coexisten dos estrategias. Una aplica una representación uniforme a todas las variables y confía en que el modelo aprenda sus diferencias. La otra prueba muchas combinaciones de ventanas, transformaciones y arquitecturas. La primera puede imponer un sesgo inadecuado; la segunda consume recursos y puede adaptar el procedimiento al conjunto de validación~\cite{cawley2010overfit}. Falta establecer si descriptores temporales calculados antes de entrenar permiten restringir esas decisiones sin perder desempeño fuera de muestra.
 
@@ -98,19 +99,19 @@ La pregunta no supone que toda serie tenga grupos estables ni que una arquitectu
 
 Sea $X_{1:L}\in\mathbb{R}^{L\times p}$ una ventana de $p$ variables observadas hasta el instante de decisión, y sea $Y_{L+1:L+H}$ el horizonte que se desea pronosticar. Una representación aprendida es una transformación parametrizada $Z=f_\theta(X)$ cuyas activaciones se ajustan mediante un objetivo de entrenamiento. En una representación modular, las variables se dividen en grupos $G_1,\ldots,G_B$. El extractor de la rama $j$ distingue un detector temporal $D_j$, un integrador $I_j$ y una adaptación de salida $A_j$ (esta última puede ser la identidad):
 \begin{equation}
-  Z_j=A_j\bigl(I_j(D_j(X_{:,G_j}))\bigr)\in\mathbb{R}^{L_j\times d_j}.
+  Z_j=A_j\bigl(I_j(D_j(X_{:,G_j}))\bigr)\in\mathbb{R}^{L_j\times c_j}.
 \end{equation}
 $L_j$ es la longitud de la secuencia a la salida de esa rama: no se supone $L_j=L$ si hay submuestreo. Las ramas deben compartir una correspondencia temporal explícita antes de la fusión $G_\psi$; un cabezal $h_\omega$ produce el pronóstico. Esta separación describe interfaces y modos de entrenamiento; no impone tres redes independientes ni congelación obligatoria. El campo receptivo de una activación del detector no equivale a la historia accesible al predictor completo.
 
 El \emph{campo receptivo} de una activación es la porción de la historia que puede afectarla. Puede ampliarse mediante dilataciones, tamaños de parche, recurrencia o atención. La \emph{escala temporal característica} resume cuánto tarda una dependencia en decaer o qué periodicidades aparecen de forma estable. No son conceptos idénticos: detectar una periodicidad no garantiza que usar exactamente esa ventana mejore el pronóstico. La tesis estudia esa relación como una hipótesis, no como una regla universal.
 
-El perfil temporal de una variable se estimará solo en el prefijo de entrenamiento e incluirá medidas predeclaradas de decaimiento de autocorrelación, concentración espectral, periodicidades dominantes y estabilidad entre subventanas. Los retardos se expresarán respecto a la frecuencia de muestreo y a la historia disponible; las frecuencias se normalizarán respecto a Nyquist. La escala común de los descriptores se aprenderá en las familias de desarrollo y quedará fija antes de la confirmación. Así, la heterogeneidad entre tareas no desaparecerá por normalizar cada una de manera independiente. No se llamará \enquote{ruido} a todo residuo de una serie real ni se interpretará una transformada como información causal. Las señales sintéticas permitirán comprobar si los diagnósticos recuperan escalas conocidas; los datos públicos decidirán si son útiles para pronosticar.
+El perfil temporal de una variable se estimará solo en el prefijo de entrenamiento e incluirá medidas predeclaradas de decaimiento de autocorrelación, concentración espectral, periodicidades dominantes y estabilidad entre subventanas. Los retardos se expresarán respecto a la frecuencia de muestreo y a la historia disponible; las frecuencias se normalizarán respecto a la frecuencia de Nyquist, que corresponde a la mitad de la frecuencia de muestreo. La escala común de los descriptores se aprenderá en las familias de desarrollo y quedará fija antes de la confirmación. Así, la heterogeneidad entre tareas no desaparecerá por normalizar cada una de manera independiente. No se llamará \enquote{ruido} a todo residuo de una serie real ni se interpretará una transformada como información causal. Las señales sintéticas permitirán comprobar si los diagnósticos recuperan escalas conocidas; los datos públicos decidirán si son útiles para pronosticar.
 
 \subsection{Lo que ya resuelven los modelos recientes}
 
 Los modelos lineales DLinear mostraron que una referencia simple puede superar arquitecturas mucho más complejas en varios bancos~\cite{zeng2023dlinear}. PatchTST segmenta la historia en parches y procesa cada variable de manera independiente~\cite{nie2023patchtst}; iTransformer invierte los ejes habituales y usa variables como tokens para aprender relaciones multivariadas~\cite{liu2024itransformer}. Estos resultados obligan a comparar cualquier arquitectura modular con referencias simples y con estrategias de dependencia e independencia entre canales.
 
-La representación multiescala tampoco es nueva. TimesNet organiza variaciones periódicas en tensores bidimensionales~\cite{wu2023timesnet}; MTST utiliza ramas con diferentes resoluciones de parche~\cite{zhang2024mtst}; Pathformer aprende rutas entre escalas~\cite{chen2024pathformer}; y TimeMixer mezcla componentes en resoluciones finas y gruesas~\cite{wang2024timemixer}. MSGNet aprende relaciones entre variables que cambian con la escala~\cite{cai2024msgnet}. CCM agrupa canales a partir de una métrica aprendida~\cite{chen2024ccm}, mientras DUET combina agrupación temporal y agrupación suave de canales~\cite{qiu2025duet}. Leddam y CATS ofrecen otras formas de representar dependencias entre series~\cite{yu2024leddam,lu2024cats}. Por ello, esta investigación no reclamará como aporte el simple uso de ramas, múltiples ventanas, agrupación, descomposición o atención.
+La representación multiescala tampoco es nueva. TimesNet organiza variaciones periódicas en tensores bidimensionales~\cite{wu2023timesnet}; MTST utiliza ramas con diferentes resoluciones de parche~\cite{zhang2024mtst}; Pathformer aprende rutas entre escalas~\cite{chen2024pathformer}; y TimeMixer mezcla componentes en resoluciones finas y gruesas~\cite{wang2024timemixer}. MSGNet aprende relaciones entre variables que cambian con la escala~\cite{cai2024msgnet}. CCM aprende asignaciones y prototipos de grupos de canales, regularizados por su similitud~\cite{chen2024ccm}, mientras DUET combina agrupación temporal y agrupación suave de canales~\cite{qiu2025duet}. Leddam y CATS ofrecen otras formas de representar dependencias entre series~\cite{yu2024leddam,lu2024cats}. Por ello, esta investigación no reclamará como aporte el simple uso de ramas, múltiples ventanas, agrupación, descomposición o atención.
 
 CoST separa componentes estacionales y de tendencia mediante aprendizaje contrastivo~\cite{woo2022cost}; BTSF combina representaciones temporales y espectrales~\cite{yang2022btsf}. Fuera de las series de pronóstico, SincNet y LEAF muestran que operaciones inspiradas en procesamiento de señales pueden parametrizarse y aprenderse con la tarea~\cite{ravanelli2018sincnet,zeghidour2021leaf}. EfficientLEAF encontró que frentes aprendibles más baratos no superaron consistentemente un banco fijo en sus tareas~\cite{schlueter2022efficientleaf}. Ese resultado adverso es importante: incorporar conocimiento de señales no garantiza utilidad.
 
@@ -120,39 +121,42 @@ FFORMA usa características de una serie para ponderar modelos completos de pron
 
 La revisión inicial no encontró todavía un método que reúna las tres condiciones que aquí se estudiarán: (i) estimar un perfil temporal reutilizable sin observar los resultados de prueba; (ii) usarlo para restringir conjuntamente la agrupación de variables y los campos receptivos internos, en vez de escoger únicamente un modelo terminado; y (iii) evaluar la transferencia de esa regla de composición a familias de datos no usadas para desarrollarla, con controles explícitos de capacidad, régimen de aprendizaje y costo. Esta es una \emph{brecha provisional}. La revisión sistemática del primer semestre deberá confirmarla, estrecharla o reemplazarla si aparece un método equivalente.
 
-El preentrenamiento por capas de autoencoders y la reconstrucción enmascarada de series son antecedentes del régimen de aprendizaje, no de la regla de diseño~\cite{bengio2007greedy,li2023timae}. Reutilizar pesos de un codificador tampoco se reclamará como novedad. La experiencia técnica previa incluye exportación separada de codificador y decodificador y configuraciones para reajustar extractores en tareas de pronóstico~\cite{featureextractor2024cnn,predictor2024trainfe}. Esa evidencia respalda la viabilidad, pero no demuestra que el acoplamiento diferenciable requerido por esta propuesta ya esté implementado. La integración se verificará mediante una prueba de flujo de gradientes y no mediante nombres de opciones o archivos de configuración.
+El preentrenamiento por capas de autoencoders y la reconstrucción enmascarada de series son antecedentes del régimen de aprendizaje, no de la regla de diseño~\cite{bengio2007greedy,li2023timae}. Reutilizar pesos de un codificador tampoco se reclamará como novedad. La experiencia técnica previa incluye exportación separada de codificador y decodificador y configuraciones para reajustar extractores en tareas de pronóstico~\cite{featureextractor2026manager,predictor2026trainfe}. Esa evidencia respalda la viabilidad, pero no demuestra que el acoplamiento diferenciable requerido por esta propuesta ya esté implementado. La integración se verificará mediante una prueba de flujo de gradientes y no mediante nombres de opciones o archivos de configuración.
 
 \section{Objetivos e hipótesis}
 
 \subsection{Objetivo general}
 
-Desarrollar y evaluar un procedimiento para diseñar y aprender representaciones temporales modulares que vincule perfiles de dependencia estimados en los datos de entrenamiento con la agrupación de variables y los campos receptivos de sus ramas, con una frontera explícita del detector y un régimen de aprendizaje declarado, y determinar sus condiciones de utilidad para el pronóstico multivariado bajo restricciones de información y recursos.
+Desarrollar y evaluar un procedimiento para diseñar y aprender representaciones temporales modulares que vincule perfiles temporales marginales estimados en los datos de entrenamiento con la agrupación de variables y los campos receptivos de sus ramas, con una frontera explícita del detector y un régimen de aprendizaje declarado, y determinar sus condiciones de utilidad para el pronóstico multivariado bajo restricciones de información y recursos.
 
 \subsection{Objetivos específicos}
 
 \begin{enumerate}
-  \item Formalizar el contrato de una representación temporal modular ---detector, integrador, adaptación, consolidador y cabezal--- y caracterizar, sin usar datos futuros, perfiles de dependencia que puedan orientar agrupaciones y campos receptivos.
+  \item Formalizar el contrato de una representación temporal modular ---detector, integrador, adaptación, consolidador y cabezal--- y caracterizar, sin usar datos futuros, perfiles temporales marginales que puedan orientar agrupaciones y campos receptivos.
   \item Construir una regla reproducible que traduzca esos perfiles en un diseño inicial de ramas, especifique la correspondencia temporal entre sus salidas y declare el régimen de aprendizaje (conjunto desde cero, detector congelado o detector ajustable).
   \item Evaluar el procedimiento frente a referencias fuertes y ablaciones en tareas públicas no usadas para desarrollarlo, midiendo error, costo total, estabilidad y condiciones de fallo; posteriormente examinar su utilidad en una aplicación financiera separada.
 \end{enumerate}
 
 \subsection{Hipótesis falsables}
+\label{sec:hipotesis}
 
-La unidad primaria será una tarea de pronóstico definida por conjunto de datos, variables objetivo y horizonte. Los orígenes rodantes y las semillas serán repeticiones dentro de la tarea, no observaciones independientes. Para cada tarea $t$ se calculará
+La unidad primaria será una tarea de pronóstico definida por conjunto de datos, variables objetivo y horizonte. Los orígenes rodantes y las semillas serán repeticiones dentro de la tarea, no observaciones independientes. Cada variable objetivo tendrá su propio denominador del error absoluto medio escalado (MASE; \S\ref{sec:medidas}), calculado con el entrenamiento disponible en el origen correspondiente y compartido por todos los métodos. Si un denominador predeclarado es nulo, la tarea completa no será elegible para H1 y se informará por separado. Dentro de cada tarea, los errores escalados se promediarán con igual peso entre variables objetivo, pasos del horizonte, orígenes y semillas. Para cada tarea $t$ se calculará
 \begin{equation}
   \Delta_t=\operatorname{MASE}_{t,\,\text{método}}-
   \operatorname{MASE}_{t,\,\text{control}},
 \end{equation}
-de modo que un valor negativo favorece al método. Antes de examinar las familias confirmatorias se fijará un margen práctico $\varepsilon>0$, sustentado en el piloto de precisión y costo, y se conservará sin cambios durante E2.
+de modo que un valor negativo favorece al método. El efecto principal $\Delta$ dará igual peso a las tareas dentro de cada conjunto, a los conjuntos dentro de cada familia y a las familias. Esta jerarquía evita que una fuente con muchas series domine la conclusión. El remuestreo conservará el emparejamiento entre métodos y la dependencia entre objetivos y horizontes de una misma fuente.
+
+Antes de abrir la evaluación confirmatoria (E2) se fijarán un margen práctico $\varepsilon>0$, el nivel $\alpha=0.05$ y las $F$ familias públicas. El piloto comprobará si el banco permite resolver un margen elegido por relevancia para la tarea; no se escogerá $\varepsilon$ solo porque produzca significación. El conjunto confirmatorio contendrá $K=F+4$ efectos: el efecto global y los $F$ efectos por familia de H1, la pendiente de H2 y los dos contrastes de H3. Para cada uno se construirá un intervalo bilateral con cobertura nominal $1-\alpha/K$ mediante el remuestreo pareado y jerárquico descrito en \S\ref{sec:medidas}. Si las simulaciones de desarrollo o el soporte observado muestran que esos intervalos no son estables, el resultado correspondiente se declarará inconcluso.
 
 \noindent\textbf{H1 · Utilidad del diseño informado.}
-En familias públicas no usadas para desarrollar la regla, la representación modular informada reducirá el error escalado frente al mejor control congelado entre una TCN monolítica y una arquitectura modular con agrupación y campos receptivos no informados. El contraste usará las mismas entradas, el mismo régimen de aprendizaje y el mismo presupuesto de ajuste. Una mejora que solo aparezca al añadir preentrenamiento al método propuesto no identificará el efecto de la regla estructural. H1 quedará respaldada únicamente si el límite superior del intervalo simultáneo de $\Delta$ es menor que $-\varepsilon$ y ninguna familia predeclarada muestra perjuicio material.
+En familias públicas no usadas para desarrollar la regla, la representación modular informada reducirá el error escalado frente al mejor control congelado entre una red convolucional temporal (TCN) monolítica y una arquitectura modular con agrupación y campos receptivos no informados. El contraste usará las mismas entradas, el mismo régimen de aprendizaje y el mismo presupuesto de ajuste. Una mejora que solo aparezca al añadir preentrenamiento al método propuesto no identificará el efecto de la regla estructural. H1 quedará respaldada únicamente si el límite superior del intervalo de $\Delta$ es menor que $-\varepsilon$ y, en cada familia predeclarada, el límite superior es menor o igual que $\varepsilon$. Una familia estimada con precisión insuficiente impedirá afirmar el resultado conjunto.
 
 \noindent\textbf{H2 · Mecanismo de acoplamiento.}
-La ventaja de la regla informada sobre una asignación permutada aumentará a medida que crezca la heterogeneidad de escalas temporales. El contraste principal será un experimento sintético factorial en el que las clases de escala sean conocidas y la heterogeneidad cambie sin alterar el tamaño de muestra, el número de variables ni la distribución del ruido. La pendiente entre heterogeneidad y diferencia de error deberá ser negativa y su intervalo simultáneo excluir cero. En datos públicos se estimará la misma asociación con perfiles calculados antes de entrenar, pero se interpretará como evidencia de transferencia, no como prueba causal del mecanismo.
+La ventaja de la regla informada sobre una asignación permutada aumentará a medida que crezca la heterogeneidad de escalas temporales. El contraste principal será un experimento sintético factorial en el que las clases de escala sean conocidas y la heterogeneidad cambie sin alterar el tamaño de muestra, el número de variables ni la distribución del ruido. Sea $e(h)=\operatorname{MASE}(\text{informada},h)-\operatorname{MASE}(\text{permutada},h)$ para el nivel conocido de heterogeneidad $h$. H2 quedará respaldada si el límite superior del intervalo de la pendiente $\beta$ de $e(h)$ respecto a $h$ es menor que cero. Esta prueba identifica si la ventaja relativa crece con la heterogeneidad; no demuestra por sí sola un beneficio absoluto. En datos públicos, $q(X)$ será una covariable de un análisis complementario, no un sustituto del factor generativo conocido ni una prueba causal del mecanismo.
 
 \noindent\textbf{H3 · Conservación temporal hasta la fusión.}
-En tareas sintéticas con dependencias cruzadas rezagadas conocidas, fusionar las secuencias alineadas antes de resumirlas reducirá el error frente a resumir cada rama antes de la fusión. El experimento comparará tareas emparejadas con y sin interacción rezagada y mantendrá fijos los extractores, la historia de entrada y el régimen de aprendizaje. La variante que conserva la secuencia usa más memoria de activaciones; esa diferencia se medirá en vez de ocultarse bajo una supuesta igualdad de información. En datos públicos, H3 tendrá un análisis complementario limitado a tareas identificadas mediante un diagnóstico rezagado calculado solo con entrenamiento.
+En tareas sintéticas con dependencias cruzadas rezagadas conocidas, fusionar las secuencias alineadas antes de resumirlas reducirá el error frente a resumir cada rama antes de la fusión. Para aislar la fusión, las dos variantes recibirán activaciones del mismo extractor, obtenido mediante un protocolo fijado en desarrollo y congelado durante este contraste; solo se ajustarán la fusión y el cabezal. Sea $d_r=\operatorname{MASE}(\text{fusión temporal},r)-\operatorname{MASE}(\text{resumen temprano},r)$, donde $r=1$ indica acoplamiento cruzado rezagado y $r=0$ un control con las mismas leyes temporales marginales, pero sin ese acoplamiento. Se definirá $\gamma=d_1-d_0$. H3 requerirá que el límite superior de $d_1$ sea menor que $-\varepsilon$ y que el de $\gamma$ sea menor que cero. La variante que conserva la secuencia usa más memoria de activaciones; esa diferencia se medirá. En datos públicos, H3 tendrá un análisis complementario limitado a tareas identificadas mediante un diagnóstico rezagado calculado solo con entrenamiento.
 
 Los perfiles marginales se calcularán sobre las variables de entrada y orientarán compatibilidad de escalas, no dependencia causal entre variables. Las relaciones rezagadas usadas en H3 se estimarán mediante un diagnóstico separado. Un detector preentrenado no resuelve por sí solo ninguno de esos problemas de identificación.
 
@@ -162,9 +166,9 @@ Los perfiles marginales se calcularán sobre las variables de entrada y orientar
 
 Cada conjunto se almacenará con procedencia, frecuencia, zona temporal cuando corresponda, variables observadas, objetivo y marcas de disponibilidad. Todo ajuste de normalización, imputación, agrupación o diagnóstico se realizará con el segmento de entrenamiento. Una transformación será admisible solo si puede aplicarse causalmente en el punto de decisión y si la misma información original está disponible para todos los comparadores. Las operaciones que usan toda una ventana histórica no se considerarán fuga por ese solo hecho; la validez dependerá de que la ventana termine antes del instante pronosticado.
 
-La entrada común será la serie normalizada sin transformaciones específicas. El método calculará por variable un perfil $d_j$ y una medida de estabilidad entre subventanas. Los retardos y frecuencias se expresarán en coordenadas comparables, y cada componente se escalará con estadísticas robustas aprendidas en E1 y congeladas antes de E2. La heterogeneidad de una tarea se resumirá mediante
+La entrada común será la serie normalizada sin transformaciones específicas. El método calculará para cada variable $i$ un perfil $d_i$ y una medida de estabilidad entre subventanas. Los retardos y frecuencias se expresarán en coordenadas comparables, y cada componente se escalará con estadísticas robustas aprendidas en E1 y congeladas antes de E2. La heterogeneidad de una tarea se resumirá mediante
 \begin{equation}
-  q(X)=\operatorname{mediana}_{j<k}\lVert \widetilde d_j-\widetilde d_k\rVert_2,
+  q(X)=\operatorname{mediana}_{i<k}\lVert \widetilde d_i-\widetilde d_k\rVert_2,
 \end{equation}
 donde $q$ no pretende medir dificultad ni causalidad: solo cuantifica cuán distintos son los perfiles usados por la regla. Con esos perfiles, una regla $A_\eta$ producirá una partición $G$ y un conjunto de campos receptivos $R$:
 \begin{equation}
@@ -174,9 +178,9 @@ La primera realización de $A_\eta$ agrupará perfiles mediante agrupamiento jer
 
 \subsection{Arquitectura y aprendizaje}
 
-La realización principal usará bloques convolucionales temporales causales, porque permiten calcular el campo receptivo y modificarlo mediante profundidad, tamaño de núcleo y dilatación~\cite{bai2018tcn}. En cada rama, $D_j$ detectará patrones locales; $I_j$ integrará esas activaciones hasta alcanzar el campo receptivo asignado; y $A_j$ ajustará, cuando sea necesario, longitud y número de canales sin alterar la correspondencia temporal. Cada rama entregará $Z_j\in\mathbb{R}^{L_j\times d_j}$. Si hay submuestreo, la regla de alineación, su costo y la marca temporal de cada salida se declararán antes de entrenar.
+La realización principal usará bloques convolucionales temporales causales, porque permiten calcular el campo receptivo y modificarlo mediante profundidad, tamaño de núcleo y dilatación~\cite{bai2018tcn}. En cada rama, $D_j$ detectará patrones locales; $I_j$ integrará esas activaciones hasta alcanzar el campo receptivo asignado; y $A_j$ ajustará, cuando sea necesario, longitud y número de canales sin alterar la correspondencia temporal. Cada rama entregará $Z_j\in\mathbb{R}^{L_j\times c_j}$, donde $c_j$ es su número de canales de salida. Si hay submuestreo, la regla de alineación, su costo y la marca temporal de cada salida se declararán antes de entrenar.
 
-La variante principal concatenará las salidas alineadas por instante, aplicará un mezclador temporal común y proyectará su último estado a los horizontes de pronóstico. La ablación de H3 partirá de las mismas salidas de rama, pero las resumirá antes de concatenarlas y empleará un cabezal vectorial con parámetros comparables. Ambas recibirán la misma historia; se publicarán por separado parámetros, operaciones y memoria de activaciones, pues conservar una secuencia y resumirla no tienen el mismo ancho de representación.
+La variante principal concatenará las salidas alineadas por instante, aplicará un mezclador temporal común y proyectará su último estado a los horizontes de pronóstico. En el contraste mecanístico de H3, un extractor compartido producirá las mismas salidas de rama para las dos variantes y permanecerá congelado: una conservará las secuencias hasta la fusión y la otra resumirá cada rama antes de concatenarla. Se ajustarán únicamente sus módulos de fusión y cabezales bajo presupuestos comparables. Este contraste atribuirá el efecto a la forma de fusionar una representación común; el contraste principal de H1, en cambio, conservará el entrenamiento conjunto del sistema. Se publicarán por separado parámetros, operaciones y memoria de activaciones.
 
 La Figura~\ref{fig:arquitectura} sitúa el detector como submódulo inicial del extractor, no como una red distinta por obligación.
 
@@ -187,27 +191,32 @@ La Figura~\ref{fig:arquitectura} sitúa el detector como submódulo inicial del 
   font=\footnotesize,
   box/.style={draw, rounded corners=1.2pt, align=center, inner sep=3.4pt, text width=2.35cm, minimum height=1.15cm},
   branch/.style={box, text width=3.0cm, fill=soft},
-  arr/.style={-{Latex}, thick}
+  arr/.style={-{Latex}, thick},
+  designarr/.style={-{Latex}, thick, dashed, color=sabana}
 ]
+\node[box] (history) at (0,2.85) {Datos históricos\\de entrenamiento};
+\node[box] (profiles) at (3.3,2.85) {Estimación de\\perfiles temporales};
+\node[box] (rule) at (6.6,2.85) {Regla de\\composición};
 \node[box] (input) at (0,0) {Ventana\\multivariada};
-\node[box] (rule) at (3.2,0) {Perfiles, grupos y\\alcances temporales};
-\node[branch] (b1) at (7.0,1.45) {Rama 1\\$D_1 \rightarrow I_1 \rightarrow A_1$};
-\node[branch] (bj) at (7.0,0) {Rama $j$\\$D_j \rightarrow I_j \rightarrow A_j$};
-\node[branch] (bb) at (7.0,-1.45) {Rama $B$\\$D_B \rightarrow I_B \rightarrow A_B$};
-\node[box] (fusion) at (10.6,0) {Alineación y\\fusión temporal};
-\node[box] (head) at (13.8,0) {Cabezal\\multi-horizonte};
-\draw[arr] (input) -- (rule);
-\draw[arr] (rule.east) -- ++(0.45,0) |- (b1.west);
-\draw[arr] (rule.east) -- (bj.west);
-\draw[arr] (rule.east) -- ++(0.45,0) |- (bb.west);
+\node[branch] (b1) at (6.6,1.25) {Rama 1\\$D_1 \rightarrow I_1 \rightarrow A_1$};
+\node[branch] (bj) at (6.6,0) {Rama $j$\\$D_j \rightarrow I_j \rightarrow A_j$};
+\node[branch] (bb) at (6.6,-1.25) {Rama $B$\\$D_B \rightarrow I_B \rightarrow A_B$};
+\node[box] (fusion) at (10.4,0) {Alineación y\\fusión temporal};
+\node[box] (head) at (13.7,0) {Cabezal\\multi-horizonte};
+\draw[designarr] (history) -- (profiles);
+\draw[designarr] (profiles) -- (rule);
+\draw[arr] (input.east) -- ++(0.55,0) |- (b1.west);
+\draw[arr] (input.east) -- (bj.west);
+\draw[arr] (input.east) -- ++(0.55,0) |- (bb.west);
 \draw[arr] (b1.east) -- ++(0.45,0) |- (fusion.west);
 \draw[arr] (bj.east) -- (fusion.west);
 \draw[arr] (bb.east) -- ++(0.45,0) |- (fusion.west);
 \draw[arr] (fusion) -- (head);
 \node[draw, dashed, rounded corners=1.2pt, inner sep=6pt, fit=(b1)(bb),
-      label={[font=\scriptsize]above:Ramas con secuencia temporal explícita}] {};
+      label={[font=\scriptsize]below:Ramas con secuencia temporal explícita}] (branchset) {};
+\draw[designarr] (rule) -- (branchset.north);
 \end{tikzpicture}}
-\caption{Arquitectura conceptual. Los perfiles estimados en entrenamiento determinan qué variables comparten rama y qué alcance temporal usa cada una. El detector reconoce patrones locales, el integrador reúne contexto y la adaptación alinea las salidas antes de fusionarlas. Fuente: elaboración propia.}
+\caption{Arquitectura conceptual. Las líneas discontinuas representan decisiones de diseño obtenidas con entrenamiento; las líneas continuas muestran el flujo de tensores. Cada rama recibe $X_{:,G_j}$, el detector reconoce patrones locales, el integrador reúne contexto y la adaptación alinea las secuencias antes de fusionarlas. Fuente: elaboración propia.}
 \label{fig:arquitectura}
 \end{figure}
 
@@ -226,13 +235,13 @@ R2 & el mismo codificador preentrenado & detector y resto ajustables \\
 \end{tabular}
 \end{center}
 
-Cuando se use preentrenamiento, un decodificador auxiliar $Q_j$ reconstruirá la entrada o los elementos ocultos por una máscara definida previamente. Una reconstrucción ordinaria no se presentará como eliminación de ruido. La pareja codificador--decodificador se conservará como artefacto reproducible; el predictor utilizará el codificador y guardará por separado cualquier copia reajustada. En R1 se comprobará que no reciba gradientes y en R2 que permanezca conectado a la pérdida final. Entrenar sobre activaciones guardadas en un archivo será tratado como extracción fija, no como ajuste de extremo a extremo~\cite{keras2023transfer}.
+Cuando se use preentrenamiento, un decodificador auxiliar $Q_j$ reconstruirá la entrada o los elementos ocultos por una máscara definida previamente. Una reconstrucción ordinaria no se presentará como eliminación de ruido. La pareja codificador--decodificador se conservará como artefacto reproducible; el predictor utilizará el codificador y guardará por separado cualquier copia reajustada. En R1 se verificará que los pesos del detector permanezcan invariantes durante el ajuste del predictor. En R2 se comprobarán su conexión diferenciable con la pérdida final y la actualización efectiva de sus parámetros mediante una prueba controlada. También se declarará el tratamiento de estados no entrenables. Entrenar sobre activaciones guardadas en un archivo será tratado como extracción fija, no como ajuste de extremo a extremo~\cite{keras2023transfer}.
 
 Los tres regímenes se examinarán durante E1. Antes de E2 se congelará uno para el contraste principal y se aplicará de manera idéntica al método y a sus controles. Los resultados de desarrollo no sostendrán por sí solos una conclusión sobre las ventajas del preentrenamiento.
 
 Una segunda familia de bloques, probablemente basada en parches, se incorporará solo como análisis de robustez si el piloto demuestra que el presupuesto permite separar el efecto de la regla del efecto del operador.
 
-Las restricciones comprobables ---causalidad, dimensiones, disponibilidad y memoria máxima--- se aplicarán antes de entrenar. Las decisiones heurísticas ---agrupación, escala y ancho--- se evaluarán durante el desarrollo. Tasas de aprendizaje, ancho y regularización se ajustarán dentro de rangos comunes para todos los métodos. La Figura~\ref{fig:protocolo} resume qué queda fijo antes de la confirmación y qué se aprende dentro de una tarea nueva.
+Las restricciones comprobables ---causalidad, dimensiones, disponibilidad y memoria máxima--- se aplicarán antes de entrenar. Las decisiones heurísticas ---agrupación, escala y ancho--- se evaluarán durante el desarrollo. Las variantes construidas con el mismo contrato compartirán rangos de ajuste. Los comparadores externos conservarán espacios compatibles con sus implementaciones de referencia, predeclarados y sujetos al mismo límite de recursos de selección. La Figura~\ref{fig:protocolo} resume qué queda fijo antes de la confirmación y qué se aprende dentro de una tarea nueva.
 
 \begin{figure}[htbp]
 \centering
@@ -245,13 +254,13 @@ Las restricciones comprobables ---causalidad, dimensiones, disponibilidad y memo
   fixedarr/.style={-{Latex}, thick, dashed, color=sabana}
 ]
 \node[box] (dev) at (3.5,2.1) {Familias de\\desarrollo};
-\node[fixed] (protocol) at (8.2,2.1) {Fijar perfiles, regla, régimen,\\comparador y márgenes};
+\node[fixed] (protocol) at (8.2,2.1) {Definir y normalizar perfiles; fijar\\regla, régimen, comparador y márgenes};
 \draw[arr] (dev) -- (protocol);
 
 \node[box] (train) at (0,0) {Entrenamiento de\\una tarea nueva};
 \node[box] (design) at (3.0,0) {Estimar perfiles y\\construir ramas};
 \node[box] (pretrain) at (6.0,0) {Preentrenar detector\\solo en R1/R2};
-\node[box] (fit) at (9.0,0) {Ajustar y seleccionar\\con validación};
+\node[box] (fit) at (9.0,0) {Entrenar; seleccionar\\con validación};
 \node[box] (locked) at (12.0,0) {Modelo y decisiones\\congelados};
 \node[box] (test) at (15.0,0) {Prueba reservada\\de la tarea};
 \draw[arr] (train) -- (design);
@@ -262,22 +271,22 @@ Las restricciones comprobables ---causalidad, dimensiones, disponibilidad y memo
 \draw[fixedarr] (protocol.south) -- ++(0,-0.38) -| (design.north);
 \draw[fixedarr] (protocol.south) -- ++(0,-0.38) -| (fit.north);
 \end{tikzpicture}}
-\caption{Protocolo confirmatorio. Las decisiones generales se fijan con familias de desarrollo. En cada tarea nueva, perfiles, ramas y pesos se estiman solo con entrenamiento y validación; la prueba reservada se consulta una vez y no modifica el procedimiento. Fuente: elaboración propia.}
+\caption{Protocolo confirmatorio. Las decisiones generales se fijan con familias de desarrollo. En cada tarea nueva, los perfiles se estiman y los pesos se entrenan con el segmento de entrenamiento; la validación selecciona configuraciones y puntos de parada. La prueba se usa exclusivamente en la campaña predeclarada y no modifica el procedimiento. Fuente: elaboración propia.}
 \label{fig:protocolo}
 \end{figure}
 
 \subsection{Fases experimentales}
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \small
 \caption{Fases y función de cada fuente de evidencia.}
 \label{tab:phases}
-\begin{tabularx}{\textwidth}{@{}L{1.1cm}L{3.1cm}Y L{2.8cm}@{}}
+\begin{tabularx}{\textwidth}{@{}L{1.0cm}L{2.75cm}Y L{2.75cm}@{}}
 \toprule
 \textbf{Fase} & \textbf{Datos} & \textbf{Propósito} & \textbf{Uso en el estudio} \\
 \midrule
-E0 & Señales sintéticas multicomponente & Calibrar perfiles y estudiar escalas y desfases conocidos. & Pruebas de mecanismo para H2 y H3. \\
+E0 & Señales sintéticas multicomponente & Desarrollar y calibrar perfiles; probar mecanismos con una reserva separada. & Desarrollo y pruebas reservadas de H2 y H3. \\
 E1 & Familias públicas de desarrollo & Elegir opciones finitas, régimen R0/R1/R2, presupuesto y márgenes. & Desarrollo del procedimiento. \\
 E2 & Familias públicas reservadas & Probar H1 con la regla congelada y repetir los análisis de transferencia. & Evaluación confirmatoria principal. \\
 E3 & Datos financieros históricos & Examinar la transferencia a un dominio con cambios temporales marcados. & Aplicación secundaria. \\
@@ -285,9 +294,11 @@ E3 & Datos financieros históricos & Examinar la transferencia a un dominio con 
 \end{tabularx}
 \end{table}
 
-E0 combinará procesos autorregresivos, componentes periódicos, tendencias y eventos localizados. Un primer factor variará la separación entre escalas con tamaño y ruido constantes. Un segundo comparará relaciones cruzadas con retardos conocidos frente a controles obtenidos por permutación temporal, de modo que se conserven las distribuciones marginales y se destruya la alineación rezagada. E0 se dividirá en generadores de calibración y generadores reservados: las ecuaciones, rangos y semillas de prueba se fijarán antes de ajustar la regla. También habrá casos no estacionarios y mal especificados para observar cuándo los perfiles dejan de ser identificables. El ruido aditivo tendrá magnitud conocida, pero esa construcción no se extrapolará como una medida de \enquote{señal verdadera} en datos reales.
+E0 combinará procesos autorregresivos, componentes periódicos, tendencias y eventos localizados. Un primer factor variará la separación entre escalas con tamaño y ruido constantes. Un segundo comparará sistemas con acoplamiento cruzado rezagado frente a controles construidos con realizaciones independientes de los mismos procesos. Esos controles conservarán, en distribución, las leyes temporales marginales, el tamaño de muestra y el ruido, pero eliminarán el vínculo cruzado previsto; esta propiedad se comprobará mediante replicación antes de usar el contraste. Las permutaciones temporales se reservarán, en todo caso, como pruebas de estrés y no como control causal principal.
 
-El censo de E1 y E2 considerará conjuntos públicos de energía, clima, tráfico y otros dominios incluidos en TFB, Monash y GIFT-Eval~\cite{qiu2024tfb,godahewa2021monash,aksu2025gifteval}. Una unidad será elegible solo si contiene variables no duplicadas observadas conjuntamente y permite comparar al menos dos particiones distintas, además de tener frecuencia documentada, licencia compatible, historia suficiente para las particiones previstas y un denominador MASE no nulo en entrenamiento. Los conjuntos univariados podrán servir para comprobar la implementación de referencias, pero no probarán las hipótesis sobre agrupación. Familias, horizontes y particiones se congelarán antes de puntuar E2. La separación se hará por dominio y fuente, no repartiendo al azar ventanas del mismo conjunto entre desarrollo y confirmación.
+E0 se dividirá en generadores de desarrollo y una reserva sintética para H2 y H3. Los primeros podrán usarse durante E1. Las ecuaciones, rangos y semillas de la reserva se fijarán antes de ajustar la regla, pero sus resultados permanecerán cerrados hasta congelar, al final de E1, perfiles, regla, arquitectura, régimen y contrastes. También habrá casos no estacionarios y mal especificados para observar cuándo los perfiles dejan de ser identificables. El ruido aditivo tendrá magnitud conocida, pero esa construcción no se extrapolará como una medida de \enquote{señal verdadera} en datos reales.
+
+El censo de E1 y E2 considerará conjuntos públicos de energía, clima, tráfico y otros dominios incluidos en TFB, Monash y GIFT-Eval~\cite{qiu2024tfb,godahewa2021monash,aksu2024gifteval}. Una unidad será elegible solo si contiene variables no duplicadas observadas conjuntamente y permite comparar al menos dos particiones distintas, además de tener frecuencia documentada, licencia compatible, historia suficiente para las particiones previstas y un denominador MASE no nulo en entrenamiento. Los conjuntos univariados podrán servir para comprobar la implementación de referencias, pero no probarán las hipótesis sobre agrupación. Familias, horizontes y particiones se congelarán antes de puntuar E2. La separación se hará por dominio y fuente, no repartiendo al azar ventanas del mismo conjunto entre desarrollo y confirmación.
 
 \section{Diseño de evaluación}
 
@@ -300,41 +311,54 @@ El conjunto mínimo incluirá:
   \item PatchTST e iTransformer como referencias de independencia y dependencia entre variables;
   \item DUET como vecino directo de agrupación temporal y de canales, y un método multiescala elegido entre MTST, Pathformer o TimeMixer antes de observar E1;
   \item una TCN monolítica y una modular con grupos aleatorios, ambas construidas con el mismo contrato del método;
-  \item ablaciones que permutan los perfiles, fijan un campo receptivo común y adelantan el resumen temporal.
+  \item ablaciones que permutan la asignación entre variables y perfiles, fijan un campo receptivo común y adelantan el resumen temporal.
 \end{enumerate}
+
+El control permutado aleatorizará qué variables ocupan los grupos definidos por los perfiles. Mantendrá el número y tamaño de las ramas, el repertorio de campos receptivos, la interfaz, los objetivos y el presupuesto del diseño informado; nunca permutará conjuntamente datos, objetivos y módulos de manera que el cambio sea solo nominal. Sus realizaciones y desempates se fijarán antes de abrir la reserva.
 
 MSGNet o CCM se incorporará como análisis de robustez si su interfaz y costo permiten una comparación limpia. No se ejecutarán todos los modelos publicados ni el producto cartesiano de regímenes, familias y ablaciones. Cada comparador tendrá una función: establecer un piso, aislar modularidad, aislar la regla informada o enfrentar el vecino directo. El monolítico, el modular aleatorio y el método recibirán la misma cinta de semillas, búsqueda de hiperparámetros y régimen de aprendizaje. Sus parámetros se igualarán dentro de una tolerancia fijada por el piloto; si esa igualdad oculta diferencias grandes de tiempo o memoria, se informará además la frontera entre error y costo.
 
 \subsection{Medidas, incertidumbre y costo}
+\label{sec:medidas}
 
-La métrica primaria será el error absoluto medio escalado (MASE), cuyo denominador se calculará únicamente con el entrenamiento~\cite{hyndman2006mase}. Si ese denominador es cero, la tarea se marcará como no evaluable para H1 y se informará por separado; no se sustituirá por una constante elegida después de ver los resultados. MAE y error cuadrático se informarán como secundarios, junto con desempeño por horizonte, estabilidad entre semillas y error en eventos cuando exista una definición previa.
+La métrica primaria será el error absoluto medio escalado (MASE)~\cite{hyndman2006mase}. Para el objetivo $k$ y el origen $o$, con $n_o$ observaciones de entrenamiento y período estacional $m_k$, se definirán
+\begin{equation}
+ a_{k,o}=\frac{1}{n_o-m_k}\sum_{u=m_k+1}^{n_o}|y_{k,u}-y_{k,u-m_k}|,
+ \qquad
+ \operatorname{MASE}_{k,o}=\frac{H^{-1}\sum_{h=1}^{H}|y_{k,n_o+h}-\widehat y_{k,n_o+h}|}{a_{k,o}}.
+\end{equation}
+Cada variable objetivo y cada origen tendrán así un denominador propio, calculado únicamente con su segmento de entrenamiento y compartido por todos los métodos. Los errores escalados se promediarán después con los pesos definidos en \S\ref{sec:hipotesis}. Si cualquiera de los denominadores exigidos es cero, la tarea se marcará como no evaluable para H1 antes de examinar sus errores de prueba; no se sustituirá por una constante elegida después. MAE y error cuadrático se informarán como secundarios, junto con desempeño por horizonte, estabilidad entre semillas y error en eventos cuando exista una definición previa.
 
-El período estacional usado por MASE se tomará de los metadatos del conjunto o de una regla congelada en E1; nunca se elegirá con la prueba. El costo total se expresará como
+El período estacional $m_k$ se tomará de los metadatos del conjunto o de una regla congelada en E1; nunca se elegirá con la prueba. Para la ecuación siguiente, $C$ representará energía consumida, medida en Wh con un instrumento fijado y validado durante E1:
 \begin{equation}
  C_{\mathrm{total}}=\sum_{t,o} C_{\mathrm{perfil},t,o}+
  \sum_{t,m,s,o}\left(C_{\mathrm{pre}}+C_{\mathrm{ajuste}}+C_{\mathrm{eval}}\right)_{t,m,s,o},
 \end{equation}
-donde $m$, $s$ y $o$ identifican método, semilla y origen de evaluación. Se medirán tiempo, memoria máxima, operaciones estimadas y energía con un instrumento fijado durante E1. El preentrenamiento por tarea y su decodificador se incluirán en cada celda correspondiente. Si un codificador compartido se reutiliza, se publicarán por separado su costo inicial, el costo marginal y el acumulado. Una mejora obtenida con más capacidad o más cómputo no se atribuirá únicamente al diseño estructural.
+donde $m$, $s$ y $o$ identifican método, semilla y origen de evaluación. $C_{\mathrm{ajuste}}$ incluirá todos los candidatos de la búsqueda, la selección por validación, las paradas tempranas y los intentos fallidos que consuman recursos, no solo el modelo ganador. El preentrenamiento por tarea y su decodificador se incluirán en cada celda correspondiente. Si un codificador compartido se reutiliza, se publicarán por separado su costo inicial, el costo marginal y el acumulado, junto con la regla de asignación del trabajo compartido.
 
-Las repeticiones por semilla y origen se agregarán dentro de cada tarea. Un bootstrap jerárquico re-muestreará familias, conjuntos y tareas; si estima incertidumbre temporal, conservará bloques contiguos. H2 estimará además la asociación entre $q(X)$ y la diferencia pareada entre la asignación informada y su permutación. La familia confirmatoria de H1--H3 se corregirá mediante el procedimiento de Holm~\cite{holm1979multiple}. Se publicarán intervalos y efectos por tarea y familia, no solo promedios.
+El tiempo de pared, la suma de horas de CPU y GPU, las operaciones estimadas y el máximo de memoria por ejecución se informarán por separado, identificando hardware y concurrencia. La memoria máxima y las duraciones de trabajos paralelos no se sumarán como si fueran energía o tiempo de pared. El costo de desarrollar la regla en E1 se distinguirá del costo de aplicarla en una tarea nueva. Una mejora obtenida con más capacidad o más cómputo no se atribuirá únicamente al diseño estructural.
 
-Las particiones serán cronológicas y la evaluación empleará orígenes rodantes no solapados cuando la longitud lo permita. El ajuste del diseño se repetirá dentro de cada muestra de entrenamiento; no se recalculará con prueba. Estas precauciones siguen la evidencia sobre selección sesgada y evaluación temporal~\cite{cawley2010overfit,bergmeir2018cv}.
+Las repeticiones por semilla y origen se agregarán dentro de cada tarea. Para el efecto global, un bootstrap jerárquico re-muestreará familias, conjuntos y tareas; para cada efecto por familia mantendrá fija la familia y re-muestreará sus conjuntos y tareas. En H2 y H3 se re-muestrearán configuraciones del generador y repeticiones, conservando juntas todas las variantes pareadas de cada unidad sintética. Los métodos permanecerán pareados y, cuando se remuestreen errores temporales, se conservarán bloques contiguos. Los $K=F+4$ intervalos confirmatorios definidos en \S\ref{sec:hipotesis} usarán el ajuste de Bonferroni. Su cobertura y sensibilidad al tamaño de bloque se estudiarán mediante simulación durante E1, sin escoger después la variante más favorable. H2 estimará además la asociación exploratoria entre $q(X)$ y la diferencia pareada entre la asignación informada y su permutación. Se publicarán intervalos y efectos por tarea y familia, no solo promedios.
+
+Las particiones serán cronológicas y seguirán una política rodante predeclarada, con horizontes de prueba no solapados cuando la longitud lo permita~\cite{hyndman2021tscv}. La regla general permanecerá congelada; antes de cada origen se volverán a estimar perfiles y pesos únicamente con los datos entonces disponibles. Una observación evaluada en un origen anterior podrá incorporarse a entrenamientos posteriores cuando ya sea observable, bajo la misma política para todos los métodos. Los resultados de prueba no modificarán la regla, los espacios de ajuste ni los criterios de parada. La separación entre selección y evaluación busca reducir el sesgo de selección~\cite{cawley2010overfit}; la dependencia restante entre errores se tratará mediante el remuestreo declarado.
 
 \subsection{Criterios de decisión}
 
-H1 se juzgará contra un comparador principal elegido durante el desarrollo y congelado antes de E2. H2 y H3 usarán contrastes pareados dentro de la misma tarea sintética. Para un intervalo simultáneo $[L,U]$ de la diferencia $\Delta$, se declarará \emph{beneficio práctico} si $U<-\varepsilon$, \emph{equivalencia práctica} si $[L,U]\subseteq[-\varepsilon,\varepsilon]$, y \emph{perjuicio práctico} si $L>\varepsilon$; cualquier otro caso será \emph{inconcluso}. H2 exigirá además la pendiente negativa definida en su enunciado y H3 una interacción entre presencia de dependencia rezagada y estrategia de fusión. Un promedio favorable que dependa de un único conjunto o que oculte perjuicio material en una familia no respaldará H1. El análisis de E1 fijará el tamaño de banco necesario; si no puede alcanzar la precisión prevista, E2 se declarará inconcluso en lugar de ampliar datos o modelos después de conocer el resultado.
+H1 se juzgará contra un comparador principal elegido durante el desarrollo y congelado antes de E2. H2 y H3 usarán contrastes pareados dentro de la misma tarea sintética. Para cada intervalo ajustado $[L,U]$ de una diferencia expresada de manera que los valores negativos favorezcan al método, se declarará \emph{beneficio práctico} si $U<-\varepsilon$, \emph{equivalencia práctica} si $[L,U]\subseteq[-\varepsilon,\varepsilon]$, y \emph{perjuicio práctico} si $L>\varepsilon$; cualquier otro caso será \emph{inconcluso}.
+
+H1 requerirá beneficio práctico en el efecto global y no inferioridad por familia, definida por $U_f\leq\varepsilon$. H2 se decidirá por $U_\beta<0$ y H3 por $U_{d_1}<-\varepsilon$ junto con $U_\gamma<0$, según sus definiciones en \S\ref{sec:hipotesis}. Un análisis por exclusión de cada conjunto se publicará como sensibilidad, no como una segunda regla de significación. El análisis de E1 fijará el tamaño de banco necesario; si no puede alcanzar la precisión prevista, el contraste afectado se declarará inconcluso en lugar de ampliar datos o modelos después de conocer el resultado.
 
 \section{Viabilidad, ética y plan de trabajo}
 
 \subsection{Recursos y relación con el sistema existente}
 
-El trabajo parte de cuatro GPU propias de capacidades diferentes, CPU local, software funcional para datos, preprocesamiento, modelos y registro de experimentos, y experiencia previa con campañas reproducibles. La disponibilidad simultánea no se presupone. E0 y los diagnósticos se ejecutarán en CPU; E1 reducirá el espacio antes de reservar cómputo confirmatorio. El costo se medirá con pilotos y no se estimará multiplicando una sola corrida por toda la tesis.
+El trabajo parte de cuatro GPU propias de capacidades diferentes, CPU local, software funcional para datos, preprocesamiento, modelos y registro de experimentos, y experiencia previa con campañas reproducibles. La disponibilidad simultánea no se presupone. La generación sintética y los diagnósticos no neuronales de E0 se ejecutarán en CPU; sus contrastes neuronales usarán el mismo contrato de recursos que las demás comparaciones. E1 reducirá el espacio antes de reservar cómputo confirmatorio. El costo se medirá con pilotos y no se estimará multiplicando una sola corrida por toda la tesis.
 
 La implementación previa permite exportar codificadores y decodificadores y declarar el reajuste de extractores, pero todavía deberá demostrarse el flujo de gradientes del modelo compuesto. Esa verificación es una tarea inicial de ingeniería, no evidencia a favor de las hipótesis. La aplicación financiera usará datos históricos y un protocolo separado; no intervendrá en la selección del método ni de los comparadores principales.
 
 \subsection{Cronograma de seis semestres}
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \small
 \caption{Plan de trabajo y productos verificables.}
@@ -344,10 +368,10 @@ La implementación previa permite exportar codificadores y decodificadores y dec
 \textbf{Sem.} & \textbf{Trabajo principal} & \textbf{Producto} \\
 \midrule
 1 & Revisión sistemática, contrato formal, banco y piloto de precisión/costo. & Protocolo registrado y artículo de revisión o diseño. \\
-2 & Implementación del perfil, regla y arquitectura; E0 completo. & Software reproducible y estudio de identificabilidad. \\
+2 & Implementación del perfil, regla y arquitectura; E0 de desarrollo completo y reserva sintética cerrada. & Software reproducible y estudio de identificabilidad. \\
 3 & E1 en familias públicas; recorte de descriptores y comparadores. & Artículo metodológico y diseño E2 congelado. \\
-4 & E2, análisis confirmatorio y auditoría de reproducibilidad. & Artículo principal con resultados positivos, negativos o inconclusos. \\
-5 & Validación externa y E3 financiera o de aprendizaje por refuerzo si las condiciones previas se cumplen. & Artículo aplicado; si se recorta E3, análisis ampliado de E2. \\
+4 & Reserva sintética de H2/H3 y E2 con el procedimiento congelado; auditoría de reproducibilidad. & Artículo principal con resultados positivos, negativos o inconclusos. \\
+5 & Validación externa y E3 financiera histórica, si el presupuesto y las condiciones previas lo permiten. & Artículo aplicado; si se recorta E3, análisis exploratorio adicional de E2. \\
 6 & Integración, réplica independiente, tesis y defensa. & Tesis, artefactos y documentos de reproducibilidad. \\
 \bottomrule
 \end{tabularx}
@@ -357,7 +381,7 @@ El mínimo defendible comprende contrato, mecanismo, E0, E1 y E2. Si faltan recu
 
 \subsection{Riesgos y ética}
 
-El mayor riesgo científico es que los perfiles temporales no anticipen qué diseño ayuda. Ese resultado refutaría el mecanismo, pero permitiría identificar condiciones en las que una arquitectura común o una búsqueda directa es preferible. Otro riesgo es que un antecedente equivalente elimine la brecha; en ese caso se adoptará como comparador y se estrechará la pregunta antes de E2. También puede ocurrir que los bancos públicos no contengan suficiente heterogeneidad o que los resultados dependan del dominio; la separación por familias hará visible esa limitación.
+El mayor riesgo científico es que los perfiles temporales no anticipen qué diseño ayuda. La evidencia de equivalencia o perjuicio delimitará la utilidad del mecanismo en las condiciones evaluadas; un resultado inconcluso señalará los límites de la evidencia disponible, sin demostrar ausencia de efecto. Otro riesgo es que un antecedente equivalente elimine la brecha; en ese caso se adoptará como comparador y se estrechará la pregunta antes de E2. También puede ocurrir que los bancos públicos no contengan suficiente heterogeneidad o que los resultados dependan del dominio; la separación por familias hará visible esa limitación.
 
 Los experimentos principales usarán datos públicos con sus licencias y datos sintéticos sin participantes humanos. No se recopilarán decisiones clínicas, datos personales ni intervenciones sobre usuarios. La validación financiera será histórica. Se publicarán configuraciones fallidas, consumo computacional y resultados nulos para reducir repetición innecesaria de cómputo. El preentrenamiento usará solo particiones permitidas; todo corpus previo compartido se declarará con su posible solapamiento, y una familia vista durante preentrenamiento no se presentará después como completamente nueva.
 
@@ -372,7 +396,7 @@ La investigación busca cuatro contribuciones acotadas:
   \item un protocolo reproducible, con comparadores actuales y costos completos, para evaluar transferencia a tareas y familias no usadas durante el desarrollo.
 \end{enumerate}
 
-El aporte no se atribuirá al uso de autoencoders, a la existencia de varias ramas ni a la reutilización de pesos. Se evaluará un vínculo concreto entre perfiles calculados en entrenamiento, agrupación y campo receptivo. Si ese vínculo no resulta más informativo que una asignación no informada, la tesis establecerá dónde falla y qué alternativa simple ofrece una mejor relación entre error y costo.
+El aporte no se atribuirá al uso de autoencoders, a la existencia de varias ramas ni a la reutilización de pesos. Se evaluará un vínculo concreto entre perfiles calculados en entrenamiento, agrupación y campo receptivo. Si no se demuestra una ventaja frente a la asignación no informada, se distinguirán equivalencia, perjuicio e incertidumbre y se comparará la relación entre error y costo de las alternativas efectivamente evaluadas.
 
 \printbibliography[title={Referencias}]
 
