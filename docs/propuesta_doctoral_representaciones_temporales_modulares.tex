@@ -95,7 +95,7 @@ La \emph{representación temporal} es la parte de una arquitectura para pronóst
 Se diseñará la \emph{representación temporal modular} mostrada en la Figura~\ref{fig:vista-general}, formada por:
 \begin{itemize}
 \item \emph{ramas} que procesan grupos de variables usando extractores de características especializados;
-\item un \emph{consolidador} que alinea y concatena las secuencias;
+\item un \emph{módulo de fusión de características} que alinea y concatena las secuencias;
 \item un \emph{núcleo temporal} que combina la información y reduce dimensionalidad conservando el eje temporal;
 \item \emph{cabezales de salida} que se adaptan a la tarea: pronóstico para estimar valores o aprendizaje por refuerzo para seleccionar acciones y, según el algoritmo, estimar funciones de valor.
 \end{itemize}
@@ -115,7 +115,7 @@ Se diseñará la \emph{representación temporal modular} mostrada en la Figura~\
 \node[ext] (e1) at (-2.55,-2.0) {Extractor\\temporal 1};
 \node[ext] (eB) at (2.55,-2.0) {Extractor\\temporal $B$};
 \node at (0,-2.0) {$\cdots$};
-\node[box] (cons) at (0,-4.15) {Consolidador\\Alineación y concatenación};
+\node[box] (cons) at (0,-4.15) {Fusión de características\\Alineación y concatenación};
 \node[box] (nuc) at (0,-5.75) {Núcleo temporal\\Mezcla y reducción de dimensionalidad};
 \node[box] (out) at (0,-7.35) {Cabezales de salida\\Pronóstico / política o valor};
 \draw[arr] (in.south) -- ++(0,-0.42) -| (e1.north)
@@ -128,7 +128,7 @@ Se diseñará la \emph{representación temporal modular} mostrada en la Figura~\
 \draw[arr] (cons) -- (nuc);
 \draw[arr] (nuc) -- (out);
 \end{tikzpicture}
-\caption{Representación temporal modular. Las ramas procesan grupos de variables, el consolidador alinea y concatena sus secuencias, y el núcleo temporal combina la información para los cabezales de salida. La reducción de dimensionalidad conserva el eje temporal. $B$ indica el número total de ramas.}
+\caption{Representación temporal modular. Las ramas procesan grupos de variables, el módulo de fusión de características alinea y concatena sus secuencias, y el núcleo temporal combina la información para los cabezales de salida. La reducción de dimensionalidad conserva el eje temporal. $B$ indica el número total de ramas.}
 \label{fig:vista-general}
 \end{figure}
 
@@ -182,7 +182,7 @@ Z_j=A_j\bigl(I_j(D_j(X_{:,G_j}))\bigr)\in\mathbb{R}^{L_j\times c_j}.
 \end{equation}
 Aquí $X_{:,G_j}$ contiene las variables del grupo $j$, $L_j$ es la longitud de la secuencia producida y $c_j$ el número de características por instante, también llamadas \emph{canales}. El detector $D_j$ tendrá una interfaz independiente para entrenarlo, guardar sus pesos y reutilizarlo. $I_j$ y $A_j$ serán configurables y podrán implementarse separados o en un componente conjunto; si alguna función no requiere una transformación, se representará mediante la identidad. La ecuación describe esa composición funcional y no exige que integración y adaptación sean siempre redes independientes.
 
-Antes de combinar las ramas, el consolidador establecerá qué instantes corresponden entre sus salidas y concatenará las características. Si una rama reduce su resolución temporal, $L_j$ podrá ser distinto de $L$ y será necesario especificar esa correspondencia. El núcleo temporal procesará la secuencia conjunta; el cabezal de pronóstico producirá $\widehat Y_{L+1:L+H}$, las predicciones de los siguientes $H$ pasos. En aprendizaje por refuerzo, las salidas se adaptarán al algoritmo de selección de acciones o estimación de valor. Cada aplicación utilizará un modelo entrenado para su objetivo.
+Antes de combinar las ramas, el módulo de fusión de características establecerá qué instantes corresponden entre sus salidas y concatenará las características. Si una rama reduce su resolución temporal, $L_j$ podrá ser distinto de $L$ y será necesario especificar esa correspondencia. El núcleo temporal procesará la secuencia conjunta; el cabezal de pronóstico producirá $\widehat Y_{L+1:L+H}$, las predicciones de los siguientes $H$ pasos. En aprendizaje por refuerzo, las salidas se adaptarán al algoritmo de selección de acciones o estimación de valor. Cada aplicación utilizará un modelo entrenado para su objetivo.
 
 \subsection{Propiedades temporales para orientar el diseño}
 
@@ -298,7 +298,7 @@ La Figura~\ref{fig:arquitectura} muestra el detector separado y las funciones co
       label={[font=\scriptsize]below:Ramas con secuencia temporal explícita}] (branchset) {};
 \draw[designarr] (rule) -- (branchset.north);
 \end{tikzpicture}}
-\caption{Arquitectura conceptual. Las líneas discontinuas muestran propuestas de diseño a partir de los datos de entrenamiento; la validación selecciona los modelos. Las continuas muestran el flujo de datos. Cada rama contiene un detector $D_j$ separado e integración $I_j$ y adaptación $A_j$ configurables. Alineación y fusión reúnen el consolidador y el núcleo temporal de la Figura~\ref{fig:vista-general}.}
+\caption{Arquitectura conceptual. Las líneas discontinuas muestran propuestas de diseño a partir de los datos de entrenamiento; la validación selecciona los modelos. Las continuas muestran el flujo de datos. Cada rama contiene un detector $D_j$ separado e integración $I_j$ y adaptación $A_j$ configurables. Alineación y fusión reúnen el módulo de fusión de características y el núcleo temporal de la Figura~\ref{fig:vista-general}.}
 \label{fig:arquitectura}
 \end{figure}
 
