@@ -78,78 +78,35 @@ Se diseñará una \emph{representación temporal modular} formada por ramas que 
 
 El estudio combinará señales sintéticas con estructura conocida y tareas públicas multivariadas seleccionadas por su pertinencia y por disponer de resultados y protocolos de comparación en la literatura. En esas tareas se contrastará el diseño informado con referencias simples y recientes, una arquitectura monolítica y módulos con asignación no informada. Las familias utilizadas para desarrollar la regla se separarán de la evaluación confirmatoria y se conservará el control de entradas, régimen de aprendizaje y recursos. Como entrega obligatoria, la representación se integrará en la plataforma existente de aprendizaje por refuerzo para trading y se evaluará en simulación histórica frente a su representación de referencia. Esta evaluación tendrá un protocolo propio y no modificará retrospectivamente las hipótesis públicas. El estudio distinguirá beneficio, equivalencia, perjuicio e incertidumbre. En los contrastes públicos, la unidad estadística será la tarea de pronóstico, no cada ventana ni cada semilla. El resultado esperado es un método reproducible y una caracterización de cuándo ayuda, empata o perjudica; la tesis seguirá siendo informativa si una referencia más simple resulta preferible.
 
-\begin{figure}[t!]
+\begin{figure}[H]
 \centering
-\resizebox{0.98\textwidth}{!}{%
 \begin{tikzpicture}[
   font=\footnotesize,
-  box/.style={draw, rounded corners=1.2pt, align=center, inner sep=3.0pt, text width=1.7cm, minimum height=1.1cm, fill=white},
-  sub/.style={draw, rounded corners=1.2pt, align=center, inner sep=2.6pt, text width=1.9cm, minimum height=1.15cm, fill=white},
-  app/.style={draw, rounded corners=1.2pt, align=center, inner sep=3.0pt, text width=2.2cm, minimum height=1.1cm, fill=soft},
+  box/.style={draw, rounded corners=1.2pt, align=center, inner sep=4pt,
+              text width=4.6cm, minimum height=0.95cm, fill=white},
+  ext/.style={draw, rounded corners=1.2pt, align=center, inner sep=4pt,
+              text width=2.7cm, minimum height=0.95cm, fill=soft},
   arr/.style={-{Latex}, thick},
-  lbl/.style={font=\scriptsize, align=center, inner sep=1pt}
+  lbl/.style={font=\footnotesize, inner sep=1.5pt}
 ]
-% ---- rama 1 (carril superior) ----
-\node[sub] (d1) at (6.6,1.3) {Detector de\\patrones temporales};
-\node[sub] (i1) at (10.1,1.3) {Integrador temporal\\de la rama};
-\node[sub] (a1) at (13.6,1.3) {Adaptación de\\salida (opcional)};
-% ---- rama B (carril inferior) ----
-\node[sub] (dB) at (6.6,-1.7) {Detector de\\patrones temporales};
-\node[sub] (iB) at (10.1,-1.7) {Integrador temporal\\de la rama};
-\node[sub] (aB) at (13.6,-1.7) {Adaptación de\\salida (opcional)};
-\begin{scope}[on background layer]
-\node[draw, rounded corners=1.6pt, fill=soft, inner sep=5.5pt,
-      label={[font=\scriptsize\bfseries]above:Rama 1 · Extractor temporal},
-      fit=(d1)(i1)(a1)] (ext1) {};
-\node[draw, rounded corners=1.6pt, fill=soft, inner sep=5.5pt,
-      label={[font=\scriptsize\bfseries]above:Rama $B$ · Extractor temporal},
-      fit=(dB)(iB)(aB)] (extB) {};
-\end{scope}
-% indicación gráfica de más ramas (no procesa datos)
-\node at (10.1,-0.2) {$\vdots$};
-% flechas internas del extractor, etiquetadas en la rama 1
-\draw[arr] (d1) -- (i1);
-\draw[arr] (i1) -- (a1);
-\node[lbl] at (8.35,0.85) {Activaciones\\temporales};
-\node[lbl] at (11.85,0.85) {Características\\con contexto};
-\draw[arr] (dB) -- (iB);
-\draw[arr] (iB) -- (aB);
-% ---- entradas ----
-\node[box] (n0) at (0.4,-0.2) {Entradas\\preprocesadas};
-\node[box] (n1) at (3.15,-0.2) {Distribución\\por grupos};
-\draw[arr] (n0) -- (n1);
-\node[lbl] at (1.78,0.55) {Ventana\\multivariada};
-\draw[arr] (n1.east) -- ++(0.42,0) |- (d1.west);
-\draw[arr] (n1.east) -- ++(0.42,0) |- (dB.west);
-\node[lbl, anchor=east] at (4.42,0.92) {Variables\\del grupo};
-% ---- nota de la regla ----
-\node[draw, dashed, color=sabana, rounded corners=1.2pt, align=center,
-      font=\scriptsize, inner sep=3pt, text width=3.3cm]
-      at (1.85,-2.35)
-      {Grupos y campos receptivos definidos por la regla basada en perfiles de entrenamiento};
-% ---- consolidación y núcleo ----
-\node[box] (cons) at (17.5,-0.2) {Consolidador};
-\node[box] (nucleo) at (20.8,-0.2) {Núcleo\\temporal};
-\draw[arr] (a1.east) -- ++(0.55,0) |- (cons.west);
-\draw[arr] (aB.east) -- ++(0.55,0) |- (cons.west);
-\node[lbl] at (15.9,-0.85) {Secuencias de\\características};
-\draw[arr] (cons) -- (nucleo);
-\node[lbl, text width=2.3cm] at (19.15,-1.35) {Características alineadas y concatenadas};
-% ---- aplicaciones alternativas de salida ----
-\node[app] (pron) at (24.6,1.15) {Cabezal de\\pronóstico};
-\node[app] (rl) at (24.6,-1.55) {Salidas del\\agente de RL};
-\draw[arr] (nucleo.east) -- ++(0.45,0) |- (pron.west);
-\draw[arr] (nucleo.east) -- ++(0.45,0) |- (rl.west);
-\node[lbl] at (22.85,1.7) {Aplicación:\\pronóstico};
-\node[lbl] at (22.85,-2.2) {Aplicación:\\decisión y control};
-% ---- estado del agente ----
-\node[draw, rounded corners=1.2pt, align=center, font=\footnotesize,
-      inner sep=2.6pt, text width=2.2cm, minimum height=0.85cm, fill=white]
-      (estado) at (24.6,-3.75) {Estado del agente\\(cuando corresponda)};
-\draw[arr] (estado) -- (rl);
-\node[lbl, anchor=east] at (23.85,-2.9) {Estado interno\\observable};
-\end{tikzpicture}}
-\caption{\textbf{Vista general de la arquitectura modular y sus aplicaciones.} Cada extractor procesa un grupo de variables mediante detección de patrones, integración temporal y adaptación opcional. El consolidador alinea y concatena sus secuencias; el núcleo temporal aprende una representación conjunta antes de las salidas específicas de la tarea. El pronóstico público y la decisión mediante aprendizaje por refuerzo (política y/o valor, según el algoritmo) son aplicaciones alternativas, con regímenes de entrenamiento propios. La reducción de canales no implica eliminar el eje temporal. Cada bloque puede contener varias capas. Fuente: elaboración propia.}
+\node[box] (in) at (0,0) {Entradas preprocesadas\\Grupos de variables};
+\node[ext] (e1) at (-2.55,-2.0) {Extractor\\temporal 1};
+\node[ext] (eB) at (2.55,-2.0) {Extractor\\temporal $B$};
+\node at (0,-2.0) {$\cdots$};
+\node[box] (cons) at (0,-4.15) {Consolidador\\Alineación y concatenación};
+\node[box] (nuc) at (0,-5.75) {Núcleo temporal\\Mezcla y reducción de canales};
+\node[box] (out) at (0,-7.35) {Cabezales de salida\\Pronóstico / política o valor};
+\draw[arr] (in.south) -- ++(0,-0.42) -| (e1.north)
+  node[lbl, pos=0.85, left=2pt] {Grupo 1};
+\draw[arr] (in.south) -- ++(0,-0.42) -| (eB.north)
+  node[lbl, pos=0.85, right=2pt] {Grupo $B$};
+\draw[arr] (e1.south) -- ++(0,-0.45) -| ([xshift=-9mm]cons.north);
+\draw[arr] (eB.south) -- ++(0,-0.45) -| ([xshift=9mm]cons.north);
+\node[lbl] at (0,-3.15) {Secuencias de características};
+\draw[arr] (cons) -- (nuc);
+\draw[arr] (nuc) -- (out);
+\end{tikzpicture}
+\caption{Organización de alto nivel de la representación temporal modular. Las ramas procesan grupos de variables; el consolidador alinea y concatena sus secuencias, y el núcleo temporal combina la información antes de las salidas específicas de cada aplicación. El detalle interno de las ramas se presenta en la Figura~\ref{fig:arquitectura}. Fuente: elaboración propia.}
 \label{fig:vista-general}
 \end{figure}
 
@@ -403,7 +360,7 @@ MSGNet o CCM se incorporará como análisis de robustez si su interfaz y costo p
 
 La selección de conjuntos seguirá el orden pregunta y mecanismo $\rightarrow$ resultado publicado pertinente $\rightarrow$ tarea y protocolo $\rightarrow$ artefactos $\rightarrow$ elegibilidad del conjunto; no se elegirán datos por popularidad aislada ni después de observar dónde gana el método propio. Para cada candidato se localizará la tabla o figura publicada con su protocolo ejecutable (artículo, suplemento, código y configuración), se verificará la pertinencia del conjunto para el mecanismo estudiado, se identificarán exactamente datos y particiones ---con copia o manifiesto con \emph{hashes} cuando sea posible--- y se comprobará su compatibilidad con la separación entre familias de desarrollo y prueba reservada; las variantes de un mismo origen no se contarán como familias independientes. Antes de atribuir diferencias al método se reproducirá al menos una referencia, con una tolerancia de reproducción fijada por precisión numérica y variación entre ejecuciones, nunca después de observar el resultado propio. La selección se congelará antes de ejecutar la comparación reservada; el número suficiente de familias lo establecerán el censo y el piloto, no una cifra fijada de antemano.
 
-Se distinguirán tres afirmaciones que no deben mezclarse: la \emph{reproducción} de un resultado publicado con sus artefactos recuperados; la \emph{comparación controlada} de métodos bajo un protocolo común declarado, que no equivale automáticamente al benchmark original si lo modifica; y la \emph{aplicación al sistema propio}, cuya utilidad no permite comparar directamente contra cifras obtenidas en otros mercados o simuladores. Comparar modelos diferentes es legítimo ---esa es la comparación---, pero cuando la atribución al diseño de la representación sea central se incluirá un control con información y actualización equivalentes; si cambian a la vez algoritmo, información, entorno o actualización, la atribución será al sistema completo. Se conservará MASE y su agregación para H1 y se añadirán las métricas exactas del protocolo publicado (por ejemplo, MSE o MAE con su escala y reducción especificadas), sin sustituir unas por otras ni mezclar sus márgenes; si la política rodante propia difiere del protocolo de prueba publicado, las referencias se volverán a ejecutar bajo la política propia y el resultado se rotulará como adaptación, no como reproducción. Un mismo nombre de conjunto no demuestra identidad de datos: cuando falte un \emph{snapshot} idéntico se consignará \enquote{identidad de datos no verificada}, las contradicciones entre artículo, suplemento y código se registrarán con la versión adoptada, y una media publicada sin dispersión suficiente no sostendrá afirmaciones de significación. La ficha de comparabilidad completa ---identidad de datos, universo, tiempo, particiones, disponibilidad, preprocesamiento, entrenamiento, actualización, simulador, ejecución, contabilidad, métricas, incertidumbre y código--- y el inventario inicial de candidatos se mantienen en el documento auxiliar \texttt{docs/tesis\_representaciones\_modulares/09\_CONTRATO\_BENCHMARKS\_Y\_APLICACION\_RL.md} del repositorio.
+Se distinguirán tres afirmaciones que no deben mezclarse: la \emph{reproducción} de un resultado publicado con sus artefactos recuperados; la \emph{comparación controlada} de métodos bajo un protocolo común declarado, que no equivale automáticamente al benchmark original si lo modifica; y la \emph{aplicación al sistema propio}, cuya utilidad no permite comparar directamente contra cifras obtenidas en otros mercados o simuladores. Comparar modelos diferentes es legítimo ---esa es la comparación---, pero cuando la atribución al diseño de la representación sea central se incluirá un control con información y actualización equivalentes; si cambian a la vez algoritmo, información, entorno o actualización, la atribución será al sistema completo. Se conservará MASE y su agregación para H1 y se añadirán las métricas exactas del protocolo publicado (por ejemplo, MSE o MAE con su escala y reducción especificadas), sin sustituir unas por otras ni mezclar sus márgenes; si la política rodante propia difiere del protocolo de prueba publicado, las referencias se volverán a ejecutar bajo la política propia y el resultado se rotulará como adaptación, no como reproducción. Un mismo nombre de conjunto no demuestra identidad de datos: cuando falte un \emph{snapshot} idéntico se consignará \enquote{identidad de datos no verificada}, las contradicciones entre artículo, suplemento y código se registrarán con la versión adoptada, y una media publicada sin dispersión suficiente no sostendrá afirmaciones de significación. La ficha de comparabilidad completa ---identidad de datos, universo, tiempo, particiones, disponibilidad, preprocesamiento, entrenamiento, actualización, simulador, ejecución, contabilidad, métricas, incertidumbre y código--- y el inventario inicial de candidatos se mantienen en el \href{https://github.com/harveybc/predictor/blob/55e8b5f3a1744fb8bb597bc717326a194731b89c/docs/tesis_representaciones_modulares/09_CONTRATO_BENCHMARKS_Y_APLICACION_RL.md}{protocolo de comparabilidad y aplicación RL}, documento auxiliar versionado del repositorio.
 
 \subsection{Medidas, incertidumbre y costo}
 \label{sec:medidas}
@@ -455,7 +412,7 @@ La implementación previa permite exportar codificadores y decodificadores y dec
 \textbf{Sem.} & \textbf{Trabajo principal} & \textbf{Producto} \\
 \midrule
 1 & Revisión sistemática, contrato formal, banco y piloto de precisión/costo; inicio del inventario de artefactos para la comparación con literatura. & Protocolo registrado y artículo de revisión o diseño. \\
-2 & Implementación del perfil, regla y arquitectura; E0 de desarrollo completo y reserva sintética cerrada; prueba inicial de interfaz de la representación con el agente de RL (junto a U08). & Software reproducible, estudio de identificabilidad y prueba de interfaz con el agente. \\
+2 & Implementación del perfil, regla y arquitectura; E0 de desarrollo completo y reserva sintética cerrada; verificación del flujo de gradientes del modelo compuesto y prueba inicial de su interfaz con el agente de RL. & Software reproducible, estudio de identificabilidad y prueba de interfaz con el agente. \\
 3 & E1 en familias públicas; recorte de descriptores y comparadores; fijación del protocolo aplicado de E3 (agente, identidad de datos y recursos). & Artículo metodológico, diseño E2 congelado y protocolo E3 fijado. \\
 4 & Reserva sintética de H2/H3 y E2 con el procedimiento congelado; auditoría de reproducibilidad. & Artículo principal con resultados positivos, negativos o inconclusos. \\
 5 & Integración final y evaluación histórica E3 del agente RL con representación de referencia y propuesta; comparación con protocolo financiero publicado cuando sus artefactos sean recuperables. & Implementación y evaluación E3 obligatorias; el artículo aplicado depende del resultado y del calendario editorial. \\
