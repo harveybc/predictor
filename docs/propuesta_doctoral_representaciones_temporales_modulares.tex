@@ -212,59 +212,79 @@ El preentrenamiento por capas y la reconstrucción de valores ocultos tienen ant
 
 \section{Metodología}
 
-\subsection{Organización del trabajo con CRISP-DM}
+CRISP-DM organizará el trabajo en seis etapas~\cite{ibmcrispdm}, desde la comprensión de los datos y la tarea hasta la evaluación e integración de los modelos. La Tabla~\ref{tab:crispdm} especifica las acciones y entregas de cada etapa.
 
-CRISP-DM organizará el trabajo en comprensión del problema y los datos, preparación, modelado, evaluación e integración en las plataformas~\cite{ibmcrispdm}. El análisis de datos orientará la selección de modelos y sus configuraciones; la validación comparará las alternativas. Las decisiones podrán revisarse durante el desarrollo, y el procedimiento quedará fijado antes de la prueba reservada.
+\begin{table}[H]
+\centering
+\small
+\caption{Aplicación de CRISP-DM al proyecto.}
+\label{tab:crispdm}
+\begin{tabularx}{\textwidth}{@{}L{3.2cm}Y L{4.0cm}@{}}
+\toprule
+\textbf{Etapa} & \textbf{Qué se hará} & \textbf{Entrega verificable} \\
+\midrule
+Comprensión del problema & Definir las tareas de pronóstico y RL, las restricciones del sistema y las mejoras que justificarían el diseño modular. & Especificación de entradas, salidas y criterios de comparación. \\
+Comprensión de los datos & Inventariar fuentes y resultados publicados; examinar calidad, escalas temporales y disponibilidad de cada variable. & Inventario de datos y diagnóstico temporal. \\
+Preparación de los datos & Construir particiones temporales, ajustar transformaciones con entrenamiento y preparar las entradas de las ramas. & Datos y transformaciones reproducibles, sin información futura. \\
+Modelado & Proponer grupos, seleccionar modelos por rama, configurar su contexto y entrenar el sistema completo. & Procedimiento de diseño, modelos y configuraciones. \\
+Evaluación & Comparar diseños, probar las hipótesis y medir desempeño, incertidumbre y costo. & Resultados frente a controles y límites de interpretación. \\
+Despliegue e integración & Conectar los módulos con las plataformas, registrar experimentos y definir seguimiento y reentrenamiento. & Componentes reutilizables y evaluación financiera histórica. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-H1 evaluará la utilidad del método en pronóstico; H2, la agrupación por escalas; y H3, la conservación de secuencias hasta fusionar las ramas. Las dos últimas utilizarán principalmente señales sintéticas. RL tendrá una evaluación aplicada con métricas de decisión y desempeño financiero.
+Estas etapas podrán repetirse durante el desarrollo. Antes de abrir los resultados reservados para evaluación quedarán fijados los datos, las alternativas de diseño, los presupuestos y las reglas de comparación. En una tarea nueva se podrán elegir y entrenar modelos con sus segmentos de entrenamiento y validación, aplicando ese procedimiento ya definido.
 
-El desarrollo del procedimiento se denominará E1 y su evaluación en familias públicas reservadas, E2. E0 comprende la generación de señales sintéticas, con datos separados para desarrollo y prueba. E3 corresponde a la aplicación financiera en aprendizaje por refuerzo. La sección de fases experimentales detalla cada una.
+\subsection{Comprensión del problema: definir qué debe resolver la representación}
 
-\subsection{Selección de datos y comparación con resultados publicados}
+Se especificarán los requisitos de cada aplicación. Para pronóstico se definirán las variables objetivo, los pasos futuros que deben predecirse y la frecuencia de actualización. Para RL se establecerán las observaciones, acciones, recompensa y condiciones de ejecución del agente. En ambos casos se identificarán las interfaces con los extractores, el módulo de fusión, el núcleo temporal y los cabezales, junto con los límites de memoria y tiempo.
+
+El resultado será una especificación que permita comparar representaciones dentro del mismo problema. Una estrategia trivial de trading o un pronóstico ingenuo aportarán referencias básicas de utilidad; los modelos sin procesamiento diferenciado por ramas permitirán comprobar si la mejora procede del diseño modular. Los márgenes de mejora relevante se justificarán durante el piloto y quedarán registrados antes de la evaluación final.
+
+\subsection{Comprensión de los datos: conocer las señales y elegir comparaciones reproducibles}
 \label{sec:comparabilidad}
 
-Para cada conjunto candidato se localizará un resultado publicado pertinente, su tarea, las métricas y el protocolo experimental. Se comprobarán el acceso a datos y código, las divisiones de entrenamiento y prueba, y su compatibilidad con la separación entre familias. La selección se cerrará antes de ejecutar la evaluación reservada. El número de familias necesario se determinará con el inventario y el piloto de precisión estadística.
+Se partirá del inventario de datos existente para la aplicación financiera y de conjuntos públicos para contrastar resultados con la literatura. Se examinarán, entre otros, los bancos TFB, Monash y GIFT-Eval, que reúnen tareas de distintos dominios~\cite{qiu2024tfb,godahewa2021monash,aksu2024gifteval}. Cada conjunto candidato deberá tener frecuencia y licencia documentadas, historia suficiente y variables distintas observadas conjuntamente que permitan comparar agrupaciones. Los datos univariados podrán verificar una implementación, pero no demostrar el beneficio de agrupar variables.
 
-Se reproducirá al menos un modelo de referencia, con tolerancia fijada previamente según precisión numérica y variación entre ejecuciones. Se distinguirán reproducción del estudio original, comparación bajo protocolo común adaptado y aplicación propia. Si cambian algoritmo, información o simulador, la diferencia corresponderá al sistema completo; el efecto de la representación se aislará con controles equivalentes.
+Para cada fuente se documentarán archivos y versiones, fechas, frecuencia de muestreo, variables, valores ausentes y momento de disponibilidad de las observaciones. El diagnóstico del segmento de entrenamiento examinará ritmos de cambio, periodicidades, autocorrelación y estabilidad entre períodos. Así se distinguirán propiedades persistentes de estimaciones que cambian demasiado para justificar una rama especializada. El inventario también identificará datos ya utilizados por el proyecto o por modelos preentrenados.
 
-Se identificarán archivos, versiones, fechas, instrumentos, frecuencia, variables y divisiones temporales, conservando huellas digitales cuando sea posible. Se documentarán discrepancias entre artículo, suplemento y código. En trading se igualarán ejecución, comisiones, deslizamiento, restricciones y contabilidad. Corregir un protocolo con información futura exigirá adaptar todos los métodos y declarar el cambio.
+La selección de conjuntos partirá de experimentos publicados con tareas, métricas y protocolos recuperables. Se reproducirá al menos un modelo de referencia; la tolerancia se fijará antes de obtener el resultado propio según la precisión numérica y la variación entre ejecuciones. Se conservarán las fechas, particiones, objetivos y métricas del estudio original cuando se afirme una reproducción directa. Si es necesario adaptar el protocolo, todos los métodos recibirán el mismo tratamiento y la comparación se identificará como adaptada.
 
-H1 conservará MASE y su agregación. Las comparaciones publicadas añadirán las métricas, escalas y promedios originales. Si se adopta reentrenamiento periódico, se aplicará también a las referencias y se declarará como adaptación. Una media publicada sin información sobre su variación no permitirá afirmar significación estadística.
+En finanzas se verificarán además instrumentos, precios y momento de ejecución, comisiones, deslizamiento y restricciones. TradeMaster y FinRL-Meta serán puntos de partida para buscar experimentos compatibles~\cite{sun2023trademaster,liu2022finrlmeta}. Si no puede recuperarse una comparación externa, se mantendrá la evaluación con los controles propios y se declarará esa limitación. La normalización y cualquier posible acceso a información futura se revisarán antes de aceptar un protocolo.
 
-La lista detallada de comprobaciones y el inventario de candidatos se encuentran en el \href{https://github.com/harveybc/predictor/blob/55e8b5f3a1744fb8bb597bc717326a194731b89c/docs/tesis_representaciones_modulares/09_CONTRATO_BENCHMARKS_Y_APLICACION_RL.md}{protocolo de comparabilidad y aplicación RL}. Entre las comprobaciones pendientes figuran el tratamiento de la normalización en TradeMaster y la exposición previa del proyecto a los conjuntos candidatos.
-
-\subsection{Preparación de datos y construcción de las ramas}
+\subsection{Preparación de los datos: construir entradas comparables}
 \label{sec:datos}
 
-Se documentarán fuente, frecuencia de muestreo, zona horaria, variables, objetivos y disponibilidad temporal de cada dato. Normalización, imputación y perfiles se ajustarán solo con entrenamiento. Las transformaciones podrán utilizar la ventana histórica completa, pero ninguna observación posterior al instante de pronóstico o decisión.
+Cada tarea tendrá segmentos cronológicos de entrenamiento, validación y prueba. El entrenamiento ajustará transformaciones y pesos; la validación seleccionará configuraciones y puntos de parada; la prueba medirá el desempeño del modelo seleccionado. La normalización, la imputación y las descomposiciones que se utilicen se ajustarán solo con entrenamiento. Las ventanas incluirán únicamente información disponible en el instante de pronóstico o decisión, considerando posibles retrasos de publicación.
 
-Los controles compartirán información y preprocesamiento común; las adaptaciones de formato no añadirán datos. Para cada variable $i$ se calculará un perfil $d_i$ y su estabilidad entre segmentos. Los retardos tendrán unidades comparables y las frecuencias se normalizarán respecto de Nyquist, la mitad de la frecuencia de muestreo. El escalado robusto de los perfiles se ajustará en E1 y se fijará antes de E2, conservando diferencias entre tareas; $\widetilde d_i$ denotará el perfil escalado. Su heterogeneidad se resumirá como
+Para cada variable $i$ se calculará el perfil temporal $d_i$ definido en el marco teórico. Los retardos se expresarán en unidades comparables y las frecuencias respecto de la frecuencia de Nyquist, la mitad de la frecuencia de muestreo. Se utilizará un escalado robusto común, ajustado durante el desarrollo y conservado en las tareas reservadas; se evitará normalizar cada tarea de manera que desaparezcan sus diferencias. El perfil escalado se denotará por $\widetilde d_i$, y su heterogeneidad se resumirá mediante
 \begin{equation}
 q(X)=\operatorname{mediana}_{i<k}\lVert\widetilde d_i-\widetilde d_k\rVert_2.
 \end{equation}
-Esta medida expresa diferencias entre los perfiles utilizados por el procedimiento; no se interpretará como una medida de dificultad de pronóstico o causalidad.
+Este valor mide cuánto difieren los perfiles entre sí; no representa causalidad ni dificultad de pronóstico. Las dependencias entre variables con retraso se analizarán mediante un diagnóstico separado, también calculado con entrenamiento.
 
-El análisis basado en perfiles propondrá una agrupación $G$, los contextos temporales $R$ y las alternativas de modelos admisibles para cada rama, reunidas en $\mathcal{M}$. Con parámetros de diseño $\eta$, esta etapa se expresará como
+Se prepararán entradas que conserven las marcas de tiempo y permitan alinear las salidas de las ramas. Las adaptaciones de formato requeridas por un modelo se documentarán sin añadir información a la disponible para sus comparadores.
+
+\subsection{Modelado: diseñar las ramas y aprender sus representaciones}
+
+El diseño se realizará en dos pasos: el análisis de entrenamiento propondrá configuraciones pertinentes y la validación de la tarea decidirá entre ellas. Se seguirá esta secuencia:
+\begin{enumerate}
+\item \textbf{Proponer grupos de variables.} Se utilizará agrupamiento jerárquico de perfiles como punto de partida y se comprobará su estabilidad entre segmentos. Una variable con perfil inestable se asignará a una rama común, dejando constancia de que los datos no justificaron una especialización.
+\item \textbf{Proponer contexto y modelos.} Para cada grupo se estudiarán alternativas convolucionales, recurrentes, de atención o híbridas compatibles con sus escalas, cantidad de datos y recursos. Se fijarán un catálogo finito y rangos de configuración; las ramas podrán utilizar modelos diferentes.
+\item \textbf{Ensamblar y entrenar.} Se conectarán detectores, integración, adaptación, fusión, núcleo y cabezales. Se comprobarán dimensiones, correspondencia temporal y actualización de parámetros antes de las ejecuciones completas.
+\item \textbf{Seleccionar con validación.} Se comparará el desempeño del sistema completo, no solo el error de reconstrucción de un extractor. La búsqueda de hiperparámetros y estructura se reservará para las alternativas que el análisis previo no permita resolver. Se definirán criterios de parada temprana tanto para el entrenamiento como para la búsqueda, utilizando validación.
+\end{enumerate}
+
+La parte del procedimiento que propone agrupación $G$, contextos $R$ y modelos admisibles $\mathcal{M}$ se representará como
 \begin{equation}
 (G,R,\mathcal{M})=A_\eta(\widetilde d_1,\ldots,\widetilde d_p).
 \end{equation}
-El agrupamiento jerárquico será el punto de partida. E1 fijará los criterios de agrupación, el máximo de ramas, los contextos admisibles, el catálogo de modelos y el presupuesto. En E2, cada tarea podrá seleccionar arquitecturas distintas mediante entrenamiento y validación del modelo completo, sin consultar la prueba ni modificar esos criterios.
+Los parámetros $\eta$ describirán sus criterios de diseño. Durante el desarrollo se fijarán esos criterios, el máximo de ramas y el presupuesto de búsqueda. En las tareas reservadas cambiarán los perfiles y los modelos resultantes, pero no el procedimiento utilizado para elegirlos.
 
-Si el perfil de una variable es inestable, se asignará a una rama común y se registrará que no fue posible justificar una especialización con esos datos. Para H3 se estimarán por separado relaciones predictivas entre variables con distintos retardos. Ese diagnóstico utilizará solo entrenamiento y no modificará la regla $A_\eta$ durante E2.
+\paragraph{Configurar el procesamiento temporal.}
+En convoluciones se ajustarán profundidad, filtros y dilatación para controlar el alcance temporal~\cite{bai2018tcn}; en recurrencia, la historia accesible y el tratamiento de estados; y en atención, la longitud de secuencia y las restricciones de acceso. El detector permanecerá como módulo separado. El integrador añadirá contexto cuando sea necesario y la adaptación ajustará dimensiones, desplazamientos y correspondencia temporal. Ampliar el contexto no exige aumentar la longitud de la secuencia de salida. Integración y adaptación podrán configurarse juntas o separadas, o actuar como identidad.
 
-\subsection{Selección de modelos, arquitectura y entrenamiento}
-
-Las ramas podrán utilizar modelos convolucionales, recurrentes, de atención o híbridos. La selección considerará cantidad y estructura de los datos, escalas, contexto, relaciones entre variables, preentrenamiento y compatibilidad con los demás componentes. El catálogo y los rangos de configuración se justificarán en E1 mediante literatura e implementaciones reproducibles.
-
-Las convoluciones temporales permitirán configurar el alcance mediante profundidad, tamaño de filtro y dilatación~\cite{bai2018tcn}. En modelos recurrentes se declararán la historia accesible y el tratamiento de sus estados; en atención, la longitud de secuencia y las restricciones de acceso temporal. En todos los casos se verificará qué observaciones puede utilizar cada salida y se conservará una secuencia de características compatible con el resto del sistema.
-
-La implementación conservará la separación de $D_j$ y permitirá configurar $I_j$ y $A_j$ por separado, conjuntamente o como identidad. El integrador añadirá contexto cuando el detector no lo proporcione para adecuar el tamaño de la dimension temporal, la adaptación ajustará dimensiones, desplazamientos y correspondencia temporal. Se verificarán interfaces, marcas de tiempo, memoria y costos.
-
-La elección se basará en la validación de la tarea final, no únicamente en la reconstrucción del autoencoder usado para preentrenamiento del detector. El sistema de optimización ajustará los parámetros y decisiones estructurales que aún requieran búsqueda, registrando también los candidatos descartados y sus métricas para una posible meta-optimización.
-
-Tras la alineación y concatenación, el núcleo procesará la secuencia conjunta. Para pronóstico, el cabezal utilizará su último estado para predecir $H$ pasos. En RL se definirán salidas de política o valor. Cuando existan actor y crítico (modelo SAC), que seleccionan acciones y estiman valor, se declarará si comparten la representación o requieren representaciones separadas.
-
-La Figura~\ref{fig:arquitectura} muestra el detector separado y las funciones configurables de integración y adaptación. Cada componente podrá contener varias capas; sus tipos, tamaños, repeticiones y conexiones formarán parte de la configuración del extractor.
+La Figura~\ref{fig:arquitectura} muestra el ensamblaje. Cada componente podrá contener varias capas, con tipos, tamaños y repeticiones configurables. Tras la fusión, el núcleo procesará la secuencia conjunta; el cabezal de pronóstico utilizará su último estado para predecir los pasos futuros. En algoritmos de actor y crítico, como el actor-crítico suave (SAC), se decidirá si los modelos de política y valor comparten representación~\cite{raffin2021sb3}.
 
 \begin{figure}[htbp]
 \centering
@@ -302,33 +322,30 @@ La Figura~\ref{fig:arquitectura} muestra el detector separado y las funciones co
 \label{fig:arquitectura}
 \end{figure}
 
-Se compararán tres modalidades de entrenamiento, identificadas como R0, R1 y R2 para facilitar su seguimiento en los experimentos:
+\paragraph{Elegir cómo se inicializa y entrena el detector.}
+Se compararán las tres modalidades de la Tabla~\ref{tab:regimenes}. Los códigos R0, R1 y R2 identifican únicamente estas modalidades de entrenamiento.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Inicialización y entrenamiento de los detectores.}
+\caption{Modalidades de entrenamiento del detector de patrones.}
 \label{tab:regimenes}
-\begin{tabularx}{\textwidth}{@{}L{1.0cm}Y Y@{}}
+\begin{tabularx}{\textwidth}{@{}L{1.2cm}L{3.3cm}Y@{}}
 \toprule
-\textbf{Modo} & \textbf{Pesos iniciales del detector} & \textbf{Entrenamiento del modelo completo} \\
+\textbf{Código} & \textbf{Modalidad} & \textbf{Qué se entrena} \\
 \midrule
-R0 & Inicialización aleatoria. & Detector y resto del modelo se ajustan juntos. \\
-R1 & Codificador preentrenado. & El detector se mantiene fijo; se ajusta el resto. \\
-R2 & El mismo codificador preentrenado que en R1. & Detector y resto del modelo continúan ajustándose. \\
+R0 & Desde cero & El detector empieza con pesos aleatorios y se ajusta junto con el resto del modelo. \\
+R1 & Preentrenado y congelado & Se importan pesos preentrenados y se mantienen fijos; se entrena el resto del modelo. \\
+R2 & Preentrenado y ajustable & Se importan los mismos pesos iniciales de la modalidad congelada y se siguen ajustando con el modelo completo. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-El detector de patrones utilizará un autoencoder: el codificador aprenderá una representación y un decodificador auxiliar reconstruirá la entrada o unos valores ocultos mediante una máscara definida previamente. La reconstrucción ordinaria no se interpretará por sí sola como eliminación de ruido. Se conservarán el codificador y el decodificador entrenados, así como una copia separada de los pesos modificados durante el ajuste posterior.
+Para preentrenar el detector se utilizará un autoencoder: su codificador aprenderá a representar la entrada y un decodificador auxiliar intentará reconstruirla, completa o con valores ocultos mediante una máscara definida previamente. Después se incorporará el codificador como detector; el decodificador se conservará por separado. El entrenamiento desde cero no requerirá esta etapa. La reconstrucción ordinaria no se interpretará por sí sola como eliminación de ruido.
 
-La implementación se comprobará con pruebas de actualización de parámetros. En R1, los pesos del detector deberán permanecer fijos. En R2, los valores preentrenados se usarán como punto de partida pero los pesos variarán con el resto del modelo en tiempo de entrenamiento~\cite{keras2023transfer}.
+Se comprobará que el detector congelado conserve sus pesos y que el ajustable los modifique a partir del objetivo final~\cite{keras2023transfer}. Se guardarán por separado los pesos preentrenados y los modificados durante el ajuste. Para la comparación principal en pronóstico se elegirá una modalidad durante el desarrollo y se aplicará por igual al método y sus controles.
 
-E1 elegirá una de las tres modalidades para H1 y la fijará para el método y sus controles, evitando ventajas exclusivas de preentrenamiento. H3 utilizará el extractor común y fijo definido en su contraste.
-
-
-
-La Figura~\ref{fig:protocolo} distingue las decisiones que se fijan durante el desarrollo de los pesos y perfiles que se aprenden con los datos de cada tarea.
+El sistema de optimización registrará configuraciones, pesos iniciales y métricas de los candidatos, incluidos los descartados. Ese historial podrá servir para una futura metaoptimización; en esta propuesta su función será permitir el análisis y la reproducción de las decisiones de diseño. La Figura~\ref{fig:protocolo} resume cómo se separará la elección del modelo de su prueba final.
 
 \begin{figure}[htbp]
 \centering
@@ -358,197 +375,192 @@ La Figura~\ref{fig:protocolo} distingue las decisiones que se fijan durante el d
 \draw[fixedarr] (protocol.south) -- ++(0,-0.38) -| (design.north);
 \draw[fixedarr] (protocol.south) -- ++(0,-0.38) -| (fit.north);
 \end{tikzpicture}}
-\caption{Separación entre desarrollo y evaluación. E1 fija el procedimiento; cada tarea estima perfiles y entrena candidatos con entrenamiento, selecciona con validación y evalúa el modelo resultante en prueba reservada.}
+\caption{Separación entre desarrollo y evaluación. Durante el desarrollo se fija el procedimiento; cada tarea estima perfiles y entrena candidatos con entrenamiento, selecciona con validación y evalúa el modelo resultante en prueba reservada.}
 \label{fig:protocolo}
 \end{figure}
 
-\subsection{Fases experimentales}
-\label{sec:fases}
+\subsection{Evaluación: comprobar el aporte del diseño y sus límites}
 
-El estudio separará el desarrollo del procedimiento, las pruebas reservadas y la aplicación al sistema existente. La Tabla~\ref{tab:phases} resume el propósito de cada fase.
+La evaluación responderá tres preguntas concretas: si el diseño mejora el pronóstico, si agrupar por escalas aporta una ventaja y si conservar las secuencias ayuda a utilizar relaciones entre variables con retraso. La Tabla~\ref{tab:hipotesis} presenta las hipótesis correspondientes. Sus códigos identifican afirmaciones que se contrastarán; la selección de modelos seguirá el procedimiento de la etapa anterior.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Datos y propósito de las fases experimentales.}
-\label{tab:phases}
-\begin{tabularx}{\textwidth}{@{}L{0.8cm}L{3.2cm}Y@{}}
+\caption{Hipótesis de investigación y comparación que las pone a prueba.}
+\label{tab:hipotesis}
+\begin{tabularx}{\textwidth}{@{}L{1.2cm}Y Y@{}}
 \toprule
-\textbf{Fase} & \textbf{Datos} & \textbf{Propósito} \\
+\textbf{Código} & \textbf{Qué se espera comprobar} & \textbf{Comparación} \\
 \midrule
-E0 & Señales sintéticas con estructura conocida. & Comprobar los perfiles y los mecanismos de H2 y H3, con señales separadas para desarrollo y prueba. \\
-E1 & Familias públicas de desarrollo. & Definir los criterios de agrupación y selección de modelos, las modalidades de entrenamiento, los comparadores y presupuestos; fijar márgenes de relevancia y comprobar precisión estadística. \\
-E2 & Familias públicas reservadas. & Contrastar H1 con el procedimiento ya fijado y estudiar su utilidad en tareas de distinto origen. \\
-E3 & Datos financieros históricos identificados y divididos de antemano. & Integrar la representación en el agente y compararla con la estrategia trivial y los controles de representación. Es una entrega obligatoria, con análisis separado de H1--H3. \\
+H1 & El diseño basado en datos mejora el pronóstico global sin perjuicio relevante en ninguna familia evaluada. & Método propuesto frente al control principal elegido durante el desarrollo. \\
+H2 & La ventaja de agrupar mediante perfiles aumenta cuando las escalas temporales son más distintas. & Agrupación informada frente a asignación permutada, variando la heterogeneidad de señales sintéticas. \\
+H3 & Con relaciones temporales entre variables, conservar las secuencias hasta fusionarlas mejora el pronóstico. & Fusión de secuencias frente a resumen temprano, con y sin relaciones entre variables con retraso. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\paragraph{Señales sintéticas.}
-E0 combinará procesos autorregresivos, periodicidades, tendencias y eventos localizados. Los generadores implementarán los contrastes de H2 y H3. Para H3, realizaciones independientes eliminarán las relaciones entre variables conservando, en distribución, sus propiedades individuales, tamaño de muestra y ruido; esto se comprobará con repeticiones. Permutar el orden temporal se reservará para sensibilidad, porque altera también la estructura individual.
+La evaluación financiera en RL comprobará además la utilidad de la representación dentro del agente. Tendrá métricas y criterios propios; sus resultados no se mezclarán con el error de pronóstico.
 
-La reserva sintética fijará ecuaciones, rangos y semillas antes de ajustar la regla y permanecerá cerrada hasta terminar E1. Incluirá cambios temporales y fallos de los supuestos del diagnóstico. El ruido añadido será conocido; en datos reales no se supondrá que todo residuo es ruido.
+\subsubsection{Organizar los experimentos y reservar datos para la prueba}
+\label{sec:fases}
 
-\paragraph{Tareas públicas.}
-Se examinarán conjuntos de energía, clima, tráfico y otros dominios recogidos en TFB, Monash y GIFT-Eval~\cite{qiu2024tfb,godahewa2021monash,aksu2024gifteval}. Para evaluar la agrupación, un conjunto deberá contener variables distintas observadas conjuntamente y permitir al menos dos agrupaciones de variables diferentes. También deberá tener frecuencia documentada, licencia compatible, historia suficiente para las divisiones de entrenamiento y evaluación, y denominadores de MASE no nulos en entrenamiento. Los conjuntos univariados podrán utilizarse para verificar implementaciones, pero no para probar la utilidad de agrupar variables.
+Los experimentos se organizarán en cuatro bloques, descritos en la Tabla~\ref{tab:phases}. Estos bloques no sustituyen las etapas de CRISP-DM: indican qué datos se utilizarán para desarrollar el método y cuáles para comprobarlo.
 
-Antes de E2 se fijarán familias, horizontes y divisiones temporales. Las variantes de una fuente permanecerán juntas; dividir sus ventanas no creará familias independientes. En cada tarea reservada se entrenará un modelo nuevo con el procedimiento fijado en E1 y sus propios datos de entrenamiento y validación.
+\begin{table}[H]
+\centering
+\small
+\caption{Bloques experimentales, datos y finalidad.}
+\label{tab:phases}
+\begin{tabularx}{\textwidth}{@{}L{1.2cm}L{3.5cm}Y@{}}
+\toprule
+\textbf{Código} & \textbf{Bloque} & \textbf{Datos y uso} \\
+\midrule
+E0 & Pruebas sintéticas & Señales de estructura conocida, con grupos separados para desarrollar diagnósticos y contrastar H2 y H3. \\
+E1 & Desarrollo del método & Familias públicas para elegir criterios de diseño, alternativas, controles, entrenamiento y presupuestos, y comprobar la precisión estadística. \\
+E2 & Evaluación pública reservada & Otras familias públicas para contrastar H1 con el procedimiento fijado. Cada tarea conserva su entrenamiento, validación y prueba. \\
+E3 & Aplicación financiera & Datos históricos para comparar la representación dentro del agente de RL. Es una entrega obligatoria y su análisis es independiente de H1--H3. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\paragraph{Aplicación al sistema de trading.}
-E1 elegirá una tarea financiera histórica y un algoritmo compatibles con la plataforma para E3. Se compararán una estrategia trivial y el agente con la representación propuesta, la actual y una variante sin procesamiento diferenciado por ramas; las dos últimas podrán coincidir. Las variantes del agente compartirán entorno, observaciones, recompensa, acciones, calendario y presupuesto. Se especificarán la posición y el estado de cuenta en la entrada, y si actor y crítico comparten representación~\cite{raffin2021sb3}.
+El desarrollo precederá a las pruebas reservadas. Antes de ajustar el método se fijarán las ecuaciones, rangos y semillas de la reserva sintética; sus resultados permanecerán cerrados hasta terminar el desarrollo. Antes de la evaluación pública se fijarán familias, horizontes y divisiones temporales. Las variantes de una misma fuente se mantendrán juntas: separar sus ventanas no creará familias independientes. El piloto determinará cuántas familias y repeticiones pueden sostener una comparación precisa dentro del presupuesto.
 
-Se fijarán antes de la prueba la métrica principal de RL, su margen de relevancia y las métricas financieras complementarias. Con reglas contables, costos y ejecución comunes, se estimarán diferencias e intervalos que consideren semillas y períodos compartidos. La comparación con el agente sin diseño modular medirá el aporte de la representación; superar la estrategia trivial mostrará utilidad básica. Se distinguirán mejora, equivalencia, perjuicio e incertidumbre. E3 se analizará por separado de H1--H3 y de su ajuste de multiplicidad.
+Las señales sintéticas combinarán procesos autorregresivos, periodicidades, tendencias y eventos localizados. Para probar la agrupación se variarán las escalas manteniendo constantes cantidad de datos y ruido. Para probar la fusión se construirán pares con y sin dependencias entre variables, preservando en distribución sus propiedades individuales. Se comprobará esa preservación con repeticiones; permutar el orden temporal se reservará para sensibilidad porque altera también cada serie. Se incluirán cambios temporales y casos donde fallen los supuestos del diagnóstico. El ruido añadido será conocido, sin extender esa suposición a los residuos de datos reales.
 
-TradeMaster y FinRL-Meta permitirán buscar experimentos publicados con datos, código y protocolos recuperables~\cite{sun2023trademaster,liu2022finrlmeta}. Si existe uno compatible, se reproducirá la comparación y se documentarán las diferencias. En caso contrario, E3 conservará los controles propios y declarará la limitación de comparación externa. La plataforma de pronóstico reutilizará los componentes y experimentos correspondientes.
+\subsubsection{Comparar con referencias y aislar el efecto de las decisiones}
 
-\subsection{Modelos de referencia y controles experimentales}
+Se utilizarán tres grupos de comparación:
+\begin{itemize}
+\item \textbf{Referencias de desempeño:} pronóstico ingenuo y estacional ingenuo, un modelo estadístico multivariado pertinente y DLinear; PatchTST, iTransformer y DUET, junto con un método multiescala elegido entre MTST, Pathformer y TimeMixer antes de examinar los resultados de desarrollo. DUET será obligatorio por su proximidad a la propuesta.
+\item \textbf{Controles del diseño:} un modelo sin procesamiento diferenciado por ramas y uno modular organizado sin utilizar los perfiles. Se elegirá como control principal el que obtenga menor error agregado en los datos de desarrollo, con el mismo criterio que se aplicará después.
+\item \textbf{Ablaciones:} variantes que cambian una decisión concreta, como permutar la asignación de variables, usar un contexto común o resumir las ramas antes de fusionarlas. Permitirán distinguir el efecto de agrupación, selección de modelos y conservación temporal.
+\end{itemize}
 
-Los comparadores se elegirán por la pregunta que permiten responder:
-\begin{enumerate}
-\item Como referencias básicas se utilizarán el pronóstico ingenuo y el estacional ingenuo, junto con una estrategia trivial de trading para RL, seleccionada antes de evaluar y compatible con el entorno. Se incorporará un modelo estadístico multivariado pertinente y reproducible; DLinear aportará además una referencia lineal aprendida.
-\item PatchTST e iTransformer permitirán comparar estrategias de procesamiento independiente y conjunto de las variables.
-\item DUET será un comparador obligatorio por su proximidad a la propuesta. Antes de examinar los resultados de E1 se elegirá además un método multiescala entre MTST, Pathformer y TimeMixer.
-\item Se utilizarán modelos sin el procesamiento diferenciado por ramas como controles del diseño propuesto, con selección de arquitectura y ajuste bajo recursos comparables. Un control modular organizado sin perfiles permitirá separar el efecto de usar ramas del efecto de organizarlas mediante los datos.
-\item Se realizarán \emph{ablaciones}, es decir, comparaciones que alteran una decisión concreta: permutar la correspondencia entre variables y perfiles, usar un campo receptivo común o resumir las ramas antes de combinarlas.
-\end{enumerate}
+Método y controles compartirán información, preprocesamiento común, semillas, criterios de entrenamiento, límites de búsqueda y catálogos comparables. Cuando sea viable, se igualarán parámetros dentro de una tolerancia fijada en el piloto; se informarán también error, tiempo y memoria. El control permutado conservará número y tamaño de ramas, modelos, contextos, interfaces y presupuesto. Se fijarán previamente sus permutaciones y desempates, evitando una permutación conjunta de datos, objetivos y módulos que solo cambie sus nombres. MSGNet o CCM podrá añadirse si su interfaz y costo permiten una comparación útil.
 
-El control permutado cambiará la asignación de variables conservando número y tamaño de ramas, modelos, contextos, interfaces, objetivos y presupuesto. Las permutaciones compatibles y los desempates se fijarán antes de la prueba. Se evitará permutar simultáneamente datos, objetivos y módulos de manera que solo cambien sus nombres.
-
-El método y sus controles compartirán semillas, criterios de entrenamiento, límites de búsqueda y catálogos comparables. Cuando sea viable, se igualarán parámetros dentro de una tolerancia fijada en el piloto; también se compararán error, tiempo y memoria. Ablaciones con tipos de modelos fijos distinguirán los efectos de agrupación, selección de modelos y configuración.
-
-MSGNet o CCM podrá añadirse si su interfaz y costo lo permiten. Se priorizarán los controles de las hipótesis sobre la exploración exhaustiva de combinaciones.
-
-\subsection{Hipótesis y criterios de contraste}
-\label{sec:hipotesis}
-
-La unidad principal de evaluación será una \emph{tarea de pronóstico}, definida por un conjunto de datos, unas variables objetivo y un horizonte. Una misma tarea se repetirá desde distintos puntos de inicio del pronóstico, llamados \emph{orígenes de evaluación}, y con distintas \emph{semillas aleatorias}, que controlan la aleatoriedad del entrenamiento. Estas repeticiones no se contarán como tareas independientes.
-
-Se utilizará el error absoluto medio escalado (MASE): el error de pronóstico dividido por un error de referencia calculado con entrenamiento. La sección~\ref{sec:medidas} define su fórmula. Cada variable y origen tendrán un denominador propio, compartido por todos los métodos; si alguno es nulo, la tarea se informará aparte y no se usará para H1. Se promediarán los errores escalados con igual peso entre variables objetivo, pasos del horizonte, orígenes y semillas. Para cada tarea $t$ se calculará
-\begin{equation}
-\Delta_t=\operatorname{MASE}_{t,\,\text{método}}-
-\operatorname{MASE}_{t,\,\text{control}}.
-\end{equation}
-Un valor negativo favorece al método propuesto. El efecto global $\Delta$ dará igual peso a las tareas de cada conjunto, a los conjuntos de cada familia y a las familias. Así, una fuente que aporte muchas series no dominará el resultado. La estimación de incertidumbre conservará las comparaciones de métodos sobre las mismas tareas y la dependencia entre objetivos y horizontes de una fuente.
-
-Antes de E2 se fijarán las $F$ familias de evaluación, un margen de relevancia práctica $\varepsilon>0$ y el nivel de error estadístico $\alpha=0.05$. El margen expresará qué diferencia de MASE se considera relevante. El piloto comprobará si la cantidad de datos permite estimarla con precisión suficiente. Se evaluarán $K=F+4$ efectos: el global y los $F$ efectos por familia de H1, la pendiente de H2 y los dos contrastes de H3. Cada efecto tendrá un intervalo bilateral con cobertura nominal $1-\alpha/K$, aplicando el ajuste de Bonferroni y el remuestreo de la sección~\ref{sec:medidas}. La cobertura y estabilidad de esos intervalos se comprobarán mediante simulación; si los datos o las simulaciones no permiten sostener su precisión, el resultado afectado se declarará inconcluso.
-
-\noindent\textbf{H1 · Utilidad de organizar las ramas mediante perfiles temporales.}
-En familias públicas reservadas, el método reducirá el MASE frente al control principal: la alternativa con menor MASE agregado en E1 entre un modelo sin procesamiento diferenciado por ramas y uno modular organizado sin perfiles. Se mantendrán la ponderación por tareas, conjuntos y familias y las condiciones comparables de selección y entrenamiento. H1 requerirá que el límite superior de $\Delta$ sea menor que $-\varepsilon$ y el de cada efecto por familia sea menor o igual que $\varepsilon$: mejora global relevante y no inferioridad por familia. Si alguna familia carece de precisión suficiente, el resultado conjunto será inconcluso.
-
-\noindent\textbf{H2 · Utilidad de la agrupación cuando las escalas son distintas.}
-La ventaja del diseño basado en perfiles frente a una asignación permutada aumentará con la heterogeneidad de las escalas temporales. La permutación cambiará qué variables se asignan a los grupos, conservando las características de la arquitectura. El experimento sintético variará un nivel conocido de heterogeneidad $h$, manteniendo constantes el tamaño de muestra, el número de variables y la distribución del ruido. Se definirá
-\[
-e(h)=\operatorname{MASE}(\text{perfiles},h)-\operatorname{MASE}(\text{permutación},h).
-\]
-H2 se considerará respaldada si el límite superior del intervalo de la pendiente $\beta$ de $e(h)$ respecto de $h$ es menor que cero. Una pendiente negativa indicará que la ventaja relativa crece con la heterogeneidad, aunque por sí sola no demostrará que el método sea mejor en todos sus niveles. En datos públicos se explorará la relación entre esa diferencia de desempeño y la heterogeneidad estimada de los perfiles, definida como $q(X)$ en la sección~\ref{sec:datos}; este análisis complementario no sustituirá el experimento con estructura conocida.
-
-\noindent\textbf{H3 · Conservación de las secuencias hasta combinar las ramas.}
-Cuando existan relaciones conocidas con retraso entre variables, combinar las secuencias alineadas antes de resumirlas reducirá el error frente a resumir cada rama por separado antes de combinarla. Las dos variantes recibirán las mismas activaciones de un extractor entrenado con un procedimiento fijado durante E1 y mantenido sin cambios durante este contraste. Solo se ajustarán los módulos que combinan las ramas y los cabezales. Se definirá
-\[
-d_r=\operatorname{MASE}(\text{fusión temporal},r)-\operatorname{MASE}(\text{resumen temprano},r),
-\qquad \gamma=d_1-d_0,
-\]
-donde $r=1$ indica dependencia entre variables con retraso y $r=0$ un control que conserva el comportamiento temporal de cada variable, pero elimina esa dependencia. H3 requerirá que el límite superior del intervalo de $d_1$ sea menor que $-\varepsilon$ y el de $\gamma$ menor que cero. Se medirá la memoria adicional necesaria para conservar las secuencias. En datos públicos se realizará un análisis complementario sobre tareas donde un diagnóstico separado, calculado con entrenamiento, identifique relaciones predictivas entre variables con retraso.
-
-\subsection{Medidas de desempeño, incertidumbre y costo}
+\subsubsection{Medir el desempeño y decidir si la diferencia es relevante}
 \label{sec:medidas}
 
-El MASE expresa el error absoluto del modelo respecto de un error de referencia calculado con entrenamiento~\cite{hyndman2006mase}. Para la variable objetivo $k$ y el origen de evaluación $o$, sean $n_o$ el número de observaciones de entrenamiento, $m_k$ el período estacional y $H$ los pasos futuros evaluados. Se calcularán
+La unidad de evaluación será una tarea de pronóstico: conjunto de datos, variables objetivo y horizonte. Se repetirá desde distintos puntos de inicio, llamados \emph{orígenes de evaluación}, y con distintas \emph{semillas aleatorias} del entrenamiento. Estas repeticiones se agregarán dentro de la tarea y no se contarán como tareas independientes.
+
+La medida principal será el error absoluto medio escalado, MASE~\cite{hyndman2006mase}. Divide el error del modelo por el de repetir un valor de un período anterior, calculado con entrenamiento. Para la variable $k$, el origen $o$, las $n_o$ observaciones disponibles, el período estacional $m_k$ y los $H$ pasos futuros, se calcularán
 \begin{equation}
 a_{k,o}=\frac{1}{n_o-m_k}\sum_{u=m_k+1}^{n_o}|y_{k,u}-y_{k,u-m_k}|,
 \qquad
 \operatorname{MASE}_{k,o}=\frac{H^{-1}\sum_{h=1}^{H}|y_{k,n_o+h}-\widehat y_{k,n_o+h}|}{a_{k,o}}.
 \end{equation}
-El denominador $a_{k,o}$ es el error medio de repetir el valor de un período estacional anterior dentro del entrenamiento. Se compartirá entre todos los métodos y se promediarán después los errores escalados según la sección~\ref{sec:hipotesis}. El período $m_k$ procederá de los metadatos o de una regla fijada en E1. Si algún denominador requerido es cero, la tarea se declarará no evaluable para H1 antes de examinar sus errores de prueba. Se informarán también el error absoluto medio (MAE), el error cuadrático medio (MSE), el desempeño por horizonte y la variación entre semillas; los errores en eventos específicos se medirán cuando esos eventos estén definidos previamente.
+Todos los métodos compartirán el denominador $a_{k,o}$. El período procederá de metadatos o de una regla fijada durante el desarrollo. Si un denominador requerido es cero, la tarea se informará aparte y no se utilizará para contrastar la hipótesis principal. Para comparar con publicaciones se añadirán sus métricas y formas exactas de agregación, incluidas MAE y MSE cuando correspondan.
 
-Los datos se dividirán cronológicamente y se evaluarán desde sucesivos orígenes, desplazando el punto de inicio del pronóstico según una política fijada de antemano~\cite{hyndman2021tscv}. Se usarán horizontes de prueba no solapados cuando la longitud disponible lo permita. Antes de cada origen se volverán a estimar perfiles y pesos solo con los datos entonces disponibles. Una observación ya evaluada podrá usarse en un entrenamiento posterior cuando haya pasado a formar parte del historial observable, con la misma política para todos los métodos. Los resultados de prueba no cambiarán la regla de diseño, los rangos de búsqueda ni los criterios de parada~\cite{cawley2010overfit}.
+Se promediará MASE con igual peso entre variables objetivo, pasos del horizonte, orígenes y semillas. La diferencia entre método y control para la tarea $t$ será
+\begin{equation}
+\Delta_t=\operatorname{MASE}_{t,\,\text{método}}-
+\operatorname{MASE}_{t,\,\text{control}}.
+\end{equation}
+Una diferencia negativa favorece a la propuesta. El efecto global $\Delta$ dará igual peso a tareas dentro de cada conjunto, conjuntos dentro de cada familia y familias, para que una fuente abundante no domine el resultado.
 
-La incertidumbre se estimará mediante \emph{bootstrap jerárquico}, un procedimiento que repite el análisis tomando muestras con reemplazo y conserva la estructura de los datos. Para el efecto global se remuestrearán familias, conjuntos y tareas; para un efecto por familia se mantendrá fija esa familia y se remuestrearán sus conjuntos y tareas. En H2 y H3 se remuestrearán configuraciones del generador y repeticiones, manteniendo juntas las variantes comparadas de cada experimento. Las semillas y los orígenes se agregarán dentro de cada tarea; si se remuestrean errores temporales, se usarán bloques contiguos para conservar su dependencia.
+Antes de la evaluación reservada se fijará un margen $\varepsilon>0$, que representa la diferencia mínima de MASE considerada relevante. Con un intervalo de incertidumbre $[L,U]$, la interpretación será:
+\begin{itemize}
+\item \textbf{Mejora relevante:} $U<-\varepsilon$.
+\item \textbf{Equivalencia práctica:} $[L,U]\subseteq[-\varepsilon,\varepsilon]$.
+\item \textbf{Perjuicio relevante:} $L>\varepsilon$.
+\item \textbf{Resultado inconcluso:} el intervalo no permite decidir entre las anteriores.
+\end{itemize}
+La ausencia de una mejora demostrada no se interpretará como equivalencia. Se publicarán también resultados por horizonte, variación entre semillas y eventos definidos previamente.
 
-La simulación en E1 verificará la cobertura de los intervalos ajustados y su sensibilidad a la longitud de los bloques. Se publicarán efectos e intervalos por tarea y familia.
+\subsubsection{Contrastar las hipótesis y cuantificar la incertidumbre}
+\label{sec:hipotesis}
 
-El costo energético se medirá en vatios-hora (Wh) con un instrumento seleccionado y validado durante E1. Para tareas $t$, métodos $m$, semillas $s$ y orígenes $o$, se contabilizará
+\paragraph{Mejora del pronóstico global (H1).}
+Se comparará el método con el control principal elegido durante el desarrollo. La hipótesis requerirá mejora global relevante, con límite superior de $\Delta$ menor que $-\varepsilon$, y ausencia de perjuicio mayor que ese margen en cada familia, con límite superior por familia menor o igual que $\varepsilon$. Una familia sin precisión suficiente impedirá afirmar ese resultado conjunto.
+
+\paragraph{Utilidad de agrupar por escalas (H2).}
+El experimento sintético variará un nivel conocido de heterogeneidad $h$, conservando tamaño de muestra, número de variables y distribución del ruido. Se calculará
+\[
+e(h)=\operatorname{MASE}(\text{perfiles},h)-\operatorname{MASE}(\text{permutación},h).
+\]
+La hipótesis se considerará respaldada si el límite superior del intervalo de la pendiente $\beta$ de $e(h)$ respecto de $h$ es menor que cero. Esto indicará que la ventaja relativa aumenta con la heterogeneidad; no demostrará que el método sea superior en todos sus niveles. La relación con $q(X)$ en datos públicos será un análisis complementario.
+
+\paragraph{Utilidad de conservar las secuencias (H3).}
+Las dos variantes recibirán las mismas activaciones de un extractor entrenado y mantenido fijo durante el contraste. Solo se ajustarán sus módulos de combinación y cabezales. Se compararán la fusión de secuencias y el resumen temprano en presencia de dependencias entre variables con retraso ($r=1$) y en un control que conserva el comportamiento individual, pero elimina esa dependencia ($r=0$):
+\[
+d_r=\operatorname{MASE}(\text{fusión temporal},r)-\operatorname{MASE}(\text{resumen temprano},r),
+\qquad \gamma=d_1-d_0.
+\]
+La hipótesis requerirá un límite superior de $d_1$ menor que $-\varepsilon$ y de $\gamma$ menor que cero. Se medirá la memoria adicional para conservar secuencias. En datos públicos se hará un contraste complementario cuando el diagnóstico de entrenamiento identifique relaciones predictivas con retraso.
+
+\paragraph{Control de la incertidumbre.}
+Con $F$ familias reservadas se evaluarán $K=F+4$ efectos: uno global y $F$ por familia para H1, la pendiente de H2 y dos contrastes para H3. Se fijará $\alpha=0.05$ y se utilizarán intervalos bilaterales de cobertura nominal $1-\alpha/K$, con ajuste de Bonferroni para el conjunto de comparaciones. El margen de MASE no se aplicará a la pendiente ni sustituirá el criterio de interacción de la fusión.
+
+Los intervalos se estimarán mediante \emph{bootstrap jerárquico}: remuestreo con reemplazo que conserva las comparaciones sobre los mismos datos. Para el efecto global se remuestrearán familias, conjuntos y tareas; para un efecto por familia, se fijará esa familia y se remuestrearán sus conjuntos y tareas. Se preservará la dependencia entre objetivos y horizontes de una fuente. En señales sintéticas se remuestrearán configuraciones del generador y repeticiones, manteniendo juntas las variantes comparadas. Si se remuestrean errores temporales se utilizarán bloques contiguos.
+
+El piloto comprobará mediante simulación la precisión y cobertura de los intervalos y su sensibilidad a la longitud de bloque. Si el soporte no permite sostenerlas, el resultado afectado será inconcluso. La sensibilidad al retirar conjuntos se informará sin redefinir contrastes ni ampliar la prueba después de ver los resultados.
+
+\paragraph{Evaluación temporal y reentrenamiento.}
+Se avanzará por sucesivos orígenes siguiendo una política fijada previamente~\cite{hyndman2021tscv}, con horizontes de prueba no solapados cuando los datos lo permitan. Antes de cada origen se estimarán perfiles y pesos con la información entonces disponible. Una observación ya evaluada podrá incorporarse al entrenamiento cuando forme parte del historial, con la misma política para todos los métodos. Los resultados de prueba no cambiarán reglas de diseño, rangos de búsqueda ni criterios de parada~\cite{cawley2010overfit}. Un protocolo periódico diferente del publicado se declarará como adaptación.
+
+\subsubsection{Medir el costo completo de obtener el resultado}
+
+Se contabilizarán diagnóstico, preentrenamiento, selección, ajuste y evaluación, incluidos candidatos descartados, paradas tempranas e intentos fallidos. El costo energético se medirá en vatios-hora con un instrumento validado durante el desarrollo. Para tareas $t$, métodos $m$, semillas $s$ y orígenes $o$, se registrará
 \begin{equation}
 C_{\mathrm{total}}=\sum_{t,o}C_{\mathrm{perfil},t,o}
 +\sum_{t,m,s,o}\left(C_{\mathrm{pre}}+C_{\mathrm{ajuste}}+C_{\mathrm{eval}}\right)_{t,m,s,o}.
 \end{equation}
-Los términos corresponden al cálculo de perfiles, preentrenamiento, ajuste y evaluación. El ajuste incluirá todos los candidatos explorados, la selección por validación, las paradas tempranas y los intentos fallidos que consuman recursos. El preentrenamiento incluirá el decodificador. Si se reutiliza un codificador, se distinguirán su costo inicial, el costo adicional de cada uso y el acumulado, indicando cómo se reparte el trabajo compartido.
+El preentrenamiento incluirá el decodificador. Al reutilizar pesos se distinguirán costo inicial, costo adicional y acumulado, declarando cómo se reparte el trabajo compartido. Se separará el costo de desarrollar el procedimiento del de aplicarlo a una tarea nueva.
 
-Se informarán tiempo transcurrido, horas de CPU y GPU, operaciones estimadas, memoria máxima, hardware y concurrencia. Se distinguirá el costo de desarrollar el procedimiento en E1 del de aplicarlo a nuevas tareas; los tiempos de trabajos paralelos no se sumarán como duración transcurrida.
+Se informarán además tiempo transcurrido, horas de CPU y GPU, memoria máxima, operaciones estimadas, hardware y concurrencia. Las duraciones de trabajos paralelos no se sumarán como tiempo transcurrido. Esta contabilidad permitirá comprobar si la mejora requiere una búsqueda o una capacidad mayores que las de los controles.
 
-\begin{samepage}
-\subsection{Interpretación de los resultados}
+\subsection{Despliegue e integración: utilizar los módulos en las plataformas existentes}
 
-El margen $\varepsilon$ permitirá distinguir relevancia práctica de una diferencia pequeña. Para una diferencia de MASE cuyo signo negativo favorezca al método y cuyo intervalo ajustado sea $[L,U]$, se aplicarán estos criterios:
-\begin{itemize}
-\item \textbf{Beneficio relevante:} $U<-\varepsilon$.
-\item \textbf{Equivalencia práctica:} $[L,U]\subseteq[-\varepsilon,\varepsilon]$.
-\item \textbf{Perjuicio relevante:} $L>\varepsilon$.
-\item \textbf{Resultado inconcluso:} cualquier otro caso, porque el intervalo no permite decidir entre las categorías anteriores.
-\end{itemize}
-\end{samepage}
+Se entregarán extractores con interfaces documentadas para cargar datos, importar y exportar pesos y conectar sus salidas con la fusión, el núcleo y los cabezales. Se verificará el flujo de gradientes y la actualización de los componentes configurados como entrenables. La plataforma de pronóstico utilizará estos módulos en sus experimentos; la de RL permitirá comprobarlos en una tarea financiera histórica, sin reconstruir la infraestructura de optimización.
 
-Los criterios específicos de H1--H3 se aplicarán como se definieron en la sección~\ref{sec:hipotesis}; el margen de MASE no se trasladará a pendientes o interacciones. La ausencia de mejora demostrada no se interpretará como equivalencia.
+Durante el desarrollo se elegirán una tarea financiera y un algoritmo compatibles con la plataforma. El agente se evaluará con la representación propuesta, la actual y una variante sin procesamiento independiente por ramas; las dos últimas podrán coincidir. Se mantendrán constantes observaciones, recompensa, acciones, entorno, calendario y presupuesto. Se documentará cómo entran la posición y el estado de cuenta. Una estrategia trivial ofrecerá la referencia básica de trading.
 
-Se comprobará la sensibilidad retirando cada conjunto por turnos. Este análisis no permitirá redefinir contrastes ni ampliar la prueba después de observar resultados para buscar significación.
+Antes de la prueba financiera se fijarán métrica principal, margen de relevancia y métricas complementarias, con ejecución, costos y contabilidad comunes. Las diferencias e intervalos considerarán semillas y períodos compartidos. La comparación entre representaciones medirá su aporte dentro del agente; superar la estrategia trivial solo demostrará utilidad frente a esa referencia. Se distinguirán mejora, equivalencia, perjuicio e incertidumbre, con un análisis separado del de pronóstico y de su ajuste de multiplicidad.
+
+DOIN proporcionará la optimización y el registro de los experimentos. El cubo OLAP existente organizará configuraciones, particiones, semillas, métricas y costos para su análisis y visualización. Se documentarán versiones, seguimiento del desempeño y reglas de reentrenamiento. Las actualizaciones posteriores conservarán su trazabilidad y no sustituirán retrospectivamente los resultados de la evaluación doctoral.
 
 \section{Viabilidad, recursos y riesgos}
 
-\subsection{Recursos e integración con el sistema existente}
+El proyecto dispone de cuatro GPU de distintas capacidades, CPU y plataformas de datos y entrenamiento. El piloto medirá tiempos y memoria, contemplando disponibilidad parcial de las GPU y reservando recursos para RL. Los diagnósticos y generadores que no requieran redes se ejecutarán en CPU.
 
-El proyecto dispone de cuatro GPU de distintas capacidades, CPU local y software para gestionar datos, preprocesar series, entrenar modelos y registrar experimentos. La planificación tendrá en cuenta que las cuatro GPU pueden no estar disponibles simultáneamente. La generación de señales y los diagnósticos que no requieran redes neuronales se ejecutarán en CPU; el costo del resto se medirá mediante pilotos representativos.
+Si el presupuesto es insuficiente, se retirarán alternativas redundantes y comparadores opcionales, conservando los controles principales. La aplicación financiera podrá acotarse a una tarea y un agente, con su estrategia trivial y control sin procesamiento diferenciado por ramas. El inventario y el piloto cerrarán datos, arquitecturas y presupuestos antes de consultar la prueba.
 
-DOIN proporcionará optimización y registro de experimentos. El cubo OLAP existente organizará modelos, configuraciones, particiones, semillas, métricas y costos para comparar tareas y componentes. Se comprobarán las interfaces con las plataformas de pronóstico y RL y el flujo de gradientes del ensamblaje.
+Los riesgos científicos son que los perfiles no orienten una mejora, que esta se limite a ciertos dominios o que los datos no permitan estimarla con precisión. Se informarán resultados desfavorables e inconclusos. Los datos se utilizarán conforme a sus licencias y la evaluación financiera será histórica. Se documentará cualquier solapamiento del preentrenamiento o desarrollo con las fuentes reservadas.
 
-El piloto reservará recursos para E3. Si es necesario acotarlo a una tarea y un agente, se mantendrán la estrategia trivial y el control sin procesamiento diferenciado por ramas.
-
-\subsection{Riesgos y uso responsable de los datos}
-
-Los principales riesgos son perfiles que no orienten un diseño útil, soporte experimental insuficiente o utilidad limitada a ciertos dominios. La evaluación por familias y los resultados de equivalencia, perjuicio o incertidumbre permitirán distinguir estas situaciones.
-
-
-
-Se utilizarán datos públicos conforme a sus licencias y señales sintéticas. La evaluación financiera será histórica, sin intervenciones sobre usuarios. Se publicarán configuraciones, costos y resultados, incluidos los desfavorables. Se documentará el solapamiento del preentrenamiento o desarrollo con la evaluación; una fuente ya utilizada no se presentará como completamente nueva.
-
-\clearpage
 \section{Cronograma}
 
-La Tabla~\ref{tab:timeline} resume las actividades y entregas previstas para los seis semestres.
+La Tabla~\ref{tab:timeline} distribuye las actividades y entregas en seis semestres.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Plan de trabajo y entregas previstas.}
+\caption{Actividades y entregas por semestre.}
 \label{tab:timeline}
-\begin{tabularx}{\textwidth}{@{}L{0.9cm}Y L{4.7cm}@{}}
+\begin{tabularx}{\textwidth}{@{}L{0.8cm}Y L{4.8cm}@{}}
 \toprule
 \textbf{Sem.} & \textbf{Trabajo principal} & \textbf{Entrega} \\
 \midrule
-1 & Revisión sistemática, definición del método, inventario de datos y protocolos, y piloto de precisión y costo. & Protocolo inicial registrado; manuscrito de revisión o diseño. \\
-2 & Implementación de perfiles, selección de modelos y componentes; señales sintéticas de desarrollo y reserva definida; pruebas de gradientes e interfaces. & Software reproducible; pruebas de recuperación de escalas e integración. \\
-3 & Desarrollo E1; selección de modelos por rama, controles y entrenamiento; fijación de los protocolos E2 y E3. & Manuscrito metodológico; protocolos finales de evaluación. \\
-4 & Pruebas de H1 en E2 y de H2/H3 en la reserva sintética; comprobación de reproducibilidad. & Manuscrito principal con resultados y límites de interpretación. \\
-5 & Integración y evaluación E3 frente a la estrategia trivial y los controles de representación; comparación publicada cuando su protocolo sea recuperable. & Modelo y evaluación financiera; manuscrito aplicado si los resultados y el calendario lo permiten. \\
-6 & Análisis conjunto, réplica independiente, escritura de tesis y defensa. & Tesis, modelos, configuraciones y documentación reproducible. \\
+1 & Revisar antecedentes, definir tareas e interfaces, inventariar datos y realizar el piloto de recursos y precisión. & Diseño inicial registrado e inventario de datos y comparaciones. \\
+2 & Implementar perfiles, componentes y selección de modelos; construir señales sintéticas y verificar gradientes. & Software reproducible y reserva sintética definida (E0). \\
+3 & Desarrollar y comparar criterios de diseño, modalidades de entrenamiento y controles; cerrar los protocolos finales. & Método y presupuestos fijados al terminar el desarrollo (E1); manuscrito metodológico. \\
+4 & Evaluar pronóstico en familias reservadas y contrastar agrupación y fusión en señales sintéticas. & Resultados de la evaluación pública (E2) y de las tres hipótesis; manuscrito principal. \\
+5 & Integrar y evaluar los módulos en RL, con controles propios y comparación publicada cuando sea recuperable. & Evaluación financiera histórica (E3) y componentes reutilizables. \\
+6 & Integrar resultados, realizar la réplica independiente, escribir la tesis y preparar la defensa. & Tesis, modelos, configuraciones y documentación. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-El alcance mínimo incluirá comprensión y preparación de datos, selección de modelos por rama, pruebas sintéticas, evaluación pública e integración evaluada en RL. Si es necesario reducir trabajo, se retirarán alternativas redundantes, comparadores opcionales y ampliaciones de activos o períodos. Se conservarán la selección justificada de modelos, la separación entre desarrollo y prueba, los controles del procesamiento modular y la medición completa de costos.
-
 \section{Resultados y contribuciones esperadas}
 
 \begin{enumerate}
-\item Un procedimiento basado en datos para agrupar variables, seleccionar los modelos de sus extractores y configurar el contexto temporal, la integración y la adaptación de sus ramas.
-\item Evidencia sobre cómo las diferencias de escala y las relaciones entre variables con retraso afectan a la utilidad de esa organización y a la necesidad de conservar las secuencias hasta combinarlas.
-\item Comparaciones que distingan el efecto de agrupar y procesar variables por ramas del efecto de seleccionar modelos, preentrenarlos o asignarles más recursos.
-\item Un protocolo para evaluar el procedimiento en familias de datos reservadas, con modelos de referencia, estimación de incertidumbre y costos completos.
-\item Una representación integrada en las plataformas existentes, con evaluación financiera frente a una estrategia trivial y modelos sin el diseño modular, y registro de configuraciones y métricas en el cubo OLAP.
+\item Un procedimiento reproducible para diseñar representaciones temporales modulares a partir del análisis de datos, con criterios explícitos de agrupación, contexto y selección de modelos.
+\item Evidencia que distinga el aporte del diseño del efecto de la arquitectura elegida, el preentrenamiento y los recursos empleados, incluyendo sus fallos y límites de generalización.
+\item Componentes integrados en pronóstico y RL, evaluados con protocolos comparables y acompañados de configuraciones, pesos y registros experimentales analizables en el cubo OLAP.
 \end{enumerate}
 
 \begin{thebibliography}{99}
 \small
-\setlength{\itemsep}{0.35em}
+
 \bibitem{bengio2013representation}
 Y.~Bengio, A.~Courville y P.~Vincent, «Representation Learning: A Review and New Perspectives», \emph{IEEE Transactions on Pattern Analysis and Machine Intelligence}, vol. 35, n.º 8, pp. 1798--1828, 2013. DOI: \href{https://doi.org/10.1109/TPAMI.2013.50}{\nolinkurl{10.1109/TPAMI.2013.50}}.
 
@@ -633,12 +645,6 @@ H.~Bastidas, «Configuraci\'on de carga de extractor y \texttt{train\_fe}», 202
 \bibitem{ibmcrispdm}
 IBM, \emph{IBM SPSS Modeler CRISP-DM Guide}, versión 19. Documentación de la metodología y de la selección de técnicas de modelado. \url{https://www.ibm.com/docs/en/SS3RA7_19.0.0/pdf/ModelerCRISPDM.pdf}.
 
-\bibitem{bai2018tcn}
-S.~Bai, J. Z.~Kolter y V.~Koltun, «An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling», \emph{arXiv preprint arXiv:1803.01271}, 2018. DOI: \href{https://doi.org/10.48550/arXiv.1803.01271}{\nolinkurl{10.48550/arXiv.1803.01271}}.
-
-\bibitem{keras2023transfer}
-Keras Team, «Transfer learning \& fine-tuning», 2023. Documentaci\'on oficial; consultada el 7 de septiembre de 2026. \url{https://keras.io/guides/transfer_learning/}.
-
 \bibitem{qiu2024tfb}
 X.~Qiu et al., «{TFB}: Towards Comprehensive and Fair Benchmarking of Time Series Forecasting Methods», \emph{Proceedings of the VLDB Endowment}, vol. 17, n.º 9, pp. 2363--2377, 2024. DOI: \href{https://doi.org/10.14778/3665844.3665863}{\nolinkurl{10.14778/3665844.3665863}}.
 
@@ -648,14 +654,20 @@ R.~Godahewa et al., «Monash Time Series Forecasting Archive», \emph{Advances i
 \bibitem{aksu2024gifteval}
 T.~Aksu et al., «{GIFT-Eval}: A Benchmark for General Time Series Forecasting Model Evaluation», \emph{arXiv preprint arXiv:2410.10393}, 2024. DOI: \href{https://doi.org/10.48550/arXiv.2410.10393}{\nolinkurl{10.48550/arXiv.2410.10393}}.
 
-\bibitem{raffin2021sb3}
-A.~Raffin et al., «Stable-Baselines3: Reliable Reinforcement Learning Implementations», \emph{Journal of Machine Learning Research}, vol. 22, n.º 268, pp. 1--8, 2021. \url{http://jmlr.org/papers/v22/20-1364.html}.
-
 \bibitem{sun2023trademaster}
 S.~Sun et al., «{TradeMaster}: A Holistic Quantitative Trading Platform Empowered by Reinforcement Learning», \emph{Advances in Neural Information Processing Systems 36, Datasets and Benchmarks Track}, 2023. \url{https://proceedings.neurips.cc/paper_files/paper/2023/file/b8f6f7f2ba4137124ac976286eacb611-Paper-Datasets_and_Benchmarks.pdf}.
 
 \bibitem{liu2022finrlmeta}
 X.-Y.~Liu et al., «{FinRL-Meta}: Market Environments and Benchmarks for Data-Driven Financial Reinforcement Learning», \emph{Advances in Neural Information Processing Systems 35, Datasets and Benchmarks Track}, 2022. \url{https://papers.neurips.cc/paper_files/paper/2022/file/0bf54b80686d2c4dc0808c2e98d430f7-Paper-Datasets_and_Benchmarks.pdf}.
+
+\bibitem{bai2018tcn}
+S.~Bai, J. Z.~Kolter y V.~Koltun, «An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling», \emph{arXiv preprint arXiv:1803.01271}, 2018. DOI: \href{https://doi.org/10.48550/arXiv.1803.01271}{\nolinkurl{10.48550/arXiv.1803.01271}}.
+
+\bibitem{raffin2021sb3}
+A.~Raffin et al., «Stable-Baselines3: Reliable Reinforcement Learning Implementations», \emph{Journal of Machine Learning Research}, vol. 22, n.º 268, pp. 1--8, 2021. \url{http://jmlr.org/papers/v22/20-1364.html}.
+
+\bibitem{keras2023transfer}
+Keras Team, «Transfer learning \& fine-tuning», 2023. Documentaci\'on oficial; consultada el 7 de septiembre de 2026. \url{https://keras.io/guides/transfer_learning/}.
 
 \bibitem{hyndman2006mase}
 R. J.~Hyndman y A. B.~Koehler, «Another Look at Measures of Forecast Accuracy», \emph{International Journal of Forecasting}, vol. 22, n.º 4, pp. 679--688, 2006. DOI: \href{https://doi.org/10.1016/j.ijforecast.2006.03.001}{\nolinkurl{10.1016/j.ijforecast.2006.03.001}}.
@@ -663,4 +675,5 @@ R. J.~Hyndman y A. B.~Koehler, «Another Look at Measures of Forecast Accuracy»
 \bibitem{hyndman2021tscv}
 R. J.~Hyndman y G.~Athanasopoulos, \emph{Forecasting: Principles and Practice}, 3.a ed.. OTexts, 2021. Secci\'on 5.10: evaluaci\'on con origen rodante. \url{https://otexts.com/fpp3/tscv.html}.
 \end{thebibliography}
+
 \end{document}
