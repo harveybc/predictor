@@ -56,3 +56,14 @@ La disposición de los ocho P1 y trece P2 de la relectura final se registra por 
 ## Límite factual U08
 
 No se afirma que el codificador histórico ya haya corrido de extremo a extremo dentro del predictor actual. Antes de cualquier experimento R1/R2 deberá existir una prueba que muestre, sobre el modelo compuesto, qué pesos reciben gradiente y cuáles cambian después de un paso de optimización.
+
+## Adenda 2026-09-08 (encargo figura adicional, RL obligatoria y comparabilidad)
+
+U08 sigue cerrado como limitación, pero deja de esperar al quinto semestre: el
+cronograma de la propuesta compromete en el semestre 2 una prueba inicial de interfaz
+de la representación con el agente de RL (junto a la prueba de flujo de gradientes de
+U08), y en el semestre 3 la fijación del protocolo aplicado de E3 (agente, identidad
+de datos y recursos). E3 pasa de aplicación secundaria eliminable a evaluación
+aplicada obligatoria con objetivo específico propio (objetivo 4) y contrato en
+`09_CONTRATO_BENCHMARKS_Y_APLICACION_RL.md`; su análisis queda separado de la familia
+inferencial H1–H3 y el inventario de comparadores comienza en el semestre 1.
