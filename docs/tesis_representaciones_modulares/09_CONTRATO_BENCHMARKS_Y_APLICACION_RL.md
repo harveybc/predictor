@@ -5,8 +5,10 @@ temporales modulares» (`docs/propuesta_doctoral_representaciones_temporales_mod
 **Origen:** encargo `SOLICITUD_MUSASHI_FIGURA_ADICIONAL_RL_Y_COMPARABILIDAD_2026_09_08.md`
 (solicitante: Harvey Demian Bastidas Caicedo; preparado por Takeshi).
 **Fecha:** 8 de septiembre de 2026.
-**Estado:** contrato vigente + inventario inicial. La búsqueda de §4 es orientadora:
-no declara datos descargados, reproducidos ni seleccionados definitivamente.
+**Estado:** contrato vigente + inventario inicial, revisado tras
+`AUDITORIA_D19A55E_FIGURA_Y_CAMBIOS_2026_09_08.md` (Takeshi). El inventario de §7 es
+orientador: no declara datos descargados, reproducidos ni seleccionados
+definitivamente.
 
 La propuesta (§5.2 del PDF) contiene la versión condensada; este documento es la
 referencia normativa extensa.
@@ -169,7 +171,7 @@ es un valor legítimo; no se rellenan huecos con supuestos.
 | Métricas exactas | MSE/MAE según protocolo TFB; escala y reducción por verificar en el código. |
 | Código/configuración | Repositorio público; commit por congelar. |
 | Acceso/licencia | Por verificar por conjunto. |
-| Exposición previa | ETT usado en experimentos previos del proyecto: examinar antes de contarlo como no visto; las variantes ETT* se agrupan por procedencia. |
+| Exposición previa | POR VERIFICAR (T02): la afirmación previa «ETT usado en experimentos previos del proyecto» carecía de registro identificado. Pregunta abierta a Musashi: aportar ruta, configuración o registro que la sustente, o declarar que no existe. Distinguir una prueba técnica de carga de datos de su uso para desarrollar decisiones del método; registrar qué se observó antes de decidir elegibilidad. No se declara independencia por defecto ni se excluyen familias por suposición. Las variantes ETT* se agrupan por procedencia. |
 | Diferencias pendientes | Cruce con protocolos de DUET y comparadores ya elegidos; priorizar intersecciones con artefactos recuperables y familias distintas. |
 | Costo piloto | Por medir. |
 | Veredicto | CANDIDATO; nada se incorpora íntegramente por defecto. |
@@ -187,9 +189,26 @@ es un valor legítimo; no se rellenan huecos con supuestos.
 | Código/configuración | Repositorio público; commit por congelar. |
 | Acceso/licencia | Por verificar. |
 | Exposición previa | Ninguna conocida. |
-| Diferencias pendientes | ¿Alguna tarea corresponde al entorno propio o admite un adaptador acotado? |
+| Diferencias pendientes | ¿Alguna tarea corresponde al entorno propio o admite un adaptador acotado? Además, T01 (registro obligatorio, abajo). |
 | Costo piloto | Por medir. |
 | Veredicto | PRIMER CANDIDATO DE INSPECCIÓN (resultados localizables + herramientas públicas). No es una orden de migrar la plataforma a TradeMaster; no se afirma acceso idéntico verificado a sus datos. |
+
+**T01 — comprobación de causalidad registrada (auditoría 2026-09-08).** El artículo
+describe en su p. 7 («Experimental Setup») normalización específica de cada
+partición, incluida prueba:
+
+> El artículo describe normalización específica de cada partición, incluida prueba.
+> Verificar en la versión ejecutable si utiliza estadísticas del período completo. Si
+> ocurre, la evaluación causal propia utilizará escalado ajustado con información
+> disponible para todos los métodos y se identificará como adaptación del protocolo.
+> Las cifras de esa adaptación no se equipararán directamente con la Tabla 2
+> publicada. Registrar asimismo la configuración de imputación y su disponibilidad
+> temporal.
+
+No se descarta TradeMaster ni se afirma que todo su código tenga una fuga: la
+observación procede del artículo y la implementación no fue ejecutada ni
+inspeccionada en esta ronda. Tampoco se ejecutará un protocolo con información futura
+para presentarlo como validación causal. [Fuente primaria, pp. 6–7](https://proceedings.neurips.cc/paper_files/paper/2023/file/b8f6f7f2ba4137124ac976286eacb611-Paper-Datasets_and_Benchmarks.pdf).
 
 ### 7.3. FinRL-Meta (RL financiero)
 
@@ -212,26 +231,41 @@ todas sus tareas.
 | ID | Ubicación en el PDF | Cambio aplicado | Cierre |
 |---|---|---|---|
 | A01 | Resumen, párrafos 2–3 (p. 1) | Arquitectura común con consolidador/núcleo/módulos de salida, dos usos alternativos y entrega RL obligatoria; definición de campo receptivo junto a su primera mención. | Se entiende desde la primera página. |
-| A02 | Figura 1 (p. 2), citada desde el resumen | Figura introductoria nueva añadida (TikZ editable, nodos N0–S y enlaces etiquetados del encargo, nota de la regla, sin decoder); las dos figuras previas se conservan como Figuras 2 y 3 con numeración automática. | Hay tres figuras; las previas intactas. |
+| A02 | Figura 1 (p. 2), citada desde el resumen | Figura introductoria añadida y luego SIMPLIFICADA según la especificación cerrada de la auditoría de d19a55e: seis componentes de alto nivel (entradas, extractores 1/$B$ con puntos suspensivos sin caja, consolidador, núcleo temporal, cabezales de salida), cinco conexiones con etiquetas «Grupo 1»/«Grupo $B$» y una compartida «Secuencias de características»; sin D/I/A, distribución, nota de perfiles, decoder ni estado del agente (el estado sigue declarado en el protocolo RL); dibujada al ancho final SIN escalado, texto efectivo 9 pt; pie propuesto por la auditoría con remisión a la Figura 2. Figuras 2 y 3 conservadas byte-idénticas en el fuente. | Hay tres figuras; las previas intactas; la nueva explica los cinco tipos de componentes sin capas internas. |
 | A03 | §1 (motivación) y párrafo tras la pregunta (p. 2) | Motivación aplicada = entradas de los agentes RL del sistema existente; párrafo de aplicación obligatoria separada; «una mejora de pronóstico no se interpretará por sí sola como mejora de decisión». | No se infiere rentabilidad desde MASE. |
 | A04 | §3.1–3.2 (p. 4) | Objetivo general con integración y evaluación RL; objetivo específico 3 sin aplicación financiera genérica; objetivo 4 RL independiente. | Entrega verificable propia. |
 | A05 | §2.1 (p. 3) y §4.2 (p. 6) | Frase de correspondencia de notación (consumidor de pronóstico H1–H3, interfaces conservadas para RL); consolidador + núcleo temporal = mezclador ya descrito, sin módulo duplicado; salidas política/valor sin obligar red compartida actor–crítico. | Sin contradicción R0/R1/R2 ni segundo núcleo. |
 | A06 | Tabla 1 fila E3 y §4.3 (p. 8) | E3 obligatoria: fila reemplazada + párrafo metodológico completo (contraste con entorno/observaciones/recompensa/acciones/calendario/presupuesto constantes; verificación de ensamblaje y actualización; métricas sobre trayectoria contable común; comparación publicada cuando sea recuperable; análisis separado de H1–H3). | Algoritmo y tarea se elegirán con protocolo definido. |
 | A07 | §5.2 nueva (pp. 9–10) + este documento | Regla de selección (pregunta→referencia→protocolo→artefactos→elegibilidad), tres tipos de afirmación, adaptación vs reproducción, identidad de datos; ficha extensa e inventario aquí. | Reproducción, comparación común y uso propio diferenciados. |
-| A08 | §6.1 y Tabla 2 (p. 11) + recorte (p. 12) | Prueba de interfaz en semestre 2 (junto a U08); protocolo E3 fijado en semestre 3; inventario desde semestre 1; semestre 5 = integración final y evaluación E3 obligatorias; recorte sustituido: E3 conserva una tarea, un agente y el contraste. | E3 no se elimina en el recorte; presupuesto reservado desde el piloto. |
+| A08 | §6.1 y Tabla 2 + recorte | Semestre 2: «verificación del flujo de gradientes del modelo compuesto y prueba inicial de su interfaz con el agente de RL» (F04: el código interno U08 se retiró del PDF y queda solo en el seguimiento interno); protocolo E3 fijado en semestre 3; inventario desde semestre 1; semestre 5 = integración final y evaluación E3 obligatorias; recorte sustituido: E3 conserva una tarea, un agente y el contraste. | E3 no se elimina en el recorte; presupuesto reservado desde el piloto; «U08» ausente del PDF. |
 | A09 | §7 (p. 12) | Quinta contribución: integración evaluada en agente RL del sistema existente, resultado positivo/negativo/inconcluso con costos. | No promete resultado favorable ni reinventa el sistema. |
-| A10 | Referencias [33]–[35] | Añadidas solo las discutidas: Stable-Baselines3 (JMLR 2021), TradeMaster (NeurIPS 2023), FinRL-Meta (NeurIPS 2022), citadas en §4.3. | Cada referencia con función y fuente verificable. |
-| A11 | Todo el PDF | Numeración automática de figuras; compilación sin referencias indefinidas; revisión visual de las 15 páginas; el párrafo «Se distinguirán tres regímenes…» fluye continuo hacia la tabla R0/R1/R2 sin figura interpuesta; tipografía intacta. | Lectura continua verificada. |
+| A10 | Referencias [33]–[35] | Añadidas solo las discutidas: Stable-Baselines3 (JMLR 2021), TradeMaster (NeurIPS 2023, título verificado contra la primera página de la fuente: «A Holistic Quantitative Trading Platform Empowered by Reinforcement Learning» — F03 corregido), FinRL-Meta (NeurIPS 2022), citadas en §4.3; las notas editoriales se retiraron de las entradas y sus hechos viven en este contrato. | Cada referencia con función, título exacto y fuente verificable. |
+| A11 | Todo el PDF | Numeración automática; compilación sin referencias indefinidas; PDF recompuesto de 14 páginas revisado visualmente en sus páginas afectadas y transiciones. Precisión exigida por F05: la fuente del CUERPO está intacta y, además, el texto EFECTIVO de la Figura 1 es de 9 pt (dibujada al ancho final, sin `resizebox`) — en d19a55e la figura rendía ~5,3–6,0 pt y partía la oración «Falta establecer si descriptores… / permiten restringir…» (F01/F02); ahora la p. 1 termina con el resumen completo, la p. 2 abre con Figura 1 + pie y después el encabezado «1. Problema y motivación», con la oración reunida en un solo párrafo (verificado en capa de texto y render). El párrafo de R0/R1/R2 sigue fluyendo continuo hacia su tabla. | Continuidad resumen→figura→introducción verificada en el PDF renderizado; ninguna oración atravesada por flotantes. |
 
-**Desviaciones declaradas respecto del encargo:**
+**Desviaciones declaradas:**
 
 1. El nombre auxiliar propuesto `07_CONTRATO_BENCHMARKS_Y_APLICACION_RL.md` estaba
    ocupado (`07_SOLICITUD_RELECTURA_TAKESHI_2026_09_07.md`); se usó el siguiente
    número libre: `09_…` (autorizado por el propio encargo, §2).
-2. En el nodo R de la Figura 1 el nombre visible es «Salidas del agente de RL» y el
-   calificador «(política y/o valor, según el algoritmo)» se trasladó al pie, que por
-   lo demás es el propuesto en §4.6; motivo: legibilidad del dibujo a ancho de página.
-   La leyenda del enlace S→R y las demás etiquetas están en el dibujo.
-3. El PDF pasó de 12 a 15 páginas por la figura nueva, el párrafo E3, la subsección
-   5.2 y las tres referencias; no se redujo la tipografía (§4.1 del encargo lo
-   prohíbe).
+2. La especificación original de la Figura 1 (encargo 2026-09-08, §4) fue SUSTITUIDA
+   por la especificación cerrada de `AUDITORIA_D19A55E_FIGURA_Y_CAMBIOS_2026_09_08.md`
+   §3, que anula aquella para la vista introductoria: sin submódulos D/I/A, sin
+   distribución, sin nota de perfiles, sin estado del agente (declarado en el
+   protocolo RL, no en esta vista), pie nuevo. La colocación usa un flotante `[H]`
+   local (la política general de figuras no cambió), con el salto de página entre
+   bloques completos que la auditoría permite.
+3. El PDF quedó en 14 páginas (12 en la base 7390fb3, 15 en d19a55e); no se redujo
+   la tipografía en ninguna ronda.
+
+## 9. Registro de la ronda F01–F05 / T01 / T02 (auditoría de d19a55e)
+
+| Hallazgo | Acción | Estado |
+|---|---|---|
+| F01 (figura sobredetallada, ~5,3–6,0 pt) | Dibujo y pie sustituidos por la especificación cerrada §3 de la auditoría; sin `resizebox`; 9 pt efectivos; Figuras 2 y 3 intactas; ninguna cuarta figura. | CERRADO |
+| F02 (oración partida por el flotante) | Flotante `[H]` tras el resumen: p. 1 = resumen completo; p. 2 = figura + pie + encabezado §1; oración «Falta establecer… permiten restringir…» reunida (verificado en render y capa de texto). | CERRADO |
+| F03 (título TradeMaster) | «A Holistic Quantitative Trading Platform Empowered by Reinforcement Learning», cotejado con la primera página del PDF oficial de NeurIPS 2023. | CERRADO |
+| F04 (código interno U08) | Celda del semestre 2 sustituida por la redacción de la auditoría; `grep U08` = 0 en fuente y PDF. | CERRADO |
+| F05 (ruta literal + cierres amplios) | Enlace descriptivo «protocolo de comparabilidad y aplicación RL» con URL fijada al commit de este auxiliar; «búsqueda de §4»→«inventario de §7»; A02 y A11 reescritos tras revisar el PDF recompuesto. | CERRADO |
+| T01 (causalidad TradeMaster) | Bloque registrado en §7.2 (Diferencias pendientes); sin descartar el candidato ni afirmar fuga no verificada. | REGISTRADO |
+| T02 (exposición previa ETT) | §7.1 → «POR VERIFICAR», pregunta abierta a Musashi (ruta/configuración/registro o declaración de inexistencia); sin independencia por defecto ni exclusión por suposición. | ABIERTO — RESPUESTA DE MUSASHI PENDIENTE |
+| Opcionales §5 | (2) notas editoriales retiradas de [33]–[35]; (1) §5.2 conservada tal cual; (3) sin describir opciones concretas de SB3, cita genérica mantenida. | APLICADO PARCIAL (permitido) |
