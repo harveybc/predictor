@@ -94,9 +94,9 @@ La \emph{representación temporal} es la parte de una arquitectura para pronóst
 
 Se diseñará la \emph{representación temporal modular} mostrada en la Figura~\ref{fig:vista-general}, formada por:
 \begin{itemize}
-\item \emph{ramas} que procesan grupos de variables usando extractores de características especializados;
-\item un \emph{módulo de fusión de características} que alinea y concatena las secuencias;
-\item un \emph{núcleo temporal} que combina la información y reduce dimensionalidad conservando el eje temporal;
+\item \emph{ramas 1..B} que procesan grupos de variables usando extractores de características especializados
+\item \emph{módulo de fusión de características} que alinea y concatena las secuencias
+\item \emph{núcleo temporal} que combina la información y reduce dimensionalidad conservando el eje temporal
 \item \emph{cabezales de salida} que se adaptan a la tarea: pronóstico para estimar valores o aprendizaje por refuerzo para seleccionar acciones y, según el algoritmo, estimar funciones de valor.
 \end{itemize}
 
@@ -128,21 +128,21 @@ Se diseñará la \emph{representación temporal modular} mostrada en la Figura~\
 \draw[arr] (cons) -- (nuc);
 \draw[arr] (nuc) -- (out);
 \end{tikzpicture}
-\caption{Representación temporal modular. Las ramas procesan grupos de variables, el módulo de fusión de características alinea y concatena sus secuencias, y el núcleo temporal combina la información para los cabezales de salida. La reducción de dimensionalidad conserva el eje temporal. $B$ indica el número total de ramas.}
+\caption{Representación temporal modular. Las ramas 1..B procesan grupos de variables, el módulo de fusión de características alinea y concatena sus secuencias, y el núcleo temporal combina la información para los cabezales de salida.}
 \label{fig:vista-general}
 \end{figure}
 
 El procedimiento analizará los datos de entrenamiento para proponer grupos de variables, contextos temporales y modelos adecuados para cada rama. Las alternativas se seleccionarán mediante validación de la tarea, considerando sus requisitos y los recursos disponibles.
 
-Cada extractor tendrá un detector de patrones separado y componentes configurables de integración temporal y adaptación, que podrán combinarse u omitirse cuando no sean necesarios. El detector podrá entrenarse desde cero o importar pesos preentrenados, mantenerlos fijos o ajustarlos con el modelo completo. La Figura~\ref{fig:arquitectura} detalla estos componentes.
+Cada extractor tendrá un detector de patrones separado y componentes configurables de integración temporal y adaptación, que podrán combinarse u omitirse cuando no sean necesarios. El detector podrá entrenarse desde cero o importar pesos preentrenados, mantenerlos fijos o ajustarlos con el modelo completo. 
 
-Se evaluarán tareas de pronóstico y RL con series multivariadas y protocolos disponibles en la literatura, además de señales sintéticas con estructura conocida. Se comparará la propuesta con referencias sencillas, modelos publicados y variantes sin el diseño modular, controlando entradas, entrenamiento y recursos.
+Se evaluarán tareas de pronóstico y RL con series multivariadas y protocolos disponibles en la literatura. Se comparará la propuesta con referencias sencillas, modelos publicados y variantes sin el diseño modular, controlando entradas, entrenamiento y recursos.
 
-La representación se integrará en las plataformas existentes de pronóstico y RL. Sus configuraciones y métricas se registrarán en el cubo de procesamiento analítico en línea (OLAP) disponible. Se espera obtener un método reproducible y determinar si mejora el desempeño, lo mantiene en un nivel equivalente o lo empeora; la evidencia insuficiente se declarará inconclusa.
+La representación se integrará en plataformas existentes de pronóstico y RL. Sus configuraciones y métricas se registrarán en un cubo OLAP existente que permitirá organizar y facilitar el análisis y visualización de los resultados. Se espera obtener un método reproducible y determinar si el uso de la representación modular basada en datos mejora el desempeño, lo mantiene en un nivel equivalente o lo empeora. La evidencia insuficiente se declarará inconclusa.
 
 \section{Definición del problema y justificación}
 
-El aprendizaje de representaciones transforma las observaciones en características que facilitan una tarea, como pronosticar valores o seleccionar acciones~\cite{bengio2013representation,goodfellow2016deep}. En series temporales, diseñar esa transformación exige decidir cuánto pasado proporcionar, cómo agrupar las variables, qué resolución temporal conservar y en qué etapa combinar la información. Estas decisiones están relacionadas: una capa puede reconocer patrones breves y otra integrar un contexto mayor; resumir cada variable demasiado pronto puede ocultar relaciones que aparecen con retraso entre ellas.
+El aprendizaje de representaciones transforma las observaciones en características que facilitan una tarea, como pronosticar valores o seleccionar acciones~\cite{bengio2013representation,goodfellow2016deep}. En series temporales, diseñar esa transformación exige decidir cuánto pasado proporcionar, cómo agrupar las variables, qué resolución temporal conservar y en qué etapa combinar la información. 
 
 Una representación uniforme puede resultar insuficiente cuando las variables cambian a ritmos distintos. Explorar muchas combinaciones de ventanas y arquitecturas permite adaptarlas, pero consume recursos y aumenta el riesgo de escoger una configuración demasiado ajustada a los datos de validación~\cite{cawley2010overfit}. La pregunta es si un análisis previo de las propiedades temporales permite orientar la selección y configuración de los modelos y mejorar su desempeño en el conjunto de prueba reservado.
 
@@ -150,10 +150,10 @@ El proyecto parte de sistemas de pronóstico y RL para trading en los que se han
 
 \begin{tcolorbox}[colback=soft,colframe=sabana,boxrule=0.6pt,arc=1.2pt,left=6pt,right=6pt,top=5pt,bottom=5pt]
 \textbf{Pregunta de investigación.}
-¿En qué condiciones agrupar variables en ramas según sus propiedades temporales y adaptar el contexto que procesa cada rama mejora el desempeño de un modelo de pronóstico o RL en datos reservados, frente a un modelo que no utilice este procesamiento diferenciado por rama, con información, entrenamiento y recursos comparables?
+¿En qué condiciones agrupar variables según sus propiedades temporales y adaptar el procesamiento de cada rama a las características específicas de estos datos, mejora el desempeño de un modelo de pronóstico o RL en datos reservados, frente a un modelo que no utilice este procesamiento independiente por rama, con datos, entrenamiento y recursos comparables?
 \end{tcolorbox}
 
-La pregunta se responderá con evaluaciones separadas de pronóstico y RL: una mejora predictiva no implica por sí sola mejores decisiones de trading.
+La pregunta se responderá con evaluaciones separadas de pronóstico y RL, ya que una mejora predictiva no implica por sí sola mejores decisiones de trading.
 
 \section{Objetivos}
 
