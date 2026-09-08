@@ -180,7 +180,7 @@ El bloque de representación realiza una transformación aprendida $Z=f_\theta(X
 \begin{equation}
 Z_j=A_j\bigl(I_j(D_j(X_{:,G_j}))\bigr)\in\mathbb{R}^{L_j\times c_j}.
 \end{equation}
-Aquí $X_{:,G_j}$ contiene las variables del grupo $j$, $L_j$ es la longitud de la secuencia producida y $c_j$ el número de características por instante, también llamadas \emph{canales}. El detector $D_j$ tendrá una interfaz independiente para entrenarlo, guardar sus pesos y reutilizarlo. $I_j$ y $A_j$ serán configurables y podrán implementarse separados o en un componente conjunto; si alguna función no requiere una transformación, se representará mediante la identidad. La ecuación describe esa composición funcional y no exige que integración y adaptación sean siempre redes independientes.
+Aquí $X_{:,G_j}$ contiene las variables del grupo $j$, $L_j$ es la longitud de la secuencia producida y $c_j$ el número de características por instante, también llamadas \emph{canales}. El detector $D_j$ tendrá una interfaz independiente para entrenarse, guardar sus pesos y reutilizarse. $I_j$ y $A_j$ serán configurables y podrán implementarse separados o en un componente conjunto; si alguna función no requiere una transformación, se representará mediante la identidad. La ecuación describe esa composición funcional y no exige que integración y adaptación sean siempre redes independientes.
 
 Antes de combinar las ramas, el módulo de fusión de características establecerá qué instantes corresponden entre sus salidas y concatenará las características. Si una rama reduce su resolución temporal, $L_j$ podrá ser distinto de $L$ y será necesario especificar esa correspondencia. El núcleo temporal procesará la secuencia conjunta; el cabezal de pronóstico producirá $\widehat Y_{L+1:L+H}$, las predicciones de los siguientes $H$ pasos. En aprendizaje por refuerzo, las salidas se adaptarán al algoritmo de selección de acciones o estimación de valor. Cada aplicación utilizará un modelo entrenado para su objetivo.
 
@@ -258,11 +258,11 @@ Las ramas podrán utilizar modelos convolucionales, recurrentes, de atención o 
 
 Las convoluciones temporales permitirán configurar el alcance mediante profundidad, tamaño de filtro y dilatación~\cite{bai2018tcn}. En modelos recurrentes se declararán la historia accesible y el tratamiento de sus estados; en atención, la longitud de secuencia y las restricciones de acceso temporal. En todos los casos se verificará qué observaciones puede utilizar cada salida y se conservará una secuencia de características compatible con el resto del sistema.
 
-La implementación conservará la separación de $D_j$ y permitirá configurar $I_j$ y $A_j$ por separado, conjuntamente o como identidad. El integrador añadirá contexto cuando el detector no lo proporcione; la adaptación ajustará dimensiones y correspondencia temporal. Se verificarán interfaces, marcas de tiempo, memoria y costos.
+La implementación conservará la separación de $D_j$ y permitirá configurar $I_j$ y $A_j$ por separado, conjuntamente o como identidad. El integrador añadirá contexto cuando el detector no lo proporcione para adecuar el tamaño de la dimension temporal, la adaptación ajustará dimensiones, desplazamientos y correspondencia temporal. Se verificarán interfaces, marcas de tiempo, memoria y costos.
 
-La elección se basará en la validación de la tarea final, no únicamente en la reconstrucción del autoencoder. DOIN ajustará los parámetros y decisiones estructurales que aún requieran búsqueda, registrando también los candidatos descartados.
+La elección se basará en la validación de la tarea final, no únicamente en la reconstrucción del autoencoder usado para preentrenamiento del detector. El sistema de optimización ajustará los parámetros y decisiones estructurales que aún requieran búsqueda, registrando también los candidatos descartados y sus métricas para una posible meta-optimización.
 
-Tras la alineación y concatenación, el núcleo procesará la secuencia conjunta. Para pronóstico, el cabezal utilizará su último estado para predecir $H$ pasos. En RL se definirán salidas de política o valor; cuando existan actor y crítico, que seleccionan acciones y estiman valor, se declarará si comparten la representación.
+Tras la alineación y concatenación, el núcleo procesará la secuencia conjunta. Para pronóstico, el cabezal utilizará su último estado para predecir $H$ pasos. En RL se definirán salidas de política o valor. Cuando existan actor y crítico (modelo SAC), que seleccionan acciones y estiman valor, se declarará si comparten la representación o requieren representaciones separadas.
 
 La Figura~\ref{fig:arquitectura} muestra el detector separado y las funciones configurables de integración y adaptación. Cada componente podrá contener varias capas; sus tipos, tamaños, repeticiones y conexiones formarán parte de la configuración del extractor.
 
@@ -320,9 +320,9 @@ R2 & El mismo codificador preentrenado que en R1. & Detector y resto del modelo 
 \end{tabularx}
 \end{table}
 
-El preentrenamiento utilizará un autoencoder: el codificador aprenderá una representación y un decodificador auxiliar reconstruirá la entrada o unos valores ocultos mediante una máscara definida previamente. La reconstrucción ordinaria no se interpretará por sí sola como eliminación de ruido. Se conservarán el codificador y el decodificador entrenados, así como una copia separada de los pesos modificados durante el ajuste posterior.
+El detector de patrones utilizará un autoencoder: el codificador aprenderá una representación y un decodificador auxiliar reconstruirá la entrada o unos valores ocultos mediante una máscara definida previamente. La reconstrucción ordinaria no se interpretará por sí sola como eliminación de ruido. Se conservarán el codificador y el decodificador entrenados, así como una copia separada de los pesos modificados durante el ajuste posterior.
 
-La implementación se comprobará con pruebas de actualización de parámetros. En R1, los pesos del detector deberán permanecer fijos. En R2, se verificará que los gradientes del objetivo final lleguen al detector y modifiquen sus pesos; también se especificará cómo se tratan estados que no se actualizan mediante gradientes. Si se entrena el resto del modelo sobre características guardadas en un archivo, se considerará extracción fija, porque ese procedimiento no actualiza el codificador~\cite{keras2023transfer}.
+La implementación se comprobará con pruebas de actualización de parámetros. En R1, los pesos del detector deberán permanecer fijos. En R2, los valores preentrenados se usarán como punto de partida pero los pesos variarán con el resto del modelo en tiempo de entrenamiento~\cite{keras2023transfer}.
 
 E1 elegirá una de las tres modalidades para H1 y la fijará para el método y sus controles, evitando ventajas exclusivas de preentrenamiento. H3 utilizará el extractor común y fijo definido en su contraste.
 
