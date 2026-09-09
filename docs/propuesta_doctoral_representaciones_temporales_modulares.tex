@@ -270,7 +270,7 @@ Una predicción ingenua o una estrategia trivial de trading ofrecerán referenci
 
 Se utilizarán el inventario financiero existente y conjuntos públicos con protocolos publicados. TFB~\cite{qiu2024tfb} será un punto de partida por reunir tareas y métodos de pronóstico de distintos dominios. Para evaluar agrupaciones se requerirán variables distintas observadas conjuntamente, frecuencia documentada e historia suficiente. El inventario documentará cada fuente y su disponibilidad para las decisiones.
 
-La comparación con la literatura conservará datos, particiones, objetivos, horizontes y métricas cuando se declare una reproducción directa. Se reproducirá al menos una referencia con una tolerancia fijada previamente a partir de su variación documentada o de ejecuciones de desarrollo. Si se adapta el protocolo, todos los métodos recibirán el mismo tratamiento y se identificará la adaptación.
+La comparación con la literatura conservará datos, particiones, objetivos, horizontes y métricas cuando se declare una reproducción directa. Se reproducirá al menos una referencia con una tolerancia fijada previamente a partir de su variación documentada o de ejecuciones de desarrollo.
 
 En finanzas se comprobarán además instrumentos, precios de ejecución, comisiones, deslizamiento y restricciones. TradeMaster~\cite{sun2023trademaster} y FinRL-Meta~\cite{liu2022finrlmeta} ofrecen entornos y referencias para buscar experimentos compatibles. La comparación externa dependerá de recuperar sus datos y condiciones; la evaluación con controles propios se realizará en cualquier caso.
 
@@ -291,15 +291,7 @@ El análisis orientará la normalización, descomposición mediante STL o wavele
 
 \subsection{Modelado y optimización}
 
-El procedimiento combinará propuestas basadas en entrenamiento y selección mediante validación del modelo completo:
-\begin{enumerate}
-\item \textbf{Proponer grupos.} Se partirá de agrupamiento jerárquico de perfiles, con una distancia y tratamiento de sus magnitudes definidos en desarrollo. Se comprobará la estabilidad entre segmentos y se contrastarán las agrupaciones con procesamiento común. Una semejanza estadística no bastará para aceptar el diseño: se evaluará el desempeño de la tarea.
-\item \textbf{Elegir contexto y modelos candidatos.} Se considerarán convoluciones, recurrencia, atención e híbridos compatibles con los datos y la tarea. Las ramas podrán usar modelos distintos. El catálogo, sus rangos y el máximo de ramas se fijarán durante el desarrollo.
-\item \textbf{Ensamblar y entrenar candidatos (nivel 1).} Se conectarán extractores, fusión, núcleo y cabezales, comprobando dimensiones y alineación. Los pesos se ajustarán con entrenamiento y la parada temprana se controlará con validación.
-\item \textbf{Optimizar y seleccionar la configuración (nivel 2).} DEAP realizará la búsqueda de estructura e hiperparámetros en la plataforma distribuida existente. Los pesos de cada candidato se ajustarán con los datos de entrenamiento; su configuración se seleccionará según el desempeño de pronóstico o RL en validación. La búsqueda se concentrará en decisiones no resueltas por el diagnóstico, con presupuesto y parada temprana propios.
-\end{enumerate}
-
-El diseño especificará profundidad, tamaños de filtros y dilatación en convoluciones; historia accesible y estados en recurrencia; y longitud de secuencia y acceso al pasado en atención. La modularidad permitirá optimizar el tipo de modelo de cada componente, sus capas y conexiones compatibles, junto con hiperparámetros de entrenamiento como la tasa de aprendizaje. Estas alternativas se compararán mediante validación del modelo completo. La integración añadirá contexto y la adaptación preparará dimensiones y alineación cuando sean necesarias. El núcleo combinará las secuencias antes del cabezal; su reducción de dimensionalidad conservará el eje temporal.
+El procedimiento de diseño parte de un diagnóstico de los datos para configurar la arquitectura del modelo como se muestra en la Figura~\ref{fig:arquitectura}.
 
 \begin{figure}[htbp]
 \centering
@@ -333,9 +325,20 @@ El diseño especificará profundidad, tamaños de filtros y dilatación en convo
       label={[font=\scriptsize]below:Ramas que conservan la secuencia}] (branchset) {};
 \draw[designarr] (rule) -- (branchset.north);
 \end{tikzpicture}}
-\caption{Arquitectura conceptual. Cada rama contiene un extractor con detector $D_j$  e integración $I_j$ y adaptación $A_j$ configurables. El bloque de fusión y núcleo reúne esos dos componentes de la Figura~\ref{fig:vista-general}.}
+\caption{Arquitectura conceptual. Se parte de un análisis de los datos, dada rama contiene un extractor con detector $D_j$  e integración $I_j$ y adaptación $A_j$ configurables. El bloque de fusión y núcleo reúne esos dos componentes de la Figura~\ref{fig:vista-general}.}
 \label{fig:arquitectura}
 \end{figure}
+
+El procedimiento combinará propuestas basadas en resultado del análisis de los datos de entrenamiento:
+
+\begin{enumerate}
+\item \textbf{Proponer grupos.} Se partirá de agrupamiento jerárquico de perfiles, con una distancia y tratamiento de sus magnitudes definidos en desarrollo. Se comprobará la estabilidad entre segmentos y se contrastarán las agrupaciones con procesamiento común. Una semejanza estadística no bastará para aceptar el diseño: se evaluará el desempeño de la tarea.
+\item \textbf{Elegir contexto y modelos candidatos.} Se considerarán convoluciones, recurrencia, atención e híbridos compatibles con los datos y la tarea. Las ramas podrán usar modelos distintos. El catálogo, sus rangos y el máximo de ramas se fijarán durante el desarrollo.
+\item \textbf{Ensamblar y entrenar candidatos (nivel 1).} Se conectarán extractores, fusión, núcleo y cabezales, comprobando dimensiones y alineación. Los pesos se ajustarán con entrenamiento y la parada temprana se controlará con validación.
+\item \textbf{Optimizar y seleccionar la configuración (nivel 2).} DEAP realizará la búsqueda de estructura e hiperparámetros en la plataforma distribuida existente. Los pesos de cada candidato se ajustarán con los datos de entrenamiento; su configuración se seleccionará según el desempeño de pronóstico o RL en validación. La búsqueda se concentrará en decisiones no resueltas por el diagnóstico, con presupuesto y parada temprana propios.
+\end{enumerate}
+
+El diseño especificará profundidad, tamaños de filtros y dilatación en convoluciones; historia accesible y estados en recurrencia; y longitud de secuencia y acceso al pasado en atención. La modularidad permitirá optimizar el tipo de modelo de cada componente, sus capas y conexiones compatibles, junto con hiperparámetros de entrenamiento como la tasa de aprendizaje. Estas alternativas se compararán mediante validación del modelo completo. La integración añadirá contexto y la adaptación preparará dimensiones y alineación cuando sean necesarias. El núcleo combinará las secuencias antes del cabezal; su reducción de dimensionalidad conservará el eje temporal.
 
 El detector se entrenará mediante las modalidades de la Tabla~\ref{tab:regimenes}. Para preentrenarlo, un autoencoder reconstruirá los valores originales a partir de entradas completas o parcialmente ocultas. Se reutilizará el codificador y se conservará el decodificador por separado. Reconstruir una señal no demostrará por sí solo eliminación de ruido.
 
