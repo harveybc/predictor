@@ -18,8 +18,6 @@
 \usepackage{array}
 \usepackage{float}
 
-% Pies de figura y tabla diferenciados del cuerpo de 11 puntos.
-% Adaptación editorial para propuesta doctoral en español, no plantilla IEEEtran.
 \usepackage{caption}
 \captionsetup{font=small,labelfont=bf,labelsep=period,skip=7pt}
 \captionsetup[figure]{position=bottom,justification=raggedright,singlelinecheck=false}
@@ -39,7 +37,7 @@
 \urlstyle{same}
 
 \hypersetup{
-  pdftitle={Diseño de representaciones temporales modulares basado en datos},
+  pdftitle={Diseño de representaciones temporales modulares mediante procesamiento diferenciado de variables},
   pdfauthor={Harvey Demian Bastidas Caicedo},
   pdfsubject={Propuesta de investigación doctoral}
 }
@@ -68,17 +66,14 @@
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 
 
-% Fuente autocontenida: referencias integradas; no requiere Biber.
-% Reedición de 9940fdf, actualizada con las decisiones explícitas del autor.
-% Conserva su definición de conocimiento y su pregunta de investigación.
 \addto\captionsspanish{\renewcommand{\tablename}{Tabla}\renewcommand{\refname}{Referencias}}
 \widowpenalty=10000
 \clubpenalty=10000
 \begin{document}
 
 \begin{center}
-{\LARGE\bfseries Diseño de representaciones temporales\\[0.2em]
-modulares basado en datos}\\[0.8em]
+{\LARGE\bfseries Diseño de representaciones temporales modulares\\[0.2em]
+mediante procesamiento diferenciado de variables}\\[0.8em]
 {\large Propuesta de investigación doctoral}\\[0.4em]
 Harvey Demian Bastidas Caicedo\\
 Doctorado en Inteligencia Artificial · Universidad de La Sabana
@@ -90,13 +85,13 @@ aprendizaje de representaciones · series temporales · arquitectura modular · 
 
 \section*{Resumen}
 
-La \emph{representación temporal} es la parte de una arquitectura para pronóstico o aprendizaje por refuerzo que transforma la información de una serie temporal multivariada de entrada en conocimiento usable por las capas de salida. Las series temporales multivariadas pueden reunir variables cuyos ritmos de cambio, periodicidades y relaciones son distintos. Algunos modelos de pronóstico y aprendizaje por refuerzo (RL) procesan todas las variables con la misma ventana y el mismo extractor de características, otros incorporan varias escalas temporales mediante una representación elegida de antemano o una búsqueda de configuraciones que puede ser costosa. Esta propuesta estudiará si las propiedades temporales de los datos de entrenamiento permiten orientar las decisiones de diseño de la representación temporal tanto para pronóstico como para RL.
+La \emph{representación temporal} es la parte de una arquitectura para pronóstico o aprendizaje por refuerzo que transforma la información de una serie temporal multivariada de entrada en conocimiento usable por las capas de salida. Las series temporales multivariadas pueden reunir variables cuyos ritmos de cambio, periodicidades y relaciones son distintos. Algunos modelos de pronóstico y aprendizaje por refuerzo (RL) procesan todas las variables con la misma ventana y el mismo extractor de características; otros incorporan varias escalas temporales mediante una representación elegida de antemano o una búsqueda de configuraciones que puede ser costosa. Esta propuesta estudiará si las propiedades de los datos de entrenamiento permiten orientar las decisiones de diseño de la representación tanto para pronóstico como para RL.
 
 Se diseñará la \emph{representación temporal modular} mostrada en la Figura~\ref{fig:vista-general}, formada por:
 \begin{itemize}
-\item \emph{ramas 1..B} que procesan grupos de variables usando extractores de características especializados
+\item \emph{ramas} que procesan grupos de variables usando extractores de características configurados para cada grupo
 \item \emph{módulo de fusión de características} que alinea y concatena las secuencias
-\item \emph{núcleo temporal} que combina la información y reduce dimensionalidad conservando el eje temporal
+\item \emph{núcleo} que combina la información y reduce dimensionalidad conservando el eje temporal
 \item \emph{cabezales de salida} que se adaptan a la tarea: pronóstico para estimar valores o aprendizaje por refuerzo para seleccionar acciones y, según el algoritmo, estimar funciones de valor.
 \end{itemize}
 
@@ -112,11 +107,11 @@ Se diseñará la \emph{representación temporal modular} mostrada en la Figura~\
   lbl/.style={font=\footnotesize, inner sep=1.5pt}
 ]
 \node[box] (in) at (0,0) {Entradas preprocesadas\\Grupos de variables};
-\node[ext] (e1) at (-2.55,-2.0) {Extractor\\temporal 1};
-\node[ext] (eB) at (2.55,-2.0) {Extractor\\temporal $B$};
+\node[ext] (e1) at (-2.55,-2.0) {Extractor de\\características 1};
+\node[ext] (eB) at (2.55,-2.0) {Extractor de\\características $B$};
 \node at (0,-2.0) {$\cdots$};
 \node[box] (cons) at (0,-4.15) {Fusión de características\\Alineación y concatenación};
-\node[box] (nuc) at (0,-5.75) {Núcleo temporal\\Mezcla y reducción de dimensionalidad};
+\node[box] (nuc) at (0,-5.75) {Núcleo\\Mezcla y reducción de dimensionalidad};
 \node[box] (out) at (0,-7.35) {Cabezales de salida\\Pronóstico / política o valor};
 \draw[arr] (in.south) -- ++(0,-0.42) -| (e1.north)
   node[lbl, pos=0.85, left=2pt] {Grupo 1};
@@ -128,7 +123,7 @@ Se diseñará la \emph{representación temporal modular} mostrada en la Figura~\
 \draw[arr] (cons) -- (nuc);
 \draw[arr] (nuc) -- (out);
 \end{tikzpicture}
-\caption{Representación temporal modular. Las ramas 1..B procesan grupos de variables, el módulo de fusión de características alinea y concatena sus secuencias, y el núcleo temporal combina la información para los cabezales de salida.}
+\caption{Representación temporal modular. Las ramas, numeradas de 1 a $B$, procesan grupos de variables, el módulo de fusión de características alinea y concatena sus secuencias, y el núcleo combina la información para los cabezales de salida.}
 \label{fig:vista-general}
 \end{figure}
 
@@ -138,19 +133,19 @@ Cada extractor tendrá un detector de patrones separado y componentes configurab
 
 Se evaluarán tareas de pronóstico y RL con series multivariadas y protocolos disponibles en la literatura. Se comparará la propuesta con referencias sencillas, modelos publicados y variantes sin el diseño modular, controlando entradas, entrenamiento y recursos.
 
-La representación se integrará en plataformas existentes de pronóstico y RL. Sus configuraciones y métricas se registrarán en un cubo OLAP existente que permitirá organizar y facilitar el análisis y visualización de los resultados. Se espera obtener un método reproducible y determinar si el uso de la representación modular basada en datos mejora el desempeño, lo mantiene en un nivel equivalente o lo empeora. La evidencia insuficiente se declarará inconclusa.
+La representación se integrará en plataformas existentes de pronóstico y RL. Sus configuraciones y métricas se registrarán en un cubo OLAP existente que permitirá organizar y facilitar el análisis y visualización de los resultados. Se espera obtener un método reproducible y determinar si el uso de la representación temporal modular basada en datos mejora el desempeño, lo mantiene en un nivel equivalente o lo empeora. La evidencia insuficiente se declarará inconclusa.
 
 \section{Definición del problema y justificación}
 
-El aprendizaje de representaciones transforma las observaciones en características que facilitan una tarea, como pronosticar valores o seleccionar acciones~\cite{bengio2013representation,goodfellow2016deep}. En series temporales, diseñar esa transformación exige decidir cuánto pasado proporcionar, cómo agrupar las variables, qué resolución temporal conservar y en qué etapa combinar la información. 
+Según Bengio et al.~\cite{bengio2013representation}, el aprendizaje de representaciones transforma las observaciones en características que facilitan una tarea, como pronosticar valores o seleccionar acciones. En series temporales, diseñar esa transformación exige decidir cuánto pasado proporcionar, cómo agrupar las variables, qué resolución temporal conservar y en qué etapa combinar la información. 
 
-Una representación uniforme puede resultar insuficiente cuando las variables cambian a ritmos distintos. Explorar muchas combinaciones de ventanas y arquitecturas permite adaptarlas, pero consume recursos y aumenta el riesgo de escoger una configuración demasiado ajustada a los datos de validación~\cite{cawley2010overfit}. La pregunta es si un análisis previo de las propiedades temporales permite orientar la selección y configuración de los modelos y mejorar su desempeño en el conjunto de prueba reservado.
+Una representación uniforme puede resultar insuficiente cuando las variables cambian a ritmos distintos. Explorar muchas combinaciones de ventanas y arquitecturas permite adaptarlas, pero consume recursos. Como muestran Cawley y Talbot~\cite{cawley2010overfit}, la selección también puede sobreajustarse a los datos utilizados para comparar configuraciones. La pregunta es si un análisis previo de las propiedades de los datos permite orientar la selección y configuración de los modelos y mejorar su desempeño en el conjunto de prueba reservado.
 
-El proyecto parte de sistemas de pronóstico y RL para trading en los que se han probado extractores modulares y codificadores preentrenados. La necesidad práctica es orientar la selección y combinación de estos componentes mediante un análisis de los datos, y comprobar tanto su utilidad financiera como su desempeño frente a métodos publicados.
+El proyecto parte de sistemas de pronóstico y RL para trading en los que se han probado extractores modulares y codificadores preentrenados. La necesidad práctica es orientar la selección y combinación de estos componentes mediante un análisis de los datos, y comprobar tanto su utilidad financiera como su desempeño frente a resultados de métodos publicados.
 
 \begin{tcolorbox}[colback=soft,colframe=sabana,boxrule=0.6pt,arc=1.2pt,left=6pt,right=6pt,top=5pt,bottom=5pt]
 \textbf{Pregunta de investigación.}
-¿En qué condiciones agrupar variables según sus propiedades temporales y adaptar el procesamiento de cada rama a las características específicas de estos datos, mejora el desempeño de un modelo de pronóstico o RL en datos reservados, frente a un modelo que no utilice este procesamiento independiente por rama, con datos, entrenamiento y recursos comparables?
+¿En qué condiciones agrupar variables según sus propiedades y adaptar el procesamiento de cada rama a las características específicas de estos datos mejora el desempeño de un modelo de pronóstico o RL en datos reservados, frente a un modelo que no utilice este procesamiento diferenciado por rama, con datos, entrenamiento y recursos comparables?
 \end{tcolorbox}
 
 La pregunta se responderá con evaluaciones separadas de pronóstico y RL, ya que una mejora predictiva no implica por sí sola mejores decisiones de trading.
@@ -159,132 +154,142 @@ La pregunta se responderá con evaluaciones separadas de pronóstico y RL, ya qu
 
 \subsection{Objetivo general}
 
-Desarrollar y evaluar un procedimiento basado en las propiedades temporales de los datos para agrupar variables, seleccionar y configurar los modelos de cada rama y aprender una representación temporal modular, comprobando su desempeño en pronóstico y aprendizaje por refuerzo frente a líneas base y modelos sin ese procesamiento diferenciado, con información, entrenamiento y recursos comparables.
+Desarrollar y evaluar un procedimiento que utilice las propiedades de los datos y los requisitos de la tarea para agrupar variables, seleccionar y configurar los extractores de cada rama y aprender una representación temporal modular. Se comprobará su desempeño en pronóstico y aprendizaje por refuerzo frente a líneas base y modelos sin ese procesamiento diferenciado, con información, entrenamiento y recursos comparables.
 
 \subsection{Objetivos específicos}
 
 \begin{enumerate}
-\item Definir los componentes y las interfaces de la representación modular, y estimar propiedades temporales que orienten la agrupación de variables y el contexto de cada rama.
-\item Construir un procedimiento reproducible para agrupar variables, seleccionar los modelos adecuados para cada rama y configurar su contexto temporal, integración y adaptación, con entrenamiento desde cero o con detectores preentrenados fijos o ajustables.
-\item Comparar el procedimiento con modelos de la literatura y variantes controladas de su arquitectura en tareas públicas reservadas, midiendo error, costo, estabilidad y condiciones de fallo.
-\item Integrar la representación en las plataformas existentes de pronóstico y RL, registrar las configuraciones y métricas en la infraestructura analítica y evaluar la aplicación financiera frente a una estrategia trivial, la representación actual y una variante sin el procesamiento modular propuesto.
+\item Definir los componentes e interfaces de la representación e identificar propiedades de los datos que orienten la agrupación de variables y el procesamiento de cada rama.
+\item Construir un procedimiento reproducible de diseño y selección de modelos, con entrenamiento desde cero o con detectores preentrenados, fijos o ajustables.
+\item Comparar el procedimiento con métodos publicados y variantes controladas en tareas reservadas, midiendo desempeño, costo y variación de los resultados.
+\item Integrar la representación en plataformas existentes de pronóstico y RL, registrar los experimentos y evaluar su aplicación financiera frente a una estrategia trivial, la representación actual y una variante sin el diseño modular propuesto.
 \end{enumerate}
 
 \section{Marco teórico y antecedentes}
 
 \subsection{Representación temporal y componentes del modelo}
 
-Una \emph{ventana de entrada} es el segmento histórico que se entrega al modelo. Se representará por $X_{1:L}\in\mathbb{R}^{L\times p}$, donde $L$ es el número de instantes y $p$ el de variables. El \emph{campo receptivo de una activación} es la parte de esa entrada que puede influir en una salida concreta de una capa. Por ejemplo, una ventana puede contener 144 observaciones mientras una activación de la primera capa utiliza solo tres. Las capas posteriores pueden ampliar ese alcance. Cuando se hable del campo receptivo de una rama, se hará referencia al de sus activaciones de salida, medido respecto de la entrada original.
+Una \emph{ventana de entrada} es el segmento histórico que recibe el modelo. Se denotará por $X\in\mathbb{R}^{L\times p}$, con $L$ instantes y $p$ variables. El \emph{campo receptivo} de una activación es la parte de esa entrada que puede influir en ella. Una ventana puede contener 144 observaciones y una activación de la primera capa utilizar solo tres. Las capas siguientes pueden ampliar ese alcance, como ilustra la arquitectura de Bai et al.~\cite{bai2018tcn}.
 
-El bloque de representación realiza una transformación aprendida $Z=f_\theta(X)$, donde $\theta$ contiene los pesos ajustados durante el entrenamiento y $Z$ es la secuencia de características que utilizarán las capas siguientes. En la arquitectura modular, las variables se distribuyen en $B$ grupos, $G_1,\ldots,G_B$. Cada rama contiene un detector de patrones $D_j$ como módulo separado, un componente de integración temporal $I_j$ y una adaptación de salida $A_j$:
+Las variables se distribuirán en $B$ grupos. Cada rama $j$ producirá una secuencia de características mediante un detector de patrones $D_j$, una integración temporal $I_j$ y una adaptación $A_j$:
 \begin{equation}
 Z_j=A_j\bigl(I_j(D_j(X_{:,G_j}))\bigr)\in\mathbb{R}^{L_j\times c_j}.
 \end{equation}
-Aquí $X_{:,G_j}$ contiene las variables del grupo $j$, $L_j$ es la longitud de la secuencia producida y $c_j$ el número de características por instante, también llamadas \emph{canales}. El detector $D_j$ tendrá una interfaz independiente para entrenarse, guardar sus pesos y reutilizarse. $I_j$ y $A_j$ serán configurables y podrán implementarse separados o en un componente conjunto; si alguna función no requiere una transformación, se representará mediante la identidad. La ecuación describe esa composición funcional y no exige que integración y adaptación sean siempre redes independientes.
+$G_j$ identifica las variables del grupo, $L_j$ la longitud de la secuencia de salida y $c_j$ sus características por instante, también llamadas canales. El detector será un módulo separado que podrá preentrenarse y reutilizarse. Integración y adaptación serán configurables: podrán implementarse juntas, separadas o como identidad cuando no se requiera alguna transformación. La Figura~\ref{fig:ejemplo-keras} muestra un ejemplo con capas de Keras.
 
-Antes de combinar las ramas, el módulo de fusión de características establecerá qué instantes corresponden entre sus salidas y concatenará las características. Si una rama reduce su resolución temporal, $L_j$ podrá ser distinto de $L$ y será necesario especificar esa correspondencia. El núcleo temporal procesará la secuencia conjunta; el cabezal de pronóstico producirá $\widehat Y_{L+1:L+H}$, las predicciones de los siguientes $H$ pasos. En aprendizaje por refuerzo, las salidas se adaptarán al algoritmo de selección de acciones o estimación de valor. Cada aplicación utilizará un modelo entrenado para su objetivo.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  component/.style={draw, rounded corners=1.2pt, align=center, inner sep=4pt,
+    text width=3.55cm, minimum height=2.3cm, fill=soft},
+  terminal/.style={align=center, inner sep=1pt, text width=1.25cm},
+  arr/.style={-{Latex}, thick}
+]
+\node[terminal] (input) at (0,0) {Entrada\\$144\times8$};
+\node[component] (detector) at (3.05,0) {\textbf{Detector $D_j$}\\[3pt]
+  \texttt{Conv1D(32, 3)}\\$\downarrow$\\\texttt{Conv1D(32, 3)}\\[2pt]
+  \texttt{padding='causal'}};
+\node[component] (integrator) at (7.55,0) {\textbf{Integrador $I_j$}\\[5pt]
+  \texttt{LSTM(64)}\\[3pt]\texttt{return\_sequences}\\\texttt{=True}};
+\node[component] (adapter) at (12.05,0) {\textbf{Adaptador $A_j$}\\[5pt]
+  \texttt{Conv1D(16, 1)}\\[3pt]Proyección de características\\por instante};
+\node[terminal] (fusion) at (15.1,0) {Hacia la\\fusión};
+\draw[arr] (input.east) -- (detector.west);
+\draw[arr] (detector.east) -- (integrator.west);
+\draw[arr] (integrator.east) -- (adapter.west);
+\draw[arr] (adapter.east) -- (fusion.west);
+\node[below=3pt of detector.south] {$144\times32$};
+\node[below=3pt of integrator.south] {$144\times64$};
+\node[below=3pt of adapter.south] {$144\times16$};
+\end{tikzpicture}
+\caption{Ejemplo de una rama con capas de Keras~\cite{keras2026conv1d}, \cite{keras2026lstm}. Las dimensiones indican instantes por características, sin el lote. Las convoluciones usan paso y dilatación 1, con ReLU en el detector. La LSTM conserva la secuencia y el adaptador reduce las características por instante. Configuración ilustrativa con detector reutilizable.}
+\label{fig:ejemplo-keras}
+\end{figure}
 
-\subsection{Propiedades temporales para orientar el diseño}
+El módulo de fusión alineará las secuencias y concatenará sus características. Si las ramas tienen resoluciones distintas, se especificará a qué instante corresponde cada salida. El núcleo procesará la secuencia conjunta antes de los cabezales. Cada aplicación entrenará el modelo para su objetivo: pronóstico de valores futuros o aprendizaje de una política y, cuando corresponda, funciones de valor.
 
-Una \emph{escala temporal} describe la duración de un patrón o una dependencia: por ejemplo, el período de una oscilación o cuánto tarda en disminuir la semejanza entre una señal y sus valores pasados. El \emph{perfil temporal} reunirá medidas de esas propiedades para cada variable. Se calculará exclusivamente con sus datos de entrenamiento e incluirá decaimiento de autocorrelación, distribución de energía entre frecuencias, periodicidades dominantes y estabilidad de las estimaciones entre segmentos de la serie.
+\subsection{Propiedades de los datos que orientan el diseño}
 
-Los perfiles se expresarán en unidades comparables entre tareas. Su cálculo y normalización se especifican en la sección~\ref{sec:datos}.
+El análisis distinguirá cantidad y calidad de datos, distribución de valores, comportamiento temporal y relaciones entre variables. Hyndman y Athanasopoulos~\cite{hyndman2021tscv} describen características calculadas sobre series para resumir distintos aspectos de su comportamiento. Su función aquí será orientar decisiones concretas: las ausencias y la distribución condicionarán la preparación y compatibilidad de los modelos; las periodicidades y dependencias respecto del pasado ayudarán a proponer grupos y contextos.
 
-Los perfiles individuales pueden orientar la agrupación, pero su semejanza no demuestra causalidad ni dependencias entre variables con retraso. Estas se examinarán por separado. Tampoco se supondrá que una periodicidad determina el campo receptivo óptimo: la utilidad de esa relación se evaluará con señales sintéticas y datos públicos.
+Un \emph{perfil temporal} reunirá, para cada variable, decaimiento de autocorrelación, distribución de energía entre frecuencias, periodicidades dominantes y estabilidad entre segmentos de entrenamiento. Una \emph{escala temporal} será la duración de un patrón o dependencia. Los perfiles describirán estas propiedades, pero su semejanza no demostrará causalidad ni relaciones entre variables con retraso; estas se examinarán por separado. Una periodicidad tampoco determina por sí sola el contexto más adecuado para la tarea.
 
-\subsection{Modelos de referencia}
+\subsection{Antecedentes y contribución propuesta}
 
-DLinear mostró que un modelo lineal sencillo puede superar arquitecturas más complejas en varios conjuntos de pronóstico~\cite{zeng2023dlinear}. PatchTST divide la historia en segmentos o \emph{parches} y procesa las variables de manera independiente~\cite{nie2023patchtst}. iTransformer representa cada variable como una unidad de entrada del mecanismo de atención para aprender relaciones entre ellas~\cite{liu2024itransformer}. Estos trabajos justifican comparar el método tanto con referencias sencillas como con modelos que procesan las variables por separado o conjuntamente.
+DLinear~\cite{zeng2023dlinear} mostró que un modelo lineal puede superar varios transformadores evaluados en pronóstico. PatchTST~\cite{nie2023patchtst} procesa segmentos de cada variable con pesos compartidos entre variables; iTransformer~\cite{liu2024itransformer} representa las variables como unidades de entrada de la atención para modelar sus relaciones. MTST~\cite{zhang2024mtst} utiliza ramas de distintas resoluciones, Pathformer~\cite{chen2024pathformer} adapta las rutas entre escalas y TimeMixer~\cite{wang2024timemixer} combina componentes en varias resoluciones.
 
-Varios métodos incorporan múltiples escalas. TimesNet organiza variaciones periódicas en representaciones bidimensionales~\cite{wu2023timesnet}; MTST utiliza ramas con distintas resoluciones de parche~\cite{zhang2024mtst}; Pathformer aprende rutas entre escalas~\cite{chen2024pathformer}; y TimeMixer combina componentes en resoluciones finas y gruesas~\cite{wang2024timemixer}. MSGNet aprende relaciones entre variables que dependen de la escala~\cite{cai2024msgnet}. CCM aprende grupos de variables mediante asignaciones y prototipos regularizados por similitud~\cite{chen2024ccm}; DUET combina agrupación temporal con pertenencias graduadas de las variables a grupos~\cite{qiu2025duet}. Leddam y CATS estudian otras formas de representar dependencias entre series~\cite{yu2024leddam,lu2024cats}. Por tanto, la presencia de ramas, agrupaciones o múltiples escalas ya tiene antecedentes directos.
+Otros trabajos abordan directamente la agrupación. MSGNet~\cite{cai2024msgnet} aprende relaciones entre variables a distintas escalas. CCM~\cite{chen2024ccm} aprende asignaciones a grupos y representaciones de esos grupos. DGCformer~\cite{liu2024dgcformer} combina un autoencoder y convoluciones sobre grafos para agrupar variables antes de aplicar atención. DUET~\cite{qiu2025duet} combina extractores según distribuciones temporales y aprende relaciones entre canales en frecuencia para seleccionar conexiones mediante una máscara de atención. Por tanto, agrupar variables y usar varios extractores ya tiene antecedentes directos.
 
-También existen representaciones aprendidas que aprovechan propiedades de las señales. CoST separa tendencia y estacionalidad mediante aprendizaje contrastivo~\cite{woo2022cost}, mientras BTSF combina información temporal y espectral~\cite{yang2022btsf}. En audio, SincNet y LEAF incorporan operaciones de procesamiento de señales cuyos parámetros se aprenden con la tarea~\cite{ravanelli2018sincnet,zeghidour2021leaf}. Sin embargo, EfficientLEAF encontró que sus extractores aprendibles no superaban consistentemente un banco de filtros fijo en las tareas evaluadas~\cite{schlueter2022efficientleaf}. Estos antecedentes motivan el diseño basado en propiedades de señales y, a la vez, la necesidad de comprobar su utilidad frente a alternativas sencillas.
+La adaptación del diseño también se ha estudiado desde otras perspectivas. FFORMA~\cite{montero2020fforma} utiliza características de las series para ponderar pronósticos de modelos completos; EMTSF~\cite{liang2024emtsf} busca mediante evolución módulos de convolución espacial y temporal. REP-Net~\cite{leppich2025repnet} estudia configuraciones de representación, extracción de información y proyección. Ma et al.~\cite{ma2026heterogeneity} proponen en un preprint de 2026 actualizar grupos mediante el error de validación y volver a un modelo global cuando la especialización no mejora ese error.
 
-\subsection{Diferencia que estudiará la propuesta}
+El vínculo con procesamiento de señales tiene ejemplos como CoST~\cite{woo2022cost}, que aprende representaciones de tendencia y estacionalidad, y LEAF~\cite{zeghidour2021leaf}, que aprende un banco de filtros para audio. Sin embargo, EfficientLEAF~\cite{schlueter2022efficientleaf} encontró que sus alternativas aprendibles no superaban consistentemente un banco mel fijo en seis tareas de audio. Estas evidencias motivan comparar las decisiones aprendidas con diseños sencillos, sin trasladar automáticamente resultados de audio a otras series.
 
-FFORMA utiliza características de una serie para ponderar modelos completos de pronóstico~\cite{montero2020fforma}. EMTSF busca mediante evolución combinaciones de módulos espaciales y temporales~\cite{liang2024emtsf}. REP-Net divide el procesamiento en representación, extracción y proyección y evalúa configuraciones de esas etapas~\cite{leppich2025repnet}. DUET es un comparador especialmente cercano porque aborda tanto diferencias temporales como relaciones entre variables.
+La contribución que se evaluará es un procedimiento de diseño previo al entrenamiento final que conecte el diagnóstico de los datos con la agrupación, el contexto y la elección de extractores por rama, y conserve sus secuencias hasta la fusión. Se medirá el aporte de esas decisiones con controles de arquitectura, inicialización y recursos, tanto en pronóstico como en su integración en RL. La novedad se delimita en ese procedimiento y su evidencia experimental; no se atribuye a la modularidad, al agrupamiento o a la selección de modelos por separado.
 
-La contribución propuesta es comprobar si las propiedades temporales orientan conjuntamente la agrupación de variables, el contexto y la selección de modelos por rama. Se evaluará el procedimiento en \emph{familias de datos} reservadas: conjuntos relacionados por su fuente y dominio, cuyas variantes no se contarán como evidencia independiente.
-
-La revisión inicial no identificó un método que combine esa regla previa de diseño con una evaluación entre familias reservadas y controles de capacidad, entrenamiento y costo. Esta diferencia deberá verificarse mediante la revisión sistemática del primer semestre. Si se encuentra un método equivalente, se incorporará como referencia y se delimitará la contribución antes de realizar la evaluación final.
-
-El preentrenamiento por capas y la reconstrucción de valores ocultos tienen antecedentes en autoencoders~\cite{bengio2007greedy,li2023timae}. El sistema existente permite exportar codificadores y decodificadores y configurar el reajuste de extractores~\cite{featureextractor2026manager,predictor2026trainfe}; el entrenamiento conjunto se verificará en la implementación.
+El preentrenamiento mediante reconstrucción tiene antecedentes específicos para series temporales, como Ti-MAE~\cite{li2023timae}. El código del proyecto permite guardar codificadores y decodificadores por separado~\cite{featureextractor2026manager}; sus configuraciones contemplan cargar extractores y habilitar su ajuste~\cite{predictor2026trainfe}. El ensamblaje y la actualización conjunta de sus parámetros se comprobarán durante la implementación.
 
 \section{Metodología}
 
-CRISP-DM organizará el trabajo en seis etapas~\cite{ibmcrispdm}, desde la comprensión de los datos y la tarea hasta la evaluación e integración de los modelos. La Tabla~\ref{tab:crispdm} especifica las acciones y entregas de cada etapa.
+El trabajo seguirá las seis etapas de CRISP-DM descritas en la guía de IBM~\cite{ibmcrispdm}. La Tabla~\ref{tab:crispdm} resume su aplicación. Durante el desarrollo se podrán revisar decisiones; antes de la prueba final quedarán fijados los datos, las alternativas, los presupuestos y los criterios de evaluación.
 
 \begin{table}[H]
-\centering
-\small
+\centering\small
 \caption{Aplicación de CRISP-DM al proyecto.}
 \label{tab:crispdm}
-\begin{tabularx}{\textwidth}{@{}L{3.2cm}Y L{4.0cm}@{}}
+\begin{tabularx}{\textwidth}{@{}L{3.1cm}Y L{3.7cm}@{}}
 \toprule
-\textbf{Etapa} & \textbf{Qué se hará} & \textbf{Entrega verificable} \\
+\textbf{Etapa} & \textbf{Actividad} & \textbf{Entrega} \\
 \midrule
-Comprensión del problema & Definir las tareas de pronóstico y RL, las restricciones del sistema y las mejoras que justificarían el diseño modular. & Especificación de entradas, salidas y criterios de comparación. \\
-Comprensión de los datos & Inventariar fuentes y resultados publicados; examinar calidad, escalas temporales y disponibilidad de cada variable. & Inventario de datos y diagnóstico temporal. \\
-Preparación de los datos & Construir particiones temporales, ajustar transformaciones con entrenamiento y preparar las entradas de las ramas. & Datos y transformaciones reproducibles, sin información futura. \\
-Modelado & Proponer grupos, seleccionar modelos por rama, configurar su contexto y entrenar el sistema completo. & Procedimiento de diseño, modelos y configuraciones. \\
-Evaluación & Comparar diseños, probar las hipótesis y medir desempeño, incertidumbre y costo. & Resultados frente a controles y límites de interpretación. \\
-Despliegue e integración & Conectar los módulos con las plataformas, registrar experimentos y definir seguimiento y reentrenamiento. & Componentes reutilizables y evaluación financiera histórica. \\
+Comprensión del problema & Definir tareas, entradas, salidas y restricciones de las plataformas. & Requisitos y criterios de comparación. \\
+Comprensión de los datos & Inventariar fuentes y examinar calidad, distribución, patrones y relaciones. & Inventario y diagnóstico. \\
+Preparación de los datos & Separar entrenamiento, validación y prueba; ajustar transformaciones y preparar entradas. & Particiones y transformaciones reproducibles. \\
+Modelado & Proponer grupos y modelos por rama, configurar sus conexiones y entrenar. & Procedimiento y modelos seleccionados. \\
+Evaluación & Contrastar hipótesis y medir desempeño, incertidumbre y costo. & Resultados y límites de interpretación. \\
+Despliegue e integración & Conectar los módulos con las plataformas y registrar su evaluación y seguimiento. & Componentes reutilizables y evaluación financiera. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Estas etapas podrán repetirse durante el desarrollo. Antes de abrir los resultados reservados para evaluación quedarán fijados los datos, las alternativas de diseño, los presupuestos y las reglas de comparación. En una tarea nueva se podrán elegir y entrenar modelos con sus segmentos de entrenamiento y validación, aplicando ese procedimiento ya definido.
+\subsection{Comprensión del problema}
 
-\subsection{Comprensión del problema: definir qué debe resolver la representación}
+Para pronóstico se definirán variables objetivo, horizontes y frecuencia de actualización. Para RL se especificarán observaciones, acciones, recompensa y condiciones de ejecución. Se documentarán las interfaces de las plataformas y los límites de tiempo y memoria. Estos requisitos determinarán qué modelos y formatos son admisibles; la validación permitirá elegir entre ellos.
 
-Se especificarán los requisitos de cada aplicación. Para pronóstico se definirán las variables objetivo, los pasos futuros que deben predecirse y la frecuencia de actualización. Para RL se establecerán las observaciones, acciones, recompensa y condiciones de ejecución del agente. En ambos casos se identificarán las interfaces con los extractores, el módulo de fusión, el núcleo temporal y los cabezales, junto con los límites de memoria y tiempo.
+Una predicción ingenua o una estrategia trivial de trading ofrecerán referencias básicas. Los modelos sin procesamiento diferenciado por ramas permitirán comprobar el aporte del diseño modular. El piloto establecerá los márgenes de mejora relevante y los recursos disponibles para las comparaciones.
 
-El resultado será una especificación que permita comparar representaciones dentro del mismo problema. Una estrategia trivial de trading o un pronóstico ingenuo aportarán referencias básicas de utilidad; los modelos sin procesamiento diferenciado por ramas permitirán comprobar si la mejora procede del diseño modular. Los márgenes de mejora relevante se justificarán durante el piloto y quedarán registrados antes de la evaluación final.
-
-\subsection{Comprensión de los datos: conocer las señales y elegir comparaciones reproducibles}
+\subsection{Comprensión de los datos}
 \label{sec:comparabilidad}
 
-Se partirá del inventario de datos existente para la aplicación financiera y de conjuntos públicos para contrastar resultados con la literatura. Se examinarán, entre otros, los bancos TFB, Monash y GIFT-Eval, que reúnen tareas de distintos dominios~\cite{qiu2024tfb,godahewa2021monash,aksu2024gifteval}. Cada conjunto candidato deberá tener frecuencia y licencia documentadas, historia suficiente y variables distintas observadas conjuntamente que permitan comparar agrupaciones. Los datos univariados podrán verificar una implementación, pero no demostrar el beneficio de agrupar variables.
+Se utilizarán el inventario financiero existente y conjuntos públicos con protocolos publicados. TFB~\cite{qiu2024tfb} será un punto de partida por reunir tareas y métodos de pronóstico de distintos dominios. Para evaluar agrupaciones se requerirán variables distintas observadas conjuntamente, frecuencia documentada e historia suficiente. Se registrarán versiones, fechas, licencias, datos ausentes y momento de disponibilidad de cada variable.
 
-Para cada fuente se documentarán archivos y versiones, fechas, frecuencia de muestreo, variables, valores ausentes y momento de disponibilidad de las observaciones. El diagnóstico del segmento de entrenamiento examinará ritmos de cambio, periodicidades, autocorrelación y estabilidad entre períodos. Así se distinguirán propiedades persistentes de estimaciones que cambian demasiado para justificar una rama especializada. El inventario también identificará datos ya utilizados por el proyecto o por modelos preentrenados.
+La comparación con la literatura conservará datos, particiones, objetivos, horizontes y métricas cuando se declare una reproducción directa. Se reproducirá al menos una referencia con una tolerancia fijada previamente a partir de su variación documentada o de ejecuciones de desarrollo. Si se adapta el protocolo, todos los métodos recibirán el mismo tratamiento y se identificará la adaptación.
 
-La selección de conjuntos partirá de experimentos publicados con tareas, métricas y protocolos recuperables. Se reproducirá al menos un modelo de referencia; la tolerancia se fijará antes de obtener el resultado propio según la precisión numérica y la variación entre ejecuciones. Se conservarán las fechas, particiones, objetivos y métricas del estudio original cuando se afirme una reproducción directa. Si es necesario adaptar el protocolo, todos los métodos recibirán el mismo tratamiento y la comparación se identificará como adaptada.
+En finanzas se comprobarán además instrumentos, precios de ejecución, comisiones, deslizamiento y restricciones. TradeMaster~\cite{sun2023trademaster} y FinRL-Meta~\cite{liu2022finrlmeta} ofrecen entornos y referencias para buscar experimentos compatibles. La comparación externa dependerá de recuperar sus datos y condiciones; la evaluación con controles propios se realizará en cualquier caso.
 
-En finanzas se verificarán además instrumentos, precios y momento de ejecución, comisiones, deslizamiento y restricciones. TradeMaster y FinRL-Meta serán puntos de partida para buscar experimentos compatibles~\cite{sun2023trademaster,liu2022finrlmeta}. Si no puede recuperarse una comparación externa, se mantendrá la evaluación con los controles propios y se declarará esa limitación. La normalización y cualquier posible acceso a información futura se revisarán antes de aceptar un protocolo.
-
-\subsection{Preparación de los datos: construir entradas comparables}
+\subsection{Preparación de los datos}
 \label{sec:datos}
 
-Cada tarea tendrá segmentos cronológicos de entrenamiento, validación y prueba. El entrenamiento ajustará transformaciones y pesos; la validación seleccionará configuraciones y puntos de parada; la prueba medirá el desempeño del modelo seleccionado. La normalización, la imputación y las descomposiciones que se utilicen se ajustarán solo con entrenamiento. Las ventanas incluirán únicamente información disponible en el instante de pronóstico o decisión, considerando posibles retrasos de publicación.
+Cada tarea tendrá entrenamiento, validación y prueba separados cronológicamente. Con entrenamiento se ajustarán transformaciones y pesos; con validación se elegirán configuraciones y puntos de parada; con prueba se evaluará el modelo seleccionado. Las transformaciones y descomposiciones usarán exclusivamente información disponible al producir cada entrada, considerando retrasos de publicación. Se documentarán fuentes ya utilizadas en desarrollo o preentrenamiento para evitar presentarlas como nuevas.
 
-Para cada variable $i$ se calculará el perfil temporal $d_i$ definido en el marco teórico. Los retardos se expresarán en unidades comparables y las frecuencias respecto de la frecuencia de Nyquist, la mitad de la frecuencia de muestreo. Se utilizará un escalado robusto común, ajustado durante el desarrollo y conservado en las tareas reservadas; se evitará normalizar cada tarea de manera que desaparezcan sus diferencias. El perfil escalado se denotará por $\widetilde d_i$, y su heterogeneidad se resumirá mediante
+El diagnóstico de entrenamiento registrará cantidad de observaciones, distribución de valores y ausencias, además de los perfiles temporales $d_i$. Las primeras propiedades orientarán la preparación y las restricciones de los modelos; los perfiles propondrán grupos y contextos. Se comprobará su estabilidad entre segmentos y se analizarán por separado las relaciones entre variables con retraso. Las decisiones de diseño quedarán registradas junto con la propiedad que las motivó.
+
+Los retardos tendrán unidades comparables y las frecuencias se expresarán respecto de Nyquist, la mitad de la frecuencia de muestreo. Un escalado robusto común, ajustado en desarrollo y después fijado, producirá los perfiles $\widetilde d_i$. Su diferencia se resumirá como
 \begin{equation}
-q(X)=\operatorname{mediana}_{i<k}\lVert\widetilde d_i-\widetilde d_k\rVert_2.
+q=\operatorname{mediana}_{i<k}\lVert\widetilde d_i-\widetilde d_k\rVert_2.
 \end{equation}
-Este valor mide cuánto difieren los perfiles entre sí; no representa causalidad ni dificultad de pronóstico. Las dependencias entre variables con retraso se analizarán mediante un diagnóstico separado, también calculado con entrenamiento.
+$q$ medirá diferencias entre perfiles temporales, no calidad de los datos ni dificultad de la tarea. Se conservarán marcas de tiempo y correspondencias entre las entradas y salidas de cada rama. Las adaptaciones de formato no aportarán información adicional respecto de los comparadores.
 
-Se prepararán entradas que conserven las marcas de tiempo y permitan alinear las salidas de las ramas. Las adaptaciones de formato requeridas por un modelo se documentarán sin añadir información a la disponible para sus comparadores.
+\subsection{Modelado}
 
-\subsection{Modelado: diseñar las ramas y aprender sus representaciones}
-
-El diseño se realizará en dos pasos: el análisis de entrenamiento propondrá configuraciones pertinentes y la validación de la tarea decidirá entre ellas. Se seguirá esta secuencia:
+El procedimiento combinará propuestas basadas en entrenamiento y selección mediante validación del modelo completo:
 \begin{enumerate}
-\item \textbf{Proponer grupos de variables.} Se utilizará agrupamiento jerárquico de perfiles como punto de partida y se comprobará su estabilidad entre segmentos. Una variable con perfil inestable se asignará a una rama común, dejando constancia de que los datos no justificaron una especialización.
-\item \textbf{Proponer contexto y modelos.} Para cada grupo se estudiarán alternativas convolucionales, recurrentes, de atención o híbridas compatibles con sus escalas, cantidad de datos y recursos. Se fijarán un catálogo finito y rangos de configuración; las ramas podrán utilizar modelos diferentes.
-\item \textbf{Ensamblar y entrenar.} Se conectarán detectores, integración, adaptación, fusión, núcleo y cabezales. Se comprobarán dimensiones, correspondencia temporal y actualización de parámetros antes de las ejecuciones completas.
-\item \textbf{Seleccionar con validación.} Se comparará el desempeño del sistema completo, no solo el error de reconstrucción de un extractor. La búsqueda de hiperparámetros y estructura se reservará para las alternativas que el análisis previo no permita resolver. Se definirán criterios de parada temprana tanto para el entrenamiento como para la búsqueda, utilizando validación.
+\item \textbf{Agrupar variables.} Se partirá de agrupamiento jerárquico de perfiles. Su estabilidad determinará si se mantiene la agrupación propuesta o se incluye una alternativa de procesamiento común.
+\item \textbf{Elegir contexto y modelos candidatos.} Se considerarán convoluciones, recurrencia, atención e híbridos compatibles con los datos y la tarea. Las ramas podrán usar modelos distintos. El catálogo, sus rangos y el máximo de ramas se fijarán durante el desarrollo.
+\item \textbf{Ensamblar y entrenar.} Se conectarán extractores, fusión, núcleo y cabezales, comprobando dimensiones, alineación y actualización de parámetros.
+\item \textbf{Seleccionar el modelo completo.} Se evaluará el objetivo de pronóstico o RL. La búsqueda de hiperparámetros y estructura con DEAP en DOIN (nivel 2) se concentrará en alternativas que el diagnóstico no permita resolver, con presupuesto y parada temprana definidos para entrenamiento y búsqueda.
 \end{enumerate}
 
-La parte del procedimiento que propone agrupación $G$, contextos $R$ y modelos admisibles $\mathcal{M}$ se representará como
-\begin{equation}
-(G,R,\mathcal{M})=A_\eta(\widetilde d_1,\ldots,\widetilde d_p).
-\end{equation}
-Los parámetros $\eta$ describirán sus criterios de diseño. Durante el desarrollo se fijarán esos criterios, el máximo de ramas y el presupuesto de búsqueda. En las tareas reservadas cambiarán los perfiles y los modelos resultantes, pero no el procedimiento utilizado para elegirlos.
-
-\paragraph{Configurar el procesamiento temporal.}
-En convoluciones se ajustarán profundidad, filtros y dilatación para controlar el alcance temporal~\cite{bai2018tcn}; en recurrencia, la historia accesible y el tratamiento de estados; y en atención, la longitud de secuencia y las restricciones de acceso. El detector permanecerá como módulo separado. El integrador añadirá contexto cuando sea necesario y la adaptación ajustará dimensiones, desplazamientos y correspondencia temporal. Ampliar el contexto no exige aumentar la longitud de la secuencia de salida. Integración y adaptación podrán configurarse juntas o separadas, o actuar como identidad.
-
-La Figura~\ref{fig:arquitectura} muestra el ensamblaje. Cada componente podrá contener varias capas, con tipos, tamaños y repeticiones configurables. Tras la fusión, el núcleo procesará la secuencia conjunta; el cabezal de pronóstico utilizará su último estado para predecir los pasos futuros. En algoritmos de actor y crítico, como el actor-crítico suave (SAC), se decidirá si los modelos de política y valor comparten representación~\cite{raffin2021sb3}.
+El diseño fijará profundidad, tamaños de filtros y dilatación en convoluciones; historia accesible y estados en recurrencia; y longitud de secuencia y acceso al pasado en atención. La modularidad permitirá optimizar el tipo de modelo de cada componente, sus capas y conexiones compatibles, junto con hiperparámetros de entrenamiento como la tasa de aprendizaje. Estas alternativas se compararán mediante validación del modelo completo. La integración añadirá contexto y la adaptación preparará dimensiones y alineación cuando sean necesarias. El núcleo combinará las secuencias antes del cabezal; su reducción de dimensionalidad conservará el eje temporal.
 
 \begin{figure}[htbp]
 \centering
@@ -297,13 +302,13 @@ La Figura~\ref{fig:arquitectura} muestra el ensamblaje. Cada componente podrá c
   designarr/.style={-{Latex}, thick, dashed, color=sabana}
 ]
 \node[box] (history) at (0,3.25) {Datos históricos\\de entrenamiento};
-\node[box] (profiles) at (3.3,3.25) {Estimación de\\perfiles temporales};
+\node[box] (profiles) at (3.3,3.25) {Diagnóstico de\\los datos};
 \node[box] (rule) at (6.6,3.25) {Agrupación, contexto\\y modelos candidatos};
 \node[box] (input) at (0,0) {Ventana\\multivariada};
 \node[branch] (b1) at (6.6,1.25) {Rama 1\\$D_1 \rightarrow I_1 \rightarrow A_1$};
 \node[branch] (bj) at (6.6,0) {Rama $j$\\$D_j \rightarrow I_j \rightarrow A_j$};
 \node[branch] (bb) at (6.6,-1.25) {Rama $B$\\$D_B \rightarrow I_B \rightarrow A_B$};
-\node[box] (fusion) at (10.4,0) {Alineación y\\fusión temporal};
+\node[box] (fusion) at (10.4,0) {Fusión y\\núcleo};
 \node[box] (head) at (13.7,0) {Cabezales de salida\\Pronóstico / RL};
 \draw[designarr] (history) -- (profiles);
 \draw[designarr] (profiles) -- (rule);
@@ -315,37 +320,31 @@ La Figura~\ref{fig:arquitectura} muestra el ensamblaje. Cada componente podrá c
 \draw[arr] (bb.east) -- ++(0.45,0) |- (fusion.west);
 \draw[arr] (fusion) -- (head);
 \node[draw, dashed, rounded corners=1.2pt, inner sep=6pt, fit=(b1)(bb),
-      label={[font=\scriptsize]below:Ramas con secuencia temporal explícita}] (branchset) {};
+      label={[font=\scriptsize]below:Ramas que conservan la secuencia}] (branchset) {};
 \draw[designarr] (rule) -- (branchset.north);
 \end{tikzpicture}}
-\caption{Arquitectura conceptual. Las líneas discontinuas muestran propuestas de diseño a partir de los datos de entrenamiento; la validación selecciona los modelos. Las continuas muestran el flujo de datos. Cada rama contiene un detector $D_j$ separado e integración $I_j$ y adaptación $A_j$ configurables. Alineación y fusión reúnen el módulo de fusión de características y el núcleo temporal de la Figura~\ref{fig:vista-general}.}
+\caption{Arquitectura conceptual. Las líneas discontinuas muestran propuestas de diseño a partir de los datos de entrenamiento; la validación selecciona los modelos. Las continuas muestran el flujo de datos. Cada rama contiene un detector $D_j$ separado e integración $I_j$ y adaptación $A_j$ configurables. El bloque de fusión y núcleo reúne esos dos componentes de la Figura~\ref{fig:vista-general}.}
 \label{fig:arquitectura}
 \end{figure}
 
-\paragraph{Elegir cómo se inicializa y entrena el detector.}
-Se compararán las tres modalidades de la Tabla~\ref{tab:regimenes}. Los códigos R0, R1 y R2 identifican únicamente estas modalidades de entrenamiento.
+El detector se entrenará mediante las modalidades de la Tabla~\ref{tab:regimenes}. Para preentrenarlo, un autoencoder reconstruirá los valores originales a partir de entradas completas o parcialmente ocultas. Se reutilizará el codificador y se conservará el decodificador por separado. Reconstruir una señal no demostrará por sí solo eliminación de ruido.
 
 \begin{table}[H]
-\centering
-\small
-\caption{Modalidades de entrenamiento del detector de patrones.}
+\centering\small
+\caption{Inicialización y entrenamiento del detector.}
 \label{tab:regimenes}
-\begin{tabularx}{\textwidth}{@{}L{1.2cm}L{3.3cm}Y@{}}
+\begin{tabularx}{\textwidth}{@{}L{1.1cm}L{3.6cm}Y@{}}
 \toprule
-\textbf{Código} & \textbf{Modalidad} & \textbf{Qué se entrena} \\
+\textbf{Código} & \textbf{Modalidad} & \textbf{Entrenamiento} \\
 \midrule
-R0 & Desde cero & El detector empieza con pesos aleatorios y se ajusta junto con el resto del modelo. \\
-R1 & Preentrenado y congelado & Se importan pesos preentrenados y se mantienen fijos; se entrena el resto del modelo. \\
-R2 & Preentrenado y ajustable & Se importan los mismos pesos iniciales de la modalidad congelada y se siguen ajustando con el modelo completo. \\
+R0 & Desde cero & Detector y resto del modelo se ajustan desde una inicialización aleatoria. \\
+R1 & Preentrenado y congelado & Se importan pesos y se mantiene fijo el detector; se entrena el resto. \\
+R2 & Preentrenado y ajustable & Se importan los mismos pesos iniciales de R1 y se ajustan con el modelo completo. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Para preentrenar el detector se utilizará un autoencoder: su codificador aprenderá a representar la entrada y un decodificador auxiliar intentará reconstruirla, completa o con valores ocultos mediante una máscara definida previamente. Después se incorporará el codificador como detector; el decodificador se conservará por separado. El entrenamiento desde cero no requerirá esta etapa. La reconstrucción ordinaria no se interpretará por sí sola como eliminación de ruido.
-
-Se comprobará que el detector congelado conserve sus pesos y que el ajustable los modifique a partir del objetivo final~\cite{keras2023transfer}. Se guardarán por separado los pesos preentrenados y los modificados durante el ajuste. Para la comparación principal en pronóstico se elegirá una modalidad durante el desarrollo y se aplicará por igual al método y sus controles.
-
-El sistema de optimización registrará configuraciones, pesos iniciales y métricas de los candidatos, incluidos los descartados. Ese historial podrá servir para una futura metaoptimización; en esta propuesta su función será permitir el análisis y la reproducción de las decisiones de diseño. La Figura~\ref{fig:protocolo} resume cómo se separará la elección del modelo de su prueba final.
+Se comprobará que el detector congelado conserve sus parámetros y que el ajustable reciba gradientes del objetivo final. Se especificará el tratamiento de estados de normalización que se actualicen sin gradientes, siguiendo las distinciones de la guía de Keras~\cite{keras2023transfer}. La comparación principal usará una modalidad elegida en desarrollo y aplicada por igual al método y sus controles. En cada tarea reservada se entrenarán modelos nuevos con sus propios datos; el procedimiento de selección permanecerá fijo, como muestra la Figura~\ref{fig:protocolo}.
 
 \begin{figure}[htbp]
 \centering
@@ -362,10 +361,10 @@ El sistema de optimización registrará configuraciones, pesos iniciales y métr
 \draw[arr] (dev) -- (protocol);
 
 \node[box] (train) at (0,0) {Entrenamiento de\\una tarea nueva};
-\node[box] (design) at (3.0,0) {Analizar perfiles y\\proponer ramas y modelos};
+\node[box] (design) at (3.0,0) {Analizar datos y\\proponer ramas y modelos};
 \node[box] (pretrain) at (6.0,0) {Preentrenar detector\\solo en R1/R2};
 \node[box] (fit) at (9.0,0) {Entrenar candidatos;\\seleccionar con validación};
-\node[box] (locked) at (12.0,0) {Modelo y decisiones\\congelados};
+\node[box] (locked) at (12.0,0) {Modelo elegido y\\reglas fijadas};
 \node[box] (test) at (15.0,0) {Prueba reservada\\de la tarea};
 \draw[arr] (train) -- (design);
 \draw[arr] (design) -- (pretrain);
@@ -375,177 +374,152 @@ El sistema de optimización registrará configuraciones, pesos iniciales y métr
 \draw[fixedarr] (protocol.south) -- ++(0,-0.38) -| (design.north);
 \draw[fixedarr] (protocol.south) -- ++(0,-0.38) -| (fit.north);
 \end{tikzpicture}}
-\caption{Separación entre desarrollo y evaluación. Durante el desarrollo se fija el procedimiento; cada tarea estima perfiles y entrena candidatos con entrenamiento, selecciona con validación y evalúa el modelo resultante en prueba reservada.}
+\caption{Separación entre desarrollo y evaluación. Durante el desarrollo se fija el procedimiento; cada tarea analiza sus datos de entrenamiento, selecciona candidatos con validación y evalúa el modelo elegido en prueba reservada.}
 \label{fig:protocolo}
 \end{figure}
 
-\subsection{Evaluación: comprobar el aporte del diseño y sus límites}
+\subsection{Evaluación}
 
-La evaluación responderá tres preguntas concretas: si el diseño mejora el pronóstico, si agrupar por escalas aporta una ventaja y si conservar las secuencias ayuda a utilizar relaciones entre variables con retraso. La Tabla~\ref{tab:hipotesis} presenta las hipótesis correspondientes. Sus códigos identifican afirmaciones que se contrastarán; la selección de modelos seguirá el procedimiento de la etapa anterior.
+La Tabla~\ref{tab:hipotesis} distingue el efecto global del diseño de los mecanismos de agrupación y fusión. La evaluación en RL tendrá criterios propios y no se mezclará con el error de pronóstico.
 
 \begin{table}[H]
-\centering
-\small
-\caption{Hipótesis de investigación y comparación que las pone a prueba.}
+\centering\small
+\caption{Hipótesis y comparaciones experimentales.}
 \label{tab:hipotesis}
-\begin{tabularx}{\textwidth}{@{}L{1.2cm}Y Y@{}}
+\begin{tabularx}{\textwidth}{@{}L{1.1cm}Y Y@{}}
 \toprule
-\textbf{Código} & \textbf{Qué se espera comprobar} & \textbf{Comparación} \\
+\textbf{Código} & \textbf{Hipótesis} & \textbf{Comparación} \\
 \midrule
-H1 & El diseño basado en datos mejora el pronóstico global sin perjuicio relevante en ninguna familia evaluada. & Método propuesto frente al control principal elegido durante el desarrollo. \\
-H2 & La ventaja de agrupar mediante perfiles aumenta cuando las escalas temporales son más distintas. & Agrupación informada frente a asignación permutada, variando la heterogeneidad de señales sintéticas. \\
-H3 & Con relaciones temporales entre variables, conservar las secuencias hasta fusionarlas mejora el pronóstico. & Fusión de secuencias frente a resumen temprano, con y sin relaciones entre variables con retraso. \\
+H1 & El diseño basado en datos mejora el pronóstico global sin perjuicio relevante por familia. & Método frente al control principal elegido en desarrollo. \\
+H2 & La ventaja de agrupar mediante perfiles aumenta con las diferencias de escala temporal. & Agrupación por perfiles frente a asignación permutada en señales sintéticas. \\
+H3 & Con relaciones entre variables con retraso, conservar las secuencias hasta fusionarlas mejora el pronóstico. & Fusión de secuencias frente a resumen temprano, con y sin esas relaciones. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-La evaluación financiera en RL comprobará además la utilidad de la representación dentro del agente. Tendrá métricas y criterios propios; sus resultados no se mezclarán con el error de pronóstico.
-
-\subsubsection{Organizar los experimentos y reservar datos para la prueba}
+\subsubsection{Organización de los experimentos}
 \label{sec:fases}
 
-Los experimentos se organizarán en cuatro bloques, descritos en la Tabla~\ref{tab:phases}. Estos bloques no sustituyen las etapas de CRISP-DM: indican qué datos se utilizarán para desarrollar el método y cuáles para comprobarlo.
+Los cuatro bloques de la Tabla~\ref{tab:phases} separan desarrollo, pruebas reservadas y aplicación. Una \emph{familia de datos} reúne conjuntos relacionados por fuente y dominio. Sus variantes se mantendrán juntas para que distintas ventanas de una fuente no se cuenten como familias independientes.
 
 \begin{table}[H]
-\centering
-\small
-\caption{Bloques experimentales, datos y finalidad.}
+\centering\small
+\caption{Bloques experimentales y finalidad.}
 \label{tab:phases}
-\begin{tabularx}{\textwidth}{@{}L{1.2cm}L{3.5cm}Y@{}}
+\begin{tabularx}{\textwidth}{@{}L{1.1cm}L{3.8cm}Y@{}}
 \toprule
 \textbf{Código} & \textbf{Bloque} & \textbf{Datos y uso} \\
 \midrule
-E0 & Pruebas sintéticas & Señales de estructura conocida, con grupos separados para desarrollar diagnósticos y contrastar H2 y H3. \\
-E1 & Desarrollo del método & Familias públicas para elegir criterios de diseño, alternativas, controles, entrenamiento y presupuestos, y comprobar la precisión estadística. \\
-E2 & Evaluación pública reservada & Otras familias públicas para contrastar H1 con el procedimiento fijado. Cada tarea conserva su entrenamiento, validación y prueba. \\
-E3 & Aplicación financiera & Datos históricos para comparar la representación dentro del agente de RL. Es una entrega obligatoria y su análisis es independiente de H1--H3. \\
+E0 & Pruebas sintéticas & Señales conocidas, separadas para desarrollar diagnósticos y contrastar H2 y H3. \\
+E1 & Desarrollo del método & Familias públicas para fijar criterios de diseño, controles, entrenamiento, presupuestos y precisión estadística. \\
+E2 & Evaluación pública reservada & Otras familias para contrastar H1. Cada tarea tendrá entrenamiento, validación y prueba propios. \\
+E3 & Aplicación financiera & Datos históricos para evaluar la representación en RL; entrega obligatoria, independiente de H1--H3. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-El desarrollo precederá a las pruebas reservadas. Antes de ajustar el método se fijarán las ecuaciones, rangos y semillas de la reserva sintética; sus resultados permanecerán cerrados hasta terminar el desarrollo. Antes de la evaluación pública se fijarán familias, horizontes y divisiones temporales. Las variantes de una misma fuente se mantendrán juntas: separar sus ventanas no creará familias independientes. El piloto determinará cuántas familias y repeticiones pueden sostener una comparación precisa dentro del presupuesto.
+Las señales sintéticas combinarán procesos autorregresivos, periodicidades, tendencias y eventos localizados. Para H2 se variarán escalas conservando cantidad de datos y distribución del ruido. Para H3 se construirán pares con y sin dependencias entre variables, conservando en distribución el comportamiento individual. Esta conservación se verificará con repeticiones; desordenar instantes no servirá como único control porque altera también cada serie. Se incluirán cambios de comportamiento y casos donde el diagnóstico falle.
 
-Las señales sintéticas combinarán procesos autorregresivos, periodicidades, tendencias y eventos localizados. Para probar la agrupación se variarán las escalas manteniendo constantes cantidad de datos y ruido. Para probar la fusión se construirán pares con y sin dependencias entre variables, preservando en distribución sus propiedades individuales. Se comprobará esa preservación con repeticiones; permutar el orden temporal se reservará para sensibilidad porque altera también cada serie. Se incluirán cambios temporales y casos donde fallen los supuestos del diagnóstico. El ruido añadido será conocido, sin extender esa suposición a los residuos de datos reales.
+La reserva sintética fijará generadores, rangos y semillas antes de desarrollar la regla; sus resultados permanecerán cerrados hasta terminar ese desarrollo. Para la evaluación pública se fijarán familias, horizontes y particiones. El piloto determinará cuántas familias y repeticiones permiten una comparación suficientemente precisa dentro del presupuesto.
 
-\subsubsection{Comparar con referencias y aislar el efecto de las decisiones}
+\subsubsection{Modelos de referencia y controles}
 
-Se utilizarán tres grupos de comparación:
-\begin{itemize}
-\item \textbf{Referencias de desempeño:} pronóstico ingenuo y estacional ingenuo, un modelo estadístico multivariado pertinente y DLinear; PatchTST, iTransformer y DUET, junto con un método multiescala elegido entre MTST, Pathformer y TimeMixer antes de examinar los resultados de desarrollo. DUET será obligatorio por su proximidad a la propuesta.
-\item \textbf{Controles del diseño:} un modelo sin procesamiento diferenciado por ramas y uno modular organizado sin utilizar los perfiles. Se elegirá como control principal el que obtenga menor error agregado en los datos de desarrollo, con el mismo criterio que se aplicará después.
-\item \textbf{Ablaciones:} variantes que cambian una decisión concreta, como permutar la asignación de variables, usar un contexto común o resumir las ramas antes de fusionarlas. Permitirán distinguir el efecto de agrupación, selección de modelos y conservación temporal.
-\end{itemize}
+Se comparará con pronóstico ingenuo y estacional ingenuo, un modelo estadístico multivariado pertinente, DLinear, PatchTST, iTransformer y DUET. Antes de examinar resultados de desarrollo se elegirá además un método multiescala entre MTST, Pathformer y TimeMixer. Los antecedentes de agrupación, incluidos CCM, DGCformer y el método de Ma et al., se considerarán para un comparador adicional según disponibilidad y compatibilidad del protocolo.
 
-Método y controles compartirán información, preprocesamiento común, semillas, criterios de entrenamiento, límites de búsqueda y catálogos comparables. Cuando sea viable, se igualarán parámetros dentro de una tolerancia fijada en el piloto; se informarán también error, tiempo y memoria. El control permutado conservará número y tamaño de ramas, modelos, contextos, interfaces y presupuesto. Se fijarán previamente sus permutaciones y desempates, evitando una permutación conjunta de datos, objetivos y módulos que solo cambie sus nombres. MSGNet o CCM podrá añadirse si su interfaz y costo permiten una comparación útil.
+El control principal de H1 será la mejor alternativa en desarrollo entre un modelo sin procesamiento diferenciado por ramas y uno modular organizado sin perfiles. Se elegirá con el mismo error agregado que se utilizará en la evaluación final. Las comparaciones adicionales modificarán una decisión concreta: asignación de variables, contexto o fusión antes o después de resumir las ramas.
 
-\subsubsection{Medir el desempeño y decidir si la diferencia es relevante}
+Método y controles recibirán la misma información y preprocesamiento común, con semillas, presupuestos y oportunidades de selección comparables. En los controles de arquitectura se igualará el número de parámetros entrenables dentro de una tolerancia fijada en el piloto. Las referencias publicadas conservarán su arquitectura; se informarán parámetros, tiempo y memoria de todos los modelos. La asignación permutada conservará número y tamaño de ramas, modelos, contextos e interfaces; cambiará qué variables llegan a cada rama. Se fijarán varias permutaciones antes de evaluar, evitando cambios que solo renombren conjuntamente datos y módulos.
+
+\subsubsection{Desempeño y relevancia de las diferencias}
 \label{sec:medidas}
 
-La unidad de evaluación será una tarea de pronóstico: conjunto de datos, variables objetivo y horizonte. Se repetirá desde distintos puntos de inicio, llamados \emph{orígenes de evaluación}, y con distintas \emph{semillas aleatorias} del entrenamiento. Estas repeticiones se agregarán dentro de la tarea y no se contarán como tareas independientes.
+La unidad será una tarea de pronóstico: conjunto, variables objetivo y horizonte. Las repeticiones con distintas semillas aleatorias y puntos de inicio del pronóstico, u \emph{orígenes}, se agregarán dentro de la tarea. Se evaluará desde orígenes sucesivos, siguiendo el esquema descrito por Hyndman y Athanasopoulos~\cite{hyndman2021tscv}, con una política de reentrenamiento fijada previamente. Una observación ya evaluada podrá incorporarse al historial de un origen posterior; sus errores de prueba no cambiarán las reglas de diseño o selección.
 
-La medida principal será el error absoluto medio escalado, MASE~\cite{hyndman2006mase}. Divide el error del modelo por el de repetir un valor de un período anterior, calculado con entrenamiento. Para la variable $k$, el origen $o$, las $n_o$ observaciones disponibles, el período estacional $m_k$ y los $H$ pasos futuros, se calcularán
+La medida principal será el error absoluto medio escalado, MASE, propuesto por Hyndman y Koehler~\cite{hyndman2006mase} y descrito también para referencias estacionales en~\cite{hyndman2021tscv}. Para una variable $k$ y un origen $o$, el denominador $a_{k,o}$ será el error absoluto medio, calculado en entrenamiento, de repetir el valor de un período anterior. Con $H$ pasos futuros:
 \begin{equation}
-a_{k,o}=\frac{1}{n_o-m_k}\sum_{u=m_k+1}^{n_o}|y_{k,u}-y_{k,u-m_k}|,
-\qquad
-\operatorname{MASE}_{k,o}=\frac{H^{-1}\sum_{h=1}^{H}|y_{k,n_o+h}-\widehat y_{k,n_o+h}|}{a_{k,o}}.
+\operatorname{MASE}_{k,o}=\frac{1}{H\,a_{k,o}}\sum_{h=1}^{H}|y_{k,o+h}-\widehat y_{k,o+h}|.
 \end{equation}
-Todos los métodos compartirán el denominador $a_{k,o}$. El período procederá de metadatos o de una regla fijada durante el desarrollo. Si un denominador requerido es cero, la tarea se informará aparte y no se utilizará para contrastar la hipótesis principal. Para comparar con publicaciones se añadirán sus métricas y formas exactas de agregación, incluidas MAE y MSE cuando correspondan.
+El período estacional procederá de metadatos o de una regla fijada en desarrollo; sin estacionalidad se utilizará el valor inmediatamente anterior. Los métodos compartirán denominadores. Una tarea con denominador cero se identificará antes de examinar sus errores de prueba y se informará aparte de H1. Se añadirán las métricas y agregaciones exactas de las publicaciones comparadas, como MAE y MSE.
 
-Se promediará MASE con igual peso entre variables objetivo, pasos del horizonte, orígenes y semillas. La diferencia entre método y control para la tarea $t$ será
+Se promediarán los errores con igual peso entre variables objetivo, pasos, orígenes y semillas. Para la tarea $t$:
 \begin{equation}
-\Delta_t=\operatorname{MASE}_{t,\,\text{método}}-
-\operatorname{MASE}_{t,\,\text{control}}.
+\Delta_t=\operatorname{MASE}_{t,\text{método}}-\operatorname{MASE}_{t,\text{control}}.
 \end{equation}
-Una diferencia negativa favorece a la propuesta. El efecto global $\Delta$ dará igual peso a tareas dentro de cada conjunto, conjuntos dentro de cada familia y familias, para que una fuente abundante no domine el resultado.
-
-Antes de la evaluación reservada se fijará un margen $\varepsilon>0$, que representa la diferencia mínima de MASE considerada relevante. Con un intervalo de incertidumbre $[L,U]$, la interpretación será:
+El efecto global $\Delta$ dará igual peso a tareas dentro de cada conjunto, conjuntos dentro de cada familia y familias. Una diferencia negativa favorecerá al método. Se fijará antes de la prueba un margen $\varepsilon>0$ que represente una diferencia relevante de MASE. Para un intervalo $[L,U]$:
 \begin{itemize}
 \item \textbf{Mejora relevante:} $U<-\varepsilon$.
 \item \textbf{Equivalencia práctica:} $[L,U]\subseteq[-\varepsilon,\varepsilon]$.
 \item \textbf{Perjuicio relevante:} $L>\varepsilon$.
-\item \textbf{Resultado inconcluso:} el intervalo no permite decidir entre las anteriores.
+\item \textbf{Resultado inconcluso:} cualquiera de los demás casos.
 \end{itemize}
-La ausencia de una mejora demostrada no se interpretará como equivalencia. Se publicarán también resultados por horizonte, variación entre semillas y eventos definidos previamente.
+Se informarán resultados por tarea, familia y horizonte. La ausencia de una mejora demostrada no se interpretará como equivalencia.
 
-\subsubsection{Contrastar las hipótesis y cuantificar la incertidumbre}
+\subsubsection{Contraste de las hipótesis}
 \label{sec:hipotesis}
 
-\paragraph{Mejora del pronóstico global (H1).}
-Se comparará el método con el control principal elegido durante el desarrollo. La hipótesis requerirá mejora global relevante, con límite superior de $\Delta$ menor que $-\varepsilon$, y ausencia de perjuicio mayor que ese margen en cada familia, con límite superior por familia menor o igual que $\varepsilon$. Una familia sin precisión suficiente impedirá afirmar ese resultado conjunto.
+\paragraph{Mejora global (H1).}
+Se requerirá un límite superior de $\Delta$ menor que $-\varepsilon$ y un límite superior por familia menor o igual que $\varepsilon$. Así, una mejora promedio no ocultará un perjuicio relevante en una familia. Si una familia no ofrece precisión suficiente, no se podrá afirmar el resultado conjunto.
 
-\paragraph{Utilidad de agrupar por escalas (H2).}
-El experimento sintético variará un nivel conocido de heterogeneidad $h$, conservando tamaño de muestra, número de variables y distribución del ruido. Se calculará
+\paragraph{Agrupación por escalas (H2).}
+Para cada nivel conocido de heterogeneidad sintética $h$ se calculará
 \[
 e(h)=\operatorname{MASE}(\text{perfiles},h)-\operatorname{MASE}(\text{permutación},h).
 \]
-La hipótesis se considerará respaldada si el límite superior del intervalo de la pendiente $\beta$ de $e(h)$ respecto de $h$ es menor que cero. Esto indicará que la ventaja relativa aumenta con la heterogeneidad; no demostrará que el método sea superior en todos sus niveles. La relación con $q(X)$ en datos públicos será un análisis complementario.
+Se estimará la pendiente de $e(h)$ mediante una regresión lineal sobre niveles y ponderaciones fijados previamente. H2 requerirá que su límite superior sea menor que cero: una ventaja relativa creciente, aunque no necesariamente superioridad en todos los niveles. La relación con $q$ en datos públicos será complementaria.
 
-\paragraph{Utilidad de conservar las secuencias (H3).}
-Las dos variantes recibirán las mismas activaciones de un extractor entrenado y mantenido fijo durante el contraste. Solo se ajustarán sus módulos de combinación y cabezales. Se compararán la fusión de secuencias y el resumen temprano en presencia de dependencias entre variables con retraso ($r=1$) y en un control que conserva el comportamiento individual, pero elimina esa dependencia ($r=0$):
+\paragraph{Conservación de las secuencias (H3).}
+Se compararán fusión de secuencias y resumen temprano sobre las mismas activaciones de un extractor entrenado y fijo. Solo se ajustarán los módulos de combinación y cabezales. Para señales con relaciones entre variables con retraso ($r=1$) y sus controles sin esas relaciones ($r=0$):
 \[
-d_r=\operatorname{MASE}(\text{fusión temporal},r)-\operatorname{MASE}(\text{resumen temprano},r),
+d_r=\operatorname{MASE}(\text{fusión de secuencias},r)-\operatorname{MASE}(\text{resumen temprano},r),
 \qquad \gamma=d_1-d_0.
 \]
-La hipótesis requerirá un límite superior de $d_1$ menor que $-\varepsilon$ y de $\gamma$ menor que cero. Se medirá la memoria adicional para conservar secuencias. En datos públicos se hará un contraste complementario cuando el diagnóstico de entrenamiento identifique relaciones predictivas con retraso.
+H3 requerirá que el límite superior de $d_1$ sea menor que $-\varepsilon$ y el de $\gamma$ menor que cero. Se medirá la memoria adicional. Los contrastes públicos guiados por relaciones detectadas en entrenamiento serán complementarios.
 
-\paragraph{Control de la incertidumbre.}
-Con $F$ familias reservadas se evaluarán $K=F+4$ efectos: uno global y $F$ por familia para H1, la pendiente de H2 y dos contrastes para H3. Se fijará $\alpha=0.05$ y se utilizarán intervalos bilaterales de cobertura nominal $1-\alpha/K$, con ajuste de Bonferroni para el conjunto de comparaciones. El margen de MASE no se aplicará a la pendiente ni sustituirá el criterio de interacción de la fusión.
+\paragraph{Incertidumbre y multiplicidad.}
+Con $F$ familias reservadas se evaluarán $K=F+4$ efectos: uno global y $F$ por familia para H1, una pendiente para H2 y dos diferencias para H3. Se usarán intervalos bilaterales con cobertura nominal $1-0.05/K$, aplicando Bonferroni al conjunto. El margen de MASE no se aplicará a la pendiente ni a la diferencia de diferencias $\gamma$.
 
-Los intervalos se estimarán mediante \emph{bootstrap jerárquico}: remuestreo con reemplazo que conserva las comparaciones sobre los mismos datos. Para el efecto global se remuestrearán familias, conjuntos y tareas; para un efecto por familia, se fijará esa familia y se remuestrearán sus conjuntos y tareas. Se preservará la dependencia entre objetivos y horizontes de una fuente. En señales sintéticas se remuestrearán configuraciones del generador y repeticiones, manteniendo juntas las variantes comparadas. Si se remuestrean errores temporales se utilizarán bloques contiguos.
+Los intervalos se estimarán mediante \emph{bootstrap jerárquico}, remuestreando familias, conjuntos y tareas y manteniendo emparejados los métodos. Para efectos por familia se fijará la familia correspondiente. Objetivos y horizontes de una fuente permanecerán vinculados; las semillas y orígenes se agregarán dentro de cada tarea. En señales sintéticas se remuestrearán configuraciones y repeticiones con sus controles emparejados. Si se remuestrean errores temporales, se usarán bloques contiguos para conservar dependencia.
 
-El piloto comprobará mediante simulación la precisión y cobertura de los intervalos y su sensibilidad a la longitud de bloque. Si el soporte no permite sostenerlas, el resultado afectado será inconcluso. La sensibilidad al retirar conjuntos se informará sin redefinir contrastes ni ampliar la prueba después de ver los resultados.
+El piloto comprobará mediante simulación la precisión y cobertura de los intervalos y su sensibilidad a la longitud de bloque. Cuando la cantidad o diversidad de datos no permitan sostenerlas, el contraste será inconcluso. Se examinará la sensibilidad al retirar conjuntos, sin ampliar la prueba ni redefinir hipótesis después de observar resultados.
 
-\paragraph{Evaluación temporal y reentrenamiento.}
-Se avanzará por sucesivos orígenes siguiendo una política fijada previamente~\cite{hyndman2021tscv}, con horizontes de prueba no solapados cuando los datos lo permitan. Antes de cada origen se estimarán perfiles y pesos con la información entonces disponible. Una observación ya evaluada podrá incorporarse al entrenamiento cuando forme parte del historial, con la misma política para todos los métodos. Los resultados de prueba no cambiarán reglas de diseño, rangos de búsqueda ni criterios de parada~\cite{cawley2010overfit}. Un protocolo periódico diferente del publicado se declarará como adaptación.
+\subsubsection{Costo de obtener el resultado}
 
-\subsubsection{Medir el costo completo de obtener el resultado}
+Se registrarán diagnóstico, preentrenamiento, búsqueda, ajuste y evaluación, incluidos decodificador, candidatos descartados y ejecuciones fallidas. Se distinguirá el costo de desarrollar el procedimiento del de aplicarlo a nuevas tareas. Al reutilizar un codificador se informarán costo inicial, costo adicional por uso y acumulado, atribuyendo el trabajo compartido sin contarlo varias veces.
 
-Se contabilizarán diagnóstico, preentrenamiento, selección, ajuste y evaluación, incluidos candidatos descartados, paradas tempranas e intentos fallidos. El costo energético se medirá en vatios-hora con un instrumento validado durante el desarrollo. Para tareas $t$, métodos $m$, semillas $s$ y orígenes $o$, se registrará
-\begin{equation}
-C_{\mathrm{total}}=\sum_{t,o}C_{\mathrm{perfil},t,o}
-+\sum_{t,m,s,o}\left(C_{\mathrm{pre}}+C_{\mathrm{ajuste}}+C_{\mathrm{eval}}\right)_{t,m,s,o}.
-\end{equation}
-El preentrenamiento incluirá el decodificador. Al reutilizar pesos se distinguirán costo inicial, costo adicional y acumulado, declarando cómo se reparte el trabajo compartido. Se separará el costo de desarrollar el procedimiento del de aplicarlo a una tarea nueva.
+Las medidas serán energía en vatios-hora, tiempo transcurrido, horas de CPU y GPU y memoria máxima, con hardware y concurrencia documentados. El instrumento de medida energética se verificará durante el piloto. Las duraciones de trabajos paralelos no se sumarán como tiempo transcurrido. Esta contabilidad acompañará las comparaciones de desempeño.
 
-Se informarán además tiempo transcurrido, horas de CPU y GPU, memoria máxima, operaciones estimadas, hardware y concurrencia. Las duraciones de trabajos paralelos no se sumarán como tiempo transcurrido. Esta contabilidad permitirá comprobar si la mejora requiere una búsqueda o una capacidad mayores que las de los controles.
+\subsection{Despliegue e integración}
 
-\subsection{Despliegue e integración: utilizar los módulos en las plataformas existentes}
+Los extractores se integrarán con interfaces para importar y exportar pesos y conectar sus salidas con la fusión, el núcleo y los cabezales. Se verificará el flujo de gradientes de los componentes entrenables. La integración en pronóstico y RL utilizará las plataformas existentes.
 
-Se entregarán extractores con interfaces documentadas para cargar datos, importar y exportar pesos y conectar sus salidas con la fusión, el núcleo y los cabezales. Se verificará el flujo de gradientes y la actualización de los componentes configurados como entrenables. La plataforma de pronóstico utilizará estos módulos en sus experimentos; la de RL permitirá comprobarlos en una tarea financiera histórica, sin reconstruir la infraestructura de optimización.
+Durante el desarrollo se elegirán una tarea financiera y un algoritmo compatibles con la plataforma. Se compararán la representación propuesta, la actual y una variante sin procesamiento diferenciado por ramas; las dos últimas podrán coincidir. Las variantes compartirán observaciones, acciones, recompensa, entorno, calendario y presupuesto. Se documentarán la entrada de posición y estado de cuenta y, cuando existan actor y crítico, si comparten la representación.
 
-Durante el desarrollo se elegirán una tarea financiera y un algoritmo compatibles con la plataforma. El agente se evaluará con la representación propuesta, la actual y una variante sin procesamiento independiente por ramas; las dos últimas podrán coincidir. Se mantendrán constantes observaciones, recompensa, acciones, entorno, calendario y presupuesto. Se documentará cómo entran la posición y el estado de cuenta. Una estrategia trivial ofrecerá la referencia básica de trading.
+Antes de la prueba se fijarán métrica principal, margen relevante y medidas complementarias, incluyendo rentabilidad neta, riesgo y caída máxima del capital. Los costos y condiciones de ejecución serán comunes. Las diferencias se estimarán sobre los mismos períodos y con varias semillas; sus intervalos conservarán esa dependencia. Superar una estrategia trivial dará una referencia de utilidad; la comparación entre representaciones permitirá atribuir el efecto al diseño. Este análisis tendrá su propio control de multiplicidad y no modificará H1--H3.
 
-Antes de la prueba financiera se fijarán métrica principal, margen de relevancia y métricas complementarias, con ejecución, costos y contabilidad comunes. Las diferencias e intervalos considerarán semillas y períodos compartidos. La comparación entre representaciones medirá su aporte dentro del agente; superar la estrategia trivial solo demostrará utilidad frente a esa referencia. Se distinguirán mejora, equivalencia, perjuicio e incertidumbre, con un análisis separado del de pronóstico y de su ajuste de multiplicidad.
-
-DOIN proporcionará la optimización y el registro de los experimentos. El cubo OLAP existente organizará configuraciones, particiones, semillas, métricas y costos para su análisis y visualización. Se documentarán versiones, seguimiento del desempeño y reglas de reentrenamiento. Las actualizaciones posteriores conservarán su trazabilidad y no sustituirán retrospectivamente los resultados de la evaluación doctoral.
+DOIN proporcionará optimización y registro; el cubo OLAP organizará configuraciones, particiones, semillas, métricas y costos. Se conservarán candidatos descartados, versiones de pesos y reglas de reentrenamiento para reproducir y analizar los experimentos.
 
 \section{Viabilidad, recursos y riesgos}
 
-El proyecto dispone de cuatro GPU de distintas capacidades, CPU y plataformas de datos y entrenamiento. El piloto medirá tiempos y memoria, contemplando disponibilidad parcial de las GPU y reservando recursos para RL. Los diagnósticos y generadores que no requieran redes se ejecutarán en CPU.
+Se dispone de cuatro GPU de distintas capacidades, CPU y plataformas de datos y entrenamiento. El piloto medirá tiempos y memoria con disponibilidad parcial de las GPU y reservará recursos para RL. Si es necesario reducir alcance, se retirarán comparadores opcionales y configuraciones redundantes, conservando pruebas sintéticas, evaluación pública y aplicación financiera con sus controles principales.
 
-Si el presupuesto es insuficiente, se retirarán alternativas redundantes y comparadores opcionales, conservando los controles principales. La aplicación financiera podrá acotarse a una tarea y un agente, con su estrategia trivial y control sin procesamiento diferenciado por ramas. El inventario y el piloto cerrarán datos, arquitecturas y presupuestos antes de consultar la prueba.
-
-Los riesgos científicos son que los perfiles no orienten una mejora, que esta se limite a ciertos dominios o que los datos no permitan estimarla con precisión. Se informarán resultados desfavorables e inconclusos. Los datos se utilizarán conforme a sus licencias y la evaluación financiera será histórica. Se documentará cualquier solapamiento del preentrenamiento o desarrollo con las fuentes reservadas.
+Los riesgos científicos son que el diagnóstico no mejore el diseño, que la utilidad se limite a ciertos dominios o que los datos no permitan estimarla con precisión. Se publicarán resultados favorables, desfavorables e inconclusos. Se respetarán las licencias de los datos y la evaluación financiera será histórica.
 
 \section{Cronograma}
 
-La Tabla~\ref{tab:timeline} distribuye las actividades y entregas en seis semestres.
-
 \begin{table}[H]
-\centering
-\small
-\caption{Actividades y entregas por semestre.}
+\centering\small
+\caption{Actividades y entregas previstas en seis semestres.}
 \label{tab:timeline}
-\begin{tabularx}{\textwidth}{@{}L{0.8cm}Y L{4.8cm}@{}}
+\begin{tabularx}{\textwidth}{@{}L{0.9cm}Y L{4.3cm}@{}}
 \toprule
-\textbf{Sem.} & \textbf{Trabajo principal} & \textbf{Entrega} \\
+\textbf{Sem.} & \textbf{Actividad principal} & \textbf{Entrega} \\
 \midrule
-1 & Revisar antecedentes, definir tareas e interfaces, inventariar datos y realizar el piloto de recursos y precisión. & Diseño inicial registrado e inventario de datos y comparaciones. \\
-2 & Implementar perfiles, componentes y selección de modelos; construir señales sintéticas y verificar gradientes. & Software reproducible y reserva sintética definida (E0). \\
-3 & Desarrollar y comparar criterios de diseño, modalidades de entrenamiento y controles; cerrar los protocolos finales. & Método y presupuestos fijados al terminar el desarrollo (E1); manuscrito metodológico. \\
-4 & Evaluar pronóstico en familias reservadas y contrastar agrupación y fusión en señales sintéticas. & Resultados de la evaluación pública (E2) y de las tres hipótesis; manuscrito principal. \\
-5 & Integrar y evaluar los módulos en RL, con controles propios y comparación publicada cuando sea recuperable. & Evaluación financiera histórica (E3) y componentes reutilizables. \\
-6 & Integrar resultados, realizar la réplica independiente, escribir la tesis y preparar la defensa. & Tesis, modelos, configuraciones y documentación. \\
+1 & Actualizar antecedentes, definir tareas e interfaces, inventariar datos y realizar el piloto. & Diseño registrado, inventario y presupuesto. \\
+2 & Implementar diagnóstico y componentes; construir señales sintéticas y comprobar el entrenamiento. & Software, pruebas y reserva sintética (E0). \\
+3 & Desarrollar criterios de diseño, elegir controles y cerrar protocolos. & Procedimiento fijado (E1) y manuscrito metodológico. \\
+4 & Evaluar familias reservadas y contrastar agrupación y fusión en señales sintéticas. & Resultados E2 y H1--H3; manuscrito principal. \\
+5 & Integrar y evaluar en RL frente a controles y referencias compatibles. & Evaluación financiera (E3) y módulos reutilizables. \\
+6 & Integrar resultados, comprobar reproducibilidad, escribir y defender la tesis. & Tesis, modelos y documentación. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -553,22 +527,33 @@ La Tabla~\ref{tab:timeline} distribuye las actividades y entregas en seis semest
 \section{Resultados y contribuciones esperadas}
 
 \begin{enumerate}
-\item Un procedimiento reproducible para diseñar representaciones temporales modulares a partir del análisis de datos, con criterios explícitos de agrupación, contexto y selección de modelos.
-\item Evidencia que distinga el aporte del diseño del efecto de la arquitectura elegida, el preentrenamiento y los recursos empleados, incluyendo sus fallos y límites de generalización.
-\item Componentes integrados en pronóstico y RL, evaluados con protocolos comparables y acompañados de configuraciones, pesos y registros experimentales analizables en el cubo OLAP.
+\item Un procedimiento reproducible que conecte el análisis de los datos con la agrupación, el contexto y la selección de extractores por rama.
+\item Evidencia que distinga el aporte del diseño del efecto de la arquitectura, el preentrenamiento y los recursos, incluyendo resultados desfavorables y límites de aplicación.
+\item Componentes integrados y evaluados en pronóstico y RL, con configuraciones, pesos y registros experimentales reproducibles.
 \end{enumerate}
 
 \begin{thebibliography}{99}
 \small
+\setlength{\itemsep}{0.35em}
+\setlength{\parsep}{0pt}
 
 \bibitem{bengio2013representation}
 Y.~Bengio, A.~Courville y P.~Vincent, «Representation Learning: A Review and New Perspectives», \emph{IEEE Transactions on Pattern Analysis and Machine Intelligence}, vol. 35, n.º 8, pp. 1798--1828, 2013. DOI: \href{https://doi.org/10.1109/TPAMI.2013.50}{\nolinkurl{10.1109/TPAMI.2013.50}}.
 
-\bibitem{goodfellow2016deep}
-I.~Goodfellow, Y.~Bengio y A.~Courville, \emph{Deep Learning}. MIT Press, 2016. \url{https://www.deeplearningbook.org/}.
-
 \bibitem{cawley2010overfit}
 G. C.~Cawley y N. L. C.~Talbot, «On Over-fitting in Model Selection and Subsequent Selection Bias in Performance Evaluation», \emph{Journal of Machine Learning Research}, vol. 11, n.º 70, pp. 2079--2107, 2010. \url{https://jmlr.org/papers/v11/cawley10a.html}.
+
+\bibitem{bai2018tcn}
+S.~Bai, J. Z.~Kolter y V.~Koltun, «An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling», \emph{arXiv preprint arXiv:1803.01271}, 2018. DOI: \href{https://doi.org/10.48550/arXiv.1803.01271}{\nolinkurl{10.48550/arXiv.1803.01271}}.
+
+\bibitem{keras2026conv1d}
+Keras Team, «Conv1D layer», documentación oficial de Keras 3, consultada el 9 de septiembre de 2026. \url{https://keras.io/api/layers/convolution_layers/convolution1d/}.
+
+\bibitem{keras2026lstm}
+Keras Team, «LSTM layer», documentación oficial de Keras 3, consultada el 9 de septiembre de 2026. \url{https://keras.io/api/layers/recurrent_layers/lstm/}.
+
+\bibitem{hyndman2021tscv}
+R. J.~Hyndman y G.~Athanasopoulos, \emph{Forecasting: Principles and Practice}, 3.\textsuperscript{a} ed. OTexts, 2021, cap. 4 y secs. 5.8 y 5.10. \url{https://otexts.com/fpp3/}.
 
 \bibitem{zeng2023dlinear}
 A.~Zeng et al., «Are Transformers Effective for Time Series Forecasting?», \emph{Proceedings of the AAAI Conference on Artificial Intelligence}, vol. 37, n.º 9, pp. 11121--11128, 2023. DOI: \href{https://doi.org/10.1609/aaai.v37i9.26317}{\nolinkurl{10.1609/aaai.v37i9.26317}}.
@@ -578,9 +563,6 @@ Y.~Nie et al., «A Time Series is Worth 64 Words: Long-term Forecasting with Tra
 
 \bibitem{liu2024itransformer}
 Y.~Liu et al., «{iTransformer}: Inverted Transformers Are Effective for Time Series Forecasting», \emph{International Conference on Learning Representations}, 2024. \url{https://openreview.net/forum?id=JePfAI8fah}.
-
-\bibitem{wu2023timesnet}
-H.~Wu et al., «{TimesNet}: Temporal 2D-Variation Modeling for General Time Series Analysis», \emph{International Conference on Learning Representations}, 2023. \url{https://openreview.net/forum?id=ju_Uqw384Oq}.
 
 \bibitem{zhang2024mtst}
 Y.~Zhang et al., «Multi-resolution Time-Series Transformer for Long-term Forecasting», \emph{Proceedings of the 27th International Conference on Artificial Intelligence and Statistics}, vol. 238, pp. 4222--4230, 2024. \url{https://proceedings.mlr.press/v238/zhang24l.html}.
@@ -597,29 +579,11 @@ W.~Cai et al., «{MSGNet}: Learning Multi-Scale Inter-Series Correlations for Mu
 \bibitem{chen2024ccm}
 J.~Chen et al., «From Similarity to Superiority: Channel Clustering for Time Series Forecasting», \emph{Advances in Neural Information Processing Systems}, vol. 37, 2024. DOI: \href{https://doi.org/10.52202/079017-4152}{\nolinkurl{10.52202/079017-4152}}.
 
+\bibitem{liu2024dgcformer}
+Q.~Liu, Y.~Fang, P.~Jiang y G.~Li, «DGCformer: Deep Graph Clustering Transformer for Multivariate Time Series Forecasting», \emph{arXiv preprint arXiv:2405.08440}, 2024. \url{https://arxiv.org/abs/2405.08440}.
+
 \bibitem{qiu2025duet}
 X.~Qiu et al., «{DUET}: Dual Clustering Enhanced Multivariate Time Series Forecasting», \emph{Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining}, pp. 1185--1196, 2025. DOI: \href{https://doi.org/10.1145/3690624.3709325}{\nolinkurl{10.1145/3690624.3709325}}.
-
-\bibitem{yu2024leddam}
-G.~Yu et al., «Revitalizing Multivariate Time Series Forecasting: Learnable Decomposition with Inter-Series Dependencies and Intra-Series Variations Modeling», \emph{Proceedings of the 41st International Conference on Machine Learning}, vol. 235, pp. 57818--57841, 2024. \url{https://proceedings.mlr.press/v235/yu24s.html}.
-
-\bibitem{lu2024cats}
-J.~Lu et al., «{CATS}: Enhancing Multivariate Time Series Forecasting by Constructing Auxiliary Time Series as Exogenous Variables», \emph{Proceedings of the 41st International Conference on Machine Learning}, vol. 235, pp. 32990--33006, 2024. \url{https://proceedings.mlr.press/v235/lu24d.html}.
-
-\bibitem{woo2022cost}
-G.~Woo et al., «{CoST}: Contrastive Learning of Disentangled Seasonal-Trend Representations for Time Series Forecasting», \emph{International Conference on Learning Representations}, 2022. \url{https://openreview.net/forum?id=PilZY3omXV2}.
-
-\bibitem{yang2022btsf}
-L.~Yang y S.~Hong, «Unsupervised Time-Series Representation Learning with Iterative Bilinear Temporal-Spectral Fusion», \emph{Proceedings of the 39th International Conference on Machine Learning}, vol. 162, pp. 25038--25054, 2022. \url{https://proceedings.mlr.press/v162/yang22e.html}.
-
-\bibitem{ravanelli2018sincnet}
-M.~Ravanelli y Y.~Bengio, «Speaker Recognition from Raw Waveform with {SincNet}», \emph{arXiv preprint arXiv:1808.00158}, 2018. DOI: \href{https://doi.org/10.48550/arXiv.1808.00158}{\nolinkurl{10.48550/arXiv.1808.00158}}.
-
-\bibitem{zeghidour2021leaf}
-N.~Zeghidour et al., «{LEAF}: A Learnable Frontend for Audio Classification», \emph{International Conference on Learning Representations}, 2021. \url{https://openreview.net/forum?id=jM76BCb6F9m}.
-
-\bibitem{schlueter2022efficientleaf}
-J.~Schl{\"u}ter y G.~Gutenbrunner, «{EfficientLEAF}: A Faster Learnable Audio Frontend of Questionable Use», \emph{arXiv preprint arXiv:2207.05508}, 2022. DOI: \href{https://doi.org/10.48550/arXiv.2207.05508}{\nolinkurl{10.48550/arXiv.2207.05508}}.
 
 \bibitem{montero2020fforma}
 P.~Montero-Manso et al., «{FFORMA}: Feature-based Forecast Model Averaging», \emph{International Journal of Forecasting}, vol. 36, n.º 1, pp. 86--92, 2020. DOI: \href{https://doi.org/10.1016/j.ijforecast.2019.02.011}{\nolinkurl{10.1016/j.ijforecast.2019.02.011}}.
@@ -630,29 +594,32 @@ Z.~Liang y Y.~Sun, «Evolutionary Neural Architecture Search for Multivariate Ti
 \bibitem{leppich2025repnet}
 R.~Leppich et al., «Decomposing the Time Series Forecasting Pipeline: A Modular Approach for Time Series Representation, Information Extraction, and Projection», \emph{arXiv preprint arXiv:2507.05891}, 2025. DOI: \href{https://doi.org/10.48550/arXiv.2507.05891}{\nolinkurl{10.48550/arXiv.2507.05891}}.
 
-\bibitem{bengio2007greedy}
-Y.~Bengio et al., «Greedy Layer-Wise Training of Deep Networks», \emph{Advances in Neural Information Processing Systems}, vol. 19, 2007. \url{https://proceedings.neurips.cc/paper_files/paper/2006/file/5da713a690c067105aeb2fae32403405-Paper.pdf}.
+\bibitem{ma2026heterogeneity}
+Z.~Ma, Á.~López-Oriona, H.~Ombao y Y.~Sun, «Forecasting Multivariate Time Series under Predictive Heterogeneity: A Validation-Driven Clustering Framework», \emph{arXiv preprint arXiv:2604.13748}, 2026. \url{https://arxiv.org/abs/2604.13748}.
+
+\bibitem{woo2022cost}
+G.~Woo et al., «{CoST}: Contrastive Learning of Disentangled Seasonal-Trend Representations for Time Series Forecasting», \emph{International Conference on Learning Representations}, 2022. \url{https://openreview.net/forum?id=PilZY3omXV2}.
+
+\bibitem{zeghidour2021leaf}
+N.~Zeghidour et al., «{LEAF}: A Learnable Frontend for Audio Classification», \emph{International Conference on Learning Representations}, 2021. \url{https://openreview.net/forum?id=jM76BCb6F9m}.
+
+\bibitem{schlueter2022efficientleaf}
+J.~Schl{\"u}ter y G.~Gutenbrunner, «{EfficientLEAF}: A Faster Learnable Audio Frontend of Questionable Use», \emph{arXiv preprint arXiv:2207.05508}, 2022. DOI: \href{https://doi.org/10.48550/arXiv.2207.05508}{\nolinkurl{10.48550/arXiv.2207.05508}}.
 
 \bibitem{li2023timae}
 Z.~Li et al., «{Ti-MAE}: Self-Supervised Masked Time Series Autoencoders», \emph{arXiv preprint arXiv:2301.08871}, 2023. DOI: \href{https://doi.org/10.48550/arXiv.2301.08871}{\nolinkurl{10.48550/arXiv.2301.08871}}.
 
 \bibitem{featureextractor2026manager}
-H.~Bastidas, «Gestor de autoencoder en \texttt{feature-extractor}», 2026. Inspecci\'on est\'atica; commit \texttt{df86252}; consultado el 7 de septiembre de 2026. \url{https://github.com/harveybc/feature-extractor/blob/df86252a174a1f5b9f77f4cb1bcb78fcdfe429e8/app/autoencoder_manager.py}.
+H.~Bastidas, «Gestor de autoencoder de feature-extractor», código fuente, revisión \texttt{df86252}, 2026. \url{https://github.com/harveybc/feature-extractor/blob/df86252a174a1f5b9f77f4cb1bcb78fcdfe429e8/app/autoencoder_manager.py}.
 
 \bibitem{predictor2026trainfe}
-H.~Bastidas, «Configuraci\'on de carga de extractor y \texttt{train\_fe}», 2026. Configuración del repositorio, commit \texttt{20ec571}; consultada el 7 de septiembre de 2026. \url{https://github.com/harveybc/predictor/blob/20ec57145b4ed3eb647eabe2b7591f35a3dbbf47/examples/config/phase_3_1/phase_3_1_cnn_25200_1h_config.json}.
+H.~Bastidas, «Configuración de carga y ajuste del extractor de características», código fuente, revisión \texttt{20ec571}, 2026. \url{https://github.com/harveybc/predictor/blob/20ec57145b4ed3eb647eabe2b7591f35a3dbbf47/examples/config/phase_3_1/phase_3_1_cnn_25200_1h_config.json}.
 
 \bibitem{ibmcrispdm}
-IBM, \emph{IBM SPSS Modeler CRISP-DM Guide}, versión 19. Documentación de la metodología y de la selección de técnicas de modelado. \url{https://www.ibm.com/docs/en/SS3RA7_19.0.0/pdf/ModelerCRISPDM.pdf}.
+IBM, \emph{IBM SPSS Modeler CRISP-DM Guide}, versión 14, 2011. \url{https://inseaddataanalytics.github.io/INSEADAnalytics/CRISP_DM.pdf}.
 
 \bibitem{qiu2024tfb}
 X.~Qiu et al., «{TFB}: Towards Comprehensive and Fair Benchmarking of Time Series Forecasting Methods», \emph{Proceedings of the VLDB Endowment}, vol. 17, n.º 9, pp. 2363--2377, 2024. DOI: \href{https://doi.org/10.14778/3665844.3665863}{\nolinkurl{10.14778/3665844.3665863}}.
-
-\bibitem{godahewa2021monash}
-R.~Godahewa et al., «Monash Time Series Forecasting Archive», \emph{Advances in Neural Information Processing Systems: Datasets and Benchmarks Track}, 2021. \url{https://openreview.net/forum?id=I01l7rc0jcb}.
-
-\bibitem{aksu2024gifteval}
-T.~Aksu et al., «{GIFT-Eval}: A Benchmark for General Time Series Forecasting Model Evaluation», \emph{arXiv preprint arXiv:2410.10393}, 2024. DOI: \href{https://doi.org/10.48550/arXiv.2410.10393}{\nolinkurl{10.48550/arXiv.2410.10393}}.
 
 \bibitem{sun2023trademaster}
 S.~Sun et al., «{TradeMaster}: A Holistic Quantitative Trading Platform Empowered by Reinforcement Learning», \emph{Advances in Neural Information Processing Systems 36, Datasets and Benchmarks Track}, 2023. \url{https://proceedings.neurips.cc/paper_files/paper/2023/file/b8f6f7f2ba4137124ac976286eacb611-Paper-Datasets_and_Benchmarks.pdf}.
@@ -660,20 +627,11 @@ S.~Sun et al., «{TradeMaster}: A Holistic Quantitative Trading Platform Empower
 \bibitem{liu2022finrlmeta}
 X.-Y.~Liu et al., «{FinRL-Meta}: Market Environments and Benchmarks for Data-Driven Financial Reinforcement Learning», \emph{Advances in Neural Information Processing Systems 35, Datasets and Benchmarks Track}, 2022. \url{https://papers.neurips.cc/paper_files/paper/2022/file/0bf54b80686d2c4dc0808c2e98d430f7-Paper-Datasets_and_Benchmarks.pdf}.
 
-\bibitem{bai2018tcn}
-S.~Bai, J. Z.~Kolter y V.~Koltun, «An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling», \emph{arXiv preprint arXiv:1803.01271}, 2018. DOI: \href{https://doi.org/10.48550/arXiv.1803.01271}{\nolinkurl{10.48550/arXiv.1803.01271}}.
-
-\bibitem{raffin2021sb3}
-A.~Raffin et al., «Stable-Baselines3: Reliable Reinforcement Learning Implementations», \emph{Journal of Machine Learning Research}, vol. 22, n.º 268, pp. 1--8, 2021. \url{http://jmlr.org/papers/v22/20-1364.html}.
-
 \bibitem{keras2023transfer}
-Keras Team, «Transfer learning \& fine-tuning», 2023. Documentaci\'on oficial; consultada el 7 de septiembre de 2026. \url{https://keras.io/guides/transfer_learning/}.
+Keras Team, «Transfer learning \& fine-tuning», documentación oficial, actualizada en 2023, consultada el 9 de septiembre de 2026. \url{https://keras.io/guides/transfer_learning/}.
 
 \bibitem{hyndman2006mase}
 R. J.~Hyndman y A. B.~Koehler, «Another Look at Measures of Forecast Accuracy», \emph{International Journal of Forecasting}, vol. 22, n.º 4, pp. 679--688, 2006. DOI: \href{https://doi.org/10.1016/j.ijforecast.2006.03.001}{\nolinkurl{10.1016/j.ijforecast.2006.03.001}}.
-
-\bibitem{hyndman2021tscv}
-R. J.~Hyndman y G.~Athanasopoulos, \emph{Forecasting: Principles and Practice}, 3.a ed.. OTexts, 2021. Secci\'on 5.10: evaluaci\'on con origen rodante. \url{https://otexts.com/fpp3/tscv.html}.
 \end{thebibliography}
 
 \end{document}
