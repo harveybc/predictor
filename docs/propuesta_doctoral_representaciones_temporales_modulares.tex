@@ -141,7 +141,7 @@ El aprendizaje de representaciones transforma las observaciones en característi
 
 Una representación uniforme puede resultar insuficiente cuando las variables cambian a ritmos distintos. Explorar muchas combinaciones de ventanas y arquitecturas permite adaptarlas, pero consume recursos y aumenta el riesgo de escoger una configuración demasiado ajustada a los datos de validación~\cite{cawley2010overfit}. La pregunta es si un análisis previo de las propiedades de los datos permite orientar la selección y configuración de los modelos y mejorar su desempeño en el conjunto de prueba reservado.
 
-El proyecto parte de sistemas de pronóstico y RL para trading en los que se han probado extractores modulares y codificadores preentrenados. La necesidad práctica es orientar la selección y combinación de estos componentes mediante un análisis de los datos, y comprobar tanto su utilidad financiera como su desempeño frente a métodos publicados.
+El proyecto parte de sistemas de pronóstico y RL para trading en los que se han probado extractores modulares y codificadores preentrenados. La necesidad práctica es orientar la selección y combinación de estos componentes mediante un análisis de los datos, y comprobar tanto su utilidad financiera como su desempeño frente a resultados de métodos publicados.
 
 \begin{tcolorbox}[colback=soft,colframe=sabana,boxrule=0.6pt,arc=1.2pt,left=6pt,right=6pt,top=5pt,bottom=5pt]
 \textbf{Pregunta de investigación.}
@@ -162,14 +162,14 @@ Desarrollar y evaluar un procedimiento que utilice las propiedades de los datos 
 \item Definir los componentes e interfaces de la representación e identificar propiedades de los datos que orienten la agrupación de variables y el procesamiento de cada rama.
 \item Construir un procedimiento reproducible de diseño y selección de modelos, con entrenamiento desde cero o con detectores preentrenados, fijos o ajustables.
 \item Comparar el procedimiento con métodos publicados y variantes controladas en tareas reservadas, midiendo desempeño, costo y variación de los resultados.
-\item Integrar la representación en las plataformas existentes de pronóstico y RL, registrar los experimentos y evaluar su aplicación financiera frente a una estrategia trivial, la representación actual y una variante sin el diseño modular propuesto.
+\item Integrar la representación en plataformas existentes de pronóstico y RL, registrar los experimentos y evaluar su aplicación financiera frente a una estrategia trivial, la representación actual y una variante sin el diseño modular propuesto.
 \end{enumerate}
 
 \section{Marco teórico y antecedentes}
 
 \subsection{Representación temporal y componentes del modelo}
 
-Una \emph{ventana de entrada} es el segmento histórico que recibe el modelo. Se denotará por $X\in\mathbb{R}^{L\times p}$, con $L$ instantes y $p$ variables. El \emph{campo receptivo} de una activación es la parte de esa entrada que puede influir en ella. Una ventana puede contener 144 observaciones y una activación de la primera capa utilizar solo tres; las capas siguientes pueden ampliar ese alcance~\cite{bai2018tcn}.
+Una \emph{ventana de entrada} es el segmento histórico que recibe el modelo. Se denotará por $X\in\mathbb{R}^{L\times p}$, con $L$ instantes y $p$ variables. El \emph{campo receptivo} de una activación es la parte de esa entrada que puede influir en ella. Una ventana puede contener 144 observaciones y una activación de la primera capa utilizar solo tres, las capas siguientes pueden ampliar ese alcance~\cite{bai2018tcn}.
 
 Las variables se distribuirán en $B$ grupos. Cada rama $j$ producirá una secuencia de características mediante un detector de patrones $D_j$, una integración temporal $I_j$ y una adaptación $A_j$:
 \begin{equation}
