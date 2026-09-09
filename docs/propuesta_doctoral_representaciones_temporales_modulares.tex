@@ -203,19 +203,20 @@ $G_j$ identifica las variables del grupo, $L_j$ la longitud de la secuencia de s
 \node[below=3pt of integrator.south] {$144\times64$};
 \node[below=3pt of adapter.south] {$144\times16$};
 \end{tikzpicture}
-\caption{Ejemplo de un extractor de características con capas de Keras~\cite{keras2026conv1d}, \cite{keras2026lstm}. Las dimensiones indican instantes por características, sin el lote. Las convoluciones usan paso y dilatación 1, con ReLU en el detector. La LSTM conserva la secuencia y el adaptador reduce las características por instante. Configuración ilustrativa con detector reutilizable.}
+\caption{Ejemplo de un extractor de características con capas de Keras~\cite{keras2026conv1d}, \cite{keras2026lstm}. Las dimensiones indican instantes por características, sin el lote. Las convoluciones usan paso y dilatación 1, con ReLU en el detector. La LSTM conserva la secuencia y el adaptador reduce las características por instante.}
 \label{fig:ejemplo-keras}
 \end{figure}
 
 El módulo de fusión alineará las secuencias y concatenará sus características. El núcleo procesará la secuencia conjunta y reducirá dimensionalidad antes de los cabezales. Cada aplicación entrenará los modelos y optimizará hiperparámetros para su objetivo: pronóstico de valores futuros o aprendizaje de una política y, cuando corresponda, funciones de valor.
-
 \subsection{Propiedades de los datos que orientan el diseño}
 
-El análisis distinguirá cantidad y calidad de datos, distribución de valores, comportamiento temporal y relaciones entre variables. Hyndman y Athanasopoulos~\cite{hyndman2021tscv} describen características calculadas sobre series para resumir distintos aspectos de su comportamiento. Estas propiedades orientarán decisiones concretas: las ausencias y la distribución condicionarán la preparación y compatibilidad de los modelos; las periodicidades y dependencias respecto del pasado ayudarán a proponer grupos y contextos.
+El análisis la calidad de los datos, la distribución de sus valores, su comportamiento temporal y las relaciones entre variables. Estas propiedades orientarán la preparación de las entradas, su agrupación y la configuración de los extractores. Se examinarán tanto las variables originales como las entradas resultantes del preprocesamiento, pues las transformaciones y descomposiciones pueden modificar las propiedades que deberá aprovechar cada rama.
 
-Se distinguirán el \emph{intervalo de muestreo}, que separa observaciones consecutivas; la \emph{periodicidad}, que indica cada cuánto se repite un comportamiento; y el \emph{contexto}, que es la extensión de historia disponible para una rama. Una serie horaria puede contener ciclos diarios y semanales; normalizar sus valores no elimina esas diferencias temporales.
+Se distinguirán el \emph{intervalo de muestreo}, que separa observaciones consecutivas; la \emph{periodicidad}, que indica cada cuánto se repite un comportamiento; y el \emph{contexto}, que es la extensión de historia disponible para una rama. Una serie observada cada hora puede contener ciclos diarios y semanales. La normalización mediante z-score modifica la escala de sus valores, pero conserva esas periodicidades.
 
-Un \emph{perfil temporal} resumirá autocorrelación, distribución de energía entre frecuencias, periodicidades y estabilidad entre segmentos de entrenamiento. No se asignará una duración única a cada variable: pueden coexistir varios comportamientos o no encontrarse regularidades estables. La autocorrelación también puede reflejar tendencias, como explican Hyndman y Athanasopoulos~\cite{hyndman2021tscv}. Los perfiles permitirán proponer agrupaciones, cuya utilidad se comprobará mediante validación del modelo completo; su semejanza no demuestra que las variables deban compartir extractor. Las relaciones entre variables con retraso se examinarán por separado.
+Para describir cada entrada se utilizará un \emph{perfil temporal}: un conjunto de medidas de autocorrelación, distribución de potencia entre frecuencias, fuerza de tendencia y estacionalidad. Hyndman y Athanasopoulos~\cite{hyndman2021tscv} presentan medidas que permiten caracterizar estos aspectos y explican cómo la tendencia y la estacionalidad se reflejan en la autocorrelación. Se comprobará la estabilidad de los perfiles entre segmentos de entrenamiento, considerando que una misma entrada puede contener varios comportamientos superpuestos.
+
+La semejanza entre perfiles permitirá construir agrupaciones candidatas. Las relaciones entre variables, incluidas las que aparecen con retraso, se analizarán por separado para orientar su procesamiento y combinación. La metodología especificará cómo estas mediciones se traducen en grupos, contextos y modelos candidatos, cuya utilidad se evaluará mediante el desempeño del modelo completo en validación.
 
 \subsection{Antecedentes}
 
@@ -537,11 +538,11 @@ d_r=\operatorname{MASE}(\text{fusión de secuencias},r)
 Un $d_r$ negativo favorecerá conservar las secuencias; un $\gamma$ negativo indicará que su ventaja es mayor cuando hay relaciones con retraso. H3 recibirá apoyo si el límite superior del intervalo de confianza de $d_1$ es menor que $-\varepsilon$ y el de $\gamma$ menor que cero. Se medirá también la diferencia de memoria utilizada. Las comparaciones públicas basadas en relaciones detectadas en entrenamiento serán complementarias.
 
 \paragraph{Incertidumbre y multiplicidad.}
-Con $F$ familias reservadas se evaluarán $K=F+4$ efectos: el global de H1, $F$ resultados por familia, la pendiente de H2 y las dos diferencias de H3. Se usarán intervalos bilaterales con cobertura nominal $1-0.05/K$, aplicando Bonferroni al conjunto. El margen de MASE no se aplicará a la pendiente ni a la diferencia de diferencias $\gamma$.
+Con $F$ grupos de datos  reservados se evaluarán $K=F+4$ efectos: el global de H1, $F$ resultados por grupo, la pendiente de H2 y las dos diferencias de H3. Se usarán intervalos bilaterales con cobertura nominal $1-0.05/K$, aplicando Bonferroni al conjunto. El margen de MASE no se aplicará a la pendiente ni a la diferencia de diferencias $\gamma$.
 
-Los intervalos se estimarán mediante \emph{bootstrap jerárquico}, remuestreando familias, conjuntos y tareas y manteniendo emparejados los métodos. Para efectos por familia se fijará la familia correspondiente. Objetivos y horizontes de una fuente permanecerán vinculados; las semillas y orígenes se agregarán dentro de cada tarea. En señales sintéticas se remuestrearán configuraciones y repeticiones con sus controles emparejados. Si se remuestrean errores temporales, se usarán bloques contiguos para conservar dependencia.
+Los intervalos se estimarán mediante \emph{bootstrap jerárquico}.  Objetivos y horizontes de una fuente permanecerán vinculados; las semillas y orígenes se agregarán dentro de cada tarea. En señales sintéticas se remuestrearán configuraciones y repeticiones con sus controles emparejados. Si se remuestrean errores temporales, se usarán bloques contiguos para conservar dependencia.
 
-El piloto comprobará mediante simulación la precisión y cobertura de los intervalos y su sensibilidad a la longitud de bloque. Cuando la cantidad o diversidad de datos no permitan sostenerlas, el contraste será inconcluso. Se examinará la sensibilidad al retirar conjuntos, sin ampliar la prueba ni redefinir hipótesis después de observar resultados.
+El piloto comprobará mediante simulación la precisión y cobertura de los intervalos. Cuando la cantidad o diversidad de datos no permitan sostenerlas, el contraste será inconcluso. Se examinará la sensibilidad al retirar conjuntos, sin ampliar la prueba ni redefinir hipótesis después de observar resultados.
 
 \subsubsection{Costo de obtener el resultado}
 
