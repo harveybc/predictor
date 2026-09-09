@@ -171,3 +171,25 @@ roc_pr_curves.png
 *_model_plot.png
 *_loss_plot.png
 *_predictions_plot.png
+
+# Copyrighted / author-PDF copies for local reading of the doctoral proposals.
+# Indexes: docs/tesis_sac/referencias/README.md and
+# docs/tesis_representaciones_modulares/referencias/README.md; do not push the papers.
+docs/tesis_sac/referencias/*.pdf
+docs/tesis_representaciones_modulares/referencias/*.pdf
+docs/tesis_representaciones_modulares/referencias/*.html
+docs/tesis_representaciones_modulares/referencias/*.py
+docs/tesis_representaciones_modulares/referencias/*.json
+
+# LaTeX intermediates (keep .tex .bib .pdf)
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.toc
+*.synctex.gz
