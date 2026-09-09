@@ -504,7 +504,7 @@ El piloto comprobará mediante simulación la precisión y cobertura de los inte
 
 Se registrarán diagnóstico, preentrenamiento, búsqueda, ajuste y evaluación, incluidos decodificador, candidatos descartados y ejecuciones fallidas. Se distinguirá el costo de desarrollar el procedimiento del de aplicarlo a nuevas tareas. Al reutilizar un codificador se informarán costo inicial, costo adicional por uso y acumulado, atribuyendo el trabajo compartido sin contarlo varias veces.
 
-Las medidas serán energía en vatios-hora, tiempo transcurrido, horas de CPU y GPU y memoria máxima, con hardware y concurrencia documentados. El instrumento de medida energética se verificará durante el piloto. Las duraciones de trabajos paralelos no se sumarán como tiempo transcurrido. Esta contabilidad acompañará las comparaciones de desempeño.
+Las medidas serán tiempo transcurrido, horas de CPU y GPU para estimación de consumo eléctrico y memoria máxima, con hardware y concurrencia documentados. Las duraciones de trabajos paralelos no se sumarán como tiempo transcurrido. Esta contabilidad acompañará las comparaciones de desempeño.
 
 \subsection{Despliegue e integración}
 
@@ -518,11 +518,11 @@ Además del precio o rendimiento futuro, se pronosticará volatilidad mediante l
 
 Antes de la prueba se fijarán métrica principal, margen relevante y medidas complementarias, incluyendo rentabilidad neta, riesgo y caída máxima del capital. Los costos y condiciones de ejecución serán comunes. Las diferencias se estimarán sobre los mismos períodos y con varias semillas; sus intervalos conservarán esa dependencia. Superar una estrategia trivial dará una referencia de utilidad; la comparación entre representaciones permitirá atribuir el efecto al diseño. Este análisis tendrá su propio control de multiplicidad y no modificará H1--H3.
 
-DOIN proporcionará optimización y registro; el cubo OLAP organizará configuraciones, particiones, semillas, métricas y costos. Se conservarán candidatos descartados, versiones de pesos y reglas de reentrenamiento para reproducir y analizar los experimentos.
+La plataforma DOIN~\cite{doin} creada por el autor proporcionará optimización distribuída con DEAP, el registro en el cubo OLAP existente en DOIN organizará configuraciones, particiones, semillas, métricas y costos. Se conservarán métricas de candidatos descartados para una posible meta-optimización futura, versiones de pesos y reglas de reentrenamiento para reproducir y analizar los experimentos.
 
 \section{Viabilidad, recursos y riesgos}
 
-Se dispone de cuatro GPU de distintas capacidades, CPU y plataformas de datos y entrenamiento. El piloto medirá tiempos y memoria con disponibilidad parcial de las GPU y reservará recursos para RL. Si es necesario reducir alcance, se retirarán comparadores opcionales y configuraciones redundantes, conservando pruebas sintéticas, evaluación pública y aplicación financiera con sus controles principales.
+Se dispone de cuatro GPU Nvidia RTX de distintas capacidades (32GB, 24GB,16GB y 8GB VRAM), CPU y plataformas de datos y entrenamiento. El piloto medirá tiempos y memoria con disponibilidad parcial de las GPU y reservará recursos para RL. Si es necesario reducir alcance, se retirarán comparadores opcionales y configuraciones redundantes, conservando pruebas sintéticas, evaluación pública y aplicación financiera con sus controles principales.
 
 Los riesgos científicos son que el diagnóstico no mejore el diseño, que la utilidad se limite a ciertos dominios o que los datos no permitan estimarla con precisión. Se publicarán resultados favorables, desfavorables e inconclusos. Se respetarán las licencias de los datos y la evaluación financiera será histórica.
 
@@ -636,6 +636,9 @@ H.~Bastidas, «Gestor de autoencoder de feature-extractor», código fuente, rev
 
 \bibitem{predictor2026trainfe}
 H.~Bastidas, «Configuración de carga y ajuste del extractor de características», código fuente, revisión \texttt{20ec571}, 2026. \url{https://github.com/harveybc/predictor/blob/20ec57145b4ed3eb647eabe2b7591f35a3dbbf47/examples/config/phase_3_1/phase_3_1_cnn_25200_1h_config.json}.
+
+\bibitem{doin}
+H.~Bastidas, «Decentralized Optimization and Inference Network», código fuente, revisión \texttt{20ec571}, 2026. \url{https://github.com/harveybc/doin-core}.
 
 \bibitem{ibmcrispdm}
 IBM, \emph{IBM SPSS Modeler CRISP-DM Guide}, versión 14, 2011. \url{https://inseaddataanalytics.github.io/INSEADAnalytics/CRISP_DM.pdf}.
