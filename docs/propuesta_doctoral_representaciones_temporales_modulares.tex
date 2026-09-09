@@ -291,7 +291,7 @@ El análisis orientará la normalización, descomposición mediante STL o wavele
 
 \subsection{Modelado y optimización}
 
-El procedimiento de diseño parte de un diagnóstico de los datos para configurar la arquitectura del modelo como se muestra en la Figura~\ref{fig:arquitectura}.
+El procedimiento de diseño utilizará el diagnóstico de los datos de entrenamiento para construir grupos de variables, seleccionar modelos candidatos y configurar sus conexiones, como muestra la Figura~\ref{fig:arquitectura}. Se analizarán las entradas que recibirá cada extractor después del preprocesamiento. Las reglas de diagnóstico y el espacio de configuraciones se definirán durante el desarrollo; en cada tarea se aplicarán esas reglas y se elegirá la configuración mediante validación del modelo completo.
 
 \begin{figure}[htbp]
 \centering
@@ -325,39 +325,80 @@ El procedimiento de diseño parte de un diagnóstico de los datos para configura
       label={[font=\scriptsize]below:Ramas que conservan la secuencia}] (branchset) {};
 \draw[designarr] (rule) -- (branchset.north);
 \end{tikzpicture}}
-\caption{Arquitectura conceptual. Se parte de un análisis de los datos, dada rama contiene un extractor con detector $D_j$  e integración $I_j$ y adaptación $A_j$ configurables. El bloque de fusión y núcleo reúne esos dos componentes de la Figura~\ref{fig:vista-general}.}
+\caption{Diseño de la arquitectura a partir del diagnóstico. Cada rama contiene un detector $D_j$, con integración $I_j$ y adaptación $A_j$ configurables. Las flechas discontinuas representan decisiones de diseño y las continuas, el paso de los datos. Fusión y núcleo corresponden a los componentes de la Figura~\ref{fig:vista-general}.}
 \label{fig:arquitectura}
 \end{figure}
 
-El procedimiento combinará propuestas basadas en resultado del análisis de los datos de entrenamiento:
+\paragraph{Diagnóstico y construcción de los grupos.}
+Para cada variable o componente obtenido del preprocesamiento se calcularán autocorrelaciones en retardos definidos, proporciones de potencia en bandas de frecuencia y fuerza de tendencia y estacionalidad. Estas medidas describen aspectos distintos del comportamiento de las series~\cite{hyndman2021tscv}. El espectro se estimará inicialmente mediante Welch, que promedia estimaciones calculadas en segmentos. Se repetirá el diagnóstico en segmentos de entrenamiento para medir su estabilidad. Los retardos, bandas y tamaños de segmento se definirán respecto del intervalo de muestreo y de la historia disponible, con una regla común para los métodos comparados.
 
-\begin{enumerate}
-\item \textbf{Proponer grupos.} Se partirá de agrupamiento jerárquico de perfiles, con una distancia y tratamiento de sus magnitudes definidos en desarrollo. Se comprobará la estabilidad entre segmentos y se contrastarán las agrupaciones con procesamiento común. Una semejanza estadística no bastará para aceptar el diseño: se evaluará el desempeño de la tarea.
-\item \textbf{Elegir contexto y modelos candidatos.} Se considerarán convoluciones, recurrencia, atención e híbridos compatibles con los datos y la tarea. Las ramas podrán usar modelos distintos. El catálogo, sus rangos y el máximo de ramas se fijarán durante el desarrollo.
-\item \textbf{Ensamblar y entrenar candidatos (nivel 1).} Se conectarán extractores, fusión, núcleo y cabezales, comprobando dimensiones y alineación. Los pesos se ajustarán con entrenamiento y la parada temprana se controlará con validación.
-\item \textbf{Optimizar y seleccionar la configuración (nivel 2).} DEAP realizará la búsqueda de estructura e hiperparámetros en la plataforma distribuida existente. Los pesos de cada candidato se ajustarán con los datos de entrenamiento; su configuración se seleccionará según el desempeño de pronóstico o RL en validación. La búsqueda se concentrará en decisiones no resueltas por el diagnóstico, con presupuesto y parada temprana propios.
-\end{enumerate}
+El agrupamiento inicial usará distancia euclidiana entre los vectores de descriptores y enlace promedio: la distancia entre dos grupos será la media de las distancias entre sus integrantes. Cada descriptor se dividirá por su desviación estándar estimada en los datos de desarrollo; los descriptores constantes se excluirán. Esa normalización permanecerá fija al evaluar tareas reservadas. Solo se agruparán entradas con una representación temporal compatible; si sus frecuencias difieren, se documentará la alineación causal o se conservarán en ramas separadas.
 
-El diseño especificará profundidad, tamaños de filtros y dilatación en convoluciones; historia accesible y estados en recurrencia; y longitud de secuencia y acceso al pasado en atención. La modularidad permitirá optimizar el tipo de modelo de cada componente, sus capas y conexiones compatibles, junto con hiperparámetros de entrenamiento como la tasa de aprendizaje. Estas alternativas se compararán mediante validación del modelo completo. La integración añadirá contexto y la adaptación preparará dimensiones y alineación cuando sean necesarias. El núcleo combinará las secuencias antes del cabezal; su reducción de dimensionalidad conservará el eje temporal.
+Se obtendrán particiones con distintos números de grupos, desde uno hasta un máximo fijado por el presupuesto. Su estabilidad se medirá por la proporción de pares de variables cuya pertenencia al mismo grupo se conserva al repetir el diagnóstico en distintos segmentos. Las particiones se compararán por el desempeño del modelo completo en validación. Así, la semejanza de los descriptores construye las alternativas y la tarea determina cuál se conserva. La redistribución aleatoria de variables se utilizará como control de H2.
 
-El detector se entrenará mediante las modalidades de la Tabla~\ref{tab:regimenes}. Para preentrenarlo, un autoencoder reconstruirá los valores originales a partir de entradas completas o parcialmente ocultas. Se reutilizará el codificador y se conservará el decodificador por separado. Reconstruir una señal no demostrará por sí solo eliminación de ruido.
+\paragraph{Selección del contexto y de los modelos candidatos.}
+Se identificarán periodicidades mediante picos espectrales reproducibles entre segmentos y se contrastarán con la autocorrelación. También se examinarán correlaciones entre variables a distintos retardos para proponer contextos que permitan combinar información retrasada. Los criterios de detección y estabilidad se fijarán durante el desarrollo. Estas mediciones propondrán retardos candidatos; su utilidad predictiva se comprobará con validación.
 
-\begin{table}[H]
+Cuando el preprocesamiento produzca una componente oscilatoria con fase interpretable, se podrá estimar su período instantáneo mediante Hilbert. A partir de su fase $\phi(t)$, corregida para eliminar saltos de $2\pi$:
+\[
+f_{\mathrm{inst}}(t)=\frac{1}{2\pi}\frac{d\phi(t)}{dt},
+\qquad T_{\mathrm{inst}}(t)=\frac{1}{f_{\mathrm{inst}}(t)}.
+\]
+Se utilizarán estimaciones con amplitud suficiente y frecuencia positiva alejada de cero, comprobando su estabilidad y los efectos de borde. No se resumirá una mezcla de componentes en un único período. Si estas estimaciones se usan como entradas, se calcularán únicamente con observaciones disponibles al decidir.
+
+Para un retardo candidato $\tau$ y un intervalo de muestreo $\Delta t$, la entrada necesitará al menos $\lceil\tau/\Delta t\rceil+1$ posiciones para incluir la observación actual y la retrasada. Se compararán extensiones que cubran esos retardos y alternativas más cortas y largas, dentro de la historia disponible. Los factores de ampliación y el límite de contexto se fijarán en desarrollo. La Tabla~\ref{tab:diagnostico-modelos} relaciona las mediciones con las configuraciones que se evaluarán.
+
+\begin{table}[htbp]
 \centering\small
-\caption{Inicialización y entrenamiento del detector.}
-\label{tab:regimenes}
-\begin{tabularx}{\textwidth}{@{}L{1.1cm}L{3.6cm}Y@{}}
+\caption{Uso del diagnóstico para construir modelos candidatos.}
+\label{tab:diagnostico-modelos}
+\begin{tabularx}{\textwidth}{@{}L{4.3cm}Y@{}}
 \toprule
-\textbf{Código} & \textbf{Modalidad} & \textbf{Entrenamiento} \\
+\textbf{Resultado del diagnóstico} & \textbf{Configuraciones que se compararán} \\
 \midrule
-R0 & Desde cero & Detector y resto del modelo se ajustan desde una inicialización aleatoria. \\
-R1 & Preentrenado y congelado & Se importan pesos y se mantiene fijo el detector; se entrena el resto. \\
-R2 & Preentrenado y ajustable & Se importan los mismos pesos iniciales de R1 y se ajustan con el modelo completo. \\
+Dependencias concentradas en retardos cortos & Detectores Conv1D con filtros y profundidad que cubran esos retardos; integración adicional frente a identidad. \\
+Periodicidades o dependencias en retardos mayores & Convoluciones dilatadas o integración recurrente con historia suficiente; comparación de contextos que incluyan y excluyan esos retardos. \\
+Relaciones entre variables que cambian de retardo entre segmentos & Atención frente a convolución o recurrencia, con el mismo acceso al pasado; en el integrador si las variables comparten rama, o en el núcleo si proceden de ramas distintas. \\
+Componentes con comportamientos diferentes & Ramas y extractores diferenciados frente a procesamiento conjunto de las mismas entradas. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Se comprobará que el detector congelado conserve sus parámetros y que el ajustable reciba gradientes del objetivo final. Se especificará el tratamiento de estados de normalización que se actualicen sin gradientes, siguiendo las distinciones de la guía de Keras~\cite{keras2023transfer}. La comparación principal usará una modalidad elegida en desarrollo y aplicada por igual al método y sus controles. En cada tarea reservada se entrenarán modelos nuevos con sus propios datos; el procedimiento de selección permanecerá fijo, como muestra la Figura~\ref{fig:protocolo}.
+Estas correspondencias constituyen reglas iniciales de diseño que se evaluarán, no una garantía de superioridad de una familia de modelos. Se descartarán configuraciones incompatibles con el muestreo o las dimensiones, y aquellas cuyo consumo estimado de recursos exceda el presupuesto. Los rangos de profundidad, tamaño y entrenamiento se fijarán en desarrollo; dentro de ellos, las ramas podrán utilizar modelos diferentes.
+
+\paragraph{Cálculo del alcance y conexión de los componentes.}
+El campo receptivo se calculará a partir de la arquitectura, antes de entrenarla. Para una cadena de $n$ convoluciones con paso uno, filtros de tamaño $k_\ell$ y dilataciones $d_\ell$:
+\[
+R=1+\sum_{\ell=1}^{n}(k_\ell-1)d_\ell.
+\]
+Por ejemplo, dos convoluciones de tamaño tres sin dilatación abarcan cinco posiciones. La dilatación permite ampliar ese alcance, como en las redes temporales estudiadas por Bai et al.~\cite{bai2018tcn}. Se contabilizarán también los pasos y las capas de reducción cuando existan. En recurrencia se especificarán la historia procesada y la conservación del estado; en atención, las posiciones accesibles y su máscara.
+
+El detector podrá reconocer patrones locales mientras el integrador combina sus activaciones en un contexto mayor. El adaptador preparará dimensiones y alineación, y la fusión combinará secuencias referidas a los mismos instantes. El núcleo conservará el eje temporal al reducir dimensionalidad y entregará sus salidas a los cabezales. Se comprobará el alcance de la rama completa, sin exigir que cada capa abarque toda la ventana.
+
+\paragraph{Entrenamiento de los pesos: nivel 1.}
+Cada candidato se entrenará para el objetivo de pronóstico o RL, con actualización de pesos en entrenamiento y parada temprana controlada mediante validación. El detector utilizará una de las modalidades de la Tabla~\ref{tab:regimenes}. Para preentrenarlo, un autoencoder reconstruirá las entradas preprocesadas a partir de versiones completas o parcialmente ocultas. Se reutilizará el codificador y se guardará el decodificador por separado. La utilidad del preentrenamiento se evaluará por el desempeño de la tarea final.
+
+\begin{table}[H]
+  \centering\small
+  \caption{Inicialización y entrenamiento del detector.}
+  \label{tab:regimenes}
+  \begin{tabularx}{\textwidth}{@{}L{1.1cm}L{3.6cm}Y@{}}
+  \toprule
+  \textbf{Código} & \textbf{Modalidad} & \textbf{Entrenamiento} \\
+  \midrule
+  R0 & Desde cero & Detector y resto del modelo se ajustan desde una inicialización aleatoria. \\
+  R1 & Preentrenado y congelado & Se importan pesos y se mantiene fijo el detector; se entrena el resto. \\
+  R2 & Preentrenado y ajustable & Se importan los mismos pesos iniciales de R1 y se ajustan con el modelo completo. \\
+  \bottomrule
+  \end{tabularx}
+\end{table}
+
+Se comprobará que el detector congelado conserve sus parámetros y que el ajustable reciba gradientes del objetivo final. Se especificará el tratamiento de estados de normalización que se actualizan sin gradientes, siguiendo la guía de Keras~\cite{keras2023transfer}. La comparación principal usará una modalidad elegida en desarrollo y aplicada por igual al método y sus controles.
+
+\paragraph{Optimización de la configuración: nivel 2.}
+DEAP realizará la búsqueda en DOIN sobre las particiones candidatas, contextos, tipos de componentes, capas, conexiones compatibles e hiperparámetros de entrenamiento. Cada configuración se evaluará después de entrenar el modelo completo. La selección utilizará el error de pronóstico o la rentabilidad neta en validación, según la tarea, con semillas, presupuesto y parada de la búsqueda definidos previamente.
+
+Se registrarán la configuración, las mediciones que motivaron su inclusión, el resultado de validación y el costo de cada candidato. El diagnóstico reducirá y organizará el espacio de búsqueda; la optimización resolverá las alternativas restantes. En las tareas reservadas se volverán a calcular los descriptores con su entrenamiento y se ajustarán modelos nuevos, conservando las reglas de diseño y selección, como muestra la Figura~\ref{fig:protocolo}. Los resultados de prueba no modificarán esas reglas.
 
 \begin{figure}[htbp]
 \centering
@@ -372,13 +413,12 @@ Se comprobará que el detector congelado conserve sus parámetros y que el ajust
 \node[box] (dev) at (3.5,2.1) {Datos para desarrollar\\el procedimiento};
 \node[fixed] (protocol) at (8.2,2.1) {Fijar criterios de diseño,\\modelos candidatos, entrenamiento y evaluación};
 \draw[arr] (dev) -- (protocol);
-
 \node[box] (train) at (0,0) {Entrenamiento de\\una tarea nueva};
-\node[box] (design) at (3.0,0) {Analizar datos y\\proponer \\preprocesamiento,\\ ramas y modelos};
+\node[box] (design) at (3.0,0) {Analizar datos y\\configurar entradas,\\ramas y modelos};
 \node[box] (pretrain) at (6.0,0) {Preentrenar detector\\solo en R1/R2};
-\node[box] (fit) at (9.0,0) {Entrenar y optimizar\\con validación};
+\node[box] (fit) at (9.0,0) {Entrenar pesos;\\seleccionar con\\validación};
 \node[box] (locked) at (12.0,0) {Modelo elegido y\\reglas fijadas};
-\node[box] (test) at (15.0,0) {Tarea en \\dataset de prueba};
+\node[box] (test) at (15.0,0) {Evaluar en datos\\de prueba};
 \draw[arr] (train) -- (design);
 \draw[arr] (design) -- (pretrain);
 \draw[arr] (pretrain) -- (fit);
@@ -387,7 +427,7 @@ Se comprobará que el detector congelado conserve sus parámetros y que el ajust
 \draw[fixedarr] (protocol.south) -- ++(0,-0.38) -| (design.north);
 \draw[fixedarr] (protocol.south) -- ++(0,-0.38) -| (fit.north);
 \end{tikzpicture}}
-\caption{Separación entre desarrollo y evaluación. Durante el desarrollo se fija el procedimiento; cada tarea analiza sus datos de entrenamiento, selecciona candidatos con validación y evalúa el modelo elegido en prueba reservada.}
+\caption{Aplicación del procedimiento a una tarea reservada. Las reglas se fijan en desarrollo; los datos de entrenamiento permiten configurar y entrenar candidatos, la validación permite seleccionarlos y la prueba evalúa el modelo elegido. En R0 se omite el preentrenamiento.}
 \label{fig:protocolo}
 \end{figure}
 
@@ -413,7 +453,7 @@ H3 & Con relaciones entre variables con retraso, conservar las secuencias hasta 
 \subsubsection{Organización de los experimentos}
 \label{sec:fases}
 
-Los cuatro bloques de la Tabla~\ref{tab:phases} separan desarrollo, pruebas reservadas y aplicación. Una \emph{familia de datos} reúne conjuntos relacionados por fuente y dominio. Sus variantes se mantendrán juntas para que distintas ventanas de una fuente no se cuenten como familias independientes.
+Los cuatro bloques de la Tabla~\ref{tab:phases} separan desarrollo, pruebas reservadas y aplicación. Una \emph{familia de datos} reúne conjuntos relacionados por fuente y dominio. 
 
 \begin{table}[H]
 \centering\small
