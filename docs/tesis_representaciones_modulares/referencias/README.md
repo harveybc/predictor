@@ -8,7 +8,7 @@ Los números del nombre coinciden con `[n]` en
 
 Los PDF y copias locales quedan **en esta carpeta**. No se suben al remoto: varios son preprints de autor o documentación web. El índice sí se versiona.
 
-Donde el artículo de revista está de pago se dejó el preprint o el informe técnico abierto, y se marca abajo. `[27]` no tiene copia abierta verificada (Elsevier cerrado; el enlace RePEc apunta a otro PDF).
+Donde el artículo de revista está de pago se dejó el preprint o el informe técnico abierto, y se marca abajo.
 
 ---
 
@@ -116,34 +116,30 @@ Fuente: `feature-extractor`, revisión `df86252` (artefacto citado, no un paper)
 Configuración que carga un extractor y habilita su ajuste (`train_fe`); el ensamblaje diferenciable se comprobará en la implementación.
 Fuente: `predictor`, revisión `20ec571`, config `phase_3_1_cnn_25200_1h`.
 
-### [27] *(sin archivo local)*
-Andreou, Ghysels y Kourtellos: modelos de regresión con frecuencias de muestreo mixtas (MIDAS). En la propuesta: analizar si el detalle de mayor frecuencia aporta información, sin atribuir la mejora a la frecuencia por sí sola.
-Journal of Econometrics 158(2), 2010, DOI 10.1016/j.jeconom.2010.01.004. OpenAlex: cerrado, sin PDF abierto. El URL RePEc `07-08.pdf` descarga *otro* documento (Dustmann y Theodoropoulos, 2008); no se dejó esa copia.
-
-### [28] `28_IBM_2011_CRISP_DM.pdf`
+### [27] `27_IBM_2011_CRISP_DM.pdf`
 Las seis etapas de CRISP-DM estructuran el plan de trabajo y la tabla correspondiente de la propuesta.
 Fuente: *IBM SPSS Modeler CRISP-DM Guide*, versión 14 (PDF público).
 
-### [29] `29_Qiu_2024_TFB.pdf`
+### [28] `28_Qiu_2024_TFB.pdf`
 Punto de partida de conjuntos públicos de pronóstico: reúne tareas y métodos de distintos dominios.
 Fuente: arXiv:2403.20150 (PVLDB 17(9), 2024).
 
-### [30] `30_Sun_2023_TradeMaster.pdf`
+### [29] `29_Sun_2023_TradeMaster.pdf`
 Entorno y referencias de RL financiero para buscar experimentos compatibles; la comparación externa depende de recuperar sus datos y condiciones.
 Fuente: NeurIPS 2023 Datasets and Benchmarks.
 
-### [31] `31_Liu_2022_FinRL_Meta.pdf`
+### [30] `30_Liu_2022_FinRL_Meta.pdf`
 Entornos de mercado y benchmarks de RL financiero; mismo uso que TradeMaster como referencia externa, no como evidencia principal.
 Fuente: NeurIPS 2022 Datasets and Benchmarks.
 
-### [32] `32_Keras_Transfer_Learning.html`
+### [31] `31_Keras_Transfer_Learning.html`
 Distinción `trainable` frente a `training` y tratamiento de estados de normalización que se actualizan sin gradientes al congelar o ajustar el detector.
 Fuente: guía oficial de Keras, actualizada en 2023 (HTML, no artículo).
 
-### [33] `33_Hyndman_2006_MASE.pdf`
+### [32] `32_Hyndman_2006_MASE.pdf`
 Define el error absoluto medio escalado (MASE) como medida principal de pronóstico.
 Fuente: copia de autor del IJF 22(4), 2006.
 
-### [34] `34_TFP_Probabilistic_Layers_Regression.html`
+### [33] `33_TFP_Probabilistic_Layers_Regression.html`
 Cabezales probabilísticos para intervalos predictivos, distintos de la volatilidad como variable de la ventana futura.
 Fuente: documentación de TensorFlow Probability (HTML, no artículo).

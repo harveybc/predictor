@@ -229,7 +229,7 @@ El vínculo con procesamiento de señales tiene ejemplos como CoST~\cite{woo2022
 
 El preentrenamiento del detector mediante reconstrucción tiene antecedentes específicos para series temporales, como Ti-MAE~\cite{li2023timae}. El código del proyecto permite guardar codificadores y decodificadores por separado~\cite{featureextractor2026manager}; sus configuraciones contemplan cargar extractores y habilitar su ajuste~\cite{predictor2026trainfe}. El ensamblaje y la actualización conjunta de sus parámetros se comprobarán durante la implementación.
 
-La combinación de datos de distintas frecuencias de muestreo tiene antecedentes en los modelos MIDAS, estudiados por Andreou et al.~\cite{andreou2010midas}. En la aplicación financiera se analizará si el detalle intrahorario aporta información adicional al pronóstico y a las decisiones, sin atribuir una mejora a la frecuencia de muestreo por sí sola. 
+En la aplicación financiera se analizará si el detalle intrahorario aporta información adicional al pronóstico y a las decisiones, sin atribuir una mejora a la frecuencia de muestreo por sí sola. 
 
 \subsection{Contribución propuesta}
 
@@ -636,9 +636,6 @@ H.~Bastidas, «Gestor de autoencoder de feature-extractor», código fuente, rev
 
 \bibitem{predictor2026trainfe}
 H.~Bastidas, «Configuración de carga y ajuste del extractor de características», código fuente, revisión \texttt{20ec571}, 2026. \url{https://github.com/harveybc/predictor/blob/20ec57145b4ed3eb647eabe2b7591f35a3dbbf47/examples/config/phase_3_1/phase_3_1_cnn_25200_1h_config.json}.
-
-\bibitem{andreou2010midas}
-E.~Andreou, E.~Ghysels y A.~Kourtellos, «Regression Models with Mixed Sampling Frequencies», \emph{Journal of Econometrics}, vol. 158, n.º 2, pp. 246--261, 2010. DOI: \href{https://doi.org/10.1016/j.jeconom.2010.01.004}{\nolinkurl{10.1016/j.jeconom.2010.01.004}}.
 
 \bibitem{ibmcrispdm}
 IBM, \emph{IBM SPSS Modeler CRISP-DM Guide}, versión 14, 2011. \url{https://inseaddataanalytics.github.io/INSEADAnalytics/CRISP_DM.pdf}.
