@@ -37,7 +37,7 @@
 \urlstyle{same}
 
 \hypersetup{
-  pdftitle={Diseño de representaciones temporales modulares a partir de los datos},
+  pdftitle={Diseño de representaciones temporales modulares mediante procesamiento diferenciado de variables},
   pdfauthor={Harvey Demian Bastidas Caicedo},
   pdfsubject={Propuesta de investigación doctoral}
 }
@@ -72,8 +72,8 @@
 \begin{document}
 
 \begin{center}
-{\LARGE\bfseries Diseño de representaciones temporales\\[0.2em]
-modulares a partir de los datos}\\[0.8em]
+{\LARGE\bfseries Diseño de representaciones temporales modulares\\[0.2em]
+mediante procesamiento diferenciado de variables}\\[0.8em]
 {\large Propuesta de investigación doctoral}\\[0.4em]
 Harvey Demian Bastidas Caicedo\\
 Doctorado en Inteligencia Artificial · Universidad de La Sabana
@@ -85,13 +85,13 @@ aprendizaje de representaciones · series temporales · arquitectura modular · 
 
 \section*{Resumen}
 
-La \emph{representación temporal} es la parte de una arquitectura para pronóstico o aprendizaje por refuerzo que transforma la información de una serie temporal multivariada de entrada en conocimiento usable por las capas de salida. Las series temporales multivariadas pueden reunir variables cuyos ritmos de cambio, periodicidades y relaciones son distintos. Algunos modelos de pronóstico y aprendizaje por refuerzo (RL) procesan todas las variables con la misma ventana y el mismo extractor de características; otros incorporan varias escalas temporales mediante una representación elegida de antemano o una búsqueda de configuraciones que puede ser costosa. Esta propuesta estudiará si las propiedades de los datos de entrenamiento permiten orientar las decisiones de diseño de la representación temporal tanto para pronóstico como para RL.
+La \emph{representación temporal} es la parte de una arquitectura para pronóstico o aprendizaje por refuerzo que transforma la información de una serie temporal multivariada de entrada en conocimiento usable por las capas de salida. Las series temporales multivariadas pueden reunir variables cuyos ritmos de cambio, periodicidades y relaciones son distintos. Algunos modelos de pronóstico y aprendizaje por refuerzo (RL) procesan todas las variables con la misma ventana y el mismo extractor de características; otros incorporan varias escalas temporales mediante una representación elegida de antemano o una búsqueda de configuraciones que puede ser costosa. Esta propuesta estudiará si las propiedades de los datos de entrenamiento permiten orientar las decisiones de diseño de la representación tanto para pronóstico como para RL.
 
 Se diseñará la \emph{representación temporal modular} mostrada en la Figura~\ref{fig:vista-general}, formada por:
 \begin{itemize}
 \item \emph{ramas} que procesan grupos de variables usando extractores de características configurados para cada grupo
 \item \emph{módulo de fusión de características} que alinea y concatena las secuencias
-\item \emph{núcleo temporal} que combina la información y reduce dimensionalidad conservando el eje temporal
+\item \emph{núcleo} que combina la información y reduce dimensionalidad conservando el eje temporal
 \item \emph{cabezales de salida} que se adaptan a la tarea: pronóstico para estimar valores o aprendizaje por refuerzo para seleccionar acciones y, según el algoritmo, estimar funciones de valor.
 \end{itemize}
 
@@ -107,11 +107,11 @@ Se diseñará la \emph{representación temporal modular} mostrada en la Figura~\
   lbl/.style={font=\footnotesize, inner sep=1.5pt}
 ]
 \node[box] (in) at (0,0) {Entradas preprocesadas\\Grupos de variables};
-\node[ext] (e1) at (-2.55,-2.0) {Extractor\\temporal 1};
-\node[ext] (eB) at (2.55,-2.0) {Extractor\\temporal $B$};
+\node[ext] (e1) at (-2.55,-2.0) {Extractor de\\características 1};
+\node[ext] (eB) at (2.55,-2.0) {Extractor de\\características $B$};
 \node at (0,-2.0) {$\cdots$};
 \node[box] (cons) at (0,-4.15) {Fusión de características\\Alineación y concatenación};
-\node[box] (nuc) at (0,-5.75) {Núcleo temporal\\Mezcla y reducción de dimensionalidad};
+\node[box] (nuc) at (0,-5.75) {Núcleo\\Mezcla y reducción de dimensionalidad};
 \node[box] (out) at (0,-7.35) {Cabezales de salida\\Pronóstico / política o valor};
 \draw[arr] (in.south) -- ++(0,-0.42) -| (e1.north)
   node[lbl, pos=0.85, left=2pt] {Grupo 1};
@@ -123,7 +123,7 @@ Se diseñará la \emph{representación temporal modular} mostrada en la Figura~\
 \draw[arr] (cons) -- (nuc);
 \draw[arr] (nuc) -- (out);
 \end{tikzpicture}
-\caption{Representación temporal modular. Las ramas, numeradas de 1 a $B$, procesan grupos de variables, el módulo de fusión de características alinea y concatena sus secuencias, y el núcleo temporal combina la información para los cabezales de salida.}
+\caption{Representación temporal modular. Las ramas, numeradas de 1 a $B$, procesan grupos de variables, el módulo de fusión de características alinea y concatena sus secuencias, y el núcleo combina la información para los cabezales de salida.}
 \label{fig:vista-general}
 \end{figure}
 
@@ -133,7 +133,7 @@ Cada extractor tendrá un detector de patrones separado y componentes configurab
 
 Se evaluarán tareas de pronóstico y RL con series multivariadas y protocolos disponibles en la literatura. Se comparará la propuesta con referencias sencillas, modelos publicados y variantes sin el diseño modular, controlando entradas, entrenamiento y recursos.
 
-La representación se integrará en plataformas existentes de pronóstico y RL. Sus configuraciones y métricas se registrarán en un cubo OLAP existente que permitirá organizar y facilitar el análisis y visualización de los resultados. Se espera obtener un método reproducible y determinar si el uso de la representación modular basada en datos mejora el desempeño, lo mantiene en un nivel equivalente o lo empeora. La evidencia insuficiente se declarará inconclusa.
+La representación se integrará en plataformas existentes de pronóstico y RL. Sus configuraciones y métricas se registrarán en un cubo OLAP existente que permitirá organizar y facilitar el análisis y visualización de los resultados. Se espera obtener un método reproducible y determinar si el uso de la representación temporal modular basada en datos mejora el desempeño, lo mantiene en un nivel equivalente o lo empeora. La evidencia insuficiente se declarará inconclusa.
 
 \section{Definición del problema y justificación}
 
@@ -278,7 +278,7 @@ El diseño fijará profundidad, tamaños de filtros y dilatación en convolucion
 \node[branch] (b1) at (6.6,1.25) {Rama 1\\$D_1 \rightarrow I_1 \rightarrow A_1$};
 \node[branch] (bj) at (6.6,0) {Rama $j$\\$D_j \rightarrow I_j \rightarrow A_j$};
 \node[branch] (bb) at (6.6,-1.25) {Rama $B$\\$D_B \rightarrow I_B \rightarrow A_B$};
-\node[box] (fusion) at (10.4,0) {Fusión y\\núcleo temporal};
+\node[box] (fusion) at (10.4,0) {Fusión y\\núcleo};
 \node[box] (head) at (13.7,0) {Cabezales de salida\\Pronóstico / RL};
 \draw[designarr] (history) -- (profiles);
 \draw[designarr] (profiles) -- (rule);
