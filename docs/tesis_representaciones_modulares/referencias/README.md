@@ -116,30 +116,38 @@ Fuente: `feature-extractor`, revisión `df86252` (artefacto citado, no un paper)
 Configuración que carga un extractor y habilita su ajuste (`train_fe`); el ensamblaje diferenciable se comprobará en la implementación.
 Fuente: `predictor`, revisión `20ec571`, config `phase_3_1_cnn_25200_1h`.
 
-### [27] `27_IBM_2011_CRISP_DM.pdf`
+### [27] `27_Bastidas_doin_core_README.md`
+La plataforma DOIN del autor aporta optimización distribuida con DEAP y el cubo OLAP para registrar configuraciones, particiones, semillas, métricas y costos.
+Fuente: README de `doin-core` (HEAD local `a90bca2`). El `.tex` cita revisión `20ec571`, que es un commit de `predictor` y **no existe** en `doin-core`.
+
+### [28] `28_Bastidas_financial_data_INVENTORY.md`
+El inventario financiero existente es una de las fuentes de datos de la propuesta, junto con conjuntos públicos.
+Fuente: `financial-data/INVENTORY.md` (HEAD local `c077e20`). El `.tex` cita revisión `20ec571`, que **no existe** en ese repositorio.
+
+### [29] `29_IBM_2011_CRISP_DM.pdf`
 Las seis etapas de CRISP-DM estructuran el plan de trabajo y la tabla correspondiente de la propuesta.
 Fuente: *IBM SPSS Modeler CRISP-DM Guide*, versión 14 (PDF público).
 
-### [28] `28_Qiu_2024_TFB.pdf`
+### [30] `30_Qiu_2024_TFB.pdf`
 Punto de partida de conjuntos públicos de pronóstico: reúne tareas y métodos de distintos dominios.
 Fuente: arXiv:2403.20150 (PVLDB 17(9), 2024).
 
-### [29] `29_Sun_2023_TradeMaster.pdf`
+### [31] `31_Sun_2023_TradeMaster.pdf`
 Entorno y referencias de RL financiero para buscar experimentos compatibles; la comparación externa depende de recuperar sus datos y condiciones.
 Fuente: NeurIPS 2023 Datasets and Benchmarks.
 
-### [30] `30_Liu_2022_FinRL_Meta.pdf`
+### [32] `32_Liu_2022_FinRL_Meta.pdf`
 Entornos de mercado y benchmarks de RL financiero; mismo uso que TradeMaster como referencia externa, no como evidencia principal.
 Fuente: NeurIPS 2022 Datasets and Benchmarks.
 
-### [31] `31_Keras_Transfer_Learning.html`
+### [33] `33_Keras_Transfer_Learning.html`
 Distinción `trainable` frente a `training` y tratamiento de estados de normalización que se actualizan sin gradientes al congelar o ajustar el detector.
 Fuente: guía oficial de Keras, actualizada en 2023 (HTML, no artículo).
 
-### [32] `32_Hyndman_2006_MASE.pdf`
+### [34] `34_Hyndman_2006_MASE.pdf`
 Define el error absoluto medio escalado (MASE) como medida principal de pronóstico.
 Fuente: copia de autor del IJF 22(4), 2006.
 
-### [33] `33_TFP_Probabilistic_Layers_Regression.html`
+### [35] `35_TFP_Probabilistic_Layers_Regression.html`
 Cabezales probabilísticos para intervalos predictivos, distintos de la volatilidad como variable de la ventana futura.
 Fuente: documentación de TensorFlow Probability (HTML, no artículo).

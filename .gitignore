@@ -176,10 +176,8 @@ roc_pr_curves.png
 # Indexes: docs/tesis_sac/referencias/README.md and
 # docs/tesis_representaciones_modulares/referencias/README.md; do not push the papers.
 docs/tesis_sac/referencias/*.pdf
-docs/tesis_representaciones_modulares/referencias/*.pdf
-docs/tesis_representaciones_modulares/referencias/*.html
-docs/tesis_representaciones_modulares/referencias/*.py
-docs/tesis_representaciones_modulares/referencias/*.json
+docs/tesis_representaciones_modulares/referencias/*
+!docs/tesis_representaciones_modulares/referencias/README.md
 
 # LaTeX intermediates (keep .tex .bib .pdf)
 *.aux
