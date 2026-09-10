@@ -31,6 +31,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--financial-census-summary", type=Path)
     ap.add_argument("--financial-census-receipt", type=Path)
     ap.add_argument("--local-inventory", type=Path)
+    ap.add_argument("--financial-census-document", type=Path,
+                    help="the FULL content-addressed census, so "
+                         "the index carries its appearances and "
+                         "conceptual variables as rows")
     ap.add_argument("--output", required=True, type=Path)
     a = ap.parse_args(argv)
 
@@ -41,7 +45,8 @@ def main(argv: list[str] | None = None) -> int:
            if (a.t1_inventory or a.m4_design) else None)
     fin = (financial_bank(a.financial_census_summary,
                           a.financial_census_receipt,
-                          a.local_inventory)
+                          a.local_inventory,
+                          a.financial_census_document)
            if (a.financial_census_summary
                and a.financial_census_receipt) else None)
     doc = build_index(a.indexed_at, pub, syn, fin)
@@ -53,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
         "banks": {k: v["authority_class"]
                   for k, v in doc["banks"].items()},
         "rows": doc["row_count"],
+        "cardinality": doc["cardinality_by_kind_and_authority"],
         "public_series_admissible": doc["banks"].get(
             "public_forecasting", {}).get(
                 "series_admissible_total"),

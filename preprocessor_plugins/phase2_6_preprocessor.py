@@ -217,8 +217,17 @@ class PreprocessorPlugin:
         print(f"    STRICTLY CAUSAL MTM decomposing {data_name} (length={len(data)}, window={window_size}, components={n_components})...")
         
         if len(data) < window_size + 1:  # Need at least window_size + 1 for causal analysis
-            print(f"    WARNING: Data too short for strictly causal MTM, using zero components")
-            return np.zeros((len(data), n_components), dtype=np.float32)
+            # C10: the return TYPE is stable. This branch used to
+            # return a bare ndarray while every caller unpacked a
+            # tuple, so a short partition silently changed the
+            # function's contract. A short partition now returns
+            # zero components AND no scaler, which is what makes
+            # the NOT_EVALUABLE rule below possible.
+            print(f"    WARNING: Data too short for strictly causal MTM "
+                  f"({len(data)} < {window_size + 1}), returning zero "
+                  f"components and NO scaler")
+            return (np.zeros((len(data), n_components), dtype=np.float32),
+                    None)
         
         n_samples = len(data)
         mtm_components = np.zeros((n_samples, n_components), dtype=np.float32)
@@ -443,6 +452,8 @@ class PreprocessorPlugin:
                 # LEGACY_NON_AUTHORITATIVE so it can never be cited as
                 # boundary-clean evidence.
                 legacy_per_split = bool(config.get("mtm_legacy_per_split_scaler", False))
+                not_evaluable = config.setdefault(
+                    "mtm_not_evaluable_units", [])
                 if legacy_per_split:
                     config["eligibility_stamp"] = {
                         "eligibility_status": "LEGACY_NON_AUTHORITATIVE",
@@ -456,14 +467,40 @@ class PreprocessorPlugin:
 
                 mtm_train_components, mtm_scaler = self._apply_causal_mtm_decomposition(
                     feature_train, mtm_window_size, mtm_components, f"{feature_name}_train")
-                mtm_val_components, _ = self._apply_causal_mtm_decomposition(
-                    feature_val, mtm_window_size, mtm_components, f"{feature_name}_val",
-                    scaler=None if legacy_per_split else mtm_scaler,
-                    fit_scaler=legacy_per_split)
-                mtm_test_components, _ = self._apply_causal_mtm_decomposition(
-                    feature_test, mtm_window_size, mtm_components, f"{feature_name}_test",
-                    scaler=None if legacy_per_split else mtm_scaler,
-                    fit_scaler=legacy_per_split)
+
+                # C10: if TRAIN produced no valid scaler — because the
+                # partition was too short, or every differenced value
+                # was zero — validation and test may not fit one of
+                # their own. A late fit outside training is the exact
+                # boundary this correction closed, so the unit is
+                # NOT_EVALUABLE instead.
+                if mtm_scaler is None and not legacy_per_split:
+                    reason = (f"{feature_name}: training produced no valid "
+                              f"MTM scaler (train length "
+                              f"{len(feature_train)}, window "
+                              f"{mtm_window_size}); validation and test "
+                              f"are NOT_EVALUABLE rather than fitted "
+                              f"outside training")
+                    print(f"    NOT_EVALUABLE: {reason}")
+                    not_evaluable.append({"feature": feature_name,
+                                          "reason": reason})
+                    zeros_val = np.zeros((len(feature_val), mtm_components),
+                                         dtype=np.float32)
+                    zeros_test = np.zeros((len(feature_test), mtm_components),
+                                          dtype=np.float32)
+                    mtm_val_components, mtm_test_components = (zeros_val,
+                                                               zeros_test)
+                else:
+                    mtm_val_components, _ = self._apply_causal_mtm_decomposition(
+                        feature_val, mtm_window_size, mtm_components,
+                        f"{feature_name}_val",
+                        scaler=None if legacy_per_split else mtm_scaler,
+                        fit_scaler=legacy_per_split)
+                    mtm_test_components, _ = self._apply_causal_mtm_decomposition(
+                        feature_test, mtm_window_size, mtm_components,
+                        f"{feature_name}_test",
+                        scaler=None if legacy_per_split else mtm_scaler,
+                        fit_scaler=legacy_per_split)
                 
                 for comp_idx in range(mtm_components):
                     comp_name = f"{feature_name}_mtm_{comp_idx+1}"

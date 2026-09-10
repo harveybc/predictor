@@ -156,6 +156,21 @@ def public_bank(manifest_path: Path, census_path: Path,
                          "manifest and census T2 already "
                          "produced; it never downloads or "
                          "scores",
+        # C9: the admissible series are consumable rows, bound to
+        # the panel that admitted them and the dataset digest
+        # they came from.
+        "series": [
+            {"series_id": uid,
+             "family": doc.get("family", "UNKNOWN"),
+             "dataset_id": logical_id,
+             "digest": doc.get("tsf_member_sha256",
+                               doc.get("zip_sha256",
+                                       "UNAVAILABLE")),
+             "frequency": doc.get("frequency_declared",
+                                  "UNKNOWN"),
+             "seasonal_period": doc.get("seasonal_period")}
+            for logical_id, doc in sorted(pop.items())
+            for uid in doc.get("admissible_unit_ids", [])],
     }
     if adjudication_path:
         adj = _read(adjudication_path)
@@ -283,7 +298,8 @@ def synthetic_bank(t1_inventory_path: Path | None,
 
 def financial_bank(census_summary_path: Path,
                    census_receipt_path: Path,
-                   local_inventory_path: Path | None = None
+                   local_inventory_path: Path | None = None,
+                   census_document_path: Path | None = None
                    ) -> dict:
     s = _read(census_summary_path)
     r = _read(census_receipt_path)
@@ -328,12 +344,76 @@ def financial_bank(census_summary_path: Path,
         } for d in inv.get("datasets", [])]
         bank["binding"]["local_inventory_sha256"] = inv.get(
             "inventory_sha256", "UNAVAILABLE")
+    # C9: the index must CARRY the variables, not merely count
+    # them. A count inside a summary is not a consumable row, and
+    # a selection universe cannot be built from a number.
+    if census_document_path and Path(
+            census_document_path).is_file():
+        full = _read(census_document_path)
+        bank["appearances"] = [{
+            "appearance_id": a["appearance_id"],
+            "entity": a["entity"],
+            "source_class": a["source_class"],
+            "frequency": a["frequency"],
+            "period_start": a["period_start"],
+            "period_end": a["period_end"],
+            "physical_sha256": a["physical_sha256"],
+            "digest_state": a["digest_state"],
+        } for a in full.get("appearances", [])]
+        bank["variables"] = [{
+            "variable_id": v["variable_id"],
+            "entity": v["entity"],
+            "concept_name": v["concept_name"],
+            "source_class": v["source_class"],
+            "unit": v["unit"],
+            "event_time": v["event_time"],
+            "available_time": v["available_time"],
+            "appearance_count": v["appearance_count"],
+            "semantics_declared":
+                v["semantics"] != "UNKNOWN",
+        } for v in full.get("variables", [])]
+        bank["binding"]["census_document_sha256"] = full.get(
+            "census_sha256", "UNAVAILABLE")
     return bank
 
 
 # --------------------------------------------------------------
 # the common index
 # --------------------------------------------------------------
+
+def _recount(rows: list[dict]) -> dict:
+    out: dict = {}
+    for r in rows:
+        out.setdefault(r["authority"], {})
+        out[r["authority"]][r["kind"]] = \
+            out[r["authority"]].get(r["kind"], 0) + 1
+    return {a: dict(sorted(k.items()))
+            for a, k in sorted(out.items())}
+
+
+KNOWN_OPERATORS = (
+    {"operator_id": "op.denoise.D",
+     "family": "denoising",
+     "digest": "UNAVAILABLE",
+     "state": "PUBLICLY_EVALUATED_VERDICT_DOES_NOT_ADVANCE",
+     "evidence": "T2 six-panel screen"},
+    {"operator_id": "op.mtm.causal_decomposition",
+     "family": "spectral",
+     "digest": "UNAVAILABLE",
+     "state": "DEVELOPMENT_ONLY",
+     "evidence": "predictor phase 2.6, train-only scaler"},
+    {"operator_id": "op.selector.acf_pacf_pre",
+     "family": "selection",
+     "digest": "UNAVAILABLE",
+     "state": "LEGACY_NON_AUTHORITATIVE",
+     "evidence": "preprocessor pre-selector, no split boundary"},
+    {"operator_id": "op.selector.embedded_post",
+     "family": "selection",
+     "digest": "UNAVAILABLE",
+     "state": "LEGACY_NON_AUTHORITATIVE",
+     "evidence": "preprocessor post-selector, no split boundary"},
+)
+
 
 def build_index(indexed_at: str, public: dict | None,
                 synthetic: dict | None,
@@ -344,6 +424,11 @@ def build_index(indexed_at: str, public: dict | None,
     if synthetic:
         banks["synthetic_known_mechanism"] = synthetic
     if financial:
+        # known transformation operators travel with the bank
+        # whose evidence describes them, and carry that bank's
+        # authority like every other row
+        financial = {**financial,
+                     "operators": list(KNOWN_OPERATORS)}
         banks["financial_domain"] = financial
     # Every row carries its bank's authority, so a consumer that
     # reads one row can never lose the provenance of its claim.
@@ -366,12 +451,53 @@ def build_index(indexed_at: str, public: dict | None,
                          "kind": "model_ready_view",
                          "id": v["dataset_id"],
                          "family": "financial"})
+        # C9: appearances, conceptual variables, public series
+        # and known operators are consumable ROWS, each carrying
+        # its authority, source, identity and digest.
+        for a in bank.get("appearances", []):
+            rows.append({"bank": bank_key, "authority": auth,
+                         "kind": "physical_appearance",
+                         "id": a["appearance_id"],
+                         "family": a["entity"],
+                         "digest": a["physical_sha256"],
+                         "identity_state": a["digest_state"]})
+        for v in bank.get("variables", []):
+            rows.append({"bank": bank_key, "authority": auth,
+                         "kind": "variable",
+                         "id": v["variable_id"],
+                         "family": v["entity"],
+                         "digest": "UNAVAILABLE",
+                         "identity_state":
+                             "CONCEPTUAL_IDENTITY"})
+        for sr in bank.get("series", []):
+            rows.append({"bank": bank_key, "authority": auth,
+                         "kind": "series",
+                         "id": sr["series_id"],
+                         "family": sr["family"],
+                         "digest": sr.get("digest",
+                                          "UNAVAILABLE"),
+                         "identity_state":
+                             "PUBLIC_BANK_SERIES"})
+        for op in bank.get("operators", []):
+            rows.append({"bank": bank_key, "authority": auth,
+                         "kind": "operator",
+                         "id": op["operator_id"],
+                         "family": op.get("family",
+                                          "UNKNOWN"),
+                         "digest": op.get("digest",
+                                          "UNAVAILABLE"),
+                         "identity_state":
+                             op.get("state", "DECLARED")})
     doc = {
         "schema": SCHEMA,
         "indexed_at": indexed_at,
         "banks": banks,
         "common_rows": rows,
         "row_count": len(rows),
+        "cardinality_by_kind_and_authority": _recount(rows),
+        "cardinality_rule": "every count here is derived FROM "
+                            "the rows, so a summary and an "
+                            "index can never disagree",
         "authority_rule": {
             "statement": "a join never promotes evidence; the "
                          "authority class of the bank that "
