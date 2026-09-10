@@ -1,0 +1,394 @@
+{
+ "artifacts": {
+  "adjudication_sha256": "b35b6fd969aa162047bdfb55b8f9fcce01aa76864c388d29a1c36642ab051ade",
+  "design_sha256": "d7280a92047d98898418fb7cd750b22c506a621eb381d9847e0fe926b7df69b9"
+ },
+ "budget": {
+  "calibration_margin": 0.09375,
+  "cost_units": "optimization_updates",
+  "device": "cpu",
+  "wall_seconds": "UNAVAILABLE"
+ },
+ "campaign_key": "m4_v5_calibration_attempt3_20260909",
+ "data_consumed": {
+  "datasets": [
+   {
+    "digest": "d7280a92047d98898418fb7cd750b22c506a621eb381d9847e0fe926b7df69b9",
+    "eligibility_state": "LAB_CALIBRATED",
+    "id": "m4_synthetic_generator_bank"
+   }
+  ],
+  "operators": [],
+  "variables": []
+ },
+ "envelope_sha256": "628ac2f98f5f3865f16989c1ce07d33eecbef708f17d8cc993fd6b27e955ff2a",
+ "identity": {
+  "code_identity": "UNAVAILABLE",
+  "design_sha256": "d7280a92047d98898418fb7cd750b22c506a621eb381d9847e0fe926b7df69b9",
+  "record_sha256": "b35b6fd969aa162047bdfb55b8f9fcce01aa76864c388d29a1c36642ab051ade",
+  "run_id": "m4_v5_calibration_run_attempt3_20260909"
+ },
+ "partitions": {
+  "exposure": "CALIBRATION_ONLY_CONFIRMATION_RESERVED",
+  "splits": "TRAIN/STOP/EVALUATION byte-disjoint per generator"
+ },
+ "producer": "M4 residual capacity",
+ "result_class": "CALIBRATION",
+ "schema": "crispdm.campaign_envelope.v1",
+ "terminal": {
+  "adjudication": "CANDIDATE_FOR_MUSASHI_REVIEW_NO_CONFIRMATION_AUTHORITY",
+  "eligible_slots": 21,
+  "state": "COMPLETE",
+  "total_slots": 28
+ },
+ "units": [
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "am::clean::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "am::clean::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "am::white::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "am::white::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "chirp::clean::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "chirp::clean::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "chirp::white::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "chirp::white::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "discontinuity::clean::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "discontinuity::clean::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "discontinuity::white::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "discontinuity::white::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "dnf3::clean::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "dnf3::clean::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "identity::clean::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "identity::clean::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "majority::clean::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "majority::clean::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "parity4::clean::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "parity4::clean::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "sine::clean::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "sine::clean::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "sine::white::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "sine::white::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "state_space::clean::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "state_space::clean::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 14.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "state_space::white::w16",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "residual_capacity_intervention",
+   "cell_key": "state_space::white::w64",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "complete_generators",
+   "metric_value": 16.0,
+   "terminal_state": "CALIBRATION_COMPLETE",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "UNAVAILABLE",
+   "uncertainty_low": "UNAVAILABLE"
+  },
+  {
+   "candidate_key": "M2_vs_M1",
+   "cell_key": "LADDER",
+   "checkpoint_count": "UNAVAILABLE",
+   "epoch_count": "UNAVAILABLE",
+   "metric_name": "m2_minus_m1_paired_gain",
+   "metric_value": -0.41982887,
+   "terminal_state": "EXECUTED",
+   "uncertainty_high": "UNAVAILABLE",
+   "uncertainty_kind": "paired_t",
+   "uncertainty_low": "UNAVAILABLE"
+  }
+ ]
+}

@@ -1,0 +1,34 @@
+{
+ "artifacts": {
+  "note": "no adjudicable artifact \u2014 the campaign did not complete"
+ },
+ "budget": {
+  "cost_units": "UNAVAILABLE",
+  "device": "gpu",
+  "wall_seconds": "UNAVAILABLE"
+ },
+ "campaign_key": "b4_campaign_generation_v7_20260908",
+ "data_consumed": {
+  "datasets": [],
+  "operators": [],
+  "variables": []
+ },
+ "envelope_sha256": "b879fa00af7c1ec9e9cb8f727dbec9ab81566555d1a67593af5c6c8aa348e055",
+ "identity": {
+  "code_identity": "UNAVAILABLE",
+  "design_sha256": "UNAVAILABLE",
+  "run_id": "b4_campaign_results_v7_20260908"
+ },
+ "partitions": {
+  "exposure": "QUARANTINED_NOT_EXPOSED",
+  "splits": "UNAVAILABLE"
+ },
+ "producer": "B4 paired RL campaign",
+ "result_class": "NON_GOVERNING",
+ "schema": "crispdm.campaign_envelope.v1",
+ "terminal": {
+  "adjudication": "B4_V7_QUARANTINED_AND_EXTERNAL_WATCHDOG_RECOVERY_READY_FOR_MUSASHI_REVIEW",
+  "state": "QUARANTINED_RUNTIME_STALL"
+ },
+ "units": []
+}
