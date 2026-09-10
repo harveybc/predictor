@@ -1,0 +1,8 @@
+throwaway database: predictor_olap_c25_7610243626
+after first load          : versions/current app+var = (1, 1, 1, 1)
+same observation again    : versions/current app+var = (1, 1, 1, 1) (idempotent)
+changed digest+availability: versions/current app+var = (2, 1, 2, 1) (new versions)
+current row shows the NEW digest: True | all versions kept: ['1', '2']
+current availability            : available_ts
+
+C25 CONFIRMED: repeating an observation is idempotent, a changed digest, availability or semantics creates a NEW version, the deterministic current view shows exactly one row per logical id, and no earlier version is ever deleted.

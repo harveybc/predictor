@@ -64,7 +64,12 @@ def _consume_producer_artifact(path: Path, *, schema_keys: set,
             f"{producer}: the source artifact is absent at "
             f"{path.name}")
     file_sha = _sha_file(path)
-    doc = json.loads(path.read_text())
+    # C21/C26: the producer's artifact is read with the STRICT
+    # parser (duplicate keys and non-finite constants refuse),
+    # not with json.loads.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from eligibility.strict import strict_load_file
+    doc = strict_load_file(path, what=f"{producer} artifact")
     got = set(doc)
     if got != schema_keys:
         raise ProducerBindingRefusal(
@@ -72,11 +77,14 @@ def _consume_producer_artifact(path: Path, *, schema_keys: set,
             f"schema (missing: {sorted(schema_keys - got)}, "
             f"unexpected: {sorted(got - schema_keys)}) — a JSON "
             "with similar fields is not the producer's artifact")
+    from eligibility.strict import require_sha256
     declared = doc.get(self_key)
-    if not isinstance(declared, str) or len(declared) != 64:
+    try:
+        require_sha256(declared, what=f"{producer}.{self_key}")
+    except SystemExit as exc:
         raise ProducerBindingRefusal(
             f"{producer}: {path.name} carries no canonical "
-            f"{self_key}")
+            f"{self_key} ({exc})")
     recomputed = _self_sha(doc, self_key)
     if recomputed != declared:
         raise ProducerBindingRefusal(

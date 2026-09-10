@@ -15,13 +15,26 @@ here?" and get an honest answer.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 
 SCHEMA = "public"
 
+
+def observation_sha256(payload: dict) -> str:
+    """C25: the identity of ONE OBSERVATION of a logical id.
+
+    Two loads of the same observation collide on this digest and
+    are idempotent; a changed digest, availability, semantics or
+    membership produces a DIFFERENT observation, which is stored
+    as a new version beside the old one instead of being dropped.
+    """
+    return hashlib.sha256(json.dumps(
+        payload, sort_keys=True).encode()).hexdigest()
+
 INVENTORY_DDL = f"""
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_lake_appearance (
-  appearance_id     TEXT PRIMARY KEY,
+  appearance_id     TEXT NOT NULL,
   entity            TEXT NOT NULL,
   source_class      TEXT NOT NULL,
   frequency         TEXT NOT NULL,
@@ -31,11 +44,13 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_lake_appearance (
   digest_state      TEXT NOT NULL,
   authority_class   TEXT NOT NULL,
   census_sha256     TEXT NOT NULL,
-  loaded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  observation_sha256 TEXT NOT NULL,
+  loaded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (appearance_id, observation_sha256)
 );
 
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_lake_variable (
-  variable_id       TEXT PRIMARY KEY,
+  variable_id       TEXT NOT NULL,
   entity            TEXT NOT NULL,
   concept_name      TEXT NOT NULL,
   source_class      TEXT NOT NULL,
@@ -46,29 +61,35 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_lake_variable (
   appearance_count  INTEGER NOT NULL,
   authority_class   TEXT NOT NULL,
   census_sha256     TEXT NOT NULL,
-  loaded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  observation_sha256 TEXT NOT NULL,
+  loaded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (variable_id, observation_sha256)
 );
 
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_public_series (
-  series_id         TEXT PRIMARY KEY,
+  series_id         TEXT NOT NULL,
   family            TEXT NOT NULL,
   dataset_id        TEXT NOT NULL,
   frequency         TEXT NOT NULL,
   digest            TEXT NOT NULL,
   authority_class   TEXT NOT NULL,
   index_sha256      TEXT NOT NULL,
-  loaded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  observation_sha256 TEXT NOT NULL,
+  loaded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (series_id, observation_sha256)
 );
 
 CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_synthetic_generator (
-  generator_id      TEXT PRIMARY KEY,
+  generator_id      TEXT NOT NULL,
   producer          TEXT NOT NULL,
   family            TEXT NOT NULL,
   role              TEXT NOT NULL,
   mechanism_json    JSONB NOT NULL,
   authority_class   TEXT NOT NULL,
   index_sha256      TEXT NOT NULL,
-  loaded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  observation_sha256 TEXT NOT NULL,
+  loaded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (generator_id, observation_sha256)
 );
 
 CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_eligibility_decision (
@@ -84,6 +105,30 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_eligibility_decision (
   loaded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (subject_id, scope, manifest_sha256)
 );
+
+-- C25: a deterministic CURRENT view per inventory table. The
+-- newest observation of a logical id wins, ties broken by the
+-- observation digest so two readers always agree. No version is
+-- ever deleted; history is the point.
+CREATE OR REPLACE VIEW {SCHEMA}.v_lake_appearance_current AS
+SELECT DISTINCT ON (appearance_id) *
+FROM {SCHEMA}.dim_lake_appearance
+ORDER BY appearance_id, loaded_at DESC, observation_sha256 DESC;
+
+CREATE OR REPLACE VIEW {SCHEMA}.v_lake_variable_current AS
+SELECT DISTINCT ON (variable_id) *
+FROM {SCHEMA}.dim_lake_variable
+ORDER BY variable_id, loaded_at DESC, observation_sha256 DESC;
+
+CREATE OR REPLACE VIEW {SCHEMA}.v_public_series_current AS
+SELECT DISTINCT ON (series_id) *
+FROM {SCHEMA}.dim_public_series
+ORDER BY series_id, loaded_at DESC, observation_sha256 DESC;
+
+CREATE OR REPLACE VIEW {SCHEMA}.v_synthetic_generator_current AS
+SELECT DISTINCT ON (generator_id) *
+FROM {SCHEMA}.dim_synthetic_generator
+ORDER BY generator_id, loaded_at DESC, observation_sha256 DESC;
 
 CREATE INDEX IF NOT EXISTS idx_dim_lake_variable_entity
   ON {SCHEMA}.dim_lake_variable (entity);
@@ -139,11 +184,23 @@ def load_index(engine, index: dict) -> dict:
                   (appearance_id, entity, source_class,
                    frequency, period_start, period_end,
                    physical_sha256, digest_state,
-                   authority_class, census_sha256)
+                   authority_class, census_sha256,
+                   observation_sha256)
                 VALUES (:i, :e, :sc, :f, :ps, :pe, :d, :ds, :a,
-                        :c)
-                ON CONFLICT (appearance_id) DO NOTHING
-            """), {"i": a["appearance_id"], "e": a["entity"],
+                        :c, :o)
+                ON CONFLICT (appearance_id, observation_sha256)
+                DO NOTHING
+            """), {"o": observation_sha256({
+                       "entity": a["entity"],
+                       "source_class": a["source_class"],
+                       "frequency": a["frequency"],
+                       "period_start": str(a["period_start"]),
+                       "period_end": str(a["period_end"]),
+                       "physical_sha256": a["physical_sha256"],
+                       "digest_state": a["digest_state"],
+                       "authority_class": auth_fin,
+                       "census_sha256": census_sha}),
+                   "i": a["appearance_id"], "e": a["entity"],
                    "sc": a["source_class"],
                    "f": a["frequency"],
                    "ps": str(a["period_start"]),
@@ -159,11 +216,25 @@ def load_index(engine, index: dict) -> dict:
                    source_class, unit, event_time,
                    available_time, semantics_declared,
                    appearance_count, authority_class,
-                   census_sha256)
+                   census_sha256, observation_sha256)
                 VALUES (:i, :e, :cn, :sc, :u, :et, :at, :sd,
-                        :ac, :a, :c)
-                ON CONFLICT (variable_id) DO NOTHING
-            """), {"i": v["variable_id"], "e": v["entity"],
+                        :ac, :a, :c, :o)
+                ON CONFLICT (variable_id, observation_sha256)
+                DO NOTHING
+            """), {"o": observation_sha256({
+                       "entity": v["entity"],
+                       "concept_name": v["concept_name"],
+                       "source_class": v["source_class"],
+                       "unit": v["unit"],
+                       "event_time": v["event_time"],
+                       "available_time": v["available_time"],
+                       "semantics_declared":
+                           bool(v["semantics_declared"]),
+                       "appearance_count":
+                           int(v["appearance_count"]),
+                       "authority_class": auth_fin,
+                       "census_sha256": census_sha}),
+                   "i": v["variable_id"], "e": v["entity"],
                    "cn": v["concept_name"],
                    "sc": v["source_class"], "u": v["unit"],
                    "et": v["event_time"],
@@ -179,10 +250,19 @@ def load_index(engine, index: dict) -> dict:
             r = conn.execute(text(f"""
                 INSERT INTO {SCHEMA}.dim_public_series
                   (series_id, family, dataset_id, frequency,
-                   digest, authority_class, index_sha256)
-                VALUES (:i, :f, :d, :fr, :dg, :a, :x)
-                ON CONFLICT (series_id) DO NOTHING
-            """), {"i": s["series_id"], "f": s["family"],
+                   digest, authority_class, index_sha256,
+                   observation_sha256)
+                VALUES (:i, :f, :d, :fr, :dg, :a, :x, :o)
+                ON CONFLICT (series_id, observation_sha256)
+                DO NOTHING
+            """), {"o": observation_sha256({
+                       "family": s["family"],
+                       "dataset_id": s["dataset_id"],
+                       "frequency": str(s.get("frequency",
+                                              "UNKNOWN")),
+                       "digest": s.get("digest", "UNAVAILABLE"),
+                       "authority_class": auth_pub}),
+                   "i": s["series_id"], "f": s["family"],
                    "d": s["dataset_id"],
                    "fr": str(s.get("frequency", "UNKNOWN")),
                    "dg": s.get("digest", "UNAVAILABLE"),
@@ -195,11 +275,18 @@ def load_index(engine, index: dict) -> dict:
             r = conn.execute(text(f"""
                 INSERT INTO {SCHEMA}.dim_synthetic_generator
                   (generator_id, producer, family, role,
-                   mechanism_json, authority_class, index_sha256)
+                   mechanism_json, authority_class,
+                   index_sha256, observation_sha256)
                 VALUES (:i, :p, :f, :r, CAST(:m AS JSONB), :a,
-                        :x)
-                ON CONFLICT (generator_id) DO NOTHING
-            """), {"i": g["generator_id"], "p": g["producer"],
+                        :x, :o)
+                ON CONFLICT (generator_id, observation_sha256)
+                DO NOTHING
+            """), {"o": observation_sha256({
+                       "producer": g["producer"],
+                       "mechanism": g["mechanism"],
+                       "role": g["role"],
+                       "authority_class": auth_syn}),
+                   "i": g["generator_id"], "p": g["producer"],
                    "f": str(g["mechanism"].get("family",
                                                "UNKNOWN")),
                    "r": g["role"],
