@@ -1,6 +1,9 @@
 {
  "artifacts": {
-  "note": "no adjudicable artifact \u2014 the campaign did not complete"
+  "note": "no adjudicable artifact \u2014 the campaign did not complete",
+  "source_file_name": "UNAVAILABLE",
+  "source_file_sha256": "UNAVAILABLE",
+  "verification": "NO_PRODUCER_ARTIFACT_EXISTS_THE_CAMPAIGN_DID_NOT_COMPLETE"
  },
  "budget": {
   "cost_units": "UNAVAILABLE",
@@ -13,7 +16,7 @@
   "operators": [],
   "variables": []
  },
- "envelope_sha256": "b879fa00af7c1ec9e9cb8f727dbec9ab81566555d1a67593af5c6c8aa348e055",
+ "envelope_sha256": "30668574086432cc5d1b8048026d7a4321363ff0f7ab95a24c78743c45e46dff",
  "identity": {
   "code_identity": "UNAVAILABLE",
   "design_sha256": "UNAVAILABLE",

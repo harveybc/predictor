@@ -1,0 +1,82 @@
+{
+ "as_of": "2026-09-10T00:00:00Z",
+ "backup": {
+  "name": "predictor_olap_pre_c12_c15_20260910.dump",
+  "sha256": "df2e2c4bf85ac47d11d5daffd2f0ced830aafeb1cfee0f0fbc76a682a085d67e",
+  "verification": "OPENED_AND_REHASHED"
+ },
+ "changed_tables": {
+  "dim_lake_appearance": [
+   "ABSENT",
+   1680
+  ],
+  "dim_lake_variable": [
+   "ABSENT",
+   1965
+  ],
+  "dim_public_series": [
+   "ABSENT",
+   4650
+  ],
+  "dim_synthetic_generator": [
+   "ABSENT",
+   202
+  ],
+  "fact_eligibility_decision": [
+   "ABSENT",
+   0
+  ]
+ },
+ "counts_after": {
+  "dim_dataset": 2,
+  "dim_experiment": 39,
+  "dim_lake_appearance": 1680,
+  "dim_lake_variable": 1965,
+  "dim_public_series": 4650,
+  "dim_series": 2,
+  "dim_synthetic_generator": 202,
+  "dim_variable": 99,
+  "fact_dataset_inventory": 2,
+  "fact_eligibility_decision": 0,
+  "fact_performance": 1404,
+  "fact_results_summary": 1404,
+  "fact_variable_profile": 99
+ },
+ "counts_before": {
+  "dim_dataset": 2,
+  "dim_experiment": 39,
+  "dim_lake_appearance": "ABSENT",
+  "dim_lake_variable": "ABSENT",
+  "dim_public_series": "ABSENT",
+  "dim_series": 2,
+  "dim_synthetic_generator": "ABSENT",
+  "dim_variable": 99,
+  "fact_dataset_inventory": 2,
+  "fact_eligibility_decision": "ABSENT",
+  "fact_performance": 1404,
+  "fact_results_summary": 1404,
+  "fact_variable_profile": 99
+ },
+ "deletions": "NONE",
+ "historical_tables_untouched": {
+  "dim_dataset": 2,
+  "dim_experiment": 39,
+  "dim_series": 2,
+  "dim_variable": 99,
+  "fact_dataset_inventory": 2,
+  "fact_performance": 1404,
+  "fact_results_summary": 1404,
+  "fact_variable_profile": 99
+ },
+ "index_sha256": "e184666f407e086e38ebe9b9104e973ab6dd8294e7bf87e2b50b44e4ddb42275",
+ "loaded": {
+  "dim_lake_appearance": 1680,
+  "dim_lake_variable": 1965,
+  "dim_public_series": 4650,
+  "dim_synthetic_generator": 202,
+  "fact_eligibility_decision": 0
+ },
+ "receipt_sha256": "5293fe0e5723b84facd2126e29c4ca520f26ba0bff8f1e736cc84de649045fb7",
+ "schema": "crispdm.index_ingestion_receipt.v1",
+ "separation": "these tables are distinct from the 99 historical variable profiles; the two are never mixed"
+}

@@ -111,7 +111,11 @@ COMPARATORS = (
 def build_design(*, sealed_at: str, tasks: list[dict],
                  budget_rule: dict, bank_index_sha256: str,
                  eligibility_manifest_sha256: str | None,
-                 excluded_comparators: list[dict] | None = None
+                 excluded_comparators: list[dict] | None = None,
+                 supersedes_design_sha256: str | None = None,
+                 review_record_sha256: str | None = None,
+                 census_sha256: str | None = None,
+                 index_row_cardinality: dict | None = None
                  ) -> dict:
     if not tasks:
         raise SelectionDesignRefusal(
@@ -149,6 +153,36 @@ def build_design(*, sealed_at: str, tasks: list[dict],
             "bank_index_sha256": bank_index_sha256,
             "eligibility_manifest_sha256":
                 eligibility_manifest_sha256 or "UNAVAILABLE",
+            # C11: the design binds the DECISION and the PHYSICAL
+            # index, not only a summary. Without a review record
+            # it is a candidate whose self-digest proves
+            # chronology and nothing else.
+            "eligibility_review_record_sha256":
+                review_record_sha256 or "UNAVAILABLE",
+            "physical_census_sha256":
+                census_sha256 or "UNAVAILABLE",
+            "index_row_cardinality":
+                index_row_cardinality or "UNAVAILABLE",
+        },
+        "supersedes_design_sha256":
+            supersedes_design_sha256 or "NONE",
+        "authority": (
+            "CANDIDATE_SUBMISSION_NO_EXTERNAL_REVIEW — the "
+            "self-digest below proves this design existed before "
+            "any score, and proves nothing about whether anyone "
+            "reviewed it"
+            if not review_record_sha256 else
+            "BOUND_TO_AN_EXTERNAL_REVIEW_RECORD"),
+        "nested_validation": {
+            "inner": "selection, imputation, scaling and every "
+                     "transformation are fitted INSIDE the inner "
+                     "training split of each outer origin",
+            "outer": "each outer origin's validation and test "
+                     "are consulted ONCE, for comparison only",
+            "statement": "a nested design is what makes the "
+                         "outer estimate honest; consulting the "
+                         "outer split while choosing is the "
+                         "failure it prevents",
         },
         "outer_unit": {
             "unit": OUTER_UNIT,

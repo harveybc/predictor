@@ -1,0 +1,43 @@
+POST-01 the gate precedes the optimizer: CORRECTED
+         gate_run() now stands before optimizer_plugin.optimize() and before the pipeline; the PRE's own locator crashes here because gate_subjects( no longer exists in app/main.py (True)
+POST-02 no data-consuming call precedes the gate: CORRECTED
+         every consuming call now follows the gate; the test that checks this names each one rather than only the pipeline
+POST-03 the subject set is DERIVED from the bytes: CORRECTED
+         resolved ['d6.csv::px', 'd6.csv::vol'] from the partition headers the contract names, with DATE_TIME excluded as a row identifier; a config list can no longer be the source
+POST-04 an empty declared list refuses: CORRECTED
+         REFUSED: eligibility_subjects does not match the consumed set (not declared: ['d6.csv::px', 'd6.csv::vol']; de
+POST-05 a self-issued manifest no longer grants GATED: CORRECTED
+         REFUSED: no external eligibility review record exists — a new experiment cannot be gated on a decision that ha
+POST-06 the config cannot choose the review record: CORRECTED
+         review_record_path() takes NO arguments, so no configuration value can reach it; only a repository constant and an environment variable resolve it
+POST-07 substituted bindings refuse at the point of use: CORRECTED
+         data/partitions/code/evidence each refuse: {'data': True, 'partitions': True, 'code': True, 'evidence': True}
+POST-08 a consumed-column derivation exists: CORRECTED
+         eligibility.consumed.resolve_consumed_subjects reads the partition headers, requires identical schemas across train/validation/test, refuses duplicates and unnamed columns, and digests bytes, schema, partitions and code
+POST-09 the parser refuses what it used to accept: CORRECTED
+         {'duplicate_keys': True, 'nan': True, 'uppercase_digest': True, 'short_digest': True, 'future_date': True} — duplicate keys, NaN, a non-canonical digest and a future timestamp all refuse now
+POST-10 a first census digests every appearance: CORRECTED
+         1680/1680 digested, 14,436,534,039 bytes read, coverage 1.0 — the real 14.4 GB lake
+POST-11 an equal-length mutation forces a re-hash: CORRECTED
+         physical identity compares size, mtime_ns AND ctime_ns; a regression rewrites a file to the same length and proves it is re-digested
+POST-12 the content-addressed writer never truncates: CORRECTED
+         O_EXCL plus a full byte-equality check; an existing artifact is verified, not overwritten
+POST-13 external profiles are re-derived and re-hashed: CORRECTED
+         the inventory's self digest is recomputed and every dataset it claims to profile is re-hashed; anything unverifiable says why
+POST-14 an availability family reaches its variables: CORRECTED
+         the explicit join resolves a family to the entities whose source path it prefixes, reports unmatched families and refuses to choose when an entity matches two
+POST-15 the index carries the 1,965 variables as rows: CORRECTED
+         8513 rows: {'model_ready_view': 2, 'physical_appearance': 1680, 'variable': 1965, 'operator': 4, 'dataset': 10, 'series': 4650, 'generator': 202} — and every cardinality is recounted from the rows
+POST-16 a campaign_key collision refuses: CORRECTED
+         the stored identity is compared field by field and a difference refuses BEFORE any fact is written
+POST-17 the backup gate opens the dump: CORRECTED
+         the dump is opened and re-hashed; a well-formed string with no file refuses
+    STRICTLY CAUSAL MTM decomposing short (length=6, window=32, components=2)...
+    WARNING: Data too short for strictly causal MTM (6 < 33), returning zero components and NO scaler
+POST-18 a short partition keeps the return contract: CORRECTED
+         returns tuple of length 2 with scaler=None, so validation and test become NOT_EVALUABLE instead of fitting one late
+POST-19 a terminal run feeds the cube on its own: CORRECTED
+         app/main.py emits its envelope to the durable outbox (['main.py']), and the CPU loader drains it idempotently — a run no longer depends on a human running a backfill CLI
+
+POST CONFIRMED: all nineteen defects the PRE reproduced are corrected, each for its own reason. The gate precedes the optimizer and derives its subjects from the bytes; a self-issued manifest and an empty subject list grant nothing; every declared binding is compared at the point of use; the parser refuses duplicate keys, NaN, non-canonical digests and future dates; the census digested all 1,680 appearances over 14.4 GB and re-hashes an equal-length mutation; the content-addressed artifact is never truncated; external profiles are re-derived; the availability join fires; the index carries 1,965 variable rows; a campaign collision and an absent backup refuse; the MTM contract is total; and a terminal run now feeds the cube by itself.
+exit=0

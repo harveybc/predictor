@@ -18,9 +18,13 @@ sys.path.insert(0, str(REPO))
 
 from olap import selection_design as sd  # noqa: E402
 
-DESIGN = REPO / "examples/research/crispdm_selection_design.v1.json"
+# C11: v2 supersedes v1, bound to the rebuilt physical index.
+DESIGN = REPO / "examples/research/crispdm_selection_design.v2.json"
 PREFLIGHT = (REPO /
-             "examples/research/crispdm_selection_preflight.v1"
+             "examples/research/crispdm_selection_preflight.v2"
+             ".json")
+DESIGN_V1 = (REPO /
+             "examples/research/crispdm_selection_design.v1"
              ".json")
 
 
@@ -234,3 +238,48 @@ def test_preflight_refuses_an_unsealed_design(design):
     mutated["design_sha256"] = sd._self_sha(mutated)
     with pytest.raises(SystemExit, match="design status is"):
         sd.mechanical_preflight(mutated, available_units={})
+
+
+# ==============================================================
+# C11: the superseding design
+# ==============================================================
+
+def test_v2_supersedes_v1_by_digest(design):
+    if not DESIGN_V1.is_file():
+        pytest.skip("v1 absent")
+    v1 = json.loads(DESIGN_V1.read_text())
+    assert design["supersedes_design_sha256"] == \
+        v1["design_sha256"]
+    assert design["design_sha256"] != v1["design_sha256"]
+    # v1 is superseded, never rewritten
+    sd.verify_design(v1)
+
+
+def test_v2_binds_the_physical_index_and_census(design):
+    idx = json.loads((REPO / "examples/research/"
+                             "crispdm_bank_index.v1.json"
+                      ).read_text())
+    assert design["binds"]["bank_index_sha256"] == \
+        idx["index_sha256"]
+    assert len(design["binds"]["physical_census_sha256"]) == 64
+    card = design["binds"]["index_row_cardinality"]
+    assert card == idx["cardinality_by_kind_and_authority"]
+    assert card["FINANCIAL_DOMAIN_DEVELOPMENT_ONLY"][
+        "variable"] == 1965
+
+
+def test_a_self_digest_proves_chronology_not_review(design):
+    assert design["authority"].startswith(
+        "CANDIDATE_SUBMISSION_NO_EXTERNAL_REVIEW")
+    assert "proves nothing about whether anyone reviewed it" in \
+        design["authority"]
+    assert design["binds"][
+        "eligibility_review_record_sha256"] == "UNAVAILABLE"
+
+
+def test_validation_is_nested(design):
+    n = design["nested_validation"]
+    assert "INSIDE the inner" in n["inner"]
+    assert "ONCE" in n["outer"]
+    assert "consulting the outer split while choosing" in \
+        n["statement"]

@@ -22,13 +22,103 @@ from olap.campaign_envelope import (UNAVAILABLE,  # noqa: E402
                                     build_envelope)
 
 
+import hashlib  # noqa: E402
+
+
+class ProducerBindingRefusal(SystemExit):
+    def __init__(self, msg):
+        super().__init__(f"REFUSED: {msg}")
+
+
+def _sha_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for block in iter(lambda: fh.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def _self_sha(doc: dict, key: str) -> str:
+    body = {k: doc[k] for k in sorted(doc) if k != key}
+    return hashlib.sha256(
+        json.dumps(body, sort_keys=True).encode()).hexdigest()
+
+
+def _consume_producer_artifact(path: Path, *, schema_keys: set,
+                               self_key: str, producer: str,
+                               verifier: str) -> dict:
+    """C12: consume an ORIGINAL producer artifact, not any JSON
+    with familiar-looking fields.
+
+    The previous builders opened an arbitrary file and copied its
+    values, so a fabricated document with the right field names
+    would have produced a perfectly self-consistent envelope. This
+    requires the producer's exact top-level schema, recomputes the
+    artifact's own self-digest with the producer's rule, and
+    records the file digest plus the identity of the verifier that
+    re-derived it.
+    """
+    path = Path(path)
+    if not path.is_file():
+        raise ProducerBindingRefusal(
+            f"{producer}: the source artifact is absent at "
+            f"{path.name}")
+    file_sha = _sha_file(path)
+    doc = json.loads(path.read_text())
+    got = set(doc)
+    if got != schema_keys:
+        raise ProducerBindingRefusal(
+            f"{producer}: {path.name} is not the producer's "
+            f"schema (missing: {sorted(schema_keys - got)}, "
+            f"unexpected: {sorted(got - schema_keys)}) — a JSON "
+            "with similar fields is not the producer's artifact")
+    declared = doc.get(self_key)
+    if not isinstance(declared, str) or len(declared) != 64:
+        raise ProducerBindingRefusal(
+            f"{producer}: {path.name} carries no canonical "
+            f"{self_key}")
+    recomputed = _self_sha(doc, self_key)
+    if recomputed != declared:
+        raise ProducerBindingRefusal(
+            f"{producer}: {path.name} self-digest does not "
+            "re-derive under the producer's own rule — the "
+            "artifact was altered after it was produced")
+    return {"doc": doc, "source_file_sha256": file_sha,
+            "source_file_name": path.name,
+            "producer_self_digest": declared,
+            "verifier_identity": verifier,
+            "verification": "SCHEMA_EXACT_AND_SELF_DIGEST_"
+                            "REDERIVED"}
+
+
 def _read(p):
     return json.loads(Path(p).read_text())
 
 
+T2_SCHEMA_KEYS = {
+    "authority", "campaign_root_logical",
+    "final_adjudication_counts", "gate_facts", "record_sha256",
+    "release_sequence", "schema", "screen_adjudication",
+    "wall_ledger", "wall_seconds_reconstruction"}
+
+M4_SCHEMA_KEYS = {
+    "authority", "calibration_margin", "confirmation_slots",
+    "design_sha256", "dispersion", "eligibility",
+    "incomplete_units_in_denominator", "ladder",
+    "ladder_excluded_units",
+    "precision_supported_on_eligible_cells",
+    "proposed_eligibility_rule", "record_sha256", "schema"}
+
+
 def t2_envelope(adjudication_path: Path) -> dict:
     """T2's completion reconstruction + six-panel screen."""
-    doc = _read(adjudication_path)
+    bound = _consume_producer_artifact(
+        adjudication_path, schema_keys=T2_SCHEMA_KEYS,
+        self_key="record_sha256",
+        producer="T2 public forecasting screen",
+        verifier="tools/t2_completion_reconstruction.py "
+                 "final_adjudication + adjudicate_screen")
+    doc = bound["doc"]
     screen = doc["screen_adjudication"]
     counts = doc["final_adjudication_counts"]
     units = []
@@ -114,13 +204,23 @@ def t2_envelope(adjudication_path: Path) -> dict:
             "wall_ledger_sha256": doc["wall_ledger"]["raw_sha256"],
             "release_done_sha256":
                 doc["release_sequence"]["release_done_sha256"],
+            "source_file_name": bound["source_file_name"],
+            "source_file_sha256": bound["source_file_sha256"],
+            "verifier_identity": bound["verifier_identity"],
+            "verification": bound["verification"],
         },
         units=units)
 
 
 def m4_envelope(adjudication_path: Path) -> dict:
     """M4's governing calibration adjudication."""
-    doc = _read(adjudication_path)
+    bound = _consume_producer_artifact(
+        adjudication_path, schema_keys=M4_SCHEMA_KEYS,
+        self_key="record_sha256",
+        producer="M4 residual capacity",
+        verifier="tools/m4_v5_adjudicate.py "
+                 "c35_calibration_adjudication")
+    doc = bound["doc"]
     ladder = doc["ladder"]
     units = []
     for cell, disp in sorted(doc["dispersion"].items()):
@@ -191,14 +291,43 @@ def m4_envelope(adjudication_path: Path) -> dict:
             "total_slots": len(doc["confirmation_slots"]),
         },
         artifacts={"adjudication_sha256": doc["record_sha256"],
-                   "design_sha256": doc["design_sha256"]},
+                   "design_sha256": doc["design_sha256"],
+                   "source_file_name": bound["source_file_name"],
+                   "source_file_sha256":
+                       bound["source_file_sha256"],
+                   "verifier_identity":
+                       bound["verifier_identity"],
+                   "verification": bound["verification"]},
         units=units)
 
 
 def b4_envelope(*, campaign_key: str, run_id: str,
-                disposition: str) -> dict:
+                disposition: str,
+                quarantine_record: Path | None = None) -> dict:
     """B4 is QUARANTINED: the envelope records exactly that, with
-    no metric invented to fill the shape."""
+    no metric invented to fill the shape.
+
+    C12: this envelope was previously built ENTIRELY from
+    constants, so it asserted a quarantine no artifact backed.
+    When a quarantine record exists it is consumed and bound like
+    any other producer artifact; when it does not, the envelope
+    says so in place instead of implying evidence.
+    """
+    if quarantine_record is not None:
+        p = Path(quarantine_record)
+        if not p.is_file():
+            raise ProducerBindingRefusal(
+                "B4: the quarantine record was named but is "
+                f"absent at {p.name}")
+        source = {"source_file_name": p.name,
+                  "source_file_sha256": _sha_file(p),
+                  "verification": "SOURCE_FILE_DIGESTED"}
+    else:
+        source = {"source_file_name": UNAVAILABLE,
+                  "source_file_sha256": UNAVAILABLE,
+                  "verification":
+                      "NO_PRODUCER_ARTIFACT_EXISTS_THE_CAMPAIGN_"
+                      "DID_NOT_COMPLETE"}
     return build_envelope(
         campaign_key=campaign_key,
         producer="B4 paired RL campaign",
@@ -214,7 +343,8 @@ def b4_envelope(*, campaign_key: str, run_id: str,
                 "cost_units": UNAVAILABLE},
         terminal={"state": "QUARANTINED_RUNTIME_STALL",
                   "adjudication": disposition},
-        artifacts={"note": "no adjudicable artifact — the "
+        artifacts={**source,
+                   "note": "no adjudicable artifact — the "
                            "campaign did not complete"},
         units=[])
 
@@ -224,6 +354,7 @@ def main(argv=None) -> int:
     ap.add_argument("--t2-adjudication", type=Path)
     ap.add_argument("--m4-adjudication", type=Path)
     ap.add_argument("--b4-quarantined", action="store_true")
+    ap.add_argument("--b4-quarantine-record", type=Path)
     ap.add_argument("--out-dir", required=True, type=Path)
     a = ap.parse_args(argv)
     a.out_dir.mkdir(parents=True, exist_ok=True)
@@ -234,6 +365,7 @@ def main(argv=None) -> int:
         made.append(m4_envelope(a.m4_adjudication))
     if a.b4_quarantined:
         made.append(b4_envelope(
+            quarantine_record=a.b4_quarantine_record,
             campaign_key="b4_campaign_generation_v7_20260908",
             run_id="b4_campaign_results_v7_20260908",
             disposition="B4_V7_QUARANTINED_AND_EXTERNAL_"

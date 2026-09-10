@@ -19,6 +19,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from olap import campaign_envelope as ce  # noqa: E402
 
+
+def _sha_file(path: Path) -> str:
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for block in iter(lambda: fh.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
 WATCHED = (
     "dim_experiment", "fact_performance", "fact_results_summary",
     "dim_dataset", "dim_series", "dim_variable",
@@ -57,18 +66,37 @@ def counts(engine) -> dict:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--envelope-dir", required=True, type=Path)
+    ap.add_argument("--backup-file", required=True, type=Path,
+                    help="the pre-backfill dump itself; the "
+                         "backfill OPENS it and recomputes its "
+                         "digest")
     ap.add_argument("--backup-sha256", required=True,
-                    help="digest of the pre-backfill dump; the "
-                         "backfill refuses without one")
+                    help="expected digest of that dump")
     ap.add_argument("--backup-logical-name", required=True)
     ap.add_argument("--receipt", required=True, type=Path)
     ap.add_argument("--as-of", required=True)
     a = ap.parse_args(argv)
 
-    if len(a.backup_sha256) != 64:
+    # C13: the backup gate is no longer a length check. The dump
+    # is opened and re-hashed here, because a well-formed string
+    # authorised a migration with no file on disk.
+    import re
+    if not re.fullmatch(r"[0-9a-f]{64}", a.backup_sha256 or ""):
         raise SystemExit(
-            "REFUSED: --backup-sha256 is not a sha256 — a "
-            "backfill without a real backup is not reversible")
+            "REFUSED: --backup-sha256 is not a canonical "
+            "SHA-256")
+    if not a.backup_file.is_file():
+        raise SystemExit(
+            f"REFUSED: the backup dump does not exist at "
+            f"{a.backup_file.name} — a digest is not a backup")
+    recomputed = _sha_file(a.backup_file)
+    if recomputed != a.backup_sha256:
+        raise SystemExit(
+            "REFUSED: the backup dump on disk does not match "
+            f"the declared digest (recomputed {recomputed[:16]}, "
+            f"declared {a.backup_sha256[:16]}) — the migration "
+            "is not reversible from that file")
+    backup_bytes = a.backup_file.stat().st_size
 
     engine = _engine()
     before = counts(engine)
@@ -91,7 +119,9 @@ def main(argv=None) -> int:
         "schema": "crispdm.campaign_backfill_receipt.v1",
         "as_of": a.as_of,
         "backup": {"logical_name": a.backup_logical_name,
-                   "sha256": a.backup_sha256},
+                   "sha256": a.backup_sha256,
+                   "bytes": backup_bytes,
+                   "verification": "OPENED_AND_REHASHED"},
         "counts_before": before,
         "counts_after": after,
         "changed_tables": changed,

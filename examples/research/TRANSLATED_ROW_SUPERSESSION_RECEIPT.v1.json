@@ -1,0 +1,47 @@
+{
+ "as_of": "2026-09-10T00:00:00Z",
+ "counts_after": {
+  "dim_campaign": 3,
+  "dim_dataset": 2,
+  "dim_experiment": 39,
+  "dim_series": 2,
+  "dim_variable": 99,
+  "fact_campaign_consumption": 3,
+  "fact_campaign_unit": 60,
+  "fact_dataset_inventory": 2,
+  "fact_ingestion_receipt": 1,
+  "fact_performance": 1404,
+  "fact_results_summary": 1404,
+  "fact_variable_profile": 99
+ },
+ "counts_before": {
+  "dim_campaign": 3,
+  "dim_dataset": 2,
+  "dim_experiment": 39,
+  "dim_series": 2,
+  "dim_variable": 99,
+  "fact_campaign_consumption": 3,
+  "fact_campaign_unit": 60,
+  "fact_dataset_inventory": 2,
+  "fact_ingestion_receipt": 1,
+  "fact_performance": 1404,
+  "fact_results_summary": 1404,
+  "fact_variable_profile": 99
+ },
+ "deletions": "NONE \u2014 no row was deleted and no metric was rewritten; two additive columns carry the label and the link",
+ "receipt_sha256": "e44701a8bddb4aba3e5877c4dff9bc365debdc1bf6e79fe301f9d3d0197f186b",
+ "rows_linked_to_superseding_envelope": {
+  "m4_v5_calibration_attempt3_20260909": 29,
+  "t2_resource_successor_v1_20260909": 31
+ },
+ "rows_marked_total": 60,
+ "rows_marked_translated": {
+  "m4_v5_calibration_attempt3_20260909": 29,
+  "t2_resource_successor_v1_20260909": 31
+ },
+ "schema": "crispdm.translated_row_supersession.v1",
+ "superseding_envelopes": {
+  "m4_v5_calibration_attempt3_20260909": "9182939fe49a98a2ac78cb285047816fc81ec25dec2fc1c2ca8e0ed918c6679d",
+  "t2_resource_successor_v1_20260909": "827ad800cc21c4b6c933976ca332ced25bc73b6a2d8b8b71a9101334f691e487"
+ }
+}

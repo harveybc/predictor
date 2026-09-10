@@ -299,6 +299,70 @@ def main():
         target_plugin
     )
         
+    # C14: every terminal run emits its envelope to the durable
+    # local outbox. This never contacts PostgreSQL, so a database
+    # that is down or restarting cannot fail a scientific run;
+    # the CPU loader drains the outbox separately and
+    # idempotently.
+    try:
+        from olap import outbox as _outbox
+        from olap.campaign_envelope import build_envelope as _be
+        _stamp = config.get("eligibility_stamp") or {}
+        _envelope = _be(
+            campaign_key=str(config.get(
+                "experiment_key",
+                Path(str(config.get("load_config",
+                                    "predictor_run"))).stem)),
+            producer="predictor",
+            result_class=("DEVELOPMENT"
+                          if _stamp.get("eligibility_status")
+                          == "ELIGIBILITY_GATED"
+                          else "NON_GOVERNING"),
+            identity={
+                "run_id": str(config.get("output_file",
+                                         "UNAVAILABLE")),
+                "code_identity": str(
+                    _stamp.get("digests", {}).get(
+                        "code", "UNAVAILABLE")),
+                "design_sha256": str(
+                    _stamp.get("manifest_sha256",
+                               "UNAVAILABLE")),
+            },
+            data_consumed={"datasets": [], "variables": [
+                {"id": s, "digest": str(
+                    _stamp.get("digests", {}).get(
+                        "data", "UNAVAILABLE")),
+                 "eligibility_state": _stamp.get(
+                     "eligibility_status", "UNAVAILABLE")}
+                for s in _stamp.get("subject_ids", [])],
+                "operators": []},
+            partitions={
+                "exposure": str(_stamp.get(
+                    "execution_purpose", "UNAVAILABLE")),
+                "splits": str(_stamp.get(
+                    "digests", {}).get("partitions",
+                                       "UNAVAILABLE"))},
+            budget={"device": "cpu",
+                    "wall_seconds": "UNAVAILABLE",
+                    "cost_units": "UNAVAILABLE"},
+            terminal={
+                "state": "COMPLETE",
+                "adjudication": str(_stamp.get(
+                    "eligibility_status",
+                    "LEGACY_NON_AUTHORITATIVE"))},
+            artifacts={"results_file": str(
+                config.get("results_file", "UNAVAILABLE"))},
+            units=[])
+        _emitted = _outbox.emit(_envelope, kind="envelope")
+        print(f"olap outbox: {_emitted['state']} "
+              f"{_emitted['outbox_entry']}")
+    except Exception as _exc:          # noqa: BLE001
+        # An outbox problem is an OPERATIONAL fault, never a
+        # scientific one: it is reported and the run still ends
+        # normally with its results on disk.
+        print(f"olap outbox: NOT EMITTED "
+              f"({_exc.__class__.__name__}: {_exc})")
+
     # Guardado de la configuración local y remota
     if config.get('save_config'):
         try:

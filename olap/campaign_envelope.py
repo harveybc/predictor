@@ -119,6 +119,18 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_campaign_consumption (
   PRIMARY KEY (envelope_sha256, subject_kind, subject_id)
 );
 
+-- C12: the 60 rows loaded from translated summaries are kept,
+-- never deleted, and marked additively as non-authoritative with
+-- a link to the envelope that supersedes them. Two additive
+-- columns carry that, so no historical row is rewritten in place
+-- beyond the label it never had.
+ALTER TABLE {SCHEMA}.fact_campaign_unit
+  ADD COLUMN IF NOT EXISTS authority_state TEXT;
+ALTER TABLE {SCHEMA}.fact_campaign_unit
+  ADD COLUMN IF NOT EXISTS superseded_by_envelope_sha256 TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_fact_campaign_unit_authority
+  ON {SCHEMA}.fact_campaign_unit (authority_state);
 CREATE INDEX IF NOT EXISTS idx_fact_campaign_unit_class
   ON {SCHEMA}.fact_campaign_unit (result_class, campaign_key);
 CREATE INDEX IF NOT EXISTS idx_fact_campaign_unit_metric
@@ -155,6 +167,14 @@ def build_envelope(*, campaign_key: str, producer: str,
     doc["envelope_sha256"] = _sha(doc, "envelope_sha256")
     validate_envelope(doc)
     return doc
+
+
+UNIT_KEYS_REQUIRED = ("cell_key", "candidate_key",
+                      "metric_name", "terminal_state")
+UNIT_KEYS_ALLOWED = UNIT_KEYS_REQUIRED + (
+    "metric_value", "uncertainty_kind", "uncertainty_low",
+    "uncertainty_high", "checkpoint_count", "epoch_count",
+    "n_series")
 
 
 def validate_envelope(doc: dict) -> dict:
@@ -194,11 +214,31 @@ def validate_envelope(doc: dict) -> dict:
             "envelope self digest does not re-derive — the "
             "artifact was mutated after it was produced")
     for u in doc.get("units", []):
-        for f in ("cell_key", "candidate_key", "metric_name",
-                  "terminal_state"):
-            if f not in u:
+        missing = [f for f in UNIT_KEYS_REQUIRED if f not in u]
+        if missing:
+            raise EnvelopeRefusal(f"unit is missing {missing}")
+        extra = sorted(set(u) - set(UNIT_KEYS_ALLOWED))
+        if extra:
+            raise EnvelopeRefusal(
+                f"unit carries undeclared fields {extra} — an "
+                "envelope schema that accepts anything records "
+                "nothing")
+        for f in UNIT_KEYS_REQUIRED:
+            if not isinstance(u[f], str) or not u[f].strip():
                 raise EnvelopeRefusal(
-                    f"unit is missing {f!r}")
+                    f"unit field {f!r} must be a non-empty "
+                    f"string, got {type(u[f]).__name__}")
+        for f in ("metric_value", "uncertainty_low",
+                  "uncertainty_high"):
+            v = u.get(f)
+            if v is None or v == UNAVAILABLE:
+                continue
+            if isinstance(v, bool) or not isinstance(
+                    v, (int, float)):
+                raise EnvelopeRefusal(
+                    f"unit field {f!r} is a "
+                    f"{type(v).__name__}, not a number or "
+                    f"{UNAVAILABLE}")
     return doc
 
 
@@ -224,10 +264,25 @@ def ensure_envelope_tables(engine) -> None:
         conn.exec_driver_sql(ENVELOPE_DDL)
 
 
+PRODUCER_BOUND = "PRODUCER_VERIFIED"
+TRANSLATED = "TRANSLATED_SUMMARY_NON_AUTHORITATIVE"
+
+
+def envelope_authority_state(doc: dict) -> str:
+    """An envelope is PRODUCER_VERIFIED only when it records that
+    it consumed the producer's own artifact and re-derived its
+    self-digest. Anything else is a translated summary."""
+    v = (doc.get("artifacts") or {}).get("verification", "")
+    if v == "SCHEMA_EXACT_AND_SELF_DIGEST_REDERIVED":
+        return PRODUCER_BOUND
+    return TRANSLATED
+
+
 def load_envelope(engine, doc: dict) -> dict:
     """Insert an envelope. Re-loading the same envelope changes
     nothing; loading a mutated one refuses before any write."""
     validate_envelope(doc)
+    authority_state = envelope_authority_state(doc)
     from sqlalchemy import text
 
     ident = doc["identity"]
@@ -239,18 +294,44 @@ def load_envelope(engine, doc: dict) -> dict:
             f"SELECT count(*) FROM {SCHEMA}.fact_campaign_unit "
             "WHERE envelope_sha256 = :e"),
             {"e": doc["envelope_sha256"]}).scalar()
-        conn.execute(text(f"""
-            INSERT INTO {SCHEMA}.dim_campaign
-              (campaign_key, producer, result_class,
-               design_sha256, code_identity, run_id)
-            VALUES (:k, :p, :rc, :d, :c, :r)
-            ON CONFLICT (campaign_key) DO NOTHING
-        """), {"k": doc["campaign_key"],
-               "p": doc["producer"],
-               "rc": doc["result_class"],
-               "d": str(ident["design_sha256"]),
-               "c": str(ident["code_identity"]),
-               "r": str(ident["run_id"])})
+        # C13: a campaign_key is a LOGICAL id, not an identity.
+        # On conflict the stored identity is compared field by
+        # field and a difference REFUSES before any fact is
+        # written — previously ON CONFLICT DO NOTHING let a
+        # second envelope attach its facts to another campaign's
+        # dimension row.
+        existing_dim = conn.execute(text(
+            f"SELECT producer, result_class, design_sha256, "
+            f"code_identity, run_id FROM {SCHEMA}.dim_campaign "
+            "WHERE campaign_key = :k"),
+            {"k": doc["campaign_key"]}).mappings().first()
+        incoming = {"producer": doc["producer"],
+                    "result_class": doc["result_class"],
+                    "design_sha256": str(ident["design_sha256"]),
+                    "code_identity": str(ident["code_identity"]),
+                    "run_id": str(ident["run_id"])}
+        if existing_dim is not None:
+            stored = dict(existing_dim)
+            differing = sorted(k for k in incoming
+                               if stored.get(k) != incoming[k])
+            if differing:
+                raise EnvelopeRefusal(
+                    f"campaign_key {doc['campaign_key']!r} "
+                    f"already exists with a DIFFERENT identity "
+                    f"(differing: {differing}) — a logical id is "
+                    "not an identity, and facts are never "
+                    "attached to another campaign's dimension")
+        else:
+            conn.execute(text(f"""
+                INSERT INTO {SCHEMA}.dim_campaign
+                  (campaign_key, producer, result_class,
+                   design_sha256, code_identity, run_id)
+                VALUES (:k, :p, :rc, :d, :c, :r)
+            """), {"k": doc["campaign_key"], "p": doc["producer"],
+                   "rc": doc["result_class"],
+                   "d": incoming["design_sha256"],
+                   "c": incoming["code_identity"],
+                   "r": incoming["run_id"]})
         counts["campaigns"] = 1
         if existing:
             counts["skipped_existing"] = int(existing)
@@ -263,10 +344,10 @@ def load_envelope(engine, doc: dict) -> dict:
                    uncertainty_kind, uncertainty_low,
                    uncertainty_high, exposure, device,
                    wall_seconds, checkpoint_count, epoch_count,
-                   envelope_json)
+                   envelope_json, authority_state)
                 VALUES (:e, :k, :cell, :cand, :rc, :ts, :adj,
                         :mn, :mv, :uk, :ul, :uh, :ex, :dev,
-                        :ws, :cc, :ec, CAST(:j AS JSONB))
+                        :ws, :cc, :ec, CAST(:j AS JSONB), :auth)
                 ON CONFLICT (envelope_sha256, cell_key,
                              candidate_key, metric_name)
                 DO NOTHING
@@ -289,7 +370,8 @@ def load_envelope(engine, doc: dict) -> dict:
                 "ws": _num(doc["budget"].get("wall_seconds")),
                 "cc": _int(u.get("checkpoint_count")),
                 "ec": _int(u.get("epoch_count")),
-                "j": json.dumps(u, sort_keys=True)})
+                "j": json.dumps(u, sort_keys=True),
+                "auth": authority_state})
             counts["units"] += res.rowcount or 0
         for kind, items in (
                 ("variable",

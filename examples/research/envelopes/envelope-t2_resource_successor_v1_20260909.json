@@ -2,6 +2,10 @@
  "artifacts": {
   "adjudication_sha256": "6e92b02dd76a92a6d87dfa84b29d3d7d44f54cd8e06aa087c76c0e3241191b9f",
   "release_done_sha256": "51a1a97af6197c710f7b6952a2cca9b3bdc6f13d194e3a16dd970576dfe2181e",
+  "source_file_name": "T2_COMPLETION_RECONSTRUCTION_AND_SCREEN_ADJUDICATION_2026_09_10.json",
+  "source_file_sha256": "181c0796d015710b97e605c4fc3c9125271b94e4228dab397722e1e3eb75e0d7",
+  "verification": "SCHEMA_EXACT_AND_SELF_DIGEST_REDERIVED",
+  "verifier_identity": "tools/t2_completion_reconstruction.py final_adjudication + adjudicate_screen",
   "wall_ledger_sha256": "8ac5210cb9e021759c02ed88fd6a8dd4394e6c9d725a797f40cddba005e1df42"
  },
  "budget": {
@@ -29,7 +33,7 @@
   ],
   "variables": []
  },
- "envelope_sha256": "397354dc46a63e9701ad126d8f5580f62ca138eab0ac1f3d16720aecd1c0a570",
+ "envelope_sha256": "827ad800cc21c4b6c933976ca332ced25bc73b6a2d8b8b71a9101334f691e487",
  "identity": {
   "code_identity": "4761df4a8b324442a83a0554cc53d3005025500d9e8d0c3b2272a729c9714752",
   "design_sha256": "0542ed0536c38e92707454f0e55134246dddecbfbad4a63db1817c1ba1ce4e27",
