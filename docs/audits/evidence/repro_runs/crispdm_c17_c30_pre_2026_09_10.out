@@ -1,0 +1,25 @@
+PRE-01 a mutated y changes no derived identity: REPRODUCED
+        y_validation went from 1 to 999; subjects ['x_d6.csv::px'], data_digest d950cdc4bbf0aabc and partitions_digest 6e7631028c532072 are IDENTICAL — subjects derive from the x header only, and both digests are computed from x alone
+PRE-02 the optimizer mutates the approved contract: REPRODUCED
+        gate at 11235, config.update(optimal_params) at 11992, pipeline at 12402; there is NO allowlist and no re-derivation between them, so an optimizer returning x_test_file, target_column or a plugin name changes what the pipeline consumes AFTER approval
+PRE-03 the submission is regenerated every run: REPRODUCED
+        gate_run() stamps submitted_at with the wall clock of THIS invocation and immediately demands a record binding that submission's digest; there is no SUBMIT_ONLY phase and no way to consume a previously reviewed submission, so a record issued for run N refuses run N+1 on chronology
+PRE-04 a manifest accepts undeclared fields: REPRODUCED
+        loaded with undeclared_top_level_field='smuggled' and undeclared_nested_field='smuggled'
+PRE-05 an envelope accepts NaN and undeclared fields: REPRODUCED
+        undeclared nested identity field accepted: True; wall_seconds=NaN accepted and digested: True — a non-finite number passed as a measurement
+PRE-06 the envelope builder parses loosely: REPRODUCED
+        the producer artifact is read with plain json.loads (so duplicate keys and NaN survive) and its self-digest is validated by LENGTH, not as canonical lowercase hex
+PRE-07 a pipeline exception emits no terminal: REPRODUCED
+        the only emit() stands at 15027, AFTER the pipeline call at 12402, with no try/except around the pipeline; an exception, a refusal or an inconclusive outcome before that line leaves the cube with no record that the run ever happened
+PRE-08 no persistent loader and no productive outbox: REPRODUCED
+        systemd --user units matching an OLAP loader: NONE; the productive outbox directory olap_outbox exists: False — the loader was implemented and tested as a component, never deployed as a flow
+PRE-09 the inventory ignores a new version of an id: REPRODUCED
+        5 inserts use ON CONFLICT (<logical id>) DO NOTHING with no version column, so a changed digest, availability or semantics under the same id is silently dropped and the cube keeps the older observation
+PRE-10 the reviewed code digest ignores the real graph: REPRODUCED
+        CONSUMING_CODE is ['app/main.py', 'eligibility/gate.py', 'eligibility/consumed.py', 'eligibility/integration.py'] — four gate files. The predictor, optimizer, pipeline, target, preprocessor, data handler and config merge modules that actually consume the data are absent, so changing any of them leaves reviewed_code_digest unchanged
+PRE-11 T2/M4/B4 never emit a terminal: REPRODUCED
+        outbox references in each producer's tools: {'T2': 'NONE', 'M4': 'NONE', 'B4': 'NONE'} — their results reached the cube only through the manual backfill, so their NEXT execution records nothing
+
+PRE CONFIRMED: every counterexample in the governing re-audit reproduces from the shipped code, each for its own named reason. A mutated y really is invisible to every derived identity; the optimizer really can rewrite the approved contract; a reviewed submission really cannot govern a later run; manifest and envelope really accept undeclared fields and NaN; a pipeline exception really emits nothing; there really is no loader process and no productive outbox; the inventory really freezes an old version; the reviewed code digest really ignores the modules that consume the data; and T2, M4 and B4 really have no terminal emission.
+exit=0
