@@ -191,3 +191,7 @@ docs/tesis_representaciones_modulares/referencias/*
 *.run.xml
 *.toc
 *.synctex.gz
+
+# Frozen audit evidence is tracked deliberately: the LaTeX *.log/*.out
+# rules above must never swallow a PRE/POST reproduction output.
+!docs/audits/evidence/**
