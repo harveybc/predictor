@@ -95,11 +95,16 @@ def test_an_unconfigured_new_experiment_refuses(name, tmp_path):
     """Order C5: omitting a manifest is no longer an implicit
     legacy run in ANY consumer."""
     mod = _load(PRESENT[name], f"adapter2_{name.replace('-', '_')}")
+    # C17: BOTH phases need a reviewed manifest, and the
+    # manifest guard is the first to speak — a phase cannot be
+    # entered at all without one
     config = _partitions(tmp_path)
-    config["execution_purpose"] = "NEW_EXPERIMENT"
-    with pytest.raises(SystemExit, match="no eligibility "
-                                         "manifest"):
-        mod.gate_run(config, consumer=name, repo_root=tmp_path)
+    for purpose in (mod.PURPOSE_SUBMIT, mod.PURPOSE_EXECUTE):
+        config["execution_purpose"] = purpose
+        with pytest.raises(SystemExit,
+                           match="no eligibility manifest"):
+            mod.gate_run(config, consumer=name,
+                         repo_root=tmp_path)
 
 
 @pytest.mark.parametrize("name", sorted(PRESENT))

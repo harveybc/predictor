@@ -151,13 +151,20 @@ def test_only_a_producer_bound_envelope_is_authoritative():
 # ==============================================================
 
 def test_a_campaign_key_collision_refuses(throwaway_db):
+    """Under C13 a differing run_id is a new RUN, not a
+    conflicting campaign — the conflict must be in what DEFINES
+    the campaign."""
     _, engine = throwaway_db
     ce.ensure_envelope_tables(engine)
-    first = _minimal()
-    ce.load_envelope(engine, first)
+    ce.load_envelope(engine, _minimal())
+    # a second run of the same campaign is accepted
+    ce.load_envelope(engine, _minimal(
+        identity={"run_id": "SECOND_RUN", "code_identity": "c",
+                  "design_sha256": "d"}))
+    # a different DESIGN under the same logical key refuses
     impostor = _minimal(
-        identity={"run_id": "OTHER", "code_identity": "c",
-                  "design_sha256": "d"})
+        identity={"run_id": "r", "code_identity": "c",
+                  "design_sha256": "A_DIFFERENT_DESIGN"})
     with pytest.raises(SystemExit,
                        match="DIFFERENT identity"):
         ce.load_envelope(engine, impostor)
@@ -377,13 +384,19 @@ def test_the_outbox_never_deletes_evidence():
     assert src.count("unlink") == 1
 
 
-def test_predictor_emits_at_the_end_of_a_run():
+def test_predictor_emits_a_terminal_for_every_outcome():
+    """Superseded by C22: the success-only emitter was replaced
+    by a wrapper around the WHOLE run."""
     src = (REPO / "app/main.py").read_text()
-    assert "outbox.emit(" in src or "_outbox.emit(" in src
-    assert "NOT EMITTED" in src, (
-        "an outbox failure must be reported, never silent")
-    assert src.index("_outbox.emit(") > src.index(
-        "pipeline_plugin.run_prediction_pipeline(")
+    assert "terminal_run(" in src
+    assert "_outbox.emit(" not in src, (
+        "the success-only emitter must be gone")
+    term_src = (REPO / "olap/terminal.py").read_text()
+    assert "OPERATIONAL_GAP" in term_src, (
+        "an outbox failure must be recorded, never silent")
+    for state in ("COMPLETE", "FAILED", "INCONCLUSIVE",
+                  "REFUSED", "QUARANTINED"):
+        assert state in term_src
 
 
 # ==============================================================

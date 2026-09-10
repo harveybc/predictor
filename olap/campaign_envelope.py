@@ -316,14 +316,31 @@ def ensure_envelope_tables(engine) -> None:
 
 
 PRODUCER_BOUND = "PRODUCER_VERIFIED"
+PRODUCER_EMITTED = "PRODUCER_EMITTED_AT_TERMINAL"
 TRANSLATED = "TRANSLATED_SUMMARY_NON_AUTHORITATIVE"
+
+# An envelope born AT the producer's own terminal point carries
+# the strongest provenance there is: it is not a reading of an
+# artifact, it IS the artifact. Calling it "translated" would
+# rank the live producer below a later re-reading of its summary.
+BORN_AT_TERMINAL = "BORN_AT_PRODUCER_TERMINAL"
 
 
 def envelope_authority_state(doc: dict) -> str:
-    """An envelope is PRODUCER_VERIFIED only when it records that
-    it consumed the producer's own artifact and re-derived its
-    self-digest. Anything else is a translated summary."""
-    v = (doc.get("artifacts") or {}).get("verification", "")
+    """Three provenances, ranked by what actually happened.
+
+      * PRODUCER_EMITTED_AT_TERMINAL — the producer emitted this
+        as it ended; there is no earlier artifact to verify
+        against because this IS the record;
+      * PRODUCER_VERIFIED — a builder consumed the producer's own
+        artifact and re-derived its self-digest;
+      * TRANSLATED_SUMMARY_NON_AUTHORITATIVE — everything else,
+        including a summary copied without verification.
+    """
+    art = doc.get("artifacts") or {}
+    v = art.get("verification", "")
+    if v == BORN_AT_TERMINAL:
+        return PRODUCER_EMITTED
     if v == "SCHEMA_EXACT_AND_SELF_DIGEST_REDERIVED":
         return PRODUCER_BOUND
     return TRANSLATED

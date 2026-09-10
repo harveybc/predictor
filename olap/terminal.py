@@ -99,8 +99,12 @@ def build_terminal_envelope(*, campaign_key: str, producer: str,
             # scientific finding
             "failure_phase": failure_phase,
             "failure_type": failure_type},
-        artifacts={"results_file": str(
-            config.get("results_file", UNAVAILABLE))},
+        artifacts={
+            "results_file": str(
+                config.get("results_file", UNAVAILABLE)),
+            # C23: born at the producer's terminal point, not
+            # translated from a summary after the fact
+            "verification": "BORN_AT_PRODUCER_TERMINAL"},
         # C23: a terminal run IS a unit. Emitting a campaign
         # summary with units=[] was exactly the shape the order
         # rejected, so the run appears with its own identity and
