@@ -139,12 +139,22 @@ def main():
     def _body():
         return _run_main(shared)
 
+    # C13: the campaign is the EXPERIMENT. Two runs of one
+    # experiment share it; two experiments never do.
+    def _campaign_key():
+        cfg = shared.get("config", {})
+        name = cfg.get("load_config") or "predictor_run"
+        return f"predictor::{Path(str(name)).stem}"
+
     campaign_key = "predictor_run"
     try:
         return terminal_run(
-            _body, campaign_key=campaign_key,
+            _body, campaign_key=_campaign_key,
             producer="predictor",
-            config=shared.setdefault("config", {}),
+            # read at FINISH time: the run builds its config
+            # part-way through, and a snapshot taken now would
+            # report UNAVAILABLE for everything it did
+            config=lambda: shared.get("config", {}),
             results_dir=shared.get("results_dir"))
     finally:
         pass

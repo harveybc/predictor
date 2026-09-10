@@ -118,6 +118,12 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_campaign_unit (
                metric_name)
 );
 
+-- C13: `run_id` identifies a RUN, not a campaign. Two runs of one
+-- campaign legitimately differ, so the run travels on the FACT
+-- while the dimension keeps only what defines the campaign.
+ALTER TABLE {SCHEMA}.fact_campaign_unit
+  ADD COLUMN IF NOT EXISTS run_id TEXT;
+
 CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_campaign_consumption (
   envelope_sha256   TEXT NOT NULL,
   campaign_key      TEXT NOT NULL
@@ -350,11 +356,13 @@ def load_envelope(engine, doc: dict) -> dict:
             f"code_identity, run_id FROM {SCHEMA}.dim_campaign "
             "WHERE campaign_key = :k"),
             {"k": doc["campaign_key"]}).mappings().first()
+        # C13: the campaign's identity is what DEFINES the
+        # campaign. run_id varies per run by construction and is
+        # therefore compared on the fact, never on the dimension.
         incoming = {"producer": doc["producer"],
                     "result_class": doc["result_class"],
                     "design_sha256": str(ident["design_sha256"]),
-                    "code_identity": str(ident["code_identity"]),
-                    "run_id": str(ident["run_id"])}
+                    "code_identity": str(ident["code_identity"])}
         if existing_dim is not None:
             stored = dict(existing_dim)
             differing = sorted(k for k in incoming
@@ -376,7 +384,7 @@ def load_envelope(engine, doc: dict) -> dict:
                    "rc": doc["result_class"],
                    "d": incoming["design_sha256"],
                    "c": incoming["code_identity"],
-                   "r": incoming["run_id"]})
+                   "r": str(ident["run_id"])})
         counts["campaigns"] = 1
         if existing:
             counts["skipped_existing"] = int(existing)
@@ -389,10 +397,11 @@ def load_envelope(engine, doc: dict) -> dict:
                    uncertainty_kind, uncertainty_low,
                    uncertainty_high, exposure, device,
                    wall_seconds, checkpoint_count, epoch_count,
-                   envelope_json, authority_state)
+                   envelope_json, authority_state, run_id)
                 VALUES (:e, :k, :cell, :cand, :rc, :ts, :adj,
                         :mn, :mv, :uk, :ul, :uh, :ex, :dev,
-                        :ws, :cc, :ec, CAST(:j AS JSONB), :auth)
+                        :ws, :cc, :ec, CAST(:j AS JSONB), :auth,
+                        :run)
                 ON CONFLICT (envelope_sha256, cell_key,
                              candidate_key, metric_name)
                 DO NOTHING
@@ -416,7 +425,8 @@ def load_envelope(engine, doc: dict) -> dict:
                 "cc": _int(u.get("checkpoint_count")),
                 "ec": _int(u.get("epoch_count")),
                 "j": json.dumps(u, sort_keys=True),
-                "auth": authority_state})
+                "auth": authority_state,
+                "run": str(ident["run_id"])})
             counts["units"] += res.rowcount or 0
         for kind, items in (
                 ("variable",

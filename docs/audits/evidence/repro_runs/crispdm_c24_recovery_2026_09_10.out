@@ -1,0 +1,12 @@
+throwaway database created: predictor_olap_c24_1faf8d9fc9 (the real cube is untouched)
+emitted with the database UNREACHABLE-to-be: {'pending': 1, 'loaded': 0, 'failed': 0}
+drain with DB down       : {'attempted': 1, 'loaded': 0, 'failed': 0, 'database_unavailable': True}
+outbox after             : {'pending': 1, 'loaded': 0, 'failed': 0}
+drain after DB returns   : {'attempted': 1, 'loaded': 1, 'failed': 0, 'database_unavailable': False}
+outbox after             : {'pending': 0, 'loaded': 1, 'failed': 0}
+rows in the throwaway db : 1
+second drain             : {'attempted': 0, 'loaded': 0} | rows unchanged: True
+re-emit + drain          : {'attempted': 0, 'loaded': 0} | rows unchanged: True
+throwaway database dropped
+
+C24 RECOVERY CONFIRMED: a down database costs a retry and never a lost or duplicated entry; the loader recovers on its own when the database returns; and neither PostgreSQL nor Metabase was restarted.

@@ -101,7 +101,27 @@ def build_terminal_envelope(*, campaign_key: str, producer: str,
             "failure_type": failure_type},
         artifacts={"results_file": str(
             config.get("results_file", UNAVAILABLE))},
-        units=[])
+        # C23: a terminal run IS a unit. Emitting a campaign
+        # summary with units=[] was exactly the shape the order
+        # rejected, so the run appears with its own identity and
+        # its measured cost.
+        units=[{
+            "cell_key": str(stamp.get("dataset_id",
+                                      UNAVAILABLE)),
+            "candidate_key": str(config.get(
+                "plugin", UNAVAILABLE)),
+            "metric_name": "run_wall_seconds",
+            "metric_value": wall_seconds,
+            "uncertainty_kind": UNAVAILABLE,
+            "uncertainty_low": UNAVAILABLE,
+            "uncertainty_high": UNAVAILABLE,
+            "terminal_state": state,
+            "epoch_count": (int(config["epochs"])
+                            if isinstance(config.get("epochs"),
+                                          int)
+                            else UNAVAILABLE),
+            "checkpoint_count": UNAVAILABLE,
+        }])
 
 
 def emit_terminal(envelope: dict, *, results_dir: Path | None
@@ -137,9 +157,15 @@ def emit_terminal(envelope: dict, *, results_dir: Path | None
                 "state": "OPERATIONAL_GAP", "gap": gap}
 
 
-def terminal_run(fn, *, campaign_key: str, producer: str,
-                 config: dict, results_dir: Path | None = None):
+def terminal_run(fn, *, campaign_key, producer: str,
+                 config, results_dir: Path | None = None):
     """Run `fn` and emit EXACTLY ONE terminal, whatever happens.
+
+    `config` may be a dict OR a zero-argument callable returning
+    one. The callable form exists because the run only builds its
+    configuration part-way through: capturing the dict up front
+    would freeze an empty object and report UNAVAILABLE for
+    everything the run actually did.
 
     `fn` may return the string INCONCLUSIVE (or a dict carrying
     `terminal_state`) to declare an outcome that is neither a
@@ -182,6 +208,13 @@ def terminal_run(fn, *, campaign_key: str, producer: str,
 
 def _finish(state, phase, ftype, campaign_key, producer, config,
             results_dir, started):
+    # both the key and the config are read at FINISH time: the run
+    # only knows which experiment it is once its configuration is
+    # merged
+    campaign_key = (campaign_key() if callable(campaign_key)
+                    else campaign_key)
+    config = config() if callable(config) else config
+    config = config if isinstance(config, dict) else {}
     env = build_terminal_envelope(
         campaign_key=campaign_key, producer=producer,
         state=state, stamp=config.get("eligibility_stamp") or {},

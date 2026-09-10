@@ -142,14 +142,21 @@ def heartbeat(root: str | Path | None = None,
                   key=lambda p: p.stat().st_mtime)
     oldest_pending_at = (pend[0].stat().st_mtime
                          if pend else None)
+    # No nulls: the same rule the envelopes obey. An unknown is
+    # written UNAVAILABLE so a reader never mistakes it for zero.
     doc = {
         "schema": "crispdm.olap_outbox_heartbeat.v1",
         "outbox_root": str(r.name),
+        "published_at_epoch": round(now, 3),
         "pending": c[PENDING],
         "loaded": c[LOADED],
         "failed": c[FAILED],
-        "last_ingestion_epoch": last_loaded_at,
-        "oldest_pending_epoch": oldest_pending_at,
+        "last_ingestion_epoch": (round(last_loaded_at, 3)
+                                 if last_loaded_at
+                                 else "UNAVAILABLE"),
+        "oldest_pending_epoch": (round(oldest_pending_at, 3)
+                                 if oldest_pending_at
+                                 else "UNAVAILABLE"),
         "lag_seconds": (round(now - oldest_pending_at, 3)
                         if oldest_pending_at else 0.0),
         "healthy": c[FAILED] == 0,
