@@ -1,0 +1,43 @@
+PRE-01 optimizer precedes the gate: REPRODUCED
+        optimizer_plugin.optimize() at app/main.py:268, gate_subjects() at app/main.py:291 — with use_optimizer=true the optimizer builds data and fits models before the gate is ever consulted, and the comment above it calls itself the single choke point
+PRE-02 the shipped test never mentions the optimizer: REPRODUCED
+        test_main_asks_the_gate_before_the_pipeline_runs compares gate_subjects() only against run_prediction_pipeline; the optimizer path is untested
+PRE-03 empty subject list returns GATED: REPRODUCED
+        status=ELIGIBILITY_GATED universe_size=1 subjects_used=[] — a run that reviewed NOTHING carries the same positive label as a run that reviewed everything
+PRE-04 the default config makes this the default path: REPRODUCED
+        app/config.py ships eligibility_subjects=None, so status=ELIGIBILITY_GATED is what a default gated run gets
+PRE-05 a self-issued manifest grants GATED: REPRODUCED
+        the manifest was written by this process with reviewer='candidate', its own self digest, and that same digest supplied as the pinned expectation from the SAME config — nothing external reviewed anything, and the run is labelled ELIGIBILITY_GATED
+PRE-06 gate_subjects passes no version or digest: REPRODUCED
+        require_eligible() can compare version, code_digest and evidence_digest, but gate_subjects() supplies none of them, so a manifest entry's data and partition digests are never checked against the bytes in hand
+PRE-07 substituted data/partition digests still pass: REPRODUCED
+        the same subject id with COMPLETELY different data and partition digests is accepted identically — the id is the only thing that travels
+PRE-08 no consumed-column derivation exists: REPRODUCED
+        nothing derives the subject set from the run's own data contract or file headers; the caller's optional list is the only source, so it can name variables the run does not read and omit variables it does
+PRE-09 the manifest parser is permissive: REPRODUCED
+        duplicate keys silently keep the last value (issuer='b'); NaN accepted; an UPPERCASE digest passes; a 3-character 'digest' passes; an issued_at of 2099 passes a 30-day staleness limit because a negative age is not greater than the limit
+PRE-10 a NEW appearance never triggers a digest: REPRODUCED
+        under policy 'selected' want_digest is true only for an explicit selection or a size change; a first census has no previous, so every appearance is DECLARED_ONLY and 0/1,680 bytes are digested
+PRE-11 change detection ignores an equal-length mutation: REPRODUCED
+        changed_physically compares SIZE only; mtime_ns is recorded but never compared and ctime_ns is not recorded, so a mutation that preserves length is invisible
+PRE-12 the content-addressed writer truncates: REPRODUCED
+        the census file is named census-<sha>.json but opened with O_CREAT|O_TRUNC, so an existing content-addressed artifact is overwritten instead of verified
+PRE-13 external profiles are copied, not revalidated: REPRODUCED
+        _load_external_full_profiles copies the external inventory's self digest, row counts and dataset digests without recomputing the inventory digest or hashing a single byte it claims to have profiled
+PRE-14 availability instances are unreachable: REPRODUCED
+        instances are keyed by cand['feature_family'] but looked up by a['entity']; the two namespaces coincide only by accident, so the first real contract can land and still leave every variable UNAVAILABLE
+PRE-15 the index has no conceptual-variable rows: REPRODUCED
+        row_count=214 kinds={'model_ready_view': 2, 'dataset': 10, 'generator': 202} — the financial bank's 1,965 conceptual variables and the public bank's series appear only as COUNTS inside the bank summary, never as consumable rows
+PRE-16 campaign_key conflicts are ignored: REPRODUCED
+        dim_campaign is inserted with ON CONFLICT DO NOTHING and no comparison of producer, class, design, code or run, so a second envelope with the same campaign_key and a DIFFERENT identity attaches its facts to the first campaign's dimension row
+PRE-17 the backup gate never opens a file: REPRODUCED
+        the backfill validates --backup-sha256 by LENGTH only; a well-formed 64-character string authorises a migration with no dump on disk and no recomputed digest
+    STRICTLY CAUSAL MTM decomposing short (length=6, window=32, components=2)...
+    WARNING: Data too short for strictly causal MTM, using zero components
+PRE-18 short partition breaks the return contract: REPRODUCED
+        returned <class 'numpy.ndarray'> with shape (6, 2) while the caller unpacks `components, scaler = ...`; a partition shorter than the window silently changes the function's type
+PRE-19 no pipeline calls the loader: REPRODUCED
+        load_envelope() callers: ['backfill_campaign_envelopes.py', 'campaign_envelope.py', 'test_campaign_envelope.py'] — the only real flow is the manual backfill CLI, so no run, candidate or cell reaches the cube on its own
+
+PRE CONFIRMED: every finding in the governing audit reproduces from the shipped code, each for its own named reason. The optimizer really does precede the gate, an empty subject list and a self-issued manifest really do return ELIGIBILITY_GATED, the declared bindings really are never compared to bytes, the first census really digests nothing, the availability join really cannot fire, the index really carries no variables, the campaign dimension really ignores identity, the backup gate really is a length check, the MTM contract really breaks on short partitions, and nothing feeds the cube automatically.
+exit=0
