@@ -80,5 +80,14 @@ DEFAULT_VALUES = {
     "penalty_close_lambda":0.0001, # penalty in thel loss function for the predicted value being 0 (Naive)
     "penalty_far_lambda":0.0001,    # penalty in thel loss function for the predicted value being far from the target value in the opposite dicection of the 0 (Naive)
     "incentive_loss": 10.0,
-    "use_log1p_targets": True
+    "use_log1p_targets": True,
+    # Work-plan P3 eligibility gate. With no manifest configured a
+    # run is stamped LEGACY_NON_AUTHORITATIVE; with one, every
+    # declared subject must be reviewed-eligible for the scope
+    # before any window is built or any model is fitted.
+    "eligibility_manifest": None,
+    "eligibility_manifest_sha256": None,
+    "eligibility_max_age_days": None,
+    "eligibility_scope": "forecasting",
+    "eligibility_subjects": None,
 }

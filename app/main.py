@@ -279,6 +279,20 @@ def main():
             print("Skipping hyperparameter optimization.")
         print("Running prediction pipeline...")
 
+    # Eligibility gate (work-plan P3). This is the single choke
+    # point for every pipeline plugin, asked BEFORE preprocessing
+    # builds any window and before any model is fitted. With a
+    # reviewed manifest configured the run refuses here unless
+    # every declared variable is eligible for the declared scope;
+    # with none configured the run is stamped
+    # LEGACY_NON_AUTHORITATIVE and is not gated evidence.
+    from eligibility.integration import describe, gate_subjects
+
+    eligibility_stamp = gate_subjects(
+        config, subject_ids=config.get("eligibility_subjects"),
+        consumer="predictor.main")
+    print(describe(eligibility_stamp))
+
     # Pipeline Plugin orchestrates preprocessing, training (or model loading), evaluation
     pipeline_plugin.run_prediction_pipeline(
         config,
