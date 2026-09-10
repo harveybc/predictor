@@ -10,8 +10,10 @@ silent allow.
 """
 from __future__ import annotations
 
+import csv
 import hashlib
 import importlib.util
+import re
 import sys
 from pathlib import Path
 
@@ -36,6 +38,28 @@ PRESENT = {k: v for k, v in ADAPTERS.items() if v.is_file()}
 
 def _sha(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def _partitions(tmp_path):
+    """A minimal but REAL data contract, so a refusal about the
+    manifest is not masked by a refusal about missing files."""
+    cfg = {}
+    for role, key in (("d4", "x_train_file"),
+                      ("d5", "x_validation_file"),
+                      ("d6", "x_test_file")):
+        p = tmp_path / f"{role}.csv"
+        with open(p, "w", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["DATE_TIME", "px"])
+            w.writerow(["2020-01-01", "1"])
+        cfg[key] = str(p)
+    cfg["target_column"] = "px"
+    cfg["eligibility_scope"] = "forecasting"
+    return cfg
+
+
+def _flat(path: Path) -> str:
+    return re.sub(r'[\s"]+', " ", path.read_text())
 
 
 def _load(path: Path, name: str):
@@ -67,20 +91,42 @@ def test_consumer_resolves_the_one_shared_gate(name):
 
 
 @pytest.mark.parametrize("name", sorted(PRESENT))
-def test_unconfigured_consumer_is_recorded_not_allowed(name):
+def test_an_unconfigured_new_experiment_refuses(name, tmp_path):
+    """Order C5: omitting a manifest is no longer an implicit
+    legacy run in ANY consumer."""
     mod = _load(PRESENT[name], f"adapter2_{name.replace('-', '_')}")
-    stamp = mod.gate_subjects({}, consumer=name)
-    assert stamp["eligibility_status"] == "LEGACY_NON_AUTHORITATIVE"
-    assert "not gated evidence" in stamp["reason"]
-    op = mod.gate_operator({}, consumer=name, operator_id="o",
-                           version="1", code_digest="c" * 64)
-    assert op["eligibility_status"] == "LEGACY_NON_AUTHORITATIVE"
-    assert "not licensed" in op["reason"]
+    config = _partitions(tmp_path)
+    config["execution_purpose"] = "NEW_EXPERIMENT"
+    with pytest.raises(SystemExit, match="no eligibility "
+                                         "manifest"):
+        mod.gate_run(config, consumer=name, repo_root=tmp_path)
+
+
+@pytest.mark.parametrize("name", sorted(PRESENT))
+def test_archival_replay_must_be_declared_in_every_consumer(
+        name, tmp_path):
+    mod = _load(PRESENT[name], f"adapter3_{name.replace('-', '_')}")
+    config = _partitions(tmp_path)
+    config["execution_purpose"] = mod.PURPOSE_ARCHIVAL
+    stamp = mod.gate_run(config, consumer=name,
+                         repo_root=tmp_path)
+    assert stamp["eligibility_status"] == \
+        "LEGACY_NON_AUTHORITATIVE"
+    assert stamp["execution_purpose"] == mod.PURPOSE_ARCHIVAL
+
+
+@pytest.mark.parametrize("name", sorted(PRESENT))
+def test_no_consumer_offers_a_subject_id_shortcut(name):
+    """The subject set is derived; a consumer that accepted a
+    caller's list would reopen the hole the audit found."""
+    src = PRESENT[name].read_text()
+    assert "subject_ids" not in src
+    assert "def gate_subjects" not in src
 
 
 @pytest.mark.parametrize("name", sorted(PRESENT))
 def test_configured_but_unlocatable_gate_refuses(name, tmp_path):
-    mod = _load(PRESENT[name], f"adapter3_{name.replace('-', '_')}")
+    mod = _load(PRESENT[name], f"adapter4_{name.replace('-', '_')}")
     config = {"eligibility_manifest": str(tmp_path / "m.json"),
               "eligibility_gate_path": str(tmp_path / "nowhere"),
               "eligibility_scope": "forecasting"}
@@ -107,9 +153,19 @@ def test_preprocessor_gate_precedes_materialization():
     if not src.is_file():
         pytest.skip("preprocessor not present")
     text = src.read_text()
-    assert "gate_subjects(" in text
-    assert text.index("gate_subjects(") < text.index(
+    assert "gate_run(" in text
+    assert text.index("gate_run(") < text.index(
         "plugin.process(data, config)")
+
+
+def test_agent_multi_refuses_an_undeclared_new_experiment():
+    src = (SIBLINGS / "agent-multi/optimizer_plugins/"
+                      "project3_full_genome_optimizer.py")
+    if not src.is_file():
+        pytest.skip("agent-multi not present")
+    text = _flat(src)
+    assert "no longer an implicit legacy run" in text
+    assert "ARCHIVAL_REPLAY_NON_AUTHORITATIVE" in text
 
 
 def test_doin_plugins_verifies_without_selecting():

@@ -1,89 +1,178 @@
 """Consumer-side integration of the eligibility gate.
 
-Every repository asks the gate the same way and stamps the same
-answer into its run record, so a reader can always tell which
-reviewed manifest governed a result — or that none did.
+Rewritten for order C1-C5 after the audit found three holes in
+the previous version: it ran after the optimizer, it returned a
+positive label for a run that reviewed nothing, and it accepted a
+manifest the caller had written itself.
 
-Two outcomes, no third:
+The contract now:
 
-  * a manifest is configured — every subject the run is about to
-    use must pass `require_eligible` for the declared scope, or
-    the run refuses BEFORE any window is built, any operator is
-    materialized and any model is fitted;
-  * no manifest is configured — the run proceeds and is stamped
-    `LEGACY_NON_AUTHORITATIVE`. It still produces numbers; it can
-    never be cited as gated evidence.
-
-The second outcome exists because the program has 137 runnable
-historical configurations that predate the gate. It is not a
-default-allow: the absence of review is recorded in the effective
-config and travels with the results.
+  * the subjects are DERIVED from the files the run will consume
+    (`eligibility.consumed`), never taken from a config list; a
+    declared list is checked as an assertion and a mismatch
+    refuses;
+  * a positive decision requires an EXTERNAL review record whose
+    location the run's config cannot choose, binding the exact
+    submission, manifest, census, code and partitions;
+  * every declared binding is compared at the point of use, so
+    substituted data, partitions, code or evidence refuses;
+  * historical reproduction is an EXPRESS choice
+    (`execution_purpose=ARCHIVAL_REPLAY_NON_AUTHORITATIVE`),
+    never the silent consequence of omitting a manifest;
+  * a new experiment with no review record REFUSES.
 """
 from __future__ import annotations
 
 from pathlib import Path
 
 from eligibility import gate
+from eligibility.consumed import resolve_consumed_subjects
+from eligibility import review
 
 STATUS_GATED = "ELIGIBILITY_GATED"
 STATUS_LEGACY = "LEGACY_NON_AUTHORITATIVE"
 
-# config keys every consumer honours
+PURPOSE_KEY = "execution_purpose"
+PURPOSE_ARCHIVAL = "ARCHIVAL_REPLAY_NON_AUTHORITATIVE"
+PURPOSE_EXPERIMENT = "NEW_EXPERIMENT"
+
 KEY_MANIFEST = "eligibility_manifest"
 KEY_SHA = "eligibility_manifest_sha256"
 KEY_MAX_AGE = "eligibility_max_age_days"
 KEY_SCOPE = "eligibility_scope"
 KEY_STAMP = "eligibility_stamp"
+KEY_CENSUS = "eligibility_census_sha256"
+KEY_SUBMISSION_OUT = "eligibility_submission_out"
 
 
-def gate_subjects(config: dict, *, scope: str | None = None,
-                  subject_ids: list[str] | None = None,
-                  subject_kind: str = "variable",
-                  consumer: str = "unknown") -> dict:
-    """Enforce the gate for one run and return its stamp.
+class GateOrderRefusal(SystemExit):
+    def __init__(self, msg: str) -> None:
+        super().__init__(f"REFUSED: {msg}")
 
-    Refuses (never returns) when a manifest is configured and any
-    requested subject is not reviewed-eligible for the scope.
+
+def _archival_stamp(config: dict, consumer: str,
+                    consumed: dict | None) -> dict:
+    stamp = {
+        "eligibility_status": STATUS_LEGACY,
+        "execution_purpose": PURPOSE_ARCHIVAL,
+        "consumer": consumer,
+        "reason": "this run declared "
+                  f"{PURPOSE_KEY}={PURPOSE_ARCHIVAL}; it "
+                  "reproduces historical work and is NOT gated "
+                  "evidence",
+        "subjects_derived": (len(consumed["subject_ids"])
+                             if consumed else "UNAVAILABLE"),
+        "dataset_id": (consumed["dataset_id"] if consumed
+                       else "UNAVAILABLE"),
+    }
+    config[KEY_STAMP] = stamp
+    return stamp
+
+
+def gate_run(config: dict, *, repo_root: Path,
+             consumer: str = "unknown",
+             scope: str | None = None) -> dict:
+    """The single decision, asked BEFORE any data is consumed.
+
+    Returns a stamp, or refuses. There is no path that returns a
+    positive label without an external decision about the exact
+    bytes this run will read.
     """
-    manifest_path = config.get(KEY_MANIFEST)
+    purpose = config.get(PURPOSE_KEY, PURPOSE_EXPERIMENT)
     scope = scope or config.get(KEY_SCOPE)
+
+    # The consumed set is derived first: even an archival replay
+    # records WHAT it consumed, so a later reader can tell.
+    try:
+        consumed = resolve_consumed_subjects(
+            config, repo_root=repo_root)
+    except SystemExit:
+        if purpose == PURPOSE_ARCHIVAL:
+            return _archival_stamp(config, consumer, None)
+        raise
+
+    if purpose == PURPOSE_ARCHIVAL:
+        return _archival_stamp(config, consumer, consumed)
+    if purpose != PURPOSE_EXPERIMENT:
+        raise GateOrderRefusal(
+            f"{consumer}: unknown {PURPOSE_KEY} {purpose!r} — "
+            f"declare {PURPOSE_EXPERIMENT} or "
+            f"{PURPOSE_ARCHIVAL}")
+
+    manifest_path = config.get(KEY_MANIFEST)
     if not manifest_path:
-        stamp = {
-            "eligibility_status": STATUS_LEGACY,
-            "consumer": consumer,
-            "scope": scope,
-            "manifest": None,
-            "reason": "no reviewed eligibility manifest was "
-                      "configured for this run; results are "
-                      "not gated evidence",
-        }
-        config[KEY_STAMP] = stamp
-        return stamp
+        raise GateOrderRefusal(
+            f"{consumer}: a new experiment has no eligibility "
+            "manifest. Omitting one is no longer an implicit "
+            "legacy run — declare "
+            f"{PURPOSE_KEY}={PURPOSE_ARCHIVAL} to reproduce "
+            "historical work, or supply a reviewed manifest")
     if not scope:
-        raise gate.EligibilityRefusal(
-            f"{consumer}: an eligibility manifest is configured "
-            f"but no scope was declared — eligibility is never "
-            "global")
+        raise GateOrderRefusal(
+            f"{consumer}: no eligibility scope was declared — "
+            "eligibility is never global")
+
     manifest = gate.load_manifest(
         Path(manifest_path),
         expected_sha256=config.get(KEY_SHA),
         max_age_days=config.get(KEY_MAX_AGE))
-    universe = gate.eligible_universe(
-        manifest, scope=scope, subject_kind=subject_kind)
-    used = sorted(subject_ids) if subject_ids else []
-    for sid in used:
-        gate.require_eligible(manifest, sid, scope=scope,
-                              subject_kind=subject_kind)
+
+    census_sha = config.get(KEY_CENSUS)
+    if not census_sha:
+        raise GateOrderRefusal(
+            f"{consumer}: no physical census digest was declared "
+            f"({KEY_CENSUS}) — a decision must bind the census "
+            "the variables were verified against")
+
+    submission = review.build_submission(
+        submitted_at=review.utc_now_stamp(),
+        submitter=consumer,
+        scope=scope,
+        manifest_sha256=gate.manifest_fingerprint(manifest),
+        census_sha256=census_sha,
+        consumed=consumed)
+    out = config.get(KEY_SUBMISSION_OUT)
+    if out:
+        import json
+        p = Path(out)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(submission, indent=1,
+                                sort_keys=True) + "\n")
+
+    # The decision itself — from a document this config cannot
+    # choose, binding these exact bytes.
+    record = review.read_review_record(
+        submission=submission, census_sha256=census_sha,
+        scope=scope)
+
+    # Every derived subject must be reviewed, with its declared
+    # bindings compared against what this run actually holds.
+    d = consumed["digests"]
+    for subject in consumed["subjects"]:
+        gate.require_eligible(
+            manifest, subject["subject_id"], scope=scope,
+            subject_kind="variable",
+            evidence_digest=None,
+            code_digest=None,
+            data_digest=d["data"],
+            partitions_digest=d["partitions"])
+
     stamp = {
         "eligibility_status": STATUS_GATED,
+        "execution_purpose": PURPOSE_EXPERIMENT,
         "consumer": consumer,
         "scope": scope,
         "manifest": str(manifest_path),
         "manifest_sha256": gate.manifest_fingerprint(manifest),
-        "subject_kind": subject_kind,
-        "universe_size": len(universe),
-        "subjects_used": used,
-        "subjects_used_count": len(used),
+        "submission_sha256": submission["submission_sha256"],
+        "review_record_sha256": record["record_sha256"],
+        "reviewer": record["reviewer"],
+        "census_sha256": census_sha,
+        "dataset_id": consumed["dataset_id"],
+        "subjects_derived": len(consumed["subject_ids"]),
+        "subjects_reviewed": len(consumed["subject_ids"]),
+        "subject_ids": list(consumed["subject_ids"]),
+        "digests": dict(d),
     }
     config[KEY_STAMP] = stamp
     return stamp
@@ -94,21 +183,26 @@ def gate_operator(config: dict, *, operator_id: str,
                   scope: str | None = None,
                   plugin_name: str | None = None,
                   consumer: str = "unknown") -> dict:
-    """Enforce the gate for ONE operator before it materializes a
+    """Enforce the gate for ONE operator before it materialises a
     transformation."""
-    manifest_path = config.get(KEY_MANIFEST)
+    purpose = config.get(PURPOSE_KEY, PURPOSE_EXPERIMENT)
     scope = scope or config.get(KEY_SCOPE)
-    if not manifest_path:
+    if purpose == PURPOSE_ARCHIVAL:
         return {"eligibility_status": STATUS_LEGACY,
+                "execution_purpose": PURPOSE_ARCHIVAL,
                 "consumer": consumer,
                 "operator_id": operator_id,
-                "reason": "no reviewed eligibility manifest was "
-                          "configured; this transformation is "
-                          "experimental, not licensed"}
+                "reason": "archival replay; this transformation "
+                          "is reproduced, not licensed"}
+    manifest_path = config.get(KEY_MANIFEST)
+    if not manifest_path:
+        raise GateOrderRefusal(
+            f"{consumer}: operator {operator_id!r} has no "
+            "eligibility manifest and this run is not declared "
+            f"{PURPOSE_ARCHIVAL}")
     if not scope:
-        raise gate.EligibilityRefusal(
-            f"{consumer}: an eligibility manifest is configured "
-            "but no scope was declared")
+        raise GateOrderRefusal(
+            f"{consumer}: no eligibility scope was declared")
     manifest = gate.load_manifest(
         Path(manifest_path),
         expected_sha256=config.get(KEY_SHA),
@@ -118,6 +212,7 @@ def gate_operator(config: dict, *, operator_id: str,
         code_digest=code_digest, scope=scope,
         plugin_name=plugin_name)
     return {"eligibility_status": STATUS_GATED,
+            "execution_purpose": PURPOSE_EXPERIMENT,
             "consumer": consumer,
             "operator_id": operator_id,
             "version": entry["version"],
@@ -128,11 +223,12 @@ def gate_operator(config: dict, *, operator_id: str,
 
 
 def describe(stamp: dict) -> str:
-    """One line for a log or a report header."""
     if stamp.get("eligibility_status") == STATUS_GATED:
-        return (f"eligibility: GATED by "
-                f"{stamp['manifest_sha256'][:12]} "
+        return (f"eligibility: GATED by review "
+                f"{stamp['review_record_sha256'][:12]} "
+                f"(reviewer={stamp['reviewer']}) "
                 f"scope={stamp['scope']} "
-                f"universe={stamp.get('universe_size', '?')}")
-    return ("eligibility: LEGACY_NON_AUTHORITATIVE (no reviewed "
-            "manifest configured)")
+                f"subjects={stamp['subjects_reviewed']}")
+    return (f"eligibility: {stamp.get('eligibility_status')} "
+            f"({stamp.get('execution_purpose')}) — "
+            f"{stamp.get('reason', '')}")

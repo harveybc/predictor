@@ -174,7 +174,7 @@ def test_numeric_columns_do_not_enter_without_the_gate():
         "fit_scope": "TRAIN_ONLY",
         "incremental_state_policy": "none", "parameters": {},
         "digests": {"data": "d" * 64, "code": "c" * 64,
-                    "partitions": "p" * 64, "evidence": "e" * 64},
+                    "partitions": "b" * 64, "evidence": "e" * 64},
         "measured_cost": {}, "decision": "PUBLICLY_ELIGIBLE",
         "decision_scope": "representation",
         "decision_reason": "r", "reviewer": "x",

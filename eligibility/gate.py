@@ -102,17 +102,11 @@ def load_manifest(path: str | Path, *,
         raise EligibilityRefusal(
             f"eligibility manifest is ABSENT at {p.name} — "
             "without a reviewed manifest nothing is eligible")
-    fd = os.open(str(p), os.O_RDONLY | os.O_NOFOLLOW)
-    try:
-        raw = os.read(fd, 64 * 1024 * 1024)
-    finally:
-        os.close(fd)
-    try:
-        doc = json.loads(raw.decode())
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise EligibilityRefusal(
-            f"eligibility manifest is not strict JSON "
-            f"({exc.__class__.__name__})") from exc
+    # C4: duplicate keys, non-finite constants and partial
+    # reads are refused by the strict reader, not tolerated by
+    # json.loads.
+    from eligibility.strict import strict_load_file
+    doc = strict_load_file(p, what="eligibility manifest")
     if doc.get("schema") != MANIFEST_SCHEMA:
         raise EligibilityRefusal(
             f"eligibility manifest schema is "
@@ -129,7 +123,14 @@ def load_manifest(path: str | Path, *,
         raise EligibilityRefusal(
             "eligibility manifest digest is not the pinned one — "
             "a different manifest is not the reviewed manifest")
-    issued = _parse_ts(doc.get("issued_at", ""), "issued_at")
+    from eligibility.strict import (require_sha256,
+                                    require_timestamp)
+    require_sha256(declared, what="manifest_sha256")
+    if expected_sha256 is not None:
+        require_sha256(expected_sha256,
+                       what="pinned manifest digest")
+    issued = require_timestamp(doc.get("issued_at", ""),
+                               what="issued_at", now=now)
     if max_age_days is not None:
         now = now or datetime.now(timezone.utc)
         age = (now - issued).total_seconds() / 86400.0
@@ -173,6 +174,15 @@ def _validate_entry(entry: dict) -> None:
     if missing_d:
         raise EligibilityRefusal(
             f"{sid}: entry declares no {missing_d} digest")
+    # C4: a field named "digest" must BE one
+    from eligibility.strict import (require_sha256,
+                                    require_str,
+                                    require_timestamp)
+    for kind in REQUIRED_DIGEST_KINDS:
+        require_sha256(dig[kind],
+                       what=f"{sid}: digests.{kind}")
+    require_str(entry["subject_id"], what=f"{sid}: subject_id")
+    require_str(entry["version"], what=f"{sid}: version")
     avail = entry["temporal_availability"]
     missing_a = [k for k in REQUIRED_AVAILABILITY_FIELDS
                  if k not in avail]
@@ -187,7 +197,8 @@ def _validate_entry(entry: dict) -> None:
     if not str(entry["decision_scope"]).strip():
         raise EligibilityRefusal(
             f"{sid}: the reviewer recorded no scope")
-    _parse_ts(entry["reviewed_at"], f"{sid}: reviewed_at")
+    require_timestamp(entry["reviewed_at"],
+                      what=f"{sid}: reviewed_at")
 
 
 # --------------------------------------------------------------
@@ -204,7 +215,10 @@ def require_eligible(manifest: dict, subject_id: str, *,
                      subject_kind: str | None = None,
                      version: str | None = None,
                      evidence_digest: str | None = None,
-                     code_digest: str | None = None) -> dict:
+                     code_digest: str | None = None,
+                     data_digest: str | None = None,
+                     partitions_digest: str | None = None
+                     ) -> dict:
     """Return the reviewed entry, or refuse.
 
     There is deliberately no `default` parameter and no boolean
@@ -248,6 +262,21 @@ def require_eligible(manifest: dict, subject_id: str, *,
             "the reviewed evidence digest — replacing the "
             "evidence under a positive label is exactly what "
             "this gate exists to stop")
+    # C2/C3: the data and partition bindings are compared at the
+    # POINT OF USE. Without this, an id was the only thing that
+    # travelled and the reviewed bytes were never checked.
+    if data_digest is not None and \
+            entry["digests"]["data"] != data_digest:
+        raise EligibilityRefusal(
+            f"{subject_id}: the data in hand does not match the "
+            "reviewed data digest — a decision about other "
+            "bytes is not a decision about this run")
+    if partitions_digest is not None and \
+            entry["digests"]["partitions"] != partitions_digest:
+        raise EligibilityRefusal(
+            f"{subject_id}: the partition layout in hand does "
+            "not match the reviewed partitions digest — a "
+            "re-cut split is a new review")
     return entry
 
 
