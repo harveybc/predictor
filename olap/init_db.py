@@ -16,6 +16,11 @@ import os
 import logging
 from sqlalchemy import create_engine
 
+try:
+    from olap.information_schema import INFORMATION_DDL
+except ModuleNotFoundError:  # Direct execution: python olap/init_db.py
+    from information_schema import INFORMATION_DDL
+
 SCHEMA = "public"
 
 DDL = f"""
@@ -102,6 +107,7 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_performance (
   split_key      TEXT NOT NULL REFERENCES {SCHEMA}.dim_dataset_split(split_key),
   horizon_key    INTEGER NOT NULL REFERENCES {SCHEMA}.dim_horizon(horizon_key),
   metric_key     TEXT NOT NULL REFERENCES {SCHEMA}.dim_metric(metric_key),
+  metric_value   DOUBLE PRECISION,
   avg_value      DOUBLE PRECISION,
   std_dev        DOUBLE PRECISION,
   min_value      DOUBLE PRECISION,
@@ -170,6 +176,7 @@ def main():
     logging.info("Creating schema and tables (SCHEMA=%s)...", SCHEMA)
     with engine.begin() as conn:
         conn.exec_driver_sql(DDL)
+        conn.exec_driver_sql(INFORMATION_DDL)
         conn.exec_driver_sql(SEED)
     logging.info("Database initialization complete.")
 

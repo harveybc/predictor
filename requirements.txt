@@ -21,3 +21,4 @@ tf-keras
 tqdm
 PyWavelets
 psycopg2-binary
+SQLAlchemy>=2.0,<3.0

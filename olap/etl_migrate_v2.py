@@ -23,6 +23,11 @@ from typing import Dict, Optional   # typing hints
 import pandas as pd                 # CSV parsing
 from sqlalchemy import create_engine, text  # DB access
 
+try:
+    from olap.information_schema import ensure_information_tables
+except ModuleNotFoundError:  # Direct execution: python olap/etl_migrate_v2.py
+    from information_schema import ensure_information_tables
+
 # Constants
 SCHEMA = "public"
 
@@ -133,6 +138,7 @@ def ensure_schema_and_tables(engine):
             split_key      TEXT NOT NULL REFERENCES {SCHEMA}.dim_dataset_split(split_key),
             horizon_key    INTEGER NOT NULL REFERENCES {SCHEMA}.dim_horizon(horizon_key),
             metric_key     TEXT NOT NULL REFERENCES {SCHEMA}.dim_metric(metric_key),
+            metric_value   DOUBLE PRECISION,
             avg_value      DOUBLE PRECISION,
             std_dev        DOUBLE PRECISION,
             min_value      DOUBLE PRECISION,
@@ -168,8 +174,10 @@ def ensure_schema_and_tables(engine):
                 # Backfill/migrate existing tables that may predate new columns
                 # These are safe, idempotent ALTERs for older databases.
                 try:
+                    with conn.begin_nested():
                         conn.exec_driver_sql(f"""
                                 ALTER TABLE {SCHEMA}.fact_performance
+                                    ADD COLUMN IF NOT EXISTS metric_value DOUBLE PRECISION,
                                     ADD COLUMN IF NOT EXISTS avg_value   DOUBLE PRECISION,
                                     ADD COLUMN IF NOT EXISTS std_dev     DOUBLE PRECISION,
                                     ADD COLUMN IF NOT EXISTS min_value   DOUBLE PRECISION,
@@ -183,6 +191,7 @@ def ensure_schema_and_tables(engine):
                 # - Allow NULL to prevent insert failures when not provided
                 # - Backfill from avg_value when available
                 try:
+                    with conn.begin_nested():
                         # Drop NOT NULL if present (idempotent using information_schema)
                         conn.exec_driver_sql(f"""
                                 DO $$
@@ -212,6 +221,7 @@ def ensure_schema_and_tables(engine):
                 # Older databases may miss the UNIQUE constraint even if the table exists.
                 # First, remove duplicates that would block unique index creation.
                 try:
+                    with conn.begin_nested():
                         conn.exec_driver_sql(f"""
                                 DELETE FROM {SCHEMA}.fact_performance t
                                 USING {SCHEMA}.fact_performance t2
@@ -227,6 +237,7 @@ def ensure_schema_and_tables(engine):
 
                 # Create a unique index if it does not exist (supports ON CONFLICT by column list)
                 try:
+                    with conn.begin_nested():
                         conn.exec_driver_sql(f"""
                                 DO $$
                                 BEGIN
@@ -267,6 +278,7 @@ def ensure_schema_and_tables(engine):
                             ('Naive MAE','baseline','lower_is_better')
                         ON CONFLICT DO NOTHING;
                 """)
+        ensure_information_tables(engine)
 
 # -----------------------------
 # Upsert helpers

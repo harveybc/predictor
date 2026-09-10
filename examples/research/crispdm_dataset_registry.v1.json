@@ -1,0 +1,113 @@
+{
+  "datasets": [
+    {
+      "availability_policy": "FEATURES_COMPUTED_CAUSALLY_THROUGH_BAR_CLOSE; DECISION_AT_CLOSE; EXECUTION_NOT_ASSUMED_BY_THIS_DATASET",
+      "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1",
+      "declared_rows": 18085,
+      "declared_sha256": "1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+      "default_unit": "UNDECLARED",
+      "default_variable_role": "input_candidate",
+      "domain": "crypto_spot",
+      "exposure_status": "DEVELOPMENT_EXPOSED; NOT_CONFIRMATORY",
+      "format": "csv",
+      "license_id": "UNDECLARED",
+      "notes": "Current 90-column financial development table. It is evidence for inventory and applied diagnostics, not a public confirmatory forecasting bank.",
+      "provider": "Binance-derived Project 3 export",
+      "relative_path": "examples/data/project3/ethusdt_4h_tech_stat_full_model_ready.csv",
+      "root_id": "predictor",
+      "source_class": "financial",
+      "timestamp_column": "DATE_TIME",
+      "timestamp_semantics": "BAR_OPEN_TIME_UTC",
+      "units": {
+        "CLOSE": "quote_currency_per_base_asset",
+        "DATE_TIME": "utc_timestamp",
+        "HIGH": "quote_currency_per_base_asset",
+        "LOW": "quote_currency_per_base_asset",
+        "OPEN": "quote_currency_per_base_asset",
+        "VOLUME": "base_asset_units",
+        "log_return_1": "dimensionless",
+        "log_return_10": "dimensionless",
+        "log_return_20": "dimensionless",
+        "log_return_5": "dimensionless",
+        "log_return_60": "dimensionless",
+        "return_1": "dimensionless",
+        "return_10": "dimensionless",
+        "return_20": "dimensionless",
+        "return_5": "dimensionless",
+        "return_60": "dimensionless",
+        "statistical__log_return_1": "dimensionless",
+        "typical_price": "quote_currency_per_base_asset"
+      },
+      "variable_roles": {
+        "CLOSE": "market_observation",
+        "DATE_TIME": "timestamp",
+        "HIGH": "market_observation",
+        "LOW": "market_observation",
+        "OPEN": "market_observation",
+        "VOLUME": "market_observation"
+      },
+      "version": "sha256:1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f"
+    },
+    {
+      "availability_policy": "UNDECLARED",
+      "dataset_id": "predictor.legacy.eurusd_1h.phase1_test.v1",
+      "declared_rows": 8456,
+      "declared_sha256": "d701af612eeada01df7ab7e7009d95ff8da6aeb270ff026eea7055b3de9adc95",
+      "default_unit": "UNDECLARED",
+      "default_variable_role": "input_candidate",
+      "domain": "forex",
+      "exposure_status": "LEGACY_DEVELOPMENT_EXPOSED; MECHANICS_ONLY",
+      "format": "csv",
+      "license_id": "UNDECLARED",
+      "notes": "Legacy predictor fixture retained to expose missing provenance and availability metadata. It cannot become doctoral confirmation evidence without reconciliation.",
+      "provider": "legacy predictor dataset; provider not recorded",
+      "relative_path": "examples/data/phase_1/base_d6.csv",
+      "root_id": "predictor",
+      "source_class": "financial",
+      "timestamp_column": "DATE_TIME",
+      "timestamp_semantics": "BAR_TIMEZONE_UNDECLARED",
+      "units": {
+        "BC-BO": "quote_currency_per_base_asset",
+        "BH-BL": "quote_currency_per_base_asset",
+        "BH-BO": "quote_currency_per_base_asset",
+        "BO-BL": "quote_currency_per_base_asset",
+        "CLOSE": "quote_currency_per_base_asset",
+        "DATE_TIME": "timestamp_timezone_undeclared",
+        "HIGH": "quote_currency_per_base_asset",
+        "LOW": "quote_currency_per_base_asset",
+        "OPEN": "quote_currency_per_base_asset"
+      },
+      "variable_roles": {
+        "CLOSE": "market_observation",
+        "DATE_TIME": "timestamp",
+        "HIGH": "market_observation",
+        "LOW": "market_observation",
+        "OPEN": "market_observation"
+      },
+      "version": "sha256:d701af612eeada01df7ab7e7009d95ff8da6aeb270ff026eea7055b3de9adc95"
+    }
+  ],
+  "schema": "predictor.crispdm_dataset_registry.v1",
+  "scope": {
+    "banks": {
+      "financial": "Reconcile financial-data catalogs and profile only datasets admitted to an experiment.",
+      "public_forecasting": "Separate bank selected from published forecasting protocols; no financial substitution.",
+      "synthetic": "Generators with known latent structure, noise and delays for calibration and falsification."
+    },
+    "crisp_dm_phase": "DATA_UNDERSTANDING",
+    "selection_order": [
+      "provenance_and_temporal_eligibility",
+      "quality_and_variable_characterization",
+      "train_only_relevance",
+      "train_only_redundancy_and_grouping",
+      "nested_validation_selection",
+      "held_out_evaluation"
+    ],
+    "tasks": [
+      "public_multivariate_forecasting",
+      "synthetic_mechanism_identification",
+      "financial_historical_application",
+      "reinforcement_learning_application_after_forecasting_gates"
+    ]
+  }
+}
