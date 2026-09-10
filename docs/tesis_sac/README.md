@@ -10,7 +10,10 @@ El pivote fue aceptado como dirección el 2026-09-03. La propuesta actual usa un
 2. [`02_CONTRATO_CIENTIFICO.md`](02_CONTRATO_CIENTIFICO.md): pregunta, objetivos, hipótesis, unidad, métricas y falsación.
 3. [`03_PRESUPUESTO_L1.md`](03_PRESUPUESTO_L1.md): cuenta máxima de evaluaciones costosas y puertas de gasto.
 4. [`04_AUDITORIA_MUSASHI_PRE_PDF.md`](04_AUDITORIA_MUSASHI_PRE_PDF.md): afirmaciones eliminadas, ataques de jurado y riesgos residuales.
-5. [`../propuesta_doctoral_seleccion_multifidelidad_rl_borrador.pdf`](../propuesta_doctoral_seleccion_multifidelidad_rl_borrador.pdf): propuesta de ocho páginas.
+5. [`../propuesta_doctoral_seleccion_multifidelidad_rl.tex`](../propuesta_doctoral_seleccion_multifidelidad_rl.tex): fuente canónica. Compilar con `make -C docs`.
+6. [`../propuesta_doctoral_seleccion_multifidelidad_rl.pdf`](../propuesta_doctoral_seleccion_multifidelidad_rl.pdf): PDF generado en LaTeX (Times, IEEE).
+7. [`05_COBERTURA_PREGUNTAS_PROPUESTA.md`](05_COBERTURA_PREGUNTAS_PROPUESTA.md): preguntas difíciles por sección, alineadas al PDF actual.
+8. [`../propuesta_doctoral_seleccion_multifidelidad_rl_borrador.pdf`](../propuesta_doctoral_seleccion_multifidelidad_rl_borrador.pdf): primer borrador de Musashi; no se reescribió.
 
 ## Linaje
 

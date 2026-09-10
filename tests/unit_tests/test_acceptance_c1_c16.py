@@ -114,6 +114,20 @@ def test_3_a_self_issued_manifest_grants_no_review(run_world,
     cfg[integ.KEY_CENSUS] = "a" * 64
     monkeypatch.setenv(review.REVIEW_RECORD_ENV,
                        str(tmp / "absent.json"))
+    monkeypatch.setenv(review.SUBMISSION_ENV, str(tmp / "subs"))
+    # under C17 a self-issued manifest cannot even reach the
+    # record: the executing phase demands a PERSISTED submission
+    # that a reviewer saw
+    cfg[integ.PURPOSE_KEY] = integ.PURPOSE_EXECUTE
+    with pytest.raises(SystemExit,
+                       match="requires eligibility_submission"):
+        integ.gate_run(dict(cfg), repo_root=tmp, consumer="t")
+    # and even after phase one persists one, the absent record
+    # still refuses
+    phase1 = dict(cfg)
+    phase1[integ.PURPOSE_KEY] = integ.PURPOSE_SUBMIT
+    st = integ.gate_run(phase1, repo_root=tmp, consumer="t")
+    cfg[integ.KEY_SUBMISSION_SHA] = st["submission_sha256"]
     with pytest.raises(SystemExit,
                        match="no external eligibility review"):
         integ.gate_run(cfg, repo_root=tmp, consumer="t")

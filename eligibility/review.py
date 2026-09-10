@@ -142,6 +142,89 @@ def review_record_path() -> Path:
     return Path(env) if env else DEFAULT_REVIEW_RECORD
 
 
+# C17: the submission is a PERSISTED artifact with its own
+# identity, written once by the SUBMIT_ONLY phase and consumed
+# unchanged by the EXECUTE_REVIEWED phase. It is content-addressed
+# so the two phases cannot silently disagree about which bytes
+# were reviewed.
+SUBMISSION_ENV = "CRISPDM_ELIGIBILITY_SUBMISSION_DIR"
+DEFAULT_SUBMISSION_DIR = (
+    Path.home() / ".local/share/predictor/eligibility_submissions")
+
+
+def submission_dir() -> Path:
+    env = os.environ.get(SUBMISSION_ENV)
+    return Path(env) if env else DEFAULT_SUBMISSION_DIR
+
+
+def submission_path(submission_sha256: str) -> Path:
+    return submission_dir() / f"submission-{submission_sha256}.json"
+
+
+def persist_submission(doc: dict) -> Path:
+    """Write a submission content-addressed, exactly once.
+
+    Re-writing the same submission is a no-op; a DIFFERENT
+    document under the same name is impossible, because the name
+    IS the digest.
+    """
+    verify_submission(doc)
+    d = submission_dir()
+    d.mkdir(parents=True, exist_ok=True)
+    p = submission_path(doc["submission_sha256"])
+    payload = json.dumps(doc, indent=1, sort_keys=True) + "\n"
+    if p.exists():
+        if p.read_text() != payload:
+            raise ReviewAuthorityRefusal(
+                f"a different submission already occupies "
+                f"{p.name} — a content-addressed name is never "
+                "overwritten")
+        return p
+    fd = os.open(str(p), os.O_CREAT | os.O_EXCL | os.O_WRONLY,
+                 0o600)
+    try:
+        os.write(fd, payload.encode())
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    return p
+
+
+def load_persisted_submission(submission_sha256: str) -> dict:
+    """Consume the submission the reviewer actually reviewed."""
+    p = submission_path(submission_sha256)
+    if not p.is_file():
+        raise ReviewAuthorityRefusal(
+            f"no persisted submission {submission_sha256[:12]} — "
+            "run the SUBMIT_ONLY phase first; the executing "
+            "phase never invents a new submission")
+    doc = strict_load_file(p, what="persisted submission")
+    verify_submission(doc)
+    if doc["submission_sha256"] != submission_sha256:
+        raise ReviewAuthorityRefusal(
+            "the persisted submission's digest does not match "
+            "its own name")
+    return doc
+
+
+def assert_same_submission(persisted: dict, rederived: dict
+                           ) -> None:
+    """The executing phase re-derives every fact and must land on
+    the SAME submission. One changed byte between the phases is a
+    different run, and refuses."""
+    ignore = {"submitted_at", "submission_sha256"}
+    a = {k: v for k, v in persisted.items() if k not in ignore}
+    b = {k: v for k, v in rederived.items() if k not in ignore}
+    if a != b:
+        differing = sorted(k for k in set(a) | set(b)
+                           if a.get(k) != b.get(k))
+        raise ReviewAuthorityRefusal(
+            "the executing phase derived DIFFERENT facts than "
+            f"the reviewed submission (differing: {differing}) — "
+            "one changed byte between submission and execution "
+            "is a different run")
+
+
 def read_review_record(*, submission: dict, census_sha256: str,
                        scope: str,
                        now: datetime | None = None) -> dict:

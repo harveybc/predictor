@@ -54,6 +54,17 @@ REQUIRED_PARTITIONS = ("exposure", "splits")
 REQUIRED_BUDGET = ("device", "wall_seconds", "cost_units")
 REQUIRED_TERMINAL = ("state", "adjudication")
 
+# Fields a producer may add to a block, declared here so an
+# undeclared one is still a refusal.
+OPTIONAL_BLOCK_FIELDS = {
+    "identity": ("record_sha256",),
+    "partitions": (),
+    "budget": ("units_verified", "units_failed",
+               "calibration_margin"),
+    "terminal": ("reason", "eligible_slots", "total_slots",
+                 "failure_phase", "failure_type"),
+}
+
 
 class EnvelopeRefusal(SystemExit):
     def __init__(self, msg: str) -> None:
@@ -203,11 +214,45 @@ def validate_envelope(doc: dict) -> dict:
             raise EnvelopeRefusal(
                 f"{group} is missing {gaps} — write "
                 f"{UNAVAILABLE} rather than omitting a field")
+    # C21: exact recursive schemas for every block, and no
+    # non-finite number anywhere. A NaN that reaches a digest is
+    # a measurement nobody made.
+    import math
+    for group, required in (("identity", REQUIRED_IDENTITY),
+                            ("partitions", REQUIRED_PARTITIONS),
+                            ("budget", REQUIRED_BUDGET),
+                            ("terminal", REQUIRED_TERMINAL)):
+        allowed = set(required) | set(
+            OPTIONAL_BLOCK_FIELDS.get(group, ()))
+        extra = sorted(set(doc[group]) - allowed)
+        if extra:
+            raise EnvelopeRefusal(
+                f"{group} declares undeclared fields {extra} — "
+                "an envelope schema that accepts anything "
+                "records nothing")
+    extra_top = sorted(set(doc) - set(REQUIRED_TOP)
+                       - {"units", "envelope_sha256"})
+    if extra_top:
+        raise EnvelopeRefusal(
+            f"envelope declares undeclared top-level fields "
+            f"{extra_top}")
+    if not isinstance(doc["data_consumed"], dict):
+        raise EnvelopeRefusal("data_consumed must be an object")
+    extra_dc = sorted(set(doc["data_consumed"])
+                      - {"datasets", "variables", "operators"})
+    if extra_dc:
+        raise EnvelopeRefusal(
+            f"data_consumed declares undeclared kinds "
+            f"{extra_dc}")
     for k, v in _walk(doc):
         if v is None:
             raise EnvelopeRefusal(
                 f"{k} is null — an unknown value is written "
                 f"{UNAVAILABLE}, never null")
+        if isinstance(v, float) and not math.isfinite(v):
+            raise EnvelopeRefusal(
+                f"{k} is {v!r} — a non-finite number is not a "
+                "measurement and never reaches a digest")
     declared = doc.get("envelope_sha256")
     if declared and _sha(doc, "envelope_sha256") != declared:
         raise EnvelopeRefusal(

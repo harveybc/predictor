@@ -44,6 +44,11 @@ REQUIRED_ENTRY_FIELDS = (
     "reviewer", "reviewed_at",
 )
 REQUIRED_DIGEST_KINDS = ("data", "code", "partitions", "evidence")
+MANIFEST_TOP_KEYS = {"schema", "issued_at", "issuer", "scope",
+                     "entries", "manifest_sha256"}
+ENTRY_KEYS = set(REQUIRED_ENTRY_FIELDS)
+AVAILABILITY_OPTIONAL = ("min_latency_minutes",
+                         "revision_policy", "timezone")
 REQUIRED_AVAILABILITY_FIELDS = ("event_time", "available_time")
 
 FIT_SCOPES = ("TRAIN_ONLY", "TRAIN_PLUS_CALIBRATION",
@@ -111,6 +116,11 @@ def load_manifest(path: str | Path, *,
         raise EligibilityRefusal(
             f"eligibility manifest schema is "
             f"{doc.get('schema')!r}, not {MANIFEST_SCHEMA!r}")
+    # C21: an exact top-level schema. A field nobody declared is
+    # a field nobody reviewed.
+    from eligibility.strict import require_keys
+    require_keys(doc, MANIFEST_TOP_KEYS,
+                 what="eligibility manifest")
     declared = doc.get("manifest_sha256")
     if not declared:
         raise EligibilityRefusal(
@@ -159,6 +169,12 @@ def _validate_entry(entry: dict) -> None:
             f"{sid}: manifest entry is missing required "
             f"bindings {missing} — an absent binding is never a "
             "default")
+    extra = sorted(set(entry) - ENTRY_KEYS)
+    if extra:
+        raise EligibilityRefusal(
+            f"{sid}: manifest entry declares undeclared fields "
+            f"{extra} — a field nobody declared is a field "
+            "nobody reviewed")
     if entry["subject_kind"] not in SUBJECT_KINDS:
         raise EligibilityRefusal(
             f"{sid}: unknown subject kind "
@@ -184,6 +200,35 @@ def _validate_entry(entry: dict) -> None:
     require_str(entry["subject_id"], what=f"{sid}: subject_id")
     require_str(entry["version"], what=f"{sid}: version")
     avail = entry["temporal_availability"]
+    if not isinstance(avail, dict):
+        raise EligibilityRefusal(
+            f"{sid}: temporal_availability must be an object")
+    extra_a = sorted(set(avail) - set(REQUIRED_AVAILABILITY_FIELDS)
+                     - set(AVAILABILITY_OPTIONAL))
+    if extra_a:
+        raise EligibilityRefusal(
+            f"{sid}: temporal_availability declares undeclared "
+            f"fields {extra_a}")
+    if "min_latency_minutes" in avail:
+        from eligibility.strict import require_number
+        require_number(avail["min_latency_minutes"],
+                       what=f"{sid}: min_latency_minutes")
+    if not isinstance(entry["digests"], dict):
+        raise EligibilityRefusal(f"{sid}: digests must be an "
+                                 "object")
+    extra_d = sorted(set(entry["digests"])
+                     - set(REQUIRED_DIGEST_KINDS))
+    if extra_d:
+        raise EligibilityRefusal(
+            f"{sid}: digests declares undeclared kinds "
+            f"{extra_d}")
+    for block in ("io_schema", "parameters", "measured_cost"):
+        if not isinstance(entry[block], dict):
+            raise EligibilityRefusal(
+                f"{sid}: {block} must be an object")
+    from eligibility.strict import require_number as _rn
+    for k, v in entry["measured_cost"].items():
+        _rn(v, what=f"{sid}: measured_cost.{k}")
     missing_a = [k for k in REQUIRED_AVAILABILITY_FIELDS
                  if k not in avail]
     if missing_a:

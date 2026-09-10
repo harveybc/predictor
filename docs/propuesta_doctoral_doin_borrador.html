@@ -2,178 +2,214 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Propuesta doctoral - DOIN</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta doctoral - Metaoptimización confiable</title>
 <style>
   @page { size: Letter; margin: 0; }
   * { box-sizing: border-box; }
-  body { margin: 0; color: #1c282d; font-family: "DejaVu Sans", Arial, sans-serif; background: #e8ecef; }
-  .page { width: 8.5in; height: 11in; margin: 0 auto 8mm; padding: 13mm 15.5mm 13mm; background: #fff; position: relative; page-break-after: always; overflow: hidden; }
+  :root { --ink: #20282c; --muted: #57656b; --accent: #176d68; --line: #bdc9cc; --soft: #eef5f4; }
+  body { margin: 0; color: var(--ink); font-family: "DejaVu Sans", Arial, sans-serif; background: #e8ecef; }
+  .page { width: 8.5in; height: 11in; margin: 0 auto 8mm; padding: 16mm 18mm 15mm; background: #fff; position: relative; page-break-after: always; overflow: hidden; }
   .page:last-child { page-break-after: auto; }
-  .rule { width: 36mm; height: 2mm; background: #147d74; margin-bottom: 4mm; }
-  h1 { margin: 0 0 2.8mm; font-family: "DejaVu Serif", Georgia, serif; font-size: 19pt; line-height: 1.08; color: #12383c; }
-  .subtitle { margin: 0 0 4.2mm; color: #526168; font-size: 9.5pt; line-height: 1.24; }
-  h2 { margin: 3.1mm 0 1.35mm; font-size: 11.5pt; line-height: 1.12; color: #0e625d; }
-  h3 { margin: 2mm 0 0.8mm; font-size: 10pt; line-height: 1.15; color: #273b42; }
-  p, li, td, th, .refs { font-size: 9.5pt; line-height: 1.18; }
-  p { margin: 0 0 1.55mm; text-align: justify; }
-  ul, ol { margin: 0.8mm 0 1.6mm 4mm; padding-left: 3.8mm; }
-  li { margin-bottom: 0.6mm; }
-  strong { color: #15383d; }
-  .lead { font-family: "DejaVu Serif", Georgia, serif; font-size: 10.1pt; line-height: 1.28; color: #20373e; }
-  .question { border-left: 2mm solid #147d74; background: #edf6f5; padding: 2.6mm 3.4mm; margin: 2.6mm 0; font-family: "DejaVu Serif", Georgia, serif; font-size: 10pt; line-height: 1.24; }
-  .thesis { border: 0.35mm solid #9bbdb9; padding: 2.3mm 2.8mm; margin: 2.3mm 0; background: #fafcfc; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 4.8mm; }
-  .box { border-top: 0.7mm solid #147d74; background: #f5f8f8; padding: 1.9mm 2.2mm; }
-  .box h3 { margin-top: 0; }
-  .formula { margin: 1.8mm 0; padding: 2mm 2.5mm; text-align: center; background: #f1f4f5; font-family: "DejaVu Serif", Georgia, serif; font-size: 9.7pt; line-height: 1.2; }
-  table { width: 100%; border-collapse: collapse; margin: 1.2mm 0 1.8mm; }
-  th { background: #eaf3f2; color: #153e42; text-align: left; }
-  th, td { border: 0.25mm solid #becbce; padding: 1.2mm 1.45mm; vertical-align: top; }
-  .compact td, .compact th { padding: 1mm 1.25mm; }
+  .rule { width: 38mm; height: 1.5mm; background: var(--accent); margin-bottom: 4.5mm; }
+  h1 { margin: 0 0 3.2mm; font-family: "DejaVu Serif", Georgia, serif; font-size: 20pt; line-height: 1.12; color: #173b3d; letter-spacing: 0; }
+  .subtitle { margin: 0 0 5mm; color: var(--muted); font-size: 10pt; line-height: 1.3; text-align: left; }
+  h2 { margin: 4mm 0 1.8mm; font-size: 13.5pt; line-height: 1.2; color: #145e5a; letter-spacing: 0; }
+  h3 { margin: 2.8mm 0 1.2mm; font-size: 11pt; line-height: 1.22; color: #263c42; letter-spacing: 0; }
+  p, li, td, th, .refs { font-size: 10pt; line-height: 1.28; }
+  p { margin: 0 0 2.1mm; text-align: justify; }
+  ul, ol { margin: 1mm 0 2.2mm 4mm; padding-left: 4.2mm; }
+  li { margin-bottom: 1mm; }
+  strong { color: #183a3e; }
+  a { color: inherit; text-decoration: none; }
+  .lead { font-family: "DejaVu Serif", Georgia, serif; font-size: 10.4pt; line-height: 1.34; color: #20383d; }
+  .question { border-left: 1.4mm solid var(--accent); background: var(--soft); padding: 3mm 3.8mm; margin: 3mm 0; font-family: "DejaVu Serif", Georgia, serif; font-size: 10.3pt; line-height: 1.32; }
+  .note { border-top: 0.35mm solid var(--line); border-bottom: 0.35mm solid var(--line); padding: 2.4mm 0; margin: 2.6mm 0; }
+  .formula { margin: 2.4mm 0; padding: 2.4mm 3mm; text-align: center; background: #f2f5f5; font-family: "DejaVu Serif", Georgia, serif; font-size: 10pt; line-height: 1.3; }
+  table { width: 100%; border-collapse: collapse; margin: 1.8mm 0 2.5mm; }
+  th { background: #eaf2f1; color: #173d40; text-align: left; }
+  th, td { border: 0.25mm solid var(--line); padding: 1.7mm 2mm; vertical-align: top; }
   .cite { white-space: nowrap; }
-  .refs { columns: 2; column-gap: 5mm; }
-  .ref { break-inside: avoid; margin: 0 0 0.8mm; padding-left: 4.8mm; text-indent: -4.8mm; text-align: left; }
-  .footer { position: absolute; bottom: 5.6mm; left: 15.5mm; right: 15.5mm; border-top: 0.25mm solid #c8d0d4; padding-top: 1.4mm; color: #68777d; font-size: 8pt; display: flex; justify-content: space-between; }
+  .refs { margin-top: 1.5mm; }
+  .ref { break-inside: avoid; margin: 0 0 1.7mm; padding-left: 6mm; text-indent: -6mm; text-align: left; }
+  .footer { position: absolute; bottom: 6mm; left: 18mm; right: 18mm; border-top: 0.25mm solid #c8d0d4; padding-top: 1.6mm; color: #68777d; font-size: 8.5pt; display: flex; justify-content: space-between; }
   @media print { body { background: #fff; } .page { margin: 0; } }
+  @media screen and (max-width: 8.5in) {
+    body { background: #fff; }
+    .page { width: 100%; height: auto; min-height: 0; margin: 0; padding: 24px 20px; overflow: visible; page-break-after: auto; }
+    .footer { position: static; margin-top: 28px; }
+  }
 </style>
 </head>
 <body>
 
 <section class="page" id="page-1">
   <div class="rule"></div>
-  <h1>Validación e incentivos entre pares para mercados descentralizados de inferencia y optimización</h1>
+  <h1>Metaoptimización confiable de modelos de inteligencia artificial a partir de experiencias heterogéneas</h1>
   <p class="subtitle"><strong>Propuesta doctoral preliminar</strong><br>Harvey Demian Bastidas Caicedo · Doctorado en Inteligencia Artificial · Universidad de La Sabana</p>
 
-  <h2>1. Resumen</h2>
-  <p class="lead">Esta investigación estudiará cómo validar y remunerar trabajo producido por sistemas de inteligencia artificial cuando su calidad es costosa de verificar y, en algunos dominios, no existe una respuesta objetiva disponible para cada tarea. El caso principal es la evaluación confiable de inferencias de modelos de lenguaje y agentes bajo contaminación de pruebas, jueces automáticos imperfectos y participantes estratégicos.</p>
+  <h2>Resumen</h2>
+  <p class="lead">Optimizar un modelo de inteligencia artificial suele exigir muchas pruebas costosas. Sin embargo, cada entrenamiento anterior deja información sobre qué configuraciones funcionaron, cuáles fallaron y cuánto costó evaluarlas. Esta investigación propone aprender de ese historial para recomendar mejores puntos de partida en tareas nuevas. El problema es que las experiencias disponibles pueden venir de modelos, datos, presupuestos y algoritmos de búsqueda distintos; también pueden estar incompletas, sesgadas o contener errores.</p>
 
-  <p>La contribución central será diseñar y evaluar un protocolo de validación y pago que combine pruebas ejecutables, retos posteriores al compromiso, auditoría parcial y elicitación de información entre pares. Tendrá dos regímenes: uno con oráculo objetivo, usado como control, y otro con verdad parcial. El mercado y el registro distribuido serán el entorno experimental para estudiar incentivos; no sustituirán la evaluación ni constituirán por sí solos la contribución.</p>
+  <p>La contribución central será un metaoptimizador que represente cada tarea, lea trazas verificables de optimizaciones previas, estime la utilidad y la incertidumbre de una configuración candidata y decida entre transferir conocimiento o abstenerse. La teoría de la información se usará para distinguir capacidad representacional, información adquirida e información útil para decidir la siguiente evaluación. DOIN aportará un entorno distribuido y trazable para poner a prueba el método, pero el resultado científico no dependerá de una blockchain ni del éxito de un dominio particular.</p>
 
-  <div class="question"><strong>Pregunta de investigación.</strong> ¿Puede un protocolo que combina auditoría parcial, retos posteriores al compromiso y Correlated Agreement reducir la aceptación de resultados inválidos y hacer menos rentable el reporte de bajo esfuerzo, a presupuesto de validación fijo, de modo que su resultado pueda condicionar pagos en un mercado descentralizado?</div>
+  <h2>1. Planteamiento del problema y objetivos</h2>
+  <h3>1.1 Problema</h3>
+  <p>La optimización de hiperparámetros y arquitecturas sigue consumiendo tiempo, energía y capacidad de cómputo. Empezar cada tarea desde cero desperdicia conocimiento acumulado; reutilizarlo sin cuidado puede ser peor, porque una configuración exitosa en otra tarea puede inducir transferencia negativa. El reto no es solo predecir buenos parámetros: es reconocer cuándo dos experiencias son comparables, cuánto puede confiarse en ellas y cuándo conviene volver a un optimizador sin transferencia.</p>
 
-  <h2>2. Problema, motivación y alcance</h2>
-  <p>En una red abierta, la capacidad de cómputo, la disponibilidad, la especialización de un modelo y el costo de oportunidad están dispersos entre participantes. El precio puede transmitir parte de ese conocimiento económico, en el sentido acotado por Hayek <span class="cite">[1]</span>; sin embargo, una oferta barata no prueba que una inferencia sea correcta. El diseño de mecanismos permite estudiar reglas de asignación y pago bajo información privada <span class="cite">[2]</span>, mientras que la predicción entre pares aborda el problema distinto de recompensar reportes informativos cuando falta una verdad observable <span class="cite">[3], [4]</span>.</p>
+  <div class="question"><strong>Pregunta de investigación.</strong> ¿Puede un metaoptimizador que combine trazas verificadas, descriptores informacionales de la tarea y una regla explícita de abstención reducir el costo de optimizar modelos de inteligencia artificial en tareas nuevas, sin empeorar el resultado final cuando cambian los datos, la arquitectura o la calidad de las trazas?</div>
 
-  <p>El escenario permite que una persona venda capacidad ociosa, que un proveedor ofrezca la inferencia de un modelo afinado sin entregar sus pesos, o que varios trabajadores formen un pool para resolver una tarea. La auto-selección de dominio, hardware o pipeline puede ser una estrategia privada del proveedor para maximizar su utilidad; no será aprendida ni controlada por el mecanismo doctoral. La asignación utilizará una subasta inversa sellada sencilla como infraestructura de comparación. El objeto científico comienza después: qué evidencia admite el protocolo, cómo se remunera al evaluador y cuándo esa evidencia permite liberar el pago.</p>
+  <h3>1.2 Objetivo general</h3>
+  <p>Diseñar y evaluar un método de metaoptimización capaz de transferir conocimiento entre tareas heterogéneas de inteligencia artificial y de abstenerse cuando esa transferencia no sea confiable.</p>
 
-  <div class="thesis"><strong>Tesis de trabajo.</strong> Bajo tareas repetidas, señales correlacionadas y una fracción de auditoría externa aleatoria, un protocolo de validación entre pares puede reducir desviaciones de bajo esfuerzo y pagos por resultados inválidos frente a pago uniforme y mayoría simple. Sin auditoría externa alguna, la validez absoluta no es identificable: solo puede reclamarse acuerdo informado.</div>
-
-  <h2>3. Punto de partida</h2>
-  <p>La tesis de maestría introdujo una prueba de trabajo de optimización y una red para evolución computacional descentralizada <span class="cite">[5]</span>. El prototipo DOIN actual consensa <em>incrementos de optimización</em> <span class="cite">[19]</span>; el doctorado propone un mercado de <em>tareas demandadas</em> y usará DOIN como runtime y banco de pruebas. Por tanto, no se presenta el mercado como una extensión ya resuelta, sino como un cambio de mecanismo cuya contribución doctoral se limita a validación e incentivos.</p>
-
-  <div class="footer"><span>Harvey Demian Bastidas Caicedo · Propuesta doctoral preliminar</span><span>1 / 4</span></div>
+  <div class="footer"><span>Propuesta doctoral preliminar · Metaoptimización confiable</span><span>1 / 7</span></div>
 </section>
 
 <section class="page" id="page-2">
-  <h2>4. Modelo del mercado y del pool</h2>
-  <p>Una tarea será <em>T = (d, g, B, τ, P, K, G, w)</em>: dominio <em>d</em>, interfaz ejecutable <em>g</em>, presupuesto <em>B</em>, plazo <em>τ</em>, protocolo de validación <em>P</em>, número de trabajadores <em>K</em>, agregador determinista <em>G</em> y participaciones de pago <em>w</em>, con Σ<em>w</em><sub>i</sub> = 1. Con <em>K</em> = 1 la tarea es atómica. Con <em>K</em> &gt; 1, cada salida se compromete por separado, <em>G</em> combina réplicas o subtareas según una regla publicada y el pago se libera solo si pasan las pruebas locales y el agregado satisface <em>P</em>. La comparación <em>K</em> = 1 frente a <em>K</em> = 3 será una ablación, no una segunda tesis.</p>
+  <h3>1.3 Objetivos específicos</h3>
+  <ol>
+    <li>Construir una representación de tareas y trazas que separe capacidad del modelo, información aprendida, información útil para la tarea, costo de evaluación y procedencia de cada resultado.</li>
+    <li>Desarrollar un metaoptimizador probabilístico que proponga configuraciones, estime su incertidumbre y active una salida segura sin transferencia cuando la evidencia no sea suficiente.</li>
+    <li>Comparar el método con optimización aleatoria, optimización bayesiana sin transferencia y métodos recientes de transferencia, usando tareas no vistas y escenarios de cambio, censura y corrupción de trazas.</li>
+  </ol>
 
-  <p><strong>Actores.</strong> Los trabajadores serán agentes simulados y servicios de modelos —LLM u optimizadores—; los evaluadores serán agentes estratégicos programables y jueces LLM sin checkpoint ni proveedor compartido con los trabajadores. Los humanos participarán únicamente como referencia oculta: dos expertos independientes, ciegos al brazo y al proveedor, con un tercero para desacuerdos. Esta separación permite estudiar estrategias automatizadas sin confundir consenso de máquinas con verdad.</p>
+  <h3>1.4 Alcance</h3>
+  <p>La tesis estudiará optimización de caja negra: una configuración entra a un flujo de aprendizaje y devuelve una medida de desempeño y su costo. No intentará crear un optimizador universal para cualquier problema. El alcance principal será la configuración de modelos supervisados. La confirmación aplicada se hará con series de tiempo y, si el presupuesto lo permite, con adaptación eficiente de modelos de lenguaje compactos. La negociación algorítmica seguirá siendo un caso de estrés, no una condición para que la tesis sea válida.</p>
 
-  <p>El consumidor deposita <em>B = b<sub>w</sub> + Σb<sub>e</sub> + b<sub>h</sub> + b<sub>r</sub></em>: pagos de trabajadores, evaluadores, auditoría humana y reserva de disputas. Una tarea que no cierre ese presupuesto rehúsa antes de adjudicarse. Los trabajadores presentan ofertas selladas y comprometen el digest de su salida antes de conocer los retos ocultos. El ledger conserva eventos y evita doble liquidación; no decide verdad. Durante la investigación, todos los pagos serán simulados o de testnet, sin token propio ni dinero real.</p>
+  <h2>2. Marco teórico y estado del arte</h2>
+  <h3>2.1 Capacidad de una neurona y de una familia de modelos</h3>
+  <p>MacKay estudia una neurona binaria de umbral con <em>K</em> entradas y pesos, sin sesgo. El receptor no puede leer los pesos ni probar entradas arbitrarias: solo observa las salidas sobre los mismos <em>N</em> puntos usados para entrenar. Para puntos en posición general, el número de etiquetados binarios que la neurona puede realizar es <span class="cite">[1], [2]</span>:</p>
 
-  <h2>5. Protocolo de aceptación P</h2>
-  <table class="compact">
-    <tr><th>Régimen</th><th>Regla predeclarada y verdad de referencia</th></tr>
-    <tr><td><strong>Oráculo objetivo</strong><br>Control</td><td>Dos evaluadores reproducen <em>q<sub>d</sub></em> sobre retos ocultos. Se acepta si ambos cumplen esquema y plazo, difieren a lo sumo δ y la mediana supera θ. El desacuerdo convoca un tercero. La solución o métrica exacta permite medir aceptación y rechazo falsos.</td></tr>
-    <tr><td><strong>Oráculo parcial</strong><br>Prueba principal</td><td>Tres o más evaluadores aplican una rúbrica pilotada a tareas de LLM/agentes y ejecutan pruebas verificables. Se acepta administrativamente si las pruebas duras pasan y la mediana alcanza θ. Una muestra oculta y estratificada de tareas únicas, compartida entre brazos y semillas, estima por contraste pareado la aceptación y el rechazo falsos mediante auditoría humana; el acuerdo del comité nunca se etiqueta como verdad. <em>n</em><sub>audit</sub> = max(60, ⌈0,30<em>N</em><sub>únicas</sub>⌉).</td></tr>
-  </table>
+  <div class="formula">T(N,K) = 2 &Sigma;<sub>k=0</sub><sup>K-1</sup> C(N-1,k)</div>
 
-  <p>Los retos se revelan después del compromiso. El generador sintético operará con presupuesto de consultas y medirá no-memorización, no realismo; una partición oculta no reutilizada limita la adaptación al test, siguiendo la advertencia de la literatura sobre holdouts reutilizados <span class="cite">[6]</span>. En el dominio LLM/agente se medirán además sesgo de posición, verbosidad y auto-preferencia de jueces automáticos <span class="cite">[7]</span>.</p>
+  <p>Al comparar <em>T(N,K)</em> con los 2<sup>N</sup> etiquetados posibles aparece, para <em>K</em> grande, una transición cerca de <em>N = 2K</em>. De ahí surge el resultado de aproximadamente dos bits funcionales por peso: casi todas las etiquetas aleatorias pueden memorizarse antes de ese punto y casi ninguna después. Es una medida de memoria funcional para un clasificador lineal bajo supuestos concretos; no dice que cualquier neurona, red profunda o peso físico almacene siempre dos bits.</p>
 
-  <h2>6. Pago informativo operacional</h2>
-  <p>Cada reporte es una señal categórica <em>e<sub>j</sub><sup>t</sup></em> sobre la tarea <em>t</em>. Se adoptará Correlated Agreement (CA), que recompensa dependencia entre reportes de tareas coincidentes y descuenta la coincidencia espuria obtenida al desemparejarlas <span class="cite">[3]</span>. Para cada celda se predeclaran <em>N</em> ≥ 200 tareas, al menos tres evaluadores por tarea y validación cruzada de cinco pliegues. El aprendizaje fuera de pliegue es una salvaguarda metodológica de esta tesis.</p>
+  <p>La topología cambia la familia de funciones disponibles. Profundidad, recurrencia, atención y pesos compartidos pueden aumentar, restringir o reutilizar capacidad. Por eso esta tesis no multiplicará conexiones por dos para estimar la inteligencia de una red. Primero reproducirá el caso conocido de MacKay y Cover; después medirá, en modelos pequeños y controlados, cómo cambian la memorización, la robustez y la generalización al variar la topología y la precisión.</p>
 
-  <div class="formula">Δ<sub>−f</sub>(x,y) = Sign[P<sub>−f</sub>(x,y) − P<sub>−f</sub>(x)P<sub>−f</sub>(y)]<br>S<sub>j</sub> = (1/N) Σ<sub>t</sub> (1/(|E<sub>t</sub>|−1)) Σ<sub>k≠j</sub> [Δ<sub>−f</sub>(e<sub>j</sub><sup>t</sup>,e<sub>k</sub><sup>t</sup>) − Δ<sub>−f</sub>(e<sub>j</sub><sup>t</sup>,e<sub>k</sub><sup>π<sub>f</sub>(t)</sup>)]</div>
+  <div class="note"><strong>Distinción central.</strong> Capacidad es lo que una familia de modelos podría representar; información adquirida es lo que un entrenamiento concreto incorpora; información útil es la parte que ayuda en datos no vistos. Una red grande puede memorizar mucho ruido y aun así aprender poco de valor.</div>
 
-  <p><em>π<sub>f</sub></em> permuta tareas dentro del pliegue, <em>E<sub>t</sub></em> es el conjunto de evaluadores asignados a <em>t</em> y <em>Δ<sub>−f</sub></em> es la matriz de signos de <span class="cite">[3]</span>, estimada con los otros cuatro pliegues; para una rúbrica binaria se reduce al signo de la covarianza. <em>S<sub>j</sub></em> promedia todos los pares disponibles. El pago <em>π<sub>j</sub> = c<sub>0</sub> + αS<sub>j</sub></em> estará acotado por <em>B</em>. CA conserva equilibrios no informativos; la auditoría externa ancla las etiquetas <span class="cite">[3], [4]</span>.</p>
-
-  <div class="thesis"><strong>Resultado formal comprometido.</strong> Se demostrarán condiciones suficientes sobre la probabilidad de auditoría <em>p</em>, el bono <em>α</em>, la retención <em>ℓ</em>, el costo de esfuerzo <em>c<sub>i</sub></em> y la ganancia máxima de desviación <em>v<sub>i</sub></em> para que esfuerzo alto y reporte veraz sean mejor respuesta estricta. Si señales laterales baratas lo impiden, se caracterizará la región de imposibilidad, en diálogo directo con <span class="cite">[8], [9]</span>.</div>
-
-  <div class="footer"><span>Harvey Demian Bastidas Caicedo · Propuesta doctoral preliminar</span><span>2 / 4</span></div>
+  <div class="footer"><span>Propuesta doctoral preliminar · Metaoptimización confiable</span><span>2 / 7</span></div>
 </section>
 
 <section class="page" id="page-3">
-  <h2>7. Actores y utilidades observables</h2>
-  <p>Para el agente <em>i</em>, <em>U<sub>i</sub>(s) = E[π<sub>i</sub>|s] − c<sub>i</sub>(e<sub>i</sub>) − ℓ<sub>i</sub>(s)</em>. La utilidad de desviación será <em>ΔU<sub>i</sub> = max<sub>s′<sub>i</sub>≠s*<sub>i</sub></sub> U<sub>i</sub>(s′<sub>i</sub>,s<sub>−i</sub>) − U<sub>i</sub>(s*)</em>, con creencias y costos fijados por celda. Precio, costo privado, acuerdo y validez auditada permanecerán separados.</p>
+  <h3>2.2 Información aprendida y decisión de optimización</h3>
+  <p>La complejidad de Kolmogorov ofrece una idea atractiva: describir un objeto por el programa más corto que lo produce. Sin embargo, no puede calcularse exactamente <span class="cite">[3]</span>. En los experimentos se usarán aproximaciones reproducibles: análisis de información y generalización, compresión del modelo, sensibilidad a cuantización y cotas PAC-Bayes basadas en compresión <span class="cite">[4], [5]</span>. Estas medidas no se presentarán como una cantidad exacta de inteligencia, sino como descriptores cuya utilidad deberá demostrarse por ablación.</p>
 
-  <h2>8. Objetivo y preguntas contrastables</h2>
-  <p><strong>Objetivo general.</strong> Diseñar y evaluar un protocolo de validación y remuneración entre pares para trabajos descentralizados de inferencia y optimización cuando la verdad es parcial o costosa de observar.</p>
+  <p>Para decidir qué configuración evaluar, la información tiene otro papel. Entropy Search propone elegir la evaluación que más reduzca la incertidumbre sobre la ubicación del óptimo <span class="cite">[7]</span>. Esta tesis seguirá esa idea, pero dividirá la ganancia esperada por el costo de la evaluación y descontará la confianza cuando la tarea fuente sea distinta o su procedencia sea débil. El teorema de Shannon sobre canales no se aplicará directamente a un conjunto de datos: usarlo exige definir señal, ruido, ancho de banda y canal. En series de tiempo esos elementos se estimarán y se reportará la sensibilidad a su definición.</p>
 
-  <h3>Objetivos específicos</h3>
-  <ol>
-    <li>Derivar condiciones suficientes o una frontera de imposibilidad para que esfuerzo alto y reporte veraz sean mejor respuesta estricta.</li>
-    <li>Comparar CA, auditoría parcial y retos post-compromiso contra los baselines bajo adversarios ejecutables.</li>
-    <li>Medir error, utilidad de desviación, costo y throughput, y validar la portabilidad a DOIN.</li>
-  </ol>
+  <h3>2.3 Metaaprendizaje y metaoptimización</h3>
+  <p>Aprender el propio algoritmo de optimización no es nuevo. Los optimizadores aprendidos muestran que una red puede explotar regularidades de familias de problemas <span class="cite">[6]</span>. OptFormer aprende de grandes historiales de búsqueda <span class="cite">[8]</span>; HyperBO preentrena procesos gaussianos con tareas relacionadas <span class="cite">[9]</span>; y PFNs4BO realiza inferencia en contexto para optimización bayesiana <span class="cite">[10]</span>. HPO-B ofrece millones de evaluaciones y particiones por tarea para comparar transferencia de manera reproducible <span class="cite">[11]</span>.</p>
 
-  <h2>9. Hipótesis</h2>
-  <table class="compact">
-    <tr><th>Hipótesis</th><th>Criterio que puede refutarla</th></tr>
-    <tr><td><strong>H1 · Reporte</strong></td><td>A presupuesto fijo, auditoría parcial + CA hace no positiva la utilidad de la mejor desviación adaptativa, y la reduce al menos 20% frente a pago uniforme + mayoría, sin aumentar la aceptación falsa auditada en más de 5 puntos porcentuales.</td></tr>
-    <tr><td><strong>H2 · Retos</strong></td><td>Los retos posteriores al compromiso reducen en al menos 20% la aceptación de resultados contaminados o sobreajustados, frente a un test público reutilizado, manteniendo la aceptación de trabajadores honestos dentro de un margen de 5 puntos porcentuales.</td></tr>
-    <tr><td><strong>H3 · Liquidación</strong></td><td>Condicionar el pago al protocolo reduce el gasto en resultados inválidos frente a liquidar por precio y entrega, mientras el throughput de resultados válidos es no inferior bajo un margen predeclarado de 10%.</td></tr>
-  </table>
+  <p>Los trabajos recientes ya tratan espacios de parámetros heterogéneos <span class="cite">[12]</span> y secuencias de tareas que cambian con el tiempo <span class="cite">[13]</span>. Por tanto, la novedad no puede ser simplemente entrenar una red con pares de parámetros y métricas. La pregunta abierta de esta propuesta es más estrecha: aprender de historiales generados por políticas distintas, con presupuestos desiguales, ejecuciones detenidas y calidad variable, sin convertir esa transferencia en una nueva fuente de error.</p>
 
-  <h2>10. Diseño experimental</h2>
-  <p><strong>Dominio de control:</strong> optimización cuadrática o combinatoria, con solución o puntaje verificable. <strong>Dominio principal:</strong> lotes de inferencia de LLM/agentes con pruebas ejecutables, rúbrica categórica y auditoría experta oculta. Las series temporales y dominios adicionales se reservan para validez externa posterior.</p>
+  <h3>2.4 Brecha que abordará la tesis</h3>
+  <p>Una traza histórica no es una muestra neutral. Contiene solo las configuraciones que otro optimizador decidió probar; los fallos pueden desaparecer; la parada temprana censura resultados; y dos procesos de entrenamiento pueden usar nombres iguales con significados distintos. El método propuesto tratará la política de origen, el presupuesto, la censura y la procedencia como datos del aprendizaje, no como metadatos decorativos. Su salida incluirá la opción de no transferir. Esta precaución también es coherente con el principio de que ningún optimizador domina en todas las clases de problemas <span class="cite">[14]</span>.</p>
 
-  <p>Se compararán cinco brazos: (A) pago por entrega; (B) mayoría + pago uniforme; (C) auditoría aleatoria + mayoría; (D) auditoría aleatoria + CA; y (E) CA sin auditoría, celda crítica para medir sus equilibrios patológicos. Para identificar H2, B y D se cruzarán con {test público reutilizable, retos ocultos post-compromiso}. H2 se respaldará solo si ambos contrastes alcanzan 20% y conservan la aceptación honesta dentro de 5 puntos. Cada celda compartirá tareas, presupuestos y poblaciones.</p>
+  <h2>3. Metodología</h2>
+  <h3>3.1 Unidad de información</h3>
+  <p>Cada tarea <em>&tau;</em> reunirá un conjunto de datos, un modelo, un espacio de configuración, una métrica, un presupuesto y una versión ejecutable del proceso de entrenamiento. Cada evaluación registrará la configuración probada, los pasos consumidos, el resultado, el costo, el estado terminal o censurado y la procedencia. Las particiones de entrenamiento, calibración y prueba se harán por tareas completas; ninguna evaluación de una tarea de prueba podrá aparecer en el entrenamiento del metaoptimizador.</p>
 
-  <p>Además de ataques fijos, un optimizador evolutivo o RL, con presupuesto retenido, buscará la mejor respuesta contra el protocolo publicado: copia, contaminación, identidades múltiples y colusión con pagos laterales. La unidad primaria será la tarea única; habrá al menos diez poblaciones, bootstrap jerárquico tarea/población y corrección Holm sobre todos los contrastes primarios. El piloto, fuera de confirmación, fijará potencia ≥ 0,80 y traducirá costo y riesgo en diferencias relevantes; 20/5/10 son pisos que solo podrán hacerse más exigentes; de lo contrario, se aumentará <em>N</em>.</p>
-
-  <div class="two">
-    <div class="box"><h3>Métricas primarias</h3><p>Aceptación falsa y rechazo falso sobre la muestra auditada; utilidad de desviación; gasto en resultados inválidos; costo de validación; throughput de resultados válidos.</p></div>
-    <div class="box"><h3>Métricas secundarias</h3><p>Acuerdo experto, calibración por criterio, varianza del pago, participación, concentración, latencia, trabajo duplicado, disputas y sensibilidad al número de identidades.</p></div>
-  </div>
-
-  <h2>11. Límites e imposibilidades</h2>
-  <p>El esfuerzo no observable conserva el problema de riesgo moral en equipos <span class="cite">[10]</span>. CA exige tareas correlacionadas, asignación suficientemente densa y distribución aproximadamente estable; admite permutación, coordinación por señales baratas y colusión <span class="cite">[3], [4], [8]</span>. Las identidades Sybil se modelarán como costosas o limitadas, no como resueltas por el ledger <span class="cite">[11]</span>. Las trayectorias serán evidencia reproducible, no prueba criptográfica de aprendizaje <span class="cite">[12]</span>. Si no existe observación externa, solo podrá concluirse acuerdo informado, no verdad.</p>
-
-  <div class="footer"><span>Harvey Demian Bastidas Caicedo · Propuesta doctoral preliminar</span><span>3 / 4</span></div>
+  <div class="footer"><span>Propuesta doctoral preliminar · Metaoptimización confiable</span><span>3 / 7</span></div>
 </section>
 
 <section class="page" id="page-4">
-  <h2>12. Trabajo relacionado y novedad</h2>
-  <p>Dasgupta y Ghosh estudian esfuerzo endógeno; Gao et al. muestran que peer prediction con verdad limitada puede exigir más auditoría <span class="cite">[8], [9]</span>. La novedad es formalizar y atacar el juego completo trabajador–evaluador: producir y comprometer el artefacto antes de retos ocultos, evaluarlo y condicionar su liquidación.</p>
+  <table>
+    <tr><th>Grupo</th><th>Información observada</th><th>Función en el método</th></tr>
+    <tr><td>Tarea</td><td>Tamaño, tipos de variables, ruido estimado, balance, estructura temporal y modelo</td><td>Estimar semejanza y cambio de distribución</td></tr>
+    <tr><td>Traza</td><td>Parámetros, presupuesto, métricas, curva parcial, fallos y censura</td><td>Aprender la respuesta y proponer candidatos</td></tr>
+    <tr><td>Procedencia</td><td>Proceso ejecutado, versión, política de búsqueda y verificaciones disponibles</td><td>Reducir o rechazar evidencia incompatible</td></tr>
+    <tr><td>Información</td><td>Capacidad funcional, compresibilidad y reducción esperada de incertidumbre</td><td>Priorizar evaluaciones informativas por costo</td></tr>
+  </table>
 
-  <p>zkLLM y TOPLOC verifican ejecución o identidad de inferencias, no su calidad semántica <span class="cite">[13], [14]</span>. Bittensor y Gensyn abordan incentivos o cómputo; Akash y Golem, provisión <span class="cite">[15]–[18]</span>. La tesis estudia el residuo: respuestas abiertas bajo verdad parcial y agentes estratégicos.</p>
+  <h3>3.2 Metaoptimizador propuesto</h3>
+  <p>El modelo tendrá tres piezas. Un codificador de tarea resumirá datos, arquitectura y descriptores informacionales. Un codificador de trazas leerá conjuntos de evaluaciones con máscaras explícitas para parámetros ausentes y un canal ordenado cuando el tiempo importe. Una cabeza probabilística estimará la distribución del desempeño y el costo de cada candidato. La regla de selección elegirá la evaluación con mejor ganancia esperada de información por unidad de costo.</p>
 
-  <h2>13. Método y plan de trabajo</h2>
-  <p><strong>Año 1:</strong> S1, juego, ética y dominios; S2, proposición, piloto y preregistro. <strong>Año 2:</strong> S3, campaña con oráculo; S4, LLM/agentes, mejor respuesta, colusión y pooling. <strong>Año 3:</strong> S5, MVP firmado e integración DOIN; S6, replicación, publicaciones y tesis.</p>
+  <p>La capacidad funcional se medirá como la mayor cantidad de etiquetas aleatorias que una arquitectura puede memorizar bajo un protocolo fijo. La compresibilidad será el menor número de bits que conserva el desempeño dentro de una tolerancia predeclarada. Ambas son aproximaciones experimentales, no medidas universales, y solo permanecerán en el método si mejoran la predicción sobre tareas no vistas.</p>
 
-  <h2>14. Viabilidad, ética y plan de recorte</h2>
-  <p>La auditoría compartida requiere 120 valoraciones y hasta 60 arbitrajes, con reserva inicial de 40–80 horas expertas ajustable por el piloto. Antes de reclutar se solicitarán aval ético, consentimiento, pago por hora, manejo de contenido sensible y minimización de datos. El cómputo CPU/GPU se acotará en el piloto y no exige entrenar modelos fundacionales. Se solicitará dirección en IA confiable/sistemas multiagente y codirección en mecanismos.</p>
+  <p>Una compuerta de transferencia comparará la tarea nueva con la experiencia disponible y calibrará la incertidumbre sobre tareas reservadas. Si la cobertura o la semejanza no alcanzan el nivel fijado antes de la prueba, el sistema se abstendrá y entregará el control a un optimizador bayesiano sin transferencia. Esta salida no se contará como fracaso: es parte del método y busca evitar que una recomendación segura en apariencia sea peor que empezar de cero.</p>
 
-  <p>El MVP defendible es el teorema y la evaluación preregistrada sobre un orquestador firmado; si DOIN se retrasa, su integración no bloquea la tesis. Se proyectan un artículo formal (AAMAS/EC), uno experimental y un artefacto reproducible.</p>
+  <h3>3.3 Resultado teórico</h3>
+  <p>Se buscará un límite matemático para el arrepentimiento de la política selectiva, entendido como la pérdida acumulada frente a la mejor decisión disponible. Este resultado dependerá de supuestos declarados sobre calibración, semejanza entre tareas y proporción de trazas defectuosas. Si esos supuestos no permiten una garantía útil, se caracterizará una región de imposibilidad: condiciones bajo las cuales ninguna regla basada solo en las trazas observadas puede distinguir una transferencia provechosa de una perjudicial. El resultado teórico y el algoritmo experimental se evaluarán por separado.</p>
 
-  <h2>15. Contribuciones esperadas</h2>
-  <p>(i) Condiciones formales de incentivos o imposibilidad; (ii) evidencia sobre evaluación de IA bajo esfuerzo insuficiente, contaminación, colusión y mejor respuesta; y (iii) un protocolo reproducible y portable a DOIN, para tareas atómicas y pools, sin token propio.</p>
+  <div class="footer"><span>Propuesta doctoral preliminar · Metaoptimización confiable</span><span>4 / 7</span></div>
+</section>
 
+<section class="page" id="page-5">
+  <h3>3.4 Datos y experimentos</h3>
+  <p>La primera etapa usará HPO-B como conjunto público de referencia, para evitar que el método sea evaluado solo con datos propios. La segunda incorporará trazas verificadas de DOIN y de los procesos existentes de predicción, aprendizaje por refuerzo y dominios alternativos <span class="cite">[15], [16]</span>. La confirmación final incluirá dos familias manejables: modelos de series de tiempo y adaptación eficiente de modelos de lenguaje compactos. No se entrenarán modelos fundacionales desde cero.</p>
+
+  <p>Se compararán búsqueda aleatoria, optimización bayesiana sin transferencia, inicio con las mejores configuraciones previas y métodos de transferencia compatibles, entre ellos HyperBO, PFNs4BO y una representación inspirada en OptFormer. El presupuesto, las tareas y los puntos iniciales serán compartidos. Los escenarios adversos eliminarán resultados malos, censurarán curvas, duplicarán evaluaciones, alterarán una fracción de métricas y cambiarán gradualmente la distribución de tareas.</p>
+
+  <h3>3.5 Hipótesis</h3>
+  <ol>
+    <li><strong>H1 · Eficiencia.</strong> En tareas nuevas relacionadas, el metaoptimizador reducirá el área bajo la curva de arrepentimiento y el costo necesario para alcanzar un desempeño objetivo frente al mejor método de referencia sin transferencia.</li>
+    <li><strong>H2 · Seguridad.</strong> Bajo cambio de distribución o trazas defectuosas, la compuerta de abstención mantendrá el resultado final dentro del margen de no inferioridad respecto al método de referencia sin transferencia y reducirá la frecuencia de transferencia negativa.</li>
+    <li><strong>H3 · Información.</strong> Los descriptores de capacidad, compresibilidad y ganancia informativa mejorarán la calibración y la selección de tareas fuente frente al mismo modelo que use solo metadatos convencionales.</li>
+  </ol>
+
+  <h3>3.6 Evaluación y falsación</h3>
+  <p>La unidad primaria será la tarea no vista, no cada ejecución individual. Se usarán al menos treinta tareas por familia y cinco corridas de optimización por tarea. Las medidas principales serán el arrepentimiento simple normalizado —la diferencia entre el mejor resultado disponible y el mejor encontrado—, el costo hasta el objetivo, el error de calibración, la cobertura de intervalos, la frecuencia de abstención y la transferencia negativa. Un piloto separado fijará el margen práctico de H2 y el tamaño final de muestra; luego quedarán congelados. Los intervalos se estimarán sobre tareas y la multiplicidad de las tres hipótesis se controlará con el método de Holm.</p>
+
+  <p>La tesis aceptará un resultado negativo. H1 fallará si la transferencia no mejora costo o arrepentimiento; H2 fallará si abstenerse no protege frente al cambio; H3 fallará si las medidas informacionales no aportan fuera de muestra. En ese caso, el resultado seguirá siendo útil al delimitar cuándo las trazas históricas no justifican un metaoptimizador.</p>
+
+  <h2>4. Contribuciones esperadas</h2>
+  <ol>
+    <li>Una formulación clara de la metaoptimización con trazas heterogéneas, censuradas y de procedencia desigual.</li>
+    <li>Un metaoptimizador probabilístico con transferencia selectiva, incertidumbre calibrada y abstención explícita.</li>
+    <li>Evidencia sobre la utilidad real de descriptores informacionales de capacidad y compresibilidad para transferir optimización.</li>
+    <li>Un conjunto reproducible de referencia que combine datos públicos y trazas distribuidas verificadas, junto con resultados positivos o negativos publicables.</li>
+  </ol>
+
+  <div class="footer"><span>Propuesta doctoral preliminar · Metaoptimización confiable</span><span>5 / 7</span></div>
+</section>
+
+<section class="page" id="page-6">
+  <h2>5. Plan de trabajo, viabilidad y ética</h2>
+  <h3>5.1 Plan de tres años</h3>
+  <table>
+    <tr><th>Periodo</th><th>Trabajo y producto verificable</th></tr>
+    <tr><td>Año 1</td><td>Revisión sistemática; definiciones de capacidad, información y procedencia; reproducción de MacKay; preparación de HPO-B; piloto y prerregistro. Producto: artículo de marco y conjunto de referencia.</td></tr>
+    <tr><td>Año 2</td><td>Diseño del metaoptimizador, incertidumbre, abstención y escenarios de corrupción; evaluación por tareas reservadas. Producto: artículo metodológico y código reproducible.</td></tr>
+    <tr><td>Año 3</td><td>Confirmación en series de tiempo y modelos de lenguaje compactos; integración experimental con DOIN; análisis final y tesis. Producto: artículo aplicado y artefacto abierto.</td></tr>
+  </table>
+
+  <h3>5.2 Viabilidad y plan de recorte</h3>
+  <p>HPO-B permite realizar gran parte del estudio sin repetir millones de entrenamientos. Los experimentos reales se limitarán por presupuesto de cómputo y usarán modelos pequeños o adaptación eficiente. La experiencia del candidato en optimización evolutiva distribuida, series de tiempo y construcción de sistemas de aprendizaje reduce el riesgo técnico inicial; además, ya existen procesos de entrenamiento, registros de optimización y una red experimental derivados de la tesis de maestría <span class="cite">[15], [16]</span>. Si DOIN se retrasa, las trazas se consumirán desde un almacén firmado sin cambiar la pregunta científica. Si una de las dos familias aplicadas excede los recursos, HPO-B y una familia confirmatoria bastarán para evaluar las tres hipótesis.</p>
+
+  <h3>5.3 Ética y reproducibilidad</h3>
+  <p>No se requieren participantes humanos ni datos personales en la fase principal. Para modelos de lenguaje se usarán conjuntos de datos con licencia clara, se filtrará contenido sensible y se documentarán proveedor, versión y costo. Se publicarán semillas, particiones por tarea, presupuestos, fallos y consumo de cómputo. Las trazas privadas solo se usarán después de sanitización y control de procedencia. Ningún experimento ejecutará operaciones financieras reales.</p>
+
+  <h3>5.4 Pertinencia para el Doctorado en Inteligencia Artificial</h3>
+  <p>La pregunta central es cómo un sistema aprende a mejorar otro proceso de aprendizaje y cómo reconoce los límites de lo aprendido. Esto se ubica en aprendizaje automático avanzado, metaaprendizaje, optimización, incertidumbre y series de tiempo, áreas expresamente relacionadas con el programa <span class="cite">[17]</span>. La infraestructura distribuida sirve para obtener evidencia difícil; no reemplaza la contribución en inteligencia artificial.</p>
+
+  <div class="note"><strong>Criterio de confirmación.</strong> Un piloto separado fijará los umbrales, presupuestos, decisiones de arquitectura y tamaño final de muestra. Esas decisiones quedarán congeladas antes de evaluar las hipótesis.</div>
+
+  <div class="footer"><span>Propuesta doctoral preliminar · Metaoptimización confiable</span><span>6 / 7</span></div>
+</section>
+
+<section class="page" id="page-7">
   <h2>Referencias</h2>
   <div class="refs">
-    <p class="ref">[1] F. A. Hayek, “The Use of Knowledge in Society,” <em>American Economic Review</em>, vol. 35, no. 4, pp. 519–530, 1945.</p>
-    <p class="ref">[2] L. Hurwicz, “The Design of Mechanisms for Resource Allocation,” <em>American Economic Review</em>, vol. 63, no. 2, pp. 1–30, 1973.</p>
-    <p class="ref">[3] V. Shnayder, A. Agarwal, R. M. Frongillo and D. C. Parkes, “Informed Truthfulness in Multi-Task Peer Prediction,” in <em>Proc. ACM EC</em>, pp. 179–196, 2016.</p>
-    <p class="ref">[4] Y. Kong and G. Schoenebeck, “An Information Theoretic Framework for Designing Information Elicitation Mechanisms,” <em>ACM Trans. Econ. Comput.</em>, vol. 7, no. 1, pp. 1–33, 2019.</p>
-    <p class="ref">[5] H. D. Bastidas Caicedo, <em>Computación Evolutiva Descentralizada de Modelo Híbrido usando Blockchain y Prueba de Trabajo de Optimización</em>, tesis de Maestría, Pontificia Universidad Javeriana, 2018.</p>
-    <p class="ref">[6] C. Dwork et al., “Generalization in Adaptive Data Analysis and Holdout Reuse,” in <em>NeurIPS</em>, pp. 2350–2358, 2015.</p>
-    <p class="ref">[7] L. Zheng et al., “Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena,” in <em>NeurIPS</em>, 2023.</p>
-    <p class="ref">[8] X. A. Gao, J. R. Wright and K. Leyton-Brown, “Incentivizing Evaluation with Peer Prediction and Limited Access to Ground Truth,” <em>Artif. Intell.</em>, vol. 275, pp. 618–638, 2019.</p>
-    <p class="ref">[9] A. Dasgupta and A. Ghosh, “Crowdsourced Judgement Elicitation with Endogenous Proficiency,” in <em>Proc. WWW</em>, pp. 319–330, 2013.</p>
-    <p class="ref">[10] B. Holmström, “Moral Hazard in Teams,” <em>Bell Journal of Economics</em>, vol. 13, no. 2, pp. 324–340, 1982.</p>
-    <p class="ref">[11] J. R. Douceur, “The Sybil Attack,” in <em>Peer-to-Peer Systems</em>, LNCS 2429, pp. 251–260, 2002.</p>
-    <p class="ref">[12] C. Fang et al., “Proof-of-Learning is Currently More Broken Than You Think,” in <em>IEEE EuroS&amp;P</em>, pp. 797–816, 2023.</p>
-    <p class="ref">[13] H. Sun, J. Li and H. Zhang, “zkLLM: Zero Knowledge Proofs for Large Language Models,” in <em>Proc. ACM CCS</em>, pp. 4405–4419, 2024.</p>
-    <p class="ref">[14] J. M. Ong et al., “TOPLOC: A Locality Sensitive Hashing Scheme for Trustless Verifiable Inference,” in <em>Proc. ICML</em>, PMLR 267, 2025.</p>
-    <p class="ref">[15] Opentensor Foundation, “Amplifying the Weight-copying Penalty in Bittensor,” technical report, 2024.</p>
-    <p class="ref">[16] Gensyn, “The Gensyn Protocol: Litepaper,” 2022.</p>
-    <p class="ref">[17] Akash Network, “Core Concepts,” documentation. [Online]. Available: akash.network/docs (accessed Sep. 1, 2026).</p>
-    <p class="ref">[18] Golem Network, “Documentation.” [Online]. Available: docs.golem.network (accessed Sep. 1, 2026).</p>
-    <p class="ref">[19] H. D. Bastidas Caicedo, “DOIN Core: Proof-of-Optimization Consensus,” software repository, 2026. [Online]. Available: github.com/harveybc/doin-core.</p>
+    <p class="ref">[1] D. J. C. MacKay, <em>Information Theory, Inference, and Learning Algorithms</em>. Cambridge, U.K.: Cambridge University Press, 2003, cap. 40, pp. 483–490. [En línea]. Disponible: <a href="https://www.inference.org.uk/itprnn/book.pdf">inference.org.uk/itprnn/book.pdf</a>.</p>
+    <p class="ref">[2] T. M. Cover, “Geometrical and Statistical Properties of Systems of Linear Inequalities with Applications in Pattern Recognition,” <em>IEEE Transactions on Electronic Computers</em>, vol. EC-14, no. 3, pp. 326–334, 1965, doi: 10.1109/PGEC.1965.264137.</p>
+    <p class="ref">[3] M. Li and P. Vitanyi, <em>An Introduction to Kolmogorov Complexity and Its Applications</em>, 4th ed. Cham, Switzerland: Springer, 2019.</p>
+    <p class="ref">[4] A. Xu and M. Raginsky, “Information-Theoretic Analysis of Generalization Capability of Learning Algorithms,” in <em>Advances in Neural Information Processing Systems 30</em>, 2017.</p>
+    <p class="ref">[5] S. Lotfi, M. Finzi, S. Kapoor, A. Potapczynski, M. Goldblum and A. G. Wilson, “PAC-Bayes Compression Bounds So Tight That They Can Explain Generalization,” in <em>Advances in Neural Information Processing Systems 35</em>, 2022.</p>
+    <p class="ref">[6] M. Andrychowicz et al., “Learning to Learn by Gradient Descent by Gradient Descent,” in <em>Advances in Neural Information Processing Systems 29</em>, 2016.</p>
+    <p class="ref">[7] P. Hennig and C. J. Schuler, “Entropy Search for Information-Efficient Global Optimization,” <em>Journal of Machine Learning Research</em>, vol. 13, pp. 1809–1837, 2012.</p>
+    <p class="ref">[8] Y. Chen et al., “Towards Learning Universal Hyperparameter Optimizers with Transformers,” in <em>Advances in Neural Information Processing Systems 35</em>, 2022.</p>
+    <p class="ref">[9] Z. Wang et al., “Pre-trained Gaussian Processes for Bayesian Optimization,” <em>Journal of Machine Learning Research</em>, vol. 25, no. 212, pp. 1–83, 2024.</p>
+    <p class="ref">[10] S. Müller, M. Feurer, N. Hollmann and F. Hutter, “PFNs4BO: In-Context Learning for Bayesian Optimization,” in <em>Proc. 40th International Conference on Machine Learning</em>, PMLR 202, pp. 25444–25470, 2023.</p>
+    <p class="ref">[11] S. Pineda Arango, H. S. Jomaa, M. Wistuba and J. Grabocka, “HPO-B: A Large-Scale Reproducible Benchmark for Black-Box HPO Based on OpenML,” in <em>NeurIPS Datasets and Benchmarks</em>, 2021.</p>
+    <p class="ref">[12] Z. Fan, X. Han and Z. Wang, “Transfer Learning for Bayesian Optimization on Heterogeneous Search Spaces,” <em>Transactions on Machine Learning Research</em>, 2024.</p>
+    <p class="ref">[13] S. P. Hellan, H. Shen, F.-X. Aubet, D. Salinas and A. Klein, “Obeying the Order: Introducing Ordered Transfer Hyperparameter Optimization,” in <em>Proc. Fourth International Conference on Automated Machine Learning</em>, PMLR 293, pp. 14/1–29, 2025.</p>
+    <p class="ref">[14] D. H. Wolpert and W. G. Macready, “No Free Lunch Theorems for Optimization,” <em>IEEE Transactions on Evolutionary Computation</em>, vol. 1, no. 1, pp. 67–82, 1997.</p>
+    <p class="ref">[15] H. D. Bastidas Caicedo, <em>Computación Evolutiva Descentralizada de Modelo Híbrido usando Blockchain y Prueba de Trabajo de Optimización</em>, tesis de Maestría, Pontificia Universidad Javeriana, 2018.</p>
+    <p class="ref">[16] H. D. Bastidas Caicedo, “DOIN Core: Proof-of-Optimization Consensus,” repositorio de software, 2026. [En línea]. Disponible: <a href="https://github.com/harveybc/doin-core">github.com/harveybc/doin-core</a>.</p>
+    <p class="ref">[17] Universidad de La Sabana, “Doctorado en Inteligencia Artificial,” 2026. [En línea]. Disponible: <a href="https://www.unisabana.edu.co/programas/posgrados/doctorado-en-inteligencia-artificial">unisabana.edu.co/programas/posgrados/doctorado-en-inteligencia-artificial</a>.</p>
   </div>
 
-  <div class="footer"><span>Harvey Demian Bastidas Caicedo · Propuesta doctoral preliminar</span><span>4 / 4</span></div>
+  <div class="footer"><span>Propuesta doctoral preliminar · Metaoptimización confiable</span><span>7 / 7</span></div>
 </section>
 
 <script>

@@ -2,9 +2,11 @@
 
 **Fecha:** 2026-09-05
 
-**Estado:** borrador doctoral listo para revisión del autor
+**Estado:** PDF committeado (`5449bed`); Satoshi `ACCEPT_WITH_INTEGRATION_NOTES` (`3116c362`); Retsu re-verificó 2026-09-06.
 
 **Objeto:** selección de grafos pequeños de transformación para tareas temporales nuevas, bajo presupuesto y con abstención
+
+**Correo de admisión (G12):** sigue siendo la propuesta L2/RL hasta decisión explícita de Harvey. Satoshi recomienda *esta* como madre de La Sabana; Retsu no cambia el adjunto por omisión. Carta: `docs/RETSU_TO_HARVEY_G12_TRANSFORMACIONES_VS_L2_2026_09_06.md`.
 
 ## Documento principal
 
@@ -18,6 +20,7 @@
 - `02_ARQUITECTURA_TRANSFERENCIA_DOIN.md`: separación entre validación científica, modelos de referencia e integración con DOIN.
 - `03_WORKPLAN_PATCH_TRANSFORMACIONES_DOIN.md`: cambio propuesto al plan de trabajo; no modifica campañas activas.
 - `04_AUDITORIA_INTERNA_TRES_JURADOS.md`: lectura hostil desde estadística, AutoML y sistemas.
+- `05_DICTAMEN_SATOSHI_VERIFICACION_E_INSERCION_DOIN_2026_09_05.md`: verificación byte a byte e inserción T0–T5 en el plan DOIN.
 
 ## Decisiones que gobiernan el expediente
 
@@ -42,4 +45,10 @@ validación aplicada retenida
         -> adopción, rechazo o abstención
 ```
 
-No se inicia una campaña GPU por la existencia de este documento. El primer trabajo ejecutable es un banco CPU pequeño y determinista.
+No se inicia una campaña GPU por la existencia de este documento. El primer trabajo ejecutable es un banco CPU pequeño y determinista (T0+T1 = G3; un banco, no dos). No se toca B4.
+
+## Divergencia deliberada: Tabla 1 vs STEP 11
+
+La Tabla 1 del PDF deja la corrupción/máscara del autoencoder **fuera** del núcleo doctoral. El STEP 11 del work plan la mantiene como módulo (máscara train-only sobre el AE que ya existe; compuertas 11A–11D; un nulo cierra).
+
+No es contradicción: **tesis ⊂ work plan**. Ningún operador debe “resolverlo” fusionándolos, ni promover la máscara a capítulo, ni borrar el experimento de laboratorio. Recorte: `docs/SUGERENCIAS_STEP_11_PARA_WORK_AGENT.md`.

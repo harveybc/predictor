@@ -31,10 +31,87 @@ from eligibility import review
 
 STATUS_GATED = "ELIGIBILITY_GATED"
 STATUS_LEGACY = "LEGACY_NON_AUTHORITATIVE"
+STATUS_SUBMITTED = "ELIGIBILITY_SUBMITTED_AWAITING_REVIEW"
 
 PURPOSE_KEY = "execution_purpose"
 PURPOSE_ARCHIVAL = "ARCHIVAL_REPLAY_NON_AUTHORITATIVE"
-PURPOSE_EXPERIMENT = "NEW_EXPERIMENT"
+# C17: a new experiment is TWO phases. Phase one derives the
+# facts, persists a stable submission and exits before the
+# optimizer or the pipeline. The reviewer then decides on those
+# exact bytes. Phase two re-derives everything, proves it landed
+# on the SAME submission, and consumes the record.
+PURPOSE_SUBMIT = "SUBMIT_ONLY"
+PURPOSE_EXECUTE = "EXECUTE_REVIEWED"
+PURPOSE_EXPERIMENT = PURPOSE_EXECUTE
+KNOWN_PURPOSES = (PURPOSE_ARCHIVAL, PURPOSE_SUBMIT,
+                  PURPOSE_EXECUTE)
+
+# C19: the ONLY keys an optimizer may change. Everything that
+# decides what is consumed — data, partitions, target, plugins,
+# authority, evidence paths, scope — is forbidden, because
+# approving a contract is worthless if the object stays mutable.
+ALLOWED_OPTIMIZER_KEYS = frozenset({
+    "batch_size", "epochs", "learning_rate", "l2_reg",
+    "dropout_rate", "layer_size", "layer_sizes", "num_layers",
+    "kernel_size", "filters", "units", "activation",
+    "early_patience", "threshold_error", "iterations",
+    "mc_samples", "optimizer", "momentum", "beta_1", "beta_2",
+    "epsilon", "clipnorm", "clipvalue", "seed", "num_heads",
+    "ff_dim", "embed_dim", "rnn_units", "conv_filters",
+    "time_horizon_weights", "incentive_loss",
+    "penalty_close_lambda", "penalty_far_lambda",
+})
+
+
+class ContractMutationRefusal(SystemExit):
+    def __init__(self, msg: str) -> None:
+        super().__init__(f"REFUSED: {msg}")
+
+
+def assert_optimizer_result_is_hyperparameters_only(
+        result: dict, *, consumer: str = "unknown") -> dict:
+    """C19: filter an optimizer's return value BEFORE it touches
+    the approved config."""
+    if not isinstance(result, dict):
+        raise ContractMutationRefusal(
+            f"{consumer}: the optimizer returned a "
+            f"{type(result).__name__}, not a mapping of "
+            "hyperparameters")
+    forbidden = sorted(k for k in result
+                       if k not in ALLOWED_OPTIMIZER_KEYS)
+    if forbidden:
+        raise ContractMutationRefusal(
+            f"{consumer}: the optimizer tried to change "
+            f"{forbidden} — an optimizer may only propose "
+            "hyperparameters, never the data, partitions, "
+            "target, plugins, authority or evidence paths that "
+            "were approved before it ran")
+    return dict(result)
+
+
+def assert_contract_unchanged(config: dict, *, repo_root: Path,
+                              consumer: str = "unknown") -> dict:
+    """C19: re-derive the whole identity and require equality with
+    the stamp the gate produced. Called immediately before the
+    pipeline consumes anything."""
+    stamp = config.get(KEY_STAMP) or {}
+    if stamp.get("eligibility_status") != STATUS_GATED:
+        return stamp
+    fresh = resolve_consumed_subjects(config,
+                                      repo_root=repo_root)
+    before = stamp.get("digests", {})
+    after = fresh["digests"]
+    differing = sorted(k for k in ("data", "partitions",
+                                   "schema", "code")
+                       if before.get(k) != after.get(k))
+    if differing or sorted(stamp.get("subject_ids", [])) != \
+            sorted(fresh["subject_ids"]):
+        raise ContractMutationRefusal(
+            f"{consumer}: the consumed contract CHANGED after "
+            f"the gate approved it (differing: "
+            f"{differing or 'subject set'}) — approval before "
+            "the change does not cover what would run now")
+    return stamp
 
 KEY_MANIFEST = "eligibility_manifest"
 KEY_SHA = "eligibility_manifest_sha256"
@@ -43,6 +120,7 @@ KEY_SCOPE = "eligibility_scope"
 KEY_STAMP = "eligibility_stamp"
 KEY_CENSUS = "eligibility_census_sha256"
 KEY_SUBMISSION_OUT = "eligibility_submission_out"
+KEY_SUBMISSION_SHA = "eligibility_submission_sha256"
 
 
 class GateOrderRefusal(SystemExit):
@@ -69,6 +147,15 @@ def _archival_stamp(config: dict, consumer: str,
     return stamp
 
 
+def _submission_from(config, consumed, scope, consumer,
+                     manifest, census_sha, submitted_at):
+    return review.build_submission(
+        submitted_at=submitted_at, submitter=consumer,
+        scope=scope,
+        manifest_sha256=gate.manifest_fingerprint(manifest),
+        census_sha256=census_sha, consumed=consumed)
+
+
 def gate_run(config: dict, *, repo_root: Path,
              consumer: str = "unknown",
              scope: str | None = None) -> dict:
@@ -93,11 +180,10 @@ def gate_run(config: dict, *, repo_root: Path,
 
     if purpose == PURPOSE_ARCHIVAL:
         return _archival_stamp(config, consumer, consumed)
-    if purpose != PURPOSE_EXPERIMENT:
+    if purpose not in KNOWN_PURPOSES:
         raise GateOrderRefusal(
             f"{consumer}: unknown {PURPOSE_KEY} {purpose!r} — "
-            f"declare {PURPOSE_EXPERIMENT} or "
-            f"{PURPOSE_ARCHIVAL}")
+            f"declare one of {list(KNOWN_PURPOSES)}")
 
     manifest_path = config.get(KEY_MANIFEST)
     if not manifest_path:
@@ -124,20 +210,55 @@ def gate_run(config: dict, *, repo_root: Path,
             f"({KEY_CENSUS}) — a decision must bind the census "
             "the variables were verified against")
 
-    submission = review.build_submission(
-        submitted_at=review.utc_now_stamp(),
-        submitter=consumer,
-        scope=scope,
-        manifest_sha256=gate.manifest_fingerprint(manifest),
-        census_sha256=census_sha,
-        consumed=consumed)
-    out = config.get(KEY_SUBMISSION_OUT)
-    if out:
-        import json
-        p = Path(out)
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(json.dumps(submission, indent=1,
-                                sort_keys=True) + "\n")
+    if purpose == PURPOSE_SUBMIT:
+        # PHASE ONE. Derive, persist, and STOP. Nothing after
+        # this point runs, so no optimizer and no pipeline can
+        # observe or alter the bytes being submitted.
+        submission = _submission_from(
+            config, consumed, scope, consumer, manifest,
+            census_sha, review.utc_now_stamp())
+        path = review.persist_submission(submission)
+        stamp = {
+            "eligibility_status": STATUS_SUBMITTED,
+            "execution_purpose": PURPOSE_SUBMIT,
+            "consumer": consumer,
+            "scope": scope,
+            "submission_sha256":
+                submission["submission_sha256"],
+            "submission_file": path.name,
+            "manifest_sha256": gate.manifest_fingerprint(
+                manifest),
+            "census_sha256": census_sha,
+            "dataset_id": consumed["dataset_id"],
+            "subjects_derived": len(consumed["subject_ids"]),
+            "subject_ids": list(consumed["subject_ids"]),
+            "digests": dict(consumed["digests"]),
+            "grants_nothing":
+                "a submission asks for a decision and is not "
+                "one; nothing executes in this phase",
+            "next_step":
+                "the external reviewer decides on these exact "
+                f"bytes, then re-run with {PURPOSE_KEY}="
+                f"{PURPOSE_EXECUTE}",
+        }
+        config[KEY_STAMP] = stamp
+        return stamp
+
+    # PHASE TWO. Re-derive every fact, land on the SAME
+    # submission the reviewer saw, then consume the record.
+    declared_sub = config.get(KEY_SUBMISSION_SHA)
+    if not declared_sub:
+        raise GateOrderRefusal(
+            f"{consumer}: {PURPOSE_EXECUTE} requires "
+            f"{KEY_SUBMISSION_SHA} — the digest of the "
+            "submission that was reviewed. Run "
+            f"{PURPOSE_KEY}={PURPOSE_SUBMIT} first")
+    persisted = review.load_persisted_submission(declared_sub)
+    rederived = _submission_from(
+        config, consumed, scope, consumer, manifest, census_sha,
+        persisted["submitted_at"])
+    review.assert_same_submission(persisted, rederived)
+    submission = persisted
 
     # The decision itself — from a document this config cannot
     # choose, binding these exact bytes.
@@ -159,7 +280,7 @@ def gate_run(config: dict, *, repo_root: Path,
 
     stamp = {
         "eligibility_status": STATUS_GATED,
-        "execution_purpose": PURPOSE_EXPERIMENT,
+        "execution_purpose": PURPOSE_EXECUTE,
         "consumer": consumer,
         "scope": scope,
         "manifest": str(manifest_path),

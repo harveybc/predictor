@@ -124,6 +124,33 @@ def _validate_logging_config(config: Dict[str, Any]) -> None:
         print(f"[LOGGING_CONFIG] WARN: cannot initialize optimizer_resource_log_file: {e}")
 
 def main():
+    """C22: wrap the WHOLE run so exactly one durable terminal is
+    emitted on every exit path — complete, failed, inconclusive,
+    refused or quarantined.
+
+    The previous emitter fired only after the pipeline returned,
+    so an exception, a refusal or an inconclusive outcome left the
+    cube with no record that the run had happened at all.
+    """
+    from olap.terminal import terminal_run
+
+    shared: Dict[str, Any] = {}
+
+    def _body():
+        return _run_main(shared)
+
+    campaign_key = "predictor_run"
+    try:
+        return terminal_run(
+            _body, campaign_key=campaign_key,
+            producer="predictor",
+            config=shared.setdefault("config", {}),
+            results_dir=shared.get("results_dir"))
+    finally:
+        pass
+
+
+def _run_main(shared: Dict[str, Any]):
     """
     Orquesta la ejecución completa del sistema, incluyendo la optimización (si se configura)
     y la ejecución del pipeline completo (preprocesamiento, entrenamiento, predicción y evaluación).
@@ -266,18 +293,48 @@ def main():
     # window is built and before any model is fitted or loaded.
     # The previous version stood after the optimizer and still
     # called itself the single choke point; it was not.
-    from eligibility.integration import describe, gate_run
+    from eligibility.integration import (
+        STATUS_SUBMITTED, assert_contract_unchanged,
+        assert_optimizer_result_is_hyperparameters_only,
+        describe, gate_run)
 
+    _REPO_ROOT = Path(__file__).resolve().parents[1]
+    # the terminal wrapper needs the LIVE config object, so it can
+    # report the eligibility stamp and results file of whatever
+    # outcome occurs
+    shared["config"] = config
+    shared["results_dir"] = Path(
+        str(config.get("results_file", "."))).parent
     eligibility_stamp = gate_run(
-        config, repo_root=Path(__file__).resolve().parents[1],
+        config, repo_root=_REPO_ROOT,
         consumer="predictor.main")
     print(describe(eligibility_stamp))
+
+    # C17 phase one stops here: the submission is persisted and
+    # nothing downstream observes or alters the bytes under
+    # review.
+    if eligibility_stamp.get("eligibility_status") == \
+            STATUS_SUBMITTED:
+        print("SUBMIT_ONLY complete — submission "
+              f"{eligibility_stamp['submission_sha256'][:12]} "
+              f"written to {eligibility_stamp['submission_file']}"
+              "; nothing was executed. Hand it to the reviewer, "
+              "then re-run with execution_purpose="
+              "EXECUTE_REVIEWED and "
+              "eligibility_submission_sha256 set.")
+        return
 
     # --- DECISIÓN DE EJECUCIÓN ---
     if config.get('use_optimizer', False) and not config.get('load_model', False):
         print("Running hyperparameter optimization with Optimizer Plugin...")
         try:
             optimal_params = optimizer_plugin.optimize(predictor_plugin, preprocessor_plugin, config)
+            # C19: an optimizer proposes hyperparameters. It may
+            # not change the data, partitions, target, plugins or
+            # authority that were approved before it ran.
+            optimal_params = \
+                assert_optimizer_result_is_hyperparameters_only(
+                    optimal_params, consumer="predictor.main")
             optimizer_output_file = config.get("optimizer_output_file", "optimizer_output.json")
             with open(optimizer_output_file, "w") as f:
                 json.dump(optimal_params, f, indent=4)
@@ -291,6 +348,13 @@ def main():
             print("Skipping hyperparameter optimization.")
         print("Running prediction pipeline...")
 
+    # C19: re-derive the whole identity and require equality with
+    # what the gate approved, immediately before anything is
+    # consumed. Approval before a change does not cover what
+    # would run now.
+    assert_contract_unchanged(config, repo_root=_REPO_ROOT,
+                              consumer="predictor.main")
+
     # Pipeline Plugin orchestrates preprocessing, training (or model loading), evaluation
     pipeline_plugin.run_prediction_pipeline(
         config,
@@ -299,70 +363,6 @@ def main():
         target_plugin
     )
         
-    # C14: every terminal run emits its envelope to the durable
-    # local outbox. This never contacts PostgreSQL, so a database
-    # that is down or restarting cannot fail a scientific run;
-    # the CPU loader drains the outbox separately and
-    # idempotently.
-    try:
-        from olap import outbox as _outbox
-        from olap.campaign_envelope import build_envelope as _be
-        _stamp = config.get("eligibility_stamp") or {}
-        _envelope = _be(
-            campaign_key=str(config.get(
-                "experiment_key",
-                Path(str(config.get("load_config",
-                                    "predictor_run"))).stem)),
-            producer="predictor",
-            result_class=("DEVELOPMENT"
-                          if _stamp.get("eligibility_status")
-                          == "ELIGIBILITY_GATED"
-                          else "NON_GOVERNING"),
-            identity={
-                "run_id": str(config.get("output_file",
-                                         "UNAVAILABLE")),
-                "code_identity": str(
-                    _stamp.get("digests", {}).get(
-                        "code", "UNAVAILABLE")),
-                "design_sha256": str(
-                    _stamp.get("manifest_sha256",
-                               "UNAVAILABLE")),
-            },
-            data_consumed={"datasets": [], "variables": [
-                {"id": s, "digest": str(
-                    _stamp.get("digests", {}).get(
-                        "data", "UNAVAILABLE")),
-                 "eligibility_state": _stamp.get(
-                     "eligibility_status", "UNAVAILABLE")}
-                for s in _stamp.get("subject_ids", [])],
-                "operators": []},
-            partitions={
-                "exposure": str(_stamp.get(
-                    "execution_purpose", "UNAVAILABLE")),
-                "splits": str(_stamp.get(
-                    "digests", {}).get("partitions",
-                                       "UNAVAILABLE"))},
-            budget={"device": "cpu",
-                    "wall_seconds": "UNAVAILABLE",
-                    "cost_units": "UNAVAILABLE"},
-            terminal={
-                "state": "COMPLETE",
-                "adjudication": str(_stamp.get(
-                    "eligibility_status",
-                    "LEGACY_NON_AUTHORITATIVE"))},
-            artifacts={"results_file": str(
-                config.get("results_file", "UNAVAILABLE"))},
-            units=[])
-        _emitted = _outbox.emit(_envelope, kind="envelope")
-        print(f"olap outbox: {_emitted['state']} "
-              f"{_emitted['outbox_entry']}")
-    except Exception as _exc:          # noqa: BLE001
-        # An outbox problem is an OPERATIONAL fault, never a
-        # scientific one: it is reported and the run still ends
-        # normally with its results on disk.
-        print(f"olap outbox: NOT EMITTED "
-              f"({_exc.__class__.__name__}: {_exc})")
-
     # Guardado de la configuración local y remota
     if config.get('save_config'):
         try:

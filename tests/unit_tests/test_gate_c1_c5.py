@@ -39,17 +39,24 @@ def _csv(path: Path, columns=None, rows=3):
 
 
 @pytest.fixture()
-def world(tmp_path):
-    """A run whose contract names three real partitions."""
+def world(tmp_path, monkeypatch):
+    """A run whose contract names three real partitions.
+
+    Migrated to the C17 two-phase protocol: EXECUTE_REVIEWED now
+    consumes a PERSISTED submission instead of minting one
+    inline, so these fixtures persist a submission first.
+    """
     for role in ("d4", "d5", "d6"):
         _csv(tmp_path / "data" / f"{role}.csv")
+    monkeypatch.setenv(review.SUBMISSION_ENV,
+                       str(tmp_path / "subs"))
     config = {
         "x_train_file": str(tmp_path / "data/d4.csv"),
         "x_validation_file": str(tmp_path / "data/d5.csv"),
         "x_test_file": str(tmp_path / "data/d6.csv"),
         "target_column": "typical_price",
         integ.KEY_SCOPE: "forecasting",
-        integ.PURPOSE_KEY: integ.PURPOSE_EXPERIMENT,
+        integ.PURPOSE_KEY: integ.PURPOSE_EXECUTE,
     }
     return tmp_path, config
 
@@ -111,6 +118,7 @@ def _install_review(tmp_path, monkeypatch, submission,
             submission["partitions_digest"],
         "decision": review.REVIEW_DECISION,
     }
+    rec["reviewed_at"] = submission["submitted_at"]
     rec.update(over)
     rec["record_sha256"] = review._self_sha(rec, "record_sha256")
     p = tmp_path / "REVIEW_RECORD.json"
@@ -124,19 +132,21 @@ CENSUS = "a" * 64
 
 def _gated(tmp_path, config, monkeypatch, submitted_at=None,
            consumer="t"):
-    """Build the submission EXACTLY as gate_run will, so the
-    review record under test binds the same bytes."""
-    consumed = resolve_consumed_subjects(config,
+    """Run PHASE ONE for real, so the persisted submission the
+    executing phase will consume is the one under test."""
+    consumed = resolve_consumed_subjects(dict(config),
                                          repo_root=tmp_path)
     mp, _ = _manifest(tmp_path, consumed)
     config[integ.KEY_MANIFEST] = str(mp)
     config[integ.KEY_CENSUS] = CENSUS
-    sub = review.build_submission(
-        submitted_at=submitted_at or "2026-09-10T10:00:00Z",
-        submitter=consumer, scope="forecasting",
-        manifest_sha256=json.loads(
-            mp.read_text())["manifest_sha256"],
-        census_sha256=CENSUS, consumed=consumed)
+    phase1 = dict(config)
+    phase1[integ.PURPOSE_KEY] = integ.PURPOSE_SUBMIT
+    stamp = integ.gate_run(phase1, repo_root=tmp_path,
+                           consumer=consumer)
+    sub = json.loads(review.submission_path(
+        stamp["submission_sha256"]).read_text())
+    config[integ.PURPOSE_KEY] = integ.PURPOSE_EXECUTE
+    config[integ.KEY_SUBMISSION_SHA] = sub["submission_sha256"]
     return consumed, mp, sub
 
 
@@ -287,8 +297,6 @@ def test_a_complete_review_opens_the_gate(world, monkeypatch):
     tmp, config = world
     consumed, mp, sub = _gated(tmp, config, monkeypatch)
     _install_review(tmp, monkeypatch, sub, CENSUS)
-    monkeypatch.setattr(review, "utc_now_stamp",
-                        lambda: "2026-09-10T10:00:00Z")
     stamp = integ.gate_run(config, repo_root=tmp, consumer="t")
     assert stamp["eligibility_status"] == integ.STATUS_GATED
     assert stamp["subjects_reviewed"] == 2
@@ -299,8 +307,6 @@ def test_a_complete_review_opens_the_gate(world, monkeypatch):
 def test_a_review_of_other_bytes_refuses(world, monkeypatch):
     tmp, config = world
     consumed, mp, sub = _gated(tmp, config, monkeypatch)
-    monkeypatch.setattr(review, "utc_now_stamp",
-                        lambda: "2026-09-10T10:00:00Z")
     for field, value, needle in (
             ("reviewed_submission_sha256", "b" * 64,
              "DIFFERENT submission"),
@@ -323,11 +329,9 @@ def test_a_review_of_other_bytes_refuses(world, monkeypatch):
 def test_a_review_dated_before_the_submission_refuses(
         world, monkeypatch):
     tmp, config = world
-    consumed, mp, sub = _gated(tmp, config, monkeypatch,
-                               submitted_at="2026-09-10T13:00:00Z")
-    monkeypatch.setattr(review, "utc_now_stamp",
-                        lambda: "2026-09-10T13:00:00Z")
-    _install_review(tmp, monkeypatch, sub, CENSUS)
+    consumed, mp, sub = _gated(tmp, config, monkeypatch)
+    _install_review(tmp, monkeypatch, sub, CENSUS,
+                    reviewed_at="2020-01-01T00:00:00Z")
     with pytest.raises(SystemExit, match="chronology"):
         integ.gate_run(config, repo_root=tmp, consumer="t")
 
@@ -372,8 +376,6 @@ def test_substituted_data_or_partitions_refuse(world,
     tmp, config = world
     consumed, mp, sub = _gated(tmp, config, monkeypatch)
     _install_review(tmp, monkeypatch, sub, CENSUS)
-    monkeypatch.setattr(review, "utc_now_stamp",
-                        lambda: "2026-09-10T10:00:00Z")
     doc = json.loads(mp.read_text())
     for field, needle in (("data", "reviewed data digest"),
                           ("partitions",
@@ -387,11 +389,14 @@ def test_substituted_data_or_partitions_refuse(world,
         cfg[integ.KEY_MANIFEST] = str(mp)
         # the submission binds the NEW manifest, so rebuild the
         # review around it: only the DATA binding differs
-        sub2 = review.build_submission(
-            submitted_at="2026-09-10T10:00:00Z",
-            submitter="t", scope="forecasting",
-            manifest_sha256=mutated["manifest_sha256"],
-            census_sha256=CENSUS, consumed=consumed)
+        phase1 = dict(cfg)
+        phase1[integ.PURPOSE_KEY] = integ.PURPOSE_SUBMIT
+        st = integ.gate_run(phase1, repo_root=tmp, consumer="t")
+        sub2 = json.loads(review.submission_path(
+            st["submission_sha256"]).read_text())
+        cfg[integ.PURPOSE_KEY] = integ.PURPOSE_EXECUTE
+        cfg[integ.KEY_SUBMISSION_SHA] = \
+            sub2["submission_sha256"]
         _install_review(tmp, monkeypatch, sub2, CENSUS)
         with pytest.raises(SystemExit, match=needle):
             integ.gate_run(cfg, repo_root=tmp, consumer="t")
@@ -402,8 +407,6 @@ def test_a_renamed_column_refuses(world, monkeypatch):
     tmp, config = world
     consumed, mp, sub = _gated(tmp, config, monkeypatch)
     _install_review(tmp, monkeypatch, sub, CENSUS)
-    monkeypatch.setattr(review, "utc_now_stamp",
-                        lambda: "2026-09-10T10:00:00Z")
     for role in ("d4", "d5", "d6"):
         _csv(tmp / "data" / f"{role}.csv",
              columns=["DATE_TIME", "typical_price", "renamed"])
@@ -411,8 +414,11 @@ def test_a_renamed_column_refuses(world, monkeypatch):
     # data digest, so the run is no longer the run that was
     # reviewed; the submission binding is the first guard to say
     # so, and that is the correct reason
+    # under C17 the executing phase re-derives first, so the
+    # earliest and strongest guard is the cross-phase equality
     with pytest.raises(SystemExit,
-                       match="DIFFERENT submission"):
+                       match="DIFFERENT facts|DIFFERENT "
+                             "submission"):
         integ.gate_run(config, repo_root=tmp, consumer="t")
     # and the reviewed manifest genuinely does not list the new
     # column, proven directly
