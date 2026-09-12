@@ -1,0 +1,127 @@
+{
+ "abstention_states": [
+  "ABSTAIN_NO_CAUSAL_OPERATOR",
+  "ABSTAIN_INSUFFICIENT_SUPPORT",
+  "ABSTAIN_NOT_IDENTIFIABLE",
+  "ABSTAIN_LINEAGE_UNRESOLVED"
+ ],
+ "arms": [
+  {
+   "content": "X, no new transformation",
+   "id": "A0_BASELINE",
+   "purpose": "what must be beaten"
+  },
+  {
+   "content": "D_j(X_j)",
+   "id": "A1_PER_VARIABLE",
+   "purpose": "the hypothesis"
+  },
+  {
+   "content": "[X_j, D_j(X_j), X_j - D_j(X_j)]",
+   "id": "A2_AUGMENTED",
+   "purpose": "keeps the residual rather than discarding it"
+  },
+  {
+   "content": "X widened to A2's dimension with uninformative columns",
+   "id": "A3_CAPACITY_CONTROL",
+   "purpose": "separates the transformation from the extra width"
+  }
+ ],
+ "before_it_runs": [
+  "external review of this design \u2014 the step v1's seal claimed for itself and which has not happened",
+  "external review of FEATURE_DAG.v2",
+  "dataset timestamp semantics and provider latency declared",
+  "an explicit development licence, which Musashi opens"
+ ],
+ "decision_rule": {
+  "multiplicity": "Holm across all panels and candidate operators jointly; an abstention consumes its place",
+  "requires_all": [
+   "broad_family_consistency",
+   "confidence_bound_beyond_a_frozen_margin",
+   "no_material_harm_on_any_panel",
+   "complete_cost_accounting_including_the_transform",
+   "A3_capacity_control_does_not_explain_the_gain"
+  ],
+  "sign_test": {
+   "form": "exact two-sided min(1, 2*min(P(X<=k), P(X>=k)))",
+   "supersedes_published_value": 1.3125,
+   "table_0_to_6": [
+    0.03125,
+    0.21875,
+    0.6875,
+    1.0,
+    0.6875,
+    0.21875,
+    0.03125
+   ]
+  }
+ },
+ "design_sha256": "224693a5883122fa7ca0e34f5429d4f880fb82a7c3f00bd3c8013de317921c65",
+ "eligibility_conditions": [
+  {
+   "artifact": "public.v_batch_membership_integrity",
+   "id": "E1",
+   "requires": "C62 batch membership row exists and the batch is EXACT"
+  },
+  {
+   "artifact": "crispdm.lake_characterization_terminal.v2",
+   "id": "E2",
+   "requires": "the v2 terminal's outcome is MEASURED"
+  },
+  {
+   "artifact": "crispdm.lake_characterization_terminal.v2",
+   "id": "E3",
+   "requires": "the v2 terminal's source.sha256 is present and matches the file read"
+  },
+  {
+   "artifact": "financial_data.feature_dag.v2",
+   "id": "E4",
+   "requires": "lineage class is CAUSAL_ACTIVE"
+  },
+  {
+   "artifact": "financial_data.feature_dag.v2",
+   "id": "E5",
+   "requires": "availability is not UNAVAILABLE"
+  }
+ ],
+ "eligible_set": {
+  "causal_active_columns_before_E5": 37,
+  "size": 0,
+  "state": "EMPTY_BY_RULE_E5",
+  "why": "no dataset declares what its timestamp MEANS, so every column's earliest availability is UNAVAILABLE. The condition is stated and enforced rather than quietly dropped"
+ },
+ "executed": {
+  "arms_run": 0,
+  "confirmation_touched": false,
+  "gpu_opened": false,
+  "scores": 0,
+  "variables_selected": 0
+ },
+ "grants_nothing": "a design describes what would be done. It confers no eligibility, opens no screen and carries no licence",
+ "paired_budget": "every arm sees the same data, origins, seeds and wall-clock budget; unequal budget is the cheapest way to fake an improvement",
+ "prose": {
+  "document": "PER_VARIABLE_PREPROCESSING_DESIGN.v2.md",
+  "sha256": "ada4ebbf371f31db4943d5e243a6f1869abaaa1d94fad07380467b52749bb11d"
+ },
+ "schema": "crispdm.per_variable_preprocessing_design.v2",
+ "status": "DRAFT_CANDIDATE_NO_SCORES_COMPUTED",
+ "supersedes": {
+  "document": "PER_VARIABLE_PREPROCESSING_DESIGN.v1.md",
+  "old_status": "SEALED_DESIGN_NO_SCORES_COMPUTED",
+  "rewritten": false,
+  "sha256": "f3ecc75ad04331f78a975752c08db698709fb7c59ceb9607f4c5d6ef5351027e",
+  "why": "a seal asserts that an EXTERNAL party fixed the document before any score could influence it. No external party had seen it. Hashing my own design establishes only that I have not changed it since. An author cannot seal his own design any more than he can review it"
+ },
+ "unit_of_analysis": {
+  "never": "1,965 variables are NOT 1,965 independent tests",
+  "outer_cluster": "panel",
+  "statistical_unit": "conceptual variable within a panel"
+ },
+ "withdrawal_conditions": [
+  "the CAUSAL_ACTIVE set falls below a pre-fixed minimum",
+  "C49 coverage stops being complete for the panels in scope",
+  "the budget ceiling cannot be met with paired arms",
+  "a candidate operator is found non-causal after the population is fixed",
+  "any batch in scope stops being EXACT"
+ ]
+}
