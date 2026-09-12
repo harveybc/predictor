@@ -1,0 +1,70 @@
+[C87.predictor.1-4] CORRECTED  replaced child directory
+     refused OPEN_VS_INVENTORY ['ctime_ns', 'inode', 'mtime_ns']
+[C87.predictor.5] CORRECTED  substitute and restore by name
+     refused ['ctime_ns']
+[C87.predictor.6] CORRECTED  listing mutated during enumeration
+     refused ENUMERATION_UNSTABLE
+[C87.predictor.7] CORRECTED  duplicate keys and NaN
+     2/2 refused
+[C87.b4.1-4] CORRECTED  replaced child directory
+     refused OPEN_VS_INVENTORY ['ctime_ns', 'inode', 'mtime_ns']
+[C87.b4.5] CORRECTED  substitute and restore by name
+     refused ['ctime_ns']
+[C87.b4.6] CORRECTED  listing mutated during enumeration
+     refused ENUMERATION_UNSTABLE
+[C87.b4.7] CORRECTED  duplicate keys and NaN
+     2/2 refused
+[C87.t2_hardened.1-4] CORRECTED  replaced child directory
+     refused OPEN_VS_INVENTORY ['ctime_ns', 'inode', 'mtime_ns']
+[C87.t2_hardened.5] CORRECTED  substitute and restore by name
+     refused ['ctime_ns']
+[C87.t2_hardened.6] CORRECTED  listing mutated during enumeration
+     refused ENUMERATION_UNSTABLE
+[C87.t2_hardened.7] CORRECTED  duplicate keys and NaN
+     2/2 refused
+[C88.one_implementation] CORRECTED  live copies identical
+     {'predictor': 'a299cf78ba9e5b64', 'b4': 'a299cf78ba9e5b64', 't2_hardened': 'a299cf78ba9e5b64'}; historical reproducer 6fe6c1ea preserved at its round-6 custody by design
+[C89.1-5] CORRECTED  stale census digest, duplicate keys, extra keys, NaN, datetime sentinel
+     16 passed in 0.46s
+[C90.real] CORRECTED  canonical census recomputed on the real lake
+     TERMINAL_POPULATION_AND_CANONICAL_CENSUS_VERIFIED layers {'DIVERGES': 0, 'INDEPENDENTLY_RECOMPUTED': 1501, 'PHYSICALLY_TYPED': 0, 'PRODUCER_DECLARED': 460, 'SEMANTICALLY_UNRESOLVED': 4, 'SOURCE_BOUND': 0}
+[C91.real] CORRECTED  the datetime sentinel is no longer measured
+     {'NON_NUMERIC': 1840, 'NUMERIC_MEASURABLE': 1501, 'SEMANTIC_TYPE_UNRESOLVED': 4}
+[T2-R25.battery] CORRECTED  gate before imports, environment guards, identity views
+     57 passed in 1.17s
+[T2-R26.divergence] NOT CORRECTED  hardened replay stopped: candidate diverges
+     1 fields: screen_adjudication.sign_test_exact_p_two_sided
+[T2-R26-R27.submission] NOT CORRECTED  hardened readjudication submission v4
+     absent
+[C93] CORRECTED  v3 disposition recorded
+     present
+[C96-C97] CORRECTED  binding v2 and DAG v4 published with real counts
+     {'bindings_established': 89, 'by_class': {'CAUSAL_ACTIVE': 89}}
+[C100-C104.battery] CORRECTED  v4 design validator, Holm, population, score refusal
+     18 passed in 0.17s
+[B4.battery] CORRECTED  focal battery at final tip
+     98 passed in 0.45s
+[predictor.battery] CORRECTED  focal battery at final tip
+     54 passed, 4 skipped in 0.65s
+[financial-data.battery] CORRECTED  focal battery at final tip
+     277 passed, 108 warnings in 22.90s
+
+=== identities ===
+  b4_v7_real: unchanged=True
+  t2_original_real: unchanged=True
+  b4_v7_private_copy: unchanged=True
+  t2_successor_private_copy: unchanged=True
+  lake_terminals: unchanged=True
+  lake_terminals_v2: unchanged=True
+  lake_terminals_v3: unchanged=True
+  FEATURE_DAG.v1.json: unchanged=True
+  FEATURE_DAG.v2.json: unchanged=True
+  FEATURE_DAG.v3.json: unchanged=True
+  PRODUCER_BINDING_MANIFEST.v1.json: unchanged=True
+  ETH_H4_TEMPORAL_CONTRACT.v1.json: unchanged=True
+  B4_V2: unchanged=True
+  B4_V3: unchanged=True
+  T2_V2: unchanged=True
+  T2_V3: unchanged=True
+
+=== POST SUMMARY: 25 checks; 2 NOT corrected ['T2-R26.divergence', 'T2-R26-R27.submission'] ===
