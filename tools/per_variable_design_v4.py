@@ -327,9 +327,17 @@ def derive_population(*, terminals_v4: Path | None, dag_v4: Path | None,
     temporal_ok = set()
     for c in temporal_contracts:
         doc = json.loads(Path(c).read_text())
-        ds = (doc.get("contract") or {}).get("dataset_id") or doc.get("dataset_id")
+        # the temporal quality contract declares its dataset under
+        # `dataset`; v1-style contracts under `availability_contract`.
+        # My first version read keys neither contract uses, so the
+        # temporal requirement was never actually evaluated.
+        ds = ((doc.get("dataset") or {}).get("dataset_id")
+              or (doc.get("availability_contract") or {}).get("dataset_id")
+              or (doc.get("contract") or {}).get("dataset_id")
+              or doc.get("dataset_id"))
         if ds:
             temporal_ok.add(ds)
+    active_ids = set(active)
     panels = {ds: len(cols) for ds, cols in active.items() if ds in temporal_ok
               and len(cols) >= MIN_VARIABLES_PER_PANEL}
     return {"state": "DERIVED",
@@ -337,6 +345,13 @@ def derive_population(*, terminals_v4: Path | None, dag_v4: Path | None,
             "census_variables_with_declared_semantics_role_unit_license": len(declared_ok),
             "causal_active_columns": sum(len(v) for v in active.values()),
             "datasets_with_temporal_quality_contract": sorted(temporal_ok),
+            "datasets_with_causal_active_columns": sorted(active_ids),
+            "datasets_with_both": sorted(active_ids & temporal_ok),
+            "unmatched": [{"dataset_id": ds,
+                           "reason": "NO_TEMPORAL_QUALITY_CONTRACT_FOR_ACTIVE_DATASET"}
+                          for ds in sorted(active_ids - temporal_ok)],
+            "matching_rule": "dataset ids must be equal; a successor is never "
+                             "mapped to the historical dataset's contract",
             "panels": panels, "panel_count": len(panels),
             "verdict": "BANK_INSUFFICIENT" if len(panels) < MIN_PANELS else "BANK_SUFFICIENT_FOR_REVIEW",
             "members": 0 if len(panels) < MIN_PANELS else sum(panels.values())}

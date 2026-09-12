@@ -105,3 +105,18 @@ def test_the_v4_score_entry_point_refuses_before_importing_anything():
             "    print(e.code_name, sorted(heavy))\n") % str(REPO / "tools")
     out = subprocess.run((sys.executable, "-c", code), capture_output=True, text=True).stdout.strip()
     assert out == f"{S.REFUSAL} []"
+
+
+def test_the_temporal_contract_dataset_id_is_read_and_a_successor_is_not_mapped(tmp_path):
+    (tmp_path / "t4").mkdir()
+    (tmp_path / "dag.json").write_text(json.dumps({"nodes": [
+        {"dataset_id": "eth.successor", "column": f"c{i}", "class": "CAUSAL_ACTIVE"} for i in range(6)]}))
+    (tmp_path / "c.json").write_text(json.dumps({"variables": []}))
+    (tmp_path / "tq.json").write_text(json.dumps({"dataset": {"dataset_id": "eth.historical"}}))
+    pop = D.derive_population(terminals_v4=tmp_path / "t4", dag_v4=tmp_path / "dag.json",
+                              temporal_contracts=[tmp_path / "tq.json"], census=tmp_path / "c.json")
+    assert pop["datasets_with_temporal_quality_contract"] == ["eth.historical"]
+    assert pop["datasets_with_both"] == []
+    assert pop["unmatched"] == [{"dataset_id": "eth.successor",
+                                 "reason": "NO_TEMPORAL_QUALITY_CONTRACT_FOR_ACTIVE_DATASET"}]
+    assert pop["verdict"] == "BANK_INSUFFICIENT"

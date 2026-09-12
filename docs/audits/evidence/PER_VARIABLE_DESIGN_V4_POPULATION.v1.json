@@ -1,0 +1,27 @@
+{
+ "population": {
+  "causal_active_columns": 89,
+  "census_variables_with_declared_semantics_role_unit_license": 0,
+  "datasets_with_both": [],
+  "datasets_with_causal_active_columns": [
+   "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1"
+  ],
+  "datasets_with_temporal_quality_contract": [
+   "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1"
+  ],
+  "matching_rule": "dataset ids must be equal; a successor is never mapped to the historical dataset's contract",
+  "members": 0,
+  "panel_count": 0,
+  "panels": {},
+  "state": "DERIVED",
+  "terminals_independently_recomputed": 1501,
+  "unmatched": [
+   {
+    "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+    "reason": "NO_TEMPORAL_QUALITY_CONTRACT_FOR_ACTIVE_DATASET"
+   }
+  ],
+  "verdict": "BANK_INSUFFICIENT"
+ },
+ "problems": []
+}
