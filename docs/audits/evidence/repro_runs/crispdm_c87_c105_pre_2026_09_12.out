@@ -1,0 +1,128 @@
+=== identities BEFORE ===
+  b4_v7_real: 9944feb340a4e2f3
+  t2_original_real: ea2a8a5da5512558
+  b4_v7_private_copy: b5ea94edd810b770
+  t2_successor_private_copy: 160e198c94a277f1
+  lake_terminals: ec303016bc85c44b
+  lake_terminals_v2: 41dfa92c00321822
+  lake_terminals_v3: f9dd5fc01f6b834d
+  FEATURE_DAG.v1.json: 4991e36862d42b8a
+  FEATURE_DAG.v2.json: 8fbe787a8b8279b5
+  FEATURE_DAG.v3.json: cf2da14190236e3e
+  PRODUCER_BINDING_MANIFEST.v1.json: 5f24ff8545f96cde
+  ETH_H4_TEMPORAL_CONTRACT.v1.json: 6e3a0c8d67dd2ec6
+  B4_SUBMISSION_V2: 8db3e1dfa19702a0
+  B4_SUBMISSION_V3: 70ac0650052f57ac
+  T2_SUBMISSION_V2: e3a36d542574d9a9
+  T2_SUBMISSION_V3: 7c1e8d0de3007f90
+
+--- copy predictor: 93e0fd89f72b
+
+=== PRE C87.predictor.1-4: child directory replaced after the root photograph ===
+  ACCEPTED_REPLACED_CHILD_DIR {'wall': 9}
+  [PRE-REPRODUCED] walk_to('cell') consumed {'wall': 9}
+
+=== PRE C87.predictor.5: child directory substituted and restored by name ===
+  [PRE-REPRODUCED] accepted after substitute-and-restore; directory ctime moved (True) and nothing compared it
+
+=== PRE C87.predictor.6: entries changed while a directory is enumerated ===
+  [PRE-REPRODUCED] snapshot accepted with files ['a.json']; directory mtime moved during enumeration and no before/after fstat was compared
+
+=== PRE C87.predictor.7: duplicate JSON keys and non-finite constants ===
+  [PRE-REPRODUCED] duplicate accepted as {'rows_used': 11}; NaN and Infinity accepted {'value': nan, 'other': inf}
+
+--- copy b4: 93e0fd89f72b
+
+=== PRE C87.b4.1-4: child directory replaced after the root photograph ===
+  ACCEPTED_REPLACED_CHILD_DIR {'wall': 9}
+  [PRE-REPRODUCED] walk_to('cell') consumed {'wall': 9}
+
+=== PRE C87.b4.5: child directory substituted and restored by name ===
+  [PRE-REPRODUCED] accepted after substitute-and-restore; directory ctime moved (True) and nothing compared it
+
+=== PRE C87.b4.6: entries changed while a directory is enumerated ===
+  [PRE-REPRODUCED] snapshot accepted with files ['a.json']; directory mtime moved during enumeration and no before/after fstat was compared
+
+=== PRE C87.b4.7: duplicate JSON keys and non-finite constants ===
+  [PRE-REPRODUCED] duplicate accepted as {'rows_used': 11}; NaN and Infinity accepted {'value': nan, 'other': inf}
+
+--- copy t2: 93e0fd89f72b
+
+=== PRE C87.t2.1-4: child directory replaced after the root photograph ===
+  ACCEPTED_REPLACED_CHILD_DIR {'wall': 9}
+  [PRE-REPRODUCED] walk_to('cell') consumed {'wall': 9}
+
+=== PRE C87.t2.5: child directory substituted and restored by name ===
+  [PRE-REPRODUCED] accepted after substitute-and-restore; directory ctime moved (True) and nothing compared it
+
+=== PRE C87.t2.6: entries changed while a directory is enumerated ===
+  [PRE-REPRODUCED] snapshot accepted with files ['a.json']; directory mtime moved during enumeration and no before/after fstat was compared
+
+=== PRE C87.t2.7: duplicate JSON keys and non-finite constants ===
+  [PRE-REPRODUCED] duplicate accepted as {'rows_used': 11}; NaN and Infinity accepted {'value': nan, 'other': inf}
+
+--- copy t2_reproducer: 93e0fd89f72b
+
+=== PRE C87.t2_reproducer.1-4: child directory replaced after the root photograph ===
+  ACCEPTED_REPLACED_CHILD_DIR {'wall': 9}
+  [PRE-REPRODUCED] walk_to('cell') consumed {'wall': 9}
+
+=== PRE C87.t2_reproducer.5: child directory substituted and restored by name ===
+  [PRE-REPRODUCED] accepted after substitute-and-restore; directory ctime moved (True) and nothing compared it
+
+=== PRE C87.t2_reproducer.6: entries changed while a directory is enumerated ===
+  [PRE-REPRODUCED] snapshot accepted with files ['a.json']; directory mtime moved during enumeration and no before/after fstat was compared
+
+=== PRE C87.t2_reproducer.7: duplicate JSON keys and non-finite constants ===
+  [PRE-REPRODUCED] duplicate accepted as {'rows_used': 11}; NaN and Infinity accepted {'value': nan, 'other': inf}
+
+=== PRE C89.1: a mutated appearance keeps its declared census digest ===
+  [PRE-REPRODUCED] MUTATED_CENSUS TERMINAL_POPULATION_AND_SOURCE_BINDING_VERIFIED features/evil.parquet
+
+=== PRE C89.2: duplicate JSON keys in a terminal and in the census ===
+  [PRE-REPRODUCED] terminal duplicate: TERMINAL_POPULATION_AND_SOURCE_BINDING_VERIFIED rows_used=11
+  [PRE-REPRODUCED] census duplicate key: TERMINAL_POPULATION_AND_SOURCE_BINDING_VERIFIED
+
+=== PRE C89.3: extra keys in appearance and variable ===
+  [PRE-REPRODUCED] extra keys accepted: TERMINAL_POPULATION_AND_SOURCE_BINDING_VERIFIED
+
+=== PRE C89.4: a non-finite JSON constant ===
+  [PRE-REPRODUCED] NaN in census accepted: TERMINAL_POPULATION_AND_SOURCE_BINDING_VERIFIED
+
+=== PRE C89.5: an int64 datetime sentinel measured as a finite number ===
+  [PRE-REPRODUCED] rows=32 why=None missing=0.0 mean=-9.223e+18 entropy=0.0
+
+=== PRE C100.1: A3 (a dimension control) sits in the family with A1, which adds no dimension ===
+  [PRE-REPRODUCED] family ['A1_VS_A0', 'A1_VS_A3', 'A2_VS_A0']
+
+=== PRE C100.2: a t interval with only three panels ===
+  [PRE-REPRODUCED] minimum_panels=3 interval='one-sided t lower bound over panel values'
+
+=== PRE C100.3: population admits variables without semantic type, unit, role, license or null policy ===
+  [PRE-REPRODUCED] population conditions never mention ['semantic', 'unit', 'role', 'license', 'sentinel']
+
+=== PRE C100.4: no exclusion of samples crossing gaps or truncated bars ===
+  [PRE-REPRODUCED] neither truncated bars nor gaps appear in the design
+
+=== PRE C100.5: Holm inversion for the bounds is not executable ===
+  [PRE-REPRODUCED] multiplicity is prose: 'HOLM over the family'
+
+=== identities AFTER ===
+  b4_v7_real: unchanged=True
+  t2_original_real: unchanged=True
+  b4_v7_private_copy: unchanged=True
+  t2_successor_private_copy: unchanged=True
+  lake_terminals: unchanged=True
+  lake_terminals_v2: unchanged=True
+  lake_terminals_v3: unchanged=True
+  FEATURE_DAG.v1.json: unchanged=True
+  FEATURE_DAG.v2.json: unchanged=True
+  FEATURE_DAG.v3.json: unchanged=True
+  PRODUCER_BINDING_MANIFEST.v1.json: unchanged=True
+  ETH_H4_TEMPORAL_CONTRACT.v1.json: unchanged=True
+  B4_SUBMISSION_V2: unchanged=True
+  B4_SUBMISSION_V3: unchanged=True
+  T2_SUBMISSION_V2: unchanged=True
+  T2_SUBMISSION_V3: unchanged=True
+
+=== PRE SUMMARY: 0 NOT reproduced ===
