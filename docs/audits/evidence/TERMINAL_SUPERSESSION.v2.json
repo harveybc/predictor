@@ -1,0 +1,14 @@
+{
+ "guarded_content_digests": {
+  "terminals": "ec303016bc85c44b1ae30ea2785621b56d51cc1af11ebebe893a93e838927eab",
+  "terminals_v2": "41dfa92c00321822356c94c74420d83ff002adc1a1d579ad8a24cce6a16f45ab"
+ },
+ "population_verdict": "TERMINAL_POPULATION_AND_SOURCE_BINDING_VERIFIED",
+ "recomputation_verdict": "INDEPENDENT_RECOMPUTATION_DIVERGES",
+ "schema": "crispdm.lake_terminal_supersession.v2",
+ "superseded_at": "2026-09-12T00:00:00Z",
+ "supersession_sha256": "5d4a442691366ea03f5301d787c01866f55c0a730651c5b2392e3fc256d2d822",
+ "v3_directory": "terminals_v3",
+ "v3_terminals_written": 1965,
+ "verification_sha256": "e1fba2b843424652ed00ea32a9ef7ad74b160394a6b05da5961951fd0e788594"
+}

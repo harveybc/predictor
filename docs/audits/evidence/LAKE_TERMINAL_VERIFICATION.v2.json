@@ -1,0 +1,547 @@
+{
+ "authority": {
+  "census_file_sha256": "818063ba501bc460182e83f1705ee4c2b6b033559e036cec92e85eb20fcad134",
+  "expected_census_sha256": "49a8813d782a0e11cfcfde3e02a946fa04883db9f4e9563dced2fa24a7a1b82d"
+ },
+ "custody": {
+  "lake_reads": 420,
+  "physical_paths": "WITHHELD",
+  "state_reads": 1966,
+  "strict_mode": false
+ },
+ "grants_nothing": "binding and recomputation are evidence a later gate may consume; neither makes a variable eligible",
+ "independence": "no producer module is imported; descriptor formulas come from lake_descriptor_recompute",
+ "population": {
+  "declared": 1965,
+  "divergence_count": 0,
+  "divergences": [],
+  "producer_declared_outcomes": {
+   "PRODUCER_DECLARED_MEASURED": 1505,
+   "PRODUCER_DECLARED_NOT_IDENTIFIABLE": 460
+  },
+  "sources_bound": 420,
+  "terminals_read": 1965,
+  "variables_source_bound": 1505,
+  "verdict": "TERMINAL_POPULATION_AND_SOURCE_BINDING_VERIFIED"
+ },
+ "recomputation": {
+  "descriptor_states": {
+   "autocorrelation_lag1": {
+    "AGREES": 1487
+   },
+   "autocorrelation_lag20": {
+    "AGREES": 1487
+   },
+   "autocorrelation_lag5": {
+    "AGREES": 1487
+   },
+   "characterization_disposition": {
+    "AGREES": 1505
+   },
+   "compressed_length_ratio": {
+    "AGREES": 1316,
+    "NOT_INDEPENDENTLY_VERIFIABLE": 171
+   },
+   "constant": {
+    "AGREES": 1487
+   },
+   "difference_to_level_dispersion": {
+    "NOT_INDEPENDENTLY_VERIFIABLE": 1487
+   },
+   "discrete_entropy_bits": {
+    "AGREES": 1315,
+    "DIVERGES": 1,
+    "NOT_INDEPENDENTLY_VERIFIABLE": 171
+   },
+   "duplicate_count": {
+    "AGREES": 1316,
+    "NOT_INDEPENDENTLY_VERIFIABLE": 189
+   },
+   "insufficient_finite_observations": {
+    "AGREES": 18
+   },
+   "iqr": {
+    "NOT_INDEPENDENTLY_VERIFIABLE": 1487
+   },
+   "mad": {
+    "NOT_INDEPENDENTLY_VERIFIABLE": 1487
+   },
+   "max": {
+    "AGREES": 1316,
+    "NOT_INDEPENDENTLY_VERIFIABLE": 171
+   },
+   "mean": {
+    "AGREES": 1316,
+    "NOT_INDEPENDENTLY_VERIFIABLE": 171
+   },
+   "median": {
+    "AGREES": 1316,
+    "NOT_INDEPENDENTLY_VERIFIABLE": 171
+   },
+   "min": {
+    "AGREES": 1316,
+    "NOT_INDEPENDENTLY_VERIFIABLE": 171
+   },
+   "missing_count": {
+    "AGREES": 1505
+   },
+   "missingness_fraction": {
+    "AGREES": 1505
+   },
+   "n_observations": {
+    "AGREES": 1505
+   },
+   "noise_estimate": {
+    "AGREES": 1487
+   },
+   "non_finite_count": {
+    "AGREES": 1505
+   },
+   "p01": {
+    "NOT_INDEPENDENTLY_VERIFIABLE": 1487
+   },
+   "p99": {
+    "NOT_INDEPENDENTLY_VERIFIABLE": 1487
+   },
+   "spectral_centroid": {
+    "NOT_INDEPENDENTLY_VERIFIABLE": 1487
+   },
+   "std": {
+    "AGREES": 1316,
+    "NOT_INDEPENDENTLY_VERIFIABLE": 171
+   },
+   "window_mean_dispersion": {
+    "NOT_INDEPENDENTLY_VERIFIABLE": 1487
+   }
+  },
+  "first_divergences": [
+   {
+    "descriptors": {
+     "autocorrelation_lag1": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": null,
+      "published_identifiable": false,
+      "reason": null,
+      "recomputed": null,
+      "recomputed_identifiable": false,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "autocorrelation_lag20": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": null,
+      "published_identifiable": false,
+      "reason": null,
+      "recomputed": null,
+      "recomputed_identifiable": false,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "autocorrelation_lag5": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": null,
+      "published_identifiable": false,
+      "reason": null,
+      "recomputed": null,
+      "recomputed_identifiable": false,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "characterization_disposition": {
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "compressed_length_ratio": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": 0.003122161671207993,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": 0.003122161671207993,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "constant": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": 1.0,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": 1.0,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "difference_to_level_dispersion": {
+      "agrees_under_declared_reading": true,
+      "layer": "SOURCE_BOUND",
+      "published": null,
+      "published_identifiable": false,
+      "reason": "degrees of freedom of both standard deviations unstated",
+      "recomputed": null,
+      "recomputed_identifiable": false,
+      "specificity": "UNDERSPECIFIED",
+      "state": "NOT_INDEPENDENTLY_VERIFIABLE"
+     },
+     "discrete_entropy_bits": {
+      "agrees_under_declared_reading": null,
+      "layer": "SOURCE_BOUND",
+      "published": null,
+      "published_identifiable": false,
+      "reason": null,
+      "recomputed": 0.0,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "DIVERGES"
+     },
+     "duplicate_count": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": 2201.0,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": 2201.0,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "iqr": {
+      "agrees_under_declared_reading": true,
+      "layer": "SOURCE_BOUND",
+      "published": 0.0,
+      "published_identifiable": true,
+      "reason": "percentile interpolation method unstated",
+      "recomputed": 0.0,
+      "recomputed_identifiable": true,
+      "specificity": "UNDERSPECIFIED",
+      "state": "NOT_INDEPENDENTLY_VERIFIABLE"
+     },
+     "mad": {
+      "agrees_under_declared_reading": true,
+      "layer": "SOURCE_BOUND",
+      "published": 0.0,
+      "published_identifiable": true,
+      "reason": "whether the consistency constant 1.4826 is applied is unstated",
+      "recomputed": 0.0,
+      "recomputed_identifiable": true,
+      "specificity": "UNDERSPECIFIED",
+      "state": "NOT_INDEPENDENTLY_VERIFIABLE"
+     },
+     "max": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": -9.223372036854776e+18,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": -9.223372036854776e+18,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "mean": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": -9.223372036854776e+18,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": -9.223372036854776e+18,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "median": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": -9.223372036854776e+18,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": -9.223372036854776e+18,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "min": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": -9.223372036854776e+18,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": -9.223372036854776e+18,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "missing_count": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": 0.0,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": 0.0,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "missingness_fraction": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": 0.0,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": 0.0,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "n_observations": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": 2202.0,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": 2202.0,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "noise_estimate": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": null,
+      "published_identifiable": false,
+      "reason": null,
+      "recomputed": null,
+      "recomputed_identifiable": false,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "non_finite_count": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": 0.0,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": 0.0,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "p01": {
+      "agrees_under_declared_reading": true,
+      "layer": "SOURCE_BOUND",
+      "published": -9.223372036854776e+18,
+      "published_identifiable": true,
+      "reason": "percentile interpolation method unstated",
+      "recomputed": -9.223372036854776e+18,
+      "recomputed_identifiable": true,
+      "specificity": "UNDERSPECIFIED",
+      "state": "NOT_INDEPENDENTLY_VERIFIABLE"
+     },
+     "p99": {
+      "agrees_under_declared_reading": true,
+      "layer": "SOURCE_BOUND",
+      "published": -9.223372036854776e+18,
+      "published_identifiable": true,
+      "reason": "percentile interpolation method unstated",
+      "recomputed": -9.223372036854776e+18,
+      "recomputed_identifiable": true,
+      "specificity": "UNDERSPECIFIED",
+      "state": "NOT_INDEPENDENTLY_VERIFIABLE"
+     },
+     "spectral_centroid": {
+      "agrees_under_declared_reading": null,
+      "layer": "SOURCE_BOUND",
+      "published": null,
+      "published_identifiable": false,
+      "reason": "frequency unit, amplitude definition and treatment of the zero frequency unstated",
+      "recomputed": "NOT_COMPUTED",
+      "recomputed_identifiable": null,
+      "specificity": "UNDERSPECIFIED",
+      "state": "NOT_INDEPENDENTLY_VERIFIABLE"
+     },
+     "std": {
+      "agrees_under_declared_reading": null,
+      "layer": "INDEPENDENTLY_RECOMPUTED",
+      "published": 0.0,
+      "published_identifiable": true,
+      "reason": null,
+      "recomputed": 0.0,
+      "recomputed_identifiable": true,
+      "specificity": "FULLY_SPECIFIED",
+      "state": "AGREES"
+     },
+     "window_mean_dispersion": {
+      "agrees_under_declared_reading": null,
+      "layer": "SOURCE_BOUND",
+      "published": 0.0,
+      "published_identifiable": true,
+      "reason": "the number of equal windows is unstated",
+      "recomputed": "NOT_COMPUTED",
+      "recomputed_identifiable": null,
+      "specificity": "UNDERSPECIFIED",
+      "state": "NOT_INDEPENDENTLY_VERIFIABLE"
+     }
+    },
+    "layer": "SOURCE_BOUND",
+    "non_finite_in_window": 0,
+    "problems": [],
+    "recomputation": "DIVERGES",
+    "variable_id": "var_47a0b32197a21af453c33c2e"
+   }
+  ],
+  "published_attempt": "crispdm-c49-2026-09-12",
+  "specificity": {
+   "autocorrelation_lag1": {
+    "declared_reading": null,
+    "level": "FULLY_SPECIFIED",
+    "reason": null
+   },
+   "autocorrelation_lag20": {
+    "declared_reading": null,
+    "level": "FULLY_SPECIFIED",
+    "reason": null
+   },
+   "autocorrelation_lag5": {
+    "declared_reading": null,
+    "level": "FULLY_SPECIFIED",
+    "reason": null
+   },
+   "characterization_disposition": {
+    "declared_reading": null,
+    "level": "FULLY_SPECIFIED",
+    "reason": null
+   },
+   "compressed_length_ratio": {
+    "declared_reading": null,
+    "level": "CONDITIONAL",
+    "reason": "whether non-finite values enter the compressed bytes is unstated"
+   },
+   "constant": {
+    "declared_reading": null,
+    "level": "FULLY_SPECIFIED",
+    "reason": null
+   },
+   "difference_to_level_dispersion": {
+    "declared_reading": "ddof=1 for both standard deviations",
+    "level": "UNDERSPECIFIED",
+    "reason": "degrees of freedom of both standard deviations unstated"
+   },
+   "discrete_entropy_bits": {
+    "declared_reading": null,
+    "level": "CONDITIONAL",
+    "reason": "non-finite handling unstated"
+   },
+   "duplicate_count": {
+    "declared_reading": null,
+    "level": "CONDITIONAL",
+    "reason": "whether NaN entries count as one distinct value is unstated"
+   },
+   "insufficient_finite_observations": {
+    "declared_reading": null,
+    "level": "FULLY_SPECIFIED",
+    "reason": null
+   },
+   "iqr": {
+    "declared_reading": "numpy linear interpolation over finite values",
+    "level": "UNDERSPECIFIED",
+    "reason": "percentile interpolation method unstated"
+   },
+   "mad": {
+    "declared_reading": "unscaled median of absolute deviations from the median",
+    "level": "UNDERSPECIFIED",
+    "reason": "whether the consistency constant 1.4826 is applied is unstated"
+   },
+   "max": {
+    "declared_reading": null,
+    "level": "CONDITIONAL",
+    "reason": "non-finite handling unstated"
+   },
+   "mean": {
+    "declared_reading": null,
+    "level": "CONDITIONAL",
+    "reason": "the contract does not say whether non-finite values are excluded"
+   },
+   "median": {
+    "declared_reading": null,
+    "level": "CONDITIONAL",
+    "reason": "non-finite handling unstated"
+   },
+   "min": {
+    "declared_reading": null,
+    "level": "CONDITIONAL",
+    "reason": "non-finite handling unstated"
+   },
+   "missing_count": {
+    "declared_reading": null,
+    "level": "FULLY_SPECIFIED",
+    "reason": null
+   },
+   "missingness_fraction": {
+    "declared_reading": null,
+    "level": "FULLY_SPECIFIED",
+    "reason": null
+   },
+   "n_observations": {
+    "declared_reading": null,
+    "level": "FULLY_SPECIFIED",
+    "reason": null
+   },
+   "noise_estimate": {
+    "declared_reading": null,
+    "level": "FULLY_SPECIFIED",
+    "reason": null
+   },
+   "non_finite_count": {
+    "declared_reading": null,
+    "level": "FULLY_SPECIFIED",
+    "reason": null
+   },
+   "p01": {
+    "declared_reading": "numpy linear interpolation over finite values",
+    "level": "UNDERSPECIFIED",
+    "reason": "percentile interpolation method unstated"
+   },
+   "p99": {
+    "declared_reading": "numpy linear interpolation over finite values",
+    "level": "UNDERSPECIFIED",
+    "reason": "percentile interpolation method unstated"
+   },
+   "spectral_centroid": {
+    "declared_reading": null,
+    "level": "UNDERSPECIFIED",
+    "reason": "frequency unit, amplitude definition and treatment of the zero frequency unstated"
+   },
+   "std": {
+    "declared_reading": null,
+    "level": "CONDITIONAL",
+    "reason": "the contract does not say whether non-finite values are excluded"
+   },
+   "window_mean_dispersion": {
+    "declared_reading": null,
+    "level": "UNDERSPECIFIED",
+    "reason": "the number of equal windows is unstated"
+   }
+  },
+  "tolerance": {
+   "counts": "exact",
+   "reals_abs": 1e-12,
+   "reals_rel": 1e-09
+  },
+  "variables_by_layer": {
+   "INDEPENDENTLY_RECOMPUTED": 1504,
+   "PRODUCER_DECLARED": 460,
+   "SOURCE_BOUND": 1
+  },
+  "variables_compared": 1965,
+  "variables_diverging": 1,
+  "verdict": "INDEPENDENT_RECOMPUTATION_DIVERGES"
+ },
+ "retired_verdict": "TERMINALS_VERIFIED_EXACT is no longer emitted: it named a recomputation that had not happened",
+ "schema": "crispdm.lake_terminal_verification.v2",
+ "verification_sha256": "e1fba2b843424652ed00ea32a9ef7ad74b160394a6b05da5961951fd0e788594"
+}
