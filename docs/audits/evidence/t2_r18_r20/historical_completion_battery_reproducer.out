@@ -1,0 +1,294 @@
+....F.....                                                               [100%]
+=================================== FAILURES ===================================
+________________________ test_omitted_mlp_seed_refuses _________________________
+
+world = (PosixPath('/tmp/pytest-of-harveybc/pytest-20/t2c900/t2_confirmatory_results_resource_successor_v1_20260909'), <module...irmatory_executor' from '~/Documents/GitHub/.runtime/am-t2-reproducer/tools/t2_confirmatory_executor.py'>)
+
+    def test_omitted_mlp_seed_refuses(world):
+        root, ex = world
+        uid, safe = _uid0(root)
+        def mut(doc):
+            res = doc["assay_record"]["rolling_origins"][
+                "origin0"]["results"]
+            ml = res["X"]["mlp_small"]
+            ml.pop(next(k for k in ml if k.startswith("seed")))
+        _rewrite_record(root, safe, mut)
+>       _expect_refusal(root, "seed|mlp|schema|does not|re-derive")
+
+tests/test_t2_completion.py:191: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_t2_completion.py:125: in _expect_refusal
+    rec.reconstruct(root)
+tools/t2_completion_reconstruction.py:142: in reconstruct
+    counts = ex.final_adjudication(rr, uids, design, authority,
+tools/t2_confirmatory_executor.py:2168: in final_adjudication
+    st, why = adjudicate_unit_deep(rr, uid, design,
+tools/t2_confirmatory_executor.py:2107: in adjudicate_unit_deep
+    verify_unit_record(srcs["RECORD"], srcs["ARRAYS"],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rec_path = (<t2_confirmatory_executor.ResultsRoot object at 0x7023a0166d20>, 'RECORD_electricity_weekly__T111.json')
+npz_path = (<t2_confirmatory_executor.ResultsRoot object at 0x7023a0166d20>, 'ARRAYS_electricity_weekly__T111.npz')
+design = {'schema': 'agent_multi.t2_screen_design.v6_resource_successor', 'sealed_after_census_manifest_sha256': '43c48f6bb513b...6aec0', 'operator': {'kind': 'ewma', 'params': {'alpha': 0.3}, 'selection_source': 'T1_v4_record_LAB_CALIBRATED'}, ...}
+authority = {'sealed_design_file_sha256': '0e0317e2de947fd49efec10e4849909e25f619174533863520301c473a81a97f', 'sealed_design_self_...97c03bec1251d86fb', 'execution_record_sha256': '4761df4a8b324442a83a0554cc53d3005025500d9e8d0c3b2272a729c9714752', ...}
+unit_y = array([42560., 43663., 45572., 44936., 43760., 44162., 43765., 43744.,
+       42925., 42323., 46663., 47325., 51921., ... 53648.,
+       51047., 50935., 52573., 50159., 45117., 43797., 44856., 44167.,
+       43017., 42417., 46103., 43221.])
+mode_expected = 'confirmatory'
+repo_root = PosixPath('~/Documents/GitHub/.runtime/am-t2-reproducer')
+
+    def verify_unit_record(rec_path, npz_path,
+                           design: dict, authority: dict = None,
+                           unit_y=None, mode_expected: str = None,
+                           repo_root: Path = None) -> dict:
+        """C49/C50/C51 (+C59): RE-DERIVE, never believe — including
+        the full v3 claim the record's attempt binds to."""
+        import t2_assay_harness as hz
+        repo_root = repo_root or conf.REPO
+        wrapper = _strict_parse(
+            _read_evidence(rec_path, "unit record"),
+            "unit record")
+        if set(wrapper) != _WRAPPER_KEYS:
+            raise ExecutorRefusal(
+                "unit record keys are not the exact v2 schema (diff: "
+                f"{sorted(set(wrapper) ^ _WRAPPER_KEYS)})")
+        for k in ("schema", "mode", "unit_id", "attempt_id",
+                  *_AUTHORITY_KEYS, "arrays_npz_sha256",
+                  "record_sha256"):
+            if type(wrapper[k]) is not str or not wrapper[k]:
+                raise ExecutorRefusal(
+                    f"unit record field {k!r} must be a nonempty "
+                    "string")
+        for k in ("unit_binding", "code_identity", "assay_record"):
+            if type(wrapper[k]) is not dict or not wrapper[k]:
+                raise ExecutorRefusal(
+                    f"unit record field {k!r} must be a nonempty "
+                    "object")
+        if type(wrapper["wall_seconds"]) not in (int, float) or \
+                isinstance(wrapper["wall_seconds"], bool) or \
+                wrapper["wall_seconds"] < 0:
+            raise ExecutorRefusal(
+                "unit record wall_seconds must be a nonnegative "
+                "number")
+        if wrapper["schema"] != \
+                "agent_multi.t2_confirmatory_unit_record.v2":
+            raise ExecutorRefusal(
+                "unit record carries a foreign schema")
+        if _self_sha(wrapper, "record_sha256") != \
+                wrapper["record_sha256"]:
+            raise ExecutorRefusal(
+                "unit record self-digest does not re-derive")
+        mode = wrapper["mode"]
+        if mode not in MODES:
+            raise ExecutorRefusal(
+                f"unit record mode {mode!r} is not a known execution "
+                "mode")
+        if mode_expected is not None and mode != mode_expected:
+            raise ExecutorRefusal(
+                f"unit record mode {mode!r} does not match the "
+                f"expected {mode_expected!r} — rehearsal records "
+                "never verify as confirmatory")
+        uid = wrapper["unit_id"]
+        import re as _re
+        if not _re.fullmatch(r"attempt_[0-9a-f]{16}",
+                             wrapper["attempt_id"]):
+            raise ExecutorRefusal(
+                "unit record attempt_id is not a canonical attempt "
+                "identifier")
+        binding = wrapper["unit_binding"]
+        if mode == "confirmatory":
+            tp = design["task_population"]
+            if uid not in set(tp["series_ids"]):
+                raise ExecutorRefusal(
+                    f"unit {uid!r} is NOT one of the sealed "
+                    "population's series — a foreign unit never "
+                    "verifies")
+            if binding != tp["unit_map"][uid]:
+                raise ExecutorRefusal(
+                    f"unit {uid!r} binding does not equal the sealed "
+                    "unit_map entry — transplanted bindings refuse")
+        else:
+            if uid not in DEV_UNITS:
+                raise ExecutorRefusal(
+                    f"unit {uid!r} is not a development unit — the "
+                    "rehearsal population is closed")
+            if set(binding) != _REHEARSAL_BINDING_KEYS:
+                raise ExecutorRefusal(
+                    "rehearsal unit binding keys are not the exact "
+                    "schema")
+            if uid in set(design["task_population"]["series_ids"]):
+                raise ExecutorRefusal(
+                    "a rehearsal record can never name a sealed-"
+                    "population series")
+        safe = _safe_name(uid)
+        if _src_name(rec_path) != f"RECORD_{safe}.json":
+            raise ExecutorRefusal(
+                f"unit record filename {_src_name(rec_path)!r} does "
+                f"not derive from its unit_id ({uid!r})")
+        if _src_name(npz_path) != f"ARRAYS_{safe}.npz":
+            raise ExecutorRefusal(
+                f"arrays filename {_src_name(npz_path)!r} does not "
+                f"derive from the unit_id ({uid!r})")
+        expected = authority if authority is not None else \
+            physical_authority(design, mode, repo_root=repo_root)
+        for k in _AUTHORITY_KEYS:
+            if wrapper[k] != expected[k]:
+                raise ExecutorRefusal(
+                    f"unit record {k} does not match the physical "
+                    "authority object — a repaired self-digest never "
+                    "converts false authority into fact")
+        physical_ci = conf.executor_code_identity(repo_root)
+        if wrapper["code_identity"] != physical_ci:
+            raise ExecutorRefusal(
+                "unit record code_identity does not match the "
+                "reviewed checkout surface — declared identities "
+                "grant nothing")
+        # C59: the claim this record's attempt binds to must verify
+        claim = verify_unit_claim(
+            _src_sibling(rec_path, f"CLAIM_{safe}.json"), design,
+            authority=expected, mode_expected=mode,
+            uid_expected=uid, repo_root=repo_root)
+        if claim["attempt_id"] != wrapper["attempt_id"]:
+            raise ExecutorRefusal(
+                "unit record does not bind this unit's claimed "
+                "attempt")
+        raw_npz = _read_evidence(npz_path, "persisted arrays")
+        if hashlib.sha256(raw_npz).hexdigest() != \
+                wrapper["arrays_npz_sha256"]:
+            raise ExecutorRefusal(
+                "persisted arrays differ from the record's digest — "
+                "swapped or edited evidence")
+        try:
+            with np.load(io.BytesIO(raw_npz),
+                         allow_pickle=False) as npz:
+                data = {k: npz[k] for k in npz.files}
+        except ExecutorRefusal:
+            raise
+        except Exception as exc:
+            raise ExecutorRefusal(
+                "persisted arrays are not a loadable pickle-free NPZ "
+                f"({type(exc).__name__}) — arbitrary bytes are never "
+                "evidence")
+        rec = wrapper["assay_record"]
+        if rec.get("unit_id") != uid:
+            raise ExecutorRefusal(
+                "assay record unit_id does not match the wrapper")
+        period = int(binding["seasonal_period"])
+        horizon = int(design["role_geometry"]["horizon"])
+        if int(rec.get("seasonal_period", -1)) != period or \
+                int(rec.get("horizon", -1)) != horizon or \
+                int(binding["horizon"]) != horizon:
+            raise ExecutorRefusal(
+                "seasonal period / horizon do not agree across "
+                "binding, design and assay record")
+        lags = int(design["role_geometry"].get("lags", hz.RIDGE_LAGS))
+        if lags != hz.RIDGE_LAGS:
+            raise ExecutorRefusal(
+                "design lag order does not match the harness")
+        arms = sorted(design["arms"])
+        models = ["ridge"] + [f"mlp_seed{s}"
+                              for s in design["seed_tape"]]
+        wins = binding["origin_windows"]
+        okeys = sorted(wins)
+        if okeys != [f"origin{i}" for i in range(len(okeys))] or \
+                len(okeys) != int(
+                    design["role_geometry"]["rolling_origins"]):
+            raise ExecutorRefusal(
+                "binding origin windows are not the sealed geometry")
+        if sorted(rec.get("rolling_origins", {})) != okeys:
+            raise ExecutorRefusal(
+                "assay record origins do not match the binding")
+        expected_arrays = {"y"}
+        for okey in okeys:
+            expected_arrays.add(f"pred__{okey}__seasonal_naive__"
+                                "baseline")
+            expected_arrays.add(f"obs__{okey}__seasonal_naive__"
+                                "baseline")
+            for arm in arms:
+                for m in models:
+                    for kind in ("pred", "obs", "fit"):
+                        expected_arrays.add(
+                            f"{kind}__{okey}__{arm}__{m}")
+        got_arrays = set(data)
+        if got_arrays != expected_arrays:
+            raise ExecutorRefusal(
+                "persisted array inventory is not exact (diff: "
+                f"{sorted(got_arrays ^ expected_arrays)[:6]})")
+        y = data["y"]
+        if y.ndim != 1 or y.dtype != np.float64 or \
+                not np.all(np.isfinite(y)):
+            raise ExecutorRefusal(
+                "persisted series y is not 1-D finite float64")
+        if int(binding["n_obs"]) != len(y):
+            raise ExecutorRefusal(
+                "persisted series length differs from the binding")
+        if bank.series_numeric_digest(y) != \
+                binding["series_numeric_sha256"]:
+            raise ExecutorRefusal(
+                "persisted series numeric digest differs from the "
+                "binding — the arrays are not this unit's series")
+        if rec.get("series_numeric_sha256") != \
+                binding["series_numeric_sha256"]:
+            raise ExecutorRefusal(
+                "assay record series digest differs from the binding")
+        if unit_y is not None and not np.array_equal(
+                y, np.asarray(unit_y, dtype=np.float64)):
+            raise ExecutorRefusal(
+                "persisted series is not byte-identical to the "
+                "physically rebuilt unit")
+        want_w = bank.origin_windows_for(
+            len(y), int(design["role_geometry"]["rolling_origins"]),
+            float(design["role_geometry"]["origin_base_frac"]),
+            seasonal_period=period, horizon=horizon)
+        if want_w != wins:
+            raise ExecutorRefusal(
+                "binding origin windows do not re-derive from the "
+                "physical series through the sealed geometry")
+        for okey in okeys:
+            o = rec["rolling_origins"][okey]
+            o_lo, o_hi = wins[okey]["score"]
+            lo_t, hi_t = 0, o_lo
+            if list(o.get("train", ())) != [lo_t, hi_t] or \
+                    list(o.get("score", ())) != [o_lo, o_hi]:
+                raise ExecutorRefusal(
+                    f"{okey}: assay windows do not equal the binding "
+                    "windows")
+            targets_idx = [t + horizon for t in
+                           range(o_lo + hz.RIDGE_LAGS, o_hi - horizon)]
+            train_idx = [t + horizon for t in
+                         range(lo_t + hz.RIDGE_LAGS, hi_t - horizon)]
+            if not targets_idx or not train_idx:
+                raise ExecutorRefusal(f"{okey}: degenerate geometry")
+            obs_want = y[targets_idx]
+            yt = y[train_idx]
+            den_want = hz._mase_denominator(y, lo_t, hi_t, period)
+            _expect_close(den_want,
+                          o.get("mase_denominator_train_snaive"),
+                          f"rolling_origins.{okey}."
+                          "mase_denominator_train_snaive")
+            ex_mask, ex_thresh = hz.train_innovation_extremes(
+                y, lo_t, hi_t, targets_idx, period)
+            _expect_close(
+                ex_thresh,
+                o.get("extreme_innovation_threshold_train"),
+                f"rolling_origins.{okey}."
+                "extreme_innovation_threshold_train")
+            snv_idx = [t - period for t in targets_idx]
+            if min(snv_idx) < 0:
+                raise ExecutorRefusal(
+                    f"{okey}: seasonal naive would read before the "
+                    "series start")
+            entries = {("seasonal_naive", "baseline"):
+                       o["results"]["seasonal_naive"]["metrics"]}
+            for arm in arms:
+                entries[(arm, "ridge")] = o["results"][arm]["ridge"]
+                for s in design["seed_tape"]:
+                    entries[(arm, f"mlp_seed{s}")] = \
+>                       o["results"][arm]["mlp_small"][f"seed{s}"]
+E                   KeyError: 'seed11'
+
+tools/t2_confirmatory_executor.py:1976: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_t2_completion.py::test_omitted_mlp_seed_refuses - KeyError:...
+1 failed, 9 passed in 1750.25s (0:29:10)
