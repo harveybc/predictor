@@ -1,0 +1,90 @@
+[C67.predictor.1-4] CORRECTED  leaf renamed and substituted with the same name, mode, length and mtime
+     refused at OPEN_VS_INVENTORY on ['ctime_ns', 'inode']
+[C67.predictor.5] CORRECTED  equal-length in-place mutation after inventory
+     refused at OPEN_VS_INVENTORY on ['ctime_ns']
+[C67.b4.1-4] CORRECTED  leaf renamed and substituted with the same name, mode, length and mtime
+     refused at OPEN_VS_INVENTORY on ['ctime_ns', 'inode']
+[C67.b4.5] CORRECTED  equal-length in-place mutation after inventory
+     refused at OPEN_VS_INVENTORY on ['ctime_ns']
+[C67.t2.1-4] CORRECTED  leaf renamed and substituted with the same name, mode, length and mtime
+     refused at OPEN_VS_INVENTORY on ['ctime_ns', 'inode']
+[C67.t2.5] CORRECTED  equal-length in-place mutation after inventory
+     refused at OPEN_VS_INVENTORY on ['ctime_ns']
+[C67.t2_reproducer.1-4] CORRECTED  leaf renamed and substituted with the same name, mode, length and mtime
+     refused at OPEN_VS_INVENTORY on ['ctime_ns', 'inode']
+[C67.t2_reproducer.5] CORRECTED  equal-length in-place mutation after inventory
+     refused at OPEN_VS_INVENTORY on ['ctime_ns']
+[C68.one_implementation] CORRECTED  the copies no longer diverge
+     {'predictor': '93e0fd89f72b2cd0', 'b4': '93e0fd89f72b2cd0', 't2': '93e0fd89f72b2cd0', 't2_reproducer': '93e0fd89f72b2cd0'}
+[C67.t2.6] CORRECTED  npz substituted between inventory and its late read (reproducer)
+     refused at OPEN_VS_INVENTORY on ['ctime_ns', 'inode']
+[C67.t2_snapshot] CORRECTED  the historical snapshot f070eeb1 is left as evidence; the corrected successor is the reproducer
+     snapshot untouched by this order; its pre-existing uncommitted edit of mine is still present: 'M tools/t2_campaign_closure.py'
+[C69.1] CORRECTED  absent source
+     TERMINAL_POPULATION_AND_SOURCE_BINDING_DIVERGES ['SOURCE_ABSENT']
+[C69.2] CORRECTED  fabricated descriptor block
+     TERMINAL_POPULATION_AND_SOURCE_BINDING_DIVERGES ['TERMINAL_MISSING', 'TERMINAL_SCHEMA']
+[C69.3] CORRECTED  a terminal declaring another variable's appearance
+     ['APPEARANCE_NOT_OWNED_BY_VARIABLE']
+[C69.4.absolute] CORRECTED  source outside the lake is never read
+     ['SOURCE_OUTSIDE_ROOT_OR_LINK']
+[C69.4.traversal] CORRECTED  source outside the lake is never read
+     ['SOURCE_OUTSIDE_ROOT_OR_LINK']
+[C69.4.symlink] CORRECTED  source outside the lake is never read
+     ['SOURCE_OUTSIDE_ROOT_OR_LINK']
+[C69.5] CORRECTED  unknown outcome, wrong type, undeclared key
+     ['TERMINAL_MISSING', 'TERMINAL_SCHEMA']
+[C69.6] CORRECTED  self-consistent substituted population
+     the census declares 353e2a55c42b1719 but the expected authority is 49a8813d782a0e11: a substituted population is refused
+[C70.real] CORRECTED  the real verdict names only what was checked
+     TERMINAL_POPULATION_AND_SOURCE_BINDING_VERIFIED / INDEPENDENT_RECOMPUTATION_DIVERGES {'INDEPENDENTLY_RECOMPUTED': 1504, 'PRODUCER_DECLARED': 460, 'SOURCE_BOUND': 1}
+[C74.1] CORRECTED  the last reaching definition governs
+     NON_CAUSAL
+[C74.2] CORRECTED  chained windows compose inclusively
+     lookback=29
+[C74.3] CORRECTED  a forward callable passed to a method is followed
+     {'apply': 'NON_CAUSAL', 'map': 'NON_CAUSAL', 'transform': 'NON_CAUSAL'}
+[C74.4] CORRECTED  constant positional indices are unresolved
+     {"df['close'].iloc[-1]": 'UNRESOLVED', "df['close'].iloc[5]": 'UNRESOLVED', "df['close'].values[-1]": 'UNRESOLVED'}
+[C74.5] CORRECTED  a nested body never binds the outer scope
+     UNRESOLVED
+[C74.6] CORRECTED  two disagreeing producers: unresolved, in any order
+     UNRESOLVED / identical across orders
+[C74.7] CORRECTED  a name-coincident producer is never CAUSAL_ACTIVE unbound
+     STATIC_CAUSAL_CANDIDATE_UNBOUND
+[C80.real] CORRECTED  published v3 counts, with no positive count manufactured
+     {'STATIC_CAUSAL_CANDIDATE_UNBOUND': 83, 'UNRESOLVED_PRODUCER_BINDING': 14}, bindings 0
+[C80.additive] CORRECTED  v1 and v2 byte-identical
+     {'FEATURE_DAG.v1.json': '4991e36862d42b8a', 'FEATURE_DAG.v2.json': '8fbe787a8b8279b5'}
+[C74-C83.battery] CORRECTED  DAG v3, v2 and temporal batteries
+     133 passed in 8.31s
+[T2-R18.no_self_authorization] CORRECTED  no readjudication record exists at the real authority root
+     authority root holds 4 records, none of them a readjudication record written by the candidate
+[T2-R20.schema_and_kind] CORRECTED  v3, with its review-record kind named
+     agent_multi.t2_readjudication_submission.v3 / ISOLATED_FIXTURE_NOT_AN_EXTERNAL_RECORD / requires EXTERNAL_READJUDICATION_REVIEW_RECORD
+[T2-R20.same_result] CORRECTED  same 242 units, effects and estimand as the historical result, or a stop
+     counts {'COMPLETED_VERIFIED': 242, 'TERMINAL_FAILED': 0}, estimand -0.001048443391358884, verdict DOES_NOT_ADVANCE
+[T2-R20.no_promotion] CORRECTED  the readjudication grants no promotion
+     grants_promotion false, retraining false, downloads false
+[T2-R17.leaf_binding_real] CORRECTED  every unit read of the real rerun was leaf-bound
+     726/726
+[T2-R20.no_paths] CORRECTED  no physical path in the submission
+     logical ids only
+[B4-R22.battery] CORRECTED  focal battery at the final tip
+     78 passed in 0.40s
+[T2-R17.battery] CORRECTED  focal battery at the final tip
+     49 passed in 0.55s
+[T2-R18-R21.battery] CORRECTED  focal battery at the final tip
+     51 passed in 0.87s
+[C68-C73.battery] CORRECTED  focal battery at the final tip
+     85 passed in 1.18s
+
+=== identities ===
+  b4_v7_real: unchanged=True
+  t2_original_real: unchanged=True
+  b4_v7_private_copy: unchanged=True
+  t2_successor_private_copy: unchanged=True
+  lake_terminals_v1: unchanged=True
+  lake_terminals_v2: unchanged=True
+
+=== POST SUMMARY: 40 checks; 0 NOT corrected  ===
