@@ -1,0 +1,170 @@
+{
+ "batch_membership": {
+  "batches": 14,
+  "integrity_states": [
+   "EXACT"
+  ],
+  "not_exact": [],
+  "per_batch": [
+   {
+    "batch_key": "batch_00000",
+    "membership_sha256": "07eb66d3975bca8f283b6db138e035bfefabeac58c99e17fe7ef6234a754b701",
+    "outcomes_json": {
+     "MEASURED": 105,
+     "NOT_IDENTIFIABLE": 45
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00001",
+    "membership_sha256": "3ed0f7ff129d13e212535bb87d0582722038453086e038d205baf46b7bd537e6",
+    "outcomes_json": {
+     "MEASURED": 112,
+     "NOT_IDENTIFIABLE": 38
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00002",
+    "membership_sha256": "33a13a832da4e8b955a5073fcab51a0d75cac12922a45644e703de0a76de5fa3",
+    "outcomes_json": {
+     "MEASURED": 107,
+     "NOT_IDENTIFIABLE": 43
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00003",
+    "membership_sha256": "ea79e4ed09a8db6a90fa1aced96acb596705fdae9d01b22e9c0e60186f18b8fe",
+    "outcomes_json": {
+     "MEASURED": 119,
+     "NOT_IDENTIFIABLE": 31
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00004",
+    "membership_sha256": "d068dcf05760de45c61b8ef38a810ebbf2deac350a852860610ec7838e9e6829",
+    "outcomes_json": {
+     "MEASURED": 117,
+     "NOT_IDENTIFIABLE": 33
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00005",
+    "membership_sha256": "0e53aad85a2380139b6361a7c35abb641c9353c28b691e4a0124b3075c8049e3",
+    "outcomes_json": {
+     "MEASURED": 115,
+     "NOT_IDENTIFIABLE": 35
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00006",
+    "membership_sha256": "2312d576561b47bc68b0f965231724260ca671d592f4026653f3dc01c5403898",
+    "outcomes_json": {
+     "MEASURED": 116,
+     "NOT_IDENTIFIABLE": 34
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00007",
+    "membership_sha256": "71c80fff5165e2ea35aad60a445b034f35797486d5f1b55b203ac73b8076a415",
+    "outcomes_json": {
+     "MEASURED": 120,
+     "NOT_IDENTIFIABLE": 30
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00008",
+    "membership_sha256": "423ce9df58aa8a6a79e5506fe8f51890628fd5957cabf72d5907e0f63ecf5abe",
+    "outcomes_json": {
+     "MEASURED": 119,
+     "NOT_IDENTIFIABLE": 31
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00009",
+    "membership_sha256": "1260e3ca7ac1bfc0aff0b5689c924530ed398bc1d13782ddc6bbbf7a901393aa",
+    "outcomes_json": {
+     "MEASURED": 121,
+     "NOT_IDENTIFIABLE": 29
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00010",
+    "membership_sha256": "577547e208ca068ca4831f9b8c728f2eedc08ff16e30bd2f4387a1026fb89320",
+    "outcomes_json": {
+     "MEASURED": 110,
+     "NOT_IDENTIFIABLE": 40
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00011",
+    "membership_sha256": "ca8a02ee9bf0138d1c2c627050814cc3d21d71ee1f87742e7c59c07c01e6a832",
+    "outcomes_json": {
+     "MEASURED": 111,
+     "NOT_IDENTIFIABLE": 39
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00012",
+    "membership_sha256": "c43a5cae845e726fddf52fbdf7dae08d7eea868bfa5a1aa2663298665e8b54cc",
+    "outcomes_json": {
+     "MEASURED": 121,
+     "NOT_IDENTIFIABLE": 29
+    },
+    "variables_declared": 150
+   },
+   {
+    "batch_key": "batch_00013",
+    "membership_sha256": "0ee5deddf5cf94f2c0b6ef5da95bd2981897f439c447a616ddd1e8c18de2c95b",
+    "outcomes_json": {
+     "MEASURED": 12,
+     "NOT_IDENTIFIABLE": 3
+    },
+    "variables_declared": 15
+   }
+  ],
+  "variables_declared_total": 1965
+ },
+ "current_view_supersession": {
+  "ambiguous_ties_today": 0,
+  "rows": 40341,
+  "v1": "public.v_variable_characterization_current \u2014 KEPT, not dropped",
+  "v2": "public.v_variable_characterization_current_v2",
+  "why": "v1 broke a tie by digest order and never said so. v2 keeps the same deterministic row and publishes currency_state, so a reader can tell a succession from a coin flip"
+ },
+ "grants_nothing": "a healthy outbox and an exact membership make the cube checkable. They confer no eligibility",
+ "observed_at": "2026-09-12T00:00:00Z",
+ "outbox_health": {
+  "attention_required": false,
+  "backlog_lag_seconds": 0.0,
+  "backlog_overdue": false,
+  "backlog_pending": 0,
+  "dead_letters_adjudicated": 16,
+  "dead_letters_total": 16,
+  "dead_letters_unadjudicated": 0,
+  "healthy": true,
+  "heartbeat_age_seconds": 0.369,
+  "max_backlog_lag_seconds": 900.0,
+  "max_heartbeat_age_seconds": 120.0,
+  "process_fresh": true
+ },
+ "outbox_taxonomy": {
+  "adjudicated_dead_letters": 16,
+  "process_fresh": true,
+  "retryable_backlog": 0,
+  "rule": "a dead letter is ADJUDICATED or SUPERSEDED, never deleted",
+  "unadjudicated_dead_letters": 0
+ },
+ "record_sha256": "11efa2dc88ee2f2485f731284d6022e539556b3cafa1d7dbe300ad58ecd2daa9",
+ "schema": "crispdm.olap_outbox_health_and_membership.v1"
+}
