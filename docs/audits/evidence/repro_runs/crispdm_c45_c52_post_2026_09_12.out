@@ -1,0 +1,54 @@
+
+=== POST 1: the terminal is adjudicated from the bytes it was hashed from ===
+  [CORRECTED] the file now reads 999999.0 on disk; the closure adjudicated 123.4 and published the digest of THOSE bytes
+
+=== POST 2: the per-bar rows are counted in the bytes that were hashed ===
+  [CORRECTED] a row-count-preserving replacement no longer reaches the adjudication; the digest is of the consumed bytes
+
+=== POST 3: the seal chain hashes what it parsed ===
+  [CORRECTED] every artifact in the sealed-cell verification comes from `custody.read`; there is no second open and no path hash
+
+=== POST 4: the partial cell is adjudicated from its inventory read ===
+  [CORRECTED] epoch 111 adjudicated from the same inventory read, never a second open
+
+=== POST 5: absence is decided from a snapshot, and says so ===
+  [CORRECTED] the classification names the snapshot it came from and publishes its digest, so a later appearance is visibly outside the run that used it
+
+=== POST 6: demand comes from configurations the entry point can execute ===
+  [CORRECTED] 137 executable configurations and 87 unreachable ones; the registry datasets are a separate universe of 97 candidate columns
+
+=== POST 7: an empty set yields NOT_APPLICABLE ===
+  [CORRECTED] the active RL set is empty, so the subset test answers NOT_APPLICABLE instead of a vacuous true
+
+=== POST 8: the grains are materialised separately ===
+  [CORRECTED] 30 unique names, 159 (dataset, column) subjects, 162 x and 162 y subjects, 2 targets
+
+=== POST 9: targets are identified and never counted as inputs ===
+  [CORRECTED] targets ['ATR', 'typical_price'] carry contract_role=target; roles present: ['input', 'label', 'target']
+
+=== POST 10: each feature carries its own graph, window and availability ===
+  [CORRECTED] 11 distinct lookbacks and 5 distinct producing files across 52 resolved columns; 45 are UNRESOLVED_PRODUCER and assert nothing
+
+=== POST 11: the lineage is derived from the producer repositories ===
+  [CORRECTED] 250 producer files parsed across 3 repositories, each bound by commit
+
+=== POST 12: every conceptual variable of the lake has a disposition ===
+  [CORRECTED] 1965/1965; outcomes {'FAILED': 0, 'MEASURED': 1505, 'NOT_IDENTIFIABLE': 460, 'UNAVAILABLE': 0}
+
+=== POST 13: the record that is scored is the record that was verified ===
+  [CORRECTED] the screen consumes `snap.record(...)` — the same bytes the pinned verifier read through the snapshot. The function calls neither the re-resolving final_adjudication() nor any file reader; reopening calls found: none
+
+=== POST 14: the identity names every file and where it came from ===
+  [CORRECTED] 10 files; 7 pinned and matching the record, 3 from the tip and declared as such
+
+=== POST 15: a dedicated battery exists for the T2 closure ===
+  [CORRECTED] test_t2_campaign_closure.py: 17 tests collected in 0.10s
+
+=== POST 16: no p-value leaves [0,1] and the table is symmetric ===
+  [CORRECTED] table [0.03125, 0.21875, 0.6875, 1.0, 0.6875, 0.21875, 0.03125]; the published 1.3125 is superseded by 1.0 and the doubled one-tail is gone from the code
+
+=== REAL EVIDENCE ROOTS ===
+  b4: unchanged=True
+  t2: unchanged=True
+
+=== POST SUMMARY: 16/16 CORRECTED; real roots untouched=True ===

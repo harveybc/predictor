@@ -150,6 +150,23 @@ def resolve(role: str, name: str, *,
                if ep.name == str(name)]
     values = sorted({ep.value for ep in matches})
     duplicate_policy, rejected = "NONE", []
+    distributions = sorted({_distribution_name(ep) for ep in matches})
+
+    # E1 (audit 2026-09-12): the policy only fired when two
+    # distributions disagreed about the VALUE. Two distributions
+    # publishing the SAME (group, name, value) left two matches and
+    # `matches[0]` was consumed — silently, and in installation order.
+    # The resolved module is usually the same file, so nothing broke;
+    # but "usually" is not a policy and the second distribution was not
+    # even recorded. Every distribution publishing the name is now
+    # bound, whether or not they agree.
+    if len(values) == 1 and len(distributions) > 1:
+        duplicate_policy = "IDENTICAL_VALUE_ALL_DISTRIBUTIONS_BOUND"
+        rejected = [{"value": values[0], "distribution": d,
+                     "note": "publishes the same value; bound, not "
+                             "discarded"}
+                    for d in distributions]
+
     if len(values) > 1:
         # An explicit, BOUND policy — never "the first one". The
         # entry-point groups here are shared with sibling applications
@@ -231,6 +248,7 @@ def resolve(role: str, name: str, *,
         "role": role,
         "duplicate_policy": duplicate_policy,
         "rejected_duplicates": rejected,
+        "publishing_distributions": distributions,
         "config_key": PLUGIN_ROLES[role][0],
         "entry_point_group": group,
         "entry_point_name": str(name),

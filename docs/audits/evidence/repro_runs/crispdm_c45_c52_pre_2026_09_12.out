@@ -1,0 +1,118 @@
+
+=== PRE 1: the B4 terminal is parsed from one open and hashed from another, so the record can describe bytes that are not on disk ===
+  every descriptor reported verified : True
+  wall_seconds the closure recorded  : 123.4
+  wall_seconds actually on disk      : 999999.0
+  [PRE-REPRODUCED] the adjudication is built from the FIRST open and every digest from a LATER one: it certifies bytes it did not consume
+
+=== PRE 2: the per-bar ledger is hashed from one open and counted from another ===
+  bytes hashed  : b'net_return\n0.1\n0.2\n'
+  bytes on disk : b'net_return\n9.9\n9.9\n'
+  closure accepted the cell : True
+  digest recorded for evidence that is no longer there : ea43c702910847d28102ae2d9ab192f2
+  [PRE-REPRODUCED] the digest check and the row count are independent opens, so a replacement that preserves the row count is consumed without any guard noticing
+
+=== PRE 3: a claim, intent or seal can be replaced between parse and hash ===
+  intent parsed at source offset : 8323
+  intent hashed at source offset : 8738  (a later, INDEPENDENT open)
+  same file opened twice         : True
+  [PRE-REPRODUCED] the seal chain parses the intent and then re-opens it to hash it; the two reads are not guaranteed to see the same bytes
+
+=== PRE 4: objects of the partial cell can change after the inventory ===
+  epoch when inventoried : 111
+  epoch adjudicated      : {'epoch_completed': 1999, 'num_timesteps': 1, 'stop_reason': 'FORGED', 'last_durable_artifact': None}
+  [PRE-REPRODUCED] the inventory hashes the artifacts and the classification then RE-READS status.json, so the adjudicated progress is not the inventoried progress
+
+=== PRE 5: an artifact created after the absence check keeps NOT_STARTED ===
+  the cell directory exists afterwards : True
+  it even carries a terminal           : True
+  its recorded classification          : NOT_STARTED
+  [PRE-REPRODUCED] absence is decided by a bare existence check, so a cell that appears afterwards keeps the classification NOT_STARTED
+
+=== PRE 6: demand is derived from a research registry, not from a consumer ===
+  registry datasets : ['ethusdt_4h_tech_stat_full_model_ready.csv', 'base_d6.csv']
+  the supervised branch consults any config : False
+  ethusdt_4h_tech_stat_full_model_ready.csv            configs= 19 with observation_contract=0
+  base_d6.csv                                          configs=  0 with observation_contract=0
+  supervised demand published        : 93
+  active RL configs                  : 0
+  [PRE-REPRODUCED] supervised demand is read straight from the registry headers without ever consulting a config, so a positive count is published while no active consumer has been demonstrated
+
+=== PRE 7: an empty RL set produces a positive subset claim ===
+  rl columns        : 0
+  subset claim      : True
+  [PRE-REPRODUCED] the empty set satisfies every subset test, so the report states a positive relation that means nothing
+
+=== PRE 8: two different grains are reported side by side as one ===
+  unique column NAMES (bridge)          : 93
+  (dataset, column) SUBJECTS (lineage)  : 97
+  recomputed: names=93 subjects=97
+  [PRE-REPRODUCED] 93 unique names and 97 (dataset, column) subjects are published without a field that distinguishes the two grains
+
+=== PRE 9: a column with neither a target declaration nor a consuming config enters as an active input ===
+  legacy view columns treated as inputs : 8
+  declared targets in the registry      : []
+  example                               : OPEN kind=OHLCV_RAW
+  [PRE-REPRODUCED] with no target metadata every column becomes an input, so a label could be consumed as a feature and nothing would say so
+
+=== PRE 10: every derived feature receives the same upstream sentence ===
+  derived features            : 88
+  DISTINCT upstream sentences : 1
+    computed inside this view's producer from the OHLCV of the same bar; the lake census does not carry it as a co
+  derived features in the resolved view : 84
+  DISTINCT availability formulas there  : 1
+  [PRE-REPRODUCED] a rolling mean, a lagged return and an externally published series all receive one generic provenance and one generic availability
+
+=== PRE 11: changing the real producer of a feature does not change its lineage ===
+  producer repositories inspected by the tool : NONE
+  node field commit                : False
+  node field function              : False
+  node field lookback              : False
+  node field shift                 : False
+  node field alignment             : False
+  node field producer_code_sha256  : False
+  [PRE-REPRODUCED] the tool never opens a producer repository, so mutating the code that computes a feature cannot change its lineage
+
+=== PRE 12: the characterization ledger ends green with 107 of 1,965 ===
+  conceptual variables attempted : 107
+  outcomes                        : {'FAILED': 0, 'MEASURED': 107, 'NOT_IDENTIFIABLE': 0, 'UNAVAILABLE': 0}
+  lake conceptual variables       : 1965
+  variables with NO outcome       : 1858
+  [PRE-REPRODUCED] every attempted subject succeeded, so the ledger reads as complete while 1,858 conceptual variables have no disposition at all
+
+=== PRE 13: a T2 record can be verified and a different one scored ===
+  final_adjudication at offset : 5628
+  RECORD re-opened by path at  : 6104
+  adjudicate_screen at         : 7286
+  verify -> reopen -> score    : True
+  [PRE-REPRODUCED] the units are verified, then EVERY record is re-opened by path to build the list that is scored
+
+=== PRE 14: the closure's own code is not part of the identity it calls reviewed ===
+  tools/t2_completion_reconstruction.py        pinned: False
+  tools/t2_campaign_closure.py                 pinned: False
+  the closure imports the reconstructor from the TIP : True
+  [PRE-REPRODUCED] the reconstruction driver and the closure itself come from the branch tip while the output is labelled a reviewed identity
+
+=== PRE 15: no dedicated battery exercises the T2 closure ===
+  test files naming t2_campaign_closure : NONE
+  [PRE-REPRODUCED] there is no battery that could make the two defects above bite
+
+=== PRE 16: T2 publishes a p-value of 1.3125 ===
+  doubled one-tail formula present : True
+  published table for 0..6 positives:
+    0 positives -> None
+    1 positives -> None
+    2 positives -> None
+    3 positives -> 1.3125  <-- outside [0,1]
+    4 positives -> 0.6875
+    5 positives -> 0.21875
+    6 positives -> 0.03125
+  value in the durable closure record : 1.3125
+  [PRE-REPRODUCED] the doubled one-tail exceeds 1 at three positives and the formula is not defined below three, so it is neither bounded nor symmetric
+
+=== REAL EVIDENCE ROOTS ===
+  b4: unchanged=True
+  t2: unchanged=True
+
+=== PRE SUMMARY: 16 items; 0 NOT reproduced ===
+Copies live under ~/.local/state/crispdm-pre-copies; every destructive step above ran on a temporary synthetic root.

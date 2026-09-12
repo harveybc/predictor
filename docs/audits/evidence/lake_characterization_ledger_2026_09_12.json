@@ -1,0 +1,24 @@
+{
+ "census_sha256": "49a8813d782a0e11cfcfde3e02a946fa04883db9f4e9563dced2fa24a7a1b82d",
+ "coverage": {
+  "complete": true,
+  "conceptual_variables_declared": 1965,
+  "conceptual_variables_with_a_terminal": 1965,
+  "physical_appearances_declared": 1680
+ },
+ "disposition_rows_loaded": 1965,
+ "emitted": 14,
+ "ledger_sha256": "a68eda0b9fd72eda5cc7b7421e7cc46e3c096bb1167f3adac5ecb54abf7cfb6d",
+ "measured_at": "2026-09-12T06:00:00Z",
+ "measurement_repeated": false,
+ "mode": "EMIT_ONLY_FROM_WRITE_ONCE_TERMINALS",
+ "outcomes": {
+  "FAILED": 0,
+  "MEASURED": 1505,
+  "NOT_IDENTIFIABLE": 460,
+  "UNAVAILABLE": 0
+ },
+ "pre_ledger_sha256": "e684b633be530cc561dc90c85820362cfe19737bec36aeb340818e3c24d70d3e",
+ "schema": "crispdm.lake_characterization_ledger.v1",
+ "terminal_attempt": "crispdm-c49-2026-09-12"
+}

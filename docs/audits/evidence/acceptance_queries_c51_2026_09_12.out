@@ -1,0 +1,25 @@
+--- 1 every census variable has a terminal disposition ---
+    ('census_variables_with_a_terminal_disposition', 1965)
+    ('disposition_measured', 1505)
+    ('disposition_not_identifiable', 460)
+--- 2 coverage by bank and state ---
+    ('FINANCIAL_DOMAIN_DEVELOPMENT_ONLY', False, 3080, 2064)
+    ('FINANCIAL_DOMAIN_DEVELOPMENT_ONLY', True, 37357, 1604)
+    ('PUBLIC_FORECASTING_EVIDENCE', False, 7, 7)
+    ('PUBLIC_FORECASTING_EVIDENCE', True, 161, 7)
+    ('SYNTHETIC_KNOWN_MECHANISM_CALIBRATION_ONLY', True, 144, 3)
+--- 3 populations kept apart ---
+    ('conceptual_variables', 1965)
+    ('physical_appearances', 1680)
+    ('census_variables_dispositioned', 1965)
+    ('earlier_run_subjects_other_namespace', 109)
+--- 4 no selection emitted ---
+    (zero rows — as required)
+--- 5 re-ingestion idempotent ---
+    (zero rows — as required)
+--- 6 audited counts conserved ---
+    ('dim_experiment', 39, 39)
+    ('fact_performance', 1404, 1404)
+    ('dim_campaign_run', 9, 8)
+    ('fact_campaign_unit', 183, 127)
+    ('fact_variable_characterization', 40749, 2988)

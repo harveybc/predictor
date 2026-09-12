@@ -353,3 +353,44 @@ def test_main_puts_construction_after_the_gate():
     build_at = src.index("predictor_plugin = classes[\"predictor\"]")
     assert gate_at < submit_return < tf_at < logging_at < build_at, (
         "everything that executes must sit after the SUBMIT_ONLY exit")
+
+
+# ================================================================== E1
+def test_identical_duplicate_entry_points_bind_every_distribution():
+    """E1 (audit 2026-09-12): when two distributions publish the SAME
+    (group, name, value), `matches[0]` used to win in installation
+    order and the second distribution was never recorded."""
+    w = pr.resolve("optimizer", "default_optimizer")
+    if len(w["publishing_distributions"]) < 2:
+        pytest.skip("only one distribution publishes this name here")
+    assert w["duplicate_policy"] == \
+        "IDENTICAL_VALUE_ALL_DISTRIBUTIONS_BOUND"
+    assert len(w["rejected_duplicates"]) == \
+        len(w["publishing_distributions"])
+    for d in w["rejected_duplicates"]:
+        assert "bound, not discarded" in d["note"]
+
+
+def test_the_witness_does_not_depend_on_installation_order(monkeypatch):
+    """Reverse the order the registry returns and demand the same
+    witness — or a refusal, never a different silent answer."""
+    class EP:
+        def __init__(self, name, value, dist):
+            self.name, self.value = name, value
+            self.dist = type("D", (), {"name": dist})()
+
+    forward = [EP("ann", "predictor_plugins.predictor_plugin_ann:Plugin",
+                  "predictor"),
+               EP("ann", "predictor_plugins.predictor_plugin_ann:Plugin",
+                  "agent-multi")]
+    seen = []
+    for order in (forward, list(reversed(forward))):
+        monkeypatch.setattr(pr, "_installed_entry_points",
+                            lambda group, _o=order: list(_o))
+        w = pr.resolve("predictor", "ann")
+        seen.append((w["entry_point_value"], w["origin_id"],
+                     tuple(w["publishing_distributions"])))
+    assert seen[0] == seen[1], (
+        "the witness must not depend on which distribution the "
+        "registry happens to list first")
+    assert seen[0][2] == ("agent-multi", "predictor")
