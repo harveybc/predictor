@@ -52,10 +52,24 @@ class ConsumedSubjectsRefusal(SystemExit):
         super().__init__(f"REFUSED: {msg}")
 
 
-def subject_id(dataset_id: str, column: str) -> str:
-    """Stable logical id. The physical path is never part of it,
-    so relocating a file does not rename a variable."""
-    return (f"{dataset_id}::{column}")
+def subject_id(dataset_id: str, column: str, *,
+               side: str = "x", contract_role: str = "input") -> str:
+    """Stable logical id over (dataset, side, contract role, column).
+
+    C33 (order 2026-09-11): it used to be `dataset::column`, and the
+    y-side builder skipped any column whose NAME already appeared on
+    x. A file with a column `SAME` on both sides therefore produced
+    ONE subject, labelled x — the y-side subject simply did not exist,
+    so a review of "every consumed subject" covered an input and
+    silently omitted the label that shared its name.
+
+    Side and role are part of the identity because they are part of
+    what the subject IS: the same column consumed as an input and as a
+    target are two different things to review. The physical PATH is
+    still never part of it, so relocating a file does not rename a
+    variable.
+    """
+    return f"{dataset_id}::{side}::{contract_role}::{column}"
 
 
 def sha256_file(path: Path, chunk: int = 1 << 20) -> str:
@@ -140,23 +154,52 @@ def code_identity(repo_root: Path, files: list[str],
             "entry_point": f"{info['entry_point_group']}:"
                            f"{info['entry_point_name']}",
             "entry_point_value": info["entry_point_value"],
+            "resolution_source": info.get("resolution_source",
+                                          "UNAVAILABLE"),
             "sha256": sha256_file(origin)})
+    for ext in external_distributions():
+        inventory.append({"kind": "external", **ext})
     digest = hashlib.sha256(json.dumps(
         inventory, sort_keys=True).encode()).hexdigest()
     return digest, inventory
 
 
-# C20: the code identity must cover the graph that actually
-# consumes the data, not four gate files. The static core is
-# listed here; the plugin modules are resolved from the entry
-# points the run will really load, and hashed by their file
-# bytes.
+# C32 (order 2026-09-11): the code identity covers the COMPLETE local
+# surface, not a list of twelve files.
+#
+# The audit's counterexample was exact: mutating
+# `predictor_plugins/common/base.py` changed training and did not
+# change the digest, because only the entry point's own file was
+# hashed and nothing it imports was. Chasing the import graph is one
+# answer; a COMPLETE, FINITE local surface is the other, and it is the
+# one that cannot be fooled by a conditional or dynamic import.
+#
+# So every `.py` under the packages a run can execute is bound, plus
+# the packaging metadata that decides which entry point resolves where.
+# 128 files at the time of writing; hashing them costs milliseconds.
+LOCAL_PACKAGES = (
+    "app",
+    "eligibility",
+    "olap",
+    "predictor_plugins",
+    "pipeline_plugins",
+    "preprocessor_plugins",
+    "target_plugins",
+    "optimizer_plugins",
+)
+
+#: files outside a package that still decide what runs.
+LOCAL_ROOT_FILES = ("setup.py",)
+
+#: kept for readers of the pre-C32 identity: the twelve modules the
+#: old digest covered. The surface below is a strict superset.
 CONSUMING_CODE = (
     "app/main.py",
     "app/config.py",
     "app/config_merger.py",
     "app/config_handler.py",
     "app/plugin_loader.py",
+    "app/plugin_resolver.py",
     "app/data_handler.py",
     "app/data_processor.py",
     "eligibility/gate.py",
@@ -166,16 +209,60 @@ CONSUMING_CODE = (
     "eligibility/strict.py",
 )
 
-# The plugin roles a run resolves through entry points, and the
-# config key that names each one.
-PLUGIN_ROLES = {
-    "predictor": ("plugin", "predictor.plugins"),
-    "optimizer": ("optimizer_plugin", "optimizer.plugins"),
-    "pipeline": ("pipeline_plugin", "pipeline.plugins"),
-    "preprocessor": ("preprocessor_plugin",
-                     "preprocessor.plugins"),
-    "target": ("target_plugin", "target.plugins"),
-}
+#: external distributions whose behaviour a run depends on. Hashing one
+#: wrapper file would not cover TensorFlow, so these are recorded by
+#: distribution name, version and logical location instead — an honest
+#: weaker binding, named as such, rather than a strong-looking one that
+#: covers nothing.
+EXTERNAL_DISTRIBUTIONS = (
+    "tensorflow", "keras", "numpy", "pandas", "scikit-learn",
+    "scipy", "deap", "neat-python", "sqlalchemy", "psycopg2-binary",
+)
+
+
+def local_code_surface(repo_root: Path) -> list[str]:
+    """Every local `.py` a run could execute, repo-relative, sorted."""
+    repo_root = Path(repo_root)
+    out: set[str] = set()
+    for pkg in LOCAL_PACKAGES:
+        base = repo_root / pkg
+        if not base.is_dir():
+            continue
+        for f in base.rglob("*.py"):
+            if "__pycache__" in f.parts:
+                continue
+            out.add(str(f.relative_to(repo_root)))
+    for rel in LOCAL_ROOT_FILES:
+        if (repo_root / rel).is_file():
+            out.add(rel)
+    if not out:
+        raise CodeIdentityRefusal(
+            f"no local code surface found under {repo_root} — an "
+            "identity over nothing is not an identity")
+    return sorted(out)
+
+
+def external_distributions() -> list[dict]:
+    """Name, version and logical location of the external libraries.
+
+    A digest is not claimed: hashing a package's whole tree on every
+    run would be dishonest about what was verified. What IS claimed is
+    exactly what is recorded — which distribution, which version, and
+    where it was resolved from.
+    """
+    from importlib import metadata
+    out = []
+    for name in sorted(EXTERNAL_DISTRIBUTIONS):
+        try:
+            dist = metadata.distribution(name)
+            version = dist.version
+            location = str(dist.locate_file(""))
+        except Exception:                       # noqa: BLE001
+            version, location = "NOT_INSTALLED", "UNAVAILABLE"
+        out.append({"distribution": name, "version": version,
+                    "location": location,
+                    "binding": "NAME_VERSION_LOCATION_ONLY"})
+    return out
 
 
 class CodeIdentityRefusal(SystemExit):
@@ -186,55 +273,13 @@ class CodeIdentityRefusal(SystemExit):
 def resolve_plugin_modules(config: dict) -> dict:
     """Resolve each plugin role to the FILE that will be loaded.
 
-    Uses the same entry-point registry the run uses, so the
-    identity follows the real resolution rather than a guess. A
-    role that is declared but cannot be resolved or hashed
-    refuses, because an unlocatable module cannot be reviewed.
+    C31: this delegates to the ONE resolver the executor also uses, so
+    the identity can no longer describe a different plugin from the one
+    that runs. It used to look the predictor up under the legacy key
+    `plugin` while `app/main.py` read `predictor_plugin`.
     """
-    from importlib import metadata
-    resolved = {}
-    for role, (config_key, group) in sorted(
-            PLUGIN_ROLES.items()):
-        name = config.get(config_key)
-        if not name:
-            continue
-        found = None
-        try:
-            eps = metadata.entry_points(group=group)
-        except TypeError:                       # older API
-            eps = metadata.entry_points().get(group, [])
-        for ep in eps:
-            if ep.name == str(name):
-                found = ep
-                break
-        if found is None:
-            raise CodeIdentityRefusal(
-                f"{role}: entry point {name!r} is not registered "
-                f"in group {group!r} — a plugin that cannot be "
-                "resolved cannot be reviewed")
-        module_name = found.value.split(":")[0]
-        try:
-            import importlib.util as _ilu
-            spec = _ilu.find_spec(module_name)
-        except (ImportError, ValueError,
-                ModuleNotFoundError) as exc:
-            raise CodeIdentityRefusal(
-                f"{role}: module {module_name!r} could not be "
-                f"located ({exc.__class__.__name__})")
-        if spec is None or not spec.origin:
-            raise CodeIdentityRefusal(
-                f"{role}: module {module_name!r} has no file "
-                "origin — it cannot be hashed, so it cannot be "
-                "reviewed")
-        resolved[role] = {
-            "config_key": config_key,
-            "entry_point_group": group,
-            "entry_point_name": str(name),
-            "entry_point_value": found.value,
-            "module": module_name,
-            "origin": spec.origin,
-        }
-    return resolved
+    from app.plugin_resolver import resolve_all
+    return resolve_all(config, code_root=CODE_ROOT)
 
 
 def resolve_consumed_subjects(config: dict, *,
@@ -323,48 +368,89 @@ def resolve_consumed_subjects(config: dict, *,
         partitions[base_role]["x_file"]))
     target = config.get("target_column")
     subjects, excluded = [], []
-    # C18: a target that lives on the y side is a subject too,
-    # and it is named as such rather than assumed to be a column
-    # of x.
-    y_only = []
-    for role in sorted(y_headers):
-        for column in y_headers[role]:
-            if column in base or column in NON_FEATURE_COLUMNS:
-                continue
-            if column not in y_only:
-                y_only.append(column)
-    for column in base:
-        if not column.strip():
+
+    # C33: the schema of EACH side must be constant across the
+    # partitions. Train, validation and test are the same contract
+    # observed three times; a column that exists in one and not
+    # another is not a partition, it is two datasets sharing a name.
+    for side, per_role in (("x", headers), ("y", y_headers)):
+        shapes = {r: tuple(per_role[r]) for r in sorted(per_role)}
+        distinct = sorted(set(shapes.values()))
+        if len(distinct) > 1:
+            differing = {r: list(v) for r, v in shapes.items()}
             raise ConsumedSubjectsRefusal(
-                "the consumed schema contains an unnamed column "
-                "— a column without an identity cannot be "
-                "reviewed")
-        if column in NON_FEATURE_COLUMNS:
-            excluded.append({"column": column,
-                             "reason": "ROW_IDENTIFIER"})
-            continue
-        role = "target" if column == target else "input"
-        subjects.append({
-            "subject_id": subject_id(dataset_id, column),
-            "column": column,
-            "dataset_id": dataset_id,
-            "contract_role": role,
-        })
+                f"the {side} schema differs across partitions — "
+                f"{ {r: len(v) for r, v in differing.items()} } columns "
+                "per role. Train, validation and test must observe the "
+                "SAME contract, or a model is fitted and scored on "
+                "different variables")
 
     dataset_id_y = _dataset_id(
         config, Path(partitions[base_role].get("y_file")
                      or partitions[base_role]["x_file"]))
-    for column in y_only:
-        subjects.append({
-            "subject_id": subject_id(dataset_id_y, column),
-            "column": column,
-            "dataset_id": dataset_id_y,
-            "contract_role": ("target"
-                              if column == target else "label"),
-            "side": "y",
-        })
+
+    # C33: both sides build subjects INDEPENDENTLY. The old builder
+    # skipped a y column whose name already appeared on x, so a column
+    # present on both sides produced only its x subject.
+    y_columns: list[str] = []
+    for role in sorted(y_headers):
+        for column in y_headers[role]:
+            if column not in y_columns:
+                y_columns.append(column)
+
+    for side, columns, ds in (("x", list(base), dataset_id),
+                              ("y", y_columns, dataset_id_y)):
+        for column in columns:
+            if not column.strip():
+                raise ConsumedSubjectsRefusal(
+                    "the consumed schema contains an unnamed column "
+                    "— a column without an identity cannot be "
+                    "reviewed")
+            if column in NON_FEATURE_COLUMNS:
+                excluded.append({"column": column, "side": side,
+                                 "reason": "ROW_IDENTIFIER"})
+                continue
+            if column == target:
+                role = "target"
+            else:
+                role = "input" if side == "x" else "label"
+            subjects.append({
+                "subject_id": subject_id(ds, column, side=side,
+                                         contract_role=role),
+                "column": column,
+                "dataset_id": ds,
+                "contract_role": role,
+                "side": side,
+            })
+
+    # C33: a declared target must exist exactly where the contract
+    # says it does. A target nobody can find is not a contract.
+    if target:
+        found = sorted({s["side"] for s in subjects
+                        if s["contract_role"] == "target"})
+        if not found:
+            raise ConsumedSubjectsRefusal(
+                f"the declared target {target!r} appears on neither "
+                "the x nor the y side of any partition — a target that "
+                "is not in the data is not a contract")
+        declared_side = config.get("target_side")
+        if declared_side and declared_side not in found:
+            raise ConsumedSubjectsRefusal(
+                f"the contract declares the target on side "
+                f"{declared_side!r} but {target!r} was found on "
+                f"{found}")
+
+    # C33: zero subject_id collisions. Two subjects sharing an id
+    # would make one of them invisible to review.
+    seen: dict[str, dict] = {}
     for sub in subjects:
-        sub.setdefault("side", "x")
+        clash = seen.get(sub["subject_id"])
+        if clash is not None:
+            raise ConsumedSubjectsRefusal(
+                f"subject id collision on {sub['subject_id']!r}: "
+                f"{clash} and {sub} — one of them would be invisible "
+                "to a review")
+        seen[sub["subject_id"]] = sub
 
     if not subjects:
         raise ConsumedSubjectsRefusal(
@@ -406,7 +492,7 @@ def resolve_consumed_subjects(config: dict, *,
 
     plugins = resolve_plugin_modules(config)
     code_digest, code_inventory = code_identity(
-        CODE_ROOT, list(CONSUMING_CODE), plugins)
+        CODE_ROOT, local_code_surface(CODE_ROOT), plugins)
 
     resolved = {
         "dataset_id": dataset_id,

@@ -186,9 +186,14 @@ def test_no_data_consuming_call_precedes_the_gate():
 def test_subjects_are_derived_from_the_consumed_headers(world):
     tmp, config = world
     consumed = resolve_consumed_subjects(config, repo_root=tmp)
+    # C33: a subject is (dataset, side, contract_role, column), so the
+    # declared target is a TARGET subject and not an input that happens
+    # to share the name.
     assert consumed["subject_ids"] == sorted([
-        subject_id(consumed["dataset_id"], "typical_price"),
-        subject_id(consumed["dataset_id"], "volume")])
+        subject_id(consumed["dataset_id"], "typical_price",
+                   side="x", contract_role="target"),
+        subject_id(consumed["dataset_id"], "volume",
+                   side="x", contract_role="input")])
     assert [c["column"] for c in consumed["excluded_columns"]] \
         == ["DATE_TIME"]
     assert consumed["digests"]["data"] != \

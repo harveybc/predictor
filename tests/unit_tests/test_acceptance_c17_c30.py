@@ -16,6 +16,17 @@ from pathlib import Path
 
 import pytest
 
+#: C39: a descriptor row must bind the bytes it measured, so
+#: every characterization fixture now carries a binding.
+C39_BINDING = {
+    "source_id": "fixture.csv", "source_sha256": "a" * 64,
+    "window_sha256": "b" * 64, "window_contract": "all rows",
+    "code_identity": "c" * 64,
+    "protocol_version": "crispdm.characterization_protocol.v2",
+    "side": "x", "contract_role": "input", "units": "u",
+    "terminal_attempt": "acceptance-fixture",
+}
+
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
@@ -163,10 +174,10 @@ def test_4_the_optimizer_cannot_change_data_target_or_plugins():
 def test_5_changing_a_plugin_changes_the_code_digest(run_world):
     tmp, config = run_world
     a = resolve_consumed_subjects(
-        dict(config, plugin="ann",
+        dict(config, predictor_plugin="ann",
              pipeline_plugin="stl_pipeline"), repo_root=tmp)
     b = resolve_consumed_subjects(
-        dict(config, plugin="ann",
+        dict(config, predictor_plugin="ann",
              pipeline_plugin="default_pipeline"), repo_root=tmp)
     assert a["digests"]["code"] != b["digests"]["code"]
 
@@ -270,9 +281,11 @@ def test_9_a_new_census_versions_and_a_repeat_does_not(
         throwaway_db):
     from sqlalchemy import text
 
-    def index(digest):
+    def index(digest, indexed_at="2026-09-10T00:00:00Z"):
         return {"schema": "crispdm.bank_index.v1",
                 "index_sha256": "i" * 64,
+                # C38: the artifact's own chronology, not the load time
+                "indexed_at": indexed_at,
                 "banks": {"financial_domain": {
                     "authority_class": ir.__dict__.get(
                         "X", "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY"),
@@ -292,7 +305,11 @@ def test_9_a_new_census_versions_and_a_repeat_does_not(
         assert c.execute(text(
             "select count(*) from dim_lake_appearance"
         )).scalar() == 1
-    ir.load_index(throwaway_db, index("2" * 64))
+    # C38: a NEW census is a LATER observation. Loading it with the
+    # same indexed_at would make the two branches incomparable, and
+    # the view now says so instead of picking one silently.
+    ir.load_index(throwaway_db,
+                  index("2" * 64, indexed_at="2026-09-11T00:00:00Z"))
     with throwaway_db.connect() as c:
         assert c.execute(text(
             "select count(*) from dim_lake_appearance"
@@ -300,10 +317,23 @@ def test_9_a_new_census_versions_and_a_repeat_does_not(
         assert c.execute(text(
             "select count(*) from v_lake_appearance_current"
         )).scalar() == 1
-        current = c.execute(text(
-            "select physical_sha256 from "
-            "v_lake_appearance_current")).scalar()
+        current, currency = c.execute(text(
+            "select physical_sha256, currency_state from "
+            "v_lake_appearance_current")).first()
     assert current.startswith("2")
+    assert currency == "UNAMBIGUOUS"
+
+    # ...and re-importing an OLDER census does not resurrect it.
+    ir.load_index(throwaway_db,
+                  index("3" * 64, indexed_at="2026-01-01T00:00:00Z"))
+    with throwaway_db.connect() as c:
+        assert c.execute(text(
+            "select count(*) from dim_lake_appearance"
+        )).scalar() == 3, "every version is kept"
+        assert c.execute(text(
+            "select physical_sha256 from v_lake_appearance_current"
+        )).scalar().startswith("2"), (
+            "re-importing an older census must not make it current")
 
 
 # 10 -----------------------------------------------------------
@@ -332,12 +362,15 @@ def test_10_the_cube_keeps_its_history():
     assert exp == 39
     assert perf == 1404
     assert units >= 120, "the 120 existing units must survive"
-    # the 60 translated and 60 producer-verified rows survive;
-    # runs born at a producer terminal are a THIRD provenance and
-    # are never counted among the translated
-    assert states.get("TRANSLATED_SUMMARY_NON_AUTHORITATIVE") \
-        == 60
-    assert states.get("PRODUCER_VERIFIED") == 60
+    # These are FLOORS, not equalities. The cube is fed continuously,
+    # so a frozen count is a test that breaks every time the system
+    # does its job — and C35 deliberately lets a second attempt of an
+    # experiment land, which is exactly what raised the translated
+    # count from 60 to 61 when the historical dead-letter was
+    # adjudicated and carried. What must never happen is a row
+    # DISAPPEARING, and that is what is asserted.
+    assert states.get("TRANSLATED_SUMMARY_NON_AUTHORITATIVE", 0) >= 60
+    assert states.get("PRODUCER_VERIFIED", 0) >= 60
     assert states.get(ce.PRODUCER_EMITTED, 0) >= 1
 
 
@@ -392,7 +425,7 @@ def test_12c_noise_is_only_reported_where_identifiable():
         [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
         variable_id="v", partition_key="p",
         bank_authority=ch.BANK_FINANCIAL,
-        measured_at="2026-09-10T00:00:00Z",
+        measured_at="2026-09-10T00:00:00Z", binding=C39_BINDING,
         noise_reference=None)
     noise = [r for r in rows if r["descriptor"] ==
              "noise_estimate"]
@@ -404,7 +437,7 @@ def test_12d_descriptors_never_overclaim():
     rows = ch.characterize_series(
         list(range(64)), variable_id="v", partition_key="p",
         bank_authority=ch.BANK_SYNTHETIC,
-        measured_at="2026-09-10T00:00:00Z")
+        measured_at="2026-09-10T00:00:00Z", binding=C39_BINDING)
     by = {r["descriptor"]: r for r in rows}
     assert "NOT an information content" in \
         by["compressed_length_ratio"]["descriptor_contract"]
@@ -423,4 +456,4 @@ def test_12e_an_unknown_bank_refuses():
         ch.characterize_series(
             [1.0, 2.0, 3.0], variable_id="v",
             partition_key="p", bank_authority="SOME_NEW_BANK",
-            measured_at="2026-09-10T00:00:00Z")
+            measured_at="2026-09-10T00:00:00Z", binding=C39_BINDING)

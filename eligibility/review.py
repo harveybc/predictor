@@ -55,9 +55,18 @@ _SUBMISSION_KEYS = {
     "schema", "submitted_at", "submitter", "scope",
     "manifest_sha256", "census_sha256", "code_digest",
     "partitions_digest", "data_digest", "schema_digest",
-    "dataset_id", "subject_ids", "grants_nothing",
+    "dataset_id", "subject_ids", "subjects", "grants_nothing",
     "submission_sha256",
 }
+
+#: C33: a subject is an OBJECT. A bare id string cannot say which side
+#: of the contract a column is consumed on or what role it plays, so a
+#: reviewer reading a list of strings has to guess — and an id is only
+#: unambiguous because those facts were folded into it.
+_SUBJECT_KEYS = {"subject_id", "column", "dataset_id",
+                 "contract_role", "side"}
+_SIDES = ("x", "y")
+_ROLES = ("input", "label", "target")
 _RECORD_KEYS = {
     "schema", "reviewed_at", "reviewer", "scope",
     "reviewed_submission_sha256", "reviewed_manifest_sha256",
@@ -98,6 +107,9 @@ def build_submission(*, submitted_at: str, submitter: str,
         "schema_digest": d["schema"],
         "dataset_id": consumed["dataset_id"],
         "subject_ids": list(consumed["subject_ids"]),
+        "subjects": [{k: sub[k] for k in sorted(_SUBJECT_KEYS)}
+                     for sub in sorted(consumed["subjects"],
+                                       key=lambda s: s["subject_id"])],
         "grants_nothing":
             "a submission states what was consumed and asks for "
             "a decision; it is not a decision, and the gate "
@@ -125,6 +137,44 @@ def verify_submission(doc: dict) -> dict:
     if not doc["subject_ids"]:
         raise ReviewAuthorityRefusal(
             "a submission with no subjects asks for nothing")
+    # C33: the objects and the ids must describe the SAME set, each
+    # object must be the exact schema, and its id must re-derive from
+    # its own fields — otherwise the two lists could drift and a
+    # reviewer would not know which one was authoritative.
+    subjects = doc["subjects"]
+    if not isinstance(subjects, list) or not subjects:
+        raise ReviewAuthorityRefusal(
+            "a submission must carry subject OBJECTS, not only ids")
+    seen = set()
+    for sub in subjects:
+        if not isinstance(sub, dict) or set(sub) != _SUBJECT_KEYS:
+            raise ReviewAuthorityRefusal(
+                f"submission.subjects entry is not the exact schema "
+                f"(diff: "
+                f"{sorted(set(sub) ^ _SUBJECT_KEYS) if isinstance(sub, dict) else sub})")
+        if sub["side"] not in _SIDES:
+            raise ReviewAuthorityRefusal(
+                f"submission subject side {sub['side']!r} is not one "
+                f"of {list(_SIDES)}")
+        if sub["contract_role"] not in _ROLES:
+            raise ReviewAuthorityRefusal(
+                f"submission subject role {sub['contract_role']!r} is "
+                f"not one of {list(_ROLES)}")
+        expected = (f"{sub['dataset_id']}::{sub['side']}::"
+                    f"{sub['contract_role']}::{sub['column']}")
+        if sub["subject_id"] != expected:
+            raise ReviewAuthorityRefusal(
+                f"submission subject id {sub['subject_id']!r} does not "
+                f"re-derive from its own fields ({expected!r})")
+        if sub["subject_id"] in seen:
+            raise ReviewAuthorityRefusal(
+                f"submission carries {sub['subject_id']!r} twice")
+        seen.add(sub["subject_id"])
+    if seen != set(doc["subject_ids"]):
+        raise ReviewAuthorityRefusal(
+            "submission.subjects and submission.subject_ids describe "
+            "different sets — one of them would be the real contract "
+            "and nothing says which")
     if _self_sha(doc, "submission_sha256") != \
             doc["submission_sha256"]:
         raise ReviewAuthorityRefusal(

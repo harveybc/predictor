@@ -1,0 +1,76 @@
+
+=== PRE 1: predictor_plugin="cnn" + plugin="ann": CNN runs, C20 records ANN ===
+  identity looks the predictor up under 'plugin' : True
+  executor selects it with 'predictor_plugin'    : True
+  identity records                              : {"predictor": "ann"}
+  [PRE-REPRODUCED] the executor would train CNN while the identity records ANN
+
+=== PRE 2: mutating predictor_plugins/common/base.py leaves C20 unchanged ===
+  modules in the PRE identity: 12
+  covers predictor_plugins/common/base.py: False
+  [PRE-REPRODUCED] the identity covers 12 files and not the shared modules the executed plugin imports
+
+=== PRE 3: a clean checkout without predictor.egg-info fails the C20 tests ===
+  the PRE checkout carries its own egg-info : False
+  entry points visible from the PRE checkout: 0
+  [PRE-REPRODUCED] the PRE checkout has NO egg-info of its own, so its plugin resolution depends on a DIFFERENT checkout being installed
+
+=== PRE 4: the same column SAME on x and y produces only the x subject ===
+    side=x column=SAME id=x_test.csv::SAME
+    side=x column=f1 id=x_test.csv::f1
+    side=y column=TARGET id=y_test.csv::TARGET
+  [PRE-REPRODUCED] the y-side subject for a column that also exists on x is simply absent
+
+=== PRE 5: a y schema that differs across partitions is accepted ===
+  outcome: ACCEPTED
+  [PRE-REPRODUCED] train/validation/test may carry different y schemas and the gate says nothing
+
+=== PRE 6: a FAILED run then a COMPLETE run of one campaign: the second refuses ===
+  dim_campaign freezes result_class/design/code : True
+  a per-run dimension exists                    : False
+  the live consequence on disk: REFUSED: campaign_key 'predictor_run' already exists with a DIFFERENT identity (differing: ['run_id']) — a logical id is
+  [PRE-REPRODUCED] the campaign dimension freezes execution facts, so a second legitimate attempt collides with its own first
+
+=== PRE 7: loading a NEW observation then an OLD one makes the OLD current ===
+  `current` views ordered by loaded_at DESC : 4
+  any artifact chronology column           : False
+  [PRE-REPRODUCED] `current` means the latest LOAD, so re-importing an old census today supersedes a newer observation
+
+=== PRE 8: a characterization of other bytes with the same descriptor collides ===
+  the PRE observation identity is built from:
+    variable_id: True
+    partition_key: True
+    descriptor: True
+    value_text: True
+    contract: True
+    bank: True
+    source_sha256: False
+    window: False
+    code_identity: False
+  [PRE-REPRODUCED] the identity omits the data, so two different files with the same descriptive number are ONE observation
+
+=== PRE 9: an intermediate NaN removes a position and changes lag 1 ===
+  clean acf1, holed acf1, clean spectrum, holed spectrum:
+    0.9512842116128337 0.9508066412192651 0.050000000000010786 0.07738900452992468
+  [PRE-REPRODUCED] one NaN shifts the reported lag-1 autocorrelation AND a spectrum is still computed over a compacted axis
+
+=== PRE 10: DATE_TIME enters C30 as a numeric variable ===
+  columns taken by POSITION (header[:limit]) : True
+  any temporal exclusion in the driver       : False
+  [PRE-REPRODUCED] the first N columns are measured by position, so a timestamp gets a mean, an entropy and a spectrum
+
+=== PRE 11: an outbox failure leaves no gap file: results_dir was None ===
+  results_dir read EAGERLY at the call site : True
+  read lazily                               : False
+  the run sets it LATER in the body         : True
+  the gap file has ONE fixed name           : True
+  [PRE-REPRODUCED] results_dir is captured as None before the body runs, so an outbox failure writes the gap nowhere; and the fixed filename would let a second run erase the first
+
+=== PRE 12: the heartbeat stays healthy=false on a known dead-letter and does not distinguish it from a dead loader ===
+  healthy is literally `failed == 0`  : True
+  dead-letter adjudication exists     : False
+  process freshness is measured       : False
+  [PRE-REPRODUCED] one historical refusal makes the alarm red forever, and it is the SAME red a stopped loader would show
+
+=== PRE SUMMARY: 12 items; 0 NOT reproduced ===
+Reproduced against the audited base commits in clean detached worktrees; see the confession at the top of this file.

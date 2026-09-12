@@ -87,6 +87,33 @@ def _ensure_csv_header(path: str, header_line: str) -> None:
             os.fsync(f.fileno())
 
 
+def _configure_tensorflow_memory() -> None:
+    """Import TensorFlow and make GPU allocation predictable.
+
+    C34: this is EXECUTION — it loads a framework and enumerates
+    devices — so it is called only on the execution side of the gate,
+    never during SUBMIT_ONLY.
+    """
+    os.environ.setdefault("TF_FORCE_GPU_ALLOW_GROWTH", "true")
+    os.environ.setdefault("TF_GPU_ALLOCATOR", "cuda_malloc_async")
+    try:
+        import tensorflow as tf  # noqa: WPS433 (runtime import intentional)
+
+        gpus = tf.config.list_physical_devices('GPU')
+        for gpu in gpus:
+            try:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            except Exception:
+                # If TF already initialized somewhere, we can't change
+                # this. Keep going; the env var above still helps.
+                pass
+        if gpus:
+            print("TensorFlow GPU memory growth configured for "
+                  f"{len(gpus)} GPU(s).")
+    except Exception as e:
+        print(f"INFO: TensorFlow memory configuration skipped: {e}")
+
+
 def _validate_logging_config(config: Dict[str, Any]) -> None:
     """Fail-fast-ish validation so remote runs never silently produce 'no logs'."""
     mem_log = _resolve_repo_path(config.get("memory_log_file"))
@@ -155,7 +182,12 @@ def main():
             # part-way through, and a snapshot taken now would
             # report UNAVAILABLE for everything it did
             config=lambda: shared.get("config", {}),
-            results_dir=shared.get("results_dir"))
+            # C36: lazy for the same reason the config is. The run
+            # only knows where it writes once its configuration is
+            # merged, so reading this now would freeze None and the
+            # operational-gap file would have nowhere to land — in
+            # exactly the situation the file exists for.
+            results_dir=lambda: shared.get("results_dir"))
     finally:
         pass
 
@@ -169,28 +201,11 @@ def _run_main(shared: Dict[str, Any]):
     args, unknown_args = parse_args()
     cli_args: Dict[str, Any] = vars(args)
 
-    # ------------------------------------------------------------------
-    # TensorFlow memory safety (must run BEFORE any TF import in plugins)
-    # ------------------------------------------------------------------
-    # Helps prevent long-run fragmentation and makes GPU allocation behavior
-    # consistent across plugins (CNN was attempting this too late).
-    os.environ.setdefault("TF_FORCE_GPU_ALLOW_GROWTH", "true")
-    os.environ.setdefault("TF_GPU_ALLOCATOR", "cuda_malloc_async")
-    try:
-        import tensorflow as tf  # noqa: WPS433 (runtime import intentional)
-
-        gpus = tf.config.list_physical_devices('GPU')
-        for gpu in gpus:
-            try:
-                tf.config.experimental.set_memory_growth(gpu, True)
-            except Exception:
-                # If TF already initialized somewhere, we can't change this.
-                # Keep going; env var above still helps in many setups.
-                pass
-        if gpus:
-            print(f"TensorFlow GPU memory growth configured for {len(gpus)} GPU(s).")
-    except Exception as e:
-        print(f"INFO: TensorFlow memory configuration skipped: {e}")
+    # C34 (order 2026-09-11): importing TensorFlow and enumerating
+    # devices is EXECUTION. It used to happen here, before the gate, so
+    # a phase the report called "nothing was executed" had already
+    # loaded a framework and touched the accelerator. It now runs after
+    # the gate, and never at all in SUBMIT_ONLY.
 
     print("Loading default configuration...")
     config: Dict[str, Any] = DEFAULT_VALUES.copy()
@@ -222,81 +237,56 @@ def _run_main(shared: Dict[str, Any]):
     # Selección del plugins
     if not cli_args.get('predictor_plugin'):
         cli_args['predictor_plugin'] = config.get('predictor_plugin', 'default_predictor')
-    plugin_name = config.get('predictor_plugin', 'default_predictor')
+    # C31: ONE resolver names the predictor, and it refuses BEFORE any
+    # model object exists if the legacy `plugin` key disagrees with the
+    # canonical `predictor_plugin`. That disagreement used to train one
+    # architecture while the eligibility identity recorded another.
+    from app.plugin_resolver import canonical_name
+    plugin_name = (canonical_name(config, "predictor")
+                   or 'default_predictor')
+    config['predictor_plugin'] = plugin_name
     
     
-    # --- CARGA DE PLUGINS ---
-    # Carga del Predictor Plugin
-    print(f"Loading Predictor Plugin: {plugin_name}")
-    try:
-        predictor_class, _ = load_plugin('predictor.plugins', plugin_name)
-        predictor_plugin = predictor_class(config)
-        predictor_plugin.set_params(**config)
-    except Exception as e:
-        print(f"Failed to load or initialize Predictor Plugin '{plugin_name}': {e}")
-        sys.exit(1)
+    # --- RESOLUCIÓN DE PLUGINS (sin construir nada) ---
+    # C34: SUBMIT_ONLY is a phase of INSPECTION. It may read the
+    # config, the headers, the bytes and a component's declared
+    # metadata; it may not build the components. Every plugin's
+    # `plugin_params` is a CLASS attribute, so the contract those
+    # defaults belong to can be merged without instantiating anything
+    # — which is what the five constructors and their set_params calls
+    # used to do before the gate was ever asked.
+    from app.plugin_resolver import declared_plugin_params, resolve
+    PLUGIN_ORDER = (
+        ("predictor", 'predictor_plugin', 'default_predictor'),
+        ("optimizer", 'optimizer_plugin', 'default_optimizer'),
+        ("pipeline", 'pipeline_plugin', 'default_pipeline'),
+        ("target", 'target_plugin', 'default_target'),
+        ("preprocessor", 'preprocessor_plugin', 'default_preprocessor'),
+    )
+    witnesses: Dict[str, Any] = {}
+    for role, key, default in PLUGIN_ORDER:
+        name = plugin_name if role == "predictor" \
+            else config.get(key, default)
+        print(f"Resolving {role} plugin: {name}")
+        try:
+            witnesses[role] = resolve(role, name)
+        except SystemExit:
+            raise
+        except Exception as e:
+            print(f"Failed to resolve {role} plugin '{name}': {e}")
+            sys.exit(1)
 
-    # Carga del Optimizer Plugin (por defecto, se usa el de DEAP)
-    # Selección del plugin si no se especifica
-    plugin_name = config.get('optimizer_plugin', 'default_optimizer')
-    print(f"Loading Plugin ..{plugin_name}")
+    # fusión de configuración con los parámetros DECLARADOS por cada
+    # plugin — leídos del código fuente con `ast`, sin importar el
+    # módulo. Importarlo cargaría TensorFlow, y eso es ejecución.
+    print("Merging configuration with CLI arguments and unknown args "
+          "(second pass, with declared plugin params)...")
+    for role, _key, _default in PLUGIN_ORDER:
+        config = merge_config(config,
+                              declared_plugin_params(witnesses[role]),
+                              {}, file_config, cli_args,
+                              unknown_args_dict)
 
-    try:
-        optimizer_class, _ = load_plugin('optimizer.plugins', plugin_name)
-        optimizer_plugin = optimizer_class()
-        optimizer_plugin.set_params(**config)
-    except Exception as e:
-        print(f"Failed to load or initialize Optimizer Plugin: {e}")
-        sys.exit(1)
-
-    # Carga del Pipeline Plugin (orquestador del flujo de entrenamiento y evaluación)
-    plugin_name = config.get('pipeline_plugin', 'default_pipeline')
-    print(f"Loading Plugin ..{plugin_name}")
-    try:
-        pipeline_class, _ = load_plugin('pipeline.plugins', plugin_name)
-        pipeline_plugin = pipeline_class()
-        pipeline_plugin.set_params(**config)
-    except Exception as e:
-        print(f"Failed to load or initialize Pipeline Plugin: {e}")
-        sys.exit(1)
-
-    # Carga del Target Plugin (para target and metrics calculation)
-    plugin_name = config.get('target_plugin', 'default_target')
-    print(f"Loading Plugin ..{plugin_name}")
-    try:
-        target_class, _ = load_plugin('target.plugins', plugin_name)
-        target_plugin = target_class()
-        target_plugin.set_params(**config)
-    except Exception as e:
-        print(f"Failed to load or initialize Target Plugin: {e}")
-        sys.exit(1)
-
-    # Carga del Preprocessor Plugin (para process_data, ventanas deslizantes y STL)
-    plugin_name = config.get('preprocessor_plugin', 'default_preprocessor')
-    print(f"Loading Plugin ..{plugin_name}")
-    try:
-        preprocessor_class, _ = load_plugin('preprocessor.plugins', plugin_name)
-        preprocessor_plugin = preprocessor_class()
-        preprocessor_plugin.set_params(**config)
-    except Exception as e:
-        print(f"Failed to load or initialize Preprocessor Plugin: {e}")
-        sys.exit(1)
-
-    # fusión de configuración, integrando parámetros específicos de plugin predictor
-    print("Merging configuration with CLI arguments and unknown args (second pass, with plugin params)...")
-    config = merge_config(config, predictor_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
-    # fusión de configuración, integrando parámetros específicos de plugin optimizer
-    config = merge_config(config, optimizer_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
-    # fusión de configuración, integrando parámetros específicos de plugin pipeline
-    config = merge_config(config, pipeline_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
-    # fusión de configuración, integrando parámetros específicos de plugin target
-    config = merge_config(config, target_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
-    # fusión de configuración, integrando parámetros específicos de plugin preprocessor
-    config = merge_config(config, preprocessor_plugin.plugin_params, {}, file_config, cli_args, unknown_args_dict)
-
-    # Validate logging destinations after final config merge.
-    _validate_logging_config(config)
-    
 
     # --- ELIGIBILITY GATE (order C1) ---
     # Asked BEFORE the optimizer, before any pipeline, before any
@@ -333,6 +323,36 @@ def _run_main(shared: Dict[str, Any]):
               "EXECUTE_REVIEWED and "
               "eligibility_submission_sha256 set.")
         return
+
+    # ==================================================================
+    # Everything below this line EXECUTES. Nothing above it may.
+    # ==================================================================
+    _configure_tensorflow_memory()
+
+    # Validate logging destinations — this CREATES files, so it is on
+    # the execution side of the line.
+    _validate_logging_config(config)
+
+    # --- CONSTRUCCIÓN DE PLUGINS ---
+    # The classes are loaded from the SAME witnesses the identity
+    # bound, so what runs is what was reviewed.
+    from app.plugin_resolver import load_from_witness
+    try:
+        classes = {role: load_from_witness(witnesses[role])
+                   for role, _k, _d in PLUGIN_ORDER}
+        predictor_plugin = classes["predictor"](config)
+        predictor_plugin.set_params(**config)
+        optimizer_plugin = classes["optimizer"]()
+        optimizer_plugin.set_params(**config)
+        pipeline_plugin = classes["pipeline"]()
+        pipeline_plugin.set_params(**config)
+        target_plugin = classes["target"]()
+        target_plugin.set_params(**config)
+        preprocessor_plugin = classes["preprocessor"]()
+        preprocessor_plugin.set_params(**config)
+    except Exception as e:
+        print(f"Failed to initialize plugins: {e}")
+        sys.exit(1)
 
     # --- DECISIÓN DE EJECUCIÓN ---
     if config.get('use_optimizer', False) and not config.get('load_model', False):

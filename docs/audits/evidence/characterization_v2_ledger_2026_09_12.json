@@ -1,0 +1,1206 @@
+{
+ "attempts": [
+  {
+   "appearance_id": "synthetic::sine24::seed1000",
+   "bank": "SYNTHETIC_KNOWN_MECHANISM_CALIBRATION_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": true,
+   "outcome": "MEASURED",
+   "variable_id": "synthetic::sine24::seed1000"
+  },
+  {
+   "appearance_id": "synthetic::sine32::seed1001",
+   "bank": "SYNTHETIC_KNOWN_MECHANISM_CALIBRATION_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": true,
+   "outcome": "MEASURED",
+   "variable_id": "synthetic::sine32::seed1001"
+  },
+  {
+   "appearance_id": "synthetic::sine40::seed1002",
+   "bank": "SYNTHETIC_KNOWN_MECHANISM_CALIBRATION_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": true,
+   "outcome": "MEASURED",
+   "variable_id": "synthetic::sine40::seed1002"
+  },
+  {
+   "appearance_id": "etth1::etth1__ETTh1.csv",
+   "bank": "PUBLIC_FORECASTING_EVIDENCE",
+   "confirmatory_material": false,
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "partition": "development",
+   "variable_id": "etth1::HUFL"
+  },
+  {
+   "appearance_id": "etth1::etth1__ETTh1.csv",
+   "bank": "PUBLIC_FORECASTING_EVIDENCE",
+   "confirmatory_material": false,
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "partition": "development",
+   "variable_id": "etth1::HULL"
+  },
+  {
+   "appearance_id": "etth1::etth1__ETTh1.csv",
+   "bank": "PUBLIC_FORECASTING_EVIDENCE",
+   "confirmatory_material": false,
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "partition": "development",
+   "variable_id": "etth1::LUFL"
+  },
+  {
+   "appearance_id": "etth1::etth1__ETTh1.csv",
+   "bank": "PUBLIC_FORECASTING_EVIDENCE",
+   "confirmatory_material": false,
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "partition": "development",
+   "variable_id": "etth1::LULL"
+  },
+  {
+   "appearance_id": "etth1::etth1__ETTh1.csv",
+   "bank": "PUBLIC_FORECASTING_EVIDENCE",
+   "confirmatory_material": false,
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "partition": "development",
+   "variable_id": "etth1::MUFL"
+  },
+  {
+   "appearance_id": "etth1::etth1__ETTh1.csv",
+   "bank": "PUBLIC_FORECASTING_EVIDENCE",
+   "confirmatory_material": false,
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "partition": "development",
+   "variable_id": "etth1::MULL"
+  },
+  {
+   "appearance_id": "etth1::etth1__ETTh1.csv",
+   "bank": "PUBLIC_FORECASTING_EVIDENCE",
+   "confirmatory_material": false,
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "partition": "development",
+   "variable_id": "etth1::OT"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::CLOSE"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::HIGH"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::LOW"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::OPEN"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::VOLUME"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::atr_14"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::autocorr_lag1_100"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::autocorr_lag5_100"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::bb_lower"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::bb_middle"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::bb_pct_b"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::bb_upper"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::bb_width"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::cci_14"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::close_sma_ratio_10"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::close_sma_ratio_100"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::close_sma_ratio_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::close_sma_ratio_200"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::close_sma_ratio_50"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ema_10"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ema_100"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ema_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ema_200"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ema_50"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ema_cross_10_50"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ema_cross_20_100"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::hist_vol_10"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::hist_vol_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::hist_vol_60"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::hurst_proxy_200"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::log_return_1"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::log_return_10"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::log_return_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::log_return_5"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::log_return_60"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::macd"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::macd_hist"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::macd_signal"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::mfi_14"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::mom_10"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::mom_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::natr_14"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::obv"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::obv_delta_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::realized_var_12"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::realized_var_48"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::return_1"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::return_10"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::return_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::return_5"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::return_60"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roc_10"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roc_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roc_60"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_kurt_ret_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_kurt_ret_252"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_kurt_ret_60"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_mean_ret_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_mean_ret_252"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_mean_ret_60"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_skew_ret_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_skew_ret_252"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_skew_ret_60"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_std_ret_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_std_ret_252"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::roll_std_ret_60"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::rsi_14"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::rsi_21"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::rsi_7"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::sma_10"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::sma_100"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::sma_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::sma_200"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::sma_50"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::sqret_autocorr_lag1_100"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::statistical__log_return_1"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::stoch_d"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::stoch_k"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::trend_slope_50"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::trend_strength_50"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::typical_price"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::vol_regime_high"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::vol_regime_low"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::volume_ratio_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::volume_sma_10"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::volume_sma_20"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::vwap_60"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::williams_r_14"
+  },
+  {
+   "appearance_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::ethusdt_4h_tech_stat_full_model_ready.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1::zscore_close_100"
+  },
+  {
+   "appearance_id": "predictor.legacy.eurusd_1h.phase1_test.v1::base_d6.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "predictor.legacy.eurusd_1h.phase1_test.v1::BC-BO"
+  },
+  {
+   "appearance_id": "predictor.legacy.eurusd_1h.phase1_test.v1::base_d6.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "predictor.legacy.eurusd_1h.phase1_test.v1::BH-BL"
+  },
+  {
+   "appearance_id": "predictor.legacy.eurusd_1h.phase1_test.v1::base_d6.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "predictor.legacy.eurusd_1h.phase1_test.v1::BH-BO"
+  },
+  {
+   "appearance_id": "predictor.legacy.eurusd_1h.phase1_test.v1::base_d6.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "predictor.legacy.eurusd_1h.phase1_test.v1::BO-BL"
+  },
+  {
+   "appearance_id": "predictor.legacy.eurusd_1h.phase1_test.v1::base_d6.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "predictor.legacy.eurusd_1h.phase1_test.v1::CLOSE"
+  },
+  {
+   "appearance_id": "predictor.legacy.eurusd_1h.phase1_test.v1::base_d6.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "predictor.legacy.eurusd_1h.phase1_test.v1::HIGH"
+  },
+  {
+   "appearance_id": "predictor.legacy.eurusd_1h.phase1_test.v1::base_d6.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "predictor.legacy.eurusd_1h.phase1_test.v1::LOW"
+  },
+  {
+   "appearance_id": "predictor.legacy.eurusd_1h.phase1_test.v1::base_d6.csv",
+   "bank": "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY",
+   "descriptors": 24,
+   "noise_identifiable": false,
+   "not_identifiable": 1,
+   "outcome": "MEASURED",
+   "provenance_state": "PROFILED_WITH_METADATA_GAPS",
+   "variable_id": "predictor.legacy.eurusd_1h.phase1_test.v1::OPEN"
+  }
+ ],
+ "attempts_total": 107,
+ "axis_contracts": [
+  {
+   "axis_columns": [
+    "date"
+   ],
+   "axis_sha256": "ed347c65d14af8ecbcc5e82c771a2b5d9b982859f84a3dc28b6a18d2e71bba0e",
+   "dataset": "etth1",
+   "first": "2016-07-01 00:00:00",
+   "last": "2018-06-26 19:00:00",
+   "monotonic_non_decreasing": true,
+   "note": "excluded from the numeric universe: a mean, a spectrum or an entropy of a timestamp describes the calendar, not the variable",
+   "rows": 17420,
+   "state": "DECLARED_AS_AXIS_NOT_MEASURED"
+  },
+  {
+   "axis_columns": [
+    "DATE_TIME"
+   ],
+   "axis_sha256": "939fcd955972d6d08d3b757f5c6ba3f571d85a0b56702f3fc36f38d93848d179",
+   "dataset": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1",
+   "first": "2017-09-28 04:00:00",
+   "last": "2025-12-31 20:00:00",
+   "monotonic_non_decreasing": true,
+   "note": "excluded from the numeric universe: a mean, a spectrum or an entropy of a timestamp describes the calendar, not the variable",
+   "rows": 18085,
+   "state": "DECLARED_AS_AXIS_NOT_MEASURED"
+  },
+  {
+   "axis_columns": [
+    "DATE_TIME"
+   ],
+   "axis_sha256": "6107bdb374cd3daa0b43817d953d4da1d878bd79fcab901db9e8ed0104011151",
+   "dataset": "predictor.legacy.eurusd_1h.phase1_test.v1",
+   "first": "2018-12-14 08:00:00",
+   "last": "2020-04-29 22:00:00",
+   "monotonic_non_decreasing": true,
+   "note": "excluded from the numeric universe: a mean, a spectrum or an entropy of a timestamp describes the calendar, not the variable",
+   "rows": 8456,
+   "state": "DECLARED_AS_AXIS_NOT_MEASURED"
+  }
+ ],
+ "code_identity": "c5e5d8811ad6908ef4c6911ae6ac95201f1f1484d90fa44791eb4183e6855a76",
+ "confirmation_used": "NONE",
+ "coverage": {
+  "conceptual_variables_attempted": 107,
+  "note": "a conceptual variable may appear in many files; these are DIFFERENT populations and a count of one is never a count of the other",
+  "physical_appearances_attempted": 6
+ },
+ "financial_bank": {
+  "datasets_declared": 2,
+  "state": "MEASURED"
+ },
+ "gpu_used": "NONE",
+ "ledger_sha256": "1605428aee5a2affd21482731be9ba2eae599956bdb6438e2637baade97d19ee",
+ "loaded": {
+  "fact_variable_characterization": 2568
+ },
+ "measured_at": "2026-09-12T05:40:00Z",
+ "outcomes": {
+  "FAILED": 0,
+  "MEASURED": 107,
+  "NOT_IDENTIFIABLE": 0,
+  "UNAVAILABLE": 0
+ },
+ "protocol_version": "crispdm.characterization_protocol.v2",
+ "public_bank": {
+  "eligible": 1,
+  "skipped": [
+   {
+    "admission": "ADMISSIBLE",
+    "dataset": "electricity_weekly",
+    "reason": "confirmatory-eligible material; measuring it here would spend confirmation"
+   },
+   {
+    "admission": "ADMISSIBLE",
+    "dataset": "hospital",
+    "reason": "confirmatory-eligible material; measuring it here would spend confirmation"
+   },
+   {
+    "admission": "ADMISSIBLE",
+    "dataset": "pedestrian_counts",
+    "reason": "confirmatory-eligible material; measuring it here would spend confirmation"
+   },
+   {
+    "admission": "ADMISSIBLE",
+    "dataset": "saugeenday",
+    "reason": "confirmatory-eligible material; measuring it here would spend confirmation"
+   },
+   {
+    "admission": "ADMISSIBLE",
+    "dataset": "solar_10_minutes",
+    "reason": "confirmatory-eligible material; measuring it here would spend confirmation"
+   },
+   {
+    "admission": "ADMISSIBLE",
+    "dataset": "solar_weekly",
+    "reason": "confirmatory-eligible material; measuring it here would spend confirmation"
+   },
+   {
+    "admission": "ADMISSIBLE",
+    "dataset": "tourism_monthly",
+    "reason": "confirmatory-eligible material; measuring it here would spend confirmation"
+   },
+   {
+    "admission": "ADMISSIBLE",
+    "dataset": "us_births",
+    "reason": "confirmatory-eligible material; measuring it here would spend confirmation"
+   },
+   {
+    "admission": "ADMISSIBLE",
+    "dataset": "weather",
+    "reason": "confirmatory-eligible material; measuring it here would spend confirmation"
+   }
+  ],
+  "state": "PILOT"
+ },
+ "rows_bound_to_source": 2568,
+ "rows_by_bank": {
+  "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY": 2328,
+  "PUBLIC_FORECASTING_EVIDENCE": 168,
+  "SYNTHETIC_KNOWN_MECHANISM_CALIBRATION_ONLY": 72
+ },
+ "rows_not_identifiable": 104,
+ "rows_total": 2568,
+ "schema": "crispdm.characterization_ledger.v2",
+ "selection_emitted": "NONE \u2014 this run measures variables and chooses none",
+ "supersedes": "the C30 pilot rows are KEPT; this is a new version beside them, never an edit",
+ "terminal_attempt": "crispdm-c39-c41-2026-09-12",
+ "total_cost_seconds": 0.686214,
+ "wall_seconds": 2.624
+}

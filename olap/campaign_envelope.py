@@ -155,6 +155,86 @@ CREATE INDEX IF NOT EXISTS idx_fact_campaign_unit_metric
 CREATE INDEX IF NOT EXISTS idx_fact_campaign_consumption_subject
   ON {SCHEMA}.fact_campaign_consumption (subject_kind,
                                          subject_id);
+
+-- C35 (order 2026-09-11): campaign -> run -> unit.
+--
+-- dim_campaign froze result_class, design_sha256 and code_identity
+-- against campaign_key, and the loader refused any difference. But a
+-- campaign is a QUESTION and those three describe an EXECUTION: a
+-- second legitimate run after a code revision, a design revision or
+-- with a different result class collided with its own first run and
+-- landed in dead-letter. One such envelope is in the outbox today.
+--
+-- The stable grain is therefore split in two. dim_campaign keeps what
+-- names the question; dim_campaign_run keeps one irreproducible
+-- execution of it. Nothing is dropped and nothing is rewritten: the
+-- historical columns stay exactly as loaded and are relabelled, by an
+-- added column, as what they always were — the FIRST observation, not
+-- the campaign's identity.
+CREATE TABLE IF NOT EXISTS {SCHEMA}.dim_campaign_run (
+  campaign_key      TEXT NOT NULL,
+  run_id            TEXT NOT NULL,
+  producer          TEXT NOT NULL,
+  result_class      TEXT NOT NULL,
+  design_sha256     TEXT NOT NULL,
+  code_identity     TEXT NOT NULL,
+  terminal_state    TEXT NOT NULL,
+  adjudication      TEXT NOT NULL,
+  first_seen_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (campaign_key, run_id)
+);
+
+ALTER TABLE {SCHEMA}.dim_campaign
+  ADD COLUMN IF NOT EXISTS identity_authority TEXT;
+UPDATE {SCHEMA}.dim_campaign
+   SET identity_authority = 'FIRST_OBSERVATION_NOT_CAMPAIGN_IDENTITY'
+ WHERE identity_authority IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_dim_campaign_run_class
+  ON {SCHEMA}.dim_campaign_run (result_class, campaign_key);
+CREATE INDEX IF NOT EXISTS idx_dim_campaign_run_code
+  ON {SCHEMA}.dim_campaign_run (code_identity);
+CREATE INDEX IF NOT EXISTS idx_fact_campaign_unit_run
+  ON {SCHEMA}.fact_campaign_unit (campaign_key, run_id);
+
+-- One row per run, with the units it produced. Attempts of the same
+-- campaign sit side by side instead of overwriting or refusing each
+-- other; a FAILED run and a later COMPLETE run are two rows.
+CREATE OR REPLACE VIEW {SCHEMA}.v_campaign_run AS
+SELECT r.campaign_key,
+       r.run_id,
+       r.producer,
+       r.result_class,
+       r.code_identity,
+       r.design_sha256,
+       r.terminal_state,
+       r.adjudication,
+       r.first_seen_at,
+       count(f.*)                       AS unit_rows,
+       count(DISTINCT f.envelope_sha256) AS envelopes
+  FROM {SCHEMA}.dim_campaign_run r
+  LEFT JOIN {SCHEMA}.fact_campaign_unit f
+         ON f.campaign_key = r.campaign_key
+        AND f.run_id       = r.run_id
+ GROUP BY r.campaign_key, r.run_id, r.producer, r.result_class,
+          r.code_identity, r.design_sha256, r.terminal_state,
+          r.adjudication, r.first_seen_at;
+
+-- How many runs a campaign has, and in how many code revisions and
+-- result classes. A campaign with attempts_total > 1 is history, not
+-- a conflict.
+CREATE OR REPLACE VIEW {SCHEMA}.v_campaign_attempts AS
+SELECT campaign_key,
+       count(*)                        AS attempts_total,
+       count(DISTINCT code_identity)   AS code_revisions,
+       count(DISTINCT design_sha256)   AS design_revisions,
+       count(DISTINCT result_class)    AS result_classes,
+       count(*) FILTER (WHERE terminal_state = 'COMPLETE')
+                                       AS complete_attempts,
+       count(*) FILTER (WHERE terminal_state <> 'COMPLETE')
+                                       AS non_complete_attempts
+  FROM {SCHEMA}.dim_campaign_run
+ GROUP BY campaign_key;
 """
 
 
@@ -325,6 +405,10 @@ TRANSLATED = "TRANSLATED_SUMMARY_NON_AUTHORITATIVE"
 # rank the live producer below a later re-reading of its summary.
 BORN_AT_TERMINAL = "BORN_AT_PRODUCER_TERMINAL"
 
+# What the frozen columns on dim_campaign always were. The label is
+# added, the values are untouched.
+FIRST_OBSERVATION = "FIRST_OBSERVATION_NOT_CAMPAIGN_IDENTITY"
+
 
 def envelope_authority_state(doc: dict) -> str:
     """Three provenances, ranked by what actually happened.
@@ -354,8 +438,8 @@ def load_envelope(engine, doc: dict) -> dict:
     from sqlalchemy import text
 
     ident = doc["identity"]
-    counts = {"campaigns": 0, "units": 0, "consumption": 0,
-              "skipped_existing": 0}
+    counts = {"campaigns": 0, "runs": 0, "units": 0,
+              "consumption": 0, "skipped_existing": 0}
     with engine.begin() as conn:
         conn.exec_driver_sql(ENVELOPE_DDL)
         existing = conn.execute(text(
@@ -373,36 +457,83 @@ def load_envelope(engine, doc: dict) -> dict:
             f"code_identity, run_id FROM {SCHEMA}.dim_campaign "
             "WHERE campaign_key = :k"),
             {"k": doc["campaign_key"]}).mappings().first()
-        # C13: the campaign's identity is what DEFINES the
-        # campaign. run_id varies per run by construction and is
-        # therefore compared on the fact, never on the dimension.
+        # C35: the campaign is the QUESTION; only the producer
+        # that asks it belongs to its identity. result_class,
+        # design_sha256 and code_identity describe an EXECUTION
+        # and moved to dim_campaign_run — freezing them here made
+        # a second legitimate attempt collide with its own first.
+        run_id = str(ident["run_id"])
         incoming = {"producer": doc["producer"],
                     "result_class": doc["result_class"],
                     "design_sha256": str(ident["design_sha256"]),
                     "code_identity": str(ident["code_identity"])}
         if existing_dim is not None:
             stored = dict(existing_dim)
-            differing = sorted(k for k in incoming
-                               if stored.get(k) != incoming[k])
-            if differing:
+            if stored.get("producer") != doc["producer"]:
                 raise EnvelopeRefusal(
                     f"campaign_key {doc['campaign_key']!r} "
-                    f"already exists with a DIFFERENT identity "
-                    f"(differing: {differing}) — a logical id is "
-                    "not an identity, and facts are never "
-                    "attached to another campaign's dimension")
+                    f"belongs to producer "
+                    f"{stored.get('producer')!r}, not "
+                    f"{doc['producer']!r} — facts are never "
+                    "attached to another producer's campaign")
         else:
             conn.execute(text(f"""
                 INSERT INTO {SCHEMA}.dim_campaign
                   (campaign_key, producer, result_class,
-                   design_sha256, code_identity, run_id)
-                VALUES (:k, :p, :rc, :d, :c, :r)
+                   design_sha256, code_identity, run_id,
+                   identity_authority)
+                VALUES (:k, :p, :rc, :d, :c, :r, :ia)
             """), {"k": doc["campaign_key"], "p": doc["producer"],
                    "rc": doc["result_class"],
                    "d": incoming["design_sha256"],
                    "c": incoming["code_identity"],
-                   "r": str(ident["run_id"])})
+                   "r": run_id,
+                   "ia": FIRST_OBSERVATION})
         counts["campaigns"] = 1
+
+        # C35: the RUN is where an execution's identity lives. A
+        # repeated run_id must mean the same execution, so a
+        # difference here IS a genuine conflict and still
+        # refuses; a NEW run_id is simply new history.
+        existing_run = conn.execute(text(
+            f"SELECT producer, result_class, design_sha256, "
+            f"code_identity, terminal_state, adjudication "
+            f"FROM {SCHEMA}.dim_campaign_run "
+            "WHERE campaign_key = :k AND run_id = :r"),
+            {"k": doc["campaign_key"], "r": run_id}
+        ).mappings().first()
+        run_incoming = dict(
+            incoming,
+            terminal_state=str(doc["terminal"]["state"]),
+            adjudication=str(doc["terminal"]["adjudication"]))
+        if existing_run is not None:
+            stored_run = dict(existing_run)
+            differing = sorted(k for k in run_incoming
+                               if stored_run.get(k)
+                               != run_incoming[k])
+            if differing:
+                raise EnvelopeRefusal(
+                    f"run {run_id!r} of campaign "
+                    f"{doc['campaign_key']!r} already exists "
+                    f"with a DIFFERENT identity (differing: "
+                    f"{differing}) — one run is one execution; a "
+                    "new attempt needs a new run_id, not a "
+                    "rewritten one")
+        else:
+            conn.execute(text(f"""
+                INSERT INTO {SCHEMA}.dim_campaign_run
+                  (campaign_key, run_id, producer, result_class,
+                   design_sha256, code_identity, terminal_state,
+                   adjudication)
+                VALUES (:k, :r, :p, :rc, :d, :c, :ts, :adj)
+            """), {"k": doc["campaign_key"], "r": run_id,
+                   "p": doc["producer"],
+                   "rc": run_incoming["result_class"],
+                   "d": run_incoming["design_sha256"],
+                   "c": run_incoming["code_identity"],
+                   "ts": run_incoming["terminal_state"],
+                   "adj": run_incoming["adjudication"]})
+            counts["runs"] = 1
         if existing:
             counts["skipped_existing"] = int(existing)
         for u in doc.get("units", []):
@@ -443,7 +574,7 @@ def load_envelope(engine, doc: dict) -> dict:
                 "ec": _int(u.get("epoch_count")),
                 "j": json.dumps(u, sort_keys=True),
                 "auth": authority_state,
-                "run": str(ident["run_id"])})
+                "run": run_id})
             counts["units"] += res.rowcount or 0
         for kind, items in (
                 ("variable",

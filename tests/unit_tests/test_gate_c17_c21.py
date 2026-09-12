@@ -359,13 +359,13 @@ def test_main_enforces_both_c19_guards():
 
 def test_the_code_identity_covers_the_consuming_graph(world):
     tmp, config = world
-    cfg = dict(config, plugin="ann",
+    cfg = dict(config, predictor_plugin="ann",
                pipeline_plugin="stl_pipeline",
                preprocessor_plugin="stl_preprocessor")
     c = resolve_consumed_subjects(cfg, repo_root=tmp)
     kinds = {e["kind"] for e in c["code_inventory"]}
-    assert kinds == {"module", "plugin"}
-    ids = {e["id"] for e in c["code_inventory"]}
+    assert kinds == {"module", "plugin", "external"}
+    ids = {e["id"] for e in c["code_inventory"] if "id" in e}
     for expected in ("app/main.py", "app/config_merger.py",
                      "app/plugin_loader.py",
                      "app/data_handler.py"):
@@ -378,7 +378,7 @@ def test_the_code_identity_covers_the_consuming_graph(world):
 def test_changing_a_plugin_changes_the_code_digest(world,
                                                    tmp_path):
     tmp, config = world
-    cfg = dict(config, plugin="ann",
+    cfg = dict(config, predictor_plugin="ann",
                pipeline_plugin="stl_pipeline")
     a = resolve_consumed_subjects(dict(cfg), repo_root=tmp)
     cfg2 = dict(cfg, pipeline_plugin="default_pipeline")
@@ -390,8 +390,8 @@ def test_changing_a_plugin_changes_the_code_digest(world,
 
 def test_an_unresolvable_plugin_refuses(world):
     tmp, config = world
-    cfg = dict(config, plugin="a_plugin_that_does_not_exist")
-    with pytest.raises(SystemExit, match="not registered"):
+    cfg = dict(config, predictor_plugin="a_plugin_that_does_not_exist")
+    with pytest.raises(SystemExit, match="registered in neither"):
         resolve_consumed_subjects(cfg, repo_root=tmp)
 
 
@@ -402,9 +402,16 @@ def test_a_missing_consuming_module_refuses(tmp_path):
 
 def test_the_inventory_names_what_it_bound(world):
     tmp, config = world
-    c = resolve_consumed_subjects(dict(config, plugin="ann"),
-                                  repo_root=tmp)
+    c = resolve_consumed_subjects(
+        dict(config, predictor_plugin="ann"), repo_root=tmp)
     for e in c["code_inventory"]:
+        if e["kind"] == "external":
+            # honestly weaker: name, version and location, and
+            # no digest claimed for a whole distribution
+            assert e["binding"] == "NAME_VERSION_LOCATION_ONLY"
+            assert e["distribution"] and e["version"]
+            assert "sha256" not in e
+            continue
         assert len(e["sha256"]) == 64
         assert e["id"]
         if e["kind"] == "plugin":

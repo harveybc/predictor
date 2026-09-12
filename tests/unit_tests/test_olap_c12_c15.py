@@ -178,13 +178,30 @@ def test_the_collision_refuses_before_any_fact(throwaway_db):
     with engine.connect() as c:
         before = c.execute(text(
             "select count(*) from fact_campaign_unit")).scalar()
+    # C35 narrowed WHICH collision is a collision. A campaign is a
+    # QUESTION, so a second attempt with new code or a new design is
+    # history, not a conflict; what must still refuse is a foreign
+    # PRODUCER claiming the campaign, and a run_id reused for a
+    # different execution. Both are checked here, and neither writes
+    # a fact.
     impostor = _minimal(producer="SOMEONE_ELSE")
-    with pytest.raises(SystemExit, match="DIFFERENT identity"):
+    with pytest.raises(SystemExit, match="belongs to producer"):
         ce.load_envelope(engine, impostor)
     with engine.connect() as c:
         after = c.execute(text(
             "select count(*) from fact_campaign_unit")).scalar()
     assert before == after
+
+    reused = _minimal()
+    reused["identity"]["code_identity"] = "f" * 64
+    reused["envelope_sha256"] = ce._sha(reused, "envelope_sha256")
+    with pytest.raises(SystemExit, match="already exists with a "
+                                         "DIFFERENT identity"):
+        ce.load_envelope(engine, reused)
+    with engine.connect() as c:
+        after2 = c.execute(text(
+            "select count(*) from fact_campaign_unit")).scalar()
+    assert before == after2
 
 
 def test_the_same_identity_is_still_idempotent(throwaway_db):

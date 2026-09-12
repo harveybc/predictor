@@ -17,6 +17,7 @@ results rather than a print that scrolls away.
 from __future__ import annotations
 
 import json
+import os
 import time
 import traceback
 from pathlib import Path
@@ -43,7 +44,9 @@ RESULT_CLASS_FOR = {
     QUARANTINED: "NON_GOVERNING",
 }
 
-OPERATIONAL_GAP_NAME = "OLAP_OUTBOX_OPERATIONAL_GAP.json"
+OPERATIONAL_GAP_STEM = "OLAP_OUTBOX_OPERATIONAL_GAP"
+#: kept for readers of the pre-C36 fixed name
+OPERATIONAL_GAP_NAME = f"{OPERATIONAL_GAP_STEM}.json"
 
 
 class TerminalEmissionGap(Exception):
@@ -128,16 +131,38 @@ def build_terminal_envelope(*, campaign_key: str, producer: str,
         }])
 
 
-def emit_terminal(envelope: dict, *, results_dir: Path | None
-                  ) -> dict:
+def gap_name(envelope: dict) -> str:
+    """One gap file per ENVELOPE, never one per directory.
+
+    C36: the gap used to be written to a single fixed name. Two runs
+    into the same results directory meant the second silently erased
+    the first run's only record that the cube never heard from it — the
+    exact evidence the file exists to preserve. The envelope digest in
+    the name makes the file specific to the run, and O_EXCL makes it
+    write-once.
+    """
+    digest = str(envelope.get("envelope_sha256") or UNAVAILABLE)
+    return f"{OPERATIONAL_GAP_STEM}-{digest[:16]}.json"
+
+
+def emit_terminal(envelope: dict, *, results_dir) -> dict:
     """Emit, or record a typed operational gap beside the
-    results."""
+    results.
+
+    `results_dir` may be a path OR a zero-argument callable, for the
+    same reason `config` is: the run only learns where it writes once
+    its configuration is merged. Capturing it before the body runs
+    froze `None`, so a failed outbox left no gap file anywhere — the
+    one situation the file exists for.
+    """
     try:
         return ob.emit(envelope, kind="envelope")
     except Exception as exc:                    # noqa: BLE001
+        ident = envelope.get("identity") or {}
         gap = {
             "schema": "crispdm.olap_outbox_operational_gap.v1",
             "campaign_key": envelope.get("campaign_key"),
+            "run_id": ident.get("run_id", UNAVAILABLE),
             "envelope_sha256": envelope.get("envelope_sha256"),
             "terminal_state":
                 envelope.get("terminal", {}).get("state"),
@@ -148,28 +173,45 @@ def emit_terminal(envelope: dict, *, results_dir: Path | None
                            "absence is visible instead of "
                            "silent",
         }
-        if results_dir:
+        written = UNAVAILABLE
+        d = results_dir() if callable(results_dir) else results_dir
+        if d:
             try:
-                d = Path(results_dir)
+                d = Path(d)
                 d.mkdir(parents=True, exist_ok=True)
-                (d / OPERATIONAL_GAP_NAME).write_text(
-                    json.dumps(gap, indent=1, sort_keys=True)
-                    + "\n")
+                target = d / gap_name(envelope)
+                fd = os.open(str(target),
+                             os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+                try:
+                    os.write(fd, (json.dumps(gap, indent=1,
+                                             sort_keys=True)
+                                  + "\n").encode())
+                    os.fsync(fd)
+                finally:
+                    os.close(fd)
+                written = str(target)
+            except FileExistsError:
+                # write-once: an existing gap for THIS envelope is the
+                # same gap, not a newer one to overwrite
+                written = str(Path(d) / gap_name(envelope))
             except Exception:                   # noqa: BLE001
-                pass
+                written = UNAVAILABLE
+        gap["gap_file"] = written
         return {"outbox_entry": UNAVAILABLE,
                 "state": "OPERATIONAL_GAP", "gap": gap}
 
 
 def terminal_run(fn, *, campaign_key, producer: str,
-                 config, results_dir: Path | None = None):
+                 config, results_dir=None):
     """Run `fn` and emit EXACTLY ONE terminal, whatever happens.
 
-    `config` may be a dict OR a zero-argument callable returning
-    one. The callable form exists because the run only builds its
-    configuration part-way through: capturing the dict up front
-    would freeze an empty object and report UNAVAILABLE for
-    everything the run actually did.
+    `campaign_key`, `config` and `results_dir` may each be a value
+    OR a zero-argument callable returning one. The callable form
+    exists because the run only builds its configuration — and
+    therefore only learns which experiment it is and where it writes —
+    part-way through: capturing them up front freezes an empty config
+    and a `None` directory, and reports UNAVAILABLE for everything the
+    run actually did.
 
     `fn` may return the string INCONCLUSIVE (or a dict carrying
     `terminal_state`) to declare an outcome that is neither a

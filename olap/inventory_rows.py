@@ -106,29 +106,226 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.fact_eligibility_decision (
   PRIMARY KEY (subject_id, scope, manifest_sha256)
 );
 
--- C25: a deterministic CURRENT view per inventory table. The
--- newest observation of a logical id wins, ties broken by the
--- observation digest so two readers always agree. No version is
--- ever deleted; history is the point.
-CREATE OR REPLACE VIEW {SCHEMA}.v_lake_appearance_current AS
-SELECT DISTINCT ON (appearance_id) *
-FROM {SCHEMA}.dim_lake_appearance
-ORDER BY appearance_id, loaded_at DESC, observation_sha256 DESC;
+-- C38 (order 2026-09-11): CURRENT means the latest SCIENTIFIC
+-- observation, not the latest LOAD.
+--
+-- The views ordered by loaded_at DESC. Re-importing an old census
+-- today therefore made the OLD observation current, silently
+-- superseding a newer one — and the existing test only ever loaded
+-- old-then-new, so it never saw it. Load time is a fact about this
+-- database; it says nothing about when the world was observed.
+--
+-- Three things decide currency now, in order:
+--
+--   1. SUPERSESSION. An observation another observation explicitly
+--      supersedes is never current, whatever its date. An explicit
+--      chain is the producer asserting an order and beats inference;
+--   2. OBSERVED TIME. The artifact's own chronology — when the census
+--      or index was produced — not when this database heard about it;
+--   3. the observation digest, purely so two readers agree.
+--
+-- When the newest observed_at is shared by observations with no
+-- supersession link between them, the two branches are INCOMPARABLE.
+-- The view still returns one row deterministically, but it says so:
+-- currency_state = AMBIGUOUS_TIE. Silently picking a winner among
+-- incomparable branches is the failure mode this replaces.
+ALTER TABLE {SCHEMA}.dim_lake_appearance
+  ADD COLUMN IF NOT EXISTS observed_at TEXT;
+ALTER TABLE {SCHEMA}.dim_lake_appearance
+  ADD COLUMN IF NOT EXISTS observed_at_source TEXT;
+ALTER TABLE {SCHEMA}.dim_lake_appearance
+  ADD COLUMN IF NOT EXISTS supersedes_sha256 TEXT;
+ALTER TABLE {SCHEMA}.dim_lake_variable
+  ADD COLUMN IF NOT EXISTS observed_at TEXT;
+ALTER TABLE {SCHEMA}.dim_lake_variable
+  ADD COLUMN IF NOT EXISTS observed_at_source TEXT;
+ALTER TABLE {SCHEMA}.dim_lake_variable
+  ADD COLUMN IF NOT EXISTS supersedes_sha256 TEXT;
+ALTER TABLE {SCHEMA}.dim_public_series
+  ADD COLUMN IF NOT EXISTS observed_at TEXT;
+ALTER TABLE {SCHEMA}.dim_public_series
+  ADD COLUMN IF NOT EXISTS observed_at_source TEXT;
+ALTER TABLE {SCHEMA}.dim_public_series
+  ADD COLUMN IF NOT EXISTS supersedes_sha256 TEXT;
+ALTER TABLE {SCHEMA}.dim_synthetic_generator
+  ADD COLUMN IF NOT EXISTS observed_at TEXT;
+ALTER TABLE {SCHEMA}.dim_synthetic_generator
+  ADD COLUMN IF NOT EXISTS observed_at_source TEXT;
+ALTER TABLE {SCHEMA}.dim_synthetic_generator
+  ADD COLUMN IF NOT EXISTS supersedes_sha256 TEXT;
 
-CREATE OR REPLACE VIEW {SCHEMA}.v_lake_variable_current AS
-SELECT DISTINCT ON (variable_id) *
-FROM {SCHEMA}.dim_lake_variable
-ORDER BY variable_id, loaded_at DESC, observation_sha256 DESC;
+-- Rows that predate C38 have no artifact chronology to recover. They
+-- keep their load time as a STAND-IN, and the stand-in is labelled so
+-- nobody reads it as the producer's own date.
+UPDATE {SCHEMA}.dim_lake_appearance
+   SET observed_at = to_char(loaded_at AT TIME ZONE 'UTC',
+                             'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+       observed_at_source = 'BACKFILLED_FROM_LOAD_TIME'
+ WHERE observed_at IS NULL;
+UPDATE {SCHEMA}.dim_lake_variable
+   SET observed_at = to_char(loaded_at AT TIME ZONE 'UTC',
+                             'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+       observed_at_source = 'BACKFILLED_FROM_LOAD_TIME'
+ WHERE observed_at IS NULL;
+UPDATE {SCHEMA}.dim_public_series
+   SET observed_at = to_char(loaded_at AT TIME ZONE 'UTC',
+                             'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+       observed_at_source = 'BACKFILLED_FROM_LOAD_TIME'
+ WHERE observed_at IS NULL;
+UPDATE {SCHEMA}.dim_synthetic_generator
+   SET observed_at = to_char(loaded_at AT TIME ZONE 'UTC',
+                             'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+       observed_at_source = 'BACKFILLED_FROM_LOAD_TIME'
+ WHERE observed_at IS NULL;
 
-CREATE OR REPLACE VIEW {SCHEMA}.v_public_series_current AS
-SELECT DISTINCT ON (series_id) *
-FROM {SCHEMA}.dim_public_series
-ORDER BY series_id, loaded_at DESC, observation_sha256 DESC;
+DROP VIEW IF EXISTS {SCHEMA}.v_lake_appearance_current;
+CREATE VIEW {SCHEMA}.v_lake_appearance_current AS
+WITH base AS (
+  SELECT t.*,
+         EXISTS (SELECT 1 FROM {SCHEMA}.dim_lake_appearance s
+                  WHERE s.appearance_id = t.appearance_id
+                    AND s.supersedes_sha256 = t.observation_sha256)
+           AS is_superseded
+    FROM {SCHEMA}.dim_lake_appearance t
+), ranked AS (
+  SELECT b.*,
+         count(*) FILTER (WHERE NOT is_superseded)
+           OVER (PARTITION BY appearance_id, observed_at) AS live_at_observed,
+         max(observed_at) FILTER (WHERE NOT is_superseded)
+           OVER (PARTITION BY appearance_id)             AS newest_live
+    FROM base b
+)
+SELECT DISTINCT ON (appearance_id) ranked.*,
+       CASE WHEN NOT is_superseded
+             AND observed_at = newest_live
+             AND live_at_observed > 1
+            THEN 'AMBIGUOUS_TIE' ELSE 'UNAMBIGUOUS'
+       END AS currency_state
+  FROM ranked
+ ORDER BY appearance_id, is_superseded ASC, observed_at DESC,
+          observation_sha256 DESC;
 
-CREATE OR REPLACE VIEW {SCHEMA}.v_synthetic_generator_current AS
-SELECT DISTINCT ON (generator_id) *
-FROM {SCHEMA}.dim_synthetic_generator
-ORDER BY generator_id, loaded_at DESC, observation_sha256 DESC;
+DROP VIEW IF EXISTS {SCHEMA}.v_lake_appearance_ambiguous;
+CREATE VIEW {SCHEMA}.v_lake_appearance_ambiguous AS
+SELECT appearance_id, observed_at, count(*) AS branches
+  FROM {SCHEMA}.dim_lake_appearance t
+ WHERE NOT EXISTS (SELECT 1 FROM {SCHEMA}.dim_lake_appearance s
+                    WHERE s.appearance_id = t.appearance_id
+                      AND s.supersedes_sha256 = t.observation_sha256)
+ GROUP BY appearance_id, observed_at
+HAVING count(*) > 1;
+
+DROP VIEW IF EXISTS {SCHEMA}.v_lake_variable_current;
+CREATE VIEW {SCHEMA}.v_lake_variable_current AS
+WITH base AS (
+  SELECT t.*,
+         EXISTS (SELECT 1 FROM {SCHEMA}.dim_lake_variable s
+                  WHERE s.variable_id = t.variable_id
+                    AND s.supersedes_sha256 = t.observation_sha256)
+           AS is_superseded
+    FROM {SCHEMA}.dim_lake_variable t
+), ranked AS (
+  SELECT b.*,
+         count(*) FILTER (WHERE NOT is_superseded)
+           OVER (PARTITION BY variable_id, observed_at) AS live_at_observed,
+         max(observed_at) FILTER (WHERE NOT is_superseded)
+           OVER (PARTITION BY variable_id)             AS newest_live
+    FROM base b
+)
+SELECT DISTINCT ON (variable_id) ranked.*,
+       CASE WHEN NOT is_superseded
+             AND observed_at = newest_live
+             AND live_at_observed > 1
+            THEN 'AMBIGUOUS_TIE' ELSE 'UNAMBIGUOUS'
+       END AS currency_state
+  FROM ranked
+ ORDER BY variable_id, is_superseded ASC, observed_at DESC,
+          observation_sha256 DESC;
+
+DROP VIEW IF EXISTS {SCHEMA}.v_lake_variable_ambiguous;
+CREATE VIEW {SCHEMA}.v_lake_variable_ambiguous AS
+SELECT variable_id, observed_at, count(*) AS branches
+  FROM {SCHEMA}.dim_lake_variable t
+ WHERE NOT EXISTS (SELECT 1 FROM {SCHEMA}.dim_lake_variable s
+                    WHERE s.variable_id = t.variable_id
+                      AND s.supersedes_sha256 = t.observation_sha256)
+ GROUP BY variable_id, observed_at
+HAVING count(*) > 1;
+
+DROP VIEW IF EXISTS {SCHEMA}.v_public_series_current;
+CREATE VIEW {SCHEMA}.v_public_series_current AS
+WITH base AS (
+  SELECT t.*,
+         EXISTS (SELECT 1 FROM {SCHEMA}.dim_public_series s
+                  WHERE s.series_id = t.series_id
+                    AND s.supersedes_sha256 = t.observation_sha256)
+           AS is_superseded
+    FROM {SCHEMA}.dim_public_series t
+), ranked AS (
+  SELECT b.*,
+         count(*) FILTER (WHERE NOT is_superseded)
+           OVER (PARTITION BY series_id, observed_at) AS live_at_observed,
+         max(observed_at) FILTER (WHERE NOT is_superseded)
+           OVER (PARTITION BY series_id)             AS newest_live
+    FROM base b
+)
+SELECT DISTINCT ON (series_id) ranked.*,
+       CASE WHEN NOT is_superseded
+             AND observed_at = newest_live
+             AND live_at_observed > 1
+            THEN 'AMBIGUOUS_TIE' ELSE 'UNAMBIGUOUS'
+       END AS currency_state
+  FROM ranked
+ ORDER BY series_id, is_superseded ASC, observed_at DESC,
+          observation_sha256 DESC;
+
+DROP VIEW IF EXISTS {SCHEMA}.v_public_series_ambiguous;
+CREATE VIEW {SCHEMA}.v_public_series_ambiguous AS
+SELECT series_id, observed_at, count(*) AS branches
+  FROM {SCHEMA}.dim_public_series t
+ WHERE NOT EXISTS (SELECT 1 FROM {SCHEMA}.dim_public_series s
+                    WHERE s.series_id = t.series_id
+                      AND s.supersedes_sha256 = t.observation_sha256)
+ GROUP BY series_id, observed_at
+HAVING count(*) > 1;
+
+DROP VIEW IF EXISTS {SCHEMA}.v_synthetic_generator_current;
+CREATE VIEW {SCHEMA}.v_synthetic_generator_current AS
+WITH base AS (
+  SELECT t.*,
+         EXISTS (SELECT 1 FROM {SCHEMA}.dim_synthetic_generator s
+                  WHERE s.generator_id = t.generator_id
+                    AND s.supersedes_sha256 = t.observation_sha256)
+           AS is_superseded
+    FROM {SCHEMA}.dim_synthetic_generator t
+), ranked AS (
+  SELECT b.*,
+         count(*) FILTER (WHERE NOT is_superseded)
+           OVER (PARTITION BY generator_id, observed_at) AS live_at_observed,
+         max(observed_at) FILTER (WHERE NOT is_superseded)
+           OVER (PARTITION BY generator_id)             AS newest_live
+    FROM base b
+)
+SELECT DISTINCT ON (generator_id) ranked.*,
+       CASE WHEN NOT is_superseded
+             AND observed_at = newest_live
+             AND live_at_observed > 1
+            THEN 'AMBIGUOUS_TIE' ELSE 'UNAMBIGUOUS'
+       END AS currency_state
+  FROM ranked
+ ORDER BY generator_id, is_superseded ASC, observed_at DESC,
+          observation_sha256 DESC;
+
+DROP VIEW IF EXISTS {SCHEMA}.v_synthetic_generator_ambiguous;
+CREATE VIEW {SCHEMA}.v_synthetic_generator_ambiguous AS
+SELECT generator_id, observed_at, count(*) AS branches
+  FROM {SCHEMA}.dim_synthetic_generator t
+ WHERE NOT EXISTS (SELECT 1 FROM {SCHEMA}.dim_synthetic_generator s
+                    WHERE s.generator_id = t.generator_id
+                      AND s.supersedes_sha256 = t.observation_sha256)
+ GROUP BY generator_id, observed_at
+HAVING count(*) > 1;
+
 
 CREATE INDEX IF NOT EXISTS idx_dim_lake_variable_entity
   ON {SCHEMA}.dim_lake_variable (entity);
@@ -170,6 +367,17 @@ def load_index(engine, index: dict) -> dict:
         raise InventoryLoadRefusal(
             f"not a bank index: {index.get('schema')!r}")
     index_sha = index["index_sha256"]
+    # C38: the artifact's OWN chronology decides currency. `indexed_at`
+    # is when the index was built; `loaded_at` is when this database
+    # heard about it, and re-importing an old index today must not make
+    # it current.
+    observed_at = index.get("indexed_at")
+    observed_source = "ARTIFACT_INDEXED_AT"
+    if not isinstance(observed_at, str) or not observed_at.strip():
+        raise InventoryLoadRefusal(
+            "the index carries no `indexed_at`; without the artifact's "
+            "own chronology, currency would silently fall back to load "
+            "order — which is the defect C38 exists to remove")
     banks = index["banks"]
     counts = {t: 0 for t in NEW_TABLES}
     with engine.begin() as conn:
@@ -185,9 +393,10 @@ def load_index(engine, index: dict) -> dict:
                    frequency, period_start, period_end,
                    physical_sha256, digest_state,
                    authority_class, census_sha256,
-                   observation_sha256)
+                   observation_sha256, observed_at,
+                   observed_at_source)
                 VALUES (:i, :e, :sc, :f, :ps, :pe, :d, :ds, :a,
-                        :c, :o)
+                        :c, :o, :oa, :os)
                 ON CONFLICT (appearance_id, observation_sha256)
                 DO NOTHING
             """), {"o": observation_sha256({
@@ -207,7 +416,8 @@ def load_index(engine, index: dict) -> dict:
                    "pe": str(a["period_end"]),
                    "d": a["physical_sha256"],
                    "ds": a["digest_state"], "a": auth_fin,
-                   "c": census_sha})
+                   "c": census_sha, "oa": observed_at,
+                   "os": observed_source})
             counts["dim_lake_appearance"] += r.rowcount or 0
         for v in fin.get("variables", []):
             r = conn.execute(text(f"""
@@ -216,9 +426,10 @@ def load_index(engine, index: dict) -> dict:
                    source_class, unit, event_time,
                    available_time, semantics_declared,
                    appearance_count, authority_class,
-                   census_sha256, observation_sha256)
+                   census_sha256, observation_sha256,
+                   observed_at, observed_at_source)
                 VALUES (:i, :e, :cn, :sc, :u, :et, :at, :sd,
-                        :ac, :a, :c, :o)
+                        :ac, :a, :c, :o, :oa, :os)
                 ON CONFLICT (variable_id, observation_sha256)
                 DO NOTHING
             """), {"o": observation_sha256({
@@ -241,7 +452,8 @@ def load_index(engine, index: dict) -> dict:
                    "at": v["available_time"],
                    "sd": bool(v["semantics_declared"]),
                    "ac": int(v["appearance_count"]),
-                   "a": auth_fin, "c": census_sha})
+                   "a": auth_fin, "c": census_sha,
+                   "oa": observed_at, "os": observed_source})
             counts["dim_lake_variable"] += r.rowcount or 0
 
         pub = banks.get("public_forecasting", {})
@@ -251,8 +463,10 @@ def load_index(engine, index: dict) -> dict:
                 INSERT INTO {SCHEMA}.dim_public_series
                   (series_id, family, dataset_id, frequency,
                    digest, authority_class, index_sha256,
-                   observation_sha256)
-                VALUES (:i, :f, :d, :fr, :dg, :a, :x, :o)
+                   observation_sha256, observed_at,
+                   observed_at_source)
+                VALUES (:i, :f, :d, :fr, :dg, :a, :x, :o, :oa,
+                        :os)
                 ON CONFLICT (series_id, observation_sha256)
                 DO NOTHING
             """), {"o": observation_sha256({
@@ -266,7 +480,8 @@ def load_index(engine, index: dict) -> dict:
                    "d": s["dataset_id"],
                    "fr": str(s.get("frequency", "UNKNOWN")),
                    "dg": s.get("digest", "UNAVAILABLE"),
-                   "a": auth_pub, "x": index_sha})
+                   "a": auth_pub, "x": index_sha,
+                   "oa": observed_at, "os": observed_source})
             counts["dim_public_series"] += r.rowcount or 0
 
         syn = banks.get("synthetic_known_mechanism", {})
@@ -276,9 +491,10 @@ def load_index(engine, index: dict) -> dict:
                 INSERT INTO {SCHEMA}.dim_synthetic_generator
                   (generator_id, producer, family, role,
                    mechanism_json, authority_class,
-                   index_sha256, observation_sha256)
+                   index_sha256, observation_sha256,
+                   observed_at, observed_at_source)
                 VALUES (:i, :p, :f, :r, CAST(:m AS JSONB), :a,
-                        :x, :o)
+                        :x, :o, :oa, :os)
                 ON CONFLICT (generator_id, observation_sha256)
                 DO NOTHING
             """), {"o": observation_sha256({
@@ -292,7 +508,8 @@ def load_index(engine, index: dict) -> dict:
                    "r": g["role"],
                    "m": json.dumps(g["mechanism"],
                                    sort_keys=True),
-                   "a": auth_syn, "x": index_sha})
+                   "a": auth_syn, "x": index_sha,
+                   "oa": observed_at, "os": observed_source})
             counts["dim_synthetic_generator"] += r.rowcount or 0
     return counts
 

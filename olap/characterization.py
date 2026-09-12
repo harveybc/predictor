@@ -65,15 +65,59 @@ CREATE TABLE IF NOT EXISTS {SCHEMA_NAME}.fact_variable_characterization (
                observation_sha256)
 );
 
-CREATE OR REPLACE VIEW {SCHEMA_NAME}.v_variable_characterization_current AS
+-- C39 (order 2026-09-11): a descriptor row must say WHAT was measured.
+--
+-- The 420 pilot rows carried a value and a contract and nothing that
+-- ties them to bytes: no source, no digest, no window, no code, no
+-- protocol, and no terminal they were born from. Two different files
+-- yielding the same descriptive number produced the SAME
+-- observation_sha256 and collided as one observation.
+--
+-- These columns are ADDITIVE. The pilot rows are never edited or
+-- deleted; they keep their identity and are labelled for what they
+-- were, and every new measurement is a new version beside them.
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS source_id TEXT;
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS source_sha256 TEXT;
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS window_sha256 TEXT;
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS window_contract TEXT;
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS code_identity TEXT;
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS protocol_version TEXT;
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS side TEXT;
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS contract_role TEXT;
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS units TEXT;
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS terminal_attempt TEXT;
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS measurement_sha256 TEXT;
+ALTER TABLE {SCHEMA_NAME}.fact_variable_characterization
+  ADD COLUMN IF NOT EXISTS binding_state TEXT;
+
+UPDATE {SCHEMA_NAME}.fact_variable_characterization
+   SET binding_state = 'PILOT_UNBOUND_TO_SOURCE_BYTES'
+ WHERE binding_state IS NULL;
+
+-- C39/C38: current means the latest MEASUREMENT, not the latest load.
+DROP VIEW IF EXISTS {SCHEMA_NAME}.v_variable_characterization_current;
+CREATE VIEW {SCHEMA_NAME}.v_variable_characterization_current AS
 SELECT DISTINCT ON (variable_id, partition_key, descriptor) *
 FROM {SCHEMA_NAME}.fact_variable_characterization
 ORDER BY variable_id, partition_key, descriptor,
-         loaded_at DESC, observation_sha256 DESC;
+         measured_at DESC, observation_sha256 DESC;
 
 CREATE INDEX IF NOT EXISTS idx_fact_var_char_bank
   ON {SCHEMA_NAME}.fact_variable_characterization
      (bank_authority, descriptor);
+CREATE INDEX IF NOT EXISTS idx_fact_var_char_source
+  ON {SCHEMA_NAME}.fact_variable_characterization (source_sha256);
 """
 
 
@@ -89,17 +133,77 @@ def _sha(payload) -> str:
 
 
 def _timed(fn):
+    """Measure a descriptor, and its cost, without letting one
+    descriptor kill the measurement.
+
+    C40: a variable whose range overflows float64 made `np.histogram`
+    raise, and the exception escaped the whole characterization — so a
+    single pathological column silenced every other descriptor of
+    every other variable in the batch. A descriptor that cannot be
+    computed is a typed ABSENCE, which is a result; it is not an
+    excuse to report nothing.
+    """
     t0 = time.perf_counter()
-    value = fn()
+    try:
+        value = fn()
+    except Exception as exc:                            # noqa: BLE001
+        value = _NotComputed(exc.__class__.__name__)
     return value, round(time.perf_counter() - t0, 9)
+
+
+class _NotComputed:
+    __slots__ = ("reason",)
+
+    def __init__(self, reason: str) -> None:
+        self.reason = reason
+
+
+#: C39: the facts a descriptor row must bind before it is a
+#: measurement of anything. A value with no source is a number.
+BINDING_KEYS = ("source_id", "source_sha256", "window_sha256",
+                "window_contract", "code_identity", "protocol_version",
+                "side", "contract_role", "units", "terminal_attempt")
+
+PROTOCOL_VERSION = "crispdm.characterization_protocol.v2"
+
+
+def verify_binding(binding: dict, *, variable_id: str) -> dict:
+    """Every binding field present and non-empty, nothing undeclared."""
+    if not isinstance(binding, dict):
+        raise CharacterizationRefusal(
+            f"{variable_id}: the observation binding is not a mapping")
+    missing = [k for k in BINDING_KEYS
+               if not str(binding.get(k, "")).strip()]
+    if missing:
+        raise CharacterizationRefusal(
+            f"{variable_id}: the observation binding is missing "
+            f"{missing} — a descriptor that cannot be traced to the "
+            "bytes it was computed from is not a measurement")
+    undeclared = sorted(set(binding) - set(BINDING_KEYS))
+    if undeclared:
+        raise CharacterizationRefusal(
+            f"{variable_id}: undeclared binding fields {undeclared}")
+    return {k: str(binding[k]) for k in BINDING_KEYS}
 
 
 def characterize_series(values, *, variable_id: str,
                         partition_key: str,
                         bank_authority: str,
                         measured_at: str,
-                        noise_reference=None) -> list[dict]:
-    """Measure ONE variable on ONE development partition."""
+                        binding: dict,
+                        noise_reference=None,
+                        timestamps=None,
+                        imputation: str | None = None) -> list[dict]:
+    """Measure ONE variable on ONE development partition.
+
+    `binding` is required (C39): the source and its byte digest, the
+    exact window, the code and protocol that produced the numbers, the
+    side/role the variable is consumed under, its units, and the
+    terminal attempt this measurement was born from. All of it enters
+    the observation identity, so two different files that happen to
+    give the same descriptive number are two observations — they used
+    to collide as one.
+    """
     import numpy as np
 
     if bank_authority not in BANKS:
@@ -107,6 +211,7 @@ def characterize_series(values, *, variable_id: str,
             f"{variable_id}: unknown bank authority "
             f"{bank_authority!r} — a measurement whose authority "
             "is unknown is not stored")
+    bound = verify_binding(binding, variable_id=variable_id)
     arr = np.asarray(values, dtype="float64")
     rows: list[dict] = []
 
@@ -115,28 +220,77 @@ def characterize_series(values, *, variable_id: str,
         # the observation identity is stamped HERE so every exit
         # path carries it — the early return for a series with
         # too few finite values used to skip it
+        if isinstance(value, _NotComputed):
+            rows.append({
+                "variable_id": variable_id,
+                "partition_key": partition_key,
+                "bank_authority": bank_authority,
+                "descriptor": descriptor,
+                "value": None,
+                "value_text": f"NOT_COMPUTABLE:{value.reason}",
+                "descriptor_contract": (
+                    f"{contract} — NOT IDENTIFIABLE: computing it "
+                    f"raised {value.reason} on this variable"),
+                "identifiable": False,
+                "cost_seconds": cost,
+                "measured_at": measured_at,
+                "binding_state": "BOUND_TO_SOURCE_BYTES",
+                **bound,
+            })
+            rows[-1]["observation_sha256"] = _sha({
+                "variable_id": variable_id,
+                "partition_key": partition_key,
+                "descriptor": descriptor,
+                "value_text": rows[-1]["value_text"],
+                "identifiable": False,
+                "contract": rows[-1]["descriptor_contract"],
+                "bank": bank_authority, "binding": bound})
+            rows[-1]["measurement_sha256"] = _sha({
+                "observation": rows[-1]["observation_sha256"],
+                "measured_at": measured_at, "cost_seconds": cost})
+            return
+        numeric = (isinstance(value, (int, float))
+                   and not isinstance(value, bool))
+        finite_value = numeric and math.isfinite(float(value))
+        if numeric and not finite_value:
+            # C40: an inf or NaN never leaves as an identifiable
+            # number with numeric-looking text. It is a typed absence.
+            value_text, identifiable = "NOT_FINITE", False
+        elif value is None:
+            value_text = "UNAVAILABLE"
+        else:
+            value_text = str(value)
         row = {
             "variable_id": variable_id,
             "partition_key": partition_key,
             "bank_authority": bank_authority,
             "descriptor": descriptor,
-            "value": (float(value)
-                      if isinstance(value, (int, float))
-                      and math.isfinite(float(value)) else None),
-            "value_text": ("UNAVAILABLE" if value is None
-                           else str(value)),
+            "value": float(value) if finite_value else None,
+            "value_text": value_text,
             "descriptor_contract": contract,
             "identifiable": bool(identifiable),
             "cost_seconds": cost,
             "measured_at": measured_at,
+            "binding_state": "BOUND_TO_SOURCE_BYTES",
+            **bound,
         }
+        # C39: the SCIENTIFIC identity covers every fact that decides
+        # what was measured. Cost and the instant of measurement are
+        # performance, not science, so they carry their own identity
+        # and cannot silently collapse two observations into one.
         row["observation_sha256"] = _sha({
             "variable_id": row["variable_id"],
             "partition_key": row["partition_key"],
             "descriptor": row["descriptor"],
             "value_text": row["value_text"],
+            "identifiable": row["identifiable"],
             "contract": row["descriptor_contract"],
-            "bank": row["bank_authority"]})
+            "bank": row["bank_authority"],
+            "binding": bound})
+        row["measurement_sha256"] = _sha({
+            "observation": row["observation_sha256"],
+            "measured_at": measured_at,
+            "cost_seconds": cost})
         rows.append(row)
 
     n = arr.size
@@ -202,46 +356,79 @@ def characterize_series(values, *, variable_id: str,
         "std of per-window means divided by the overall std; "
         "windows are equal splits, not a regime model", cost)
 
-    # ---- dependence ----
+    # ---- dependence, on the ORIGINAL time axis ----
+    #
+    # C40: these used to run on `finite`, the array with non-finite
+    # entries REMOVED. Deleting a row before shifting closes the gap,
+    # so "lag 1" became "the next value that happens to exist" — with
+    # one NaN in the middle of a daily series, the reported lag-1
+    # autocorrelation pairs observations two days apart. The pairs are
+    # now taken at the original separation and only kept when BOTH
+    # members are finite.
+    has_gaps = bool(n - finite.size)
+
     def acf(lag):
         def _f():
-            a, b = finite[:-lag], finite[lag:]
+            a, b = arr[:-lag], arr[lag:]
+            keep = np.isfinite(a) & np.isfinite(b)
+            a, b = a[keep], b[keep]
             if a.size < 3 or np.std(a) == 0 or np.std(b) == 0:
                 return None
             return float(np.corrcoef(a, b)[0, 1])
         return _f
     for lag in (1, 5, 20):
-        if finite.size > lag + 2:
+        if n > lag + 2:
             val, cost = _timed(acf(lag))
             add(f"autocorrelation_lag{lag}", val,
-                f"Pearson correlation at lag {lag}", cost,
+                f"Pearson correlation over pairs separated by {lag} "
+                "positions on the ORIGINAL axis, keeping only pairs "
+                "whose members are both finite; missing rows are "
+                "skipped, never closed up", cost,
                 identifiable=val is not None)
 
     def unit_root_proxy():
-        d = np.diff(finite)
+        # differences between ADJACENT original positions, both finite
+        a, b = arr[:-1], arr[1:]
+        keep = np.isfinite(a) & np.isfinite(b)
+        d = b[keep] - a[keep]
         if d.size < 3 or np.std(finite) == 0:
             return None
         return float(np.std(d, ddof=1) / np.std(finite, ddof=1))
     val, cost = _timed(unit_root_proxy)
     add("difference_to_level_dispersion", val,
-        "std of first differences over std of levels — a "
-        "DESCRIPTIVE stationarity proxy, not a hypothesis test",
-        cost, identifiable=val is not None)
+        "std of first differences over std of levels, differences "
+        "taken between ADJACENT original positions that are both "
+        "finite — a DESCRIPTIVE stationarity proxy, not a hypothesis "
+        "test", cost, identifiable=val is not None)
 
     # ---- spectral content ----
+    #
+    # C40: a Fourier transform assumes a regular grid. Running it over
+    # the compacted finite values silently resamples the series onto a
+    # grid that does not exist. With gaps it either refuses, or uses an
+    # imputation the CALLER predeclared — and then says which one.
     def spectral_centroid():
-        if finite.size < 8:
+        if has_gaps and not imputation:
             return None
-        spec = np.abs(np.fft.rfft(finite - finite.mean()))
-        freqs = np.fft.rfftfreq(finite.size)
+        series = finite if not has_gaps else _impute(arr, imputation)
+        if series is None or series.size < 8:
+            return None
+        spec = np.abs(np.fft.rfft(series - series.mean()))
+        freqs = np.fft.rfftfreq(series.size)
         total = spec.sum()
         return float((spec * freqs).sum() / total) if total > 0 \
             else None
     val, cost = _timed(spectral_centroid)
     add("spectral_centroid", val,
-        "amplitude-weighted mean frequency of the "
-        "mean-removed series", cost,
-        identifiable=val is not None)
+        "amplitude-weighted mean frequency of the mean-removed "
+        "series on a REGULAR grid"
+        + (f"; gaps filled by the predeclared imputation "
+           f"{imputation!r}" if (has_gaps and imputation)
+           else ("; NOT IDENTIFIABLE because the series has gaps and "
+                 "no imputation was predeclared — a spectrum of a "
+                 "compacted series describes a grid that does not "
+                 "exist" if has_gaps else "; the series has no gaps")),
+        cost, identifiable=val is not None)
 
     # ---- compressibility, named honestly ----
     def compressed_ratio():
@@ -274,11 +461,18 @@ def characterize_series(values, *, variable_id: str,
             "reported", 0.0, identifiable=False)
     else:
         def snr():
+            # C40: exact alignment. The observed and the reference are
+            # compared position by position on the original axis, and
+            # only where BOTH are finite — so a gap in either never
+            # shifts one series against the other.
             ref = np.asarray(noise_reference, dtype="float64")
             if ref.shape != arr.shape:
                 return None
-            resid = finite - ref[np.isfinite(arr)]
-            rp, np_ = float(np.var(ref)), float(np.var(resid))
+            keep = np.isfinite(arr) & np.isfinite(ref)
+            if keep.sum() < 3:
+                return None
+            resid = arr[keep] - ref[keep]
+            rp, np_ = float(np.var(ref[keep])), float(np.var(resid))
             return (10.0 * math.log10(rp / np_)
                     if np_ > 0 and rp > 0 else None)
         val, cost = _timed(snr)
@@ -288,6 +482,30 @@ def characterize_series(values, *, variable_id: str,
             "was supplied", cost, identifiable=val is not None)
 
     return rows
+
+
+#: imputations a caller may PREDECLARE for the spectral descriptor.
+#: There is no default: filling gaps is a modelling decision, and one
+#: made silently inside a measurement is the worst kind.
+IMPUTATIONS = ("linear_interpolation", "mean_fill")
+
+
+def _impute(arr, how: str | None):
+    import numpy as np
+    if how not in IMPUTATIONS:
+        raise CharacterizationRefusal(
+            f"unknown imputation {how!r}; declare one of "
+            f"{list(IMPUTATIONS)} or accept that the spectrum is not "
+            "identifiable for a series with gaps")
+    finite_mask = np.isfinite(arr)
+    if finite_mask.sum() < 2:
+        return None
+    idx = np.arange(arr.size)
+    if how == "mean_fill":
+        out = arr.copy()
+        out[~finite_mask] = float(np.mean(arr[finite_mask]))
+        return out
+    return np.interp(idx, idx[finite_mask], arr[finite_mask])
 
 
 def assert_no_selection(rows: list[dict]) -> None:
@@ -323,9 +541,16 @@ def load_rows(engine, rows: list[dict]) -> dict:
                   (variable_id, partition_key, bank_authority,
                    descriptor, value, value_text,
                    descriptor_contract, identifiable,
-                   cost_seconds, observation_sha256, measured_at)
+                   cost_seconds, observation_sha256, measured_at,
+                   source_id, source_sha256, window_sha256,
+                   window_contract, code_identity,
+                   protocol_version, side, contract_role, units,
+                   terminal_attempt, measurement_sha256,
+                   binding_state)
                 VALUES (:v, :p, :b, :d, :val, :vt, :c, :i, :cost,
-                        :o, :m)
+                        :o, :m, :src, :srcsha, :wsha, :wc, :code,
+                        :proto, :side, :role, :units, :term,
+                        :msha, :bstate)
                 ON CONFLICT (variable_id, partition_key,
                              descriptor, observation_sha256)
                 DO NOTHING
@@ -338,6 +563,19 @@ def load_rows(engine, rows: list[dict]) -> dict:
                    "i": r["identifiable"],
                    "cost": r["cost_seconds"],
                    "o": r["observation_sha256"],
-                   "m": r["measured_at"]})
+                   "m": r["measured_at"],
+                   "src": r.get("source_id"),
+                   "srcsha": r.get("source_sha256"),
+                   "wsha": r.get("window_sha256"),
+                   "wc": r.get("window_contract"),
+                   "code": r.get("code_identity"),
+                   "proto": r.get("protocol_version"),
+                   "side": r.get("side"),
+                   "role": r.get("contract_role"),
+                   "units": r.get("units"),
+                   "term": r.get("terminal_attempt"),
+                   "msha": r.get("measurement_sha256"),
+                   "bstate": r.get("binding_state",
+                                   "PILOT_UNBOUND_TO_SOURCE_BYTES")})
             loaded += res.rowcount or 0
     return {"fact_variable_characterization": loaded}

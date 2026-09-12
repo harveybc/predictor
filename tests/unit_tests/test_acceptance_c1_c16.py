@@ -338,9 +338,12 @@ def test_12_translated_rows_are_kept_and_superseded():
     except Exception as exc:                    # noqa: BLE001
         pytest.skip(f"cube unavailable: "
                     f"{exc.__class__.__name__}")
-    assert rows.get(ce.TRANSLATED) == 60, (
-        "the 60 translated rows must be KEPT, not deleted")
-    assert rows.get(ce.PRODUCER_BOUND) == 60
+    assert rows.get(ce.TRANSLATED, 0) >= 60, (
+        "the 60 translated rows must be KEPT, not deleted — a FLOOR, "
+        "because the cube is fed continuously and C35 lets a second "
+        "attempt of an experiment land beside the first")
+    assert rows.get(ce.PRODUCER_BOUND, 0) >= 60, (
+        "a FLOOR: the cube is fed continuously and no row may\n         disappear")
     assert linked == 60
 
 
