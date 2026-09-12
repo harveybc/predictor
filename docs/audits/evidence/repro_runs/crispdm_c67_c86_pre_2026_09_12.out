@@ -1,0 +1,108 @@
+=== identities BEFORE ===
+  b4_v7_real: 9944feb340a4e2f3
+  t2_original_real: ea2a8a5da5512558
+  b4_v7_private_copy: b5ea94edd810b770
+  t2_successor_private_copy: 160e198c94a277f1
+  lake_terminals_v1: ec303016bc85c44b
+  lake_terminals_v2: 41dfa92c00321822
+  implementation digests: predictor=a2b579dc8b46, b4=a2b579dc8b46, t2=a2b579dc8b46, t2_snapshot=a2b579dc8b46
+
+=== PRE C67.predictor.1-4: leaf renamed inside the RETAINED directory, substitute with same name, mode, length and mtime ===
+  inventoried {'ino': 394, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218580359503, 'ctime_ns': 1789239218580359503}
+  substituted {'ino': 395, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218580359503, 'ctime_ns': 1789239218580487936}
+  [PRE-REPRODUCED] photographed=1.0 consumed=9.0: the reader re-opens the NAME and compares no inventoried leaf facts
+
+=== PRE C67.predictor.5: in-place mutation of equal length after inventory ===
+  inventoried {'ino': 399, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218581144190, 'ctime_ns': 1789239218581144190}
+  mutated     {'ino': 399, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218581144190, 'ctime_ns': 1789239218581227017}
+  [PRE-REPRODUCED] same inode, size and mtime; only ctime moved (True); consumed=9.0
+
+=== PRE C67.b4.1-4: leaf renamed inside the RETAINED directory, substitute with same name, mode, length and mtime ===
+  inventoried {'ino': 403, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218582155627, 'ctime_ns': 1789239218582155627}
+  substituted {'ino': 404, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218582155627, 'ctime_ns': 1789239218582266467}
+  [PRE-REPRODUCED] photographed=1.0 consumed=9.0: the reader re-opens the NAME and compares no inventoried leaf facts
+
+=== PRE C67.b4.5: in-place mutation of equal length after inventory ===
+  inventoried {'ino': 408, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218582524596, 'ctime_ns': 1789239218582524596}
+  mutated     {'ino': 408, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218582524596, 'ctime_ns': 1789239218582605109}
+  [PRE-REPRODUCED] same inode, size and mtime; only ctime moved (True); consumed=9.0
+
+=== PRE C67.t2.1-4: leaf renamed inside the RETAINED directory, substitute with same name, mode, length and mtime ===
+  inventoried {'ino': 412, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218583441665, 'ctime_ns': 1789239218583441665}
+  substituted {'ino': 413, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218583441665, 'ctime_ns': 1789239218583551593}
+  [PRE-REPRODUCED] photographed=1.0 consumed=9.0: the reader re-opens the NAME and compares no inventoried leaf facts
+
+=== PRE C67.t2.5: in-place mutation of equal length after inventory ===
+  inventoried {'ino': 417, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218583798581, 'ctime_ns': 1789239218583798581}
+  mutated     {'ino': 417, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218583798581, 'ctime_ns': 1789239218583879034}
+  [PRE-REPRODUCED] same inode, size and mtime; only ctime moved (True); consumed=9.0
+
+=== PRE C67.t2_snapshot.1-4: leaf renamed inside the RETAINED directory, substitute with same name, mode, length and mtime ===
+  inventoried {'ino': 421, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218584658782, 'ctime_ns': 1789239218584658782}
+  substituted {'ino': 422, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218584658782, 'ctime_ns': 1789239218584771565}
+  [PRE-REPRODUCED] photographed=1.0 consumed=9.0: the reader re-opens the NAME and compares no inventoried leaf facts
+
+=== PRE C67.t2_snapshot.5: in-place mutation of equal length after inventory ===
+  inventoried {'ino': 426, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218585014556, 'ctime_ns': 1789239218585014556}
+  mutated     {'ino': 426, 'size': 21, 'mode': '0o600', 'mtime_ns': 1789239218585014556, 'ctime_ns': 1789239218585093055}
+  [PRE-REPRODUCED] same inode, size and mtime; only ctime moved (True); consumed=9.0
+
+=== PRE C67.t2.6: ARRAYS_<uid>.npz substituted between inventory and its late read ===
+  inventoried {'ino': 431, 'size': 320, 'mode': '0o600', 'mtime_ns': 1789239218591677204, 'ctime_ns': 1789239218591677204}
+  substituted {'ino': 432, 'size': 320, 'mode': '0o600', 'mtime_ns': 1789239218591677204, 'ctime_ns': 1789239218591959239}
+  [PRE-REPRODUCED] the adapter photographed 1.0 and the verifier would consume 999.0
+
+=== PRE C69.1: an absent source file ===
+  [PRE-REPRODUCED] verdict=TERMINALS_VERIFIED_EXACT with absent_count=1
+
+=== PRE C69.2: a fabricated descriptor block ===
+  [PRE-REPRODUCED] verdict=TERMINALS_VERIFIED_EXACT: no terminal schema, no recomputation
+
+=== PRE C69.3: a terminal declaring ANOTHER variable's appearance and file ===
+  [PRE-REPRODUCED] verdict=TERMINALS_VERIFIED_EXACT; var_a declares app_1 (b.csv) and the verifier silently bound it to the census's FIRST appearance (a.csv)
+
+=== PRE C69.4: absolute path, traversal and symlink sources reach the read ===
+  [PRE-REPRODUCED] absolute: bytes outside the lake root were read and digested (verdict=TERMINALS_VERIFIED_EXACT)
+  [PRE-REPRODUCED] traversal: bytes outside the lake root were read and digested (verdict=TERMINALS_VERIFIED_EXACT)
+  [PRE-REPRODUCED] symlink: bytes outside the lake root were read and digested (verdict=TERMINALS_VERIFIED_EXACT)
+
+=== PRE C69.5: extra key, wrong type and unknown outcome in a terminal ===
+  [PRE-REPRODUCED] verdict=TERMINALS_VERIFIED_EXACT; outcomes={'BANANA': 1}
+
+=== PRE C69.6: a self-consistent ledger and census over a SUBSTITUTED population ===
+  [PRE-REPRODUCED] verdict=TERMINALS_VERIFIED_EXACT for census 9ef85cfbad9c != durable 49a8813d782a; verify() takes no expected authority: ['state_dir', 'lake_root', 'census_path', 'strict_mode']
+
+=== PRE C74.1: local reassignment whose LAST definition leaks ===
+  [PRE-REPRODUCED] class=CAUSAL_ACTIVE lookback=1
+
+=== PRE C74.2: chained windows 10 then 20 ===
+  [PRE-REPRODUCED] lookback=20; inclusive composition is 29
+
+=== PRE C74.3: a forward callable passed to apply/map/transform ===
+  [PRE-REPRODUCED] apply(lead): class=CAUSAL_ACTIVE
+  [PRE-REPRODUCED] map(lead): class=CAUSAL_ACTIVE
+  [PRE-REPRODUCED] transform(lead): class=CAUSAL_ACTIVE
+
+=== PRE C74.4: constant positional indices ===
+  [PRE-REPRODUCED] df['close'].iloc[-1]: class=CAUSAL_ACTIVE
+  [PRE-REPRODUCED] df['close'].iloc[5]: class=CAUSAL_ACTIVE
+  [PRE-REPRODUCED] df['close'].values[-1]: class=CAUSAL_ACTIVE
+
+=== PRE C74.5: a nested function body contaminating the outer scope ===
+  [PRE-REPRODUCED] class=CAUSAL_ACTIVE: `x` is unbound in the outer scope, yet the nested definition was harvested as an outer local
+
+=== PRE C74.6: two live producers of one column; the order decides ===
+  [PRE-REPRODUCED] order A -> CAUSAL_ACTIVE, order B -> NON_CAUSAL
+
+=== PRE C74.7: a name-coincident causal producer that never generated the dataset ===
+  [PRE-REPRODUCED] class=CAUSAL_ACTIVE from repo some_other_project; published producer keys ['code_sha256', 'commit', 'file', 'line', 'repository', 'symbol'] carry no dataset/physical binding
+
+=== identities AFTER ===
+  b4_v7_real: unchanged=True
+  t2_original_real: unchanged=True
+  b4_v7_private_copy: unchanged=True
+  t2_successor_private_copy: unchanged=True
+  lake_terminals_v1: unchanged=True
+  lake_terminals_v2: unchanged=True
+
+=== PRE SUMMARY: 0 NOT reproduced ===
