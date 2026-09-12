@@ -1,0 +1,37 @@
+[Unit]
+Description=CRISP-DM OLAP outbox loader (CPU only, idempotent)
+Documentation=file:%h/Documents/GitHub/predictor/docs/handoffs/MUSASHI_TO_GENERAL_SATOSHI_CRISPDM_C17_C30_ORDER_2026_09_10.md
+# The loader is the ONLY component that needs PostgreSQL. It never
+# starts, stops or restarts PostgreSQL or Metabase; if the database
+# is unavailable it retries and the outbox keeps the evidence.
+#
+# A crash loop must not become a busy loop. R5 (order 2026-09-11):
+# these two directives belong to [Unit], not [Service]. They were
+# declared under [Service], where systemd parses the file, warns
+# `Unknown key ... ignoring` and applies its DEFAULT burst instead —
+# so the rate limit the comment promised was never in force. The
+# warning was visible in `systemd-analyze --user verify` the whole
+# time; nobody ran it. There is now a regression that does.
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+Type=simple
+# One effective consumer: systemd will not start a second copy of
+# a running unit, and the loader itself is idempotent by content
+# address, so a duplicate could not double-load anyway.
+WorkingDirectory=%h/Documents/GitHub/predictor
+EnvironmentFile=%h/.config/crispdm/olap-loader.env
+ExecStart=%h/anaconda3/envs/trading-stack/bin/python \
+    %h/Documents/GitHub/predictor/tools/olap_loader.py \
+    --watch 30
+Nice=15
+# CPU only: no accelerator is visible to this unit.
+Environment=CUDA_VISIBLE_DEVICES=
+Restart=always
+RestartSec=10
+StandardOutput=append:%h/.local/state/crispdm/olap-loader.log
+StandardError=append:%h/.local/state/crispdm/olap-loader.log
+
+[Install]
+WantedBy=default.target

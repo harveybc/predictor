@@ -80,5 +80,21 @@ DEFAULT_VALUES = {
     "penalty_close_lambda":0.0001, # penalty in thel loss function for the predicted value being 0 (Naive)
     "penalty_far_lambda":0.0001,    # penalty in thel loss function for the predicted value being far from the target value in the opposite dicection of the 0 (Naive)
     "incentive_loss": 10.0,
-    "use_log1p_targets": True
+    "use_log1p_targets": True,
+    # Eligibility gate (order C1-C5). A NEW experiment requires a
+    # reviewed manifest and an EXTERNAL review record; omitting
+    # them no longer degrades silently. Reproducing historical
+    # work is an express choice:
+    #   "execution_purpose": "ARCHIVAL_REPLAY_NON_AUTHORITATIVE"
+    # which is stamped into the config, the results and the cube.
+    "execution_purpose": "ARCHIVAL_REPLAY_NON_AUTHORITATIVE",
+    "eligibility_manifest": None,
+    "eligibility_manifest_sha256": None,
+    "eligibility_max_age_days": None,
+    "eligibility_scope": "forecasting",
+    "eligibility_census_sha256": None,
+    "eligibility_submission_out": None,
+    # An ASSERTION about the derived set, never its source. If
+    # present it must equal what the run actually consumes.
+    "eligibility_subjects": None,
 }

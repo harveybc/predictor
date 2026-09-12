@@ -1,0 +1,40 @@
+
+=== POST 1: a disagreeing legacy alias refuses before any model exists ===
+  [CORRECTED] REFUSED: predictor: predictor_plugin='cnn' and legacy plugin='ann' disagree. The executor obeys the canonical key, so this run would train one plugin 
+
+=== POST 2: mutating a shared plugin module changes the identity ===
+  [CORRECTED] surface=130 files; base.py bound=True; digest changed=True
+
+=== POST 3: resolution falls back to this repository's own declaration ===
+  [CORRECTED] setup.py declares 28 predictor entry points; resolution stays inside this checkout (source=INSTALLED_ENTRY_POINT_REGISTRY)
+
+=== POST 4: x::SAME and y::SAME are distinct subjects ===
+  [CORRECTED] subjects=[('x', 'SAME'), ('x', 'f1'), ('y', 'SAME'), ('y', 'TARGET')]; collisions=0
+
+=== POST 5: a y schema that differs across partitions refuses ===
+  [CORRECTED] REFUSED: the y schema differs across partitions — {'test': 3, 'train': 3, 'validation': 3} columns per role. Train, validation and test must observe t
+
+=== POST 6: a run dimension carries the execution identity ===
+  [CORRECTED] one campaign, 2 attempts (FAILED then COMPLETE, different code); a REUSED run_id with a different execution refuses (True); a foreign producer refuses (True)
+
+=== POST 7: `current` is the latest OBSERVATION, not the latest load ===
+  [CORRECTED] no statement orders by load time; 4 orderings by observed_at with a supersession override, and 8 views including the companions that expose incomparable branches
+
+=== POST 8: different source bytes are different observations ===
+  [CORRECTED] the same descriptive value over different source bytes yields different observation digests, and an unbound measurement refuses outright
+
+=== POST 9: a gap is skipped, not closed, and the spectrum refuses ===
+  [CORRECTED] with every third sample missing: PRE reports +0.6843, POST reports +0.8660, the truth over adjacent finite pairs is +0.8660; the spectrum is NOT identifiable without a predeclared imputation and IS with one
+
+=== POST 10: a timestamp is an axis contract, never a numeric variable ===
+  [CORRECTED] 3 axis contracts recorded; zero temporal columns received a descriptor
+olap terminal: COMPLETE -> OPERATIONAL_GAP UNAVAILABLE
+olap terminal: INCONCLUSIVE -> OPERATIONAL_GAP UNAVAILABLE
+
+=== POST 11: an outbox failure leaves ONE gap per run beside the results ===
+  [CORRECTED] 2 gap files written for two runs into one directory; the call site binds results_dir lazily
+
+=== POST 12: health is the service; a dead-letter is a separate signal ===
+  [CORRECTED] a known refusal leaves `healthy` true and raises `attention_required`; a stale heartbeat makes `healthy` false
+
+=== POST SUMMARY: 12/12 CORRECTED ===

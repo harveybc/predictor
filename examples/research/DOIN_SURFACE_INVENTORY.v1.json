@@ -1,0 +1,201 @@
+{
+ "as_of": "2026-09-10T00:00:00Z",
+ "inventory_sha256": "74eef578cef7bb2f2c42c329092da4d1973142f9439376c1dcafd617110942ac",
+ "proposed_wiring": "when a trading L2 publication path exists, call doin_domains.eligibility.require_eligible_gene_inputs(config, subject_ids=<the gene's declared input ids>, scope=<the L2 scope>) immediately before the gene is written, and refuse publication on its refusal. NOT WIRED in this order.",
+ "repositories": [
+  {
+   "call_site_rule": "a re-export inside the defining package is plumbing; only a call from outside it is an integration",
+   "directories_with_only_a_pycache": [
+    "src/doin_domains/simulation"
+   ],
+   "eligibility_call_sites_outside_defining_package": {
+    "require_eligible_gene_inputs": [],
+    "verify_identity": []
+   },
+   "has_live_call_site": false,
+   "package_surfaces": [
+    {
+     "modules": [
+      "validate_sota_domains_registry.py"
+     ],
+     "package": "docs/research/sota_domains/sources"
+    },
+    {
+     "modules": [
+      "run.py"
+     ],
+     "package": "experiments/wp3_mnist"
+    },
+    {
+     "modules": [
+      "run.py"
+     ],
+     "package": "experiments/wp3b_power"
+    },
+    {
+     "modules": [
+      "run.py"
+     ],
+     "package": "experiments/wp3c_scale"
+    },
+    {
+     "modules": [
+      "__init__.py"
+     ],
+     "package": "src/doin_domains"
+    },
+    {
+     "modules": [
+      "__init__.py",
+      "d3_contracts.py",
+      "holdout_budget.py",
+      "mnist_attack.py",
+      "mnist_holdout.py"
+     ],
+     "package": "src/doin_domains/domains"
+    },
+    {
+     "modules": [
+      "__init__.py",
+      "adapter.py"
+     ],
+     "package": "src/doin_domains/eligibility"
+    },
+    {
+     "modules": [
+      "__init__.py",
+      "contract.py",
+      "interface.py"
+     ],
+     "package": "src/doin_domains/verification"
+    },
+    {
+     "modules": [
+      "conftest.py",
+      "test_d3_contract.py",
+      "test_d3_mnist.py",
+      "test_domain_verification_interface.py"
+     ],
+     "package": "tests"
+    }
+   ],
+   "reexports_within_the_defining_package": {
+    "require_eligible_gene_inputs": [],
+    "verify_identity": []
+   },
+   "ref_count": 17,
+   "refs_carrying_a_trading_l2_path": {},
+   "refs_examined": [
+    "master",
+    "origin",
+    "origin/master",
+    "origin/retsu/wp2-d1-nats-hpob-20260829",
+    "origin/retsu/wp2c-claim-identity-20260829",
+    "origin/retsu/wp2d-partial-verification-20260829",
+    "origin/retsu/wp3-d3-mnist-20260829",
+    "origin/retsu/wp3b-power-adaptive-20260829",
+    "origin/retsu/wp3c-attack-scaling-20260829",
+    "origin/satoshi/crispdm-census-gate-20260910",
+    "retsu/wp2-d1-nats-hpob-20260829",
+    "retsu/wp2c-claim-identity-20260829",
+    "retsu/wp2d-partial-verification-20260829",
+    "retsu/wp3-d3-mnist-20260829",
+    "retsu/wp3b-power-adaptive-20260829",
+    "retsu/wp3c-attack-scaling-20260829",
+    "satoshi/crispdm-census-gate-20260910"
+   ],
+   "repository": "doin-domains"
+  },
+  {
+   "call_site_rule": "a re-export inside the defining package is plumbing; only a call from outside it is an integration",
+   "directories_with_only_a_pycache": [
+    "src/doin_plugins/verification"
+   ],
+   "eligibility_call_sites_outside_defining_package": {
+    "require_eligible_gene_inputs": [],
+    "verify_identity": []
+   },
+   "has_live_call_site": false,
+   "package_surfaces": [
+    {
+     "modules": [
+      "run_predictor_network.py"
+     ],
+     "package": "examples"
+    },
+    {
+     "modules": [
+      "__init__.py",
+      "quadratic_inferencer.py",
+      "quadratic_optimizer.py",
+      "quadratic_synthetic.py"
+     ],
+     "package": "src/doin_plugins"
+    },
+    {
+     "modules": [
+      "__init__.py",
+      "adapter.py",
+      "verify.py"
+     ],
+     "package": "src/doin_plugins/eligibility"
+    },
+    {
+     "modules": [
+      "__init__.py",
+      "binary_inferencer.py",
+      "binary_optimizer.py",
+      "inferencer.py",
+      "optimizer.py",
+      "synthetic.py"
+     ],
+     "package": "src/doin_plugins/predictor"
+    },
+    {
+     "modules": [
+      "__init__.py",
+      "inferencer.py",
+      "optimizer.py",
+      "runtime.py",
+      "synthetic.py"
+     ],
+     "package": "src/doin_plugins/trading"
+    },
+    {
+     "modules": [
+      "__init__.py",
+      "test_e2e_lifecycle.py",
+      "test_integration.py",
+      "test_network_integration.py",
+      "test_plugins.py",
+      "test_predictor_plugins.py",
+      "test_task_queue_integration.py",
+      "test_trading_plugins.py"
+     ],
+     "package": "tests"
+    }
+   ],
+   "reexports_within_the_defining_package": {
+    "require_eligible_gene_inputs": [],
+    "verify_identity": [
+     "src/doin_plugins/eligibility/__init__.py"
+    ]
+   },
+   "ref_count": 7,
+   "refs_carrying_a_trading_l2_path": {},
+   "refs_examined": [
+    "master",
+    "musashi/domain-adaptation-kit-20260816",
+    "origin",
+    "origin/master",
+    "origin/musashi/domain-adaptation-kit-20260816",
+    "origin/satoshi/crispdm-census-gate-20260910",
+    "satoshi/crispdm-census-gate-20260910"
+   ],
+   "repository": "doin-plugins"
+  }
+ ],
+ "schema": "crispdm.doin_surface_inventory.v1",
+ "verdict": "TRADING_L2_PUBLICATION_PATH_NOT_IMPLEMENTED",
+ "verdict_note": "no ref of either repository carries a trading-domain L2 gene publication path, and no module outside the one that defines it calls the eligibility consumer. The consumer is therefore INSTALLED AND TESTED but NOT INTEGRATED, and is reported as such rather than counted as an integration."
+}

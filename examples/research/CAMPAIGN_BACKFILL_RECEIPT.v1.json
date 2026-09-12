@@ -1,0 +1,132 @@
+{
+ "as_of": "2026-09-10T00:00:00Z",
+ "backup": {
+  "bytes": 123875,
+  "logical_name": "predictor_olap_pre_c12_c15_20260910.dump",
+  "sha256": "df2e2c4bf85ac47d11d5daffd2f0ced830aafeb1cfee0f0fbc76a682a085d67e",
+  "verification": "OPENED_AND_REHASHED"
+ },
+ "changed_tables": {
+  "fact_campaign_consumption": [
+   3,
+   6
+  ],
+  "fact_campaign_unit": [
+   60,
+   120
+  ]
+ },
+ "counts_after": {
+  "dim_campaign": 3,
+  "dim_dataset": 2,
+  "dim_experiment": 39,
+  "dim_series": 2,
+  "dim_variable": 99,
+  "fact_campaign_consumption": 6,
+  "fact_campaign_unit": 120,
+  "fact_dataset_inventory": 2,
+  "fact_ingestion_receipt": 1,
+  "fact_performance": 1404,
+  "fact_results_summary": 1404,
+  "fact_variable_profile": 99
+ },
+ "counts_before": {
+  "dim_campaign": 3,
+  "dim_dataset": 2,
+  "dim_experiment": 39,
+  "dim_series": 2,
+  "dim_variable": 99,
+  "fact_campaign_consumption": 3,
+  "fact_campaign_unit": 60,
+  "fact_dataset_inventory": 2,
+  "fact_ingestion_receipt": 1,
+  "fact_performance": 1404,
+  "fact_results_summary": 1404,
+  "fact_variable_profile": 99
+ },
+ "deletions": "NONE \u2014 this tool has no delete, truncate or reset path",
+ "ingestion_receipts": [
+  {
+   "as_of": "2026-09-10T00:00:00Z",
+   "campaign_key": "b4_campaign_generation_v7_20260908",
+   "envelope_sha256": "30668574086432cc5d1b8048026d7a4321363ff0f7ab95a24c78743c45e46dff",
+   "grants_nothing": "ingestion records a result; it never changes the result's authority",
+   "loaded": {
+    "campaigns": 1,
+    "consumption": 0,
+    "skipped_existing": 0,
+    "units": 0
+   },
+   "producer": "B4 paired RL campaign",
+   "receipt_sha256": "5e0b3b4870afcc0a9ce96073895439f62c1905e02cc2cdec49703f0f58de8cb5",
+   "result_class": "NON_GOVERNING",
+   "schema": "crispdm.campaign_ingestion_receipt.v1"
+  },
+  {
+   "as_of": "2026-09-10T00:00:00Z",
+   "campaign_key": "m4_v5_calibration_attempt3_20260909",
+   "envelope_sha256": "9182939fe49a98a2ac78cb285047816fc81ec25dec2fc1c2ca8e0ed918c6679d",
+   "grants_nothing": "ingestion records a result; it never changes the result's authority",
+   "loaded": {
+    "campaigns": 1,
+    "consumption": 1,
+    "skipped_existing": 0,
+    "units": 29
+   },
+   "producer": "M4 residual capacity",
+   "receipt_sha256": "14af1b05be1cfb519d06d46e881f4487842ab947fa8489a56ecd99761cb4b207",
+   "result_class": "CALIBRATION",
+   "schema": "crispdm.campaign_ingestion_receipt.v1"
+  },
+  {
+   "as_of": "2026-09-10T00:00:00Z",
+   "campaign_key": "t2_resource_successor_v1_20260909",
+   "envelope_sha256": "827ad800cc21c4b6c933976ca332ced25bc73b6a2d8b8b71a9101334f691e487",
+   "grants_nothing": "ingestion records a result; it never changes the result's authority",
+   "loaded": {
+    "campaigns": 1,
+    "consumption": 2,
+    "skipped_existing": 0,
+    "units": 31
+   },
+   "producer": "T2 public forecasting screen",
+   "receipt_sha256": "b340b3b3204a87d4c390e49d9af15ab3e6af7f9588c6264e39bed66d93caef84",
+   "result_class": "CONFIRMATION",
+   "schema": "crispdm.campaign_ingestion_receipt.v1"
+  }
+ ],
+ "loaded": {
+  "b4_campaign_generation_v7_20260908": {
+   "campaigns": 1,
+   "consumption": 0,
+   "skipped_existing": 0,
+   "units": 0
+  },
+  "m4_v5_calibration_attempt3_20260909": {
+   "campaigns": 1,
+   "consumption": 1,
+   "skipped_existing": 0,
+   "units": 29
+  },
+  "t2_resource_successor_v1_20260909": {
+   "campaigns": 1,
+   "consumption": 2,
+   "skipped_existing": 0,
+   "units": 31
+  }
+ },
+ "receipt_sha256": "2c3d053593f25a4ab812f4840a5aef7190b52f08cdda2f71dd7c02ffa12aa464",
+ "schema": "crispdm.campaign_backfill_receipt.v1",
+ "untouched_tables": {
+  "dim_campaign": 3,
+  "dim_dataset": 2,
+  "dim_experiment": 39,
+  "dim_series": 2,
+  "dim_variable": 99,
+  "fact_dataset_inventory": 2,
+  "fact_ingestion_receipt": 1,
+  "fact_performance": 1404,
+  "fact_results_summary": 1404,
+  "fact_variable_profile": 99
+ }
+}

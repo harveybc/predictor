@@ -1,0 +1,46 @@
+{
+ "as_of": "2026-09-10T00:00:00Z",
+ "backup": {
+  "name": "predictor_olap_pre_c25_20260910.dump",
+  "sha256": "ffe6570b752b706ab63c044e9b58c57075c878f2f4e78a98ce492d54c380547e",
+  "verification": "OPENED_AND_REHASHED"
+ },
+ "counts_after": {
+  "dim_dataset": 2,
+  "dim_experiment": 39,
+  "dim_lake_appearance": 1680,
+  "dim_lake_variable": 1965,
+  "dim_public_series": 4650,
+  "dim_series": 2,
+  "dim_synthetic_generator": 202,
+  "dim_variable": 99,
+  "fact_dataset_inventory": 2,
+  "fact_performance": 1404,
+  "fact_results_summary": 1404,
+  "fact_variable_profile": 99
+ },
+ "counts_before": {
+  "dim_dataset": 2,
+  "dim_experiment": 39,
+  "dim_lake_appearance": 1680,
+  "dim_lake_variable": 1965,
+  "dim_public_series": 4650,
+  "dim_series": 2,
+  "dim_synthetic_generator": 202,
+  "dim_variable": 99,
+  "fact_dataset_inventory": 2,
+  "fact_performance": 1404,
+  "fact_results_summary": 1404,
+  "fact_variable_profile": 99
+ },
+ "deletions": "NONE \u2014 the primary key moved so history can accumulate; no row was deleted and no value was rewritten",
+ "receipt_sha256": "439e72a9d2f3469877f986aa72d637aa2c21b1b8576548872f09acc121b07589",
+ "row_counts_unchanged": true,
+ "rows_given_an_observation_identity": {
+  "dim_lake_appearance": 1680,
+  "dim_lake_variable": 1965,
+  "dim_public_series": 4650,
+  "dim_synthetic_generator": 202
+ },
+ "schema": "crispdm.inventory_versioning_receipt.v1"
+}

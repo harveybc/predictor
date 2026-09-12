@@ -1,0 +1,160 @@
+{
+ "authority": "CANDIDATE_SUBMISSION_NO_EXTERNAL_REVIEW \u2014 the self-digest below proves this design existed before any score, and proves nothing about whether anyone reviewed it",
+ "binds": {
+  "bank_index_sha256": "e184666f407e086e38ebe9b9104e973ab6dd8294e7bf87e2b50b44e4ddb42275",
+  "eligibility_manifest_sha256": "UNAVAILABLE",
+  "eligibility_review_record_sha256": "UNAVAILABLE",
+  "index_row_cardinality": {
+   "FINANCIAL_DOMAIN_DEVELOPMENT_ONLY": {
+    "model_ready_view": 2,
+    "operator": 4,
+    "physical_appearance": 1680,
+    "variable": 1965
+   },
+   "PUBLIC_FORECASTING_EVIDENCE": {
+    "dataset": 10,
+    "series": 4650
+   },
+   "SYNTHETIC_KNOWN_MECHANISM_CALIBRATION_ONLY": {
+    "generator": 202
+   }
+  },
+  "physical_census_sha256": "e1845971c3decbc4221db5373c0dbc627a4eec81154a302019d0bdf53cf74881"
+ },
+ "budget_rule": {
+  "budgets": {
+   "financial_eth_h4_development": 24,
+   "public_forecasting_h1": 16
+  },
+  "rule": "fixed variable budget per task, frozen here",
+  "tie_break": "lower selection cost wins; never a later re-tune"
+ },
+ "comparators": [
+  {
+   "comparator_id": "all_mechanically_admissible",
+   "description": "every variable that passed mechanical admissibility \u2014 the ceiling a selector must beat to be worth its cost",
+   "fits_on": "nothing",
+   "required": true,
+   "selection_rule": "identity"
+  },
+  {
+   "comparator_id": "stability_redundancy_filter",
+   "description": "drop variables that are unstable across training origins or redundant with an already-kept variable",
+   "fits_on": "training_only",
+   "required": true,
+   "selection_rule": "threshold on within-training stability and pairwise redundancy"
+  },
+  {
+   "comparator_id": "mutual_information_train_only",
+   "description": "univariate mutual information with the target, estimated inside training",
+   "fits_on": "training_only",
+   "required": true,
+   "selection_rule": "top-k by MI under the frozen budget"
+  },
+  {
+   "comparator_id": "regularised_linear",
+   "description": "an L1/elastic-net linear model fitted inside training; non-zero coefficients select",
+   "fits_on": "training_only",
+   "required": true,
+   "selection_rule": "non-zero coefficients under the frozen penalty path"
+  },
+  {
+   "comparator_id": "random_same_size_control",
+   "description": "a uniformly random subset of the same size as the selector under test \u2014 a selector that does not beat this has shown nothing",
+   "fits_on": "nothing",
+   "required": true,
+   "selection_rule": "uniform without replacement, seeded from the frozen tape"
+  }
+ ],
+ "design_sha256": "51639954ad8761136a41c62c35a91dc5d240e182b9f97809e2efb41e1835ba4c",
+ "excluded_comparators": [
+  {
+   "comparator_id": "agent_multi_current_selector",
+   "may_re_enter": "only after a boundary-clean selector exists and passes a fresh P4 audit",
+   "reason": "EXCLUDED: the P4 boundary audit labelled the available historical selectors LEGACY_NON_AUTHORITATIVE \u2014 neither takes a split argument, so both fit outside training. The order admits this comparator only if it passes P4; it does not, so it is excluded rather than quietly included."
+  }
+ ],
+ "execution_boundary": {
+  "confirmation": "NOT AUTHORIZED by this design \u2014 a large confirmation requires an external review record",
+  "permitted_now": "a mechanical preflight that constructs units, splits and comparators and measures cost, and produces NO score"
+ },
+ "frozen_analysis": {
+  "extreme_preservation": {
+   "rationale": "a preparation that improves the average by erasing extremes is a loss disguised as a gain",
+   "requirement": "error on the declared extreme regime may not degrade beyond the same margin"
+  },
+  "global_non_inferiority": {
+   "margin": 0.02,
+   "scale": "relative to the all-admissible comparator on the task's own objective",
+   "statement": "a selector that reduces the variable count but loses more than the margin does not advance"
+  },
+  "inconclusive_rule": "when the interval for the primary contrast contains both the non-inferiority margin and zero, the result is INCONCLUSIVE \u2014 never rounded toward the preferred outcome",
+  "multiplicity": {
+   "family_frozen_before_scoring": true,
+   "procedure": "Holm over the full comparator family per task, alpha 0.05"
+  },
+  "selection_cost": "wall seconds and peak memory of profiling, fitting and selecting, recorded per comparator per outer origin, and reported with every result",
+  "stability_across_origins": {
+   "reported": "always, as a first-class result, not only when it is favourable",
+   "statistic": "Jaccard overlap of selected sets between outer origins"
+  },
+  "stability_floor": 0.5,
+  "withdrawal_criterion": "a comparator that fails non-inferiority, or fails extreme preservation, or whose stability overlap is below the frozen floor, is WITHDRAWN from the path and is not re-entered by a later run"
+ },
+ "nested_validation": {
+  "inner": "selection, imputation, scaling and every transformation are fitted INSIDE the inner training split of each outer origin",
+  "outer": "each outer origin's validation and test are consulted ONCE, for comparison only",
+  "statement": "a nested design is what makes the outer estimate honest; consulting the outer split while choosing is the failure it prevents"
+ },
+ "outer_unit": {
+  "forbidden_units": [
+   "seed",
+   "model_seed",
+   "replicate",
+   "epoch",
+   "checkpoint"
+  ],
+  "statement": "the outer unit is a task, origin and series; seeds and repetitions are nested inside it",
+  "unit": "task_origin_series"
+ },
+ "schema": "crispdm.selection_design.v1",
+ "sealed_at": "2026-09-10T00:00:00Z",
+ "split_discipline": {
+  "fitted_inside_training_only": [
+   "imputation",
+   "scaling",
+   "transformations",
+   "the selector itself"
+  ],
+  "outer_split": "UNTOUCHED \u2014 declared before selection and never re-cut",
+  "validation_reuse": "each outer origin's validation may be consulted ONCE per comparator; repeated consultation is manual optimisation and is forbidden"
+ },
+ "status": "SEALED_BEFORE_ANY_SCORE",
+ "supersedes_design_sha256": "aa846d6db9f3057231fa42b60794856c2a3148d45e8bb9e6a3bc3c7730d18e04",
+ "tasks": [
+  {
+   "bank": "public_forecasting",
+   "baseline": "seasonal_naive",
+   "extreme_regime": "innovation extremes as declared by the T2 harness",
+   "objective": "MASE at horizon 1 against the seasonal-naive baseline",
+   "outer_origins": [
+    "origin0",
+    "origin1"
+   ],
+   "outer_unit": "task_origin_series",
+   "task_id": "public_forecasting_h1"
+  },
+  {
+   "authority_note": "DEVELOPMENT_ONLY \u2014 cannot carry a general claim",
+   "bank": "financial_domain",
+   "baseline": "naive_last_value",
+   "extreme_regime": "largest absolute returns in the scored window",
+   "objective": "MAE on the declared horizon against the naive baseline",
+   "outer_origins": [
+    "origin0"
+   ],
+   "outer_unit": "task_origin_series",
+   "task_id": "financial_eth_h4_development"
+  }
+ ]
+}

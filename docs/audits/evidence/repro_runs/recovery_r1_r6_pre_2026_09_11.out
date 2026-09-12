@@ -1,0 +1,63 @@
+
+=== PRE-R 1: B4 v7 has 2 terminals, 1 partial, 9 not started and no final quarantine adjudication ===
+  declared cells           : 12
+  COMPLETED (terminal)     : 2 ['o2022_seed101', 'o2022_seed202']
+  PARTIAL (dir, no term.)  : 1 ['o2022_seed303']
+  NOT_STARTED (no dir)     : 9 
+  CAMPAIGN_STOP present    : True
+  per-cell STOP on partial : ['o2022_seed303']
+  ledger cell statuses     : ['PENDING']
+  campaign adjudication    : ABSENT
+  [PRE-REPRODUCED] B4 v7 is physically 2 COMPLETED / 1 PARTIAL / 9 NOT_STARTED
+  [PRE-REPRODUCED] the ledger still calls every cell PENDING, including the two sealed
+  [PRE-REPRODUCED] no durable campaign-level quarantine adjudication exists
+
+=== PRE-R 2: T2 has 242/242/242 while the heartbeat still says done=241 ===
+  unit artifacts by kind   : {'ARRAYS': 242, 'CLAIM': 242, 'RECORD': 242}
+  heartbeat done           : 241
+  heartbeat current_unit   : weather::T961
+  heartbeat wall_consumed_s: 32547.3
+  record of current_unit   : ~/.local/share/agent-multi/t2_confirmatory_results_resource_successor_v1_20260909/units/RECORD_weather__T961.json exists=True
+  durable closure record   : ABSENT
+  [PRE-REPRODUCED] T2 holds exactly 242 claims, 242 arrays and 242 records
+  [PRE-REPRODUCED] the heartbeat reports done=241 while the 242nd record is sealed on disk — telemetry disagreeing with durable evidence
+  [PRE-REPRODUCED] no durable 241->242 reconciliation/closure record exists
+
+=== PRE-R 3: p1lr-decision@101 restarts on an ExecStartPre refusal that RestartPreventExitStatus cannot cover ===
+  ActiveState               : failed
+  Result                    : exit-code
+  Restart                   : on-failure
+  RestartPreventExitStatus  : 4
+  ExecMainStatus            : 0
+  NRestarts                 : 11
+  effective pinned gate     : ~/.local/share/agent-multi/p1lr_v3_explicit_close_collections_20260818/screen_verdict_bfbfd6443b849275.json
+  pinned gate exists        : False
+  [PRE-REPRODUCED] the pinned screen gate does not exist, so ExecStartPre exits 4
+  [PRE-REPRODUCED] systemd restarted the unit because the MAIN process never ran: RestartPreventExitStatus=4 does not see an ExecStartPre exit code
+
+=== PRE-R 4: the Alpaca runner classifies a wrapped ConnectionError as fatal ===
+  direct  ConnectionError   -> transient
+  wrapped in AlpacaPaperError -> fatal
+  __cause__ of the wrapper   -> ConnectionError
+  live runner state          : degraded_error
+  live runner phase          : fatal
+  live runner error          : AlpacaPaperError: account request failed: ConnectionError
+  [PRE-REPRODUCED] the same connection failure is transient when raw and fatal once the broker wraps it with `raise ... from`
+
+=== PRE-R 5: the OLAP loader is alive, fresh and empty, yet healthy=false ===
+  outbox counts             : {'pending': 0, 'loaded': 4, 'failed': 1}
+  heartbeat healthy         : False
+  heartbeat pending         : 0
+  heartbeat failed          : 1
+  dead-letter reason        : REFUSED: campaign_key 'predictor_run' already exists with a DIFFERENT identity (differing: ['run_id']) — a logical id is
+  loader ActiveState        : ActiveState=active
+  loader NRestarts          : NRestarts=0
+  [PRE-REPRODUCED] a single historical dead-letter makes `healthy` false forever, and nothing distinguishes it from a dead loader
+
+=== PRE-R 6: systemd ignores StartLimitIntervalSec in the loader unit ===
+  ~/.config/systemd/user/crispdm-olap-loader.service:24: Unknown key 'StartLimitIntervalSec' in section [Service], ignoring.
+  StartLimit* declared in   : {'StartLimitIntervalSec': '[Service]', 'StartLimitBurst': '[Service]'}
+  [PRE-REPRODUCED] StartLimitIntervalSec sits in [Service], where systemd ignores it
+
+=== PRE-R SUMMARY: 6 items printed; 0 assertions NOT reproduced ===
+READ-ONLY: no service was started, stopped or restarted; no durable artifact was written.

@@ -1,0 +1,40 @@
+{
+ "comparator_count": 5,
+ "conclusion": "NONE \u2014 a preflight establishes that the design can be executed, and nothing about whether any selector works",
+ "design_sha256": "51639954ad8761136a41c62c35a91dc5d240e182b9f97809e2efb41e1835ba4c",
+ "mode": "MECHANICAL_ONLY_NO_SCORE",
+ "next_gate": "external review of this design before any scoring run",
+ "schema": "crispdm.selection_preflight.v1",
+ "tasks": [
+  {
+   "comparators_constructible": [
+    "all_mechanically_admissible",
+    "stability_redundancy_filter",
+    "mutual_information_train_only",
+    "regularised_linear",
+    "random_same_size_control"
+   ],
+   "feasible": true,
+   "outer_origins_declared": 2,
+   "outer_units_constructible": 80,
+   "reason": "declared origins and available series both present",
+   "series_available": 40,
+   "task_id": "public_forecasting_h1"
+  },
+  {
+   "comparators_constructible": [
+    "all_mechanically_admissible",
+    "stability_redundancy_filter",
+    "mutual_information_train_only",
+    "regularised_linear",
+    "random_same_size_control"
+   ],
+   "feasible": true,
+   "outer_origins_declared": 1,
+   "outer_units_constructible": 2,
+   "reason": "declared origins and available series both present",
+   "series_available": 2,
+   "task_id": "financial_eth_h4_development"
+  }
+ ]
+}

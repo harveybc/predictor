@@ -1,0 +1,85 @@
+{
+ "_template_note": "NON-AUTHORIZING TEMPLATE. An external reviewer fills every <field> and publishes the result; this file carries an extra key and placeholder values, and the gate refuses both. Candidate code never issues its own eligibility.",
+ "schema": "crispdm.eligibility_manifest.v1",
+ "issued_at": "<RFC3339 timestamp of the review>",
+ "issuer": "<reviewer identity>",
+ "scope": "<what this manifest governs>",
+ "entries": [
+  {
+   "subject_kind": "variable",
+   "subject_id": "<census variable_id, e.g. var_9f2c... \u2014 never a physical path>",
+   "version": "<version reviewed>",
+   "io_schema": {
+    "input": [
+     "<dtype>"
+    ],
+    "output": [
+     "<dtype>"
+    ]
+   },
+   "unit": "<declared unit, or UNKNOWN if the source does not declare one>",
+   "temporal_availability": {
+    "event_time": "<column or rule for the instant represented>",
+    "available_time": "<column or rule for the instant observable>",
+    "min_latency_minutes": 0
+   },
+   "fit_scope": "TRAIN_ONLY",
+   "incremental_state_policy": "<how state carries across bars>",
+   "parameters": {},
+   "digests": {
+    "data": "<64-hex>",
+    "code": "<64-hex>",
+    "partitions": "<64-hex>",
+    "evidence": "<64-hex>"
+   },
+   "measured_cost": {
+    "fit_seconds": 0.0,
+    "transform_seconds": 0.0
+   },
+   "decision": "PUBLICLY_ELIGIBLE",
+   "decision_scope": "<the exact scope this decision covers>",
+   "decision_reason": "<why the evidence supports this decision>",
+   "reviewer": "<reviewer identity>",
+   "reviewed_at": "<RFC3339>"
+  },
+  {
+   "subject_kind": "operator",
+   "subject_id": "<operator_id>",
+   "version": "<version reviewed>",
+   "io_schema": {
+    "input": [
+     "<dtype>"
+    ],
+    "output": [
+     "<dtype>"
+    ]
+   },
+   "unit": "<unit of the output>",
+   "temporal_availability": {
+    "event_time": "<...>",
+    "available_time": "<...>",
+    "min_latency_minutes": 0
+   },
+   "fit_scope": "TRAIN_ONLY",
+   "incremental_state_policy": "<batch/incremental parity statement>",
+   "parameters": {
+    "plugin_name": "<entry-point name, checked not trusted>"
+   },
+   "digests": {
+    "data": "<64-hex>",
+    "code": "<64-hex>",
+    "partitions": "<64-hex>",
+    "evidence": "<64-hex>"
+   },
+   "measured_cost": {
+    "fit_seconds": 0.0,
+    "transform_seconds": 0.0
+   },
+   "decision": "PUBLICLY_ELIGIBLE",
+   "decision_scope": "<scope>",
+   "decision_reason": "<reason>",
+   "reviewer": "<reviewer identity>",
+   "reviewed_at": "<RFC3339>"
+  }
+ ]
+}

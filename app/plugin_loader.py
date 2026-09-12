@@ -30,12 +30,23 @@ def load_plugin(plugin_group: str, plugin_name: str):
     """
     print(f"Attempting to load plugin: {plugin_name} from group: {plugin_group}")
     try:
-        # Filter entry points for the specified group using the new .select() method.
-        group_entries = entry_points().select(group=plugin_group)
-        # Find the entry point that matches the plugin name.
-        entry_point = next(ep for ep in group_entries if ep.name == plugin_name)
-        # Load the plugin class using the entry point's load method.
-        plugin_class = entry_point.load()
+        # C31: the loader and the eligibility identity must consult ONE
+        # resolver, or they can disagree about which plugin runs — which
+        # is exactly what happened: the executor read `predictor_plugin`
+        # and the identity read the legacy `plugin`, so a CNN could train
+        # while an ANN was recorded. The witness returned here is the
+        # same object the identity binds, and it refuses a name two
+        # distributions register differently instead of silently taking
+        # whichever was installed first.
+        from app.plugin_resolver import (PLUGIN_ROLES, load_from_witness,
+                                         resolve)
+        role = next((r for r, (_k, g, _a) in PLUGIN_ROLES.items()
+                     if g == plugin_group), None)
+        if role is None:
+            raise ImportError(
+                f"group {plugin_group!r} is not a declared plugin role")
+        witness = resolve(role, plugin_name)
+        plugin_class = load_from_witness(witness)
         # Extract the keys from the plugin's plugin_params attribute as required parameters.
         required_params = list(plugin_class.plugin_params.keys())
         print(f"Successfully loaded plugin: {plugin_name} with params: {plugin_class.plugin_params}")
@@ -67,14 +78,18 @@ def get_plugin_params(plugin_group: str, plugin_name: str):
     """
     print(f"Getting plugin parameters for: {plugin_name} from group: {plugin_group}")
     try:
-        # Filter entry points for the specified group using the new .select() method.
-        group_entries = entry_points().select(group=plugin_group)
-        # Find the entry point that matches the plugin name.
-        entry_point = next(ep for ep in group_entries if ep.name == plugin_name)
-        # Load the plugin class using the entry point's load method.
-        plugin_class = entry_point.load()
-        print(f"Retrieved plugin params: {plugin_class.plugin_params}")
-        return plugin_class.plugin_params
+        # C31: same resolver, same witness. A second lookup here could
+        # report the parameters of a plugin other than the one that runs.
+        from app.plugin_resolver import (PLUGIN_ROLES,
+                                         declared_plugin_params, resolve)
+        role = next((r for r, (_k, g, _a) in PLUGIN_ROLES.items()
+                     if g == plugin_group), None)
+        if role is None:
+            raise ImportError(
+                f"group {plugin_group!r} is not a declared plugin role")
+        params = declared_plugin_params(resolve(role, plugin_name))
+        print(f"Retrieved plugin params: {params}")
+        return params
     except StopIteration:
         print(f"Failed to find plugin {plugin_name} in group {plugin_group}")
         raise ImportError(f"Plugin {plugin_name} not found in group {plugin_group}.")

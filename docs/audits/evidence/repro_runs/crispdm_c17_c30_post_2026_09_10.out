@@ -1,0 +1,28 @@
+POST-01 a mutated y changes every derived identity: CORRECTED
+         data 59d17fae4774 -> 98db45dbc358, partitions f28ab8bc0cc0 -> dbf35dfed77b; both digests now cover the complete ordered file list, x and y
+POST-02 the y target is a reviewable subject: CORRECTED
+         subject sides {'px': 'x', 'target': 'y'} — a target living on the y side is a subject with its side and contract role named
+POST-03 the optimizer may only propose hyperparameters: CORRECTED
+         {'x_test_file': True, 'y_test_file': True, 'target_column': True, 'preprocessor_plugin': True, 'plugin': True} — every data, target and plugin key refuses, and the whole identity is re-derived before the pipeline via assert_contract_unchanged
+POST-04 the guards stand in the only order that works: CORRECTED
+         gate -> optimizer filter -> config.update -> full re-derivation -> pipeline
+POST-05 the review protocol has two real phases: CORRECTED
+         phase one derives, persists a content-addressed submission and EXITS; phase two re-derives, proves it landed on the same persisted submission and only then consumes the record — proven across separate processes in tests/unit_tests/test_gate_c17_c21.py
+POST-06 manifest and envelope enforce exact schemas: CORRECTED
+         manifest {'undeclared_top_level': True, 'undeclared_entry_field': True, 'bool_as_cost': True}, envelope {'envelope_undeclared_field': True, 'envelope_nan': True} — undeclared fields, bool-as-number and NaN all refuse
+POST-07 producer artifacts are parsed strictly: CORRECTED
+         the builder reads with the strict parser and requires a canonical lowercase-hex digest, not a length
+POST-08 every outcome produces exactly one terminal unit: CORRECTED
+         {'COMPLETE': True, 'FAILED': True, 'INCONCLUSIVE': True, 'REFUSED': True, 'QUARANTINED': True} — the success-only emitter is gone and a terminal run carries its own unit with its measured cost
+POST-09 the loader is an active supervised service: CORRECTED
+         systemd --user unit is 'active'; heartbeat reports loaded=4 pending=0 failed=1 — an entry travelled from a real run to the cube with no human in the loop
+POST-10 the inventory keeps every version: CORRECTED
+         the primary key is (logical id, observation), a changed observation is a NEW version, and four deterministic current views expose one row per id without deleting history
+POST-11 the reviewed code digest follows the real graph: CORRECTED
+         14 bound entries ({'plugin', 'module'}); changing the executed pipeline plugin changes the digest, which four gate files could never detect
+POST-12 the availability gap is bridged by evidence: CORRECTED
+         94 consumed columns examined, 0 resolved and 94 unresolved with the stage named; the 83 RL columns proved to be a SUBSET of the 94 supervised columns, so both consumers read the same view — the gap is crossed by physical evidence and no configuration was edited
+POST-13 characterization measures without selecting: CORRECTED
+         420 descriptor rows over 19 attempts, {'FINANCIAL_DOMAIN_DEVELOPMENT_ONLY': 348, 'SYNTHETIC_KNOWN_MECHANISM_CALIBRATION_ONLY': 72}, 16 explicitly NOT identifiable, total cost 0.157795 s; no selection, no confirmation, no GPU
+
+POST CONFIRMED: every counterexample the PRE reproduced is corrected. A mutated y changes the identity and a y-side target is a subject; the optimizer may only propose hyperparameters and the contract is re-derived before the pipeline; the review protocol has two real phases with a persisted submission; manifests, envelopes and producer artifacts enforce exact schemas and canonical digests; every outcome emits exactly one terminal carrying its own unit and cost; the loader is an ACTIVE supervised service that has carried a real run to the cube; the inventory versions instead of freezing; the code digest follows the real graph; the availability gap is bridged by evidence with zero as an honest answer; and the first characterization measures variables without choosing any.
