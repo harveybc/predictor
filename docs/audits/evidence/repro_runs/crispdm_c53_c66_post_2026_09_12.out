@@ -1,0 +1,43 @@
+=== POST: the 17 PRE items at the final tip ===
+
+[ 1] CORRECTED  a photographed cell directory can be replaced before the read
+     the retained descriptor still returns {'x': 1}; the name now points at inode 153225, the snapshot published 153223
+[ 2] CORRECTED  an intermediate directory can be replaced the same way
+     every component is retained, so replacing `mid` cannot change what `mid/leaf` reads: {'x': 1}
+[ 3] CORRECTED  restore-after-swap: equal names hide a changed inode
+     the published inode moves 153237 -> 153239, so a restore under the same name is visible in the record
+[ 4] CORRECTED  the shipped battery stays green under the directory attack
+     B4 focal suite: 61 passed in 0.31s
+[ 5] CORRECTED  the T2 units directory can be swapped between inventory and read
+     T2 focal suite: 30 passed in 0.46s
+[ 6] CORRECTED  the published B4 submission binds a commit no remote ref contains
+     commit A c578fef3982d is reachable from a remote ref
+[ 7] CORRECTED  the T2 submission was generated from a mixed, dirty identity
+     commit A ee1d79040308 reachable from a remote ref; schema agent_multi.t2_readjudication_submission.v2; no home directory in the record
+[ 8] CORRECTED  a configuration is called executable because its files exist
+     137 keeps the honest name INPUT_FILES_PRESENT_CONFIG_CANDIDATES; 20 configs are VALIDATED_RUNNABLE and 204 are refused
+[ 9] CORRECTED  the target is read from raw JSON, so a defaulted target is missed
+     every one of the 20 validated configs names a target derived from the EFFECTIVE configuration, not the file
+[10] CORRECTED  absolute paths and traversal are not contained
+     the validator refuses absolute paths and traversal before resolving anything
+[11] CORRECTED  the DAG calls a column causal from one assignment line
+     log_return_1=CAUSAL_ACTIVE/lb=1/leaves=1; macd=UNRESOLVED/lb=None/leaves=1; stoch_k=CAUSAL_ACTIVE/lb=14/leaves=3; cci_14=CAUSAL_ACTIVE/lb=14/leaves=3; mfi_14=CAUSAL_ACTIVE/lb=14/leaves=4
+[12] CORRECTED  a shift hidden in a local variable or a helper is invisible
+     local: NON_CAUSAL; helper: NON_CAUSAL via ['h']
+[13] CORRECTED  the 1,965 terminals carry no schema, digest or binding
+     1965 v2 terminals, each carrying schema, source.sha256, window_contract_sha256 and terminal_sha256
+[14] CORRECTED  the reader accepts them without verifying anything
+     TERMINALS_VERIFIED_EXACT: 1,965 declared, 1965 read, 0 missing, 420 sources re-digested; the verifier imports nothing from the producer
+[15] CORRECTED  every disposition row claims the census digest as its source
+     a v2 terminal's source digest is the digest of the FILE it describes, recomputed by an independent verifier
+[16] CORRECTED  batch envelopes bind no members
+     14 batches, 1,965 variables, every batch EXACT, membership held as ROWS in bridge_batch_variable
+[17] CORRECTED  C52 calls itself sealed but is prose
+     status DRAFT_CANDIDATE_NO_SCORES_COMPUTED; machine-readable with 5 eligibility conditions and an eligible set of 0 (EMPTY_BY_RULE_E5); v1 not rewritten
+
+=== PRESERVED ROOTS ===
+  b4: mode=0o700 inode=20457361 — not opened for writing
+  t2: mode=0o700 inode=20460071 — not opened for writing
+  originals: 1965 terminals, mode=0o775 — untouched
+
+=== POST SUMMARY: 17 items; 0 NOT corrected  ===

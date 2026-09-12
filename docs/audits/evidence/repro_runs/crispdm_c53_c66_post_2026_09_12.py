@@ -164,11 +164,8 @@ else:
     item(6, "the published B4 submission binds a commit no remote ref "
             "contains", False, "no v2 submission on disk")
 
-t2_sub = Path(os.environ.get(
-    "T2_SUBMISSION",
-    "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/"
-    "94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/"
-    "T2_READJUDICATION_SUBMISSION.v2.json"))
+t2_sub = (AM_T2 / "docs/audits/evidence/"
+          "T2_READJUDICATION_SUBMISSION_V2_2026_09_12.json")
 if t2_sub.is_file():
     doc = json.loads(t2_sub.read_text())
     ca = (doc.get("publication") or {}).get("commit_a", "")
