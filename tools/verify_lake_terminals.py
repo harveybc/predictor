@@ -332,7 +332,8 @@ def load_published_from_olap(dsn: str, attempt: str) -> dict:
 
 
 def compare_variable(vid: str, outcome: str, published: dict,
-                     window, rows_in_file: int, source: dict) -> dict:
+                     window, rows_in_file: int, source: dict,
+                     census_sha256: str) -> dict:
     """Row-by-row comparison of one MEASURED variable."""
     rec = R.recompute(window)
     non_finite = int(rec["non_finite_count"][0])
@@ -355,7 +356,14 @@ def compare_variable(vid: str, outcome: str, published: dict,
                 problems.append({"kind": "WINDOW_DIVERGES", "descriptor": d,
                                  "field": k, "published": wc[k],
                                  "recomputed": win[k]})
-        if p.get("source_sha256") != source["sha256"]:
+        # The disposition row adjudicates a census variable, so it is
+        # published against the census content digest; every
+        # measurement row is published against the source file digest.
+        # My first real run applied the file rule to the disposition row
+        # and reported all 1,505 variables as diverging for it.
+        expected_src = (census_sha256 if d == "characterization_disposition"
+                        else source["sha256"])
+        if p.get("source_sha256") != expected_src:
             problems.append({"kind": "PUBLISHED_SOURCE_DIGEST_DIVERGES",
                              "descriptor": d})
         if d == "characterization_disposition":
@@ -534,7 +542,7 @@ def verify(state_dir: Path, lake_root: Path, census_path: Path, *,
                     continue
                 comparisons[vid] = compare_variable(
                     vid, MEASURED, pub_rows.get(vid, {}), window,
-                    rows_in_file, facts)
+                    rows_in_file, facts, census["census_sha256"])
             del art
 
         if pub_rows is not None:

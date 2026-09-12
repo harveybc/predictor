@@ -36,12 +36,13 @@ def parquet_bytes(values=SERIES, column="close"):
     return buf.getvalue()
 
 
-def published_for(vid, values=SERIES, *, sha, rel):
+def published_for(vid, values=SERIES, *, sha, rel, census_sha=None):
     win = R.window_rows(len(values))
     rec = R.recompute(np.asarray(values[:win["rows_used"]], dtype=float))
     rows = {"characterization_disposition": {
         "value": None, "value_text": "MEASURED", "identifiable": True,
-        "source_id": rel, "source_sha256": sha, "window_contract": win}}
+        "source_id": rel, "source_sha256": census_sha,
+        "window_contract": win}}
     names = (V.INSUFFICIENT_DESCRIPTORS if "insufficient_finite_observations"
              in rec else V.FULL_DESCRIPTORS) - {"characterization_disposition"}
     for d in names:
@@ -114,7 +115,8 @@ def kinds(r):
 def test_a_bound_measured_terminal_recomputes_without_divergence(tmp_path):
     state, lake, cpath, digest, sha = world(tmp_path)
     pub = {"rows": {"var_a": published_for("var_a", sha=sha,
-                                           rel="features/src.parquet")},
+                                           rel="features/src.parquet",
+                                           census_sha=digest)},
            "attempt": "t", "duplicates": []}
     r = run(state, lake, cpath, digest, published=pub)
     assert r["population"]["verdict"] == V.POPULATION_VERIFIED
@@ -153,7 +155,8 @@ def test_a_fabricated_descriptor_block_is_a_schema_divergence(tmp_path):
 
 def test_a_fabricated_published_value_diverges(tmp_path):
     state, lake, cpath, digest, sha = world(tmp_path)
-    rows = published_for("var_a", sha=sha, rel="features/src.parquet")
+    rows = published_for("var_a", sha=sha, rel="features/src.parquet",
+                         census_sha=digest)
     rows["mean"]["value"] = 999.0
     r = run(state, lake, cpath, digest,
             published={"rows": {"var_a": rows}, "attempt": "t",
@@ -165,7 +168,8 @@ def test_a_fabricated_published_value_diverges(tmp_path):
 
 def test_a_missing_published_row_diverges(tmp_path):
     state, lake, cpath, digest, sha = world(tmp_path)
-    rows = published_for("var_a", sha=sha, rel="features/src.parquet")
+    rows = published_for("var_a", sha=sha, rel="features/src.parquet",
+                         census_sha=digest)
     del rows["std"]
     r = run(state, lake, cpath, digest,
             published={"rows": {"var_a": rows}, "attempt": "t",
@@ -320,7 +324,8 @@ def test_v3_is_written_beside_v1_and_v2_which_stay_byte_intact(tmp_path):
     before = {d: V.tree_content_digest(state / d)
               for d in ("terminals", "terminals_v2")}
     pub = {"rows": {"var_a": published_for("var_a", sha=sha,
-                                           rel="features/src.parquet")},
+                                           rel="features/src.parquet",
+                                           census_sha=digest)},
            "attempt": "t", "duplicates": []}
     r = run(state, lake, cpath, digest, published=pub)
     idx = V.supersede_v3(state, r, superseded_at="t",
@@ -349,3 +354,21 @@ def test_the_verifier_imports_no_producer_code():
         elif isinstance(node, ast.ImportFrom) and node.module:
             mods.add(node.module)
     assert not any("characteriz" in m for m in mods), mods
+
+
+def test_the_disposition_row_is_bound_to_the_census_not_the_file(tmp_path):
+    """A disposition adjudicates a census variable; binding it to the
+    file digest was my first real run's defect."""
+    state, lake, cpath, digest, sha = world(tmp_path)
+    good = published_for("var_a", sha=sha, rel="features/src.parquet",
+                         census_sha=digest)
+    r = run(state, lake, cpath, digest, published={
+        "rows": {"var_a": good}, "attempt": "t", "duplicates": []})
+    assert r["_comparisons"]["var_a"]["problems"] == []
+    wrong = published_for("var_a", sha=sha, rel="features/src.parquet",
+                          census_sha=sha)
+    r = run(state, lake, cpath, digest, published={
+        "rows": {"var_a": wrong}, "attempt": "t", "duplicates": []})
+    assert r["_comparisons"]["var_a"]["problems"] == [
+        {"kind": "PUBLISHED_SOURCE_DIGEST_DIVERGES",
+         "descriptor": "characterization_disposition"}]
