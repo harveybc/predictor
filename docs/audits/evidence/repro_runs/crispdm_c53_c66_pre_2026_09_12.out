@@ -1,0 +1,118 @@
+
+=== PRE 1: a photographed cell directory can be replaced before the read ===
+  snapshot listed              : ('terminal.json',)
+  wall_seconds consumed after  : 999.0
+  [PRE-REPRODUCED] the snapshot kept only NAMES and the read re-walked the path, so a different directory instance was consumed
+
+=== PRE 2: an intermediate directory can be replaced the same way ===
+  epoch consumed after the swap: 1999
+  [PRE-REPRODUCED] an INTERMEDIATE component is re-resolved by name too, so the whole subtree can be exchanged under the snapshot
+
+=== PRE 3: restore-after-swap: equal names hide a changed inode ===
+  inode at snapshot / at read : 135216 / 135218
+  snapshot facts published    : ['dirs', 'files', 'other_entries', 'rel']
+  value consumed              : sub
+  [PRE-REPRODUCED] the snapshot publishes neither device nor inode, so name equality is the only thing binding the read to the listing
+
+=== PRE 4: the shipped battery stays green under the directory attack ===
+  battery result                 : 45 passed in 0.29s
+  any test replaces a DIRECTORY  : False
+  [PRE-REPRODUCED] 45 tests pass while none of them replaces an existing directory, which is the attack that works
+
+=== PRE 5: the T2 units directory can be swapped between inventory and verification ===
+  effect consumed after swap  : -99.0
+  the T2 closure uses the same custody module : True
+  [PRE-REPRODUCED] the same defect reaches T2: `units` is re-resolved by name for every RECORD and ARRAYS read
+
+=== PRE 6: the published B4 submission binds a commit no remote ref contains ===
+  submission declares commit : ac788210de33
+  published tip              : c907495daa1c
+  remote refs containing it  : (none)  rc=0
+  root_actually_read         : ~/.local/state/crispdm-pre-copies/b4_v7
+  [PRE-REPRODUCED] the submission names a commit unreachable from origin and publishes an absolute private path in versioned evidence
+
+=== PRE 7: the T2 submission was generated from a mixed, dirty identity ===
+  files by origin : {'BRANCH_TIP': 3, 'REVIEWED_CHECKOUT': 7}
+  branch tip clean at generation : False
+  dirty paths                    : ['ools/t2_campaign_closure.py', 'tests/test_t2_campaign_closure.py', 'tools/descriptor_custody.py', 'tools/t2_confirmatory.py']
+  numpy location published       : ~/anaconda3/envs/trading-stack/lib/python3.12/site-packages
+  [PRE-REPRODUCED] seven files come from one checkout and three from a DIRTY tip, and the dependency record carries a site-packages path
+  the adapter calls ResultsRoot.__init__ : False
+  [PRE-REPRODUCED] the adapter subclasses the pinned root without running its constructor, so every constructor invariant is assumed unnecessary rather than shown to be
+
+=== PRE 8: a configuration is called executable because its files exist ===
+  builds the effective configuration : False
+  builds plugin defaults             : False
+  builds entry-point resolution      : False
+  builds the default layer           : False
+  decides on `.is_file()`          : True
+  [PRE-REPRODUCED] `executable` means only that the declared x/y files are present; no effective configuration is built and no entry point is resolved
+
+=== PRE 9: the target is read from raw JSON, so a defaulted target is invisible ===
+  reads cfg.get('target_column') : True
+  any default/plugin fallback    : True
+  roles derived without a declared target : ['input', 'label']
+  targets found                           : {}
+  [PRE-REPRODUCED] with no literal `target_column` every y column becomes a label, so a target supplied by a default or a plugin would be consumed as a feature
+
+=== PRE 10: absolute paths and traversal are not contained ===
+  resolve() returns absolute paths as-is : True
+  any containment check                  : False
+  an absolute path outside the checkout resolves to : /tmp/tmpitc6dnkr/outside.csv
+  [PRE-REPRODUCED] an absolute path or a `..` escape is resolved and read without being contained under the authorized checkout
+
+=== PRE 11: the DAG calls a column causal from one assignment line ===
+  log_return_1   class=CAUSAL     lookback=None inputs=[]
+  macd           class=CAUSAL     lookback=None inputs=[]
+  stoch_k        class=CAUSAL     lookback=None inputs=[]
+  cci_14         class=CAUSAL     lookback=None inputs=[]
+  mfi_14         class=CAUSAL     lookback=None inputs=[]
+  [PRE-REPRODUCED] 5 of the named columns are CAUSAL with NO direct inputs, which proves nothing about their dependencies or their windows
+
+=== PRE 12: a shift hidden in a local variable or a helper is invisible ===
+  hidden_local     -> CAUSAL     shift=None inputs=[]
+  hidden_helper    -> CAUSAL     shift=None inputs=['CLOSE']
+  [PRE-REPRODUCED] a forward shift stored in a local variable or returned by a helper is classified CAUSAL: the analysis never leaves the assignment line
+
+=== PRE 13: the 1,965 terminals carry no schema, digest or binding ===
+  terminals on disk : 1965
+  keys              : ['appearance', 'batch', 'concept_name', 'descriptors', 'entity', 'measured_at', 'not_identifiable', 'outcome', 'rows_used', 'variable_id']
+  carries schema          : False
+  carries source_sha256   : False
+  carries window_sha256   : False
+  carries terminal_sha256 : False
+  carries appearance_id   : False
+  [PRE-REPRODUCED] a terminal is a bare producer note: no schema, no source digest, no window digest and no self-digest
+
+=== PRE 14: the reader accepts them without verifying anything ===
+  uses glob + read_text        : True
+  silently skips invalid JSON  : True
+  checks schema                  : False
+  checks sha                     : False
+  checks duplicate               : False
+  checks filename                : False
+  [PRE-REPRODUCED] invalid JSON is skipped in silence and no schema, digest, filename-id correspondence or duplicate check is performed
+
+=== PRE 15: every disposition row claims the census digest as its source ===
+  source_sha256 := census_sha : True
+  window_sha256 := census_sha : True
+  publishes BOUND_TO_SOURCE_BYTES : True
+  [PRE-REPRODUCED] 1,965 rows claim to be bound to source bytes while carrying one global census digest as both the source and the window
+
+=== PRE 16: batch envelopes bind no members ===
+  data_consumed.variables is empty : True
+  names its member terminals       : False
+  [PRE-REPRODUCED] a batch envelope carries no variable members, so nothing ties the cube row to the terminals it summarises
+
+=== PRE 17: C52 calls itself sealed but is prose ===
+  declares SEALED            : True
+  has a machine schema       : False
+  has a self digest          : False
+  has an executable validator: False
+  [PRE-REPRODUCED] it is Markdown prose with no schema, no self-digest, no executable population and no validator, and it calls itself sealed
+
+=== PRESERVED ROOTS ===
+  b4: unchanged=True
+  t2: unchanged=True
+
+=== PRE SUMMARY: 17 items; 0 NOT reproduced ===

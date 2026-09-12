@@ -315,6 +315,22 @@ def declared_plugin_params(witness: dict) -> dict:
         raise PluginResolutionRefusal(
             f"{witness['role']}: cannot read the declared parameters of "
             f"{origin.name} ({type(exc).__name__})")
+    # An entry point may name a module-level ALIAS rather than the
+    # class itself — `PreprocessorPlugin = STLPreprocessorZScore`. The
+    # first version looked only for a ClassDef with that name and
+    # refused a perfectly declarative plugin, which would have made a
+    # runnable configuration look unvalidatable.
+    aliases: dict[str, str] = {}
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and len(node.targets) == 1 \
+                and isinstance(node.targets[0], ast.Name) \
+                and isinstance(node.value, ast.Name):
+            aliases[node.targets[0].id] = node.value.id
+    seen = set()
+    while class_name in aliases and class_name not in seen:
+        seen.add(class_name)
+        class_name = aliases[class_name]
+
     for node in tree.body:
         if not isinstance(node, ast.ClassDef) or node.name != class_name:
             continue

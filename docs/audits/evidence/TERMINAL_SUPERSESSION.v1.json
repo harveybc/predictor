@@ -1,0 +1,18 @@
+{
+ "rule": "v1 is never opened for writing, never moved and never rewritten; the run refuses outright if any v1 file's inode, size or mtime moves",
+ "schema": "crispdm.lake_terminal_supersession.v1",
+ "superseded_at": "2026-09-12T00:00:00Z",
+ "supersession_sha256": "6d410a8058095feed8c41859d26f1a40250b474c7f42618841eaf8569a6bc3d1",
+ "v1_directory": "terminals",
+ "v1_terminals_unchanged": 1965,
+ "v2_directory": "terminals_v2",
+ "v2_terminals_written": 1965,
+ "verification_sha256": "e3189c2c9676231c7adb74ee9bc52200bd8fbd74e76733d247e64e7351e287e0",
+ "what_v2_adds": [
+  "schema \u2014 the contract the terminal was written against",
+  "source.sha256 \u2014 the BYTES the outcome describes, re-digested by an independent verifier",
+  "window_contract + its digest \u2014 what a descriptor means",
+  "terminal_sha256 \u2014 the terminal's digest of ITSELF, so a terminal that is edited stops matching"
+ ],
+ "window_contract_sha256": "abe3b36a5114f6cd759271450a6e4f077ace40b40324adef83fe07f00f158159"
+}

@@ -1,0 +1,3730 @@
+{
+ "custody": {
+  "directory_instances": {
+   "root": {
+    "custody_weakness": "GROUP_WRITABLE",
+    "device": 66309,
+    "dirs": [
+     "terminals"
+    ],
+    "files": [
+     "PRE_LEDGER.json"
+    ],
+    "inode": 20460808,
+    "mode": "0o775",
+    "other_entries": [],
+    "uid": 1000
+   },
+   "terminals": {
+    "custody_weakness": "GROUP_WRITABLE",
+    "device": 66309,
+    "dirs": [],
+    "files": [
+     "00089a6b70fe49ede525b4bddb69b5f6.json",
+     "0033bf2fdbab7b0cf6084cd84ff39b57.json",
+     "00eccba3ceeaef649f8e1e4eb26c8cab.json",
+     "0101935058a5a665824e52830ee90596.json",
+     "014485e46e47dfadaca7ec5038983de2.json",
+     "017ae6fec3161a04b8111f56efe23db1.json",
+     "0185cdb43c3290d6d2efaded5f9a548f.json",
+     "01981cc969d76d6d3336871ec77ec531.json",
+     "0198505a7776971f538b665ebc186380.json",
+     "01a62606258f04e018202d2b2200b2e7.json",
+     "01be122dab747ee538b3a117afe9cd88.json",
+     "01d8165dd632e06013b07ab8513ccb67.json",
+     "0233e1606954393ea15acd7b8a09fc19.json",
+     "023975f48ca9801f5aabb122f8ecf6ad.json",
+     "0273ea8f5c446f01926c43cec2e06366.json",
+     "027b3fa0ff31c6c9f9b301f9f4e7223d.json",
+     "027cb7fab6b594800c75b82ad4f20912.json",
+     "0282afd0dbaf91e2ff6dfe849c213e4f.json",
+     "02b706b3cee8e0b87f9e80ce9773b1a5.json",
+     "02b88bd88c24da1371a17ca466fe38b5.json",
+     "02b94dcf2af5e81a134c7f7bfdde6def.json",
+     "02f1c4b15f634e661d830fa391420d80.json",
+     "0300a27440b6b0ae2511a3a49c80ddaa.json",
+     "033467a34724c6003101582d7fc21551.json",
+     "03586b01ac1bf61b1fc5c88e7f73d8fc.json",
+     "03a7eed48aa33dc9fd750edef87c17ca.json",
+     "03bcb83f28eabbaa8fa55bde55a330df.json",
+     "044b230cbc1346256465929b37bd9847.json",
+     "0477f44315ade8477ce9c0f54627d56b.json",
+     "04918afbb55b51d6de06d5675db874f1.json",
+     "049b09b7e538e0e1e694c123e530a84d.json",
+     "04ed62e924aa0b2fd4965f2dee7c5969.json",
+     "04f35f320118d2ca2092ef5a90e79507.json",
+     "04ff007074e9f368f5aa78221bff57a1.json",
+     "051effc57cf06d786d35840a97a15415.json",
+     "0540a4959dbc8f3d24c3f9388f8ba186.json",
+     "05532b43927e9cc9607f8f8c8bb27473.json",
+     "056a9b202d5327267504cf67524f7346.json",
+     "058107bffbcc7aa1451fe8aa72607341.json",
+     "0590e2f4b2415ac942a534ce63ad8a01.json",
+     "05aa26ee16f480e6300829f8d8729843.json",
+     "05bc6e2b0cf9a896465f0a6a23968efb.json",
+     "05c862d4101e9a70d7ac60fa99facbd3.json",
+     "05f9a623d636ce5d1d6f712a4e4ec277.json",
+     "06017188df20b44ab56b72ea531754d3.json",
+     "0636701c9d40b6ba5e06ee88201b0709.json",
+     "067faa14e9b15a648fc9b5dfa08f181d.json",
+     "06a020b37721255d2acdc31539611fc1.json",
+     "06da2238b700da835ee617c2084126d6.json",
+     "06ebf3afbf328898b280d07e618152e0.json",
+     "0702b51850905def1efdfd6e0e77d567.json",
+     "0721d83d89d9abc2fe71abf46eb02ee5.json",
+     "072bc5860c0c3e16f697cf202571b4e4.json",
+     "0790e85f6316cc466055b43928e50692.json",
+     "07c0cb180963bf0ad5602adabe5fe015.json",
+     "07deb950e248a425dd8970b4e89c0fcf.json",
+     "07e0b2cc08a4b4ae088f9d035c9dd754.json",
+     "07fd29c524cd57087ae308cdc92fb577.json",
+     "080abf279c0fbcb96c84398575942d00.json",
+     "0834acc761e4e4ebcd3d51495281253f.json",
+     "0834d3c4cc28e53080b5103f9842bcdf.json",
+     "0852eb239d31c2aa6ebb1a33949954e3.json",
+     "0859820d9aaad6fff2679b5803e1dfec.json",
+     "0876d85478e2697741b9957ad220e0ac.json",
+     "08a164874f9a55c6f3298310882fef0d.json",
+     "08ab6fc34f12ee636b0320e065d47615.json",
+     "08e4129df196f1fc4f96566c84ce57e7.json",
+     "08e97b7c48368de74f60f0a097f7c1f5.json",
+     "092198a12c841c4678d83d800b676b99.json",
+     "0927cc10faa361fbc481c3dfc9e603c5.json",
+     "0978e3408edc7fa89121f6f545d21f35.json",
+     "097f379bcf87e004e1517c27a974eb34.json",
+     "0a3200ebe57b589ef5657567b0df21aa.json",
+     "0a39e097288e1eb7e7971e875e9ee13e.json",
+     "0a61e97304526a255a9870f8f561218a.json",
+     "0a9ffa9e12def4abeeb6eed503be7e27.json",
+     "0ab177789c8b5fb7e549cf3e27464f4e.json",
+     "0acc128c8acea4a1a3070a372ef623b0.json",
+     "0ad8f07b648c5fe993b801d6106954be.json",
+     "0ae3e1db040f4252e5b2bed7c0b37f17.json",
+     "0ae5eb7f7f0abffd6df20f749532b489.json",
+     "0af10eea8e859c8f92aeac1819a36e31.json",
+     "0b58cacd74ed70928275cae0dae6bfd6.json",
+     "0b71c0b7081595acd4b08812bf6e9f99.json",
+     "0baf4807c14bafa7ea0e6f46817c73eb.json",
+     "0bd40519e9029e9e49760783e1f7b1f1.json",
+     "0bdc0a0242de77746b5f58fbfaef05c1.json",
+     "0bf40d96f07737aa0d0f932ff9a49d67.json",
+     "0bf4464d1d913558aeaaa624f7465c2e.json",
+     "0c39b79166ec5b8bddc4d21717fe6476.json",
+     "0c4b09f3dea6146f06ab352118d6b11b.json",
+     "0c6aef236bb951838d91cecb5dfcf1c6.json",
+     "0c76a8669b97ffad342b76601935da61.json",
+     "0ca517d5a156694b8a0265dec22f73e5.json",
+     "0cdcb4accaf34a15d37b8b6b43b06162.json",
+     "0cf1ff29fd8b1c4670f88d2055ef0661.json",
+     "0d0570130ac3cd872e10c1fa852eb290.json",
+     "0d1497f5508074a994b1b4677fe2d896.json",
+     "0d48599014f09d7512f3e9fc8139b855.json",
+     "0d550a226afed03f8a1b7f553f35f711.json",
+     "0d5f984755ec161b60864b5a04c504e1.json",
+     "0d747ee29c4990a6cb01e79c17060a67.json",
+     "0da00ca8b0576facfec3e4b14b91d7d7.json",
+     "0da760175f8d6098e8e08373467868fa.json",
+     "0e1cf7ac40d667981870212f63b42b2a.json",
+     "0e5d65c4f0d1d23536f24a9a67c7a144.json",
+     "0e89239e085b139b7086926a07db9ad2.json",
+     "0eaa07eb9e91889d5386863253620ff3.json",
+     "0ed8d4a1438520f9d13ab54985ff3600.json",
+     "0eefa2a3128d4a8df7a90a422b53a9ff.json",
+     "0f45f2eac7d1f289ae3515aaca58f967.json",
+     "0fa8dba4a804224d57f550b73713941a.json",
+     "0fbeadca7eb92a9fd470caa7b495d772.json",
+     "0fbf9ba070835cede1b00c419e9bc847.json",
+     "0fd8c50b65c4f21bcb35a7a77c5e9f0a.json",
+     "0fe9387ac00ab6674083202f99951d99.json",
+     "10140fe17e23fcb7be66d153ba9a12b5.json",
+     "1029ac756f50b571d5985834fdc410dd.json",
+     "10c291a8d571fa1b16b7f18bd0b54a6c.json",
+     "10db00fd15424ef1a02c2d8eda8190be.json",
+     "10e22917b07cadc2b5dfa1cff233865f.json",
+     "10efdce02998c41c5784bd54b8e7603d.json",
+     "110b51d0d9c1fc753681355e6d6b3ece.json",
+     "110d120e3c55f798543a5e68724a71fa.json",
+     "11166a6b8d5a9509d8d3d1a542ad648c.json",
+     "1166a9bccca44c6b2ea208cfc8b5f78c.json",
+     "117742465ff0e0498778f884492da549.json",
+     "12253d83ce0901834e87e600ca2d9460.json",
+     "122d9dac0f5253273a51618d89b4652f.json",
+     "12347ab89a9a0d76c35377130837380b.json",
+     "12533487c85010c72583155f49f95279.json",
+     "126f965c82bf0998bdc35a15d57d633c.json",
+     "1273ff02afed8d415260d440a84e66af.json",
+     "12a867397e6fb7d99ee3fb28c84a20b3.json",
+     "12b8ef694a96a5890dce27a6a48942cc.json",
+     "12ee1d89e57fa63699457e20ab968de8.json",
+     "13b8a85f8fbb3193f56778254a7f664a.json",
+     "13c97dabb414a0f06143ef405a36e0c5.json",
+     "13d77565df9596cc255a33f78d56c83d.json",
+     "13f64f59b84e82d597a65cf850ab812b.json",
+     "1403ff5b9a0ffe000af63220887e21c7.json",
+     "1458f42816aebbbf8065c99a1a4f5f7d.json",
+     "1477ecf7b0aef53e94109cf5defb5355.json",
+     "148f15bc3da3e2c106f38f7d09ef5629.json",
+     "14f092b71f198995f800b7812499522b.json",
+     "15233f4d48d683d4649f1b3dd5301119.json",
+     "15462acd8031964b88a9ccbe6770a547.json",
+     "155e1acc31d3b8864147c013d828a816.json",
+     "158746afff4b5a014aa13cc2fbd91068.json",
+     "15945ceca31598a0eff5f9737b381118.json",
+     "15e00e51fa36326da6f9d3e4b3d3be92.json",
+     "15e3abd742b739e9450c5bcbd2d8f34e.json",
+     "15ea534cf396897f44ce6829e09c237b.json",
+     "15f1c777d3ef8d9ed2cdb0ac8bdcba8c.json",
+     "15f28618f158ea15958758415a03c6b6.json",
+     "15fb1e6df51bd023a2a60a76d0baf071.json",
+     "161b62fb7b18280dc43ddff3e6297f8f.json",
+     "166fc71da03880a0ae88a11b7b55f3d7.json",
+     "1686154dab9320b26eedbdbd87f2d98b.json",
+     "16a1f4010694c0e8e1bc282560cc9ad6.json",
+     "16e73385fbf390528b1c7eb89f3c1120.json",
+     "1733b24782c86c471b2b75544ad1951b.json",
+     "173a9682ab6795f6c93a3f746ae1d2a1.json",
+     "178798da78f3e99673d1e6d251e64e07.json",
+     "1787e01e998ce06dccae3edb0b31ad06.json",
+     "179f10c7b69ea32550787edfc9f99585.json",
+     "17aa7dd88846e1674a015ce0b2054894.json",
+     "17ce9382a014b6cdecb92a24af16eaca.json",
+     "17e558d24ba02c521c65f89b2ad6c2bd.json",
+     "17f184f5f44b3d22e366b300a22b06e8.json",
+     "18af4c9dc243a9fc13b4b00f04627a91.json",
+     "18bdbe6e32079c7c20b64c7da3b984c1.json",
+     "19041b3581f37b5f3348af93d535265e.json",
+     "191953a9ff9a83e51333811b0109d2ee.json",
+     "191f3035f16ab592ca858a37b4a8bffe.json",
+     "195f97dcc6a3c9d24ed45bea1c72722a.json",
+     "198a2e8565ea491a04f3b6ab38ba4977.json",
+     "199b2821dae794ff44fcbe8818360c27.json",
+     "19d57aa4732b6abc32019f7b91a2c1b3.json",
+     "19ed4380597ceb0e4cb2eae67f193cb0.json",
+     "1a2506fd70a78778cb97ce3039db1689.json",
+     "1a290c31b3f2202a55f9c77850ecb8b0.json",
+     "1a2e298b09b0a7fe0f9cb5f1d21acc64.json",
+     "1a30fbf7253c7c1f0a88115685c434dc.json",
+     "1a3392003e80c43f685ab7d00a6b9516.json",
+     "1a5db7094bb1253ee29661edd8cbaae9.json",
+     "1a641440027b8c0caf3a26c37c186472.json",
+     "1a6f3fd960cabff06fdd9214854db08d.json",
+     "1a81b7f3773af68732afc2e9add7c980.json",
+     "1a83641a48d4e719961262121e0113b3.json",
+     "1a85cdfadb2298f2e878c13457392f1e.json",
+     "1a88423fe21b1802233b9787b9053e75.json",
+     "1a99350aa0cd629aec91f522a31fbb31.json",
+     "1acc114ca76297b3164069223baa9d2b.json",
+     "1ae6e0719822d385bbc0d1a3e9af7494.json",
+     "1aef1d4f10c8fa157ff2e04c7a45ead3.json",
+     "1b4e408a686ad1efb1ec9ea943aa4647.json",
+     "1b8cabb039f5444b3228fac5421edec7.json",
+     "1b9e97566777a285d9ff8440e2ea4f28.json",
+     "1bac316f550829c9761a2b241853c4f2.json",
+     "1bb452061c5995e907af71d2b91f9086.json",
+     "1be64e88cdd718e833785ccd3b442047.json",
+     "1c1585bfd160dfc4e3fffc7224be794c.json",
+     "1c1b71039a96f4afa147be7aa4f67fb3.json",
+     "1c5d1563ec1842345127c22271861c53.json",
+     "1c632585c88486719dfbae280bd09eef.json",
+     "1cb2158aadf5fd93c83191979a36705d.json",
+     "1cbfcea1ee7f6aebbee7ff2fa72c1c04.json",
+     "1ccc5d1e6d22b404bb50f6dd3d29c5a7.json",
+     "1cf5c963e14f3ceb8964564c11e044be.json",
+     "1d50f8d6a640ff3ec31a0e8319198e66.json",
+     "1d5ed4fdaa6de15d0b28b3062f51831e.json",
+     "1d5f2296663f429300a3ca57abf63280.json",
+     "1d65431182b126d22161132dbb7de6a9.json",
+     "1d83bbd78f939c7cfd41a682acf3e43f.json",
+     "1dc9e015bef83e041b375bd0cc974200.json",
+     "1ded1b22a8601ded8217f23be914c7e7.json",
+     "1e006402851d3b86968401d7c42b7ea3.json",
+     "1e0460b22ca6689300a3b2644df653a3.json",
+     "1e1e289dc7e3562a04be3b85d8e14dcb.json",
+     "1e6cf7497921d3430d4b6c58904bee4f.json",
+     "1e6e849a8c41f9e51ff13db7ce08002e.json",
+     "1e789e449fd7299b7a7b1b92c4a85707.json",
+     "1e8e14dd58f145f2eb6a09e9d84e5f90.json",
+     "1ebda663413a777d08d8125bdc84ad1f.json",
+     "1eecab92f920f1f42e731d148d80e340.json",
+     "1ef3058eccb39384181d56e84d297a3e.json",
+     "1f16c1053f162de5f7f630f5cccc0f9b.json",
+     "1f6df22302ec7c045bf105aa114188d0.json",
+     "1f77603ab4eee257936dde476333552c.json",
+     "1facde16e8882e3c8fbf5c9f645354e3.json",
+     "1fc874604849c59e8a293a63b3003239.json",
+     "1fd33913a63a15b1fcf7a24e65f2e353.json",
+     "209a7d737d181e102ca4765c78f5c658.json",
+     "20a27bb57ab40f7eb728d8d8b511838c.json",
+     "20b2332afa59931882e62734df78de7f.json",
+     "20b4d35add4e1e7baf4f3a31c0560419.json",
+     "20ccd1bbdb19dff07f8fbb298aa7343f.json",
+     "20f339dc5ead46a3dcadf5da4bcf8cb5.json",
+     "20ffb2f740c6b032f7c1db441607d78c.json",
+     "210924f785cbac79cebbc793cadf29f3.json",
+     "210c2311b78ecfc5e2dc8f4d799abf0d.json",
+     "211ed627a9f0ad103cd529699b37e90b.json",
+     "21a4d0b31816315e37362e626f655c81.json",
+     "21c1193c21e51f2843afd8a090ee6f6b.json",
+     "21c71a05ac8ec1f0dc333b3de5ff018f.json",
+     "21d9d7d79798d4e4356a97b08d79a5fb.json",
+     "21efbded82ed68a521f078c356f87c07.json",
+     "22406eb3b69ebf5031fc8d1cef6403c7.json",
+     "22ac072f406b6342c4ff791b281a1ffb.json",
+     "22bc5321cd6c8ac05fb1f2b1715aeb06.json",
+     "22c2f6769503f538960b2be439be5eb7.json",
+     "22c8777648755974a9c0b0a63dedfef8.json",
+     "23196ad884c9f301d013893ac6643276.json",
+     "236c9a77c43b831b9572db7d80a8bf2b.json",
+     "2375efa9a9d901e19a6b78deb39f67ef.json",
+     "239020908233bf0189e8876c0cae706c.json",
+     "23c35b072da31dae8750ccb8d46c4b71.json",
+     "240cfb813ea013ff64d1b6cdf13e3b31.json",
+     "245423d5a42f07bdbe330a3973f1eba5.json",
+     "2459085ee0b765d197ada08dc1318d5e.json",
+     "24ac0f41c228d62127c4efe8149d13eb.json",
+     "24f146734bfb088eaf018c4e51ce895c.json",
+     "2511117af0ef26117bffc67be61e2df2.json",
+     "256265c366de02449428acc26b33db8f.json",
+     "2580919ec67fc15de9e1fa50a8f3289a.json",
+     "25c61427ccafcaed7fa5870aefc08c94.json",
+     "260718f09c5f799d15938df4b39882d6.json",
+     "260afb5c85492a49c76971f1f4bc5169.json",
+     "2619e65399387962b2456f272fbf63fb.json",
+     "2621dc531bfb19ac8ad29b4158895c57.json",
+     "2640483ae426c8a3f3f08b069574c108.json",
+     "2658ecd654cc223ea8acfcb524ef7cae.json",
+     "265ff65f32bcce7aa61daba1b93be1eb.json",
+     "266b71e5c719b2b14a343ffe4ed6000a.json",
+     "267cd8f552d8f2392d4b6232d87c2415.json",
+     "269c492868f8eca41f62cf79962cd51a.json",
+     "26c0108867b742fbd4df1c7d546b2956.json",
+     "26f50840845fe07f6406ba9071fbaa62.json",
+     "270ace4fdc34eaef2a2d231e83cc2401.json",
+     "275bf922eb8c0aa40a81383598db889d.json",
+     "275ec75c0a01ef13f6a015dd464a3cb7.json",
+     "276d908ae48242071265eabe5bcd393e.json",
+     "277f68aa879353921a9c35fa9422846a.json",
+     "2782863384baf05e55b4d47da25a4b22.json",
+     "27841b1a03ad7dcc5dd759faf29399ae.json",
+     "279c9e84e1bbb6c72cbae3ef09b7859b.json",
+     "27a4b8333791d009dc57ff5563ccaf90.json",
+     "27a908ba55b8956ca7a31d617b542a9b.json",
+     "27be34775dc18b06c3c1e9a1ff6298c2.json",
+     "27c802568310e159759d70e8b2ac5ad4.json",
+     "27f9681a6abf2756aca35cdd2fb388b6.json",
+     "27fdeb341e5c58b8d04f704beb695c3c.json",
+     "2802f885a7c2cee2e37f02f7d0bf9109.json",
+     "28320bebcc845d31672ff059f7d8d8a0.json",
+     "286b00d3bafd7b4c0a218866642bab5f.json",
+     "28a55f305c332909c48ac35ff7147a57.json",
+     "28aef2d7c84d92dbcfefe5a69d223772.json",
+     "28b42d86e28759365f09145db0f6da8c.json",
+     "28cb6c34024f56286dda658713ff64ac.json",
+     "28d80790ba079b9cf3d0b297f19b625a.json",
+     "28f79c2c4f32545b818ae392092a780e.json",
+     "29659ceea7dc5c81fb2ace180645c167.json",
+     "2996207916cd5cacbc735811b74ec1cd.json",
+     "29a8938bc45f1dda2f2412614c0060a0.json",
+     "2a5be9fd4ff268f6ed8fd0c318dcfb2c.json",
+     "2a8e12b53774dcc720a7f3aca37a109d.json",
+     "2b24e00b8e2bc86e80f7fa7ed13b6e89.json",
+     "2b2bb6cceb47916053d6144e2b625edf.json",
+     "2b53d80cc1b58ce74566c95fb8b0f6be.json",
+     "2b6b937d437dbc76f13929048765d9df.json",
+     "2b85acc51568c8ef2cf980cde20bb5c2.json",
+     "2bc9a13432091c4c6cc4d9d00b69e1cd.json",
+     "2bcb60d1ee8f76c567045b72726b05f8.json",
+     "2bce2d1acaa426ff23d726cb523611e6.json",
+     "2c14fdcb2faf108823ea009ff9785b54.json",
+     "2c17233e304e69a749015bd9e348541a.json",
+     "2c1b1f7809ef109b3c72548a28787269.json",
+     "2c2440592af3773db503150089593621.json",
+     "2c3e9a8263111b3687839b1ad8cfad5d.json",
+     "2c5af68031680a4e230d9fef07f8598e.json",
+     "2c60843829bee498002cd42e86e4d970.json",
+     "2c7808bddc5c5951bf9dabc036d42651.json",
+     "2c875a1d2d057211bee8fbc78ae248f4.json",
+     "2c9a0efe95da4d4595980b6331585fd2.json",
+     "2ca273f8e31c33baa92eba39cbb7a143.json",
+     "2cbe791fa6643d2421b6a1f153aa3b24.json",
+     "2cd10cd3b24962654573dbc41044d156.json",
+     "2cd60e4c843e0683263ab5de9baf4907.json",
+     "2ce1d49bc37e6c16697676f94dffd4ce.json",
+     "2ce508b6ff14bf82b5ef8c16acb187ab.json",
+     "2ce9dd5a7d2660eba0036d368935ae36.json",
+     "2d193b310613fdd2d1d1fd946fe21033.json",
+     "2d23deefacfbf3e461fbd711338aaa54.json",
+     "2d5a94c4f3e8ea21c949049bda5c99e5.json",
+     "2d8e3e4f0fd62db3819ff94bf5298438.json",
+     "2da6f10e6ebec2acae153e80a2e77ad8.json",
+     "2dabedcc50c450d6b03187d361f3dae1.json",
+     "2db3316b037c0645e1dc7e98afdc4e3d.json",
+     "2dbfea0819830a42c4f15dafc6a2c323.json",
+     "2e97b4f38065612ea15e172451bf6591.json",
+     "2f1044519b74ffd89c7bed3fffdf8e24.json",
+     "2f3712a057a8242cfa059d755e8ab475.json",
+     "2f3eca3842bd412de6fc166f6e5269f4.json",
+     "2f40836c607eb8ab19798bd952ad64ee.json",
+     "2f56111d39db99b9e5bfba8b176a4dcf.json",
+     "2f6f623253f35e761f4cd9a1689f1b17.json",
+     "2f7c00ea835b3aa4ebcdfb119ab0e7bd.json",
+     "2fb1776840fe7122442af58f912fc297.json",
+     "2fd4caa261d051fd206c3e0e24011b85.json",
+     "2fd9f3b6bd35b322d22b8f7d6d4425aa.json",
+     "2fdcbce6decc43671a7db91afbabcfb0.json",
+     "2fe95de481eeb83d38e0c832d77829a0.json",
+     "2feedf60c55c6582fcea8f10d5e71fd7.json",
+     "303f21c505477e7b248bc88bc7b342f8.json",
+     "30487ab22e767067d6677157cd65f708.json",
+     "3049d29ae32b55ef46d753e8d2a6d1d9.json",
+     "3061bef6d2a4c84c47458f4f261af52c.json",
+     "30b77467e2714ef25734f4060d48733b.json",
+     "30d3b8b019cde646b9125d0baa0b4edf.json",
+     "3116927e9b9f2a6b1e679bb8ecf6a0b7.json",
+     "31556f93cdfd1cc19c84260548427b19.json",
+     "317272babf130d09f291b3b9aa24e962.json",
+     "3182737635d0fd1e8a3286dcdb2b308e.json",
+     "31f1f7db32cc76a6c648d24b0457ab87.json",
+     "3208f644b9c46561a094ba2ba0519916.json",
+     "3217440b96d63f640f923b80e89e2833.json",
+     "322e561e181c5cd93555186f16d2bafa.json",
+     "324a36112e01f882805803a798171c73.json",
+     "3287a76b3783a133fb499a87b973e072.json",
+     "328d7b1477a9d144043125ee4e278e6e.json",
+     "32956664362219eddd21558427a672d7.json",
+     "329798fcb79557b56df45bb3e21b2564.json",
+     "32b3770b244f44476f1a40eddeb91e3f.json",
+     "32d294a67425dfe194aaa190673c322e.json",
+     "331e462b22d89ded0d6412613bd836d5.json",
+     "3322411688e1909c3dcd0e5678d6bb48.json",
+     "334b79cd6493e7b1a73c14ee0bfc7e8f.json",
+     "3366352f9a8cdc69d8153a541319e1f5.json",
+     "33968c5580a1c69599487950545195e2.json",
+     "33abd7bf9da62f879f7a939ffde20e00.json",
+     "33c490fe3ff67fea0e014b9288d1a39a.json",
+     "340b5c7004b4d0c7f2c3d5a084f7b655.json",
+     "342e82f8ac1d5240c31d2286e79328dc.json",
+     "34561cf7316d89a47229cadac41f707a.json",
+     "3465ac77010b988f32d8e51430c71cfb.json",
+     "349a75d3399f30903f6a5b9d8cdd6d0a.json",
+     "349ffde8b2c5eef18de589e7fdb1bf05.json",
+     "34a709acfd970ea05d9ba3c890ca36c2.json",
+     "34be72f68c9d212cd2204cfad0e7b74c.json",
+     "34dde8e1930f93d63216a45dcfa35205.json",
+     "3504542916bf21ef1d921c812a9a5540.json",
+     "351e82be1b61365bf4999113e9728237.json",
+     "3531d8e556915d3011c7c92a947ce62c.json",
+     "3542d394b16212fd1668f83c5baab84b.json",
+     "356587c0f3a6b03f8b989e1c1d4a801a.json",
+     "3573ac5274b81e6025b842df8441bc24.json",
+     "3582d23bba20350f5c2eb9ca18a7fb91.json",
+     "358831478501a9338f93fff92fb3c682.json",
+     "35b38014589be168eeb4625b6a1a8bf4.json",
+     "35dad1aa4390a6e2d676d67b65cb57c2.json",
+     "35f4a1faeba4d1d3556cf07072b7b3f8.json",
+     "3630c60af184c40e1cf5320cab223e98.json",
+     "363ad4ec72219cd192d29277ab59d7df.json",
+     "367030267467fff8963486f630aaa5fd.json",
+     "3675004740dddfaec56e1b9c63f82b26.json",
+     "3719c39ed66bbae66deab81fbf8cbc63.json",
+     "37241c8ac2910777c326d610be756645.json",
+     "3776b999a6e01e0efe7417ae96ccc30c.json",
+     "3780ea010daaa93176c55d6d82a7b3f4.json",
+     "37831e208c78a10f852080a2879e749e.json",
+     "378ca8df55c3fb9447a01a882758ae32.json",
+     "3793c4b438cd92b65ea0dc767d71f63a.json",
+     "37a72deb32289018f6f86024cb06b442.json",
+     "37d172682b0d1770a9dcd1ea2cfd4586.json",
+     "37e8932e0eae15c19bb70ce02faf1be7.json",
+     "37efbb6c46bed42ad14b1d273061ad16.json",
+     "37f16c4b929d312ff3329d2ea5c5f389.json",
+     "3803505b6c75ef40f4916ca14f850887.json",
+     "380a65546e61bf60d2bb4c1d5013245c.json",
+     "3831d690cbe1fc4c0d216d976a2ef139.json",
+     "384e24919e88899076988d2b3cef8f73.json",
+     "3850eca3bfa3f747ade7ec2b620a3f74.json",
+     "38604a9135a1c28f9e2496a683a8444a.json",
+     "3866305ab395335b40aae919d6e585c1.json",
+     "386d02b8c95b1891bc86056b84b49b77.json",
+     "38950f737e9d745c92fea6c619efd098.json",
+     "38addce59c706460556fe163d993129d.json",
+     "38b1401351747ed605754ebfe5c7dd55.json",
+     "38c5e9112156028ed97e39b257093434.json",
+     "38db2e9d88bdc8b0e1401be2850266a9.json",
+     "3920a1d1976f2557cbe46b383c695baf.json",
+     "39475d18a085bcd92341323202d74f5b.json",
+     "395f3c6b6bf1f094d7c35299dde706f8.json",
+     "396c4f51e2d8462f368d06e0dff4a934.json",
+     "397999045d7266d7c615525bcc13c9bb.json",
+     "39b27f0cdce13b0ec45623422b45152f.json",
+     "3a06caf6df9546ca188c88f5002625a9.json",
+     "3a07c7ecb5f88270b7b42d7ab04be15a.json",
+     "3a2fecf673760b987b3165beff30a9a8.json",
+     "3a39bdff98c44a3f2a198d70b6b26c9b.json",
+     "3a3b96a97e937a851ef9ba4a0bc49c51.json",
+     "3ab1e2069bb9635159757fc99ae495e3.json",
+     "3aba0cb71f4adc2ef4ad23a165b75cc3.json",
+     "3b10bed41112043d020bb81a450561f4.json",
+     "3b151764b64641bcd75c85ba18a7dd52.json",
+     "3b71da2a7d5c65da4f99b2be5597156d.json",
+     "3b8b9d87079e6534bab696d46eae28dc.json",
+     "3bf6ef2177f3af220c38057857da3972.json",
+     "3bfc6798409300d064f5461709271bf1.json",
+     "3c05f2136cd88a2d81afa1e06ee6dc7b.json",
+     "3c54500910877fccde14b32813ef303f.json",
+     "3c546745015c1cc9defcf7ac9fc629d2.json",
+     "3c729b60c24dbc1ecda3d0da2f3fbe45.json",
+     "3cc025ad4b2fa275d769dc48a578130c.json",
+     "3cf67692ccd77fed1ebc3fa04ba30f02.json",
+     "3cfd258fd1d1ec6efb6e447f556ac129.json",
+     "3d2e0ee2a6395350f57bc97f4b3553ae.json",
+     "3d7e7e7257cbfe806001e5d3b8e69491.json",
+     "3d82f6e565c9e3514855202f824302cc.json",
+     "3d8b7dedf253aeb48e89298d17eaef6b.json",
+     "3dcac28b25fedcea6773ccd2c78355e9.json",
+     "3dcb32746962a3edc7158c96aa64206d.json",
+     "3e0ea2f3bbfc97fc299859a81bbd31d2.json",
+     "3e1af0c6025d658238bb441c5cd91282.json",
+     "3e27471d74aef19d125962ce39ee4e82.json",
+     "3e5c5f89a10c9eac8aa2e6741ee4f37c.json",
+     "3e643348ae80daa493eb496d1ca0f7f0.json",
+     "3e7fae7b6cab493a6e41c51b3542c148.json",
+     "3eb6f8ebf7aa26c2217c0b1c494265cd.json",
+     "3ee1bf0f6ed14d43c8c3fb6179d76938.json",
+     "3f0dd5900e360dbf44b6fb799f412534.json",
+     "3f398e1dbbaa99e268e5476765489232.json",
+     "3f399b8a268c2beef9cd585d062e51aa.json",
+     "3f6ff33b3f4d1a6a3e69868bf745aaae.json",
+     "3f7a6996755e5049e4238ccb4fed65d3.json",
+     "3f8f5067e82ebd950a3d5bb26d3ebd59.json",
+     "3f9f449cfcff95b926a8823ad242691f.json",
+     "3fa716392e4f481985259a65234d8622.json",
+     "3fc1e7e70fa2379ef4285355e5159fd3.json",
+     "3fd4a67950b40ac54a25354215b809c9.json",
+     "3fdc835ae3bf4dd78dc63835a2eb1994.json",
+     "3ff1c279f573de5740947ed5c9c4a8b7.json",
+     "3ffc4513e423769410d1968e169b121c.json",
+     "403d313aa08ecdd653ef9f78fe3d4143.json",
+     "40578b9177fc7d36a260665a124901e3.json",
+     "40643a2e4fe9881b09ac635b4e7ba02b.json",
+     "40861e66e2327704074df55c414bba72.json",
+     "4089e15e00660346bfbff48e2e86e84b.json",
+     "40b60eb895601987ddcd876c01625c67.json",
+     "4137c9a4c71346f0c00186c5710bdf69.json",
+     "41445880d76e2a5fd6123886f98e643d.json",
+     "415247f12ba9cc11625dfab0a844d17d.json",
+     "4160a44f4e70b7f053a6d4b53fd0ebc3.json",
+     "418725e8d618ba9264237421705cd57a.json",
+     "41ae218e1b20ed9732dfe2afa08d17f3.json",
+     "41b1285aeed9a49c9061f3500bf22f8e.json",
+     "41cfa88d77f64e4e20efbf50997fb168.json",
+     "41dd23e4359d22b1c79f54a4ce4e7106.json",
+     "41e22f22803733d0305484c884a110a2.json",
+     "42022ebc3405072467c6b2d3afca8d57.json",
+     "424524339cbba6beefc42854e60cf2c4.json",
+     "424a1b90312335a418823fe045e05a27.json",
+     "425be55bb90a8f538655ad19ba9ff689.json",
+     "426576b8644802cc5250184a4478713f.json",
+     "42685bec31b0390f89e9c97fbc07d3b4.json",
+     "427eb3c05ea092eddbc66ca781fb5692.json",
+     "428182c23c0461ac09bf5120efca93c8.json",
+     "42dedd9f67250002515135c81ab8eb30.json",
+     "42e690b12a7d8106c109f6d85874669d.json",
+     "430dcdfa0b643c0e5c542ead0e8a2c4a.json",
+     "4312301b6260999df65bd9498edbd894.json",
+     "4316e46320115483feb99c3b3452602d.json",
+     "432ecde618572905c6f1598e4879863f.json",
+     "433f7f6e0b80c4e91b80b5df8f93e4d2.json",
+     "434131a63cb241eb4b718b05e014f823.json",
+     "43440d17d9b42fed27b3fe8aaa18b10f.json",
+     "43bc7012631d720401f55c74a8771d21.json",
+     "43dfb01fc1fcfda15c87b6154ddbb23d.json",
+     "44136fad68927fe9e3c32e32b9c92a8d.json",
+     "441e80c729bb8828aa6f9874d5a2c7af.json",
+     "441f24069491e66d9ce6818a7b59f7c3.json",
+     "4445f407cbf253acb73724dafd11938c.json",
+     "448cca18894687f11dafea4412a57848.json",
+     "44975b55d7b1bd213620a776f49b3fc0.json",
+     "4497c563a4196681751e361c7ecf5ae2.json",
+     "449e3018ef07716a13064dd841f108a3.json",
+     "449ed34b56c6191adfa4b764a4719b28.json",
+     "44a5ecf6b0e4dd896b933ae06de8eff3.json",
+     "44dccba765b85afc339b533e08bfb9d3.json",
+     "44e4c0cc586e2d44292027ff750800a4.json",
+     "4541581ca7dc5245e824b5cf58830477.json",
+     "4541992475c07378a9d6f9371c8e6dde.json",
+     "45adbff3bdbacdf33bcc974c68faaaa7.json",
+     "45be977d7b9f206d9535ed01d6cdeca6.json",
+     "45c3f0c4509560a70b581c097d2ab30f.json",
+     "45cded1fde04e319449380cea870f258.json",
+     "45fb32e40a7369c70e9be1337ac05c3a.json",
+     "462565877a50668dd1a6e138e4020683.json",
+     "462eeea837727f2910d88715c84a3ec3.json",
+     "4638a9b3728a1da1a846292b6223a1e6.json",
+     "466c2ef997c92550bc7a94434e0e7b09.json",
+     "47980cbe91f80e1755f4d188314a151d.json",
+     "47aa4af034b6143428ab7639a673e631.json",
+     "47c1c79e6345caf33bcfadef45e17995.json",
+     "47cb9041adb6fbdd2ee8d988ef7a8deb.json",
+     "47ddf89553cccdde8dd41645613439af.json",
+     "47fc6b7fd809d66454cdff4d38c2818a.json",
+     "483092297af90618cd577902610bd6de.json",
+     "487693481620eda7cd21d83b1bf0e101.json",
+     "4899a8356a45a8b97cc2048be3c35d57.json",
+     "489d59752b6cae219c69bb98cdeb604c.json",
+     "48bb41673526e12cd8b03bed80ccf445.json",
+     "48c13ff8bf7529243ecacafe244f52dc.json",
+     "48c2039ae9360b940471f7d98acf6b86.json",
+     "48cb42e69895dd8ea071d72def3ee11b.json",
+     "49118c7e98d81a4683006f75885e02b5.json",
+     "491de65f37a76be3d677152fb38354c4.json",
+     "4925e4d965e9776c650ed2269cb36888.json",
+     "4937b4f06470af41cd2252c455223807.json",
+     "4941d58ca61124e6f8251dd3d62c6cb9.json",
+     "494a7ab36474b4b669dd9eb306750b0e.json",
+     "498235156a79f7a810af762606085613.json",
+     "49f167b5ff62e4c8b1a15e175224b85b.json",
+     "4a1b2d92b3543305c6075582f5baa961.json",
+     "4a9449987a596b607bd85f9a0a2fa5ef.json",
+     "4aa98d7575d90f350b37068c30b14453.json",
+     "4ac4ebf35216d673f779f089e38d816b.json",
+     "4b34527826f36b107021b7cb1d3c154a.json",
+     "4b375f767b77bb8dc28d0632126d62db.json",
+     "4b4252809fc24d0b482e08d14296c5bb.json",
+     "4b5c0b20119f4d23bf7f7aac2e366d98.json",
+     "4b77a67c5a0374b6cf13cb0fde071540.json",
+     "4b9b7e999d9c69859fea9de399b0cfbe.json",
+     "4ba2f912619a2f2775729b1970865d66.json",
+     "4bb30c8c669bb19cdb6cd005808b1933.json",
+     "4c5e21c2f657dbbd163bc1f326db3ec8.json",
+     "4c84f2d9b0aea4aadc99f536eb81c976.json",
+     "4ca9b0e421e481064d91084d788133e9.json",
+     "4cafcfc3a3eb43b67c77ccee53abda5d.json",
+     "4cd94ae899090599e7b3dbab9bf9c725.json",
+     "4d64882cfb5344d38b613b454fb7a132.json",
+     "4d6bb0fd8e31791a5b7b8286d5768091.json",
+     "4d8df4e67006a44595f4abfd1d04c83f.json",
+     "4d902683844db7db06430d08c0263978.json",
+     "4df08420ce977ead86606bfda1c577bc.json",
+     "4df7410dd6d0e66d2b9ae9c384282062.json",
+     "4e2b02f0d88b1651aa75916be7e2d2a1.json",
+     "4e40070f7719a5ee88f02768c8ded921.json",
+     "4e78c0b71209a2e3e97dc3b480d6c2e7.json",
+     "4e8d1a31ddef922c3846de3451be0057.json",
+     "4ea55d1dbd44e62c78a02c55cd14bc26.json",
+     "4ea7bbb312ef06cb116166b597c70065.json",
+     "4ec583e27a509466085b37e666a583fb.json",
+     "4ec68440af15e5ffa3d908308911bcfb.json",
+     "4ecc136d0948fec68abd109061a2bc27.json",
+     "4f1395b67dde0a2ab52b9099af7f9520.json",
+     "4f15a3b0bf3a48630702c4c75fa5fd3a.json",
+     "4f28a2ae0bfd37b33737f724971adaeb.json",
+     "4f4415c39e6da6d99b3b46ffdfb62ec8.json",
+     "4f443ad5326bba749e65eeb60e38a466.json",
+     "4f4eade320ae7f76a19468d674a391a8.json",
+     "4fcdbce888477dea48f185c975e96c8b.json",
+     "501e5c6bd016cab22c1bd18dab86a0d8.json",
+     "502bcad64379dea82e2cfdaefbad342b.json",
+     "502ecd5a3d650299388593a25b09dd84.json",
+     "50ada5fb791b7d0c706012a83de26e04.json",
+     "50b6c3e2a266eb67d85132071749683c.json",
+     "50f1a2f8a061ed6c083e775c96eaf3ce.json",
+     "5123097831e8014364da9670f28b137f.json",
+     "517370edde37f98bb609b095f014e5e3.json",
+     "5195c77a233a93f19c64aadb29200329.json",
+     "5199e56b80bacc7473fcd0c97d20f2de.json",
+     "51a00e7849a1764ef0b578fcb405d981.json",
+     "51a63c33c3635b49c41f60617890f612.json",
+     "51a8a5292ace398dcc5f4cc330c369fb.json",
+     "51a93b0ac205e3c3ad5134843efb5e83.json",
+     "51b14b6632c9829dc87a3a067d554cbc.json",
+     "51d63db5e1cbad0754c400b002118b7e.json",
+     "51f2777c15f312d08a92f09fae57443f.json",
+     "5214f3d8d20c019a32b36667f51d367b.json",
+     "527da0dac280c3662a7d2f5255def2bf.json",
+     "5282d49910d0581cb851205d3522517a.json",
+     "528f6ac2cc96c2239200af6e9f97e67f.json",
+     "529393171bc65243a2d05e2d2514fd8f.json",
+     "52c5260365171c27492b3a26b6aeaec7.json",
+     "5307ca169c5c146f3c21a1a8b3e2445f.json",
+     "531d2ee0f9f5dc2ed2d827ed1332228f.json",
+     "53403c70f8fc03fabc40bae9c26aa922.json",
+     "534a882dbdeb06289ebf246f5b92e4b2.json",
+     "534e067a1696eaf66bd6eca7e96ae793.json",
+     "53546b937f79d0e1649e287642f9fe07.json",
+     "53d1bedc702f38ec474daee24a638e29.json",
+     "53f1954f8ee8199eecc0ef83a166a8d8.json",
+     "5411163bfe0857dbda528d2afb86e9bb.json",
+     "5484fd76ea24f3787133350ab76d0f7f.json",
+     "54af20fbdb560b8e887bb5480e000ef2.json",
+     "54d9efd3e78a1c8618faabf6b0644f2e.json",
+     "54ea0ce18a773ef6117c228cdbf25b15.json",
+     "55283cf35fba3ed841d507c34f0add8d.json",
+     "5558f04d87f01375322639e49a708b35.json",
+     "55b16ea241d58ff8dfdc94a69cf0b52a.json",
+     "55d5d09b37e8b7a8f9a47eb5e4fc9aec.json",
+     "55d934d5fd65d6e02a9762eceb06e6a2.json",
+     "55dbc48fcbc8d6cca0e54ba4eef98219.json",
+     "55e8534dc3ae5abaf7dfc820526e9ebe.json",
+     "55f18cc19879e3b74dc47aee8a57b68c.json",
+     "560b53e11aad60ee09c858a9e57b1474.json",
+     "560e99b58dffb5010c6dc01230232a65.json",
+     "5625ae0b92573c7e04a25ad27242d78d.json",
+     "562e2a7fc27b910fbd4e5902d6776849.json",
+     "5651908eb3aa3e0ed2e0e3f746aa73c3.json",
+     "56602457c81c73842a75b56c88e94eed.json",
+     "56c489c7d6e0ffb7c4eb8a4c5eedc962.json",
+     "56e6fdf6271f3c329427d34595bde93a.json",
+     "570158a9d3275b5a1a845dfc029e178c.json",
+     "5743c78c9ddef3847e5a9f3302595b1c.json",
+     "5766ed1778236e82b574e53c7561ac27.json",
+     "578464e16793d769fe43995cfb063804.json",
+     "57b6a7fcc21bc88da3648d8a45304c78.json",
+     "57cde7eea72ba861aa4ac461d6a30674.json",
+     "57d8da86c1c05ced43875b191939eea9.json",
+     "57dff4f018b634efefcb89a618f3afc2.json",
+     "57e17f225b1a0c3b3f365338360ae2a9.json",
+     "57e2a9645b453e593d788ef00db892f2.json",
+     "581b598a629c2c7d9a9c8d2a9fbbece5.json",
+     "584f8c53d24647bb73979da43291c6e0.json",
+     "58add5cc432198f93f4130ff64502f6c.json",
+     "58f2d7516f4c1fa1b61c9daef5f0a92a.json",
+     "58facb580473878186d239cb39d49815.json",
+     "5903514a7e68a23a623f70ebde49c3a1.json",
+     "592b05904ef3aa6299dbe98c0f8c57b3.json",
+     "593e6a2e3c359c0239a5092d4f1ce6c6.json",
+     "5940072cd7d463b3de06ac977e609aba.json",
+     "598767df04df17b795b00fd93be8748d.json",
+     "598d7bdd3f366d10ca29fbca20166777.json",
+     "598e65e5bf9bddd0a174831a8a901e43.json",
+     "599596a8c753da2bd9a655b5cf15c153.json",
+     "5996d544461ac2ecc266ecaefc58220c.json",
+     "59c0062ee21fb369e34ea3ceb15dc45b.json",
+     "59edd65c43b871e468f23d71677b571f.json",
+     "5a01e7fa1dd9fbdcbd30ab3b332e7153.json",
+     "5a0407cf63c4b6b9cc3233c6d83cab26.json",
+     "5a4ccb14efa21a0b9bcaa058260096bb.json",
+     "5a773941664bc8ea060d785b0e54bd7a.json",
+     "5aa9ab6535b0576dc827e888b93c1c64.json",
+     "5ab97d10137b8c6e7ed4a710b39f8080.json",
+     "5ae9ad664694a820f0747672031f0e7c.json",
+     "5b02f82c7723d801041ac8c7e6c43370.json",
+     "5b09be518f95e117f4fb2d16efcd4b64.json",
+     "5b4c62adb78b8a27bc253730889c7047.json",
+     "5b5dbdb396801e088860404af337088b.json",
+     "5b66f822dba0eb762bf39283801ada65.json",
+     "5b95ad81aac9f6aeb395fc7660fc65ea.json",
+     "5b9684bb2e2987d5975df4581550844a.json",
+     "5baca0731954379fb5c39450882a4be5.json",
+     "5baf1059871e0d1a8e48110687b1f651.json",
+     "5bb29757ebd2f8cd1711c6011a134f89.json",
+     "5beb60ca9b18eb1b70329cd9ff9053da.json",
+     "5bf40f0870d53cc3879aea128e6bfef6.json",
+     "5bf6a5be9193838a3fd69e0af34d3b00.json",
+     "5c8a396cd9d9f8f6d11a7b9cbd6f3b32.json",
+     "5c944eebf41cdc4c9d0ba07833ffe2f8.json",
+     "5c9d83b1e8011228286bbb2b63f74249.json",
+     "5ca38c5df3427eb0e7fd44d52d78403c.json",
+     "5cdaf5f497230b85f23306c1ca04a556.json",
+     "5ce34053a1d746d08fcb6f32e8035dd2.json",
+     "5d1629e02147ecfc42863aa3918239d6.json",
+     "5d4ba5b3a1f6c5b0cde234e0262d4890.json",
+     "5d59c67a2d3a46bb5fbe51bcda1b8d56.json",
+     "5dba545afb1aede729ef38b606db15f4.json",
+     "5dbe2afbffe2e655a5f7622ecf781334.json",
+     "5dea89ea5e7ed4a16706da428a25dc90.json",
+     "5e2eae321c5bb2656a39d3b1c97d1481.json",
+     "5e68fb6369993f06db44562f1f11ad5d.json",
+     "5e736ba3e987b9379c8bdda38e4e8579.json",
+     "5e74d291c90715ad6af645ffcd4089e4.json",
+     "5e97226ebb866d5ffb901dddc68b184a.json",
+     "5eb9e4ca5eb0e8636701c8123a2bc222.json",
+     "5ec39add2dee2f8ce4a156966cb1d529.json",
+     "5ec77b1ecc288a8884707906be419c6d.json",
+     "5f25a7ed83fb5a448f1d53b8a254f6e8.json",
+     "5f36e1d330c60b2f6c723328e60db29a.json",
+     "5f5c902679d750ab05ddb37dc964ae2a.json",
+     "5f624a318afe3b047bdf846b34566f3f.json",
+     "5f8ef2d4eda08571664d7bfbc2da9f5a.json",
+     "5fb066ee822dc34eef4cd2c88fdc89a7.json",
+     "5fda71abcf8004a068d409a547b9ac68.json",
+     "5fdbafcc61d5ffc07559f8624ed19102.json",
+     "5fe09f56876f0df534a6d021a9ce75a7.json",
+     "60089e7390fff664c8331926deba8de5.json",
+     "602521aa239e1d3e3f710a1fc93f0e3c.json",
+     "608998f78832d07d6c983839eb8e33f6.json",
+     "60b536cbea6cbdbc78728856ff020fa8.json",
+     "60bfbd667ae1808ebbc9a7946fdc3844.json",
+     "60cc305e248945e6c53851ff37b2a046.json",
+     "61129e644fca06b3bed9e1499fa76c0b.json",
+     "61331e10152c10c702c27407d4231a43.json",
+     "613a31f86407f010b27adfb3ca5bfd7d.json",
+     "6168f2ecad499d885ce23f8afc7ba89b.json",
+     "61d4ecb00bd80f39b6db63ff970622ae.json",
+     "61e16c5aa1fdd40dff10de5a5516ef1e.json",
+     "623425218d3b19a209d000cdfe71f574.json",
+     "623d1003857ee8ac520c52d535c29dc2.json",
+     "6277081849fb465a945a74429b7a2576.json",
+     "629b61ed5869e54d398991eb3e357045.json",
+     "633e1cae0f64d610cd22b3b4101a71c3.json",
+     "634bdff9e5848884e567c29fdf929521.json",
+     "63761ff687cf94e659b359431f7101b1.json",
+     "63a30e50e8cba85b2ce633c156585656.json",
+     "63b4a4f41fc6c7f6f01447d6213e1693.json",
+     "63c9fffd88e8eb584912b6a539ff0f19.json",
+     "6400037f102febd32230c50508f6dbf8.json",
+     "640757af9c9a02d50dfee04c3b459465.json",
+     "6408fb67da7016827bc67bc5fb2dca70.json",
+     "640dc7e17ad777ac77f1762f00b35427.json",
+     "6412554650005307584fc9bad7d82094.json",
+     "641e11bf0f7881dae8c0040f35d52525.json",
+     "64595f467164194e3abc9ca62d91c262.json",
+     "64c972f63a7f53e3b59755f850cbf1b8.json",
+     "64ccdeff45c04cf1e39fd3b48a28c458.json",
+     "656b2263001422c415c5b5ccb2f00e77.json",
+     "656e56244e9054fe2f710d8de6788531.json",
+     "65860156b80675b5139f40d09a323731.json",
+     "659af8ecb3502ba585f3885177b3b7a9.json",
+     "65bc8162669ba564d66bbd391ae907ae.json",
+     "65bf9619cfbaf4c7cef610085fc67230.json",
+     "65e2b008a07e0a01c8fbf03b26a0eb70.json",
+     "6622380de370fbe58347ee260ba9c47c.json",
+     "662ff0af4b099a27f3b7b777a040ad64.json",
+     "665e69ca54b7c364a7448c0a9854c06d.json",
+     "6676421d17a2906b048874a0b0f42b8a.json",
+     "667acb793f5f0f55fc831d3be39ac3f5.json",
+     "66c4a8ede511ef4cc2489ee61e3d452b.json",
+     "66ee2f10003f5bf60f5f78c7fad7ace0.json",
+     "6728e60ca434c24f681cbcbbc2d274ea.json",
+     "672a3bf96ff067548651f22335ee7cbb.json",
+     "67436e5be359043d8433c41254549e38.json",
+     "67938249e66b1842c22b7aae656a1d1e.json",
+     "67a593d7c0699dde93f2857a45064dd6.json",
+     "67c05fab6b758636b204b80e72f8ca4c.json",
+     "67cca6bb72bc05b2a06b61ae86e4b051.json",
+     "67dee49619fd5a0ffe43e08b6ace6f03.json",
+     "68384208222d76ebc5b3c5422214169c.json",
+     "6867446af32b71b8357ed011c342d682.json",
+     "68696253da6a0c53eaf08f6a1144b7d0.json",
+     "68926edca731be38e315de609f6ffc86.json",
+     "689515dde94db0f103ec64ae804414a0.json",
+     "68cdd957bf9dfd5b3d7b6a5f298cb429.json",
+     "68ef5a5cec5544d19debcb94fe387215.json",
+     "69027ab2c460561b995671219db23159.json",
+     "69157597f4fd750cc03a7361f9458d69.json",
+     "692924f3e808239dfdeff522aa534ed4.json",
+     "6929f33a880a820047c451fecf236c23.json",
+     "6931365d85c674e47d0c4d69e65ba8d7.json",
+     "69359c94bfb2184150aceb389c826a1c.json",
+     "697fc6950fa7dcceea045f1d84a29fbb.json",
+     "69c53cf3b9310d7b1063ed202caef3c1.json",
+     "69e06381fb95f6d6b5aa89e52849a044.json",
+     "69e111059f2df4423f44e1c78586e74f.json",
+     "69fbff7806e675cd2dd11ad2789e62bf.json",
+     "69fd96c8b08fc485a2a83ef5c4b7c134.json",
+     "6a1a858ae221351d90c68eeb93fdb9e0.json",
+     "6a1fbd57d31306e306085f415a13b38b.json",
+     "6a29f08af36a5bc535034cbf9c5dd41e.json",
+     "6a362bb369b35d4e85a6fc03cbbf141e.json",
+     "6a614c47063b8a09b753d04f4321a20f.json",
+     "6a91d3f153dfa16ba52879a36a061baa.json",
+     "6ab7f42e8dcda8c008161d5b6bd8bd04.json",
+     "6b084d2fa7ac20c1b79ad50f89001f18.json",
+     "6b0d49494dac39b11458ab0bf25c80e1.json",
+     "6b12fced495c6414186467fbd0dac5da.json",
+     "6b6b53694e023386f1122f9d22bceee8.json",
+     "6b7afaf7c4de63617b58dcdbd8b5c222.json",
+     "6b8697e258a7f060d9e8a3a2e7e65d4f.json",
+     "6b9afee7c1a15c3d883eecae6bbcca57.json",
+     "6b9d2a094ccc0cb1e61ae3945759b55b.json",
+     "6babd462665dfa740389c0a0caac5e57.json",
+     "6bc28e600f160742166edb937a9199e2.json",
+     "6bc7485661580076a65348d55a3e2f6f.json",
+     "6bd029f6cdd95e30d1c7feec7db6d862.json",
+     "6bddb9f025b4774503481ca97b724d58.json",
+     "6c2893fbfa17cc1167de8df1fa1af4bf.json",
+     "6c3ecbd6f61865ca501fe9de4b2718e4.json",
+     "6c5cccc658287f168d823dd9a619397d.json",
+     "6c6e31e1076b247609abf0aa4b6a62fe.json",
+     "6c8498cb9bf22623f7b3bd6e7363c1e4.json",
+     "6c8d2d3c0943d4bb00844008947a4aa0.json",
+     "6c9c7add10c0576fe9b925d52c12950b.json",
+     "6caec61bd6c2ab2dfe439329189996e3.json",
+     "6cb32ce8705e07f3e7eb73e84e20bff7.json",
+     "6cc9fae6eec96563da815ad51db41775.json",
+     "6cd3a3d7fb9c12f7f5c4e1ddbc62e80c.json",
+     "6cf04f0f6ee4e75c9c734d3a89988db4.json",
+     "6d3a219e0e7fcd9509411a02df7525ab.json",
+     "6d4825a9fc7c0e24672d46e44e7d420d.json",
+     "6d601235e7dc607776541acb15169a78.json",
+     "6d658fd42164f5e8b18ca020551f37fd.json",
+     "6d7d572c0fe47d1924bcd58985ec4b50.json",
+     "6d7e38c2dffe3d665d45ad26e0953ba8.json",
+     "6d86a32265568823c38c37e59be58774.json",
+     "6db2d0661e841de19a1a36c3bb0c5f06.json",
+     "6dcd3be625a37db6232fbc3a49c619f0.json",
+     "6e1eaa515891509c9f2aeb635d50e9a1.json",
+     "6e21efe7684e2ef3e0f348b74f29f975.json",
+     "6e556f0f9978bd733997dbfdeab8d6d4.json",
+     "6e5907d731afb66b5efae094d9a8b467.json",
+     "6e63827eac055f10762f6ec8bb3cfad3.json",
+     "6ea14fe559c01909dd2813373e45c49a.json",
+     "6ebc4775ab9ebe3b3f8a1b4ccb6f6884.json",
+     "6ecc82eb4678f6349a76355292a94581.json",
+     "6ef4f74766c6becb2d58194d4861eb61.json",
+     "6f003a1671dc1b061c1d6ce1f8198388.json",
+     "6f0d1ba3125ef9db12a2e143131591e8.json",
+     "6f20b7042046598adf3d0672bf5ee15c.json",
+     "6f2482601b0d994b351a570c198e99ae.json",
+     "6f5ebd0fe9b5c94841c8830bb8d26bf4.json",
+     "6f82bf8931a86f1435211342607678ae.json",
+     "6f92f2748b67924cfe65073909a9332e.json",
+     "6fb24384c7935ea4c7328e5987f8f8ad.json",
+     "6fe1ac73d9a416491d16284dcd1699e2.json",
+     "700b729476509247f446b6e2843f59dd.json",
+     "70237bcd9b202db99c8266ae6d8a197e.json",
+     "702f6002268780923e4f07b96f418b56.json",
+     "703217c43c76fdd47c5cb2d4b9c52253.json",
+     "7076b85e6c782e9a05f8980102bc8a00.json",
+     "70a5106c30c8c981c12b40ce19df4878.json",
+     "70b31f66c81ac1c0995294b6288ba836.json",
+     "70be85a6996b5427349c8df0e9b77327.json",
+     "70e1263a460fb08942e9785c24a28375.json",
+     "7117113fff3c20f28e4b89f77ed69ca6.json",
+     "7130cfcff7842c571a7210fcb93de6ad.json",
+     "71ab73e0ee3d83c8641e5845260c8ccd.json",
+     "71d88ec0e1eb266415329a67bc8692f2.json",
+     "721561b965ddd581e1f92fe2de3a1acc.json",
+     "721ee43d00c351a2ef58f176d7fdf393.json",
+     "7239e97752a31c8a3b9f23638bdf5fdd.json",
+     "725d53438ad1dd2176dbb58dd44d7fed.json",
+     "727194f4e76334085319b8421ff490c9.json",
+     "72b16b6bc973215c39962164b7f24a63.json",
+     "72d1c9137957490205e20cd1d80417d6.json",
+     "72ee13271c2de1685995ba862e76396d.json",
+     "72f625c32070e7534b63a5e8ad3dcaa3.json",
+     "7347f8593171716e920dae051420b12e.json",
+     "7357d951b7448834d0d645c51851b3b8.json",
+     "73896dc5e19915679beb781b6e7ffa2a.json",
+     "73a88f2ca0f569396af7ab7a1c353bc5.json",
+     "73e3bf9b55cb52c41b1c855ace67a9c4.json",
+     "73ed26fe673dd66a3473ca616f7c0478.json",
+     "74174307a7cf7e03ef9d83759afcc21b.json",
+     "744939992bad657bc3eef1f940340449.json",
+     "745ce07053161c128958e729de58524e.json",
+     "745d9dc7dabc6c2b14c09f6c1699244a.json",
+     "7462e92b401982c30003747a3f4cb921.json",
+     "7478c09dd87b37c645474ab377be6080.json",
+     "74b15d6f632637a5ec93f552eae6f8cf.json",
+     "74b25036e8f2f4abf43026b1cd2e6d98.json",
+     "74bd3d3ca7169247e2cf09deea5359f0.json",
+     "74c2ec3ccf5bd9a8ae116548cd4ad351.json",
+     "74c6f25a324b8a4e9f4d5da92fa4029c.json",
+     "74cd651d909cfd921743941885615206.json",
+     "74efd4c6fe883f24625d41d012d9482f.json",
+     "74fdfb3c8221299d29dced0a740ef468.json",
+     "750138306435b1918233b2cc09782e18.json",
+     "7533b870aa9cec41a73335c06ff8e155.json",
+     "756e8710017e2cec671ef91ac91d12cf.json",
+     "758a4d8024f01ccdb415399998480d28.json",
+     "758f69fab89677064fbc923a0c2dd0d8.json",
+     "759a2d910f980b2f23a6367bab183670.json",
+     "760581d514c6a901a1364fe546e1d1f6.json",
+     "761ec44cbd0364b062c990b7651b4c56.json",
+     "763723f2723ac1397372bc544034bc55.json",
+     "7639e691f141ecdfb9142bbabc68cb38.json",
+     "7653ca0ac64f9ec7e79b000badb4bf62.json",
+     "76831ee4c1a49a317539a66e2a33d378.json",
+     "7695a253eba2564a7bd1bda44da372f3.json",
+     "76a20469b2295c90d82e56e95700ed6f.json",
+     "76a7d2d423417e6095cb82ca81a1515e.json",
+     "76eae4980b69a03b95465ebef2bb918b.json",
+     "77369ae290b1e64f70502ae560277263.json",
+     "77564d5fe7509234b52be039d9c8ac3e.json",
+     "77a7af1cd5a0c9cbe6add3fe5a487da1.json",
+     "77c4a5f3ae07514db7b166df075ab156.json",
+     "780bb99fcd8c7d782bc6b0a3d6177195.json",
+     "78373f3b06b65dee555be942db71619f.json",
+     "7870eb58a1574d1064bf4f206fc97f55.json",
+     "7883f62cfeed2210c6f42b90724b9116.json",
+     "78affb4e2f759274fb1894aaeeec7e82.json",
+     "78b9cd54c92725a1eb8818d98f906b55.json",
+     "78dbb92eb5c1550e73a76e851c32f80b.json",
+     "78dd310b2466aa8e5af276ec494cbbd6.json",
+     "78deafa605fd0eefc7f1c1435bbeddb4.json",
+     "78e897e6cfb128b1ca3b084ae1f5411a.json",
+     "78f5246fb5f3055f0c90bf83997fd22f.json",
+     "7965a6c9a9885229e2c6fdda4148fc79.json",
+     "79a90f76eb00335b9bd7a7aeeb43eb3d.json",
+     "79da1a732c7f852b476a40624f20e44f.json",
+     "79e1b8efeb758d6c716731a0b7b7c5e7.json",
+     "7a03edac84fffae7395c01cee60ceb7e.json",
+     "7a3b854ee404fc31dc4d88238d21ff57.json",
+     "7a5f0082881bcd11c08852c637ad0d8b.json",
+     "7a5fae6997c365002c8dac3a41c24abe.json",
+     "7a7ac5b98c5b65c1fbf4196166f969b4.json",
+     "7a8939dbb5b74b41b8346662b6661b9e.json",
+     "7a9948d7401cdbe369946a9b711e9789.json",
+     "7ae0a3af44c0ba2146ffd30b01e91e2d.json",
+     "7afa96b708d83e9f28bcbc0f0f964a59.json",
+     "7b49aa043a8bb8aa519db186bfa29a38.json",
+     "7b4a68882ecee62b2496c5d59eaca0ea.json",
+     "7b5d6c5b85f5b7921b180653f9fecb9e.json",
+     "7b8af058bc9ef67773a1bbf728819d9d.json",
+     "7bd17c991929fe4078aa954ceeb6d7a2.json",
+     "7bef15376c0972c7547353f966997200.json",
+     "7c139c6fe4387568799b5c1cd5f8b3be.json",
+     "7c244aafbe435c6b12d7f20b0066fe34.json",
+     "7c31de53d6acf971269810c7c3e84692.json",
+     "7c4238a12377e4c9190764a60a206036.json",
+     "7c435098cb30f78d9486b276d1e06ce6.json",
+     "7cc8fc3f5ebfd7e5c886f7c7114afe99.json",
+     "7d03a100b4aa1eaa886094337f9df90f.json",
+     "7d1e752c02d62076d6a339d16f8a2c4d.json",
+     "7d5f622e8306331c3c9011ea0c4aec6d.json",
+     "7d725237b7a72f6a83e1f22fd82d0a47.json",
+     "7d9507ea01bfaa84f107c4065e185b68.json",
+     "7db3e222f26fde8d0469b6da7dfdff38.json",
+     "7dd0bbdc10e12eca2b64b0fe926db0a8.json",
+     "7dea435cef36a9a6faf85cc0bb312de5.json",
+     "7e5dd629dbda90acdc07b81770104dc5.json",
+     "7e5ffbd1c6c13f7a78c1c7cd287ebebf.json",
+     "7f0bdfbcdb8e06342463b7fda5c443b1.json",
+     "7f1d86f2d0925f618ca341c05cfbb4b1.json",
+     "7f52598f9ccaed234926fa3996211288.json",
+     "7f72fe7f7555d72f73c72552cfb9f1e1.json",
+     "8003d0c6ed92179feb89f04c503ac4e1.json",
+     "80071807daba40902664a33d73f1b7eb.json",
+     "80165dd42d0f6426f54730d2d5047360.json",
+     "801ab90393f1e2e3ccb0ba4e4217c3ff.json",
+     "80597428016090ae7ef77b8cc5695596.json",
+     "805ab1c65e3b0c414ac4c2961ef41a0a.json",
+     "8099dc7e0c8018536df5873cc0b9bd6b.json",
+     "809ec40024e656c32c8cc9d442276778.json",
+     "80b99172ad43b19c7f51d89b34298546.json",
+     "80c36658b896a63564a0309338f56a9f.json",
+     "80d356881d290ade2c0f547345a97d24.json",
+     "8111b973602a854e18713dd1630e2cd4.json",
+     "8118282441c07c3d8925adbdb52044d5.json",
+     "816677d7428526db1256f81661f6dee3.json",
+     "818e13c25358166e6b14dde05472a0c6.json",
+     "81f583bbcdd5b3f9a6d0e5a22e1fc4ef.json",
+     "820003558ccdc463e3db14a1ef0ca4c3.json",
+     "8215db4a3b5af7e7b14a73887a4a899a.json",
+     "82178cc8d0b3ca4a3d3c80e67d76ed39.json",
+     "8218aae2fe7691e861db4f21a565f807.json",
+     "8228363e51a42881a2ad8248996b5918.json",
+     "829b77d990a2cb7eac434f5f63ededb1.json",
+     "82af040d4f7ca8ddb5569371d1d4ed28.json",
+     "82e1129d6e71a9b392b50d6737b272bb.json",
+     "83044ea8b6972c0df63db766a776c9a5.json",
+     "832e5cfb07931acdea6945d908c4e19f.json",
+     "8330948243b2a4e254b07262f9064223.json",
+     "8389bcf83971dd39e4840eec5405d501.json",
+     "83905a449efd28ae9b95cb556cb56c86.json",
+     "83ab9f12eee7e5216b3e2d749e63e62e.json",
+     "83c1c8422a1a06c727e019a03ed2b894.json",
+     "83d6b3ccd8eab341ffc8c76cf8ca57d1.json",
+     "83e665c22966654834ebdb11a1063ad6.json",
+     "84157bb462511d9d50fbb06dc6d26b5e.json",
+     "8418833cbdf29d66ac557886d7e21957.json",
+     "843a84aa1c6314eb9ba9bc5f5e03d603.json",
+     "8447b622c1471ece61ba0a806b69b1e3.json",
+     "8448f03007c016fd16d88517d7e4dc48.json",
+     "845a163c23a55ae001b99d56aaff19b9.json",
+     "84b4624053a54ad9516462e3fc67b987.json",
+     "84f57cd3c5a5cb8b2556bcb52e3b4257.json",
+     "84ff9be8698091edf6a7f51df5099cb5.json",
+     "8525c87604f3b92de9278bbbd414622e.json",
+     "856bd64b150b7647d9f584e36d566cd4.json",
+     "858ee7c9c1205bfb1019fdfc7c9bd298.json",
+     "85a17d769822c4f8a65e5e67f1a6aef6.json",
+     "85b63296b8a0f88bc9c527a2c3a7d4c2.json",
+     "85bbfdccfd2bf4c2887e04e6aff5acf3.json",
+     "85e60968cd6feb109eff8f708b6c602f.json",
+     "860bca656ae59be6a8690ab8dfa8a6b2.json",
+     "8617a4f7a72b37b8091012e3c3977b07.json",
+     "86550025e36bf8b6af52dbbb93f7158b.json",
+     "8655722495ad8e49205d6031e4e35fac.json",
+     "86846f9587fa20f597e33b5cbb4d0cca.json",
+     "869be5991bf663b76ee2f9d7293496f4.json",
+     "86b9489220a25ab3bf2511047b5dd632.json",
+     "86cde795597a6c4100c0acab9bba334a.json",
+     "870b11b4da8af2373b131775227f7a42.json",
+     "87159cf01e2ed75f6204453d8aa500f7.json",
+     "875653b844377c692ebba8f7aaed5cf3.json",
+     "878a8b87a8a1d34bd456185139ea8405.json",
+     "87c5d98a692172ec7eeefe329c49fce9.json",
+     "87f980a0d211292cd0875d42142f35c2.json",
+     "88191d70ef4815de9a6bf338c5e3dc6b.json",
+     "88329c1a53f43e8e287c043b516d5ad4.json",
+     "88893b20c55702e41b2318f56062af5c.json",
+     "88a161e260761698363df754e7b78829.json",
+     "88b8427b4a1ff1a55ad652cc73a5a980.json",
+     "88e60fe8434670ea14c7578b5187bbe3.json",
+     "89367f35c2e8efc978504ad9d53f1028.json",
+     "8950a8ad2495c088f84ffa3d907f6220.json",
+     "8957b5cd6011c4d64983c85bce9d83c7.json",
+     "8987d69064d7706a38abe9bdd4658f62.json",
+     "89aeb9b7ba9fd1b155d71783f7643513.json",
+     "8a1f0ed442db6029ad96b0fa37125642.json",
+     "8a358310334bad84bfd734250d9933e1.json",
+     "8a40257d4aada47cad10c545788253f6.json",
+     "8abed658d82d34ba9a50e2cd3cc68bf8.json",
+     "8ad02826c73d7284a2fbab7810687ef1.json",
+     "8ad8032b28bd2d2870dffd3be166cac3.json",
+     "8aeae5c0e24fac9c0e2243aee4dadcd6.json",
+     "8b32c883d4d593c4f073fba7e562a62c.json",
+     "8b942b0f5ee5c3793aa4dfa284e430bb.json",
+     "8baa8fb7ee882f5004b1d69bb410084f.json",
+     "8c1a711abac389a2293bfd842347e0c3.json",
+     "8c1b9685c1cb9d12ec44680118bd346d.json",
+     "8c964af0b5c65e9b9ab78e3852d42dee.json",
+     "8d052ce380022ddaeb0c3dc9846252c3.json",
+     "8d6f85196e3177717f32c3149e551a38.json",
+     "8daf6c2de5d870f23556471bafc9db66.json",
+     "8ddb3095e72a58094407c4e17432f3ea.json",
+     "8ddce919e06ce9273334302aa1f759da.json",
+     "8de3f6c228789db366a6623946e44cf1.json",
+     "8e02d9382b4b056ea7deb7c9f957c47a.json",
+     "8e104b232ea391d16c160d302d8cda67.json",
+     "8e2675b7d29fb7e75710bce392104774.json",
+     "8e51461e594397427f37911ffc413fe8.json",
+     "8e771bf02333805cec06fbc7c5b7c0bc.json",
+     "8e8523443059bfc69aceb0bf55d75da5.json",
+     "8e8e8c3d03e05ceeb490d328d88edd90.json",
+     "8ea5b4f952651201fe7a81bf32be7760.json",
+     "8eb0f0801329c01a844359dabf81b36c.json",
+     "8ee7efcf422a4718434de828066b05a1.json",
+     "8ef0999ae3d4f4fab45112cb96264f26.json",
+     "8f058fb1adb89f0a3fe044943a57a368.json",
+     "8f0f0e44870f38779b797b007b65a777.json",
+     "8f20587dbe17ae28926788a6a8a9c158.json",
+     "8f2d62a2401bee7582ed99e813e30799.json",
+     "8f362d8a076996f79bb70b46ec136d9f.json",
+     "8f5ebaee12d61629652f9a5edcf09fbd.json",
+     "8f9cc1ebbc8a5afc5526da97f9a7009d.json",
+     "8faeccd83baed9fe28d2b830579bac22.json",
+     "8fc24e9302528320e1af729ba7f63f3e.json",
+     "8fc413c19344d24d57b8cc1e382cb20a.json",
+     "8fdaef4742485e90adf2f456cae3bb08.json",
+     "8fef03e086cf5b6d8f7c6530f08cd39c.json",
+     "8ffd9ef646cee811697a24fe55a4e9f5.json",
+     "8ffde8ecac151f915132721020ac3668.json",
+     "90430b5d68a24b101cb5a5c4bc208b35.json",
+     "9048797d49c4d134974885126562c568.json",
+     "9055c83b4e6e2b658ee0dd390b84a000.json",
+     "905de78e0f69baadc85a9995325e8666.json",
+     "90626005e5d0d51cbddf17e322803bdb.json",
+     "906c8b6e6d90b849eeb00250a8911dbb.json",
+     "90d207bb28660d62a6e7b82eb061dbb4.json",
+     "90e718266a62500e19fc0595e2db7c98.json",
+     "9124f694b48277b3171f329ca2d0a8e5.json",
+     "914344b80e625af767566029dd8cffc4.json",
+     "917e81279c76d6f0e116b0428932b4eb.json",
+     "918f2dfea4c2d7e320a7c0cad2ed897f.json",
+     "91b0e14661a779ecd61b153ad7993054.json",
+     "91ee984757ce79dc92ca2b8104c31bb3.json",
+     "91ef8555a7f7fd5b9a70ed49098fe4a6.json",
+     "9237607e7058aa90a0756f6fdd36c783.json",
+     "9287d6a15b96907599ec489a2e87c2e8.json",
+     "9296eea1fe45f48c6114bf020653ec16.json",
+     "92a123f58a3c4192cbcfba8c5d79ab41.json",
+     "92a2c5519716205b692657a0de6c3e0d.json",
+     "92c6cfcda7f488bc29846fd26d2b5ae8.json",
+     "930c85491d24abf34d70c1fa1580c605.json",
+     "932a6ced988e7a701737319127c4fbe6.json",
+     "93491765f15277eca708be5e4dd88e70.json",
+     "939e0c52bb506eab28701691fe1dceaa.json",
+     "93b4b9bb64ab674036d6d447bba751da.json",
+     "93d188d9d4a1243efb726f794fb3f2ed.json",
+     "94242f7a631269bea7e2055d6829e200.json",
+     "9429dd797182c859385f1423f1c289a6.json",
+     "9475c1f7b3a639e52998d875bf95c822.json",
+     "9479f5771a13775b58c6db88748fa6b2.json",
+     "948cf0f2313c80c3e0d452ace2b476c6.json",
+     "948f9da0356b5cf487a2dcf724b36391.json",
+     "9495513cbe00b1a0f9c6b713157295e5.json",
+     "94a3314402b210993739f5824ed41716.json",
+     "94a68dc658c8edd880be37a9d4965ddd.json",
+     "94ccb56681b100a3e5d77229287dcf38.json",
+     "94e25bb22d06d122ccdf6d83c1b729a8.json",
+     "94f391cdd26b3269e9ab9d22e7bc161b.json",
+     "950da53d76a0f5b1b07c0034ecf14321.json",
+     "953316e5ab7250725f6dd0489bcf2415.json",
+     "9548608a92687d0a1cf0e8736e27d339.json",
+     "95979e4dd5ea2e2acc951edcf756d6da.json",
+     "95c1695836f62521083a331bcd66e036.json",
+     "96476990c6ab0f724b0dd8de8362f288.json",
+     "964cd8ac19dd3eca7dffc5db91d4eabb.json",
+     "964d2484fe9629831265f206651a7587.json",
+     "967cb6ea718862c26c936cc3e8299799.json",
+     "96ec7a764196e83cb1b2e9b1f9567c6c.json",
+     "96f34ea369116af4ac427ba6f370fc0e.json",
+     "971b9314f9e5fe174006be8f16a1bc71.json",
+     "974d4791317f8a538c982bf029321a11.json",
+     "974e54d74a2f155495cf3ff54766cc5d.json",
+     "975414ccad9b9c8c5f472e16e1cbd9a3.json",
+     "97580d052d39b0438c996a8133eae7a4.json",
+     "975c49e595c6b7015c84b80fe3d0875a.json",
+     "97691fd27fb755519d2e775fa8a664bf.json",
+     "978a649cb2d34d964d5e46917afbdca9.json",
+     "97f03bc649b7616c38cc8b103767aac3.json",
+     "9812a4f932add0b099a6353cfad63c77.json",
+     "9818adaa12fca0964da75e146ec99f60.json",
+     "9825a234a0a3745592a0aaee377b3c72.json",
+     "9829626457216e8c257715a3bd8af912.json",
+     "984ac5a1e07efee7c9d6a0ee513dada9.json",
+     "984b6cfb5011e996e4134b75763606d3.json",
+     "985b637a13a23e1aa9e54e0ad7a589d0.json",
+     "988c86ba9ef0cd5eb58a1f8e349eda71.json",
+     "98943d78c90fd446fc06e349bac2363b.json",
+     "98b4a98a704f81bee814da2d4ab8ef2f.json",
+     "98d75aa9fda57156d78f18db9561162d.json",
+     "98dfe0fdbff4dcd726b9f23e073d6165.json",
+     "991e3fd485a05749b2aadc12f421aa14.json",
+     "9981b9a2e7e3c90f8955bcedd17d1607.json",
+     "99b9f404b2c519eab277fbf304c75f7e.json",
+     "99be09ba422cac7ef7fabea40ec6ee5a.json",
+     "99c7281e94ed753d3e1519a905f1a46b.json",
+     "99cfef263654e68111d265f1b49dc8da.json",
+     "99e0d985a29281f26e8bc57b1395339c.json",
+     "99ffdf4bbf47c8800560c3b90796985f.json",
+     "9a093e608a3485f671103f9cad28f61c.json",
+     "9a1ec4006387520d864baed265c0cb0f.json",
+     "9a3e98e8995c04c9995bff3d5d7c512b.json",
+     "9a498d3c5da665612b299138c3d2c3e0.json",
+     "9a649420f41ae854119cefc14f96d80c.json",
+     "9a682ab1232f87d983fe8e6e253bf0ff.json",
+     "9a6f5a36fc312958767789f23f331d3e.json",
+     "9a7e7198fac4eb0e55f593fb800dae05.json",
+     "9ab53e245c43e812058c5076faa1c0ec.json",
+     "9b3b186bb6cb4bb4f9d2e950c11124a8.json",
+     "9b3ffbafb4b8ce4a1d81d10527477838.json",
+     "9b4bfd9b144ce4a34027f483ff9dc89b.json",
+     "9b5093a26583c871dfbc417c78fc39cc.json",
+     "9b688b654ed25caa933ef7f6c0b46a49.json",
+     "9b6c3cb6dc6619e0adc0e024e5b2b118.json",
+     "9b6d4b9afe41ea0fc025f194a22e2ce8.json",
+     "9b7b371df26e52e20ce8098db06ecd58.json",
+     "9b8a2e8f63d5d6405492e5d0c640e982.json",
+     "9b8fe07a3a0bc364dbb6850bc6589c25.json",
+     "9c13a923f99e1fba981794b49d18b55f.json",
+     "9c302e54593c1679c4ea29029766fddd.json",
+     "9c4ab20a67b9e02cd802ef24adb0bfd6.json",
+     "9c5d23203dea6658c856ed42b8ee28c6.json",
+     "9c972cc731893cd9ae9908f23c7af61f.json",
+     "9c9c2736770f805f073f1ab0f12d27d7.json",
+     "9cde38267f765cad319aa37c36b5ff02.json",
+     "9cdf38916e9c41aaf2e55607cf2f75af.json",
+     "9cfc098cebf9adb962cde7a07f7679f1.json",
+     "9d0063edf9363cf9b79eb047ef769440.json",
+     "9d05fd8b0efd93eff49e1bbcb919de51.json",
+     "9d1add056ffbc9fa6aa87c9a5a8cbbbe.json",
+     "9d1b2d6c063b21780fc5c5e48dce7fc0.json",
+     "9d8016623a1436b25180373b310cd21b.json",
+     "9d8aed8be8900b2e0e446e71e1c0f671.json",
+     "9d94ebf40816844627c8da2746cf5481.json",
+     "9dce581403de02aac8ac2679c17b432d.json",
+     "9e2820d22fadd4ea231f06944ed6cfc7.json",
+     "9e54e54771d3700780bdf542d4701e27.json",
+     "9e6b0f164d1f28916b9463079b1ce2b2.json",
+     "9e72b62ece8be492561c168198dc887e.json",
+     "9e7ce5aeb59ef1adbdff97fb9ede6e79.json",
+     "9ee01cf035d5ffe6355e20672b7fa51a.json",
+     "9ee1bffc7054825dcfb0b896a1c5c70d.json",
+     "9f3ddfbbace5f7fc8761dec219051b89.json",
+     "9f5cfc18791cc83213ef78d81379de30.json",
+     "9fd2723b9ba75c8af5ca15e3154b81a9.json",
+     "9fd6a2e505feb2600f95e72fda0fe278.json",
+     "9fe9c436873f350494beaf8deeddbdfc.json",
+     "a0550d11756e94678b1e2556f957a0c6.json",
+     "a05cd0f78f906926ee3c3519d788700d.json",
+     "a08cac68f1075a106c3f8d205eff2af2.json",
+     "a106f156b1dfe623a31fa6a903114cff.json",
+     "a155b45d42d0d6ae88d824140a383ad1.json",
+     "a159adcf5c61407ddd1dd1222dda6f9a.json",
+     "a163476491ce7146acdc74c6a62928dc.json",
+     "a16e06e6184ea971925eebe8dfa67cca.json",
+     "a17d43b491f81001c3e178adee46d3b1.json",
+     "a1cf5c95f8c21c6f182660fdf99839b1.json",
+     "a208322f242101eb46bf79fb279a3fce.json",
+     "a2152ed488937343e723c1563f587060.json",
+     "a285e87a3a4cf57a6f364c1bc9243a55.json",
+     "a2b9336c0f3320cdf82dcefb97a948e2.json",
+     "a2d040951fd43920897162a8caf8ef0b.json",
+     "a2d714bf8af03278714b515d5553a99e.json",
+     "a3020e7ed36633db4c8ac3c28c5d088f.json",
+     "a332b8bc32fe9122655d41caac0077e6.json",
+     "a35dd6b86e9641bd9f801d91b3bb0363.json",
+     "a38ddbddc719039d65cfde4092545249.json",
+     "a3b69517edcd956ce7b44ed19b7e0a93.json",
+     "a3babfb5f761a60858702147349984bd.json",
+     "a3bc9ed0a21ee67d89c8805210fb3203.json",
+     "a3c636e754bb267e8603e7b59ead06a0.json",
+     "a421b90c14e9e47c6e48e69eadd12a09.json",
+     "a453291100cf07df27251b231fda65e9.json",
+     "a454842d3e347a316a104b2e5c00ae83.json",
+     "a45dbe9609e9ba6c074fd3b91192f558.json",
+     "a469365ccf83fa61368677053f128776.json",
+     "a48ba9eee47d94847bcee577c50507b1.json",
+     "a4a380b4f2b6ea98182a787811fcdf80.json",
+     "a4b74e03c180605083ccb939d613cd47.json",
+     "a4eb5bbfd39e02c8d97a20cb7ccdfd2d.json",
+     "a50d19fbfe3aff37f01607ff2505ceb1.json",
+     "a50f80a0f6fe454f6e18a9a26b520e37.json",
+     "a51efce174c8a005abaa9b1116acd71c.json",
+     "a52566e95c2044db35ebc4c7bb5158d1.json",
+     "a55955ca86a4075460059337f15c3f9c.json",
+     "a57e2e129263f0112bdfa1a0f26eb496.json",
+     "a5bbeaeaf6c08f3ea2a98209b2e42343.json",
+     "a5c175a48649c68bc7d66efc685eb645.json",
+     "a5cef9eff2db0c4a8e08e7d053abfb93.json",
+     "a5d420f6c23f333e60c87fea3eaa307f.json",
+     "a6691be490d26232af3841f689c26abd.json",
+     "a66b22f5450b5299ca9485cee45dd26f.json",
+     "a6c8e77390356427911efdcc84d345a2.json",
+     "a73e7cca35310c4756d1e4e536cfc23e.json",
+     "a74aea8169e0137b51ce1daf06c34010.json",
+     "a7b1164abced85ed3ce7856e4bfda130.json",
+     "a7b9ba867bb284a3ace70ae1c377dcf3.json",
+     "a7faab96610d24effdade0b423759211.json",
+     "a80d0e077d1cf598082e20629aa586e0.json",
+     "a80fabfaf853663b98233c89afcb7db6.json",
+     "a88dde1b18d04dfb7641ec8481bc0967.json",
+     "a95536c15fad71e9dc5f6c6b4dc6f3bc.json",
+     "a9778e966861b2c52296725056b207ac.json",
+     "a9aabccdf39b921bdd9b453603117f9f.json",
+     "a9aff7582b9ec6c59bb1d50bf6d19923.json",
+     "a9c8034731d6b3cdb37a9cfaccb4061d.json",
+     "a9cfce83dc2befb78f44353f72f9cc39.json",
+     "aa3fbeb97ee1a4c0e1debfa2f997b7c6.json",
+     "aa4e5076f9211150f7d0f4e7b1aa4ed2.json",
+     "aa7afd899a031ce44c040a9e1a2fdd58.json",
+     "aa8b1750185383f6e158d1be2a2dadbd.json",
+     "aac0750e1cd22b23ae0c0a18f124330f.json",
+     "aac445987ea22ad73fdfab79bad6a8a3.json",
+     "aac4b3529e3e3c0863a79532705b7742.json",
+     "aae8e3f307a072f47b3c6546b3cea893.json",
+     "ab014d48c28656625adb63f85a5a9b5f.json",
+     "ab0ca1640cf4ebc6c0faad147ee90bd8.json",
+     "ab2cef218447eddc68a6a9e8df25e0d6.json",
+     "ab38151c019ba461c815a73592847f10.json",
+     "ab8b297404bc312d198b67fe8488dd88.json",
+     "aba813190a2b5d22235fba3b74c88d5e.json",
+     "aba9fa2150d501f9f37531a0e4b7456a.json",
+     "abbcf6f32086a6a80f2af7c177fd8200.json",
+     "abfd0806be88e3e1f8675b9df9c2c059.json",
+     "ac1057f8f7ea0fd74894dd8ca0a748cf.json",
+     "ac1e02aa76c14336cf757d8a10f99a49.json",
+     "ac5c4ca4dbfb42424b827abefe14d310.json",
+     "ac744d37a44748dabaa3850ee801aea9.json",
+     "ac869e3e60e7e68177085dd18e2af2d6.json",
+     "aca11575dca9f3a2a78d1d0c6696a6eb.json",
+     "accc5347bbbdb08411c94953148b7f42.json",
+     "ad01481554124ad7a3caf07dbf06594e.json",
+     "ad11927caaf12216ac9b64a513de9779.json",
+     "ad198dfc6225704886be848d0b5b298f.json",
+     "ad1d83308eb8af57efb442752fa4c282.json",
+     "ad399fad0f9847be4591d5682c1dc4d5.json",
+     "adbd0c558206b28e234a1ac90a927788.json",
+     "adfea9827ba52c5d3d417229f66fc26f.json",
+     "ae3931b5df40f9684883e16a86c02d5b.json",
+     "ae425deea878f447edc528ff9bf4d33b.json",
+     "ae5b3846b964b0f70ec0c16f37e459af.json",
+     "ae95023bd6546a3ba0335c4f44396d56.json",
+     "aeeecf4903c98b7a0d2dd8ed2008ad9c.json",
+     "af1f040c9d54af55915d7959732beed6.json",
+     "af24eb143c8821e1145a49997154d493.json",
+     "af2c2cd8cc905d61774e6afc10bd5457.json",
+     "af40226e59a47d4186b48b7d7af4e255.json",
+     "af838c467cd0c04545965b171c71d9c4.json",
+     "af989a40d70fe740333b6978d01f6920.json",
+     "af99050fe887fb713a2be82f8a600407.json",
+     "af99c39b0c9d61c4efca34af38ae4e7a.json",
+     "afa7d1e01e8be10df8c32ee9830866d8.json",
+     "afc9a0de7ec38e8540ea452d2aca6f7a.json",
+     "b0017b1f8eb1baaa2f16f03225d4775d.json",
+     "b05eb61b2bd644ba3657e47abfa02ac2.json",
+     "b0743a762684f93f23cee883f2b67afe.json",
+     "b0aa2e611e4f847b735af64dcc30a770.json",
+     "b12fdbdbe3f2d62c6fa92e1743a57dbc.json",
+     "b1673e8ffef2c40a97a6c8e4a2d97be8.json",
+     "b19cc9a792ed51558d9df0ae3e1634b6.json",
+     "b1a07dd89cdb790ecdeaf103e0142e78.json",
+     "b1f8b41af7d106868659f9e1f6ffe9ea.json",
+     "b23809de0d5407155fa25ab24753b22e.json",
+     "b24bead0b69f4828f29cc76987016117.json",
+     "b2701e85f42f6948ffd7d63cdcddfcab.json",
+     "b29e6139776aea70a808503c6dc6d142.json",
+     "b2a77a82bbf4c2fac9f644977d433625.json",
+     "b2d7ebcb515b8979b248fa41069abe38.json",
+     "b2dffedcee01734f7e1af1ee88a838db.json",
+     "b30d4907d752232c6c16893343857113.json",
+     "b32b5c13d09444d9f0e331dd6d0b7076.json",
+     "b34b85e314c9e8fc109a0f4bcced86f8.json",
+     "b352f89156fc3598f60843418db76a82.json",
+     "b35850cf3862462fb929290f1c0744c3.json",
+     "b38ba7025b0dcf65f6d2b3e0cf5f361f.json",
+     "b3a0f3d7906cfa99fd289740284c2bf1.json",
+     "b3aa1c2467b2367bbe6d82400d81e871.json",
+     "b3c33cf8a5291d5f5671f732178beb70.json",
+     "b40e99ed856ff38d987240c4e036c1d3.json",
+     "b43c71040d7f627cf71ad4e407975881.json",
+     "b45066d61c56d6eef15b08e594b602fc.json",
+     "b46bbd9630e87958ea045f4c5b6910ad.json",
+     "b4988a8b2a8893a11471ddc36233884d.json",
+     "b4c4d62ff7830ff3421b32069e2f095d.json",
+     "b4cc7b574a4326c73bf591b7a0f7d732.json",
+     "b4fad803197b33befb13291ad804b314.json",
+     "b5032f1ec0e2edd0966be15f91941f8a.json",
+     "b5071ca36fd5a3fb5e256f146f71f8a2.json",
+     "b50ca744106a4757a53e9278d76bc3df.json",
+     "b51068d8f6be0abedb235de808950792.json",
+     "b52dc57b6fc45ca8083675f5bf5d7f6a.json",
+     "b52f1a68f242731b5d3e95183d17a9cd.json",
+     "b5304fb52032ef469b52a8af82b19861.json",
+     "b5598201906fb015a30ae68648ce6afd.json",
+     "b55d5d7c56c5be98091bf9215648b4a3.json",
+     "b567c9d3393a936d422f41aaca86b649.json",
+     "b56d0cc203965cc51cf4d152d575afa3.json",
+     "b57ea3748d4f47e6382ce670c62198a9.json",
+     "b5e7520fc43b394f234fa413921c1e2a.json",
+     "b5ed8c9fc6f38ed0af77dc7805a8300b.json",
+     "b60340b039436527fdd2baf4947d85a9.json",
+     "b608967496eb0184819c12d85580a8cd.json",
+     "b64e5294701bfd61adb7402353b9b6b5.json",
+     "b66508a30639b01af8a3d50d16c87e24.json",
+     "b689a648f9a3c0c20a4ebab12e309665.json",
+     "b68d5704d082deb2dec53555f9a6a849.json",
+     "b6a42df8afff98accab1cca9992c95dd.json",
+     "b6ba2e663ca093a6a0a0d11cb61a39cb.json",
+     "b6dfacf8d54aec2f0d1a1b77409f830c.json",
+     "b6e368519e5232d7c2161af435fbc535.json",
+     "b6fde71fda65eda5b0d240e3a9f8a91a.json",
+     "b72d3aa193478c4294882c7a89e7ebd1.json",
+     "b739105b3a2e3b717d1eb1c9d8fa055f.json",
+     "b747790bb159c9a50aea6aeca8e7b883.json",
+     "b74ad61a60b9bd5248044a7bd8503d18.json",
+     "b7613f3c70744c91341f15777d6b577e.json",
+     "b76a535f202b3334e8d471d7363bf9cc.json",
+     "b793f186445e65ba5dbd97b760253609.json",
+     "b7cbe73254c597a2f28f889d2693a8d4.json",
+     "b7f8de026fe35997ed48039cf937a4d4.json",
+     "b7fbab04e197fed2206f19cfabe77b85.json",
+     "b8109a618e7d80e379ab384a059d52cb.json",
+     "b82ee839e1c96467dd23ddaf995934ae.json",
+     "b83e82d101c09a9865756314a68113dd.json",
+     "b885c2dfe174bb5bb55ab68f5657418d.json",
+     "b88f4ffe9869bc3e06354fb9d7dfbf3a.json",
+     "b8bec65227d8837209279451e99754dc.json",
+     "b8bfef46260d7bf78bc49972913ace64.json",
+     "b8c2ca4c6893b2f5e443a01a1b67a8e1.json",
+     "b8c3191bf5b5e76a7d805a3c66e634f4.json",
+     "b8c955de955ec7731a9378fe198a8bce.json",
+     "b8d346c382d99974f896e907c482ff3b.json",
+     "b8ee37cd5c6b97a2dbada730020a810a.json",
+     "b8fcac3edfa7aeae925cc0c40b9c2823.json",
+     "b91c60b742b8613231f5e4b7f355e7d8.json",
+     "b92927c538802e7113f73a5ae7d631a6.json",
+     "b9381f3d35990e886c00a7fcdbb47201.json",
+     "b95cd95333b7a470c8e9e6cc88eb98bc.json",
+     "b960fd2795b836aff171db42c3427d09.json",
+     "b9b83967bba131560df36b9e7f3d1513.json",
+     "b9d9a636017c39d2eb03a6df487f225f.json",
+     "b9dae7444ab5d188d91a93409991e9b3.json",
+     "ba92066003f7a72d38029b6f630d0f7f.json",
+     "bab5529e404cf1d795f26a347786ccfe.json",
+     "baf80254781e3f57417db03226b80c62.json",
+     "bb0380be9192b2ae00229d044310d572.json",
+     "bb17f6af6142ffc962f0854c211ef69d.json",
+     "bb267ffd2ee000e6a616450d87c0f7aa.json",
+     "bb34973316b63c783b21df19d894966b.json",
+     "bb4a23a0cdd0cc12eac9d049510c7542.json",
+     "bbaf37761fd60b73dfd01f11e26e9f73.json",
+     "bbb9e64b6a32e4f89319dd4b049d7ffa.json",
+     "bbc007830ee1b88e793c81070921099a.json",
+     "bbd7ba327dce0476d20dd305e61202b4.json",
+     "bbdaf33a080e8a045a1b072aed8c6e15.json",
+     "bbfbc20a25e3b135f490ea6627fe5102.json",
+     "bbfe85a901f5fa7661fc2fd94bf1c3b7.json",
+     "bc1c41d0cf4ae24eae8f2ce8c527cc97.json",
+     "bc900a16c09bca91131a52036a9645eb.json",
+     "bca957c168d1816799ed5c8a049682fd.json",
+     "bcaa57cfa1228b69e6720cf2c744d597.json",
+     "bcd696a691d02919f425c18849869057.json",
+     "bd02b0204900b61d3396fc0ef852159f.json",
+     "bd4d4d588d583cec1d55a5bc3e419a28.json",
+     "bd53ff9210ea27447606ecd662b73fe4.json",
+     "bd583690966d451edd2d4f8ff6696c30.json",
+     "bd99a2e3f0f4f50577833c903f4335dd.json",
+     "bd9a00ca1ae9f7af5d0400f98feff07e.json",
+     "bda336aa89718a5bffa0e1070115f875.json",
+     "bde8f9d688387e33d2acfddb2420d4cd.json",
+     "bdf2e57c64ec80a7be92ee5399ea14a6.json",
+     "be16e752194d3f055f7dda7570e79076.json",
+     "be1774e3c8e5455722505239b479ee2e.json",
+     "be34a680e1b3ce4d43d9d290166d85e4.json",
+     "be42d0b5c5e271f305e59cc3856f4abd.json",
+     "be45d280f8bedc1166ad8c8b96caee7e.json",
+     "be87714de28ae219f5a3d38afe3a59f0.json",
+     "be885c59d7c86b8d87e9d457a95fcf49.json",
+     "bebf0a2832f55f85bd96f8cd2546463d.json",
+     "bed95e0de65b87fb9a404f385011ead3.json",
+     "bf1e62add3a50b2732a7b142c2f5a381.json",
+     "bf1eb938d2d5e544717eff81832c6b1e.json",
+     "bf24e27d03a4cd34b9245f60af782896.json",
+     "bf59135c9b61c4e09309909641dec0cb.json",
+     "bfa8039be585e81de5562a202a4b098b.json",
+     "bfc02284dd0a8b20296f9e4c49a97e4a.json",
+     "bff117ff073ef58841675b16a5eb8ad3.json",
+     "c0026b7360d05390ff845ae21031d368.json",
+     "c00abe96e0e635953ca7ff48f4a6994f.json",
+     "c04634dee10e52e4a7895e1918853686.json",
+     "c05381fb9e448128175912bf0a66c40e.json",
+     "c05e07afcaee962f0ff9cfb42e729edd.json",
+     "c05eae188fd1332fad98961851d6d2e5.json",
+     "c0a35815ef673b7b152bb3cb104c9764.json",
+     "c0d83aca4f48a1fd87f00b7281d9eacb.json",
+     "c1061f77dce73cb6e518c92540800534.json",
+     "c125f75c0d199e1b836fed6fcbf1ae14.json",
+     "c1284f896ce74ef6778d4feac6edfe2c.json",
+     "c1519c34b5a1f598b010b5c4b2af1c57.json",
+     "c15c690b0710fc57485a0cec1c0a914d.json",
+     "c16483c0a887f3801bd90c030c1c0d8d.json",
+     "c16c553d09513b8ab86b8e840791f7ea.json",
+     "c1b108e2ed4b95a9634d1764195e9c62.json",
+     "c1e6cce92bed1dca41e3bb7853717b09.json",
+     "c2309f8e2c550a3b5a25d4b4cbec8f68.json",
+     "c23789c1075915b303543f5e9fae0719.json",
+     "c2478c02ae5cd625e9b736dd92ba991a.json",
+     "c2899251200bbfe4486d70ff19a0e769.json",
+     "c2997df09374aafa6eae69e6e8115a2b.json",
+     "c29b396ba6f86810c6292eff2f7193b5.json",
+     "c29b939c5cd03cdf430a381b5e87d930.json",
+     "c2a2aef45569f034575ba83e64548ecd.json",
+     "c344d99bb5ee1f2a4a53149f3f3f0f41.json",
+     "c353b1de65c3c1919db19209d7179c4e.json",
+     "c3818f0cd542914f06754e936164de59.json",
+     "c3d4262a80ad0d32444bca5160df4a96.json",
+     "c3e48379e785c0dd03d4f15731c89495.json",
+     "c3f0047877664ac0f322a1269e07641e.json",
+     "c3f124da43d8354f533f01fd091bfb69.json",
+     "c4181177f304477882ff5e726460fcf9.json",
+     "c461582ed632b798f424b4a3672ff5db.json",
+     "c48c3e39debbfb28c6524df3ef35edbf.json",
+     "c4bc193499dee60c590c9d2d4649036a.json",
+     "c4c2b5e50c867ab05920b605010b65b9.json",
+     "c53417404c271c308fe7bc42728d3077.json",
+     "c599dc183f009f2e82aa55f28c3f7075.json",
+     "c59b4288b806dbc03cfc3067414f36c3.json",
+     "c5a71acf1fc34797d68cb0c8fd070c54.json",
+     "c5bb5d257d55b197a1485aa0d1202d7a.json",
+     "c5f3049559eefd49fcb1466902ef05fe.json",
+     "c5f9b767e4b8980b292a7824cd9378e1.json",
+     "c6017ce0f75d21b5476f3eb966282ff6.json",
+     "c609f84923cee0e5c997fc355ef1bcd1.json",
+     "c618aeff7ff007565b8b56b0c9fe1514.json",
+     "c62bf67dcc38fcdbc6a39922b179db03.json",
+     "c6331641e2c3088be5b53a97227916ee.json",
+     "c661b946951ed7876c1c28768cbb3621.json",
+     "c69128811d57290a7059f978e92c78ae.json",
+     "c693c97d0d7fbd8e4990dabdd4aa1f20.json",
+     "c6a58208ebc23d0da0c1da62f80d86db.json",
+     "c6bdd797a75bce93a0ad9e7755aba1f5.json",
+     "c70f471174e66947051af254ec412a61.json",
+     "c75f9b108b8339de7b5885879edc3673.json",
+     "c7b3264a99818854a195ec361fc1d523.json",
+     "c7c7634a933850baef2c29326803545c.json",
+     "c7ec1229bbbcdff619ab64bd4c4984c1.json",
+     "c7fb610ae70ccfe196f6dba04f53cb32.json",
+     "c803f6ebe8c001227e86fee5bd5ca463.json",
+     "c82d3923db40204994227a9312fbd8e8.json",
+     "c83282c1b6babbcb84dbc7f545cc5418.json",
+     "c83cf4329b261b000d3f2d0e6c37ab13.json",
+     "c8486ae596c49973dd5d2167e9ccbd96.json",
+     "c85633095da30522d59a4f7cec5ea74e.json",
+     "c85f36f3c5f7655c395c7880c4b04048.json",
+     "c87a3b897dac2462705de6131eb6f53a.json",
+     "c889c5f5f26389b89feb83ba02153604.json",
+     "c8992df5b1eabbc5756cf81eaf520727.json",
+     "c8a668c8026643b32038a4b435071550.json",
+     "c8c1554bda0278588189d83f8b367fd8.json",
+     "c8c3ecdcee98b1844fcef9da1bcb41be.json",
+     "c8f15d08ada28f0114155cda8fb3ec53.json",
+     "c907eb5451951dc91cd831e24ba28921.json",
+     "c920b8405ddc71a06978037bf529df83.json",
+     "c92f8fd1ea8bf3b91424a4a09f044066.json",
+     "c95523fe1056d6d8a162c431b0468eae.json",
+     "c959a67becc0981fad038a54826eb947.json",
+     "c96da07d337675db5b5de3ddf9c751e0.json",
+     "c99dda603b8cff196f7f4a77cd592bf4.json",
+     "c9aafd84e17ff1057413108ed61ef443.json",
+     "c9c35200d393ec54345f8324c5eebe52.json",
+     "c9fafa122371d5e817e6824975e61633.json",
+     "ca306ec615fbeaf2a6c1c6a1bf3a24a9.json",
+     "cad5344595dcfa9c2c309374b8f925db.json",
+     "cadef508a58826fab7c9262d59fe0166.json",
+     "cb31e0530406a30506f440f961dbc1c3.json",
+     "cb55ce30d3aa0858fbdc2fe0c0cf96ba.json",
+     "cb995066a0aa62d9b0178c8fc3aacdc9.json",
+     "cbc46e9f372f6b24c98095fa7d8ddd66.json",
+     "cbe1d643d20ed25bde4eda89a050f6d3.json",
+     "cc0d53bd49320b9259febe4ffb3ece11.json",
+     "cc2c6bf056986bc28bdf5e2fd89d2acb.json",
+     "cc5c9b7e265950f0d05458e49cbe83a5.json",
+     "cce75e28ec86d7f9440fa97a3506c656.json",
+     "cd06354e74a3b9233c48e8d306a82ce0.json",
+     "cd7b3ceca988988a52a94059d518d87c.json",
+     "cd7f663ccfe2e81a392d0a2f32800d56.json",
+     "cd8fef7f8d6080f18c83bc7b898e0ee6.json",
+     "cda00bb72986286d0657761b3c4cc3e8.json",
+     "cdb362929e5403f274651806244f15e9.json",
+     "ce1caec35287e5d5976499ad3b2b7480.json",
+     "ce5af23bf29e27e92d4aee6a2e762350.json",
+     "ceee3564e538f0796a8abca7b3616ebe.json",
+     "cf0852184af86f7f4a40c88a22cb0796.json",
+     "cf202fb7118b33ff2b2df9e340e3d734.json",
+     "cf8dd7d7dc4370bedc7352b0557555c9.json",
+     "cf90b10240593504afcb7300fe2eafcd.json",
+     "cf9a83809b90cdef675f9e213cc21fdd.json",
+     "cfad1a7d5910c28d0c7e56aaae490a3b.json",
+     "cfbc31ff84c7c5d5ff0d37bbcdef9b44.json",
+     "cfedabf83938d79c08465375fa326d3e.json",
+     "cff8c3d579491e4f455ff983e68d1768.json",
+     "d011bc48127bcdbe3326e0a3bbc76dc6.json",
+     "d01d9598ceb749a8cc0988247171fbc4.json",
+     "d01fbee133e34beeda13ac7ba9f3fbb0.json",
+     "d0698ecfcc5ba13e293cbd64bffb5302.json",
+     "d0bd37c834fb95e2e5a7a433807fc367.json",
+     "d1085b5e7af28691ead2fc58992d5742.json",
+     "d111e0fe659462a5d80b52f073070e86.json",
+     "d11d8302e973a09b18596b00ef6d7ef8.json",
+     "d13dd6190edc6ba4431d52043d3f52ab.json",
+     "d1c02b7fc77b6d0a78c223e3cc3f7013.json",
+     "d1d0b111f050562b2989d3a0e3e4188d.json",
+     "d1de9afa98209abab9f743dd93ef3fa8.json",
+     "d1ed50089b58be1ee59cea7d5fac91ff.json",
+     "d1f6a3c4d626bcb9fe9ac05059670f0d.json",
+     "d226b1fbddb7232787e93e198776bb6c.json",
+     "d2354daaa49ada5a500674214272072e.json",
+     "d25bebe9f307c60c9dbc558ceaa796a7.json",
+     "d25e91887871ffa71f23bc8495d921b0.json",
+     "d2630cca85903f421d577907f01a6581.json",
+     "d27c0d56db7a92fae2145055f6573a10.json",
+     "d288cf271da77bf3d60df929b0bbbf96.json",
+     "d299dcce463045dd7706157c9e0a3e48.json",
+     "d2d2761e7a7b208d375fe4c6970d912e.json",
+     "d30488acc6206c68aa06f1d5a7f48377.json",
+     "d30d1b801e473907bc22cadcd4f131b4.json",
+     "d32556b05f8de28da7e7414b187f85e8.json",
+     "d3f8e8d6404154d78be36683bce99232.json",
+     "d40554a0b6c6fa857bc3747a5ae8c726.json",
+     "d43eb7d8cefab943bcf68b5f3a7dca99.json",
+     "d455cd41b8e669df5290cb6484eaae8d.json",
+     "d460116fac8897b392eb1b0ceec928c9.json",
+     "d49b3c46395134195cb1fedbc8f58f39.json",
+     "d49e4bb2286527ecf66cf1eb9ef4455f.json",
+     "d4a986c5d1433133be094ee58624324a.json",
+     "d4cfe21805416c6ec607709ac685bf51.json",
+     "d4df01971ab2c0dd955103199745e7f2.json",
+     "d4e8612b5f28e4fe24ab0ce49096dafb.json",
+     "d4f1afc99512e8018992c6a9a15572ba.json",
+     "d5010b2ee4dd2efa44221d2463c60f9f.json",
+     "d5270f9e4b2c8267ee5013cb6f0b162b.json",
+     "d539b65b8c2f433ae1f72745cb7f13af.json",
+     "d53a50563215e052c0a51e9b73cece5e.json",
+     "d59dd65ecd19608858884fd4895b97ff.json",
+     "d5defef4e55780d904e09f97c15195d9.json",
+     "d60b872e90f7b357bd543f6bf408574d.json",
+     "d616c6189337e43e23035e0cc885b184.json",
+     "d6283ede5871b4a1f092295df2770d1d.json",
+     "d62841f41fe58c6dec429d1a6b0fc680.json",
+     "d635acfee3bf403b59fc19d7db761754.json",
+     "d6511d35818f67c49896384be4800930.json",
+     "d65f41544a45bcd9fc0684e441fb3d4f.json",
+     "d686fe6bdf99577433f056c7106d1e58.json",
+     "d6a0c3c34488cf6008c1e65d81e71d83.json",
+     "d6cc1d7bfe099b7fca27fb4597514d24.json",
+     "d6f6ff69ffc3c9ce7c0756dcb4cae27b.json",
+     "d6fdc240180837fe9838d05ba45c6477.json",
+     "d71ab6809333ef1a73471bbce6c3bef0.json",
+     "d74accaa4b0d0ff77ddea1f4fecaf40c.json",
+     "d7858c7180f1832b8f2a350f951f160e.json",
+     "d7874219980a84681b430536b8935887.json",
+     "d7901f74f118c168a776480e620d4c3d.json",
+     "d7a40ec05fe410384d450b5f115730bc.json",
+     "d7ac792bed664977b979936e8811cbd4.json",
+     "d7e8a9d72f926e54c32a11b20732565d.json",
+     "d7f795c94b907062b49f54eb645aaa52.json",
+     "d820fd4145d68d42bd257e9caf99d6ad.json",
+     "d83a151cceba933e0b6e28d5e1481018.json",
+     "d84129742976a74bac7250e9cece4498.json",
+     "d866d9667fb3b39f8bb7362f85557c43.json",
+     "d882d59fc0f609b2a7c6f6533f1c9483.json",
+     "d89cedc82299bddf8a35d422d37ae63f.json",
+     "d8a979781474f19fd8acdf463fc7c3ba.json",
+     "d8bf5c506fd44589e4b6d8e181ca7518.json",
+     "d8d644683bd0ac9899520bf429f811b1.json",
+     "d911f256cd6d751eb088a16864acadc5.json",
+     "d925a3f4cbdbac34092ffa9445f06b66.json",
+     "d967b7b6eaf9f9fa8c248c0c36cf9995.json",
+     "d9698bf7485c0ca3a28986d4ebd49d03.json",
+     "d971e089d795c2e3711cd98ec2d2635c.json",
+     "d98f26380a7aa1e50b46a03a6bac7b28.json",
+     "d993057f7bfa8fb3f2d1a39b73781699.json",
+     "d9a397adb311320fba65c55abc5922cf.json",
+     "d9b1a95fd9fd91c54eb5a711b9ef3cbc.json",
+     "d9c29885547016100bdfc966ee7cdf3b.json",
+     "d9c5f2a039d64994f8ffa22d29d389d7.json",
+     "d9c6b6331dadc271cab84d38ac0acf3e.json",
+     "d9c89f399066b4c111f36e935c23117c.json",
+     "d9ebe1e2d29e3ad41ff0f184428242e9.json",
+     "d9ec048a0814d137c7aa307fc2849a73.json",
+     "da463627cf0d4cfe03b6f2222a7ae9ec.json",
+     "da54862177f3bf86be83497109d739ef.json",
+     "da5be6bee92c5ac17664cd2f57f26c3a.json",
+     "da6e1d4c2b5ac2d44b390729d11cfd6b.json",
+     "daa3ab739c1bfd7aaa4def0e93c5bbb1.json",
+     "dab48678419f0a3f26ee18bbdbb4249a.json",
+     "dae3691c84c9a54772ffee88a4af842c.json",
+     "db118148e4dac6e4bb8fc81ac6290fec.json",
+     "db6085db47cf99cda435b6dda5556133.json",
+     "db94e26289557ed4cbf17e4e019dacf3.json",
+     "dbbffbd9ca14aeba1f6d6d0e7eafaf9e.json",
+     "dbdc235ae0d0040843f85daa15e89faf.json",
+     "dbe26af0a0212e05a0d78f129305f416.json",
+     "dc0b7b98a2193320ed7a46a93f855aca.json",
+     "dc72c8a4618e47723a0a0e0f29cec7de.json",
+     "dc8c27628167655b4a5937e69fd0b1b8.json",
+     "dc9985b13dc0848837d9bcea37a66783.json",
+     "dc9b258953d87b82a5ee9f9f92c678d0.json",
+     "dca4f6f53c43645bd74b21877c4574c6.json",
+     "dca97b7e92b32a78d1cef733912a9e6a.json",
+     "dcb8ab23685634734fb3b0a1caaef885.json",
+     "dcc2dbf0cd9b0cf6a43856d109cb81a8.json",
+     "dcca96eed1e4d7566ad767e3f2700cf1.json",
+     "dcd6cd55498e4bebe88a77f40f0c9327.json",
+     "dcdf8a362b91bd25a2ef98baf97268b2.json",
+     "dce23756619c4404cf007a174d34f052.json",
+     "dd02a27fc00760fd9f80367a9e973490.json",
+     "dd0919983d5187ba49a8af27b3267ddc.json",
+     "dd181ec9e7ceb3f551e38b9c1840245f.json",
+     "dd281596f2f1d0b2db5d4d82848cd4ce.json",
+     "dd47d1d0f5db18a6235f3709f4fb6617.json",
+     "dd675a3715216d5ae71b94c898343410.json",
+     "dd87269bba29924c468e7c538a380bb9.json",
+     "dda7c66141a9441c719cc8c5f32b9250.json",
+     "de3f8ab3c97682346701ad3e7a201fe9.json",
+     "de752ddb555268658a55491a4b66a990.json",
+     "de7ee48d3a3aeec692b6ea1435450499.json",
+     "de9cb7eeee664eb91ac867e313ab2512.json",
+     "dea5a943557981ad32948993fdb7d35e.json",
+     "deca15741f9d8055abeefb8e66161c8f.json",
+     "df1a71070358a1efc98a97b631704884.json",
+     "df6b6fcb1f259c0c51478e297ec44658.json",
+     "df73e4020b8bd752a696ab693126a990.json",
+     "df9a18458dd256a24b2088787fbca942.json",
+     "dfc39b93d65d61f196052f97d9a6bf4a.json",
+     "dfc8c1498ef5c08c512601ab404546b2.json",
+     "dfdf77fddaef90f0d58e04f64a66b777.json",
+     "e01a3e8e0075030e82536cde04ecd8f5.json",
+     "e06aaaf3755f1f730143a928279c169b.json",
+     "e06f07f5b95c7044c074f274e4b7ee40.json",
+     "e08096403859bf7ff0106cdf1b8371c4.json",
+     "e0db4001143cf466bbcf6a4871aefbc0.json",
+     "e103daa68c044e1485f172cc883fea25.json",
+     "e12baf0eefaa41069b5d4d43a586731f.json",
+     "e12cc6ab4bbe13aa03a08517b1011a1f.json",
+     "e1355aff85935ee2febb423b75ac2d55.json",
+     "e1372b2f81a9cd11dad8600e41489ce4.json",
+     "e18bfa039a9ab245d25f2683215315ea.json",
+     "e1939f60793e0919e0603ed68a686b8e.json",
+     "e1b153ca847d838b9d261f4d6a0eefec.json",
+     "e1c9d64b59cd859d227e648f382d0109.json",
+     "e1ddc20270187e5aa5440821a4e52378.json",
+     "e212ec96a90143f2bb7df1e7ad244a16.json",
+     "e25f27c82ec30cf057edfe84be826855.json",
+     "e2842a236af7ea021063475e70728ac9.json",
+     "e28c5be544f8fab582c9f6efa08cd3e9.json",
+     "e2b5927adc016035a0b9f3c102f33b83.json",
+     "e2d079595a2ffc9f185568b43658f0dc.json",
+     "e2e70399a4a330a5cb4c6fe8fa3d2ce3.json",
+     "e2edcb1b6c50ebce0ae953a43fa085c2.json",
+     "e3032b1fcef2af7ada8c9f0047d3993d.json",
+     "e386215822725f7ed99ad07d2fc568a5.json",
+     "e3865382a8e4a2e7e0f156465ee5b2ce.json",
+     "e38b0159ca098621ad2e72a8fa089b61.json",
+     "e3b34df353e7f241b76f5e03fdcb8635.json",
+     "e3c1a971cefce6bb5ffb39b221917d9f.json",
+     "e3c259bab4df59b015fc6b60d4501c60.json",
+     "e3cafeb35cfc42e916e6429887df96ce.json",
+     "e3eb95f92fd18e80f466922903fc464c.json",
+     "e3ed10380268ad080a68a3ce4f586388.json",
+     "e3f4235eb863f33bcf60bf8a16f03b07.json",
+     "e4634516f3cf6fc832879f599b39cd76.json",
+     "e46c0cffc232a0a42efde0d570a01dab.json",
+     "e494a264bfa39680ce7f6fd99fdf123a.json",
+     "e49a80557ce2e7430c38c601f530cf7a.json",
+     "e52dabc715d2c174f2c58ac79b981e2b.json",
+     "e533cce3dbe830b116111aed3dd4452a.json",
+     "e54d0e7ca25d66ac484668d30c8353c6.json",
+     "e5a14c04028ba4c7eb508c6936d81371.json",
+     "e5af10e2f260fcf0e1ff41aaa6e21747.json",
+     "e5bac0cf909159d3758e9342bebff1fa.json",
+     "e5cd13476ee1169c16e545b35807b57f.json",
+     "e5db6402c194c5921c2835c1abf9ad89.json",
+     "e5f7e7e7135e537952b3063a25d35580.json",
+     "e62a3ba6490a1fd2b15b7a35fad29d97.json",
+     "e6754541aa83adc28fa1126bc9aa5787.json",
+     "e6a769fc5041022b442a93b40c53aaad.json",
+     "e705b39bebae7417a90e263f431db25e.json",
+     "e7081cbadccf5c4833d9d194aba0fe4d.json",
+     "e712cf4cd87ce3b8caad809a90b78661.json",
+     "e71e9a531b2f2c6c9c18a2bcf2032ba1.json",
+     "e72c0aec3cddaf196def05040c1b0ccd.json",
+     "e74828bf96d89f6519779248b2da72ae.json",
+     "e75de73a575b03c52573497b5f793673.json",
+     "e7605e212c90af81bc9b94e3fc763ee9.json",
+     "e78a55b4d003cc2f731653df0607626e.json",
+     "e7912dc2ee1fe52d47e426dc7b88452b.json",
+     "e7918e77cfb04c7e133ef7376a2599bd.json",
+     "e792fde97df097c7fab0c0b2671ef3dc.json",
+     "e794dc3b9afec972c537ea35f9951134.json",
+     "e797fdf5fbd57d5ffdad9447ca21be28.json",
+     "e7a5057bf5b7960c122e893aedf6511e.json",
+     "e7b30386e61dd261968e1432ba827423.json",
+     "e7b55dc8519aae747a3ed3a22e2c8c28.json",
+     "e7ed32e99c4ba2f2cc9b0ed564e8d618.json",
+     "e7f7e4d1b42adfe8707812bc01ce4195.json",
+     "e80ba5ab3bfdff999482129bb2fbc408.json",
+     "e82df7b3c26331e8051cc8211713ac26.json",
+     "e8385a5dcef800d110eef7cb3534cc5b.json",
+     "e84d0aeefe1d4ef9949b57e2d957bc5e.json",
+     "e84f721e92be333c16e7f54c241f6050.json",
+     "e8651de75344e90e66582856792b9948.json",
+     "e8951ac199bfc0fd29e710678ab6ae7d.json",
+     "e8a768d7013982bc0d730a04b7eeb39b.json",
+     "e8b46b4f5f47e04159de698232486c08.json",
+     "e8e87d626db5978ed96493e71127f3a6.json",
+     "e8f4d727f32181f4cf03c91447464047.json",
+     "e8fbcaa917a86d507c783d53fc7d2fd4.json",
+     "e9201f24e3a94e06c057f5ff21ae719d.json",
+     "e93db516adfc64751e8867c4646f276f.json",
+     "e98a5b9e419730b34a04c22e039f6066.json",
+     "e9a5cd257b8f09c654ef7d21ca4fd079.json",
+     "e9be89c790bf5a885934d0e5471a752d.json",
+     "e9ea3c7e97ec0e06633e56b1c6496ad2.json",
+     "e9fd1c5565100e37cece2353f197448f.json",
+     "e9ff2a4047479c677cceb6f1bb7ad2c3.json",
+     "ea15fc593e7e0f4e617f4fc97316d87c.json",
+     "ea3aa2d8d6fddd494b95dc891b9c156e.json",
+     "ea6a49de8588dc82dcc0bbc30c14f161.json",
+     "ea750d39fe092fd700c22d09acd469ad.json",
+     "ea7a5c17ca8131984229b8b5796b4cc4.json",
+     "ea884cde90f675713475d8eecb794fc4.json",
+     "ea8c1b700c7c229cedbcd5d0795db6ac.json",
+     "ea99ee7d4fb50fb55a724769f9d568a6.json",
+     "eaadc2f852ae3997f951577a7340b09f.json",
+     "eac0d8266463c301dd89339ff7dcaa39.json",
+     "eac74fcc9c5a978fe2c6fafd86d58dea.json",
+     "eac97e9c16d4c8bde58f4989a2565460.json",
+     "eb0cf6e8da27fb42aecade8a9169241d.json",
+     "eb3d7a6d58bb4294352fe6ec203efcce.json",
+     "ebf1485001ce25774f3be240ed37f23c.json",
+     "ec03c8769f3dd6a0dbe89ed24f3c275c.json",
+     "ec3d03d372f6acabd0249f623421be51.json",
+     "ec5235175448274809890e969fc60b4a.json",
+     "ec64ac39a3ed2f4b01e38377bf45e44e.json",
+     "ec80861def8180344629987e6ab45c0b.json",
+     "ecadbf025856dc1c762659c4df27545c.json",
+     "ecc323563270e355ede17a58ed918891.json",
+     "eceac72549f2a2396cf6a7ed8c23aee7.json",
+     "ecfd7d9ad4c1e8a2c9f9fdd0d1cd867d.json",
+     "ed12b963804529c6e68476a6af751f91.json",
+     "ed1f6b8b3e5463df07352a663035fc22.json",
+     "ed50e3dd09d63957bca9079d7319a090.json",
+     "ed694d9fae54a076341c13e65051d5b6.json",
+     "ed8acc7858168eeec86c28728f7a97e4.json",
+     "edafc8898e4ecb9ff1e96d6cb594fd15.json",
+     "ede65710289e3a578f3ab491aacfd74c.json",
+     "ee03ee4c0e0556a3cba8b2b9841ca577.json",
+     "ee134557bf53e0c8bd98058ca26ac1db.json",
+     "eea57ce2f7070b60681ae4ecdf752310.json",
+     "eeabfc3e14c52114709d95a1257555a9.json",
+     "eeb3e799cffc447e43cdcd365b36901d.json",
+     "eecfd651a55ed6ad098eaf9c5a0a319f.json",
+     "ef0366c54b4bfa4d05f076030ddcebb3.json",
+     "ef1268b7efbc935836ca3a5ad54c1f2e.json",
+     "ef28c91927c9cd2a1a9e235a79fd2ef6.json",
+     "ef412d4a2bcc4087dc28619bea02d6fa.json",
+     "ef44acc6f872008caa7a60280e44ba4a.json",
+     "ef4ab9d166be9cf4b1b170037c8fb20a.json",
+     "efad5405ac799288b83210f07f8199a0.json",
+     "efc76b36cad13fb5fcbc6d045183e03f.json",
+     "f02d8f64ea3c35a1765c04cc10be498f.json",
+     "f03a884ddeb99658dfd09198078e663a.json",
+     "f0511f004187032136920c4ccf4c968b.json",
+     "f08c6c39bad74615d696d38acd2896be.json",
+     "f090f159cce757f1f0ccd6e4d8a311dd.json",
+     "f0940d5d586d1ebadd6dbc31e7364dd5.json",
+     "f0983150b9850946d9089783d5ea9d84.json",
+     "f098a5ec217654d861fefc09aca673ae.json",
+     "f0aa59da9e37206ce1768d8ee8474647.json",
+     "f0bce8cc682b11c0c57b7f0fa26c5aec.json",
+     "f0e5c88239cba49b36fd045172beb02d.json",
+     "f116277f5113425b199016ad2fee4a83.json",
+     "f1296dc725f27dee985202987051d21f.json",
+     "f148b3b40a6802cc77374db4b6e8be8b.json",
+     "f158f40b729d17f754bc2ebeb3fd4e79.json",
+     "f16c8ad305aa4afc4d9c7f3c76762912.json",
+     "f1a0f03e835d9f914535906a5956e1fd.json",
+     "f1ab747cb8b31993b5c517b46bfec614.json",
+     "f1cc8091709b1323c8d1f13df44c51f1.json",
+     "f225f26ea5b570b29baabc0eb2c4e392.json",
+     "f253137d260d08846e60badf34c9e9f6.json",
+     "f26a1244a32ae7b1a27e5302e38d2ab8.json",
+     "f26b4b3428f0e7cb61e5b26c471b6882.json",
+     "f27ac633e25ba276f6a66278be5785c9.json",
+     "f29ef172a26265f9d73cd9c580fa46ef.json",
+     "f2c79c95993054a2c115f0d01ca2feae.json",
+     "f2f684a1cf92f2aa6b2cd49832fa0f36.json",
+     "f2fcc39fe5c457f8f9fbb27782e7c3b1.json",
+     "f326546879891fefd761cbff4fcf9bd9.json",
+     "f35205f632337a74e1e74f9a68d8b8da.json",
+     "f36803d33e79420fd877b2bd16c03758.json",
+     "f37389b892044b01fc0e43cd90c855b4.json",
+     "f374d707c5b9f83d1e975040b85903ff.json",
+     "f3c6af07b10e95dc8d43549c872cfda8.json",
+     "f3d2c3b76fd09404bfd400961ea22299.json",
+     "f4508ea586a6f7da164be32d02683027.json",
+     "f465d39c3bf5465c4f75ce3e93c420b9.json",
+     "f467275c97daade1ea4387553bdf97b5.json",
+     "f46f040af7ab6827d98bef16be398336.json",
+     "f4be65ef6f73ed6c9922e0d852905dc1.json",
+     "f507e6199b305e5fe243a972d377b45a.json",
+     "f50e675b2d60c0ff1f2d165b17a25501.json",
+     "f517b7940671cfdf5dec8a4b0c541460.json",
+     "f584cbb5bd9079739b06e544d8431624.json",
+     "f5a7ca544a28c226b503854c387356fd.json",
+     "f5a821d6ca4d3710f0a4fc50e84b620e.json",
+     "f5f635528dea4d0a32fd951bc8914b66.json",
+     "f63b0291e35eda3899cb1ee5dc6fbd72.json",
+     "f6584265030bc161012ffca8f5d991f9.json",
+     "f670562416386bde6fce89ca7fa3b29a.json",
+     "f6da687810f77bfed72f6da27bd13b11.json",
+     "f6f858b40dd8ff284cc50121da64a0aa.json",
+     "f6ff658cc794d59954028aad46e82d68.json",
+     "f755909230b847cafe2ec723f9f49348.json",
+     "f799ad2ba6e61163d5d2d3432b2ee90d.json",
+     "f7c396e35a46c153bcc8d2b9d68aa791.json",
+     "f7c6d4919af1d76e80889d2f4f5e959f.json",
+     "f7cfe714b7fe217b17ff7a8c61b4eab4.json",
+     "f7d480bfe2cab2b3caeb5b5871ef2dd6.json",
+     "f7e979978fa186883b6c471007cce3a0.json",
+     "f812988e362842575ed02607c4280923.json",
+     "f8f4727b2fd2e53ca90d0b8a819dbdb9.json",
+     "f9133b72bf9b43360bebaee940706bc4.json",
+     "f9189525a68bf359e25347d83de5bd7b.json",
+     "f924320928be77c2856feaee8028a0dc.json",
+     "f928ce14972fd315098492a8fef1b406.json",
+     "f92b9252a4b85435156b1bdd95bb2d48.json",
+     "f9aa1d66276db91b09fd13ab4f06b14d.json",
+     "f9bdef6a2c0f9c4d13f015433fb7b78d.json",
+     "f9bdf077f80b6ac908fadb3eab370238.json",
+     "fa0085a2e4ae750763d0fac0fd3ca0bb.json",
+     "fa11409a84a561a5c9fb584501057a5e.json",
+     "fa16d368c1c1e84fa7dd363cbe92c2dd.json",
+     "fa227e62bd97b19ffb13cbd79e7beef8.json",
+     "fa24a3b553e06b286e2d29648de27204.json",
+     "fa3eb4c292c59c3cf5315acae471ceac.json",
+     "fa887e0b20811bc43e78dad3607d92b2.json",
+     "fabe1bd3087412d30a97204eda95bcf8.json",
+     "faf800bdfc0b86fa9b4f0faeb0fd6671.json",
+     "faf955c10b960962d7ea3c5dea8bb6ed.json",
+     "fafb700b066c67d01d05a82137297668.json",
+     "fb174fc4a4aa81d999fdf03b0748aa5b.json",
+     "fb62789fef353ba2e9ef50ce00cb444b.json",
+     "fb8a9fe78d0d93f54edf7134b185d5a9.json",
+     "fba07a1de5b42cecd8dc4fb1ecb24590.json",
+     "fbb07130a51820a9735464b64757fba7.json",
+     "fbea7d6e9c323aac4838094ae32414b8.json",
+     "fc0675fcb5915bfc92c6f1e5304e4dc8.json",
+     "fc0a5ad31003ae77d1afc645c288d862.json",
+     "fc37b297d90b92009f5c787b134f6f95.json",
+     "fc5326f30758033d9d63c1049d7d6034.json",
+     "fc65038ad239e61bb064f86d2f7a72c4.json",
+     "fc894fe0f63c64f8f755fdec67194b4c.json",
+     "fc8fb6dbe548a541d4958e1e85e07937.json",
+     "fcd09fee322872060fdd47c245548cd0.json",
+     "fcdc0aa09843875c961e1a4df757f633.json",
+     "fd06035f2f33a3c552bc3551fe00f8ea.json",
+     "fd10eebf217ebf615f8f8effa4345403.json",
+     "fd14b9b048088fcc0bff5aee57679065.json",
+     "fd774fcecebe5f6e188a0b8900f27b07.json",
+     "fda50526edebd338af47e990d301cdf0.json",
+     "fdf402e11aa37cd28d25234b8489e72b.json",
+     "fe01a218f86f51ace164849bfcbcb5f4.json",
+     "fe46071269cebc4c882500f0ab48b0c6.json",
+     "fe528c86a160ed822f81f3c0b0734e84.json",
+     "fe53c4128a0db8764879a847025b3df4.json",
+     "fe7d435df7f1f11c1ee54f856e1d1067.json",
+     "fe8abb4960f98eb368b24c05dea77860.json",
+     "fe8fac160737285648e8d409a943f422.json",
+     "fed51c8c7562a7627e3bd9c8bbfe8d73.json",
+     "fee5c9088b0c52b67708a564b31614c6.json",
+     "ff43cb25267c061a49275a78ea2e68d9.json",
+     "ff4e6aa17e41d25e081d00afb147a045.json",
+     "ff600c67eef40d2a9631a9a1d6419b19.json",
+     "ff7c82b231112263ff87ee123cf47e67.json",
+     "ff926c07decbed5ed06bd41f82fdafde.json",
+     "ff9e6a314a720b6f1b7e0c8c50f58ad1.json",
+     "ffa8560122d96400c71f982bb8458f0e.json",
+     "ffc88823e9c64b6b3f651d803f4a09b9.json",
+     "ffcb2077fd02de4e57fc500abf539943.json",
+     "ffda0471e6e38fc7c60399a618cfb467.json",
+     "ffe2c2b4ab8264ddaa172a0a56bdd5f0.json",
+     "fff303e7a6ed00408fa1033154685846.json"
+    ],
+    "inode": 20460810,
+    "mode": "0o775",
+    "other_entries": [],
+    "uid": 1000
+   }
+  },
+  "physical_paths": "WITHHELD \u2014 a physical path is private evidence, never a public record",
+  "reads": 1966,
+  "retained_descriptors": 2,
+  "root_logical": "crispdm_lake_characterization_state",
+  "strict_mode": false
+ },
+ "grants_nothing": "a verified terminal set is a verified set of outcomes. It confers no eligibility on any variable",
+ "independence": "this verifier imports nothing from characterize_lake; every fact is re-derived from bytes",
+ "other_findings": [],
+ "outcomes": {
+  "MEASURED": 1505,
+  "NOT_IDENTIFIABLE": 460
+ },
+ "pre_ledger": {
+  "census_conceptual_variables": 1965,
+  "census_file_sha256": "818063ba501bc460182e83f1705ee4c2b6b033559e036cec92e85eb20fcad134",
+  "census_file_sha256_state": "RECOMPUTED_HERE_FROM_THE_BYTES_READ",
+  "census_physical_appearances": 1680,
+  "census_sha256": "49a8813d782a0e11cfcfde3e02a946fa04883db9f4e9563dced2fa24a7a1b82d",
+  "census_sha256_state": "DECLARED_BY_THE_PRODUCER \u2014 a content digest, not the file's bytes; not recomputed here",
+  "declared": 1965,
+  "identities_digest_definition": "sha256 of the sorted identity list, computed here",
+  "identities_sha256": "e12ab9c718b9cb9d82cd5a456902124f8b5ae706e33580954829855ba6ab88e0",
+  "recorded_digest_state": "DECLARED_BY_THE_PRODUCER_NOT_RECOMPUTED \u2014 the verifier does not know the producer's formula and does not import it to find out",
+  "recorded_sha256": "e684b633be530cc561dc90c85820362cfe19737bec36aeb340818e3c24d70d3e",
+  "sources_resolved_from_census": 1965
+ },
+ "schema": "crispdm.lake_terminal_verification.v1",
+ "sources": {
+  "absent": [],
+  "absent_count": 0,
+  "absent_count_definition": "distinct absences, not variables affected; each entry names how many variables it costs",
+  "digests": {
+   "features/cross_source_features/15m/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_netflow_coinbase_advanced.parquet": {
+    "bytes": 95772,
+    "sha256": "bf73aab5f246e55015f9aac163bf360ef82a66eecfb9f872fcfc42edabb6e1f0"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_netflow_kraken.parquet": {
+    "bytes": 95772,
+    "sha256": "e9a2678688624115c57151a8f0ae71135768a1d690993c3395af0cd546287d8f"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_netflow_okx.parquet": {
+    "bytes": 95772,
+    "sha256": "57634cdf0a946d739d9fe510e04d7a1501bce630460841dbd50d5aa42ea91861"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__btc_indicators__btc_estimated_leverage_ratio_all_exchange.parquet": {
+    "bytes": 89600,
+    "sha256": "87c60327ce319fb9a37aaab4c35a3d9a0b9bcbcf8f659508bc61a79dec805da9"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__btc_indicators__btc_fund_flow_ratio_all_exchange.parquet": {
+    "bytes": 89532,
+    "sha256": "e22d0a4d5cd2b3c56523f4879d68165cdbf323c9968eb07db10b8b32ae9a609b"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__btc_indicators__btc_sopr.parquet": {
+    "bytes": 94453,
+    "sha256": "3906ae206801534ecf9a37f301fbb9850191572bc0249ba94672df9196cadbb3"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__btc_indicators__btc_stablecoin_supply_ratio.parquet": {
+    "bytes": 89596,
+    "sha256": "fa8d191836202c6a67ab4f2a2d8e0f08cef1c9dd177d1d03db48b5ec47916b64"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__btc_miner_flows__btc_miner_inflow_all_miner.parquet": {
+    "bytes": 94645,
+    "sha256": "001503cd9c2b8fe30dfa122719989ffb43d74db7ad3ce2c63393d9ab96f3c86f"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__btc_miner_flows__btc_miner_outflow_all_miner.parquet": {
+    "bytes": 94681,
+    "sha256": "d5003175e171def27f6a8fcb7c45c123b6d255e3cf8fcefb0467d924b00c3b71"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__btc_miner_flows__btc_miner_reserve_all_miner.parquet": {
+    "bytes": 91167,
+    "sha256": "5c248910d5774532e742280a3004b419d880ddbbc9f2eda2726611dcbbf061a4"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_outflow_binance.parquet": {
+    "bytes": 94681,
+    "sha256": "446558b55fe9fdc037e2fcf0e6cdee7dd1ac5f6738ec709fb612fb0a56a9d65b"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_outflow_coinbase_advanced.parquet": {
+    "bytes": 94681,
+    "sha256": "1f6b5a5a8b8e843e90097e149f660134d62980fc03de368002a67bfa0a82a86c"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_outflow_okx.parquet": {
+    "bytes": 94681,
+    "sha256": "8421f7effcc7e1290d5745752a19c02613c5b6b45f3a4ec356f50aa92e0d1e8a"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_inflow_all_token_all_exchange.parquet": {
+    "bytes": 94645,
+    "sha256": "469f35c0a175c8894632b7f2b44139db4e408950357ec62aaf6c2f4a8faac8ca"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_netflow_all_token_binance.parquet": {
+    "bytes": 89516,
+    "sha256": "70d60018cf14704a423373a25f00b92ac4210f502cf01ca0c6819c3cd4cbe591"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_netflow_usdc_binance.parquet": {
+    "bytes": 89516,
+    "sha256": "efa12fe9df01408f83b0764ca0031c19737eae8788eb8f295a7a4d8408c2a1c7"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_netflow_usdt_eth_all_exchange.parquet": {
+    "bytes": 89516,
+    "sha256": "85c212141515baa97a47708d1c0be7e57ae72710d63c8d9b4c61e4a2dfbd346c"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_netflow_usdt_eth_binance.parquet": {
+    "bytes": 89516,
+    "sha256": "f5ac16a2c2f2019053048db9b5f48421266c5290b0eee3fbeccc23a78abace4e"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_reserve_all_token_all_exchange.parquet": {
+    "bytes": 89468,
+    "sha256": "98001564a8cc6fede78efb45afbe1d69ae773b0c19f500463fc9850f866c51e2"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_reserve_usdc_binance.parquet": {
+    "bytes": 89468,
+    "sha256": "44a2e20ed0cbb11a4e903455498c8263da997eedc1f25adce7d584b4f33df0c0"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_reserve_usdt_eth_binance.parquet": {
+    "bytes": 89468,
+    "sha256": "5e85288b5670177518d3f72c4d1b4469014f007f396f14daf2396601cbea12d0"
+   },
+   "features/cross_source_features/15m/alternative_data__cryptoquant__stablecoin_network__stablecoin_supply_usdt_eth.parquet": {
+    "bytes": 94344,
+    "sha256": "15be7b99ef5011aa1abcbb217a884470ffdbb511b54155349e30b7872daac794"
+   },
+   "features/cross_source_features/15m/alternative_data__onchain_btc__coinmetrics_community__btc__blkcnt.parquet": {
+    "bytes": 4684774,
+    "sha256": "113aaa0e58a3b1be819eb5e8b3e03c75acee0d16595bb10a18e61a43eedc167d"
+   },
+   "features/cross_source_features/15m/alternative_data__onchain_eth__coinmetrics_community__eth__txcnt.parquet": {
+    "bytes": 3003568,
+    "sha256": "bd97a24171145ddc3b99cf6dec781c42ea5bafa4e35a839eb2d69d60bb005b9a"
+   },
+   "features/cross_source_features/15m/alternative_data__onchain_other__coinmetrics_community__doge__hashrate.parquet": {
+    "bytes": 3435020,
+    "sha256": "d037c9e08da14ed5cda042594efc8766ddd7453cd91c682c1aec93893c6b1e6b"
+   },
+   "features/cross_source_features/15m/alternative_data__onchain_other__coinmetrics_community__doge__txtfrcnt.parquet": {
+    "bytes": 3419187,
+    "sha256": "061a51faec3f00f13e05e980ffdb94a3cbcc0fa2eabe9ce198325df741b85733"
+   },
+   "features/cross_source_features/15m/alternative_data__onchain_other__coinmetrics_community__ltc__txcnt.parquet": {
+    "bytes": 3984738,
+    "sha256": "1f7369c81e98a883979cd03ea5cf8b62b0c7a00c641e1105bfc9ab64c3b24c10"
+   },
+   "features/cross_source_features/15m/alternative_data__onchain_other__coinmetrics_community__trx__blkcnt.parquet": {
+    "bytes": 2234013,
+    "sha256": "cc6101fe9d727422829eff6689908702729b7d5b8435026a310a26325aa88328"
+   },
+   "features/cross_source_features/15m/alternative_data__onchain_other__coinmetrics_community__xlm__adractcnt.parquet": {
+    "bytes": 2945395,
+    "sha256": "3b19b8b13a496cf531b78ec9da4e27f2f49e9f92757a61cf4968471960651348"
+   },
+   "features/cross_source_features/15m/alternative_data__short_interest__finra_regsho_daily__fnsq__2025_daily_short_volume.parquet": {
+    "bytes": 3152,
+    "sha256": "d70aae351647a868aa548f28939965a3065aa54a2f8c8b80b4052ad92b5fd21b"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__credit__bamlc0a0cm__observations.parquet": {
+    "bytes": 882324,
+    "sha256": "fc1109112ddcd9cdd891361b91b24ab2d5eefce1b958df9caebed146b5606dee"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__employment__awhaetp__observations.parquet": {
+    "bytes": 5382820,
+    "sha256": "39de2ce2c432aa2d04ba981d4f106119f1b2b0404697564d8b2381b5a17cfb28"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__employment__ce16ov__observations.parquet": {
+    "bytes": 20960005,
+    "sha256": "b2d40070254ac81e8f1615dfcd22335efecf8c41b2e23449d907422c6d63b9aa"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__employment__jtsqur__observations.parquet": {
+    "bytes": 6738076,
+    "sha256": "baa0707633dbee4428cde6f393d031d6b19fcb72201d22a43ede8d7f8b6326ca"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__employment__payems__observations.parquet": {
+    "bytes": 23291120,
+    "sha256": "9e4f852ef28f6ed8ed484eb2000c2b6ad6c3643d202298de9b292d9e20653793"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__gdp__impgs__observations.parquet": {
+    "bytes": 21414414,
+    "sha256": "377b94a2fb113607ec887671b951a07fb2f7a8e9f7a7a3b269c753507182751f"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__housing__compu1usa__observations.parquet": {
+    "bytes": 15488983,
+    "sha256": "a347af635e185e093693a1cfc373f3b7c86c559faa6f9e0600b98c52912d9c72"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__housing__exhoslusm495s__observations.parquet": {
+    "bytes": 273515,
+    "sha256": "876b8208520c8b175dbe6457b9ef3c16077c2a4cef49d6aa0e706d75fc8a45d3"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__housing__houst__observations.parquet": {
+    "bytes": 18102857,
+    "sha256": "141d7063dca6b7d91e752ddeb36e75c7997d8bf2d2d471e0eed6a51ff2d7a745"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__industrial__businv__observations.parquet": {
+    "bytes": 12159207,
+    "sha256": "4cc1863b152dfe9625b99a61843302ab9afc24d98d44483066151746a069fb7a"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__inflation__gdpdef__observations.parquet": {
+    "bytes": 21160826,
+    "sha256": "264991d770125d946b8bf2ffa5f14f2fa3358adb07fca1c0048d23f8d8534d8c"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__inflation__pcepilfe__observations.parquet": {
+    "bytes": 18104901,
+    "sha256": "f3610955a2df29d79ab98de3bf527ceba68e5bc6db76a32f403553ceb38c5952"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__inflation__ppiaco__observations.parquet": {
+    "bytes": 30248322,
+    "sha256": "8c022710245c9fac074044a16c0d4c9a6b86d119e1f9fc5cc035e9b42449147d"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__inflation__trmmeancpim159sfrbcle__observations.parquet": {
+    "bytes": 11387737,
+    "sha256": "1ff62276d7514728f7a0a39493515d5e0991c4b97594cc243f8732df3d1f5960"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__money__bogmbase__observations.parquet": {
+    "bytes": 18103424,
+    "sha256": "c2efa7cf4978596ebc4f2f264de34962884d905e31bd4692d9b20cfe094004c1"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__money__m1sl__observations.parquet": {
+    "bytes": 18103505,
+    "sha256": "e415f1a8f77353af5062d8d929e9c1173548b183ddb00d28b95b7e25bdf270df"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__money__m2sl__observations.parquet": {
+    "bytes": 18103892,
+    "sha256": "c4fb2e2958534c9d6790723dba50f5ca885ca78053427e2e8c01fe3e76c2770d"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__rates__dgs10__observations.parquet": {
+    "bytes": 17419507,
+    "sha256": "bef1b014401aede8fd9ba4469dfb1d275e61b1841d41300178a4b68740fb30f8"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__rates__dgs30__observations.parquet": {
+    "bytes": 13180402,
+    "sha256": "8172feb340143e8afa4e3f1fc04881eb110d06528d0a9e70333de190dd1349b5"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__rates__dgs5__observations.parquet": {
+    "bytes": 17420266,
+    "sha256": "b7725634ba89d7c774390dc289d98be1fd35247682f0b3fc1be267e866c31e13"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__rates__dprime__observations.parquet": {
+    "bytes": 19008217,
+    "sha256": "ddd82a1ae21ead16b2565d9f97615be52ef18a840d1b672fe3c5beb1e4843475"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__rates__t10y3m__observations.parquet": {
+    "bytes": 11953880,
+    "sha256": "c8d08edfab68431ebc7833196b3e7787dd0a80809262162ec85512d29c22eef5"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__rates__t5yie__observations.parquet": {
+    "bytes": 6214370,
+    "sha256": "5e9b9585ca09718e29da1024e5345f1ceb7dd9dfb0840c12f4da1b357313bb79"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__trade__boptimp__observations.parquet": {
+    "bytes": 9321113,
+    "sha256": "53eb087b0edccd6d241b2fb5b4a9923da42710112ba51abd5b91fc73599db3a1"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__trade__expgs__observations.parquet": {
+    "bytes": 21414338,
+    "sha256": "2e2ad7f61d314a5cefdea2aef0c78fe28fdb636903d1f4537bfa3fa95d54e85c"
+   },
+   "features/cross_source_features/15m/macro_economic__fred__trade__netexp__observations.parquet": {
+    "bytes": 21414308,
+    "sha256": "a3ecae46ce9162162f60f4452414c327954f299495f2f1ca1dc4ec61c448dc70"
+   },
+   "features/cross_source_features/15m/market_data__commodities__agriculture__ct_f__daily.parquet": {
+    "bytes": 7290912,
+    "sha256": "c89c7143f8d7048c09f04c443497b3a4a9d6d87268bb36c60a6bcad1e2520567"
+   },
+   "features/cross_source_features/15m/market_data__commodities__precious_metals__gc_f__daily.parquet": {
+    "bytes": 7130665,
+    "sha256": "5e939c138ddf2ed073914176f5a6e9445e9816a7572cb53328f4ca2a46f4baf6"
+   },
+   "features/cross_source_features/15m/market_data__crypto__funding_rates__adausdt__funding_rates.parquet": {
+    "bytes": 1874605,
+    "sha256": "15ed2ced486be6f0867d73de37a688018cc2da730ae87fb2f07a77f5864a6588"
+   },
+   "features/cross_source_features/15m/market_data__crypto__funding_rates__bnbusdt__funding_rates.parquet": {
+    "bytes": 1864740,
+    "sha256": "3c1f137468d8ce0c73f6592e07132425ee183c0d29423a1b3ba526aab7ec6721"
+   },
+   "features/cross_source_features/15m/market_data__crypto__funding_rates__dogeusdt__funding_rates.parquet": {
+    "bytes": 1747951,
+    "sha256": "f915acc81e929b0582fc1b0d742bc8c72cc8d6269a347fa1f92002d85182a8e1"
+   },
+   "features/cross_source_features/15m/market_data__crypto__funding_rates__xrpusdt__funding_rates.parquet": {
+    "bytes": 1892506,
+    "sha256": "3db478292945c13fe416ff6d1b5d97bac5c2968bf4884bf22780db151a799a3c"
+   },
+   "features/cross_source_features/15m/market_data__equities__etfs__iyr__daily.parquet": {
+    "bytes": 7210373,
+    "sha256": "1cc27197267564c7812dbc5b32da92c9348287b6c6e0b22f413618e99d1cd230"
+   },
+   "features/cross_source_features/15m/market_data__equities__etfs__vea__daily.parquet": {
+    "bytes": 5257961,
+    "sha256": "035aba883fea4425e5173ae6d3f57417e7e4cfd13b184bf9dacb15cd2e4cf4ac"
+   },
+   "features/cross_source_features/15m/market_data__equities__etfs__voo__daily.parquet": {
+    "bytes": 4455000,
+    "sha256": "d03ec10769ae36a1ada29bfbf7f9934ecf6b0c8ec603b7f8bbe7429160d4f3ae"
+   },
+   "features/cross_source_features/15m/market_data__equities__etfs__vwo__daily.parquet": {
+    "bytes": 5920162,
+    "sha256": "27e1fe72a8014f5339b5c734d55528c88c7b0ef7c1333efd252f40daf331505f"
+   },
+   "features/cross_source_features/15m/market_data__equities__etfs__xlb__daily.parquet": {
+    "bytes": 7620267,
+    "sha256": "effe8c92ca4e8c1186a1a67b98d042d0c2f3b17bb2b73c8cd031659e2467a164"
+   },
+   "features/cross_source_features/15m/market_data__equities__etfs__xlc__daily.parquet": {
+    "bytes": 2327419,
+    "sha256": "8a62dc23807cc5469490dc04e3df7ecd3b3cd67a4fbc19c83811b7fa9eb6bab7"
+   },
+   "features/cross_source_features/15m/market_data__equities__etfs__xlp__daily.parquet": {
+    "bytes": 7598419,
+    "sha256": "57ff32758663c12f07b9259dd397a4fe8ee47ea99cad6a31151e4eac4a46f823"
+   },
+   "features/cross_source_features/15m/market_data__equities__etfs__xlre__daily.parquet": {
+    "bytes": 3052303,
+    "sha256": "81aecc186f0de54650e608d230c60d22c8080e1216bff4308b258aceaf63b12a"
+   },
+   "features/cross_source_features/15m/market_data__equities__global_indices__gdaxi__daily.parquet": {
+    "bytes": 10954400,
+    "sha256": "4030c314840fdbf8846f69cbfb7674c4089d3f723ba8bc83b23564ddd5cf5ab4"
+   },
+   "features/cross_source_features/15m/market_data__equities__global_indices__ks11__daily.parquet": {
+    "bytes": 8191193,
+    "sha256": "a60f4bfaac38805613cefcc9cb34721260b0d8e36adac747bda2e23f08c2796f"
+   },
+   "features/cross_source_features/15m/market_data__equities__us_indices__dji__daily.parquet": {
+    "bytes": 9846086,
+    "sha256": "17e2fd3d76b0e9757c16ae1beebc1f33b9031ab0c326e9fab05524c6754719cb"
+   },
+   "features/cross_source_features/15m/market_data__forex__emerging_markets__usdbrl_x__daily.parquet": {
+    "bytes": 6255508,
+    "sha256": "ddca413a75e35fd2a0b3fce9e83ab2cec9a83dcb781395d18c5346183a7135e1"
+   },
+   "features/cross_source_features/15m/market_data__forex__emerging_markets__usdidr_x__daily.parquet": {
+    "bytes": 6869911,
+    "sha256": "7ac1c08ade3c8ab99bce4c967f7c462bd222de4b2e3eaa9534e197c93a11cd90"
+   },
+   "features/cross_source_features/15m/market_data__forex__emerging_markets__usdkrw_x__daily.parquet": {
+    "bytes": 6255087,
+    "sha256": "011995198ab543b814271f19445a6522b211be6c8cd38043cde006ab0d1497ee"
+   },
+   "features/cross_source_features/15m/market_data__forex__emerging_markets__usdtwd_x__daily.parquet": {
+    "bytes": 6115949,
+    "sha256": "540eef2be670514ea024cb98e120d8f5e5a3ac6869d79ac3488d0f907bf24089"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_inflow_coinbase_advanced.parquet": {
+    "bytes": 26902,
+    "sha256": "3666ad187db0e034ba5dbd20fa94a85cbc065781306f7f5bc937eb587c9b8b4b"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_netflow_binance.parquet": {
+    "bytes": 23714,
+    "sha256": "2f372ae64e78080958e03d51c47aaad26a42973509ccb5b955f6d020c2266407"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_outflow_kraken.parquet": {
+    "bytes": 26934,
+    "sha256": "d01d814c4ca96822f16f4c524ad78a2dcae0e78cf1722217759b6f5570009ac6"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_outflow_okx.parquet": {
+    "bytes": 26934,
+    "sha256": "4a11b143318283362a40e6c5484d3e9e3b41dae03925b4380ebfd70376bb3370"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_reserve_binance.parquet": {
+    "bytes": 25262,
+    "sha256": "1e4c0baee31d994d69c6f09841a0f658fbaf544114da7675a7105277fd64b273"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_reserve_okx.parquet": {
+    "bytes": 25262,
+    "sha256": "0f398af219263ba4f74713c276ea2296e2aa07f783016ab768a8551ce97aa28b"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__btc_indicators__btc_exchange_whale_ratio_all_exchange.parquet": {
+    "bytes": 23776,
+    "sha256": "de2a169d53d285161dbbd8c4fc9fdb65d8cb522c82c09c47165cbadb3eea1f03"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__btc_indicators__btc_realized_price.parquet": {
+    "bytes": 23728,
+    "sha256": "f165b5faa35ca2ffd526230f240547f166ed0123f8e4c651988a5e4d06b7c669"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_inflow_coinbase_advanced.parquet": {
+    "bytes": 28536,
+    "sha256": "d4c91a37851cbb8dad73b3482025205871f349a1e6cec156cd9c5f3d88733878"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_inflow_kraken.parquet": {
+    "bytes": 28536,
+    "sha256": "86c3a3467a01d38ed830cfc42440a04a4ed9f0a2ca92ad3501da31cc46538c2c"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_inflow_okx.parquet": {
+    "bytes": 28536,
+    "sha256": "457f977a1f8431a9771d7a51ef7cd3ce83de54b8144aee6f35503593365a3e04"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_netflow_all_exchange.parquet": {
+    "bytes": 23716,
+    "sha256": "86c6550bd42e8b7f720474c4f4c2a5c3c4d026e05092e8e2d0351de1a82a2838"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_netflow_binance.parquet": {
+    "bytes": 23716,
+    "sha256": "dc53103285d8f75caec30bf08e2e7c6e9c85fe69563908a34cbcc6f5e8a3c71a"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_netflow_okx.parquet": {
+    "bytes": 23716,
+    "sha256": "a24a97afd50d8c14ea2be01c18c2f9668126d5a50359a460922054abdaf246ba"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_outflow_bybit.parquet": {
+    "bytes": 28572,
+    "sha256": "4d1d7fe937a6eb8291b331410116439b03f0363f20eac0abc3da96e46dac35d5"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_reserve_all_exchange.parquet": {
+    "bytes": 25264,
+    "sha256": "7c099c471f84b1c0548c7b946a7a4a94efc3723c07a711008e71254d2ae500a3"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_reserve_binance.parquet": {
+    "bytes": 25264,
+    "sha256": "891b918694214a1af63c34d3542424479a84d61075273fd6259ae1cf63575731"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_reserve_kraken.parquet": {
+    "bytes": 25264,
+    "sha256": "ce00cba506fcdfada0721bf96283b654b07fa4fcaca9aa694042bd8cc0483b42"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__eth_indicators__eth_exchange_supply_ratio_all_exchange.parquet": {
+    "bytes": 23780,
+    "sha256": "fa6cf71a10c84589bfc56cf2a9cd5897a9b87e303086e8db0884ac4b25147f72"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_inflow_usdt_eth_binance.parquet": {
+    "bytes": 28536,
+    "sha256": "4787097aab00277487aae0fa1404a8be5aa78d087f55eb57bfcce92a39567e95"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_netflow_all_token_all_exchange.parquet": {
+    "bytes": 23716,
+    "sha256": "2f7344d1feb1aa37fd4fae2ad1a761c8d18e9b966b0a9a6c676bbdb5c7075b87"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_netflow_usdc_all_exchange.parquet": {
+    "bytes": 23716,
+    "sha256": "2010257652e719b79607a0cd378d5faba573673467da1ebfa54ac1f29ef344b2"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_outflow_all_token_binance.parquet": {
+    "bytes": 28572,
+    "sha256": "186399e857068ccc370241523d2d35762cc20dac832244e231961386f9e5e5f5"
+   },
+   "features/cross_source_features/1h/alternative_data__cryptoquant__stablecoin_network__stablecoin_supply_all_token.parquet": {
+    "bytes": 31816,
+    "sha256": "3f33fa23021c3ee3ba42350543b7d28f0c43f86dc9bef4451b422451e6509e07"
+   },
+   "features/cross_source_features/1h/alternative_data__onchain_btc__coinmetrics_community__btc__adractcnt.parquet": {
+    "bytes": 1392013,
+    "sha256": "b84b036a5235deabe4303a6b86c819abcff55b4a7765d0054748ec6070a926b4"
+   },
+   "features/cross_source_features/1h/alternative_data__onchain_btc__coinmetrics_community__btc__hashrate.parquet": {
+    "bytes": 1405820,
+    "sha256": "ea471bddf41a9530c14fb881202c9e5f635294f43ed26371aec273ea3886f7a1"
+   },
+   "features/cross_source_features/1h/alternative_data__onchain_btc__coinmetrics_community__btc__txtfrcnt.parquet": {
+    "bytes": 1390738,
+    "sha256": "6a45b3358922964a94e75dafc6c7747660e2524281c0a1d0d2637431a88f7eba"
+   },
+   "features/cross_source_features/1h/alternative_data__onchain_eth__coinmetrics_community__eth__blkcnt.parquet": {
+    "bytes": 860048,
+    "sha256": "87d56795a01d2c9baec81872a13b22ce91e5d05cfef5ffbb19246bd1bfa65c9a"
+   },
+   "features/cross_source_features/1h/alternative_data__onchain_eth__coinmetrics_community__eth__txtfrcnt.parquet": {
+    "bytes": 874516,
+    "sha256": "500b40f944526d27ff2828a7be33faa6f9345129c0e98de22d1c5810c9ba8541"
+   },
+   "features/cross_source_features/1h/alternative_data__onchain_other__coinmetrics_community__ada__txtfrcnt.parquet": {
+    "bytes": 690644,
+    "sha256": "58432057df6d95d01a93728f9d9ac0990b0280fea00d3fbaa87ad2e58f164dcb"
+   },
+   "features/cross_source_features/1h/alternative_data__onchain_other__coinmetrics_community__dot__txcnt.parquet": {
+    "bytes": 169068,
+    "sha256": "7c0d834c511ff1dd46cf746f9f4d23134bb5725d397e936092c33e1ddc717347"
+   },
+   "features/cross_source_features/1h/alternative_data__onchain_other__coinmetrics_community__link__adractcnt.parquet": {
+    "bytes": 688576,
+    "sha256": "b71185e1a04e8e681d6620b08253cdf8cbfc3d50f15fd9039c6a223ea320916e"
+   },
+   "features/cross_source_features/1h/alternative_data__onchain_other__coinmetrics_community__ltc__txtfrcnt.parquet": {
+    "bytes": 1195494,
+    "sha256": "c2c691e4129416086de457d41c326d7cd4e9cfd6855e9dfbe48925040be02b6a"
+   },
+   "features/cross_source_features/1h/alternative_data__onchain_other__coinmetrics_community__xlm__txcnt.parquet": {
+    "bytes": 857946,
+    "sha256": "94900250453579d9f6b1a8ca16412c03e1ece30cf33f93970a33ce6223b7a73c"
+   },
+   "features/cross_source_features/1h/alternative_data__onchain_other__coinmetrics_community__xlm__txtfrcnt.parquet": {
+    "bytes": 856361,
+    "sha256": "34b601a6c967b70328754738c45d1acae2eb0e0f4805ab1fcb67ad654492b70e"
+   },
+   "features/cross_source_features/1h/alternative_data__short_interest__finra_regsho_daily__fnyx__2025_daily_short_volume.parquet": {
+    "bytes": 3152,
+    "sha256": "f69be50dd317330777570268266b3100c194fc4779b56a89aa6bdb1ada364d31"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__consumer__a229rx0__observations.parquet": {
+    "bytes": 4506197,
+    "sha256": "f69e733d0142385a4feac4f1dcd8570c8883e5f02937bd5bfb3a0f754930c2a3"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__consumer__dspi__observations.parquet": {
+    "bytes": 4506397,
+    "sha256": "c35c6401a38b812663c8b6fe36023f79dde4a4f8f61dce6533142c5aa947ed80"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__consumer__pcec__observations.parquet": {
+    "bytes": 5753709,
+    "sha256": "5a882754abd76d5fcd38fe7a26aeb5f02ab7918740823d51d639a1eada80f623"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__credit__baa10y__observations.parquet": {
+    "bytes": 2821423,
+    "sha256": "20663ad5d6855e104d278d203cf14fd4db005bcd1d3a5a6d3e8339dac254187f"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__credit__baa__observations.parquet": {
+    "bytes": 7030461,
+    "sha256": "d3ed01a2834944ce92d3020a4866154734d8e8a76046a87c2082a92e93651f69"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__credit__bamlc0a0cmey__observations.parquet": {
+    "bytes": 216221,
+    "sha256": "8c80b51edb0396ee8ea48092e743b04f157d224d829bc944f39182c2eb313141"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__employment__ahetpi__observations.parquet": {
+    "bytes": 4188904,
+    "sha256": "8ccb06886206ef642751391e15c8832f579d06210c7f82a687018c2e650fb8b4"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__employment__civpart__observations.parquet": {
+    "bytes": 5196418,
+    "sha256": "067d20a9f285076158de9658b3974ea06fd8bc93b7a5e2473e919ba6c6a0c98d"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__employment__manemp__observations.parquet": {
+    "bytes": 5768461,
+    "sha256": "86f98b966a1560f7cead4f249eee1e2d9dbe13d8b895e1535a4ad8838e21fd36"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__employment__nrou__observations.parquet": {
+    "bytes": 5125268,
+    "sha256": "f32244f35c5959dd63b7d50bfbd6dbaeee5438cb1b3a3991d404c622c1b26c24"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__fx_indices__dtwexb__observations.parquet": {
+    "bytes": 1907333,
+    "sha256": "7c847db5396e8f9f479b91a0fe2168b1846fc6d3001b66548158906c5cf37ae9"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__gdp__gdi__observations.parquet": {
+    "bytes": 5250354,
+    "sha256": "9d7654248aef4934af6ab5eda74b4b510cb4944611a7f01bb6b6a653f32bf572"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__gdp__gdp__observations.parquet": {
+    "bytes": 5311153,
+    "sha256": "36fb71b8a343b54164335ad253984e66bef7f0245def772e002ae735fcf1012d"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__gdp__gnp__observations.parquet": {
+    "bytes": 5753707,
+    "sha256": "4f32bb659e28fc6be264ad5c44b5ad1b04981b5c2052063e7f1e982bcf409ad0"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__gdp__gnpc96__observations.parquet": {
+    "bytes": 5250396,
+    "sha256": "7f62cbe0a2478c63967134d39be872c339ebcd11ba9cb1ae0fe030da9a0c61ad"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__housing__houst1f__observations.parquet": {
+    "bytes": 4504687,
+    "sha256": "330669a4646c75819111b55fa8725d84be7bb7334657100c7239003cc3820cb6"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__housing__mspus__observations.parquet": {
+    "bytes": 4238032,
+    "sha256": "7f5c50662d1ef7131b547b52520a9ea6b00c4c7adf69e2ea2376508500f709a6"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__housing__rhorusq156n__observations.parquet": {
+    "bytes": 4111467,
+    "sha256": "7f881a4112277ac95e5b7ba09e773ce642b264057a5c167f8b9150133af42101"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__industrial__cumfns__observations.parquet": {
+    "bytes": 5203925,
+    "sha256": "7c6333c44176047400333cfb46b1356e12d5d56f43b91a0cd8f1922ee619684b"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__industrial__dgorder__observations.parquet": {
+    "bytes": 4560170,
+    "sha256": "827f96c72b403772feaac7d9947a34753f62e4b0f696a59816cf67054970b579"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__industrial__isratio__observations.parquet": {
+    "bytes": 5194194,
+    "sha256": "ffa50c69d413cff4f0021b2a1791860531fb2640bfba8825d42d78225921f666"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__inflation__fpcpitotlzgusa__observations.parquet": {
+    "bytes": 4314843,
+    "sha256": "677e7f0d1b5471273e94bc1c63986654c20668cfb670e37a8fa210a570fe462e"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__inflation__medcpim158sfrbcle__observations.parquet": {
+    "bytes": 2988844,
+    "sha256": "9c2f64b2d0efd1a45c1848292e9a360695d22d1b079d3828c1c6fcb63be1e426"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__inflation__pcectpi__observations.parquet": {
+    "bytes": 5250106,
+    "sha256": "12aa3bf6e2bed64af621136c9442d14aa825f0ba04ce84b8119627e7f9231410"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__inflation__wpsfd49207__observations.parquet": {
+    "bytes": 5246122,
+    "sha256": "59fd4b45f309069789f965185da03610799c6f1bfdb589c6974a20d1bf37a619"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__inflation_expectations__t10yie__observations.parquet": {
+    "bytes": 1736831,
+    "sha256": "f7d930761cecca3b64f96f8d0ee1d90d90553249f78c3f00c37d6ca2bec9aa16"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__money__currcir__observations.parquet": {
+    "bytes": 7113615,
+    "sha256": "a4d0e795a4e6f784c94255e22374b87f8ebebd3f621a17c73bba2cf1fb467959"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__money__m2v__observations.parquet": {
+    "bytes": 4490958,
+    "sha256": "b9e8b4211ae25b80e7507e47e2967e6e029219847b6931407d179bc245b89084"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__money__totresns__observations.parquet": {
+    "bytes": 4504408,
+    "sha256": "3b740375dd6eddff88ea704a2952a5d5021dd05d81875636d47d391b5deca901"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__money__wtregen__observations.parquet": {
+    "bytes": 2806998,
+    "sha256": "4a7b608b115bd95b84e10e186ff0471316c8cde3a5ece4330a6c4c1fc21cfc05"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__rates__dgs1__observations.parquet": {
+    "bytes": 4360971,
+    "sha256": "6bfe573b4eb81bbc41170646c05bf7bea333bd88a6ae34fe8c2ea849c4372c6c"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__rates__dgs2__observations.parquet": {
+    "bytes": 3443037,
+    "sha256": "ef6a7e345de1dd9373b837a543c110e8338fd9f8186605d8692cf31cd52dc28e"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__rates__dtb3__observations.parquet": {
+    "bytes": 4867965,
+    "sha256": "6524c39d53d545ecaed808de2096eb87e071bc8fcff934a8908abc1876395f41"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__rates__fedfunds__observations.parquet": {
+    "bytes": 4788822,
+    "sha256": "f1f364e2dd35f21ef42fa04dcbd836bc49a1e4494597a93e02837d7a4da2d5ee"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__rates__tb3ms__observations.parquet": {
+    "bytes": 6084797,
+    "sha256": "9c16e39f80e555b79e083b17e1c3ec22ca998b6a5d55061cc4426487219d7093"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__stress__anfci__observations.parquet": {
+    "bytes": 3761305,
+    "sha256": "285dd425ac6921ee0a2a419ebefc3061cae00a4acfbd440270a74c1abb0253ba"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__stress__stlfsi4__observations.parquet": {
+    "bytes": 2309513,
+    "sha256": "3c25e9c11fd095d42649536a5c03d53b45431e3174d336237c2bace614608461"
+   },
+   "features/cross_source_features/1h/macro_economic__fred__stress__vixcls__observations.parquet": {
+    "bytes": 2587221,
+    "sha256": "5ded5e14c13d5410ec045274c7608469d30ec4170b5d7a10ac3dece848b20783"
+   },
+   "features/cross_source_features/1h/market_data__commodities__energy__ng_f__daily.parquet": {
+    "bytes": 2139940,
+    "sha256": "49f7adae0b2c9e45cb786864bdae6069a5ad132b7051924130e2fc24785ef70b"
+   },
+   "features/cross_source_features/1h/market_data__commodities__energy__rb_f__daily.parquet": {
+    "bytes": 2171918,
+    "sha256": "26639505c6a9a15cdf097c6a03a5d1d6e5f5c581446a90a2df4538d8e2168cc9"
+   },
+   "features/cross_source_features/1h/market_data__commodities__precious_metals__pl_f__daily.parquet": {
+    "bytes": 2299521,
+    "sha256": "dcea691f9f62e35f3473acb0c5830e31fff46022529d82b4cb60df10ac8416ae"
+   },
+   "features/cross_source_features/1h/market_data__crypto__funding_rates__avaxusdt__funding_rates.parquet": {
+    "bytes": 501693,
+    "sha256": "9b4725d465b50daf27019391e3684472cff9e06e47653ef06c2f02995e8b85cb"
+   },
+   "features/cross_source_features/1h/market_data__crypto__funding_rates__btcusdt__funding_rates.parquet": {
+    "bytes": 592745,
+    "sha256": "3c968195ec4686d81302f7e3f95565b5fe62d8889f2dc6ab45b145ee25a4f842"
+   },
+   "features/cross_source_features/1h/market_data__crypto__funding_rates__ethusdt__funding_rates.parquet": {
+    "bytes": 575252,
+    "sha256": "a38640d9330b69d76feec12ee2fec9941afada3391f2b15d56604971d46f678e"
+   },
+   "features/cross_source_features/1h/market_data__crypto__funding_rates__solusdt__funding_rates.parquet": {
+    "bytes": 506262,
+    "sha256": "7abe0612385ed2361bea5b3b43a36cc6c72bb4b4beb7222842d1f8d4f81c377f"
+   },
+   "features/cross_source_features/1h/market_data__equities__etfs__agg__daily.parquet": {
+    "bytes": 1894650,
+    "sha256": "a751ad4243c410423d9384cd5ea989ffd8ba3ea487feb859c4a9878760a4d28c"
+   },
+   "features/cross_source_features/1h/market_data__equities__etfs__dia__daily.parquet": {
+    "bytes": 2391327,
+    "sha256": "75e7133985392a33808f873f3b3476bae5b1fae3d19161f6d82319c598206f5e"
+   },
+   "features/cross_source_features/1h/market_data__equities__etfs__efa__daily.parquet": {
+    "bytes": 2088869,
+    "sha256": "058621a0c24686523fa89cc9065bab49e38708f58f548f36b6974d43c1e07e8d"
+   },
+   "features/cross_source_features/1h/market_data__equities__etfs__ivv__daily.parquet": {
+    "bytes": 2222057,
+    "sha256": "006831483e4f7fee626f14b406da2457b6eb9cbf723d850d207f145e6a9f10ed"
+   },
+   "features/cross_source_features/1h/market_data__equities__etfs__iwm__daily.parquet": {
+    "bytes": 2218254,
+    "sha256": "26f9515323eec4b8ff55483b4874be02905f6918a057edb5ad1e3717e058c3da"
+   },
+   "features/cross_source_features/1h/market_data__equities__etfs__lqd__daily.parquet": {
+    "bytes": 1995497,
+    "sha256": "a1e0f883d74ca3671ba712a28949e9eb0780392eb6bd3be59535e2f4493713cb"
+   },
+   "features/cross_source_features/1h/market_data__equities__etfs__slv__daily.parquet": {
+    "bytes": 1715510,
+    "sha256": "1c4564fd6c6a2ceaae62bd469096b60b581790a81970cf42aa5852b5720cc05b"
+   },
+   "features/cross_source_features/1h/market_data__equities__etfs__tip__daily.parquet": {
+    "bytes": 1890625,
+    "sha256": "9abd1928ab6ca4fe740ab552516db72de9c081e034de781562d75094bba79bfd"
+   },
+   "features/cross_source_features/1h/market_data__equities__etfs__tlt__daily.parquet": {
+    "bytes": 2023495,
+    "sha256": "94ffe1a3c74cadfe72879f81f0a943e70c39cb970c60b8d91dc587ff6cf65c09"
+   },
+   "features/cross_source_features/1h/market_data__equities__etfs__xli__daily.parquet": {
+    "bytes": 2290710,
+    "sha256": "66bab3d0911fc1fca60328579f090e4c48f67ca8f7864598b48410fd1fecc2c8"
+   },
+   "features/cross_source_features/1h/market_data__equities__global_indices__fchi__daily.parquet": {
+    "bytes": 2989460,
+    "sha256": "7194730bd27731e6dbeb880de9a38992a63bf4f3e9bdd6448ae63a1a9774675a"
+   },
+   "features/cross_source_features/1h/market_data__equities__global_indices__hsi__daily.parquet": {
+    "bytes": 3222983,
+    "sha256": "cabb991b182ebb9cc593485437dcac616e440050fe058acd829cda57886e356b"
+   },
+   "features/cross_source_features/1h/market_data__equities__global_indices__mxx__daily.parquet": {
+    "bytes": 2875700,
+    "sha256": "7bf6f3a44cf2b50f3a00403ae42a0f7b1bcb82368b02b5363fd22f19869f155b"
+   },
+   "features/cross_source_features/1h/market_data__equities__global_indices__twii__daily.parquet": {
+    "bytes": 2438865,
+    "sha256": "806f5e4200e0836bc83e3006128109b39f99ed15ca2e337e148f75e714081941"
+   },
+   "features/cross_source_features/1h/market_data__equities__us_indices__gspc__daily.parquet": {
+    "bytes": 7504948,
+    "sha256": "714f5153e20926950935efa03dd493a49cd0ae6b8a4989fad60eea905ca2a1d5"
+   },
+   "features/cross_source_features/1h/market_data__equities__us_indices__ixic__daily.parquet": {
+    "bytes": 4442195,
+    "sha256": "09052902f4f33a755be5be49e039ba28ccaf6e6c312bbc1752a25e6e3daac67d"
+   },
+   "features/cross_source_features/1h/market_data__forex__emerging_markets__usdcop_x__daily.parquet": {
+    "bytes": 1941410,
+    "sha256": "30202cc4ded0e4a323f61acdcd0c0f70f07c52687523f00a45741b84f4df0a35"
+   },
+   "features/cross_source_features/1h/market_data__forex__emerging_markets__usdzar_x__daily.parquet": {
+    "bytes": 1924718,
+    "sha256": "b8624603952b4669009f552ab2d9f94bae7ddc7095bef3fe08b378f3e1b2b8a9"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_inflow_okx.parquet": {
+    "bytes": 12293,
+    "sha256": "10d83a93d608536d7b2d2f2b9d7eb389d8bee833f72491f7c795be4c252e8568"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_netflow_bybit.parquet": {
+    "bytes": 8673,
+    "sha256": "3c4841aac66a08eb0cd2cd726f0731e65ee3257d0111d3f90f94d94118244d07"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_outflow_all_exchange.parquet": {
+    "bytes": 12325,
+    "sha256": "4bd6efe1eb4e648484fa81f757b3bc0721f1affc22d7021cc387111aa9f898c2"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_outflow_binance.parquet": {
+    "bytes": 12325,
+    "sha256": "991dafd90610f26ed54022f08cba96b034a30602de3db39958b64ff520497f32"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_outflow_bybit.parquet": {
+    "bytes": 12325,
+    "sha256": "7bfadc57442ac5da5a267c53c8b228d0e3e9d4a0ea5779b24c61a47d2d62b6d8"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_outflow_coinbase_advanced.parquet": {
+    "bytes": 12325,
+    "sha256": "b01e5e106220fca65d419656c5ff12681bbe6376c1b04451ce7e6dfce93240e3"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_reserve_kraken.parquet": {
+    "bytes": 10437,
+    "sha256": "9e945d0c6b3daee58c52ea11336fa9bac1127611f84cd16cfeb190947c5d7c58"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_indicators__btc_estimated_leverage_ratio_binance.parquet": {
+    "bytes": 8759,
+    "sha256": "27849e3e655c8ddf7ab34a8eb00bfb6612967b95cad628df8a7dc294b51f032c"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_indicators__btc_exchange_supply_ratio_all_exchange.parquet": {
+    "bytes": 8739,
+    "sha256": "77c3818d76b4fef885c7f2967a0a421853d9978014a12eb8ce658c1a011e79c4"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_indicators__btc_exchange_whale_ratio_binance.parquet": {
+    "bytes": 8735,
+    "sha256": "a052b48a3176ea097cd32b30758831f28d7da9b38bba4df08b8213e7454fa054"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_indicators__btc_sopr_ratio.parquet": {
+    "bytes": 8651,
+    "sha256": "d9dd52bc9b4cc2cd7f9950bf37356de06b3a66def69af1feb591e2b9cbbd0e9f"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_indicators__btc_stablecoins_ratio_all_exchange.parquet": {
+    "bytes": 10503,
+    "sha256": "9af54729cb3d6693db88fd2655b18a48aeacee50c8dae741912da1e005f063f3"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__btc_miner_flows__btc_miner_netflow_all_miner.parquet": {
+    "bytes": 8675,
+    "sha256": "d9f5b47254ab1514de0816da438b9b8baf9d663a3339ef64251d35bdf40ef437"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_inflow_all_exchange.parquet": {
+    "bytes": 14143,
+    "sha256": "c2bafaf95b827bdbcf4cbc9712e281191d2c7df95f40b18ac5a23071f2fc25a6"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_inflow_bybit.parquet": {
+    "bytes": 14143,
+    "sha256": "8369188d0ef859ce871c3748b43ffa4d5cd58a81a5b8286a8af6050307ad26b8"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_netflow_coinbase_advanced.parquet": {
+    "bytes": 8675,
+    "sha256": "f0e9b0d9881d1d79901ebae177edd8ce906b259168b4e7acb1580bec0f2b8429"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_netflow_kraken.parquet": {
+    "bytes": 8675,
+    "sha256": "1fc7f27f2788a2da1a6a7b9cac07669339bb7ee4c9a05b3e756ec8a77acb4002"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_outflow_kraken.parquet": {
+    "bytes": 14179,
+    "sha256": "ea3fd9254420b590f2576c1a72698b7374b0c179bbd1bbc7f3c00ca08984aa17"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__eth_indicators__eth_estimated_leverage_ratio_all_exchange.parquet": {
+    "bytes": 8759,
+    "sha256": "5bdd42899add580700d075e9b7d5cb5f0bc0111edae35220149791fad892fcba"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_inflow_all_token_binance.parquet": {
+    "bytes": 14143,
+    "sha256": "ab28ebf3674713cf2e8bd122059424ddf7af1171611c99374f15cbe3c0ece29f"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_inflow_usdc_binance.parquet": {
+    "bytes": 14143,
+    "sha256": "acaac968c86847d45468b8a235c2376d8ec2f38e77f43528a52a078a664833b4"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_inflow_usdt_eth_all_exchange.parquet": {
+    "bytes": 14143,
+    "sha256": "f4218646a06cdf717e717e045ec843f37bccd241c255bead0bc3cd0121e6b82e"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_outflow_all_token_all_exchange.parquet": {
+    "bytes": 14179,
+    "sha256": "68eab024dfc3c7630ef194dc2510a50b1b27d7b9f90d121ed356bab50c28d8be"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_outflow_usdt_eth_binance.parquet": {
+    "bytes": 14179,
+    "sha256": "b48def2571c4995d1b41bdc5239acb1871d59e1208cfa26b127eed315265a93b"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_reserve_all_token_binance.parquet": {
+    "bytes": 8627,
+    "sha256": "0800814df99f4710c363f530adbd2710ba4fd8cdb6b686e1404b8660f0dedf5f"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_reserve_usdc_all_exchange.parquet": {
+    "bytes": 8627,
+    "sha256": "748bcc6143975d73664e77fed1673deaaeeda2793cf5ccad4d8cad9dd355816a"
+   },
+   "features/cross_source_features/4h/alternative_data__cryptoquant__stablecoin_market__stablecoin_capitalization_usdc.parquet": {
+    "bytes": 8651,
+    "sha256": "c9a0f58cfc45f294fdf7dabe8d6afd463657be3ec23016f8ee731d4afbaf411a"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_eth__coinmetrics_community__eth__adractcnt.parquet": {
+    "bytes": 241920,
+    "sha256": "1ce24e24fa55c88b677b94da49cd0c52da1d2468b8843fe7d31fd3810d9ad755"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_eth__coinmetrics_community__eth__hashrate.parquet": {
+    "bytes": 172632,
+    "sha256": "67b72adbdaad292edd7cbf9d958460fb3d85527f928d8bc09fff9c8d2d044299"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_eth__etherscan_free_snapshots__snapshots.parquet": {
+    "bytes": 1888,
+    "sha256": "1bcc07ec9a52245b4f1b7deb769c8632425280e631b08162c49cf546aa3f35da"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__ada__adractcnt.parquet": {
+    "bytes": 192183,
+    "sha256": "81407b3cf5875481607aec4ce4b4e7175e1af5c4926bddfb05f6005a3dbb3e2b"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__bch__adractcnt.parquet": {
+    "bytes": 194478,
+    "sha256": "bf74e795cdf67a9b9f4bcd029673ff5947d914b4953c511ad389e14f77979643"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__bch__hashrate.parquet": {
+    "bytes": 205602,
+    "sha256": "866322066647983b4ea07d52d4978e5da755908af0fa7550ff9a11dfcaab1277"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__bch__txcnt.parquet": {
+    "bytes": 194290,
+    "sha256": "2678532902ea2c7c5e80b6a8b4d97aedd81fbd5c7ff8a71bfe82134c771d3877"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__doge__adractcnt.parquet": {
+    "bytes": 284153,
+    "sha256": "3d0d2d337c34735306669dc8747ff1d3c6ffeab63c72c0b80b018917bc87e0e2"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__doge__blkcnt.parquet": {
+    "bytes": 252107,
+    "sha256": "5ecc5d0d26197568a214280c5b3352dd3d462e83d1b6099a3dda35212e38f189"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__doge__txcnt.parquet": {
+    "bytes": 284574,
+    "sha256": "1088386264332d8523617f5e5f85968e8ec7d6c070af5f8c16c2541073c595d4"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__link__txcnt.parquet": {
+    "bytes": 190198,
+    "sha256": "9ccb28bbd25fe12bc5fa735da3c1d745bf0a99887ef54631232a54c7dd45ee9c"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__ltc__adractcnt.parquet": {
+    "bytes": 337146,
+    "sha256": "758cb28b2550d52e64c2c47a73f72e533791aa8edb9857a0b96d7d844f5716eb"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__ltc__blkcnt.parquet": {
+    "bytes": 303564,
+    "sha256": "90e65af9e02df4f4b9c4ce36ee84d6db6156c4fc2f149e6332efba669f48fffa"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__ltc__hashrate.parquet": {
+    "bytes": 356078,
+    "sha256": "8847a94351e2afa4d0f8a063508c380be46fe275d251980593724b54ae449d00"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__trx__adractcnt.parquet": {
+    "bytes": 175612,
+    "sha256": "9caea2e55c0b72368e603c8f5cfd0e9abfbf2eb6dbce0ef43e04b547b1c359f4"
+   },
+   "features/cross_source_features/4h/alternative_data__onchain_other__coinmetrics_community__trx__txcnt.parquet": {
+    "bytes": 176137,
+    "sha256": "f904a52b88279caa7a4c66c66dcb76d35fc6d5d0419735bd6d8457eebc5146b4"
+   },
+   "features/cross_source_features/4h/alternative_data__short_interest__finra_regsho_daily__cnms__2025_daily_short_volume.parquet": {
+    "bytes": 3152,
+    "sha256": "715b0accb9de61f3fb2d52568152e9d593404c48610da6eca10ec38f57346411"
+   },
+   "features/cross_source_features/4h/economic_calendar__release_actuals__fxmacrodata__announcements.parquet": {
+    "bytes": 38851,
+    "sha256": "59b6472fc599da22bde0158e9f6656927917f1ff53104eda69258711cadb8541"
+   },
+   "features/cross_source_features/4h/economic_calendar__scheduled_events__fxmacrodata__release_calendar.parquet": {
+    "bytes": 32970,
+    "sha256": "b546953e2977596e8cd9b2111abbd845cc706cc8cb269aee5510c169b72cc9c3"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__consumer__dpcera3m086sbea__observations.parquet": {
+    "bytes": 1322896,
+    "sha256": "066165a15d5353179f145cb9f03f8078ccaf445f2b26701353cb632d5fea9022"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__consumer__hsn1f__observations.parquet": {
+    "bytes": 1257607,
+    "sha256": "e74a8e20e5e52f5e31ae33eca0c995a7ea3eb45eced9a5516605333815bab69b"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__consumer__rrsfs__observations.parquet": {
+    "bytes": 682441,
+    "sha256": "f161623b17127fc3680278d5e21f12d5d9d5552f675ab188603f125df50ed43c"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__consumer__umcsent__observations.parquet": {
+    "bytes": 1416193,
+    "sha256": "23b4f7c3fb5fe4418da7006a0827cc4888145562e1470dd9703e59aada8a3b95"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__credit__aaa__observations.parquet": {
+    "bytes": 1945665,
+    "sha256": "0e5bdbb916eaaa35606b1aaed639b06606ac45f36997ff852926cd7a6fcfed28"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__credit__bamlh0a0hym2ey__observations.parquet": {
+    "bytes": 56197,
+    "sha256": "32a5045cc1a4912288900f4f10d52af29796f44ab3d0246a06551543a879e52f"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__employment__ccsa__observations.parquet": {
+    "bytes": 1204375,
+    "sha256": "0099492b20494526add7ce4387b73aad92047eb0ad7439731caca95203704cbe"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__employment__emratio__observations.parquet": {
+    "bytes": 1489275,
+    "sha256": "08b435f98418629ff5c32f0aa552b29eb553c7e18f0c016679f5c1a269a53acb"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__employment__jtsjol__observations.parquet": {
+    "bytes": 500821,
+    "sha256": "74d6f735543c64a2f0acc86c2bda511cb3ddcbbb3c217eff1ae81a249f9945e9"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__employment__lns14000006__observations.parquet": {
+    "bytes": 1085558,
+    "sha256": "593de26fa1be59aa1c4e8c9cec6464b350fa09cac845bb35a5e47653ecc80482"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__employment__uspriv__observations.parquet": {
+    "bytes": 1635667,
+    "sha256": "758a771eb3a9905656145b3997d33000c647bb5d392acbaf667003dd0a899a95"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__fx_indices__dtwexbgs__observations.parquet": {
+    "bytes": 462902,
+    "sha256": "030639df5d64a6d2eb048dfd5fbe1046fa6ee3e286ba908f36781f537bdcadfa"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__fx_indices__dtwexm__observations.parquet": {
+    "bytes": 1104165,
+    "sha256": "660cdc0ddde65a4d93c6bb252dca2f0dc152ed96d2dc8168f4ff5acb30433d89"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__gdp__gdpc1__observations.parquet": {
+    "bytes": 1504222,
+    "sha256": "4d23707fcf97aadb355736c99a5ace6821484d8044e44cd68402e2ff7582b399"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__gdp__gdpnow__observations.parquet": {
+    "bytes": 283223,
+    "sha256": "a42f524c822eabe3f3f70778d11095911e42761b8847102a01016fbc8a5e6286"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__gdp__gdppot__observations.parquet": {
+    "bytes": 1472612,
+    "sha256": "a30e7dca9c14ef290ae2b722e413d283a83b62ac01ede4af4c0232536943eb48"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__gdp__pce__observations.parquet": {
+    "bytes": 1322368,
+    "sha256": "71a73434e98d604b99fc1e32692c0a4520a58ab9ae3c1891d424175ad108993c"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__housing__aspus__observations.parquet": {
+    "bytes": 1252510,
+    "sha256": "ed8db8ba87c20e9da0828335bcacf6a99200e298f528ee30f5f9652ed03d4773"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__housing__csushpisa__observations.parquet": {
+    "bytes": 1027013,
+    "sha256": "cd95a7b81cd5af11c4ebab1f0daf14651120a820d30d64de137c0fcba18c3c27"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__housing__hsn1f__observations.parquet": {
+    "bytes": 1257607,
+    "sha256": "e74a8e20e5e52f5e31ae33eca0c995a7ea3eb45eced9a5516605333815bab69b"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__housing__permit__observations.parquet": {
+    "bytes": 1305288,
+    "sha256": "989f4fdff8d274bb1935b619634bb5c2dec37ec453151dee9ef7533eba247d9f"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__industrial__indpro__observations.parquet": {
+    "bytes": 1952443,
+    "sha256": "c491b7ba04b5a643b9ce9d8ab369d6de2c3ab7023af8223fcebf6a20f36db8f2"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__industrial__ipman__observations.parquet": {
+    "bytes": 1090940,
+    "sha256": "1c4e893631c6a8beefa3b3dd07f53b151467874cf6c70e2eabd6cf92fe93fd42"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__industrial__tcu__observations.parquet": {
+    "bytes": 1192088,
+    "sha256": "5e662ab15963eb3ca060c100e32227d2448653f2092d5f9ce5f2949c2ef37aa8"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__inflation__cpiaucsl__observations.parquet": {
+    "bytes": 1511676,
+    "sha256": "045ce578bca8390cac2079c3241496931eadb49a20feb10d87989ddc4c47bcaf"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__inflation__wpu0911__observations.parquet": {
+    "bytes": 1834986,
+    "sha256": "39992fc46f35a87f6e9f21bb89af79848f8ca7ca98db33c2889aa56125c63ae7"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__inflation_expectations__t5yie__observations.parquet": {
+    "bytes": 482481,
+    "sha256": "337db4aa4fd080708d7edf4aeff5a9ddb260af3a9cb6dea0ccf827795b7d725b"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__inflation_expectations__t5yifr__observations.parquet": {
+    "bytes": 475763,
+    "sha256": "84835d72f43cbe08c0db71d238c9f7c03c56dddb4c278860fc413a58a4230022"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__money__m1v__observations.parquet": {
+    "bytes": 1315241,
+    "sha256": "f626b2d10dffaa2c5700ac17c086cd227257c81cd8c253861b618a771341fdd0"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__money__nonborres__observations.parquet": {
+    "bytes": 1320327,
+    "sha256": "4714342fd36e705e6248af0ad441387f28a1fb5d6cee852acce44e9562307af4"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__rates__dff__observations.parquet": {
+    "bytes": 1450760,
+    "sha256": "deabf407b9ff38e02e1260db8f5bb6296b6e923941fe03e21282e41b73636afc"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__rates__dfii10__observations.parquet": {
+    "bytes": 483777,
+    "sha256": "799e3a234811a4c73230ee05c36413d94aba3b2f9a7eb62e3ae7360ab038573e"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__rates__dfii5__observations.parquet": {
+    "bytes": 484732,
+    "sha256": "7a8b65802533c5807d245e283b6276e80bfcf47bf0fdfd892e4a18bd0bd98c38"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__rates__dgs20__observations.parquet": {
+    "bytes": 1336917,
+    "sha256": "12d639bf3afdc04c93b04a912ab7e39f90b28f3d59fe51359cf6c75280f5e728"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__rates__dgs7__observations.parquet": {
+    "bytes": 1206494,
+    "sha256": "6c79cbb86a33d28e5099cfc2c5fcb8e83a4ab1d12a49011ae0f71badbf0ff432"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__rates__t10y2y__observations.parquet": {
+    "bytes": 1045938,
+    "sha256": "d3e2aa265891d52596f1f4a9e5c39bba78cbbb1ba7ab078fe016598ab5a91624"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__rates__t10yie__observations.parquet": {
+    "bytes": 475989,
+    "sha256": "a97eaba018b395498f84880c9dbab17ec2f3a80fe3637f7dfec873fc24c7d37d"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__rates__t5yifr__observations.parquet": {
+    "bytes": 475763,
+    "sha256": "84835d72f43cbe08c0db71d238c9f7c03c56dddb4c278860fc413a58a4230022"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__recession__usrec__observations.parquet": {
+    "bytes": 2235068,
+    "sha256": "69af38f73b577688b1650708836adfa95540e6fce9b5e7aacadfc59e8c695950"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__recession__usrecp__observations.parquet": {
+    "bytes": 2235070,
+    "sha256": "ef4288d8c03bbc73e356f99ab5cdeff6e9b814e1739e895284e647a48772fcbf"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__recession__usrecq__observations.parquet": {
+    "bytes": 2232469,
+    "sha256": "ec9402c8a9121856db232ac8f30581861f919569017bacdc288fe97b082f8410"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__stress__nfci__observations.parquet": {
+    "bytes": 1120140,
+    "sha256": "27255d6e5594119f9c69ba721d4c33b59d1ad8d3e2bb9e44557aa6e144176c55"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__stress__tedrate__observations.parquet": {
+    "bytes": 746909,
+    "sha256": "a085d8267c390e358c8d6b0966f1c0c77a4ff5627be26475858f501d19c25a62"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__trade__bopgstb__observations.parquet": {
+    "bytes": 682448,
+    "sha256": "db5a38fe7fb1e3429f5c57cf9bc1708b9212279e5b86f0f776fa2c1879950873"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__trade__boptexp__observations.parquet": {
+    "bytes": 682498,
+    "sha256": "74bcc20f0f1f9dde9f59d257d75191dd89a91e47b0da945179218aa1a4333e78"
+   },
+   "features/cross_source_features/4h/macro_economic__fred__trade__impgs__observations.parquet": {
+    "bytes": 1518447,
+    "sha256": "9caa9e816707d0756292fd6da4ceb375eeb2a9f4fb851bb78d9051100218e343"
+   },
+   "features/cross_source_features/4h/market_data__commodities__agriculture__kc_f__daily.parquet": {
+    "bytes": 831057,
+    "sha256": "f500df5e0aa8786abe68223dd28b3baf4a6d7a4dbb19fef616a6797cd8c628b5"
+   },
+   "features/cross_source_features/4h/market_data__commodities__agriculture__sb_f__daily.parquet": {
+    "bytes": 827440,
+    "sha256": "69197b6baedb64ab37584417620427752e159e20cbd3ea9a8b51e53007c2984d"
+   },
+   "features/cross_source_features/4h/market_data__commodities__agriculture__zs_f__daily.parquet": {
+    "bytes": 796831,
+    "sha256": "31152df6a8ec0f348e1cf3b03c9615a3c8fbd23ed8ae51a2d3c980dc390b9490"
+   },
+   "features/cross_source_features/4h/market_data__commodities__precious_metals__pa_f__daily.parquet": {
+    "bytes": 908587,
+    "sha256": "700e206129e9750464448bb40ac7792de758d2325d3d992fe10bc63dc4bc18ed"
+   },
+   "features/cross_source_features/4h/market_data__commodities__precious_metals__si_f__daily.parquet": {
+    "bytes": 876663,
+    "sha256": "5365d3e1fdcdbe723f4f2fd5b3f2b74d10f459bccbfacb8002cf215ab457f623"
+   },
+   "features/cross_source_features/4h/market_data__crypto__funding_rates__linkusdt__funding_rates.parquet": {
+    "bytes": 178843,
+    "sha256": "6bbeae2734e4d12c4587d05bd31b39aab4e65fcddd7890eafd42e8e539a4a605"
+   },
+   "features/cross_source_features/4h/market_data__equities__etfs__bnd__daily.parquet": {
+    "bytes": 622880,
+    "sha256": "5a50310f04219761a8b20a1eb97ebcff6635c72780ff16f2e4f128c05a2fa0ce"
+   },
+   "features/cross_source_features/4h/market_data__equities__etfs__gld__daily.parquet": {
+    "bytes": 763284,
+    "sha256": "2c42aff984c47886f4cd614c10d269eea705b0022dfb92a82d7dabc91f4945df"
+   },
+   "features/cross_source_features/4h/market_data__equities__etfs__qqq__daily.parquet": {
+    "bytes": 1008812,
+    "sha256": "6900543e0195a10a070c2df48b101cc43bd21c9af1dc5d671871166edd6e5025"
+   },
+   "features/cross_source_features/4h/market_data__equities__etfs__xle__daily.parquet": {
+    "bytes": 993419,
+    "sha256": "383365f3f9f421cbda317ea331693daae465e5d2198f33ed177860d6a5132585"
+   },
+   "features/cross_source_features/4h/market_data__equities__etfs__xlf__daily.parquet": {
+    "bytes": 933764,
+    "sha256": "3b0fb485af09b44f261c4777cda8b6b1146aa137560a51c02b5fae7916120f88"
+   },
+   "features/cross_source_features/4h/market_data__equities__etfs__xlk__daily.parquet": {
+    "bytes": 969982,
+    "sha256": "e800625a1995e8168889a9c52d241fc43ee4bd2364f0bdd79524de922c710031"
+   },
+   "features/cross_source_features/4h/market_data__equities__etfs__xlu__daily.parquet": {
+    "bytes": 938677,
+    "sha256": "2e24e5be496561416f2649c01915d0b9c4db747d1dda62cc1c7bd8be23ade1c0"
+   },
+   "features/cross_source_features/4h/market_data__equities__etfs__xlv__daily.parquet": {
+    "bytes": 937528,
+    "sha256": "fb01b079eb2e8fa51cdd74878f3963a0bab7778529aecd4e4d38136fcc90457e"
+   },
+   "features/cross_source_features/4h/market_data__equities__etfs__xly__daily.parquet": {
+    "bytes": 985471,
+    "sha256": "e31da2edf5f57c017259cb3d557651404500c9d4cc998fdf7ea8dee3b30b5138"
+   },
+   "features/cross_source_features/4h/market_data__equities__global_indices__axjo__daily.parquet": {
+    "bytes": 1203469,
+    "sha256": "5e90783a8913d38669ec50d51b070ea0a6d3897f640ad744d99b8df040cc0ff9"
+   },
+   "features/cross_source_features/4h/market_data__equities__global_indices__ftse__daily.parquet": {
+    "bytes": 1612986,
+    "sha256": "55c1f04c744c28ec64b98bd6df4ad1bd700ac2f82779243e04396ee0d5a2954c"
+   },
+   "features/cross_source_features/4h/market_data__equities__global_indices__gsptse__daily.parquet": {
+    "bytes": 1830612,
+    "sha256": "618d61e75eb6a39c0221a74db939982e5ff6dc7744b3713e6b9eea1bd0f60f52"
+   },
+   "features/cross_source_features/4h/market_data__equities__global_indices__n225__daily.parquet": {
+    "bytes": 2251447,
+    "sha256": "968c91613ed4f27fff682ab5381f0e05076328ccfca36d3e9519018dd0dc97b6"
+   },
+   "features/cross_source_features/4h/market_data__equities__us_indices__vix__daily.parquet": {
+    "bytes": 1043411,
+    "sha256": "44394c594eb0544892a6ae63d534c038bf204eb773126b5373303e6bc70123f2"
+   },
+   "features/cross_source_features/4h/market_data__forex__emerging_markets__usdinr_x__daily.parquet": {
+    "bytes": 734272,
+    "sha256": "f1abdf651b4a6ca750798ab94ae754ad79e8457a0a3b9817f04c0354b39c286d"
+   },
+   "features/cross_source_features/4h/market_data__forex__emerging_markets__usdmxn_x__daily.parquet": {
+    "bytes": 784916,
+    "sha256": "a46069507306e5cf9565308ff175e2f1500439ebadd6ae7c2d054d19fdf14fe6"
+   },
+   "features/cross_source_features/4h/market_data__forex__emerging_markets__usdtry_x__daily.parquet": {
+    "bytes": 743849,
+    "sha256": "8b9a58926cac6011b1b0d485dbfb6e83c11310c048c1a8500e22a0375cc4d7f6"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_inflow_all_exchange.parquet": {
+    "bytes": 261149,
+    "sha256": "540771b2063ec79ec0aef68c70ca532bd39055d7f29ce64a3fafee9ccbcc5ba0"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_inflow_binance.parquet": {
+    "bytes": 261149,
+    "sha256": "3812a7b1525ab1aa27cd86cc05469f00a076dbb374448c9d23e6f388021e9fd6"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_inflow_bybit.parquet": {
+    "bytes": 261149,
+    "sha256": "1cf2871b1618ebc2407950107377a90793047f6ab018ec81def62a8756f51a81"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_inflow_kraken.parquet": {
+    "bytes": 261149,
+    "sha256": "11fb16b551e00f6867b341e51cb3515f8f7befbbd56ade883070416d6c0bbc0e"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_netflow_all_exchange.parquet": {
+    "bytes": 257591,
+    "sha256": "fcf050f674c14ad97d28c61d1ae08298f5514ca795872a7e9c9694ea3af03a41"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_reserve_all_exchange.parquet": {
+    "bytes": 259324,
+    "sha256": "3fc559deb2cd797cd64dd257400aa617a46f888f7dce344c80cf07713440cbda"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_reserve_bybit.parquet": {
+    "bytes": 259324,
+    "sha256": "2abf8bfc61e98cddfbf0b30053ae1bd8f6a8bef47c1df3c1f36d3545b68fa4d9"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__btc_exchange_flows__btc_exchange_reserve_coinbase_advanced.parquet": {
+    "bytes": 259324,
+    "sha256": "4368a8935fd846b62eda86e859321028c8ba92feb96232dd368d7820d7233311"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__btc_indicators__btc_mpi.parquet": {
+    "bytes": 257478,
+    "sha256": "a7280db8f47810a45aa1b304d6605e48698192a5e3da6cd5bbbc542889b869b4"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__btc_indicators__btc_mvrv.parquet": {
+    "bytes": 257482,
+    "sha256": "7064cfb848a7c3c07126a9992aeff6fa91c1419e30531787ce673fe243cf2e72"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_inflow_binance.parquet": {
+    "bytes": 262925,
+    "sha256": "4c4c71d02609559b4bf9bbf9ca254d11610b4584a8d9e1456c75fdea652b3546"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_netflow_bybit.parquet": {
+    "bytes": 257550,
+    "sha256": "18bb30672579983ea8d32547e151196a1d4fdd745186155af32c949999d501d9"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_outflow_all_exchange.parquet": {
+    "bytes": 262961,
+    "sha256": "b207f76c1c85096e1c682e48aa83be48538aa506d37046e7d89fbd23251c3218"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_reserve_bybit.parquet": {
+    "bytes": 259283,
+    "sha256": "2206c5b9f2027b5cc5f0bc1542d17ea00d1f9fef359ed3c0a4ac3ecac507fcea"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_reserve_coinbase_advanced.parquet": {
+    "bytes": 259283,
+    "sha256": "6ec5af1bd0680a2b1ba1480dfb08112ca4e89ffeb6a42ef9b2afaca7d36c7dd8"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__eth_exchange_flows__eth_exchange_reserve_okx.parquet": {
+    "bytes": 259283,
+    "sha256": "66da6ba17a1f295575e2597de327165d6af68ca36ba595e3bbbee8c774571c31"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__eth_indicators__eth_estimated_leverage_ratio_binance.parquet": {
+    "bytes": 257634,
+    "sha256": "c0cc247cc1633244e4d2ffa8c5d35b9dc8c9f8eb8445c0adc27c54df26b6080d"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_inflow_usdc_all_exchange.parquet": {
+    "bytes": 262925,
+    "sha256": "974f489943f18286c70afb90fe0181260905bf48ebbcd2c0bebd7d8468d24516"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_outflow_usdc_all_exchange.parquet": {
+    "bytes": 262961,
+    "sha256": "e26b5010030aeda750ff25115118aee34f840468f08571c523e10b72956ffc20"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_outflow_usdc_binance.parquet": {
+    "bytes": 262961,
+    "sha256": "0b164e824206500994ca5eaa8a2f665c0cf3bb5e00b827fb1289fe531a5f2d68"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_outflow_usdt_eth_all_exchange.parquet": {
+    "bytes": 262961,
+    "sha256": "d62b0628a974e1417dbaf788e72e0b84bd750b81ad23a5b5a89c6e8ce6cc7b7d"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__stablecoin_exchange_flows__stablecoin_reserve_usdt_eth_all_exchange.parquet": {
+    "bytes": 257502,
+    "sha256": "697fcf1529d80a6d5cba9197d9ee5dfe1c24a6139e96b0b78b472516d9a2ff4a"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__stablecoin_market__stablecoin_capitalization_usdt_eth.parquet": {
+    "bytes": 257526,
+    "sha256": "221ca0e7eeac95be95ee258d261c436d3a38192003e6fe691abe5fa10e35cbc5"
+   },
+   "features/cross_source_features/5m/alternative_data__cryptoquant__stablecoin_network__stablecoin_supply_usdc.parquet": {
+    "bytes": 266593,
+    "sha256": "c0ee96a62013947aee41ecec5a060c6df706cc29cf52aac9fe73babac2dc2e15"
+   },
+   "features/cross_source_features/5m/alternative_data__onchain_btc__coinmetrics_community__btc__txcnt.parquet": {
+    "bytes": 13194861,
+    "sha256": "401e981c159683188457fa980231199d67d57feee087cc840c49990f7775854a"
+   },
+   "features/cross_source_features/5m/alternative_data__onchain_other__coinmetrics_community__ada__blkcnt.parquet": {
+    "bytes": 6416809,
+    "sha256": "71f94d18baf20b08b5917176569399360838833c101ea40410d1860a17521ac8"
+   },
+   "features/cross_source_features/5m/alternative_data__onchain_other__coinmetrics_community__ada__txcnt.parquet": {
+    "bytes": 6431438,
+    "sha256": "544b8a8010b983b4823dca16f9458009987c513a9d17bea41ae4baf2c007fd00"
+   },
+   "features/cross_source_features/5m/alternative_data__onchain_other__coinmetrics_community__bch__blkcnt.parquet": {
+    "bytes": 6523230,
+    "sha256": "84107ed841feb8e8871aec9a499ec6a288ffa7831feced681874d865a3215c20"
+   },
+   "features/cross_source_features/5m/alternative_data__onchain_other__coinmetrics_community__bch__txtfrcnt.parquet": {
+    "bytes": 6541019,
+    "sha256": "aee90cd243660b8615694b160e1acf31aaecba4a9115b361a216fd10efa62dbf"
+   },
+   "features/cross_source_features/5m/alternative_data__onchain_other__coinmetrics_community__dot__adractcnt.parquet": {
+    "bytes": 1777272,
+    "sha256": "fe8a265ff021d0afbc8850423fd316179952c7b7c6bd402c472fdf37436e8b9b"
+   },
+   "features/cross_source_features/5m/alternative_data__onchain_other__coinmetrics_community__dot__txtfrcnt.parquet": {
+    "bytes": 1777394,
+    "sha256": "3e7cac024cd6712ec7176cfde5685d217798711deb48a207fa10cd9f2a752604"
+   },
+   "features/cross_source_features/5m/alternative_data__onchain_other__coinmetrics_community__link__txtfrcnt.parquet": {
+    "bytes": 6444155,
+    "sha256": "66fa61a8c718192d8425f4d92a7c1d442450641858ce217bf4335fde5879abd5"
+   },
+   "features/cross_source_features/5m/alternative_data__onchain_other__coinmetrics_community__trx__txtfrcnt.parquet": {
+    "bytes": 5873041,
+    "sha256": "b05bca0b93a3118cf8382a651fb8e6355e68e4593e61a070bbdb937df76e6566"
+   },
+   "features/cross_source_features/5m/alternative_data__onchain_other__coinmetrics_community__xlm__blkcnt.parquet": {
+    "bytes": 7957816,
+    "sha256": "a0ea5713b7080f7e701fdde9e95b2a02193e9755ecf95ab6775cf22e584c71e7"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__consumer__psavert__observations.parquet": {
+    "bytes": 51534475,
+    "sha256": "bad3c02ffdf50271c51e9c6250a2adeac3b8076184b5738bfdd67317d515be40"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__consumer__rsafs__observations.parquet": {
+    "bytes": 26245388,
+    "sha256": "9a7d466ce91d135bf4d4ab60ae4fd6a7ff343bb2c4555172c0c1594f3311d999"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__credit__aaa10y__observations.parquet": {
+    "bytes": 33276707,
+    "sha256": "0658214f68475e1cee457efc7f1f22adaa7d3fb6dd21d8c320e1a017b4c82af7"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__credit__bamlh0a0hym2__observations.parquet": {
+    "bytes": 2253166,
+    "sha256": "343daff16150a44a51774201d749b9a352277158e1c66d8d8d2633103a4a0019"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__employment__icsa__observations.parquet": {
+    "bytes": 45381618,
+    "sha256": "47fd95bdca710bc83e76c056ef7312a904846faef4ed88ba16e7efadd88c15b8"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__employment__u6rate__observations.parquet": {
+    "bytes": 24759223,
+    "sha256": "b25899b331aa88ac3ceaa41def68c0796ed0dd141bcd3b3faf8233ff0c190b18"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__employment__unrate__observations.parquet": {
+    "bytes": 59965048,
+    "sha256": "395ee70ef34c951f82f04a111c1214b37a171ec236d2e0ea07327b4a81a50ee0"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__fx_indices__dtwexafegs__observations.parquet": {
+    "bytes": 15439756,
+    "sha256": "54884eb8a300f74c47a452cacc1580f5ac3d8080a192538ae98093f91214c99f"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__fx_indices__dtwexemegs__observations.parquet": {
+    "bytes": 15439619,
+    "sha256": "b980835de5a5eefba002a68162f3f12f7376375f8e4dbcee315794508da1d2c4"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__gdp__a191rl1q225sbea__observations.parquet": {
+    "bytes": 60398405,
+    "sha256": "4ac2a18321a5f9217c567893211c5a50471b8a94e1c78521e2da6713ea74c8a8"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__gdp__expgs__observations.parquet": {
+    "bytes": 61324201,
+    "sha256": "4113821e546c2b031381b9786bb70e4629f7013766cf7e80235c015d27a4d1c3"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__gdp__gpdi__observations.parquet": {
+    "bytes": 66785219,
+    "sha256": "51ed0e2424629f2552364153f2ea0e9bf6c6e10cbc27e9c0dc64f5f1fa226543"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__gdp__netexp__observations.parquet": {
+    "bytes": 61324144,
+    "sha256": "7e66c7349323372c7c7dc129363fd295273ec45247f36311a126f4b9c77e889d"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__housing__mortgage30us__observations.parquet": {
+    "bytes": 42249065,
+    "sha256": "29398ba01f37713f52e7a30df4d696d8eee546f8287b234b0aa89d073bd755c2"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__industrial__caputlb50001sq__observations.parquet": {
+    "bytes": 45205149,
+    "sha256": "ec25a68d07e9af20fb17bac2c2b4ffd60ee94ef0a50af925cded9001108c1c0a"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__industrial__neworder__observations.parquet": {
+    "bytes": 44519936,
+    "sha256": "abd46bf69931b53d24b75bb8b31900654c781f0fa588637b0b31542e27856a3e"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__inflation__cpaltt01usm657n__observations.parquet": {
+    "bytes": 53143571,
+    "sha256": "f3847f2f158a02c2dcd493df8d9130cb225da0e9b70955e94c4ea3da5280aca6"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__inflation__cpilfesl__observations.parquet": {
+    "bytes": 53019845,
+    "sha256": "771e3297f70e28ea8cb20ae17f1d7a944a733b1cd7e8707909e8a15ad2a0ad85"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__inflation_expectations__expinf10yr__observations.parquet": {
+    "bytes": 33934923,
+    "sha256": "59e88e21e7a413f61f40d37c7bf2d1d854b3c0adbe378f4f40df554059dec85c"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__inflation_expectations__mich__observations.parquet": {
+    "bytes": 36898129,
+    "sha256": "ef2deb7659fdd6a72aebfe993d23b1cf1fd2efab989a579c1f94fb831717851a"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__money__rrpontsyd__observations.parquet": {
+    "bytes": 17824382,
+    "sha256": "c88ada2b29c44752309fb0ca38bcd44a06fcc3cdc263b033ee1ee6c94c777675"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__money__walcl__observations.parquet": {
+    "bytes": 17911447,
+    "sha256": "3234fea2bd1f100b540676a145da50994281d7762cdb6ad5f7f59b4d201672bf"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__money__wresbal__observations.parquet": {
+    "bytes": 32507401,
+    "sha256": "d66d842768805e4baa628a6ce09ac8b9a51cb4e7a0a047561cd5f4144b78787f"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__rates__dgs3mo__observations.parquet": {
+    "bytes": 34277616,
+    "sha256": "cfc0f2e252b5cda5c9d4e1160d53b868e367a9f13e594e7b8a0c528aa57ebf87"
+   },
+   "features/cross_source_features/5m/macro_economic__fred__recession__usrecdm__observations.parquet": {
+    "bytes": 96978290,
+    "sha256": "3ec8d522083325418d2921d750e9b4e17fb3063f748a29787323d534729c7cfd"
+   },
+   "features/cross_source_features/5m/macro_economic__oecd__cli__monthly.parquet": {
+    "bytes": 20040804,
+    "sha256": "abb19abbb4f0aa4584e3bbb42ea1b785525b0987bf8f34e8acfbfb9c703ac496"
+   },
+   "features/cross_source_features/5m/market_data__commodities__agriculture__zc_f__daily.parquet": {
+    "bytes": 20002271,
+    "sha256": "569227e672a8c745cde09de875bf9be0323b19d5249e3546d236819d0f9f386a"
+   },
+   "features/cross_source_features/5m/market_data__commodities__agriculture__zw_f__daily.parquet": {
+    "bytes": 20012552,
+    "sha256": "c09bb4a40655927ded12abb15c390932b6b001576fefac1ae9cbe0a63e4325ea"
+   },
+   "features/cross_source_features/5m/market_data__commodities__energy__bz_f__daily.parquet": {
+    "bytes": 14501696,
+    "sha256": "e2f28f28564164c3489951c441b0f17eeac91ccb4a2ec6f146db449d700c7764"
+   },
+   "features/cross_source_features/5m/market_data__commodities__energy__cl_f__daily.parquet": {
+    "bytes": 20031953,
+    "sha256": "a1c351c382fddd7f427151caf7b6b274a7c89ef0b8e5b09bf421862445d44f30"
+   },
+   "features/cross_source_features/5m/market_data__crypto__funding_rates__trxusdt__funding_rates.parquet": {
+    "bytes": 4770524,
+    "sha256": "6c943eb4e4dd81d8e8aac0d729315b3fad9481333ad81708d91d618ed37d16de"
+   },
+   "features/cross_source_features/5m/market_data__equities__etfs__eem__daily.parquet": {
+    "bytes": 18035977,
+    "sha256": "1582533f7145976275c5e228a358820dfd70ae05dbc57fb9698431b9422dfb8c"
+   },
+   "features/cross_source_features/5m/market_data__equities__etfs__hyg__daily.parquet": {
+    "bytes": 14717746,
+    "sha256": "33aee3e086d02f560e5ea9a9d334c56fc025611e91b69f6d859e8186381bb798"
+   },
+   "features/cross_source_features/5m/market_data__equities__etfs__ief__daily.parquet": {
+    "bytes": 18545959,
+    "sha256": "5ba3f69082a2e385f6ba696a32e13a728d627a1fbdde32689188f5bfbd988099"
+   },
+   "features/cross_source_features/5m/market_data__equities__etfs__shy__daily.parquet": {
+    "bytes": 18462438,
+    "sha256": "f771cbd7965ddebc1ab9f13efce2ccd674ed4f286177e20a5b70af7766da6046"
+   },
+   "features/cross_source_features/5m/market_data__equities__etfs__spy__daily.parquet": {
+    "bytes": 26059442,
+    "sha256": "614324378c05bbdb29169ade4c19c66e6b54961e75b7c6ec4e187ce9f1a1e6a5"
+   },
+   "features/cross_source_features/5m/market_data__equities__etfs__uso__daily.parquet": {
+    "bytes": 15486125,
+    "sha256": "e671970d4a5a8c7fc14d91c39dcf6739ab369b34fa44438b701c2673d650b94a"
+   },
+   "features/cross_source_features/5m/market_data__equities__etfs__vnq__daily.parquet": {
+    "bytes": 16923407,
+    "sha256": "ccf3b2f675b3c4322e43b9a31932547eb0540d077c5e663c1fa5ce7b33bd83da"
+   },
+   "features/cross_source_features/5m/market_data__equities__etfs__vti__daily.parquet": {
+    "bytes": 19439607,
+    "sha256": "c323693d336194c5f13ddcdc923228a46f1a2912e0279c26f55d94f8cdec5385"
+   },
+   "features/cross_source_features/5m/market_data__equities__global_indices__000001_ss__daily.parquet": {
+    "bytes": 22413506,
+    "sha256": "5f806ec1e2d4c3a66e704af43f09cfc0509d1fc9fc2dabb95d2af8c9a92b30dd"
+   },
+   "features/cross_source_features/5m/market_data__equities__global_indices__bsesn__daily.parquet": {
+    "bytes": 22406700,
+    "sha256": "62d83ed97d272f1592a40c1db48a923541b41c77216c42c13eb97ee6c29c5d0f"
+   },
+   "features/cross_source_features/5m/market_data__equities__global_indices__bvsp__daily.parquet": {
+    "bytes": 25818157,
+    "sha256": "5d851cbd8bbbeed581ccc9f11e472775c585c2c96e5528d2c5c658544e20134d"
+   },
+   "features/cross_source_features/5m/market_data__equities__global_indices__stoxx50e__daily.parquet": {
+    "bytes": 14770386,
+    "sha256": "c38a3f24bf7334600b883fb8e826ac120311276b8c59d662c75840d89af96dd0"
+   },
+   "features/cross_source_features/5m/market_data__equities__us_indices__rut__daily.parquet": {
+    "bytes": 30170751,
+    "sha256": "955c3cf465679e1e5f4f9e589bc4d82f502cf1f6455a2a01686195173ddf0964"
+   },
+   "features/cross_source_features/5m/market_data__forex__emerging_markets__usdclp_x__daily.parquet": {
+    "bytes": 17506455,
+    "sha256": "2da5beb27cbfbcfd3c3294572875224d2275f6a21920ed4bf046efeca8a5502b"
+   },
+   "features/trading_asset_data/adausdt/4h.parquet": {
+    "bytes": 1411162,
+    "sha256": "2a5c21450769e134933a3d640aee336553e27fcd6cb1f07394e1b8a2141b7581"
+   },
+   "features/trading_asset_data/adausdt_perp/1h.parquet": {
+    "bytes": 3851303,
+    "sha256": "ea1fe0bcaaed8208f18289304e4eaac328f4c2970d705ed16402621698e15055"
+   },
+   "features/trading_asset_data/asterusdt/5m.parquet": {
+    "bytes": 1510250,
+    "sha256": "128a15970b7c0c461cf4372ab73066103d58ee2a6b34ae83215fe02ec6386e24"
+   },
+   "features/trading_asset_data/audusd/15m.parquet": {
+    "bytes": 9080555,
+    "sha256": "204af47038c7467a8be0399d17d71883c831018562425282350db8ebd02e6e2f"
+   },
+   "features/trading_asset_data/avaxusdt/15m.parquet": {
+    "bytes": 11419561,
+    "sha256": "5336152825edb9e51dee80ecce87d5ef902678278ccdf1d1ed048f79a8f2b2d3"
+   },
+   "features/trading_asset_data/avaxusdt_perp/5m.parquet": {
+    "bytes": 26766847,
+    "sha256": "537aa55b039c0158efdc424b092793f2c6d5d1eab5cdf60ed497439b7418c005"
+   },
+   "features/trading_asset_data/bchusdt/1h.parquet": {
+    "bytes": 3635500,
+    "sha256": "4e7973869af0b1ae12f4efc38cdff3f0ec8638ff07fb3c0beda52f3bf003cf2e"
+   },
+   "features/trading_asset_data/bnbusdt/5m.parquet": {
+    "bytes": 50231004,
+    "sha256": "49cc1c8b343cbfd6280301357dcbe7705d477d672dff171661bbe481ce4f99c2"
+   },
+   "features/trading_asset_data/bnbusdt_perp/1h.parquet": {
+    "bytes": 3952545,
+    "sha256": "6157af17f58c4f0f0e0e28b20298602075d609e5f77af6e537c7722971ab3814"
+   },
+   "features/trading_asset_data/btcusdt/5m.parquet": {
+    "bytes": 59325161,
+    "sha256": "fb6cf515f98dd674a430e3703345bf777153134747abb3dc558f1d7bdf4fd303"
+   },
+   "features/trading_asset_data/btcusdt_perp/1h.parquet": {
+    "bytes": 4697045,
+    "sha256": "dab2b375a9281d58ddec60a6e65306bf8b860f62dc6c8c8bfbab7ad2b670e0c1"
+   },
+   "features/trading_asset_data/dogeusdt/5m.parquet": {
+    "bytes": 37318175,
+    "sha256": "ee114d473bb11134968950643e693221fc6ce57a1ddd0d21a79dea5d0b2d5dd4"
+   },
+   "features/trading_asset_data/dogeusdt_perp/4h.parquet": {
+    "bytes": 1067389,
+    "sha256": "dfcbc7b82fb5aa11dbd1ed98e84f861b45fd238005f8b05b6bec8db4c1fe81ab"
+   },
+   "features/trading_asset_data/dotusdt/5m.parquet": {
+    "bytes": 31037047,
+    "sha256": "a76caea4091594ab515e9ddf004096ea4ed7e33ae20de9fee9ca1b57f6b8d0dc"
+   },
+   "features/trading_asset_data/ethusdt/4h.parquet": {
+    "bytes": 1578451,
+    "sha256": "37321161d3e0d372abd0c3a0cc867ed4b2faf1fdf1e4569d55da6f6a1a1df099"
+   },
+   "features/trading_asset_data/ethusdt_perp/4h.parquet": {
+    "bytes": 1115877,
+    "sha256": "4c92ad2e5cbfedef2c426a162d173f04e97e3eb39da6862b2bf5791d9b258f62"
+   },
+   "features/trading_asset_data/eurgbp/1h.parquet": {
+    "bytes": 2651272,
+    "sha256": "4c0b68164c1516b23e2acfbc9762fe8b5d556eb5441d2231a66a83569814594e"
+   },
+   "features/trading_asset_data/eurjpy/1h.parquet": {
+    "bytes": 2972533,
+    "sha256": "4e4c7cd7d3e374d5e69db174f629383469b909468dcb357cef28fdd08093168b"
+   },
+   "features/trading_asset_data/eurusd/4h.parquet": {
+    "bytes": 1070077,
+    "sha256": "4e555e2ee465b418a42c35eba4503f6e0e88827bdf1f2495639198c37c6a5a00"
+   },
+   "features/trading_asset_data/gbpjpy/4h.parquet": {
+    "bytes": 990734,
+    "sha256": "18facca2a01f228891a1ceff50ce4c9033e96b6cda4cbe4bf5e9a31d56c47e82"
+   },
+   "features/trading_asset_data/gbpusd/1h.parquet": {
+    "bytes": 3384511,
+    "sha256": "7e2f8930046d5b145b7cc87fce061f3532f9777d347f068e864bd7d1d750e1b4"
+   },
+   "features/trading_asset_data/hbarusdt/4h.parquet": {
+    "bytes": 1064987,
+    "sha256": "7b3ad346304f3a0b95b2ace5e249733164bc464e9ae7c9bfc92a68242ef90d79"
+   },
+   "features/trading_asset_data/linkusdt/1h.parquet": {
+    "bytes": 4387539,
+    "sha256": "8b8f42b02234985cbb3527b9239a9e150d3934b9af5966aec44569a2d3e662f9"
+   },
+   "features/trading_asset_data/linkusdt_perp/5m.parquet": {
+    "bytes": 33310719,
+    "sha256": "0731807aa2cb17f9a971ec8cab751966549b831efbc60c6497d8e377d1d9a226"
+   },
+   "features/trading_asset_data/ltcusdt/4h.parquet": {
+    "bytes": 1335600,
+    "sha256": "cd69d3d05d508387d6e2e4706f9b1fc6e2084d8ddd3bd680f621370906372245"
+   },
+   "features/trading_asset_data/nearusdt/15m.parquet": {
+    "bytes": 11222618,
+    "sha256": "2544a46fea1d9db3a1f9e72cc2f9f92e4c620f4ec46cfd70544ed9a14b54c11e"
+   },
+   "features/trading_asset_data/nzdusd/15m.parquet": {
+    "bytes": 8473390,
+    "sha256": "6c2e8f2e8a485a9edab74e319e565de1f30490c89b8e6fd24c4e3c3dd377b41b"
+   },
+   "features/trading_asset_data/paxgusdt/4h.parquet": {
+    "bytes": 820177,
+    "sha256": "b7fb0969592694cd5fd832134bc078f71c9d6523baeaea20aa46b8ed1f32927f"
+   },
+   "features/trading_asset_data/pepeusdt/5m.parquet": {
+    "bytes": 15440684,
+    "sha256": "4e41892ce4dbe1921976d278face217d8085b54df622eac7569c5cc0f688421e"
+   },
+   "features/trading_asset_data/shibusdt/15m.parquet": {
+    "bytes": 10217507,
+    "sha256": "747f9b86cf757e8eec5be0235da9c15358ce0c0648b6a17f1aea19d907f2352e"
+   },
+   "features/trading_asset_data/skyusdt/5m.parquet": {
+    "bytes": 1825043,
+    "sha256": "cca4e534d7aea8d167c0289a268effa220051461d5f564b01a7f377cfd0e8dd5"
+   },
+   "features/trading_asset_data/solusdt/5m.parquet": {
+    "bytes": 31530395,
+    "sha256": "eda0a72858eae2e6af562f79d88d6ca04c46a3cda259852d0b27d84cfd047a3a"
+   },
+   "features/trading_asset_data/solusdt_perp/4h.parquet": {
+    "bytes": 946224,
+    "sha256": "14d19a29a70d620145e0b70546764227ab02225620817328df84f18c2f7b9d16"
+   },
+   "features/trading_asset_data/suiusdt/1h.parquet": {
+    "bytes": 1837169,
+    "sha256": "8bf407197decd7deea7dcda756dde05f9656d1a1e3d6dca9eb206d8e2977df0d"
+   },
+   "features/trading_asset_data/taousdt/15m.parquet": {
+    "bytes": 3803982,
+    "sha256": "1f99f8fe96b7d8b6b6083ac584d7e7f9322685eec4a86989c0a6fbec2c16dbc0"
+   },
+   "features/trading_asset_data/tonusdt/15m.parquet": {
+    "bytes": 3027818,
+    "sha256": "5fdc1f3f9b70184e26b1813264122b9b97ec68a255448c855f95721f48f1d097"
+   },
+   "features/trading_asset_data/trxusdt/5m.parquet": {
+    "bytes": 40445550,
+    "sha256": "ec0962035923ce11b254d32571402329bfd5140ed93b1b348e38cbf37b7fa136"
+   },
+   "features/trading_asset_data/trxusdt_perp/15m.parquet": {
+    "bytes": 12513569,
+    "sha256": "bae71f99c8ffe70d68dc29aa7dc0ccba4a64dd92b96d35383f3a3b9fe5301334"
+   },
+   "features/trading_asset_data/uniusdt/15m.parquet": {
+    "bytes": 11535569,
+    "sha256": "c6bb09f7aa01491b663973fe2aec4bdbc2489296853b54dda5d9431c35894e4c"
+   },
+   "features/trading_asset_data/usd1usdt/1h.parquet": {
+    "bytes": 288933,
+    "sha256": "5b9b85d290fad284306187e6e369876d4d85978b932a3908f0cebfefd72505c7"
+   },
+   "features/trading_asset_data/usdcad/15m.parquet": {
+    "bytes": 8741636,
+    "sha256": "a86b2864cd96ad27011bf9d9a6b9a4016ebb10f446d626d798756b1df14e48d8"
+   },
+   "features/trading_asset_data/usdchf/5m.parquet": {
+    "bytes": 23309542,
+    "sha256": "b96317a0e0fcd4388ed0ae31afb6caff99d6c3c76f98caedca65a2e834c7fa4d"
+   },
+   "features/trading_asset_data/usdcusdt/1h.parquet": {
+    "bytes": 3396299,
+    "sha256": "f9a2808fbb5dbaa086572ee18cd2b9f6fe6ac539580081e5028f62d0cecea54b"
+   },
+   "features/trading_asset_data/usdeusdt/1h.parquet": {
+    "bytes": 151473,
+    "sha256": "9a8629fd469d2f81305b2ee2a7d5b7ac5f2f4ba4d19cf520f2df4928628c66b1"
+   },
+   "features/trading_asset_data/usdjpy/15m.parquet": {
+    "bytes": 9092193,
+    "sha256": "08872e6201ee90c20ce9d1ff534f659e4cae8322ef8231289ed5a82c41765e02"
+   },
+   "features/trading_asset_data/wlfiusdt/5m.parquet": {
+    "bytes": 2090474,
+    "sha256": "665b5cde8459589bff80c85b8ef8e22a9143f4f719364ad1ecae4e466865c525"
+   },
+   "features/trading_asset_data/xlmusdt/1h.parquet": {
+    "bytes": 4626042,
+    "sha256": "022829d9df2aec452fb4c0452c366542bc0101902fc3554a784f1aa56339c68a"
+   },
+   "features/trading_asset_data/xrpusdt/5m.parquet": {
+    "bytes": 42888778,
+    "sha256": "85bf816d2c8f07438607767b56eb674a0bacd1c234476d9596f8c7c6022e9fd8"
+   },
+   "features/trading_asset_data/xrpusdt_perp/1h.parquet": {
+    "bytes": 3788043,
+    "sha256": "6f73cee47afa10a0846b7675b8c77c5ad17f3ca990b0d5b529127fe45e8480bc"
+   },
+   "features/trading_asset_data/zecusdt/5m.parquet": {
+    "bytes": 36483139,
+    "sha256": "8c0d30c40ec60a6e85fe93f06ebea0ad1f89c89308ba0792aabbaecb60179ba6"
+   }
+  },
+  "distinct_files_digested": 420,
+  "variables_affected_by_absence": 0
+ },
+ "terminals": {
+  "extra": [],
+  "extra_count": 0,
+  "filename_collisions": 0,
+  "files_present": 1965,
+  "misfiled": [],
+  "missing": [],
+  "missing_count": 0,
+  "naming_rule_state": "ONE_FIXED_RULE_EXPLAINS_EVERY_FILENAME",
+  "naming_rules_consistent_with_every_file": [
+   "sha256[:32]"
+  ],
+  "read": 1965,
+  "unknown_variable_ids": [],
+  "unreadable": []
+ },
+ "verdict": "TERMINALS_VERIFIED_EXACT",
+ "verification_sha256": "e3189c2c9676231c7adb74ee9bc52200bd8fbd74e76733d247e64e7351e287e0"
+}
