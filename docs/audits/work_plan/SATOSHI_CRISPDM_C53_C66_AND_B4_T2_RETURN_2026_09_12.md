@@ -147,6 +147,19 @@ measured.
 
 No level is promoted to the one above it.
 
+**A finding the pre-push secret gate surfaced.** The cube stores each
+run's identity as its producer wrote it, and **four of the nine
+terminal runs are identified by a FILESYSTEM PATH** —
+`./prediction.csv`, `examples/results/…`. The public record now carries
+logical ids bound to a digest of the original, with each original's
+**shape** declared as `PATH_SHAPED_IDENTITY` or `OPAQUE_IDENTITY`,
+because "this run is identified by a path" is a fact about the cube and
+not something to hide. The defect belongs to how those producers name
+their runs; it is **reported, not corrected**, since rewriting a
+historical identity would rewrite history. The gate itself fired on a
+campaign key it read as a high-entropy token — that one was a false
+positive; the paths beside it were not.
+
 ## 6. C55–C58 — a transitive lineage, or `UNRESOLVED`
 
 252 producer files, 2,383 symbols. Locals and intermediates are
