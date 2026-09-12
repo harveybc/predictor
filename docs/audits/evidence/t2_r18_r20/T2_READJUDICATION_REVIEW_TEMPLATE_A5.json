@@ -1,0 +1,41 @@
+{
+ "candidate_adjudication_sha256": "8b93541369af0de387aa821c307f88c6e4c38ed2e5fc96bce696249f129e8b41",
+ "decision": "PENDING_EXTERNAL_REVIEW",
+ "downloads": false,
+ "grants_execution": false,
+ "historical_code_identity": {
+  "tools/t2_assay_harness.py": "4c43ed82602268dda8116a51968bead4d80bc416058de28b441bef0e9393e9f3",
+  "tools/t2_bank.py": "24598975bf32c9f36396c5e9f6fbb9648f75000c11cc85f41aed38c30035ee95",
+  "tools/t2_bank_census.py": "5a554fea5e2fbb3c2abc4ebac0d3bd92b404396c09254daf4c9cbdb8b801aeb6",
+  "tools/t2_confirmatory.py": "e00ab31937401e6f1d1129cd93da6969008a13f14038e37e7561d7cbaf1e9909",
+  "tools/t2_confirmatory_executor.py": "ff3f8a07be480d235c2d3feaf42ea88657fa63fc99cf3b055bccfb353f4133a9",
+  "tools/t2_fresh_verifier.py": "226631b0a3795a29255d4b0b4afd6d3a070332f045960a3360aa1c0346b58eb8",
+  "tools/t2_public_data_census.py": "b914a85d0767792cce5c0fb51af9dda0d4fac9fb4a08b33e38b9a834a4856f7c"
+ },
+ "historical_execution_record_sha256": "4761df4a8b324442a83a0554cc53d3005025500d9e8d0c3b2272a729c9714752",
+ "historical_pinned_commit": "7bcd3f0d6a95b30ce105df3b1e7e13614b7fe6b3",
+ "historical_pinned_tree": "6c2942a24ef4523447801a179cf5f15c9da5617b",
+ "preserved_root_inventory_sha256": "6b18e160b41cf3c5fe496c72e77c8e5ebdcb5e5a8973f2cab35631528f19733c",
+ "preserved_root_logical_id": "t2_successor",
+ "readjudication_surface": {
+  "tools/descriptor_custody.py": "93e0fd89f72b2cd042faef7c546a6484a5433295a39f3a55bdc43d5387871c60",
+  "tools/t2_assay_harness.py": "4c43ed82602268dda8116a51968bead4d80bc416058de28b441bef0e9393e9f3",
+  "tools/t2_bank.py": "24598975bf32c9f36396c5e9f6fbb9648f75000c11cc85f41aed38c30035ee95",
+  "tools/t2_bank_census.py": "5a554fea5e2fbb3c2abc4ebac0d3bd92b404396c09254daf4c9cbdb8b801aeb6",
+  "tools/t2_campaign_closure.py": "a82af9b83f3ca1fd3d93a3699e1c6cda69acdfdfc70c09dcff8ac4ff5f2fdc63",
+  "tools/t2_completion_reconstruction.py": "08d3a7fa3b29e70054b86231ae9a352f03233669cc8f342d19cb93e4e1c3a8a6",
+  "tools/t2_confirmatory.py": "e00ab31937401e6f1d1129cd93da6969008a13f14038e37e7561d7cbaf1e9909",
+  "tools/t2_confirmatory_executor.py": "ff3f8a07be480d235c2d3feaf42ea88657fa63fc99cf3b055bccfb353f4133a9",
+  "tools/t2_fresh_verifier.py": "226631b0a3795a29255d4b0b4afd6d3a070332f045960a3360aa1c0346b58eb8",
+  "tools/t2_public_data_census.py": "b914a85d0767792cce5c0fb51af9dda0d4fac9fb4a08b33e38b9a834a4856f7c",
+  "tools/t2_readjudication_gate.py": "995b92973335bf14153373625e1f904b4bea1cca7b83aa054ab44b04895fa84c"
+ },
+ "readjudication_surface_sha256": "599e7f63abd0bdcc6ca61e32615ada93da331785abf5d0af7da7b60d2ffc5ead",
+ "reproducer_commit": "bfbad73c5ddf78bbbbf5e75cfaf6c4e4fb4418dc",
+ "reproducer_tree": "6d3ef39576a501dbb77bce666a29310474cd8f87",
+ "retraining": false,
+ "reviewed_at_date": "YYYY-MM-DD",
+ "reviewer": "UNREVIEWED_TEMPLATE",
+ "schema": "agent_multi.t2_readjudication_review_record.v1",
+ "scope": "READ_ONLY_READJUDICATION"
+}

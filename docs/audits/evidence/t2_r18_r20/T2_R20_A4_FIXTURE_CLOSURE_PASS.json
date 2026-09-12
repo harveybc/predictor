@@ -1,0 +1,299 @@
+{
+ "adjudication_sha256": "a240fe1d3a6c2510b74229853b4a35f8f284216bc2901103835dedfef1316e18",
+ "audit_snapshot_identity": {
+  "clean": true,
+  "commit": "fc3d159f075bda8ba39c47da15710e96a6f06a52",
+  "dirty_paths": [],
+  "files": {
+   "tools/descriptor_custody.py": {
+    "pinned_by_execution_record": false,
+    "sha256": "93e0fd89f72b2cd042faef7c546a6484a5433295a39f3a55bdc43d5387871c60"
+   },
+   "tools/t2_assay_harness.py": {
+    "matches_record": true,
+    "pinned_by_execution_record": true,
+    "sha256": "4c43ed82602268dda8116a51968bead4d80bc416058de28b441bef0e9393e9f3"
+   },
+   "tools/t2_bank.py": {
+    "matches_record": true,
+    "pinned_by_execution_record": true,
+    "sha256": "24598975bf32c9f36396c5e9f6fbb9648f75000c11cc85f41aed38c30035ee95"
+   },
+   "tools/t2_bank_census.py": {
+    "matches_record": true,
+    "pinned_by_execution_record": true,
+    "sha256": "5a554fea5e2fbb3c2abc4ebac0d3bd92b404396c09254daf4c9cbdb8b801aeb6"
+   },
+   "tools/t2_campaign_closure.py": {
+    "pinned_by_execution_record": false,
+    "sha256": "05f5eb74f77424ef3b56628c68100d814b0bf32620b946cf1a939344f189660d"
+   },
+   "tools/t2_completion_reconstruction.py": {
+    "pinned_by_execution_record": false,
+    "sha256": "08d3a7fa3b29e70054b86231ae9a352f03233669cc8f342d19cb93e4e1c3a8a6"
+   },
+   "tools/t2_confirmatory.py": {
+    "matches_record": true,
+    "pinned_by_execution_record": true,
+    "sha256": "e00ab31937401e6f1d1129cd93da6969008a13f14038e37e7561d7cbaf1e9909"
+   },
+   "tools/t2_confirmatory_executor.py": {
+    "matches_record": true,
+    "pinned_by_execution_record": true,
+    "sha256": "ff3f8a07be480d235c2d3feaf42ea88657fa63fc99cf3b055bccfb353f4133a9"
+   },
+   "tools/t2_fresh_verifier.py": {
+    "matches_record": true,
+    "pinned_by_execution_record": true,
+    "sha256": "226631b0a3795a29255d4b0b4afd6d3a070332f045960a3360aa1c0346b58eb8"
+   },
+   "tools/t2_public_data_census.py": {
+    "matches_record": true,
+    "pinned_by_execution_record": true,
+    "sha256": "b914a85d0767792cce5c0fb51af9dda0d4fac9fb4a08b33e38b9a834a4856f7c"
+   }
+  },
+  "files_not_pinned_by_the_record": [
+   "tools/descriptor_custody.py",
+   "tools/t2_campaign_closure.py",
+   "tools/t2_completion_reconstruction.py"
+  ],
+  "honesty": "every file of the executable surface comes from ONE checkout whose commit is recorded above. The seven files the external record pins are verified byte for byte; the rest post-date the record and are named, not hidden",
+  "interpreter": "3.12.13",
+  "numeric_dependencies": {
+   "numpy": {
+    "binding": "NAME_AND_VERSION_ONLY",
+    "version": "2.5.1"
+   },
+   "scipy": {
+    "binding": "NAME_AND_VERSION_ONLY",
+    "version": "1.18.0"
+   }
+  },
+  "pinned_files_verified": [
+   "tools/t2_assay_harness.py",
+   "tools/t2_bank.py",
+   "tools/t2_bank_census.py",
+   "tools/t2_confirmatory.py",
+   "tools/t2_confirmatory_executor.py",
+   "tools/t2_fresh_verifier.py",
+   "tools/t2_public_data_census.py"
+  ],
+  "single_checkout": true,
+  "surface_sha256": "6f6bbf610bb6c7c38c7ee275c3f231927778dc67e9722a90471ab7b27101f9b2"
+ },
+ "branch_tip_divergence": {
+  "branch_tip_can_run_the_gate": true,
+  "consequence": "the branch tip equals the reviewed identity",
+  "diverged_files": {}
+ },
+ "campaign_root_logical": "t2_successor",
+ "closed_at": "2026-09-12T19:54:07Z",
+ "closure_sha256": "69c5cd9a3f2a5941f4a0bc2af2c3b0746bbfac73d87d36780bf03439631766be",
+ "downloads": "NONE",
+ "final_adjudication_counts": {
+  "COMPLETED_VERIFIED": 242,
+  "TERMINAL_FAILED": 0
+ },
+ "final_adjudication_not_called": "the pinned final_adjudication() re-resolves the results root and would reopen the evidence; its exact-inventory, deep-adjudication and population-closure guarantees are reproduced above over the snapshot",
+ "gate_facts": {
+  "census_sha256": "dc1bf8c770b297c506b1e30195753d7b25f82c51cbdd62b27667f58e7964674f",
+  "design_file_sha256": "0e0317e2de947fd49efec10e4849909e25f619174533863520301c473a81a97f",
+  "design_self_sha256": "0542ed0536c38e92707454f0e55134246dddecbfbad4a63db1817c1ba1ce4e27",
+  "execution_record_sha256": "4761df4a8b324442a83a0554cc53d3005025500d9e8d0c3b2272a729c9714752",
+  "manifest_sha256": "43c48f6bb513be37d4a591f67694880e9f768391ab0db710902c3aadd55b76ff",
+  "review_record_sha256": "13310ef88720f6a50d7f4a106c1490eac5cf65d5fb3659397c03bec1251d86fb"
+ },
+ "heartbeat_reconciliation": {
+  "authority": "RECORDS_GOVERN_TELEMETRY_DOES_NOT",
+  "current_unit_record_sealed": true,
+  "discrepancy": 1,
+  "explanation": "the heartbeat is written at the START of a unit: it names the unit being worked on and counts the units finished BEFORE it. When the executor sealed the last unit (weather::T961) it did not write a further heartbeat, because there was no next unit to announce. So done=241 and current_unit=<the 242nd> together describe 242 units, and the 242nd unit's record is physically present. No unit is missing and none was inferred: the count comes from the records, and the heartbeat is telemetry with no terminal authority.",
+  "heartbeat_current_unit": "weather::T961",
+  "heartbeat_done": 241,
+  "records_on_disk": 242,
+  "units_adjudicated": 242
+ },
+ "inventory": {
+  "artifacts_per_kind": {
+   "ARRAYS": 242,
+   "CLAIM": 242,
+   "RECORD": 242
+  },
+  "duplicates": [],
+  "exact": true,
+  "extra": [],
+  "missing": [],
+  "sealed_units": 242,
+  "snapshot_inventory_sha256": "0cad931719f50a341a916bf4d9b89c5984e876fbeb6759b5a9deb916bc356f4b",
+  "total_artifacts": 726
+ },
+ "measurement": {
+  "closure_seconds": 833.67,
+  "custody_reads": 726,
+  "reconstruction_seconds": 813.96
+ },
+ "readjudication_identity": {
+  "candidate_adjudication_sha256": "8b93541369af0de387aa821c307f88c6e4c38ed2e5fc96bce696249f129e8b41",
+  "executor_checkout_gate": "REPLACED_FOR_THIS_READ_ONLY_READJUDICATION: the pinned verify_executor_checkout demands HEAD == the historical commit, which no reproducer can be. For this run only it was replaced by readjudication_checkout_gate, which demands the historical record still pin the reviewed commit and tree and the executing checkout be the clean reproducer commit, tree and surface the readjudication record reviewed; the original was restored when the closure finished",
+  "executor_claim_identity": "REPLACED_FOR_THIS_READ_ONLY_READJUDICATION: each unit claim pins the commit and tree of the executor that wrote it, and the pinned verifier compared that pin with the executing HEAD. For this run _git_head_tree returned the historical commit and tree the readjudication record reviewed, after re-checking on every call that the executing checkout was still the clean reviewed reproducer; the claims' code identity was still compared with the physical seven historical digests, unchanged. The executor's writing entry points main and rehearse refused for the whole scope",
+  "grants_promotion": false,
+  "historical_execution_record_sha256": "4761df4a8b324442a83a0554cc53d3005025500d9e8d0c3b2272a729c9714752",
+  "historical_pinned_commit": "7bcd3f0d6a95b30ce105df3b1e7e13614b7fe6b3",
+  "historical_pinned_tree": "6c2942a24ef4523447801a179cf5f15c9da5617b",
+  "historical_result": "executed under the historical identity: the seven pinned files at commit 7bcd3f0d6a95b30ce105df3b1e7e13614b7fe6b3",
+  "readjudication": "executed under the reproducer identity bound by the readjudication review record",
+  "record_kind": "ISOLATED_FIXTURE_NOT_AN_EXTERNAL_RECORD",
+  "record_sha256": "4cd4bf558343b757332c1b24e4a6bd4b978ed6e2676f8a028415ae63842aa417",
+  "reproducer": {
+   "clean": true,
+   "commit": "fc3d159f075bda8ba39c47da15710e96a6f06a52",
+   "dirty_paths": [],
+   "tree": "2e67346607667023bece59cae8b5a27c1595fe8e"
+  },
+  "scientific_adjudication_sha256": "8b93541369af0de387aa821c307f88c6e4c38ed2e5fc96bce696249f129e8b41",
+  "scope": "READ_ONLY_READJUDICATION",
+  "surface_sha256": "e0035721b5d88e1eab3f4a060fd47aa9f14e7b187868166fb406aed7fb6f99b9"
+ },
+ "release_sequence": {
+  "epochs": [
+   1
+  ],
+  "final_epoch": 1,
+  "release_done_sha256": "51a1a97af6197c710f7b6952a2cca9b3bdc6f13d194e3a16dd970576dfe2181e",
+  "release_intent_sha256": "1dc858747f7e3315cfb8b4eb3c20be3d70b8f0cec6ed28945488c4698dbf422f"
+ },
+ "retraining": "NONE \u2014 every number re-derives from the arrays and records already on disk",
+ "reviewed_identity": {
+  "checkout_clean": true,
+  "checkout_commit": "fc3d159f075bda8ba39c47da15710e96a6f06a52",
+  "commit_relation": "the seven pinned files match the record byte for byte; this snapshot sits at fc3d159f075b rather than the pinned 7bcd3f0d6a95 because the same tree also carries the replay code, which post-dates the record",
+  "execution_record_sha256": "c6249eef6a7e5babd915ae771cdfad9f9f651f966b6533edb707f007b6f8c625",
+  "pinned_commit": "7bcd3f0d6a95b30ce105df3b1e7e13614b7fe6b3",
+  "pinned_files": {
+   "tools/t2_assay_harness.py": "4c43ed82602268dda8116a51968bead4d80bc416058de28b441bef0e9393e9f3",
+   "tools/t2_bank.py": "24598975bf32c9f36396c5e9f6fbb9648f75000c11cc85f41aed38c30035ee95",
+   "tools/t2_bank_census.py": "5a554fea5e2fbb3c2abc4ebac0d3bd92b404396c09254daf4c9cbdb8b801aeb6",
+   "tools/t2_confirmatory.py": "e00ab31937401e6f1d1129cd93da6969008a13f14038e37e7561d7cbaf1e9909",
+   "tools/t2_confirmatory_executor.py": "ff3f8a07be480d235c2d3feaf42ea88657fa63fc99cf3b055bccfb353f4133a9",
+   "tools/t2_fresh_verifier.py": "226631b0a3795a29255d4b0b4afd6d3a070332f045960a3360aa1c0346b58eb8",
+   "tools/t2_public_data_census.py": "b914a85d0767792cce5c0fb51af9dda0d4fac9fb4a08b33e38b9a834a4856f7c"
+  }
+ },
+ "schema": "agent_multi.t2_campaign_closure.v1",
+ "screen_adjudication": {
+  "leave_one_panel_out_means": [
+   0.006048409074907328,
+   -0.0024277159676020657,
+   0.0015230069371712086,
+   0.0009283548323819927,
+   -0.010284929523401517,
+   -0.0020777857016102477
+  ],
+  "panel_effect_definition": "mase_improvement_X_minus_D = MASE(X) - MASE(D); positive = D reduces error",
+  "panels": {
+   "electricity_weekly": {
+    "attribution": 0.039135682444549666,
+    "coverage_drop": 0.013661067193675885,
+    "effect": -0.03653270572268994,
+    "extreme_ratio": 0.9828915272592487,
+    "extreme_state": "EVALUATED",
+    "n_series": 40,
+    "width_ratio": 1.0504135969101642
+   },
+   "hospital": {
+    "attribution": 0.18497388022103448,
+    "coverage_drop": -0.00625,
+    "effect": 0.005847919489857028,
+    "extreme_ratio": 0.9610300256688726,
+    "extreme_state": "EVALUATED",
+    "n_series": 40,
+    "width_ratio": 1.0068241386949417
+   },
+   "pedestrian_counts": {
+    "attribution": -0.011918168706612137,
+    "coverage_drop": 0.01437078404556794,
+    "effect": -0.013905695034009338,
+    "extreme_ratio": 0.9965038128061028,
+    "extreme_state": "EVALUATED",
+    "n_series": 40,
+    "width_ratio": 0.9976329114946457
+   },
+   "solar_10_minutes": {
+    "attribution": -0.01086299398413646,
+    "coverage_drop": 9.164048367133609e-05,
+    "effect": -0.010932434510063264,
+    "extreme_ratio": 1.0484147857623103,
+    "extreme_state": "EVALUATED",
+    "n_series": 40,
+    "width_ratio": 1.0264944064967054
+   },
+   "tourism_monthly": {
+    "attribution": 0.1047102746383913,
+    "coverage_drop": 0.015270291408452518,
+    "effect": 0.04513398726885428,
+    "extreme_ratio": 0.9312186561758292,
+    "extreme_state": "EVALUATED",
+    "n_series": 40,
+    "width_ratio": 0.9653981018808494
+   },
+   "weather": {
+    "attribution": 0.006413810197179554,
+    "coverage_drop": -0.0009297109972341011,
+    "effect": 0.004098268159897935,
+    "extreme_ratio": 0.9861846218367782,
+    "extreme_state": "EVALUATED",
+    "n_series": 40,
+    "width_ratio": 0.994230756294154
+   }
+  },
+  "primary_estimand_unweighted_mean_of_panel_effects": -0.001048443391358884,
+  "reason": "electricity_weekly: effect -0.0365 beyond the non-inferiority margin",
+  "scope": "ONLY these six public panels and their admitted series \u2014 no family-level or public-eligibility claim",
+  "sign_test_exact_p_two_sided": 1.3125,
+  "signs_positive": 3,
+  "t_ci_low_df5": -0.029707838780035883,
+  "verdict": "DOES_NOT_ADVANCE"
+ },
+ "sign_test_supersession": {
+  "changes_estimand": false,
+  "changes_panel_effects": false,
+  "changes_verdict": false,
+  "corrected_table_0_to_6": [
+   0.03125,
+   0.21875,
+   0.6875,
+   1.0,
+   0.6875,
+   0.21875,
+   0.03125
+  ],
+  "corrected_value": 1.0,
+  "historical_envelope": "NOT REWRITTEN",
+  "published_value": 1.3125,
+  "published_value_valid": false,
+  "signs_positive": 3,
+  "state": "SUPERSEDED",
+  "why_the_verdict_stands": "advancement required 6/6 positive signs and the harm gate already determined the negative result; correcting an inference that could never have been read as favourable cannot turn it favourable"
+ },
+ "single_checkout_blocked": "RESOLVED_WITHOUT_REPINNING: one reproducer checkout, the seven historical digests verified byte for byte, the reproducer commit and surface bound by a separate readjudication record",
+ "single_instance": "every unit was read once through a retained descriptor; the pinned verifier and the screen consumed that same instance, and no RECORD, ARRAYS, manifest, census or design was re-opened by path between them",
+ "terminal_state": "COMPLETE",
+ "unit_snapshot": {
+  "artifacts": 726,
+  "directory_instance": {
+   "device": 66309,
+   "inode": 20460073,
+   "mode": "0o700"
+  },
+  "inventory_sha256": "0cad931719f50a341a916bf4d9b89c5984e876fbeb6759b5a9deb916bc356f4b",
+  "json_held": 484,
+  "reads": 726
+ },
+ "wall_ledger": {
+  "charged_state": 32760.294596000072,
+  "raw_sha256": "8ac5210cb9e021759c02ed88fd6a8dd4394e6c9d725a797f40cddba005e1df42",
+  "records": 50339,
+  "replayed": true
+ }
+}
