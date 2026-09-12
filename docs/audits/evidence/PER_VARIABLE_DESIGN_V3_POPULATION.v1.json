@@ -1,0 +1,16 @@
+{
+ "population": {
+  "causal_active_columns": 0,
+  "datasets_with_e5a_open": [
+   "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1"
+  ],
+  "evaluable": false,
+  "members": 0,
+  "note": "P1 binds lake variables and P2/P3 bind dataset columns; no mapping between the lake census and the dataset inventory exists yet, so a column is counted only where P2 and P3 agree and P1 is reported separately rather than joined by name",
+  "panel_count": 0,
+  "panels": {},
+  "state": "DERIVED",
+  "terminal_members_independently_recomputed": 1504
+ },
+ "problems": []
+}
