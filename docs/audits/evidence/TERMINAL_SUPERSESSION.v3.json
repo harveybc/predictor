@@ -1,0 +1,20 @@
+{
+ "guarded_content_digests_via_custody": {
+  "terminals": "ec303016bc85c44b1ae30ea2785621b56d51cc1af11ebebe893a93e838927eab",
+  "terminals_v2": "41dfa92c00321822356c94c74420d83ff002adc1a1d579ad8a24cce6a16f45ab",
+  "terminals_v3": "f9dd5fc01f6b834d0d7be708aa295b9de321db41ff8d633e3a05fb5c000bdb97"
+ },
+ "layers": {
+  "DIVERGES": 0,
+  "INDEPENDENTLY_RECOMPUTED": 1501,
+  "PHYSICALLY_TYPED": 0,
+  "PRODUCER_DECLARED": 460,
+  "SEMANTICALLY_UNRESOLVED": 4,
+  "SOURCE_BOUND": 0
+ },
+ "schema": "crispdm.lake_terminal_supersession.v3",
+ "superseded_at": "2026-09-12T00:00:00Z",
+ "supersession_sha256": "f7072351d348f0c48bc3d038d3b5fe9ccb389255b5650a20ecd0bc9953243e3f",
+ "v4_written": 1965,
+ "verification_sha256": "be73a5922663ade590c4d9d8b7112894e3b818782e5a7e41fae471d1bab8b6af"
+}

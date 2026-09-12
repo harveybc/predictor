@@ -1,0 +1,35 @@
+{
+ "outbox_after": {
+  "attention_required": false,
+  "backlog_lag_seconds": 0.0,
+  "backlog_overdue": false,
+  "backlog_pending": 0,
+  "dead_letters_adjudicated": 16,
+  "dead_letters_total": 16,
+  "dead_letters_unadjudicated": 0,
+  "healthy": true,
+  "heartbeat_age_seconds": 25.284,
+  "max_backlog_lag_seconds": 900.0,
+  "max_heartbeat_age_seconds": 120.0,
+  "process_fresh": true
+ },
+ "outbox_before": {
+  "attention_required": false,
+  "backlog_lag_seconds": 0.0,
+  "backlog_overdue": false,
+  "backlog_pending": 0,
+  "dead_letters_adjudicated": 16,
+  "dead_letters_total": 16,
+  "dead_letters_unadjudicated": 0,
+  "healthy": true,
+  "heartbeat_age_seconds": 11.151,
+  "max_backlog_lag_seconds": 900.0,
+  "max_heartbeat_age_seconds": 120.0,
+  "process_fresh": true
+ },
+ "written": {
+  "descriptors": 37201,
+  "runs": 1,
+  "variables": 1965
+ }
+}
