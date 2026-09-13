@@ -1,0 +1,54 @@
+PRE C166-C184 python=3.12.13 numpy=2.5.1
+[BASE.predictor] FACT HOLDS  checkout at the ordered base (the audit commit), no tracked edits
+     {'head': 'e009cb14b570', 'tracked_dirty': []}
+[C166.1.source_rederive] REPRODUCED  a public dict switch lets a mutated, re-digested matrix be consumed
+     {'guard_on': 'REFUSED OperatorRefusal: REFUSED: source bytes do not re-derive the snapshot matrix, timestamps or availability', 'guard_off': 'ACCEPTED', 'switch': "df_snapshot.GUARDS['source_rederive']"}
+[C166.2.availability] REPRODUCED  a public dict switch lets a row available after its decision be transformed
+     {'guard_on': 'REFUSED OperatorRefusal: REFUSED: a row is available after its decision instant', 'guard_off': 'ACCEPTED'}
+[C166.3.fit_mode] REPRODUCED  a public dict switch lets trailing_haar_threshold fit EXPANDING; later training rows then move outputs at t<=30
+     {'guard_on': "REFUSED OperatorRefusal: REFUSED: fit mode EXPANDING_PREFIX is not implemented for kind trailing_haar_threshold (declared ['FROZEN_PREV", 'guard_off': 'ACCEPTED', 'rows_changed': '31-59 (training)', 'outputs_at_t_le_30_changed_with_guard_off': True}
+[C166.4.exhaustive_cuts] REPRODUCED  a public dict switch reduces the battery to seven cuts and a one-sample leak passes
+     {'guard_on': "REFUSED OperatorRefusal: REFUSED: battery detected a future leak: prefix differs at t=100 (outputs ['y'], availability/reason equal=Tru", 'guard_off': 'ACCEPTED', 'switch': "BATTERY_GUARDS['exhaustive_cuts']"}
+[C167.switch_tables_exist] REPRODUCED  production modules expose mutable guard tables
+     {'df_snapshot': ['GUARDS'], 'df_operators': ['GUARDS'], 'df_causal_battery': ['BATTERY_GUARDS']}
+[C166.5.block_identity] REPRODUCED  three distinct ADF blocks produce resource estimates of identical identity
+     {'adf_estimate_rows': 3, 'distinct_row_identities': 1, 'result_block_offsets': ['start', 'middle', 'end'], 'row_keys': ['bank', 'budget_bytes', 'code_sha256', 'dataset_id', 'decision', 'estimated_peak_bytes', 'estimator', 'formula', 'metric', 'module', 'params', 'partition', 'run_id', 'variable_id']}
+[C166.6.coverage_states] REPRODUCED  coverage maps REFUSED to FAILED and an inapplicable cell to NOT_RUN
+     {'REFUSED_becomes': 'FAILED', 'inapplicable_cell_becomes': 'NOT_RUN', 'states': ('RESULT', 'FAILED', 'INCONCLUSIVE', 'UNAVAILABLE', 'NOT_RUN')}
+[C166.7.historical_decision] REPRODUCED  a C137 decision with a retired name and old code passes the gate's D2 stage unchallenged
+     {'historical_subject': 'wavelet_haar_atrous:{"levels": 2, "threshold_k": 3.0}', 'c137_code_sha256': 'ca6dc575b68239d1', 'current_kinds_contain_it': False, 'd2_counted_as_present': True, 'gate_checks_code_name_or_mode': False}
+[C166.8.pca_parity] REPRODUCED  the exact-equality parity test fails under a different linear-algebra stack (PCA, effective rank, loadings)
+     {'base_anaconda': {'stack': '{"numpy": "1.26.4", "blas": [["mkl", "2023.1-Product"], ["openmp", null]]}', 'summary': '1 failed in 1.14s', 'first_numeric_diff_line': None}, 'trading_stack': {'stack': '{"numpy": "2.5.1", "blas": [["openblas", "0.3.33.112.0"]]}', 'summary': '1 passed in 1.48s', 'first_numeric_diff_line': None}}
+[C166.preserved_roots] FACT HOLDS  every root the order preserves exists and is read-only
+     {'roots': 18, 'missing': [], 'writable': []}
+[C180.host_inventory] FACT HOLDS  live CPU RAM and GPU VRAM per role; WORKER_B GPU1 has no handle (quarantined, not schedulable); this order uses CPU only
+     {'COORDINATOR': {'cpus': 16, 'cpu_ram_total_gib': 30.53, 'cpu_ram_available_gib': 23.3, 'batch_slice_max_gib': 14.0, 'memguard': 'active', 'gpus_responding': [{'index': 0, 'name': 'NVIDIA GeForce RTX 4070 Laptop GPU', 'vram_total_mib': 8188, 'vram_free_mib': 7276}], 'gpu_handle_errors': []}, 'WORKER_A': {'cpus': 32, 'cpu_ram_total_gib': 30.58, 'cpu_ram_available_gib': 20.21, 'batch_slice_max_gib': 14.0, 'memguard': 'active', 'gpus_responding': [{'index': 0, 'name': 'NVIDIA GeForce RTX 4090 Laptop GPU', 'vram_total_mib': 16376, 'vram_free_mib': 15915}], 'gpu_handle_errors': []}, 'WORKER_B': {'cpus': 32, 'cpu_ram_total_gib': 14.29, 'cpu_ram_available_gib': 10.59, 'batch_slice_max_gib': 8.0, 'memguard': 'active', 'gpus_responding': [{'index': 0, 'name': 'NVIDIA GeForce RTX 5070 Ti Laptop GPU', 'vram_total_mib': 12227, 'vram_free_mib': 11759}], 'gpu_handle_errors': ['Unable to determine the device handle for GPU1: 0000:0A:00.0: Unknown Error']}}
+
+=== identities (before == after) ===
+  state:lab_evaluation_c137_v1: ba9f6d85ad327c02 unchanged=True
+  state:lab_delay_cost_c137_v2: cab51b8e908cf112 unchanged=True
+  state:causal_battery_c156_v1: a789a562ac66b50e unchanged=True
+  state:campaign_plan_c162_v1: 9dee1e47a80c834c unchanged=True
+  state:profiles_c162_v1_coordinator: 5240fce0e8ab91e0 unchanged=True
+  state:profiles_c162_v1_worker_a: ef0c4c0cc8b07074 unchanged=True
+  state:profiles_c162_v1_worker_b: 369f10501ebc5ef1 unchanged=True
+  state:snr_calibration_c163_v1: b00ee7cae628f99b unchanged=True
+  state:load_receipts: 6630789b057bece8 unchanged=True
+  state:c151_worst_case_smoke_v1: 54b3b1a3f96a79ce unchanged=True
+  state:c151_worst_case_smoke_v2: a8b1106b674dcd66 unchanged=True
+  state:host_preflight_c161_v1: a82275087835b82d unchanged=True
+  state:host_preflight_c161_v2: 5c4d3bc2e99f9f29 unchanged=True
+  state:c146_incident_v1: e16df98e4e3d01ed unchanged=True
+  state:synthetic_bank_c128_v1: 4f9a10d8fa3ca8d2 unchanged=True
+  state:public_panels_c126_v2: 38ce6e6360e22e2b unchanged=True
+  state:profiles_c130_v1: e3b0c44298fc1c14 unchanged=True
+  state:snr_calibration_c134_v1: b7ae4b3bfb03cd75 unchanged=True
+  evidence:C146_OOM_INCIDENT_RECORD.v1.json: da6aa2270ea7e70e unchanged=True
+  evidence:C122_C124_ADJUDICATIONS.v1.json: 6f0e6148fdea3ff2 unchanged=True
+  evidence:D3_QUANTIZATION_COMPRESSION_TIMEFREQ_DETECTORS_DESIGN.v1.json: 7690fdb435fa90eb unchanged=True
+  evidence:D4_EQUALIZATION_REDUNDANCY_ALIGNMENT_DESIGN.v1.json: 76a1f81a55fb63b1 unchanged=True
+  evidence:D5_ROBUSTNESS_ROUTING_ALLOCATION_DESIGN.v1.json: c3e895d6e509194f unchanged=True
+  order:MUSASHI_AUDIT_C146_C165_MEMORY_CAUSALITY_2026_09_13.md: 1a080dcc1d052c35 unchanged=True
+  order:MUSASHI_TO_GENERAL_SATOSHI_C166_C184_D2_REATTESTATION_ORDER_2026_09_13.md: a6fe36eb572ad4eb unchanged=True
+
+=== PRE SUMMARY: 9 absences/defects, 9 reproduced, not reproduced []; facts differing []; identities changed [] ===
