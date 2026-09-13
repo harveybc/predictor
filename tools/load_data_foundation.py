@@ -44,6 +44,17 @@ LICENSE_STATES = ("OPEN_ATTRIBUTION", "OPEN_PUBLIC_DOMAIN", "RESTRICTED_NO_DERIV
 COMPONENTS = ("RAW", "DENOISED", "RESIDUAL", "COMPARISON")
 SUBJECT_KINDS = ("VARIABLE", "MATRIX")
 FORBIDDEN = ("PUBLICLY_ELIGIBLE", "LIVE_ELIGIBLE")
+# C164 (order 2026-09-13): runtime, causality and host grains
+TERMINAL_STATUSES = ("COMPLETED", "FAILED", "INCONCLUSIVE", "REFUSED", "RESOURCE_EXCEEDED", "UNCERTAIN")
+RESOURCE_DECISIONS = ("RUN_EXACT", "RUN_BOUNDED", "NOT_RUN_RESOURCE_BOUND")
+HOST_ROLES = ("COORDINATOR", "WORKER_A", "WORKER_B")
+CAUSAL_TEST_CLASSES = ("PREFIX_ALL_T", "BATCH_STEP_CHUNK_RESTART", "SUFFIX_ADVERSARIAL", "REFERENCE_EQUALITY",
+                       "NEGATIVE_CONTROL", "GUARD_MUTATION", "SNAPSHOT_REFUSAL", "FIT_MODE")
+CAUSAL_OUTCOMES = ("PASS", "FAIL", "DETECTED", "NOT_DETECTED")
+NAMING_SUBJECTS = ("OPERATOR", "ESTIMATOR", "DESIGN_ARM")
+NAMING_DECISIONS = ("RENAMED", "OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL", "DESIGN_ONLY_NOT_IMPLEMENTED")
+HOST_CHECK_STATES = ("VERIFIED", "MISMATCH", "UNAVAILABLE")
+ATTEMPT_STATES = ("NON_GOVERNING_ATTEMPT",)
 
 # column types
 TEXT, INT, BOOL, JSON = "text", "int", "bool", "json"
@@ -101,6 +112,34 @@ TABLES = {
                          "operator": TEXT, "state": enum(COVERAGE_STATES), "code_sha256": TEXT},
     "df_fact_load_receipt": {"run_id": TEXT, "table_name": TEXT, "rows_offered": INT, "rows_inserted": INT,
                              "rows_already_present": INT, "rows_refused": INT, "refusals": JSON},
+    # C164
+    "df_fact_resource_estimate": {"run_id": TEXT, "bank": enum(BANKS), "dataset_id": TEXT,
+                                  "variable_id": TEXT_OR_NULL, "partition": TEXT_OR_NULL, "module": TEXT,
+                                  "metric": TEXT, "estimator": TEXT, "estimated_peak_bytes": INT, "formula": TEXT,
+                                  "params": JSON, "budget_bytes": INT, "decision": enum(RESOURCE_DECISIONS),
+                                  "code_sha256": TEXT},
+    "df_fact_dataset_terminal": {"run_id": TEXT, "host_role": enum(HOST_ROLES), "bank": enum(BANKS),
+                                 "dataset_id": TEXT, "contract_sha256": TEXT, "code_sha256": TEXT,
+                                 "status": enum(TERMINAL_STATUSES), "reason": TEXT, "rows_written": INT,
+                                 "variables_profiled": INT, "metrics_completed": INT, "metrics_missing": INT,
+                                 "planned_peak_bytes": INT_OR_NULL, "observed_peak_rss_bytes": INT_OR_NULL,
+                                 "memory_limit_bytes": INT, "limit_mechanism": TEXT, "wall_seconds": NUM_OR_NULL,
+                                 "cpu_seconds": NUM_OR_NULL, "output_file": TEXT_OR_NULL,
+                                 "output_sha256": TEXT_OR_NULL, "started_at": TEXT, "ended_at": TEXT_OR_NULL},
+    "df_fact_causal_test": {"run_id": TEXT, "operator_kind": TEXT, "operator_params": JSON, "level": INT_OR_NULL,
+                            "test_class": enum(CAUSAL_TEST_CLASSES), "case_id": TEXT, "n": INT, "cuts_tested": INT,
+                            "outcome": enum(CAUSAL_OUTCOMES), "reason": TEXT, "code_sha256": TEXT},
+    "df_fact_naming_isolation_decision": {"run_id": TEXT, "subject": TEXT, "subject_kind": enum(NAMING_SUBJECTS),
+                                          "previous_name": TEXT_OR_NULL, "decision": enum(NAMING_DECISIONS),
+                                          "evidence": TEXT, "code_sha256": TEXT},
+    "df_fact_host_receipt": {"run_id": TEXT, "host_role": enum(HOST_ROLES), "check_name": TEXT,
+                             "expected": TEXT_OR_NULL, "observed": TEXT_OR_NULL, "status": enum(HOST_CHECK_STATES),
+                             "details": JSON, "checked_at": TEXT, "code_sha256": TEXT},
+    "df_fact_incident_attempt": {"run_id": TEXT, "attempt_id": TEXT, "module": TEXT,
+                                 "state": enum(ATTEMPT_STATES), "terminated_by": TEXT, "event_at": TEXT_OR_NULL,
+                                 "victim_pid": INT_OR_NULL, "victim_anon_rss_bytes": INT_OR_NULL,
+                                 "root_name": TEXT_OR_NULL, "root_listing_sha256": TEXT_OR_NULL,
+                                 "missing_receipts": JSON, "evidence": JSON, "code_sha256": TEXT},
 }
 
 
@@ -218,7 +257,20 @@ def validate_row(table: str, row: dict) -> list[str]:
             p.append("a row that did not complete needs a reason")
     if table == "df_fact_lab_decision" and row.get("externally_reviewed") is not False:
         p.append("a lab decision is loaded unreviewed; review is recorded by the reviewer, not here")
-    for c in ("content_sha256", "code_sha256", "spec_sha256", "contract_sha256", "rule_sha256"):
+    if table == "df_fact_dataset_terminal":
+        if row.get("status") != "COMPLETED" and not str(row.get("reason", "")).strip():
+            p.append("a terminal that did not complete needs a reason")
+        if row.get("status") == "COMPLETED" and row.get("output_sha256") is None:
+            p.append("a COMPLETED terminal binds its verified output digest")
+        if row.get("status") != "COMPLETED" and row.get("output_sha256") is not None:
+            p.append("only a COMPLETED terminal binds a verified output digest")
+    if table == "df_fact_causal_test" and row.get("outcome") in ("FAIL", "NOT_DETECTED") \
+            and not str(row.get("reason", "")).strip():
+        p.append("a failed or undetected causal test needs a reason")
+    if table == "df_fact_host_receipt" and row.get("status") != "VERIFIED" and not row.get("details"):
+        p.append("an unverified host check needs details")
+    for c in ("content_sha256", "code_sha256", "spec_sha256", "contract_sha256", "rule_sha256", "output_sha256",
+              "root_listing_sha256"):
         if c in spec and isinstance(row.get(c), str) and not (len(row[c]) == 64 and all(ch in "0123456789abcdef" for ch in row[c])):
             p.append(f"{c}: expected a sha256 hex digest")
     try:

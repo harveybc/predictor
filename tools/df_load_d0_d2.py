@@ -53,6 +53,8 @@ L = _load("load_data_foundation")
 COV = _load("df_coverage")
 HISTORICAL = ("fact_variable_characterization", "fact_terminal_verification_variable_v2", "fact_campaign_unit",
               "dim_campaign", "dim_campaign_run", "fact_campaign_consumption")
+C164_TABLES = ("df_fact_resource_estimate", "df_fact_dataset_terminal", "df_fact_causal_test",
+               "df_fact_naming_isolation_decision", "df_fact_host_receipt", "df_fact_incident_attempt")
 
 
 def _sha_file(p: Path) -> str:
@@ -231,6 +233,24 @@ def collect(args) -> tuple[dict, dict]:
                      "inputs_sha256": _sha_file(Path(args.profiles) / "PROFILE_RUN_RECEIPT.json"),
                      "status": "COMPLETED", "cpu_seconds": None,
                      "details": {t: len(v) for t, v in profile_tables.items()}})
+    for d in getattr(args, "table_dir", None) or []:
+        # C164: runtime, causal, naming, host and incident outputs, each a directory of
+        # table-named JSONL files. Only the C164 grains are taken from such a directory.
+        d = Path(d)
+        found = [t for t in C164_TABLES if (d / f"{t}.jsonl").is_file()]
+        if not found:
+            raise SystemExit(f"REFUSED: {d.name} holds none of the C164 tables")
+        digests, counts, first = [], {}, None
+        for t in found:
+            rows = list(_jsonl(d / f"{t}.jsonl"))
+            tables.setdefault(t, []).extend(rows)
+            digests.append(_sha_file(d / f"{t}.jsonl"))
+            counts[t] = len(rows)
+            first = first or (rows[0] if rows else None)
+        runs.append({"run_id": first["run_id"] if first else f"c164_{d.name}", "module": f"C164 outputs: {d.name}",
+                     "code_sha256": first.get("code_sha256") if first and first.get("code_sha256") else "0" * 64,
+                     "inputs_sha256": hashlib.sha256("".join(digests).encode()).hexdigest(),
+                     "status": "COMPLETED", "cpu_seconds": None, "details": counts})
     cov_run = "c140_" + dims_run[3:]
     matrix, cov_rows = coverage(contracts, profile_tables, lab_runs, cov_run)
     tables["df_fact_coverage"] = cov_rows
@@ -288,6 +308,8 @@ def main(argv=None) -> int:
                     help="corrected delay/cost table; replaces the lab run's own table in the load")
     ap.add_argument("--snr", type=Path)
     ap.add_argument("--profiles", type=Path)
+    ap.add_argument("--table-dir", type=Path, action="append",
+                    help="C164 output directory of table-named JSONL files; repeatable")
     a = ap.parse_args(argv)
     if a.receipt.exists():
         raise SystemExit("REFUSED: the receipt exists; each load is write-once")
@@ -313,9 +335,16 @@ def main(argv=None) -> int:
         receipt["throwaway_database_dropped"] = True
     else:
         eng = _engine()
-        before = _counts(eng, HISTORICAL)
+        # C164: history is every pre-existing base table outside the data-foundation grains,
+        # discovered at load time, not a fixed list.
+        with eng.connect() as c:
+            history = [r[0] for r in c.execute(text(
+                "SELECT table_name FROM information_schema.tables WHERE table_schema='public' "
+                "AND table_type='BASE TABLE' AND table_name NOT LIKE 'df\\_%' ORDER BY 1"))]
+        before = _counts(eng, history)
         receipt["load"] = load_all(eng, tables)
-        after = _counts(eng, HISTORICAL)
+        after = _counts(eng, history)
+        receipt["tables_written_by_this_load"] = sorted(tables)
         receipt["historical_before"], receipt["historical_after"] = before, after
         receipt["historical_unchanged"] = before == after
         eng.dispose()

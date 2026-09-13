@@ -1,0 +1,104 @@
+{
+ "attempts": [
+  {
+   "attempt_id": "C130_C133_PROFILES_ATTEMPT_1",
+   "event_at": "2026-09-12T22:13:11-05:00",
+   "module": "C130_C133_PROFILES",
+   "terminated_by": "KERNEL_OOM_KILL_OF_A_RUNNER_WORKER",
+   "victim_anon_rss_bytes": 13559332864,
+   "victim_pid": 368024
+  },
+  {
+   "attempt_id": "C134_SNR_CALIBRATION_ATTEMPT_1",
+   "event_at": "2026-09-12T22:13:49-05:00",
+   "module": "C134_SNR_CALIBRATION",
+   "terminated_by": "EDITOR_SESSION_SCOPE_STOPPED_AFTER_OOM",
+   "victim_anon_rss_bytes": null,
+   "victim_pid": null
+  },
+  {
+   "attempt_id": "C130_C133_PROFILES_ATTEMPT_2",
+   "event_at": "2026-09-12T22:29:27-05:00",
+   "module": "C130_C133_PROFILES",
+   "terminated_by": "KERNEL_OOM_KILL_OF_A_RUNNER_WORKER",
+   "victim_anon_rss_bytes": 23443521536,
+   "victim_pid": 383650
+  },
+  {
+   "attempt_id": "C134_SNR_CALIBRATION_ATTEMPT_2",
+   "event_at": "2026-09-12T22:30:57-05:00",
+   "module": "C134_SNR_CALIBRATION",
+   "terminated_by": "EDITOR_SESSION_SCOPE_STOPPED_AFTER_OOM",
+   "victim_anon_rss_bytes": null,
+   "victim_pid": null
+  }
+ ],
+ "bound_pre": {
+  "output_sha256": "dcf5710b23c9b595555a8d0c88a41b0b173f7412c07e199fbfa48f142edb2e5a",
+  "script_sha256": "96ebb6156a43a1b48778d33cb5240cde860f7ff32dbb123103dd7abe014b1991"
+ },
+ "code_sha256": "95412f764332d2f8b2a0c5e72ab5644925cbb6efbe712ad51d64637163371fec",
+ "kernel_oom_kills": [
+  {
+   "anon_rss_bytes": 13559332864,
+   "at": "2026-09-12T22:13:11-05:00",
+   "pid": 368024,
+   "process_name": "python",
+   "scope": "EDITOR_SESSION_SCOPE"
+  },
+  {
+   "anon_rss_bytes": 23443521536,
+   "at": "2026-09-12T22:29:27-05:00",
+   "pid": 383650,
+   "process_name": "python",
+   "scope": "EDITOR_SESSION_SCOPE"
+  }
+ ],
+ "never": "no row, figure or root of these attempts is a result or is promoted",
+ "not_derivable_from_disk": [
+  "which dataset each killed worker was profiling: the runner wrote no job-start record (the PRE names projection-consistent candidates)",
+  "the launch time of the first attempt: its roots were empty and were removed when the names were reused at the second launch; the kept roots belong to the second attempt"
+ ],
+ "record_sha256": "0343da9f908b41b101507f6d6467d89cb1e5328ebe67bd8ce9ede43c115ab2de",
+ "roots_left": {
+  "C130_C133_PROFILES": {
+   "exists": true,
+   "files": [],
+   "listing_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "missing_final_receipts": [
+    "PROFILE_RUN_RECEIPT.json"
+   ],
+   "read_only": true,
+   "root_name": "profiles_c130_v1"
+  },
+  "C134_SNR_CALIBRATION": {
+   "exists": true,
+   "files": [
+    "run.log"
+   ],
+   "listing_sha256": "b7ae4b3bfb03cd75fe1d6c081bd9153c87ce90c3502115ea3278757782d382fc",
+   "missing_final_receipts": [
+    "SNR_CALIBRATION.v1.json",
+    "SNR_CALIBRATION.v1.olap_rows.jsonl"
+   ],
+   "read_only": true,
+   "root_name": "snr_calibration_c134_v1"
+  }
+ },
+ "schema": "crispdm.data_foundation.c146_incident_record.v1",
+ "state": "NON_GOVERNING_ATTEMPTS",
+ "units_failed_with_oom_kill": [
+  {
+   "at": "2026-09-12T22:13:00-05:00",
+   "unit": "BROWSER_SCOPE"
+  },
+  {
+   "at": "2026-09-12T22:13:49-05:00",
+   "unit": "EDITOR_SESSION_SCOPE"
+  },
+  {
+   "at": "2026-09-12T22:30:57-05:00",
+   "unit": "EDITOR_SESSION_SCOPE"
+  }
+ ]
+}
