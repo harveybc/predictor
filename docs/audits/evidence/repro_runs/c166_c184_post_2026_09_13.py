@@ -465,9 +465,8 @@ def sec_fresh():
         units_root.mkdir(parents=True, exist_ok=False)
         checks = {}
         for role, term in picked:
-            unit_id = term["dataset_id"].split("synthetic:", 1)[-1] if "synthetic:" in term["dataset_id"] else None
-            ud = next((u for u in RESERVE.iterdir() if u.is_dir() and SYNC.unit_contract(u)["contract_sha256"] == term["contract_sha256"]), None) \
-                if unit_id is None else RESERVE / unit_id
+            # dataset_id is synthetic.df_synthetic_bank.<generator version>.<unit_id>; unit ids hold no dot
+            ud = RESERVE / term["dataset_id"].rsplit(".", 1)[-1]
             v = BANK.verify_unit(ud)
             (units_root / ud.name).symlink_to(ud)
             checks[ud.name] = {"role": role, "regenerates_from_seed": v["ok"],
@@ -478,29 +477,59 @@ def sec_fresh():
                                                         "--design", DESIGN, "--units-root", units_root, "--mode",
                                                         "FRESH_CONFIRMATION", "--host-role", "COORDINATOR",
                                                         "--task-memory", str(2 << 30)])
+        # A unit computed on a worker and re-run here may differ in the last ulps of floating point (C169 measured
+        # up to 1.0e-13 across roles). Numbers compare under the tolerance declared in C169, never by false byte
+        # equality; every other field compares exactly. Measured COST values (CPU and wall time) are not data results.
+        ABS_TOL, REL_TOL = 1e-12, 1e-10
 
         def rows_of(path):
-            out_rows = []
+            out_rows = {}
             for line in open(path):
                 obj = json.loads(line)
                 r = dict(obj["row"])
                 r.pop("run_id", None)
-                if obj["table"] == "df_fact_d2_unit_denoising" and r.get("branch") == "COST":
-                    r.pop("value", None)       # measured CPU and wall time, not a result of the data
-                out_rows.append(json.dumps({"table": obj["table"], "row": r}, sort_keys=True))
-            return sorted(out_rows)
+                cost = obj["table"] == "df_fact_d2_unit_denoising" and r.get("branch") == "COST"
+                nums = {k: v for k, v in r.items() if isinstance(v, float) and not (cost and k == "value")}
+                rest = {k: v for k, v in r.items() if k not in nums and not (cost and k == "value")}
+                key = json.dumps({"table": obj["table"], "row": rest}, sort_keys=True)
+                out_rows.setdefault(key, []).append(nums)
+            return out_rows
 
-        new_terms = {json.loads(p.read_text())["contract_sha256"]: json.loads(p.read_text())
-                     for p in (out_root / "terminals").glob("*.json")}
+        def compare(a, b):
+            if set(a) != set(b) or any(len(a[k]) != len(b[k]) for k in a):
+                return {"same_row_identities": False, "only_stored": len(set(a) - set(b)),
+                        "only_rerun": len(set(b) - set(a))}
+            worst, exact, over = 0.0, 0, 0
+            for k in a:
+                for x, y in zip(sorted(a[k], key=lambda d: json.dumps(d, sort_keys=True)),
+                                sorted(b[k], key=lambda d: json.dumps(d, sort_keys=True))):
+                    if set(x) != set(y):
+                        over += 1
+                        continue
+                    for f in x:
+                        d = abs(x[f] - y[f])
+                        worst = max(worst, d)
+                        exact += d == 0.0
+                        over += d > max(ABS_TOL, REL_TOL * max(abs(x[f]), abs(y[f])))
+            return {"same_row_identities": True, "numbers_exactly_equal": exact, "numbers_over_tolerance": over,
+                    "max_abs_difference": worst, "tolerance": {"absolute": ABS_TOL, "relative": REL_TOL}}
+
+        new_terms = {}
+        for p in (out_root / "terminals").glob("*.json"):
+            t = json.loads(p.read_text())
+            new_terms[t["contract_sha256"]] = t
         for role, term in picked:
             nt = new_terms.get(term["contract_sha256"])
             name = next(k for k, v in checks.items() if v["role"] == role)
             if nt is None or nt["status"] != "COMPLETED":
                 checks[name]["rerun"] = nt["status"] if nt else "MISSING"
                 continue
-            checks[name]["rows_equal_except_run_id_and_measured_cost"] = rows_of(FRESH_ROOT / term["output_file"]) == rows_of(out_root / nt["output_file"])
-        return (rc == 0 and len(picked) == 2 and all(c.get("regenerates_from_seed") and c.get("contract_matches_terminal")
-                                                      and c.get("rows_equal_except_run_id_and_measured_cost") for c in checks.values())), checks
+            checks[name]["rerun_vs_stored"] = compare(rows_of(FRESH_ROOT / term["output_file"]),
+                                                      rows_of(out_root / nt["output_file"]))
+        return (rc == 0 and len(picked) == 2 and all(
+            c.get("regenerates_from_seed") and c.get("contract_matches_terminal")
+            and c.get("rerun_vs_stored", {}).get("same_row_identities")
+            and c["rerun_vs_stored"].get("numbers_over_tolerance") == 0 for c in checks.values())), checks
     guarded("AT9", "results re-derive from arrays and bound contracts: two fresh units, one from each worker, regenerate "
             "from their seeds and re-run in a new process to the same rows", t9)
 
