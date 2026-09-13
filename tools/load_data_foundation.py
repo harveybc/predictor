@@ -287,9 +287,13 @@ def ddl() -> str:
                 checks.append(f"CHECK ({c} IN ({', '.join(_quote(v) for v in t[1])}))")
             if t in (TEXT, TEXT_OR_NULL) or isinstance(t, tuple):
                 checks.append(f"CHECK ({c} IS NULL OR {c} NOT IN ({', '.join(_quote(v) for v in FORBIDDEN)}))")
-        if "status" in cols and "value" in cols:
+        if "status" in cols and "value" in cols and "value_text" in cols:
             checks.append("CHECK (status <> 'COMPLETED' OR value IS NOT NULL OR value_text IS NOT NULL)")
             checks.append("CHECK (status = 'COMPLETED' OR (value IS NULL AND value_text IS NULL))")
+        elif "status" in cols and "value" in cols:
+            # C178: the D2 unit tables carry a numeric value only
+            checks.append("CHECK (status <> 'COMPLETED' OR value IS NOT NULL)")
+            checks.append("CHECK (status = 'COMPLETED' OR value IS NULL)")
         if table == "df_fact_lab_decision":
             checks.append("CHECK (externally_reviewed = FALSE)")
         checks += TABLE_CHECKS.get(table, [])

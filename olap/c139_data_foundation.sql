@@ -705,8 +705,8 @@ CREATE TABLE IF NOT EXISTS public.df_fact_d2_unit_denoising (
     CHECK (reason IS NULL OR reason NOT IN ('PUBLICLY_ELIGIBLE', 'LIVE_ELIGIBLE')),
     CHECK (code_sha256 IS NULL OR code_sha256 NOT IN ('PUBLICLY_ELIGIBLE', 'LIVE_ELIGIBLE')),
     CHECK (operator_code_sha256 IS NULL OR operator_code_sha256 NOT IN ('PUBLICLY_ELIGIBLE', 'LIVE_ELIGIBLE')),
-    CHECK (status <> 'COMPLETED' OR value IS NOT NULL OR value_text IS NOT NULL),
-    CHECK (status = 'COMPLETED' OR (value IS NULL AND value_text IS NULL)),
+    CHECK (status <> 'COMPLETED' OR value IS NOT NULL),
+    CHECK (status = 'COMPLETED' OR value IS NULL),
     loaded_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
