@@ -1,6 +1,6 @@
 # Estado real del preprocesamiento y secuencia vinculante
 
-**Fecha:** 2026-09-12
+**Fecha:** 2026-09-13
 **Estado:** `AUTHORITATIVE_STATUS_SUPPLEMENT`
 
 Este suplemento evita confundir cuatro estados distintos:
@@ -104,7 +104,25 @@ El cubo es memoria append-only. Debe recibir:
 No se borran resultados viejos para hacer espacio. Si se requiere particion o
 archivo historico, se conserva la identidad y la consulta unificada.
 
-## 6. Proxima puerta
+## 6. Incidente de ejecucion C130-C134
 
-La orden C122-C145 ejecuta D0-D2 y deja D3-D5 materializados como sucesores
-obligatorios. No abre seleccion ni entrenamiento.
+El primer intento completo de perfiles y SNR no produjo recibos finales. El
+perfilador lanzo ocho procesos y dos fueron terminados por OOM. La causa
+dominante esta identificada: el ADF exacto sobre 13,253,761 muestras y 228
+rezagos requiere aproximadamente 22.71 GiB solo para su matriz OLS. Una sola
+tarea puede agotar el host; bajar el numero de workers no es correccion
+suficiente.
+
+Ademas, la causalidad local de los operadores no esta aun ligada a una
+particion fisica: la API acepta una matriz arbitraria acompanada por la etiqueta
+`train`. Los operadores wavelet y de descomposicion no pueden consumirse hasta
+tener snapshots de fit/transform ligados a bytes, tiempo y particion, y superar
+una prueba exhaustiva de invariancia de prefijo.
+
+Estado: `D1_D2_RELAUNCH_BLOCKED_BY_MEMORY_AND_CAUSALITY_AUDIT`.
+
+## 7. Proxima puerta
+
+La orden C146-C165 corrige memoria y causalidad, completa D1-D2 con recibos
+finales y deja D3-D5 como sucesores obligatorios. No abre seleccion ni
+entrenamiento.
