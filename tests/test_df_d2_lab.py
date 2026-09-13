@@ -260,6 +260,35 @@ def test_wavelet_audit_invalidates_the_root_on_a_leaking_stand_in(design, reserv
         A.load_fresh_root(run_root, design)
 
 
+def test_a_unit_refused_whole_by_the_missing_data_rule_abstains_without_invalidating(design, reserve, tmp_path,
+                                                                                     monkeypatch):
+    """C172 run: every MCAR unit of the C137 bank had a longest complete TRAIN stretch of 16-43 rows. All arms were
+    REFUSED, and the first worker turned the unevaluated oracle into a whole-root invalidation."""
+    _, root, manifest = reserve
+    monkeypatch.setattr(W.LAB, "train_fit_slice", lambda observed, train: slice(0, W.MIN_FIT_ROWS - 1))
+    rows = []
+    summary = W.process_unit(_job(design, _unit(root, manifest, R1), tmp_path, tmp_path / "a"), rows.append)
+    assert summary["unit_evaluable"] is False and not summary["root_invalidation"], summary["root_invalidation_reasons"]
+    assert [o["outcome"] for o in summary["oracle_detection"]] == ["NOT_EVALUATED"]
+    den = [o["row"] for o in rows if o["table"] == W.DENOISING_TABLE]
+    assert den and {r["status"] for r in den} == {"REFUSED"} and {r["arm_role"] for r in den} == set(D.ARM_ROLES)
+
+
+def test_an_unevaluated_oracle_on_an_evaluated_unit_still_invalidates_the_root(design, reserve, tmp_path, monkeypatch):
+    _, root, manifest = reserve
+    real_fit = W.fit_public
+
+    def fit(u, spec, fit_mode, fit_sl):
+        if spec["kind"] == "centered_mean_oracle":
+            raise W.OPS.OperatorRefusal("REFUSED: stand-in refusal of the oracle only")
+        return real_fit(u, spec, fit_mode, fit_sl)
+
+    monkeypatch.setattr(W, "fit_public", fit)
+    summary = W.process_unit(_job(design, _unit(root, manifest, R1), tmp_path, tmp_path / "a"), lambda o: None)
+    assert summary["unit_evaluable"] is True
+    assert summary["root_invalidation"] and "ORACLE_NOT_EVALUATED" in summary["root_invalidation_reasons"]
+
+
 def test_fresh_unit_cannot_be_relabelled_historical(design, reserve, tmp_path):
     _, root, manifest = reserve
     with pytest.raises(W.UnitRefusal, match="never re-labelled"):

@@ -42,7 +42,12 @@ chunked streams and save/load restarts at those boundaries; ``wavelet_mad``
 refusing every path but one whole-TRAIN aggregate. A SINGLE difference, or a
 check that cannot run, sets ``root_invalidation`` and writes a durable, write-once
 ``ROOT_INVALIDATED__<unit>.json`` marker in the run root: the whole root is
-invalid, not the row.
+invalid, not the row. The non-causal oracle control must be DETECTED on every
+evaluated unit, else the root is invalid too. A unit whose longest complete TRAIN
+stretch is under ``MIN_FIT_ROWS`` (design ``rules.missing_data``) has every arm,
+controls included, REFUSED with that one reason: it is not an evaluated unit, it
+counts as abstention, and its unevaluated oracle does not invalidate the root
+(``unit_evaluable`` false in the summary).
 
 SNR facts come from ``df_snr``'s own CLI (``--d2-unit-facts``) in a child
 process: this module never loads ``df_snr`` and never names its offline kernel
@@ -74,6 +79,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 BASE_PROCESS_BYTES = 450 * (1 << 20)
+MIN_FIT_ROWS = 50                             # design rules.missing_data: longest complete TRAIN stretch
 OUTPUT_FILE = "d2_unit_rows.jsonl"
 AUDIT_FILE = "wavelet_audit.json"
 DENOISING_TABLE = "df_fact_d2_unit_denoising"
@@ -510,6 +516,9 @@ def process_unit(job: dict, writer_write, heartbeat=None, *, transform_batch=Non
            "regime": LAB.regime_of(rec), "variable_ids": u["variable_ids"], "code_sha256": D.lab_code_sha256(),
            "operator_code_sha256": OPS.code_sha256()}
     fit_sl = LAB.train_fit_slice(u["observed"], rec["partitions"]["train"])
+    # The declared missing-data rule refuses every arm of a unit whose longest complete TRAIN stretch is short; such
+    # a unit is not evaluated (C177 audits the units really evaluated) and counts as abstention, never as a pass.
+    unit_evaluable = fit_sl.stop - fit_sl.start >= MIN_FIT_ROWS
     T = u["observed"].shape[0]
     counts = {"rows": 0, "completed": 0, "missing": 0}
     snr_doc = run_snr_facts(Path(job["unit_dir"]), design, Path(job["attempt_dir"]) / "snr")
@@ -529,7 +538,7 @@ def process_unit(job: dict, writer_write, heartbeat=None, *, transform_batch=Non
         t0 = time.process_time()
         fitted, y, avail, cpu_fit = None, None, None, 0.0
         try:
-            if fit_sl.stop - fit_sl.start < 50:
+            if not unit_evaluable:
                 raise OPS.OperatorRefusal(f"longest complete train stretch has {fit_sl.stop - fit_sl.start} rows")
             fitted = fit_public(u, spec, op["fit_mode"], fit_sl)
             cpu_fit = time.process_time() - t0
@@ -563,12 +572,14 @@ def process_unit(job: dict, writer_write, heartbeat=None, *, transform_batch=Non
     emit(SNR_TABLE, snr_rows(ctx, snr_doc))
     invalid = [a for a in audits if a["root_invalidation"]]
     reasons = [f"WAVELET_AUDIT {a['operator_params']} failed {a['failed_checks']}" for a in invalid]
-    reasons += [f"ORACLE_{o['outcome']}" for o in oracle if o["outcome"] != "DETECTED"]
+    if unit_evaluable:
+        reasons += [f"ORACLE_{o['outcome']}" for o in oracle if o["outcome"] != "DETECTED"]
     n_haar = sum(op["spec"]["kind"] == "trailing_haar_threshold" for op in design["operators"])
     return {"unit_id": rec["unit_id"], "seed": int(rec["seed"]), "mode": mode, "content_sha256": u["content_sha256"],
             "contract_sha256": u["contract"]["contract_sha256"], "dataset_id": u["contract"]["dataset_id"],
             "n_variables": rec["n_variables"], "rows": counts["rows"], "rows_completed": counts["completed"],
             "rows_not_completed": counts["missing"], "wavelet_audits": audits, "oracle_detection": oracle,
+            "unit_evaluable": unit_evaluable, "fit_stretch_rows": fit_sl.stop - fit_sl.start,
             "root_invalidation": bool(reasons), "root_invalidation_reasons": reasons,
             "memory_estimate_bytes": estimate_unit_memory_bytes(T, rec["n_variables"], len(design["operators"]),
                                                                 n_haar)}
