@@ -7,9 +7,12 @@ For each dataset in the custody manifest of C126:
    equal the manifest before anything is parsed;
 2. the archive is parsed with rules declared here (separator, decimal mark,
    missing markers, timestamp format), without interpolation, filling,
-   deduplication or re-ordering. A non-monotonic series refuses;
+   deduplication or re-ordering. A non-monotonic series refuses, with every
+   backward jump listed;
 3. a canonical panel (parquet: a timestamp label column plus one column per
-   variable) and a parse receipt are written write-once into a new root;
+   variable, missing observations as typed nulls) and a parse receipt are
+   built in a `.partial` directory and renamed into place only when the
+   contract seals, so a failure never leaves a partial dataset behind;
 4. a common contract is sealed.
 
 What the contract declares comes only from evidence:
@@ -23,6 +26,11 @@ What the contract declares comes only from evidence:
   China Meteorological Administration weather in UCI 501) carry
   TERMS_REQUIRE_REVIEW, since the distributor's license may not cover them;
 * the timestamp meaning (period start or end) is UNKNOWN unless stated.
+
+Version 1 of the panel root (public_panels_c126_v1) holds the first build and
+its receipt: two datasets failed there on parser defects (comma decimals in
+UCI 321; pandas' string dtype for the wind direction in UCI 501) and one was
+refused. It is kept as the record of that build; this code writes v2.
 """
 from __future__ import annotations
 
@@ -33,6 +41,7 @@ import importlib.util
 import io
 import json
 import re
+import shutil
 import sys
 import zipfile
 from pathlib import Path
@@ -44,9 +53,9 @@ import pyarrow.parquet as pq
 
 HERE = Path(__file__).resolve().parent
 RAW_ROOT = Path.home() / ".local/share/crispdm-data-foundation/public_raw_c126_20260912"
-PANEL_ROOT = Path.home() / ".local/state/crispdm-data-foundation/public_panels_c126_v1"
+PANEL_ROOT = Path.home() / ".local/state/crispdm-data-foundation/public_panels_c126_v2"
 RAW_LOGICAL = "crispdm-data-foundation/public_raw_c126_20260912"
-PANEL_LOGICAL = "crispdm-data-foundation/public_panels_c126_v1"
+PANEL_LOGICAL = "crispdm-data-foundation/public_panels_c126_v2"
 UNKNOWN = "UNKNOWN"
 
 
@@ -70,6 +79,11 @@ def page_text(raw: bytes) -> str:
     t = re.sub(r"<script.*?</script>|<style.*?</style>", " ", t, flags=re.S | re.I)
     t = html.unescape(re.sub(r"<[^>]+>", " ", t))
     return re.sub(r"\s+", " ", t)
+
+
+def is_text(series: pd.Series) -> bool:
+    """Text in any pandas representation (object or the string dtype)."""
+    return not pd.api.types.is_numeric_dtype(series)
 
 
 # ------------------------------------------------------------ declarations
@@ -162,34 +176,37 @@ def find(pattern: str, text: str):
 
 
 # ----------------------------------------------------------------- parsers
-def _member(zf: zipfile.ZipFile, name: str) -> bytes:
-    return zf.read(name)
+def _numeric(s: pd.Series, decimal_comma: bool = False) -> pd.Series:
+    if decimal_comma:
+        s = s.str.replace(",", ".", regex=False)
+    return pd.to_numeric(s, errors="raise").astype("float64")
 
 
 def parse_uci_321(archives):
     (_, zf), = archives
-    raw = _member(zf, "LD2011_2014.txt")
-    df = pd.read_csv(io.BytesIO(raw), sep=";", decimal=",", quotechar='"', header=0, index_col=0, dtype=str)
+    raw = zf.read("LD2011_2014.txt")
+    df = pd.read_csv(io.BytesIO(raw), sep=";", quotechar='"', header=0, index_col=0, dtype=str)
     labels = list(df.index)
-    values = df.apply(lambda s: pd.to_numeric(s, errors="raise")).astype("float64")
+    # The file writes decimals with a comma ("3,807..."); declared, not guessed.
+    values = df.apply(lambda s: _numeric(s, decimal_comma=True))
     return labels, values, {"LD2011_2014.txt": sha_bytes(raw)}, {c: c for c in values.columns}
 
 
 def parse_uci_235(archives):
     (_, zf), = archives
-    raw = _member(zf, "household_power_consumption.txt")
+    raw = zf.read("household_power_consumption.txt")
     df = pd.read_csv(io.BytesIO(raw), sep=";", header=0, dtype=str, na_values=["?", ""], keep_default_na=False)
     labels = (df["Date"] + " " + df["Time"]).tolist()
-    values = df.drop(columns=["Date", "Time"]).apply(lambda s: pd.to_numeric(s, errors="raise")).astype("float64")
+    values = df.drop(columns=["Date", "Time"]).apply(_numeric)
     return labels, values, {"household_power_consumption.txt": sha_bytes(raw)}, {c: c for c in values.columns}
 
 
 def parse_uci_374(archives):
     (_, zf), = archives
-    raw = _member(zf, "energydata_complete.csv")
+    raw = zf.read("energydata_complete.csv")
     df = pd.read_csv(io.BytesIO(raw), header=0, dtype=str, keep_default_na=False)
     labels = df["date"].tolist()
-    values = df.drop(columns=["date"]).apply(lambda s: pd.to_numeric(s.str.strip(), errors="raise")).astype("float64")
+    values = df.drop(columns=["date"]).apply(lambda s: _numeric(s.str.strip()))
     return labels, values, {"energydata_complete.csv": sha_bytes(raw)}, {c: c for c in values.columns}
 
 
@@ -216,7 +233,7 @@ def parse_uci_501(archives):
             if col in ("No", "year", "month", "day", "hour", "station"):
                 continue
             s = df[col]
-            frames[f"{station}__{col}"] = s if col == "wd" else pd.to_numeric(s, errors="raise").astype("float64")
+            frames[f"{station}__{col}"] = s.astype(object) if col == "wd" else _numeric(s)
     values = pd.DataFrame(frames)
     source_col = {c: c.split("__", 1)[1] for c in values.columns}
     return labels, values, digests, source_col
@@ -236,7 +253,7 @@ def parse_jena(archives):
             raise C.ContractRefusal([f"{n}: header differs from the first file"])
     df = pd.concat([f for _, f in frames], ignore_index=True)
     labels = df["Date Time"].tolist()
-    values = df.drop(columns=["Date Time"]).apply(lambda s: pd.to_numeric(s, errors="raise")).astype("float64")
+    values = df.drop(columns=["Date Time"]).apply(_numeric)
     return labels, values, digests, {c: c for c in values.columns}
 
 
@@ -244,6 +261,9 @@ PARSERS = {"uci_321": parse_uci_321, "uci_235": parse_uci_235, "uci_374": parse_
            "uci_501": parse_uci_501, "jena": parse_jena}
 TIMESTAMP_FORMATS = {"uci_321": "%Y-%m-%d %H:%M:%S", "uci_235": "%d/%m/%Y %H:%M:%S", "uci_374": "%Y-%m-%d %H:%M:%S",
                      "uci_501": "%Y-%m-%d %H:%M:%S", "jena": "%d.%m.%Y %H:%M:%S"}
+PARSE_RULES = {"uci_321": "sep ';', quoted label index, DECIMAL_COMMA", "uci_235": "sep ';', missing '?' or empty",
+               "uci_374": "comma-separated, quoted, values stripped", "uci_501": "nested zip of station CSVs, missing 'NA'",
+               "jena": "latin-1 CSVs concatenated in file-name order"}
 
 
 # ------------------------------------------------------------------- build
@@ -268,12 +288,15 @@ def _verified_inputs(entry: dict, raw_root: Path):
 
 def build(logical_id: str, raw_root: Path = RAW_ROOT, panel_root: Path = PANEL_ROOT) -> dict:
     spec = SOURCES[logical_id]
-    manifest = json.loads((raw_root / "PUBLIC_RAW_MANIFEST.json").read_text())
-    entry = next(d for d in manifest["datasets"] if d["logical_id"] == logical_id)
+    manifest = json.loads((Path(raw_root) / "PUBLIC_RAW_MANIFEST.json").read_text())
+    entry = next((d for d in manifest["datasets"] if d["logical_id"] == logical_id), None)
+    if entry is None:
+        raise C.ContractRefusal([f"{logical_id}: not in the custody manifest"])
     out = Path(panel_root) / logical_id
-    if out.exists():
-        raise C.ContractRefusal([f"{out.name}: canonical panel exists; write-once"])
-    archives, files, text, ev = _verified_inputs(entry, raw_root)
+    partial = out.with_name(out.name + ".partial")
+    if out.exists() or partial.exists():
+        raise C.ContractRefusal([f"{out.name}: canonical panel (or an unfinished .partial build) exists; write-once"])
+    archives, files, text, ev = _verified_inputs(entry, Path(raw_root))
     if find(r"This dataset is licensed under a Creative Commons Attribution 4\.0 International \(CC BY 4\.0\) license\.|"
             r"Terms of Use \(as per Creative Commons CC-BY-4\.0\)", text) is None:
         raise C.ContractRefusal([f"{logical_id}: the license statement is not in the kept evidence page"])
@@ -296,6 +319,10 @@ def build(logical_id: str, raw_root: Path = RAW_ROOT, panel_root: Path = PANEL_R
     ev_ref = {"source": f"{RAW_LOGICAL}/{ev['file']}", "sha256": ev["sha256"]}
     receipt_units, variables = {}, []
     header_sha = next(iter(member_digests.values()))
+    sem_quote = find(spec["semantics"][1], text)
+    missing_quote = find(spec["missing"], text) if spec.get("missing") else None
+    sentinel = spec.get("sentinel")
+    sentinel_quote = find(sentinel[0], text) if sentinel else None
     for col in values.columns:
         src = source_col[col]
         unit_val, unit_ev = UNKNOWN, []
@@ -314,22 +341,18 @@ def build(logical_id: str, raw_root: Path = RAW_ROOT, panel_root: Path = PANEL_R
             if quote:
                 unit_val, unit_ev = u, [dict(ev_ref, source=f"{ev_ref['source']}: {quote}")]
         receipt_units[col] = unit_val
-        sem_quote = find(spec["semantics"][1], text)
         semantics = ({"type": spec["semantics"][0], "description": f"source column {src!r}",
                       "evidence": [dict(ev_ref, source=f"{ev_ref['source']}: {sem_quote}")]} if sem_quote
                      else {"type": UNKNOWN, "description": f"source column {src!r}", "evidence": []})
         tp = src in spec.get("third_party", ())
         tp_quote = find(spec.get("third_party_statement", r"(?!)"), text) if tp else None
         excluded = spec.get("excluded", {}).get(src)
-        is_text = values[col].dtype == object
-        missing_quote = find(spec["missing"], text) if spec.get("missing") else None
-        sentinel = spec.get("sentinel")
-        sentinel_quote = find(sentinel[0], text) if sentinel else None
+        text_col = is_text(values[col])
         variables.append(C.variable(
             spec["dataset_id"], col,
             semantics=semantics, unit={"value": unit_val, "evidence": unit_ev},
             producer={"kind": "SOURCE_MEASUREMENT", "reference": f"{spec['provider']} ({src})"},
-            physical_type="string" if is_text else "float64",
+            physical_type="string" if text_col else "float64",
             frequency_nominal_seconds=spec["frequency_seconds"], event_time="SOURCE_TIMESTAMP_LABEL",
             available_time_rule=UNKNOWN,
             missingness={"encoding": "typed null in the canonical panel (source markers: " + {
@@ -342,60 +365,64 @@ def build(logical_id: str, raw_root: Path = RAW_ROOT, panel_root: Path = PANEL_R
             original_fields={"source_column": src, "excluded_reason": excluded,
                              "third_party_statement": tp_quote}))
 
-    out.mkdir(parents=True)
-    # A missing observation is a typed null in the panel, never a NaN that
-    # could be mistaken for a computed value.
-    columns = {}
-    for c in values.columns:
-        if values[c].dtype == object:
-            columns[c] = pa.array([None if (v is None or (isinstance(v, float) and np.isnan(v))) else str(v)
-                                   for v in values[c].tolist()], pa.string())
-        else:
-            arr = values[c].to_numpy(dtype="float64")
-            columns[c] = pa.array(arr, type=pa.float64(), mask=np.isnan(arr))
-    table = pa.table({"timestamp_label": pa.array([str(x) for x in labels], pa.string()), **columns})
-    panel_path = out / "panel.parquet"
-    pq.write_table(table, panel_path, compression="zstd")
-    tz = spec.get("timezone")
-    tz_quote = find(tz[1], text) if tz else None
-    receipt = {"schema": "crispdm.data_foundation.public_parse_receipt.v1", "logical_id": logical_id,
-               "parser": spec["parser"], "timestamp_format": TIMESTAMP_FORMATS[spec["parser"]],
-               "rows": len(labels), "columns": len(values.columns), "member_sha256": member_digests,
-               "duplicate_timestamp_labels": duplicates, "rows_reordered": 0, "rows_filled": 0, "rows_dropped": 0,
-               "units_declared": {k: v for k, v in receipt_units.items() if v != UNKNOWN},
-               "units_unknown": sorted(k for k, v in receipt_units.items() if v == UNKNOWN),
-               "missing_values": int(values.select_dtypes("float64").isna().sum().sum())}
-    receipt_path = out / "PARSE_RECEIPT.json"
-    receipt_path.write_text(json.dumps(receipt, indent=1, sort_keys=True) + "\n")
-    for p, role in ((panel_path, "DERIVED_CANONICAL_PANEL"), (receipt_path, "PARSE_RECEIPT")):
-        b = p.read_bytes()
-        files.append({"name": f"{PANEL_LOGICAL}/{logical_id}/{p.name}", "bytes": len(b), "sha256": sha_bytes(b),
-                      "role": role})
-    contract = {
-        "schema": C.DATASET_SCHEMA, "dataset_id": spec["dataset_id"], "version": entry["files"][0]["retrieved_at_utc"],
-        "bank": "PUBLIC", "files": files, "content_sha256": "", "contract_sha256": "",
-        "source": {"provider": spec["provider"], "official_url": entry["license"]["evidence"]["fetched_from"] or UNKNOWN,
-                   "citation": entry.get("citation") or UNKNOWN, "doi": entry.get("doi") or UNKNOWN,
-                   "upstream_owner": entry.get("upstream_owner") or UNKNOWN},
-        "license": {"state": "OPEN_ATTRIBUTION", "id": "CC-BY-4.0", "url": entry["license"]["url"] or UNKNOWN,
-                    "text_sha256": "UNAVAILABLE", "attribution_required": "YES",
-                    "redistribution": "ALLOWED_WITH_ATTRIBUTION", "derivatives": "ALLOWED_WITH_ATTRIBUTION",
-                    "evidence": [dict(ev_ref, source=f"{ev_ref['source']}: {entry['license']['evidence']['statement']}")]},
-        "time": {"frequency_nominal_seconds": spec["frequency_seconds"],
-                 "timezone": f"{tz[0]} (source: {tz_quote})" if tz_quote else UNKNOWN,
-                 "timestamp_meaning": UNKNOWN, "range_start": str(labels[0]), "range_end": str(labels[-1]),
-                 "availability_rule": UNKNOWN, "availability_delay_seconds": UNKNOWN},
-        "panel": {"aligned_common_grid": True, "n_series": len(values.columns),
-                  "alignment_rule": f"one table in source order; {duplicates} duplicate timestamp labels kept as found"},
-        "partitions": {"scheme": "CHRONOLOGICAL_FRACTIONS",
-                       "fractions": {"train": 0.6, "calibration": 0.2, "confirmation": 0.2},
-                       "boundaries": C.chronological_partitions(len(labels)), "sealed_periods_excluded": [],
-                       "frozen_before_profile": True},
-        "dependence": [], "variables": variables,
-        "original_fields": {"custody_manifest_entry": entry, "parse_receipt": receipt},
-    }
-    sealed = C.seal(contract)
-    (out / "CONTRACT.json").write_text(json.dumps(sealed, indent=1, sort_keys=True) + "\n")
+    partial.mkdir(parents=True)
+    try:
+        # A missing observation is a typed null in the panel, never a NaN that
+        # could be mistaken for a computed value.
+        columns = {}
+        for c in values.columns:
+            if is_text(values[c]):
+                columns[c] = pa.array([None if (v is None or (isinstance(v, float) and np.isnan(v)) or v is pd.NA)
+                                       else str(v) for v in values[c].tolist()], pa.string())
+            else:
+                arr = values[c].to_numpy(dtype="float64")
+                columns[c] = pa.array(arr, type=pa.float64(), mask=np.isnan(arr))
+        table = pa.table({"timestamp_label": pa.array([str(x) for x in labels], pa.string()), **columns})
+        pq.write_table(table, partial / "panel.parquet", compression="zstd")
+        tz = spec.get("timezone")
+        tz_quote = find(tz[1], text) if tz else None
+        receipt = {"schema": "crispdm.data_foundation.public_parse_receipt.v1", "logical_id": logical_id,
+                   "parser": spec["parser"], "parse_rule": PARSE_RULES[spec["parser"]],
+                   "timestamp_format": TIMESTAMP_FORMATS[spec["parser"]],
+                   "rows": len(labels), "columns": len(values.columns), "member_sha256": member_digests,
+                   "duplicate_timestamp_labels": duplicates, "rows_reordered": 0, "rows_filled": 0, "rows_dropped": 0,
+                   "units_declared": {k: v for k, v in receipt_units.items() if v != UNKNOWN},
+                   "units_unknown": sorted(k for k, v in receipt_units.items() if v == UNKNOWN),
+                   "missing_values": int(sum(int(values[c].isna().sum()) for c in values.columns))}
+        (partial / "PARSE_RECEIPT.json").write_text(json.dumps(receipt, indent=1, sort_keys=True) + "\n")
+        for name, role in (("panel.parquet", "DERIVED_CANONICAL_PANEL"), ("PARSE_RECEIPT.json", "PARSE_RECEIPT")):
+            b = (partial / name).read_bytes()
+            files.append({"name": f"{PANEL_LOGICAL}/{logical_id}/{name}", "bytes": len(b), "sha256": sha_bytes(b),
+                          "role": role})
+        contract = {
+            "schema": C.DATASET_SCHEMA, "dataset_id": spec["dataset_id"], "version": entry["files"][0]["retrieved_at_utc"],
+            "bank": "PUBLIC", "files": files, "content_sha256": "", "contract_sha256": "",
+            "source": {"provider": spec["provider"], "official_url": entry["license"]["evidence"]["fetched_from"] or UNKNOWN,
+                       "citation": entry.get("citation") or UNKNOWN, "doi": entry.get("doi") or UNKNOWN,
+                       "upstream_owner": entry.get("upstream_owner") or UNKNOWN},
+            "license": {"state": "OPEN_ATTRIBUTION", "id": "CC-BY-4.0", "url": entry["license"]["url"] or UNKNOWN,
+                        "text_sha256": "UNAVAILABLE", "attribution_required": "YES",
+                        "redistribution": "ALLOWED_WITH_ATTRIBUTION", "derivatives": "ALLOWED_WITH_ATTRIBUTION",
+                        "evidence": [dict(ev_ref, source=f"{ev_ref['source']}: {entry['license']['evidence']['statement']}")]},
+            "time": {"frequency_nominal_seconds": spec["frequency_seconds"],
+                     "timezone": f"{tz[0]} (source: {tz_quote})" if tz_quote else UNKNOWN,
+                     "timestamp_meaning": UNKNOWN, "range_start": str(labels[0]), "range_end": str(labels[-1]),
+                     "availability_rule": UNKNOWN, "availability_delay_seconds": UNKNOWN},
+            "panel": {"aligned_common_grid": True, "n_series": len(values.columns),
+                      "alignment_rule": f"one table in source order; {duplicates} duplicate timestamp labels kept as found"},
+            "partitions": {"scheme": "CHRONOLOGICAL_FRACTIONS",
+                           "fractions": {"train": 0.6, "calibration": 0.2, "confirmation": 0.2},
+                           "boundaries": C.chronological_partitions(len(labels)), "sealed_periods_excluded": [],
+                           "frozen_before_profile": True},
+            "dependence": [], "variables": variables,
+            "original_fields": {"custody_manifest_entry": entry, "parse_receipt": receipt},
+        }
+        sealed = C.seal(contract)
+        (partial / "CONTRACT.json").write_text(json.dumps(sealed, indent=1, sort_keys=True) + "\n")
+        partial.rename(out)
+    except BaseException:
+        shutil.rmtree(partial, ignore_errors=True)
+        raise
     return sealed
 
 

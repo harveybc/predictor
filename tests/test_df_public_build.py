@@ -47,12 +47,26 @@ def raw_root(tmp_path, rows):
 GOOD = [("2016-01-11 17:00:00", "60"), ("2016-01-11 17:10:00", "50"), ("2016-01-11 17:20:00", "40")]
 
 
-def test_a_refusal_or_failure_never_stops_the_others(tmp_path):
+def test_a_refusal_or_failure_never_stops_the_others(tmp_path, monkeypatch):
     raw = raw_root(tmp_path, GOOD)
-    r = B.build_all(raw, tmp_path / "panels", ["uci_235_individual_household_power", "uci_374_appliances_energy"])
+    real_build = B.P.build
+
+    def build(lid, raw_root_, panel_root_):
+        if lid == "uci_321_electricityloaddiagrams20112014":
+            raise RuntimeError("forced failure that is not a refusal")
+        return real_build(lid, raw_root_, panel_root_)
+
+    monkeypatch.setattr(B.P, "build", build)
+    r = B.build_all(raw, tmp_path / "panels", ["uci_235_individual_household_power",
+                                                 "uci_321_electricityloaddiagrams20112014",
+                                                 "uci_374_appliances_energy"])
     status = {x["logical_id"]: x["status"] for x in r["results"]}
-    assert status == {"uci_235_individual_household_power": "FAILED", "uci_374_appliances_energy": "BUILT"}
-    assert r["counts"] == {"BUILT": 1, "REFUSED": 0, "FAILED": 1}
+    # absent from the manifest: a typed refusal; an unexpected error: a failure; neither stops 374
+    assert status == {"uci_235_individual_household_power": "REFUSED",
+                      "uci_321_electricityloaddiagrams20112014": "FAILED",
+                      "uci_374_appliances_energy": "BUILT"}
+    assert r["counts"] == {"BUILT": 1, "REFUSED": 1, "FAILED": 1}
+    assert "not in the custody manifest" in r["results"][0]["problems"][0]
     assert (tmp_path / "panels/BUILD_RECEIPT.json").is_file()
 
 

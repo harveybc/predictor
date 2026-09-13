@@ -246,12 +246,22 @@ def load(engine, table: str, rows: list, run_id: str) -> dict:
     placeholders = ", ".join(f"CAST(:{c} AS JSONB)" if spec.get(c) == JSON else f":{c}" for c in cols)
     stmt = text(f"INSERT INTO {SCHEMA}.{table} ({', '.join(cols)}) VALUES ({placeholders}) "
                 "ON CONFLICT (row_sha256) DO NOTHING")
-    inserted = 0
     with engine.begin() as conn:
+        count = text(f"SELECT count(*) FROM {SCHEMA}.{table}")
+        before = conn.execute(count).scalar()
+        batch = []
         for r in accepted:
             params = {c: (json.dumps(r[c], sort_keys=True) if spec[c] == JSON else r[c]) for c in spec}
             params["row_sha256"] = row_sha256(table, r)
-            inserted += conn.execute(stmt, params).rowcount or 0
+            batch.append(params)
+            if len(batch) >= 5000:
+                conn.execute(stmt, batch)
+                batch = []
+        if batch:
+            conn.execute(stmt, batch)
+        # Rows actually written, counted inside the same transaction; this
+        # loader is the only writer of the data-foundation tables.
+        inserted = conn.execute(count).scalar() - before
         receipt = {"run_id": run_id, "table_name": table, "rows_offered": len(rows),
                    "rows_inserted": inserted, "rows_already_present": len(accepted) - inserted,
                    "rows_refused": len(refusals), "refusals": refusals}
