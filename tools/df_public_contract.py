@@ -281,8 +281,16 @@ def build(logical_id: str, raw_root: Path = RAW_ROOT, panel_root: Path = PANEL_R
     labels, values, member_digests, source_col = PARSERS[spec["parser"]](archives)
     ts = pd.to_datetime(pd.Series(labels), format=TIMESTAMP_FORMATS[spec["parser"]], errors="raise")
     diffs = ts.diff().dt.total_seconds().iloc[1:]
-    if (diffs < 0).any():
-        raise C.ContractRefusal([f"{logical_id}: timestamps go backwards; the source order is not chronological"])
+    backwards = diffs[diffs < 0]
+    if len(backwards):
+        # Refused, never sorted or deduplicated. Every backward jump is listed
+        # so the source anomaly can be reviewed and a rule declared for it.
+        detail = [{"row": int(ix), "jump_seconds": float(v),
+                   "labels_around": [str(x) for x in labels[max(0, int(ix) - 3):int(ix) + 3]]}
+                  for ix, v in backwards.items()][:20]
+        raise C.ContractRefusal([f"{logical_id}: timestamps go backwards at {len(backwards)} rows; "
+                                 "the source order is not chronological",
+                                 "anomalies: " + json.dumps(detail)])
     duplicates = int((diffs == 0).sum())
 
     ev_ref = {"source": f"{RAW_LOGICAL}/{ev['file']}", "sha256": ev["sha256"]}
