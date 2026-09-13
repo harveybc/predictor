@@ -205,6 +205,17 @@ def collect(args) -> tuple[dict, dict]:
                      "code_sha256": summary["code_sha256"], "inputs_sha256": summary["bank_manifest_sha256"],
                      "status": "COMPLETED", "cpu_seconds": None,
                      "details": {"decision_counts": summary["decision_counts"], "rule_sha256": summary["rule_sha256"]}})
+    if getattr(args, "lab_delay_cost", None):
+        # The first lab run's delay/cost table lacked per-frequency group and
+        # phase delay. The corrected table replaces it in the load; the first
+        # table stays in custody as the record of that gap.
+        dc_dir = Path(args.lab_delay_cost)
+        tables["df_fact_operator_delay_cost"] = list(_jsonl(dc_dir / "df_fact_operator_delay_cost.jsonl"))
+        dcs = json.loads((dc_dir / "DELAY_COST_SUMMARY.json").read_text())
+        runs.append({"run_id": dcs["run_id"], "module": "C135/C137 delay and cost (corrected table)",
+                     "code_sha256": dcs["code_sha256"], "inputs_sha256": dcs["bank_manifest_sha256"],
+                     "status": "COMPLETED", "cpu_seconds": None,
+                     "details": {"rows": dcs["table"]["rows"], "supersedes": dcs["supersedes"]}})
     if args.snr:
         snr_run, rows = snr_rows(args.snr, unit_content)
         tables["df_fact_snr_calibration"] = rows
@@ -273,6 +284,8 @@ def main(argv=None) -> int:
     ap.add_argument("--synthetic-bank", type=Path)
     ap.add_argument("--financial-contracts", type=Path)
     ap.add_argument("--lab", type=Path)
+    ap.add_argument("--lab-delay-cost", type=Path,
+                    help="corrected delay/cost table; replaces the lab run's own table in the load")
     ap.add_argument("--snr", type=Path)
     ap.add_argument("--profiles", type=Path)
     a = ap.parse_args(argv)
