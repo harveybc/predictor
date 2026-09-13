@@ -68,6 +68,17 @@ APPLICABILITY = ("APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED")
 VARIABLE_TYPES = ("NUMERIC", "TEXT", "TIMESTAMP", "UNKNOWN")
 COVERAGE_STATE_SOURCES = ("ROWS", "DATASET_TERMINAL", "DECLARATION", "NO_EVIDENCE")
 V1_COVERAGE_STATES_OR_ABSENT = COVERAGE_STATES + ("NOT_IN_V1_GRID",)
+# C178 (order 2026-09-13): the D2 v2 grains, copied verbatim from df_d2_adjudicate.PROPOSED_TABLES (a test
+# holds them equal); the lab code is not imported here so that the loader never binds the sealed design's digests
+D2_MODES = ("HISTORICAL_MIGRATION_REANALYSIS_NON_CONFIRMATORY", "FRESH_CONFIRMATION")
+D2_ARM_ROLES = ("CANDIDATE", "IDENTITY_RAW_CONTROL", "PREVIOUSLY_REJECTED_CONTROL", "NON_CAUSAL_ORACLE_CONTROL")
+D2_BRANCHES = ("RAW", "TRANSFORMED", "RESIDUAL", "COMPARISON", "COST")
+D2_ROW_STATUSES = ("COMPLETED", "INCONCLUSIVE", "UNAVAILABLE", "NOT_APPLICABLE", "REFUSED", "FAILED")
+D2_IDENTIFIABILITY = ("ESTIMATED", "NOT_IDENTIFIABLE", "NOT_APPLICABLE")
+D2_DECISIONS = ("LAB_CALIBRATED", "REGIME_LIMITED", "NOT_IDENTIFIABLE", "LAB_REJECTED", "UNDERPOWERED",
+                "CONTROL_NOT_AN_ARM",
+                "SNR_CALIBRATED_FOR_REGIME", "SNR_REGIME_LIMITED", "SNR_NOT_IDENTIFIABLE", "SNR_REJECTED")
+D2_SUBJECT_KINDS = ("OPERATOR", "SNR_ESTIMATOR")
 
 # column types
 TEXT, INT, BOOL, JSON = "text", "int", "bool", "json"
@@ -167,6 +178,37 @@ TABLES = {
                                      "unit_root_policy_sha256": TEXT_OR_NULL, "variant": TEXT,
                                      "derivation": enum(ESTIMATE_DERIVATIONS), "v1_row_sha256": TEXT,
                                      "code_sha256": TEXT},
+    # C178: D2 v2 unit rows, decisions and the historical reanalysis, exactly df_d2_adjudicate.PROPOSED_TABLES
+    "df_fact_d2_unit_denoising": {
+        "run_id": TEXT, "mode": enum(D2_MODES), "design_sha256": TEXT, "tape_sha256": TEXT_OR_NULL,
+        "unit_id": TEXT, "seed": INT, "content_sha256": TEXT, "regime": JSON, "variable_id": TEXT,
+        "variable_index": INT, "arm_role": enum(D2_ARM_ROLES), "operator_kind": TEXT, "operator_params": JSON,
+        "spec_sha256": TEXT, "fit_mode": TEXT, "fitted_sha256": TEXT_OR_NULL, "partition": TEXT,
+        "branch": enum(D2_BRANCHES), "metric": TEXT, "estimator": TEXT, "value": NUM_OR_NULL,
+        "status": enum(D2_ROW_STATUSES), "reason": TEXT, "code_sha256": TEXT, "operator_code_sha256": TEXT},
+    "df_fact_d2_unit_snr": {
+        "run_id": TEXT, "mode": enum(D2_MODES), "design_sha256": TEXT, "tape_sha256": TEXT_OR_NULL,
+        "unit_id": TEXT, "seed": INT, "content_sha256": TEXT, "regime": JSON, "variable_index": INT,
+        "estimator": TEXT, "contract_state": TEXT, "partition": TEXT, "segment_start": INT_OR_NULL,
+        "segment_end": INT_OR_NULL, "snr_db_hat": NUM_OR_NULL, "ci_low_db": NUM_OR_NULL,
+        "ci_high_db": NUM_OR_NULL, "ci_lower_unbounded": BOOL, "ci_upper_unbounded": BOOL,
+        "true_snr_db": NUM_OR_NULL, "error_db": NUM_OR_NULL, "abs_error_db": NUM_OR_NULL,
+        "ci_covers_true": NUM_OR_NULL, "identifiability": enum(D2_IDENTIFIABILITY),
+        "status": enum(D2_ROW_STATUSES), "reason": TEXT, "code_sha256": TEXT},
+    "df_fact_d2_decision": {
+        "run_id": TEXT, "design_sha256": TEXT, "stratum": enum(("FRESH_CONFIRMATION",)),
+        "subject_kind": enum(D2_SUBJECT_KINDS), "subject": TEXT, "operator_params": JSON,
+        "spec_sha256": TEXT_OR_NULL, "arm_role": TEXT_OR_NULL, "regime": JSON,
+        "decision": enum(D2_DECISIONS), "is_decision": BOOL,
+        "reasons": JSON, "evidence": JSON, "n_seeds_design": INT, "n_seeds_valid": INT,
+        "rule_sha256": TEXT, "externally_reviewed": BOOL, "code_sha256": TEXT},
+    "df_fact_d2_historical_reanalysis": {
+        "run_id": TEXT, "stratum": enum(("HISTORICAL_MIGRATION_REANALYSIS_NON_CONFIRMATORY",)),
+        "historical_run_id": TEXT,
+        "historical_operator_kind": TEXT, "operator_kind": TEXT, "operator_params": JSON, "spec_sha256": TEXT,
+        "regime": JSON, "historical_decision": TEXT_OR_NULL, "reanalysis_decision": TEXT_OR_NULL,
+        "flipped": BOOL, "flip_cause": TEXT_OR_NULL, "flip_causes": JSON, "output_differences": JSON,
+        "historical_counts": JSON, "reanalysis_counts": JSON, "code_sha256": TEXT},
     # C170: coverage v2; df_fact_coverage stays as the superseded v1 matrix
     "df_fact_coverage_v2": {"run_id": TEXT, "dataset_id": TEXT, "variable_id": TEXT,
                             "variable_type": enum(VARIABLE_TYPES), "partition": TEXT, "metric": TEXT,

@@ -62,6 +62,36 @@ def test_collected_rows_validate_and_coverage_comes_from_rows(inputs):
     assert c2["counts"]["RESULT"] > 0 and c2["counts"]["NOT_APPLICABLE"] > 0
 
 
+def test_d2_tables_in_the_loader_equal_the_adjudicator_proposal():
+    """C178: the loader holds the D2 v2 specs verbatim, without importing the lab code."""
+    A = _load("df_d2_adjudicate")
+    for t, spec in A.PROPOSED_TABLES.items():
+        assert D.L.TABLES[t] == spec, t
+    assert set(D.D2_TABLES) == set(A.PROPOSED_TABLES)
+    assert "df_fact_d2_decision" in D.L.ddl()
+
+
+def test_a_d2_table_dir_is_collected_and_its_rows_validate(inputs, tmp_path):
+    A = _load("df_d2_adjudicate")
+    row = {"run_id": "d2v2_fresh_test", "design_sha256": "a" * 64, "stratum": "FRESH_CONFIRMATION",
+           "subject_kind": "OPERATOR", "subject": "ewma", "operator_params": {"alpha": 0.3}, "spec_sha256": "b" * 64,
+           "arm_role": "CANDIDATE", "regime": {"family": "bumps", "perturbation": "white", "declared_snr_db": "10",
+                                                "length": 2048, "missingness": "none"},
+           "decision": "UNDERPOWERED", "is_decision": False, "reasons": ["SEEDS 3 < DESIGN 10"], "evidence": {},
+           "n_seeds_design": 10, "n_seeds_valid": 3, "rule_sha256": "c" * 64, "externally_reviewed": False,
+           "code_sha256": "d" * 64}
+    assert A.validate_proposed_row("df_fact_d2_decision", row) == []
+    d = tmp_path / "d2_tables"
+    d.mkdir()
+    (d / "df_fact_d2_decision.jsonl").write_text(json.dumps(row) + "\n")
+    args = argparse.Namespace(**vars(inputs), table_dir=[d])
+    tables, _ = D.collect(args)
+    assert tables["df_fact_d2_decision"] == [row] and D.L.validate_row("df_fact_d2_decision", row) == []
+    assert any(r["module"] == "D2 outputs: d2_tables" and r["run_id"] == "d2v2_fresh_test" for r in tables["df_dim_run"])
+    with pytest.raises(SystemExit, match="none of the C164 or D2 tables"):
+        D.collect(argparse.Namespace(**vars(inputs), table_dir=[tmp_path]))
+
+
 @pytest.mark.skipif("PGUSER" not in os.environ, reason="no PG credentials")
 def test_throwaway_load_is_idempotent(inputs, tmp_path):
     argv = ["--mode", "throwaway", "--receipt", str(tmp_path / "receipt.json"),

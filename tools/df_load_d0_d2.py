@@ -56,6 +56,10 @@ HISTORICAL = ("fact_variable_characterization", "fact_terminal_verification_vari
               "dim_campaign", "dim_campaign_run", "fact_campaign_consumption")
 C164_TABLES = ("df_fact_resource_estimate", "df_fact_dataset_terminal", "df_fact_causal_test",
                "df_fact_naming_isolation_decision", "df_fact_host_receipt", "df_fact_incident_attempt")
+# C178: the D2 v2 grains come the same way, as a directory of table-named JSONL files written from the sealed roots
+D2_TABLES = ("df_fact_d2_unit_denoising", "df_fact_d2_unit_snr", "df_fact_d2_decision",
+             "df_fact_d2_historical_reanalysis")
+TABLE_DIR_TABLES = C164_TABLES + D2_TABLES
 
 
 def _sha_file(p: Path) -> str:
@@ -337,12 +341,12 @@ def collect(args) -> tuple[dict, dict]:
                                      resource_estimates=len(ests), host_role=receipt.get("host_role"))})
     tables.update(profile_tables)
     for d in getattr(args, "table_dir", None) or []:
-        # C164: runtime, causal, naming, host and incident outputs, each a directory of
-        # table-named JSONL files. Only the C164 grains are taken from such a directory.
+        # C164: runtime, causal, naming, host and incident outputs; C178: the D2 v2 grains. Each is a
+        # directory of table-named JSONL files, and only those grains are taken from such a directory.
         d = Path(d)
-        found = [t for t in C164_TABLES if (d / f"{t}.jsonl").is_file()]
+        found = [t for t in TABLE_DIR_TABLES if (d / f"{t}.jsonl").is_file()]
         if not found:
-            raise SystemExit(f"REFUSED: {d.name} holds none of the C164 tables")
+            raise SystemExit(f"REFUSED: {d.name} holds none of the C164 or D2 tables")
         digests, counts, first = [], {}, None
         for t in found:
             rows = list(_jsonl(d / f"{t}.jsonl"))
@@ -350,7 +354,8 @@ def collect(args) -> tuple[dict, dict]:
             digests.append(_sha_file(d / f"{t}.jsonl"))
             counts[t] = len(rows)
             first = first or (rows[0] if rows else None)
-        runs.append({"run_id": first["run_id"] if first else f"c164_{d.name}", "module": f"C164 outputs: {d.name}",
+        kind = "D2" if all(t in D2_TABLES for t in found) else "C164"
+        runs.append({"run_id": first["run_id"] if first else f"{kind.lower()}_{d.name}", "module": f"{kind} outputs: {d.name}",
                      "code_sha256": first.get("code_sha256") if first and first.get("code_sha256") else "0" * 64,
                      "inputs_sha256": hashlib.sha256("".join(digests).encode()).hexdigest(),
                      "status": "COMPLETED", "cpu_seconds": None, "details": counts})
