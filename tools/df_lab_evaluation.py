@@ -19,7 +19,12 @@ For every synthetic unit, every variable and every operator spec:
   error after trend knots, extreme retention.
 
 Delay and cost come from `df_operator_measure.measure` on one declared
-reference fit per spec, reported apart from the unit metrics.
+reference fit per spec, reported apart from the unit metrics. For linear
+time-invariant kinds the group and phase delay are written for every declared
+frequency; for the others they are typed UNAVAILABLE. The first full run
+(lab_evaluation_c137_v1) skipped those per-frequency lists: its delay/cost
+table lacks the numeric group and phase delays, and `--delay-cost-only`
+writes the corrected table into its own root.
 
 Decisions, per operator x regime (family, perturbation, declared SNR,
 length, missingness), follow DECISION_RULES, frozen and hashed before any
@@ -472,26 +477,42 @@ def delay_cost_rows(reference: dict, specs: list[dict], run_id: str) -> list[dic
                              reason=f"ABSTAIN: {fitted['abstain_reason']}"))
             continue
 
-        def walk(node, path, freq=None):
+        def add(metric, value, freq=None, undefined_reason=None):
+            if undefined_reason is not None:
+                rows.append(dict(base, metric=metric, frequency=freq, value=None, value_text=None,
+                                 status="UNAVAILABLE", reason=undefined_reason))
+            elif value is None or isinstance(value, bool) or not math.isfinite(float(value)):
+                rows.append(dict(base, metric=metric, frequency=freq, value=None, value_text=None,
+                                 status="UNAVAILABLE", reason="non-finite or absent at this frequency"))
+            else:
+                rows.append(dict(base, metric=metric, frequency=freq, value=float(value), value_text=None,
+                                 status="COMPLETED", reason=""))
+
+        def walk(node, path):
             if isinstance(node, dict):
                 for k, v in node.items():
-                    try:
-                        f = float(k)
-                    except (TypeError, ValueError):
-                        f = None
-                    walk(v, path if f is not None else f"{path}.{k}" if path else str(k), f if f is not None else freq)
+                    walk(v, f"{path}.{k}" if path else str(k))
             elif isinstance(node, bool):
                 return
-            elif isinstance(node, (int, float)) and math.isfinite(node):
-                rows.append(dict(base, metric=path, frequency=freq, value=float(node), value_text=None,
-                                 status="COMPLETED", reason=""))
+            elif isinstance(node, (int, float)):
+                add(path, node)
             elif isinstance(node, str) and node.upper() == "UNDEFINED":
-                rows.append(dict(base, metric=path, frequency=freq, value=None, value_text=None, status="UNAVAILABLE",
-                                 reason="UNDEFINED for a non-linear or non-causal kind"))
-        for key in ("algorithmic_lookback", "look_ahead", "group_delay", "phase_delay", "settling_99_samples",
-                    "empirical", "cost", "warmup"):
+                add(path, None, undefined_reason="UNDEFINED for a non-linear or non-causal kind")
+
+        for key in ("algorithmic_lookback", "look_ahead", "settling_99_samples", "empirical", "cost", "warmup"):
             if key in rep:
                 walk(rep[key], key)
+        lti = rep.get("lti")
+        if isinstance(lti, dict):
+            # Per declared frequency; DC is frequency 0.0.
+            for i, f in enumerate(lti["freqs_cycles_per_sample"]):
+                add("group_delay_samples", lti["group_delay_samples"][i], float(f))
+                add("phase_delay_samples", lti["phase_delay_samples"][i], float(f))
+            add("dc_gain", lti.get("dc_gain"))
+        else:
+            reason = f"UNDEFINED: delay basis {rep.get('delay_basis')} has no transfer function"
+            add("group_delay_samples", None, undefined_reason=reason)
+            add("phase_delay_samples", None, undefined_reason=reason)
     return rows
 
 
@@ -510,6 +531,12 @@ def failure_regions(decisions: list[dict]) -> dict:
         else:
             entry["regime_limited_regions"].append(item)
     return by_op
+
+
+def _write_table(out_dir: Path, table: str, rows: list[dict]) -> dict:
+    p = out_dir / f"{table}.jsonl"
+    p.write_text("".join(json.dumps(row, sort_keys=True, allow_nan=False) + "\n" for row in rows))
+    return {"rows": len(rows), "sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
 
 
 def run(bank_root: Path, out_dir: Path, specs: list[dict] | None = None, unit_names: list[str] | None = None,
@@ -553,11 +580,7 @@ def run(bank_root: Path, out_dir: Path, specs: list[dict] | None = None, unit_na
         first = {t: LOADER.validate_row(t, tables[t][ix[0]]) for t, ix in problems.items() if ix}
         raise SystemExit(f"REFUSED: rows do not validate for OLAP: {first}")
     out_dir.mkdir(parents=True)
-    digests = {}
-    for t, rows in tables.items():
-        p = out_dir / f"{t}.jsonl"
-        p.write_text("".join(json.dumps(row, sort_keys=True, allow_nan=False) + "\n" for row in rows))
-        digests[t] = {"rows": len(rows), "sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
+    digests = {t: _write_table(out_dir, t, rows) for t, rows in tables.items()}
     counts: dict = {}
     for d in decisions:
         counts[d["decision"]] = counts.get(d["decision"], 0) + 1
@@ -576,12 +599,41 @@ def run(bank_root: Path, out_dir: Path, specs: list[dict] | None = None, unit_na
     return summary
 
 
+def run_delay_cost_only(bank_root: Path, out_dir: Path, specs: list[dict] | None = None) -> dict:
+    """The delay and cost table alone, on the declared reference unit."""
+    bank_root, out_dir = Path(bank_root), Path(out_dir)
+    if out_dir.exists():
+        raise SystemExit(f"REFUSED: {out_dir.name} exists; delay/cost outputs are write-once")
+    specs = specs or OPS.bank_specs()
+    manifest_bytes = (bank_root / "BANK_MANIFEST.json").read_bytes()
+    reference = load_unit(bank_root / REFERENCE_UNIT)
+    run_id = "c137dc_" + sha_obj({"code": code_sha256(), "bank": hashlib.sha256(manifest_bytes).hexdigest(),
+                                  "specs": specs, "reference": REFERENCE_UNIT})[:24]
+    rows = delay_cost_rows(reference, specs, run_id)
+    bad = [LOADER.validate_row("df_fact_operator_delay_cost", r) for r in rows if LOADER.validate_row("df_fact_operator_delay_cost", r)]
+    if bad:
+        raise SystemExit(f"REFUSED: delay/cost rows do not validate: {bad[:1]}")
+    out_dir.mkdir(parents=True)
+    digest = _write_table(out_dir, "df_fact_operator_delay_cost", rows)
+    summary = {"schema": "crispdm.data_foundation.delay_cost_summary.v1", "run_id": run_id,
+               "code_sha256": code_sha256(), "bank_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+               "reference_unit": REFERENCE_UNIT, "specs": len(specs), "table": digest,
+               "supersedes": "the delay/cost table of lab_evaluation_c137_v1, which lacked per-frequency group and phase delay"}
+    (out_dir / "DELAY_COST_SUMMARY.json").write_text(json.dumps(summary, indent=1, sort_keys=True) + "\n")
+    return summary
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--bank", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--workers", type=int, default=max(1, min(8, (os.cpu_count() or 2) // 2)))
+    ap.add_argument("--delay-cost-only", action="store_true")
     a = ap.parse_args(argv)
+    if a.delay_cost_only:
+        s = run_delay_cost_only(a.bank, a.out)
+        print(json.dumps({k: s[k] for k in ("run_id", "specs", "table")}, indent=1))
+        return 0
     s = run(a.bank, a.out, workers=a.workers)
     print(json.dumps({k: s[k] for k in ("run_id", "units", "specs", "unit_variable_operator_records",
                                          "decision_counts", "wall_seconds")}, indent=1))

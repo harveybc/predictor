@@ -118,6 +118,17 @@ def test_too_few_units_is_not_identifiable():
     assert d == "NOT_IDENTIFIABLE" and "valid" in reasons[0]
 
 
+def test_delay_rows_carry_group_and_phase_delay_per_frequency(bank):
+    reference = LAB.load_unit(bank / names(bank, "sinusoid", "white", "0")[0])
+    rows = LAB.delay_cost_rows(reference, [{"kind": "ewma", "params": {"alpha": 0.3}},
+                                           {"kind": "trailing_median", "params": {"window": 5}}], "run")
+    dc = [r for r in rows if r["operator_kind"] == "ewma" and r["metric"] == "group_delay_samples" and r["frequency"] == 0.0]
+    assert len(dc) == 1 and abs(dc[0]["value"] - 7.0 / 3.0) < 1e-9
+    med = [r for r in rows if r["operator_kind"] == "trailing_median" and r["metric"] == "group_delay_samples"]
+    assert len(med) == 1 and med[0]["status"] == "UNAVAILABLE" and "no transfer function" in med[0]["reason"]
+    assert all(LAB.LOADER.validate_row("df_fact_operator_delay_cost", r) == [] for r in rows)
+
+
 def test_outputs_are_write_once(bank, tmp_path):
     out = tmp_path / "run"
     out.mkdir()
