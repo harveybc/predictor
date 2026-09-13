@@ -18,8 +18,8 @@ Ninguno implica automaticamente el siguiente.
 |---|---|---|---|
 | I0 decisiones y roles | Parcial | contratos de campanas cerradas | contrato por nuevo banco y uso |
 | I1 inventarios | En curso | lago financiero censado; banco publico sin panel elegible | datasets con licencia, semantica y tiempo |
-| I2 perfil de calidad e informacion | Piloto | descriptores fisicos historicos y sucesor ETH | perfil por variable, particion y grupo |
-| I3 calibracion sintetica | Parcial | EWMA/Kalman/mediana en banco limitado | familias de ruido y operadores ampliadas |
+| I2 perfil de calidad e informacion | Evidencia obtenida en D1 | 715 datasets, 866.661 filas de perfil, ejecucion acotada por memoria | corregir identidad de bloques y cobertura v2 |
+| I3 calibracion sintetica | Mecanica actual; evidencia historica no consumible | SNR C163 descriptivo; C137 usa la semantica anterior | reanalisis de migracion y confirmacion en semillas frescas |
 | I4 utilidad publica | Un resultado negativo | EWMA `DOES_NOT_ADVANCE` en seis paneles T2 | probar solo operadores calibrados nuevos |
 | I5 seleccion | Bloqueada | diseno v5, poblacion cero | minimo seis paneles y 30 variables elegibles |
 | I6 pronostico | Bloqueada | sin contrato nuevo | salida revisada de I5 |
@@ -32,9 +32,9 @@ Ninguno implica automaticamente el siguiente.
 
 | Paso | Protocolo | Implementacion | Evidencia | Elegibilidad |
 |---|---|---|---|---|
-| 01 muestreo/Nyquist | Escrito | Parcial en contratos temporales | Un dataset piloto | No |
-| 02 ruido/SNR | Escrito | Parcial | Sintetica limitada | No |
-| 03 denoising | Escrito | Parcial | EWMA negativo en T2; laboratorio limitado | Ningun operador |
+| 01 muestreo/Nyquist | Escrito | Comun bajo contratos | Perfil acotado de 715 datasets | Pendiente de revision por variable/regimen |
+| 02 ruido/SNR | Escrito | Comun y acotado | 513 unidades; resultado descriptivo y sesgo dependiente del regimen | Ningun estimador general |
+| 03 denoising | Escrito | API causal y bateria exhaustiva; requiere quitar switches de mutacion | C137 historico no compatible con la API actual | Ningun operador vigente |
 | 04 cuantizacion | Escrito | No comun | No | No |
 | 05 entropia/compresion | Escrito | No comun | No | No |
 | 06 tiempo/frecuencia | Escrito | Codigo historico disperso | No bajo contrato nuevo | No |
@@ -119,10 +119,19 @@ particion fisica: la API acepta una matriz arbitraria acompanada por la etiqueta
 tener snapshots de fit/transform ligados a bytes, tiempo y particion, y superar
 una prueba exhaustiva de invariancia de prefijo.
 
-Estado: `D1_D2_RELAUNCH_BLOCKED_BY_MEMORY_AND_CAUSALITY_AUDIT`.
+La reparacion C146-C165 completo 715 de 715 datasets sin OOM del host. El peor
+caso observo 1,56 GiB bajo un limite de 3,77 GiB. La campana SNR tambien termino
+y el cubo recibio sus resultados de forma aditiva.
+
+Persisten cuatro fronteras antes de aceptar D2: los guards causales son mutables
+desde produccion, C137 no se reejecuto con la API actual, la cobertura mezcla
+rechazo, fallo e inaplicabilidad, y la paridad PCA es numerica pero no exacta.
+
+Estado: `D0_D1_ACCEPTED_D2_REATTESTATION_REQUIRED`.
 
 ## 7. Proxima puerta
 
-La orden C146-C165 corrige memoria y causalidad, completa D1-D2 con recibos
-finales y deja D3-D5 como sucesores obligatorios. No abre seleccion ni
-entrenamiento.
+La orden C166-C184 elimina los interruptores de mutacion de produccion, corrige
+identidad y cobertura, repite C137 como reanalisis y ejecuta una confirmacion
+sintetica fresca. D3-D5, seleccion y entrenamiento permanecen cerrados hasta la
+revision externa de ese resultado.
