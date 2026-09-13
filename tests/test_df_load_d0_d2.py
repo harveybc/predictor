@@ -44,6 +44,10 @@ def test_collected_rows_validate_and_coverage_comes_from_rows(inputs):
         bad = [D.L.validate_row(t, r) for r in rows if D.L.validate_row(t, r)]
         assert not bad, (t, bad[:1])
     assert len(tables["df_dim_dataset"]) == 2 and tables["df_fact_variable_profile"]
+    # C164: the runner's durable terminals and both stages of memory estimates are collected
+    assert len(tables["df_fact_dataset_terminal"]) == 2
+    assert {r["stage"] for r in tables["df_fact_resource_estimate"]} == {"PREFLIGHT_METADATA_UPPER_BOUND",
+                                                                         "CHILD_RUNTIME"}
     assert cov["cells"] == len(tables["df_fact_coverage"]) and cov["undeclared_rows"] == 0
     assert cov["counts"]["RESULT"] > 0
 

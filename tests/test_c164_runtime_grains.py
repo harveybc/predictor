@@ -72,7 +72,7 @@ def test_causal_test_and_resource_rows():
     re_ = {"run_id": "r", "bank": "SYNTHETIC", "dataset_id": "d", "variable_id": None, "partition": "train",
            "module": "df_profile_univariate", "metric": "adf_statistic", "estimator": "augmented_dickey_fuller",
            "estimated_peak_bytes": 10, "formula": "n*(lag+2)*8*5.5", "params": {"n": 1}, "budget_bytes": 5,
-           "decision": "NOT_RUN_RESOURCE_BOUND", "code_sha256": SHA}
+           "decision": "NOT_RUN_RESOURCE_BOUND", "stage": "CHILD_RUNTIME", "code_sha256": SHA}
     assert L.validate_row("df_fact_resource_estimate", re_) == []
     assert L.validate_row("df_fact_resource_estimate", dict(re_, decision="PUBLICLY_ELIGIBLE"))
 

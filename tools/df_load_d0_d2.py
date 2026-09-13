@@ -155,6 +155,18 @@ def profile_rows(profile_root: Path, content_by_dataset: dict) -> tuple[str, dic
     return run_id, tables
 
 
+def runtime_rows(profile_root: Path) -> tuple[list[dict], list[dict]]:
+    """C164: every durable terminal of a profile root, and every memory estimate row, typed by stage."""
+    root = Path(profile_root)
+    terminals = [json.loads(p.read_text()) for p in sorted((root / "terminals").glob("*.json"))]
+    estimates = []
+    for stage, name in (("PREFLIGHT_METADATA_UPPER_BOUND", "preflight_estimates.jsonl"),
+                        ("CHILD_RUNTIME", "resource_estimates.jsonl")):
+        for p in sorted((root / "attempts").glob(f"*/attempt-*/{name}")):
+            estimates += [dict(r, stage=stage) for r in _jsonl(p)]
+    return terminals, estimates
+
+
 def coverage(contracts: list[dict], profile_tables: dict, lab_runs: list[dict], run_id: str) -> list[dict]:
     variable_metrics = sorted({r["metric"] for t in ("df_fact_variable_profile", "df_fact_sampling_quality")
                                for r in profile_tables.get(t, []) if not r["variable_id"].startswith("DATASET:")}
@@ -225,14 +237,23 @@ def collect(args) -> tuple[dict, dict]:
                      "inputs_sha256": _sha_file(args.snr), "status": "COMPLETED", "cpu_seconds": None,
                      "details": {"rows": len(rows)}})
     profile_tables = {}
-    if args.profiles:
-        prof_run, profile_tables = profile_rows(args.profiles, content)
-        tables.update(profile_tables)
-        runs.append({"run_id": prof_run, "module": "C130-C133 profiles",
+    roots = args.profiles if isinstance(args.profiles, (list, tuple)) else ([args.profiles] if args.profiles else [])
+    for root in roots:
+        # C162: one sealed root per role; C164: each root's terminals and memory estimates are loaded too
+        prof_run, part = profile_rows(root, content)
+        for t, rows in part.items():
+            profile_tables.setdefault(t, []).extend(rows)
+        terms, ests = runtime_rows(root)
+        tables.setdefault("df_fact_dataset_terminal", []).extend(terms)
+        tables.setdefault("df_fact_resource_estimate", []).extend(ests)
+        receipt = json.loads((Path(root) / "PROFILE_RUN_RECEIPT.json").read_text())
+        runs.append({"run_id": prof_run, "module": f"C130-C133 profiles ({receipt.get('host_role', 'COORDINATOR')})",
                      "code_sha256": _sha_file(HERE / "df_profile_run.py"),
-                     "inputs_sha256": _sha_file(Path(args.profiles) / "PROFILE_RUN_RECEIPT.json"),
+                     "inputs_sha256": _sha_file(Path(root) / "PROFILE_RUN_RECEIPT.json"),
                      "status": "COMPLETED", "cpu_seconds": None,
-                     "details": {t: len(v) for t, v in profile_tables.items()}})
+                     "details": dict({t: len(v) for t, v in part.items()}, terminals=len(terms),
+                                     resource_estimates=len(ests), host_role=receipt.get("host_role"))})
+    tables.update(profile_tables)
     for d in getattr(args, "table_dir", None) or []:
         # C164: runtime, causal, naming, host and incident outputs, each a directory of
         # table-named JSONL files. Only the C164 grains are taken from such a directory.
@@ -307,7 +328,8 @@ def main(argv=None) -> int:
     ap.add_argument("--lab-delay-cost", type=Path,
                     help="corrected delay/cost table; replaces the lab run's own table in the load")
     ap.add_argument("--snr", type=Path)
-    ap.add_argument("--profiles", type=Path)
+    ap.add_argument("--profiles", type=Path, action="append",
+                    help="a sealed profile root; repeat once per role of the campaign")
     ap.add_argument("--table-dir", type=Path, action="append",
                     help="C164 output directory of table-named JSONL files; repeatable")
     a = ap.parse_args(argv)

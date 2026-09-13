@@ -47,6 +47,8 @@ FORBIDDEN = ("PUBLICLY_ELIGIBLE", "LIVE_ELIGIBLE")
 # C164 (order 2026-09-13): runtime, causality and host grains
 TERMINAL_STATUSES = ("COMPLETED", "FAILED", "INCONCLUSIVE", "REFUSED", "RESOURCE_EXCEEDED", "UNCERTAIN")
 RESOURCE_DECISIONS = ("RUN_EXACT", "RUN_BOUNDED", "NOT_RUN_RESOURCE_BOUND")
+# the parent's metadata-only upper bound before a dataset starts, and the child's decision at run time
+ESTIMATE_STAGES = ("PREFLIGHT_METADATA_UPPER_BOUND", "CHILD_RUNTIME")
 HOST_ROLES = ("COORDINATOR", "WORKER_A", "WORKER_B")
 CAUSAL_TEST_CLASSES = ("PREFIX_ALL_T", "BATCH_STEP_CHUNK_RESTART", "SUFFIX_ADVERSARIAL", "REFERENCE_EQUALITY",
                        "NEGATIVE_CONTROL", "GUARD_MUTATION", "SNAPSHOT_REFUSAL", "FIT_MODE")
@@ -117,9 +119,9 @@ TABLES = {
                                   "variable_id": TEXT_OR_NULL, "partition": TEXT_OR_NULL, "module": TEXT,
                                   "metric": TEXT, "estimator": TEXT, "estimated_peak_bytes": INT, "formula": TEXT,
                                   "params": JSON, "budget_bytes": INT, "decision": enum(RESOURCE_DECISIONS),
-                                  "code_sha256": TEXT},
+                                  "stage": enum(ESTIMATE_STAGES), "code_sha256": TEXT},
     "df_fact_dataset_terminal": {"run_id": TEXT, "host_role": enum(HOST_ROLES), "bank": enum(BANKS),
-                                 "dataset_id": TEXT, "contract_sha256": TEXT, "code_sha256": TEXT,
+                                 "dataset_id": TEXT, "contract_sha256": TEXT_OR_NULL, "code_sha256": TEXT,
                                  "status": enum(TERMINAL_STATUSES), "reason": TEXT, "rows_written": INT,
                                  "variables_profiled": INT, "metrics_completed": INT, "metrics_missing": INT,
                                  "planned_peak_bytes": INT_OR_NULL, "observed_peak_rss_bytes": INT_OR_NULL,

@@ -428,6 +428,7 @@ CREATE TABLE IF NOT EXISTS public.df_fact_resource_estimate (
     params JSONB NOT NULL,
     budget_bytes BIGINT NOT NULL,
     decision TEXT NOT NULL,
+    stage TEXT NOT NULL,
     code_sha256 TEXT NOT NULL,
     CHECK (run_id IS NULL OR run_id NOT IN ('PUBLICLY_ELIGIBLE', 'LIVE_ELIGIBLE')),
     CHECK (bank IN ('PUBLIC', 'FINANCIAL', 'SYNTHETIC')),
@@ -441,6 +442,8 @@ CREATE TABLE IF NOT EXISTS public.df_fact_resource_estimate (
     CHECK (formula IS NULL OR formula NOT IN ('PUBLICLY_ELIGIBLE', 'LIVE_ELIGIBLE')),
     CHECK (decision IN ('RUN_EXACT', 'RUN_BOUNDED', 'NOT_RUN_RESOURCE_BOUND')),
     CHECK (decision IS NULL OR decision NOT IN ('PUBLICLY_ELIGIBLE', 'LIVE_ELIGIBLE')),
+    CHECK (stage IN ('PREFLIGHT_METADATA_UPPER_BOUND', 'CHILD_RUNTIME')),
+    CHECK (stage IS NULL OR stage NOT IN ('PUBLICLY_ELIGIBLE', 'LIVE_ELIGIBLE')),
     CHECK (code_sha256 IS NULL OR code_sha256 NOT IN ('PUBLICLY_ELIGIBLE', 'LIVE_ELIGIBLE')),
     loaded_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -451,7 +454,7 @@ CREATE TABLE IF NOT EXISTS public.df_fact_dataset_terminal (
     host_role TEXT NOT NULL,
     bank TEXT NOT NULL,
     dataset_id TEXT NOT NULL,
-    contract_sha256 TEXT NOT NULL,
+    contract_sha256 TEXT,
     code_sha256 TEXT NOT NULL,
     status TEXT NOT NULL,
     reason TEXT NOT NULL,
