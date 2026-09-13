@@ -1,0 +1,103 @@
+{
+ "adjudications": {
+  "C122": {
+   "binds": {
+    "corrected_sign_test_p": 1.0,
+    "historical_sign_test_p": {
+     "state": "INVALID_SUPERSEDED_NOT_EDITED",
+     "value": 1.3125
+    }
+   },
+   "bundle": [
+    {
+     "relative_path": "T2_READJUDICATION_SUBMISSION_V4_2026_09_12.json",
+     "root_id": "agent-multi:satoshi/t2-c106-c109-20260912",
+     "sha256": "b3bab71dbfc31fbe13fc24d682355ebc5d78bc48fa14b0c7129fb4f745bbfc02"
+    },
+    {
+     "relative_path": "T2_C108_HARDENED_READJUDICATION_CLOSURE_2026_09_12.json",
+     "root_id": "agent-multi:satoshi/t2-c106-c109-20260912",
+     "sha256": "9924a4b32822150160d62c1ddca8d9cc7c809d77b587b80f87b704ce9703acc3"
+    },
+    {
+     "relative_path": "T2_READJUDICATION_SUBMISSION_V4_HISTORY_ADDENDUM_2026_09_12.json",
+     "root_id": "agent-multi:satoshi/t2-c106-c109-20260912",
+     "sha256": "977386359e4057d8750d52a3ae37cd898b0acce43f59090afc32fa436f3c5d26"
+    }
+   ],
+   "decision": "T2_V4_CLOSURE_AND_HISTORY_ADDENDUM_ACCEPTED_AS_ONE_NON_AUTHORIZING_BUNDLE",
+   "enters_new_bank_as_eligible": false,
+   "not_done": [
+    "submission not re-issued",
+    "no T2 code changed"
+   ],
+   "operator_outcome": "DOES_NOT_ADVANCE"
+  },
+  "C123": {
+   "artifacts": [
+    {
+     "relative_path": "ETH_H4_SUCCESSOR_TEMPORAL_CONTRACT.v3.json",
+     "root_id": "financial-data:satoshi/c106-c121-20260912",
+     "sha256": "ee95207dd6d405d68ede09176c791049fc47b257ad60bd2658bb7c896d6270cb"
+    },
+    {
+     "relative_path": "ETH_H4_SUCCESSOR_SAMPLE_ELIGIBILITY_MASK.v1.parquet",
+     "root_id": "financial-data:satoshi/c106-c121-20260912",
+     "sha256": "04cf1a021065635ccc32a2777b40fb339833364eff76a9227081d6f4a395d28a"
+    },
+    {
+     "relative_path": "ETH_H4_SUCCESSOR_SEMANTIC_CENSUS.v1.json",
+     "root_id": "financial-data:satoshi/c106-c121-20260912",
+     "sha256": "3b4b50ddd0ca7cedad019e058d73c203237df992b04079bd82233a6323121c41"
+    },
+    {
+     "relative_path": "ETH_H4_SUCCESSOR_CHARACTERIZATION.v1.json",
+     "root_id": "financial-data:satoshi/c106-c121-20260912",
+     "sha256": "b258f98f311bde40771e39024a483f3afc6e52aed563e2ccae98c3b1e774805d"
+    },
+    {
+     "relative_path": "FEATURE_DAG.v4.json",
+     "root_id": "financial-data:satoshi/c106-c121-20260912",
+     "sha256": "4fa4d1341e51fc4ff0576834fb0455297f177ec319ecd05b3429fa74c8249204"
+    },
+    {
+     "relative_path": "PRODUCER_BINDING_MANIFEST.v2.json",
+     "root_id": "financial-data:satoshi/c106-c121-20260912",
+     "sha256": "7d2b7d38c2e3be3e99f3aa06606cbc36825cd653974f8d4068f215de618f34bc"
+    }
+   ],
+   "blocked_by": [
+    "unit",
+    "license",
+    "remaining member conditions"
+   ],
+   "counts_toward_bank": false,
+   "decision": "ETH_SUCCESSOR_MECHANICS_ACCEPTED_NOT_A_SCIENTIFIC_BANK",
+   "owner_request": "none: no license is to be invented",
+   "use": "the 89 variables may serve mechanical tests only"
+  },
+  "C124": {
+   "artifacts": [
+    {
+     "relative_path": "PER_VARIABLE_PREPROCESSING_DESIGN.v5.json",
+     "root_id": "predictor:satoshi/c106-c121-20260912",
+     "sha256": "452d484f00468e622689725c078faf19df53a336ce94f0ffddd509b4e9ba47fa"
+    },
+    {
+     "relative_path": "PER_VARIABLE_DESIGN_V5_POPULATION.v1.json",
+     "root_id": "predictor:satoshi/c106-c121-20260912",
+     "sha256": "8dddf38b97a6cca30faf35b7d7ff384755e3fe8cc0247d1085bec6b1d5927790"
+    }
+   ],
+   "decision": "V5_JOIN_IMPLEMENTATION_ACCEPTED_POPULATION_BANK_INSUFFICIENT",
+   "population": "BANK_INSUFFICIENT",
+   "scoring": "CLOSED"
+  }
+ },
+ "audit": "MUSASHI_AUDIT_C106_C121_DATA_READINESS_2026_09_12.md",
+ "grants_nothing": true,
+ "order": "MUSASHI_TO_GENERAL_SATOSHI_C122_C145_DATA_FOUNDATION_ORDER_2026_09_12.md",
+ "record_sha256": "eb112c2ade9df3d421d055ee465373194c481d7157975d435fa59c696c78dec7",
+ "recorded_not_issued": "these are Musashi's decisions, recorded by Satoshi with digests of what they rule on; this file issues nothing and creates no consumer",
+ "schema": "crispdm.external_adjudications_record.v1"
+}
