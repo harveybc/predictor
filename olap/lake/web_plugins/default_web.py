@@ -7,6 +7,7 @@ from pathlib import Path
 from flask import Flask, flash, jsonify, redirect, render_template, request, url_for
 
 from app.config_handler import save_config
+from app.lake_auth import check_bearer, load_token
 
 
 def _fmt_bytes(n):
@@ -87,16 +88,31 @@ class Plugin:
             flash(f"{len(payload['rows'])} rows sha256={payload['sha256'][:12]}…", "info")
             return redirect(url_for("home"))
 
+        def _api_ok():
+            expected = cfg().get("lake_service_token") or load_token()
+            if check_bearer(request.headers.get("Authorization"), expected):
+                return None
+            return jsonify({"error": "unauthenticated"}), 401
+
         @app.get("/api/v1/describe")
         def api_describe():
+            denied = _api_ok()
+            if denied:
+                return denied
             return jsonify(q().describe())
 
         @app.get("/api/v1/storage")
         def api_storage():
+            denied = _api_ok()
+            if denied:
+                return denied
             return jsonify(q().storage())
 
         @app.get("/api/v1/discover")
         def api_discover():
+            denied = _api_ok()
+            if denied:
+                return denied
             try:
                 return jsonify({"resources": q().discover()})
             except Exception as exc:
@@ -104,6 +120,9 @@ class Plugin:
 
         @app.get("/api/v1/query")
         def api_query():
+            denied = _api_ok()
+            if denied:
+                return denied
             sql = request.args.get("sql") or ""
             try:
                 return jsonify(q().query(sql))

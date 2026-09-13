@@ -9,6 +9,7 @@ from app.cli import parse_args
 from app.config import DEFAULT_VALUES
 from app.config_handler import load_config
 from app.config_merger import merge_config, process_unknown_args
+from app.lake_auth import load_token
 from app.plugin_loader import get_plugin_params, load_plugin
 
 GROUPS = {
@@ -52,6 +53,9 @@ def main(argv=None):
     config = merge_config(
         DEFAULT_VALUES, params, file_config, cli_args, process_unknown_args(unknown)
     )
+    token = load_token()
+    if token:
+        config["lake_service_token"] = token
     plugins = assemble(config)
     return plugins["pipeline"].run({"config": config, "plugins": plugins})
 
