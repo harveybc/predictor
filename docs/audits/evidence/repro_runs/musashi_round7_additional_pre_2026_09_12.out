@@ -1,0 +1,3 @@
+T2_P {"corrected": 1.0, "historical": 1.3125, "table": [0.03125, 0.21875, 0.6875, 1.0, 0.6875, 0.21875, 0.03125]}
+T2_CORRECTED_DIGEST 1be80a0ab6d091794f7ce3ec97c2dbf88920911037c0415c383043bd95ca3a6d
+FALSE_BANK {"members": 30, "panels": 6, "semantic_variables": 0, "terminals": 0, "verdict": "BANK_SUFFICIENT_FOR_REVIEW"}
