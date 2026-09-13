@@ -9,6 +9,12 @@
 Un protocolo escrito, una implementacion, una ejecucion y una decision de
 elegibilidad son estados distintos.
 
+**Gobernanza transversal:**
+`08_GOBERNANZA_TRANSVERSAL_DATA_GOV_2026_09_13.md`. Toda ejecucion que pueda
+cambiar una decision cientifica u operativa debe registrar campana, bytes de
+entrada y desenlace mediante data-gov. Las pruebas mecanicas pueden declararse
+`NON_GOVERNING`, pero no conceden elegibilidad.
+
 ## 1. Que significa "cada variable de entrada"
 
 No significa que toda columna almacenada deba llegar al modelo. Significa que toda variable candidata debe tener una identidad estable y pasar por una secuencia explicita de controles antes de competir.
@@ -55,6 +61,11 @@ Cada experimento debe declarar antes de mirar resultados:
 - baselines sencillos que hacen inutil una mejora aparente;
 - condiciones bajo las cuales un resultado negativo es informativo;
 - dominio de uso y dominios en los que no se permite extrapolar.
+
+Esta declaracion se materializa una vez como manifiesto gobernado de campana.
+Las unidades heredan su identidad; no se crea una ceremonia por epoca, semilla
+o lote. Codigo no identificable, datos sin recibo o una unidad fuera del
+manifiesto no pueden producir evidencia gobernante.
 
 Para pronostico, la pregunta no es solo "que modelo reduce el error", sino si una preparacion de datos reduce error fuera de muestra sin borrar extremos, anticipar el futuro o aumentar el costo de forma desproporcionada. Para RL, la pregunta es si una representacion mejora aprendizaje y decision bajo el mismo presupuesto, no si luce informativa en una prueba supervisada auxiliar.
 
@@ -130,6 +141,11 @@ Un resultado apto para consumo incluye:
 
 ## 4. Orden cientifico y operativo
 
+La capa `G0-G5` envuelve todos los pasos: submission de campana, entrega o
+cache verificada de datos, ejecucion local, terminal durable, reporte por lotes
+y reconciliacion con el cubo. No es una fase cientifica nueva y no introduce
+llamadas remotas dentro de `fit`, `transform`, `step` o `learn`.
+
 | Paso | Trabajo | Salida que abre el siguiente paso |
 |---|---|---|
 | I0 | Congelar decisiones, objetivos y roles temporales | Contrato CRISP-DM por experimento |
@@ -176,7 +192,9 @@ Hasta que existan esos registros:
 - **`feature-eng`:** se conserva como inventario de implementaciones y
   antecedentes. Sus salidas historicas no reciben elegibilidad automatica; el
   carril F0-F5 separa targets de entradas y reemplaza supuestos implicitos por
-  contratos ejecutables.
+  contratos ejecutables. Sus salidas nuevas se publican como artefactos
+  direccionados por contenido con padres, operador, particion y tiempo de
+  disponibilidad; no se copian entre repositorios como autoridad.
 
 ## 6. OLAP: memoria del programa, no deposito indiscriminado
 
@@ -190,6 +208,13 @@ El cubo se amplia de forma aditiva con seis granos nuevos:
 - recibos de ingesta; los recibos de adjudicacion se agregan al conectar las campanas externas.
 
 Los resultados viejos no se borran. Se marcan con cobertura de metadatos y, cuando no sea posible reconstruir un campo, queda `UNAVAILABLE`. La migracion correcta es: base desechable, validacion de esquema e ingesta, respaldo de la base real, migracion aditiva, backfill comprobable y recibo final. `reset_olap.py` no forma parte de este plan.
+
+Para campanas gobernadas, los agentes no reciben una conexion de escritura al
+cubo. Publican terminales y metricas en un outbox durable; data-gov valida el
+linaje y su adaptador escribe en el OLAP configurado, local o remoto. El ETL de
+DOIN usa el mismo contrato por lotes. Exitos, fallos, inconclusos, rechazos y
+cuarentenas se conservan; una caida temporal del servicio deja trabajo
+pendiente, no borra ni cambia el resultado.
 
 ## 7. Entregables doctorales acumulativos
 
@@ -228,5 +253,9 @@ No completado:
 - contratos, pruebas y ejecucion F0-F5 para ingenieria de caracteristicas;
 - seleccion de variables, pronostico, representaciones, L2/DOIN y RL bajo el
   contrato nuevo.
+- beta de data-gov con registro de campana, confirmacion de entrega, terminales
+  de todos los estados, outbox durable y reconciliacion OLAP.
 
-La orden siguiente es D0-D2. I5-I10 permanecen cerradas.
+La orden siguiente sigue siendo D0-D2. La beta de gobernanza avanza en
+paralelo y debe cerrar antes de una nueva ejecucion cientifica D3-F5. I5-I10
+permanecen cerradas.

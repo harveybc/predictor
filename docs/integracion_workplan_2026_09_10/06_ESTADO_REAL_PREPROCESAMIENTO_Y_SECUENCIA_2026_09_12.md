@@ -28,6 +28,7 @@ Ninguno implica automaticamente el siguiente.
 | I8 L2/DOIN | Bloqueada | sin universo L1 elegible | manifest congelado |
 | I9 RL/trading offline | Bloqueada para entradas nuevas | campanas anteriores cerradas por su identidad | evidencia atribuible de I8 |
 | I10 financiero/live | Bloqueada | piloto temporal, no licencia operativa | revalidacion separada |
+| Gobernanza data-gov | Implementacion beta bajo auditoria | descarga con hash y reporte nominal de exitos | cerrar registro de campana, entrega confirmada, todos los terminales, outbox y reconciliacion |
 
 ## 2. Estado STEP 01-13
 
@@ -50,7 +51,8 @@ Ninguno implica automaticamente el siguiente.
 ## 3. Orden vinculante
 
 ```text
-D0 contratos e inventario
+G0 submission gobernada de campana
+ -> D0 contratos e inventario
  -> D1 perfil crudo por variable y por grupo
  -> D2 muestreo + ruido/SNR + denoising causal
  -> [D3-D5 procesamiento de senal || F0-F5 ingenieria de caracteristicas]
@@ -59,7 +61,13 @@ D0 contratos e inventario
  -> I6 pronostico supervisado
  -> I7-I9 representaciones, L2/DOIN y RL
  -> I10 validacion financiera/live
+ -> G5 reconciliacion de terminales, recibos y OLAP
 ```
+
+`G0-G5` envuelve la secuencia completa. No reemplaza las rejas cientificas y
+no hace llamadas dentro del ciclo de aprendizaje. Toda ejecucion que pueda
+cambiar una decision es `GOVERNING`; pruebas y sondas mecanicas pueden ser
+`NON_GOVERNING`, pero no se convierten en evidencia sin repeticion gobernada.
 
 Una fase puede terminar con todos los operadores rechazados. Eso no permite
 saltar a la siguiente usando entradas no caracterizadas.
@@ -101,6 +109,12 @@ El cubo es memoria append-only. Debe recibir:
 * comparaciones raw/transformada/residual;
 * recibo de cada carga.
 
+Las campanas nuevas escriben mediante data-gov y un outbox durable. El cliente
+no recibe credenciales del cubo. Una transferencia solo cuenta para linaje
+despues de que el cliente verifica los bytes; una caida temporal conserva el
+terminal como pendiente. El contrato y los bloqueadores de beta estan en
+`08_GOBERNANZA_TRANSVERSAL_DATA_GOV_2026_09_13.md`.
+
 No se borran resultados viejos para hacer espacio. Si se requiere particion o
 archivo historico, se conserva la identidad y la consulta unificada.
 
@@ -135,6 +149,11 @@ La orden C166-C184 elimina los interruptores de mutacion de produccion, corrige
 identidad y cobertura, repite C137 como reanalisis y ejecuta una confirmacion
 sintetica fresca. D3-D5, seleccion y entrenamiento permanecen cerrados hasta la
 revision externa de ese resultado.
+
+En paralelo se cierra la beta de data-gov. No se reinician los servicios vivos
+ni se declara obligatorio el camino hasta que el ensayo en puertos alternos y
+base desechable pase la auditoria. La autorizacion acotada del propietario para
+reiniciar 5055-5057 ya esta registrada y solo aplica despues de esa reja.
 
 En paralelo solo se permite trabajo de definicion F0-F3 bajo DGPD: requisitos,
 casos de uso, pruebas y arquitectura. No se puntuan features ni se modifica una

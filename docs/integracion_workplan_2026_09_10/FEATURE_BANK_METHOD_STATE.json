@@ -3,7 +3,7 @@
   "method_version": "1.0",
   "project_id": "temporal-feature-bank",
   "objective": "Construir y validar un banco causal de caracteristicas temporales antes de la seleccion de variables y del modelado.",
-  "updated_at": "2026-09-13T18:00:00-05:00",
+  "updated_at": "2026-09-13T22:30:00-05:00",
   "current_stage": "S1_REQUIREMENTS",
   "stages": [
     {"id": "S0_DISCOVERY", "status": "PASSED", "optional": false, "artifacts": ["docs/integracion_workplan_2026_09_10/07_COBERTURA_REPRESENTACIONES_Y_FEATURE_ENG_2026_09_13.md"], "evidence": ["docs/integracion_workplan_2026_09_10/07_COBERTURA_REPRESENTACIONES_Y_FEATURE_ENG_2026_09_13.md"], "review": "MUSASHI_SCOPE_AUDIT_2026-09-13"},
@@ -34,11 +34,15 @@
     {"id": "FBR-009", "text": "La bateria debe detectar controles deliberadamente no causales.", "status": "DRAFT", "source": "requisito del propietario"},
     {"id": "FBR-010", "text": "La elegibilidad exige utilidad incremental fuera de muestra.", "status": "DRAFT", "source": "propuesta doctoral"},
     {"id": "FBR-011", "text": "Toda comparacion conserva raw y controles de igual anchura o costo.", "status": "DRAFT", "source": "propuesta doctoral"},
-    {"id": "FBR-012", "text": "Todos los desenlaces deben persistirse en el cubo OLAP.", "status": "DRAFT", "source": "plan data-centric"}
+    {"id": "FBR-012", "text": "Todos los desenlaces deben persistirse en el cubo OLAP.", "status": "DRAFT", "source": "plan data-centric"},
+    {"id": "FBR-013", "text": "Toda ejecucion que pueda conceder elegibilidad debe usar una campana gobernada y entradas con recibos verificados.", "status": "DRAFT", "source": "auditoria data-gov"},
+    {"id": "FBR-014", "text": "Una prueba NON_GOVERNING no puede conceder elegibilidad y debe repetirse bajo gobernanza si cambia una decision.", "status": "DRAFT", "source": "auditoria data-gov"},
+    {"id": "FBR-015", "text": "El terminal de toda unidad debe sobrevivir a una caida de data-gov u OLAP mediante un outbox durable e idempotente.", "status": "DRAFT", "source": "auditoria data-gov"}
   ],
   "traceability_file": "docs/integracion_workplan_2026_09_10/FEATURE_BANK_TRACEABILITY.md",
   "next_allowed_actions": [
     "Revisar y aceptar FBR-001 a FBR-012",
+    "Revisar y aceptar FBR-013 a FBR-015",
     "Escribir casos de uso nominales, de rechazo y de recuperacion",
     "Definir pruebas alfa antes de elegir la arquitectura"
   ],
@@ -50,6 +54,7 @@
     "Elegir en S4 si el contrato comun vive en preprocessor o en un paquete pequeno sin dependencias de aplicacion"
   ],
   "history": [
-    {"at": "2026-09-13T18:00:00-05:00", "stage": "S1_REQUIREMENTS", "event": "Auditoria de cobertura completada y primer borrador de requisitos creado"}
+    {"at": "2026-09-13T18:00:00-05:00", "stage": "S1_REQUIREMENTS", "event": "Auditoria de cobertura completada y primer borrador de requisitos creado"},
+    {"at": "2026-09-13T22:30:00-05:00", "stage": "S1_REQUIREMENTS", "event": "Gobernanza de campana, evidencia y terminal durable incorporada como requisito transversal"}
   ]
 }

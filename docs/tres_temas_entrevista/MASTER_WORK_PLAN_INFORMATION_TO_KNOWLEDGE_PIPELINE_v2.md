@@ -614,6 +614,20 @@ identity. Future-scanning labels are a separate role and may never enter this
 lane. The full contract and current audit are maintained in
 `../integracion_workplan_2026_09_10/07_COBERTURA_REPRESENTACIONES_Y_FEATURE_ENG_2026_09_13.md`.
 
+## 7.2 Data and result governance plane
+
+Every run capable of changing a scientific or operational decision is wrapped
+by one campaign manifest, content-verified data deliveries, one durable
+terminal per unit and an idempotent report to the configured OLAP adapter.
+Governance is outside the learning loop: it makes no remote call per
+observation, environment step, batch or gradient update.
+
+Unit, integration and mechanics-only probes may be marked `NON_GOVERNING` so
+development remains fast. Such a result cannot license an operator, feature,
+model or deployment; a decision-relevant finding must be repeated as a
+governed run. The binding contract and beta gates are maintained in
+`../integracion_workplan_2026_09_10/08_GOBERNANZA_TRANSVERSAL_DATA_GOV_2026_09_13.md`.
+
 Future steps add:
 
 \[
@@ -661,6 +675,7 @@ The governance, experiment structure and modular contracts should remain stable.
 | STEP 07 | Closed | Not executed as a common detector bank |
 | Compression transversal lane | Formalized for audit | Not executed |
 | Feature-engineering lane F0-F5 | Discovery complete | Requirements under review; no eligible feature bank |
+| Data/result governance | Beta implementation under audit | Nominal success path exists; mandatory-use gates remain open |
 | STEP 08 | Planned | Blocked by D0-D3 |
 | STEP 09-13 | Planned | Blocked by preceding steps |
 
@@ -678,3 +693,5 @@ Before STEP 08 implementation/research:
    01-07 lack common-contract evidence.
 6. develop F0-F5 in parallel after D2 and join it with the signal-processing
    lane only at feature selection.
+7. close the data-gov beta before the next new scientific execution in D3-F5;
+   historical campaigns remain under their original identities.

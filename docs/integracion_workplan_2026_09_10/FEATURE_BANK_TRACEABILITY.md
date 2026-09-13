@@ -16,3 +16,6 @@
 | `FBR-010` | Elegibilidad exige utilidad incremental fuera de muestra | `UC-F10` | `AT-F10` | `ST-F10` | adjudicador | `IT-F10` | `UT-F10` | DRAFT |
 | `FBR-011` | Raw y controles de igual anchura/costo se conservan | `UC-F11` | `AT-F11` | `ST-F11` | arnes comparativo | `IT-F11` | `UT-F11` | DRAFT |
 | `FBR-012` | Exitos, fallos, rechazos e inconclusos llegan al OLAP | `UC-F12` | `AT-F12` | `ST-F12` | outbox/loader | `IT-F12` | `UT-F12` | DRAFT |
+| `FBR-013` | Una feature elegible proviene de campana y entregas gobernadas | `UC-F13` | `AT-F13` | `ST-F13` | manifest/receipts | `IT-F13` | `UT-F13` | DRAFT |
+| `FBR-014` | Un resultado `NON_GOVERNING` no abre F5 ni I5 | `UC-F14` | `AT-F14` | `ST-F14` | adjudicador | `IT-F14` | `UT-F14` | DRAFT |
+| `FBR-015` | El terminal se recupera tras indisponibilidad del servicio o cubo | `UC-F15` | `AT-F15` | `ST-F15` | outbox durable | `IT-F15` | `UT-F15` | DRAFT |
