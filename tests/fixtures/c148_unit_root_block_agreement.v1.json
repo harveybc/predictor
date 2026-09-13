@@ -1,0 +1,239 @@
+{
+ "agreement_fraction": 0.9833333333333333,
+ "agreements": 59,
+ "cases": [
+  {
+   "adf": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": true,
+     "middle": true,
+     "start": true
+    },
+    "exact_reject_5pct": true
+   },
+   "kind": "stationary",
+   "kpss": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": false,
+     "middle": false,
+     "start": false
+    },
+    "exact_reject_5pct": false
+   },
+   "seed": 1
+  },
+  {
+   "adf": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": true,
+     "middle": true,
+     "start": true
+    },
+    "exact_reject_5pct": true
+   },
+   "kind": "stationary",
+   "kpss": {
+    "agree": 2,
+    "block_reject_5pct": {
+     "end": false,
+     "middle": false,
+     "start": true
+    },
+    "exact_reject_5pct": false
+   },
+   "seed": 2
+  },
+  {
+   "adf": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": true,
+     "middle": true,
+     "start": true
+    },
+    "exact_reject_5pct": true
+   },
+   "kind": "stationary",
+   "kpss": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": false,
+     "middle": false,
+     "start": false
+    },
+    "exact_reject_5pct": false
+   },
+   "seed": 3
+  },
+  {
+   "adf": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": true,
+     "middle": true,
+     "start": true
+    },
+    "exact_reject_5pct": true
+   },
+   "kind": "stationary",
+   "kpss": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": false,
+     "middle": false,
+     "start": false
+    },
+    "exact_reject_5pct": false
+   },
+   "seed": 4
+  },
+  {
+   "adf": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": true,
+     "middle": true,
+     "start": true
+    },
+    "exact_reject_5pct": true
+   },
+   "kind": "stationary",
+   "kpss": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": false,
+     "middle": false,
+     "start": false
+    },
+    "exact_reject_5pct": false
+   },
+   "seed": 5
+  },
+  {
+   "adf": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": false,
+     "middle": false,
+     "start": false
+    },
+    "exact_reject_5pct": false
+   },
+   "kind": "unit_root",
+   "kpss": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": true,
+     "middle": true,
+     "start": true
+    },
+    "exact_reject_5pct": true
+   },
+   "seed": 1
+  },
+  {
+   "adf": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": false,
+     "middle": false,
+     "start": false
+    },
+    "exact_reject_5pct": false
+   },
+   "kind": "unit_root",
+   "kpss": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": true,
+     "middle": true,
+     "start": true
+    },
+    "exact_reject_5pct": true
+   },
+   "seed": 2
+  },
+  {
+   "adf": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": false,
+     "middle": false,
+     "start": false
+    },
+    "exact_reject_5pct": false
+   },
+   "kind": "unit_root",
+   "kpss": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": true,
+     "middle": true,
+     "start": true
+    },
+    "exact_reject_5pct": true
+   },
+   "seed": 3
+  },
+  {
+   "adf": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": false,
+     "middle": false,
+     "start": false
+    },
+    "exact_reject_5pct": false
+   },
+   "kind": "unit_root",
+   "kpss": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": true,
+     "middle": true,
+     "start": true
+    },
+    "exact_reject_5pct": true
+   },
+   "seed": 4
+  },
+  {
+   "adf": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": false,
+     "middle": false,
+     "start": false
+    },
+    "exact_reject_5pct": false
+   },
+   "kind": "unit_root",
+   "kpss": {
+    "agree": 3,
+    "block_reject_5pct": {
+     "end": true,
+     "middle": true,
+     "start": true
+    },
+    "exact_reject_5pct": true
+   },
+   "seed": 5
+  }
+ ],
+ "comparisons": 60,
+ "n": 20000,
+ "schema": "crispdm.data_foundation.c148_unit_root_block_agreement.v1",
+ "seeds": [
+  1,
+  2,
+  3,
+  4,
+  5
+ ],
+ "stationary": "AR(1) phi=0.5 gaussian",
+ "test_block_length": 5000,
+ "unit_root": "gaussian random walk"
+}

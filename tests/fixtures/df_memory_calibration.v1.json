@@ -1,0 +1,2363 @@
+{
+ "cases": [
+  {
+   "BASE_PROCESS_BYTES": 440401920,
+   "absolute_maxrss_bytes": 197820416,
+   "cap_bytes": 1073741824,
+   "case": "base",
+   "ratio_absolute": 0.4492,
+   "rss_after_warm_bytes": 198041600
+  },
+  {
+   "absolute_maxrss_bytes": 197902336,
+   "cap_bytes": 1073741824,
+   "case": "uni.train_reference.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 2940000,
+   "estimate_minus_base_bytes": 4622000,
+   "estimated_peak_bytes": 461801136,
+   "factor_needed_for_margin_1_15": 0.0,
+   "group": "train_reference",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": -20480,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4285,
+   "ratio_incremental": -0.0044,
+   "rss0_bytes": 197922816,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.0
+  },
+  {
+   "absolute_maxrss_bytes": 198152192,
+   "cap_bytes": 1073741824,
+   "case": "uni.counts.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 1380000,
+   "estimate_minus_base_bytes": 2594000,
+   "estimated_peak_bytes": 459773136,
+   "factor_needed_for_margin_1_15": 0.0,
+   "group": "counts",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 344064,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.431,
+   "ratio_incremental": 0.1326,
+   "rss0_bytes": 197808128,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.0
+  },
+  {
+   "absolute_maxrss_bytes": 198668288,
+   "cap_bytes": 1073741824,
+   "case": "uni.quantiles.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 3360000,
+   "estimate_minus_base_bytes": 5168000,
+   "estimated_peak_bytes": 462347136,
+   "factor_needed_for_margin_1_15": 0.0,
+   "group": "quantiles",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 782336,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4297,
+   "ratio_incremental": 0.1514,
+   "rss0_bytes": 197885952,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.0
+  },
+  {
+   "absolute_maxrss_bytes": 205479936,
+   "cap_bytes": 1073741824,
+   "case": "uni.acf.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 12288608,
+   "estimate_minus_base_bytes": 16775191,
+   "estimated_peak_bytes": 473954327,
+   "factor_needed_for_margin_1_15": 0.627,
+   "group": "acf",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 7503872,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4335,
+   "ratio_incremental": 0.4473,
+   "rss0_bytes": 197976064,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 203431936,
+   "cap_bytes": 1073741824,
+   "case": "uni.shift_ks_psi.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 8000000,
+   "estimate_minus_base_bytes": 11200000,
+   "estimated_peak_bytes": 468379136,
+   "factor_needed_for_margin_1_15": 0.685,
+   "group": "shift_ks_psi",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 5562368,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4343,
+   "ratio_incremental": 0.4966,
+   "rss0_bytes": 197869568,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 40000,
+    "n_train": 60000
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 199086080,
+   "cap_bytes": 1073741824,
+   "case": "uni.robust_z.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 2460000,
+   "estimate_minus_base_bytes": 3998000,
+   "estimated_peak_bytes": 461177136,
+   "factor_needed_for_margin_1_15": 0.105,
+   "group": "robust_z",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 1024000,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4317,
+   "ratio_incremental": 0.2561,
+   "rss0_bytes": 198062080,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 199790592,
+   "cap_bytes": 1073741824,
+   "case": "uni.timestamps_duplicates.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": true,
+    "n_train": 60000
+   },
+   "derived_bytes": 1020000,
+   "estimate_minus_base_bytes": 2926000,
+   "estimated_peak_bytes": 460105136,
+   "factor_needed_for_margin_1_15": 0.283,
+   "group": "timestamps_duplicates",
+   "held_bytes": 1600000,
+   "measured_peak_delta_bytes": 1851392,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4342,
+   "ratio_incremental": 0.6327,
+   "rss0_bytes": 197939200,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 198324224,
+   "cap_bytes": 1073741824,
+   "case": "inf.entropy_redundancy.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 4320000,
+   "estimate_minus_base_bytes": 6416000,
+   "estimated_peak_bytes": 463595136,
+   "factor_needed_for_margin_1_15": 0.0,
+   "group": "entropy_redundancy",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 118784,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4278,
+   "ratio_incremental": 0.0185,
+   "rss0_bytes": 198205440,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 199745536,
+   "cap_bytes": 1073741824,
+   "case": "inf.permutation_entropy_order_3.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 3720000,
+   "estimate_minus_base_bytes": 5636000,
+   "estimated_peak_bytes": 462815136,
+   "factor_needed_for_margin_1_15": 0.25,
+   "group": "permutation_entropy_order_3",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 1609728,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4316,
+   "ratio_incremental": 0.2856,
+   "rss0_bytes": 198135808,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000,
+    "order": 3
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 200081408,
+   "cap_bytes": 1073741824,
+   "case": "inf.permutation_entropy_order_4.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 4740000,
+   "estimate_minus_base_bytes": 6962000,
+   "estimated_peak_bytes": 464141136,
+   "factor_needed_for_margin_1_15": 0.351,
+   "group": "permutation_entropy_order_4",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 2248704,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4311,
+   "ratio_incremental": 0.323,
+   "rss0_bytes": 197832704,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000,
+    "order": 4
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 200888320,
+   "cap_bytes": 1073741824,
+   "case": "inf.permutation_entropy_order_5.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 5760000,
+   "estimate_minus_base_bytes": 8288000,
+   "estimated_peak_bytes": 465467136,
+   "factor_needed_for_margin_1_15": 0.336,
+   "group": "permutation_entropy_order_5",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 2482176,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4316,
+   "ratio_incremental": 0.2995,
+   "rss0_bytes": 198406144,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000,
+    "order": 5
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 197394432,
+   "cap_bytes": 1073741824,
+   "case": "inf.spectral_entropy.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 12202000,
+   "estimate_minus_base_bytes": 16662600,
+   "estimated_peak_bytes": 473841736,
+   "factor_needed_for_margin_1_15": 0.0,
+   "group": "spectral_entropy",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": -835584,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4166,
+   "ratio_incremental": -0.0501,
+   "rss0_bytes": 198230016,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 199237632,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_raw_float64_zlib9.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 3508576,
+   "estimate_minus_base_bytes": 5361149,
+   "estimated_peak_bytes": 462540285,
+   "factor_needed_for_margin_1_15": 0.124,
+   "group": "compression_raw_float64_zlib9",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 1179648,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4307,
+   "ratio_incremental": 0.22,
+   "rss0_bytes": 198057984,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.05
+  },
+  {
+   "absolute_maxrss_bytes": 206553088,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_raw_float64_lzma6.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 107317600,
+   "estimate_minus_base_bytes": 140312880,
+   "estimated_peak_bytes": 597492016,
+   "factor_needed_for_margin_1_15": 0.081,
+   "group": "compression_raw_float64_lzma6",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 8347648,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.3457,
+   "ratio_incremental": 0.0595,
+   "rss0_bytes": 198205440,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.24
+  },
+  {
+   "absolute_maxrss_bytes": 197832704,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_symbols_zlib9.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 1888576,
+   "estimate_minus_base_bytes": 3255149,
+   "estimated_peak_bytes": 460434285,
+   "factor_needed_for_margin_1_15": 0.0,
+   "group": "compression_symbols_zlib9",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": -147456,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4297,
+   "ratio_incremental": -0.0453,
+   "rss0_bytes": 197980160,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 200097792,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_symbols_lzma6.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 105697600,
+   "estimate_minus_base_bytes": 138206880,
+   "estimated_peak_bytes": 595386016,
+   "factor_needed_for_margin_1_15": 0.013,
+   "group": "compression_symbols_lzma6",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 2015232,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.3361,
+   "ratio_incremental": 0.0146,
+   "rss0_bytes": 198082560,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.03
+  },
+  {
+   "absolute_maxrss_bytes": 207876096,
+   "cap_bytes": 1073741824,
+   "case": "smp.timestamps.irregular.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": true,
+    "n_train": 60000
+   },
+   "derived_bytes": 14240000,
+   "estimate_minus_base_bytes": 19312000,
+   "estimated_peak_bytes": 476491136,
+   "factor_needed_for_margin_1_15": 0.723,
+   "group": "timestamps",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 9756672,
+   "module": "df_sampling",
+   "ratio_absolute": 0.4363,
+   "ratio_incremental": 0.5052,
+   "rss0_bytes": 198119424,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.02
+  },
+  {
+   "absolute_maxrss_bytes": 198479872,
+   "cap_bytes": 1073741824,
+   "case": "smp.spectral_decimation.regular.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 29400000,
+   "estimate_minus_base_bytes": 39020000,
+   "estimated_peak_bytes": 496199136,
+   "factor_needed_for_margin_1_15": 0.0,
+   "group": "spectral_decimation",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 299008,
+   "module": "df_sampling",
+   "ratio_absolute": 0.4,
+   "ratio_incremental": 0.0077,
+   "rss0_bytes": 198180864,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.03
+  },
+  {
+   "absolute_maxrss_bytes": 200179712,
+   "cap_bytes": 1073741824,
+   "case": "smp.spectral_decimation.nan_every_3rd.60000",
+   "context": {
+    "T": 100000,
+    "has_ts": false,
+    "n_train": 60000
+   },
+   "derived_bytes": 29400000,
+   "estimate_minus_base_bytes": 39020000,
+   "estimated_peak_bytes": 496199136,
+   "factor_needed_for_margin_1_15": 0.059,
+   "group": "spectral_decimation",
+   "held_bytes": 800000,
+   "measured_peak_delta_bytes": 2310144,
+   "module": "df_sampling",
+   "ratio_absolute": 0.4034,
+   "ratio_incremental": 0.0592,
+   "rss0_bytes": 197869568,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.0
+  },
+  {
+   "absolute_maxrss_bytes": 202268672,
+   "cap_bytes": 1073741824,
+   "case": "mv.pair_correlations.60000",
+   "context": {
+    "T": 100000,
+    "k_pairs": 2,
+    "n_train": 60000
+   },
+   "derived_bytes": 9360000,
+   "estimate_minus_base_bytes": 12168000,
+   "estimated_peak_bytes": 469347136,
+   "factor_needed_for_margin_1_15": 0.48,
+   "group": "pair_correlations",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 3903488,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.431,
+   "ratio_incremental": 0.3208,
+   "rss0_bytes": 198365184,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.02
+  },
+  {
+   "absolute_maxrss_bytes": 199794688,
+   "cap_bytes": 1073741824,
+   "case": "mv.pair_mutual_information.60000",
+   "context": {
+    "T": 100000,
+    "k_pairs": 2,
+    "n_train": 60000
+   },
+   "derived_bytes": 6240000,
+   "estimate_minus_base_bytes": 8112000,
+   "estimated_peak_bytes": 465291136,
+   "factor_needed_for_margin_1_15": 0.306,
+   "group": "pair_mutual_information",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 1662976,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.4294,
+   "ratio_incremental": 0.205,
+   "rss0_bytes": 198131712,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.02
+  },
+  {
+   "absolute_maxrss_bytes": 198979584,
+   "cap_bytes": 1073741824,
+   "case": "mv.pair_lead_lag.60000",
+   "context": {
+    "T": 100000,
+    "k_pairs": 2,
+    "n_train": 60000
+   },
+   "derived_bytes": 3060000,
+   "estimate_minus_base_bytes": 3978000,
+   "estimated_peak_bytes": 461157136,
+   "factor_needed_for_margin_1_15": 0.217,
+   "group": "pair_lead_lag",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 577536,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.4315,
+   "ratio_incremental": 0.1452,
+   "rss0_bytes": 198402048,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 60000
+   },
+   "wall_seconds": 0.02
+  },
+  {
+   "absolute_maxrss_bytes": 206893056,
+   "cap_bytes": 1073741824,
+   "case": "uni.train_reference.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 14700000,
+   "estimate_minus_base_bytes": 23110000,
+   "estimated_peak_bytes": 480289136,
+   "factor_needed_for_margin_1_15": 0.396,
+   "group": "train_reference",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 9064448,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4308,
+   "ratio_incremental": 0.3922,
+   "rss0_bytes": 197828608,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.02
+  },
+  {
+   "absolute_maxrss_bytes": 207884288,
+   "cap_bytes": 1073741824,
+   "case": "uni.counts.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 6900000,
+   "estimate_minus_base_bytes": 12970000,
+   "estimated_peak_bytes": 470149136,
+   "factor_needed_for_margin_1_15": 0.965,
+   "group": "counts",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 9789440,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4422,
+   "ratio_incremental": 0.7548,
+   "rss0_bytes": 198094848,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 208904192,
+   "cap_bytes": 1073741824,
+   "case": "uni.quantiles.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 16800000,
+   "estimate_minus_base_bytes": 25840000,
+   "estimated_peak_bytes": 483019136,
+   "factor_needed_for_margin_1_15": 0.444,
+   "group": "quantiles",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 10481664,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4325,
+   "ratio_incremental": 0.4056,
+   "rss0_bytes": 198422528,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.02
+  },
+  {
+   "absolute_maxrss_bytes": 249151488,
+   "cap_bytes": 1073741824,
+   "case": "uni.acf.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 86608864,
+   "estimate_minus_base_bytes": 116591524,
+   "estimated_peak_bytes": 573770660,
+   "factor_needed_for_margin_1_15": 0.625,
+   "group": "acf",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 51093504,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4342,
+   "ratio_incremental": 0.4382,
+   "rss0_bytes": 198057984,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.1
+  },
+  {
+   "absolute_maxrss_bytes": 217419776,
+   "cap_bytes": 1073741824,
+   "case": "uni.shift_ks_psi.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 40000000,
+   "estimate_minus_base_bytes": 56000000,
+   "estimated_peak_bytes": 513179136,
+   "factor_needed_for_margin_1_15": 0.442,
+   "group": "shift_ks_psi",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 19374080,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4237,
+   "ratio_incremental": 0.346,
+   "rss0_bytes": 198045696,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 200000,
+    "n_train": 300000
+   },
+   "wall_seconds": 0.06
+  },
+  {
+   "absolute_maxrss_bytes": 209092608,
+   "cap_bytes": 1073741824,
+   "case": "uni.robust_z.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 12300000,
+   "estimate_minus_base_bytes": 19990000,
+   "estimated_peak_bytes": 477169136,
+   "factor_needed_for_margin_1_15": 0.627,
+   "group": "robust_z",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 10711040,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4382,
+   "ratio_incremental": 0.5358,
+   "rss0_bytes": 198381568,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.02
+  },
+  {
+   "absolute_maxrss_bytes": 208769024,
+   "cap_bytes": 1073741824,
+   "case": "uni.timestamps_duplicates.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": true,
+    "n_train": 300000
+   },
+   "derived_bytes": 5100000,
+   "estimate_minus_base_bytes": 14630000,
+   "estimated_peak_bytes": 471809136,
+   "factor_needed_for_margin_1_15": 0.651,
+   "group": "timestamps_duplicates",
+   "held_bytes": 8000000,
+   "measured_peak_delta_bytes": 10887168,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4425,
+   "ratio_incremental": 0.7442,
+   "rss0_bytes": 197881856,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.08
+  },
+  {
+   "absolute_maxrss_bytes": 207564800,
+   "cap_bytes": 1073741824,
+   "case": "inf.entropy_redundancy.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 21600000,
+   "estimate_minus_base_bytes": 32080000,
+   "estimated_peak_bytes": 489259136,
+   "factor_needed_for_margin_1_15": 0.293,
+   "group": "entropy_redundancy",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 9506816,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4242,
+   "ratio_incremental": 0.2963,
+   "rss0_bytes": 198057984,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.03
+  },
+  {
+   "absolute_maxrss_bytes": 209076224,
+   "cap_bytes": 1073741824,
+   "case": "inf.permutation_entropy_order_3.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 18600000,
+   "estimate_minus_base_bytes": 28180000,
+   "estimated_peak_bytes": 485359136,
+   "factor_needed_for_margin_1_15": 0.411,
+   "group": "permutation_entropy_order_3",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 10653696,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4308,
+   "ratio_incremental": 0.3781,
+   "rss0_bytes": 198422528,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000,
+    "order": 3
+   },
+   "wall_seconds": 0.05
+  },
+  {
+   "absolute_maxrss_bytes": 208732160,
+   "cap_bytes": 1073741824,
+   "case": "inf.permutation_entropy_order_4.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 23700000,
+   "estimate_minus_base_bytes": 34810000,
+   "estimated_peak_bytes": 491989136,
+   "factor_needed_for_margin_1_15": 0.316,
+   "group": "permutation_entropy_order_4",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 10518528,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4243,
+   "ratio_incremental": 0.3022,
+   "rss0_bytes": 198213632,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000,
+    "order": 4
+   },
+   "wall_seconds": 0.05
+  },
+  {
+   "absolute_maxrss_bytes": 208433152,
+   "cap_bytes": 1073741824,
+   "case": "inf.permutation_entropy_order_5.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 28800000,
+   "estimate_minus_base_bytes": 41440000,
+   "estimated_peak_bytes": 498619136,
+   "factor_needed_for_margin_1_15": 0.259,
+   "group": "permutation_entropy_order_5",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 10477568,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.418,
+   "ratio_incremental": 0.2528,
+   "rss0_bytes": 197955584,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000,
+    "order": 5
+   },
+   "wall_seconds": 0.05
+  },
+  {
+   "absolute_maxrss_bytes": 205017088,
+   "cap_bytes": 1073741824,
+   "case": "inf.spectral_entropy.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 61192000,
+   "estimate_minus_base_bytes": 83549600,
+   "estimated_peak_bytes": 540728736,
+   "factor_needed_for_margin_1_15": 0.058,
+   "group": "spectral_entropy",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 7077888,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.3791,
+   "ratio_incremental": 0.0847,
+   "rss0_bytes": 197939200,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.03
+  },
+  {
+   "absolute_maxrss_bytes": 208527360,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_raw_float64_zlib9.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 13348576,
+   "estimate_minus_base_bytes": 21353149,
+   "estimated_peak_bytes": 478532285,
+   "factor_needed_for_margin_1_15": 0.576,
+   "group": "compression_raw_float64_zlib9",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 10682368,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4358,
+   "ratio_incremental": 0.5003,
+   "rss0_bytes": 197844992,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.27
+  },
+  {
+   "absolute_maxrss_bytes": 236830720,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_raw_float64_lzma6.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 117157600,
+   "estimate_minus_base_bytes": 156304880,
+   "estimated_peak_bytes": 613484016,
+   "factor_needed_for_margin_1_15": 0.337,
+   "group": "compression_raw_float64_lzma6",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 38346752,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.386,
+   "ratio_incremental": 0.2453,
+   "rss0_bytes": 198483968,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 1.47
+  },
+  {
+   "absolute_maxrss_bytes": 204570624,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_symbols_zlib9.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 5248576,
+   "estimate_minus_base_bytes": 10823149,
+   "estimated_peak_bytes": 468002285,
+   "factor_needed_for_margin_1_15": 0.533,
+   "group": "compression_symbols_zlib9",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 6434816,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4371,
+   "ratio_incremental": 0.5945,
+   "rss0_bytes": 198135808,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.06
+  },
+  {
+   "absolute_maxrss_bytes": 215687168,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_symbols_lzma6.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 109057600,
+   "estimate_minus_base_bytes": 145774880,
+   "estimated_peak_bytes": 602954016,
+   "factor_needed_for_margin_1_15": 0.14,
+   "group": "compression_symbols_lzma6",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 17272832,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.3577,
+   "ratio_incremental": 0.1185,
+   "rss0_bytes": 198414336,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.17
+  },
+  {
+   "absolute_maxrss_bytes": 247447552,
+   "cap_bytes": 1073741824,
+   "case": "smp.timestamps.irregular.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": true,
+    "n_train": 300000
+   },
+   "derived_bytes": 71200000,
+   "estimate_minus_base_bytes": 96560000,
+   "estimated_peak_bytes": 553739136,
+   "factor_needed_for_margin_1_15": 0.732,
+   "group": "timestamps",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 49307648,
+   "module": "df_sampling",
+   "ratio_absolute": 0.4469,
+   "ratio_incremental": 0.5106,
+   "rss0_bytes": 198139904,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.12
+  },
+  {
+   "absolute_maxrss_bytes": 208609280,
+   "cap_bytes": 1073741824,
+   "case": "smp.spectral_decimation.regular.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 147000000,
+   "estimate_minus_base_bytes": 195100000,
+   "estimated_peak_bytes": 652279136,
+   "factor_needed_for_margin_1_15": 0.048,
+   "group": "spectral_decimation",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 10182656,
+   "module": "df_sampling",
+   "ratio_absolute": 0.3198,
+   "ratio_incremental": 0.0522,
+   "rss0_bytes": 198426624,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.14
+  },
+  {
+   "absolute_maxrss_bytes": 216403968,
+   "cap_bytes": 1073741824,
+   "case": "smp.spectral_decimation.nan_every_3rd.300000",
+   "context": {
+    "T": 500000,
+    "has_ts": false,
+    "n_train": 300000
+   },
+   "derived_bytes": 147000000,
+   "estimate_minus_base_bytes": 195100000,
+   "estimated_peak_bytes": 652279136,
+   "factor_needed_for_margin_1_15": 0.111,
+   "group": "spectral_decimation",
+   "held_bytes": 4000000,
+   "measured_peak_delta_bytes": 18182144,
+   "module": "df_sampling",
+   "ratio_absolute": 0.3318,
+   "ratio_incremental": 0.0932,
+   "rss0_bytes": 198221824,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.02
+  },
+  {
+   "absolute_maxrss_bytes": 209055744,
+   "cap_bytes": 1073741824,
+   "case": "mv.pair_correlations.300000",
+   "context": {
+    "T": 500000,
+    "k_pairs": 2,
+    "n_train": 300000
+   },
+   "derived_bytes": 46800000,
+   "estimate_minus_base_bytes": 60840000,
+   "estimated_peak_bytes": 518019136,
+   "factor_needed_for_margin_1_15": 0.272,
+   "group": "pair_correlations",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 11083776,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.4036,
+   "ratio_incremental": 0.1822,
+   "rss0_bytes": 197971968,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.08
+  },
+  {
+   "absolute_maxrss_bytes": 208662528,
+   "cap_bytes": 1073741824,
+   "case": "mv.pair_mutual_information.300000",
+   "context": {
+    "T": 500000,
+    "k_pairs": 2,
+    "n_train": 300000
+   },
+   "derived_bytes": 31200000,
+   "estimate_minus_base_bytes": 40560000,
+   "estimated_peak_bytes": 497739136,
+   "factor_needed_for_margin_1_15": 0.398,
+   "group": "pair_mutual_information",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 10792960,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.4192,
+   "ratio_incremental": 0.2661,
+   "rss0_bytes": 197869568,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.12
+  },
+  {
+   "absolute_maxrss_bytes": 208908288,
+   "cap_bytes": 1073741824,
+   "case": "mv.pair_lead_lag.300000",
+   "context": {
+    "T": 500000,
+    "k_pairs": 2,
+    "n_train": 300000
+   },
+   "derived_bytes": 15300000,
+   "estimate_minus_base_bytes": 19890000,
+   "estimated_peak_bytes": 477069136,
+   "factor_needed_for_margin_1_15": 0.815,
+   "group": "pair_lead_lag",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 10842112,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.4379,
+   "ratio_incremental": 0.5451,
+   "rss0_bytes": 198066176,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 300000
+   },
+   "wall_seconds": 0.09
+  },
+  {
+   "absolute_maxrss_bytes": 212127744,
+   "cap_bytes": 1073741824,
+   "case": "uni.train_reference.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 44100000,
+   "estimate_minus_base_bytes": 69330000,
+   "estimated_peak_bytes": 526509136,
+   "factor_needed_for_margin_1_15": 0.059,
+   "group": "train_reference",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 14254080,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4029,
+   "ratio_incremental": 0.2056,
+   "rss0_bytes": 197873664,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.04
+  },
+  {
+   "absolute_maxrss_bytes": 214843392,
+   "cap_bytes": 1073741824,
+   "case": "uni.counts.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 20700000,
+   "estimate_minus_base_bytes": 38910000,
+   "estimated_peak_bytes": 496089136,
+   "factor_needed_for_margin_1_15": 0.244,
+   "group": "counts",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 16388096,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4331,
+   "ratio_incremental": 0.4212,
+   "rss0_bytes": 198455296,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.03
+  },
+  {
+   "absolute_maxrss_bytes": 220581888,
+   "cap_bytes": 1073741824,
+   "case": "uni.quantiles.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 50400000,
+   "estimate_minus_base_bytes": 77520000,
+   "estimated_peak_bytes": 534699136,
+   "factor_needed_for_margin_1_15": 0.244,
+   "group": "quantiles",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 22683648,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4125,
+   "ratio_incremental": 0.2926,
+   "rss0_bytes": 197898240,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.05
+  },
+  {
+   "absolute_maxrss_bytes": 331988992,
+   "cap_bytes": 1079568274,
+   "case": "uni.acf.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 192717728,
+   "estimate_minus_base_bytes": 262533047,
+   "estimated_peak_bytes": 719712183,
+   "factor_needed_for_margin_1_15": 0.728,
+   "group": "acf",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 133963776,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4613,
+   "ratio_incremental": 0.5103,
+   "rss0_bytes": 198025216,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.37
+  },
+  {
+   "absolute_maxrss_bytes": 294506496,
+   "cap_bytes": 1073741824,
+   "case": "uni.shift_ks_psi.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 120000000,
+   "estimate_minus_base_bytes": 168000000,
+   "estimated_peak_bytes": 625179136,
+   "factor_needed_for_margin_1_15": 0.81,
+   "group": "shift_ks_psi",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 96514048,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4711,
+   "ratio_incremental": 0.5745,
+   "rss0_bytes": 197992448,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 600000,
+    "n_train": 900000
+   },
+   "wall_seconds": 0.2
+  },
+  {
+   "absolute_maxrss_bytes": 226209792,
+   "cap_bytes": 1073741824,
+   "case": "uni.robust_z.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 36900000,
+   "estimate_minus_base_bytes": 59970000,
+   "estimated_peak_bytes": 517149136,
+   "factor_needed_for_margin_1_15": 0.514,
+   "group": "robust_z",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 28491776,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4374,
+   "ratio_incremental": 0.4751,
+   "rss0_bytes": 197718016,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.05
+  },
+  {
+   "absolute_maxrss_bytes": 244490240,
+   "cap_bytes": 1073741824,
+   "case": "uni.timestamps_duplicates.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": true,
+    "n_train": 900000
+   },
+   "derived_bytes": 15300000,
+   "estimate_minus_base_bytes": 43890000,
+   "estimated_peak_bytes": 501069136,
+   "factor_needed_for_margin_1_15": 1.686,
+   "group": "timestamps_duplicates",
+   "held_bytes": 24000000,
+   "measured_peak_delta_bytes": 46432256,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4879,
+   "ratio_incremental": 1.0579,
+   "rss0_bytes": 198057984,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.36
+  },
+  {
+   "absolute_maxrss_bytes": 213897216,
+   "cap_bytes": 1073741824,
+   "case": "inf.entropy_redundancy.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 64800000,
+   "estimate_minus_base_bytes": 96240000,
+   "estimated_peak_bytes": 553419136,
+   "factor_needed_for_margin_1_15": 0.066,
+   "group": "entropy_redundancy",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 15728640,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.3865,
+   "ratio_incremental": 0.1634,
+   "rss0_bytes": 198168576,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.08
+  },
+  {
+   "absolute_maxrss_bytes": 246042624,
+   "cap_bytes": 1073741824,
+   "case": "inf.permutation_entropy_order_3.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 55800000,
+   "estimate_minus_base_bytes": 84540000,
+   "estimated_peak_bytes": 541719136,
+   "factor_needed_for_margin_1_15": 0.743,
+   "group": "permutation_entropy_order_3",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 48074752,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4542,
+   "ratio_incremental": 0.5687,
+   "rss0_bytes": 197967872,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000,
+    "order": 3
+   },
+   "wall_seconds": 0.14
+  },
+  {
+   "absolute_maxrss_bytes": 255733760,
+   "cap_bytes": 1073741824,
+   "case": "inf.permutation_entropy_order_4.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 71100000,
+   "estimate_minus_base_bytes": 104430000,
+   "estimated_peak_bytes": 561609136,
+   "factor_needed_for_margin_1_15": 0.739,
+   "group": "permutation_entropy_order_4",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 57659392,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4554,
+   "ratio_incremental": 0.5521,
+   "rss0_bytes": 198074368,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000,
+    "order": 4
+   },
+   "wall_seconds": 0.15
+  },
+  {
+   "absolute_maxrss_bytes": 264896512,
+   "cap_bytes": 1073741824,
+   "case": "inf.permutation_entropy_order_5.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 86400000,
+   "estimate_minus_base_bytes": 124320000,
+   "estimated_peak_bytes": 581499136,
+   "factor_needed_for_margin_1_15": 0.73,
+   "group": "permutation_entropy_order_5",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 66846720,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4555,
+   "ratio_incremental": 0.5377,
+   "rss0_bytes": 198049792,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000,
+    "order": 5
+   },
+   "wall_seconds": 0.15
+  },
+  {
+   "absolute_maxrss_bytes": 208924672,
+   "cap_bytes": 1073741824,
+   "case": "inf.spectral_entropy.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 183680000,
+   "estimate_minus_base_bytes": 250784000,
+   "estimated_peak_bytes": 707963136,
+   "factor_needed_for_margin_1_15": 0.0,
+   "group": "spectral_entropy",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 10735616,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.2951,
+   "ratio_incremental": 0.0428,
+   "rss0_bytes": 198189056,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.07
+  },
+  {
+   "absolute_maxrss_bytes": 226430976,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_raw_float64_zlib9.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 37948576,
+   "estimate_minus_base_bytes": 61333149,
+   "estimated_peak_bytes": 518512285,
+   "factor_needed_for_margin_1_15": 0.496,
+   "group": "compression_raw_float64_zlib9",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 28372992,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4367,
+   "ratio_incremental": 0.4626,
+   "rss0_bytes": 198057984,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.83
+  },
+  {
+   "absolute_maxrss_bytes": 303349760,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_raw_float64_lzma6.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 141757600,
+   "estimate_minus_base_bytes": 196284880,
+   "estimated_peak_bytes": 653464016,
+   "factor_needed_for_margin_1_15": 0.757,
+   "group": "compression_raw_float64_lzma6",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 105287680,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4642,
+   "ratio_incremental": 0.5364,
+   "rss0_bytes": 198062080,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 5.43
+  },
+  {
+   "absolute_maxrss_bytes": 208547840,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_symbols_zlib9.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 13648576,
+   "estimate_minus_base_bytes": 29743149,
+   "estimated_peak_bytes": 486922285,
+   "factor_needed_for_margin_1_15": 0.0,
+   "group": "compression_symbols_zlib9",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 10522624,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4283,
+   "ratio_incremental": 0.3538,
+   "rss0_bytes": 198025216,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.17
+  },
+  {
+   "absolute_maxrss_bytes": 238485504,
+   "cap_bytes": 1073741824,
+   "case": "inf.compression_symbols_lzma6.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 117457600,
+   "estimate_minus_base_bytes": 164694880,
+   "estimated_peak_bytes": 621874016,
+   "factor_needed_for_margin_1_15": 0.278,
+   "group": "compression_symbols_lzma6",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 40431616,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.3835,
+   "ratio_incremental": 0.2455,
+   "rss0_bytes": 198053888,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.59
+  },
+  {
+   "absolute_maxrss_bytes": 356356096,
+   "cap_bytes": 1120288704,
+   "case": "smp.timestamps.irregular.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": true,
+    "n_train": 900000
+   },
+   "derived_bytes": 213600000,
+   "estimate_minus_base_bytes": 289680000,
+   "estimated_peak_bytes": 746859136,
+   "factor_needed_for_margin_1_15": 0.789,
+   "group": "timestamps",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 158515200,
+   "module": "df_sampling",
+   "ratio_absolute": 0.4771,
+   "ratio_incremental": 0.5472,
+   "rss0_bytes": 197840896,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.38
+  },
+  {
+   "absolute_maxrss_bytes": 215777280,
+   "cap_bytes": 1563718704,
+   "case": "smp.spectral_decimation.regular.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 441000000,
+   "estimate_minus_base_bytes": 585300000,
+   "estimated_peak_bytes": 1042479136,
+   "factor_needed_for_margin_1_15": 0.015,
+   "group": "spectral_decimation",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 17645568,
+   "module": "df_sampling",
+   "ratio_absolute": 0.207,
+   "ratio_incremental": 0.0301,
+   "rss0_bytes": 198131712,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.41
+  },
+  {
+   "absolute_maxrss_bytes": 247312384,
+   "cap_bytes": 1563718704,
+   "case": "smp.spectral_decimation.nan_every_3rd.900000",
+   "context": {
+    "T": 1500000,
+    "has_ts": false,
+    "n_train": 900000
+   },
+   "derived_bytes": 441000000,
+   "estimate_minus_base_bytes": 585300000,
+   "estimated_peak_bytes": 1042479136,
+   "factor_needed_for_margin_1_15": 0.097,
+   "group": "spectral_decimation",
+   "held_bytes": 12000000,
+   "measured_peak_delta_bytes": 49319936,
+   "module": "df_sampling",
+   "ratio_absolute": 0.2372,
+   "ratio_incremental": 0.0843,
+   "rss0_bytes": 197992448,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.06
+  },
+  {
+   "absolute_maxrss_bytes": 267071488,
+   "cap_bytes": 1073741824,
+   "case": "mv.pair_correlations.900000",
+   "context": {
+    "T": 1500000,
+    "k_pairs": 2,
+    "n_train": 900000
+   },
+   "derived_bytes": 140400000,
+   "estimate_minus_base_bytes": 182520000,
+   "estimated_peak_bytes": 639699136,
+   "factor_needed_for_margin_1_15": 0.566,
+   "group": "pair_correlations",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 69066752,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.4175,
+   "ratio_incremental": 0.3784,
+   "rss0_bytes": 198004736,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.28
+  },
+  {
+   "absolute_maxrss_bytes": 236576768,
+   "cap_bytes": 1073741824,
+   "case": "mv.pair_mutual_information.900000",
+   "context": {
+    "T": 1500000,
+    "k_pairs": 2,
+    "n_train": 900000
+   },
+   "derived_bytes": 93600000,
+   "estimate_minus_base_bytes": 121680000,
+   "estimated_peak_bytes": 578859136,
+   "factor_needed_for_margin_1_15": 0.47,
+   "group": "pair_mutual_information",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 38281216,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.4087,
+   "ratio_incremental": 0.3146,
+   "rss0_bytes": 198295552,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.41
+  },
+  {
+   "absolute_maxrss_bytes": 222179328,
+   "cap_bytes": 1073741824,
+   "case": "mv.pair_lead_lag.900000",
+   "context": {
+    "T": 1500000,
+    "k_pairs": 2,
+    "n_train": 900000
+   },
+   "derived_bytes": 45900000,
+   "estimate_minus_base_bytes": 59670000,
+   "estimated_peak_bytes": 516849136,
+   "factor_needed_for_margin_1_15": 0.604,
+   "group": "pair_lead_lag",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 24109056,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.4299,
+   "ratio_incremental": 0.404,
+   "rss0_bytes": 198070272,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n": 900000
+   },
+   "wall_seconds": 0.37
+  },
+  {
+   "absolute_maxrss_bytes": 217198592,
+   "cap_bytes": 1073741824,
+   "case": "uni.unit_root_adf.20000",
+   "context": {
+    "T": 33333,
+    "has_ts": false,
+    "n_train": 20000
+   },
+   "derived_bytes": 41680000,
+   "estimate_minus_base_bytes": 41946664,
+   "estimated_peak_bytes": 499125800,
+   "factor_needed_for_margin_1_15": 0.514,
+   "group": "unit_root_adf",
+   "held_bytes": 266664,
+   "measured_peak_delta_bytes": 18911232,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4352,
+   "ratio_incremental": 0.4508,
+   "rss0_bytes": 198287360,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "lag": 45,
+    "n_run": 20000
+   },
+   "wall_seconds": 0.04
+  },
+  {
+   "absolute_maxrss_bytes": 197988352,
+   "cap_bytes": 1073741824,
+   "case": "uni.unit_root_kpss.20000",
+   "context": {
+    "T": 33333,
+    "has_ts": false,
+    "n_train": 20000
+   },
+   "derived_bytes": 2240000,
+   "estimate_minus_base_bytes": 3178664,
+   "estimated_peak_bytes": 460357800,
+   "factor_needed_for_margin_1_15": 0.0,
+   "group": "unit_root_kpss",
+   "held_bytes": 266664,
+   "measured_peak_delta_bytes": -172032,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4301,
+   "ratio_incremental": -0.0541,
+   "rss0_bytes": 198160384,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n_run": 20000
+   },
+   "wall_seconds": 0.0
+  },
+  {
+   "absolute_maxrss_bytes": 406024192,
+   "cap_bytes": 1073741824,
+   "case": "uni.unit_root_adf.80000",
+   "context": {
+    "T": 133333,
+    "has_ts": false,
+    "n_train": 80000
+   },
+   "derived_bytes": 230080000,
+   "estimate_minus_base_bytes": 231146664,
+   "estimated_peak_bytes": 688325800,
+   "factor_needed_for_margin_1_15": 1.034,
+   "group": "unit_root_adf",
+   "held_bytes": 1066664,
+   "measured_peak_delta_bytes": 207929344,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.5899,
+   "ratio_incremental": 0.8996,
+   "rss0_bytes": 198094848,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "lag": 63,
+    "n_run": 80000
+   },
+   "wall_seconds": 0.39
+  },
+  {
+   "absolute_maxrss_bytes": 198381568,
+   "cap_bytes": 1073741824,
+   "case": "uni.unit_root_kpss.80000",
+   "context": {
+    "T": 133333,
+    "has_ts": false,
+    "n_train": 80000
+   },
+   "derived_bytes": 8960000,
+   "estimate_minus_base_bytes": 12714664,
+   "estimated_peak_bytes": 469893800,
+   "factor_needed_for_margin_1_15": 0.0,
+   "group": "unit_root_kpss",
+   "held_bytes": 1066664,
+   "measured_peak_delta_bytes": 212992,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4222,
+   "ratio_incremental": 0.0168,
+   "rss0_bytes": 198168576,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n_run": 80000
+   },
+   "wall_seconds": 0.0
+  },
+  {
+   "absolute_maxrss_bytes": 857202688,
+   "cap_bytes": 1776968700,
+   "case": "uni.unit_root_adf.200000",
+   "context": {
+    "T": 333333,
+    "has_ts": false,
+    "n_train": 200000
+   },
+   "derived_bytes": 724800000,
+   "estimate_minus_base_bytes": 727466664,
+   "estimated_peak_bytes": 1184645800,
+   "factor_needed_for_margin_1_15": 1.042,
+   "group": "unit_root_adf",
+   "held_bytes": 2666664,
+   "measured_peak_delta_bytes": 659226624,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.7236,
+   "ratio_incremental": 0.9062,
+   "rss0_bytes": 197976064,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "lag": 80,
+    "n_run": 200000
+   },
+   "wall_seconds": 1.54
+  },
+  {
+   "absolute_maxrss_bytes": 202248192,
+   "cap_bytes": 1073741824,
+   "case": "uni.unit_root_kpss.200000",
+   "context": {
+    "T": 333333,
+    "has_ts": false,
+    "n_train": 200000
+   },
+   "derived_bytes": 22400000,
+   "estimate_minus_base_bytes": 31786664,
+   "estimated_peak_bytes": 488965800,
+   "factor_needed_for_margin_1_15": 0.073,
+   "group": "unit_root_kpss",
+   "held_bytes": 2666664,
+   "measured_peak_delta_bytes": 4087808,
+   "module": "df_profile_univariate",
+   "ratio_absolute": 0.4136,
+   "ratio_incremental": 0.1286,
+   "rss0_bytes": 198160384,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "n_run": 200000
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 213696512,
+   "cap_bytes": 1073741824,
+   "case": "mv.pair_coherence.20000",
+   "context": {
+    "T": 33333,
+    "k_pairs": 2,
+    "n_train": 20000,
+    "pair_rows": 20000
+   },
+   "derived_bytes": 96320000,
+   "estimate_minus_base_bytes": 125216000,
+   "estimated_peak_bytes": 582395136,
+   "factor_needed_for_margin_1_15": 0.186,
+   "group": "pair_coherence",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 15572992,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.3669,
+   "ratio_incremental": 0.1244,
+   "rss0_bytes": 198123520,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "L": 20000
+   },
+   "wall_seconds": 0.07
+  },
+  {
+   "absolute_maxrss_bytes": 304959488,
+   "cap_bytes": 1249240704,
+   "case": "mv.pair_coherence.60000",
+   "context": {
+    "T": 100000,
+    "k_pairs": 2,
+    "n_train": 60000,
+    "pair_rows": 60000
+   },
+   "derived_bytes": 288960000,
+   "estimate_minus_base_bytes": 375648000,
+   "estimated_peak_bytes": 832827136,
+   "factor_needed_for_margin_1_15": 0.425,
+   "group": "pair_coherence",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 106889216,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.3662,
+   "ratio_incremental": 0.2845,
+   "rss0_bytes": 198070272,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "L": 60000
+   },
+   "wall_seconds": 0.2
+  },
+  {
+   "absolute_maxrss_bytes": 396820480,
+   "cap_bytes": 1812712704,
+   "case": "mv.pair_coherence.120000",
+   "context": {
+    "T": 200000,
+    "k_pairs": 2,
+    "n_train": 120000,
+    "pair_rows": 120000
+   },
+   "derived_bytes": 577920000,
+   "estimate_minus_base_bytes": 751296000,
+   "estimated_peak_bytes": 1208475136,
+   "factor_needed_for_margin_1_15": 0.396,
+   "group": "pair_coherence",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 198799360,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.3284,
+   "ratio_incremental": 0.2646,
+   "rss0_bytes": 198021120,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "L": 120000
+   },
+   "wall_seconds": 0.39
+  },
+  {
+   "absolute_maxrss_bytes": 202358784,
+   "cap_bytes": 1073741824,
+   "case": "inf.effective_rank.20000x10",
+   "context": {
+    "T": 33333,
+    "n_train": 20000,
+    "rg_rows": 33333
+   },
+   "derived_bytes": 13053320,
+   "estimate_minus_base_bytes": 16969316,
+   "estimated_peak_bytes": 474148452,
+   "factor_needed_for_margin_1_15": 0.375,
+   "group": "effective_rank",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 4259840,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4268,
+   "ratio_incremental": 0.251,
+   "rss0_bytes": 198098944,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "V": 10,
+    "rows": 20000
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 205332480,
+   "cap_bytes": 1073741824,
+   "case": "mv.matrix_diagnostics.20000x10",
+   "context": {
+    "T": 33333,
+    "n_train": 20000,
+    "rg_rows": 33333
+   },
+   "derived_bytes": 9749320,
+   "estimate_minus_base_bytes": 12674116,
+   "estimated_peak_bytes": 469853252,
+   "factor_needed_for_margin_1_15": 0.789,
+   "group": "matrix_diagnostics",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 6688768,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.437,
+   "ratio_incremental": 0.5278,
+   "rss0_bytes": 198643712,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "V": 10,
+    "rows": 20000
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 206274560,
+   "cap_bytes": 1073741824,
+   "case": "mv.cluster_bootstrap.20000x10",
+   "context": {
+    "T": 33333,
+    "n_train": 20000,
+    "rg_rows": 33333
+   },
+   "derived_bytes": 10500000,
+   "estimate_minus_base_bytes": 13650000,
+   "estimated_peak_bytes": 470829136,
+   "factor_needed_for_margin_1_15": 0.887,
+   "group": "cluster_bootstrap",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 8097792,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.4381,
+   "ratio_incremental": 0.5932,
+   "rss0_bytes": 198176768,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "V": 10,
+    "rows": 20000
+   },
+   "wall_seconds": 0.05
+  },
+  {
+   "absolute_maxrss_bytes": 306733056,
+   "cap_bytes": 1146488652,
+   "case": "inf.effective_rank.100000x40",
+   "context": {
+    "T": 166666,
+    "n_train": 100000,
+    "rg_rows": 166666
+   },
+   "derived_bytes": 236266640,
+   "estimate_minus_base_bytes": 307146632,
+   "estimated_peak_bytes": 764325768,
+   "factor_needed_for_margin_1_15": 0.53,
+   "group": "effective_rank",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 108826624,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4013,
+   "ratio_incremental": 0.3543,
+   "rss0_bytes": 197906432,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "V": 40,
+    "rows": 100000
+   },
+   "wall_seconds": 0.14
+  },
+  {
+   "absolute_maxrss_bytes": 342753280,
+   "cap_bytes": 1073741824,
+   "case": "mv.matrix_diagnostics.100000x40",
+   "context": {
+    "T": 166666,
+    "n_train": 100000,
+    "rg_rows": 166666
+   },
+   "derived_bytes": 174922640,
+   "estimate_minus_base_bytes": 227399432,
+   "estimated_peak_bytes": 684578568,
+   "factor_needed_for_margin_1_15": 0.951,
+   "group": "matrix_diagnostics",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 144605184,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.5007,
+   "ratio_incremental": 0.6359,
+   "rss0_bytes": 198148096,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "V": 40,
+    "rows": 100000
+   },
+   "wall_seconds": 0.11
+  },
+  {
+   "absolute_maxrss_bytes": 403619840,
+   "cap_bytes": 1081072704,
+   "case": "mv.cluster_bootstrap.100000x40",
+   "context": {
+    "T": 166666,
+    "n_train": 100000,
+    "rg_rows": 166666
+   },
+   "derived_bytes": 202720000,
+   "estimate_minus_base_bytes": 263536000,
+   "estimated_peak_bytes": 720715136,
+   "factor_needed_for_margin_1_15": 1.166,
+   "group": "cluster_bootstrap",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 205586432,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.56,
+   "ratio_incremental": 0.7801,
+   "rss0_bytes": 198033408,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "V": 40,
+    "rows": 100000
+   },
+   "wall_seconds": 1.6
+  },
+  {
+   "absolute_maxrss_bytes": 459997184,
+   "cap_bytes": 1581416652,
+   "case": "inf.effective_rank.40000x200",
+   "context": {
+    "T": 66666,
+    "n_train": 40000,
+    "rg_rows": 66666
+   },
+   "derived_bytes": 459306640,
+   "estimate_minus_base_bytes": 597098632,
+   "estimated_peak_bytes": 1054277768,
+   "factor_needed_for_margin_1_15": 0.655,
+   "group": "effective_rank",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 261771264,
+   "module": "df_profile_information",
+   "ratio_absolute": 0.4363,
+   "ratio_incremental": 0.4384,
+   "rss0_bytes": 198225920,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "V": 200,
+    "rows": 40000
+   },
+   "wall_seconds": 0.4
+  },
+  {
+   "absolute_maxrss_bytes": 524742656,
+   "cap_bytes": 1358648652,
+   "case": "mv.matrix_diagnostics.40000x200",
+   "context": {
+    "T": 66666,
+    "n_train": 40000,
+    "rg_rows": 66666
+   },
+   "derived_bytes": 345066640,
+   "estimate_minus_base_bytes": 448586632,
+   "estimated_peak_bytes": 905765768,
+   "factor_needed_for_margin_1_15": 1.089,
+   "group": "matrix_diagnostics",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 326684672,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.5793,
+   "ratio_incremental": 0.7283,
+   "rss0_bytes": 198057984,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "V": 200,
+    "rows": 40000
+   },
+   "wall_seconds": 0.32
+  },
+  {
+   "absolute_maxrss_bytes": 593317888,
+   "cap_bytes": 1483240704,
+   "case": "mv.cluster_bootstrap.40000x200",
+   "context": {
+    "T": 66666,
+    "n_train": 40000,
+    "rg_rows": 66666
+   },
+   "derived_bytes": 408960000,
+   "estimate_minus_base_bytes": 531648000,
+   "estimated_peak_bytes": 988827136,
+   "factor_needed_for_margin_1_15": 1.111,
+   "group": "cluster_bootstrap",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 395104256,
+   "module": "df_profile_multivariate",
+   "ratio_absolute": 0.6,
+   "ratio_incremental": 0.7432,
+   "rss0_bytes": 198213632,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "V": 200,
+    "rows": 40000
+   },
+   "wall_seconds": 6.64
+  },
+  {
+   "absolute_maxrss_bytes": 289288192,
+   "cap_bytes": 1073741824,
+   "case": "run.reader_numeric.1000000",
+   "context": {
+    "T": 1000000
+   },
+   "derived_bytes": 16000000,
+   "estimate_minus_base_bytes": 20800000,
+   "estimated_peak_bytes": 477979136,
+   "factor_needed_for_margin_1_15": 0.03,
+   "group": "reader_column",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 421888,
+   "module": "df_profile_run",
+   "ratio_absolute": 0.6052,
+   "ratio_incremental": 0.0203,
+   "rss0_bytes": 288866304,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "T": 1000000,
+    "columns_held": 1,
+    "rg_rows": 250000,
+    "text_timestamp": 0
+   },
+   "wall_seconds": 0.01
+  },
+  {
+   "absolute_maxrss_bytes": 295415808,
+   "cap_bytes": 1073741824,
+   "case": "run.reader_timestamp.1000000",
+   "context": {
+    "T": 1000000
+   },
+   "derived_bytes": 16000000,
+   "estimate_minus_base_bytes": 20800000,
+   "estimated_peak_bytes": 477979136,
+   "factor_needed_for_margin_1_15": 0.404,
+   "group": "reader_column",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 5623808,
+   "module": "df_profile_run",
+   "ratio_absolute": 0.6181,
+   "ratio_incremental": 0.2704,
+   "rss0_bytes": 289792000,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "T": 1000000,
+    "columns_held": 1,
+    "rg_rows": 250000,
+    "text_timestamp": 0
+   },
+   "wall_seconds": 0.02
+  },
+  {
+   "absolute_maxrss_bytes": 298274816,
+   "cap_bytes": 1073741824,
+   "case": "run.reader_numeric.3000000",
+   "context": {
+    "T": 3000000
+   },
+   "derived_bytes": 56000000,
+   "estimate_minus_base_bytes": 72800000,
+   "estimated_peak_bytes": 529979136,
+   "factor_needed_for_margin_1_15": 0.102,
+   "group": "reader_column",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 4980736,
+   "module": "df_profile_run",
+   "ratio_absolute": 0.5628,
+   "ratio_incremental": 0.0684,
+   "rss0_bytes": 293294080,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "T": 3000000,
+    "columns_held": 1,
+    "rg_rows": 1000000,
+    "text_timestamp": 0
+   },
+   "wall_seconds": 0.04
+  },
+  {
+   "absolute_maxrss_bytes": 321404928,
+   "cap_bytes": 1073741824,
+   "case": "run.reader_timestamp.3000000",
+   "context": {
+    "T": 3000000
+   },
+   "derived_bytes": 56000000,
+   "estimate_minus_base_bytes": 72800000,
+   "estimated_peak_bytes": 529979136,
+   "factor_needed_for_margin_1_15": 0.564,
+   "group": "reader_column",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 27443200,
+   "module": "df_profile_run",
+   "ratio_absolute": 0.6064,
+   "ratio_incremental": 0.377,
+   "rss0_bytes": 293961728,
+   "setup_overhang_bytes": 0,
+   "sizes": {
+    "T": 3000000,
+    "columns_held": 1,
+    "rg_rows": 1000000,
+    "text_timestamp": 0
+   },
+   "wall_seconds": 0.05
+  },
+  {
+   "absolute_maxrss_bytes": 331329536,
+   "cap_bytes": 1073741824,
+   "case": "run.reader_text_timestamp.400000",
+   "context": {
+    "T": 400000
+   },
+   "derived_bytes": 80000000,
+   "estimate_minus_base_bytes": 104000000,
+   "estimated_peak_bytes": 561179136,
+   "factor_needed_for_margin_1_15": 1.3,
+   "group": "reader_column",
+   "held_bytes": 0,
+   "measured_peak_delta_bytes": 90415104,
+   "module": "df_profile_run",
+   "ratio_absolute": 0.5904,
+   "ratio_incremental": 0.8694,
+   "rss0_bytes": 240914432,
+   "setup_overhang_bytes": 18948096,
+   "sizes": {
+    "T": 400000,
+    "columns_held": 1,
+    "rg_rows": 400000,
+    "text_timestamp": 1
+   },
+   "wall_seconds": 0.27
+  }
+ ],
+ "method": "child per case under a memory cap of 1.5x its estimate; measured = ru_maxrss - rss0",
+ "planner_code_sha256": "72a204c0f2a146db471c3003fc3f81e8bca0bb7b86148a26240d447c20c1ba61",
+ "planner_constants_sha256": "aeae1b8cb6fa34a34f805a86c1281803f0892dea36ecd42bb3a722bfeabb7462",
+ "python": "3.12.13",
+ "schema": "crispdm.data_foundation.memory_calibration.v1"
+}

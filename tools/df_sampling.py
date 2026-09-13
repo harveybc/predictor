@@ -230,11 +230,25 @@ E_AL_FOLD = est("control_source_energy_above_low_rate_nyquist", E_AL_SRC["params
 
 
 # ------------------------------------------------------------------- run
-def run_sampling(contract, X, timestamps=None, controls=None):
+RESOURCE_REASON = "NOT_RUN_RESOURCE_BOUND"
+_TS_METRICS = (("observed_median_period_seconds", E_MED),) + tuple(
+    (f"diff_quantile_{q}", E_DQ) for q in E_DQ["params"]["levels"]) + (
+    ("diff_min_seconds", E_DMIN), ("diff_max_seconds", E_DMAX), ("jitter_mad_seconds", E_JIT),
+    ("non_positive_diff_count", E_NONPOS), ("gap_count", E_GAPS), ("longest_gap_seconds", E_GAPMAX),
+    ("coverage_vs_grid", E_COV), ("regular_segment_count", E_SEGN), ("longest_regular_segment_samples", E_SEGL),
+    ("regular_segment_sample_fraction", E_SEGF), ("nyquist_frequency", E_NYQ))
+
+
+def admit_all(group, key=None, partition=None, **sizes):
+    """The default gate: every group runs exactly (C147)."""
+    return {"decision": "RUN_EXACT", "window": None}
+
+
+def run_sampling(contract, X, timestamps=None, controls=None, gate=None):
     """controls: optional {variable_id: {"x_high": 1-D array of T * factor samples of
     the same quantity at factor times the rate, "factor": int}}."""
     with blas_single_thread():
-        return _run_sampling(contract, X, timestamps, controls or {})
+        return _run_sampling(contract, X, timestamps, controls or {}, gate)
 
 
 def _period(contract):
@@ -242,8 +256,19 @@ def _period(contract):
     return float(p) if type(p) in (int, float) and p > 0 else None
 
 
-def _run_sampling(contract, X, timestamps, controls):
+def _run_sampling(contract, X, timestamps, controls, gate=None):
     X, parts, vids, timestamps = contract_layout(contract, X, timestamps)
+    rows = list(timestamp_rows(contract, parts, timestamps, gate))
+    for pname, s, e in parts:
+        reg, fs = partition_regularity(contract, s, e, timestamps)
+        for j, vid in enumerate(vids):
+            rows.extend(variable_partition_rows(contract, vid, X[s:e, j], pname, s, e, reg, fs, timestamps is None,
+                                                controls.get(vid), X.shape[0], gate))
+    return rows
+
+
+def timestamp_rows(contract, parts, timestamps, gate=None):
+    gate = gate or admit_all
     ds = contract["dataset_id"]
     meaning = contract["time"]["timestamp_meaning"]
     nominal = _period(contract)
@@ -259,6 +284,11 @@ def _run_sampling(contract, X, timestamps, controls):
             add("nominal_period_seconds", E_NOM, nominal)
 
         t0 = time.process_time()
+        if timestamps is not None and e - s >= 2 and \
+                gate("timestamps", None, pname, n=e - s)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+            for metric, estimator in _TS_METRICS:
+                add(metric, estimator, None, "NOT_RUN", RESOURCE_REASON)
+            continue
         if timestamps is None:
             why = "SAMPLE_INDEX_HAS_NO_TIMESTAMPS" if meaning == "SAMPLE_INDEX" else "TIMESTAMPS_NOT_PROVIDED"
             for metric, estimator in (("observed_median_period_seconds", E_MED), ("diff_min_seconds", E_DMIN),
@@ -322,30 +352,45 @@ def _run_sampling(contract, X, timestamps, controls):
         else:
             add("nyquist_frequency", E_NYQ, None, "INCONCLUSIVE", "NO_REGULAR_SEGMENT", cpu=c)
 
-    # per-variable spectral descriptors on regular finite runs
-    for pname, s, e in parts:
-        if timestamps is None and meaning != "SAMPLE_INDEX":
-            reg, fs = None, None
-        elif timestamps is None:
-            reg, fs = np.ones(e - s - 1, dtype=bool), 1.0
-        else:
-            d = np.diff(timestamps[s:e]).astype(np.float64) / 1e9
-            ref = nominal if nominal is not None else (float(np.median(d)) if d.size else None)
-            if ref is None or ref <= 0:
-                reg, fs = None, None
-            else:
-                reg, fs = np.abs(d - ref) <= REGULAR_TOLERANCE * ref, 1.0 / ref
-        for j, vid in enumerate(vids):
+    return rows
+
+
+def partition_regularity(contract, s, e, timestamps):
+    """(regular-difference mask, sampling frequency) of partition [s, e), or (None, None)."""
+    meaning = contract["time"]["timestamp_meaning"]
+    nominal = _period(contract)
+    if timestamps is None and meaning != "SAMPLE_INDEX":
+        return None, None
+    if timestamps is None:
+        return np.ones(e - s - 1, dtype=bool), 1.0
+    d = np.diff(timestamps[s:e]).astype(np.float64) / 1e9
+    ref = nominal if nominal is not None else (float(np.median(d)) if d.size else None)
+    if ref is None or ref <= 0:
+        return None, None
+    return np.abs(d - ref) <= REGULAR_TOLERANCE * ref, 1.0 / ref
+
+
+def variable_partition_rows(contract, vid, x, pname, s, e, reg, fs, no_timestamps, ctl, T, gate=None):
+    """The rows of one variable in one partition; `x` is that partition's slice."""
+    gate = gate or admit_all
+    ds = contract["dataset_id"]
+    rows = []
+    if True:
+        if True:
             key = {"variable_id": vid}
             add = lambda metric, estimator, value, status="COMPLETED", reason="", cpu=0.0: rows.append(
                 make_row(ds, key, pname, metric, estimator, value, status, reason, cpu))
-            x = X[s:e, j]
             if reg is None:
-                why = "TIMESTAMPS_NOT_PROVIDED" if timestamps is None else "NO_POSITIVE_REFERENCE_PERIOD"
+                why = "TIMESTAMPS_NOT_PROVIDED" if no_timestamps else "NO_POSITIVE_REFERENCE_PERIOD"
                 for metric, estimator in (("near_nyquist_energy_fraction", E_NN),
                                           ("decimation_variance_ratio", E_DVAR),
                                           ("decimation_spectral_difference", E_DSPEC)):
                     add(metric, estimator, None, "UNAVAILABLE", why)
+            elif gate("spectral_decimation", vid, pname, n=e - s)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+                for metric, estimator in (("near_nyquist_energy_fraction", E_NN),
+                                          ("decimation_variance_ratio", E_DVAR),
+                                          ("decimation_spectral_difference", E_DSPEC)):
+                    add(metric, estimator, None, "NOT_RUN", RESOURCE_REASON)
             else:
                 t0 = time.process_time()
                 rr = [(a, b) for a, b in runs(np.isfinite(x), reg) if b - a >= MIN_SPECTRAL_SEGMENT]
@@ -371,19 +416,22 @@ def _run_sampling(contract, X, timestamps, controls):
                     add("decimation_spectral_difference", E_DSPEC, ds_res[1], cpu=c)
 
             # aliasing assessment
-            ctl = controls.get(vid)
             if ctl is None:
                 add("aliasing_assessment", E_AL_NONE, None, "INCONCLUSIVE", NOT_IDENTIFIABLE)
-                continue
+                return rows
             t0 = time.process_time()
             factor = int(ctl["factor"])
             xh = np.asarray(ctl["x_high"], dtype=float)
-            if factor < 2 or xh.shape != (X.shape[0] * factor,):
+            if factor < 2 or xh.shape != (T * factor,):
                 add("aliasing_assessment", E_AL_SRC, None, "FAILED", "CONTROL_SHAPE_OR_FACTOR_INVALID")
-                continue
+                return rows
             if reg is None:
                 add("aliasing_assessment", E_AL_SRC, None, "INCONCLUSIVE", "NO_REGULAR_REFERENCE_FOR_CONTROL")
-                continue
+                return rows
+            if gate("aliasing_control", vid, pname, n=e - s, factor=factor)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+                add("aliasing_assessment", E_AL_SRC, None, "NOT_RUN", RESOURCE_REASON)
+                add("control_folded_energy_fraction", E_AL_FOLD, None, "NOT_RUN", RESOURCE_REASON)
+                return rows
             xhp = xh[s * factor:e * factor]
             rr = [(a, b) for a, b in runs(np.isfinite(x), reg) if b - a >= MIN_SPECTRAL_SEGMENT]
             rr = [(a, b) for a, b in rr if np.all(np.isfinite(xhp[a * factor:b * factor]))]
@@ -391,14 +439,14 @@ def _run_sampling(contract, X, timestamps, controls):
                 add("aliasing_assessment", E_AL_SRC, None, "INCONCLUSIVE", "NO_REGULAR_FINITE_RUN_WITH_CONTROL")
                 add("control_folded_energy_fraction", E_AL_FOLD, None, "INCONCLUSIVE",
                     "NO_REGULAR_FINITE_RUN_WITH_CONTROL")
-                continue
+                return rows
             a, b = max(rr, key=lambda r: r[1] - r[0])
             folded, excess = folded_energy_against_source(x[a:b], xhp[a * factor:b * factor], factor, fs)
             c = time.process_time() - t0
             if folded is None or excess is None:
                 add("aliasing_assessment", E_AL_SRC, None, "INCONCLUSIVE", "ZERO_POWER", cpu=c)
                 add("control_folded_energy_fraction", E_AL_FOLD, None, "INCONCLUSIVE", "ZERO_POWER", cpu=c)
-                continue
+                return rows
             claim = folded >= CONTROL_FOLDED_MIN and excess >= CONTROL_EXCESS_MIN
             add("aliasing_assessment", E_AL_SRC, excess,
                 reason="ALIASING_CONSISTENT_WITH_CONTROL" if claim else "NO_FOLDED_ENERGY_DETECTED_WITH_CONTROL", cpu=c)

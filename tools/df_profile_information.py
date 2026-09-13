@@ -251,24 +251,53 @@ E_CSUR = est("conditional_surprisal_lag1", {**_CR_P, "definition": "H(X_t | X_{t
 
 
 # ------------------------------------------------------------------- run
-def run_information(contract, X, timestamps=None):
+RESOURCE_REASON = "NOT_RUN_RESOURCE_BOUND"
+
+
+def admit_all(group, key=None, partition=None, **sizes):
+    """The default gate: every group runs exactly (C147)."""
+    return {"decision": "RUN_EXACT", "window": None}
+
+
+def bounded_estimator(e, window, total_rows):
+    """The estimator of a RUN_BOUNDED matrix group: the declared row universe is part of it."""
+    if window is None or (window[0] == 0 and window[1] == total_rows):
+        return e
+    return est(e["name"], dict(e["params"], bounded_universe={
+        "train_rows": [int(window[0]), int(window[1])], "train_rows_total": int(total_rows),
+        "rule": "the most recent contiguous train rows, length from the planner's fixed ladder"}),
+        e["assumptions"] + ["RUN_BOUNDED: computed on the declared contiguous train rows only"])
+
+
+def run_information(contract, X, timestamps=None, gate=None):
     with blas_single_thread():
-        return _run_information(contract, X, timestamps)
+        return _run_information(contract, X, timestamps, gate)
 
 
-def _run_information(contract, X, timestamps=None):
+def _run_information(contract, X, timestamps=None, gate=None):
     X, parts, vids, timestamps = contract_layout(contract, X, timestamps)
     ds = contract["dataset_id"]
     rows = []
     tr_s, tr_e = parts[0][1], parts[0][2]
-
     for j, vid in enumerate(vids):
+        rows.extend(variable_rows(ds, vid, X[:, j], parts, gate))
+    rows.extend(matrix_rows(ds, len(vids), lambda s, e: X[tr_s + s:tr_s + e], tr_e - tr_s, gate))
+    return rows
+
+
+def variable_rows(ds, vid, xcol, parts, gate=None):
+    """Every per-variable row of one variable from its full column (C149 column-wise path)."""
+    gate = gate or admit_all
+    rows = []
+    tr_s, tr_e = parts[0][1], parts[0][2]
+    if True:
         key = {"variable_id": vid}
-        xtr = X[tr_s:tr_e, j]
+        xtr = xcol[tr_s:tr_e]
         have_bins = int(np.isfinite(xtr).sum()) >= N_BINS
         edges = frozen_edges(xtr) if have_bins else None
+        del xtr
         for pname, s, e in parts:
-            x = X[s:e, j]
+            x = xcol[s:e]
             n = x.size
             add = lambda metric, estimator, value, status="COMPLETED", reason="", cpu=0.0: rows.append(
                 make_row(ds, key, pname, metric, estimator, value, status, reason, cpu))
@@ -282,6 +311,10 @@ def _run_information(contract, X, timestamps=None):
                     "FEWER_FINITE_TRAIN_VALUES_THAN_BINS")
                 add("conditional_surprisal_bits_lag1", E_CSUR, None, "UNAVAILABLE",
                     "FEWER_FINITE_TRAIN_VALUES_THAN_BINS")
+            elif gate("entropy_redundancy", vid, pname, n=n)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+                for metric, estimator in (("discrete_entropy_bits", E_ENT), ("conditional_redundancy_bits_lag1", E_CRED),
+                                          ("conditional_surprisal_bits_lag1", E_CSUR)):
+                    add(metric, estimator, None, "NOT_RUN", RESOURCE_REASON)
             else:
                 fin_sym = sym[sym != MISSING_SYMBOL]
                 if fin_sym.size == 0:
@@ -304,9 +337,13 @@ def _run_information(contract, X, timestamps=None):
                     add("conditional_redundancy_bits_lag1", E_CRED, cr[0] - cr[1], cpu=c)
                     add("conditional_surprisal_bits_lag1", E_CSUR, cr[1], cpu=c)
 
+
             # permutation entropy
             for m in PE_ORDERS:
                 t0 = time.process_time()
+                if gate(f"permutation_entropy_order_{m}", vid, pname, n=n, order=m)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+                    add(f"permutation_entropy_order_{m}", E_PE[m], None, "NOT_RUN", RESOURCE_REASON)
+                    continue
                 val, nw = permutation_entropy(x, m, PE_DELAY)
                 c = time.process_time() - t0
                 need = PE_MIN_WINDOWS_PER_PATTERN * math.factorial(m)
@@ -317,32 +354,40 @@ def _run_information(contract, X, timestamps=None):
 
             # spectral entropy in trailing windows
             t0 = time.process_time()
-            h = spectral_entropy_windows(x)
-            c = time.process_time() - t0
-            add("spectral_entropy_window_count", E_SE_N, h.size, cpu=c)
-            if h.size < SPEC_MIN_WINDOWS:
-                add("spectral_entropy_median", E_SE_MED, None, "INCONCLUSIVE", "INSUFFICIENT_SAMPLE", cpu=c)
-                add("spectral_entropy_iqr", E_SE_IQR, None, "INCONCLUSIVE", "INSUFFICIENT_SAMPLE", cpu=c)
+            if gate("spectral_entropy", vid, pname, n=n)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+                for metric, estimator in (("spectral_entropy_window_count", E_SE_N), ("spectral_entropy_median", E_SE_MED),
+                                          ("spectral_entropy_iqr", E_SE_IQR)):
+                    add(metric, estimator, None, "NOT_RUN", RESOURCE_REASON)
             else:
-                q25, q50, q75 = np.quantile(h, [0.25, 0.5, 0.75])
-                add("spectral_entropy_median", E_SE_MED, q50, cpu=c)
-                add("spectral_entropy_iqr", E_SE_IQR, q75 - q25, cpu=c)
+                h = spectral_entropy_windows(x)
+                c = time.process_time() - t0
+                add("spectral_entropy_window_count", E_SE_N, h.size, cpu=c)
+                if h.size < SPEC_MIN_WINDOWS:
+                    add("spectral_entropy_median", E_SE_MED, None, "INCONCLUSIVE", "INSUFFICIENT_SAMPLE", cpu=c)
+                    add("spectral_entropy_iqr", E_SE_IQR, None, "INCONCLUSIVE", "INSUFFICIENT_SAMPLE", cpu=c)
+                else:
+                    q25, q50, q75 = np.quantile(h, [0.25, 0.5, 0.75])
+                    add("spectral_entropy_median", E_SE_MED, q50, cpu=c)
+                    add("spectral_entropy_iqr", E_SE_IQR, q75 - q25, cpu=c)
+                del h
 
             # compression
-            streams = {"raw_float64": np.ascontiguousarray(x, dtype="<f8")}
-            if have_bins:
-                streams["symbols"] = sym
             for sname in _STREAMS:
                 for cname, (_, _, fn) in _COMP.items():
                     metric_sfx = f"{cname}_{sname}"
-                    if sname not in streams:
-                        for metric, estimator in ((f"compressed_bits_per_sample_{metric_sfx}", E_BPS),
-                                                  (f"compression_gain_vs_uncompressed_{metric_sfx}", E_GAIN),
-                                                  (f"temporal_structure_gain_{metric_sfx}", E_TGAIN)):
+                    names = ((f"compressed_bits_per_sample_{metric_sfx}", E_BPS),
+                             (f"compression_gain_vs_uncompressed_{metric_sfx}", E_GAIN),
+                             (f"temporal_structure_gain_{metric_sfx}", E_TGAIN))
+                    if sname == "symbols" and not have_bins:
+                        for metric, estimator in names:
                             add(metric, estimator[(cname, sname)], None, "UNAVAILABLE",
                                 "FEWER_FINITE_TRAIN_VALUES_THAN_BINS")
                         continue
-                    arr = streams[sname]
+                    if gate(f"compression_{sname}_{cname}", vid, pname, n=n)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+                        for metric, estimator in names:
+                            add(metric, estimator[(cname, sname)], None, "NOT_RUN", RESOURCE_REASON)
+                        continue
+                    arr = sym if sname == "symbols" else np.ascontiguousarray(x, dtype="<f8")
                     t0 = time.process_time()
                     raw = arr.tobytes()
                     ordered = fn(raw)
@@ -350,33 +395,50 @@ def _run_information(contract, X, timestamps=None):
                     add(f"compressed_bits_per_sample_{metric_sfx}", E_BPS[(cname, sname)], 8.0 * ordered / n, cpu=c)
                     add(f"compression_gain_vs_uncompressed_{metric_sfx}", E_GAIN[(cname, sname)],
                         1.0 - ordered / len(raw), cpu=c)
+                    del raw
                     t0 = time.process_time()
                     perm = np.random.default_rng(SHUFFLE_SEED).permutation(n)
                     shuffled = fn(arr[perm].tobytes())
+                    del perm, arr
                     add(f"temporal_structure_gain_{metric_sfx}", E_TGAIN[(cname, sname)],
                         (shuffled - ordered) / shuffled, cpu=c + time.process_time() - t0)
+            del sym
+    return rows
 
-    # effective rank of the train matrix only
+
+def matrix_rows(ds, V, train_rows, T_train, gate=None):
+    """Effective rank of the train matrix. `train_rows(start, end)` returns the
+    (end - start, V) float64 block of train rows [start, end); the gate declares
+    the bounded row universe when the whole train matrix does not fit."""
+    gate = gate or admit_all
+    rows = []
     g = {"group_id": "train_matrix_all_variables"}
     t0 = time.process_time()
-    V = len(vids)
     if V < 2:
         rows.append(make_row(ds, g, "train", "effective_rank", E_ERANK, None, "NOT_RUN", "SINGLE_VARIABLE"))
         rows.append(make_row(ds, g, "train", "numerical_rank", E_NRANK, None, "NOT_RUN", "SINGLE_VARIABLE"))
+        return rows
+    d = gate("effective_rank", None, "train", rows=T_train, V=V)
+    if d["decision"] == "NOT_RUN_RESOURCE_BOUND":
+        rows.append(make_row(ds, g, "train", "effective_rank", E_ERANK, None, "NOT_RUN", RESOURCE_REASON))
+        rows.append(make_row(ds, g, "train", "numerical_rank", E_NRANK, None, "NOT_RUN", RESOURCE_REASON))
+        return rows
+    w = d.get("window") or (0, T_train)
+    e_er, e_nr = bounded_estimator(E_ERANK, w, T_train), bounded_estimator(E_NRANK, w, T_train)
+    M = train_rows(w[0], w[1])
+    M = M[np.all(np.isfinite(M), axis=1)]
+    sd = M.std(axis=0) if M.shape[0] else np.zeros(V)
+    M = M[:, sd > 0]
+    need = max(ERANK_MIN_ROWS, ERANK_MIN_ROWS_PER_VARIABLE * V)
+    if M.shape[0] < need or M.shape[1] < 2:
+        why = "INSUFFICIENT_COMPLETE_ROWS" if M.shape[0] < need else "FEWER_THAN_TWO_NON_CONSTANT_VARIABLES"
+        rows.append(make_row(ds, g, "train", "effective_rank", e_er, None, "INCONCLUSIVE", why))
+        rows.append(make_row(ds, g, "train", "numerical_rank", e_nr, None, "INCONCLUSIVE", why))
     else:
-        M = X[tr_s:tr_e]
-        M = M[np.all(np.isfinite(M), axis=1)]
-        sd = M.std(axis=0) if M.shape[0] else np.zeros(V)
-        M = M[:, sd > 0]
-        need = max(ERANK_MIN_ROWS, ERANK_MIN_ROWS_PER_VARIABLE * V)
-        if M.shape[0] < need or M.shape[1] < 2:
-            why = "INSUFFICIENT_COMPLETE_ROWS" if M.shape[0] < need else "FEWER_THAN_TWO_NON_CONSTANT_VARIABLES"
-            rows.append(make_row(ds, g, "train", "effective_rank", E_ERANK, None, "INCONCLUSIVE", why))
-            rows.append(make_row(ds, g, "train", "numerical_rank", E_NRANK, None, "INCONCLUSIVE", why))
-        else:
-            Z = (M - M.mean(axis=0)) / M.std(axis=0)
-            er, nr, _ = effective_rank(Z)
-            c = time.process_time() - t0
-            rows.append(make_row(ds, g, "train", "effective_rank", E_ERANK, er, cpu=c))
-            rows.append(make_row(ds, g, "train", "numerical_rank", E_NRANK, nr, cpu=c))
+        Z = (M - M.mean(axis=0)) / M.std(axis=0)
+        del M
+        er, nr, _ = effective_rank(Z)
+        c = time.process_time() - t0
+        rows.append(make_row(ds, g, "train", "effective_rank", e_er, er, cpu=c))
+        rows.append(make_row(ds, g, "train", "numerical_rank", e_nr, nr, cpu=c))
     return rows

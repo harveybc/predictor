@@ -320,16 +320,57 @@ E_CAP = est("pair_cap", {"max_pairs": MAX_PAIRS, "max_variables_matrix": MAX_VAR
 
 
 # ------------------------------------------------------------------- run
-def run_multivariate(contract, X, timestamps=None):
+RESOURCE_REASON = "NOT_RUN_RESOURCE_BOUND"
+_CORR_METRICS = (("pearson", E_PEARSON), ("spearman", E_SPEARMAN), ("biweight_midcorrelation", E_BICOR))
+_MI_METRICS = (("mutual_information_bits", E_MI), ("mi_shuffle_mean_bits", E_MI_SM),
+               ("mi_shuffle_q95_bits", E_MI_SQ), ("mi_excess_over_shuffle_bits", E_MI_EX))
+_LEADLAG_METRICS = ([(f"causal_xcorr_a_past_b_present_lag_{k}", E_XAB) for k in range(MAX_LAG + 1)]
+                    + [(f"causal_xcorr_b_past_a_present_lag_{k}", E_XBA) for k in range(MAX_LAG + 1)]
+                    + [("best_signed_lag", E_BEST), ("best_signed_lag_correlation", E_BEST_C),
+                       ("best_lag_modal_fraction", E_LSTAB), ("best_lag_modal_value", E_LMODE),
+                       ("best_lag_stable", E_LSTABLE)])
+_COH_METRICS = (("coherence_band_mean", E_COH), ("coherence_null_percentile", E_COH_P),
+                ("coherence_null_q025", E_COH_LO), ("coherence_null_q975", E_COH_HI))
+
+
+def admit_all(group, key=None, partition=None, **sizes):
+    """The default gate: every group runs exactly (C147)."""
+    return {"decision": "RUN_EXACT", "window": None}
+
+
+def bounded(e, universe):
+    """The estimator of a RUN_BOUNDED group: the declared row universe is part of it."""
+    if universe is None:
+        return e
+    return est(e["name"], dict(e["params"], bounded_universe=universe),
+               e["assumptions"] + ["RUN_BOUNDED: computed on the declared contiguous train rows only"])
+
+
+def _universe(window, total, what):
+    if window is None or (window[0] == 0 and window[1] == total):
+        return None
+    return {"train_rows": [int(window[0]), int(window[1])], "train_rows_total": int(total), "applies_to": what,
+            "rule": "the most recent contiguous train rows, length from the planner's fixed ladder"}
+
+
+def run_multivariate(contract, X, timestamps=None, gate=None):
     with blas_single_thread():
-        return _run_multivariate(contract, X, timestamps)
+        return _run_multivariate(contract, X, timestamps, gate)
 
 
-def _run_multivariate(contract, X, timestamps=None):
+def _run_multivariate(contract, X, timestamps=None, gate=None):
     X, parts, vids, timestamps = contract_layout(contract, X, timestamps)
-    ds = contract["dataset_id"]
-    tr = X[parts[0][1]:parts[0][2]]
-    T, V = tr.shape
+    tr_s, tr_e = parts[0][1], parts[0][2]
+    return multivariate_rows(contract["dataset_id"], vids, lambda cols, s, e: X[tr_s + s:tr_s + e][:, cols],
+                             tr_e - tr_s, gate)
+
+
+def multivariate_rows(ds, vids, train_block, T, gate=None):
+    """`train_block(cols, start, end)` returns train rows [start, end) of the listed
+    columns as a (end - start, len(cols)) float64 array. Only the pair-cap and
+    matrix-cap columns are ever requested, and only the rows the gate admits."""
+    gate = gate or admit_all
+    V = len(vids)
     rows = []
     P = "train"
     order, pvars, mvars = pair_cap(vids)
@@ -344,50 +385,92 @@ def _run_multivariate(contract, X, timestamps=None):
                              "NOT_RUN", "SINGLE_VARIABLE"))
         return rows
 
-    for ia in range(len(pvars)):
-        for ib in range(ia + 1, len(pvars)):
-            i, j = pvars[ia], pvars[ib]
-            rows.extend(_pair_rows(ds, [vids[i], vids[j]], tr[:, i], tr[:, j]))
+    d = gate("pair_block", None, P, rows=T, k=len(pvars))
+    if d["decision"] == "NOT_RUN_RESOURCE_BOUND":
+        for ia in range(len(pvars)):
+            for ib in range(ia + 1, len(pvars)):
+                key = {"pair": [vids[pvars[ia]], vids[pvars[ib]]]}
+                for metric, estimator in _CORR_METRICS + _MI_METRICS + tuple(_LEADLAG_METRICS) + _COH_METRICS:
+                    rows.append(make_row(ds, key, P, metric, estimator, None, "NOT_RUN", RESOURCE_REASON))
+    else:
+        w = d.get("window") or (0, T)
+        block = np.ascontiguousarray(train_block(pvars, w[0], w[1]))
+        uni = _universe(w, T, "pairwise diagnostics")
+        for ia in range(len(pvars)):
+            for ib in range(ia + 1, len(pvars)):
+                rows.extend(_pair_rows(ds, [vids[pvars[ia]], vids[pvars[ib]]], block[:, ia], block[:, ib], gate, uni))
+        del block
 
-    rows.extend(_matrix_rows(ds, [vids[i] for i in mvars], tr[:, mvars]))
+    rows.extend(_matrix_block_rows(ds, [vids[i] for i in mvars], mvars, train_block, T, gate))
     return rows
 
 
-def _pair_rows(ds, pair, a, b):
+def _matrix_block_rows(ds, ids, cols, train_block, T, gate):
+    d = gate("matrix_diagnostics", None, "train", rows=T, V=len(cols))
+    gm = {"group_id": "train_matrix"}
+    if d["decision"] == "NOT_RUN_RESOURCE_BOUND":
+        out = [make_row(ds, gm, "train", "effective_rank", E_ERANK, None, "NOT_RUN", RESOURCE_REASON),
+               make_row(ds, gm, "train", "negative_eigenvalue_count", E_NEG, None, "NOT_RUN", RESOURCE_REASON)]
+        out.append(make_row(ds, {"group_id": "train_clusters"}, "train", "identified_group_count", E_CL_COUNT, None,
+                            "NOT_RUN", RESOURCE_REASON))
+        return out
+    w = d.get("window") or (0, T)
+    M = np.ascontiguousarray(train_block(cols, w[0], w[1]))
+    return _matrix_rows(ds, ids, M, gate, _universe(w, T, "matrix diagnostics"))
+
+
+def _pair_rows(ds, pair, a, b, gate=None, universe=None):
+    gate = gate or admit_all
     out = []
     key = {"pair": list(pair)}
     add = lambda metric, estimator, value, status="COMPLETED", reason="", cpu=0.0: out.append(
-        make_row(ds, key, "train", metric, estimator, value, status, reason, cpu))
+        make_row(ds, key, "train", metric, bounded(estimator, universe), value, status, reason, cpu))
+    n = a.size
 
     t0 = time.process_time()
     m = np.isfinite(a) & np.isfinite(b)
     xa, xb = a[m], b[m]
+    del m
     if xa.size < MIN_PAIR_N:
-        for metric, estimator in (("pearson", E_PEARSON), ("spearman", E_SPEARMAN), ("biweight_midcorrelation", E_BICOR),
-                                  ("mutual_information_bits", E_MI), ("mi_shuffle_mean_bits", E_MI_SM),
-                                  ("mi_shuffle_q95_bits", E_MI_SQ), ("mi_excess_over_shuffle_bits", E_MI_EX)):
+        for metric, estimator in _CORR_METRICS + _MI_METRICS:
             add(metric, estimator, None, "INCONCLUSIVE", "INSUFFICIENT_COMMON_SAMPLES")
     else:
-        for metric, estimator, fn in (("pearson", E_PEARSON, pearson), ("spearman", E_SPEARMAN, spearman),
-                                      ("biweight_midcorrelation", E_BICOR, biweight_midcorrelation)):
+        if gate("pair_correlations", pair, "train", n=n)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+            for metric, estimator in _CORR_METRICS:
+                add(metric, estimator, None, "NOT_RUN", RESOURCE_REASON)
+        else:
+            for metric, estimator, fn in (("pearson", E_PEARSON, pearson), ("spearman", E_SPEARMAN, spearman),
+                                          ("biweight_midcorrelation", E_BICOR, biweight_midcorrelation)):
+                t0 = time.process_time()
+                v = fn(xa, xb)
+                c = time.process_time() - t0
+                if v is None:
+                    add(metric, estimator, None, "INCONCLUSIVE", "ZERO_SPREAD", cpu=c)
+                else:
+                    add(metric, estimator, v, cpu=c)
+        if gate("pair_mutual_information", pair, "train", n=n)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+            for metric, estimator in _MI_METRICS:
+                add(metric, estimator, None, "NOT_RUN", RESOURCE_REASON)
+        else:
             t0 = time.process_time()
-            v = fn(xa, xb)
+            sa, sb = frozen_symbols(xa), frozen_symbols(xb)
+            mi = mutual_information_bits(sa, sb, MI_BINS)
+            rng = np.random.default_rng(MI_SEED)
+            null = np.array([mutual_information_bits(sa, sb[rng.permutation(sb.size)], MI_BINS)
+                             for _ in range(MI_SHUFFLES)])
+            del sa, sb
             c = time.process_time() - t0
-            if v is None:
-                add(metric, estimator, None, "INCONCLUSIVE", "ZERO_SPREAD", cpu=c)
-            else:
-                add(metric, estimator, v, cpu=c)
-        t0 = time.process_time()
-        sa, sb = frozen_symbols(xa), frozen_symbols(xb)
-        mi = mutual_information_bits(sa, sb, MI_BINS)
-        rng = np.random.default_rng(MI_SEED)
-        null = np.array([mutual_information_bits(sa, sb[rng.permutation(sb.size)], MI_BINS)
-                         for _ in range(MI_SHUFFLES)])
-        c = time.process_time() - t0
-        add("mutual_information_bits", E_MI, mi, cpu=c)
-        add("mi_shuffle_mean_bits", E_MI_SM, null.mean(), cpu=c)
-        add("mi_shuffle_q95_bits", E_MI_SQ, np.quantile(null, 0.95), cpu=c)
-        add("mi_excess_over_shuffle_bits", E_MI_EX, mi - null.mean(), cpu=c)
+            add("mutual_information_bits", E_MI, mi, cpu=c)
+            add("mi_shuffle_mean_bits", E_MI_SM, null.mean(), cpu=c)
+            add("mi_shuffle_q95_bits", E_MI_SQ, np.quantile(null, 0.95), cpu=c)
+            add("mi_excess_over_shuffle_bits", E_MI_EX, mi - null.mean(), cpu=c)
+    del xa, xb
+
+    if gate("pair_lead_lag", pair, "train", n=n)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+        for metric, estimator in _LEADLAG_METRICS:
+            add(metric, estimator, None, "NOT_RUN", RESOURCE_REASON)
+        out.extend(_coherence_rows(a, b, gate, pair, add))
+        return out
 
     # causal lead-lag
     t0 = time.process_time()
@@ -428,63 +511,89 @@ def _pair_rows(ds, pair, a, b):
             add("best_lag_modal_value", E_LMODE, mode, cpu=c)
             add("best_lag_stable", E_LSTABLE, 1.0 if frac >= LAG_STABLE_FRACTION else 0.0, cpu=c)
 
-    # coherence with a phase-randomized null
-    t0 = time.process_time()
-    s, e = longest_common_finite_run(a, b)
-    names = (("coherence_band_mean", E_COH), ("coherence_null_percentile", E_COH_P),
-             ("coherence_null_q025", E_COH_LO), ("coherence_null_q975", E_COH_HI))
-    if e - s < 4 * COH_NPERSEG:
-        for metric, estimator in names:
-            add(metric, estimator, None, "INCONCLUSIVE", "INSUFFICIENT_CONTIGUOUS_COMMON_SAMPLES")
-    elif np.all(a[s:e] == a[s]) or np.all(b[s:e] == b[s]):
-        for metric, estimator in names:
-            add(metric, estimator, None, "INCONCLUSIVE", "ZERO_VARIANCE")
-    else:
-        from scipy.signal import coherence
-        ra, rb = a[s:e], b[s:e]
-        f, C = coherence(ra, rb, fs=1.0, nperseg=COH_NPERSEG)
-        obs = float(C[f > 0].mean())
-        S = phase_randomized(rb, COH_SURROGATES, np.random.default_rng(COH_SEED))
-        f2, C2 = coherence(ra[None, :], S, fs=1.0, nperseg=COH_NPERSEG, axis=-1)
-        null = C2[:, f2 > 0].mean(axis=1)
-        c = time.process_time() - t0
-        add("coherence_band_mean", E_COH, obs, cpu=c)
-        add("coherence_null_percentile", E_COH_P, 100.0 * float((null <= obs).mean()), cpu=c)
-        add("coherence_null_q025", E_COH_LO, np.quantile(null, 0.025), cpu=c)
-        add("coherence_null_q975", E_COH_HI, np.quantile(null, 0.975), cpu=c)
+    _coherence_rows(a, b, gate, pair, add)
     return out
 
 
-def _matrix_rows(ds, ids, M):
+def _coherence_rows(a, b, gate, pair, add):
+    """Coherence with a phase-randomized null on the longest common finite run.
+    When the run does not fit, the gate may admit its most recent ladder-length
+    stretch (RUN_BOUNDED, declared in the estimator)."""
+    t0 = time.process_time()
+    s, e = longest_common_finite_run(a, b)
+    names = _COH_METRICS
+    if e - s < 4 * COH_NPERSEG:
+        for metric, estimator in names:
+            add(metric, estimator, None, "INCONCLUSIVE", "INSUFFICIENT_CONTIGUOUS_COMMON_SAMPLES")
+        return []
+    if np.all(a[s:e] == a[s]) or np.all(b[s:e] == b[s]):
+        for metric, estimator in names:
+            add(metric, estimator, None, "INCONCLUSIVE", "ZERO_VARIANCE")
+        return []
+    d = gate("pair_coherence", pair, "train", L=e - s)
+    if d["decision"] == "NOT_RUN_RESOURCE_BOUND":
+        for metric, estimator in names:
+            add(metric, estimator, None, "NOT_RUN", RESOURCE_REASON)
+        return []
+    ests = dict(names)
+    if d.get("window") is not None and d["window"][1] - d["window"][0] < e - s:
+        length = d["window"][1] - d["window"][0]
+        s = e - length
+        ests = {m: est(x["name"], dict(x["params"], bounded_run={
+            "run_rows_used": [int(s), int(e)], "rule": "most recent ladder-length stretch of the longest common run"}),
+            x["assumptions"] + ["RUN_BOUNDED: coherence on a declared contiguous stretch of the run"])
+            for m, x in names}
+    from scipy.signal import coherence
+    ra, rb = a[s:e], b[s:e]
+    f, C = coherence(ra, rb, fs=1.0, nperseg=COH_NPERSEG)
+    obs = float(C[f > 0].mean())
+    del f, C
+    S = phase_randomized(rb, COH_SURROGATES, np.random.default_rng(COH_SEED))
+    f2, C2 = coherence(ra[None, :], S, fs=1.0, nperseg=COH_NPERSEG, axis=-1)
+    del S
+    null = C2[:, f2 > 0].mean(axis=1)
+    c = time.process_time() - t0
+    add("coherence_band_mean", ests["coherence_band_mean"], obs, cpu=c)
+    add("coherence_null_percentile", ests["coherence_null_percentile"], 100.0 * float((null <= obs).mean()), cpu=c)
+    add("coherence_null_q025", ests["coherence_null_q025"], np.quantile(null, 0.025), cpu=c)
+    add("coherence_null_q975", ests["coherence_null_q975"], np.quantile(null, 0.975), cpu=c)
+    return []
+
+
+def _matrix_rows(ds, ids, M, gate=None, universe=None):
+    gate = gate or admit_all
     out = []
     T, V = M.shape
     gm = {"group_id": "train_matrix"}
+    b_ = lambda e: bounded(e, universe)  # noqa: E731
+    E_PCA_, E_ERANK_, E_NEG_, E_PC1L_, E_PC1S_, E_PRIV_, E_CL_COUNT_ = map(
+        b_, (E_PCA, E_ERANK, E_NEG, E_PC1L, E_PC1S, E_PRIV, E_CL_COUNT))
     t0 = time.process_time()
     R, _ = pairwise_pearson_matrix(M)
     w, U, neg = corr_eigen(R)
     c = time.process_time() - t0
     tot = w.sum()
     if tot <= 0:
-        out.append(make_row(ds, gm, "train", "effective_rank", E_ERANK, None, "INCONCLUSIVE", "ZERO_SPECTRUM", cpu=c))
+        out.append(make_row(ds, gm, "train", "effective_rank", E_ERANK_, None, "INCONCLUSIVE", "ZERO_SPECTRUM", cpu=c))
         return out
     for i in range(min(PCA_COMPONENTS_REPORTED, V)):
-        out.append(make_row(ds, gm, "train", f"pca_explained_variance_ratio_pc{i + 1}", E_PCA, w[i] / tot, cpu=c))
+        out.append(make_row(ds, gm, "train", f"pca_explained_variance_ratio_pc{i + 1}", E_PCA_, w[i] / tot, cpu=c))
     sv = np.sqrt(w)
     p = sv / sv.sum()
     p = p[p > 0]
-    out.append(make_row(ds, gm, "train", "effective_rank", E_ERANK, math.exp(-(p * np.log(p)).sum()), cpu=c))
-    out.append(make_row(ds, gm, "train", "negative_eigenvalue_count", E_NEG, neg, cpu=c))
+    out.append(make_row(ds, gm, "train", "effective_rank", E_ERANK_, math.exp(-(p * np.log(p)).sum()), cpu=c))
+    out.append(make_row(ds, gm, "train", "negative_eigenvalue_count", E_NEG_, neg, cpu=c))
 
     # common/private candidates
     u1 = U[:, 0] * (1.0 if U[:, 0].sum() >= 0 else -1.0)
     for i, vid in enumerate(ids):
         key = {"variable_id": vid}
         share = u1[i] ** 2 * w[0]
-        out.append(make_row(ds, key, "train", "pc1_loading", E_PC1L, u1[i] * math.sqrt(w[0]),
+        out.append(make_row(ds, key, "train", "pc1_loading", E_PC1L_, u1[i] * math.sqrt(w[0]),
                             reason="CANDIDATE_NOT_A_TRANSFORMATION", cpu=c))
-        out.append(make_row(ds, key, "train", "pc1_common_variance_share", E_PC1S, share,
+        out.append(make_row(ds, key, "train", "pc1_common_variance_share", E_PC1S_, share,
                             reason="CANDIDATE_NOT_A_TRANSFORMATION", cpu=c))
-        out.append(make_row(ds, key, "train", "private_residual_variance_share", E_PRIV, 1.0 - share,
+        out.append(make_row(ds, key, "train", "private_residual_variance_share", E_PRIV_, 1.0 - share,
                             reason="CANDIDATE_NOT_A_TRANSFORMATION", cpu=c))
 
     # hierarchical clusters with moving-block bootstrap stability
@@ -495,6 +604,18 @@ def _matrix_rows(ds, ids, M):
     rng = np.random.default_rng(CLUSTER_SEED)
     block = max(10, int(math.ceil(math.sqrt(T))))
     jacc = np.zeros(len(clusters))
+    if clusters and T > block and \
+            gate("cluster_bootstrap", None, "train", rows=T, V=V)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+        for cl in clusters:
+            members = sorted(ids[i] for i in cl)
+            gid = "train_cluster:" + hashlib.sha256("\n".join(members).encode()).hexdigest()[:16]
+            e_members = b_(est(E_CL_STAB["name"], {**E_CL_STAB["params"], "members": members},
+                               E_CL_STAB["assumptions"]))
+            out.append(make_row(ds, {"group_id": gid}, "train", "cluster_stability", e_members, None,
+                                "NOT_RUN", RESOURCE_REASON))
+        out.append(make_row(ds, {"group_id": "train_clusters"}, "train", "identified_group_count", E_CL_COUNT_,
+                            None, "NOT_RUN", RESOURCE_REASON))
+        return out
     if clusters and T > block:
         for _ in range(CLUSTER_BOOTSTRAPS):
             idx = moving_block_indices(T, block, rng)
@@ -510,7 +631,7 @@ def _matrix_rows(ds, ids, M):
     for ci, cl in enumerate(clusters):
         members = sorted(ids[i] for i in cl)
         gid = "train_cluster:" + hashlib.sha256("\n".join(members).encode()).hexdigest()[:16]
-        e_members = est(E_CL_STAB["name"], {**E_CL_STAB["params"], "members": members}, E_CL_STAB["assumptions"])
+        e_members = b_(est(E_CL_STAB["name"], {**E_CL_STAB["params"], "members": members}, E_CL_STAB["assumptions"]))
         if T <= block:
             out.append(make_row(ds, {"group_id": gid}, "train", "cluster_stability", e_members, None,
                                 "INCONCLUSIVE", "INSUFFICIENT_SAMPLE_FOR_BOOTSTRAP", cpu=c))
@@ -521,6 +642,6 @@ def _matrix_rows(ds, ids, M):
         else:
             out.append(make_row(ds, {"group_id": gid}, "train", "cluster_stability", e_members, None,
                                 "INCONCLUSIVE", "GROUP_NOT_IDENTIFIED", cpu=c))
-    out.append(make_row(ds, {"group_id": "train_clusters"}, "train", "identified_group_count", E_CL_COUNT,
+    out.append(make_row(ds, {"group_id": "train_clusters"}, "train", "identified_group_count", E_CL_COUNT_,
                         identified, reason="" if identified else "GROUP_NOT_IDENTIFIED", cpu=c))
     return out
