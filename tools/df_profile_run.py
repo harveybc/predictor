@@ -777,7 +777,10 @@ def run(out_dir: Path, jobs: list[dict], workers: int = 4, *, host_budget_bytes:
         o = t["task"].outcome
         status, reason, ver = IR.classify(o, t["adir"], mutation_bypass_preflight)
         res = o["result"] or {}
-        observed = res.get("child_maxrss_bytes") or o["child_maxrss_bytes"] or None
+        # The cgroup's own memory.peak is what MemoryMax enforces; the child's maxrss also counts shared
+        # library pages and can exceed the limit, so it is only a fallback when no cgroup peak was read.
+        observed = (res.get("cgroup_memory_peak_bytes") or o["cgroup_memory_peak"]
+                    or res.get("child_maxrss_bytes") or o["child_maxrss_bytes"] or None)
         row = terminal(t["idx"], t["sname"], t["attempt"], dataset_id=t["ds"], contract_sha256=t["csha"],
                        status=status, reason=reason, rows_written=int(res.get("rows_written") or 0),
                        variables_profiled=int(res.get("variables_profiled") or 0),
