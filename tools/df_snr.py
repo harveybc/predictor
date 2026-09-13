@@ -754,6 +754,110 @@ def _least_biased(records: list[dict]) -> dict:
     return out
 
 
+# --------------------------------------------------------------------------
+# C175 / C177 (order 2026-09-13): per-unit facts for the D2 v2 laboratory
+# --------------------------------------------------------------------------
+D2_UNIT_FACTS_SCHEMA = "crispdm.data_foundation.d2_unit_snr_facts.v1"
+
+
+def _finite_or_none(v):
+    return float(v) if v is not None and isinstance(v, (int, float)) and math.isfinite(v) else None
+
+
+def d2_unit_snr_facts(unit_dir: str, estimators: list[str], partitions: list[str],
+                      bootstrap: dict | None = None) -> list[dict]:
+    """Per variable x estimator x partition: the estimate on that partition's longest complete segment and the
+    truth on the same segment. An OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL estimator yields ONE whole-TRAIN aggregate
+    (partition "train") and is NOT_APPLICABLE on every other partition. Runs inside this module's own process."""
+    u = load_unit(unit_dir)
+    meta = u["meta"]
+    parts = meta.get("partitions") or meta.get("temporal_roles")
+    n_vars = u["observed_signal"].shape[0]
+    facts = []
+    train_snapshot = None
+    for v in range(n_vars):
+        obs = u["observed_signal"][v]
+        mask = None if u["missing_mask"] is None else u["missing_mask"][v]
+        for name in estimators:
+            state = ESTIMATORS[name]["contract_state"]
+            base = {"variable_index": v, "estimator": name, "contract_state": state}
+            todo = []
+            if state == OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL:
+                for p in partitions:
+                    facts.append(dict(base, partition=p, status="NOT_APPLICABLE", result=None, true_snr_db=None,
+                                      reason=f"{state}: one whole-TRAIN aggregate only, no estimate on {p}"))
+                todo.append("train")
+            else:
+                todo.extend(partitions)
+            for p in todo:
+                lo, hi = int(parts[p][0]), int(parts[p][1])
+                try:
+                    if state == OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL:
+                        if train_snapshot is None:
+                            contract, loader = calibration_unit_contract(unit_dir, meta, n_vars)
+                            train_snapshot = _snapshot_module().FitSnapshot.from_contract(contract, "TRAIN", loader)
+                        r = estimate_offline_train_diagnostic(train_snapshot, v, name,
+                                                              missing_mask=None if mask is None else mask[lo:hi],
+                                                              bootstrap=bootstrap)
+                    else:
+                        r = estimate(obs, (lo, hi), name, missing_mask=mask, bootstrap=bootstrap)
+                except Exception as exc:  # noqa: BLE001 - recorded, never silent
+                    facts.append(dict(base, partition=p, status="FAILED", result=None, true_snr_db=None,
+                                      reason=f"{type(exc).__name__}: {exc}"[:300]))
+                    continue
+                a, b = r["segment_used"]
+                _, t_snr = _truth(u["clean_signal"][v][a:b], u["additive_noise"][v][a:b])
+                keep = {k: r.get(k) for k in ("snr_db", "noise_variance", "signal_variance", "status", "reason",
+                                              "segment_used", "train")}
+                bsr = r.get("bootstrap") or {}
+                keep["bootstrap"] = {k: bsr.get(k) for k in ("ci_low_db", "ci_high_db", "lower_unbounded",
+                                                             "upper_unbounded", "n_replicates_used")} if bsr else None
+                facts.append(dict(base, partition=p, status="DONE", result=keep, true_snr_db=_finite_or_none(t_snr),
+                                  reason=r["reason"] or ""))
+    return facts
+
+
+def d2_wavelet_mad_path_probe(unit_dir: str) -> dict:
+    """C177: on the evaluated unit, every path but one whole-TRAIN aggregate refuses wavelet_mad."""
+    u = load_unit(unit_dir)
+    meta = u["meta"]
+    parts = meta.get("partitions") or meta.get("temporal_roles")
+    lo, hi = int(parts["train"][0]), int(parts["train"][1])
+    snap = _snapshot_module()
+    contract, loader = calibration_unit_contract(unit_dir, meta, u["observed_signal"].shape[0])
+    attempts = {}
+
+    def refuses(label, fn):
+        try:
+            fn()
+            attempts[label] = "ACCEPTED"
+        except (SnrRefusal, snap.SnapshotRefusal):
+            attempts[label] = "REFUSED"
+    x = u["observed_signal"][0]
+    refuses("bare_array_estimate", lambda: estimate(x, (lo, hi), "wavelet_mad", do_bootstrap=False))
+    refuses("calibration_snapshot", lambda: estimate_offline_train_diagnostic(
+        snap.FitSnapshot.from_contract(contract, "CALIBRATION", loader), 0, do_bootstrap=False))
+    refuses("train_prefix_snapshot", lambda: estimate_offline_train_diagnostic(
+        snap.FitSnapshot.from_contract(contract, "TRAIN", loader, start=lo, end=hi - 1), 0, do_bootstrap=False))
+    one = estimate_offline_train_diagnostic(snap.FitSnapshot.from_contract(contract, "TRAIN", loader), 0,
+                                            do_bootstrap=False)
+    scalar = one["snr_db"] is None or isinstance(one["snr_db"], float)
+    long_values = sorted(k for k, v in one.items() if isinstance(v, (list, tuple, np.ndarray)) and len(v) > 2)
+    return {"attempts": attempts, "whole_train_scalar": scalar, "per_timestamp_outputs": long_values,
+            "passed": all(s == "REFUSED" for s in attempts.values()) and scalar and not long_values}
+
+
+def d2_unit_facts_main(job_file: str) -> int:
+    with open(job_file) as fh:
+        job = json.load(fh)
+    doc = {"schema": D2_UNIT_FACTS_SCHEMA, "code_sha256": code_sha256(),
+           "facts": d2_unit_snr_facts(job["unit_dir"], job["estimators"], job["partitions"], job.get("bootstrap")),
+           "wavelet_mad_probe": d2_wavelet_mad_path_probe(job["unit_dir"])}
+    with open(job["out"], "x") as fh:
+        json.dump(doc, fh, sort_keys=True, allow_nan=False)
+    return 0
+
+
 def rows_path_for(out: str) -> str:
     root, _ = os.path.splitext(out)
     return root + ".olap_rows.jsonl"
@@ -776,12 +880,18 @@ def write_calibration(doc: dict, rows: list[dict], out: str) -> tuple[str, str]:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--bank", required=True)
-    ap.add_argument("--out", required=True)
+    ap.add_argument("--bank")
+    ap.add_argument("--out")
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--bootstrap-b", type=int, default=None,
                     help="override declared bootstrap B for all estimators (smoke runs)")
+    ap.add_argument("--d2-unit-facts", default=None,
+                    help="C175/C177: JSON job {unit_dir, estimators, partitions, bootstrap, out}; one unit, write-once")
     args = ap.parse_args(argv)
+    if args.d2_unit_facts:
+        return d2_unit_facts_main(args.d2_unit_facts)
+    if not args.bank or not args.out:
+        ap.error("--bank and --out are required")
     for p in (args.out, rows_path_for(args.out)):
         if os.path.exists(p):
             print(f"write-once: {p} already exists", file=sys.stderr)
