@@ -182,9 +182,57 @@ def merge(root: Path, work: Path) -> int:
     return 0
 
 
+def tables(root: Path) -> int:
+    """C178: every unit row of the fresh root (all partitions, re-hashed) and the decisions, as a loader table dir."""
+    out = root.parent / (root.name + "_tables")
+    if out.exists():
+        raise SystemExit("REFUSED: tables dir exists (write-once)")
+    manifest = json.loads((root / "RUN_MANIFEST.json").read_text())
+    if sorted(p.name for p in root.glob("ROOT_INVALIDATED__*.json")):
+        raise SystemExit("REFUSED: an invalidated root is never loaded as confirmation")
+    summary = json.loads((root / "ADJUDICATION_SUMMARY.json").read_text())
+    if IR.sha_file(root / "DECISIONS.jsonl") != summary["decisions_sha256"]:
+        raise SystemExit("REFUSED: DECISIONS.jsonl does not re-hash to its summary")
+    out.mkdir()
+    files = {t: open(out / f"{t}.jsonl", "w") for t in (DEN, SNR)}
+    counts = {t: 0 for t in files}
+    code = set()
+    for name, (_, term) in sorted(_latest(root).items()):
+        if term["status"] != "COMPLETED":
+            continue
+        src = root / term["output_file"]
+        if IR.sha_file(src) != term["output_sha256"]:
+            raise SystemExit(f"REFUSED: {name}: output does not re-hash to its terminal")
+        with open(src) as f:
+            for line in f:
+                obj = json.loads(line)
+                problems = A.validate_proposed_row(obj["table"], obj["row"])
+                if problems:
+                    raise SystemExit(f"REFUSED: {name}: {obj['table']}: {problems[:2]}")
+                code.add(obj["row"]["code_sha256"])
+                files[obj["table"]].write(json.dumps(obj["row"], sort_keys=True) + "\n")
+                counts[obj["table"]] += 1
+    for f in files.values():
+        f.close()
+    os.link(root / "DECISIONS.jsonl", out / "df_fact_d2_decision.jsonl")
+    counts["df_fact_d2_decision"] = summary["decision_rows"]
+    doc = {"schema": "crispdm.data_foundation.d2_fresh_tables_manifest.v1", "run_id": manifest["run_id"],
+           "label": f"D2 fresh confirmation {manifest['run_id']}", "mode": D.FRESH_MODE, "grants_consumption": False,
+           "externally_reviewed": False, "code_sha256": sorted(code)[0] if len(code) == 1 else None,
+           "code_sha256s": sorted(code), "counts": counts,
+           "sha256": {t: IR.sha_file(out / f"{t}.jsonl") for t in counts},
+           "run_manifest_sha256": IR.sha_file(root / "RUN_MANIFEST.json"), "decisions_sha256": summary["decisions_sha256"]}
+    IR.atomic_write_once(out / "TABLES_MANIFEST.json", json.dumps(doc, indent=1, sort_keys=True) + "\n")
+    for p in out.iterdir():
+        p.chmod(0o444)
+    out.chmod(0o555)
+    print(json.dumps({"counts": counts, "run_id": manifest["run_id"], "code_sha256s": len(code)}))
+    return 0
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=("collect", "split", "decide", "merge"))
+    ap.add_argument("step", choices=("collect", "split", "decide", "merge", "tables"))
     ap.add_argument("--shards", type=Path)
     ap.add_argument("--out", type=Path)
     ap.add_argument("--root", type=Path)
