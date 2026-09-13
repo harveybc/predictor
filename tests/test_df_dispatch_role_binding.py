@@ -35,6 +35,40 @@ def test_the_launched_script_carries_the_role_and_expands_home():
     assert "{role}" not in script and "/home/" not in script
 
 
+def test_the_launched_unit_is_the_recorded_template_unit():
+    """Regression: the first version named the unit after the role-bound job, so the dispatcher polled a unit that
+    never existed while the launched one kept running."""
+    import re
+
+    class Backend:
+        def __init__(self):
+            self.scripts = []
+
+        def start(self, role, script):
+            self.scripts.append(script)
+            return {"rc": 0, "message": ""}
+
+        def show(self, role, units):
+            return {u: {"Id": u + ".service", "LoadState": "loaded", "ActiveState": "active", "SubState": "running",
+                        "Result": "success", "ExecMainCode": "0", "ExecMainStatus": "0", "MemoryPeak": "1",
+                        "MemoryCurrent": "1"} for u in units}
+
+        def release(self, role, unit, props):
+            return 0
+
+    import tempfile
+    be = Backend()
+    with tempfile.TemporaryDirectory() as td:
+        d = DP.Dispatcher(Path(td) / "root", [JOB], inventory_fn=lambda: {}, backend=be)
+        (Path(td) / "root" / "receipts").mkdir(parents=True, exist_ok=True)
+        d._next_attempt = lambda job_id: 1
+        d._attach = lambda job, launch, how: setattr(d, "attached", launch)
+        d._launch(JOB, {"role": "WORKER_A", "request_bytes": 2 << 30, "gpu": None}, {"digest_sha256": "x"})
+        launched = re.search(r"--unit=(\S+)", be.scripts[0]).group(1)
+        assert launched == DP.unit_name(JOB) == d.attached["unit"]
+        assert "--host-role WORKER_A" in be.scripts[0]
+
+
 def test_an_unknown_role_is_refused():
     with pytest.raises(ValueError, match="unknown role"):
         DP.bind_role(JOB, "omega")

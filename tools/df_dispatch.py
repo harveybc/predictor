@@ -133,10 +133,13 @@ def write_once(path: Path, doc: dict) -> None:
 
 
 # ------------------------------------------------------------------ systemd
-def build_start_script(job: dict, decision: dict, checkout_rel: str) -> str:
-    """The bash text run on the role: admission check, then exec systemd-run (no alias, no home path)."""
+def build_start_script(job: dict, decision: dict, checkout_rel: str, unit: str | None = None) -> str:
+    """The bash text run on the role: admission check, then exec systemd-run (no alias, no home path).
+    `unit` must be the name the dispatcher records and polls: that of the TEMPLATE job. The first role-binding
+    version derived it here from the role-bound job, whose argv hash differs, so every launched unit ran under a
+    name the dispatcher never polled (LAUNCH_NOT_FOUND while the units were running)."""
     req = int(decision["request_bytes"])
-    unit = unit_name(job)
+    unit = unit or unit_name(job)
     wall = str(job.get("wall", "4h"))
     if not WALL_RE.match(wall):
         raise ValueError(f"wall {wall!r}")
@@ -488,7 +491,8 @@ class Dispatcher:
             default_ck = str(HERE.parent.relative_to(Path.home()))
         # {role} in argv is bound to the placed role only in the command; identity and unit name stay those of the
         # template job, so resume matches the same job wherever it was placed
-        script = build_start_script(bind_role(job, role), decision, self.checkouts.get(role, default_ck))
+        script = build_start_script(bind_role(job, role), decision, self.checkouts.get(role, default_ck),
+                                    unit=unit_name(job))
         attempt = self._next_attempt(job["job_id"])
         launch = {"job_id": job["job_id"], "identity": identity(job), "attempt": attempt, "role": role,
                   "unit": unit_name(job), "gpu": decision.get("gpu"), "request_bytes": decision["request_bytes"],
