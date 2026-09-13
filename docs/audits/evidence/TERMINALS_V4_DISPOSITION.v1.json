@@ -1,0 +1,68 @@
+{
+ "binds": {
+  "census_file_sha256": "818063ba501bc460182e83f1705ee4c2b6b033559e036cec92e85eb20fcad134",
+  "supersession_file_sha256": "6466d069d08417a9639d3a1b8efd1db7e91e6ec2540f55af52baf4aba95bd4de",
+  "supersession_sha256": "f7072351d348f0c48bc3d038d3b5fe9ccb389255b5650a20ecd0bc9953243e3f",
+  "verification_file_sha256": "28b8514c91e2794a765cb56b983750952eee2ca0ae784b76ac3ee88aad1623ec",
+  "verification_sha256": "be73a5922663ade590c4d9d8b7112894e3b818782e5a7e41fae471d1bab8b6af"
+ },
+ "columns_physically_typed": 3345,
+ "consumption": "no scope by itself licenses a variable for an experiment; membership requires the member-by-member join of per_variable_design_v5",
+ "cube": "the six evidence layers may stay in the cube; none of them licenses a variable",
+ "decided_by": "EXTERNAL: MUSASHI_AUDIT_ROUND7_C87_C105_2026_09_12 (recorded, not issued here)",
+ "decision": "TERMINALS_V4_ACCEPTED_WITH_PHYSICAL_AND_STATISTICAL_SCOPE",
+ "disposition_sha256": "4ec1e69d86be239149a93febe7887c61c5801ba288e0ced6200eececc01d00da",
+ "grants_nothing": true,
+ "schema": "crispdm.terminals_v4_disposition.v1",
+ "scopes": {
+  "NUMERIC_DESCRIPTORS_RECOMPUTED": {
+   "count": 1501,
+   "does_not_imply": [
+    "semantics",
+    "role",
+    "unit",
+    "license",
+    "missing policy"
+   ],
+   "means": "variables with numeric descriptors recomputed from their bound bytes",
+   "sentence": "1,501 variables with numeric descriptors recomputed from their bound bytes"
+  },
+  "PHYSICAL_TYPE_KNOWN": {
+   "count": 1505,
+   "does_not_imply": [
+    "semantics",
+    "unit",
+    "role",
+    "license"
+   ],
+   "means": "variables whose physical storage type is known",
+   "sentence": "1,505 variables whose physical storage type is known"
+  },
+  "PRODUCER_AUTHORITY_ONLY": {
+   "count": 460,
+   "does_not_imply": [
+    "independent recomputation",
+    "physical type"
+   ],
+   "means": "variables not identifiable, resting on the producer's declaration only",
+   "sentence": "460 variables not identifiable, resting on the producer's declaration only"
+  },
+  "SEMANTICALLY_UNRESOLVED": {
+   "count": 4,
+   "does_not_imply": [
+    "eligibility of any numeric value"
+   ],
+   "means": "variables whose semantic type is unresolved; no numeric value of theirs is eligible",
+   "sentence": "4 variables whose semantic type is unresolved; no numeric value of theirs is eligible"
+  },
+  "SEMANTIC_DECLARATIONS_KNOWN": {
+   "count": 0,
+   "does_not_imply": [
+    "independent recomputation"
+   ],
+   "means": "variables with semantics, role, unit, license and missing policy declared",
+   "sentence": "0 variables with semantics, role, unit, license and missing policy declared"
+  }
+ },
+ "terminals": 1965
+}

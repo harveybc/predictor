@@ -1,0 +1,225 @@
+{
+ "arms": {
+  "A0_BASELINE": "every population variable untransformed",
+  "A1_PER_VARIABLE": "every population variable replaced by its selected operator; dimension equals A0",
+  "A2_AUGMENTED": "per variable: untransformed, selected operator, and their difference where both are defined",
+  "A3_CAPACITY_CONTROL": {
+   "controls": "the extra dimension of A2 only; it is not a comparator for A1",
+   "generation": "i.i.d. Normal(mu_train, sigma_train) where mu_train and sigma_train are the mean and sample standard deviation of the corresponding source variable on the TRAINING fold only",
+   "inputs": "A0 inputs plus, per variable, exactly as many extra columns as A2 adds for it",
+   "never_uses": [
+    "labels",
+    "validation fold",
+    "test fold"
+   ],
+   "rng_seed": "sha256(seed, panel, variable, origin, column)"
+  }
+ },
+ "budget": {
+  "accelerator": "NONE",
+  "cpu_wall_seconds_per_panel_arm_seed": 1800,
+  "includes": [
+   "operator selection",
+   "transformation",
+   "fit",
+   "predict"
+  ],
+  "same_for_every_arm": true
+ },
+ "common_sample": {
+  "frozen": "its digest is recorded before any model is fitted and every arm is evaluated on exactly it",
+  "rule": "the intersection, across all four arms, of samples that are eligible after the maximum warm-up (512 bars) and the temporal mask"
+ },
+ "design_sha256": "2936b6dcde82ce42ad9ebe8ac500b0d5821a3a80f75985248be0f4ab12c5d441",
+ "evaluation": {
+  "embargo_bars": 24,
+  "inner_validation_fraction": 0.1,
+  "origins": 5,
+  "seeds": [
+   101,
+   202,
+   303
+  ],
+  "test_block_bars": 1000
+ },
+ "grants_nothing": "a design opens no screen",
+ "hypotheses": {
+  "H1": {
+   "contrast": "A1_PER_VARIABLE minus A0_BASELINE",
+   "direction": "GREATER",
+   "margin": 0.01,
+   "question": "does replacing each variable by its selected causal operator beat identity at the SAME dimension?"
+  },
+  "H2": {
+   "contrasts": [
+    "A2_AUGMENTED minus A0_BASELINE",
+    "A2_AUGMENTED minus A3_CAPACITY_CONTROL"
+   ],
+   "direction": "GREATER",
+   "margins": [
+    0.01,
+    0.0
+   ],
+   "question": "does the augmented representation beat both identity and the same number of columns carrying no target information?",
+   "requires_both": true
+  },
+  "H3": {
+   "inference": "DESCRIPTIVE_PLUS_HARM_RULE",
+   "measures": [
+    "abstention_rate_per_panel",
+    "selected_operator_jaccard_across_origins",
+    "per_panel_A1_minus_A0_against_harm_margin"
+   ],
+   "question": "abstention frequency, selection stability across origins, and no harm under a change of panel"
+  }
+ },
+ "implementation": {
+  "common_sample": "per_variable_design_v5.family_on_one_sample",
+  "holm": "per_variable_design_v5.holm_adjust_family",
+  "lopo": "per_variable_design_v5.lopo_from_panel_rows",
+  "panel_contrast": "per_variable_design_v5.panel_contrast_rows",
+  "population": "per_variable_design_v5.derive_population",
+  "scoring": "per_variable_design_v5.score refuses",
+  "strict_parser": "per_variable_design_v5.strict_json_loads",
+  "validator": "per_variable_design_v5.validate"
+ },
+ "inference": {
+  "below_minimum": "DESCRIPTIVE_INCONCLUSIVE",
+  "confidence": 0.95,
+  "family": [
+   "H1",
+   "H2_vs_A0",
+   "H2_vs_A3"
+  ],
+  "minimum_panels_for_inference": 6,
+  "multiplicity": {
+   "algorithm": [
+    "sort the family's one-sided p-values ascending",
+    "for rank i of m, adjusted_p = max over ranks <= i of min(1, (m - i + 1) * p_i)",
+    "reject where adjusted_p <= alpha",
+    "report the rank-i lower bound at level 1 - alpha/(m - i + 1)"
+   ],
+   "implementation": "per_variable_design_v4.holm_adjust / holm_bound_levels",
+   "method": "HOLM_STEP_DOWN"
+  },
+  "sensitivity": "leave-one-panel-out: every contrast recomputed without each panel; a claim requires every LOPO lower bound to clear its margin",
+  "test": "one-sided paired t on panel values against the margin",
+  "unit": "one value per panel per contrast: the mean over origins and seeds of (MAE(comparator) - MAE(arm)) / MAE(comparator) on the frozen common sample"
+ },
+ "license": {
+  "allowed": [
+   "validators",
+   "fixtures",
+   "materialization without labels",
+   "CPU dry-run"
+  ],
+  "required": "EXTERNAL_V5_DESIGN_REVIEW_AND_LICENSE_REQUIRED",
+  "scoring": "NOT_GRANTED"
+ },
+ "model": {
+  "alpha": 1.0,
+  "family": "ridge",
+  "lags": 24
+ },
+ "operators": [
+  "O0_IDENTITY",
+  "O1_FIRST_DIFFERENCE",
+  "O2_LOG_RETURN",
+  "O3_TRAILING_ZSCORE_64",
+  "O4_TRAILING_RANK_PERCENTILE_256",
+  "O5_CAUSAL_EWMA_0.3",
+  "O6_TRAILING_WINSORIZE_512"
+ ],
+ "panels": {
+  "below_minimum": "BANK_INSUFFICIENT; the screen does not run",
+  "independence": "distinct dataset and distinct underlying instrument or source",
+  "inventory": "built from artifacts without reading any score",
+  "minimum_eligible_variables_per_panel": 5,
+  "minimum_independent_panels": 6
+ },
+ "population": {
+  "artifacts": {
+   "lineage": "financial_data.feature_dag.v4 with PRODUCER_BINDING_MANIFEST.v2",
+   "semantic_census": "ETH_H4_SUCCESSOR_SEMANTIC_CENSUS.v1 (C115)",
+   "temporal": "ETH_H4_SUCCESSOR_TEMPORAL_CONTRACT.v3 and its mask (C114), one per panel dataset",
+   "terminals": "successor characterization terminals (C116), one per column"
+  },
+  "empty": "reported as empty; no requirement is relaxed",
+  "excluded_by_rule": [
+   "identifiers",
+   "targets",
+   "timestamps",
+   "variables available only after the origin"
+  ],
+  "join": {
+   "aggregates": "derived only from membership ledger rows; aggregates supplied by inputs are ignored",
+   "conditions": [
+    "terminal_independently_recomputed",
+    "semantic_state_numeric_measurable",
+    "dag_causal_active_with_complete_binding",
+    "role_input_feature",
+    "semantic_type_unit_license_declared",
+    "missing_and_sentinel_policy_declared",
+    "temporal_contract_and_mask_same_dataset",
+    "missingness_and_observation_limits"
+   ],
+   "duplicates": "REFUSED",
+   "key": [
+    "dataset_id",
+    "dataset_sha256",
+    "column"
+   ],
+   "limits": {
+    "max_missing_fraction": 0.2,
+    "min_observations": 2000
+   },
+   "member": "one key satisfying every condition at once"
+  },
+  "requires_all": [
+   "terminal v4 layer INDEPENDENTLY_RECOMPUTED",
+   "semantic state NUMERIC_MEASURABLE",
+   "FEATURE_DAG.v4 class CAUSAL_ACTIVE with a complete binding",
+   "declared semantic type (not UNKNOWN)",
+   "declared role equal to input_feature",
+   "declared unit, where the semantic type has one (not UNKNOWN)",
+   "declared license (not UNKNOWN)",
+   "declared missing and sentinel policy",
+   "missingness_fraction <= 0.20 and n_observations >= 2000"
+  ]
+ },
+ "rules": {
+  "abstention": "a variable with no operator beating identity by 0.1% on inner validation keeps O0 and counts as an abstention in H3",
+  "harm": "a panel with A1 minus A0 below -0.02 is harmed; any harm blocks H1",
+  "incompleteness": "an arm over budget or failing makes its panel NOT_EVALUABLE for every arm",
+  "missingness": "rows with non-finite inputs are dropped identically for every arm before the common sample is frozen",
+  "null_result": "NO_EVIDENCE_OF_BENEFIT, reported, never re-run with other settings"
+ },
+ "schema": "crispdm.per_variable_preprocessing_design.v5",
+ "status": "DRAFT_CANDIDATE_NO_SCORES_COMPUTED",
+ "supersedes": {
+  "design_sha256": "3544c09f153b3dbbc170a3c21a2442d596f993b2826168d774c389c80e942be9",
+  "document": "PER_VARIABLE_PREPROCESSING_DESIGN.v4.json",
+  "file_sha256": "109cdc505e985c885fbff05ddf33ecd68640fc0bcfe80e9e61e16ef8afc82322",
+  "rewritten": false,
+  "scientific_change": "NONE",
+  "unchanged_blocks": [
+   "hypotheses",
+   "arms",
+   "panels",
+   "temporal_quality",
+   "common_sample",
+   "operators",
+   "model",
+   "evaluation",
+   "budget",
+   "inference",
+   "rules"
+  ],
+  "why": "v4's population derivation counted artifacts separately and never joined them, so a bank with no terminal and no declared variable was sufficient; its validator and Holm accepted booleans, NaN, duplicates, p outside [0, 1] and an incomplete family. v5 changes the implementation and its bindings only."
+ },
+ "temporal_quality": {
+  "interpolation": "NONE",
+  "next_bar": "the next NOMINAL interval; an absent bar is an absent target, never the next observed row",
+  "rule": "a sample is excluded before any fit if its lookback, the operator window or its target contains a truncated bar or crosses a gap, per the panel's temporal quality mask"
+ }
+}
