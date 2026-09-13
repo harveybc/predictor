@@ -1,0 +1,63 @@
+POST C146-C165 python=3.12.13
+  tip predictor: 5003550e1274 branch=satoshi/c146-c165-20260913 tracked_dirty=[]
+  tip financial-data: 7464ea79269c branch=satoshi/c122-c145-20260912 tracked_dirty=[]
+  WORKER_A campaign worktree: cc1c1f7c2e76
+  WORKER_B campaign worktree: cc1c1f7c2e76
+[C146.record] CORRECTED  both OOM terminations recorded as non-governing attempts; incomplete roots kept, unchanged and unpromoted
+     {'record_sha256': '0343da9f908b41b1', 'rederives': True, 'bound_to_pre': True, 'attempts': ['C130_C133_PROFILES_ATTEMPT_1', 'C134_SNR_CALIBRATION_ATTEMPT_1', 'C130_C133_PROFILES_ATTEMPT_2', 'C134_SNR_CALIBRATION_ATTEMPT_2'], 'roots_unchanged_read_only_unpromoted': {'C130_C133_PROFILES': (True, True, ['PROFILE_RUN_RECEIPT.json']), 'C134_SNR_CALIBRATION': (True, True, ['SNR_CALIBRATION.v1.json', 'SNR_CALIBRATION.v1.olap_rows.jsonl'])}}
+[C151.worst_case_smoke] CORRECTED  the worst dataset completes below its planned peak and hard limit, on a development copy; the first smoke's constant-block defect stays recorded
+     {'dataset': '_appearance.app_21a100f012d47ac9b5f2fe90', 'status': 'COMPLETED', 'rows': 304, 'observed_cgroup_peak_gib': 1.45, 'planned_gib': 2.81, 'limit_gib': 3.513, 'wall_seconds': 79.552, 'limit_mechanism': 'SYSTEMD_USER_SCOPE slice=crispdm-batch.slice MemoryMax MemorySwapMax=0 RLIMIT_CPU', 'v1_record_failed_rows': 20}
+[C148.finite_adf] CORRECTED  ADF/KPSS read at most a declared block; the largest ADF now projects to a small fraction of the smallest host
+     {'policy_sha256': 'dcea5b87627e8e76', 'block_n': 200000, 'lag': 80, 'largest_adf_projection_gib': 0.616, 'pre_worst_single_task_gib': 60.655, 'smallest_host_gib': 14.29}
+[C150.isolation] CORRECTED  one process per dataset under a hard cgroup limit with heartbeat, stop file, resume and six durable terminals; no shared process pool
+     {'process_pool': False, 'hard_limits_and_terminals': True, 'heartbeat_stop_resume': True}
+[C152.fit_snapshot] CORRECTED  PRE defect: fit accepted confirmation bytes labelled train -> now refused
+     {'bare_confirmation_array_as_train': 'OperatorRefusal: REFUSED: fit requires a FitSnapshot built from a contract; a bare array or a self-declared role string never grants a fit (got ndarray)', 'confirmation_rows_as_TRAIN': 'OperatorRefusal: REFUSED: fit range [1638, 2048) is not inside the TRAIN partition [0, 1228)'}
+[C153.transform_snapshot] CORRECTED  PRE defect: unordered rows transformed without refusal -> refused; reorder control detected
+     {'unordered_bare_rows': 'OperatorRefusal: REFUSED: transform requires a TransformSnapshot built from a contract; a bare array carries no timestamps, availability or partition (got ndarray)', 'frozen_fit_on_its_own_rows': "OperatorRefusal: REFUSED: range [0, 1228) covering ['TRAIN'] is not licensed for a FROZEN_PREVIOUS_PARTITION fit on TRAIN (licensed ['CALIBRATION', 'CONFIRMATION'] from row 1228", 'reorder_negative_control': ['DETECTED'], 'battery_run': 'c156_68ef61acb354a45e10ceeaa4'}
+[C154.fit_modes] CORRECTED  PRE defect: in-sample seasonal output moved with later train rows -> fit modes separated and exercised
+     {'fit_mode_rows': 28, 'decomposition_rows': 4, 'outcomes': ['PASS'], 'modes': {'frozen': 'FROZEN_PREVIOUS_PARTITION', 'expanding': 'EXPANDING_PREFIX', 'offline': 'OFFLINE_ANALYSIS_ONLY_NON_CAUSAL'}}
+[C155.name] CORRECTED  PRE defect: a trous claimed without proof -> renamed; SWT stays design only
+     {'kinds_named': True, 'old_name': "OperatorRefusal: REFUSED: unknown operator kind 'wavelet_haar_atrous'", 'decisions': [('trailing_haar_threshold', 'RENAMED'), ('T06_CAUSAL_SWT', 'DESIGN_ONLY_NOT_IMPLEMENTED'), ('wavelet_mad', 'OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL')]}
+[C156-C159.battery] CORRECTED  PRE defect: a leak at t=100 passed seven cuts -> every-t prefix, suffixes, reference, 10 controls and 17 guard mutants all detected
+     {'counts': {'BATCH_STEP_CHUNK_RESTART': {'PASS': 252}, 'FIT_MODE': {'PASS': 28}, 'GUARD_MUTATION': {'DETECTED': 17}, 'NEGATIVE_CONTROL': {'DETECTED': 10}, 'PREFIX_ALL_T': {'PASS': 252}, 'REFERENCE_EQUALITY': {'PASS': 252}, 'SNAPSHOT_REFUSAL': {'PASS': 16}, 'SUFFIX_ADVERSARIAL': {'PASS': 252}}, 'exhaustive_cuts_mutant': ['DETECTED'], 'seven_cut_helper_removed': True, 'wall_seconds': 157.4, 'peak_rss_bytes': 125370368}
+[C160.wavelet_mad] CORRECTED  PRE defect: offline wavelet MAD reachable per timestamp -> refused outside its one-figure train path
+     {'bare_array_call': 'SnrRefusal: REFUSED: wavelet_mad is OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL: a bare array never grants it; use estimate_offline_train_diagnostic with a TRAIN FitSnapshot of the', 'contract_state': 'OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL', 'no_public_kernel': True}
+[C161.preflight] CORRECTED  every role verified commit, code, data bytes, memory cgroup and free GPUs before dispatch; evidence by role only
+     {'roles': {'COORDINATOR': {'dispatchable': True, 'not_verified': []}, 'WORKER_A': {'dispatchable': True, 'not_verified': []}, 'WORKER_B': {'dispatchable': True, 'not_verified': []}}, 'commit_per_role': {'COORDINATOR': 'cc1c1f7c2e76', 'WORKER_A': 'cc1c1f7c2e76', 'WORKER_B': 'cc1c1f7c2e76'}, 'host_names_in_evidence': False}
+[C162.physical_counts] CORRECTED  every planned dataset has exactly one durable terminal in one sealed root; outputs re-hash; peaks under limits; one code digest
+     {'per_role': {'COORDINATOR': {'datasets': 118, 'planned_jobs': 118, 'terminal_status': {'COMPLETED': 118}, 'receipt_counts': {'COMPLETED': 118}, 'rows_total': 113757, 'sealed': True}, 'WORKER_A': {'datasets': 392, 'planned_jobs': 392, 'terminal_status': {'COMPLETED': 392}, 'receipt_counts': {'COMPLETED': 392}, 'rows_total': 554141, 'sealed': True}, 'WORKER_B': {'datasets': 205, 'planned_jobs': 205, 'terminal_status': {'COMPLETED': 205}, 'receipt_counts': {'COMPLETED': 205}, 'rows_total': 198763, 'sealed': True}}, 'datasets_total': 715, 'in_more_than_one_role': 0, 'code_sha256_distinct': 1, 'problems': []}
+[C162.by_bank] CORRECTED  per bank terminal states published; no RESOURCE_EXCEEDED or UNCERTAIN hidden
+     {'terminals_by_bank_and_status': {'FINANCIAL': {'COMPLETED': 198}, 'SYNTHETIC': {'COMPLETED': 513}, 'PUBLIC': {'COMPLETED': 4}}, 'resource_exceeded_or_uncertain': {'FINANCIAL': {}, 'SYNTHETIC': {}, 'PUBLIC': {}}}
+[C163.snr] CORRECTED  SNR calibrated against separate clean and noise from a fresh write-once root; real data stays model-conditional
+     {'units': 513, 'records': 3798, 'rows': 37980, 'rows_rehash': True, 'real_label': 'MODEL_CONDITIONAL_SNR_ESTIMATE', 'least_biased_label': 'DESCRIPTIVE_ONLY_NOT_A_SELECTION'}
+[C164.olap] CORRECTED  throwaway load idempotent and dropped; real load additive with every C146-C163 outcome, history intact, zero refused
+     {'c164_rows_offered': {'df_fact_dataset_terminal': 715, 'df_fact_resource_estimate': 257884, 'df_fact_causal_test': 1079, 'df_fact_naming_isolation_decision': 3, 'df_fact_host_receipt': 54, 'df_fact_incident_attempt': 4}, 'refused': {}, 'coverage': {'cells': 220347, 'counts': {'FAILED': 675, 'INCONCLUSIVE': 6764, 'NOT_RUN': 54761, 'RESULT': 158138, 'UNAVAILABLE': 9}, 'ledger_sha256': '208ee913ff75b9f91e98acff6931fe7b4cd9d5dfa83f8b2d4b53d38b5bdd9eef', 'undeclared_rows': 0}, 'history_tables_compared': 34, 'loader': ['ActiveState=active', 'NRestarts=0']}
+[batteries.focal] CORRECTED  focal battery at the final tip, including the C151(b) preflight-bypass mutant (27 files)
+     807 passed in 277.13s (0:04:37)
+[health.roles] CORRECTED  final health of the three roles: memory, failed units, watchdog, campaign service, GPUs, OOM kills since the campaign started, units still running
+     {'COORDINATOR': {'avail_gib': '23', 'failed_units': '1', 'memguard': 'active', 'campaign': 'inactive/success', 'gpu_compute': '0', 'kernel_oom_kills_total': '2', 'kernel_oom_kills_outside_batch': '0', 'unit_oom_failures_outside_batch': '0', 'failed_unit_names': 'logrotate.service,', 'running_batch_units': '0'}, 'WORKER_A': {'avail_gib': '19', 'failed_units': '0', 'memguard': 'active', 'campaign': 'inactive/success', 'gpu_compute': '0', 'kernel_oom_kills_total': '0', 'kernel_oom_kills_outside_batch': '0', 'unit_oom_failures_outside_batch': '0', 'failed_unit_names': '', 'running_batch_units': '0'}, 'WORKER_B': {'avail_gib': '10', 'failed_units': '0', 'memguard': 'active', 'campaign': 'inactive/success', 'gpu_compute': '0', 'kernel_oom_kills_total': '0', 'kernel_oom_kills_outside_batch': '0', 'unit_oom_failures_outside_batch': '0', 'failed_unit_names': '', 'running_batch_units': '0'}}
+
+=== preserved identities (PRE value == now, unchanged during the POST) ===
+  state:public_panels_c126_v1: pre=56364af2e486b01a now=56364af2e486b01a equal=True
+  state:public_panels_c126_v2: pre=38ce6e6360e22e2b now=38ce6e6360e22e2b equal=True
+  state:lab_evaluation_c137_v1: pre=ba9f6d85ad327c02 now=ba9f6d85ad327c02 equal=True
+  state:lab_delay_cost_c137_v2: pre=cab51b8e908cf112 now=cab51b8e908cf112 equal=True
+  state:profiles_c130_v1: pre=e3b0c44298fc1c14 now=e3b0c44298fc1c14 equal=True
+  state:snr_calibration_c134_v1: pre=b7ae4b3bfb03cd75 now=b7ae4b3bfb03cd75 equal=True
+  state:run_logs: pre=80ec0710891a1542 now=80ec0710891a1542 equal=True
+  state:synthetic_bank_c128_v1:manifest: pre=b0f1899144bea7ea now=b0f1899144bea7ea equal=True
+  raw:PUBLIC_RAW_MANIFEST.json: pre=3fc806c353fd6771 now=3fc806c353fd6771 equal=True
+  evidence:C122_C124_ADJUDICATIONS.v1.json: pre=6f0e6148fdea3ff2 now=6f0e6148fdea3ff2 equal=True
+  evidence:D3_QUANTIZATION_COMPRESSION_TIMEFREQ_DETECTORS_DESIGN.v1.json: pre=7690fdb435fa90eb now=7690fdb435fa90eb equal=True
+  evidence:D4_EQUALIZATION_REDUNDANCY_ALIGNMENT_DESIGN.v1.json: pre=76a1f81a55fb63b1 now=76a1f81a55fb63b1 equal=True
+  evidence:D5_ROBUSTNESS_ROUTING_ALLOCATION_DESIGN.v1.json: pre=c3e895d6e509194f now=c3e895d6e509194f equal=True
+  census:FINANCIAL_FIRST_BATCH_CONTRACTS.v1.json: pre=4447df439434d017 now=4447df439434d017 equal=True
+  census:FINANCIAL_PROFILE_QUEUE.v1.json: pre=2220dc0720e52b86 now=2220dc0720e52b86 equal=True
+  order:MUSASHI_AUDIT_C122_C145_RUNTIME_CAUSALITY_2026_09_13.md: pre=81d6df19c55cc8e0 now=81d6df19c55cc8e0 equal=True
+  order:MUSASHI_TO_GENERAL_SATOSHI_C146_C165_MEMORY_AND_CAUSALITY_ORDER_2026_09_13.md: pre=33d5432d5052f34c now=33d5432d5052f34c equal=True
+
+=== zero line ===
+  GPU compute processes per role: {'COORDINATOR': '0', 'WORKER_A': '0', 'WORKER_B': '0'}; training 0, feature selection 0, models 0, D3-D5 execution 0, RL 0, DOIN 0, live 0, venue 0, eligibility grants 0
+
+=== POST SUMMARY: 17 checks; 0 NOT corrected []; preserved identities changed [] ===
