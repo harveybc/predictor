@@ -359,7 +359,10 @@ def collect(args) -> tuple[dict, dict]:
                      "code_sha256": first.get("code_sha256") if first and first.get("code_sha256") else "0" * 64,
                      "inputs_sha256": hashlib.sha256("".join(digests).encode()).hexdigest(),
                      "status": "COMPLETED", "cpu_seconds": None, "details": counts})
-    cov_run = "c140_" + dims_run[3:]
+    # C178: the coverage run id binds the coverage code. The first C178 load recomputed the v1 matrix with the C170
+    # code under the C164 run id: two cell-identical matrices under one run id, told apart only by code_sha256.
+    cov_code12 = _sha_file(HERE / "df_coverage.py")[:12]
+    cov_run = "c140_" + dims_run[3:] + "_" + cov_code12
     matrix, cov_rows = coverage(contracts, profile_tables, lab_runs, cov_run)
     tables["df_fact_coverage"] = cov_rows
     runs.append({"run_id": cov_run, "module": "C140 coverage", "code_sha256": _sha_file(HERE / "df_coverage.py"),
@@ -367,7 +370,7 @@ def collect(args) -> tuple[dict, dict]:
                  "details": {"cells": matrix["cells"], "counts": matrix["counts_derived_from_ledger"],
                              "undeclared_rows": len(matrix["undeclared_rows"])}})
     # C170: coverage v2 beside v1 (v1 kept as superseded history), with the per-cell v1->v2 map
-    cov2_run = "c170_" + dims_run[3:]
+    cov2_run = "c170_" + dims_run[3:] + "_" + cov_code12
     m2, cov2_rows, mapping, map_rows = coverage_v2(contracts, profile_tables, lab_runs, cov2_run, matrix, cov_run,
                                                    classified, tables.get("df_fact_dataset_terminal", []))
     tables["df_fact_coverage_v2"] = cov2_rows

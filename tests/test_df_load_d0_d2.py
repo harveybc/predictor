@@ -62,6 +62,18 @@ def test_collected_rows_validate_and_coverage_comes_from_rows(inputs):
     assert c2["counts"]["RESULT"] > 0 and c2["counts"]["NOT_APPLICABLE"] > 0
 
 
+def test_coverage_run_ids_bind_the_coverage_code(inputs):
+    """C178: a v1 or v2 coverage matrix computed by other coverage code never shares a run id with this one."""
+    tables, _ = D.collect(inputs)
+    code12 = D._sha_file(D.HERE / "df_coverage.py")[:12]
+    v1 = {r["run_id"] for r in tables["df_fact_coverage"]}
+    v2 = {r["run_id"] for r in tables["df_fact_coverage_v2"]}
+    assert len(v1) == len(v2) == 1
+    assert next(iter(v1)).startswith("c140_") and next(iter(v1)).endswith("_" + code12)
+    assert next(iter(v2)).startswith("c170_") and next(iter(v2)).endswith("_" + code12)
+    assert {r["v1_run_id"] for r in tables["df_fact_coverage_v1_v2_map"]} == v1
+
+
 def test_d2_tables_in_the_loader_equal_the_adjudicator_proposal():
     """C178: the loader holds the D2 v2 specs verbatim, without importing the lab code."""
     A = _load("df_d2_adjudicate")
