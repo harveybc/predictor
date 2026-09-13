@@ -109,6 +109,19 @@ def safe(job_id: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]", "_", job_id)[:100]
 
 
+ROLE_PLACEHOLDER = "{role}"
+
+
+def bind_role(job: dict, role: str) -> dict:
+    """A copy of the job whose argv has every {role} replaced by the placed role (e.g. an output root per role, or
+    a --host-role label). The template job keeps its identity; only the launched command carries the role."""
+    if role not in ("COORDINATOR", "WORKER_A", "WORKER_B"):
+        raise ValueError(f"unknown role {role!r}")
+    bound = dict(job)
+    bound["argv"] = [str(a).replace(ROLE_PLACEHOLDER, role) for a in job["argv"]]
+    return bound
+
+
 def unit_name(job: dict) -> str:
     """Deterministic from the job identity (without the .service suffix)."""
     return UNIT_PREFIX + re.sub(r"[^A-Za-z0-9_.-]", "_", job["job_id"])[:48] + "-" + identity(job)[:16]
@@ -473,7 +486,9 @@ class Dispatcher:
         default_ck = DEFAULT_WORKER_CHECKOUT
         if role == "COORDINATOR" and HERE.parent.is_relative_to(Path.home()):
             default_ck = str(HERE.parent.relative_to(Path.home()))
-        script = build_start_script(job, decision, self.checkouts.get(role, default_ck))
+        # {role} in argv is bound to the placed role only in the command; identity and unit name stay those of the
+        # template job, so resume matches the same job wherever it was placed
+        script = build_start_script(bind_role(job, role), decision, self.checkouts.get(role, default_ck))
         attempt = self._next_attempt(job["job_id"])
         launch = {"job_id": job["job_id"], "identity": identity(job), "attempt": attempt, "role": role,
                   "unit": unit_name(job), "gpu": decision.get("gpu"), "request_bytes": decision["request_bytes"],
