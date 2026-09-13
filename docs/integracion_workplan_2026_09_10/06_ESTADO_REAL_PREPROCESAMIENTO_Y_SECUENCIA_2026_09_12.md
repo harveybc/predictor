@@ -81,6 +81,13 @@ saltar a la siguiente usando entradas no caracterizadas.
 * Los targets no participan en inventario, perfil crudo ni seleccion del banco.
 * Feature selection comienza despues de D0-D4 y solo consume variables y
   operadores elegibles.
+* (C144) Esa regla es ejecutable. `tools/df_consumption_gate.py` rechaza
+  cualquier variable u operador sin registros de revision externa para cada
+  etapa D0, D1, D2, D3 y D4. En D2 solo se aceptan `LAB_CALIBRATED`, o
+  `REGIME_LIMITED` dentro de sus regimenes.
+* Un registro del productor no cuenta como revision, y la reja nunca concede
+  `PUBLICLY_ELIGIBLE`.
+* Sin esos registros el selector v5 no se ejecuta y no se escogen targets.
 
 ## 5. OLAP
 

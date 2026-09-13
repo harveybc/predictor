@@ -138,6 +138,21 @@ Un resultado apto para consumo incluye:
 
 La seleccion de variables ocurre en **I5**, despues de caracterizar los datos y licenciar transformaciones. Puede haber un filtro mecanico previo para retirar columnas imposibles o causales invalidas, pero ese filtro no es seleccion por rendimiento.
 
+**Reja de consumo de I5 (C144, 2026-09-12).** I5 no puede consumir una variable ni una transformacion sin estados revisados externamente para cada etapa D0-D4:
+
+- D0: contrato revisado;
+- D1: perfil crudo revisado;
+- D2: `LAB_CALIBRATED`, o `REGIME_LIMITED` solo dentro de sus regimenes;
+- D3 y D4: aceptacion revisada.
+
+La forma ejecutable es `predictor/tools/df_consumption_gate.py`. Un registro escrito por el productor no es revision, y ninguna etapa concede `PUBLICLY_ELIGIBLE`. Sin registros, que es el estado actual, rechaza todo.
+
+Hasta que existan esos registros:
+
+- el selector v5 no se ejecuta;
+- no se escogen targets;
+- ninguna salida de D0-D2 se presenta como variable o transformacion lista para seleccion.
+
 ## 5. Relacion con el trabajo ya realizado
 
 - **T0/T1:** se conservan como evidencia de contrato causal y calibracion sintetica. No se reinterpretan retroactivamente.
