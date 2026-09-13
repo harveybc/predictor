@@ -50,6 +50,16 @@ def test_collected_rows_validate_and_coverage_comes_from_rows(inputs):
                                                                          "CHILD_RUNTIME"}
     assert cov["cells"] == len(tables["df_fact_coverage"]) and cov["undeclared_rows"] == 0
     assert cov["counts"]["RESULT"] > 0
+    # C169: v2 estimates beside v1, one per physical estimate, no identity collapses
+    v2 = tables["df_fact_resource_estimate_v2"]
+    assert len(v2) == len(tables["df_fact_resource_estimate"])
+    assert len({D.L.row_sha256("df_fact_resource_estimate_v2", r) for r in v2}) == len(v2)
+    assert {r["identity_kind"] for r in v2 if r["metric"] in ("unit_root_adf", "unit_root_kpss")} == {"UNIT_ROOT_BLOCK"}
+    # C170: coverage v2 beside v1, counts from the ledger, every v1 cell mapped
+    c2 = cov["v2"]
+    assert c2["cells"] == len(tables["df_fact_coverage_v2"]) == len(tables["df_fact_coverage_v1_v2_map"])
+    assert c2["counts_verified_member_by_member"] and c2["undeclared_rows"] == 0 and c2["unmapped_v1_cells"] == 0
+    assert c2["counts"]["RESULT"] > 0 and c2["counts"]["NOT_APPLICABLE"] > 0
 
 
 @pytest.mark.skipif("PGUSER" not in os.environ, reason="no PG credentials")

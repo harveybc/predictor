@@ -406,6 +406,18 @@ def variable_rows(ds, vid, xcol, parts, gate=None):
     return rows
 
 
+def _linalg_parity():
+    import importlib.util
+    import sys
+    if "df_linalg_parity" in sys.modules:
+        return sys.modules["df_linalg_parity"]
+    spec = importlib.util.spec_from_file_location("df_linalg_parity", Path(__file__).with_name("df_linalg_parity.py"))
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["df_linalg_parity"] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
 def matrix_rows(ds, V, train_rows, T_train, gate=None):
     """Effective rank of the train matrix. `train_rows(start, end)` returns the
     (end - start, V) float64 block of train rows [start, end); the gate declares
@@ -424,7 +436,16 @@ def matrix_rows(ds, V, train_rows, T_train, gate=None):
         rows.append(make_row(ds, g, "train", "numerical_rank", E_NRANK, None, "NOT_RUN", RESOURCE_REASON))
         return rows
     w = d.get("window") or (0, T_train)
-    e_er, e_nr = bounded_estimator(E_ERANK, w, T_train), bounded_estimator(E_NRANK, w, T_train)
+    # C169: SVD-based descriptors declare numpy/backend and the tolerance; effective_rank gets a canonical form
+    LP = _linalg_parity()
+    lin = lambda e: est(e["name"], dict(e["params"], linalg=LP.linalg_provenance()), e["assumptions"])  # noqa: E731
+    e_er, e_nr = bounded_estimator(lin(E_ERANK), w, T_train), bounded_estimator(lin(E_NRANK), w, T_train)
+
+    def mrow(metric, estimator, value, status="COMPLETED", reason="", cpu=0.0):
+        r = make_row(ds, g, "train", metric, estimator, value, status, reason, cpu)
+        if LP.tolerance_for("df_profile_information", metric):
+            r["value_canonical"] = LP.canonical(r["value"])   # raw value kept in `value`
+        return r
     M = train_rows(w[0], w[1])
     M = M[np.all(np.isfinite(M), axis=1)]
     sd = M.std(axis=0) if M.shape[0] else np.zeros(V)
@@ -432,13 +453,13 @@ def matrix_rows(ds, V, train_rows, T_train, gate=None):
     need = max(ERANK_MIN_ROWS, ERANK_MIN_ROWS_PER_VARIABLE * V)
     if M.shape[0] < need or M.shape[1] < 2:
         why = "INSUFFICIENT_COMPLETE_ROWS" if M.shape[0] < need else "FEWER_THAN_TWO_NON_CONSTANT_VARIABLES"
-        rows.append(make_row(ds, g, "train", "effective_rank", e_er, None, "INCONCLUSIVE", why))
-        rows.append(make_row(ds, g, "train", "numerical_rank", e_nr, None, "INCONCLUSIVE", why))
+        rows.append(mrow("effective_rank", e_er, None, "INCONCLUSIVE", why))
+        rows.append(mrow("numerical_rank", e_nr, None, "INCONCLUSIVE", why))
     else:
         Z = (M - M.mean(axis=0)) / M.std(axis=0)
         del M
         er, nr, _ = effective_rank(Z)
         c = time.process_time() - t0
-        rows.append(make_row(ds, g, "train", "effective_rank", e_er, er, cpu=c))
-        rows.append(make_row(ds, g, "train", "numerical_rank", e_nr, nr, cpu=c))
+        rows.append(mrow("effective_rank", e_er, er, cpu=c))
+        rows.append(mrow("numerical_rank", e_nr, nr, cpu=c))
     return rows

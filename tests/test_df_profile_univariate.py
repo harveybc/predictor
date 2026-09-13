@@ -69,10 +69,16 @@ def pick(rows, metric, partition, vid=None):
 
 def check_rows(rows, module_path):
     sha = hashlib.sha256(module_path.read_bytes()).hexdigest()
+    LP = _load("df_linalg_parity")
     for r in rows:
-        ident = set(r) - ROW_KEYS
+        # C169: a tolerance-declared linear-algebra metric carries its canonical form, and only such a metric does
+        declared = LP.tolerance_for(module_path.stem, r["metric"]) is not None
+        assert ("value_canonical" in r) == declared, r
+        if declared:
+            assert r["value_canonical"] == LP.canonical(r["value"])
+        ident = set(r) - ROW_KEYS - {"value_canonical"}
         assert len(ident) == 1 and ident <= {"variable_id", "pair", "group_id"}, r
-        assert set(r) == ROW_KEYS | ident
+        assert set(r) - {"value_canonical"} == ROW_KEYS | ident
         assert set(r["estimator"]) == {"name", "params", "assumptions"}
         assert r["status"] in {"COMPLETED", "UNAVAILABLE", "INCONCLUSIVE", "FAILED", "NOT_RUN"}
         if r["status"] == "COMPLETED":

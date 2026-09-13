@@ -1,7 +1,20 @@
-"""C149: the columnar, incremental path writes the same module rows as the
+"""C149, C169: the columnar, incremental path writes the same module rows as the
 frozen whole-table path of predictor@ad30cf3, on synthetic units and on a
-small public-panel-shaped parquet fixture. The only admitted differences are
-code digests, cpu seconds and the C148 unit-root policy fields."""
+small public-panel-shaped parquet fixture.
+
+Equality is exact for every row and every field, except:
+
+* code digests, cpu seconds and the C148 unit-root policy fields (declared);
+* C169: the linear-algebra descriptors (PCA explained-variance ratios,
+  effective rank, PC1 loadings and shares) are NOT claimed equal. LAPACK on a
+  differently laid-out block, or on another numpy/BLAS stack, moves them by
+  about 1e-16..1e-14. Their raw values must agree within the tolerance
+  declared in tools/df_linalg_parity.py (pinned below by digest, before any
+  POST), and their canonical representation (`value_canonical`) must be
+  identical. Every other field of those rows is still compared exactly, and
+  the integer descriptors of the same decompositions stay exact. The new path
+  records numpy version and backends in `params.linalg`, which the frozen path
+  did not have."""
 from __future__ import annotations
 
 import hashlib
@@ -21,6 +34,8 @@ OLD_FILES = ("df_profile_run", "df_profile_univariate", "df_profile_information"
 POLICY_PARAM_KEYS = {"policy", "policy_sha256", "exact_max_n", "temporal_universe", "run_universe", "run_length",
                      "maxlag"}
 NEW_ASSUMPTION = "a descriptor only: never a causality gate and never an eligibility gate"
+# Declared before any C169 POST; changing a tolerance changes this digest and fails the test.
+DECLARED_TOLERANCES_SHA256 = "a55dc46f05dce5803ee49254378a6e6e5e24ea57e4a1e5621f1fff4ed57b8cf6"
 
 
 def _spec_load(name, path):
@@ -32,6 +47,7 @@ def _spec_load(name, path):
 
 
 R = _spec_load("df_profile_run", ROOT / "tools/df_profile_run.py")
+LP = _spec_load("df_linalg_parity", ROOT / "tools/df_linalg_parity.py")
 
 
 @pytest.fixture(scope="module")
@@ -54,20 +70,25 @@ def old(tmp_path_factory):
 
 
 def normalize(module, row):
-    r = {k: v for k, v in row.items() if k not in ("code_sha256", "cpu_seconds")}
+    """-> (row without admitted fields, canonical value or None)."""
+    r = {k: v for k, v in row.items() if k not in ("code_sha256", "cpu_seconds", "value_canonical")}
+    canon = row.get("value_canonical")
+    e = r["estimator"]
+    if "linalg" in e["params"]:
+        e = r["estimator"] = {"name": e["name"], "params": {k: v for k, v in e["params"].items() if k != "linalg"},
+                              "assumptions": e["assumptions"]}
     if module == "df_profile_univariate" and r["metric"] in ("adf_statistic", "adf_pvalue", "kpss_statistic",
                                                              "kpss_pvalue"):
-        e = r["estimator"]
         r["estimator"] = {"name": e["name"],
                           "params": {k: v for k, v in e["params"].items() if k not in POLICY_PARAM_KEYS},
                           "assumptions": [a for a in e["assumptions"] if a != NEW_ASSUMPTION]}
-    return r
+    return r, canon
 
 
 def old_rows(old, job):
     res = old.run_job(job)
     assert res["status"] == "COMPLETED", res.get("error")
-    return [(it["module"], normalize(it["module"], it["row"])) for it in res["rows"]]
+    return [(it["module"], *normalize(it["module"], it["row"])) for it in res["rows"]]
 
 
 def new_rows(job, tmp_path):
@@ -84,13 +105,36 @@ def new_rows(job, tmp_path):
     est = [json.loads(line) for line in (adir / "resource_estimates.jsonl").read_text().splitlines()]
     assert est and all(e["decision"] == "RUN_EXACT" for e in est)
     items = [json.loads(line) for line in out.read_text().splitlines()]
-    return [(it["module"], normalize(it["module"], it["row"])) for it in items]
+    for it in items:                               # provenance and canonical form are present where declared
+        r = it["row"]
+        if LP.tolerance_for(it["module"], r["metric"]) and r["status"] == "COMPLETED":
+            lin = r["estimator"]["params"]["linalg"]
+            assert lin["tolerance_sha256"] == LP.TOLERANCES_SHA256 and lin["numpy_version"] == np.__version__
+            assert r["value_canonical"] == LP.canonical(r["value"])
+    return [(it["module"], *normalize(it["module"], it["row"])) for it in items]
 
 
 def compare(a, b):
+    """Exact equality, except raw values of tolerance-declared metrics (tolerance + canonical equality)."""
     assert len(a) == len(b)
-    for i, (x, y) in enumerate(zip(a, b)):
-        assert x == y, (i, x, y)
+    tolerated = 0
+    for i, ((ma, x, _), (mb, y, yc)) in enumerate(zip(a, b)):
+        assert ma == mb, i
+        if not (LP.tolerance_for(ma, x["metric"]) and x["status"] == y["status"] == "COMPLETED"):
+            assert x == y, (i, x, y)
+            continue
+        tolerated += 1
+        assert {k: v for k, v in x.items() if k != "value"} == {k: v for k, v in y.items() if k != "value"}, (i, x, y)
+        assert LP.agree(ma, x["metric"], x["value"], y["value"]), (i, x["metric"], x["value"], y["value"])
+        assert yc == LP.canonical(y["value"]) == LP.canonical(x["value"]), (i, x["metric"], yc, x["value"])
+    return tolerated
+
+
+def test_tolerances_are_the_declared_ones():
+    assert LP.TOLERANCES_SHA256 == DECLARED_TOLERANCES_SHA256
+    for module, metrics in LP.TOLERANCES.items():
+        for name, t in metrics.items():
+            assert 0 < t["abs"] <= 1e-9 and 0 < t["rel"] <= 1e-9, (module, name)
 
 
 @pytest.fixture(scope="module")
@@ -101,7 +145,7 @@ def bank(tmp_path_factory):
     return out
 
 
-def test_synthetic_units_rows_identical(old, bank, tmp_path):
+def test_synthetic_units_rows_identical_or_within_declared_tolerance(old, bank, tmp_path):
     for i, job in enumerate(R.synthetic_jobs(bank)):
         d = tmp_path / f"u{i}"
         d.mkdir()
@@ -139,12 +183,15 @@ def public_fixture(root: Path, T=3000):
     return {"bank": "PUBLIC", "dir": str(d)}
 
 
-def test_public_panel_shaped_fixture_rows_identical(old, tmp_path):
+def test_public_panel_shaped_fixture_rows_identical_or_within_declared_tolerance(old, tmp_path):
     job = public_fixture(tmp_path / "panels")
     a = old_rows(old, job)
     b = new_rows(job, tmp_path)
-    assert any(m == "df_profile_multivariate" for m, _ in a)
-    compare(a, b)
+    assert any(m == "df_profile_multivariate" for m, _, _ in a)
+    tolerated = compare(a, b)
+    # the PCA, effective-rank and loading rows went through the declared tolerance, not through equality:
+    # 4 numeric variables -> 4 PCA ratios, 2 effective ranks (multivariate, information), 3 loading rows each
+    assert tolerated == 4 + 2 + 3 * 4
 
 
 def test_columnar_reader_matches_whole_table_read(tmp_path):

@@ -57,6 +57,17 @@ NAMING_SUBJECTS = ("OPERATOR", "ESTIMATOR", "DESIGN_ARM")
 NAMING_DECISIONS = ("RENAMED", "OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL", "DESIGN_ONLY_NOT_IMPLEMENTED")
 HOST_CHECK_STATES = ("VERIFIED", "MISMATCH", "UNAVAILABLE")
 ATTEMPT_STATES = ("NON_GOVERNING_ATTEMPT",)
+# C169-C170 (order 2026-09-13): block-identity resource estimates and coverage v2, additive
+ESTIMATE_IDENTITY_KINDS = ("UNIT_ROOT_BLOCK", "UNIT_ROOT_PREFLIGHT_V1_ALL_OFFSETS", "NOT_UNIT_ROOT")
+BLOCK_OFFSETS_V2 = ("exact", "start", "middle", "end", "NONE")
+UNIVERSE_BASES_V2 = ("LONGEST_FINITE_RUN", "PARTITION_UPPER_BOUND", "NONE")
+ESTIMATE_DERIVATIONS = ("EMITTED_WITH_BLOCK_IDENTITY", "RECOMPUTED_FROM_PROFILE_STATISTICS", "CARRIED_OVER")
+COVERAGE_STATES_V2 = ("RESULT", "INCONCLUSIVE", "UNAVAILABLE", "NOT_APPLICABLE", "NOT_RUN", "REFUSED", "FAILED",
+                      "RESOURCE_EXCEEDED", "UNCERTAIN")
+APPLICABILITY = ("APPLICABLE", "NOT_APPLICABLE", "UNDETERMINED")
+VARIABLE_TYPES = ("NUMERIC", "TEXT", "TIMESTAMP", "UNKNOWN")
+COVERAGE_STATE_SOURCES = ("ROWS", "DATASET_TERMINAL", "DECLARATION", "NO_EVIDENCE")
+V1_COVERAGE_STATES_OR_ABSENT = COVERAGE_STATES + ("NOT_IN_V1_GRID",)
 
 # column types
 TEXT, INT, BOOL, JSON = "text", "int", "bool", "json"
@@ -142,6 +153,53 @@ TABLES = {
                                  "victim_pid": INT_OR_NULL, "victim_anon_rss_bytes": INT_OR_NULL,
                                  "root_name": TEXT_OR_NULL, "root_listing_sha256": TEXT_OR_NULL,
                                  "missing_receipts": JSON, "evidence": JSON, "code_sha256": TEXT},
+    # C169: one row per physical estimate; df_fact_resource_estimate stays as the v1 history
+    "df_fact_resource_estimate_v2": {"run_id": TEXT, "bank": enum(BANKS), "dataset_id": TEXT,
+                                     "variable_id": TEXT_OR_NULL, "partition": TEXT_OR_NULL, "module": TEXT,
+                                     "metric": TEXT, "estimator": TEXT, "estimated_peak_bytes": INT, "formula": TEXT,
+                                     "params": JSON, "budget_bytes": INT, "decision": enum(RESOURCE_DECISIONS),
+                                     "stage": enum(ESTIMATE_STAGES), "attempt": TEXT,
+                                     "identity_kind": enum(ESTIMATE_IDENTITY_KINDS),
+                                     "block_offset": enum(BLOCK_OFFSETS_V2), "universe_basis": enum(UNIVERSE_BASES_V2),
+                                     "partition_start": INT_OR_NULL, "range_start": INT_OR_NULL,
+                                     "range_end": INT_OR_NULL, "run_start": INT_OR_NULL, "run_end": INT_OR_NULL,
+                                     "n_used": INT_OR_NULL, "lag_used": INT_OR_NULL,
+                                     "unit_root_policy_sha256": TEXT_OR_NULL, "variant": TEXT,
+                                     "derivation": enum(ESTIMATE_DERIVATIONS), "v1_row_sha256": TEXT,
+                                     "code_sha256": TEXT},
+    # C170: coverage v2; df_fact_coverage stays as the superseded v1 matrix
+    "df_fact_coverage_v2": {"run_id": TEXT, "dataset_id": TEXT, "variable_id": TEXT,
+                            "variable_type": enum(VARIABLE_TYPES), "partition": TEXT, "metric": TEXT,
+                            "operator": TEXT, "policy": TEXT, "applicability": enum(APPLICABILITY),
+                            "applicability_rule": TEXT, "state": enum(COVERAGE_STATES_V2),
+                            "state_source": enum(COVERAGE_STATE_SOURCES), "rows": INT, "row_states": JSON,
+                            "code_sha256": TEXT},
+    "df_fact_coverage_v1_v2_map": {"run_id": TEXT, "v1_run_id": TEXT, "dataset_id": TEXT, "variable_id": TEXT,
+                                   "metric": TEXT, "operator": TEXT,
+                                   "v1_state": enum(V1_COVERAGE_STATES_OR_ABSENT), "partition": TEXT,
+                                   "policy": TEXT, "v2_state": enum(COVERAGE_STATES_V2), "code_sha256": TEXT},
+}
+
+# Table-specific constraints, generated into the DDL and mirrored in validate_row.
+TABLE_CHECKS = {
+    "df_fact_resource_estimate_v2": [
+        "CHECK (identity_kind <> 'UNIT_ROOT_BLOCK' OR (block_offset <> 'NONE' AND universe_basis <> 'NONE' "
+        "AND partition_start IS NOT NULL AND range_start IS NOT NULL AND range_end > range_start "
+        "AND run_start <= range_start AND range_end <= run_end AND n_used = range_end - range_start "
+        "AND unit_root_policy_sha256 IS NOT NULL))",
+        "CHECK (identity_kind = 'UNIT_ROOT_BLOCK' OR (block_offset = 'NONE' AND range_start IS NULL "
+        "AND range_end IS NULL AND n_used IS NULL AND lag_used IS NULL))",
+        "CHECK ((block_offset = 'exact') = (identity_kind = 'UNIT_ROOT_BLOCK' AND variant = 'EXACT'))",
+    ],
+    "df_fact_coverage_v2": [
+        "CHECK (state <> 'NOT_APPLICABLE' OR (applicability = 'NOT_APPLICABLE' AND state_source = 'DECLARATION'))",
+        "CHECK (applicability <> 'NOT_APPLICABLE' OR state IN ('NOT_APPLICABLE', 'UNCERTAIN'))",
+        "CHECK (state_source <> 'ROWS' OR rows > 0)",
+        "CHECK (state_source <> 'NO_EVIDENCE' OR (rows = 0 AND state = 'NOT_RUN'))",
+        "CHECK (state_source <> 'DATASET_TERMINAL' OR (rows = 0 AND state IN "
+        "('INCONCLUSIVE', 'REFUSED', 'FAILED', 'RESOURCE_EXCEEDED', 'UNCERTAIN')))",
+        "CHECK (state_source <> 'DECLARATION' OR state = 'NOT_APPLICABLE')",
+    ],
 }
 
 
@@ -192,6 +250,7 @@ def ddl() -> str:
             checks.append("CHECK (status = 'COMPLETED' OR (value IS NULL AND value_text IS NULL))")
         if table == "df_fact_lab_decision":
             checks.append("CHECK (externally_reviewed = FALSE)")
+        checks += TABLE_CHECKS.get(table, [])
         lines += [f"    {c}" for c in checks]
         lines.append("    loaded_at TIMESTAMPTZ NOT NULL DEFAULT now()")
         parts.append(f"CREATE TABLE IF NOT EXISTS {SCHEMA}.{table} (\n" + ",\n".join(lines) + "\n);")
@@ -271,14 +330,59 @@ def validate_row(table: str, row: dict) -> list[str]:
         p.append("a failed or undetected causal test needs a reason")
     if table == "df_fact_host_receipt" and row.get("status") != "VERIFIED" and not row.get("details"):
         p.append("an unverified host check needs details")
+    if table == "df_fact_resource_estimate_v2" and not p:
+        p += _estimate_v2_problems(row)
+    if table == "df_fact_coverage_v2" and not p:
+        p += _coverage_v2_problems(row)
     for c in ("content_sha256", "code_sha256", "spec_sha256", "contract_sha256", "rule_sha256", "output_sha256",
-              "root_listing_sha256"):
+              "root_listing_sha256", "v1_row_sha256", "unit_root_policy_sha256"):
         if c in spec and isinstance(row.get(c), str) and not (len(row[c]) == 64 and all(ch in "0123456789abcdef" for ch in row[c])):
             p.append(f"{c}: expected a sha256 hex digest")
     try:
         canonical(row)
     except (TypeError, ValueError) as exc:
         p.append(f"not strict JSON: {exc}")
+    return p
+
+
+def _estimate_v2_problems(r: dict) -> list[str]:
+    """Mirror of TABLE_CHECKS['df_fact_resource_estimate_v2']."""
+    p = []
+    block = r["identity_kind"] == "UNIT_ROOT_BLOCK"
+    if block:
+        cols = ("partition_start", "range_start", "range_end", "run_start", "run_end", "n_used",
+                "unit_root_policy_sha256")
+        if r["block_offset"] == "NONE" or r["universe_basis"] == "NONE" or any(r[c] is None for c in cols):
+            return ["a unit-root block estimate binds its offset, basis, ranges, length and policy"]
+        if not (r["run_start"] <= r["range_start"] < r["range_end"] <= r["run_end"]):
+            p.append("the block range must lie inside its run")
+        if r["n_used"] != r["range_end"] - r["range_start"]:
+            p.append("n_used must equal the block length")
+    elif r["block_offset"] != "NONE" or any(r[c] is not None for c in ("range_start", "range_end", "n_used",
+                                                                         "lag_used")):
+        p.append("only a unit-root block estimate carries a block offset, range, length or lag")
+    if (r["block_offset"] == "exact") != (block and r["variant"] == "EXACT"):
+        p.append("block offset 'exact' is exactly the EXACT unit-root variant")
+    return p
+
+
+def _coverage_v2_problems(r: dict) -> list[str]:
+    """Mirror of TABLE_CHECKS['df_fact_coverage_v2']: NOT_APPLICABLE only by declaration, never by absence."""
+    p = []
+    s, src, app = r["state"], r["state_source"], r["applicability"]
+    if s == "NOT_APPLICABLE" and not (app == "NOT_APPLICABLE" and src == "DECLARATION"):
+        p.append("NOT_APPLICABLE comes only from a declaration, never from a missing row")
+    if app == "NOT_APPLICABLE" and s not in ("NOT_APPLICABLE", "UNCERTAIN"):
+        p.append("a cell declared not applicable is NOT_APPLICABLE, or UNCERTAIN when rows contradict it")
+    if src == "ROWS" and r["rows"] <= 0:
+        p.append("a state from rows needs rows")
+    if src == "NO_EVIDENCE" and not (r["rows"] == 0 and s == "NOT_RUN"):
+        p.append("a cell without evidence is NOT_RUN with no rows")
+    if src == "DATASET_TERMINAL" and not (r["rows"] == 0 and s in ("INCONCLUSIVE", "REFUSED", "FAILED",
+                                                                 "RESOURCE_EXCEEDED", "UNCERTAIN")):
+        p.append("a state from the dataset terminal is a non-completed terminal state with no rows")
+    if src == "DECLARATION" and s != "NOT_APPLICABLE":
+        p.append("a declaration only produces NOT_APPLICABLE")
     return p
 
 
@@ -351,7 +455,10 @@ def metric_row(module_row: dict, *, run_id: str, content_sha256: str, **grain) -
     value = module_row.get("value")
     out = {"run_id": run_id, "dataset_id": module_row["dataset_id"], "content_sha256": content_sha256,
            "partition": module_row["partition"], "metric": module_row["metric"], "estimator": est["name"],
-           "estimator_params": {"params": est.get("params", {}), "assumptions": est.get("assumptions", {})},
+           "estimator_params": dict({"params": est.get("params", {}), "assumptions": est.get("assumptions", {})},
+                                    # C169: the portable canonical form of a tolerance-declared value, beside the raw value
+                                    **({"value_canonical": module_row["value_canonical"]}
+                                       if "value_canonical" in module_row else {})),
            "value": value if not isinstance(value, str) else None,
            "value_text": value if isinstance(value, str) else None,
            "status": module_row["status"], "reason": module_row.get("reason") or "",

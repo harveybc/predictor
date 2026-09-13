@@ -39,6 +39,14 @@ FFT padding) are mirrored here and checked against the modules by a test.
 Rows: df_fact_resource_estimate (RESOURCE_ESTIMATE_KEYS). A row is written for
 every gate call, so the estimate, its formula and its parameters exist on disk
 before the computation they license.
+
+C169 (order 2026-09-13): a unit-root estimate (unit_root_adf, unit_root_kpss)
+is refused unless the caller binds the block it licenses, before the library
+is invoked: `block_identity` = block offset (exact, start, middle, end), the
+block's [start, end) in partition and in dataset row coordinates, the finite
+run it was cut from, the length and lag actually used, the unit-root policy
+digest and the variant. The identity lives in params, so it is part of the
+row's identity: the three blocks of one run are three rows, never one.
 """
 from __future__ import annotations
 
@@ -58,6 +66,12 @@ GiB = 1 << 30
 
 # --------------------------------------------------- mirrored module constants
 UNIT_ROOT_EXACT_MAX_N = 200_000          # df_profile_univariate
+UNIT_ROOT_POLICY_SHA256 = "dcea5b87627e8e768f460f8eb0db3ea2e2fbe54769158ab960916b32bfa6beec"   # df_profile_univariate
+UNIT_ROOT_GROUPS = ("unit_root_adf", "unit_root_kpss")
+BLOCK_OFFSETS = ("exact", "start", "middle", "end")
+UNIVERSE_BASES = ("LONGEST_FINITE_RUN", "PARTITION_UPPER_BOUND")
+BLOCK_IDENTITY_SCHEMA = "crispdm.data_foundation.unit_root_block_identity.v1"
+KPSS_LAG_RULE = "nlags='auto' (Hobijn et al. 1998): data-dependent, chosen inside the library, not known before it runs"
 ADF_PEAK_FACTOR = 5.5                     # declared >= 5.04 measured in the C146 PRE
 PE_ORDERS = (3, 4, 5)                     # df_profile_information
 SPEC_WINDOW, SPEC_HOP, WELCH_NPERSEG_INFO = 256, 128, 64
@@ -122,6 +136,70 @@ class PlanRefusal(ValueError):
 def schwert_lag(m: int) -> int:
     lag = int(math.floor(12 * (m / 100.0) ** 0.25))
     return max(0, min(lag, m // 2 - 2))
+
+
+def unit_root_block_ranges(run_start: int, run_end: int, exact_max_n: int = UNIT_ROOT_EXACT_MAX_N):
+    """Mirror of df_profile_univariate.unit_root_blocks: -> (variant, [(offset, start, end), ...])."""
+    n, B = run_end - run_start, int(exact_max_n)
+    if n <= B:
+        return "EXACT", [("exact", run_start, run_end)]
+    mid = run_start + (n - B) // 2
+    return "BLOCK_APPROX", [("start", run_start, run_start + B), ("middle", mid, mid + B), ("end", run_end - B, run_end)]
+
+
+def unit_root_block_identity(*, offset: str, block, run, partition_start: int, lag, policy_sha256: str,
+                             variant: str, basis: str = "LONGEST_FINITE_RUN") -> dict:
+    """The facts one unit-root estimate licenses, bound before the library is invoked.
+    `block` and `run` are [start, end) in partition row coordinates; `lag` is the ADF maxlag, None for KPSS."""
+    bs, be = int(block[0]), int(block[1])
+    rs, re_ = int(run[0]), int(run[1])
+    ps = int(partition_start)
+    return {"schema": BLOCK_IDENTITY_SCHEMA, "block_offset": offset, "universe_basis": basis,
+            "partition_start": ps, "range_partition": [bs, be], "range_absolute": [ps + bs, ps + be],
+            "run_partition": [rs, re_], "run_absolute": [ps + rs, ps + re_], "n_used": be - bs,
+            "lag_used": None if lag is None else int(lag),
+            "lag_rule": "schwert: floor(12 * (n_used/100)^(1/4)), clipped to [0, n_used//2 - 2]" if lag is not None
+            else KPSS_LAG_RULE, "unit_root_policy_sha256": policy_sha256, "variant": variant}
+
+
+def block_identity_problems(group: str, ident, sizes: dict, variant: str) -> list[str]:
+    if not isinstance(ident, dict):
+        return [f"{group}: a unit-root estimate must bind its block identity before the library runs"]
+    p = []
+    keys = {"schema", "block_offset", "universe_basis", "partition_start", "range_partition", "range_absolute",
+            "run_partition", "run_absolute", "n_used", "lag_used", "lag_rule", "unit_root_policy_sha256", "variant"}
+    if set(ident) != keys:
+        return [f"block_identity keys differ: expected {sorted(keys)}"]
+    if ident["schema"] != BLOCK_IDENTITY_SCHEMA:
+        p.append("block_identity: unknown schema")
+    if ident["block_offset"] not in BLOCK_OFFSETS:
+        p.append(f"block_offset {ident['block_offset']!r} not in {list(BLOCK_OFFSETS)}")
+    if ident["universe_basis"] not in UNIVERSE_BASES:
+        p.append(f"universe_basis {ident['universe_basis']!r} not in {list(UNIVERSE_BASES)}")
+    ranges = [ident[k] for k in ("range_partition", "range_absolute", "run_partition", "run_absolute")]
+    if not all(isinstance(r, list) and len(r) == 2 and all(type(x) is int for x in r) and 0 <= r[0] < r[1]
+               for r in ranges) or type(ident["partition_start"]) is not int:
+        return p + ["block_identity ranges must be integer [start, end) with start < end"]
+    (bs, be), (abs_s, abs_e), (rs, re_), (ars, are) = ranges
+    ps = ident["partition_start"]
+    if (abs_s, abs_e) != (ps + bs, ps + be) or (ars, are) != (ps + rs, ps + re_):
+        p.append("absolute ranges must equal partition_start + partition ranges")
+    if not rs <= bs < be <= re_:
+        p.append("the block must lie inside its finite run")
+    if ident["n_used"] != be - bs or ident["n_used"] != sizes.get("n_run"):
+        p.append("n_used must equal the block length and the estimate's n_run")
+    if ident["variant"] != variant or (ident["block_offset"] == "exact") != (variant == "EXACT"):
+        p.append("variant and block offset disagree")
+    if ident["block_offset"] == "exact" and (bs, be) != (rs, re_):
+        p.append("an exact estimate covers its whole run")
+    if group == "unit_root_adf" and (ident["lag_used"] != sizes.get("lag") or ident["lag_used"] is None):
+        p.append("an ADF estimate binds the lag it sizes")
+    if group == "unit_root_kpss" and ident["lag_used"] is not None:
+        p.append("a KPSS lag is chosen inside the library; lag_used is null")
+    h = ident["unit_root_policy_sha256"]
+    if not (isinstance(h, str) and len(h) == 64 and all(c in "0123456789abcdef" for c in h)):
+        p.append("unit_root_policy_sha256: expected a sha256 hex digest")
+    return p
 
 
 def nfft_for(n: int) -> int:
@@ -342,6 +420,13 @@ class Planner:
     def gate(self, module, group, key=None, partition=None, **sizes):
         fam_key = f"{module}.{_family(group)}"
         variant = sizes.pop("variant", "EXACT")
+        identity = sizes.pop("block_identity", None)
+        if module == "df_profile_univariate" and group in UNIT_ROOT_GROUPS:
+            problems = block_identity_problems(group, identity, sizes, variant)
+            if problems:
+                raise PlanRefusal("; ".join(problems))
+        elif identity is not None:
+            raise PlanRefusal(f"{group}: only unit-root estimates carry a block identity")
         est_bytes, formula, params = estimate(module, group, sizes, self.ctx)
         if fam_key in LADDER_GROUPS:
             axis = LADDER_GROUPS[fam_key]
@@ -368,7 +453,10 @@ class Planner:
             return {"decision": "NOT_RUN_RESOURCE_BOUND", "window": None}
         fits = est_bytes <= self.budget
         decision = ("RUN_EXACT" if variant == "EXACT" else "RUN_BOUNDED") if fits else "NOT_RUN_RESOURCE_BOUND"
-        self._row(module, group, key, partition, variant, est_bytes, formula, dict(params, variant=variant), decision)
+        params = dict(params, variant=variant)
+        if identity is not None:
+            params["block_identity"] = dict(identity)
+        self._row(module, group, key, partition, variant, est_bytes, formula, params, decision)
         return {"decision": decision, "window": None}
 
 
@@ -387,6 +475,9 @@ def validate_resource_row(row: dict) -> list[str]:
             p.append(f"{c}: expected a non-negative integer")
     if not isinstance(row["params"], dict):
         p.append("params: expected an object")
+    elif row["module"] == "df_profile_univariate" and row["metric"] in UNIT_ROOT_GROUPS:
+        p += block_identity_problems(row["metric"], row["params"].get("block_identity"),
+                                     row["params"].get("sizes") or {}, row["params"].get("variant"))
     if row["decision"] not in DECISIONS:
         p.append(f"decision: {row['decision']!r} not in {list(DECISIONS)}")
     if row["decision"] != "NOT_RUN_RESOURCE_BOUND" and type(row["estimated_peak_bytes"]) is int \
@@ -434,10 +525,16 @@ def preflight(meta: dict, planner: Planner) -> dict:
             n = e - s
             for g in ("counts", "quantiles", "acf", "robust_z"):
                 uni(g, vid, p, n=n)
-            m = min(n, UNIT_ROOT_EXACT_MAX_N)
-            variant = "EXACT" if n <= UNIT_ROOT_EXACT_MAX_N else "BLOCK_APPROX"
-            uni("unit_root_adf", vid, p, n_run=m, lag=schwert_lag(m), variant=variant)
-            uni("unit_root_kpss", vid, p, n_run=m, variant=variant)
+            # the finite run is at most the partition: one upper-bound estimate per block that run could have
+            variant, blocks = unit_root_block_ranges(0, n)
+            for label, bs, be in blocks:
+                m = be - bs
+                ident = dict(offset=label, block=(bs, be), run=(0, n), partition_start=s,
+                             policy_sha256=UNIT_ROOT_POLICY_SHA256, variant=variant, basis="PARTITION_UPPER_BOUND")
+                uni("unit_root_adf", vid, p, n_run=m, lag=schwert_lag(m), variant=variant,
+                    block_identity=unit_root_block_identity(lag=schwert_lag(m), **ident))
+                uni("unit_root_kpss", vid, p, n_run=m, variant=variant,
+                    block_identity=unit_root_block_identity(lag=None, **ident))
             if p != "train":
                 uni("shift_ks_psi", vid, p, n=n, n_train=n_train)
             inf("entropy_redundancy", vid, p, n=n)

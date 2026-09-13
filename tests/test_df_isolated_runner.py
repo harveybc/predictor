@@ -99,6 +99,12 @@ def test_c151a_dev_scale_heavy_copy_stays_under_its_estimate(tmp_path):
     assert (out / "PROFILE_RUN_RECEIPT.json").exists() and "/home/" not in (out / "PROFILE_RUN_RECEIPT.json").read_text()
 
 
+OOM_FLAG = "CRISPDM_ALLOW_DELIBERATE_OOM_TEST"
+
+
+@pytest.mark.skipif(__import__("os").environ.get(OOM_FLAG) != "1",
+                    reason=f"deliberately triggers a contained cgroup OOM kill, which the desktop reports as a "
+                           f"closed program; set {OOM_FLAG}=1 to run it")
 def test_c151b_mutation_bypassing_preflight_is_killed_inside_its_cgroup(tmp_path):
     # train = 204,000 rows: exact ADF needs about 5.04 * n * (lag + 2) * 8 = 0.67 GB, while every group
     # before it (counts, quantiles, ACF on 2^19 FFT) stays far below the 300M cap

@@ -98,11 +98,16 @@ def test_the_c146_incident_cell_is_bounded_before_any_allocation():
     assert exact > 60 * GiB
     rows = []
     pl = planner(8 * GiB, rows, {"T": 13_253_761, "n_train": n, "has_ts": True})
-    assert pl.gate("df_profile_univariate", "unit_root_adf", "v", "train", n_run=n, lag=lag)["decision"] == \
+    ident = dict(partition_start=0, policy_sha256=P.UNIT_ROOT_POLICY_SHA256)       # C169: identity is bound
+    assert pl.gate("df_profile_univariate", "unit_root_adf", "v", "train", n_run=n, lag=lag,
+                   block_identity=P.unit_root_block_identity(offset="exact", block=(0, n), run=(0, n), lag=lag,
+                                                             variant="EXACT", **ident))["decision"] == \
         "NOT_RUN_RESOURCE_BOUND"
     m = P.UNIT_ROOT_EXACT_MAX_N
     d = pl.gate("df_profile_univariate", "unit_root_adf", "v", "train", n_run=m, lag=P.schwert_lag(m),
-                variant="BLOCK_APPROX")
+                variant="BLOCK_APPROX",
+                block_identity=P.unit_root_block_identity(offset="start", block=(0, m), run=(0, n),
+                                                          lag=P.schwert_lag(m), variant="BLOCK_APPROX", **ident))
     assert d["decision"] == "RUN_BOUNDED" and rows[-1]["estimator"] == "BLOCK_APPROX"
 
 

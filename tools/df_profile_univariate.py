@@ -478,7 +478,7 @@ def variable_rows(ds, vid, xcol, parts, gate=None, policy=None):
                 del acf, cnt
 
             # unit-root diagnostics under the declared policy
-            out.extend(unit_root_rows(ds, key, pname, x, gate, policy))
+            out.extend(unit_root_rows(ds, key, pname, x, gate, policy, partition_start=s))
 
         # distribution shift against the frozen train reference
         if pname != "train":
@@ -543,8 +543,22 @@ def _ur_est(base, policy, mode, universe, run, lag=None, offset=None):
     return est(base["name"], params, base["assumptions"] + extra)
 
 
-def unit_root_rows(ds, key, pname, x, gate=None, policy=None):
-    """ADF and KPSS on the longest finite run of the partition slice `x`, under the policy."""
+def block_identity(label, bs, be, rs, re_, partition_start, lag, policy, variant):
+    """C169: the facts one ADF or KPSS estimate licenses, bound before the library is invoked
+    (the same dictionary the memory planner validates; ranges in partition and dataset coordinates)."""
+    return {"schema": "crispdm.data_foundation.unit_root_block_identity.v1", "block_offset": label,
+            "universe_basis": "LONGEST_FINITE_RUN", "partition_start": int(partition_start),
+            "range_partition": [int(bs), int(be)], "range_absolute": [int(partition_start + bs), int(partition_start + be)],
+            "run_partition": [int(rs), int(re_)], "run_absolute": [int(partition_start + rs), int(partition_start + re_)],
+            "n_used": int(be - bs), "lag_used": None if lag is None else int(lag),
+            "lag_rule": "schwert: floor(12 * (n_used/100)^(1/4)), clipped to [0, n_used//2 - 2]" if lag is not None
+            else "nlags='auto' (Hobijn et al. 1998): data-dependent, chosen inside the library, not known before it runs",
+            "unit_root_policy_sha256": policy_sha256(policy), "variant": variant}
+
+
+def unit_root_rows(ds, key, pname, x, gate=None, policy=None, partition_start=0):
+    """ADF and KPSS on the longest finite run of the partition slice `x`, under the policy.
+    `partition_start` is the dataset row of x[0]; it only enters the block identity given to the gate."""
     gate = gate or admit_all
     policy = policy or UNIT_ROOT_POLICY
     vid = key.get("variable_id")
@@ -585,7 +599,9 @@ def unit_root_rows(ds, key, pname, x, gate=None, policy=None):
                 out.append(make_row(ds, key, pname, metric, e, None, "INCONCLUSIVE", "ZERO_VARIANCE_BLOCK"))
             continue
         # ADF
-        if gate("unit_root_adf", vid, pname, n_run=m, lag=lag, variant=variant)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+        if gate("unit_root_adf", vid, pname, n_run=m, lag=lag, variant=variant,
+                block_identity=block_identity(label, bs, be, rs, re_, partition_start, lag, policy, variant)
+                )["decision"] == "NOT_RUN_RESOURCE_BOUND":
             out.append(make_row(ds, key, pname, f"adf_statistic{sfx}", e_adf, None, "NOT_RUN", RESOURCE_REASON))
             out.append(make_row(ds, key, pname, f"adf_pvalue{sfx}", e_adf, None, "NOT_RUN", RESOURCE_REASON))
         else:
@@ -603,7 +619,9 @@ def unit_root_rows(ds, key, pname, x, gate=None, policy=None):
                 out.append(make_row(ds, key, pname, f"adf_statistic{sfx}", e_adf, None, "FAILED", why, cpu=c))
                 out.append(make_row(ds, key, pname, f"adf_pvalue{sfx}", e_adf, None, "FAILED", why, cpu=c))
         # KPSS
-        if gate("unit_root_kpss", vid, pname, n_run=m, variant=variant)["decision"] == "NOT_RUN_RESOURCE_BOUND":
+        if gate("unit_root_kpss", vid, pname, n_run=m, variant=variant,
+                block_identity=block_identity(label, bs, be, rs, re_, partition_start, None, policy, variant)
+                )["decision"] == "NOT_RUN_RESOURCE_BOUND":
             out.append(make_row(ds, key, pname, f"kpss_statistic{sfx}", e_kpss, None, "NOT_RUN", RESOURCE_REASON))
             out.append(make_row(ds, key, pname, f"kpss_pvalue{sfx}", e_kpss, None, "NOT_RUN", RESOURCE_REASON))
         else:

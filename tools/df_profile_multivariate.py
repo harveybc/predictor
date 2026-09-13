@@ -28,6 +28,22 @@ from pathlib import Path
 import numpy as np
 
 CODE_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+
+def _sibling(name):
+    import importlib.util
+    import sys
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(f"{name}.py"))
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+# C169: eigen-based descriptors declare numpy/backend, a per-metric tolerance and a canonical form
+LP = _sibling("df_linalg_parity")
 PARTITIONS = ("train", "calibration", "confirmation")
 STATUSES = ("COMPLETED", "UNAVAILABLE", "INCONCLUSIVE", "FAILED", "NOT_RUN")
 
@@ -566,35 +582,44 @@ def _matrix_rows(ds, ids, M, gate=None, universe=None):
     T, V = M.shape
     gm = {"group_id": "train_matrix"}
     b_ = lambda e: bounded(e, universe)  # noqa: E731
-    E_PCA_, E_ERANK_, E_NEG_, E_PC1L_, E_PC1S_, E_PRIV_, E_CL_COUNT_ = map(
-        b_, (E_PCA, E_ERANK, E_NEG, E_PC1L, E_PC1S, E_PRIV, E_CL_COUNT))
+    lin = lambda e: est(e["name"], dict(e["params"], linalg=LP.linalg_provenance()), e["assumptions"])  # noqa: E731
+    E_PCA_, E_ERANK_, E_NEG_, E_PC1L_, E_PC1S_, E_PRIV_ = (b_(lin(e)) for e in (E_PCA, E_ERANK, E_NEG, E_PC1L,
+                                                                                E_PC1S, E_PRIV))
+    E_CL_COUNT_ = b_(E_CL_COUNT)
+
+    def row(key, metric, estimator, value, status="COMPLETED", reason="", cpu=0.0):
+        r = make_row(ds, key, "train", metric, estimator, value, status, reason, cpu)
+        if LP.tolerance_for("df_profile_multivariate", metric):
+            r["value_canonical"] = LP.canonical(r["value"])   # raw value kept in `value`
+        return r
+
     t0 = time.process_time()
     R, _ = pairwise_pearson_matrix(M)
     w, U, neg = corr_eigen(R)
     c = time.process_time() - t0
     tot = w.sum()
     if tot <= 0:
-        out.append(make_row(ds, gm, "train", "effective_rank", E_ERANK_, None, "INCONCLUSIVE", "ZERO_SPECTRUM", cpu=c))
+        out.append(row(gm, "effective_rank", E_ERANK_, None, "INCONCLUSIVE", "ZERO_SPECTRUM", cpu=c))
         return out
     for i in range(min(PCA_COMPONENTS_REPORTED, V)):
-        out.append(make_row(ds, gm, "train", f"pca_explained_variance_ratio_pc{i + 1}", E_PCA_, w[i] / tot, cpu=c))
+        out.append(row(gm, f"pca_explained_variance_ratio_pc{i + 1}", E_PCA_, w[i] / tot, cpu=c))
     sv = np.sqrt(w)
     p = sv / sv.sum()
     p = p[p > 0]
-    out.append(make_row(ds, gm, "train", "effective_rank", E_ERANK_, math.exp(-(p * np.log(p)).sum()), cpu=c))
-    out.append(make_row(ds, gm, "train", "negative_eigenvalue_count", E_NEG_, neg, cpu=c))
+    out.append(row(gm, "effective_rank", E_ERANK_, math.exp(-(p * np.log(p)).sum()), cpu=c))
+    out.append(row(gm, "negative_eigenvalue_count", E_NEG_, neg, cpu=c))
 
     # common/private candidates
-    u1 = U[:, 0] * (1.0 if U[:, 0].sum() >= 0 else -1.0)
+    u1 = U[:, 0] * LP.pc1_sign(U[:, 0])
     for i, vid in enumerate(ids):
         key = {"variable_id": vid}
         share = u1[i] ** 2 * w[0]
-        out.append(make_row(ds, key, "train", "pc1_loading", E_PC1L_, u1[i] * math.sqrt(w[0]),
-                            reason="CANDIDATE_NOT_A_TRANSFORMATION", cpu=c))
-        out.append(make_row(ds, key, "train", "pc1_common_variance_share", E_PC1S_, share,
-                            reason="CANDIDATE_NOT_A_TRANSFORMATION", cpu=c))
-        out.append(make_row(ds, key, "train", "private_residual_variance_share", E_PRIV_, 1.0 - share,
-                            reason="CANDIDATE_NOT_A_TRANSFORMATION", cpu=c))
+        out.append(row(key, "pc1_loading", E_PC1L_, u1[i] * math.sqrt(w[0]),
+                       reason="CANDIDATE_NOT_A_TRANSFORMATION", cpu=c))
+        out.append(row(key, "pc1_common_variance_share", E_PC1S_, share,
+                       reason="CANDIDATE_NOT_A_TRANSFORMATION", cpu=c))
+        out.append(row(key, "private_residual_variance_share", E_PRIV_, 1.0 - share,
+                       reason="CANDIDATE_NOT_A_TRANSFORMATION", cpu=c))
 
     # hierarchical clusters with moving-block bootstrap stability
     t0 = time.process_time()
