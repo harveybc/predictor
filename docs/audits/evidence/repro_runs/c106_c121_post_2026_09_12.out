@@ -1,0 +1,180 @@
+POST C106-C121 python=3.12.13
+  tip predictor: 38d57ad55375 branch=satoshi/c106-c121-20260912 tracked_dirty=[]
+  tip financial-data: fba552195322 branch=satoshi/c106-c121-20260912 tracked_dirty=[]
+  tip am-data-first: 432599be021e branch=satoshi/b4-c110-c111-20260912 tracked_dirty=[]
+  tip am-t0t1: a18ca3b2f24d branch=satoshi/t2-c106-c109-20260912 tracked_dirty=[]
+[C108.commit_b_is_evidence_only] CORRECTED  the T2 publication carries evidence and no code
+     a18ca3b2f24d ['docs/audits/evidence/T2_C108_HARDENED_READJUDICATION_CLOSURE_2026_09_12.json', 'docs/audits/evidence/T2_READJUDICATION_SUBMISSION_V4_2026_09_12.json', 'docs/audits/evidence/T2_READJUDICATION_SUBMISSION_V4_HISTORY_ADDENDUM_2026_09_12.json']
+[C107.record_consumed_in_place] CORRECTED  the external record's bytes and mode are unchanged
+     c75d8d6ef4f1a1af mode=0o600
+[C108.root_unchanged] CORRECTED  the preserved root keeps the inventory the record binds
+     {'logical_id': 't2_confirmatory_', 'inventory_sha256': '71c8ae7e87300f1e', 'components_and_leaves': '736'}
+[C109.same_result] CORRECTED  242/0, DOES_NOT_ADVANCE, the same estimand and six equal effects
+     DOES_NOT_ADVANCE -0.001048443391358884
+[C109.digest_equals_record] CORRECTED  scientific digest equals the record's corrected expectation
+     1be80a0ab6d09179
+[C106.flawed_template_not_used] CORRECTED  the published candidate is the record's, not the round-7 template
+     {'template_sha256': 'UNDECLARED'}
+[C109.sign_test] CORRECTED  signs_positive 3 and sign_test_exact_p_two_sided 1.0 (replay closure)
+     {'signs_positive': 3, 'p': 1.0}
+[C109.history_bound] CORRECTED  1.3125 visible as invalid, superseded and not edited (addendum bound to the files)
+     INVALID_SUPERSEDED_NOT_EDITED
+[C109.submission_itself_shows_1_3125] NOT CORRECTED  the submission's own sign-test block shows 1.3125 as an invalid superseded value
+     published_value=1.0 valid=True: the builder superseded the RECOMPUTED screen; the history is only in the addendum
+[C109.grants_nothing] CORRECTED  no promotion, retraining, downloads or model execution
+     EXTERNAL_REVIEW
+[C110.disposition] CORRECTED  decision, identities, counts and verdict recorded
+     432599be021e
+[C110.register_append_only] CORRECTED  the register gained lines and lost none
+     23	0	docs/audits/work_plan/04_OPEN_FINDINGS_REGISTER.md
+[C110.no_runner_or_consumer] CORRECTED  the only new tool is the closure envelope; no runner
+     ['tools/b4_closure_envelope.py']
+[C111.cube] CORRECTED  one closed B4 run with five campaign units: counts and declared costs, no failure
+     {'runs': [{'result_class': 'DEVELOPMENT', 'terminal_state': 'CLOSED', 'adjudication': 'SCIENTIFICALLY_INSUFFICIENT_NO_VERDICT', 'run_id': 'b4_campaign_generation_v7_20260907'}], 'metrics': {'cells_completed_verified': 2.0, 'cells_not_started': 9.0, 'cells_quarantined_partial': 1.0, 'declared_wall_seconds_completed_cells': 35682.4, 'declared_wall_seconds_lower_bound_quarantined_partial': 124993.6}}
+[C111.additive] CORRECTED  historical cube rows unchanged; the earlier B4 stub left as it was
+     {'historical': {'fact_variable_characterization': 40749, 'fact_terminal_verification_variable_v2': 1965}, 'stub': [{'result_class': 'NON_GOVERNING', 'run_id': 'b4_campaign_results_v7_20260908'}]}
+[C111.loader] CORRECTED  loader active with zero restarts; outbox healthy, nothing pending, dead letters adjudicated
+     {'systemd': ['ActiveState=active', 'NRestarts=0'], 'counts': {'pending': 0, 'loaded': 23, 'failed': 16}}
+[C112.disposition] CORRECTED  the four scopes are kept apart, with counts
+     {'NUMERIC_DESCRIPTORS_RECOMPUTED': 1501, 'PHYSICAL_TYPE_KNOWN': 1505, 'PRODUCER_AUTHORITY_ONLY': 460, 'SEMANTICALLY_UNRESOLVED': 4, 'SEMANTIC_DECLARATIONS_KNOWN': 0}
+[C112.language] CORRECTED  'verified variables' phrasing is refused and absent from the disposition
+     1,501 variables with numeric descriptors recomputed from their bound bytes
+[control_complete_bank] CORRECTED  a complete bank stays sufficient
+     input=1484d6765efb7537 same_as_pre=True ('BANK_SUFFICIENT_FOR_REVIEW', 6, 30)
+[C117.defect_zero_terminals_zero_semantics] CORRECTED  refused by the join
+     input=01e6c972151982a0 same_as_pre=True refused=KEY_INCOMPLETE in census: (None, None, None)
+[C117.terminal_of_other_variable] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=37cf313049922291 same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['NO_TERMINAL_FOR_KEY']
+[C117.census_of_other_dataset] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=d1abb04e5fc1f039 same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['NO_CENSUS_ROW_FOR_KEY']
+[C117.source_digest_distinct] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=5b4b2069f3b1e695 same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['NO_TERMINAL_FOR_KEY']
+[C117.duplicate_column] CORRECTED  refused by the join
+     input=4756fdaa5f539aca same_as_pre=True refused=DUPLICATE_CENSUS_VARIABLE_ID
+[C117.license_absent] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=bb6092923639b8b0 same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['UNDECLARED_LICENSE']
+[C117.role_absent] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=a483bed74911b280 same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['ROLE_ABSENT']
+[C117.temporal_contract_other_digest] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=5edc54a757b2d8a1 same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['NO_TEMPORAL_CONTRACT_FOR_DATASET_AND_DIGEST']
+[C117.mask_other_dataset] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=0e5d50c3b2d2c191 same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['MASK_NOT_BOUND_TO_SAME_DATASET']
+[C117.member_only_in_aggregates] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=62554d81ad916f50 same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['NO_CENSUS_ROW_FOR_KEY', 'NO_TERMINAL_FOR_KEY']
+[C113.recomputed_role_unknown] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=304490753c2ddb45 same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['ROLE_UNKNOWN']
+[C113.recomputed_license_unknown] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=2bdaf6c4f56eee87 same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['UNDECLARED_LICENSE']
+[C113.semantically_unresolved_terminal] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=92caeb6bf47010dc same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['SEMANTIC_STATE_SEMANTIC_TYPE_UNRESOLVED', 'TERMINAL_LAYER_SEMANTICALLY_UNRESOLVED']
+[C113.date_stored_as_integer] CORRECTED  not a sufficient bank, excluded by its exact reason
+     input=c861565e244d65fa same_as_pre=True verdict=BANK_INSUFFICIENT panels=5 reasons=['SEMANTIC_STATE_SEMANTIC_TYPE_UNRESOLVED', 'TIMESTAMP_EXCLUDED_BY_RULE']
+[C118.recomputed_equals_published] CORRECTED  the ledger recomputed from its bound inputs equals the published one
+     {'population_sha256': '4f53cda18c2baa0c', 'ledger_sha256': '71854f32f096fdfb', 'verdict': 'BANK_INSUFFICIEN'}
+[C118.real_result] CORRECTED  89 candidates, 0 eligible, BANK_INSUFFICIENT, 6 panels missing; each exclusion names its cause
+     {'UNDECLARED_LICENSE_LICENSE_SOURCE': 59, 'UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE': 30}
+[C119.bool_as_margin] CORRECTED  refused by the v5 validator
+     ['SCIENTIFIC_CHANGE: hypotheses differs from v4', 'H1 margin must be a finite number in [0, 1), not a boolean']
+[C119.nan_margin] CORRECTED  refused by the v5 validator
+     ['SCIENTIFIC_CHANGE: hypotheses differs from v4', 'NON_FINITE: hypotheses.H1.margin']
+[C119.inf_margin] CORRECTED  refused by the v5 validator
+     ['SCIENTIFIC_CHANGE: hypotheses differs from v4', 'NON_FINITE: hypotheses.H2.margins[1]']
+[C119.margin_out_of_domain] CORRECTED  refused by the v5 validator
+     ['SCIENTIFIC_CHANGE: hypotheses differs from v4', 'H1 margin must be a finite number in [0, 1), not a boolean']
+[C119.float_as_integer_minimum] CORRECTED  refused by the v5 validator
+     ['SCIENTIFIC_CHANGE: panels differs from v4', 'minimum_independent_panels must be an integer >= 6']
+[C119.duplicate_seed] CORRECTED  refused by the v5 validator
+     ['SCIENTIFIC_CHANGE: evaluation differs from v4', 'seeds must be distinct integers']
+[C119.duplicate_operator] CORRECTED  refused by the v5 validator
+     ['SCIENTIFIC_CHANGE: operators differs from v4', 'operators must be distinct names']
+[C119.duplicate_contrast_in_family] CORRECTED  refused by the v5 validator
+     ['SCIENTIFIC_CHANGE: inference differs from v4', "family must be exactly ['H1', 'H2_vs_A0', 'H2_vs_A3'] with no duplicate"]
+[C119.lopo_declared_not_derived] CORRECTED  refused by the v5 validator
+     ['SCIENTIFIC_CHANGE: inference differs from v4']
+[C119.holm_p_above_one] CORRECTED  Holm refuses
+     P_OUT_OF_DOMAIN: H1=1.5
+[C119.holm_p_nan] CORRECTED  Holm refuses
+     P_OUT_OF_DOMAIN: H1=nan
+[C119.holm_incomplete_family] CORRECTED  Holm refuses
+     INCOMPLETE_OR_FOREIGN_FAMILY: expected ['H1', 'H2_vs_A0', 'H2_vs_A3'], got ['H1']
+[C119.bool_panel_values] CORRECTED  booleans are refused as panel values
+     PANEL_VALUE_NOT_A_FINITE_NUMBER: 'p0'
+[C119.sample_bound] CORRECTED  a contrast without a frozen sample digest is refused
+     FROZEN_SAMPLE_DIGEST_REQUIRED
+[C119.parser_duplicate_key] CORRECTED  the --validate CLI parses strictly and refuses
+     {
+ "problems": [
+  "STRICT_JSON: DUPLICATE_KEY: 'schema'"
+ ]
+}
+[C119.parser_nan_constant] CORRECTED  the --validate CLI parses strictly and refuses
+     {
+ "problems": [
+  "STRICT_JSON: NON_FINITE_CONSTANT: NaN"
+ ]
+}
+[C114.identity] CORRECTED  the contract and its mask are the successor's, not the historical dataset's
+     {'contract': 'financial_data.eth_h4_successor_temporal_contract.v3', 'mask': '04cf1a021065635c'}
+[C114.counts] CORRECTED  18,085 rows, 20 truncated inside and 1 outside, 8 gaps, no filling
+     {'gaps_in_raw_input_total': 8, 'gaps_inside_dataset': 8, 'truncated_bars_in_raw_input_total': 21, 'truncated_bars_inside_dataset': 20, 'truncated_bars_outside_dataset_count': 1}
+[C114.geometry_not_identity] CORRECTED  equal geometry to v2 on every aspect, identity different
+     {'aspects': 14, 'sample_summary': {'eligible': 10282, 'ineligible': 7803}}
+[C114.bindings] CORRECTED  FEATURE_DAG.v4 and binding manifest v2 bound and verified
+     {'dag': 'c4e25cd1fce1af6c', 'manifest': 'f6ad3ecc912ba89a'}
+[C115.census] CORRECTED  89 rows with exact keys, one per active column, UNKNOWN kept as UNKNOWN
+     {'license': {'UNKNOWN': 89}, 'role': {'input_feature': 89}, 'unit_unknown': 30}
+[C116.characterization] CORRECTED  89 own terminals from the bound bytes, pre-ledger first and unchanged
+     {'layers': {'INDEPENDENTLY_RECOMPUTED': 89}, 'semantic': {'NUMERIC_MEASURABLE': 89}}
+[C120.inventory] CORRECTED  every candidate inventoried without labels or scores; deficit exact and consistent with the join
+     {'candidates': 38, 'deficit': {'eligible_variables_in_qualifying_panels': 0, 'eligible_variables_required': 30, 'panels_missing': 6, 'panels_qualifying': 0, 'panels_required': 6}, 'downloads': False}
+[C121.design_v5] CORRECTED  v5 validates, supersedes v4 by digest with scientific change NONE, scoring closed
+     2936b6dcde82ce42
+[C121.score_refuses] CORRECTED  scoring refuses
+     EXTERNAL_V5_DESIGN_REVIEW_AND_LICENSE_REQUIRED
+[predictor.battery] CORRECTED  focal battery at the final tip (4 files)
+     99 passed in 29.60s
+[B4.battery] CORRECTED  focal battery at the final tip (2 files)
+     27 passed in 0.46s
+[T2.battery] CORRECTED  focal battery at the final tip (2 files)
+     57 passed in 1.16s
+[financial-data.battery] CORRECTED  focal battery at the final tip (4 files)
+     119 passed in 9.10s
+
+=== identities (PRE value == now, and unchanged during the POST) ===
+  b4_v7_real: pre=9944feb340a4e2f3 now=9944feb340a4e2f3 equal=True
+  t2_original_real: pre=ea2a8a5da5512558 now=ea2a8a5da5512558 equal=True
+  b4_v7_private_copy: pre=b5ea94edd810b770 now=b5ea94edd810b770 equal=True
+  t2_successor_private_copy: pre=160e198c94a277f1 now=160e198c94a277f1 equal=True
+  external_t2_record: pre=c75d8d6ef4f1a1af now=c75d8d6ef4f1a1af equal=True
+  t2_historical_evidence_1_3125: pre=181c0796d015710b now=181c0796d015710b equal=True
+  t2_round7_divergence_report: pre=8666d5536cf22978 now=8666d5536cf22978 equal=True
+  lake_terminals: pre=ec303016bc85c44b now=ec303016bc85c44b equal=True
+  lake_terminals_v2: pre=41dfa92c00321822 now=41dfa92c00321822 equal=True
+  lake_terminals_v3: pre=f9dd5fc01f6b834d now=f9dd5fc01f6b834d equal=True
+  lake_terminals_v4: pre=29c1ff312396f5ec now=29c1ff312396f5ec equal=True
+  FEATURE_DAG.v1.json: pre=4991e36862d42b8a now=4991e36862d42b8a equal=True
+  FEATURE_DAG.v2.json: pre=8fbe787a8b8279b5 now=8fbe787a8b8279b5 equal=True
+  FEATURE_DAG.v3.json: pre=cf2da14190236e3e now=cf2da14190236e3e equal=True
+  FEATURE_DAG.v4.json: pre=4fa4d1341e51fc4f now=4fa4d1341e51fc4f equal=True
+  PRODUCER_BINDING_MANIFEST.v1.json: pre=5f24ff8545f96cde now=5f24ff8545f96cde equal=True
+  PRODUCER_BINDING_MANIFEST.v2.json: pre=7d2b7d38c2e3be3e now=7d2b7d38c2e3be3e equal=True
+  ETH_H4_TEMPORAL_CONTRACT.v1.json: pre=6e3a0c8d67dd2ec6 now=6e3a0c8d67dd2ec6 equal=True
+  ETH_H4_TEMPORAL_CONTRACT.v2.json: pre=43b9f2b6650205ec now=43b9f2b6650205ec equal=True
+  ETH_H4_SAMPLE_ELIGIBILITY_MASK.v1.parquet: pre=b5c2e3b5811c11c4 now=b5c2e3b5811c11c4 equal=True
+  b4:B4_READJUDICATION_SUBMISSION_V2_2026_09_12.json: pre=8db3e1dfa19702a0 now=8db3e1dfa19702a0 equal=True
+  b4:B4_READJUDICATION_SUBMISSION_V3_2026_09_12.json: pre=70ac0650052f57ac now=70ac0650052f57ac equal=True
+  b4:B4_READJUDICATION_SUBMISSION_V4_2026_09_12.json: pre=63ea37901c8756cd now=63ea37901c8756cd equal=True
+  t2:T2_READJUDICATION_SUBMISSION_2026_09_12.json: pre=03572efaf35d1d3f now=03572efaf35d1d3f equal=True
+  t2:T2_READJUDICATION_SUBMISSION_V2_2026_09_12.json: pre=e3a36d542574d9a9 now=e3a36d542574d9a9 equal=True
+  t2:T2_READJUDICATION_SUBMISSION_V3_2026_09_12.json: pre=7c1e8d0de3007f90 now=7c1e8d0de3007f90 equal=True
+  design:PER_VARIABLE_DESIGN_V3_POPULATION.v1.json: pre=a746f13c4630f19b now=a746f13c4630f19b equal=True
+  design:PER_VARIABLE_DESIGN_V4_POPULATION.v1.json: pre=50682f0d6d98d291 now=50682f0d6d98d291 equal=True
+  design:PER_VARIABLE_PREPROCESSING_DESIGN.v2.json: pre=bed0258942c13dba now=bed0258942c13dba equal=True
+  design:PER_VARIABLE_PREPROCESSING_DESIGN.v3.json: pre=1a8d60e5b8d92fd5 now=1a8d60e5b8d92fd5 equal=True
+  design:PER_VARIABLE_PREPROCESSING_DESIGN.v4.json: pre=109cdc505e985c88 now=109cdc505e985c88 equal=True
+  new since PRE (not preserved items): ['design:PER_VARIABLE_DESIGN_V5_POPULATION.v1.json', 'design:PER_VARIABLE_PREPROCESSING_DESIGN.v5.json', 't2:T2_READJUDICATION_SUBMISSION_V4_2026_09_12.json', 't2:T2_READJUDICATION_SUBMISSION_V4_HISTORY_ADDENDUM_2026_09_12.json']
+
+=== zero line ===
+  GPU compute processes now: none; training 0, scores 0, confirmation 0, promotion 0, live 0, venue 0, account actions 0
+
+=== POST SUMMARY: 64 checks; 1 NOT corrected ['C109.submission_itself_shows_1_3125']; preserved identities changed [] ===
