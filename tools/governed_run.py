@@ -32,6 +32,7 @@ import re
 import subprocess
 import sys
 import time
+import uuid
 from pathlib import Path
 from urllib.parse import urlencode, urlsplit
 
@@ -163,7 +164,8 @@ def canonical_config(effective: dict, identities: dict) -> str:
     """Section 8.4: the six input keys become gov:<lake>/<resource>@<sha256>,
     output paths their basenames, save_config/save_log are dropped, then
     compact sorted JSON. Invariant to the cache and output directories."""
-    out = {k: v for k, v in effective.items() if k not in PRIVATE_DEFAULTS}
+    # load_config names the governed config under the output directory: dropped like save_config/save_log
+    out = {k: v for k, v in effective.items() if k not in PRIVATE_DEFAULTS and k != "load_config"}
     for key in INPUT_KEYS:
         if key in identities:
             out[key] = identities[key]
@@ -171,6 +173,17 @@ def canonical_config(effective: dict, identities: dict) -> str:
         if (key in OUTPUT_DEFAULTS or key.endswith("_plot_file")) and out[key]:
             out[key] = Path(str(out[key])).name
     return json.dumps(out, sort_keys=True, separators=(",", ":"))
+
+
+def refuse_governed_overrides(extra) -> None:
+    """Extra flags may tune the run (--epochs ...), never replace a governed input, an output or the config."""
+    governed = set(INPUT_KEYS) | set(OUTPUT_DEFAULTS) | set(PRIVATE_DEFAULTS) | {"load_config"}
+    for token in extra:
+        if not str(token).startswith("--"):
+            continue
+        name = str(token)[2:].split("=", 1)[0]
+        if name in governed or name.endswith("_plot_file"):
+            raise GovernedRunError(f"--{name} would override a governed input or output; refused")
 
 
 def sha256_text(text: str) -> str:
@@ -288,7 +301,8 @@ class GovHttp:
                     "delivery": response.getheader("X-Delivery"),
                     "time_column": response.getheader("X-Time-Column") or None,
                 }
-                part = target_dir / f"{expected}{ext}.part"
+                # one writer, one part file: concurrent runs of the same bytes never share a partial file
+                part = target_dir / f"{expected}{ext}.{os.getpid()}.{uuid.uuid4().hex}.part"
                 digest = hashlib.sha256()
                 size = 0
                 with open(part, "wb") as handle:
@@ -411,6 +425,7 @@ def run(args, extra) -> dict:
         gcfg_path.write_text(json.dumps(gcfg, indent=4) + "\n", encoding="utf-8")
         state["governed_config"] = str(gcfg_path)
 
+        refuse_governed_overrides(extra)
         cmd = [sys.executable, "app/main.py", "--load_config", str(gcfg_path), *extra]
         env = dict(os.environ, CUDA_VISIBLE_DEVICES="", PYTHONPATH=str(REPO_ROOT))
         state["command"] = cmd
@@ -425,6 +440,10 @@ def run(args, extra) -> dict:
             raise GovernedRunError(f"predictor wrote no effective config at {effective_path}")
         with open(effective_path, encoding="utf-8") as handle:
             effective = json.load(handle)
+        for role, cached_path in cached.items():
+            used = effective.get(role)
+            if used is None or Path(str(used)).resolve() != Path(cached_path).resolve():
+                raise GovernedRunError(f"the run did not use the governed input for {role}: {used!r}")
         identities = {
             role: f"gov:{args.lake}/{downloads[path]['resource']}@{downloads[path]['sha256']}"
             for role, path in inputs.items()
