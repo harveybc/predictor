@@ -77,6 +77,7 @@ import importlib.util
 import json
 import math
 import sys
+import types
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -123,11 +124,6 @@ _REASON_DTYPE = "<U18"
 PREVIOUSLY_LAB_REJECTED_CONTROL = "PREVIOUSLY_LAB_REJECTED_CONTROL"
 NON_CAUSAL_NEGATIVE_CONTROL = "NON_CAUSAL_NEGATIVE_CONTROL"
 
-# Guards added by C152-C154, switched off only by mutation tests (C159).
-GUARDS = {name: True for name in (
-    "artifact_bound", "dataset_binding", "column_identity", "transform_partition_license",
-    "fit_mode_enforcement", "stream_binding")}
-
 NAMING_DECISIONS = (
     {"subject": "trailing_haar_threshold", "subject_kind": "OPERATOR", "previous_name": "wavelet_haar_atrous",
      "decision": "RENAMED",
@@ -151,11 +147,6 @@ class OperatorRefusal(Exception):
 
 class OperatorAbstain(OperatorRefusal):
     """The artifact is a typed ABSTAIN: no output exists for it."""
-
-
-def _guard(name: str, bad: bool, msg: str) -> None:
-    if GUARDS[name] and bad:
-        raise OperatorRefusal(msg)
 
 
 def _snap_call(fn, *a):
@@ -197,10 +188,12 @@ NON_CAUSAL_KINDS = ("centered_mean_oracle",)
 CAUSAL_KINDS = WINDOWED_KINDS + RECURSIVE_KINDS
 DATA_INDEPENDENT_KINDS = ("identity", "ewma", "trailing_mean", "trailing_median", "fir_sinc_lowpass",
                           "butterworth2_lowpass", "centered_mean_oracle")
-KIND_FIT_MODES = {k: ((EXPANDING_PREFIX, FROZEN_PREVIOUS_PARTITION, OFFLINE_ANALYSIS_ONLY_NON_CAUSAL)
-                      if k in DATA_INDEPENDENT_KINDS or k == "causal_decomposition"
-                      else (FROZEN_PREVIOUS_PARTITION, OFFLINE_ANALYSIS_ONLY_NON_CAUSAL))
-                  for k in KINDS}
+# read-only: the fit-mode check consults it, so no caller can widen a kind's modes in place (C167)
+KIND_FIT_MODES = types.MappingProxyType({
+    k: ((EXPANDING_PREFIX, FROZEN_PREVIOUS_PARTITION, OFFLINE_ANALYSIS_ONLY_NON_CAUSAL)
+        if k in DATA_INDEPENDENT_KINDS or k == "causal_decomposition"
+        else (FROZEN_PREVIOUS_PARTITION, OFFLINE_ANALYSIS_ONLY_NON_CAUSAL))
+    for k in KINDS})
 
 _WINDOW_MISSING = ("WINDOW_MUST_BE_COMPLETE: an output whose window holds "
                    "a NaN is MISSING_INPUT; no imputation")
@@ -626,16 +619,15 @@ def _build_artifact(spec: dict, x, mode, binding, t0: int) -> dict:
     validate_spec(spec)
     if mode not in FIT_MODES:
         raise OperatorRefusal(f"unknown fit mode {mode!r}; declared modes are {list(FIT_MODES)}")
-    _guard("fit_mode_enforcement", mode not in KIND_FIT_MODES[spec["kind"]],
-           f"fit mode {mode} is not implemented for kind {spec['kind']} "
-           f"(declared {list(KIND_FIT_MODES[spec['kind']])})")
+    if mode not in KIND_FIT_MODES[spec["kind"]]:
+        raise OperatorRefusal(f"fit mode {mode} is not implemented for kind {spec['kind']} "
+                              f"(declared {list(KIND_FIT_MODES[spec['kind']])})")
     x = _real_array(x, "fit matrix", allow_nan=False)
     if x.ndim != 2 or x.shape[1] < 1:
         raise OperatorRefusal("fit matrix must be 2-D (T, V)")
     if x.shape[0] < _MIN_TRAIN_ROWS:
         raise OperatorRefusal(f"fit matrix needs >= {_MIN_TRAIN_ROWS} rows")
-    if (spec["kind"] == "causal_decomposition" and mode == EXPANDING_PREFIX
-            and GUARDS["fit_mode_enforcement"]):
+    if spec["kind"] == "causal_decomposition" and mode == EXPANDING_PREFIX:
         fitted = {"seasonal": "ESTIMATED_ONLINE_FROM_THE_STREAM_PREFIX",
                   "phase_origin": "dataset row index modulo period"}
     else:
@@ -721,18 +713,16 @@ def _usable(fitted: dict) -> dict:
 def _check_license(fitted: dict, snap) -> None:
     """Dataset, columns and partition license of a verified TransformSnapshot."""
     b = fitted["fit_binding"]
-    _guard("artifact_bound", b is None, "artifact is not bound to a FitSnapshot (kernel test artifact)")
     if b is None:
-        return
-    _guard("dataset_binding", snap.dataset_id != b["dataset_id"] or snap.contract_sha256 != b["contract_sha256"],
-           "transform snapshot belongs to another dataset or contract than the fit")
-    _guard("column_identity", list(snap.column_ids) != b["column_ids"],
-           "transform columns differ from the fitted columns")
-    _guard("transform_partition_license",
-           snap.start < b["licensed_min_index"] or any(p not in b["licensed_partitions"] for p in snap.partitions),
-           f"range [{snap.start}, {snap.end}) covering {list(snap.partitions)} is not licensed for a "
-           f"{fitted['fit_mode']} fit on {b['role']} (licensed {b['licensed_partitions']} from row "
-           f"{b['licensed_min_index']})")
+        raise OperatorRefusal("artifact is not bound to a FitSnapshot (kernel test artifact)")
+    if snap.dataset_id != b["dataset_id"] or snap.contract_sha256 != b["contract_sha256"]:
+        raise OperatorRefusal("transform snapshot belongs to another dataset or contract than the fit")
+    if list(snap.column_ids) != b["column_ids"]:
+        raise OperatorRefusal("transform columns differ from the fitted columns")
+    if snap.start < b["licensed_min_index"] or any(p not in b["licensed_partitions"] for p in snap.partitions):
+        raise OperatorRefusal(f"range [{snap.start}, {snap.end}) covering {list(snap.partitions)} is not licensed "
+                              f"for a {fitted['fit_mode']} fit on {b['role']} (licensed "
+                              f"{b['licensed_partitions']} from row {b['licensed_min_index']})")
 
 
 # ----------------------------------------------------------------------
@@ -1161,25 +1151,24 @@ def _kernel_state_levels(fitted: dict, state: dict) -> list:
 def _check_bound_stream(fitted: dict, state: dict, dataset_id, contract_sha256, column_ids,
                         first_index: int, first_ts: int) -> None:
     b = state["binding"]
-    _guard("stream_binding", b is None, "state is not bound to a stream")
-    if b is not None:
-        _guard("stream_binding", b["dataset_id"] != dataset_id or b["contract_sha256"] != contract_sha256,
-               "state belongs to another series (dataset or contract differs)")
-        _guard("column_identity", b["column_ids"] != list(column_ids),
-               "row columns differ from the stream's columns")
+    if b is None:
+        raise OperatorRefusal("state is not bound to a stream")
+    if b["dataset_id"] != dataset_id or b["contract_sha256"] != contract_sha256:
+        raise OperatorRefusal("state belongs to another series (dataset or contract differs)")
+    if b["column_ids"] != list(column_ids):
+        raise OperatorRefusal("row columns differ from the stream's columns")
     fb = fitted["fit_binding"]
-    _guard("artifact_bound", fb is None, "artifact is not bound to a FitSnapshot (kernel test artifact)")
-    if fb is not None:
-        _guard("column_identity", list(column_ids) != fb["column_ids"],
-               "row columns differ from the fitted columns")
-        _guard("transform_partition_license", first_index < fb["licensed_min_index"],
-               f"row {first_index} is not licensed for a {fitted['fit_mode']} fit on {fb['role']} "
-               f"(licensed from row {fb['licensed_min_index']})")
-    if SNAP.GUARDS["monotonic_timestamps"]:
-        if first_index != state["next_index"]:
-            raise OperatorRefusal(f"row index {first_index} is not the next row {state['next_index']} of the stream")
-        if state["last_timestamp"] is not None and not first_ts > state["last_timestamp"]:
-            raise OperatorRefusal("timestamps are not strictly increasing along the stream")
+    if fb is None:
+        raise OperatorRefusal("artifact is not bound to a FitSnapshot (kernel test artifact)")
+    if list(column_ids) != fb["column_ids"]:
+        raise OperatorRefusal("row columns differ from the fitted columns")
+    if first_index < fb["licensed_min_index"]:
+        raise OperatorRefusal(f"row {first_index} is not licensed for a {fitted['fit_mode']} fit on {fb['role']} "
+                              f"(licensed from row {fb['licensed_min_index']})")
+    if first_index != state["next_index"]:
+        raise OperatorRefusal(f"row index {first_index} is not the next row {state['next_index']} of the stream")
+    if state["last_timestamp"] is not None and not first_ts > state["last_timestamp"]:
+        raise OperatorRefusal("timestamps are not strictly increasing along the stream")
 
 
 def step_components(fitted: dict, state: dict, row) -> tuple:
@@ -1190,7 +1179,7 @@ def step_components(fitted: dict, state: dict, row) -> tuple:
     _snap_call(SNAP.verify_row, row)
     _check_bound_stream(fitted, state, row.dataset_id, row.contract_sha256, row.column_ids, row.index,
                         row.timestamp)
-    if SNAP.GUARDS["availability"] and row.available_at > row.decision_at:
+    if row.available_at > row.decision_at:
         raise OperatorRefusal("a row is available after its decision instant")
     x = _real_array(row.values, "step row", allow_nan=True)
     if x.shape != (fitted["n_columns"],):

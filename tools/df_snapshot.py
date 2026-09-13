@@ -25,8 +25,10 @@ slice them. Every consumer calls ``verify_fit_snapshot`` or
 ``availability``           (transform) no row is available after its decision
                            instant.
 
-Each check can be switched off only through ``GUARDS`` for mutation testing
-(C159); production never touches it.
+C167: every check runs unconditionally on every productive path. There is no
+table, flag, environment variable, module attribute or parameter able to skip
+one; mutation testing removes a check structurally from an isolated copy of
+this source, in another process (tools/df_structural_mutation.py).
 
 Time: a SAMPLE_INDEX contract has timestamps ``0..n-1``; otherwise the
 contract's unique ``TIMESTAMPS`` file (int64, one per row) is used.
@@ -57,11 +59,6 @@ SNAPSHOT_SCHEMA = "df_snapshot.v1"
 PARTITION_ORDER = ("TRAIN", "CALIBRATION", "CONFIRMATION")
 DESIGN_FIT_ROLES = ("TRAIN", "CALIBRATION")
 _AVAILABILITY_AT_TIMESTAMP = ("SAMPLE_INDEX", "INSTANT", "PERIOD_END", "BAR_CLOSE")
-
-GUARDS = {name: True for name in (
-    "contract_digest", "matrix_digest", "source_rederive", "snapshot_digest", "monotonic_timestamps",
-    "range_in_partition", "role_allowed", "later_partition_exclusion", "availability")}
-
 
 def _load(name: str):
     if name in sys.modules:
@@ -363,38 +360,34 @@ class TransformRow:
 
 
 # ------------------------------------------------------------ verification
-def _refuse_if(guard: str, bad: bool, msg: str) -> None:
-    if GUARDS[guard] and bad:
-        raise SnapshotRefusal(msg)
-
-
 def _verify_common(s: _Snapshot, cls) -> dict:
     if not isinstance(s, cls) or s.token is not _TOKEN or s.schema != SNAPSHOT_SCHEMA or s.kind != cls.__name__:
         raise SnapshotRefusal(f"a {cls.__name__} built by from_contract is required, got {type(s).__name__}")
     contract = s.contract
-    _refuse_if("contract_digest", bool(C.validate(contract)) or contract.get("contract_sha256") != s.contract_sha256
-               or contract.get("dataset_id") != s.dataset_id, "contract digest does not re-derive")
-    _refuse_if("matrix_digest", s.matrix.dtype != np.float64 or not s.matrix.flags.c_contiguous
-               or array_sha256(s.matrix) != s.matrix_sha256
-               or array_sha256(s.timestamps) != s.timestamps_sha256
-               or array_sha256(s.available_at) != s.availability_sha256,
-               "matrix digest does not re-derive (bytes changed after materialization)")
-    if GUARDS["source_rederive"]:
-        try:
-            m = _materialize(contract, s.loader)
-            idx, _, ids = _columns(contract, list(s.column_names))
-        except SnapshotRefusal as exc:
-            raise SnapshotRefusal(f"source bytes do not re-derive: {exc}") from exc
-        again = np.ascontiguousarray(m["matrix"][s.start:s.end][:, list(idx)])
-        if (m["files"] != s.source_files or idx != s.column_index or ids != s.column_ids
-                or again.shape != s.matrix.shape or again.tobytes() != s.matrix.tobytes()
-                or not np.array_equal(m["timestamps"][s.start:s.end], s.timestamps)
-                or not np.array_equal(m["available_at"][s.start:s.end], s.available_at)):
-            raise SnapshotRefusal("source bytes do not re-derive the snapshot matrix, timestamps or availability")
-    _refuse_if("snapshot_digest", C.sha_obj(s.facts()) != s.snapshot_sha256, "snapshot digest does not re-derive")
-    _refuse_if("monotonic_timestamps", not bool(np.all(np.diff(s.timestamps) > 0)),
-               "timestamps are not strictly increasing (unordered or duplicated rows; no duplicate policy "
-               "is declared)")
+    if (bool(C.validate(contract)) or contract.get("contract_sha256") != s.contract_sha256
+            or contract.get("dataset_id") != s.dataset_id):
+        raise SnapshotRefusal("contract digest does not re-derive")
+    if (s.matrix.dtype != np.float64 or not s.matrix.flags.c_contiguous
+            or array_sha256(s.matrix) != s.matrix_sha256
+            or array_sha256(s.timestamps) != s.timestamps_sha256
+            or array_sha256(s.available_at) != s.availability_sha256):
+        raise SnapshotRefusal("matrix digest does not re-derive (bytes changed after materialization)")
+    try:
+        m = _materialize(contract, s.loader)
+        idx, _, ids = _columns(contract, list(s.column_names))
+    except SnapshotRefusal as exc:
+        raise SnapshotRefusal(f"source bytes do not re-derive: {exc}") from exc
+    again = np.ascontiguousarray(m["matrix"][s.start:s.end][:, list(idx)])
+    if (m["files"] != s.source_files or idx != s.column_index or ids != s.column_ids
+            or again.shape != s.matrix.shape or again.tobytes() != s.matrix.tobytes()
+            or not np.array_equal(m["timestamps"][s.start:s.end], s.timestamps)
+            or not np.array_equal(m["available_at"][s.start:s.end], s.available_at)):
+        raise SnapshotRefusal("source bytes do not re-derive the snapshot matrix, timestamps or availability")
+    if C.sha_obj(s.facts()) != s.snapshot_sha256:
+        raise SnapshotRefusal("snapshot digest does not re-derive")
+    if not bool(np.all(np.diff(s.timestamps) > 0)):
+        raise SnapshotRefusal("timestamps are not strictly increasing (unordered or duplicated rows; no duplicate "
+                              "policy is declared)")
     if s.matrix.shape[0] != s.end - s.start or s.timestamps.shape[0] != s.end - s.start:
         raise SnapshotRefusal("rows do not match the declared range")
     return contract
@@ -404,16 +397,15 @@ def verify_fit_snapshot(s) -> FitSnapshot:
     contract = _verify_common(s, FitSnapshot)
     ranges = _partition_ranges(contract)
     lo, hi = ranges.get(s.role, (0, -1))
-    _refuse_if("range_in_partition", not (lo <= s.start < s.end <= hi),
-               f"fit range [{s.start}, {s.end}) is not inside the {s.role} partition [{lo}, {hi})")
-    _refuse_if("role_allowed", s.role not in DESIGN_FIT_ROLES or tuple(s.allowed_roles) != DESIGN_FIT_ROLES,
-               f"fit role {s.role!r} is not allowed by the design {list(DESIGN_FIT_ROLES)}")
-    if GUARDS["later_partition_exclusion"]:
-        later = PARTITION_ORDER[PARTITION_ORDER.index(s.role) + 1:] if s.role in PARTITION_ORDER else ()
-        want = tuple((p, *ranges[p]) for p in later)
-        overlap = [p for p in later if ranges[p][0] < s.end and s.start < ranges[p][1]]
-        if tuple(tuple(x) for x in s.excluded_partitions) != want or overlap:
-            raise SnapshotRefusal(f"later partitions are not excluded from the fit (overlap {overlap})")
+    if not (lo <= s.start < s.end <= hi):
+        raise SnapshotRefusal(f"fit range [{s.start}, {s.end}) is not inside the {s.role} partition [{lo}, {hi})")
+    if s.role not in DESIGN_FIT_ROLES or tuple(s.allowed_roles) != DESIGN_FIT_ROLES:
+        raise SnapshotRefusal(f"fit role {s.role!r} is not allowed by the design {list(DESIGN_FIT_ROLES)}")
+    later = PARTITION_ORDER[PARTITION_ORDER.index(s.role) + 1:] if s.role in PARTITION_ORDER else ()
+    want = tuple((p, *ranges[p]) for p in later)
+    overlap = [p for p in later if ranges[p][0] < s.end and s.start < ranges[p][1]]
+    if tuple(tuple(x) for x in s.excluded_partitions) != want or overlap:
+        raise SnapshotRefusal(f"later partitions are not excluded from the fit (overlap {overlap})")
     return s
 
 
@@ -424,8 +416,8 @@ def verify_transform_snapshot(s) -> TransformSnapshot:
     if (s.decision_at is None or array_sha256(s.decision_at) != s.decision_sha256
             or not np.array_equal(dec, s.decision_at) or s.partitions != _covered(ranges, s.start, s.end)):
         raise SnapshotRefusal("decision instants or covered partitions do not re-derive")
-    _refuse_if("availability", bool(np.any(s.available_at > s.decision_at)),
-               "a row is available after its decision instant")
+    if bool(np.any(s.available_at > s.decision_at)):
+        raise SnapshotRefusal("a row is available after its decision instant")
     return s
 
 

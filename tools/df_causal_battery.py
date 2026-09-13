@@ -26,10 +26,18 @@ NaN == NaN, on output values, availability and reason (reason carries the
 status).
 
 NEGATIVE_CONTROL  one frozen control per forbidden class, each detected.
-GUARD_MUTATION    every guard switched off in turn; its probe must stop refusing
-                  for the expected reason.
 SNAPSHOT_REFUSAL  what fit/transform/step must refuse.
 FIT_MODE          the temporal fit modes, including the PRE seasonal case.
+
+GUARD_MUTATION rows are not produced here (C168): tools/df_structural_mutation.py
+removes each check from an isolated copy of the source and runs its probe in a
+new process. This module has no switch that reduces cuts (C167).
+
+Official battery and mechanics sample (C167). A row is PASS only when the class
+ran on the full declared list of prefixes/cuts of that case (``declared_cuts``).
+``--mechanics-sample K`` (or ``run_battery(mechanics_sample=K)``) runs K of them
+to exercise the mechanics: its passing rows are MECHANICS_SAMPLE, never PASS,
+and its summary has ``battery_scope`` MECHANICS_SAMPLE and ``all_pass`` false.
 
 CLI: ``python tools/df_causal_battery.py --out DIR`` writes, write-once,
 df_fact_causal_test.jsonl, df_fact_naming_isolation_decision.jsonl and
@@ -39,7 +47,6 @@ from __future__ import annotations
 
 import argparse
 import ast
-import contextlib
 import hashlib
 import importlib.util
 import json
@@ -68,6 +75,7 @@ def _load(name: str, directory: Path = HERE):
 OPS = _load("df_operators")
 SNAP = _load("df_snapshot")
 SYNC = _load("df_synthetic_contract")
+PROBES = _load("df_guard_probes")
 REF = _load("df_causal_reference", ROOT / "tests")
 
 SEED = 20260913
@@ -75,12 +83,11 @@ SMALL_N = 100
 LARGE_N = 600
 SMALL_CHUNKS = tuple(range(1, 9))
 LARGE_CHUNKS = (5, 64)
-SEVEN_CUTS = (0, 5, 19, 23, 60, 150, 238)
 SUFFIXES = ("zeros", "large_constant", "other_seed_noise", "reversed", "nan_blocks", "impulse_at_t_plus_1",
             "step", "chirp", "regime_change")
-BATTERY_GUARDS = {"exhaustive_cuts": True}
 TEST_CLASSES = ("PREFIX_ALL_T", "BATCH_STEP_CHUNK_RESTART", "SUFFIX_ADVERSARIAL", "REFERENCE_EQUALITY",
-                "NEGATIVE_CONTROL", "GUARD_MUTATION", "SNAPSHOT_REFUSAL", "FIT_MODE")
+                "NEGATIVE_CONTROL", "SNAPSHOT_REFUSAL", "FIT_MODE")
+MECHANICS_SAMPLE = "MECHANICS_SAMPLE"
 REFUSALS = (OPS.OperatorRefusal, SNAP.SnapshotRefusal)
 
 
@@ -92,6 +99,7 @@ def code_sha256s() -> dict:
     return {"tools/df_operators.py": _file_sha(HERE / "df_operators.py"),
             "tools/df_snapshot.py": _file_sha(HERE / "df_snapshot.py"),
             "tools/df_causal_battery.py": _file_sha(Path(__file__)),
+            "tools/df_guard_probes.py": _file_sha(HERE / "df_guard_probes.py"),
             "tests/df_causal_reference.py": _file_sha(ROOT / "tests" / "df_causal_reference.py"),
             "tools/df_synthetic_contract.py": _file_sha(HERE / "df_synthetic_contract.py"),
             "tools/df_snr.py": _file_sha(HERE / "df_snr.py")}
@@ -102,11 +110,8 @@ def code_sha256() -> str:
 
 
 # ------------------------------------------------------------------ cases
-def base_series(n: int, V: int, seed: int) -> np.ndarray:
-    r = np.random.default_rng(seed)
-    t = np.arange(n)[:, None]
-    return (np.cumsum(r.normal(scale=0.3, size=(n, V)), axis=0) + 0.8 * np.sin(2 * np.pi * t / 24)
-            + r.normal(size=(n, V)))
+base_series = PROBES.base_series
+fixture = PROBES.fixture
 
 
 _CASES: dict = {}
@@ -270,11 +275,33 @@ EXHAUSTIVE_MAX_N = 256
 
 
 def cuts_for_prefix(n: int, spec: dict, mode: str) -> list:
-    """Every t up to EXHAUSTIVE_MAX_N rows; stratified cuts beyond. The mutation
-    `exhaustive_cuts` replaces this with the seven historical cuts."""
-    if not BATTERY_GUARDS["exhaustive_cuts"]:
-        return [t for t in SEVEN_CUTS if t < n]
+    """Every t up to EXHAUSTIVE_MAX_N rows; stratified cuts beyond. No switch reduces it."""
     return list(range(n)) if n <= EXHAUSTIVE_MAX_N else boundary_cuts(spec, mode, n, 24, SEED)
+
+
+def declared_cuts(cls: str, spec: dict, mode: str, case_id: str, n: int) -> list:
+    """The full declared list of prefixes/cuts of a class on a case; the only list a PASS may use."""
+    small = n <= SMALL_N
+    if cls == "PREFIX_ALL_T":
+        return cuts_for_prefix(n, spec, mode)
+    if cls == "BATCH_STEP_CHUNK_RESTART":
+        return restart_points(spec, mode, n)
+    if cls == "SUFFIX_ADVERSARIAL":
+        return (list(range(n - 1)) if case_id == "univariate"
+                else boundary_cuts(spec, mode, n, 8 if small else 16, SEED + 1))
+    if cls == "REFERENCE_EQUALITY":
+        return list(range(n)) if small else boundary_cuts(spec, mode, n, 16, SEED + 2)
+    raise ValueError(cls)
+
+
+def sample_cuts(cuts: list, k) -> list:
+    """K evenly spaced cuts of a declared list (mechanics only); None keeps the full list."""
+    if k is None:
+        return list(cuts)
+    if type(k) is not int or k < 1:
+        raise ValueError("mechanics_sample must be a positive integer")
+    step = max(1, len(cuts) // k)
+    return list(cuts)[::step][:k]
 
 
 def suffix(kind: str, X: np.ndarray, t: int, scale: float) -> np.ndarray:
@@ -415,7 +442,7 @@ def reference_equality(fitted: dict, X: np.ndarray, cuts) -> dict:
 
 def operator_rows(spec: dict, mode: str, case_id: str, run_id: str, code: str,
                   classes=("PREFIX_ALL_T", "BATCH_STEP_CHUNK_RESTART", "SUFFIX_ADVERSARIAL",
-                           "REFERENCE_EQUALITY")) -> list:
+                           "REFERENCE_EQUALITY"), mechanics_sample=None) -> list:
     X, scale = cases()[case_id]
     n, V = X.shape
     fitted = fitted_for(spec, mode, V, scale)
@@ -425,23 +452,24 @@ def operator_rows(spec: dict, mode: str, case_id: str, run_id: str, code: str,
                        if spec["kind"] == "trailing_haar_threshold" else [])
     rows = []
     for cls in classes:
+        declared = declared_cuts(cls, spec, mode, case_id, n)
+        cuts = sample_cuts(declared, mechanics_sample)
         if cls == "PREFIX_ALL_T":
-            cuts = cuts_for_prefix(n, spec, mode)
             fails = prefix_all_t(run, X, cuts)
         elif cls == "BATCH_STEP_CHUNK_RESTART":
-            cuts = restart_points(spec, mode, n)
             fails = batch_step_chunk_restart(fitted, X, SMALL_CHUNKS if small else LARGE_CHUNKS, set(cuts))
         elif cls == "SUFFIX_ADVERSARIAL":
-            cuts = (list(range(n - 1)) if case_id == "univariate"
-                    else boundary_cuts(spec, mode, n, 8 if small else 16, SEED + 1))
             fails = suffix_adversarial(run, X, cuts, scale)
         else:
-            cuts = list(range(n)) if small else boundary_cuts(spec, mode, n, 16, SEED + 2)
             fails = reference_equality(fitted, X, cuts)
+        full = cuts == declared
         for lv in levels:
             msg = fails.get(lv)
+            outcome = "FAIL" if msg else ("PASS" if full else MECHANICS_SAMPLE)
+            reason = msg or ("" if full else f"mechanics sample: {len(cuts)} of {len(declared)} declared cuts; "
+                                             "not causal evidence")
             rows.append(_row(run_id, spec["kind"], dict(spec["params"], fit_mode=mode), lv, cls,
-                             f"{case_id}", n, len(cuts), "FAIL" if msg else "PASS", msg or "", code))
+                             f"{case_id}", n, len(cuts), outcome, reason, code))
     return rows
 
 
@@ -530,12 +558,6 @@ OUTPUT_CONTROLS = {
 }
 
 
-def fixture(n=100, V=2, seed=0, **kw):
-    X = base_series(n, V, seed)
-    c, L = SYNC.in_memory_contract(X, name=f"fx{seed}", **kw)
-    return X, c, L
-
-
 def _attempt(fn):
     try:
         fn()
@@ -544,8 +566,8 @@ def _attempt(fn):
     return None
 
 
-EWMA = {"kind": "ewma", "params": {"alpha": 0.3}}
-FROZEN, EXPANDING, OFFLINE = OPS.FROZEN_PREVIOUS_PARTITION, OPS.EXPANDING_PREFIX, OPS.OFFLINE_ANALYSIS_ONLY_NON_CAUSAL
+EWMA, HAAR = PROBES.EWMA, PROBES.HAAR
+FROZEN, EXPANDING, OFFLINE = PROBES.FROZEN, PROBES.EXPANDING, PROBES.OFFLINE
 
 
 def _control_fit_with_later_rows():
@@ -620,230 +642,6 @@ def negative_control_rows(run_id: str, code: str) -> list:
     return rows
 
 
-# --------------------------------------------------------- guard mutation
-def _redigest(snap):
-    for arr, key in (("matrix", "matrix_sha256"), ("timestamps", "timestamps_sha256"),
-                     ("available_at", "availability_sha256")):
-        object.__setattr__(snap, key, SNAP.array_sha256(getattr(snap, arr)))
-    object.__setattr__(snap, "snapshot_sha256", SNAP.C.sha_obj(snap.facts()))
-    return snap
-
-
-def _probe_contract_digest():
-    _, c, L = fixture(seed=31)
-    s = SNAP.FitSnapshot.from_contract(c, "TRAIN", L)
-    other = dict(c, original_fields={"forged": True})
-    other = SNAP.C.seal(other)
-    object.__setattr__(s, "contract_json", SNAP.C.canonical(other))
-    return lambda: OPS.fit(EWMA, s, FROZEN)
-
-
-def _probe_matrix_digest():
-    _, c, L = fixture(seed=32)
-    s = SNAP.FitSnapshot.from_contract(c, "TRAIN", L)
-    m = s.matrix.copy()
-    m[0, 0] += 1.0
-    m.flags.writeable = False
-    object.__setattr__(s, "matrix", m)
-    return lambda: OPS.fit(EWMA, s, FROZEN)
-
-
-def _probe_source_rederive():
-    _, c, L = fixture(seed=33)
-    s = SNAP.FitSnapshot.from_contract(c, "TRAIN", L)
-    m = s.matrix.copy()
-    m[0, 0] += 1.0
-    m.flags.writeable = False
-    object.__setattr__(s, "matrix", m)
-    _redigest(s)
-    return lambda: OPS.fit(EWMA, s, FROZEN)
-
-
-def _probe_snapshot_digest():
-    _, c, L = fixture(seed=34)
-    s = SNAP.FitSnapshot.from_contract(c, "TRAIN", L)
-    object.__setattr__(s, "timestamp_meaning", "INSTANT")
-    return lambda: OPS.fit(EWMA, s, FROZEN)
-
-
-def _probe_monotonic_batch():
-    X = base_series(100, 2, 35)
-    ts = np.arange(100, dtype=np.int64) * 60
-    ts[70] = ts[69]
-    c, L = SYNC.in_memory_contract(X, name="fx_dup", timestamps=ts)
-    f = OPS.fit(EWMA, SNAP.FitSnapshot.from_contract(c, "TRAIN", L), FROZEN)
-    return lambda: OPS.transform_batch(f, SNAP.TransformSnapshot.from_contract(c, L, start=60, end=100))
-
-
-def _probe_monotonic_step():
-    _, c, L = fixture(seed=36)
-    f = OPS.fit(EWMA, SNAP.FitSnapshot.from_contract(c, "TRAIN", L), FROZEN)
-    s = SNAP.TransformSnapshot.from_contract(c, L, start=60, end=100)
-    st = OPS.init_state(f, s)
-    return lambda: OPS.step(f, st, s.row(1))
-
-
-def _probe_range_in_partition():
-    _, c, L = fixture(seed=37)
-    return lambda: OPS.fit(EWMA, SNAP.FitSnapshot.from_contract(c, "CALIBRATION", L, start=0, end=60), FROZEN)
-
-
-def _probe_role_allowed():
-    _, c, L = fixture(n=300, seed=38)            # 60 confirmation rows: only the role guard can refuse
-    return lambda: OPS.fit(EWMA, SNAP.FitSnapshot.from_contract(c, "CONFIRMATION", L), FROZEN)
-
-
-def _probe_later_exclusion():
-    _, c, L = fixture(seed=39)
-    s = SNAP.FitSnapshot.from_contract(c, "TRAIN", L)
-    object.__setattr__(s, "excluded_partitions", ())
-    _redigest(s)
-    return lambda: OPS.fit(EWMA, s, FROZEN)
-
-
-def _probe_availability():
-    X = base_series(100, 2, 40)
-    c, L = SYNC.in_memory_contract(X, name="fx_delay", timestamps=np.arange(100) * 60, availability_delay=30)
-    f = OPS.fit(EWMA, SNAP.FitSnapshot.from_contract(c, "TRAIN", L), FROZEN)
-    return lambda: OPS.transform_batch(f, SNAP.TransformSnapshot.from_contract(c, L, start=60, end=100))
-
-
-def _probe_artifact_bound():
-    X, c, L = fixture(seed=41)
-    f = OPS._fit_kernel(EWMA, X[:60], FROZEN)
-    return lambda: OPS.transform_batch(f, SNAP.TransformSnapshot.from_contract(c, L, start=60, end=100))
-
-
-def _probe_dataset_binding():
-    _, ca, La = fixture(seed=42)
-    _, cb, Lb = fixture(seed=43)
-    f = OPS.fit(EWMA, SNAP.FitSnapshot.from_contract(ca, "TRAIN", La), FROZEN)
-    return lambda: OPS.transform_batch(f, SNAP.TransformSnapshot.from_contract(cb, Lb, start=60, end=100))
-
-
-def _probe_column_identity():
-    _, c, L = fixture(seed=44)
-    f = OPS.fit(EWMA, SNAP.FitSnapshot.from_contract(c, "TRAIN", L, columns=["v0", "v1"]), FROZEN)
-    return lambda: OPS.transform_batch(f, SNAP.TransformSnapshot.from_contract(c, L, start=60, end=100,
-                                                                              columns=["v1", "v0"]))
-
-
-def _probe_partition_license():
-    _, c, L = fixture(seed=45)
-    f = OPS.fit(EWMA, SNAP.FitSnapshot.from_contract(c, "TRAIN", L), FROZEN)
-    return lambda: OPS.transform_batch(f, SNAP.TransformSnapshot.from_contract(c, L, start=0, end=100))
-
-
-HAAR = {"kind": "trailing_haar_threshold", "params": {"levels": 2, "threshold_k": 3.0}}
-
-
-def _probe_fit_mode():
-    _, c, L = fixture(seed=46)
-    return lambda: OPS.transform_batch(OPS.fit(HAAR, SNAP.FitSnapshot.from_contract(c, "TRAIN", L), EXPANDING),
-                                       SNAP.TransformSnapshot.from_contract(c, L, start=0, end=60))
-
-
-def _probe_stream_binding():
-    _, ca, La = fixture(seed=47)
-    _, cb, Lb = fixture(seed=48)
-    f = OPS.fit(EWMA, SNAP.FitSnapshot.from_contract(ca, "TRAIN", La), FROZEN)
-    st = OPS.init_state(f, SNAP.TransformSnapshot.from_contract(ca, La, start=60, end=100))
-    sb = SNAP.TransformSnapshot.from_contract(cb, Lb, start=60, end=100)
-    return lambda: OPS.step(f, st, sb.row(0))
-
-
-def _probe_exhaustive_battery():
-    """A one-sample leak at t=100: the exhaustive prefix check must detect it."""
-    X = base_series(240, 2, 49)
-    f = OPS._fit_kernel(EWMA, base_series(300, 2, 99), FROZEN)
-
-    def leaking(Z):
-        y, a, r = OPS._transform_kernel(f, Z)
-        y = y.copy()
-        if Z.shape[0] > 101:
-            y[100] = Z[101]
-        return {"y": y}, a, r
-
-    def check():
-        fails = prefix_all_t(leaking, X, cuts_for_prefix(240, EWMA, FROZEN))
-        if fails:
-            raise OPS.OperatorRefusal(f"battery detected a future leak: {fails[None]}")
-    return check
-
-
-GUARD_PROBES = (
-    ("contract_digest", SNAP.GUARDS, _probe_contract_digest, "contract digest does not re-derive"),
-    ("matrix_digest", SNAP.GUARDS, _probe_matrix_digest, "matrix digest does not re-derive"),
-    ("source_rederive", SNAP.GUARDS, _probe_source_rederive, "source bytes do not re-derive"),
-    ("snapshot_digest", SNAP.GUARDS, _probe_snapshot_digest, "snapshot digest does not re-derive"),
-    ("monotonic_timestamps", SNAP.GUARDS, _probe_monotonic_batch, "not strictly increasing"),
-    ("monotonic_timestamps.step", SNAP.GUARDS, _probe_monotonic_step, "is not the next row"),
-    ("range_in_partition", SNAP.GUARDS, _probe_range_in_partition, "is not inside the CALIBRATION partition"),
-    ("role_allowed", SNAP.GUARDS, _probe_role_allowed, "is not allowed by the design"),
-    ("later_partition_exclusion", SNAP.GUARDS, _probe_later_exclusion, "later partitions are not excluded"),
-    ("availability", SNAP.GUARDS, _probe_availability, "available after its decision instant"),
-    ("artifact_bound", OPS.GUARDS, _probe_artifact_bound, "not bound to a FitSnapshot"),
-    ("dataset_binding", OPS.GUARDS, _probe_dataset_binding, "another dataset or contract"),
-    ("column_identity", OPS.GUARDS, _probe_column_identity, "columns differ from the fitted columns"),
-    ("transform_partition_license", OPS.GUARDS, _probe_partition_license, "is not licensed"),
-    ("fit_mode_enforcement", OPS.GUARDS, _probe_fit_mode, "is not implemented for kind"),
-    ("stream_binding", OPS.GUARDS, _probe_stream_binding, "another series"),
-    ("exhaustive_cuts", BATTERY_GUARDS, _probe_exhaustive_battery, "battery detected a future leak: prefix differs at t=100"),
-)
-_PROBE_OPERATOR = {"fit_mode_enforcement": HAAR}
-
-
-@contextlib.contextmanager
-def guard_disabled(table: dict, flag: str):
-    old = table[flag]
-    table[flag] = False
-    try:
-        yield
-    finally:
-        table[flag] = old
-
-
-def guard_mutation(name: str) -> dict:
-    """-> {"on": message, "off": message or None, "detected": bool}."""
-    _, table, make, expected = next(p for p in GUARD_PROBES if p[0] == name)
-    flag = name.split(".")[0]
-    on = _attempt(make())
-    with guard_disabled(table, flag):
-        off = _attempt(make())
-    detected = on is not None and expected in on and (off is None or expected not in off)
-    return {"on": on, "off": off, "expected": expected, "detected": detected}
-
-
-def fit_mode_leak_under_mutation() -> str:
-    """With fit_mode_enforcement off, an EXPANDING trailing Haar reuses thresholds from later train
-    rows on earlier rows: outputs at t <= 30 change when train rows 31..59 change."""
-    X = base_series(100, 2, 50)
-    X2 = X.copy()
-    X2[31:60] = X2[31:60] * 5.0 + 3.0
-    outs = []
-    with guard_disabled(OPS.GUARDS, "fit_mode_enforcement"):
-        for Z, nm in ((X, "a"), (X2, "b")):
-            c, L = SYNC.in_memory_contract(Z, name=f"fx_leak_{nm}")
-            f = OPS.fit(HAAR, SNAP.FitSnapshot.from_contract(c, "TRAIN", L), EXPANDING)
-            y, _, _ = OPS.transform_batch(f, SNAP.TransformSnapshot.from_contract(c, L, start=0, end=31))
-            outs.append(y)
-    moved = not _same(outs[0], outs[1])
-    return f"outputs at t<=30 moved by later train rows: {moved}"
-
-
-def guard_mutation_rows(run_id: str, code: str) -> list:
-    rows = []
-    for name, _, _, _ in GUARD_PROBES:
-        res = guard_mutation(name)
-        spec = _PROBE_OPERATOR.get(name, EWMA)
-        extra = f"; {fit_mode_leak_under_mutation()}" if name == "fit_mode_enforcement" else ""
-        rows.append(_row(run_id, spec["kind"], dict(spec["params"], guard=name), None, "GUARD_MUTATION", name,
-                         240 if name == "exhaustive_cuts" else 100, 240 if name == "exhaustive_cuts" else 1,
-                         "DETECTED" if res["detected"] else "NOT_DETECTED",
-                         f"guard on: {res['on']}; guard off: {res['off'] or 'no refusal'}{extra}", code))
-    return rows
-
-
 # ------------------------------------------------------ snapshot refusals
 def _refusal_cases():
     X, c, L = fixture(seed=60)
@@ -884,7 +682,7 @@ def _refusal_cases():
         SNAP.FitSnapshot.from_contract(c, "TRAIN", blobs)
 
     def availability():
-        _probe_availability()()
+        PROBES.probe_availability()()
 
     return (
         ("bare_array_fit", lambda: OPS.fit(EWMA, X[:60], FROZEN), "requires a FitSnapshot"),
@@ -897,14 +695,14 @@ def _refusal_cases():
         ("fit_on_confirmation", lambda: OPS.fit(EWMA, SNAP.FitSnapshot.from_contract(c, "CONFIRMATION", L), FROZEN),
          "not allowed by the design"),
         ("unordered_rows", unordered, "not strictly increasing"),
-        ("duplicated_rows", lambda: _probe_monotonic_batch()(), "not strictly increasing"),
+        ("duplicated_rows", lambda: PROBES.probe_monotonic_batch()(), "not strictly increasing"),
         ("available_after_decision", availability, "available after its decision instant"),
-        ("column_change", lambda: _probe_column_identity()(), "columns differ"),
+        ("column_change", lambda: PROBES.probe_column_identity()(), "columns differ"),
         ("range_change", range_change, "do not re-derive"),
         ("role_change", role_change, "does not re-derive"),
         ("bytes_changed_after_materialization", bytes_after, "source bytes"),
         ("bytes_mismatch_at_construction", bytes_at_construction, "do not match the contract digest"),
-        ("partition_not_licensed", lambda: _probe_partition_license()(), "is not licensed"),
+        ("partition_not_licensed", lambda: PROBES.probe_partition_license()(), "is not licensed"),
         ("step_row_of_unlicensed_partition",
          lambda: OPS.step(f, OPS.init_state(f, tsnap),
                           SNAP.TransformSnapshot.from_contract(c, L, start=0, end=100).row(0)),
@@ -1066,35 +864,38 @@ def naming_rows(run_id: str, code: str) -> list:
 
 
 # -------------------------------------------------------------------- run
-def run_battery(progress=None) -> tuple:
+def run_battery(progress=None, mechanics_sample=None) -> tuple:
     code = code_sha256()
-    run_id = "c156_" + code[:24]
+    run_id = ("c167_" if mechanics_sample is None else "c167_mechanics_sample_") + code[:24]
     tests = []
     for spec, mode in operator_uses():
         for case_id in ALL_CASES:
-            tests.extend(operator_rows(spec, mode, case_id, run_id, code))
+            tests.extend(operator_rows(spec, mode, case_id, run_id, code, mechanics_sample=mechanics_sample))
         if progress:
             progress(f"{use_id(spec, mode)} done")
     tests.extend(negative_control_rows(run_id, code))
-    tests.extend(guard_mutation_rows(run_id, code))
     tests.extend(snapshot_refusal_rows(run_id, code))
     tests.extend(fit_mode_rows(run_id, code))
     return run_id, tests, naming_rows(run_id, code)
 
 
-def summarize(run_id: str, tests: list, naming: list, wall: float) -> dict:
+def summarize(run_id: str, tests: list, naming: list, wall: float, mechanics_sample=None) -> dict:
     counts: dict = {}
     for r in tests:
         counts.setdefault(r["test_class"], {}).setdefault(r["outcome"], 0)
         counts[r["test_class"]][r["outcome"]] += 1
     bad = [r for r in tests if r["outcome"] in ("FAIL", "NOT_DETECTED")]
-    return {"schema": "crispdm.data_foundation.causal_battery_summary.v1", "run_id": run_id,
+    sampled = [r for r in tests if r["outcome"] == MECHANICS_SAMPLE]
+    scope = "FULL" if mechanics_sample is None and not sampled else MECHANICS_SAMPLE
+    return {"schema": "crispdm.data_foundation.causal_battery_summary.v2", "run_id": run_id,
+            "battery_scope": scope, "mechanics_sample": mechanics_sample, "mechanics_sample_rows": len(sampled),
+            "guard_mutation_evidence": "not produced by this battery; see tools/df_structural_mutation.py",
             "code_sha256": code_sha256(), "code_sha256s": code_sha256s(),
             "counts_per_test_class_and_outcome": counts, "rows": {"df_fact_causal_test": len(tests),
                                                                "df_fact_naming_isolation_decision": len(naming)},
             "failures": [{k: r[k] for k in ("operator_kind", "level", "test_class", "case_id", "reason")}
                          for r in bad],
-            "all_pass": not bad, "wall_seconds": round(wall, 1),
+            "all_pass": scope == "FULL" and not bad, "wall_seconds": round(wall, 1),
             "peak_rss_bytes": int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) * 1024,
             "reference_tolerance": {k: list(v) for k, v in REF.REFERENCE_TOLERANCE.items()},
             "cases": {k: list(v[0].shape) for k, v in cases().items()}}
@@ -1103,7 +904,12 @@ def summarize(run_id: str, tests: list, naming: list, wall: float) -> dict:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--mechanics-sample", type=int, default=None,
+                    help="run K cuts per class (mechanics only): rows MECHANICS_SAMPLE, never PASS; all_pass false")
     a = ap.parse_args(argv)
+    if a.mechanics_sample is not None and a.mechanics_sample < 1:
+        print("REFUSED: --mechanics-sample must be a positive integer", file=sys.stderr)
+        return 2
     out = a.out.expanduser().resolve()
     local = (Path.home() / ".local").resolve()
     if out == local or local in out.parents:
@@ -1113,8 +919,9 @@ def main(argv=None) -> int:
         print(f"REFUSED: {out.name} exists; battery outputs are write-once", file=sys.stderr)
         return 2
     t0 = time.time()
-    run_id, tests, naming = run_battery(progress=lambda m: print(m, file=sys.stderr, flush=True))
-    summary = summarize(run_id, tests, naming, time.time() - t0)
+    run_id, tests, naming = run_battery(progress=lambda m: print(m, file=sys.stderr, flush=True),
+                                        mechanics_sample=a.mechanics_sample)
+    summary = summarize(run_id, tests, naming, time.time() - t0, a.mechanics_sample)
     text = json.dumps(summary, indent=1, sort_keys=True, allow_nan=False)
     if str(Path.home()) in text:
         print("REFUSED: absolute home path in the summary", file=sys.stderr)
@@ -1125,7 +932,7 @@ def main(argv=None) -> int:
             fh.write("".join(json.dumps(r, sort_keys=True, allow_nan=False) + "\n" for r in rows))
     with open(out / "CAUSAL_BATTERY_SUMMARY.json", "x") as fh:
         fh.write(text + "\n")
-    print(json.dumps({k: summary[k] for k in ("run_id", "counts_per_test_class_and_outcome", "all_pass",
+    print(json.dumps({k: summary[k] for k in ("run_id", "battery_scope", "counts_per_test_class_and_outcome", "all_pass",
                                               "wall_seconds", "peak_rss_bytes")}, indent=1))
     return 0 if summary["all_pass"] else 1
 
