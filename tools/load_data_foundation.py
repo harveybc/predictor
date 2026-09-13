@@ -356,9 +356,11 @@ def validate_row(table: str, row: dict) -> list[str]:
     if any(s in FORBIDDEN for s in _walk_strings(row)):
         p.append("a data-foundation row never carries PUBLICLY_ELIGIBLE or LIVE_ELIGIBLE")
     if "status" in spec and "value" in spec:
-        if row["status"] == "COMPLETED" and row["value"] is None and row["value_text"] is None:
+        # C178: the D2 unit tables carry a numeric value and no value_text column
+        text_value = row.get("value_text") if "value_text" in spec else None
+        if row["status"] == "COMPLETED" and row["value"] is None and text_value is None:
             p.append("a COMPLETED row needs a value")
-        if row["status"] != "COMPLETED" and (row["value"] is not None or row["value_text"] is not None):
+        if row["status"] != "COMPLETED" and (row["value"] is not None or text_value is not None):
             p.append("only a COMPLETED row carries a value")
         if row["status"] != "COMPLETED" and not row["reason"].strip():
             p.append("a row that did not complete needs a reason")
