@@ -1,4 +1,5 @@
-"""Read-only OLAP GUI + HTTP API for data-gov."""
+"""OLAP GUI + HTTP API for data-gov: SELECT for query, append-only gov_*
+through POST /api/v1/metrics. Never runs reset_olap."""
 
 from __future__ import annotations
 
@@ -39,6 +40,7 @@ class Plugin:
             static_url_path="/static",
         )
         app.secret_key = self.params.get("secret_key") or "x"
+        app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
         q = lambda: context["plugins"]["query"]
         cfg = lambda: context["config"]
 
@@ -131,6 +133,23 @@ class Plugin:
             except PermissionError:
                 return jsonify({"error": "holdout"}), 403
 
+        @app.post("/api/v1/metrics")
+        def api_metrics():
+            denied = _api_ok()
+            if denied:
+                return denied
+            report = request.get_json(silent=True)
+            if not isinstance(report, dict):
+                return jsonify({"error": "report must be a JSON object"}), 400
+            try:
+                result = q().write_metrics(report)
+            except ValueError as exc:
+                return jsonify({"error": str(exc)}), 400
+            except Exception as exc:
+                return jsonify({"error": f"database error: {exc}"}), 503
+            result["report_sha256"] = report.get("report_sha256")
+            return jsonify(result), (201 if result.get("stored") else 200)
+
         return app
 
     def serve(self, context):
@@ -138,6 +157,6 @@ class Plugin:
         host = self.params.get("web_host") or "127.0.0.1"
         port = int(self.params.get("web_port") or 5057)
         print(f"OLAP lake UI → http://{host}:{port}")
-        print("read-only; will not run reset_olap")
+        print("SELECT for query; append-only gov_* through write_metrics; never reset_olap")
         app.run(host=host, port=port, debug=False, use_reloader=False, threaded=True)
         return 0

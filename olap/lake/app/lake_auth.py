@@ -1,4 +1,6 @@
-"""Require DATA_GOV_LAKE_TOKEN on /api/v1."""
+"""Require the lake token on /api/v1. It comes only from DATA_GOV_LAKE_TOKEN
+or the file named by DATA_GOV_LAKE_TOKEN_FILE, never from a path into
+another checkout."""
 
 from __future__ import annotations
 
@@ -10,17 +12,10 @@ from pathlib import Path
 def load_token() -> str | None:
     env = os.getenv("DATA_GOV_LAKE_TOKEN")
     if env:
-        return env.strip()
+        return env.strip() or None
     explicit = os.getenv("DATA_GOV_LAKE_TOKEN_FILE")
-    candidates = []
-    if explicit:
-        candidates.append(Path(explicit))
-    here = Path(__file__).resolve()
-    # olap/lake/app → predictor → GitHub/data-gov
-    candidates.append(here.parents[3].parent / "data-gov" / "var" / "lake_token")
-    for path in candidates:
-        if path.is_file():
-            return path.read_text(encoding="utf-8").strip() or None
+    if explicit and Path(explicit).is_file():
+        return Path(explicit).read_text(encoding="utf-8").strip() or None
     return None
 
 

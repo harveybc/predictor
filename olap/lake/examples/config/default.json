@@ -6,6 +6,6 @@
   "web_port": 5057,
   "lake_id": "olap_cube",
   "title": "predictor OLAP cube",
-  "description": "Read-only. Uses PG* (default predictor_olap). Never runs reset_olap.",
+  "description": "SELECT for query; append-only gov_* through write_metrics (PGUSER_WRITE for an INSERT-only role); never reset_olap. Uses PG* (default predictor_olap).",
   "holdout_start": "2025-01-01"
 }
