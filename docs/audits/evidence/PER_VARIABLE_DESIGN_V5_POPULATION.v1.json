@@ -1,0 +1,1858 @@
+{
+ "candidates": 89,
+ "datasets_below_minimum": {},
+ "deficit": {
+  "panels_missing": 6,
+  "panels_qualifying": 0,
+  "panels_required": 6,
+  "variables_per_panel_required": 5
+ },
+ "eligible_variables": 0,
+ "exclusion_reasons": {
+  "UNDECLARED_LICENSE_LICENSE_SOURCE": 59,
+  "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE": 30
+ },
+ "ignored_input_keys": [
+  "artifact",
+  "binding_manifest",
+  "counts",
+  "dataset_id",
+  "dataset_relative_path",
+  "dataset_root_id",
+  "dataset_sha256",
+  "evidence_fields",
+  "evidence_files",
+  "evidence_rule",
+  "feature_dag",
+  "license_search",
+  "missing_policy_derivation",
+  "observations",
+  "order_items",
+  "producer",
+  "self_digest",
+  "semantic_derivations",
+  "sentinel_derivations",
+  "unit_derivations",
+  "unit_unknown_reason",
+  "unknown_excludes",
+  "variable_id_rule"
+ ],
+ "input_aggregates": "IGNORED",
+ "inputs": {
+  "binding_manifest": {
+   "name": "PRODUCER_BINDING_MANIFEST.v2.json",
+   "sha256": "7d2b7d38c2e3be3e99f3aa06606cbc36825cd653974f8d4068f215de618f34bc"
+  },
+  "census": {
+   "name": "ETH_H4_SUCCESSOR_SEMANTIC_CENSUS.v1.json",
+   "schema": "financial_data.eth_h4_successor_semantic_census.v1",
+   "sha256": "3b4b50ddd0ca7cedad019e058d73c203237df992b04079bd82233a6323121c41"
+  },
+  "dag": {
+   "name": "FEATURE_DAG.v4.json",
+   "sha256": "4fa4d1341e51fc4ff0576834fb0455297f177ec319ecd05b3429fa74c8249204"
+  },
+  "temporal_contracts": [
+   {
+    "name": "ETH_H4_SUCCESSOR_TEMPORAL_CONTRACT.v3.json",
+    "sha256": "ee95207dd6d405d68ede09176c791049fc47b257ad60bd2658bb7c896d6270cb"
+   }
+  ],
+  "terminals": {
+   "content_sha256": "418f1b9d0663a950f7cc0901a01f11032e5cf865684fbc6ac8546608cee3621f",
+   "count": 89,
+   "rule": "sha256 over sorted (file name, NUL, file sha256)"
+  }
+ },
+ "ledger": [
+  {
+   "column": "CLOSE",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "31d1f2a0a7db561f45ecdd94f32752f70edf367cbc2d41eddc59dd73c9c22072"
+  },
+  {
+   "column": "HIGH",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "95c1a9d972ce1ccb93f3dc94184d18b6809444cddfee862c17409f180729b70c"
+  },
+  {
+   "column": "LOW",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "68f5c0dbbf9ba796c283ff7aea10bac9c952cbcce213396d133fc73b165292c6"
+  },
+  {
+   "column": "OPEN",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "156f52db043effdb143329e2abf178730ee7b3412b0144a4803658631c81c1de"
+  },
+  {
+   "column": "VOLUME",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "2ab7392480135be1b20b2e55d0b900245cd96a8e1b916b3745b9a68264e7976b"
+  },
+  {
+   "column": "atr_14",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "fced054ef35e51c559e24bc81adebd640c3eb4bfced0ce6ece93f0430cc8598b"
+  },
+  {
+   "column": "autocorr_lag1_100",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "bbb67f5ebff1db4915390a45f940649a5c0949b093865c09c1649a5d45ce828e"
+  },
+  {
+   "column": "autocorr_lag5_100",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "e8238c4769339c699678120027b0c13a23113daa2d6e832d50bd4f2a9094aaf1"
+  },
+  {
+   "column": "bb_lower",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "6cd8a604e15a370dcc7ba55439564e5dc71c029d08485df71e2ecff961fdca08"
+  },
+  {
+   "column": "bb_middle",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "4c78740a47bc499eac65d4331653e3df9be95ac403736bc9f3b4d1f1fc497830"
+  },
+  {
+   "column": "bb_pct_b",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "d513a97033c460990c244522f3465b0a8e6cce6240d9c6194202313fb18c3cf4"
+  },
+  {
+   "column": "bb_upper",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "369c5a0e94406c92516c144aba8470314e99cbae9a5ecfd436b8606d8937b59f"
+  },
+  {
+   "column": "bb_width",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "25e4cbadaff58f818986d90592d92d56ccf67fe7d6ba149d082151cd5a0d9dc9"
+  },
+  {
+   "column": "cci_14",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "1fc6695eec72cff9f032fb81f6d769e0598ea8374ce408f201651972e6d46688"
+  },
+  {
+   "column": "close_sma_ratio_10",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "6b9136fb74c7d56ebe00f9e39ea7a220a8b27847a4e7d2a1dbd32d43ebdf3e2b"
+  },
+  {
+   "column": "close_sma_ratio_100",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "ec6d17daa2a59e3badba4c5a6e5ef1683275b19447e3cfbae3506476a2f56b5b"
+  },
+  {
+   "column": "close_sma_ratio_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "e182d575544efd8c0dbd23617e58e3e465372e69f43fefde2a1fd0646d30ef49"
+  },
+  {
+   "column": "close_sma_ratio_200",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "c64d94b04cc1bdc8ebb0b166302c816e26b5352433bd081819108d4fce6ab93a"
+  },
+  {
+   "column": "close_sma_ratio_50",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "cae3a37a7358277a31df7039df6ce0385cd1a259205853c966ebaccdb288e9e5"
+  },
+  {
+   "column": "ema_10",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "841dbc69fbed8fe57b77643ca24fc4b4a50b72b34a811f456dbb6963fecffe51"
+  },
+  {
+   "column": "ema_100",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "8de225125b75eec0097984eda9c2ab839d5de71a9b19c71a94dd6eb790b91f5b"
+  },
+  {
+   "column": "ema_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "04bdf1384d53726902acd2d9ea156d4c4c8ed39698116a2cac89a945819b0adb"
+  },
+  {
+   "column": "ema_200",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "bc0293e15ecbdb242bd3d391990a349d4f8539f7e65ec0275aaccf9242c20a12"
+  },
+  {
+   "column": "ema_50",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "ad3e5802e6e549caee292cb711a3d977ce02f2a6fc10d7bb39140c7db1a772d7"
+  },
+  {
+   "column": "ema_cross_10_50",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "e5b3f08d931cf7fa52fb588948bbc3ab6b6336c01556d67046724700b6123e77"
+  },
+  {
+   "column": "ema_cross_20_100",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "c6521277703df23d84c2fdd0c1ff167a9b4ebb2a77d45bf194f15ace5c03b94f"
+  },
+  {
+   "column": "hist_vol_10",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "13602a35d0845d70fe0125b51513f96a016fc34906f1a69d279dae43a15ba9e4"
+  },
+  {
+   "column": "hist_vol_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "4d51e75d2c0066e621d536b9c70e0766ebe1e749253bafeb16c2d8349a361eb4"
+  },
+  {
+   "column": "hist_vol_60",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "3741814d4d51ee28e30523362937707c18f6f9199fed2f6680c81ad097f52ed4"
+  },
+  {
+   "column": "hurst_proxy_200",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "2079abdc7f933dc0bc1e3decdc171c76934786f7cfeb34edb86a76b436d4f28a"
+  },
+  {
+   "column": "log_return_1",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "b7de0b9cddfee16140b268f2d636fdd9241d06ebe8def4b0500542e07b344d36"
+  },
+  {
+   "column": "log_return_10",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "16a9d1bbc72a25b6a434f22269d4f7a0a2ea6bc6a15f2ffefe4bfa518a452744"
+  },
+  {
+   "column": "log_return_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "1615552fd64fc590bdbf5216b45efa90e9365c39a3914e75d99392fa4816dbe5"
+  },
+  {
+   "column": "log_return_5",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "23159f419c37a0ea7b46186197a0708d57dab16f2935453dbfbc1e5e30933c2f"
+  },
+  {
+   "column": "log_return_60",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "ed1b391a1052365c078449432f7a90a78e6442890735d56243ea8267127ab432"
+  },
+  {
+   "column": "macd",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "0b5dd7151848f8545d188c0eaf904906d0077121f9d73a50494c99f530b6b0c5"
+  },
+  {
+   "column": "macd_hist",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "1f54c75685b3decd971a32e605b5f1397275769ad4a3e179d6c170712a1299bd"
+  },
+  {
+   "column": "macd_signal",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "88e894a0a3b62cd3e5a3ceace6f2ac9f629e52802fc914e25766a2ca477245fb"
+  },
+  {
+   "column": "mfi_14",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "b026e0329af3f7419fe3daf3d25ce788b44de97d22701d6eaf24e0a16134846c"
+  },
+  {
+   "column": "mom_10",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "11fa3ca7d301749a3e53c9e1898e35e7d210f9f2fe69d970ce430ac6fbd0266d"
+  },
+  {
+   "column": "mom_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "e14033715fe2cdb2231b61860db7c0d34a0158f5f4be1f56e07210a94ba0d3be"
+  },
+  {
+   "column": "natr_14",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "6c8d64ed831f610aa1e6bbdda62929425b5bd353f0c33e77f49bb24db53d6d56"
+  },
+  {
+   "column": "obv",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "69dfc82c9635929b9798863b488f5bb1159141012c813ff08ba225a6b896186d"
+  },
+  {
+   "column": "obv_delta_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "4b6b99873708af4a0bb63ac71ae777d8c524e746dac446dc5340d65bd9abd78d"
+  },
+  {
+   "column": "realized_var_12",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "e975d1cf44b67284aaccefd4415df72a54bd6ac263260d82bb5af0e2cb9de5b2"
+  },
+  {
+   "column": "realized_var_48",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "203c217248d883c942e8fd52ec654f3ca92aab90b153759a27da68c73c73274d"
+  },
+  {
+   "column": "return_1",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "d50d794214a351063a3bc0a55785ecdc94ca869fce49a10b1b07b9c525f30e90"
+  },
+  {
+   "column": "return_10",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "8b2fb94fc6f1c4ee4fe7e5653d21a5ea300b28fc9d2174717c3c4b4ece3385a6"
+  },
+  {
+   "column": "return_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "d58a7e47e2759bf849caaa603cdf0d9b58f7938cb3801f22ac2abc6301c48c78"
+  },
+  {
+   "column": "return_5",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "55651a62ff12845040366d833d04ac6f079264c338d5be0fe72610cb70527197"
+  },
+  {
+   "column": "return_60",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "c75a9d7bd887fe1e5f4cf260c4e923a75077bfa0eeffb65474e70345c9e40787"
+  },
+  {
+   "column": "roc_10",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "ffac2dd1182c534c57f8002d8ced8a3aa43e24c9ce3c7621d7cf1a4d36b0c163"
+  },
+  {
+   "column": "roc_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "5dea3305d3a0e4940d49860810cb9c75967aaf6cf4ca5fc6c0bbe63da93924d2"
+  },
+  {
+   "column": "roc_60",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "ed7c25b763fd5d4ca2809d678adc42658dadcaac881e5c682faeee884431ac93"
+  },
+  {
+   "column": "roll_kurt_ret_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "d89c6aaec87f08f914513a1d0ea2c9151592e7181794306056c4475be560d682"
+  },
+  {
+   "column": "roll_kurt_ret_252",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "3117a659b95d03f65826c178a1a8686386b453f2bccae2be84104e391baf9615"
+  },
+  {
+   "column": "roll_kurt_ret_60",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "76812cf6735648a7525cae285f1b59a46dd7ece8ad53888cb03cace447ea57f5"
+  },
+  {
+   "column": "roll_mean_ret_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "8d10ecfe6e248250b188a6991dda3665decede76f3c52e4fa511d4500fede2b6"
+  },
+  {
+   "column": "roll_mean_ret_252",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "2151c6cc28fb680d969fadba1e01192126ae3172bd33ef231c6274c008f3d1da"
+  },
+  {
+   "column": "roll_mean_ret_60",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "5a2a83e051c8db2ccf2dfab4b9590a1ea705fd2e9a2b459da0b87fc596dfe8bc"
+  },
+  {
+   "column": "roll_skew_ret_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "888b6e2db51d865dc0733c39b674fccb9cc5d424ec324f1db8adbf32512da726"
+  },
+  {
+   "column": "roll_skew_ret_252",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "ae7797337019f27191a1a4412e9e043cb8cf93309e3d15a03453f1569d6b310b"
+  },
+  {
+   "column": "roll_skew_ret_60",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "11a4c998ecf81fc94fa2df85c1e88499cb015167d3551b9ae156d7b53f93a563"
+  },
+  {
+   "column": "roll_std_ret_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "24b8c9f1af44f88baaa3b6f8222a65405d095631126bf2107a84ea5f8bf85dbf"
+  },
+  {
+   "column": "roll_std_ret_252",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "08ca365149ddc5066f90a42488da4744aa8c9e1dd1e03f975b2dec08c8782b8c"
+  },
+  {
+   "column": "roll_std_ret_60",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "f8217c193cb87a62669fe0378b2f289d37fed845beb6b725f35a87b38b4baa43"
+  },
+  {
+   "column": "rsi_14",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "c6740b5215906e6401346af4dbf9f8096b9acc8d3d54de50adccf24ef357e5eb"
+  },
+  {
+   "column": "rsi_21",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "0d6dee596ba0c5da699d6d1f936b2262a7eb6fd22eb58eee938003fdd06d4a7b"
+  },
+  {
+   "column": "rsi_7",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "5fb4f9a71acdad52d9ff6f23e8c1c19ba4a200bea4f32819a148dc138824d042"
+  },
+  {
+   "column": "sma_10",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "00b75b4ab1f771111c2e5a92246e048670a1c5f293a84f715ed078c209a2ed5f"
+  },
+  {
+   "column": "sma_100",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "fe394709a92442bebc198f1ada85432a86d285ff4c7a19a846f22700383b38f6"
+  },
+  {
+   "column": "sma_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "d5a4d31b7adb63d7f566a1855873a2fa4eb461e5250ecbe0edd0bd3f4eae3c5b"
+  },
+  {
+   "column": "sma_200",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "ad8d05670066fa08cb6c0bc280f8894a7909ba1b0dfadd056c39e4cdbeff1cbb"
+  },
+  {
+   "column": "sma_50",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "4d643efac2d0ff2e6b2d12951410e6a9c1acf82c8c8adbd01de168d7dd0af261"
+  },
+  {
+   "column": "sqret_autocorr_lag1_100",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "e206e34a8db3643a3c3137f3e0663eab46f98aa9131d4e36af08ea0129cce33c"
+  },
+  {
+   "column": "statistical__log_return_1",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "a969a0f5138e02a7942692ce9d05bcc84381d1223275304c50dbfc716921e017"
+  },
+  {
+   "column": "stoch_d",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "f322180e47c3c226fc26d1986a99778e19c467db33417df655cbc43dcb720477"
+  },
+  {
+   "column": "stoch_k",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "e2bb74c1c9d10f498197980c1d1a2e64cb4c5264046495f86d4c3a0ce14e647f"
+  },
+  {
+   "column": "trend_slope_50",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "81020ee17f48ad4fd19d4ecfac197c15fbfa248b192c5de6816ae0b96c8f9abb"
+  },
+  {
+   "column": "trend_strength_50",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "27c065ea57312da78a382070ffb99261f14ed28b1b326d51bd8603064f238572"
+  },
+  {
+   "column": "typical_price",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "72ed75c2eedd69476f699e34c255f06c6a459fb35fed784e380dc525d216129a"
+  },
+  {
+   "column": "vol_regime_high",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "fac53806069045f712a00b884f8524ae5a41be0013f6579334fe5a5cbc8d445f"
+  },
+  {
+   "column": "vol_regime_low",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "083c4998ddc22c1111219caad1dbb4432ee874654a0c7fec29aabe812aebc54a"
+  },
+  {
+   "column": "volume_ratio_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "6815bb338e537129cb2b482a24a832b06dfad6291439cda66e699a7af1696953"
+  },
+  {
+   "column": "volume_sma_10",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "b32497747610f614681da8e7f2b9553d96ab710a454c50ede8265c4c53e828f3"
+  },
+  {
+   "column": "volume_sma_20",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "1d19f655caa42bce25e9952870deb213aad15dbd9fbba575564fd7f70e5b0ae6"
+  },
+  {
+   "column": "vwap_60",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_UNIT_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "468d2dcd6e4bdf85a462b4cdd5510fedb7759c824445450afdacc7a060abdd5a"
+  },
+  {
+   "column": "williams_r_14",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "3963f2d5d8e9573628045a58d051740008700a49a94aeab6433eb5b00fea8211"
+  },
+  {
+   "column": "zscore_close_100",
+   "conditions": {
+    "dag_causal_active_with_complete_binding": true,
+    "missing_and_sentinel_policy_declared": true,
+    "missingness_and_observation_limits": true,
+    "role_input_feature": true,
+    "semantic_state_numeric_measurable": true,
+    "semantic_type_unit_license_declared": false,
+    "temporal_contract_and_mask_same_dataset": true,
+    "terminal_independently_recomputed": true
+   },
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.successor_stage22_rerun.v1",
+   "dataset_sha256": "427a754ba3774e381e4f1353690b997d4e0ca89bf4ce6439ff2f8d651fd16d7c",
+   "member": false,
+   "reasons": [
+    "UNDECLARED_LICENSE_LICENSE_SOURCE"
+   ],
+   "variable_id": "7a72f3be4dd98765b36a03ce181b0c7420bac7225b33f0702f092530b8dc42a5"
+  }
+ ],
+ "ledger_sha256": "71854f32f096fdfb53bde1e164499863b37fb992e9d6335a4f5f6cae802d1ff3",
+ "members": 0,
+ "panel_count": 0,
+ "panels": {},
+ "population_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+ "rule": "a member is one (dataset_id, dataset_sha256, column) satisfying every condition at once; every count below is derived from the ledger rows",
+ "state": "DERIVED",
+ "unusable_temporal_contracts": [],
+ "verdict": "BANK_INSUFFICIENT"
+}
