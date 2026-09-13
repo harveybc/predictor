@@ -130,6 +130,22 @@ def test_block_agreement_with_exact_at_5pct_matches_fixture():
         assert all(v is expected for v in c["adf"]["block_reject_5pct"].values())
 
 
+def test_a_constant_block_is_inconclusive_not_failed():
+    # Found in the C151 worst-case smoke: a monthly 0/1 indicator materialized at 5 minutes is
+    # constant inside whole blocks; ADF refuses a constant input and KPSS divides by zero.
+    x = series("unit_root", 4)
+    x[7_500:12_500] = 0.0                      # exactly the middle block with TEST_BLOCK on N
+    policy = dict(U.UNIT_ROOT_POLICY, exact_max_n=TEST_BLOCK)
+    rows = by_metric(U.unit_root_rows("d", {"variable_id": "v"}, "train", x, policy=policy))
+    for test in ("adf", "kpss"):
+        for what in ("statistic", "pvalue"):
+            mid = rows[f"{test}_{what}_block_middle"]
+            assert mid["status"] == "INCONCLUSIVE" and mid["reason"] == "ZERO_VARIANCE_BLOCK"
+            assert rows[f"{test}_{what}_block_start"]["status"] == "COMPLETED"
+            assert rows[f"{test}_{what}_block_spread"]["reason"] == "NOT_EVERY_OFFSET_COMPLETED"
+    assert not [r for r in rows.values() if r["status"] == "FAILED"]
+
+
 def test_resource_gate_refusal_never_calls_the_library(monkeypatch):
     import statsmodels.tsa.stattools as st
 

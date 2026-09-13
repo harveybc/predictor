@@ -576,6 +576,14 @@ def unit_root_rows(ds, key, pname, x, gate=None, policy=None):
         offset = None if mode == "EXACT" else label
         e_adf = _ur_est(E_ADF, policy, variant, (bs, be), (rs, re_), lag, offset)
         e_kpss = _ur_est(E_KPSS, policy, variant, (bs, be), (rs, re_), None, offset)
+        if np.all(seg == seg[0]):
+            # A constant block (e.g. a step indicator that does not change inside the block) is not a
+            # failure of the test: ADF refuses a constant input and KPSS divides by zero. Typed like the
+            # exact path's ZERO_VARIANCE, per block.
+            for metric, e in ((f"adf_statistic{sfx}", e_adf), (f"adf_pvalue{sfx}", e_adf),
+                              (f"kpss_statistic{sfx}", e_kpss), (f"kpss_pvalue{sfx}", e_kpss)):
+                out.append(make_row(ds, key, pname, metric, e, None, "INCONCLUSIVE", "ZERO_VARIANCE_BLOCK"))
+            continue
         # ADF
         if gate("unit_root_adf", vid, pname, n_run=m, lag=lag, variant=variant)["decision"] == "NOT_RUN_RESOURCE_BOUND":
             out.append(make_row(ds, key, pname, f"adf_statistic{sfx}", e_adf, None, "NOT_RUN", RESOURCE_REASON))
@@ -591,8 +599,9 @@ def unit_root_rows(ds, key, pname, x, gate=None, policy=None):
                 results["adf"][label] = (stat, pval)
             except Exception as exc:  # recorded, never raised
                 c = time.process_time() - t0
-                out.append(make_row(ds, key, pname, f"adf_statistic{sfx}", e_adf, None, "FAILED", type(exc).__name__, cpu=c))
-                out.append(make_row(ds, key, pname, f"adf_pvalue{sfx}", e_adf, None, "FAILED", type(exc).__name__, cpu=c))
+                why = f"{type(exc).__name__}: {exc}"[:200]
+                out.append(make_row(ds, key, pname, f"adf_statistic{sfx}", e_adf, None, "FAILED", why, cpu=c))
+                out.append(make_row(ds, key, pname, f"adf_pvalue{sfx}", e_adf, None, "FAILED", why, cpu=c))
         # KPSS
         if gate("unit_root_kpss", vid, pname, n_run=m, variant=variant)["decision"] == "NOT_RUN_RESOURCE_BOUND":
             out.append(make_row(ds, key, pname, f"kpss_statistic{sfx}", e_kpss, None, "NOT_RUN", RESOURCE_REASON))
@@ -612,8 +621,9 @@ def unit_root_rows(ds, key, pname, x, gate=None, policy=None):
                 results["kpss"][label] = (stat, pval)
             except Exception as exc:
                 c = time.process_time() - t0
-                out.append(make_row(ds, key, pname, f"kpss_statistic{sfx}", e_kpss, None, "FAILED", type(exc).__name__, cpu=c))
-                out.append(make_row(ds, key, pname, f"kpss_pvalue{sfx}", e_kpss, None, "FAILED", type(exc).__name__, cpu=c))
+                why = f"{type(exc).__name__}: {exc}"[:200]
+                out.append(make_row(ds, key, pname, f"kpss_statistic{sfx}", e_kpss, None, "FAILED", why, cpu=c))
+                out.append(make_row(ds, key, pname, f"kpss_pvalue{sfx}", e_kpss, None, "FAILED", why, cpu=c))
     if mode == "BLOCK_APPROX":
         for test, base in (("adf", E_ADF), ("kpss", E_KPSS)):
             got = results[test]
