@@ -1,0 +1,130 @@
+PRE C106-C121 python=3.12.13
+[BASE.predictor] FACT HOLDS  checkout at the ordered base, no tracked edits
+     6a0dce448036 dirty=[]
+[BASE.financial-data] FACT HOLDS  checkout at the ordered base, no tracked edits
+     7d9862a331b9 dirty=[]
+[BASE.am-data-first] FACT HOLDS  checkout at the ordered base, no tracked edits
+     ff52ca7d9b77 dirty=[]
+[BASE.am-t2-c106-pre-4bf38b6f] FACT HOLDS  checkout at the ordered base, no tracked edits
+     4bf38b6f4ba2 dirty=[]
+[C106.1] REPRODUCED  round-7 candidate: template CLI yields a989d02d from evidence holding 1.3125
+     rc=0 cli=a989d02d3673c04c8eaa7976050ddc0b7b3e7dec3e0e6a175f04a7ef02b004ca evidence_p=1.3125
+[C106.2] REPRODUCED  hardened replay produced 1.0 and 1be80a0a (committed report + closure API)
+     report=1be80a0ab6d0 diffs=[{'candidate': 1.3125, 'path': 'screen_adjudication.sign_test_exact_p_two_sided', 'recomputed': 1.0}] api_corrected=1be80a0ab6d0 (replay not re-run: C108 is single-attempt)
+[C106.3] REPRODUCED  the two-sided formula was committed in 5fb2849e before 4d0b3159 (executed as committed)
+     ancestor=True formula=2026-09-12T03:20:07-05:00 design=2026-09-12T09:53:09-05:00 replay=2026-09-12T18:25:50-05:00 p(3,6)=1.0 table=[0.03125, 0.21875, 0.6875, 1.0, 0.6875, 0.21875, 0.03125] same_function_at_replay=True
+[C106.4] REPRODUCED  template flaw: the correction sits beside the field and is not applied to it
+     {'template_field': 1.3125, 'correction_beside_field': 1.0, 'correction_state': 'SUPERSEDED', 'published_value_valid': False, 'signs_positive': 3}
+[C107.record] FACT HOLDS  external record installed with the ordered digest
+     bytes read only; never copied, regenerated or chmod-ed
+[C106.clean] FACT HOLDS  PRE checkout still clean after CLI and API runs
+     4bf38b6f4ba2a2e3e97f331f52619757d33be538
+[control_complete_bank] FACT HOLDS  a complete bank is sufficient (control, must stay so)
+     input=1484d6765efb7537 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C117.defect_zero_terminals_zero_semantics] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=01e6c972151982a0 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C117.terminal_of_other_variable] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=37cf313049922291 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C117.census_of_other_dataset] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=d1abb04e5fc1f039 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C117.source_digest_distinct] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=5b4b2069f3b1e695 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C117.duplicate_column] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=4756fdaa5f539aca verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C117.license_absent] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=bb6092923639b8b0 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C117.role_absent] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=a483bed74911b280 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C117.temporal_contract_other_digest] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=5edc54a757b2d8a1 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C117.mask_other_dataset] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=0e5d50c3b2d2c191 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C117.member_only_in_aggregates] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=62554d81ad916f50 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C113.recomputed_role_unknown] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=304490753c2ddb45 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C113.recomputed_license_unknown] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=2bdaf6c4f56eee87 verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C113.semantically_unresolved_terminal] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=92caeb6bf47010dc verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C113.date_stored_as_integer] REPRODUCED  the current derivation admits it as a sufficient bank
+     input=c861565e244d65fa verdict=BANK_SUFFICIENT_FOR_REVIEW panels=6 members=30
+[C117.musashi_reproducer] REPRODUCED  the auditor's independent reproducer gives its captured output here
+     ['FALSE_BANK {"members": 30, "panels": 6, "semantic_variables": 0, "terminals": 0, "verdict": "BANK_SUFFICIENT_FOR_REVIEW"}']
+[C110.identity] FACT HOLDS  B4 v4 file and self digest are the ones the decision names
+     {'file': '63ea37901c87', 'self': '9e7047ea077a'}
+[C114.pre] REPRODUCED  no successor temporal contract: v2 names the historical dataset
+     {'v2_dataset': 'financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1', 'successor_declared_sha': '427a754ba377', 'successor_files': {'ethusdt_4h_tech_stat_model_ready_successor.csv': '0dbf2482548c', 'ethusdt_4h_tech_stat_model_ready_successor.parquet': '427a754ba377'}}
+[C115-C116.pre] REPRODUCED  no successor semantic census and no successor characterization
+     absent before this order
+[C111.pre] FACT HOLDS  no B4 campaign-closure envelope exists in the outbox (outbox API)
+     {'counts': {'pending': 0, 'loaded': 22, 'failed': 16}, 'b4_keys': [], 'campaign_keys': ['crispdm::lake_characterization', 'predictor::cfg', 'predictor::phase_1_ann_1575_1d_config', 'predictor::predictor_run', 'predictor_run', 't2::resource_successor_screen']}
+[C119.control] FACT HOLDS  the committed v4 design validates
+     []
+[C119.bool_as_margin] REPRODUCED  the design validator accepts it
+     []
+[C119.nan_margin] REPRODUCED  the design validator accepts it
+     []
+[C119.inf_margin] REPRODUCED  the design validator accepts it
+     []
+[C119.margin_out_of_domain] REPRODUCED  the design validator accepts it
+     []
+[C119.float_as_integer_minimum] REPRODUCED  the design validator accepts it
+     []
+[C119.duplicate_seed] REPRODUCED  the design validator accepts it
+     []
+[C119.duplicate_operator] REPRODUCED  the design validator accepts it
+     []
+[C119.duplicate_contrast_in_family] REPRODUCED  the design validator accepts it
+     []
+[C119.lopo_declared_not_derived] REPRODUCED  the design validator accepts it
+     []
+[C119.holm_p_above_one] REPRODUCED  Holm adjusts it without refusing
+     {'H2_vs_A0': 0.03, 'H2_vs_A3': 0.04, 'H1': 1.0}
+[C119.holm_p_nan] REPRODUCED  Holm adjusts it without refusing
+     {'H1': 1.0, 'H2_vs_A0': 1.0, 'H2_vs_A3': 1.0}
+[C119.holm_incomplete_family] REPRODUCED  Holm adjusts it without refusing
+     {'H1': 0.01}
+[C119.bool_panel_values] REPRODUCED  a panel contrast accepts booleans as panel values
+     {'panels': 6, 'state': 'INFERENTIAL', 'mean': 0.6666666666666666, 'se': 0.210818510677892, 'lower_bound': 0.24185716965670434, 'level': 0.95, 'df': 5}
+[C119.sample_unbound] REPRODUCED  a contrast is not bound to a frozen common-sample digest
+     ['values', 'level']
+[C119.parser_duplicate_key] REPRODUCED  the --validate CLI parses it leniently and accepts it
+     []
+[C119.parser_nan_constant] REPRODUCED  the --validate CLI parses it leniently and accepts it
+     []
+
+=== identities (before == after) ===
+  b4_v7_real: 9944feb340a4e2f3 unchanged=True
+  t2_original_real: ea2a8a5da5512558 unchanged=True
+  b4_v7_private_copy: b5ea94edd810b770 unchanged=True
+  t2_successor_private_copy: 160e198c94a277f1 unchanged=True
+  external_t2_record: c75d8d6ef4f1a1af unchanged=True
+  t2_historical_evidence_1_3125: 181c0796d015710b unchanged=True
+  t2_round7_divergence_report: 8666d5536cf22978 unchanged=True
+  lake_terminals: ec303016bc85c44b unchanged=True
+  lake_terminals_v2: 41dfa92c00321822 unchanged=True
+  lake_terminals_v3: f9dd5fc01f6b834d unchanged=True
+  lake_terminals_v4: 29c1ff312396f5ec unchanged=True
+  FEATURE_DAG.v1.json: 4991e36862d42b8a unchanged=True
+  FEATURE_DAG.v2.json: 8fbe787a8b8279b5 unchanged=True
+  FEATURE_DAG.v3.json: cf2da14190236e3e unchanged=True
+  FEATURE_DAG.v4.json: 4fa4d1341e51fc4f unchanged=True
+  PRODUCER_BINDING_MANIFEST.v1.json: 5f24ff8545f96cde unchanged=True
+  PRODUCER_BINDING_MANIFEST.v2.json: 7d2b7d38c2e3be3e unchanged=True
+  ETH_H4_TEMPORAL_CONTRACT.v1.json: 6e3a0c8d67dd2ec6 unchanged=True
+  ETH_H4_TEMPORAL_CONTRACT.v2.json: 43b9f2b6650205ec unchanged=True
+  ETH_H4_SAMPLE_ELIGIBILITY_MASK.v1.parquet: b5c2e3b5811c11c4 unchanged=True
+  b4:B4_READJUDICATION_SUBMISSION_V2_2026_09_12.json: 8db3e1dfa19702a0 unchanged=True
+  b4:B4_READJUDICATION_SUBMISSION_V3_2026_09_12.json: 70ac0650052f57ac unchanged=True
+  b4:B4_READJUDICATION_SUBMISSION_V4_2026_09_12.json: 63ea37901c8756cd unchanged=True
+  t2:T2_READJUDICATION_SUBMISSION_2026_09_12.json: 03572efaf35d1d3f unchanged=True
+  t2:T2_READJUDICATION_SUBMISSION_V2_2026_09_12.json: e3a36d542574d9a9 unchanged=True
+  t2:T2_READJUDICATION_SUBMISSION_V3_2026_09_12.json: 7c1e8d0de3007f90 unchanged=True
+  design:PER_VARIABLE_DESIGN_V3_POPULATION.v1.json: a746f13c4630f19b unchanged=True
+  design:PER_VARIABLE_DESIGN_V4_POPULATION.v1.json: 50682f0d6d98d291 unchanged=True
+  design:PER_VARIABLE_PREPROCESSING_DESIGN.v2.json: bed0258942c13dba unchanged=True
+  design:PER_VARIABLE_PREPROCESSING_DESIGN.v3.json: 1a8d60e5b8d92fd5 unchanged=True
+  design:PER_VARIABLE_PREPROCESSING_DESIGN.v4.json: 109cdc505e985c88 unchanged=True
+
+=== PRE SUMMARY: 37 defects, 37 reproduced, not reproduced []; facts differing []; identities changed [] ===
