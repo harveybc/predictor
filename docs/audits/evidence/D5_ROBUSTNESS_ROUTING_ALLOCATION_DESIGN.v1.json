@@ -1,0 +1,892 @@
+{
+ "arms": [
+  {
+   "arm_id": "A0_RAW",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "untransformed branch; always available and the abstention target",
+   "family": "identity",
+   "fit": "NONE",
+   "parameters": [],
+   "requires": [
+    "D0_COMMON_CONTRACT"
+   ],
+   "role": "RAW_CONTROL",
+   "step": "ALL",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "R11_MULTIVIEW",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "raw plus reviewed D2 views delivered together",
+   "family": "redundant multi-view encoding",
+   "fit": "NONE",
+   "parameters": [
+    "views"
+   ],
+   "requires": [
+    "D2_REVIEWED_LAB_DECISION"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_11",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "R11_MEDIAN_OF_VIEWS",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "sample-wise median of reviewed causal views",
+   "family": "robust combination of views",
+   "fit": "NONE",
+   "parameters": [
+    "views"
+   ],
+   "requires": [
+    "D2_REVIEWED_LAB_DECISION"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_11",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "R11_MASK_CAUSAL_FILL",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "masks applied on train/synthetic only; filled by last observation or the reviewed D2 state-space view",
+   "family": "train-only masking with causal fill",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "mask_rate",
+    "mask_block_length",
+    "fill_method"
+   ],
+   "requires": [
+    "D2_REVIEWED_LAB_DECISION"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_11",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "P12_FIXED_MODE",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "each reviewed mode used constantly; one arm instance per mode",
+   "family": "fixed mode baseline",
+   "fit": "NONE",
+   "parameters": [
+    "mode"
+   ],
+   "requires": [
+    "D2_REVIEWED_LAB_DECISION"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_12",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "P12_IQS_THRESHOLD",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "mode chosen from a causal quality state (reviewed D2 SNR estimate, missingness, OOD distance) with thresholds fit on train",
+   "family": "causal information-quality threshold router",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "quality_components",
+    "thresholds_fit"
+   ],
+   "requires": [
+    "D2_REVIEWED_LAB_DECISION"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_12",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "P12_IQS_HYSTERESIS",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "as P12_IQS_THRESHOLD with a minimum dwell time against chatter",
+   "family": "threshold router with hysteresis",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "quality_components",
+    "dwell_samples"
+   ],
+   "requires": [
+    "D2_REVIEWED_LAB_DECISION"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_12",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "P12_ORACLE_ANALYSIS",
+   "causal_contract": "ANALYSIS_ONLY_NON_CAUSAL",
+   "description": "best mode per block known by construction on synthetic data; regret reference only",
+   "family": "oracle router",
+   "fit": "NONE",
+   "parameters": [],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_12",
+   "usable_as_input": false
+  },
+  {
+   "arm_id": "B13_UNIFORM",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "equal share of the total cost cap to every active branch",
+   "family": "uniform allocation",
+   "fit": "NONE",
+   "parameters": [],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_13",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "B13_WATERFILL",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "allocation increasing with train-estimated branch quality, zero allowed",
+   "family": "water-filling allocation",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "quality_source"
+   ],
+   "requires": [
+    "D2_REVIEWED_LAB_DECISION"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_13",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "B13_REDUNDANCY_AWARE",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "water-filling with a discount for train-estimated redundancy between branches",
+   "family": "redundancy-discounted allocation",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "redundancy_estimator"
+   ],
+   "requires": [
+    "D2_REVIEWED_LAB_DECISION"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_13",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "B13_RESERVE",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "unallocated budget kept when marginal utility on train is not above surrogates",
+   "family": "allocation with reserve",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "quanta"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_13",
+   "usable_as_input": true
+  }
+ ],
+ "budget": {
+  "accelerator": "NONE",
+  "cpu_core_hours_cap": 24,
+  "device": "CPU_ONLY",
+  "on_cap": "RECORD_FAILED_BUDGET_EXCEEDED_NO_EXTENSION",
+  "parallel_workers_cap": 4,
+  "peak_memory_mib_cap": 4096,
+  "same_cap_for_every_arm": true,
+  "wall_seconds_cap_per_arm_regime": 1800
+ },
+ "budget_and_abstention": {
+  "abstention": {
+   "allowed": true,
+   "recorded": true,
+   "rule": "Routing may always abstain to the raw branch: when the information quality state is unavailable, in warm-up or outside its reviewed regime, when a branch cost cap is reached, or when the router cannot decide, the output is the raw branch and the abstention is recorded.",
+   "target_arm": "A0_RAW",
+   "target_branch": "B0_RAW",
+   "when": [
+    "information quality state unavailable or in warm-up",
+    "quality state outside the reviewed regime of the D2 decision",
+    "a D2 view whose decision is not in {LAB_CALIBRATED, REGIME_LIMITED} with review",
+    "a branch reaches its cost cap",
+    "an input is not available at decision time",
+    "the router cannot choose a mode"
+   ]
+  },
+  "branches": [
+   {
+    "arm_ids": [
+     "A0_RAW",
+     "R11_MULTIVIEW",
+     "R11_MEDIAN_OF_VIEWS",
+     "R11_MASK_CAUSAL_FILL",
+     "P12_FIXED_MODE",
+     "P12_IQS_THRESHOLD",
+     "P12_IQS_HYSTERESIS",
+     "P12_ORACLE_ANALYSIS",
+     "B13_UNIFORM",
+     "B13_WATERFILL",
+     "B13_REDUNDANCY_AWARE",
+     "B13_RESERVE"
+    ],
+    "branch_id": "B0_RAW",
+    "cost_cap": 20,
+    "description": "raw branch; abstention target",
+    "memory_mib_cap": 256,
+    "on_cap_exceeded": "RECORD_FAILED_BUDGET_EXCEEDED_NO_EXTENSION"
+   },
+   {
+    "arm_ids": [
+     "R11_MULTIVIEW",
+     "R11_MEDIAN_OF_VIEWS",
+     "R11_MASK_CAUSAL_FILL",
+     "P12_FIXED_MODE",
+     "P12_IQS_THRESHOLD",
+     "P12_IQS_HYSTERESIS",
+     "B13_UNIFORM",
+     "B13_WATERFILL",
+     "B13_REDUNDANCY_AWARE",
+     "B13_RESERVE"
+    ],
+    "branch_id": "B1_D2_REVIEWED_VIEWS",
+    "cost_cap": 160,
+    "description": "reviewed D2 operator views, each in its reviewed regime",
+    "memory_mib_cap": 1024,
+    "on_cap_exceeded": "ROUTE_TO_RAW_BRANCH"
+   },
+   {
+    "arm_ids": [
+     "R11_MULTIVIEW",
+     "R11_MEDIAN_OF_VIEWS",
+     "R11_MASK_CAUSAL_FILL"
+    ],
+    "branch_id": "B2_REDUNDANT_MULTIVIEW",
+    "cost_cap": 160,
+    "description": "STEP 11 redundant combinations of B0 and B1",
+    "memory_mib_cap": 1024,
+    "on_cap_exceeded": "ROUTE_TO_RAW_BRANCH"
+   },
+   {
+    "arm_ids": [
+     "P12_IQS_THRESHOLD",
+     "P12_IQS_HYSTERESIS",
+     "B13_WATERFILL",
+     "B13_REDUNDANCY_AWARE",
+     "B13_RESERVE"
+    ],
+    "branch_id": "B3_ROUTER_ALLOCATOR_OVERHEAD",
+    "cost_cap": 60,
+    "description": "quality state, router and allocator computation",
+    "memory_mib_cap": 256,
+    "on_cap_exceeded": "ROUTE_TO_RAW_BRANCH"
+   }
+  ],
+  "cost_unit": "CPU_MILLISECONDS_PER_1000_SAMPLES",
+  "reserve_allowed": true,
+  "sum_of_active_costs_within_total": true,
+  "total_cost_cap": 400
+ },
+ "consumes": {
+  "accepted_d2_decisions": [
+   "LAB_CALIBRATED",
+   "REGIME_LIMITED"
+  ],
+  "d0_d1_inputs": [
+   "C129 common dataset/variable contract (identity, source, license, semantics, unit, frequency, availability, missingness, sentinels, partitions, digest)",
+   "C130 univariate profile per partition",
+   "C131 information and compression profile",
+   "C132 multivariate profile and grouping (training only)",
+   "C133 sampling and aliasing diagnostics"
+  ],
+  "d2_grain": "operator x regime lab decision (C138)",
+  "d2_use": "reviewed D2 operator views as branches, and reviewed D2 SNR/noise estimates as quality-state components, each only in its reviewed regime",
+  "external_review_record_required": true,
+  "never_consumed": [
+   "NOT_IDENTIFIABLE",
+   "LAB_REJECTED"
+  ],
+  "review_record_fields": [
+   "operator_id",
+   "regime_id",
+   "lab_decision",
+   "lab_decision_record_sha256",
+   "external_reviewer",
+   "review_record_sha256",
+   "reviewed_design_sha256"
+  ],
+  "rule": "Only D2 lab decisions LAB_CALIBRATED or REGIME_LIMITED that carry an external review record are consumed, each within its reviewed regime. NOT_IDENTIFIABLE and LAB_REJECTED are never consumed. Nothing is consumed without an external review record. If no such record exists, real-data stages are NOT_RUN and only synthetic calibration may proceed.",
+  "successor_outputs": "Not consumed. Outputs of other successor designs may be bound only by a later version, after their own lab decisions and external review records exist.",
+  "unreviewed_d2_output": "NEVER_CONSUMED"
+ },
+ "controls": [
+  {
+   "consumed_as_input": false,
+   "control_id": "C_RAW",
+   "description": "A0_RAW on the same partition, sample, regime and budget",
+   "kind": "RAW",
+   "steps": [
+    "STEP_11",
+    "STEP_12",
+    "STEP_13"
+   ],
+   "synthetic_only": false
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NULL_PERMUTED_IQS",
+   "description": "quality state block-permuted within train before thresholds are fit",
+   "kind": "NULL_SURROGATE",
+   "steps": [
+    "STEP_12"
+   ],
+   "synthetic_only": false
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NULL_RANDOM_ROUTING",
+   "description": "random mode sequence with the same switch rate and mode frequencies as the router",
+   "kind": "NULL_SURROGATE",
+   "steps": [
+    "STEP_12"
+   ],
+   "synthetic_only": false
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NULL_RANDOM_MASK_VIEWS",
+   "description": "redundant views replaced by independent noise with matched marginals",
+   "kind": "NULL_SURROGATE",
+   "steps": [
+    "STEP_11"
+   ],
+   "synthetic_only": true
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NEG_USELESS_STATE",
+   "description": "router driven by a quality state independent of mode superiority (STEP 12 benchmark E)",
+   "kind": "NEGATIVE_CONTROL_OPERATOR",
+   "steps": [
+    "STEP_12"
+   ],
+   "synthetic_only": true
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NEG_NOISE_BRANCH_ALLOCATION",
+   "description": "allocation that gives the budget to a pure-noise synthetic branch",
+   "kind": "NEGATIVE_CONTROL_OPERATOR",
+   "steps": [
+    "STEP_13"
+   ],
+   "synthetic_only": true
+  }
+ ],
+ "decision_vocabulary": {
+  "decisions": [
+   "LAB_CALIBRATED",
+   "REGIME_LIMITED",
+   "NOT_IDENTIFIABLE",
+   "LAB_REJECTED"
+  ],
+  "grain": "arm x regime",
+  "none_equals_public_eligibility": true,
+  "statement": "LAB_CALIBRATED, REGIME_LIMITED, NOT_IDENTIFIABLE and LAB_REJECTED are laboratory decisions only; none of them equals public eligibility, and this design never grants PUBLICLY_ELIGIBLE."
+ },
+ "design_id": "D5",
+ "design_sha256": "2a18c99d3d8a6e31c4ae1de9e3ea7e3958e50f0615e9ec98fc275f343a2d0cca",
+ "failure_region_reporting": {
+  "best_case_only": "REFUSED",
+  "grain": "arm x synthetic benchmark x quality-state regime x corruption level x budget quantum",
+  "publish": [
+   "every region whose lab decision is NOT_IDENTIFIABLE or LAB_REJECTED",
+   "every region where the raw control is not dominated",
+   "every region where the null surrogate is indistinguishable",
+   "every region where the negative-control operator is not flagged",
+   "every causality or availability audit failure",
+   "every budget failure",
+   "every region where abstention to raw beats routing",
+   "every region where uniform allocation is not dominated"
+  ],
+  "required": true,
+  "rule": "Failure regions are published with the same grain and prominence as regions that calibrate; a summary of the best case alone is refused.",
+  "states_recorded": [
+   "COMPLETED",
+   "FAILED",
+   "INCONCLUSIVE",
+   "REFUSED",
+   "REJECTED",
+   "NOT_RUN",
+   "UNAVAILABLE"
+  ]
+ },
+ "grants_nothing": "This design grants nothing: no execution, no scoring, no consumption, no feature selection, no training, no GPU, no RL, no DOIN, no live or venue action, and it never grants PUBLICLY_ELIGIBLE to any variable, operator, representation, router or allocation.",
+ "hypotheses": [
+  {
+   "falsified_if": "no STEP_11 arm shows smaller degradation than A0_RAW",
+   "hypothesis_id": "H11.1",
+   "protocol_section": "STEP_11 \u00a759 H11.1",
+   "statement": "Redundant multi-view encodings degrade less than raw under train-only corruption",
+   "step": "STEP_11"
+  },
+  {
+   "falsified_if": "every tested corruption level keeps the benefit (tested range insufficient; no universal claim)",
+   "hypothesis_id": "H11.2",
+   "protocol_section": "STEP_11 \u00a759 H11.2",
+   "statement": "The benefit is not universal: some corruption level erases it",
+   "step": "STEP_11"
+  },
+  {
+   "falsified_if": "router regret is not below the best fixed mode on A and B",
+   "hypothesis_id": "H12.1",
+   "protocol_section": "STEP_12 \u00a748, \u00a749, \u00a774",
+   "statement": "On benchmarks with SNR- or missingness-dependent mode superiority (A, B) a causal router has lower regret than the best fixed mode",
+   "step": "STEP_12"
+  },
+  {
+   "falsified_if": "a gain is reported on E (router claims then NOT_IDENTIFIABLE)",
+   "hypothesis_id": "H12.2",
+   "protocol_section": "STEP_12 \u00a752, \u00a774",
+   "statement": "With a useless quality state (E) the router does not beat the best fixed mode",
+   "step": "STEP_12"
+  },
+  {
+   "falsified_if": "chatter not reduced, or regret higher",
+   "hypothesis_id": "H12.3",
+   "protocol_section": "STEP_12 \u00a753, \u00a774",
+   "statement": "Hysteresis reduces chatter (F) without raising regret above the threshold router",
+   "step": "STEP_12"
+  },
+  {
+   "falsified_if": "B13_WATERFILL efficiency is not above B13_UNIFORM",
+   "hypothesis_id": "H13.1",
+   "protocol_section": "STEP_13 \u00a725, \u00a726, \u00a7100",
+   "statement": "With branches of unequal known SNR, water-filling allocation beats uniform allocation at the same total cap",
+   "step": "STEP_13"
+  },
+  {
+   "falsified_if": "a non-uniform allocation dominates on equal-quality families (estimator overfit)",
+   "hypothesis_id": "H13.2",
+   "protocol_section": "STEP_13 \u00a769, \u00a7100",
+   "statement": "With equal branch quality, uniform allocation is not dominated",
+   "step": "STEP_13"
+  },
+  {
+   "falsified_if": "allocating to the pure-noise branch improves efficiency",
+   "hypothesis_id": "H13.3",
+   "protocol_section": "STEP_13 \u00a766, \u00a7100",
+   "statement": "A pure-noise branch receives zero budget and the reserve is used when capacity adds no utility",
+   "step": "STEP_13"
+  }
+ ],
+ "license": {
+  "consumption": "NOT_GRANTED",
+  "execution": "NOT_GRANTED",
+  "required": "EXTERNAL_REVIEW_OF_D2_OUTPUTS_AND_OF_THIS_DESIGN",
+  "scoring": "NOT_GRANTED",
+  "selection": "NOT_GRANTED",
+  "training": "NOT_GRANTED"
+ },
+ "metrics": [
+  {
+   "compares": [
+    "STEP_11_ARMS",
+    "A0_RAW",
+    "C_NULL_RANDOM_MASK_VIEWS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "increase of clean-recovery mean squared error from uncorrupted to corrupted synthetic input, per mask rate and block length",
+   "metric_id": "M11_CORRUPTION_DEGRADATION",
+   "name": "degradation under corruption",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_11"
+  },
+  {
+   "compares": [
+    "STEP_11_ARMS",
+    "A0_RAW"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "median absolute difference between outputs on clean and corrupted input, scaled by the train-frozen MAD",
+   "metric_id": "M11_REPRESENTATION_STABILITY",
+   "name": "representation stability",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_11"
+  },
+  {
+   "compares": [
+    "STEP_12_ARMS",
+    "C_NULL_RANDOM_ROUTING",
+    "C_NEG_USELESS_STATE"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "mean clean-recovery loss of routed output minus oracle-mode loss on synthetic benchmarks A-F",
+   "metric_id": "M12_ROUTING_REGRET",
+   "name": "regret against the oracle mode",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_12"
+  },
+  {
+   "compares": [
+    "P12_IQS_THRESHOLD",
+    "P12_IQS_HYSTERESIS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "mode switches per sample",
+   "metric_id": "M12_CHATTER",
+   "name": "route chatter",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_12"
+  },
+  {
+   "compares": [
+    "STEP_12_ARMS",
+    "A0_RAW"
+   ],
+   "direction": "TWO_SIDED",
+   "estimator": "fraction of samples routed to B0_RAW by abstention, and loss on those samples",
+   "metric_id": "M12_ABSTENTION",
+   "name": "abstention rate and abstention-conditioned loss",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_12"
+  },
+  {
+   "compares": [
+    "P12_IQS_THRESHOLD",
+    "P12_IQS_HYSTERESIS"
+   ],
+   "direction": "MUST_BE_ZERO",
+   "estimator": "count of quality values changing when samples after t are appended",
+   "metric_id": "M12_IQS_CAUSALITY",
+   "name": "quality-state causality audit",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_12"
+  },
+  {
+   "compares": [
+    "STEP_13_ARMS",
+    "C_NEG_NOISE_BRANCH_ALLOCATION"
+   ],
+   "direction": "HIGHER_IS_BETTER",
+   "estimator": "clean-recovery loss reduction relative to A0_RAW per unit of spent cost",
+   "metric_id": "M13_ALLOCATION_EFFICIENCY",
+   "name": "allocation efficiency",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_13"
+  },
+  {
+   "compares": [
+    "STEP_13_ARMS",
+    "A0_RAW"
+   ],
+   "direction": "TWO_SIDED",
+   "estimator": "non-dominated set over (clean-recovery loss, CPU cost, peak memory) per budget quantum",
+   "metric_id": "M13_PARETO_FRONTIER",
+   "name": "loss-cost-memory frontier",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_13"
+  },
+  {
+   "compares": [
+    "ALL_ARMS"
+   ],
+   "direction": "MUST_BE_ZERO",
+   "estimator": "count of blocks where a branch exceeds its cost cap or the total exceeds the total cap",
+   "metric_id": "M13_BUDGET_VIOLATIONS",
+   "name": "budget audit",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_13"
+  },
+  {
+   "compares": [
+    "ALL_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "CPU seconds (process time), peak RSS in MiB, algorithmic delay in samples from the impulse response, and warm-up length, each measured separately per arm x regime",
+   "metric_id": "M_COST_STEP_11",
+   "name": "computational cost and delay",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_11"
+  },
+  {
+   "compares": [
+    "ALL_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "CPU seconds (process time), peak RSS in MiB, algorithmic delay in samples from the impulse response, and warm-up length, each measured separately per arm x regime",
+   "metric_id": "M_COST_STEP_12",
+   "name": "computational cost and delay",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_12"
+  },
+  {
+   "compares": [
+    "ALL_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "CPU seconds (process time), peak RSS in MiB, algorithmic delay in samples from the impulse response, and warm-up length, each measured separately per arm x regime",
+   "metric_id": "M_COST_STEP_13",
+   "name": "computational cost and delay",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_13"
+  }
+ ],
+ "olap_grains": [
+  {
+   "grain": "redundancy_view_run",
+   "keys": [
+    "run_id",
+    "design_id",
+    "dataset_sha256",
+    "variable_id",
+    "partition",
+    "arm_id",
+    "parameters_sha256",
+    "code_sha256"
+   ],
+   "records": [
+    "views_sha256",
+    "corruption_level",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "router_decision",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "block_id"
+   ],
+   "records": [
+    "quality_state_sha256",
+    "mode",
+    "abstained",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "abstention_event",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "block_id"
+   ],
+   "records": [
+    "reason",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "budget_allocation",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "branch_id",
+    "budget_quantum"
+   ],
+   "records": [
+    "allocated_cost",
+    "branch_cost_cap",
+    "total_cost_cap",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "delay_and_cost",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "regime_id"
+   ],
+   "records": [
+    "cpu_seconds",
+    "peak_rss_mib",
+    "algorithmic_delay",
+    "warm_up",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "lab_decision",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "regime_id"
+   ],
+   "records": [
+    "lab_decision",
+    "evidence_sha256",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "failure_region",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "region_id"
+   ],
+   "records": [
+    "region_definition",
+    "lab_decision",
+    "record_state"
+   ]
+  }
+ ],
+ "order_item": "C143",
+ "partitions": {
+  "confirm": "CONFIRMATION",
+  "decide": "CALIBRATION",
+  "fit": "TRAIN_ONLY",
+  "mixing_partitions": "FORBIDDEN",
+  "rule": "All fitting (cells, codebooks, templates, scales, projections, lags, thresholds, allocations) uses training data only. Calibration decides the lab decision; confirmation confirms it without refitting. No sealed period is read. No target participates in this design.",
+  "sealed_periods": "NEVER_READ",
+  "target_exception": "A target may appear only in a later, separately licensed utility test and then only inside training folds; it is not part of this design.",
+  "target_use": "NONE",
+  "test_set_tuning": "FORBIDDEN"
+ },
+ "protocols": [
+  {
+   "file": "docs/tres_temas_entrevista/STEP_11_CONTROLLED_REDUNDANCY_CORRUPTION_HARDENING_EXISTING_EXTRACTOR_FINAL.md",
+   "sha256": "d2dc2ba9c6bd31b1eefc20567b6d16e00e05f5a75834dda5274c9b1f9fa60073"
+  },
+  {
+   "file": "docs/tres_temas_entrevista/STEP_12_ADAPTIVE_INFORMATION_QUALITY_ROUTING_LINK_ADAPTATION_FINAL.md",
+   "sha256": "171deeda6dc61f334397179b1da027cc3827affe2884dfea318d531e27305649"
+  },
+  {
+   "file": "docs/tres_temas_entrevista/STEP_13_MULTIPLEXING_MIMO_BUDGET_ALLOCATION_MULTI_BRANCH_FINAL.md",
+   "sha256": "b2e7c59439a29b3d140f4c8ba7017cd561033db38a2b4c1a24edd82fd8bd90a6"
+  },
+  {
+   "file": "docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v2.md",
+   "sha256": "19cc3653bc2b720ef1c00087476d417505f099f47075cd7eca089fb8c6996fa3"
+  }
+ ],
+ "questions": [
+  {
+   "question": "Does deliberate redundancy across reviewed causal views reduce degradation under train-only masking and corruption relative to raw?",
+   "question_id": "Q11",
+   "step": "STEP_11"
+  },
+  {
+   "question": "Does a causal information-quality router choose among reviewed modes better than the best fixed mode, and does it abstain to raw when it should?",
+   "question_id": "Q12",
+   "step": "STEP_12"
+  },
+  {
+   "question": "Under a declared cost cap per branch and in total, does non-uniform allocation beat uniform allocation, and is leaving budget unused sometimes optimal?",
+   "question_id": "Q13",
+   "step": "STEP_13"
+  }
+ ],
+ "raw_control": {
+  "arm_id": "A0_RAW",
+  "kept": true,
+  "replaced_by_transform": false,
+  "rule": "The raw (untransformed) branch is always kept as a control arm in every comparison of STEP 11-13, under the same partition, sample, regime and budget. No transform replaces the original data before a separate, reviewed utility test."
+ },
+ "schema": "crispdm.data_foundation.successor_design.d5.v1",
+ "status": "DESIGN_NO_SCORES_COMPUTED",
+ "steps": [
+  "STEP_11",
+  "STEP_12",
+  "STEP_13"
+ ],
+ "stopping_rules": [
+  {
+   "action": "real-data stages recorded NOT_RUN; only synthetic calibration may proceed",
+   "condition": "no D2 lab decision in {LAB_CALIBRATED, REGIME_LIMITED} with an external review record exists for the operator and regime",
+   "rule_id": "SR_NO_REVIEWED_D2"
+  },
+  {
+   "action": "arm stops before public and financial data; decision NOT_IDENTIFIABLE or LAB_REJECTED",
+   "condition": "an arm does not identify its known truth on the synthetic bank",
+   "rule_id": "SR_SYNTHETIC_FAIL"
+  },
+  {
+   "action": "refused; a new design version is required",
+   "condition": "a parameter or arm not predeclared in this design is proposed after any calibration output is seen",
+   "rule_id": "SR_FROZEN_GRID"
+  },
+  {
+   "action": "run recorded FAILED with reason BUDGET_EXCEEDED; no extension",
+   "condition": "an arm reaches a declared budget cap",
+   "rule_id": "SR_BUDGET"
+  },
+  {
+   "action": "decision for that regime is REGIME_LIMITED or LAB_REJECTED, never LAB_CALIBRATED",
+   "condition": "a candidate does not improve on the raw control on its declared preservation metric within a regime",
+   "rule_id": "SR_RAW_NOT_DOMINATED"
+  },
+  {
+   "action": "whole run REFUSED and recorded; no decision is emitted",
+   "condition": "any read of a sealed period, a confirmation refit or a target",
+   "rule_id": "SR_SEALED_OR_TARGET"
+  },
+  {
+   "action": "recorded DEFERRED with no arm in this design",
+   "condition": "STEP 11 corruption-hardening of the existing feature extractor (\u00a759) requires neural training",
+   "rule_id": "SR_D5_NO_NEURAL_TRAINING"
+  },
+  {
+   "action": "routing and allocation for that regime NOT_RUN; output is the raw branch",
+   "condition": "fewer than two reviewed modes exist for a regime",
+   "rule_id": "SR_D5_NO_REVIEWED_MODES"
+  },
+  {
+   "action": "arm LAB_REJECTED; route to raw branch",
+   "condition": "the budget audit counts any violation",
+   "rule_id": "SR_D5_BUDGET_VIOLATION"
+  }
+ ],
+ "synthetic_calibration_first": {
+  "families": [
+   "routing benchmarks A-F (STEP 12 \u00a748-\u00a753)",
+   "parallel branches of unequal and equal known SNR",
+   "pure-noise branch",
+   "MCAR and block missingness masks",
+   "signal-null and noise-null controls"
+  ],
+  "generator_bank": "C128 synthetic bank: clean component, perturbation, observed series, seeds and parameters stored separately and rebuildable",
+  "order": [
+   "SYNTHETIC_KNOWN_TRUTH",
+   "PUBLIC",
+   "FINANCIAL"
+  ],
+  "parameters_frozen_before_real_data": true,
+  "real_data_before_calibration": "REFUSED",
+  "required": true,
+  "rule": "Every arm parameter is calibrated on known-truth synthetic data and frozen before any public or financial data is read. An arm that does not identify its known truth stops at the synthetic stage."
+ }
+}

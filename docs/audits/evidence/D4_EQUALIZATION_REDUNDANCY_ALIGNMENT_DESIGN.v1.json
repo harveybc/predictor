@@ -1,0 +1,930 @@
+{
+ "arms": [
+  {
+   "arm_id": "A0_RAW",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "untransformed, as-of joined on each source's verified availability time",
+   "family": "identity",
+   "fit": "NONE",
+   "parameters": [],
+   "requires": [
+    "D0_COMMON_CONTRACT"
+   ],
+   "role": "RAW_CONTROL",
+   "step": "ALL",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "E08_TRAIN_AFFINE",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "robust location and scale (median, MAD) fit on train and frozen",
+   "family": "train-frozen affine canonicalization",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "scale_estimator"
+   ],
+   "requires": [
+    "VERIFIED_TEMPORAL_AVAILABILITY"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_08",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "E08_TRAILING_ROBUST",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "median and MAD over a trailing window ending at t",
+   "family": "trailing robust normalization",
+   "fit": "NONE",
+   "parameters": [
+    "window_length"
+   ],
+   "requires": [
+    "VERIFIED_TEMPORAL_AVAILABILITY"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_08",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "E08_PREWHITEN",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "causal AR inverse filter fit on train, frozen",
+   "family": "train-frozen inverse (prewhitening) filter",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "ar_order"
+   ],
+   "requires": [
+    "VERIFIED_TEMPORAL_AVAILABILITY"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_08",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "E08_RLS_EQUALIZER",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "recursive least squares update from past samples only, initialized on train",
+   "family": "RLS adaptive affine equalizer",
+   "fit": "CAUSAL_ONLINE_UPDATE_FROM_TRAIN_INIT",
+   "parameters": [
+    "forgetting_factor",
+    "regularization"
+   ],
+   "requires": [
+    "VERIFIED_TEMPORAL_AVAILABILITY"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_08",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "X09_TRAIN_PCA_COMMON_PRIVATE",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "projection fit on common training samples; delivers [X, C, U], never destructive subtraction",
+   "family": "train-fit PCA common/private split",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "components"
+   ],
+   "requires": [
+    "VERIFIED_TEMPORAL_AVAILABILITY",
+    "C132_GROUP_IDENTIFIED"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_09",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "X09_LAGGED_RESIDUALIZATION",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "ridge projection on strictly past reference samples, fit on train",
+   "family": "cross-feature residualization on lagged references",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "reference_lags",
+    "ridge"
+   ],
+   "requires": [
+    "VERIFIED_TEMPORAL_AVAILABILITY",
+    "C132_GROUP_IDENTIFIED"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_09",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "X09_ANC_LMS",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "normalized LMS with reference r_{<=t}; delivers [d, nhat, e]",
+   "family": "adaptive noise cancellation (LMS)",
+   "fit": "CAUSAL_ONLINE_UPDATE_FROM_TRAIN_INIT",
+   "parameters": [
+    "taps",
+    "step_size"
+   ],
+   "requires": [
+    "VERIFIED_TEMPORAL_AVAILABILITY"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_09",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "X09_FULLSAMPLE_ICA",
+   "causal_contract": "ANALYSIS_ONLY_NON_CAUSAL",
+   "description": "ICA over the whole series; diagnostic of mixing only",
+   "family": "full-sample ICA",
+   "fit": "NONE",
+   "parameters": [
+    "components"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_09",
+   "usable_as_input": false
+  },
+  {
+   "arm_id": "L10_ASOF_AVAILABILITY",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "each source enters at its verified availability time; no shift",
+   "family": "availability-only as-of join",
+   "fit": "NONE",
+   "parameters": [],
+   "requires": [
+    "VERIFIED_TEMPORAL_AVAILABILITY"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_10",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "L10_XCORR_TRAIN_LAG",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "lag estimated on train; the follower at t is paired with the leader at t - lag (past only)",
+   "family": "train-estimated cross-correlation lag",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "max_lag"
+   ],
+   "requires": [
+    "VERIFIED_TEMPORAL_AVAILABILITY"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_10",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "L10_GCC_PHAT_TRAIN_LAG",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "phase-transform weighted cross-correlation delay on train, frozen",
+   "family": "GCC-PHAT lag",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "max_lag",
+    "window_length"
+   ],
+   "requires": [
+    "VERIFIED_TEMPORAL_AVAILABILITY"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_10",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "L10_ROLLING_LAG_METADATA",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "lag and coherence estimated on a trailing window, delivered as metadata, no data shift",
+   "family": "trailing lag and confidence as metadata",
+   "fit": "NONE",
+   "parameters": [
+    "window_length",
+    "max_lag"
+   ],
+   "requires": [
+    "VERIFIED_TEMPORAL_AVAILABILITY"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_10",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "L10_DTW_ANALYSIS",
+   "causal_contract": "ANALYSIS_ONLY_NON_CAUSAL",
+   "description": "two-sided warping path; diagnostic of elastic timing only",
+   "family": "unconstrained DTW",
+   "fit": "NONE",
+   "parameters": [
+    "band"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_10",
+   "usable_as_input": false
+  }
+ ],
+ "budget": {
+  "accelerator": "NONE",
+  "cpu_core_hours_cap": 48,
+  "device": "CPU_ONLY",
+  "on_cap": "RECORD_FAILED_BUDGET_EXCEEDED_NO_EXTENSION",
+  "parallel_workers_cap": 4,
+  "peak_memory_mib_cap": 8192,
+  "same_cap_for_every_arm": true,
+  "wall_seconds_cap_per_arm_regime": 3600
+ },
+ "consumes": {
+  "accepted_d2_decisions": [
+   "LAB_CALIBRATED",
+   "REGIME_LIMITED"
+  ],
+  "d0_d1_inputs": [
+   "C129 common dataset/variable contract (identity, source, license, semantics, unit, frequency, availability, missingness, sentinels, partitions, digest)",
+   "C130 univariate profile per partition",
+   "C131 information and compression profile",
+   "C132 multivariate profile and grouping (training only)",
+   "C133 sampling and aliasing diagnostics"
+  ],
+  "d2_grain": "operator x regime lab decision (C138)",
+  "d2_use": "reviewed D2 denoised views and noise estimates per variable and regime; C132 groups only when not GROUP_NOT_IDENTIFIED",
+  "external_review_record_required": true,
+  "never_consumed": [
+   "NOT_IDENTIFIABLE",
+   "LAB_REJECTED"
+  ],
+  "review_record_fields": [
+   "operator_id",
+   "regime_id",
+   "lab_decision",
+   "lab_decision_record_sha256",
+   "external_reviewer",
+   "review_record_sha256",
+   "reviewed_design_sha256"
+  ],
+  "rule": "Only D2 lab decisions LAB_CALIBRATED or REGIME_LIMITED that carry an external review record are consumed, each within its reviewed regime. NOT_IDENTIFIABLE and LAB_REJECTED are never consumed. Nothing is consumed without an external review record. If no such record exists, real-data stages are NOT_RUN and only synthetic calibration may proceed.",
+  "successor_outputs": "Not consumed. Outputs of other successor designs may be bound only by a later version, after their own lab decisions and external review records exist.",
+  "unreviewed_d2_output": "NEVER_CONSUMED"
+ },
+ "controls": [
+  {
+   "consumed_as_input": false,
+   "control_id": "C_RAW",
+   "description": "A0_RAW on the same partition, sample, regime and budget",
+   "kind": "RAW",
+   "steps": [
+    "STEP_08",
+    "STEP_09",
+    "STEP_10"
+   ],
+   "synthetic_only": false
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NULL_CIRCULAR_SHIFT",
+   "description": "circular time shift of one source against the others within train, destroying cross-dependence and keeping autocorrelation",
+   "kind": "NULL_SURROGATE",
+   "steps": [
+    "STEP_09",
+    "STEP_10"
+   ],
+   "synthetic_only": false
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NULL_MULTIVARIATE_IAAFT",
+   "description": "multivariate phase-randomized surrogate for the lag significance test",
+   "kind": "NULL_SURROGATE",
+   "steps": [
+    "STEP_10"
+   ],
+   "synthetic_only": false
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NULL_DOMAIN_LABEL_PERMUTATION",
+   "description": "domain labels permuted across training windows before fitting equalizers",
+   "kind": "NULL_SURROGATE",
+   "steps": [
+    "STEP_08"
+   ],
+   "synthetic_only": false
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NEG_CONTAMINATED_REFERENCE",
+   "description": "cancellation with a reference that contains the desired signal (STEP 09 S1); must be flagged destructive",
+   "kind": "NEGATIVE_CONTROL_OPERATOR",
+   "steps": [
+    "STEP_09"
+   ],
+   "synthetic_only": true
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NEG_FUTURE_ALIGNMENT",
+   "description": "alignment that pairs t with the follower at t + lag; the availability audit must refuse it",
+   "kind": "NEGATIVE_CONTROL_OPERATOR",
+   "steps": [
+    "STEP_10"
+   ],
+   "synthetic_only": true
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NEG_COMMON_PERIODICITY",
+   "description": "two sources sharing only a periodicity with no propagation (STEP 10 T7); any lag found is false",
+   "kind": "NEGATIVE_CONTROL_OPERATOR",
+   "steps": [
+    "STEP_10"
+   ],
+   "synthetic_only": true
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NEG_MARGINAL_ONLY_EQUALIZER",
+   "description": "quantile-mapping to a reference marginal under a conditional mechanism shift (STEP 08 C8)",
+   "kind": "NEGATIVE_CONTROL_OPERATOR",
+   "steps": [
+    "STEP_08"
+   ],
+   "synthetic_only": true
+  }
+ ],
+ "decision_vocabulary": {
+  "decisions": [
+   "LAB_CALIBRATED",
+   "REGIME_LIMITED",
+   "NOT_IDENTIFIABLE",
+   "LAB_REJECTED"
+  ],
+  "grain": "arm x regime",
+  "none_equals_public_eligibility": true,
+  "statement": "LAB_CALIBRATED, REGIME_LIMITED, NOT_IDENTIFIABLE and LAB_REJECTED are laboratory decisions only; none of them equals public eligibility, and this design never grants PUBLICLY_ELIGIBLE."
+ },
+ "design_id": "D4",
+ "design_sha256": "317c11685c8b170734be8feee29125d491591f0e33414cbb5cba0df3b0514441",
+ "failure_region_reporting": {
+  "best_case_only": "REFUSED",
+  "grain": "arm x synthetic channel/benchmark x noise family x SNR band x lag x regime",
+  "publish": [
+   "every region whose lab decision is NOT_IDENTIFIABLE or LAB_REJECTED",
+   "every region where the raw control is not dominated",
+   "every region where the null surrogate is indistinguishable",
+   "every region where the negative-control operator is not flagged",
+   "every causality or availability audit failure",
+   "every budget failure",
+   "every contaminated-reference region where cancellation destroys signal",
+   "every false-lag region"
+  ],
+  "required": true,
+  "rule": "Failure regions are published with the same grain and prominence as regions that calibrate; a summary of the best case alone is refused.",
+  "states_recorded": [
+   "COMPLETED",
+   "FAILED",
+   "INCONCLUSIVE",
+   "REFUSED",
+   "REJECTED",
+   "NOT_RUN",
+   "UNAVAILABLE"
+  ]
+ },
+ "grants_nothing": "This design grants nothing: no execution, no scoring, no consumption, no feature selection, no training, no GPU, no RL, no DOIN, no live or venue action, and it never grants PUBLICLY_ELIGIBLE to any variable, operator, representation, router or allocation.",
+ "hypotheses": [
+  {
+   "falsified_if": "no STEP_08 arm improves on A0_RAW on C1-C3",
+   "hypothesis_id": "H08.1",
+   "protocol_section": "STEP_08 \u00a736-\u00a738, \u00a769",
+   "statement": "On gain, offset, drift and FIR channels (C1-C3) causal or train-frozen equalization reduces canonical reconstruction error relative to raw",
+   "step": "STEP_08"
+  },
+  {
+   "falsified_if": "the marginal-only negative control preserves information as well as the raw control on C8",
+   "hypothesis_id": "H08.2",
+   "protocol_section": "STEP_08 \u00a743, \u00a747, \u00a776",
+   "statement": "Under a conditional mechanism shift (C8), marginal alignment does not imply information preservation",
+   "step": "STEP_08"
+  },
+  {
+   "falsified_if": "safety on S1 is not below safety on S0",
+   "hypothesis_id": "H09.1",
+   "protocol_section": "STEP_09 \u00a739, \u00a740, \u00a772, \u00a787",
+   "statement": "The cancellation-safety metric separates a clean reference (S0) from a contaminated reference (S1)",
+   "step": "STEP_09"
+  },
+  {
+   "falsified_if": "recovery unstable across train bootstraps (group then GROUP_NOT_IDENTIFIED)",
+   "hypothesis_id": "H09.2",
+   "protocol_section": "STEP_09 \u00a741, \u00a742, \u00a774",
+   "statement": "Train-fit common/private decomposition recovers known common factors stably on S2/S3",
+   "step": "STEP_09"
+  },
+  {
+   "falsified_if": "lag error exceeds one sample in the SNR bands declared identifiable by D2",
+   "hypothesis_id": "H10.1",
+   "protocol_section": "STEP_10 \u00a765, \u00a789",
+   "statement": "Train-estimated cross-correlation and GCC-PHAT recover a known fixed delay (T0)",
+   "step": "STEP_10"
+  },
+  {
+   "falsified_if": "the surrogate test accepts the false lag",
+   "hypothesis_id": "H10.2",
+   "protocol_section": "STEP_10 \u00a771, \u00a772, \u00a7105",
+   "statement": "Lag without causality (T6) and common periodicity (T7) are flagged by the surrogate test",
+   "step": "STEP_10"
+  },
+  {
+   "falsified_if": "any availability violation; the arm is then LAB_REJECTED",
+   "hypothesis_id": "H10.3",
+   "protocol_section": "STEP_10 \u00a733, \u00a734, \u00a795",
+   "statement": "No alignment, equalization or cancellation arm emits a value using an observation not yet available",
+   "step": "STEP_10"
+  }
+ ],
+ "license": {
+  "consumption": "NOT_GRANTED",
+  "execution": "NOT_GRANTED",
+  "required": "EXTERNAL_REVIEW_OF_D2_OUTPUTS_AND_OF_THIS_DESIGN",
+  "scoring": "NOT_GRANTED",
+  "selection": "NOT_GRANTED",
+  "training": "NOT_GRANTED"
+ },
+ "metrics": [
+  {
+   "compares": [
+    "STEP_08_ARMS",
+    "A0_RAW"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "mean squared error between equalized output and the known canonical process on synthetic channels C0-C9",
+   "metric_id": "M08_CANONICAL_RECON",
+   "name": "canonical reconstruction error",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_08"
+  },
+  {
+   "compares": [
+    "STEP_08_ARMS",
+    "A0_RAW",
+    "C_NULL_DOMAIN_LABEL_PERMUTATION"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "Wasserstein-1 distance between domains of train-frozen outputs, per variable",
+   "metric_id": "M08_DOMAIN_ALIGNMENT",
+   "name": "cross-domain distribution alignment",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_08"
+  },
+  {
+   "compares": [
+    "STEP_08_ARMS",
+    "A0_RAW",
+    "C_NEG_MARGINAL_ONLY_EQUALIZER"
+   ],
+   "direction": "HIGHER_IS_BETTER",
+   "estimator": "KSG k-nearest-neighbour mutual information between output and known canonical process, k declared in the manifest",
+   "metric_id": "M08_INFORMATION_PRESERVATION",
+   "name": "information preservation",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_08"
+  },
+  {
+   "compares": [
+    "E08_TRAIN_AFFINE",
+    "E08_PREWHITEN"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "reconstruction error of the input from output and frozen parameters",
+   "metric_id": "M08_REVERSIBILITY",
+   "name": "reversibility error",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_08"
+  },
+  {
+   "compares": [
+    "X09_TRAIN_PCA_COMMON_PRIVATE",
+    "X09_LAGGED_RESIDUALIZATION"
+   ],
+   "direction": "HIGHER_IS_BETTER",
+   "estimator": "canonical correlation between recovered C and the known common factors (S2, S3) and its stability over train block bootstraps",
+   "metric_id": "M09_COMMON_RECOVERY",
+   "name": "common-factor recovery",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_09"
+  },
+  {
+   "compares": [
+    "X09_ANC_LMS",
+    "C_NEG_CONTAMINATED_REFERENCE"
+   ],
+   "direction": "HIGHER_IS_BETTER",
+   "estimator": "scale-invariant signal-to-distortion ratio of e against the known desired signal, clean versus contaminated reference",
+   "metric_id": "M09_CANCELLATION_SAFETY",
+   "name": "desired-signal distortion",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_09"
+  },
+  {
+   "compares": [
+    "STEP_09_ARMS",
+    "C_NULL_CIRCULAR_SHIFT"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "maximum absolute cross-correlation of U across sources at predeclared lags against circular-shift surrogates",
+   "metric_id": "M09_RESIDUAL_CROSS_DEPENDENCE",
+   "name": "residual cross-dependence",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_09"
+  },
+  {
+   "compares": [
+    "STEP_10_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "absolute error in samples between estimated and known delay (T0, T2)",
+   "metric_id": "M10_LAG_ERROR",
+   "name": "lag recovery error",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_10"
+  },
+  {
+   "compares": [
+    "STEP_10_ARMS",
+    "C_NULL_MULTIVARIATE_IAAFT",
+    "C_NEG_COMMON_PERIODICITY"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "fraction of surrogate-significant lags on T6/T7 families and surrogate pairs",
+   "metric_id": "M10_FALSE_LAG_RATE",
+   "name": "false lag rate",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_10"
+  },
+  {
+   "compares": [
+    "L10_XCORR_TRAIN_LAG",
+    "L10_GCC_PHAT_TRAIN_LAG"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "dispersion of the train lag estimate over block bootstraps",
+   "metric_id": "M10_LAG_STABILITY",
+   "name": "lag stability",
+   "partitions": [
+    "CALIBRATION"
+   ],
+   "step": "STEP_10"
+  },
+  {
+   "compares": [
+    "ALL_ARMS",
+    "C_NEG_FUTURE_ALIGNMENT"
+   ],
+   "direction": "MUST_BE_ZERO",
+   "estimator": "count of emitted values using any observation whose verified availability time is after the decision time",
+   "metric_id": "M10_AVAILABILITY_VIOLATIONS",
+   "name": "availability audit",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_10"
+  },
+  {
+   "compares": [
+    "ALL_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "CPU seconds (process time), peak RSS in MiB, algorithmic delay in samples from the impulse response, and warm-up length, each measured separately per arm x regime",
+   "metric_id": "M_COST_STEP_08",
+   "name": "computational cost and delay",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_08"
+  },
+  {
+   "compares": [
+    "ALL_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "CPU seconds (process time), peak RSS in MiB, algorithmic delay in samples from the impulse response, and warm-up length, each measured separately per arm x regime",
+   "metric_id": "M_COST_STEP_09",
+   "name": "computational cost and delay",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_09"
+  },
+  {
+   "compares": [
+    "ALL_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "CPU seconds (process time), peak RSS in MiB, algorithmic delay in samples from the impulse response, and warm-up length, each measured separately per arm x regime",
+   "metric_id": "M_COST_STEP_10",
+   "name": "computational cost and delay",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_10"
+  }
+ ],
+ "olap_grains": [
+  {
+   "grain": "availability_contract",
+   "keys": [
+    "dataset_sha256",
+    "source_id",
+    "contract_sha256"
+   ],
+   "records": [
+    "declared_availability_rule",
+    "verification_state",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "equalizer_run",
+   "keys": [
+    "run_id",
+    "design_id",
+    "dataset_sha256",
+    "variable_id",
+    "partition",
+    "arm_id",
+    "parameters_sha256",
+    "code_sha256"
+   ],
+   "records": [
+    "fit_partition",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "common_private_decomposition",
+   "keys": [
+    "run_id",
+    "group_id",
+    "arm_id",
+    "partition"
+   ],
+   "records": [
+    "projection_sha256",
+    "bootstrap_stability",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "lag_estimate",
+   "keys": [
+    "run_id",
+    "source_pair",
+    "arm_id",
+    "partition"
+   ],
+   "records": [
+    "availability_contract_sha256",
+    "lag_samples",
+    "surrogate_id",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "availability_audit",
+   "keys": [
+    "run_id",
+    "arm_id"
+   ],
+   "records": [
+    "violation_count",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "raw_transformed_residual_metric",
+   "keys": [
+    "run_id",
+    "variable_id",
+    "arm_id",
+    "regime_id",
+    "metric_id"
+   ],
+   "records": [
+    "control_id",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "delay_and_cost",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "regime_id"
+   ],
+   "records": [
+    "cpu_seconds",
+    "peak_rss_mib",
+    "algorithmic_delay",
+    "warm_up",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "lab_decision",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "regime_id"
+   ],
+   "records": [
+    "lab_decision",
+    "evidence_sha256",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "failure_region",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "region_id"
+   ],
+   "records": [
+    "region_definition",
+    "lab_decision",
+    "record_state"
+   ]
+  }
+ ],
+ "order_item": "C142",
+ "partitions": {
+  "confirm": "CONFIRMATION",
+  "decide": "CALIBRATION",
+  "fit": "TRAIN_ONLY",
+  "mixing_partitions": "FORBIDDEN",
+  "rule": "All fitting (cells, codebooks, templates, scales, projections, lags, thresholds, allocations) uses training data only. Calibration decides the lab decision; confirmation confirms it without refitting. No sealed period is read. No target participates in this design.",
+  "sealed_periods": "NEVER_READ",
+  "target_exception": "A target may appear only in a later, separately licensed utility test and then only inside training folds; it is not part of this design.",
+  "target_use": "NONE",
+  "test_set_tuning": "FORBIDDEN"
+ },
+ "protocols": [
+  {
+   "file": "docs/tres_temas_entrevista/STEP_08_EQUALIZATION_CANONICALIZATION_DOMAIN_ALIGNMENT_FINAL.md",
+   "sha256": "6bd72cc11f8007fdbd26062d105183615c459607428b6a7e4ae1988d84e84b2a"
+  },
+  {
+   "file": "docs/tres_temas_entrevista/STEP_09_INTERFERENCE_ECHO_CROSSTALK_CANCELLATION_FINAL.md",
+   "sha256": "2be9a5c49c88a690a62aa97eb613db251914fa2911586d1a24c0527078f6ca1a"
+  },
+  {
+   "file": "docs/tres_temas_entrevista/STEP_10_SYNCHRONIZATION_TEMPORAL_ALIGNMENT_TIMING_RECOVERY_FINAL.md",
+   "sha256": "17f30f0ac4664defaa9a4d1c7b17524cebda73559a3a319ddd74471d1094735c"
+  },
+  {
+   "file": "docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v2.md",
+   "sha256": "19cc3653bc2b720ef1c00087476d417505f099f47075cd7eca089fb8c6996fa3"
+  }
+ ],
+ "questions": [
+  {
+   "question": "Can known systematic channel distortions be compensated causally so that sources and regimes become canonical without erasing known structure?",
+   "question_id": "Q08",
+   "step": "STEP_08"
+  },
+  {
+   "question": "Can shared and private components be separated on training data without destroying the desired signal when the reference is contaminated?",
+   "question_id": "Q09",
+   "step": "STEP_09"
+  },
+  {
+   "question": "After availability is verified, are information-bearing events aligned, and can a train-estimated lag be applied without any future sample?",
+   "question_id": "Q10",
+   "step": "STEP_10"
+  }
+ ],
+ "raw_control": {
+  "arm_id": "A0_RAW",
+  "kept": true,
+  "replaced_by_transform": false,
+  "rule": "The raw (untransformed) branch is always kept as a control arm in every comparison of STEP 08-10, under the same partition, sample, regime and budget. No transform replaces the original data before a separate, reviewed utility test."
+ },
+ "schema": "crispdm.data_foundation.successor_design.d4.v1",
+ "status": "DESIGN_NO_SCORES_COMPUTED",
+ "steps": [
+  "STEP_08",
+  "STEP_09",
+  "STEP_10"
+ ],
+ "stopping_rules": [
+  {
+   "action": "real-data stages recorded NOT_RUN; only synthetic calibration may proceed",
+   "condition": "no D2 lab decision in {LAB_CALIBRATED, REGIME_LIMITED} with an external review record exists for the operator and regime",
+   "rule_id": "SR_NO_REVIEWED_D2"
+  },
+  {
+   "action": "arm stops before public and financial data; decision NOT_IDENTIFIABLE or LAB_REJECTED",
+   "condition": "an arm does not identify its known truth on the synthetic bank",
+   "rule_id": "SR_SYNTHETIC_FAIL"
+  },
+  {
+   "action": "refused; a new design version is required",
+   "condition": "a parameter or arm not predeclared in this design is proposed after any calibration output is seen",
+   "rule_id": "SR_FROZEN_GRID"
+  },
+  {
+   "action": "run recorded FAILED with reason BUDGET_EXCEEDED; no extension",
+   "condition": "an arm reaches a declared budget cap",
+   "rule_id": "SR_BUDGET"
+  },
+  {
+   "action": "decision for that regime is REGIME_LIMITED or LAB_REJECTED, never LAB_CALIBRATED",
+   "condition": "a candidate does not improve on the raw control on its declared preservation metric within a regime",
+   "rule_id": "SR_RAW_NOT_DOMINATED"
+  },
+  {
+   "action": "whole run REFUSED and recorded; no decision is emitted",
+   "condition": "any read of a sealed period, a confirmation refit or a target",
+   "rule_id": "SR_SEALED_OR_TARGET"
+  },
+  {
+   "action": "every lead/lag, cancellation and equalization arm using that source is REFUSED",
+   "condition": "a source has no verified availability declaration",
+   "rule_id": "SR_D4_AVAILABILITY_UNVERIFIED"
+  },
+  {
+   "action": "arm LAB_REJECTED in every regime; no correction that uses a future sample is kept",
+   "condition": "the availability audit counts any violation",
+   "rule_id": "SR_D4_FUTURE_SAMPLE"
+  },
+  {
+   "action": "common/private arms not run for that group; recorded NOT_RUN",
+   "condition": "C132 reports GROUP_NOT_IDENTIFIED",
+   "rule_id": "SR_D4_GROUP_NOT_IDENTIFIED"
+  }
+ ],
+ "synthetic_calibration_first": {
+  "families": [
+   "equalization channels C0-C9 (STEP 08 \u00a735-\u00a744)",
+   "cancellation benchmarks S0-S7 (STEP 09 \u00a739-\u00a746)",
+   "synchronization benchmarks T0-T8 (STEP 10 \u00a765-\u00a773)",
+   "asynchronous sampling with declared availability delays",
+   "signal-null and noise-null controls"
+  ],
+  "generator_bank": "C128 synthetic bank: clean component, perturbation, observed series, seeds and parameters stored separately and rebuildable",
+  "order": [
+   "SYNTHETIC_KNOWN_TRUTH",
+   "PUBLIC",
+   "FINANCIAL"
+  ],
+  "parameters_frozen_before_real_data": true,
+  "real_data_before_calibration": "REFUSED",
+  "required": true,
+  "rule": "Every arm parameter is calibrated on known-truth synthetic data and frozen before any public or financial data is read. An arm that does not identify its known truth stops at the synthetic stage."
+ },
+ "temporal_availability": {
+  "availability_function": "A_i(t): the latest observation of source i actually available to the system by decision time t (STEP 10 \u00a733)",
+  "availability_precedes_alignment": true,
+  "delay_compensation_by_future_shift": "FORBIDDEN",
+  "future_samples_in_correction": "FORBIDDEN",
+  "lead_lag_correction_without_verified_availability": "REFUSED",
+  "order": [
+   "DECLARE_AVAILABILITY_PER_SOURCE",
+   "VERIFY_AVAILABILITY_AGAINST_D0_CONTRACT",
+   "ESTIMATE_LEAD_LAG_ON_TRAIN_ONLY",
+   "APPLY_CAUSAL_CORRECTION"
+  ],
+  "rule": "Temporal availability is declared and verified before any lead/lag correction. No correction may use future samples: every aligned, equalized or cancelled output at decision time t uses only observations whose verified availability time is <= t, and alignment metadata may shift interpretation forward, never data backward.",
+  "verification": [
+   "availability declared per source in the C129 contract",
+   "availability checked against publication/arrival timestamps in D0",
+   "C133 gaps, jitter and truncated bars accounted before any join",
+   "prefix-invariance and availability audits on synthetic data with known delays"
+  ]
+ }
+}

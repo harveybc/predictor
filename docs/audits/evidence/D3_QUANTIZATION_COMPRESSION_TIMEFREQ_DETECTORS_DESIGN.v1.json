@@ -1,0 +1,1227 @@
+{
+ "arms": [
+  {
+   "arm_id": "A0_RAW",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "untransformed variable as delivered by the D0 contract, float resolution",
+   "family": "identity",
+   "fit": "NONE",
+   "parameters": [],
+   "requires": [
+    "D0_COMMON_CONTRACT"
+   ],
+   "role": "RAW_CONTROL",
+   "step": "ALL",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "Q04_UNIFORM",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "uniform cells over a train-frozen robust range with saturation cells at both ends",
+   "family": "uniform scalar quantizer",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "cell_count",
+    "range_lower_quantile",
+    "range_upper_quantile"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_04",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "Q04_QUANTILE",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "cell edges at train-frozen empirical quantiles",
+   "family": "equiprobable quantile quantizer",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "cell_count"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_04",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "Q04_LLOYD_MAX",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "MSE-optimal cells iterated on training samples only, then frozen",
+   "family": "Lloyd-Max quantizer",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "cell_count",
+    "iterations_cap"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_04",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "Q04_MU_LAW",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "train-frozen scale, mu-law compression, uniform cells in the compressed domain",
+   "family": "mu-law companding + uniform quantizer",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "mu",
+    "cell_count",
+    "scale_quantile"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_04",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "Q04_NOISE_AWARE",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "cell width tied to the reviewed D2 noise-scale estimate of the variable, frozen on train",
+   "family": "noise-aware resolution",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "cells_per_noise_scale"
+   ],
+   "requires": [
+    "D2_REVIEWED_LAB_DECISION"
+   ],
+   "role": "CANDIDATE",
+   "step": "STEP_04",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "S05_PREDICTIVE_RESIDUAL",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "E_t = X_t - Xhat_t from a fixed-order linear predictor fit on train and frozen",
+   "family": "causal predictive residual",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "predictor_order"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_05",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "S05_CONTEXT_SURPRISAL",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "S_t = -log2 p(q_t | context) from a PPM/CTW-style context model over train-frozen quantized symbols, counts frozen on train",
+   "family": "variable-order context model surprisal",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "max_context_order",
+    "symbol_quantizer_arm"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_05",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "S05_MDL_ORDER",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "two-part code length per context order on train; selected order is a memory-depth diagnostic, not an input",
+   "family": "MDL context-order diagnostic",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "max_context_order"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_05",
+   "usable_as_input": false
+  },
+  {
+   "arm_id": "S05_COMPRESSED_LENGTH",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "compressed bytes per sample of trailing windows with compressor and level fixed in the run manifest",
+   "family": "fixed-compressor code length diagnostic",
+   "fit": "NONE",
+   "parameters": [
+    "compressor",
+    "level",
+    "window_length"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_05",
+   "usable_as_input": false
+  },
+  {
+   "arm_id": "T06_TRAILING_STFT",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "one-sided window whose right edge is t; magnitude per train-declared bin",
+   "family": "trailing-window STFT magnitude",
+   "fit": "NONE",
+   "parameters": [
+    "window_length",
+    "window_family",
+    "hop"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_06",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "T06_TRAILING_PHASE",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "phase of declared bins encoded as (sin, cos) from the same trailing window",
+   "family": "trailing-window circular phase",
+   "fit": "NONE",
+   "parameters": [
+    "window_length",
+    "bins"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_06",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "T06_CAUSAL_SWT",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "undecimated wavelet with one-sided filters and no right boundary extension",
+   "family": "causal stationary wavelet bands",
+   "fit": "NONE",
+   "parameters": [
+    "wavelet_family",
+    "levels"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_06",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "T06_TRAILING_MULTITAPER",
+   "causal_contract": "ENDPOINT_CAUSAL",
+   "description": "DPSS tapers over a trailing window",
+   "family": "trailing multitaper spectrum",
+   "fit": "NONE",
+   "parameters": [
+    "window_length",
+    "time_bandwidth",
+    "tapers"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_06",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "T06_CENTERED_CWT",
+   "causal_contract": "ANALYSIS_ONLY_NON_CAUSAL",
+   "description": "two-sided CWT over the full series; boundary uses future samples",
+   "family": "centered continuous wavelet transform",
+   "fit": "NONE",
+   "parameters": [
+    "wavelet_family",
+    "scales"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_06",
+   "usable_as_input": false
+  },
+  {
+   "arm_id": "T06_FULL_HILBERT_HHT",
+   "causal_contract": "ANALYSIS_ONLY_NON_CAUSAL",
+   "description": "analytic signal and EMD over the whole series; non-causal by construction",
+   "family": "full-series Hilbert / Hilbert-Huang",
+   "fit": "NONE",
+   "parameters": [
+    "emd_stop_rule"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_06",
+   "usable_as_input": false
+  },
+  {
+   "arm_id": "D07_MATCHED_FILTER",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "templates frozen from the synthetic motif bank or train-only motif discovery, correlated over trailing windows",
+   "family": "normalized cross-correlation matched filter",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "template_bank",
+    "template_length"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_07",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "D07_GENERALIZED_MF",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "template weighted by the inverse of a train-estimated noise covariance (whitened)",
+   "family": "generalized matched filter",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "template_bank",
+    "covariance_shrinkage"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_07",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "D07_MINIROCKET",
+   "causal_contract": "ENDPOINT_CAUSAL",
+   "description": "fixed-seed kernels, biases from training quantiles, applied to the window ending at t; transform only, no classifier",
+   "family": "MiniRocket random convolution transform",
+   "fit": "TRAIN_ONLY_FROZEN",
+   "parameters": [
+    "kernel_count",
+    "seed",
+    "window_length"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_07",
+   "usable_as_input": true
+  },
+  {
+   "arm_id": "D07_LEFT_MATRIX_PROFILE",
+   "causal_contract": "TIMESTAMP_CAUSAL",
+   "description": "nearest-neighbour distance of the subsequence ending at t against past subsequences only",
+   "family": "left (trailing) matrix profile",
+   "fit": "NONE",
+   "parameters": [
+    "subsequence_length",
+    "exclusion_zone"
+   ],
+   "requires": [],
+   "role": "CANDIDATE",
+   "step": "STEP_07",
+   "usable_as_input": true
+  }
+ ],
+ "budget": {
+  "accelerator": "NONE",
+  "cpu_core_hours_cap": 64,
+  "device": "CPU_ONLY",
+  "on_cap": "RECORD_FAILED_BUDGET_EXCEEDED_NO_EXTENSION",
+  "parallel_workers_cap": 4,
+  "peak_memory_mib_cap": 8192,
+  "same_cap_for_every_arm": true,
+  "wall_seconds_cap_per_arm_regime": 3600
+ },
+ "causal_feasibility": {
+  "entries": [
+   {
+    "arm_id": "Q04_UNIFORM",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "uniform scalar quantizer",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "Q04_QUANTILE",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "equiprobable quantile quantizer",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "Q04_LLOYD_MAX",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "Lloyd-Max quantizer",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "Q04_MU_LAW",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "mu-law companding + uniform quantizer",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "Q04_NOISE_AWARE",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "noise-aware resolution",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "S05_PREDICTIVE_RESIDUAL",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "causal predictive residual",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "S05_CONTEXT_SURPRISAL",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "variable-order context model surprisal",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "S05_MDL_ORDER",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "MDL context-order diagnostic",
+    "usable_as_input": false,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "S05_COMPRESSED_LENGTH",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "fixed-compressor code length diagnostic",
+    "usable_as_input": false,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "T06_TRAILING_STFT",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "trailing-window STFT magnitude",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "T06_TRAILING_PHASE",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "trailing-window circular phase",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "T06_CAUSAL_SWT",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "causal stationary wavelet bands",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "T06_TRAILING_MULTITAPER",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "ENDPOINT_CAUSAL",
+    "online_feasible": true,
+    "representation": "trailing multitaper spectrum",
+    "usable_as_input": true,
+    "warm_up": "outputs exist only at window endpoints; internal positions are not emitted"
+   },
+   {
+    "arm_id": "T06_CENTERED_CWT",
+    "boundary_rule": "uses samples after t; analysis-only on synthetic and training data",
+    "causal_contract": "ANALYSIS_ONLY_NON_CAUSAL",
+    "online_feasible": false,
+    "representation": "centered continuous wavelet transform",
+    "usable_as_input": false,
+    "warm_up": "not applicable; never emitted as input"
+   },
+   {
+    "arm_id": "T06_FULL_HILBERT_HHT",
+    "boundary_rule": "uses samples after t; analysis-only on synthetic and training data",
+    "causal_contract": "ANALYSIS_ONLY_NON_CAUSAL",
+    "online_feasible": false,
+    "representation": "full-series Hilbert / Hilbert-Huang",
+    "usable_as_input": false,
+    "warm_up": "not applicable; never emitted as input"
+   },
+   {
+    "arm_id": "D07_MATCHED_FILTER",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "normalized cross-correlation matched filter",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "D07_GENERALIZED_MF",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "generalized matched filter",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   },
+   {
+    "arm_id": "D07_MINIROCKET",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "ENDPOINT_CAUSAL",
+    "online_feasible": true,
+    "representation": "MiniRocket random convolution transform",
+    "usable_as_input": true,
+    "warm_up": "outputs exist only at window endpoints; internal positions are not emitted"
+   },
+   {
+    "arm_id": "D07_LEFT_MATRIX_PROFILE",
+    "boundary_rule": "output at t uses samples <= t only",
+    "causal_contract": "TIMESTAMP_CAUSAL",
+    "online_feasible": true,
+    "representation": "left (trailing) matrix profile",
+    "usable_as_input": true,
+    "warm_up": "declared warm-up samples are typed UNAVAILABLE"
+   }
+  ],
+  "rule": "Any non-causal transform is analysis-only and never an input: an arm declared ANALYSIS_ONLY_NON_CAUSAL is not online feasible, its output is never delivered to a model, router or allocator, and an arm that fails the prefix-invariance audit is reclassified ANALYSIS_ONLY_NON_CAUSAL."
+ },
+ "consumes": {
+  "accepted_d2_decisions": [
+   "LAB_CALIBRATED",
+   "REGIME_LIMITED"
+  ],
+  "d0_d1_inputs": [
+   "C129 common dataset/variable contract (identity, source, license, semantics, unit, frequency, availability, missingness, sentinels, partitions, digest)",
+   "C130 univariate profile per partition",
+   "C131 information and compression profile",
+   "C132 multivariate profile and grouping (training only)",
+   "C133 sampling and aliasing diagnostics"
+  ],
+  "d2_grain": "operator x regime lab decision (C138)",
+  "d2_use": "reviewed D2 noise-scale and SNR estimates (MODEL_CONDITIONAL_SNR_ESTIMATE) per variable and regime, and reviewed denoised views, each only in its reviewed regime",
+  "external_review_record_required": true,
+  "never_consumed": [
+   "NOT_IDENTIFIABLE",
+   "LAB_REJECTED"
+  ],
+  "review_record_fields": [
+   "operator_id",
+   "regime_id",
+   "lab_decision",
+   "lab_decision_record_sha256",
+   "external_reviewer",
+   "review_record_sha256",
+   "reviewed_design_sha256"
+  ],
+  "rule": "Only D2 lab decisions LAB_CALIBRATED or REGIME_LIMITED that carry an external review record are consumed, each within its reviewed regime. NOT_IDENTIFIABLE and LAB_REJECTED are never consumed. Nothing is consumed without an external review record. If no such record exists, real-data stages are NOT_RUN and only synthetic calibration may proceed.",
+  "successor_outputs": "Not consumed. Outputs of other successor designs may be bound only by a later version, after their own lab decisions and external review records exist.",
+  "unreviewed_d2_output": "NEVER_CONSUMED"
+ },
+ "controls": [
+  {
+   "consumed_as_input": false,
+   "control_id": "C_RAW",
+   "description": "A0_RAW evaluated on the same partition, sample, regime and budget",
+   "kind": "RAW",
+   "steps": [
+    "STEP_04",
+    "STEP_05",
+    "STEP_06",
+    "STEP_07"
+   ],
+   "synthetic_only": false
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NULL_IAAFT",
+   "description": "IAAFT phase-randomized surrogate preserving amplitude distribution and spectrum, generated from training data only",
+   "kind": "NULL_SURROGATE",
+   "steps": [
+    "STEP_05",
+    "STEP_06",
+    "STEP_07"
+   ],
+   "synthetic_only": false
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NULL_BLOCK_PERMUTATION",
+   "description": "within-train block permutation destroying temporal order beyond the block length",
+   "kind": "NULL_SURROGATE",
+   "steps": [
+    "STEP_04",
+    "STEP_05"
+   ],
+   "synthetic_only": false
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NEG_RANDOM_CODEBOOK",
+   "description": "quantizer with the same cell count whose edges are drawn independently of the data",
+   "kind": "NEGATIVE_CONTROL_OPERATOR",
+   "steps": [
+    "STEP_04",
+    "STEP_05"
+   ],
+   "synthetic_only": true
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NEG_CENTERED_LEAK",
+   "description": "centered two-sided filter that the prefix-invariance audit must flag as look-ahead",
+   "kind": "NEGATIVE_CONTROL_OPERATOR",
+   "steps": [
+    "STEP_06",
+    "STEP_07"
+   ],
+   "synthetic_only": true
+  },
+  {
+   "consumed_as_input": false,
+   "control_id": "C_NEG_SIGNAL_NULL",
+   "description": "detector bank applied to signal-null synthetic series (noise only); any detection is a false alarm",
+   "kind": "NEGATIVE_CONTROL_OPERATOR",
+   "steps": [
+    "STEP_07"
+   ],
+   "synthetic_only": true
+  }
+ ],
+ "decision_vocabulary": {
+  "decisions": [
+   "LAB_CALIBRATED",
+   "REGIME_LIMITED",
+   "NOT_IDENTIFIABLE",
+   "LAB_REJECTED"
+  ],
+  "grain": "arm x regime",
+  "none_equals_public_eligibility": true,
+  "statement": "LAB_CALIBRATED, REGIME_LIMITED, NOT_IDENTIFIABLE and LAB_REJECTED are laboratory decisions only; none of them equals public eligibility, and this design never grants PUBLICLY_ELIGIBLE."
+ },
+ "design_id": "D3",
+ "design_sha256": "abcf33e29321595a0965f9c49fafa7a434e514df0c2fd4bc37c6074e7ab5000f",
+ "failure_region_reporting": {
+  "best_case_only": "REFUSED",
+  "grain": "arm x synthetic family x noise family x SNR band x length x regime",
+  "publish": [
+   "every region whose lab decision is NOT_IDENTIFIABLE or LAB_REJECTED",
+   "every region where the raw control is not dominated",
+   "every region where the null surrogate is indistinguishable",
+   "every region where the negative-control operator is not flagged",
+   "every causality or availability audit failure",
+   "every budget failure",
+   "every cell count where tails collapse",
+   "every representation that is analysis-only"
+  ],
+  "required": true,
+  "rule": "Failure regions are published with the same grain and prominence as regions that calibrate; a summary of the best case alone is refused.",
+  "states_recorded": [
+   "COMPLETED",
+   "FAILED",
+   "INCONCLUSIVE",
+   "REFUSED",
+   "REJECTED",
+   "NOT_RUN",
+   "UNAVAILABLE"
+  ]
+ },
+ "grants_nothing": "This design grants nothing: no execution, no scoring, no consumption, no feature selection, no training, no GPU, no RL, no DOIN, no live or venue action, and it never grants PUBLICLY_ELIGIBLE to any variable, operator, representation, router or allocation.",
+ "hypotheses": [
+  {
+   "falsified_if": "on every synthetic family the noise-aware arm has higher distortion against clean than A0_RAW, or no entropy reduction",
+   "hypothesis_id": "H04.1",
+   "protocol_section": "STEP_04 \u00a75, \u00a750",
+   "statement": "A noise-aware resolution reduces discrete entropy relative to fine uniform cells without increasing reconstruction distortion against clean beyond the raw control",
+   "step": "STEP_04"
+  },
+  {
+   "falsified_if": "tail preservation of Q04_MU_LAW is not above Q04_UNIFORM on the heavy-tailed families",
+   "hypothesis_id": "H04.2",
+   "protocol_section": "STEP_04 \u00a716, \u00a717, \u00a750",
+   "statement": "On heavy-tailed families, mu-law companding preserves tail events better than uniform quantization at equal cell count",
+   "step": "STEP_04"
+  },
+  {
+   "falsified_if": "selected order differs from the generating order or is unstable across train block bootstraps",
+   "hypothesis_id": "H05.1",
+   "protocol_section": "STEP_05 \u00a734, \u00a751",
+   "statement": "The MDL-selected context order recovers the generating order of known finite-memory families",
+   "step": "STEP_05"
+  },
+  {
+   "falsified_if": "the estimator reports a gain over surrogates on iid synthetic noise (then the estimator is NOT_IDENTIFIABLE)",
+   "hypothesis_id": "H05.2",
+   "protocol_section": "STEP_05 \u00a754, \u00a759",
+   "statement": "On independent noise the compression and entropy-rate gains over permutation surrogates are absent",
+   "step": "STEP_05"
+  },
+  {
+   "falsified_if": "any output at t changes when samples after t are appended",
+   "hypothesis_id": "H06.1",
+   "protocol_section": "STEP_06 \u00a712, \u00a715",
+   "statement": "Every arm declared TIMESTAMP_CAUSAL or ENDPOINT_CAUSAL is prefix-invariant",
+   "step": "STEP_06"
+  },
+  {
+   "falsified_if": "recovery error exceeds the analytic bound declared for the window on the clean-plus-white-noise family",
+   "hypothesis_id": "H06.2",
+   "protocol_section": "STEP_06 \u00a758, \u00a759, \u00a762",
+   "statement": "Trailing-window representations recover known amplitude, frequency and phase within the analytic resolution of their window",
+   "step": "STEP_06"
+  },
+  {
+   "falsified_if": "D07_GENERALIZED_MF power is not above D07_MATCHED_FILTER on colored-noise families",
+   "hypothesis_id": "H07.1",
+   "protocol_section": "STEP_07 \u00a745-\u00a747, \u00a764",
+   "statement": "Under colored noise the generalized matched filter has higher detection power than the white matched filter at equal false-alarm rate",
+   "step": "STEP_07"
+  },
+  {
+   "falsified_if": "false-alarm rate on noise-only series exceeds nominal",
+   "hypothesis_id": "H07.2",
+   "protocol_section": "STEP_07 \u00a776, \u00a783",
+   "statement": "On signal-null series every detector keeps its nominal false-alarm rate",
+   "step": "STEP_07"
+  }
+ ],
+ "license": {
+  "consumption": "NOT_GRANTED",
+  "execution": "NOT_GRANTED",
+  "required": "EXTERNAL_REVIEW_OF_D2_OUTPUTS_AND_OF_THIS_DESIGN",
+  "scoring": "NOT_GRANTED",
+  "selection": "NOT_GRANTED",
+  "training": "NOT_GRANTED"
+ },
+ "metrics": [
+  {
+   "compares": [
+    "STEP_04_ARMS",
+    "A0_RAW"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "mean squared error between the dequantized output and the clean component, per family x noise x SNR band x length",
+   "metric_id": "M04_RECON_DISTORTION",
+   "name": "reconstruction distortion against clean",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_04"
+  },
+  {
+   "compares": [
+    "STEP_04_ARMS",
+    "A0_RAW"
+   ],
+   "direction": "HIGHER_IS_BETTER",
+   "estimator": "recall of clean extreme events (beyond train-frozen tail quantiles) mapped to a distinct extreme cell",
+   "metric_id": "M04_TAIL_PRESERVATION",
+   "name": "tail event preservation",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_04"
+  },
+  {
+   "compares": [
+    "STEP_04_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "fraction of samples outside the train-frozen range, per partition",
+   "metric_id": "M04_SATURATION_RATE",
+   "name": "saturation rate",
+   "partitions": [
+    "CALIBRATION"
+   ],
+   "step": "STEP_04"
+  },
+  {
+   "compares": [
+    "STEP_04_ARMS",
+    "C_NEG_RANDOM_CODEBOOK"
+   ],
+   "direction": "TWO_SIDED",
+   "estimator": "plug-in entropy with Miller-Madow bias correction, bits per sample",
+   "metric_id": "M04_DISCRETE_ENTROPY",
+   "name": "discrete entropy under train-frozen cells",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_04"
+  },
+  {
+   "compares": [
+    "STEP_05_ARMS",
+    "C_NULL_BLOCK_PERMUTATION"
+   ],
+   "direction": "TWO_SIDED",
+   "estimator": "Lempel-Ziv (LZ78) entropy-rate estimate on quantized symbols minus the same estimate on block-permutation surrogates",
+   "metric_id": "M05_ENTROPY_RATE_GAIN",
+   "name": "entropy-rate gain over permutation",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_05"
+  },
+  {
+   "compares": [
+    "S05_COMPRESSED_LENGTH",
+    "C_NULL_BLOCK_PERMUTATION"
+   ],
+   "direction": "HIGHER_IS_BETTER",
+   "estimator": "compressed bytes per sample with the manifest compressor and level, relative to raw bytes and to permutation surrogates",
+   "metric_id": "M05_CODE_LENGTH_GAIN",
+   "name": "compression gain",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_05"
+  },
+  {
+   "compares": [
+    "S05_MDL_ORDER"
+   ],
+   "direction": "HIGHER_IS_BETTER",
+   "estimator": "agreement of the MDL-selected order with the generating order on known-order families, and its stability over train block bootstraps",
+   "metric_id": "M05_ORDER_RECOVERY",
+   "name": "context-order recovery",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_05"
+  },
+  {
+   "compares": [
+    "S05_PREDICTIVE_RESIDUAL",
+    "A0_RAW"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "Ljung-Box statistic at lags predeclared in the D1 profile, input versus residual",
+   "metric_id": "M05_RESIDUAL_WHITENESS",
+   "name": "residual whiteness",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_05"
+  },
+  {
+   "compares": [
+    "STEP_06_ARMS",
+    "STEP_07_ARMS",
+    "C_NEG_CENTERED_LEAK"
+   ],
+   "direction": "MUST_BE_ZERO",
+   "estimator": "count of time points whose output changes when samples after t are appended (batch versus truncated recomputation)",
+   "metric_id": "M06_PREFIX_INVARIANCE",
+   "name": "causality audit",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_06"
+  },
+  {
+   "compares": [
+    "STEP_06_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "absolute amplitude and frequency error and circular mean absolute phase error against known synthetic components",
+   "metric_id": "M06_AMP_FREQ_PHASE_ERROR",
+   "name": "amplitude/frequency/phase recovery",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_06"
+  },
+  {
+   "compares": [
+    "STEP_06_ARMS",
+    "C_NULL_IAAFT"
+   ],
+   "direction": "HIGHER_IS_BETTER",
+   "estimator": "rank of the observed descriptor among IAAFT surrogates",
+   "metric_id": "M06_SURROGATE_CONTRAST",
+   "name": "structure beyond surrogates",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_06"
+  },
+  {
+   "compares": [
+    "STEP_07_ARMS",
+    "A0_RAW"
+   ],
+   "direction": "HIGHER_IS_BETTER",
+   "estimator": "Neyman-Pearson detection probability at the false-alarm rate declared in the synthetic manifest, event onsets known by construction",
+   "metric_id": "M07_DETECTION_POWER",
+   "name": "detection probability at fixed false-alarm rate",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_07"
+  },
+  {
+   "compares": [
+    "STEP_07_ARMS",
+    "C_NEG_SIGNAL_NULL"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "detections per sample on noise-only synthetic series against the nominal rate",
+   "metric_id": "M07_FALSE_ALARM_NULL",
+   "name": "false-alarm rate on signal-null series",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_07"
+  },
+  {
+   "compares": [
+    "STEP_07_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "samples between known event onset and first detection",
+   "metric_id": "M07_DETECTION_DELAY",
+   "name": "detection delay",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_07"
+  },
+  {
+   "compares": [
+    "STEP_07_ARMS",
+    "A0_RAW"
+   ],
+   "direction": "HIGHER_IS_BETTER",
+   "estimator": "recall of impulses, steps, bumps and motifs of the clean component after the representation",
+   "metric_id": "M07_EVENT_PRESERVATION",
+   "name": "event preservation (C137)",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH"
+   ],
+   "step": "STEP_07"
+  },
+  {
+   "compares": [
+    "ALL_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "CPU seconds (process time), peak RSS in MiB, algorithmic delay in samples from the impulse response, and warm-up length, each measured separately per arm x regime",
+   "metric_id": "M_COST_STEP_04",
+   "name": "computational cost and delay",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_04"
+  },
+  {
+   "compares": [
+    "ALL_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "CPU seconds (process time), peak RSS in MiB, algorithmic delay in samples from the impulse response, and warm-up length, each measured separately per arm x regime",
+   "metric_id": "M_COST_STEP_05",
+   "name": "computational cost and delay",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_05"
+  },
+  {
+   "compares": [
+    "ALL_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "CPU seconds (process time), peak RSS in MiB, algorithmic delay in samples from the impulse response, and warm-up length, each measured separately per arm x regime",
+   "metric_id": "M_COST_STEP_06",
+   "name": "computational cost and delay",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_06"
+  },
+  {
+   "compares": [
+    "ALL_ARMS"
+   ],
+   "direction": "LOWER_IS_BETTER",
+   "estimator": "CPU seconds (process time), peak RSS in MiB, algorithmic delay in samples from the impulse response, and warm-up length, each measured separately per arm x regime",
+   "metric_id": "M_COST_STEP_07",
+   "name": "computational cost and delay",
+   "partitions": [
+    "SYNTHETIC_KNOWN_TRUTH",
+    "CALIBRATION"
+   ],
+   "step": "STEP_07"
+  }
+ ],
+ "olap_grains": [
+  {
+   "grain": "quantizer_run",
+   "keys": [
+    "run_id",
+    "design_id",
+    "dataset_sha256",
+    "variable_id",
+    "partition",
+    "arm_id",
+    "parameters_sha256",
+    "code_sha256"
+   ],
+   "records": [
+    "cell_edges_sha256",
+    "fit_partition",
+    "saturation_rate",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "information_compression_metric",
+   "keys": [
+    "run_id",
+    "variable_id",
+    "partition",
+    "arm_id",
+    "metric_id",
+    "estimator_id"
+   ],
+   "records": [
+    "compressor",
+    "level",
+    "surrogate_id",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "representation_causality_audit",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "causal_contract"
+   ],
+   "records": [
+    "prefix_invariance_count",
+    "warm_up_samples",
+    "reclassified",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "detector_run",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "template_bank_sha256",
+    "noise_family",
+    "snr_band"
+   ],
+   "records": [
+    "detection_power",
+    "false_alarm_rate",
+    "detection_delay",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "raw_transformed_residual_metric",
+   "keys": [
+    "run_id",
+    "variable_id",
+    "arm_id",
+    "regime_id",
+    "metric_id"
+   ],
+   "records": [
+    "control_id",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "delay_and_cost",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "regime_id"
+   ],
+   "records": [
+    "cpu_seconds",
+    "peak_rss_mib",
+    "algorithmic_delay",
+    "warm_up",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "lab_decision",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "regime_id"
+   ],
+   "records": [
+    "lab_decision",
+    "evidence_sha256",
+    "record_state"
+   ]
+  },
+  {
+   "grain": "failure_region",
+   "keys": [
+    "run_id",
+    "arm_id",
+    "region_id"
+   ],
+   "records": [
+    "region_definition",
+    "lab_decision",
+    "record_state"
+   ]
+  }
+ ],
+ "order_item": "C141",
+ "partitions": {
+  "confirm": "CONFIRMATION",
+  "decide": "CALIBRATION",
+  "fit": "TRAIN_ONLY",
+  "mixing_partitions": "FORBIDDEN",
+  "rule": "All fitting (cells, codebooks, templates, scales, projections, lags, thresholds, allocations) uses training data only. Calibration decides the lab decision; confirmation confirms it without refitting. No sealed period is read. No target participates in this design.",
+  "sealed_periods": "NEVER_READ",
+  "target_exception": "A target may appear only in a later, separately licensed utility test and then only inside training folds; it is not part of this design.",
+  "target_use": "NONE",
+  "test_set_tuning": "FORBIDDEN"
+ },
+ "protocols": [
+  {
+   "file": "docs/tres_temas_entrevista/STEP_04_QUANTIZATION_COMPANDING_INFORMATIONAL_RESOLUTION_FINAL.md",
+   "sha256": "23194e97194d197d14cbaf11bf322f89eefa9792ba2aa005d2caea0f62e0e284"
+  },
+  {
+   "file": "docs/tres_temas_entrevista/STEP_05_SOURCE_CODING_ENTROPY_CONTEXTS_DICTIONARIES_MDL_FINAL.md",
+   "sha256": "b08a5a94ce7464e2a85bb7c634ad8bfd7e8df33d4ca17d9007d1af324c810bfe"
+  },
+  {
+   "file": "docs/tres_temas_entrevista/STEP_06_AMPLITUDE_FREQUENCY_PHASE_TIME_FREQUENCY_REPRESENTATIONS_FINAL.md",
+   "sha256": "7f60279474484a06e0423dd81fda41d6e69ace569258f2b4c01ef1772270edc3"
+  },
+  {
+   "file": "docs/tres_temas_entrevista/STEP_07_MATCHED_FILTERING_PATTERN_DETECTION_DEEP_MODELS_FINAL.md",
+   "sha256": "ef4bc32483770938dc6a3306d7cafc652388dc45a81e5e628dd3fd586c6c8f37"
+  },
+  {
+   "file": "docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v2.md",
+   "sha256": "19cc3653bc2b720ef1c00087476d417505f099f47075cd7eca089fb8c6996fa3"
+  }
+ ],
+ "questions": [
+  {
+   "question": "What amplitude resolution, with cells frozen on training data, preserves known clean structure and tail events given the reviewed D2 noise scale, relative to raw floating point?",
+   "question_id": "Q04",
+   "step": "STEP_04"
+  },
+  {
+   "question": "What causal source structure (memory depth, contexts, innovations) remains after quantization, beyond what permutation surrogates show?",
+   "question_id": "Q05",
+   "step": "STEP_05"
+  },
+  {
+   "question": "Which amplitude, frequency, phase and time-frequency representations recover known components under a causal, online-feasible contract?",
+   "question_id": "Q06",
+   "step": "STEP_06"
+  },
+  {
+   "question": "Given a representation and a noise model, which detector family detects known patterns at a controlled false-alarm rate without look-ahead?",
+   "question_id": "Q07",
+   "step": "STEP_07"
+  }
+ ],
+ "raw_control": {
+  "arm_id": "A0_RAW",
+  "kept": true,
+  "replaced_by_transform": false,
+  "rule": "The raw (untransformed) branch is always kept as a control arm in every comparison of STEP 04-07, under the same partition, sample, regime and budget. No transform replaces the original data before a separate, reviewed utility test."
+ },
+ "schema": "crispdm.data_foundation.successor_design.d3.v1",
+ "status": "DESIGN_NO_SCORES_COMPUTED",
+ "steps": [
+  "STEP_04",
+  "STEP_05",
+  "STEP_06",
+  "STEP_07"
+ ],
+ "stopping_rules": [
+  {
+   "action": "real-data stages recorded NOT_RUN; only synthetic calibration may proceed",
+   "condition": "no D2 lab decision in {LAB_CALIBRATED, REGIME_LIMITED} with an external review record exists for the operator and regime",
+   "rule_id": "SR_NO_REVIEWED_D2"
+  },
+  {
+   "action": "arm stops before public and financial data; decision NOT_IDENTIFIABLE or LAB_REJECTED",
+   "condition": "an arm does not identify its known truth on the synthetic bank",
+   "rule_id": "SR_SYNTHETIC_FAIL"
+  },
+  {
+   "action": "refused; a new design version is required",
+   "condition": "a parameter or arm not predeclared in this design is proposed after any calibration output is seen",
+   "rule_id": "SR_FROZEN_GRID"
+  },
+  {
+   "action": "run recorded FAILED with reason BUDGET_EXCEEDED; no extension",
+   "condition": "an arm reaches a declared budget cap",
+   "rule_id": "SR_BUDGET"
+  },
+  {
+   "action": "decision for that regime is REGIME_LIMITED or LAB_REJECTED, never LAB_CALIBRATED",
+   "condition": "a candidate does not improve on the raw control on its declared preservation metric within a regime",
+   "rule_id": "SR_RAW_NOT_DOMINATED"
+  },
+  {
+   "action": "whole run REFUSED and recorded; no decision is emitted",
+   "condition": "any read of a sealed period, a confirmation refit or a target",
+   "rule_id": "SR_SEALED_OR_TARGET"
+  },
+  {
+   "action": "arm reclassified ANALYSIS_ONLY_NON_CAUSAL and never used as input",
+   "condition": "an arm fails the prefix-invariance audit",
+   "rule_id": "SR_D3_CAUSALITY"
+  },
+  {
+   "action": "not in this design; deferred to a separately licensed phase",
+   "condition": "a detector family requires neural training (InceptionTime, pretrained encoders, learned shapelets)",
+   "rule_id": "SR_D3_NO_NEURAL"
+  }
+ ],
+ "synthetic_calibration_first": {
+  "families": [
+   "sinusoids and multiband sums with known amplitude and phase",
+   "trend, seasonality, chirps",
+   "impulses, steps, bumps, motifs, regime changes",
+   "white, colored, impulsive, cross-correlated and heteroscedastic noise",
+   "heavy-tailed amplitude families",
+   "known-order Markov symbol sources",
+   "signal-null and noise-null controls",
+   "MCAR and block missingness"
+  ],
+  "generator_bank": "C128 synthetic bank: clean component, perturbation, observed series, seeds and parameters stored separately and rebuildable",
+  "order": [
+   "SYNTHETIC_KNOWN_TRUTH",
+   "PUBLIC",
+   "FINANCIAL"
+  ],
+  "parameters_frozen_before_real_data": true,
+  "real_data_before_calibration": "REFUSED",
+  "required": true,
+  "rule": "Every arm parameter is calibrated on known-truth synthetic data and frozen before any public or financial data is read. An arm that does not identify its known truth stops at the synthetic stage."
+ }
+}
