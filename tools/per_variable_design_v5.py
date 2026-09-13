@@ -60,6 +60,8 @@ MAX_MISSING_FRACTION = 0.20
 MIN_OBSERVATIONS = 2000
 FAMILY = ("H1", "H2_vs_A0", "H2_vs_A3")
 UNKNOWN = "UNKNOWN"
+# A declaration whose value is one of these declares nothing.
+UNDECLARED_VALUES = frozenset({UNKNOWN, "NONE"})
 LICENSE_REQUIRED = "EXTERNAL_V5_DESIGN_REVIEW_AND_LICENSE_REQUIRED"
 TEMPORAL_SEMANTIC_TYPES = frozenset({"date", "datetime", "time", "timestamp",
                                      "timestamp_ms", "epoch_ms", "epoch_seconds"})
@@ -82,6 +84,14 @@ CONDITIONS = (
     "temporal_contract_and_mask_same_dataset",
     "missingness_and_observation_limits",
 )
+# The census schemas the join reads. An unschema'd document lists its rows
+# under `variables`; the C115 successor census declares its schema, lists
+# rows under `rows` and declares exactly these row keys.
+SUCCESSOR_CENSUS_SCHEMA = "financial_data.eth_h4_successor_semantic_census.v1"
+SUCCESSOR_CENSUS_ROW_KEYS = ("variable_id", "dataset_id", "dataset_sha256", "column",
+                             "physical_type", "semantic_type", "semantics", "role", "unit",
+                             "license", "license_source", "missing_policy", "sentinel_policy",
+                             "producer", "symbol", "lookback_bars", "evidence")
 HEX64 = re.compile(r"[0-9a-f]{64}")
 
 
@@ -125,6 +135,12 @@ def strict_json_loads(text):
 
 def strict_json_file(path):
     return strict_json_loads(Path(path).read_bytes())
+
+
+def _read_json(path) -> tuple[object, str]:
+    """One read: the digest and the document come from the same bytes."""
+    raw = Path(path).read_bytes()
+    return strict_json_loads(raw), hashlib.sha256(raw).hexdigest()
 
 
 def _is_int(x) -> bool:
@@ -414,7 +430,28 @@ def score(*_args, **_kwargs):
 
 # --------------------------------------------------------------- population
 def _declared(v) -> bool:
-    return isinstance(v, str) and v.strip() != "" and v != UNKNOWN
+    return isinstance(v, str) and v.strip() != "" and v not in UNDECLARED_VALUES
+
+
+def census_rows(cen) -> list:
+    """The row list of a census this join knows, by exact schema."""
+    if not isinstance(cen, dict):
+        raise PopulationRefusal("CENSUS_NOT_AN_OBJECT")
+    schema = cen.get("schema")
+    if schema is None:
+        rows = cen.get("variables")
+        if not isinstance(rows, list):
+            raise PopulationRefusal("CENSUS_WITHOUT_VARIABLES")
+        return rows
+    if schema != SUCCESSOR_CENSUS_SCHEMA:
+        raise PopulationRefusal(f"UNKNOWN_CENSUS_SCHEMA: {schema!r}")
+    if cen.get("row_keys") != list(SUCCESSOR_CENSUS_ROW_KEYS) or not isinstance(cen.get("rows"), list):
+        raise PopulationRefusal("SUCCESSOR_CENSUS_ROW_KEYS_OR_ROWS")
+    for r in cen["rows"]:
+        if not isinstance(r, dict) or set(r) != set(SUCCESSOR_CENSUS_ROW_KEYS):
+            got = sorted(r) if isinstance(r, dict) else type(r).__name__
+            raise PopulationRefusal(f"SUCCESSOR_CENSUS_ROW_SCHEMA: {got}")
+    return cen["rows"]
 
 
 def _key(row, where):
@@ -547,15 +584,30 @@ def derive_population(*, terminals_dir, dag, census, temporal_contracts,
     if missing:
         return {"state": "UNDETERMINED", "missing_artifacts": missing,
                 "members": 0, "verdict": "BANK_INSUFFICIENT"}
-    dag_doc = strict_json_file(dag)
-    man = strict_json_file(binding_manifest) if binding_manifest else None
-    cen = strict_json_file(census)
-    terms = [strict_json_file(p) for p in sorted(Path(terminals_dir).glob("*.json"))]
-    contracts = [strict_json_file(p) for p in temporal_contracts]
+    dag_doc, dag_sha = _read_json(dag)
+    man, man_sha = _read_json(binding_manifest) if binding_manifest else (None, None)
+    cen, cen_sha = _read_json(census)
+    terms, th, names = [], hashlib.sha256(), []
+    for p in sorted(Path(terminals_dir).glob("*.json")):
+        doc, s = _read_json(p)
+        terms.append(doc)
+        th.update(p.name.encode() + b"\0" + bytes.fromhex(s))
+        names.append(p.name)
+    contracts, contract_ids = [], []
+    for p in temporal_contracts:
+        doc, s = _read_json(p)
+        contracts.append(doc)
+        contract_ids.append({"name": Path(p).name, "sha256": s})
+    inputs = {"terminals": {"count": len(names), "content_sha256": th.hexdigest(),
+                            "rule": "sha256 over sorted (file name, NUL, file sha256)"},
+              "dag": {"name": Path(dag).name, "sha256": dag_sha},
+              "binding_manifest": {"name": Path(binding_manifest).name, "sha256": man_sha}
+              if binding_manifest else "NOT_SUPPLIED",
+              "census": {"name": Path(census).name, "sha256": cen_sha,
+                         "schema": cen.get("schema", "UNSCHEMAD") if isinstance(cen, dict) else None},
+              "temporal_contracts": contract_ids}
 
-    variables = cen.get("variables")
-    if not isinstance(variables, list):
-        raise PopulationRefusal("CENSUS_WITHOUT_VARIABLES")
+    variables = census_rows(cen)
     ids = [v.get("variable_id") for v in variables if isinstance(v, dict)]
     if len(ids) != len(set(ids)):
         raise PopulationRefusal("DUPLICATE_CENSUS_VARIABLE_ID")
@@ -584,8 +636,9 @@ def derive_population(*, terminals_dir, dag, census, temporal_contracts,
         "state": "DERIVED",
         "rule": "a member is one (dataset_id, dataset_sha256, column) satisfying every "
                 "condition at once; every count below is derived from the ledger rows",
+        "inputs": inputs,
         "input_aggregates": "IGNORED",
-        "ignored_input_keys": sorted(k for k in cen if k != "variables"),
+        "ignored_input_keys": sorted(k for k in cen if k not in ("variables", "rows", "schema", "row_keys")),
         "unusable_temporal_contracts": unusable,
         "candidates": len(ledger),
         "eligible_variables": len(members),

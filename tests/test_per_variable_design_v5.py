@@ -367,3 +367,64 @@ def test_lopo_is_derived_from_panel_rows():
 def test_scoring_refuses():
     with pytest.raises(D.ScoringRefusal, match="EXTERNAL_V5_DESIGN_REVIEW_AND_LICENSE_REQUIRED"):
         D.score()
+
+
+# ------------------------------------------- the C115 successor census schema
+def _as_successor_census(kw, mutate=None):
+    doc = json.loads(Path(kw["census"]).read_text())
+    rows = []
+    for v in doc["variables"]:
+        r = {k: v[k] for k in D.SUCCESSOR_CENSUS_ROW_KEYS if k != "evidence"}
+        r["evidence"] = {"license": {"source": "fixture", "sha256": v["evidence_sha256"]}}
+        rows.append(r)
+    out = {"schema": D.SUCCESSOR_CENSUS_SCHEMA, "row_keys": list(D.SUCCESSOR_CENSUS_ROW_KEYS),
+           "rows": rows, "counts": {"rows": len(rows)}}
+    if mutate:
+        mutate(out)
+    Path(kw["census"]).write_text(json.dumps(out))
+
+
+def test_successor_census_schema_joins_like_the_fixture(tmp_path):
+    kw, _ = F.write_bank(tmp_path, "control_complete_bank")
+    _as_successor_census(kw)
+    pop = derive(kw)
+    assert (pop["verdict"], pop["panel_count"], pop["members"]) == ("BANK_SUFFICIENT_FOR_REVIEW", 6, 30)
+    assert pop["inputs"]["census"]["schema"] == D.SUCCESSOR_CENSUS_SCHEMA
+    assert pop["ignored_input_keys"] == ["counts"]
+
+
+@pytest.mark.parametrize("mutate, match", [
+    (lambda d: d.update(schema="some.other.census.v9"), "UNKNOWN_CENSUS_SCHEMA"),
+    (lambda d: d["row_keys"].pop(), "SUCCESSOR_CENSUS_ROW_KEYS_OR_ROWS"),
+    (lambda d: d["rows"][0].update(extra="x"), "SUCCESSOR_CENSUS_ROW_SCHEMA"),
+    (lambda d: d["rows"][0].pop("evidence"), "SUCCESSOR_CENSUS_ROW_SCHEMA"),
+])
+def test_successor_census_schema_is_exact(tmp_path, mutate, match):
+    kw, _ = F.write_bank(tmp_path, "control_complete_bank")
+    _as_successor_census(kw, mutate)
+    with pytest.raises(D.PopulationRefusal, match=match):
+        derive(kw)
+
+
+def test_a_license_source_of_none_declares_nothing(tmp_path):
+    kw, _ = F.write_bank(tmp_path, "control_complete_bank")
+    doc = json.loads(Path(kw["census"]).read_text())
+    doc["variables"][0]["license_source"] = "NONE"
+    Path(kw["census"]).write_text(json.dumps(doc))
+    pop = derive(kw)
+    row = next(r for r in pop["ledger"] if r["variable_id"] == doc["variables"][0]["variable_id"])
+    assert not row["member"] and "UNDECLARED_LICENSE_SOURCE" in row["reasons"]
+
+
+def test_population_binds_every_input_digest(tmp_path):
+    import hashlib
+    kw, _ = F.write_bank(tmp_path, "control_complete_bank")
+    pop = derive(kw)
+    sha = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
+    assert pop["inputs"]["dag"]["sha256"] == sha(kw["dag_v4"])
+    assert pop["inputs"]["census"]["sha256"] == sha(kw["census"])
+    assert [c["sha256"] for c in pop["inputs"]["temporal_contracts"]] == [sha(p) for p in kw["temporal_contracts"]]
+    assert pop["inputs"]["terminals"]["count"] == 30
+    t = Path(kw["terminals_v4"]) / "000.json"
+    t.write_text(t.read_text().replace('"observations": 4096', '"observations": 4097'))
+    assert derive(kw)["inputs"]["terminals"]["content_sha256"] != pop["inputs"]["terminals"]["content_sha256"]
