@@ -13,6 +13,11 @@
 * warm-up length (declared, observed, and 99 % impulse-energy settling
   for kinds with a transfer function).
 
+Responses and cost are measured on declared generated probes
+(``df_operators.probe_signal``), never on dataset rows; causality is proven by
+the exhaustive battery (tools/df_causal_battery.py), which replaced the
+seven-cut ``future_access_invariant``.
+
 "No delay" means zero look-ahead. Delay is measured, never compensated
 by shifting outputs with future samples; ``anticipation_max_abs``
 reports any response before the stimulus and is 0 for causal kinds.
@@ -44,6 +49,16 @@ def _load_operators():
 
 
 ops = _load_operators()
+
+
+def _load_sibling(name):
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).with_name(f"{name}.py"))
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod
+    spec.loader.exec_module(mod)
+    return mod
 
 DECLARED_FREQS = (0.0, 0.01, 0.02, 0.05)      # cycles/sample
 UNDEFINED = "UNDEFINED"
@@ -148,14 +163,10 @@ def empirical_responses(fitted: dict, amplitude: float = 1.0,
     For non-linear kinds the result depends on the declared amplitude."""
     V = fitted["n_columns"]
     N = t0 + horizon
-    base = np.zeros((N, V))
-    imp = base.copy()
-    imp[t0] = amplitude
-    stp = base.copy()
-    stp[t0:] = amplitude
-    y0, _, _ = ops.transform_batch(fitted, base, oracle_mode=oracle_mode)
-    yi, _, _ = ops.transform_batch(fitted, imp, oracle_mode=oracle_mode)
-    ys, _, _ = ops.transform_batch(fitted, stp, oracle_mode=oracle_mode)
+    y0, _, _ = ops.probe_transform(fitted, ops.probe_signal("ZERO", N, V, amplitude, t0), oracle_mode=oracle_mode)
+    yi, _, _ = ops.probe_transform(fitted, ops.probe_signal("IMPULSE", N, V, amplitude, t0),
+                                   oracle_mode=oracle_mode)
+    ys, _, _ = ops.probe_transform(fitted, ops.probe_signal("STEP", N, V, amplitude, t0), oracle_mode=oracle_mode)
     di_raw = yi[:, 0] - y0[:, 0]
     ds_raw = ys[:, 0] - y0[:, 0]
     di = np.nan_to_num(di_raw)
@@ -195,15 +206,14 @@ def settling_99(b, a, n: int = 4096):
 def cost(fitted: dict, latency_samples: int = 2000,
          batch_rows: int = 4000, seed: int = 0) -> dict:
     V = fitted["n_columns"]
-    rng = np.random.default_rng(seed)
-    X = np.cumsum(rng.normal(size=(batch_rows, V)), axis=0)
+    probe = ops.probe_signal("RANDOM_WALK", batch_rows, V, seed=seed)
     oracle = fitted["spec"]["kind"] in ops.NON_CAUSAL_KINDS
     c0 = time.process_time()
-    ops.transform_batch(fitted, X, oracle_mode=oracle)
+    ops.probe_transform(fitted, probe, oracle_mode=oracle)
     cpu = time.process_time() - c0
     tracemalloc.start()
     try:
-        ops.transform_batch(fitted, X, oracle_mode=oracle)
+        ops.probe_transform(fitted, probe, oracle_mode=oracle)
         _, peak = tracemalloc.get_traced_memory()
     finally:
         tracemalloc.stop()
@@ -214,37 +224,15 @@ def cost(fitted: dict, latency_samples: int = 2000,
         out.update({"step_mean_seconds": "REFUSED_NON_CAUSAL",
                     "step_p95_seconds": "REFUSED_NON_CAUSAL"})
         return out
-    st = ops.init_state(fitted)
-    xs = X[:latency_samples] if latency_samples <= batch_rows else \
-        np.cumsum(rng.normal(size=(latency_samples, V)), axis=0)
+    stream = ops.probe_stream(fitted, ops.probe_signal("RANDOM_WALK", latency_samples, V, seed=seed))
     dt = np.empty(latency_samples)
     for i in range(latency_samples):
         s = time.perf_counter()
-        ops.step(fitted, st, xs[i])
+        next(stream)
         dt[i] = time.perf_counter() - s
     out.update({"step_mean_seconds": float(dt.mean()),
                 "step_p95_seconds": float(np.percentile(dt, 95))})
     return out
-
-
-def future_access_invariant(fitted: dict, X, cuts, seed: int = 0,
-                            oracle_mode: bool = False) -> bool:
-    """True iff for every cut t, replacing X[t+1:] leaves Y[:t+1],
-    available[:t+1] and reason[:t+1] bitwise unchanged."""
-    X = np.asarray(X, dtype=float)
-    rng = np.random.default_rng(seed)
-    y, a, r = ops.transform_batch(fitted, X, oracle_mode=oracle_mode)
-    for t in cuts:
-        X2 = X.copy()
-        X2[t + 1:] = rng.normal(loc=50.0, scale=25.0,
-                                size=X2[t + 1:].shape)
-        y2, a2, r2 = ops.transform_batch(fitted, X2,
-                                         oracle_mode=oracle_mode)
-        if not (np.array_equal(y[:t + 1], y2[:t + 1], equal_nan=True)
-                and np.array_equal(a[:t + 1], a2[:t + 1])
-                and np.array_equal(r[:t + 1], r2[:t + 1])):
-            return False
-    return True
 
 
 def measure(fitted: dict, freqs=DECLARED_FREQS, latency_samples=2000,
@@ -281,9 +269,8 @@ def measure(fitted: dict, freqs=DECLARED_FREQS, latency_samples=2000,
     rep["empirical"] = empirical_responses(fitted, amplitude,
                                            oracle_mode=oracle)
     rep["cost"] = cost(fitted, latency_samples, batch_rows)
-    probe = np.cumsum(np.random.default_rng(1).normal(size=(200, fitted[
-        "n_columns"])), axis=0)
-    _, av, _ = ops.transform_batch(fitted, probe, oracle_mode=oracle)
+    _, av, _ = ops.probe_transform(fitted, ops.probe_signal("RANDOM_WALK", 200, fitted["n_columns"], seed=1),
+                                   oracle_mode=oracle)
     first = np.flatnonzero(av[:, 0])
     rep["warmup"] = {"declared": meta["warmup"],
                      "observed_first_available_row":
@@ -299,12 +286,14 @@ def _demo_train(n=600, V=2, seed=7):
 
 
 def main():
-    train = _demo_train()
+    sync = _load_sibling("df_synthetic_contract")
+    snap = _load_sibling("df_snapshot")
+    contract, loader = sync.in_memory_contract(_demo_train(), name="measure_demo")
+    fit_snap = snap.FitSnapshot.from_contract(contract, "TRAIN", loader)
     rows = []
     for spec in ops.bank_specs():
-        fitted = ops.fit(spec, train, "train")
-        rep = measure(fitted, latency_samples=300, batch_rows=1000)
-        rows.append(rep)
+        fitted = ops.fit(spec, fit_snap, ops.FROZEN_PREVIOUS_PARTITION)
+        rows.append(measure(fitted, latency_samples=300, batch_rows=1000))
     print(json.dumps(rows, indent=1, default=str))
 
 

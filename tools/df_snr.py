@@ -25,15 +25,38 @@ FILE-with-suffix ".olap_rows.jsonl" (OLAP-ready rows).  Both must not exist.
 from __future__ import annotations
 
 import argparse
+import contextvars
 import hashlib
+import importlib.util
 import json
 import math
 import os
 import sys
 import warnings
+from pathlib import Path
 from typing import Any, Callable
 
 import numpy as np
+
+OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL = "OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL"
+TRAIN_SEGMENT_AGGREGATE = "TRAIN_SEGMENT_AGGREGATE"
+# True only inside estimate_offline_train_diagnostic (C160).
+_OFFLINE_AGGREGATE = contextvars.ContextVar("df_snr_offline_aggregate", default=False)
+
+
+class SnrRefusal(Exception):
+    def __init__(self, msg: str):
+        super().__init__(f"REFUSED: {msg}")
+
+
+def _snapshot_module():
+    name = "df_snapshot"
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().with_name(f"{name}.py"))
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[name] = mod
+        spec.loader.exec_module(mod)
+    return sys.modules[name]
 
 CALIBRATION_SCHEMA = "crispdm.data_foundation.snr_calibration.v1"
 REAL_LABEL = "MODEL_CONDITIONAL_SNR_ESTIMATE"
@@ -67,7 +90,13 @@ def _nv_mad_first_difference(x: np.ndarray, p: dict) -> float:
     return float(sigma ** 2)
 
 
-def _nv_wavelet_mad(x: np.ndarray, p: dict) -> float:
+def _offline_wavelet_mad_kernel(x: np.ndarray, p: dict) -> float:
+    """PRIVATE. db4 with periodization over the whole segment: the last sample
+    moves the first coefficients, so it is never causal. It runs only inside the
+    aggregate path that returns one figure per training segment."""
+    if not _OFFLINE_AGGREGATE.get():
+        raise SnrRefusal("wavelet_mad is OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL; it runs only inside "
+                         "estimate_offline_train_diagnostic and never yields per-timestamp values")
     import pywt
     _, detail = pywt.dwt(x, p["wavelet"], mode=p["mode"])
     sigma = np.median(np.abs(detail)) / MAD_TO_SIGMA
@@ -159,7 +188,7 @@ ESTIMATORS: dict[str, dict[str, Any]] = {
                         "signal smooth at the sampling scale"],
         "known_biases": ["colored noise with positive autocorrelation -> noise variance biased LOW, SNR HIGH",
                          "rough/jumpy signal -> noise variance biased HIGH"],
-        "kernel": _nv_mad_first_difference,
+        "contract_state": TRAIN_SEGMENT_AGGREGATE,
         "bootstrap_B": None,
     },
     "wavelet_mad": {
@@ -170,7 +199,7 @@ ESTIMATORS: dict[str, dict[str, Any]] = {
         "assumptions": ["white Gaussian noise", "finest-scale detail dominated by noise",
                         "analysis-only offline estimator (uses the whole train segment, not causal)"],
         "known_biases": ["colored noise -> finest-scale energy misrepresents total noise variance"],
-        "kernel": _nv_wavelet_mad,
+        "contract_state": OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL,
         "bootstrap_B": None,
     },
     "ar_residual": {
@@ -183,7 +212,7 @@ ESTIMATORS: dict[str, dict[str, Any]] = {
                         "colored measurement noise is partly counted as signal",
                         "white measurement noise on an AR signal is NOT separated from signal innovations"],
         "known_biases": ["p*=0 gives noise variance = var(x) -> NOT_IDENTIFIABLE"],
-        "kernel": _nv_ar_residual,
+        "contract_state": TRAIN_SEGMENT_AGGREGATE,
         "bootstrap_B": None,
     },
     "spectral_floor": {
@@ -195,7 +224,7 @@ ESTIMATORS: dict[str, dict[str, Any]] = {
         "assumptions": ["white noise (flat spectrum)", "no signal power in the declared upper band",
                         "chi2 median correction uses 2*n_segments dof, ignoring overlap correlation"],
         "known_biases": ["signal energy in upper band -> HIGH", "red noise -> LOW"],
-        "kernel": _nv_spectral_floor,
+        "contract_state": TRAIN_SEGMENT_AGGREGATE,
         "bootstrap_B": None,
     },
     "local_level_kalman": {
@@ -206,7 +235,7 @@ ESTIMATORS: dict[str, dict[str, Any]] = {
         "assumptions": ["signal is a random walk", "irregular is white Gaussian",
                         "non-convergence is reported as fit_failed"],
         "known_biases": ["deterministic smooth signals are approximated by a random walk"],
-        "kernel": _nv_local_level_kalman,
+        "contract_state": TRAIN_SEGMENT_AGGREGATE,
         "bootstrap_B": 50,
     },
     "trailing_median_residual": {
@@ -218,9 +247,20 @@ ESTIMATORS: dict[str, dict[str, Any]] = {
                         "causal (uses only past and current samples)"],
         "known_biases": ["current sample is inside its own window -> residual shrunk, noise variance LOW "
                          "(no finite-sample correction applied)", "trending signal -> HIGH"],
-        "kernel": _nv_trailing_median_residual,
+        "contract_state": TRAIN_SEGMENT_AGGREGATE,
         "bootstrap_B": None,
     },
+}
+
+
+# Private registry: kernels are not reachable through ESTIMATORS (C160).
+_KERNELS: dict[str, Callable] = {
+    "mad_first_difference": _nv_mad_first_difference,
+    "wavelet_mad": _offline_wavelet_mad_kernel,
+    "ar_residual": _nv_ar_residual,
+    "spectral_floor": _nv_spectral_floor,
+    "local_level_kalman": _nv_local_level_kalman,
+    "trailing_median_residual": _nv_trailing_median_residual,
 }
 
 
@@ -228,7 +268,7 @@ def estimator_declarations(bootstrap: dict | None = None) -> dict[str, dict]:
     bs = dict(DEFAULT_BOOTSTRAP, **(bootstrap or {}))
     out = {}
     for name, spec in ESTIMATORS.items():
-        d = {k: v for k, v in spec.items() if k not in ("kernel", "bootstrap_B")}
+        d = {k: v for k, v in spec.items() if k != "bootstrap_B"}
         b = dict(bs)
         if spec["bootstrap_B"] is not None and bootstrap is None:
             b["B"] = spec["bootstrap_B"]
@@ -275,7 +315,9 @@ def _point(x: np.ndarray, name: str) -> dict:
         return res
     try:
         with np.errstate(all="ignore"):
-            nv = spec["kernel"](x, params)
+            nv = _KERNELS[name](x, params)
+    except SnrRefusal:
+        raise
     except _FitFailed as exc:
         res["reason"] = str(exc)
         return res
@@ -345,12 +387,99 @@ def _bootstrap(x: np.ndarray, name: str, bs: dict) -> dict:
 def estimate(x_full: np.ndarray, train: tuple[int, int] | list, name: str,
              missing_mask: np.ndarray | None = None, bootstrap: dict | None = None,
              do_bootstrap: bool = True) -> dict:
-    """Estimate on x_full[train[0]:train[1]] only.  `bootstrap` overrides the declared config."""
+    """Estimate on x_full[train[0]:train[1]] only.  `bootstrap` overrides the declared config.
+    An OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL estimator refuses here: it is reachable only
+    through estimate_offline_train_diagnostic."""
     if name not in ESTIMATORS:
         raise KeyError(f"unknown estimator {name!r}")
+    if ESTIMATORS[name]["contract_state"] == OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL:
+        raise SnrRefusal(f"{name} is OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL: a bare array never grants it; use "
+                         "estimate_offline_train_diagnostic with a TRAIN FitSnapshot of the whole train partition")
     s, e = int(train[0]), int(train[1])
     xt = np.asarray(x_full, dtype=float)[s:e]
     mt = None if missing_mask is None else np.asarray(missing_mask, dtype=bool)[s:e]
+    return _estimate_segment(xt, mt, s, e, name, bootstrap, do_bootstrap)
+
+
+def estimate_offline_train_diagnostic(snapshot, column: int, name: str = "wavelet_mad",
+                                      missing_mask: np.ndarray | None = None, bootstrap: dict | None = None,
+                                      do_bootstrap: bool = True) -> dict:
+    """The only path to an OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL estimator: ONE figure for one column
+    of a verified TRAIN FitSnapshot covering the whole train partition of its contract. `missing_mask`
+    has the length of the train partition."""
+    if name not in ESTIMATORS or ESTIMATORS[name]["contract_state"] != OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL:
+        raise SnrRefusal(f"{name!r} is not an offline train diagnostic")
+    snap = _snapshot_module()
+    if not isinstance(snapshot, snap.FitSnapshot):
+        raise SnrRefusal("an offline train diagnostic requires a FitSnapshot built from a contract")
+    try:
+        snap.verify_fit_snapshot(snapshot)
+    except snap.SnapshotRefusal as exc:
+        raise SnrRefusal(f"fit snapshot does not verify: {exc}") from exc
+    lo, hi = snap._partition_ranges(snapshot.contract)["TRAIN"]
+    if snapshot.role != "TRAIN" or (snapshot.start, snapshot.end) != (lo, hi):
+        raise SnrRefusal(f"one figure per training segment: the snapshot [{snapshot.start}, {snapshot.end}) "
+                         f"with role {snapshot.role} is not the whole TRAIN partition [{lo}, {hi})")
+    if type(column) is not int or not 0 <= column < snapshot.matrix.shape[1]:
+        raise SnrRefusal(f"column {column!r} is not a column of the snapshot")
+    xt = np.array(snapshot.matrix[:, column], dtype=float)
+    mt = None if missing_mask is None else np.asarray(missing_mask, dtype=bool)
+    if mt is not None and mt.shape != xt.shape:
+        raise SnrRefusal("missing_mask must have the length of the train partition")
+    token = _OFFLINE_AGGREGATE.set(True)
+    try:
+        return _estimate_segment(xt, mt, lo, hi, name, bootstrap, do_bootstrap)
+    finally:
+        _OFFLINE_AGGREGATE.reset(token)
+
+
+def calibration_unit_contract(unit_dir: str, meta: dict, n_variables: int) -> tuple[dict, Callable]:
+    """A sealed contract over a calibration unit's on-disk observed bytes, with its layout's
+    train / calibration (or validation) / confirmation boundaries, and a bytes loader."""
+    snap = _snapshot_module()
+    C = snap.C
+    parts = meta.get("partitions") or meta.get("temporal_roles")
+    n = int(meta["n_samples"])
+    second = "calibration" if "calibration" in parts else "validation"
+    bounds = {"train": [int(v) for v in parts["train"]], "calibration": [int(v) for v in parts[second]],
+              "confirmation": [int(v) for v in parts["confirmation"]]}
+    name = "observed_signal.npy"
+    blob = Path(unit_dir, name).read_bytes()
+    unit_id = str(meta.get("unit_id") or os.path.basename(os.path.normpath(unit_dir)))
+    dataset_id = f"snr_calibration_unit.{unit_id}"
+    ev = [{"source": "calibration unit record", "sha256": "UNAVAILABLE"}]
+    variables = [C.variable(dataset_id, f"v{i}", semantics={"type": "CALIBRATION_UNIT_OBSERVED",
+                                                           "description": "observed signal", "evidence": ev},
+                            available_time_rule="SAMPLE_INDEX", role="INPUT_CANDIDATE",
+                            license_state="NOT_APPLICABLE_GENERATED", original_fields={"variable_index": i})
+                 for i in range(n_variables)]
+    na = "NOT_APPLICABLE"
+    lengths = {k: b[1] - b[0] for k, b in bounds.items()}
+    doc = {"schema": C.DATASET_SCHEMA, "dataset_id": dataset_id, "version": "calibration_unit.v1",
+           "bank": "SYNTHETIC",
+           "files": [{"name": name, "bytes": len(blob), "sha256": hashlib.sha256(blob).hexdigest(),
+                      "role": "OBSERVED"}],
+           "content_sha256": "", "contract_sha256": "",
+           "source": {"provider": "calibration unit", "official_url": na, "citation": na, "doi": na,
+                      "upstream_owner": na},
+           "license": {"state": "NOT_APPLICABLE_GENERATED", "id": na, "url": na, "text_sha256": "UNAVAILABLE",
+                       "attribution_required": "NO", "redistribution": na, "derivatives": na, "evidence": []},
+           "time": {"frequency_nominal_seconds": na, "timezone": na, "timestamp_meaning": "SAMPLE_INDEX",
+                    "range_start": "0", "range_end": str(n - 1), "availability_rule": "SAMPLE_INDEX",
+                    "availability_delay_seconds": na},
+           "panel": {"aligned_common_grid": True, "n_series": n_variables, "alignment_rule": "unit grid"},
+           "partitions": {"scheme": "UNIT_DECLARED_BOUNDARIES",
+                          "fractions": {k: lengths[k] / n if n else 0.0 for k in bounds},
+                          "boundaries": bounds, "sealed_periods_excluded": [], "frozen_before_profile": True},
+           "dependence": [], "variables": variables, "original_fields": {"unit_record": meta}}
+    try:
+        contract = C.seal(doc)
+    except C.ContractRefusal as exc:
+        raise SnrRefusal(f"calibration unit does not seal as a contract: {exc}") from exc
+    return contract, (lambda requested: Path(unit_dir, requested).read_bytes() if requested == name else None)
+
+
+def _estimate_segment(xt: np.ndarray, mt, s: int, e: int, name: str, bootstrap, do_bootstrap) -> dict:
     a, b = longest_complete_segment(xt, mt)
     n_missing = int((~np.isfinite(xt)).sum() + (0 if mt is None else (mt & np.isfinite(xt)).sum()))
     seg = xt[a:b]
@@ -368,8 +497,11 @@ def estimate(x_full: np.ndarray, train: tuple[int, int] | list, name: str,
 
 
 def estimate_real(x: np.ndarray, train: tuple[int, int] | list, variable_names: list[str] | None = None,
-                  estimators: list[str] | None = None, bootstrap: dict | None = None) -> list[dict]:
-    """Real-data estimates.  x is (T,) or (V, T).  Rows are always labelled model-conditional."""
+                  estimators: list[str] | None = None, bootstrap: dict | None = None,
+                  train_snapshot=None) -> list[dict]:
+    """Real-data estimates.  x is (T,) or (V, T).  Rows are always labelled model-conditional.
+    An offline train diagnostic is computed only from `train_snapshot` (a TRAIN FitSnapshot whose
+    column v is variable v); without one its rows are NOT_IDENTIFIABLE with a refusal reason."""
     arr = np.asarray(x, dtype=float)
     if arr.ndim == 1:
         arr = arr[None, :]
@@ -379,7 +511,16 @@ def estimate_real(x: np.ndarray, train: tuple[int, int] | list, variable_names: 
     rows = []
     for v in range(arr.shape[0]):
         for name in names:
-            r = estimate(arr[v], train, name, bootstrap=bootstrap)
+            if ESTIMATORS[name]["contract_state"] == OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL:
+                if train_snapshot is None:
+                    r = {"snr_db": None, "noise_variance": None, "signal_variance": None,
+                         "status": STATUS_NI, "train": [int(train[0]), int(train[1])], "segment_used": None,
+                         "bootstrap": None,
+                         "reason": "refused: offline train diagnostic requires a TRAIN FitSnapshot"}
+                else:
+                    r = estimate_offline_train_diagnostic(train_snapshot, v, name, bootstrap=bootstrap)
+            else:
+                r = estimate(arr[v], train, name, bootstrap=bootstrap)
             bsr = r.get("bootstrap") or {}
             rows.append({
                 "label": REAL_LABEL,
@@ -481,6 +622,11 @@ def calibrate(bank: str, limit: int | None = None, estimators: list[str] | None 
         u = load_unit(ud)
         meta = u["meta"]
         s, e = u["train"]
+        train_snapshot = None
+        if any(ESTIMATORS[nm]["contract_state"] == OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL for nm in names):
+            snap = _snapshot_module()
+            contract, loader = calibration_unit_contract(ud, meta, u["observed_signal"].shape[0])
+            train_snapshot = snap.FitSnapshot.from_contract(contract, "TRAIN", loader)
         for v in range(u["observed_signal"].shape[0]):
             obs = u["observed_signal"][v]
             mask = None if u["missing_mask"] is None else u["missing_mask"][v]
@@ -492,7 +638,11 @@ def calibrate(bank: str, limit: int | None = None, estimators: list[str] | None 
                      "declared_snr_db": _declared_for_var(meta.get("declared_snr_db"), v),
                      "length": int(meta["n_samples"])}
             for name in names:
-                r = estimate(obs, u["train"], name, missing_mask=mask, bootstrap=bootstrap)
+                if ESTIMATORS[name]["contract_state"] == OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL:
+                    r = estimate_offline_train_diagnostic(train_snapshot, v, name, missing_mask=mt,
+                                                          bootstrap=bootstrap)
+                else:
+                    r = estimate(obs, u["train"], name, missing_mask=mask, bootstrap=bootstrap)
                 bsr = r["bootstrap"] or {}
                 log_err = snr_err = covers = None
                 if r["status"] == STATUS_OK:

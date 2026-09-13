@@ -98,17 +98,44 @@ def test_failure_regions_are_published_and_rows_validate(result):
     assert {d["decision"] for d in decisions} <= {"LAB_CALIBRATED", "REGIME_LIMITED", "NOT_IDENTIFIABLE", "LAB_REJECTED"}
 
 
-def test_fitting_never_sees_calibration_or_confirmation(bank, tmp_path):
-    import shutil
+def test_fitting_never_sees_calibration_or_confirmation(bank):
     unit = bank / names(bank, "sinusoid", "white", "0")[0]
     u = LAB.load_unit(unit)
+    train_end = u["rec"]["partitions"]["train"][1]
     s = LAB.train_fit_slice(u["observed"], u["rec"]["partitions"]["train"])
-    assert s.stop <= u["rec"]["partitions"]["train"][1]
-    f1 = LAB.OPS.fit(SPECS[2], u["observed"][s], "train")
+    assert s.stop <= train_end
+    hampel = {"kind": "trailing_hampel", "params": {"window": 9, "k": 3.0}}
+    snap = LAB.SNAP.FitSnapshot.from_contract(u["contract"], "TRAIN", u["loader"], start=s.start, end=s.stop)
+    f1 = LAB.OPS.fit(hampel, snap, LAB.LAB_USE_FIT_MODE["trailing_hampel"])
+    # parameters are those of the train rows alone: rows after the fit range cannot move them
     changed = u["observed"].copy()
     changed[s.stop:] += 100.0
-    f2 = LAB.OPS.fit(SPECS[2], changed[s], "train")
-    assert f1["artifact_sha256"] == f2["artifact_sha256"]
+    assert f1["fitted"] == LAB.OPS._fit_kernel(hampel, changed[s], t0=s.start)["fitted"]
+    b = f1["fit_binding"]
+    assert b["role"] == "TRAIN" and b["range"] == [s.start, s.stop]
+    assert [p[0] for p in b["excluded_partitions"]] == ["CALIBRATION", "CONFIRMATION"]
+    assert b["contract_sha256"] == u["contract"]["contract_sha256"]
+    # a fit snapshot reaching into calibration refuses, whatever it is labelled
+    with pytest.raises(LAB.OPS.OperatorRefusal, match="not inside the TRAIN partition"):
+        LAB.OPS.fit(hampel, LAB.SNAP.FitSnapshot.from_contract(u["contract"], "TRAIN", u["loader"],
+                                                               start=s.start, end=train_end + 10),
+                    LAB.OPS.FROZEN_PREVIOUS_PARTITION)
+    with pytest.raises(LAB.OPS.OperatorRefusal, match="requires a FitSnapshot"):
+        LAB.OPS.fit(hampel, u["observed"][s], "train")
+    # a FROZEN operator is transformed only after the train partition
+    fitted, y, avail = LAB.fit_and_transform(u, hampel, s)
+    assert fitted["fit_mode"] == LAB.OPS.FROZEN_PREVIOUS_PARTITION
+    assert not avail[:train_end].any() and np.isnan(y[:train_end]).all() and avail[train_end + 9:].any()
+    # an EXPANDING operator is transformed over the whole series
+    fitted, y, avail = LAB.fit_and_transform(u, SPECS[1], s)
+    assert fitted["fit_mode"] == LAB.OPS.EXPANDING_PREFIX and avail[8:train_end].all()
+
+
+def test_lab_declares_a_fit_mode_for_every_kind():
+    assert set(LAB.LAB_USE_FIT_MODE) == set(LAB.OPS.KINDS)
+    assert LAB.LAB_USE_FIT_MODE["causal_decomposition"] == LAB.OPS.EXPANDING_PREFIX
+    for k in ("trailing_haar_threshold", "trailing_hampel", "local_level_kalman", "local_linear_trend_kalman"):
+        assert LAB.LAB_USE_FIT_MODE[k] == LAB.OPS.FROZEN_PREVIOUS_PARTITION
 
 
 def test_too_few_units_is_not_identifiable():

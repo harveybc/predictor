@@ -5,9 +5,10 @@ may emit.
 
 For every synthetic unit, every variable and every operator spec:
 
-* the operator is fitted on the TRAIN partition only (the longest complete
-  contiguous train stretch; no imputation) and applied causally to the
-  whole observed series;
+* the operator is fitted on a FitSnapshot of the TRAIN partition only (the
+  longest complete contiguous train stretch; no imputation) under the fit
+  mode declared in LAB_USE_FIT_MODE, and applied through a TransformSnapshot
+  of the range that mode licenses (C152-C154);
 * X (observed), D(X) (operator output) and R = X - D(X) are compared with
   the clean truth on CALIBRATION and CONFIRMATION separately, only on
   samples the operator marks available and that are not missing;
@@ -66,6 +67,15 @@ OPS = _load("df_operators")
 MEASURE = _load("df_operator_measure")
 LOADER = _load("load_data_foundation")
 SYNC = _load("df_synthetic_contract")
+SNAP = _load("df_snapshot")
+
+# C154: the temporal fit mode this lab declares for each operator use. Kinds
+# that implement EXPANDING_PREFIX are transformed over the whole series (every
+# output uses only its prefix); the others are FROZEN_PREVIOUS_PARTITION and
+# are transformed only from the end of the train partition on, so their state
+# starts at calibration row 0 and never sees parameters applied in-sample.
+LAB_USE_FIT_MODE = {k: (OPS.EXPANDING_PREFIX if OPS.EXPANDING_PREFIX in modes else OPS.FROZEN_PREVIOUS_PARTITION)
+                    for k, modes in OPS.KIND_FIT_MODES.items()}
 
 EVAL_PARTITIONS = ("calibration", "confirmation")
 MAX_DELAY_LAG = 32
@@ -134,8 +144,30 @@ def load_unit(unit_dir: Path) -> dict:
             "noise": arr("additive_noise").astype(float), "observed": arr("observed_signal").astype(float),
             "mask": arr("missing_mask").astype(bool),
             "events": json.loads((unit_dir / "events.json").read_text())["events"],
-            "content_sha256": contract["content_sha256"],
+            "content_sha256": contract["content_sha256"], "contract": contract,
+            "loader": SYNC.file_loader(unit_dir),
             "variable_ids": [v["variable_id"] for v in contract["variables"]]}
+
+
+def fit_and_transform(u: dict, spec: dict, fit_sl: slice) -> tuple:
+    """Fit on a FitSnapshot of the complete train stretch under the declared
+    mode; transform the licensed range; -> (fitted, Y, available) over the
+    whole series, unavailable outside the licensed range."""
+    contract, loader = u["contract"], u["loader"]
+    mode = LAB_USE_FIT_MODE[spec["kind"]]
+    snap = SNAP.FitSnapshot.from_contract(contract, "TRAIN", loader, start=fit_sl.start, end=fit_sl.stop)
+    fitted = OPS.fit(spec, snap, mode)
+    if fitted["status"] != "FITTED":
+        return fitted, None, None
+    T = u["observed"].shape[0]
+    start = 0 if mode == OPS.EXPANDING_PREFIX else int(u["rec"]["partitions"]["train"][1])
+    tsnap = SNAP.TransformSnapshot.from_contract(contract, loader, start=start, end=T)
+    oracle = spec["kind"] in OPS.NON_CAUSAL_KINDS
+    y_part, a_part, _ = OPS.transform_batch(fitted, tsnap, oracle_mode=oracle)
+    y = np.full(u["observed"].shape, np.nan)
+    avail = np.zeros(u["observed"].shape, dtype=bool)
+    y[start:], avail[start:] = y_part, a_part
+    return fitted, y, avail
 
 
 def regime_of(rec: dict) -> dict:
@@ -318,15 +350,14 @@ def evaluate_unit(args) -> list[dict]:
         try:
             if fit_sl.stop - fit_sl.start < 50:
                 raise OPS.OperatorRefusal(f"longest complete train stretch has {fit_sl.stop - fit_sl.start} rows")
-            fitted = OPS.fit(spec, u["observed"][fit_sl], "train")
+            fitted, y, avail = fit_and_transform(u, spec, fit_sl)
             if fitted["status"] != "FITTED":
                 raise OPS.OperatorAbstain(f"ABSTAIN: {fitted['abstain_reason']}")
-            oracle = spec["kind"] in OPS.NON_CAUSAL_KINDS
-            y, avail, _ = OPS.transform_batch(fitted, u["observed"], oracle_mode=oracle)
             status, reason, fsha = "COMPLETED", "", fitted["artifact_sha256"]
         except Exception as exc:  # noqa: BLE001 - every outcome is recorded
             y = avail = None
-            status = "REFUSED" if isinstance(exc, OPS.OperatorRefusal) else "FAILED"
+            status = ("REFUSED" if isinstance(exc, (OPS.OperatorRefusal, SNAP.SnapshotRefusal))
+                      else "FAILED")
             reason, fsha = f"{type(exc).__name__}: {exc}"[:300], None
         cpu = time.process_time() - t0
         for v in range(rec["n_variables"]):
@@ -466,7 +497,9 @@ def delay_cost_rows(reference: dict, specs: list[dict], run_id: str) -> list[dic
         base = {"run_id": run_id, "operator_kind": spec["kind"], "operator_params": spec["params"],
                 "spec_sha256": spec_sha(spec), "code_sha256": code}
         try:
-            fitted = OPS.fit(spec, reference["observed"][fit_sl], "train")
+            snap = SNAP.FitSnapshot.from_contract(reference["contract"], "TRAIN", reference["loader"],
+                                                  start=fit_sl.start, end=fit_sl.stop)
+            fitted = OPS.fit(spec, snap, LAB_USE_FIT_MODE[spec["kind"]])
             rep = MEASURE.measure(fitted)
         except Exception as exc:  # noqa: BLE001
             rows.append(dict(base, metric="measure", frequency=None, value=None, value_text=None, status="FAILED",
@@ -590,6 +623,7 @@ def run(bank_root: Path, out_dir: Path, specs: list[dict] | None = None, unit_na
                "reference_unit_for_delay_and_cost": reference["rec"]["unit_id"],
                "units": len(units), "specs": len(specs), "unit_variable_operator_records": len(records),
                "decision_counts": counts, "tables": digests, "wall_seconds": round(time.time() - t0, 1),
+               "fit_mode_per_kind": LAB_USE_FIT_MODE,
                "operators": failure_regions(decisions),
                "never": DECISION_RULES["never"]}
     text = json.dumps(summary, indent=1, sort_keys=True, allow_nan=False)

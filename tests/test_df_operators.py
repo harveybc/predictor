@@ -1,4 +1,6 @@
-"""Tests for the D2 causal operator bank (C135 contract, C136 bank)."""
+"""Tests for the D2 causal operator bank (C135 contract, C136 bank) and its
+snapshot boundary (C152-C155). Numerics are exercised through the private
+kernels; the public API is exercised through contracts and snapshots."""
 from __future__ import annotations
 
 import copy
@@ -28,10 +30,14 @@ def _load(name):
 
 ops = _load("df_operators")
 meas = _load("df_operator_measure")
+snapm = _load("df_snapshot")
+sync = _load("df_synthetic_contract")
+bat = _load("df_causal_battery")
 
 ALL_SPECS = ops.bank_specs()
 CAUSAL_SPECS = [s for s in ALL_SPECS if s["kind"] in ops.CAUSAL_KINDS]
 ORACLE_SPEC = {"kind": "centered_mean_oracle", "params": {"window": 5}}
+FROZEN, EXPANDING = ops.FROZEN_PREVIOUS_PARTITION, ops.EXPANDING_PREFIX
 
 
 def _sid(s):
@@ -54,7 +60,7 @@ _FIT_CACHE = {}
 def _fitted(spec):
     key = json.dumps(spec, sort_keys=True)
     if key not in _FIT_CACHE:
-        _FIT_CACHE[key] = ops.fit(spec, TRAIN, "train")
+        _FIT_CACHE[key] = ops._fit_kernel(spec, TRAIN)
     f = _FIT_CACHE[key]
     assert f["status"] == "FITTED", f["abstain_reason"]
     return copy.deepcopy(f)
@@ -85,7 +91,7 @@ def test_bank_grid_is_the_predeclared_one():
                       "local_linear_trend_kalman": 1, "trailing_mean": 2,
                       "trailing_median": 3, "trailing_hampel": 2,
                       "fir_sinc_lowpass": 2, "butterworth2_lowpass": 2,
-                      "wavelet_haar_atrous": 2, "causal_decomposition": 2,
+                      "trailing_haar_threshold": 2, "causal_decomposition": 2,
                       "centered_mean_oracle": 1}
     for s in ALL_SPECS:
         assert ops.validate_spec(s) is s
@@ -119,7 +125,7 @@ def test_spec_validation_refuses(bad):
     with pytest.raises(ops.OperatorRefusal, match="^REFUSED"):
         ops.validate_spec(bad)
     with pytest.raises(ops.OperatorRefusal):
-        ops.fit(bad, TRAIN, "train")
+        ops._fit_kernel(bad, TRAIN)
 
 
 def test_no_spec_parameter_can_shift_or_lead():
@@ -147,13 +153,13 @@ def test_lookback_matches_derivation():
             assert lb == p["window"] - 1
         elif k == "fir_sinc_lowpass":
             assert lb == 20
-        elif k == "wavelet_haar_atrous":
+        elif k == "trailing_haar_threshold":
             assert lb == 2 ** p["levels"] - 1
     assert ops.LOOKBACK_UNBOUNDED == -1 and ops.LOOKBACK_NON_CAUSAL == -2
 
 
 def test_controls_are_labelled():
-    f = ops.fit(ORACLE_SPEC, TRAIN, "train")
+    f = ops._fit_kernel(ORACLE_SPEC, TRAIN)
     assert f["meta"]["causality"] == "NON_CAUSAL"
     assert f["meta"]["control_label"] == ops.NON_CAUSAL_NEGATIVE_CONTROL
     med5 = _fitted({"kind": "trailing_median", "params": {"window": 5}})
@@ -163,18 +169,53 @@ def test_controls_are_labelled():
     assert med9["meta"]["control_label"] is None
 
 
-def test_every_kind_declares_assumptions_as_data():
+def test_every_kind_declares_assumptions_and_fit_modes_as_data():
     for s in ALL_SPECS:
         a = ops.KIND_META[s["kind"]]["assumptions"]
         assert isinstance(a, dict) and a
         assert all(type(v) is bool for v in a.values())
+        modes = ops.KIND_FIT_MODES[s["kind"]]
+        assert ops.FROZEN_PREVIOUS_PARTITION in modes and ops.OFFLINE_ANALYSIS_ONLY_NON_CAUSAL in modes
+        assert (ops.EXPANDING_PREFIX in modes) == (s["kind"] in ops.DATA_INDEPENDENT_KINDS
+                                                   or s["kind"] == "causal_decomposition")
 
 
 # ------------------------------------------------------------- fit ----
-@pytest.mark.parametrize("role", ["validation", "test", "Train", "", None])
-def test_fit_refuses_non_train_role(role):
-    with pytest.raises(ops.OperatorRefusal, match="role"):
-        ops.fit({"kind": "ewma", "params": {"alpha": 0.1}}, TRAIN, role)
+def _contract(X=None, **kw):
+    X = _series(100, seed=5) if X is None else X
+    return sync.in_memory_contract(X, **kw)
+
+
+@pytest.mark.parametrize("role", ["validation", "test", "Train", "train", "", None])
+def test_fit_refuses_a_role_string_or_a_bare_array(role):
+    spec = {"kind": "ewma", "params": {"alpha": 0.1}}
+    with pytest.raises(ops.OperatorRefusal, match="requires a FitSnapshot"):
+        ops.fit(spec, role, FROZEN)
+    with pytest.raises(ops.OperatorRefusal, match="requires a FitSnapshot"):
+        ops.fit(spec, TRAIN, FROZEN)
+    c, L = _contract()
+    with pytest.raises(snapm.SnapshotRefusal, match="unknown role"):
+        snapm.FitSnapshot.from_contract(c, role, L)
+
+
+def test_fit_refuses_calibration_or_confirmation_rows_under_train():
+    spec = {"kind": "ewma", "params": {"alpha": 0.1}}
+    c, L = _contract()
+    with pytest.raises(ops.OperatorRefusal, match="not inside the TRAIN partition"):
+        ops.fit(spec, snapm.FitSnapshot.from_contract(c, "TRAIN", L, end=100), FROZEN)
+    with pytest.raises(ops.OperatorRefusal, match="not allowed by the design"):
+        ops.fit(spec, snapm.FitSnapshot.from_contract(c, "CONFIRMATION", L), FROZEN)
+    c, L = _contract(_series(300, seed=6))            # a calibration partition of 60 rows
+    f = ops.fit(spec, snapm.FitSnapshot.from_contract(c, "CALIBRATION", L), FROZEN)
+    assert f["fit_binding"]["role"] == "CALIBRATION" and f["fit_binding"]["range"] == [180, 240]
+    assert f["fit_binding"]["licensed_partitions"] == ["CONFIRMATION"]
+
+
+def test_a_hand_built_snapshot_refuses():
+    c, L = _contract()
+    s = snapm.FitSnapshot.from_contract(c, "TRAIN", L)
+    with pytest.raises(snapm.SnapshotRefusal, match="built only by from_contract"):
+        snapm.FitSnapshot(**{k: getattr(s, k) for k in s.__dataclass_fields__ if k != "token"}, token=None)
 
 
 def test_fit_refuses_bad_train_arrays():
@@ -184,16 +225,32 @@ def test_fit_refuses_bad_train_arrays():
            np.where(np.arange(300)[:, None] == 3, np.inf, TRAIN)]
     for b in bad:
         with pytest.raises(ops.OperatorRefusal):
-            ops.fit(s, b, "train")
+            ops._fit_kernel(s, b)
+
+
+def test_artifact_binds_what_it_was_fitted_on():
+    c, L = _contract()
+    s = snapm.FitSnapshot.from_contract(c, "TRAIN", L)
+    f = ops.fit({"kind": "trailing_mean", "params": {"window": 5}}, s, FROZEN)
+    b = f["fit_binding"]
+    assert b["snapshot_sha256"] == s.snapshot_sha256 and b["matrix_sha256"] == s.matrix_sha256
+    assert b["dataset_id"] == c["dataset_id"] and b["contract_sha256"] == c["contract_sha256"]
+    assert b["range"] == [0, 60] and b["role"] == "TRAIN" and b["licensed_min_index"] == 60
+    assert b["excluded_partitions"] == [["CALIBRATION", 60, 80], ["CONFIRMATION", 80, 100]]
+    ops.verify_artifact(f)
+    g = copy.deepcopy(f)
+    g["fit_binding"]["range"] = [0, 100]
+    with pytest.raises(ops.OperatorRefusal, match="digest"):
+        ops.verify_artifact(g)
 
 
 @pytest.mark.parametrize("spec", CAUSAL_SPECS, ids=_sid)
-def test_fit_is_train_only_and_digest_bound(spec):
+def test_fit_is_digest_bound(spec):
     f = _fitted(spec)
-    again = ops.fit(spec, TRAIN, "train")
+    again = ops._fit_kernel(spec, TRAIN)
     assert again == f                                     # deterministic
     before = json.dumps(f, sort_keys=True)
-    ops.transform_batch(f, TEST * 10.0 + 3.0)              # other data
+    ops._transform_kernel(f, TEST * 10.0 + 3.0)            # other data
     assert json.dumps(f, sort_keys=True) == before         # no refit
     body = {k: f[k] for k in f if k != "artifact_sha256"}
     assert ops._sha(body) == f["artifact_sha256"]
@@ -202,19 +259,27 @@ def test_fit_is_train_only_and_digest_bound(spec):
         first = next(iter(tampered["fitted"]))
         tampered["fitted"][first] = "x"
         with pytest.raises(ops.OperatorRefusal, match="digest"):
-            ops.transform_batch(tampered, TEST)
+            ops._transform_kernel(tampered, TEST)
     tampered = copy.deepcopy(f)
     tampered["meta"]["warmup"] = 999                # understate/overstate
     with pytest.raises(ops.OperatorRefusal):
-        ops.init_state(tampered)
+        ops._kernel_init_state(tampered)
 
 
-def test_fitted_parameters_depend_on_train_only():
+def test_fitted_parameters_depend_on_fit_rows_only():
     s = {"kind": "trailing_hampel", "params": {"window": 9, "k": 3.0}}
-    a = ops.fit(s, TRAIN, "train")
-    b = ops.fit(s, TRAIN * 2.0, "train")
+    a = ops._fit_kernel(s, TRAIN)
+    b = ops._fit_kernel(s, TRAIN * 2.0)
     assert np.allclose(np.array(b["fitted"]["fallback_scale"]),
                        2.0 * np.array(a["fitted"]["fallback_scale"]))
+    X = _series(500, seed=8)
+    X2 = X.copy()
+    X2[300:] += 100.0
+    c1, L1 = _contract(X)
+    c2, L2 = _contract(X2)
+    f1 = ops.fit(s, snapm.FitSnapshot.from_contract(c1, "TRAIN", L1), FROZEN)
+    f2 = ops.fit(s, snapm.FitSnapshot.from_contract(c2, "TRAIN", L2), FROZEN)
+    assert f1["fitted"] == f2["fitted"] == ops._fit_kernel(s, X[:300])["fitted"]
 
 
 def test_kalman_mle_agrees_with_statsmodels():
@@ -222,8 +287,7 @@ def test_kalman_mle_agrees_with_statsmodels():
     import warnings
     rng = np.random.default_rng(11)
     y = np.cumsum(rng.normal(scale=0.5, size=300)) + rng.normal(size=300)
-    f = ops.fit({"kind": "local_level_kalman", "params": {}}, y[:, None],
-                "train")
+    f = ops._fit_kernel({"kind": "local_level_kalman", "params": {}}, y[:, None])
     c = f["fitted"]["per_column"][0]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -242,38 +306,37 @@ def test_typed_abstain_artifacts_refuse_to_transform():
         ({"kind": "local_linear_trend_kalman", "params": {}}, const),
         ({"kind": "trailing_hampel", "params": {"window": 9, "k": 3.0}},
          const),
-        ({"kind": "wavelet_haar_atrous",
+        ({"kind": "trailing_haar_threshold",
           "params": {"levels": 2, "threshold_k": 3.0}}, const),
         ({"kind": "causal_decomposition",
           "params": {"period": 24, "trend_alpha": 0.1,
                      "season_alpha": 0.1}}, TRAIN[:60]),
         # a pure random walk whose MLE reaches the ratio upper bound
-        # (seed-dependent: other draws yield a small finite noise and FIT)
         ({"kind": "local_level_kalman", "params": {}},
          np.cumsum(np.random.default_rng(0).normal(size=(300, 1)), 0)),
     ]
     for spec, train in cases:
-        f = ops.fit(spec, train, "train")
+        f = ops._fit_kernel(spec, train)
         assert f["status"] == "ABSTAIN", spec
         assert isinstance(f["abstain_reason"], str) and f["abstain_reason"]
         ops.verify_artifact(f)
         with pytest.raises(ops.OperatorAbstain, match="ABSTAIN"):
-            ops.transform_batch(f, np.zeros((10, train.shape[1])))
+            ops._transform_kernel(f, np.zeros((10, train.shape[1])))
         with pytest.raises(ops.OperatorAbstain):
-            ops.init_state(f)
+            ops._kernel_init_state(f)
         assert meas.measure(f)["status"] == "ABSTAIN"
 
 
 # -------------------------------------------------- batch / step ------
 def _run_steps(f, X, reload_at=None):
-    st = ops.init_state(f)
+    st = ops._kernel_init_state(f)
     ys, av, rs = [], [], []
     for i in range(X.shape[0]):
         if reload_at is not None and i == reload_at:
             blob = ops.save_state(st)
             assert isinstance(blob, bytes)
             st = ops.load_state(blob, f)
-        y, a, r, st = ops.step(f, st, X[i])
+        y, a, r, st = ops._kernel_step(f, st, X[i])
         ys.append(y.copy())
         av.append(a.copy())
         rs.append(r.copy())
@@ -281,20 +344,15 @@ def _run_steps(f, X, reload_at=None):
 
 
 @pytest.mark.parametrize("spec", CAUSAL_SPECS, ids=_sid)
-def test_batch_incremental_parity(spec):
+def test_batch_incremental_parity_is_bitwise(spec):
     f = _fitted(spec)
     for X in (TEST, _with_nans(TEST)):
-        Y, A, R = ops.transform_batch(f, X)
+        Y, A, R = ops._transform_kernel(f, X)
         ys, av, rs = _run_steps(f, X)
         assert Y.shape == X.shape and A.dtype == bool
         assert np.array_equal(A, av) and np.array_equal(R, rs)
-        assert np.array_equal(np.isnan(Y), np.isnan(ys))
         assert np.array_equal(np.isnan(Y), ~A)
-        diff = np.nanmax(np.abs(Y - ys))
-        if spec["kind"] in ops.RECURSIVE_KINDS:
-            assert np.array_equal(Y, ys, equal_nan=True)       # bitwise
-        else:
-            assert diff <= 1e-12
+        assert np.array_equal(Y, ys, equal_nan=True)
 
 
 @pytest.mark.parametrize("spec", CAUSAL_SPECS, ids=_sid)
@@ -311,22 +369,23 @@ def test_save_reload_mid_stream_is_identical(spec):
 def test_decomposition_components_parity_and_identity():
     s = {"kind": "causal_decomposition",
          "params": {"period": 24, "trend_alpha": 0.1, "season_alpha": 0.1}}
-    f = _fitted(s)
-    X = _with_nans(TEST)
-    outs, A, R = ops.transform_batch_components(f, X)
-    assert set(outs) == {"denoised", "trend", "seasonal", "residual"}
-    fin = A
-    assert np.allclose((outs["trend"] + outs["seasonal"])[fin],
-                       outs["denoised"][fin], atol=0, rtol=0)
-    assert np.allclose((outs["denoised"] + outs["residual"])[fin], X[fin],
-                       atol=1e-12)
-    Y, _, _ = ops.transform_batch(f, X)
-    assert np.array_equal(Y, outs["denoised"], equal_nan=True)
-    st = ops.init_state(f)
-    for i in range(X.shape[0]):
-        o, a, r, st = ops.step_components(f, st, X[i])
-        for n in outs:
-            assert np.array_equal(o[n], outs[n][i], equal_nan=True)
+    for mode in (FROZEN, EXPANDING):
+        f = ops._fit_kernel(s, TRAIN, mode)
+        X = _with_nans(TEST)
+        outs, A, R = ops._transform_kernel_components(f, X)
+        assert set(outs) == {"denoised", "trend", "seasonal", "residual"}
+        fin = A
+        assert np.allclose((outs["trend"] + outs["seasonal"])[fin],
+                           outs["denoised"][fin], atol=0, rtol=0)
+        assert np.allclose((outs["denoised"] + outs["residual"])[fin], X[fin],
+                           atol=1e-12)
+        Y, _, _ = ops._transform_kernel(f, X)
+        assert np.array_equal(Y, outs["denoised"], equal_nan=True)
+        st = ops._kernel_init_state(f)
+        for i in range(X.shape[0]):
+            o, a, r, st = ops._kernel_step_components(f, st, X[i])
+            for n in outs:
+                assert np.array_equal(o[n], outs[n][i], equal_nan=True)
 
 
 def test_butterworth_matches_scipy_lfilter_with_carried_zi():
@@ -334,12 +393,11 @@ def test_butterworth_matches_scipy_lfilter_with_carried_zi():
         f = _fitted({"kind": "butterworth2_lowpass",
                      "params": {"cutoff": cutoff}})
         b, a = signal.butter(2, 2 * cutoff)
-        Y, _, _ = ops.transform_batch(f, TEST)
+        Y, _, _ = ops._transform_kernel(f, TEST)
         for j in range(TEST.shape[1]):
             zi = signal.lfilter_zi(b, a) * TEST[0, j]
             ref, _ = signal.lfilter(b, a, TEST[:, j], zi=zi)
             assert np.max(np.abs(ref - Y[:, j])) <= 1e-12
-            # chunked lfilter with carried zi equals one pass
             y1, z = signal.lfilter(b, a, TEST[:100, j], zi=zi)
             y2, _ = signal.lfilter(b, a, TEST[100:, j], zi=z)
             assert np.max(np.abs(np.r_[y1, y2] - Y[:, j])) <= 1e-12
@@ -350,19 +408,93 @@ def test_fir_sinc_is_causal_21_tap_convolution():
         f = _fitted({"kind": "fir_sinc_lowpass",
                      "params": {"cutoff": cutoff, "taps": 21}})
         h = signal.firwin(21, cutoff, fs=1.0)
-        Y, A, _ = ops.transform_batch(f, TEST)
+        Y, A, _ = ops._transform_kernel(f, TEST)
         ref = signal.lfilter(h, [1.0], TEST, axis=0)
         assert not A[:20].any() and A[20:].all()
         assert np.max(np.abs(ref[20:] - Y[20:])) <= 1e-12
+
+
+def test_trailing_haar_threshold_recurrence_without_threshold_is_identity():
+    s = {"kind": "trailing_haar_threshold", "params": {"levels": 3, "threshold_k": 3.0}}
+    f = copy.deepcopy(_fitted(s))
+    f["fitted"]["thresholds"] = [[0.0] * 3 for _ in range(2)]
+    f = ops._seal(f)
+    Y, A, _ = ops._transform_kernel(f, TEST)
+    assert np.allclose(Y[A], TEST[A], atol=1e-12) and not A[:7].any() and A[7:].all()
+    lv = ops._transform_levels_kernel(f, TEST)
+    t = 50
+    c1 = (TEST[t] + TEST[t - 1]) / 2
+    c2 = (c1 + (TEST[t - 2] + TEST[t - 3]) / 2) / 2
+    assert np.allclose(lv[0]["approx"][t], c1) and np.allclose(lv[1]["approx"][t], c2)
+    assert np.allclose(lv[0]["detail"][t], TEST[t] - c1)
+
+
+# ------------------------------------------------ public snapshot path ----
+def _bank_contract():
+    X = _with_nans(_series(500, seed=9))
+    X[100:104, 1] = np.nan
+    return X, *_contract(X, name="bank")
+
+
+@pytest.mark.parametrize("spec", CAUSAL_SPECS + [ORACLE_SPEC], ids=_sid)
+def test_snapshot_path_equals_the_kernel_bitwise(spec):
+    X, c, L = _bank_contract()
+    fs = snapm.FitSnapshot.from_contract(c, "TRAIN", L, start=104, end=300)   # complete stretch after the NaNs
+    oracle = spec["kind"] in ops.NON_CAUSAL_KINDS
+    for mode in [m for m in ops.KIND_FIT_MODES[spec["kind"]] if m != ops.OFFLINE_ANALYSIS_ONLY_NON_CAUSAL]:
+        f = ops.fit(spec, fs, mode)
+        if f["status"] != "FITTED":
+            continue
+        start = 0 if mode == EXPANDING else 300
+        ts = snapm.TransformSnapshot.from_contract(c, L, start=start, end=500)
+        outs, A, R = ops.transform_batch_components(f, ts, oracle_mode=oracle)
+        k = ops._fit_kernel(spec, X[104:300], mode, t0=104)
+        assert k["fitted"] == f["fitted"]
+        kouts, kA, kR = ops._transform_kernel_components(f, X[start:], start, oracle_mode=oracle)
+        assert all(_same(outs[n], kouts[n]) for n in outs) and _same(A, kA) and _same(R, kR)
+        if oracle:
+            continue
+        st = ops.init_state(f, ts)
+        rows = [ops.step(f, st, ts.row(i)) for i in range(500 - start)]
+        assert _same(np.array([r[0] for r in rows]), outs[f["meta"]["outputs"][0]])
+        assert _same(np.array([r[2] for r in rows]), R)
+        # fragmented public stream over two contiguous snapshots
+        mid = start + 37
+        st = ops.init_state(f, snapm.TransformSnapshot.from_contract(c, L, start=start, end=mid))
+        y1, _, r1, st = ops.transform_chunk(f, st, snapm.TransformSnapshot.from_contract(c, L, start=start, end=mid))
+        st = ops.load_state(ops.save_state(st), f)
+        y2, _, r2, st = ops.transform_chunk(f, st, snapm.TransformSnapshot.from_contract(c, L, start=mid, end=500))
+        assert _same(np.concatenate([y1, y2]), outs[f["meta"]["outputs"][0]])
+        assert _same(np.concatenate([r1, r2]), R)
+
+
+def test_public_stream_refuses_gaps_repeats_and_foreign_series():
+    X, c, L = _bank_contract()
+    f = ops.fit({"kind": "ewma", "params": {"alpha": 0.3}}, snapm.FitSnapshot.from_contract(c, "TRAIN", L,
+                                                                                            start=104), FROZEN)
+    ts = snapm.TransformSnapshot.from_contract(c, L, start=300, end=500)
+    st = ops.init_state(f, ts)
+    ops.step(f, st, ts.row(0))
+    with pytest.raises(ops.OperatorRefusal, match="not the next row"):
+        ops.step(f, st, ts.row(0))
+    with pytest.raises(ops.OperatorRefusal, match="not the next row"):
+        ops.step(f, st, ts.row(5))
+    with pytest.raises(ops.OperatorRefusal, match="not the next row"):
+        ops.transform_chunk(f, st, snapm.TransformSnapshot.from_contract(c, L, start=310, end=320))
+    c2, L2 = _contract(_series(500, seed=10), name="other")
+    with pytest.raises(ops.OperatorRefusal, match="another series"):
+        ops.step(f, st, snapm.TransformSnapshot.from_contract(c2, L2, start=301, end=500).row(0))
+    with pytest.raises(ops.OperatorRefusal, match="stepped only with TransformRows"):
+        ops._kernel_step(f, st, X[301])
 
 
 # ------------------------------------------------ state validation ----
 def test_load_state_refuses_foreign_or_corrupt_state():
     f = _fitted({"kind": "trailing_mean", "params": {"window": 5}})
     g = _fitted({"kind": "trailing_mean", "params": {"window": 9}})
-    st = ops.init_state(f)
+    st = ops._kernel_init_state(f)
     for i in range(7):
-        _, _, _, st = ops.step(f, st, TEST[i])
+        _, _, _, st = ops._kernel_step(f, st, TEST[i])
     blob = ops.save_state(st)
     assert ops.load_state(blob, f)["t"] == 7
     with pytest.raises(ops.OperatorRefusal, match="different artifact"):
@@ -372,12 +504,12 @@ def test_load_state_refuses_foreign_or_corrupt_state():
             lambda d: d.__setitem__("t", 8),
             lambda d: d["payload"]["buffer"]["values"].__setitem__(0, 1e9),
             lambda d: d.__setitem__("extra", 1),
+            lambda d: d.__setitem__("binding", {"dataset_id": "x"}),
             lambda d: d.__setitem__("schema", "other")):
         d = copy.deepcopy(doc)
         mutate(d)
         with pytest.raises(ops.OperatorRefusal):
             ops.load_state(ops._canonical(d), f)
-    # re-sealed but incoherent with t
     d = copy.deepcopy(doc)
     d["t"] = 2
     body = {k: d[k] for k in d if k != "state_sha256"}
@@ -389,19 +521,16 @@ def test_load_state_refuses_foreign_or_corrupt_state():
     with pytest.raises(ops.OperatorRefusal):
         ops.load_state(b"{not json", f)
     with pytest.raises(ops.OperatorRefusal):
-        ops.step(g, st, TEST[7])
+        ops._kernel_step(g, st, TEST[7])
 
 
 # -------------------------------------------------- future access -----
-CUTS = (0, 5, 19, 23, 60, 150, 238)
-
-
 @pytest.mark.parametrize("spec", CAUSAL_SPECS, ids=_sid)
-def test_future_access_invariance(spec):
+def test_future_access_invariance_at_every_t(spec):
     f = _fitted(spec)
-    assert meas.future_access_invariant(f, TEST, CUTS, seed=5)
-    assert meas.future_access_invariant(f, _with_nans(TEST), CUTS, seed=6)
-    # incremental path: prefix outputs never see the future row
+    run = bat.kernel_runner(f)
+    assert bat.prefix_all_t(run, TEST, range(TEST.shape[0])) == {}
+    assert bat.prefix_all_t(run, _with_nans(TEST), range(TEST.shape[0])) == {}
     rng = np.random.default_rng(9)
     X2 = TEST.copy()
     X2[121:] = rng.normal(100.0, 30.0, size=X2[121:].shape)
@@ -412,32 +541,33 @@ def test_future_access_invariance(spec):
 
 
 def test_oracle_fails_future_access_and_refuses_without_oracle_mode():
-    f = ops.fit(ORACLE_SPEC, TRAIN, "train")
+    f = ops._fit_kernel(ORACLE_SPEC, TRAIN)
     assert f["status"] == "FITTED"
     with pytest.raises(ops.OperatorRefusal, match="oracle_mode"):
-        ops.transform_batch(f, TEST)
+        ops._transform_kernel(f, TEST)
     with pytest.raises(ops.OperatorRefusal, match="oracle_mode"):
-        ops.transform_batch(f, TEST, oracle_mode=1)
+        ops._transform_kernel(f, TEST, oracle_mode=1)
     with pytest.raises(ops.OperatorRefusal):
-        ops.init_state(f)
-    assert meas.future_access_invariant(f, TEST, CUTS, oracle_mode=True) \
-        is False
-    Y, A, R = ops.transform_batch(f, TEST, oracle_mode=True)
+        ops._kernel_init_state(f)
+
+    def run(X):
+        outs, a, r = ops._transform_kernel_components(f, X, oracle_mode=True)
+        return outs, a, r
+    assert bat.prefix_all_t(run, TEST, range(TEST.shape[0]))
+    Y, A, R = ops._transform_kernel(f, TEST, oracle_mode=True)
     assert set(R[:2].ravel()) == {"WARMUP"}
     assert set(R[-2:].ravel()) == {"FUTURE_UNAVAILABLE"}
     assert np.allclose(Y[2:-2], (TEST[:-4] + TEST[1:-3] + TEST[2:-2]
                                  + TEST[3:-1] + TEST[4:]) / 5)
     with pytest.raises(ops.OperatorRefusal, match="oracle_mode"):
-        ops.transform_batch(_fitted({"kind": "ewma",
-                                     "params": {"alpha": 0.1}}),
-                            TEST, oracle_mode=True)
+        ops._transform_kernel(_fitted({"kind": "ewma", "params": {"alpha": 0.1}}), TEST, oracle_mode=True)
 
 
 # ----------------------------------------------- warm-up and NaN ------
 @pytest.mark.parametrize("spec", CAUSAL_SPECS, ids=_sid)
 def test_warmup_typing(spec):
     f = _fitted(spec)
-    Y, A, R = ops.transform_batch(f, TEST)
+    Y, A, R = ops._transform_kernel(f, TEST)
     w = f["meta"]["warmup"]
     assert w == (ops.derived_lookback(spec["kind"], spec["params"])
                  if spec["kind"] in ops.WINDOWED_KINDS else 0)
@@ -451,7 +581,7 @@ def test_warmup_typing(spec):
 def test_nan_is_typed_never_forward_filled(spec):
     f = _fitted(spec)
     X = _with_nans(TEST)
-    Y, A, R = ops.transform_batch(f, X)
+    Y, A, R = ops._transform_kernel(f, X)
     nan = np.isnan(X)
     assert (R[nan] == "MISSING_INPUT").all()
     assert not A[nan].any() and np.isnan(Y[nan]).all()
@@ -465,34 +595,28 @@ def test_nan_is_typed_never_forward_filled(spec):
             assert (R[i + 1:max(i + 1, min(hi, f["meta"]["warmup"])), j]
                     == "WARMUP").all()
     else:
-        # carry state: the NaN row is not consumed, so the output after a
-        # gap equals the output of the stream with the NaN rows deleted
-        # (except for kinds whose recursion depends on elapsed time)
         if kind in ("ewma", "butterworth2_lowpass"):
             for j in range(X.shape[1]):
                 keep = ~nan[:, j]
                 sub = X[keep][:, [j, j]]
                 fj = copy.deepcopy(f)
-                ys, _, _ = ops.transform_batch(
+                ys, _, _ = ops._transform_kernel(
                     ops._seal(dict(fj, n_columns=2)), sub)
                 assert np.array_equal(ys[:, 0], Y[keep, j])
         if kind in ("local_level_kalman", "local_linear_trend_kalman"):
-            # predict-only: the level holds, uncertainty grows
-            st = ops.init_state(f)
+            st = ops._kernel_init_state(f)
             for i in range(100):
-                _, _, _, st = ops.step(f, st, X[i])
+                _, _, _, st = ops._kernel_step(f, st, X[i])
             var_key = "var" if kind == "local_level_kalman" else "p11"
             v0 = st["payload"][var_key][1]
             lv0 = st["payload"]["level"][1]
-            _, a, r, st = ops.step(f, st, X[100])
+            _, a, r, st = ops._kernel_step(f, st, X[100])
             assert r[1] == "MISSING_INPUT" and not a[1]
             assert st["payload"][var_key][1] > v0
             if kind == "local_level_kalman":
                 assert st["payload"]["level"][1] == lv0
-    # no value after a NaN is a copy of the last finite input
     for (i, j) in zip(*np.nonzero(nan)):
         assert np.isnan(Y[i, j])
-    # every available output is a finite number
     assert np.isfinite(Y[A]).all()
 
 
@@ -501,14 +625,14 @@ def test_inf_is_refused_in_batch_and_step():
     X = TEST.copy()
     X[5, 0] = np.inf
     with pytest.raises(ops.OperatorRefusal, match="infinite"):
-        ops.transform_batch(f, X)
-    st = ops.init_state(f)
+        ops._transform_kernel(f, X)
+    st = ops._kernel_init_state(f)
     with pytest.raises(ops.OperatorRefusal, match="infinite"):
-        ops.step(f, st, np.array([np.inf, 0.0]))
+        ops._kernel_step(f, st, np.array([np.inf, 0.0]))
     with pytest.raises(ops.OperatorRefusal):
-        ops.step(f, st, np.array([True, False]))
+        ops._kernel_step(f, st, np.array([True, False]))
     with pytest.raises(ops.OperatorRefusal):
-        ops.transform_batch(f, TEST[:, :1])
+        ops._transform_kernel(f, TEST[:, :1])
 
 
 # ------------------------------------------------------ delays --------
@@ -519,7 +643,6 @@ def test_fir_moving_average_group_delay_at_dc(w):
     assert rep["delay_basis"] == "LTI"
     assert rep["lti"]["freqs_cycles_per_sample"][0] == 0.0
     assert abs(rep["group_delay"][0] - (w - 1) / 2) < 1e-9
-    # linear phase: phase delay equals group delay in the passband
     assert np.allclose(rep["phase_delay"], (w - 1) / 2, atol=1e-6)
     assert rep["algorithmic_lookback"] == w - 1
     assert abs(rep["lti"]["dc_gain"] - 1.0) < 1e-12
@@ -555,11 +678,10 @@ def test_other_lti_delays():
     b, a, _ = meas.transfer_function(ll)
     k = b[0]
     assert abs(rep["group_delay"][0] - (1 - k) / k) < 1e-9
-    # the recursion converges to that gain
     c = ll["fitted"]["per_column"][0]
-    st = ops.init_state(ll)
+    st = ops._kernel_init_state(ll)
     for i in range(200):
-        _, _, _, st = ops.step(ll, st, TEST[i])
+        _, _, _, st = ops._kernel_step(ll, st, TEST[i])
     vp = st["payload"]["var"][0] + c["level_var"]
     assert abs(vp / (vp + c["obs_var"]) - k) < 1e-9
     llt = meas.measure(_fitted({"kind": "local_linear_trend_kalman",
@@ -569,7 +691,7 @@ def test_other_lti_delays():
 
 
 NONLINEAR = [s for s in CAUSAL_SPECS if s["kind"] in
-             ("trailing_median", "trailing_hampel", "wavelet_haar_atrous",
+             ("trailing_median", "trailing_hampel", "trailing_haar_threshold",
               "causal_decomposition")]
 
 
@@ -589,6 +711,18 @@ def test_non_lti_delays_are_undefined_and_empirical_is_reported(spec):
         assert e["step_rise_50pct_lag"] == w // 2
 
 
+def test_probes_are_declared_signals_only():
+    f = _fitted({"kind": "ewma", "params": {"alpha": 0.3}})
+    with pytest.raises(ops.OperatorRefusal, match="ProbeSignal"):
+        ops.probe_transform(f, TEST)
+    p = ops.probe_signal("STEP", 100, 2, 3.0, 10)
+    object.__setattr__(p, "matrix", np.asarray(TEST[:100]))
+    with pytest.raises(ops.OperatorRefusal, match="does not re-derive"):
+        ops.probe_transform(f, p)
+    with pytest.raises(ops.OperatorRefusal):
+        ops.probe_signal("DATA", 10, 2)
+
+
 # ------------------------------------------- no shift compensation ----
 @pytest.mark.parametrize("spec", CAUSAL_SPECS, ids=_sid)
 def test_no_future_shift_compensation(spec):
@@ -598,14 +732,12 @@ def test_no_future_shift_compensation(spec):
     lag = e["impulse_first_response_lag"]
     assert lag == "NO_RESPONSE" or lag >= 0
     if spec["kind"] not in ("identity", "trailing_hampel",
-                            "trailing_median", "wavelet_haar_atrous"):
-        # smoothing kinds respond to a step with a non-negative delay,
-        # never ahead of it
+                            "trailing_median", "trailing_haar_threshold"):
         assert e["step_rise_50pct_lag"] >= 0
 
 
 def test_oracle_anticipates_in_measurement():
-    f = ops.fit(ORACLE_SPEC, TRAIN, "train")
+    f = ops._fit_kernel(ORACLE_SPEC, TRAIN)
     rep = meas.measure(f, latency_samples=10, batch_rows=100)
     assert rep["causality"] == "NON_CAUSAL"
     assert rep["look_ahead"] == 2
@@ -691,27 +823,24 @@ def test_parity_with_causal_operators(ref, spec):
         size=(200, 3))
     train = np.cumsum(rng.normal(size=(120, 3)), axis=0) + rng.normal(
         size=(120, 3))
-    train[0] = X[0]        # reference Kalman seeds its level at train[0]
+    train[0] = X[0]
     rart, cols = _ref_fit(ref, kind, params, train)
     ry = ref.transform_batch(rart, X, cols,
                              ref.make_bar_close_contract(X.shape[0]))
-    mine = ops.fit(spec, train, "train")
+    mine = ops._fit_kernel(spec, train)
     oracle = kind == "centered_mean_oracle"
     if kind == "local_level_kalman":
-        # parity of the recursion under identical noise parameters: the
-        # reference estimates them by method of moments, this bank by
-        # MLE, so the reference's values are injected and re-sealed
         mine = copy.deepcopy(mine)
         mine["fitted"]["per_column"] = [
             {"obs_var": rart["fitted"]["per_column"][c]["obs_var"],
              "level_var": rart["fitted"]["per_column"][c]["level_var"],
              "log_ratio": 0.0} for c in cols]
         mine = ops._seal(mine)
-    Y, A, R = ops.transform_batch(mine, X, oracle_mode=oracle)
+    Y, A, R = ops._transform_kernel(mine, X, oracle_mode=oracle)
     assert A.any()
     assert np.max(np.abs(Y[A] - ry[A])) <= 1e-12
     if kind in ("ewma", "local_level_kalman", "identity"):
-        assert np.array_equal(Y, ry)                         # bitwise
+        assert np.array_equal(Y, ry)
         assert A.all()
     if not oracle:
         ys, _, _ = _run_steps(mine, X)

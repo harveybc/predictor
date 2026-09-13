@@ -1,8 +1,11 @@
 """C134 tests: noise / SNR estimators calibrated against known truth.
 
 Self-contained: a tiny generator lives in this file; tools/df_synthetic_bank.py
-is NOT imported and no real data root is read.
+is NOT imported and no real data root is read. The offline wavelet MAD (C160)
+is reached only through a TRAIN FitSnapshot of an in-memory contract.
 """
+import hashlib
+import io
 import json
 import math
 import os
@@ -13,8 +16,59 @@ import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "tools")))
 import df_snr as d  # noqa: E402
+import df_snapshot as snap  # noqa: E402
 
 SMALL_BS = dict(d.DEFAULT_BOOTSTRAP, B=20)
+
+
+def _train_snapshot(x_full, train_end):
+    """A sealed in-memory contract whose TRAIN partition is [0, train_end), and its loader."""
+    x = np.asarray(x_full, dtype=float)
+    T = x.shape[0]
+    if T - train_end < 2:
+        x = np.concatenate([x, np.full(2, np.nan)])
+        T = x.shape[0]
+    mid = train_end + (T - train_end) // 2
+    buf = io.BytesIO()
+    np.save(buf, x[:, None])
+    blob = buf.getvalue()
+    C = snap.C
+    ds = "snr_test_fixture." + hashlib.sha256(blob).hexdigest()[:12]
+    na = "NOT_APPLICABLE"
+    doc = {"schema": C.DATASET_SCHEMA, "dataset_id": ds, "version": "t", "bank": "SYNTHETIC",
+           "files": [{"name": "o.npy", "bytes": len(blob), "sha256": hashlib.sha256(blob).hexdigest(),
+                      "role": "OBSERVED"}], "content_sha256": "", "contract_sha256": "",
+           "source": {"provider": na, "official_url": na, "citation": na, "doi": na, "upstream_owner": na},
+           "license": {"state": "NOT_APPLICABLE_GENERATED", "id": na, "url": na, "text_sha256": "UNAVAILABLE",
+                       "attribution_required": "NO", "redistribution": na, "derivatives": na, "evidence": []},
+           "time": {"frequency_nominal_seconds": na, "timezone": na, "timestamp_meaning": "SAMPLE_INDEX",
+                    "range_start": "0", "range_end": str(T - 1), "availability_rule": "SAMPLE_INDEX",
+                    "availability_delay_seconds": na},
+           "panel": {"aligned_common_grid": True, "n_series": 1, "alignment_rule": "t"},
+           "partitions": {"scheme": "t", "fractions": {"train": train_end / T, "calibration": (mid - train_end) / T,
+                                                        "confirmation": (T - mid) / T},
+                          "boundaries": {"train": [0, train_end], "calibration": [train_end, mid],
+                                         "confirmation": [mid, T]},
+                          "sealed_periods_excluded": [], "frozen_before_profile": True},
+           "dependence": [], "variables": [C.variable(ds, "v0", role="INPUT_CANDIDATE",
+                                                       license_state="NOT_APPLICABLE_GENERATED")],
+           "original_fields": {}}
+    return C.seal(doc), {"o.npy": blob}
+
+
+def _fit_snapshot(x_full, train_end, **kw):
+    c, L = _train_snapshot(x_full, train_end)
+    return snap.FitSnapshot.from_contract(c, "TRAIN", L, **kw)
+
+
+def _est(x, train, name, missing_mask=None, **kw):
+    """estimate(), or for an offline train diagnostic its only path: one figure from a TRAIN snapshot."""
+    if d.ESTIMATORS[name]["contract_state"] != d.OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL:
+        return d.estimate(x, train, name, missing_mask=missing_mask, **kw)
+    s, e = int(train[0]), int(train[1])
+    assert s == 0
+    mt = None if missing_mask is None else np.asarray(missing_mask, dtype=bool)[s:e]
+    return d.estimate_offline_train_diagnostic(_fit_snapshot(x, e), 0, name, missing_mask=mt, **kw)
 
 
 def _ar1(n, phi, rng):
@@ -57,7 +111,7 @@ def test_sine_white_known_snr_long_n(name):
     noise = _noise_at_snr(clean, 0.0, rng)
     x = clean + noise
     true_snr = 10 * math.log10(np.var(clean) / np.var(noise))
-    r = d.estimate(x, (0, n), name, do_bootstrap=False)
+    r = _est(x, (0, n), name, do_bootstrap=False)
     assert r["status"] == d.STATUS_OK
     assert abs(math.log(r["noise_variance"] / np.var(noise))) < 0.05
     assert abs(r["snr_db"] - true_snr) < 0.5
@@ -85,7 +139,7 @@ def test_null_noise_no_division_errors():
             for name in d.ESTIMATORS:
                 if name == "local_level_kalman":
                     continue  # statsmodels internals are not errstate-clean; checked below
-                r = d.estimate(x, (0, n), name, bootstrap=SMALL_BS)
+                r = _est(x, (0, n), name, bootstrap=SMALL_BS)
                 assert r["status"] in (d.STATUS_OK, d.STATUS_NI)
                 if r["status"] == d.STATUS_OK:
                     assert r["snr_db"] > 20.0 and math.isfinite(r["snr_db"])
@@ -99,7 +153,7 @@ def test_null_noise_no_division_errors():
 
 
 def test_constant_series_is_not_identifiable():
-    r = d.estimate(np.ones(512), (0, 512), "wavelet_mad")
+    r = _est(np.ones(512), (0, 512), "wavelet_mad")
     assert r["status"] == d.STATUS_NI and r["reason"] == "total_variance_nonpositive"
 
 
@@ -112,7 +166,7 @@ def test_null_signal_very_negative_or_not_identifiable():
             x_use, nn = x[:1024], 1024
         else:
             x_use, nn = x, n
-        r = d.estimate(x_use, (0, nn), name, do_bootstrap=False)
+        r = _est(x_use, (0, nn), name, do_bootstrap=False)
         if r["status"] == d.STATUS_OK:
             assert r["snr_db"] < -3.0, (name, r["snr_db"])
         else:
@@ -126,7 +180,7 @@ def test_signal_variance_nonpositive_rule():
     hits = 0
     for seed in range(20):
         x = np.random.default_rng(seed).standard_normal(2048)
-        r = d.estimate(x, (0, 2048), "wavelet_mad", do_bootstrap=False)
+        r = _est(x, (0, 2048), "wavelet_mad", do_bootstrap=False)
         if r["status"] == d.STATUS_NI:
             assert r["reason"].startswith("signal_variance_nonpositive")
             assert r["signal_variance"] is None
@@ -162,8 +216,8 @@ def test_train_only_confirmation_changes_do_not_move_estimates():
     y[2000:] = rng.standard_normal(1000) * 50 + 1e3  # rewrite confirmation data
     y[2500] = np.nan
     for name in d.ESTIMATORS:
-        a = d.estimate(x, (0, 2000), name, bootstrap=SMALL_BS)
-        b = d.estimate(y, (0, 2000), name, bootstrap=SMALL_BS)
+        a = _est(x, (0, 2000), name, bootstrap=SMALL_BS)
+        b = _est(y, (0, 2000), name, bootstrap=SMALL_BS)
         assert a["noise_variance"] == b["noise_variance"], name
         assert a["snr_db"] == b["snr_db"], name
         assert (a["bootstrap"] or {}).get("ci_low_db") == (b["bootstrap"] or {}).get("ci_low_db"), name
@@ -192,16 +246,16 @@ def test_nan_uses_longest_complete_segment_or_refuses():
     xn[300] = np.nan
     xn[1200:1210] = np.nan
     for name in d.ESTIMATORS:
-        r = d.estimate(xn, (0, 1500), name, bootstrap=SMALL_BS)
+        r = _est(xn, (0, 1500), name, bootstrap=SMALL_BS)
         assert r["segment_used"] == [301, 1200]  # longest of [0,300), [301,1200), [1210,1500)
         assert r["n_missing_in_train"] == 11
-        ref = d.estimate(x[301:1200], (0, 899), name, bootstrap=SMALL_BS)
+        ref = _est(x[301:1200], (0, 899), name, bootstrap=SMALL_BS)
         assert r["noise_variance"] == ref["noise_variance"], name  # same data, no interpolation
     # mask-based missingness is honoured the same way
     mask = np.zeros(n, bool)
     mask[300] = True
     mask[1200:1210] = True
-    rm = d.estimate(x, (0, 1500), "wavelet_mad", missing_mask=mask, do_bootstrap=False)
+    rm = _est(x, (0, 1500), "wavelet_mad", missing_mask=mask, do_bootstrap=False)
     assert rm["segment_used"] == [301, 1200]
     # fragmented train: every complete segment too short -> refuse
     xf = x.copy()

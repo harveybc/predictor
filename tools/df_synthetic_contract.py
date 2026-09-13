@@ -117,6 +117,78 @@ def unit_contract(unit_dir: Path) -> dict:
     return C.seal(doc)
 
 
+def file_loader(unit_dir: Path):
+    """Loader for df_snapshot: bytes of a file bound by the unit contract."""
+    unit_dir = Path(unit_dir)
+
+    def read(name: str) -> bytes:
+        if name not in ROLES:
+            raise C.ContractRefusal([f"{name!r} is not a file of a synthetic unit"])
+        return (unit_dir / name).read_bytes()
+    return read
+
+
+def _npy_bytes(a: np.ndarray) -> bytes:
+    import io
+    buf = io.BytesIO()
+    np.save(buf, a, allow_pickle=False)
+    return buf.getvalue()
+
+
+def in_memory_contract(X, *, name: str = "fixture", timestamps=None, availability_delay=None,
+                       fractions=(0.6, 0.2, 0.2)) -> tuple[dict, dict]:
+    """A sealed contract plus a bytes loader for an in-memory generated array
+    (tests, probes, battery fixtures). Partitions are chronological fractions of
+    the length, never chosen by the caller row by row. With `timestamps` the
+    contract binds a TIMESTAMPS file and, with `availability_delay`, declares
+    INSTANT_PLUS_DECLARED_DELAY availability."""
+    X = np.asarray(X, dtype=np.float64)
+    if X.ndim != 2:
+        raise C.ContractRefusal(["in-memory fixture must be (T, V)"])
+    T, V = X.shape
+    blobs = {"observed_signal.npy": _npy_bytes(np.ascontiguousarray(X))}
+    roles = {"observed_signal.npy": "OBSERVED"}
+    if timestamps is not None:
+        ts = np.asarray(timestamps, dtype=np.int64)
+        blobs["timestamps.npy"] = _npy_bytes(ts)
+        roles["timestamps.npy"] = "TIMESTAMPS"
+    digest = hashlib.sha256(b"".join(blobs[k] for k in sorted(blobs))).hexdigest()[:16]
+    dataset_id = f"synthetic.in_memory_fixture.{name}.{digest}"
+    files = [{"name": k, "bytes": len(b), "sha256": hashlib.sha256(b).hexdigest(), "role": roles[k]}
+             for k, b in blobs.items()]
+    evidence = [{"source": "caller-supplied in-memory fixture", "sha256": "UNAVAILABLE"}]
+    if timestamps is None:
+        meaning, rule, delay, rs, re_ = "SAMPLE_INDEX", "SAMPLE_INDEX", NA, "0", str(T - 1)
+    else:
+        meaning, rule = "INSTANT", "INSTANT_PLUS_DECLARED_DELAY"
+        delay = 0 if availability_delay is None else int(availability_delay)
+        rs, re_ = str(int(ts[0])), str(int(ts[-1]))
+    variables = [C.variable(dataset_id, f"v{i}", semantics={"type": "SYNTHETIC_IN_MEMORY_FIXTURE",
+                                                           "description": "in-memory fixture", "evidence": evidence},
+                            producer={"kind": "GENERATOR", "reference": "IN_MEMORY_FIXTURE"},
+                            physical_type="float64", event_time=meaning, available_time_rule=rule,
+                            role="INPUT_CANDIDATE", license_state="NOT_APPLICABLE_GENERATED",
+                            original_fields={"variable_index": i}) for i in range(V)]
+    bounds = C.chronological_partitions(T, fractions)
+    doc = {
+        "schema": C.DATASET_SCHEMA, "dataset_id": dataset_id, "version": "in_memory_fixture.v1", "bank": "SYNTHETIC",
+        "files": files, "content_sha256": "", "contract_sha256": "",
+        "source": {"provider": "in-memory fixture", "official_url": NA, "citation": NA, "doi": NA,
+                   "upstream_owner": NA},
+        "license": {"state": "NOT_APPLICABLE_GENERATED", "id": NA, "url": NA, "text_sha256": "UNAVAILABLE",
+                    "attribution_required": "NO", "redistribution": NA, "derivatives": NA, "evidence": []},
+        "time": {"frequency_nominal_seconds": NA if timestamps is None else "IRREGULAR", "timezone": NA,
+                 "timestamp_meaning": meaning, "range_start": rs, "range_end": re_, "availability_rule": rule,
+                 "availability_delay_seconds": delay},
+        "panel": {"aligned_common_grid": True, "n_series": V, "alignment_rule": "one in-memory grid"},
+        "partitions": {"scheme": "CHRONOLOGICAL_FRACTIONS", "fractions": {k: float(f) for k, f in
+                                                                           zip(C.PARTITIONS, fractions)},
+                       "boundaries": bounds, "sealed_periods_excluded": [], "frozen_before_profile": True},
+        "dependence": [], "variables": variables, "original_fields": {},
+    }
+    return C.seal(doc), blobs
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
