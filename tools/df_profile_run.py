@@ -909,6 +909,9 @@ def main(argv=None) -> int:
     ap.add_argument("--host-role", default="COORDINATOR")
     ap.add_argument("--slice", default=None)
     ap.add_argument("--smoke-dataset", default=None, help="BANK:selector; runs exactly one dataset")
+    ap.add_argument("--jobs-file", type=Path, default=None,
+                    help="C162: one BANK:selector per line (a role's share of a campaign plan); resolved against "
+                         "this host's own --public-panels/--synthetic-bank/--financial-* paths")
     a = ap.parse_args(argv)
     if a.worker:
         return worker_main(a.worker)
@@ -918,7 +921,12 @@ def main(argv=None) -> int:
     task_memory = a.task_memory
     if a.memory_limit:
         task_memory = int(math.ceil(a.memory_limit / IR.LIMIT_RATIO)) + 1
-    if a.smoke_dataset:
+    if a.jobs_file:
+        selectors = [ln.strip() for ln in a.jobs_file.read_text().splitlines() if ln.strip()]
+        if len(set(selectors)) != len(selectors):
+            raise SystemExit("REFUSED: the jobs file repeats a selector")
+        jobs = [select_job(s, a) for s in selectors]
+    elif a.smoke_dataset:
         jobs = [select_job(a.smoke_dataset, a)]
     else:
         jobs = []

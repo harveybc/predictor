@@ -61,7 +61,7 @@ gpu=$(nvidia-smi --query-compute-apps=pid --format=csv,noheader 2>/dev/null | gr
 py=$( [ -x "$HOME/PYREL" ] && echo PRESENT || echo MISSING)
 mem=$(grep MemTotal /proc/meminfo | tr -s ' ' | cut -d' ' -f2)
 printf '{"head":"%s","dirty":%s,"code":"%s","manifest_sha":"%s","manifest_bad":%s,"cgroup":"%s","gpu":%s,"python":"%s","mem_kib":%s,"cpus":%s}\n' \
-  "$head" "${dirty:-0}" "$code" "$msha" "$bad" "$ctl" "${gpu:-0}" "$py" "$mem" "$(nproc)"
+  "$head" "${dirty:-0}" "$code" "$msha" "$bad" "$ctl" "${gpu:-0}" "$py" "$mem" "$(nproc --all)"
 """.replace("PYREL", PY_REL)
 
 
