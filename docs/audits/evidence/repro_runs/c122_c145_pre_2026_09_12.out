@@ -1,0 +1,114 @@
+PRE C122-C145 python=3.12.13
+[BASE.predictor] FACT HOLDS  checkout at the ordered base with no tracked edits
+     f6bf437def84 dirty=[]
+[BASE.financial-data] FACT HOLDS  checkout at the ordered base with no tracked edits
+     fba552195322 dirty=[]
+[BASE.am-t0t1] FACT HOLDS  checkout at the ordered base with no tracked edits
+     a18ca3b2f24d dirty=[]
+[BASE.am-data-first] FACT HOLDS  checkout at the ordered base with no tracked edits
+     432599be021e dirty=[]
+[BASE.prep-t0t1] FACT HOLDS  checkout at the ordered base with no tracked edits
+     e6c3cdc8fae9 dirty=[]
+  code index: 7161 defined symbols
+
+=== STEP 01-13 status matrix (derived from artifacts) ===
+  step protocol  symbols contract  executed  eligibility
+  01   yes             0 no        yes       NONE_GRANTED
+  02   yes             1 no        yes       NONE_GRANTED
+  03   yes             1 yes       yes       NONE_GRANTED
+  04   yes             0 no        NO        NONE_GRANTED
+  05   yes             6 no        NO        NONE_GRANTED
+  06   yes            12 no        NO        NONE_GRANTED
+  07   yes             0 no        NO        NONE_GRANTED
+  08   yes             0 no        NO        NONE_GRANTED
+  09   yes             0 no        NO        NONE_GRANTED
+  10   yes             0 no        NO        NONE_GRANTED
+  11   yes             0 no        NO        NONE_GRANTED
+  12   yes             0 no        NO        NONE_GRANTED
+  13   yes             1 no        NO        NONE_GRANTED
+  STEP 01 executed: ['~/Documents/GitHub/financial-data/features/census/ETH_H4_SUCCESSOR_TEMPORAL_CONTRACT.v3.json'] scope=ONE_PILOT_DATASET (ETH successor temporal contract: gaps and truncations, no Nyquist/aliasing run)
+  STEP 02 executed: ['~/.local/share/agent-multi/t1_bank_v3_20260906/BANK_INVENTORY.json'] scope=SYNTHETIC_GENERATOR_ONLY (declared SNR of generated noise; no estimator from observed data)
+  STEP 03 executed: ['~/Documents/GitHub/.worktrees/am-t0t1/docs/audits/evidence/T2_C108_HARDENED_READJUDICATION_CLOSURE_2026_09_12.json', '~/Documents/GitHub/.worktrees/am-t0t1/docs/audits/evidence/t1_lab_v4_20260906/T1_ADJUDICATION_V4.json'] scope=LIMITED_LAB (T1, 5 operators) PLUS ONE NEGATIVE PUBLIC RESULT (T2 DOES_NOT_ADVANCE)
+[C125.matrix_protocols] FACT HOLDS  every STEP 01-13 has a protocol document on disk
+     {'01': 'MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v2.md', '02': 'STEP_03_NOISE_SNR_DENOISING_PROTOCOL_FINAL.md', '03': 'STEP_03_NOISE_SNR_DENOISING_PROTOCOL_FINAL.md', '04': 'STEP_04_QUANTIZATION_COMPANDING_INFORMATIONAL_RESOLUTION_FINAL.md', '05': 'STEP_05_SOURCE_CODING_ENTROPY_CONTEXTS_DICTIONARIES_MDL_FINAL.md', '06': 'STEP_06_AMPLITUDE_FREQUENCY_PHASE_TIME_FREQUENCY_REPRESENTATIONS_FINAL.md', '07': 'STEP_07_MATCHED_FILTERING_PATTERN_DETECTION_DEEP_MODELS_FINAL.md', '08': 'STEP_08_EQUALIZATION_CANONICALIZATION_DOMAIN_ALIGNMENT_FINAL.md', '09': 'STEP_09_INTERFERENCE_ECHO_CROSSTALK_CANCELLATION_FINAL.md', '10': 'STEP_10_SYNCHRONIZATION_TEMPORAL_ALIGNMENT_TIMING_RECOVERY_FINAL.md', '11': 'STEP_11_CONTROLLED_REDUNDANCY_CORRUPTION_HARDENING_EXISTING_EXTRACTOR_FINAL.md', '12': 'STEP_12_ADAPTIVE_INFORMATION_QUALITY_ROUTING_LINK_ADAPTATION_FINAL.md', '13': 'STEP_13_MULTIPLEXING_MIMO_BUDGET_ALLOCATION_MULTI_BRANCH_FINAL.md'}
+[C125.no_executed_matrix_04_13] REPRODUCED  no executed experiment exists for STEP 04-13
+     {'steps_without_execution': ['04', '05', '06', '07', '08', '09', '10', '11', '12', '13']}
+[C125.common_contract_only_step_03] REPRODUCED  only STEP 03 has operators declared by the common contract
+     {'declared_kinds': ('identity', 'trailing_mean', 'trailing_median', 'ewma', 'local_level_kalman', 'centered_mean_oracle'), 'by_step': {'03': ['ewma', 'local_level_kalman', 'trailing_mean', 'trailing_median']}, 'unmapped_kinds': []}
+[C125.v5_zero_eligible] REPRODUCED  v5 has zero eligible variables
+     {'candidates': 89, 'eligible': 0, 'verdict': 'BANK_INSUFFICIENT'}
+[C125.zero_publicly_eligible_denoisers] REPRODUCED  no denoising operator is publicly eligible
+     {'grants_in_files': [], 'grants_in_cube': {}, 'cube_columns_scanned': 48, 't2_verdict': 'DOES_NOT_ADVANCE', 't1_lab_verdict_counts': {'NON_CAUSAL_ORACLE_ONLY': 64, 'LAB_CALIBRATED': 180, 'LAB_REJECTED': 116, 'INCONCLUSIVE': 24}, 't1_review': 'T1_V4_EXTERNALLY_REVIEWED_FOR_T2_ONLY'}
+[C125.v5_operators_do_not_represent_13_steps] REPRODUCED  the seven v5 operators touch at most two of the thirteen steps
+     {'steps_with_a_v5_operator': ['03', '04'], 'steps_without': ['01', '02', '05', '06', '07', '08', '09', '10', '11', '12', '13'], 'code_defining_operator_like_functions': {'O1_FIRST_DIFFERENCE': ['~/Documents/GitHub/.worktrees/am-t0t1/tools/project3_evidence_screen.py:_fractional_difference', '~/Documents/GitHub/.worktrees/am-t0t1/tools/t2_campaign_closure.py:field_differences', '~/Documents/GitHub/.worktrees/prep-t0t1/app/plugins/anti_naive_lock.py:_apply_first_differences', '~/Documents/GitHub/predictor/preprocessor_plugins/anti_naive_lock.py:apply_first_differences_to_series'], 'O2_LOG_RETURN': ['~/Documents/GitHub/.worktrees/am-t0t1/agent_plugins/branch_pretraining.py:forward_log_return_targets', '~/Documents/GitHub/.worktrees/prep-t0t1/app/plugins/anti_naive_lock.py:_apply_log_returns', '~/Documents/GitHub/.worktrees/prep-t0t1/app/plugins/anti_naive_lock.py:_apply_uniform_log_returns', '~/Documents/GitHub/predictor/preprocessor_plugins/anti_naive_lock.py:apply_log_returns_to_series'], 'O3_TRAILING_ZSCORE_64': ['~/Documents/GitHub/predictor/preprocessor_plugins/stl_preprocessor.py:STLPreprocessorZScore', '~/Documents/GitHub/synthetic-datagen/sdg_plugins/feature_engine/tech_stat_feature_engine.py:_zscore'], 'O4_TRAILING_RANK_PERCENTILE_256': [], 'O6_TRAILING_WINSORIZE_512': []}}
+[C125.statistic_grants_no_semantics_or_license] REPRODUCED  a recomputed numeric statistic grants neither semantics nor license
+     {'scopes': {'NUMERIC_DESCRIPTORS_RECOMPUTED': 1501, 'PHYSICAL_TYPE_KNOWN': 1505, 'PRODUCER_AUTHORITY_ONLY': 460, 'SEMANTICALLY_UNRESOLVED': 4, 'SEMANTIC_DECLARATIONS_KNOWN': 0}, 'fixture_row_reasons': ['UNDECLARED_LICENSE']}
+[C129.no_common_dataset_contract] REPRODUCED  no common dataset/variable contract module
+     {'defined': []}
+[C128.synthetic_bank_gaps] REPRODUCED  the known-truth bank lacks trend, seasonality, steps, motifs, missing blocks and null controls
+     {'families': ('blocks', 'bumps', 'heavisine', 'doppler', 'sine', 'chirp', 'am', 'state_space_mv'), 'perturbations': ('white', 'colored', 'cross_correlated', 'heteroscedastic', 'impulsive', 'missing', 'delayed')}
+[C133.no_nyquist_or_aliasing_code] REPRODUCED  no Nyquist or aliasing analysis exists
+     {'defined': []}
+[C134.no_snr_estimator_from_data] REPRODUCED  no SNR/noise estimator from observed data exists
+     {'defined': []}
+[C136.operator_families_missing] REPRODUCED  the operator contract has no FIR/IIR, wavelet, decomposition or robust families
+     {'declared_kinds': ('identity', 'trailing_mean', 'trailing_median', 'ewma', 'local_level_kalman', 'centered_mean_oracle'), 'families_found': []}
+[C135.no_delay_measurement] REPRODUCED  no group-delay / algorithmic-delay measurement exists
+     {'defined': []}
+[C131.no_permutation_or_spectral_entropy] REPRODUCED  no permutation or spectral entropy estimator exists
+     {'defined': []}
+[C139.no_data_foundation_tables] REPRODUCED  the cube has none of the data-foundation grains
+     {'public_tables': 49}
+[C141_C143.no_successor_designs] REPRODUCED  no D3, D4 or D5 design document exists
+     []
+[C127.census_has_no_producer_family_consumer] REPRODUCED  the 1,965-variable census has no producer, family or consumer field
+     {'variable_keys': ['appearance_count', 'appearances', 'availability_contract', 'available_time', 'concept_name', 'entity', 'event_time', 'frequencies', 'license', 'lineage', 'physical_type', 'profile_depth', 'role', 'semantics', 'semantics_source', 'source_class', 'unit', 'variable_id']}
+
+=== identities (before == after) ===
+  evidence:T2_READJUDICATION_SUBMISSION_2026_09_12.json: 03572efaf35d1d3f unchanged=True
+  evidence:T2_READJUDICATION_SUBMISSION_V2_2026_09_12.json: e3a36d542574d9a9 unchanged=True
+  evidence:T2_READJUDICATION_SUBMISSION_V4_2026_09_12.json: b3bab71dbfc31fbe unchanged=True
+  evidence:T2_READJUDICATION_SUBMISSION_V4_HISTORY_ADDENDUM_2026_09_12.json: 977386359e4057d8 unchanged=True
+  evidence:T2_C108_HARDENED_READJUDICATION_CLOSURE_2026_09_12.json: 9924a4b328221501 unchanged=True
+  evidence:T2_HARDENED_READJUDICATION_DIVERGENCE_2026_09_12.json: 8666d5536cf22978 unchanged=True
+  evidence:T2_COMPLETION_RECONSTRUCTION_AND_SCREEN_ADJUDICATION_2026_09_10.json: 181c0796d015710b unchanged=True
+  evidence:B4_READJUDICATION_SUBMISSION_V2_2026_09_12.json: 8db3e1dfa19702a0 unchanged=True
+  evidence:B4_READJUDICATION_SUBMISSION_V3_2026_09_12.json: 70ac0650052f57ac unchanged=True
+  evidence:B4_READJUDICATION_SUBMISSION_V4_2026_09_12.json: 63ea37901c8756cd unchanged=True
+  work_plan:B4_V4_CLOSURE_DISPOSITION_2026_09_12.md: 8700cc95ee8423a9 unchanged=True
+  evidence:PER_VARIABLE_DESIGN_V3_POPULATION.v1.json: a746f13c4630f19b unchanged=True
+  evidence:PER_VARIABLE_DESIGN_V4_POPULATION.v1.json: 50682f0d6d98d291 unchanged=True
+  evidence:PER_VARIABLE_DESIGN_V5_POPULATION.v1.json: 8dddf38b97a6cca3 unchanged=True
+  evidence:PER_VARIABLE_PREPROCESSING_DESIGN.v2.json: bed0258942c13dba unchanged=True
+  evidence:PER_VARIABLE_PREPROCESSING_DESIGN.v3.json: 1a8d60e5b8d92fd5 unchanged=True
+  evidence:PER_VARIABLE_PREPROCESSING_DESIGN.v4.json: 109cdc505e985c88 unchanged=True
+  evidence:PER_VARIABLE_PREPROCESSING_DESIGN.v5.json: 452d484f00468e62 unchanged=True
+  evidence:TERMINALS_V4_DISPOSITION.v1.json: 4a9202943c1d922a unchanged=True
+  evidence:PANEL_INVENTORY.v1.json: 9725c2de834464a1 unchanged=True
+  evidence:LAKE_TERMINAL_VERIFICATION.v1.json: 403e9cf504ee2f2f unchanged=True
+  evidence:LAKE_TERMINAL_VERIFICATION.v2.json: ed107f4d39fc421c unchanged=True
+  evidence:LAKE_TERMINAL_VERIFICATION.v2_FIRST_RUN_DEFECT.json: 229f949728b8a991 unchanged=True
+  evidence:LAKE_TERMINAL_VERIFICATION.v3.json: 28b8514c91e2794a unchanged=True
+  evidence:TERMINAL_SUPERSESSION.v1.json: 850b1dbd7c13a55d unchanged=True
+  evidence:TERMINAL_SUPERSESSION.v2.json: 579610e253b929a9 unchanged=True
+  evidence:TERMINAL_SUPERSESSION.v3.json: 6466d069d08417a9 unchanged=True
+  census:FEATURE_DAG.v1.json: 4991e36862d42b8a unchanged=True
+  census:FEATURE_DAG.v2.json: 8fbe787a8b8279b5 unchanged=True
+  census:FEATURE_DAG.v3.json: cf2da14190236e3e unchanged=True
+  census:FEATURE_DAG.v4.json: 4fa4d1341e51fc4f unchanged=True
+  census:PRODUCER_BINDING_MANIFEST.v1.json: 5f24ff8545f96cde unchanged=True
+  census:PRODUCER_BINDING_MANIFEST.v2.json: 7d2b7d38c2e3be3e unchanged=True
+  census:ETH_H4_SUCCESSOR_TEMPORAL_CONTRACT.v3.json: ee95207dd6d405d6 unchanged=True
+  census:ETH_H4_TEMPORAL_CONTRACT.v1.json: 6e3a0c8d67dd2ec6 unchanged=True
+  census:ETH_H4_TEMPORAL_CONTRACT.v2.json: 43b9f2b6650205ec unchanged=True
+  census:ETH_H4_SAMPLE_ELIGIBILITY_MASK.v1.parquet: b5c2e3b5811c11c4 unchanged=True
+  census:ETH_H4_SUCCESSOR_SAMPLE_ELIGIBILITY_MASK.v1.parquet: 04cf1a021065635c unchanged=True
+  census:ETH_H4_SUCCESSOR_CHARACTERIZATION.v1.json: b258f98f311bde40 unchanged=True
+  census:ETH_H4_SUCCESSOR_SEMANTIC_CENSUS.v1.json: 3b4b50ddd0ca7ced unchanged=True
+  lake:terminals: ec303016bc85c44b unchanged=True
+  lake:terminals_v2: 41dfa92c00321822 unchanged=True
+  lake:terminals_v3: f9dd5fc01f6b834d unchanged=True
+  lake:terminals_v4: 29c1ff312396f5ec unchanged=True
+  successor:characterization_terminals: a791a5f746b2a18c unchanged=True
+
+=== PRE SUMMARY: 16 absences/defects, 16 reproduced, not reproduced []; facts differing []; identities changed [] ===
