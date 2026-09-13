@@ -1,9 +1,13 @@
 # Plan maestro CRISP-DM para el programa data-centric
 
-**Fecha de corte:** 2026-09-10
+**Fecha de corte:** 2026-09-12
 
 **Alcance:** pronostico supervisado, seleccion de representaciones para RL y optimizacion con DOIN.
 **Regla principal:** ningun modelo compensa una entrada mal definida. La unidad de trabajo inicial es la variable con su procedencia y disponibilidad temporal, no la arquitectura neuronal.
+
+**Estado vinculante:** `06_ESTADO_REAL_PREPROCESAMIENTO_Y_SECUENCIA_2026_09_12.md`.
+Un protocolo escrito, una implementacion, una ejecucion y una decision de
+elegibilidad son estados distintos.
 
 ## 1. Que significa "cada variable de entrada"
 
@@ -171,19 +175,25 @@ La tesis no gobierna el work plan completo: consume evidencia del programa. El p
 
 ## 8. Estado de esta iteracion
 
-Completado en `predictor`:
+Completado o demostrado:
 
-- registro inicial de los dos datasets locales actualmente utilizables;
-- perfil reproducible de 99 columnas;
-- reconciliacion estructural de las 1,680 vistas del manifiesto de `financial-data`;
-- esquema OLAP aditivo para inventario, variables, particiones y epocas;
-- correccion del bootstrap de una base OLAP nueva, que antes exigia un `ALTER TABLE` manual;
-- pruebas focales y validacion end-to-end en PostgreSQL desechable.
+- censo incremental: 1,680 apariciones fisicas y 1,965 variables conceptuales;
+- reja de consumo antes de modelado y outbox OLAP durable;
+- caracterizacion numerica historica con alcance fisico/estadistico;
+- un sucesor ETH con lineage y contrato temporal propios, aceptado solo como
+  piloto mecanico;
+- T2 cerrado con resultado `DOES_NOT_ADVANCE` para el operador evaluado;
+- diseno por variable v5 con join miembro a miembro;
+- resultado real de poblacion: cero variables elegibles.
 
-Pendiente por diseno, no por olvido:
+No completado:
 
-- resolver identidades logicas y metadatos de todo el banco financiero;
-- completar contratos de disponibilidad y unidades donde la fuente no los declara;
-- reconciliar el banco publico T2 y registrar el banco sintetico E0 bajo el mismo contrato;
-- implementar la reja `PUBLICLY_ELIGIBLE` antes de los selectores y genes;
-- migrar la base OLAP real solo despues de respaldo y revision del recibo de base desechable.
+- semantica, unidad, licencia y disponibilidad de la poblacion financiera;
+- banco publico multivariado listo para experimentos;
+- perfil por variable y por grupo de muestreo, informacion y ruido;
+- denoising causal por variable con retardo y preservacion medidos;
+- ejecucion de STEP 04-13;
+- seleccion de variables, pronostico, representaciones, L2/DOIN y RL bajo el
+  contrato nuevo.
+
+La orden siguiente es D0-D2. I5-I10 permanecen cerradas.

@@ -5,6 +5,11 @@
 **Version:** 2  
 **Purpose:** Maintain one authoritative map of the research program while individual STEP documents remain independently auditable.
 
+**Execution status supplement:**
+`../integracion_workplan_2026_09_10/06_ESTADO_REAL_PREPROCESAMIENTO_Y_SECUENCIA_2026_09_12.md`.
+In this document, `Protocol closed` means that the experimental specification
+was written and reviewed. It does not mean implemented, executed or eligible.
+
 ---
 
 # 1. Research objective
@@ -627,18 +632,18 @@ The governance, experiment structure and modular contracts should remain stable.
 
 # 9. Current project state
 
-| Step | Status |
-|---|---|
-| STEP 01 | Protocol closed |
-| STEP 02 | Incorporated into STEP 03 |
-| STEP 03 | Protocol closed |
-| STEP 04 | Protocol closed |
-| STEP 05 | Protocol closed |
-| STEP 06 | Protocol closed |
-| STEP 07 | Protocol closed |
-| Compression transversal lane | Formalized for audit |
-| STEP 08 | Next research task |
-| STEP 09–13 | Planned |
+| Step | Protocol | Execution status |
+|---|---|---|
+| STEP 01 | Closed | Partial, one pilot dataset |
+| STEP 02 | Incorporated into STEP 03 | Partial synthetic calibration |
+| STEP 03 | Closed | Limited lab plus one negative public result; no eligible operator |
+| STEP 04 | Closed | Not executed under the common contract |
+| STEP 05 | Closed | Not executed under the common contract |
+| STEP 06 | Closed | Not executed under the common contract |
+| STEP 07 | Closed | Not executed as a common detector bank |
+| Compression transversal lane | Formalized for audit | Not executed |
+| STEP 08 | Planned | Blocked by D0-D3 |
+| STEP 09-13 | Planned | Blocked by preceding steps |
 
 ---
 
@@ -649,4 +654,6 @@ Before STEP 08 implementation/research:
 1. agents audit PATCH 001;
 2. agents audit the compression transversal lane;
 3. no existing STEP 01–07 file is rewritten unless a substantive audit finding requires it;
-4. this master roadmap becomes the authoritative index for subsequent STEP documents.
+4. this master roadmap becomes the authoritative index for subsequent STEP documents;
+5. execute D0-D3 first; STEP 08 is not the next implementation while STEP
+   01-07 lack common-contract evidence.
