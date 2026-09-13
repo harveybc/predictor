@@ -21,6 +21,7 @@ Ninguno implica automaticamente el siguiente.
 | I2 perfil de calidad e informacion | Evidencia obtenida en D1 | 715 datasets, 866.661 filas de perfil, ejecucion acotada por memoria | corregir identidad de bloques y cobertura v2 |
 | I3 calibracion sintetica | Mecanica actual; evidencia historica no consumible | SNR C163 descriptivo; C137 usa la semantica anterior | reanalisis de migracion y confirmacion en semillas frescas |
 | I4 utilidad publica | Un resultado negativo | EWMA `DOES_NOT_ADVANCE` en seis paneles T2 | probar solo operadores calibrados nuevos |
+| F0-F5 ingenieria de caracteristicas | Descubrimiento completo; requisitos en revision | auditoria de `feature-eng` y matriz FBR-001..012 | cerrar casos y pruebas antes de implementar |
 | I5 seleccion | Bloqueada | diseno v5, poblacion cero | minimo seis paneles y 30 variables elegibles |
 | I6 pronostico | Bloqueada | sin contrato nuevo | salida revisada de I5 |
 | I7 representaciones | Bloqueada | protocolos solamente | evidencia I2-I6 |
@@ -52,9 +53,8 @@ Ninguno implica automaticamente el siguiente.
 D0 contratos e inventario
  -> D1 perfil crudo por variable y por grupo
  -> D2 muestreo + ruido/SNR + denoising causal
- -> D3 cuantizacion + compresion + tiempo/frecuencia + detectores
- -> D4 ecualizacion + redundancia + sincronizacion
- -> D5 robustez + routing + asignacion multirama
+ -> [D3-D5 procesamiento de senal || F0-F5 ingenieria de caracteristicas]
+ -> union de manifests elegibles
  -> I5 seleccion de variables
  -> I6 pronostico supervisado
  -> I7-I9 representaciones, L2/DOIN y RL
@@ -80,7 +80,7 @@ saltar a la siguiente usando entradas no caracterizadas.
   y dentro de la particion permitida.
 * Los targets no participan en inventario, perfil crudo ni seleccion del banco.
 * Feature selection comienza despues de D0-D4 y solo consume variables y
-  operadores elegibles.
+  operadores elegibles. Tambien exige F5 para cualquier feature derivada.
 * (C144) Esa regla es ejecutable. `tools/df_consumption_gate.py` rechaza
   cualquier variable u operador sin registros de revision externa para cada
   etapa D0, D1, D2, D3 y D4. En D2 solo se aceptan `LAB_CALIBRATED`, o
@@ -135,3 +135,8 @@ La orden C166-C184 elimina los interruptores de mutacion de produccion, corrige
 identidad y cobertura, repite C137 como reanalisis y ejecuta una confirmacion
 sintetica fresca. D3-D5, seleccion y entrenamiento permanecen cerrados hasta la
 revision externa de ese resultado.
+
+En paralelo solo se permite trabajo de definicion F0-F3 bajo DGPD: requisitos,
+casos de uso, pruebas y arquitectura. No se puntuan features ni se modifica una
+campana cerrada. Estado ejecutable:
+`FEATURE_BANK_METHOD_STATE.json`.

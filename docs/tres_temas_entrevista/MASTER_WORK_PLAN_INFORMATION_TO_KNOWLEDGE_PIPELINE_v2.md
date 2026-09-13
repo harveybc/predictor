@@ -596,6 +596,24 @@ Where:
 - \(Z\): consolidated latent;
 - \(H_h\): task-specific predictive heads.
 
+## 7.1 Feature-engineering transversal lane
+
+Hand-engineered temporal features are not implicit preprocessing and are not a
+substitute for the representation bank. They form a separately governed lane
+after sampling/noise characterization and before feature selection:
+
+1. calendar, session and externally published event features;
+2. lags, differences and returns;
+3. trailing-window statistics with declared warm-up;
+4. cross-variable features whose joins obey per-source availability;
+5. out-of-sample utility and cost adjudication.
+
+Every output carries its parents, formula, parameters, unit, lookback,
+effective delay, event/availability-time rule, fitted state and code/data
+identity. Future-scanning labels are a separate role and may never enter this
+lane. The full contract and current audit are maintained in
+`../integracion_workplan_2026_09_10/07_COBERTURA_REPRESENTACIONES_Y_FEATURE_ENG_2026_09_13.md`.
+
 Future steps add:
 
 \[
@@ -642,6 +660,7 @@ The governance, experiment structure and modular contracts should remain stable.
 | STEP 06 | Closed | Not executed under the common contract |
 | STEP 07 | Closed | Not executed as a common detector bank |
 | Compression transversal lane | Formalized for audit | Not executed |
+| Feature-engineering lane F0-F5 | Discovery complete | Requirements under review; no eligible feature bank |
 | STEP 08 | Planned | Blocked by D0-D3 |
 | STEP 09-13 | Planned | Blocked by preceding steps |
 
@@ -657,3 +676,5 @@ Before STEP 08 implementation/research:
 4. this master roadmap becomes the authoritative index for subsequent STEP documents;
 5. execute D0-D3 first; STEP 08 is not the next implementation while STEP
    01-07 lack common-contract evidence.
+6. develop F0-F5 in parallel after D2 and join it with the signal-processing
+   lane only at feature selection.

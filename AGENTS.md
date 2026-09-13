@@ -251,6 +251,16 @@ repository. Do not claim the code is lint- or type-clean.
 
 ## Conventions and constraints
 
+### New software and substantial redesigns
+
+Use the repository's
+[`Diseno guiado por pruebas y datos`](docs/metodologias/DISENO_GUIADO_POR_PRUEBAS_Y_DATOS.md)
+for new components or broad architectural changes. Resume from the initiative's
+`PROJECT_METHOD_STATE.json`; validate it with
+`python tools/test_led_state.py validate <state>` before editing implementation
+code. Ordinary narrow bug fixes do not require creating a new method state, but
+must preserve the traceability and tests of an existing one.
+
 - **Config-driven.** A run is a flat JSON file merged over `app/config.py`
   defaults. Precedence, from `app/config_merger.py`: plugin params → defaults →
   file config → CLI args. CLI wins, but only for long-form `--flags`.

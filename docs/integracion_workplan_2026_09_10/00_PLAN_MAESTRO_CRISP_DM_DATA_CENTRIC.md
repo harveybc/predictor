@@ -82,6 +82,14 @@ La preparacion ocurre en tres rejas distintas:
 
 No se permite que un selector rescate una variable que fallo la primera reja ni que un gen de DOIN active una transformacion no licenciada.
 
+La ingenieria de caracteristicas tiene un carril propio `F0-F5`. Comienza
+despues de D2 y avanza en paralelo con D3-D5: calendario y eventos conocidos,
+desfases y diferencias, ventanas causales, relaciones entre variables y una
+reja final de utilidad. Cada salida vuelve a ser una variable con identidad,
+unidad, padres, disponibilidad, warm-up, retardo, costo y perfil propios. El
+detalle vinculante esta en
+`07_COBERTURA_REPRESENTACIONES_Y_FEATURE_ENG_2026_09_13.md`.
+
 ### 3.4 Modelado
 
 El modelado se ordena de barato a caro:
@@ -129,6 +137,7 @@ Un resultado apto para consumo incluye:
 | I2 | Perfilar calidad, temporalidad e informacion | Ledger por variable y por particion |
 | I3 | Calibrar diagnosticos en sinteticamente conocido | Metricas interpretables y limites de deteccion |
 | I4 | Evaluar transformaciones en banco publico | Lista revisada de operadores elegibles |
+| F0-F5 | Construir y evaluar features causales desde variables y transformaciones elegibles | Manifiesto revisado de features candidatas para I5 |
 | I5 | Seleccionar variables con validacion temporal anidada | Manifest de variables congeladas y controles |
 | I6 | Ejecutar pronostico supervisado en `predictor` | Evidencia de transferencia entre tareas y modelos |
 | I7 | Construir grupos y representaciones modulares | Universo L1 congelado |
@@ -136,7 +145,11 @@ Un resultado apto para consumo incluye:
 | I9 | Evaluar RL y trading offline | Resultado mecanico/economico atribuible |
 | I10 | Revalidar en dominio financiero y live | Elegibilidad operativa separada de la cientifica |
 
-La seleccion de variables ocurre en **I5**, despues de caracterizar los datos y licenciar transformaciones. Puede haber un filtro mecanico previo para retirar columnas imposibles o causales invalidas, pero ese filtro no es seleccion por rendimiento.
+La seleccion de variables ocurre en **I5**, despues de caracterizar los datos,
+licenciar transformaciones y cerrar F5. Puede haber un filtro mecanico previo
+para retirar columnas imposibles o causales invalidas, pero ese filtro no es
+seleccion por rendimiento. I5 recibe tres poblaciones separadas: variables
+crudas, salidas de procesamiento de senal y features derivadas.
 
 **Reja de consumo de I5 (C144, 2026-09-12).** I5 no puede consumir una variable ni una transformacion sin estados revisados externamente para cada etapa D0-D4:
 
@@ -160,6 +173,10 @@ Hasta que existan esos registros:
 - **M3/M4:** las mediciones de capacidad, complejidad y aprendizaje se incorporan como diagnosticos experimentales en I2-I3. Un descriptor que no demuestre utilidad incremental se retira.
 - **B4 y campañas RL:** se adjudican bajo el contrato con que fueron ejecutadas. Los hallazgos nuevos solo gobiernan campañas sucesoras.
 - **Planes de 13 pasos:** se conservan como catalogo de familias de operadores. Cada paso debe demostrar causalidad, utilidad y costo antes de entrar al flujo; el numero del paso no confiere elegibilidad.
+- **`feature-eng`:** se conserva como inventario de implementaciones y
+  antecedentes. Sus salidas historicas no reciben elegibilidad automatica; el
+  carril F0-F5 separa targets de entradas y reemplaza supuestos implicitos por
+  contratos ejecutables.
 
 ## 6. OLAP: memoria del programa, no deposito indiscriminado
 
@@ -208,6 +225,7 @@ No completado:
 - perfil por variable y por grupo de muestreo, informacion y ruido;
 - denoising causal por variable con retardo y preservacion medidos;
 - ejecucion de STEP 04-13;
+- contratos, pruebas y ejecucion F0-F5 para ingenieria de caracteristicas;
 - seleccion de variables, pronostico, representaciones, L2/DOIN y RL bajo el
   contrato nuevo.
 

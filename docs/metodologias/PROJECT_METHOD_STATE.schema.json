@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/harveybc/predictor/docs/metodologias/PROJECT_METHOD_STATE.schema.json",
+  "title": "DGPD project method state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "method_version",
+    "project_id",
+    "objective",
+    "updated_at",
+    "current_stage",
+    "stages",
+    "requirements",
+    "traceability_file",
+    "next_allowed_actions",
+    "blocked_actions",
+    "open_decisions",
+    "history"
+  ],
+  "properties": {
+    "schema": {"const": "dgpd_project_state.v1"},
+    "method_version": {"const": "1.0"},
+    "project_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
+    "objective": {"type": "string", "minLength": 10},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "current_stage": {"type": "string"},
+    "stages": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status", "optional", "artifacts", "evidence", "review"],
+        "properties": {
+          "id": {"type": "string"},
+          "status": {"enum": ["NOT_STARTED", "IN_PROGRESS", "PASSED", "BLOCKED", "DEFERRED"]},
+          "optional": {"type": "boolean"},
+          "artifacts": {"type": "array", "items": {"type": "string"}},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "review": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "status", "source"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9_-]+-[0-9]{3}$"},
+          "text": {"type": "string", "minLength": 5},
+          "status": {"enum": ["DRAFT", "ACCEPTED", "SUPERSEDED"]},
+          "source": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "traceability_file": {"type": "string", "minLength": 1},
+    "next_allowed_actions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 3}},
+    "blocked_actions": {"type": "array", "items": {"type": "string", "minLength": 3}},
+    "open_decisions": {"type": "array", "items": {"type": "string", "minLength": 3}},
+    "history": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["at", "stage", "event"],
+        "properties": {
+          "at": {"type": "string", "format": "date-time"},
+          "stage": {"type": "string"},
+          "event": {"type": "string", "minLength": 3}
+        }
+      }
+    }
+  }
+}

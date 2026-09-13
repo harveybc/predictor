@@ -562,7 +562,7 @@ Además del precio o rendimiento futuro, se pronosticará volatilidad mediante l
 
 Antes de la prueba se fijarán métrica principal, margen relevante y medidas complementarias, incluyendo rentabilidad neta, riesgo y caída máxima del capital. Los costos y condiciones de ejecución serán comunes. Las diferencias se estimarán sobre los mismos períodos y con varias semillas; sus intervalos conservarán esa dependencia. Superar una estrategia trivial dará una referencia de utilidad; la comparación entre representaciones permitirá atribuir el efecto al diseño. Este análisis tendrá su propio control de multiplicidad y no modificará H1--H3.
 
-La plataforma DOIN~\cite{doin} creada por el autor proporcionará optimización distribuída con DEAP, el registro en el cubo OLAP existente en DOIN organizará configuraciones, particiones, semillas, métricas y costos. Se conservarán métricas de candidatos descartados para una posible meta-optimización futura, versiones de pesos y reglas de reentrenamiento para reproducir y analizar los experimentos.
+La plataforma DOIN~\cite{doin} creada por el autor proporcionará la ejecución distribuida de la optimización. El cubo OLAP existente en el nodo DOIN organizará configuraciones, particiones, semillas, métricas y costos. Se conservarán métricas de candidatos descartados para una posible meta-optimización futura, versiones de pesos y reglas de reentrenamiento para reproducir y analizar los experimentos.
 
 \section{Viabilidad, recursos y riesgos}
 
@@ -682,10 +682,10 @@ H.~Bastidas, «Gestor de autoencoder de feature-extractor», código fuente, rev
 H.~Bastidas, «Configuración de carga y ajuste del extractor de características», código fuente, revisión \texttt{20ec571}, 2026. \url{https://github.com/harveybc/predictor/blob/20ec57145b4ed3eb647eabe2b7591f35a3dbbf47/examples/config/phase_3_1/phase_3_1_cnn_25200_1h_config.json}.
 
 \bibitem{doin}
-H.~Bastidas, «Decentralized Optimization and Inference Network», código fuente, revisión \texttt{20ec571}, 2026. \url{https://github.com/harveybc/doin-core}.
+H.~Bastidas, «DOIN Node: ejecución distribuida y registro analítico de experimentos», código fuente, revisión \texttt{8bfc64f}, 2026. \url{https://github.com/harveybc/doin-node/tree/8bfc64f5de20200b93a8f9451b4e1a7ea9742df8}.
 
 \bibitem{financialdatalake}
-H.~Bastidas, «Financial Data Lake Inventory», código fuente, revisión \texttt{20ec571}, 2026. \url{https://github.com/harveybc/financial-data/blob/master/INVENTORY.md}.
+H.~Bastidas, «Financial Data Lake Inventory», inventario de datos, revisión \texttt{a808710}, 2026. \url{https://github.com/harveybc/financial-data/blob/a8087108812072d55387877ca14acd97f9213049/INVENTORY.md}.
 
 
 \bibitem{ibmcrispdm}

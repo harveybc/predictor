@@ -1,0 +1,55 @@
+{
+  "schema": "dgpd_project_state.v1",
+  "method_version": "1.0",
+  "project_id": "temporal-feature-bank",
+  "objective": "Construir y validar un banco causal de caracteristicas temporales antes de la seleccion de variables y del modelado.",
+  "updated_at": "2026-09-13T18:00:00-05:00",
+  "current_stage": "S1_REQUIREMENTS",
+  "stages": [
+    {"id": "S0_DISCOVERY", "status": "PASSED", "optional": false, "artifacts": ["docs/integracion_workplan_2026_09_10/07_COBERTURA_REPRESENTACIONES_Y_FEATURE_ENG_2026_09_13.md"], "evidence": ["docs/integracion_workplan_2026_09_10/07_COBERTURA_REPRESENTACIONES_Y_FEATURE_ENG_2026_09_13.md"], "review": "MUSASHI_SCOPE_AUDIT_2026-09-13"},
+    {"id": "S1_REQUIREMENTS", "status": "IN_PROGRESS", "optional": false, "artifacts": ["docs/integracion_workplan_2026_09_10/FEATURE_BANK_TRACEABILITY.md"], "evidence": [], "review": null},
+    {"id": "S2_USE_CASES", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S3_ACCEPTANCE_TEST_DESIGN", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S4_ARCHITECTURE", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S5_SYSTEM_TEST_DESIGN", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S6_COMPONENT_DESIGN", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S7_INTEGRATION_TEST_DESIGN", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S8_UNIT_TEST_DESIGN", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S9_UNIT_IMPLEMENTATION", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S10_INTEGRATION_VERIFICATION", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S11_SYSTEM_VERIFICATION", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S12_ALPHA_ACCEPTANCE", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S13_BETA_ACCEPTANCE", "status": "NOT_STARTED", "optional": true, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S14_RELEASE_OPERATION", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null}
+  ],
+  "requirements": [
+    {"id": "FBR-001", "text": "Toda feature debe declarar padres, formula, parametros e identidad.", "status": "DRAFT", "source": "auditoria feature-eng"},
+    {"id": "FBR-002", "text": "Una salida temporal no puede depender de observaciones futuras.", "status": "DRAFT", "source": "requisito del propietario"},
+    {"id": "FBR-003", "text": "Todo estado aprendido debe ajustarse exclusivamente en training.", "status": "DRAFT", "source": "plan CRISP-DM"},
+    {"id": "FBR-004", "text": "Batch, incremental y restart deben producir resultados equivalentes.", "status": "DRAFT", "source": "contrato T0"},
+    {"id": "FBR-005", "text": "Los cruces entre fuentes deben respetar el tiempo de disponibilidad.", "status": "DRAFT", "source": "plan D0-D5"},
+    {"id": "FBR-006", "text": "Targets y features deben tener registros y caminos de ejecucion separados.", "status": "DRAFT", "source": "auditoria feature-eng"},
+    {"id": "FBR-007", "text": "Ausencias y warm-up deben conservar una semantica explicita.", "status": "DRAFT", "source": "auditoria feature-eng"},
+    {"id": "FBR-008", "text": "Cada feature debe medir costo, memoria, warm-up y retardo.", "status": "DRAFT", "source": "plan data-centric"},
+    {"id": "FBR-009", "text": "La bateria debe detectar controles deliberadamente no causales.", "status": "DRAFT", "source": "requisito del propietario"},
+    {"id": "FBR-010", "text": "La elegibilidad exige utilidad incremental fuera de muestra.", "status": "DRAFT", "source": "propuesta doctoral"},
+    {"id": "FBR-011", "text": "Toda comparacion conserva raw y controles de igual anchura o costo.", "status": "DRAFT", "source": "propuesta doctoral"},
+    {"id": "FBR-012", "text": "Todos los desenlaces deben persistirse en el cubo OLAP.", "status": "DRAFT", "source": "plan data-centric"}
+  ],
+  "traceability_file": "docs/integracion_workplan_2026_09_10/FEATURE_BANK_TRACEABILITY.md",
+  "next_allowed_actions": [
+    "Revisar y aceptar FBR-001 a FBR-012",
+    "Escribir casos de uso nominales, de rechazo y de recuperacion",
+    "Definir pruebas alfa antes de elegir la arquitectura"
+  ],
+  "blocked_actions": [
+    "No implementar plugins nuevos ni puntuar features antes de cerrar S8",
+    "No enviar ninguna feature a I5 antes de F5"
+  ],
+  "open_decisions": [
+    "Elegir en S4 si el contrato comun vive en preprocessor o en un paquete pequeno sin dependencias de aplicacion"
+  ],
+  "history": [
+    {"at": "2026-09-13T18:00:00-05:00", "stage": "S1_REQUIREMENTS", "event": "Auditoria de cobertura completada y primer borrador de requisitos creado"}
+  ]
+}

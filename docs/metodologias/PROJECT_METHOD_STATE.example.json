@@ -1,0 +1,35 @@
+{
+  "schema": "dgpd_project_state.v1",
+  "method_version": "1.0",
+  "project_id": "example-project",
+  "objective": "Demostrar el formato minimo de un estado DGPD reanudable.",
+  "updated_at": "2026-09-13T12:00:00-05:00",
+  "current_stage": "S1_REQUIREMENTS",
+  "stages": [
+    {"id": "S0_DISCOVERY", "status": "PASSED", "optional": false, "artifacts": ["docs/metodologias/DISENO_GUIADO_POR_PRUEBAS_Y_DATOS.md"], "evidence": ["docs/metodologias/DISENO_GUIADO_POR_PRUEBAS_Y_DATOS.md"], "review": "EXAMPLE_REVIEW"},
+    {"id": "S1_REQUIREMENTS", "status": "IN_PROGRESS", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S2_USE_CASES", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S3_ACCEPTANCE_TEST_DESIGN", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S4_ARCHITECTURE", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S5_SYSTEM_TEST_DESIGN", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S6_COMPONENT_DESIGN", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S7_INTEGRATION_TEST_DESIGN", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S8_UNIT_TEST_DESIGN", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S9_UNIT_IMPLEMENTATION", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S10_INTEGRATION_VERIFICATION", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S11_SYSTEM_VERIFICATION", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S12_ALPHA_ACCEPTANCE", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S13_BETA_ACCEPTANCE", "status": "NOT_STARTED", "optional": true, "artifacts": [], "evidence": [], "review": null},
+    {"id": "S14_RELEASE_OPERATION", "status": "NOT_STARTED", "optional": false, "artifacts": [], "evidence": [], "review": null}
+  ],
+  "requirements": [
+    {"id": "EX-001", "text": "El estado debe poder validarse sin dependencias externas.", "status": "DRAFT", "source": "ejemplo"}
+  ],
+  "traceability_file": "docs/metodologias/MATRIZ_TRAZABILIDAD.md",
+  "next_allowed_actions": ["Revisar y aceptar los requisitos"],
+  "blocked_actions": ["No implementar antes de disenar las pruebas"],
+  "open_decisions": [],
+  "history": [
+    {"at": "2026-09-13T12:00:00-05:00", "stage": "S1_REQUIREMENTS", "event": "Estado de ejemplo creado"}
+  ]
+}

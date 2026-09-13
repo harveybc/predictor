@@ -178,6 +178,8 @@ roc_pr_curves.png
 docs/tesis_sac/referencias/*.pdf
 docs/tesis_representaciones_modulares/referencias/*
 !docs/tesis_representaciones_modulares/referencias/README.md
+!docs/tesis_representaciones_modulares/referencias/MANIFEST.json
+!docs/tesis_representaciones_modulares/referencias/verificar_expediente.py
 
 # LaTeX intermediates (keep .tex .bib .pdf)
 *.aux
