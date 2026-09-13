@@ -31,6 +31,8 @@ A = load("df_d2_adjudicate")
 BANK = load("df_synthetic_bank")
 OPS = load("df_operators")
 L = load("load_data_foundation")
+# the retired name comes from the naming record, the only place it is written
+OLD = next(k for k, v in D.RETIRED_NAMES.items() if v == "trailing_haar_threshold")
 
 N = 512
 CELLS = [BANK._cell("sinusoid", "white", 10, N), BANK._cell("steps", "white", 0, N)]
@@ -115,7 +117,7 @@ def test_c137_dispersion_extractor(tmp_path):
     runs, metrics = [], []
     for i, val in enumerate((1.0, 2.0, 4.0)):
         run = {"run_id": "c137_x", "subject_id": f"sinusoid__white__snr10__none__n2048__v1__seed{11 + i}",
-               "content_sha256": "0" * 64, "variable_id": "v", "regime": regime, "operator_kind": "wavelet_haar_atrous",
+               "content_sha256": "0" * 64, "variable_id": "v", "regime": regime, "operator_kind": OLD,
                "operator_params": {"levels": 2, "threshold_k": 3.0}, "spec_sha256": "1" * 64, "fitted_sha256": None,
                "status": "COMPLETED", "reason": "", "code_sha256": "2" * 64, "cpu_seconds": 0.1,
                "peak_memory_bytes": None}
@@ -129,7 +131,7 @@ def test_c137_dispersion_extractor(tmp_path):
     (root / "df_fact_operator_signal_metric.jsonl").write_text("".join(json.dumps(m) + "\n" for m in metrics))
     out = D.extract_c137_dispersion(root, metrics=("snr_improvement_db",))
     (row,) = out["rows"]
-    assert row["spec"]["kind"] == "trailing_haar_threshold" and row["historical_kind"] == "wavelet_haar_atrous"
+    assert row["spec"]["kind"] == "trailing_haar_threshold" and row["historical_kind"] == OLD
     assert row["n"] == 3 and row["mean"] == pytest.approx(7 / 3) and row["sd"] == pytest.approx(np.std([1, 2, 4], ddof=1))
 
 
@@ -217,10 +219,16 @@ def test_worker_two_units_public_api_oracle_detected_rows_valid(two_units):
         assert {r["partition"]: r["status"] for r in wm if r["partition"] != "train"} == \
             {"confirmation": "NOT_APPLICABLE", "calibration": "NOT_APPLICABLE"}
         (conf,) = [r for r in snr if r["estimator"] == "mad_first_difference" and r["partition"] == "confirmation"]
-        if summary["unit_id"].startswith("sinusoid"):
-            assert conf["status"] == "COMPLETED" and conf["snr_db_hat"] is not None and conf["abs_error_db"] is not None
-        else:   # steps at 0 dB: the estimator is typed NOT_IDENTIFIABLE on confirmation, with its reason
+        # The fresh seeds derive from the design digest, which binds the lab code digests, so the realization of
+        # a unit changes whenever that code changes. The first version asserted one realization's outcome (steps at
+        # 0 dB not identifiable) and broke when the guard-removal code was merged. What must hold for every
+        # realization is the typing: an estimate either completes with its values or is NOT_IDENTIFIABLE with a reason.
+        if conf["status"] == "COMPLETED":
+            assert conf["snr_db_hat"] is not None and conf["abs_error_db"] is not None
+        else:
             assert conf["status"] == "INCONCLUSIVE" and conf["identifiability"] == "NOT_IDENTIFIABLE" and conf["reason"]
+        if summary["unit_id"].startswith("sinusoid"):
+            assert conf["status"] == "COMPLETED"   # 10 dB on a smooth sinusoid is identifiable for any seed
         (train,) = [r for r in snr if r["estimator"] == "wavelet_mad" and r["partition"] == "train"]
         assert train["contract_state"] == "OFFLINE_TRAIN_DIAGNOSTIC_NON_CAUSAL"
 
@@ -408,7 +416,7 @@ def test_historical_comparison_classifies_flip_and_keeps_counts_apart(design):
     for i in range(3):
         subject = f"u_{300 + i}"
         run = {"run_id": "c137_x", "subject_id": subject, "content_sha256": "f" * 64, "variable_id": "v0",
-               "regime": regime, "operator_kind": "wavelet_haar_atrous", "operator_params": op["spec"]["params"],
+               "regime": regime, "operator_kind": OLD, "operator_params": op["spec"]["params"],
                "spec_sha256": "1" * 64, "fitted_sha256": None, "status": "COMPLETED", "reason": "",
                "code_sha256": "2" * 64, "cpu_seconds": 0.1, "peak_memory_bytes": None}
         runs.append(run)
@@ -418,12 +426,12 @@ def test_historical_comparison_classifies_flip_and_keeps_counts_apart(design):
                                 "metric": m, "value": v, "status": "COMPLETED"})
             for m, v in (("support", 90.0), ("snr_improvement_db", 0.1), ("rmse_ratio", 0.99)):
                 re_rows.append(drow(design, subject, op, m, v, partition=part, mode=D.HISTORICAL_MODE, regime=regime))
-    hist = [{"operator_kind": "wavelet_haar_atrous", "operator_params": op["spec"]["params"], "regime": regime,
+    hist = [{"operator_kind": OLD, "operator_params": op["spec"]["params"], "regime": regime,
              "decision": "LAB_CALIBRATED"}]
     rep = A.compare_with_historical(hist, runs, metrics, re_rows, design)
     (row,) = rep["rows"]
     assert row["flipped"] and row["flip_cause"] == "TRANSFORMED_RANGE" and row["reanalysis_decision"] == "LAB_REJECTED"
-    assert row["historical_operator_kind"] == "wavelet_haar_atrous" and row["operator_kind"] == "trailing_haar_threshold"
+    assert row["historical_operator_kind"] == OLD and row["operator_kind"] == "trailing_haar_threshold"
     assert rep["status_counts"]["historical"]["RESULT"] == 3 and rep["status_counts"]["reanalysis"]["RESULT"] == 3
     assert rep["units_equal"] and rep["truth_content_equal"] and rep["grants_consumption"] is False
     assert A.historical_rows(rep, "r", "c137_x")

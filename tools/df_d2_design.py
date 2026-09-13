@@ -44,9 +44,9 @@ C137 dispersion (``extract_c137_dispersion``), read-only. Metric
 ``confirmation`` (the partition that governs the fresh test), joined to their
 ``df_fact_operator_run`` row by ``row_sha256``; aggregation: mean over the
 unit's variables gives ONE value per unit (= seed); across the seeds of an
-operator x regime the table reports n, mean and sample sd (ddof=1). The retired
-name ``wavelet_haar_atrous`` is mapped to ``trailing_haar_threshold`` and the
-mapping is recorded.
+operator x regime the table reports n, mean and sample sd (ddof=1). A retired
+operator name is mapped to its current name through ``RETIRED_NAMES``, derived
+from ``df_operators.NAMING_DECISIONS``, and the mapping is recorded.
 """
 from __future__ import annotations
 
@@ -66,7 +66,12 @@ HISTORICAL_MODE = "HISTORICAL_MIGRATION_REANALYSIS_NON_CONFIRMATORY"
 FRESH_MODE = "FRESH_CONFIRMATION"
 MODES = (HISTORICAL_MODE, FRESH_MODE)
 ARM_ROLES = ("CANDIDATE", "IDENTITY_RAW_CONTROL", "PREVIOUSLY_REJECTED_CONTROL", "NON_CAUSAL_ORACLE_CONTROL")
-RETIRED_NAMES = {"wavelet_haar_atrous": "trailing_haar_threshold"}
+def _retired_names() -> dict:
+    """Retired operator name -> current name, derived from df_operators.NAMING_DECISIONS: the naming record
+    is the single place a retired name is written."""
+    OPS = _load("df_operators")
+    return {d["previous_name"]: d["subject"] for d in OPS.NAMING_DECISIONS
+            if d.get("subject_kind") == "OPERATOR" and d.get("decision") == "RENAMED" and d.get("previous_name")}
 REGIME_FIELDS = ("family", "perturbation", "declared_snr_db", "length", "missingness")
 D2_CODE_FILES = ("df_d2_design", "df_seed_tape", "df_d2_unit_worker", "df_d2_adjudicate", "df_lab_evaluation",
                  "df_synthetic_bank", "df_synthetic_contract", "df_snr", "df_operators", "df_snapshot", "df_contract",
@@ -81,6 +86,9 @@ def _load(name: str):
     sys.modules[name] = mod
     spec.loader.exec_module(mod)
     return mod
+
+
+RETIRED_NAMES = _retired_names()
 
 
 class DesignRefusal(ValueError):

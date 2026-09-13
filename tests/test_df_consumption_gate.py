@@ -71,7 +71,10 @@ def test_regime_limited_is_limited_to_its_regimes():
 
 def test_a_historical_c137_decision_never_passes_d2():
     """C181 test 7: a C137-style D2 record (v1 schema, retired name, old code, no fit mode, no fresh root)."""
-    subject = 'wavelet_haar_atrous:{"levels": 2, "threshold_k": 3.0}'
+    # the retired name comes from the naming record, the only place it is written
+    OLD = next(d["previous_name"] for d in G._load("df_operators").NAMING_DECISIONS
+               if d["subject"] == "trailing_haar_threshold")
+    subject = f'{OLD}:{{"levels": 2, "threshold_k": 3.0}}'
     old = {"schema": G.RECORD_SCHEMA, "stage": "D2", "reviewer": "external reviewer", "reviewed_at_date": "2026-09-13",
            "subject_kind": "OPERATOR", "states": {subject: "LAB_CALIBRATED"}, "regimes": {},
            "grants_public_eligibility": False, "record_sha256": ""}
@@ -82,7 +85,7 @@ def test_a_historical_c137_decision_never_passes_d2():
     assert d["missing_stages"] == ["D2"] and any("NOT_CONSUMABLE" in s for s in d["states_not_consumable"])
     # the same record upgraded to the v2 schema but bound to the retired name and old code still refuses
     stale = record("D2", {subject: "LAB_CALIBRATED"}, d2_binding=binding(
-        "trailing_haar_threshold", operator_kind="wavelet_haar_atrous", operator_code_sha256="ca6d" + "0" * 60))
+        "trailing_haar_threshold", operator_kind=OLD, operator_code_sha256="ca6d" + "0" * 60))
     d = G.decide(subject, "OPERATOR", recs[:2] + [stale] + recs[3:])
     assert d["missing_stages"] == ["D2"]
     why = " ".join(d["states_not_consumable"])
