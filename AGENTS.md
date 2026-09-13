@@ -98,6 +98,10 @@ before picking a config.
 
 ### 4. OLAP: load results into the cube
 
+Governed runs (inputs downloaded through data-gov, metrics reported into the
+cube's `gov_*` tables) use `tools/governed_run.py`; see `docs/GOVERNED_RUN.md`.
+The ETL below is the legacy path and is not run for governed experiment keys.
+
 The analytics layer is PostgreSQL. `olap/` holds an idempotent schema
 initializer, an ETL that loads a run's config + metrics CSV, and a truncate
 helper. Connection comes from the standard `PG*` environment variables
