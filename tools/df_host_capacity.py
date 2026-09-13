@@ -12,8 +12,9 @@ that tests feed with captured text:
 
 * cpus (nproc --all) and load average;
 * /proc/meminfo: MemTotal, MemAvailable, SwapTotal, SwapFree;
-* crispdm-batch.slice: MemoryMax, MemoryHigh, memory.current, and each running
-  crispdm-*.scope in it with memory.current and memory.peak;
+* crispdm-batch.slice: MemoryMax, MemoryHigh, memory.current, and each scope or
+  service in it (crispdm-run scopes, dispatcher services) with memory.current and
+  memory.peak;
 * crispdm-memguard.service state and whether crispdm-run is installed;
 * GPUs: `nvidia-smi --query-gpu` (index, name, uuid, pci bus, total/free/used
   VRAM) and `--query-compute-apps` (processes per GPU). A GPU whose handle
@@ -67,7 +68,7 @@ if [ -n "$CG" ] && [ -d "/sys/fs/cgroup$CG" ]; then
 fi
 echo "@@scopes"
 if [ -n "$CG" ] && [ -d "/sys/fs/cgroup$CG" ]; then
-  for d in /sys/fs/cgroup$CG/*.scope; do
+  for d in /sys/fs/cgroup$CG/*.scope /sys/fs/cgroup$CG/*.service; do
     [ -d "$d" ] || continue
     echo "$(basename "$d") $(cat "$d/memory.current" 2>/dev/null || echo -1) $(cat "$d/memory.peak" 2>/dev/null || echo -1)"
   done
@@ -150,7 +151,7 @@ def parse_scopes(text: str) -> list:
     out = []
     for line in text.splitlines():
         p = line.split()
-        if len(p) == 3 and p[0].endswith(".scope"):
+        if len(p) == 3 and p[0].endswith((".scope", ".service")):
             cur, peak = int(p[1]), int(p[2])
             out.append({"unit": p[0], "memory_current_bytes": cur if cur >= 0 else None,
                         "memory_peak_bytes": peak if peak >= 0 else None})

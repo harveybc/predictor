@@ -44,10 +44,19 @@ forbids GPU use). A QUARANTINED_NOT_SCHEDULABLE GPU is never chosen. A role is o
 eligible when reachable, crispdm-run is installed, crispdm-memguard is active and
 the batch slice has a finite MemoryMax.
 
-Tie-breaking (deterministic): GPU jobs by the most free VRAM after placement, then
-CPU jobs and GPU ties by the most RAM headroom after placement, then the most free
-CPU slots after placement, then role order COORDINATOR, WORKER_A, WORKER_B, then
-GPU index.
+Workers first (other agents also run heavy work on the COORDINATOR):
+
+* COORDINATOR reserve: on the COORDINATOR a request must also be <=
+  COORDINATOR_MAX_FRACTION (0.25) of its free memory (MemAvailable - outstanding);
+  its ceiling is that fraction of (MemTotal - HOST_RESERVE_BYTES). A larger job
+  stays on the workers or waits.
+* The COORDINATOR is chosen only when no worker fits now AND no worker is merely
+  waiting for this dispatcher's own running jobs (a worker that would fit if those
+  reservations were released and the concurrency cap were free): then the job WAITs.
+
+Tie-breaking (deterministic): workers before the COORDINATOR, then GPU jobs by the
+most free VRAM after placement, then the most RAM headroom after placement, then the
+most free CPU slots after placement, then role order WORKER_A, WORKER_B, then GPU index.
 """
 from __future__ import annotations
 
@@ -61,12 +70,15 @@ RAM_MARGIN_RATIO = 0.25
 VRAM_MARGIN_RATIO = 0.10
 VRAM_MARGIN_MIN_BYTES = 512 * MIB
 DEFAULT_ROLE_CAPS = {"COORDINATOR": 2, "WORKER_A": 3, "WORKER_B": 2}
+COORDINATOR_MAX_FRACTION = 0.25
+WORKERS = ("WORKER_A", "WORKER_B")
 SCHEDULABLE = "SCHEDULABLE"
 DECISIONS = ("PLACED", "WAIT", "SPLIT", "UNPLACEABLE")
 
 
 def default_policy(**over) -> dict:
     p = {"allow_gpu": False, "exclusive_gpu": True, "role_caps": dict(DEFAULT_ROLE_CAPS),
+         "coordinator_max_fraction": COORDINATOR_MAX_FRACTION,
          "host_reserve_bytes": HOST_RESERVE_BYTES, "ram_margin_ratio": RAM_MARGIN_RATIO,
          "vram_margin_ratio": VRAM_MARGIN_RATIO, "vram_margin_min_bytes": VRAM_MARGIN_MIN_BYTES}
     p.update(over)
@@ -152,6 +164,9 @@ def evaluate_role(job: dict, role: str, inv: dict, running: list, policy: dict) 
     sl = inv["batch_slice"]
     reserve = int(policy["host_reserve_bytes"])
     ceiling_ram = min(int(sl["memory_max_bytes"]), int(inv["mem_total_bytes"]) - reserve)
+    frac = float(policy.get("coordinator_max_fraction", COORDINATOR_MAX_FRACTION))
+    if role == "COORDINATOR":
+        ceiling_ram = min(ceiling_ram, int(frac * (int(inv["mem_total_bytes"]) - reserve)))
     gpus = _gpu_candidates(job, inv, policy) if need_v else []
     ceiling_reasons = []
     if req > ceiling_ram:
@@ -183,6 +198,10 @@ def evaluate_role(job: dict, role: str, inv: dict, running: list, policy: dict) 
     if req > ram_head:
         now_reasons.append(f"RAM_REQUEST_{req}_OVER_HEADROOM_{ram_head}"
                            f"(host_{host_head},slice_{slice_head})")
+    if role == "COORDINATOR":
+        coord_free = int(inv["mem_available_bytes"]) - ram_out
+        if req > frac * coord_free:
+            now_reasons.append(f"COORDINATOR_RESERVE_REQUEST_{req}_OVER_{frac}_OF_FREE_{coord_free}")
     if cpus_need > cpu_free:
         now_reasons.append(f"CPUS_{cpus_need}_OVER_FREE_{cpu_free}")
     best_gpu = None
@@ -267,10 +286,17 @@ def place(job: dict, inventory: dict, running: list | None = None, policy: dict 
         evals[role] = e
         base["per_role"][role] = e["reason"]
     now = [e for e in evals.values() if e["fits_now"]]
+    if now and not any(e["role"] in WORKERS for e in now):
+        # only the COORDINATOR fits now: not while a worker merely waits for this dispatcher's own jobs
+        soon = [r for r in WORKERS if r in evals and evals[r]["fits_ceiling"] and evaluate_role(
+            job, r, roles_inv.get(r), [x for x in running if x["role"] != r], policy)["fits_now"]]
+        if soon:
+            return dict(base, decision="WAIT",
+                        reason="WORKERS_FIRST: " + ",".join(soon) + " fits once this dispatcher's own jobs finish")
     if now:
-        best = sorted(now, key=lambda e: (-e["score"]["vram_free_after"], -e["score"]["ram_headroom_after"],
-                                          -e["score"]["cpu_free_after"], ROLES.index(e["role"]),
-                                          e["gpu"]["index"] if e["gpu"] else -1))[0]
+        best = sorted(now, key=lambda e: (e["role"] == "COORDINATOR", -e["score"]["vram_free_after"],
+                                          -e["score"]["ram_headroom_after"], -e["score"]["cpu_free_after"],
+                                          ROLES.index(e["role"]), e["gpu"]["index"] if e["gpu"] else -1))[0]
         return dict(base, decision="PLACED", role=best["role"], gpu=best["gpu"],
                     reason=f"{best['role']}: {best['reason']}")
     if any(e["fits_ceiling"] for e in evals.values()):

@@ -42,6 +42,7 @@ memory.current 337547264
 memory.max 8589934592
 @@scopes
 crispdm-jobA-abcdef12-1789325173-1047683.scope 1048576 2097152
+crispdm-dispatch-jobB-0123456789abcdef.service 3145728 4194304
 @@memguard
 {memguard}
 @@crispdm_run
@@ -74,6 +75,7 @@ def test_role_inventory_quarantines_the_gpu_without_handle_and_counts_processes(
     assert inv["batch_slice"]["memory_current_bytes"] == 337547264
     assert inv["batch_slice"]["memory_high_bytes"] is None
     assert inv["batch_scopes"][0]["memory_peak_bytes"] == 2097152
+    assert inv["batch_scopes"][1]["unit"].endswith(".service") and inv["batch_scopes"][1]["memory_peak_bytes"] == 4194304
     g0, g1 = inv["gpus"]
     assert g0["status"] == HC.SCHEDULABLE and g0["compute_processes"] == 1 and g0["compute_used_bytes"] == 512 * MIB
     assert g1["index"] == 1 and g1["status"] == HC.QUARANTINED and "NO_DEVICE_HANDLE" in g1["quarantine_reason"]
