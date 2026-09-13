@@ -1,0 +1,11 @@
+{
+  "pipeline_plugin": "default_pipeline",
+  "web_plugin": "default_web",
+  "query_plugin": "sql_query",
+  "web_host": "127.0.0.1",
+  "web_port": 5057,
+  "lake_id": "olap_cube",
+  "title": "predictor OLAP cube",
+  "description": "Read-only. Uses PG* (default predictor_olap). Never runs reset_olap.",
+  "holdout_start": "2025-01-01"
+}

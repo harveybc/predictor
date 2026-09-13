@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OLAP lake</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/adminlte.min.css') }}">
+  <style>
+    body { background:#1f2d3d; color:#f8f9fa; font-size:14px; }
+    .content-wrapper { margin-left:0 !important; background:#1f2d3d; }
+  </style>
+</head>
+<body class="hold-transition layout-top-nav dark-mode">
+<div class="wrapper">
+  <nav class="main-header navbar navbar-expand navbar-dark">
+    <span class="navbar-brand"><strong>OLAP</strong> cube (read-only)</span>
+  </nav>
+  <div class="content-wrapper">
+    <section class="content pt-3">
+      <div class="container-fluid">
+        {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+        <div class="row">
+          <div class="col-md-4">
+            <div class="small-box bg-info"><div class="inner">
+              <h3>{{ resources|length }}</h3><p>Tables in inventory</p>
+            </div></div>
+            <div class="card card-dark">
+              <div class="card-body">
+                <p>{{ meta.description or meta.title }}</p>
+                <p class="small text-muted">{{ storage.root }}</p>
+                <p>Host free {{ fmt_bytes(storage.host_free) }}</p>
+              </div>
+            </div>
+            <div class="card card-dark">
+              <div class="card-header"><h3 class="card-title">Holdout</h3></div>
+              <div class="card-body">
+                <form method="post" action="{{ url_for('save') }}">
+                  <input name="holdout_start" class="form-control" value="{{ holdout }}">
+                  <button class="btn btn-primary btn-block mt-2" type="submit">Save</button>
+                </form>
+              </div>
+            </div>
+            <div class="card card-dark">
+              <div class="card-header"><h3 class="card-title">SELECT</h3></div>
+              <div class="card-body">
+                <form method="post" action="{{ url_for('ops_query') }}">
+                  <textarea name="sql" class="form-control" rows="5" placeholder="SELECT …">SELECT * FROM fact_performance LIMIT 20</textarea>
+                  <button class="btn btn-secondary btn-block mt-2" type="submit">Run (read-only)</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="card card-dark">
+              <div class="card-header"><h3 class="card-title">Inventory</h3></div>
+              <div class="card-body p-0">
+                <table class="table table-sm table-striped table-dark mb-0">
+                  <thead><tr><th>Table</th><th>Rows</th></tr></thead>
+                  <tbody>
+                    {% for r in resources %}
+                    <tr><td><code>{{ r.resource_id }}</code></td><td>{{ r.rows }}</td></tr>
+                    {% else %}
+                    <tr><td colspan="2">No tables (or cube unreachable).</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

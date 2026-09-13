@@ -1,0 +1,17 @@
+DEFAULT_VALUES = {
+    "pipeline_plugin": "default_pipeline",
+    "web_plugin": "default_web",
+    "query_plugin": "sql_query",
+    "web_host": "127.0.0.1",
+    "web_port": 5057,
+    "secret_key": "change-me-olap",
+    "lake_id": "olap_cube",
+    "title": "predictor OLAP",
+    "description": "Read-only cube. Never runs reset_olap. Postgres via PG* or sqlite_path for tests.",
+    "kind": "sql_olap",
+    "sqlite_path": None,
+    "schema": "public",
+    "holdout_start": "2025-01-01",
+    "time_column": None,
+    "load_config": None,
+}
