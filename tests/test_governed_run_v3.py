@@ -147,14 +147,32 @@ def test_outbox_keeps_failure_and_retries_exactly_once(tmp_path):
     first = outbox.put(envelope)
     assert first.path.is_file()
     assert outbox.flush(lambda payload: (_ for _ in ()).throw(RuntimeError("down"))) == {
-        "sent": 0, "pending": 1,
+        "sent": 0, "pending": 1, "failures": {first.path.name: "RuntimeError: down"},
     }
     calls = []
     assert outbox.flush(lambda payload: calls.append(payload) or {"terminal_sha256": "f" * 64}) == {
-        "sent": 1, "pending": 0,
+        "sent": 1, "pending": 0, "failures": {},
     }
     assert calls == [envelope]
-    assert outbox.flush(lambda payload: calls.append(payload)) == {"sent": 0, "pending": 0}
+    assert outbox.flush(lambda payload: calls.append(payload)) == {
+        "sent": 0, "pending": 0, "failures": {},
+    }
+
+
+def test_metric_labels_become_terminal_keys():
+    """predictor writes `Train Naive MAE H9`; governed_terminal.v1 refuses a
+    metric name with a space (400 for the whole terminal, pending forever)."""
+    rows = GR.parse_results_rows([
+        {"Metric": "Train Naive MAE H9", "Average": "1", "Std Dev": "0", "Min": "1", "Max": "1"},
+        {"Metric": "Test MAE H9", "Average": "2", "Std Dev": "0", "Min": "2", "Max": "2"},
+        {"Metric": "Sharpe (annual)", "Average": "3", "Std Dev": "0", "Min": "3", "Max": "3"},
+    ])
+    assert [(r["metric"], r["split"], r["horizon"]) for r in rows] == [
+        ("Naive_MAE", "train", 9), ("MAE", "test", 9), ("Sharpe_annual", None, None),
+    ]
+    for row in rows:
+        assert GR.re.fullmatch(r"[A-Za-z0-9._:-]{1,128}", row["metric"])
+    assert GR.metric_key("   ") == "metric"
 
 
 def test_success_registers_downloads_and_terminal_before_return(tmp_path, monkeypatch):

@@ -143,10 +143,22 @@ def _num(value):
     return number if math.isfinite(number) else None
 
 
+METRIC_KEY_DISALLOWED = re.compile(r"[^A-Za-z0-9._:-]+")
+
+
+def metric_key(label: str) -> str:
+    """governed_terminal.v1 identifies a metric by a key over [A-Za-z0-9._:-].
+    predictor labels carry spaces (`Naive MAE`); every run of other characters
+    becomes one underscore, deterministically, so `Naive MAE` -> `Naive_MAE`."""
+    key = METRIC_KEY_DISALLOWED.sub("_", label.strip()).strip("_")
+    return key or "metric"
+
+
 def parse_results_rows(rows) -> list:
     """Results rows (Metric, Average, Std Dev, Min, Max) -> metric rows.
     `Train MAE H24` -> metric MAE, split train, horizon 24; a label without
-    the split or the horizon keeps them null."""
+    the split or the horizon keeps them null. Metric names are terminal keys
+    (see metric_key)."""
     metrics = []
     for row in rows:
         label = (row.get("Metric") or "").strip()
@@ -155,10 +167,10 @@ def parse_results_rows(rows) -> list:
         match = METRIC_ROW.match(label)
         if match:
             split = match.group(1).lower()
-            metric = match.group(2).strip()
+            metric = metric_key(match.group(2))
             horizon = int(match.group(3)) if match.group(3) else None
         else:
-            split, metric, horizon = None, label, None
+            split, metric, horizon = None, metric_key(label), None
         metrics.append({
             "metric": metric,
             "value": _num(row.get("Average")),
@@ -328,14 +340,19 @@ class TerminalOutbox:
         return OutboxItem(path, "PENDING", payload)
 
     def flush(self, sender):
+        """Send every pending envelope once. A refusal keeps the envelope pending
+        and is reported under `failures` (file -> reason) so a permanent refusal
+        is diagnosable from GOVERNED_RUN.json instead of a bare pending count."""
         sent = 0
+        failures = {}
         for path in sorted(self.pending.glob("*.json")):
             try:
                 payload = json.loads(path.read_text(encoding="ascii"))
                 receipt = sender(payload)
                 if not isinstance(receipt, dict) or not receipt.get("terminal_sha256"):
                     raise GovernedRunError("terminal receipt missing")
-            except Exception:
+            except Exception as exc:
+                failures[path.name] = f"{type(exc).__name__}: {exc}"
                 continue
             target = self.sent / path.name
             if target.exists():
@@ -347,7 +364,11 @@ class TerminalOutbox:
             _fsync_dir(self.pending)
             _fsync_dir(self.sent)
             sent += 1
-        return {"sent": sent, "pending": len(list(self.pending.glob("*.json")))}
+        return {
+            "sent": sent,
+            "pending": len(list(self.pending.glob("*.json"))),
+            "failures": failures,
+        }
 
 
 def _utc_now():

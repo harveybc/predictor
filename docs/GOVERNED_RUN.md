@@ -74,7 +74,12 @@ refused.
 
 ## Data recorded
 
-`gov_terminal` stores one terminal per campaign/unit/generation.
+`gov_terminal` stores one terminal per campaign/unit/generation. Metric names
+are terminal keys over `[A-Za-z0-9._:-]`: every run of other characters in a
+results label becomes one underscore (`Naive MAE` -> `Naive_MAE`). A refused
+terminal stays in the outbox and its reason is recorded under
+`outbox_flush.failures` in `GOVERNED_RUN.json` (and printed by
+`flush_governed_terminals.py`).
 `gov_terminal_dataset` stores each delivery id, source and delivered hashes,
 role, range, available-time column, availability-contract hash and whether the
 bytes came from a verified transfer or cache. `gov_terminal_metric` stores the
