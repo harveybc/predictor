@@ -111,7 +111,8 @@ def test_table_dirs_load_only_c164_grains(tmp_path):
     assert len(run) == 1 and L.validate_row("df_dim_run", run[0]) == []
     empty = tmp_path / "empty"
     empty.mkdir()
-    with pytest.raises(SystemExit, match="none of the C164 tables"):
+    # C178 widened the table directory to the D2 grains; the refusal names both
+    with pytest.raises(SystemExit, match="none of the C164 or D2 tables"):
         ORCH.collect(argparse.Namespace(**{**vars(args), "table_dir": [empty]}))
 
 
