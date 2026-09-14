@@ -865,6 +865,10 @@ def parse_args(argv):
     parser.add_argument("--to", dest="range_to", metavar="YYYY-MM-DD")
     parser.add_argument("--project", default="predictor")
     parser.add_argument("--phase", help="default: the config's parent directory name")
+    parser.add_argument("--classification", choices=("GOVERNING", "NON_GOVERNING"),
+                        default="GOVERNING",
+                        help="NON_GOVERNING for a mechanical check: it records transport and "
+                             "cost, and grants nothing scientific")
     return parser.parse_args(argv)
 
 
@@ -977,6 +981,7 @@ def run(args, extra) -> dict:
         "code_identity": code_identity,
         "execution_spec": json.loads(spec),
         "config_sha256": config_sha256,
+        "classification": args.classification,
     }
     receipt_path = out_dir / "GOVERNED_RUN.json"
 
@@ -987,7 +992,7 @@ def run(args, extra) -> dict:
     campaign = {
         "schema": "governed_campaign.v1",
         "campaign_key": key,
-        "classification": "GOVERNING",
+        "classification": args.classification,
         "project": args.project,
         "code_identity": code_identity,
         "config_sha256": config_sha256,
