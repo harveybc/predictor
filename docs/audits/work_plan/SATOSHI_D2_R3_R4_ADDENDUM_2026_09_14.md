@@ -138,3 +138,42 @@ the other five estimators back; they can be submitted separately.
 | `local_level_kalman` | design | deterministic algorithm with independent proof before selection, live or public claim |
 | financial resource contracts | data producer/integrator | provider time semantics before any scientific use |
 | DOIN / live | Satoshi designs, Musashi reviews | `doin_governed_result.v1` and fixtures; live only through offline replay |
+
+---
+
+## 8. Second addendum, 2026-09-14: the owner's corrections and the two store hosts
+
+**The three corrections.** (1) The successor run leaves **47 `LAB_CALIBRATED` + 6
+`REGIME_LIMITED`** in the `CANDIDATE` arm, against 51 + 7 published — not "48 plus 6";
+recount read-only against the cube in `d2_support_r1/r3/R3_CANDIDATE_RECOUNT.json`.
+(2) **Four** estimators are exactly equal on the three CPUs and a **fifth**, `ar_residual`,
+only meets the observed tolerance (1.9184653865522705e-13 dB). (3) The comparator could
+report `changed: 0` from inputs that covered nothing; it now accounts for coverage, emits
+`MEASURED` | `INCONCLUSIVE` and exits 4 rather than serving an empty comparison as
+stability (PRE 7/7 failing → POST 7/7, `d2_support_r1/r4_guard/`). Re-run: `MEASURED`,
+32/32 units, 1,716 cells, 639 substituted facts, 16/16 regimes, **288 decisions compared,
+0 changed** — the conclusion survives, now with its scope.
+
+**The two repositories, created and in use.** `data-lake` and `data-warehouse` exist with
+the providers packaged separately (`financial-data-store`, `predictor-olap-store`). The
+design's first deliverable — an installed external provider passing the unchanged
+governance contract — is proven three ways: real installs into throwaway virtual
+environments with named refusals; route parity against both legacy hosts (8/8 and 11/11);
+and the full Flow v3 campaign through both new hosts with the governance configuration
+untouched (same availability contract, same dataset digest, exact reconciliation). The
+parity harness found a real defect on its first run — a provider's own `HoldoutError` is
+not the host's class, so a holdout became a 500 — now classified and regression-tested.
+Nothing is deployed.
+
+**feature-extractor** is ported (`5d10f0d`) and proven under governance
+(`flow_v3_tools/p6_feature_extractor_throwaway.out`). The port exposed a second drift: the
+preprocessor trims its windows to the targets but not the parallel date vectors; the
+alignment rule and its refusal are explicit.
+
+**financial-data**: closed by the owner's disposition — provenance per file, no merge. My
+recommendation is withdrawn (§2 above).
+
+Services `:5055/:5056/:5057` untouched, loader `active` with `NRestarts=0`, no throwaway
+database left, `gov_terminal` = 3 rows in the production cube.
+
+Stop: `CORRECTIONS_APPLIED_STORE_HOSTS_PROVEN_FEATURE_EXTRACTOR_PORTED_READY_FOR_REVIEW`.
