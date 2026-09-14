@@ -194,3 +194,43 @@ sin envio y recibo de cache en la segunda corrida.
 promover ese archivo y reiniciar solo `crispdm-data-lake-synthetic`; este agente no puede
 controlar procesos de servicios vivos. Tras la activacion, repetir los cuatro consumidores
 contra produccion es una sola ejecucion del mismo arnes.
+
+
+## Actualizacion 2026-09-14 (Satoshi, ordenes vigentes P1-P7, continuacion)
+
+**Activacion resuelta por el owner**, no por este agente: catalogo sintetico activo con 8
+recursos y los cuatro consumidores comprobados en produccion. No se repite ninguna de esas
+corridas ni el reinicio; el estado se toma del acta de aceptacion y se verifica contra el cubo.
+
+**Roles de columnas (P1) — ahora en los tres consumidores.** El mismo contrato explicito
+(columnas declaradas y en el orden declarado; columna no declarada rechazada por nombre;
+columna declarada ausente rechazada por nombre; feature no numerica detenida antes del tensor;
+corrida sin contrato rechazada salvo `column_roles_migration` declarado; plan y digest
+registrados) rige tambien en **feature-eng** (`satoshi/column-roles-20260914`, `e7130f8`) y
+**preprocessor** (`satoshi/column-roles-20260914`, `89c83dd`), once reglas verdes en cada uno.
+
+**Replay offline DOIN (P5) — ejecutado en produccion.** `doin-offline-replay-prod-3`
+COMPLETED, NON_GOVERNING, entrega `synthetic_features_4h_train.csv` VERIFIED_TRANSFER
+(contrato `41e67f99…`), metricas `wall_seconds 7.11` y `total_timesteps 64` en el terminal,
+conciliacion vacia en las tres listas. El intento previo (`prod-1`) completo **sin metricas**:
+el replay escribia los numeros anidados y el colector lee nombres aplanados; ambos recibos se
+conservan porque el primero es lo que mostro el defecto. Recibo:
+`docs/audits/evidence/repro_runs/doin_offline_20260914/GOVERNED_OFFLINE_REPLAY_PRODUCTION.json`.
+Con esto la fila `agent-multi / DOIN` de la Etapa 6 deja de estar "sin empezar".
+
+**Arnes (P4).** El parser real y el punto de entrada real quedan ejercitados en las pruebas de
+clasificacion (`build_parser()` + `main()` con el cliente HTTP sustituido, 8 reglas); el
+registrador ya no infiere ruta desde un nulo: marca **no observable** con su razon. Queda
+abierto: la prueba de recuperacion del outbox por cada wrapper que no comparte implementacion.
+
+**Investigacion temporal financiera (P6).** Respondida desde el codigo del propio productor
+(`_scripts/workers/stage13_dragon_crypto_worker.py`): REST historico paginado contra
+`api.binance.com/api/v3/klines`, cota fija `END_MS = 2025-12-31T23:59:00Z`, ambas columnas de
+tiempo son epoch-ms convertidos con `utc=True`, sin hora de llegada por fila. La recepcion pasa
+a `BOUNDED_AT_FILE_GRAIN` (cota `2026-05-01T15:58:56.166Z`); la publicacion sigue UNOBSERVED y
+las 21 barras anomalas siguen sin explicacion de construccion. financial-data `8ec5e16`.
+Quedan dos preguntas: revisiones (medibles con un re-fetch acotado, llamada saliente,
+**propuesta no ejecutada**) y derechos de uso (unica accion del owner).
+
+**Cubo medido tras el ultimo replay: 35 terminales**, historia intacta, servicios `:5055/:5056/
+:5057/:5058` sanos y sin reinicios.

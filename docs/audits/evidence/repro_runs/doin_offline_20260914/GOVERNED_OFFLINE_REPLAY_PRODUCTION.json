@@ -1,0 +1,170 @@
+{
+ "campaign_key": "doin-offline-replay-prod-3",
+ "campaign_sha256": "729c517f8d8352e7f655757a6d949df54ae9cfed0d52ebae58ccdb41d255b1d3",
+ "classification": "NON_GOVERNING",
+ "code_identity": {
+  "kind": "git_commit",
+  "value": "e28c51870d2d420b81edfdb23ce0f542102d1e93-dirty"
+ },
+ "command": [
+  "~/anaconda3/envs/trading-stack/bin/python",
+  "~/Documents/GitHub/agent-multi/tools/governed_offline_replay.py",
+  "--load_config",
+  "~/scratch/doin_prod2/run/governed_config.json"
+ ],
+ "config_sha256": "d8514787ee9bc95021036bb81db4371b0562cb44bb16e0394a0e8a3a515daaa1",
+ "cwd": "~/scratch/doin_prod2/run",
+ "execution_spec": {
+  "artifacts": [
+   "effective_config",
+   "replay_log"
+  ],
+  "command": [
+   "~/anaconda3/envs/trading-stack/bin/python",
+   "{repo_root}/tools/governed_offline_replay.py",
+   "--load_config",
+   "{config}"
+  ],
+  "config": {
+   "experiment_config": "~/scratch/doin_smoke.json",
+   "experiment_name": "governed-offline-replay-production",
+   "input_data_file": "role:input_data_file",
+   "max_rows": 384,
+   "runtime_overlay": "~/scratch/doin_overlay.json",
+   "save_config": "replay_config.json",
+   "save_log": "replay_log.json",
+   "total_timesteps": 64
+  },
+  "datasets": [
+   {
+    "from": null,
+    "lake": "governance_smoke",
+    "resource": "synthetic_features_4h_train.csv",
+    "role": "input_data_file",
+    "to": null
+   }
+  ],
+  "extra_args": [],
+  "metrics": {
+   "keys": [
+    "wall_seconds",
+    "best_fitness",
+    "champion_fitness",
+    "final_reward",
+    "total_timesteps",
+    "candidates_evaluated",
+    "generations"
+   ],
+   "kind": "json_numbers",
+   "path": "replay_log.json"
+  },
+  "project": "agent-multi",
+  "schema": "governed_exec_execution_spec.v1"
+ },
+ "exit_code": 0,
+ "governed_config": "~/scratch/doin_prod2/run/governed_config.json",
+ "inputs": [
+  {
+   "availability_completion_lag_max": "4h",
+   "availability_contract_sha256": "41e67f995fc8a3174b1c688380bdda66c15f00b9d3714897e7b118d9b647b90b",
+   "availability_label": "WINDOW_START",
+   "availability_use": "OFFLINE_DAY_GRANULAR",
+   "bytes": 228801,
+   "cached": false,
+   "delivery": "AS_IS",
+   "delivery_id": "c8656b3387944eef9bf3eb5ea7683961",
+   "lake": "governance_smoke",
+   "path": "~/scratch/doin_prod2/cache/governance_smoke/4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027.csv",
+   "range_from": null,
+   "range_to": null,
+   "resource": "synthetic_features_4h_train.csv",
+   "role": "input_data_file",
+   "sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+   "source_sha256": "4b60c34839e2dfb1f8a92f31cbe81c9d413041c559026481b94af3884acd9027",
+   "time_column": "DATE_TIME",
+   "timezone_evidence": "PRODUCER_STATEMENT",
+   "verification_state": "VERIFIED_TRANSFER"
+  }
+ ],
+ "out_dir": "~/scratch/doin_prod2/run",
+ "outbox_flush": {
+  "failures": {},
+  "pending": 0,
+  "sent": 1
+ },
+ "prior_outbox_flush": {
+  "failures": {},
+  "pending": 0,
+  "sent": 0
+ },
+ "project": "agent-multi",
+ "reconciliation": {
+  "accounting_only": [],
+  "campaign_sha256": "729c517f8d8352e7f655757a6d949df54ae9cfed0d52ebae58ccdb41d255b1d3",
+  "lake_only": [],
+  "missing_units": []
+ },
+ "repo_root": "~/Documents/GitHub/agent-multi",
+ "schema": "governed_exec_run.v1",
+ "status": "COMPLETED",
+ "terminal": {
+  "artifacts": [
+   {
+    "bytes": 299,
+    "role": "replay_log",
+    "sha256": "67572318cc3a0f0fbc2f064e200e906fa22164caf98b99d627cc9bef891fe63f"
+   },
+   {
+    "bytes": 953,
+    "role": "governed_config",
+    "sha256": "3682382180f5c27465ef1cf59c174c6a3ff9545fcd708b9312dc8f047c96478f"
+   }
+  ],
+  "costs": {
+   "wall_seconds": 7.163661383005092
+  },
+  "deliveries": [
+   "c8656b3387944eef9bf3eb5ea7683961"
+  ],
+  "finished_at": "2026-09-14T22:31:28.549253Z",
+  "generation": 1,
+  "metrics": [
+   {
+    "horizon": null,
+    "max_value": null,
+    "metric": "wall_seconds",
+    "min_value": null,
+    "split": null,
+    "std_dev": null,
+    "unit": null,
+    "value": 7.113479464984266
+   },
+   {
+    "horizon": null,
+    "max_value": null,
+    "metric": "total_timesteps",
+    "min_value": null,
+    "split": null,
+    "std_dev": null,
+    "unit": null,
+    "value": 64.0
+   }
+  ],
+  "reason": null,
+  "schema": "governed_terminal.v1",
+  "started_at": "2026-09-14T22:31:21.385602Z",
+  "status": "COMPLETED",
+  "tags": {
+   "availability_use": "OFFLINE_DAY_GRANULAR",
+   "device": "cpu",
+   "exit_code": "0",
+   "experiment_set_key": "",
+   "network": "none",
+   "offline": "true",
+   "phase": "scratchpad"
+  }
+ },
+ "terminal_outbox": "~/scratch/doin_prod2/outbox/pending/004884eb8d4e2bfa5939587c291e1f0f5fc67d4f5c8117420eb52afd37bcd210.json",
+ "terminal_pending": false,
+ "unit_id": "doin-offline-replay-prod-3"
+}
