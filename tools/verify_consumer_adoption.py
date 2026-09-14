@@ -61,8 +61,16 @@ def receipt_of(out_dir: Path) -> dict:
 
 
 def terminal_rows(campaign: str):
-    if not campaign:
+    """Terminal rows of this campaign, from whichever cube the run targeted."""
+    if not campaign or not RUN.get("cube"):
         return []
+    if RUN["cube"] != "postgres":
+        import sqlite3
+
+        with sqlite3.connect(f"file:{RUN['cube']}?mode=ro", uri=True) as conn:
+            return conn.execute(
+                "SELECT status, reason, costs_json FROM gov_terminal WHERE campaign_sha256=?",
+                (campaign,)).fetchall()
     return pg("SELECT status, reason, costs_json FROM public.gov_terminal WHERE campaign_sha256=%s",
               (campaign,))
 
@@ -73,10 +81,80 @@ def reconcile(campaign: str, key: str) -> dict:
     if not campaign:
         return {}
     request = urllib.request.Request(
-        f"{GOV_URL}/api/v2/campaigns/{campaign}/reconcile",
+        f"{RUN['gov_url']}/api/v2/campaigns/{campaign}/reconcile",
         headers={"Authorization": f"Bearer {key}", "X-Campaign-SHA256": campaign})
     with urllib.request.urlopen(request, timeout=60) as response:
         return json.load(response)
+
+
+def fixture_config(consumer: str, case: str, manifest: dict, lake_root: Path) -> dict:
+    """A bounded configuration whose inputs are the declared fixtures of this consumer."""
+    roles = (manifest.get("roles") or {}).get(consumer) or {}
+    if not roles:
+        raise SystemExit(f"the fixture manifest declares no roles for {consumer}")
+    paths = {key: str(lake_root / name) for key, name in roles.items()}
+    if consumer == "preprocessor":
+        template = json.loads((GITHUB / "preprocessor" / "examples" / "config_downsampled"
+                               / "phase_1b.json").read_text(encoding="utf-8"))
+        template.update(paths)
+        template.update({
+            "plugin": "plugin_default" if case != "failure" else "no_such_plugin_a3",
+            "dataset_prefix": "./base_", "target_prefix": "./normalized_",
+            "normalization_config_a": "./norm_a.json", "normalization_config_b": "./norm_b.json",
+            "output_file": "./preprocessed.csv", "save_log": "./debug_out.json",
+            "save_config": "./config_out.json", "debug_file": "./debug_out_file.json",
+            "quiet_mode": True, "trim_start_rows": 0,
+            "execution_purpose": "ARCHIVAL_REPLAY_NON_AUTHORITATIVE"})
+        return template
+    if consumer == "predictor":
+        base = json.loads((REPO / "examples" / "config" / "phase_1_daily"
+                           / "phase_1_ann_1575_1d_config.json").read_text(encoding="utf-8"))
+        base.update(paths)
+        base.update({"epochs": 1, "max_steps_train": 64, "max_steps_test": 64, "mc_samples": 2,
+                     "early_patience": 1, "quiet_mode": True})
+        if case == "failure":
+            base["predictor_plugin"] = "no_such_plugin_a3"
+        for key, value in list(base.items()):
+            if isinstance(value, str) and value.startswith("examples/results/"):
+                base[key] = "./" + Path(value).name
+        base["save_log"] = "./debug_out.json"
+        base["save_config"] = "./config_out.json"
+        return base
+    if consumer == "feature-eng":
+        body = {"output_file": "./indicators_output.csv", "save_log": "./debug_log.json",
+                "save_config": "./output_config.json",
+                "plugin": "tech_indicator" if case != "failure" else "no_such_plugin_a3",
+                "dataset_type": "forex_1h", "tech_indicators": True,
+                "seasonality_columns": False, "correlation_analysis": False,
+                "distribution_plot": False, "quiet_mode": True,
+                "high_freq_dataset": None, "sp500_dataset": None, "vix_dataset": None,
+                "economic_calendar": None, "forex_datasets": None}
+        body.update(paths)
+        return body
+    if consumer == "feature-extractor":
+        base = json.loads((GITHUB / "feature-extractor" / "examples" / "config"
+                           / "phase_4_2" / "phase_4_2_small.json").read_text(encoding="utf-8"))
+        base.update(paths)
+        base.update({"epochs": 1, "kl_anneal_epochs": 1, "start_from_epoch": 0,
+                     "quiet_mode": True, "save_log": "./debug_out.json",
+                     "save_config": "./config_out.json",
+                     # the targets must exist in the fixture's schema: the sample config
+                     # names sub-periodicity columns that only its own data carries
+                     "cvae_target_feature_names": ["OPEN", "LOW", "HIGH", "vix_close",
+                                                   "BC-BO", "BH-BL"],
+                     "use_normalization_json": None})
+        if case == "failure":
+            base["encoder_plugin"] = "no_such_plugin_a3"
+        for key, value in list(base.items()):
+            if isinstance(value, str) and value.startswith("examples/results/"):
+                base[key] = "./" + Path(value).name
+        return base
+    raise SystemExit(f"no bounded configuration is defined for {consumer}")
+
+
+#: Where this invocation points: set from the command line before anything runs.
+RUN = {"gov_url": GOV_URL, "lake": SAMPLE_LAKE, "lake_root": SAMPLE_ROOT,
+       "metrics_lake": "olap_cube", "manifest": None, "cube": "postgres"}
 
 
 def config_for(consumer: str, work: Path, case: str) -> Path:
@@ -84,6 +162,10 @@ def config_for(consumer: str, work: Path, case: str) -> Path:
     directory = work / consumer / "configs"
     directory.mkdir(parents=True, exist_ok=True)
     path = directory / f"{case}.json"
+    if RUN["manifest"]:
+        body = fixture_config(consumer, case, RUN["manifest"], Path(RUN["lake_root"]))
+        path.write_text(json.dumps(body, indent=1), encoding="utf-8")
+        return path
     if consumer == "preprocessor":
         template = json.loads((GITHUB / "preprocessor" / "examples" / "config_downsampled"
                                / "phase_1b.json").read_text(encoding="utf-8"))
@@ -165,6 +247,26 @@ def python_of(consumer: str) -> str:
     return str(venv) if venv.is_file() else sys.executable
 
 
+def route_of(gov_url: str, key: str, lake: str) -> dict:
+    """What actually serves this lake: the plugin data-gov loaded and, over http, the host."""
+    import urllib.error
+    import urllib.request
+
+    def fetch(url, token):
+        request = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                return json.load(response)
+        except (urllib.error.URLError, OSError, ValueError) as exc:
+            return {"error": str(exc)}
+
+    catalogue = fetch(f"{gov_url}/api/v1/lakes", key)
+    entry = next((e for e in catalogue.get("lakes", []) if e.get("lake_id") == lake), {})
+    route = {"lake": lake, "kind": entry.get("kind"), "engine": entry.get("engine"),
+             "transport": entry.get("transport"), "in_catalogue": bool(entry)}
+    return route
+
+
 def run_case(consumer: str, case: str, work: Path, key_file: Path, key: str,
              out_dir: Path, config: Path, label: str = "") -> dict:
     checkout, wrapper = wrapper_of(consumer)
@@ -172,9 +274,9 @@ def run_case(consumer: str, case: str, work: Path, key_file: Path, key: str,
     # the kernel, as it should be. Each attempt of this check carries its own label.
     experiment = f"a3-{consumer}-{case}" + (f"-{label}" if label else "")
     command = [python_of(consumer), str(wrapper), "--load_config", str(config),
-               "--experiment-key", experiment, "--gov-url", GOV_URL,
-               "--api-key-file", str(key_file), "--lake", SAMPLE_LAKE,
-               "--lake-root", str(SAMPLE_ROOT), "--metrics-lake", "olap_cube",
+               "--experiment-key", experiment, "--gov-url", RUN["gov_url"],
+               "--api-key-file", str(key_file), "--lake", RUN["lake"],
+               "--lake-root", str(RUN["lake_root"]), "--metrics-lake", RUN["metrics_lake"],
                "--out-dir", str(out_dir), "--cache-dir", str(work / "cache"),
                "--outbox-dir", str(work / "outbox"), "--classification", "NON_GOVERNING"]
     log = work / consumer / f"{case}.log"
@@ -221,17 +323,35 @@ def main(argv=None) -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--consumer", action="append", default=[])
     parser.add_argument("--label", default="", help="suffix for the campaign keys of this attempt")
+    parser.add_argument("--gov-url", default=GOV_URL)
+    parser.add_argument("--lake", default=SAMPLE_LAKE, help="the data-gov lake of the inputs")
+    parser.add_argument("--lake-root", type=Path, default=SAMPLE_ROOT)
+    parser.add_argument("--metrics-lake", default="olap_cube")
+    parser.add_argument("--fixtures-manifest", type=Path,
+                        help="MANIFEST.json of the fixtures; its roles build each configuration")
+    parser.add_argument("--no-cube", action="store_true",
+                        help="the terminal lake is not the production cube: skip its counters")
+    parser.add_argument("--sqlite-cube", type=Path,
+                        help="a disposable cube file to read terminals from instead of PostgreSQL")
     args = parser.parse_args(argv)
     consumers = args.consumer or ["preprocessor", "predictor"]
+    RUN.update({"gov_url": args.gov_url, "lake": args.lake, "lake_root": args.lake_root,
+                "metrics_lake": args.metrics_lake,
+                "manifest": json.loads(args.fixtures_manifest.read_text(encoding="utf-8"))
+                if args.fixtures_manifest else None,
+                "cube": str(args.sqlite_cube) if args.sqlite_cube
+                else (None if args.no_cube else "postgres")})
     work = args.work.resolve()
     if work.exists():
         raise SystemExit(f"REFUSED: the work directory already exists: {work}")
     work.mkdir(parents=True)
     key = args.api_key_file.read_text().strip()
 
-    report = {"schema": "consumer_adoption_check.v1", "gov_url": GOV_URL, "label": args.label,
-              "sample_lake": SAMPLE_LAKE, "classification": "NON_GOVERNING",
-              "cube_before": cube_counts(), "consumers": {}}
+    report = {"schema": "consumer_adoption_check.v2", "gov_url": args.gov_url,
+              "label": args.label, "lake": args.lake, "classification": "NON_GOVERNING",
+              "route": route_of(args.gov_url, key, args.lake),
+              "fixtures": (RUN["manifest"] or {}).get("generator_sha256"),
+              "cube_before": {} if args.no_cube else cube_counts(), "consumers": {}}
     for consumer in consumers:
         cases = {}
         out_dir = work / consumer / "run"
@@ -242,14 +362,17 @@ def main(argv=None) -> int:
         cases["failure"] = run_case(consumer, "failure", work, args.api_key_file, key,
                                     work / consumer / "run_failure",
                                     config_for(consumer, work, "failure"), args.label)
-        before = cube_counts()
+        before = {} if args.no_cube else cube_counts()
         cases["retry"] = {"flush": flush(work, args.api_key_file), "cube_before": before,
-                          "cube_after": cube_counts()}
+                          "cube_after": {} if args.no_cube else cube_counts()}
         exact = lambda r: (r.get("missing_units") == [] and r.get("accounting_only") == []  # noqa: E731
                            and r.get("lake_only") == [])
         cases["retry"]["sends_nothing"] = (cases["retry"]["flush"].get("sent") == 0
                                            and before == cases["retry"]["cube_after"])
-        transport_only = consumer in ("feature-eng", "feature-extractor")
+        # with the fixtures each consumer reads its own schema, so success is expected of
+        # every one of them; the transport-only exemption applies only to the sample lake
+        transport_only = (RUN["manifest"] is None
+                          and consumer in ("feature-eng", "feature-extractor"))
         verdict = {
             "governed_delivery": bool(cases["success"]["inputs"])
             and all(i.get("verification_state", "").startswith("VERIFIED")
@@ -277,7 +400,7 @@ def main(argv=None) -> int:
                         "fixtures are inside its repository. Next action: publish those "
                         "fixtures as a governed resource with a derived contract")
             if transport_only else None}
-    report["cube_after"] = cube_counts()
+    report["cube_after"] = {} if args.no_cube else cube_counts()
     report["cube_delta"] = {k: report["cube_after"][k] - report["cube_before"][k]
                             for k in report["cube_after"]}
     report["ok"] = all(c["adopted"] if c["scope"] == "FULL" else c["transport_proven"]
@@ -286,7 +409,8 @@ def main(argv=None) -> int:
     args.out.write_text(json.dumps(report, indent=1, default=str).replace(str(Path.home()), "~")
                         + "\n", encoding="utf-8")
     shutil.rmtree(work / "cache", ignore_errors=True)
-    print(json.dumps({"ok": report["ok"], "cube_delta": report["cube_delta"],
+    print(json.dumps({"ok": report["ok"], "route": report["route"],
+                      "cube_delta": report["cube_delta"],
                       "consumers": {name: c["verdict"] for name, c in report["consumers"].items()}},
                      indent=1))
     return 0 if report["ok"] else 1
