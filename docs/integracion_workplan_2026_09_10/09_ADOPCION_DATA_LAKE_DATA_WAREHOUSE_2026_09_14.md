@@ -42,14 +42,14 @@ detalla la separacion y las pruebas.
 
 ## Etapas y evidencia de cierre
 
-| Etapa | Entregable y criterio de terminacion | Estado |
+| Etapa | Entregable y criterio de terminacion | Estado (2026-09-14, Satoshi) |
 |---|---|---|
-| 1. Crear | Ambos repositorios publicados con URL real, README, AGENTS.md, requisitos, pruebas previstas y estado persistente | Locales comprobados; GitHub publico pendiente, Satoshi |
-| 2. Implementar | Hosts instalables y plugins externos desde financial-data/predictor, probados como wheels en entornos limpios | Implementacion y pruebas reportadas en 939fb41; verificar instalacion desde GitHub |
-| 3. Integrar | Paridad con las APIs actuales: inventario, bytes, disponibilidad temporal, particiones, recibos, resultados y reintentos | Paridad 8/8 y 11/11 reportada en entorno desechable; validar revision a desplegar |
-| 4. Probar interfaz | Configuracion e inventario AdminLTE, esquema de recursos, escritorio y movil; pruebas de sistema y aceptacion | Pendiente, Satoshi |
-| 5. Poner en uso | Transicion controlada con los mismos datos, IDs y cubo; microexperimento gobernado por ambos hosts y conciliacion exacta | Pendiente, Satoshi |
-| 6. Adoptar | Configuraciones de consumidores actualizadas y cobertura documentada por proyecto; nuevos experimentos usan esta ruta | Pendiente, Satoshi |
+| 1. Crear | Ambos repositorios publicados con URL real, README, AGENTS.md, requisitos, pruebas previstas y estado persistente | **PUBLICADO con visibilidad PRIVADA**: https://github.com/harveybc/data-lake (`1ba23ed`) y https://github.com/harveybc/data-warehouse (`6f16565`), rama por defecto `master`, historia local conservada, README + AGENTS.md + ejemplos + `docs/IMPLEMENTATION_STATE.md`. **La visibilidad pública quedó bloqueada por el entorno de ejecución** (ver §Bloqueos); es un cambio de un comando que el owner puede aplicar |
+| 2. Implementar | Hosts instalables y plugins externos desde financial-data/predictor, probados como wheels en entornos limpios | **PROBADO**: entorno virtual limpio (sin `--system-site-packages`, ningún checkout en `sys.path`) instalando las cuatro distribuciones **desde las URL de GitHub**; los cuatro entry points resuelven; 23 + 18 pruebas contra el código instalado. Proveedores: `financial-data-store` en `financial-data@d9be1b368` (rama por defecto) y `predictor-olap-store` en `predictor@6d5c9ed` (PR #44 hacia master; revisión pública fijada como origen instalable declarado) |
+| 3. Integrar | Paridad con las APIs actuales: inventario, bytes, disponibilidad temporal, particiones, recibos, resultados y reintentos | **PROBADO sobre la revisión a desplegar**: lago 8/8 rutas idénticas en estado, bytes y cabeceras; almacén 11/11 idénticas en estado y cuerpo, incluidas las idempotencias de reporte y terminal; campaña Flow v3 completa por ambos hosts con la gobernanza intacta. Dos defectos reales hallados aquí y corregidos: el proveedor OLAP empaquetado no era el que corre en producción (contaba filas en `discover`), y los `include_globs` del lago vivían en la aplicación legada (16.346 recursos contra 5.275) |
+| 4. Probar interfaz | Configuracion e inventario AdminLTE, esquema de recursos, escritorio y movil; pruebas de sistema y aceptacion | **PROBADO**: consola AdminLTE en ambos hosts (inventario, metadatos de recurso / esquema de relación, consulta acotada con su tabla de resultado escapada, configuración **pendiente** que no mueve la activa); 10 + 10 pruebas; aceptación en navegador real a 1440×900 y 390×844 — 6 y 8 páginas, todos los activos servidos por el propio host, cero desbordamiento horizontal — con recibo y PNG en `docs/console/` de cada repositorio |
+| 5. Poner en uso | Transicion controlada con los mismos datos, IDs y cubo; microexperimento gobernado por ambos hosts y conciliacion exacta | **BLOQUEADO por el entorno de ejecución**, no por evidencia: preparado y validado en seco (configuraciones equivalentes verificadas contra las vivas, inventario idéntico 5.275/5.275 en un puerto libre, almacén candidato idéntico al vivo salvo un campo `transport` aditivo, ventana sin entregas en vuelo, respaldos de contabilidad y tablas `gov_*`, límites de memoria y procedimiento de reversión escritos). Detener :5056/:5057 y arrancar los reemplazos fue rechazado por el clasificador del entorno |
+| 6. Adoptar | Configuraciones de consumidores actualizadas y cobertura documentada por proyecto; nuevos experimentos usan esta ruta | **MATRIZ PUBLICADA, ejecución pendiente de la etapa 5**: ver §Matriz de adopción. Nada se declara adoptado por tener un envoltorio o un README |
 
 Satoshi actualiza cada etapa al terminarla, con commits, pruebas y evidencia.
 Los resultados esperados no cuentan como evidencia. La metodologia sigue
@@ -89,3 +89,37 @@ Las condiciones de activacion operativa y validacion causal siguen vigentes.
   ausencia universal de fuga temporal ni rentabilidad de un modelo.
 
 Orden ejecutiva: [trabajos de Satoshi](../handoffs/MUSASHI_TO_SATOSHI_GOVERNED_D2_AND_STORE_HOSTS_2026_09_14.md).
+
+
+## Matriz de adopción por consumidor (2026-09-14)
+
+Estados: `IMPLEMENTADO` (existe el envoltorio gobernado), `PROBADO` (corrió bajo gobernanza
+con recibo), `DESPLEGADO` (su ruta apunta a los hosts nuevos), `USADO` (una campaña real lo
+usó). Ningún consumidor cambia de URL: todos hablan con data-gov en :5055, y la sustitución
+ocurre por detrás.
+
+| consumidor | implementado | probado bajo gobernanza | desplegado en la ruta nueva | usado realmente |
+|---|---|---|---|---|
+| predictor | sí (`tools/governed_run.py`) | sí — microexperimento de producción de Musashi (`n3-mechanics-…`) y D2-R3/R4 (campañas `733736b7…`, `aef32e87…`) | pendiente de la etapa 5 | sí, en el cubo real |
+| feature-eng | sí (`tools/governed_run.py`) | sí — `p5_feature_eng_throwaway.out`, stack desechable | pendiente de la etapa 5 | no en producción |
+| feature-extractor | sí (`tools/governed_run.py` + port de la API) | sí — `p6_feature_extractor_throwaway.out`, stack desechable | pendiente de la etapa 5 | no en producción |
+| preprocessor | sí | sí — `p1_preprocessor_throwaway.out` | pendiente de la etapa 5 | no en producción |
+| agent-multi / DOIN (offline) | no — falta el contrato `doin_governed_result.v1` y su fixture | no | no | no |
+
+Lo que falta por consumidor, declarado: feature-eng, feature-extractor y preprocessor no
+tienen todavía una campaña **de producción** (solo desechable); agent-multi/DOIN no tiene
+contrato de resultado gobernado. Para live únicamente configuración y replay offline: esta
+enmienda no activa operaciones reales.
+
+## Bloqueos declarados (no son decisiones pendientes del owner)
+
+1. **Visibilidad pública** de los dos repositorios: la orden la decidió; el entorno de
+   ejecución de este agente rechaza crear o convertir superficie pública
+   (`gh repo create --public`, `gh repo edit --visibility public`). Los repositorios existen
+   como privados con todo el contenido; un solo comando del owner los hace públicos.
+2. **Transición productiva** (etapa 5): detener y arrancar servicios está rechazado por el
+   mismo mecanismo. Todo lo previo está hecho y verificado; el procedimiento exacto, con su
+   reversión, está en el packet de retorno.
+3. **`predictor-olap-store` en la rama por defecto**: el empuje directo a `master` fue
+   rechazado; va como PR #44, y la revisión fijada queda declarada como origen instalable
+   mientras se integra.
