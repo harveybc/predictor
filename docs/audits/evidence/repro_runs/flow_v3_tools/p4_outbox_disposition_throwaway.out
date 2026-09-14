@@ -1,0 +1,305 @@
+{
+ "schema": "flow_v3_n4_outbox_disposition_throwaway.v1",
+ "code_sha256": "1e199beb11d2a0966ec34e83da3ec7e6e48f5008d4a5955b9e91d62e7cb2718b",
+ "predictor_commit": "d406fea9c57229f2fbc558687977aecd8f2a9d7b",
+ "predictor_clean": true,
+ "pg_db": "data_gov_v3_throwaway_p4_1789362546",
+ "steps": {
+  "1_run_a": {
+   "exit_code": 0,
+   "status": "COMPLETED",
+   "generations": [
+    [
+     1,
+     "COMPLETED",
+     "f5c1d1348c57bda32602e94be5aa5c511600f668f8010cdeab1d8034e1bc0c73"
+    ]
+   ],
+   "ok": true
+  },
+  "2_refused_by_server": {
+   "flush": {
+    "rc": 1,
+    "body": {
+     "failures": {
+      "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.json": "GovernedRunError: terminal refused: http 400 invalid metric"
+     },
+     "pending": 1,
+     "sent": 0
+    },
+    "stderr": ""
+   },
+   "status": {
+    "adjudicated": [],
+    "awaiting_adjudication": 1,
+    "pending": [
+     {
+      "attempts": 1,
+      "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+      "class": "REFUSED_BY_SERVER",
+      "file": "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.json",
+      "generation": 2,
+      "last_error": "GovernedRunError: terminal refused: http 400 invalid metric",
+      "status": "COMPLETED",
+      "unit_id": "fv3-n4-a"
+     }
+    ],
+    "recoverable": 0,
+    "schema": "terminal_outbox_status.v1",
+    "sent": 1,
+    "unresolved": 0
+   },
+   "ok": true
+  },
+  "3_configuration_then_recovery": {
+   "flush_wrong_key": {
+    "rc": 1,
+    "body": {
+     "failures": {
+      "adbb765d005e19f78875f2acbd77d5cbf80f47e274d6b0e6c32285c4ccc5b172.json": "GovernedRunError: terminal refused: http 401 unauthenticated",
+      "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.json": "GovernedRunError: terminal refused: http 401 unauthenticated"
+     },
+     "pending": 2,
+     "sent": 0
+    },
+    "stderr": ""
+   },
+   "classes_after_wrong_key": {
+    "adbb765d005e19f78875f2acbd77d5cbf80f47e274d6b0e6c32285c4ccc5b172.json": "CONFIGURATION",
+    "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.json": "CONFIGURATION"
+   },
+   "flush_right_key": {
+    "rc": 1,
+    "body": {
+     "failures": {
+      "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.json": "GovernedRunError: terminal refused: http 400 invalid metric"
+     },
+     "pending": 1,
+     "sent": 1
+    },
+    "stderr": ""
+   },
+   "pending_after": [
+    "e8a2d6320271:REFUSED_BY_SERVER"
+   ],
+   "ok": true
+  },
+  "4_superseded": {
+   "flush": {
+    "rc": 0,
+    "body": {
+     "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+     "decision": "SUPERSEDED",
+     "disposed_at": "2026-09-14T05:09:24.090485Z",
+     "envelope_sha256": "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f",
+     "failure": {
+      "attempts": 3,
+      "class": "REFUSED_BY_SERVER",
+      "first_seen": "2026-09-14T05:09:23.649355Z",
+      "last_error": "GovernedRunError: terminal refused: http 400 invalid metric",
+      "last_seen": "2026-09-14T05:09:23.922668Z"
+     },
+     "file": "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.json",
+     "generation": 2,
+     "reason": "metric name carried a space; the producer canonicalises keys since 08a4c04",
+     "schema": "terminal_outbox_disposition.v1",
+     "status": "COMPLETED",
+     "successor_generation": 3,
+     "successor_terminal_sha256": "9309ebdded77265979d6f221bf6c167c2fe44fbd4cac33a97f098c9b2c9904a7",
+     "unit_id": "fv3-n4-a"
+    },
+    "stderr": ""
+   },
+   "generations": [
+    [
+     1,
+     "COMPLETED",
+     "f5c1d1348c57bda32602e94be5aa5c511600f668f8010cdeab1d8034e1bc0c73"
+    ],
+    [
+     3,
+     "COMPLETED",
+     "9309ebdded77265979d6f221bf6c167c2fe44fbd4cac33a97f098c9b2c9904a7"
+    ],
+    [
+     5,
+     "COMPLETED",
+     "1d6f4c3b8a03e79b06a67d37289a58b5cbdaca0362356c03d0a864617e8d1768"
+    ]
+   ],
+   "counts_before": {
+    "gov_terminal": 2,
+    "gov_terminal_metric": 180,
+    "gov_terminal_dataset": 12,
+    "gov_terminal_artifact": 12
+   },
+   "counts_after": {
+    "gov_terminal": 3,
+    "gov_terminal_metric": 270,
+    "gov_terminal_dataset": 18,
+    "gov_terminal_artifact": 18
+   },
+   "after_replay": {
+    "gov_terminal": 3,
+    "gov_terminal_metric": 270,
+    "gov_terminal_dataset": 18,
+    "gov_terminal_artifact": 18
+   },
+   "replay_http": 200,
+   "replay_body": {
+    "already_stored": true,
+    "stored": false,
+    "terminal_sha256": "9309ebdded77265979d6f221bf6c167c2fe44fbd4cac33a97f098c9b2c9904a7"
+   },
+   "reconcile": {
+    "accounting_only": [],
+    "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+    "lake_only": [],
+    "missing_units": []
+   },
+   "moved_unchanged": true,
+   "ok": true
+  },
+  "5_invalid_envelope_disposed": {
+   "flush": {
+    "rc": 1,
+    "body": {
+     "failures": {
+      "8c1662d767c71a69b7ce21cd25b2d0bf842f5a7f47960acb2ee7cf214a3099db.json": "GovernedRunError: terminal refused: http 400 invalid metric"
+     },
+     "pending": 1,
+     "sent": 0
+    },
+    "stderr": ""
+   },
+   "dispose": {
+    "rc": 0,
+    "body": {
+     "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+     "decision": "INVALID_ENVELOPE",
+     "disposed_at": "2026-09-14T05:09:24.291149Z",
+     "envelope_sha256": "8c1662d767c71a69b7ce21cd25b2d0bf842f5a7f47960acb2ee7cf214a3099db",
+     "failure": {
+      "attempts": 1,
+      "class": "REFUSED_BY_SERVER",
+      "first_seen": "2026-09-14T05:09:24.231172Z",
+      "last_error": "GovernedRunError: terminal refused: http 400 invalid metric",
+      "last_seen": "2026-09-14T05:09:24.231205Z"
+     },
+     "file": "8c1662d767c71a69b7ce21cd25b2d0bf842f5a7f47960acb2ee7cf214a3099db.json",
+     "generation": 4,
+     "reason": "manufactured probe; no successor: the run's generation 1 terminal stands",
+     "schema": "terminal_outbox_disposition.v1",
+     "status": "COMPLETED",
+     "successor_generation": null,
+     "successor_terminal_sha256": null,
+     "unit_id": "fv3-n4-a"
+    },
+    "stderr": ""
+   },
+   "status": {
+    "adjudicated": [
+     {
+      "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+      "decision": "INVALID_ENVELOPE",
+      "disposed_at": "2026-09-14T05:09:24.291149Z",
+      "envelope_sha256": "8c1662d767c71a69b7ce21cd25b2d0bf842f5a7f47960acb2ee7cf214a3099db",
+      "failure": {
+       "attempts": 1,
+       "class": "REFUSED_BY_SERVER",
+       "first_seen": "2026-09-14T05:09:24.231172Z",
+       "last_error": "GovernedRunError: terminal refused: http 400 invalid metric",
+       "last_seen": "2026-09-14T05:09:24.231205Z"
+      },
+      "file": "8c1662d767c71a69b7ce21cd25b2d0bf842f5a7f47960acb2ee7cf214a3099db.json",
+      "generation": 4,
+      "reason": "manufactured probe; no successor: the run's generation 1 terminal stands",
+      "schema": "terminal_outbox_disposition.v1",
+      "status": "COMPLETED",
+      "successor_generation": null,
+      "successor_terminal_sha256": null,
+      "unit_id": "fv3-n4-a"
+     },
+     {
+      "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+      "decision": "SUPERSEDED",
+      "disposed_at": "2026-09-14T05:09:24.090485Z",
+      "envelope_sha256": "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f",
+      "failure": {
+       "attempts": 3,
+       "class": "REFUSED_BY_SERVER",
+       "first_seen": "2026-09-14T05:09:23.649355Z",
+       "last_error": "GovernedRunError: terminal refused: http 400 invalid metric",
+       "last_seen": "2026-09-14T05:09:23.922668Z"
+      },
+      "file": "e8a2d63202719553639307226e9e649de8bb4fc5ef2743da0febf38f9252580f.json",
+      "generation": 2,
+      "reason": "metric name carried a space; the producer canonicalises keys since 08a4c04",
+      "schema": "terminal_outbox_disposition.v1",
+      "status": "COMPLETED",
+      "successor_generation": 3,
+      "successor_terminal_sha256": "9309ebdded77265979d6f221bf6c167c2fe44fbd4cac33a97f098c9b2c9904a7",
+      "unit_id": "fv3-n4-a"
+     }
+    ],
+    "awaiting_adjudication": 0,
+    "pending": [],
+    "recoverable": 0,
+    "schema": "terminal_outbox_status.v1",
+    "sent": 3,
+    "unresolved": 0
+   },
+   "ok": true
+  },
+  "6_isolation_and_recovery": {
+   "run_b_exit": 1,
+   "run_b_status": "COMPLETED",
+   "pending_during_outage": [
+    "TRANSIENT"
+   ],
+   "flush_after_lake_back": {
+    "rc": 0,
+    "body": {
+     "failures": {},
+     "pending": 0,
+     "sent": 1
+    },
+    "stderr": ""
+   },
+   "status_after": {
+    "recoverable": 0,
+    "awaiting_adjudication": 0,
+    "unresolved": 0,
+    "sent": 4
+   },
+   "generations_b": [
+    [
+     1,
+     "COMPLETED",
+     "34a2d6b67eaf60d1c5c20fb9de02e2426934933a185e07ed11fdd6e3dc6735b4"
+    ]
+   ],
+   "reconcile_a": {
+    "accounting_only": [],
+    "campaign_sha256": "f0335bb8c5025c675f7a805537aeb727927c8b4d031592940b8f1802260492d0",
+    "lake_only": [],
+    "missing_units": []
+   },
+   "reconcile_b": {
+    "accounting_only": [],
+    "campaign_sha256": "7dc364d592652c7fa9d304269e5b31bcd5edd30a44aa9925aaa37380e9a7dd7f",
+    "lake_only": [],
+    "missing_units": []
+   },
+   "ok": true
+  }
+ },
+ "throwaway_cube_counts_final": {
+  "gov_terminal": 4,
+  "gov_terminal_metric": 360,
+  "gov_terminal_dataset": 24,
+  "gov_terminal_artifact": 24
+ },
+ "ok": true,
+ "pg_db_dropped": true
+}

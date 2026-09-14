@@ -135,7 +135,7 @@ def main(argv=None):
         outbox = GR.TerminalOutbox(outbox_dir)
         bad = json.loads(json.dumps(sent_a))
         bad["terminal"]["generation"] = 2
-        bad["terminal"]["metrics"][0]["metric"] = "Naive MAE"
+        bad["terminal"]["metrics"][0]["metric"] = "MAE (custom)"  # a key the contract refuses, unique once fixed
         bad_item = outbox.put(bad)
         f2 = flush(predictor, gov_url, key_file, outbox_dir)
         status2 = flush(predictor, gov_url, key_file, outbox_dir, "--status")["body"]
@@ -154,15 +154,19 @@ def main(argv=None):
         cls3 = {p["file"]: p["class"] for p in status3["pending"]}
         f3b = flush(predictor, gov_url, key_file, outbox_dir)
         status3b = flush(predictor, gov_url, key_file, outbox_dir, "--status")["body"]
+        # the class is that of the LAST attempt: under the wrong key every pending envelope is a
+        # configuration failure; with the right key the sendable one goes and the refused one
+        # shows its server refusal again
         steps["3_configuration_then_recovery"] = {
             "flush_wrong_key": f3, "classes_after_wrong_key": cls3, "flush_right_key": f3b,
             "pending_after": [p["file"][:12] + ":" + p["class"] for p in status3b["pending"]],
-            "ok": cls3.get(good_item.path.name) == "CONFIGURATION" and cls3.get(bad_item.path.name) == "REFUSED_BY_SERVER"
-            and f3b["body"].get("sent") == 1 and [p["class"] for p in status3b["pending"]] == ["REFUSED_BY_SERVER"]}
+            "ok": set(cls3.values()) == {"CONFIGURATION"} and len(cls3) == 2
+            and f3b["body"].get("sent") == 1 and [p["class"] for p in status3b["pending"]] == ["REFUSED_BY_SERVER"]
+            and status3b["pending"][0]["file"] == bad_item.path.name}
 
         # 4. supersede the refused envelope with a corrected terminal (generation 3)
         corrected = json.loads(json.dumps(bad["terminal"]))
-        corrected["metrics"][0]["metric"] = "Naive_MAE"
+        corrected["metrics"][0]["metric"] = "MAE_custom"
         corrected_path = work / "corrected_terminal.json"
         corrected_path.write_text(json.dumps(corrected, indent=1))
         before = p03.gov_counts(a.pg_db)
