@@ -294,8 +294,9 @@ def main(argv=None):
         pg_admin("predictor_olap", f'DROP DATABASE IF EXISTS "{a.pg_db}"')
         result["pg_db_dropped"] = a.pg_db not in {r[0] for r in pg("predictor_olap", "SELECT datname FROM pg_database")}
         shutil.rmtree(work / "cache", ignore_errors=True)
-    json.dump(result, sys.stdout, indent=1, default=str)
-    sys.stdout.write("\n")
+    # the sealed output names no home directory: local roots are printed as ~
+    text = json.dumps(result, indent=1, default=str).replace(str(Path.home()), "~")
+    sys.stdout.write(text + "\n")
     return 0 if result.get("ok") else 1
 
 
