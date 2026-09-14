@@ -1,14 +1,14 @@
 # Plan obligatorio: crear y adoptar data-lake y data-warehouse
 
 Fecha: 2026-09-14. Decisor: Harvey. Ejecutor: Satoshi. Revision: Musashi.
-Estado actual: repositorios locales creados; publicacion y adopcion productiva pendientes.
+Estado actual: repositorios publicos y hosts desplegados; prueba productiva
+sintetica conciliada. Contratos financieros y adopcion completa por consumidor
+siguen pendientes.
 
-Actualizacion tras el retorno `939fb41`: ambos repositorios git locales
-existen; Satoshi reporta pruebas desechables de hosts y proveedores. La
-publicacion en GitHub y el despliegue productivo siguen pendientes. Visibilidad
-decidida: **publica para ambos repositorios**. La
-[orden de publicacion y despliegue](../handoffs/MUSASHI_TO_SATOSHI_PUBLICAR_Y_DESPLEGAR_HOSTS_2026_09_14.md)
-es la continuacion vigente y no exige otra decision del owner para esos pasos.
+Actualizacion de Musashi tras el retorno `329af81`: ver
+[acta productiva](../handoffs/MUSASHI_STORE_HOSTS_PRODUCTION_ACCEPTANCE_2026_09_14.md).
+La orden anterior de publicacion queda satisfecha en ese alcance. Continuacion:
+[contratos y adopcion](../handoffs/MUSASHI_TO_SATOSHI_CONTRACTS_AND_CONSUMER_ADOPTION_2026_09_14.md).
 
 ## Encaje en el plan vigente
 
@@ -44,11 +44,11 @@ detalla la separacion y las pruebas.
 
 | Etapa | Entregable y criterio de terminacion | Estado |
 |---|---|---|
-| 1. Crear | Ambos repositorios publicados con URL real, README, AGENTS.md, requisitos, pruebas previstas y estado persistente | Locales comprobados; GitHub publico pendiente, Satoshi |
-| 2. Implementar | Hosts instalables y plugins externos desde financial-data/predictor, probados como wheels en entornos limpios | Implementacion y pruebas reportadas en 939fb41; verificar instalacion desde GitHub |
-| 3. Integrar | Paridad con las APIs actuales: inventario, bytes, disponibilidad temporal, particiones, recibos, resultados y reintentos | Paridad 8/8 y 11/11 reportada en entorno desechable; validar revision a desplegar |
-| 4. Probar interfaz | Configuracion e inventario AdminLTE, esquema de recursos, escritorio y movil; pruebas de sistema y aceptacion | Pendiente, Satoshi |
-| 5. Poner en uso | Transicion controlada con los mismos datos, IDs y cubo; microexperimento gobernado por ambos hosts y conciliacion exacta | Pendiente, Satoshi |
+| 1. Crear | Ambos repositorios publicados con URL real, README, AGENTS.md, requisitos, pruebas previstas y estado persistente | Completado: publicos; proveedor OLAP integrado en master por PR 44 |
+| 2. Implementar | Hosts instalables y plugins externos desde financial-data/predictor, probados como wheels en entornos limpios | Completado en las revisiones instaladas del acta; pruebas independientes 33+28+4 |
+| 3. Integrar | Paridad con las APIs actuales: inventario, bytes, disponibilidad temporal, particiones, recibos, resultados y reintentos | Paridad previa 8/8 y 11/11; E2E desechable re-ejecutado por Musashi |
+| 4. Probar interfaz | Configuracion e inventario AdminLTE, esquema de recursos, escritorio y movil; pruebas de sistema y aceptacion | Pruebas y capturas publicadas por Satoshi; suites de consola re-ejecutadas por Musashi |
+| 5. Poner en uso | Transicion controlada con los mismos datos, IDs y cubo; microexperimento gobernado por ambos hosts y conciliacion exacta | Completado en infraestructura y transporte sintetico; 5.275 recursos conservados, terminal y cuatro metricas en cubo real |
 | 6. Adoptar | Configuraciones de consumidores actualizadas y cobertura documentada por proyecto; nuevos experimentos usan esta ruta | Pendiente, Satoshi |
 
 Satoshi actualiza cada etapa al terminarla, con commits, pruebas y evidencia.
@@ -88,4 +88,4 @@ Las condiciones de activacion operativa y validacion causal siguen vigentes.
 - Este cambio de infraestructura no demuestra utilidad de preprocesamiento,
   ausencia universal de fuga temporal ni rentabilidad de un modelo.
 
-Orden ejecutiva: [trabajos de Satoshi](../handoffs/MUSASHI_TO_SATOSHI_GOVERNED_D2_AND_STORE_HOSTS_2026_09_14.md).
+Orden ejecutiva vigente: [contratos y adopcion de consumidores](../handoffs/MUSASHI_TO_SATOSHI_CONTRACTS_AND_CONSUMER_ADOPTION_2026_09_14.md).
