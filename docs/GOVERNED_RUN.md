@@ -72,6 +72,20 @@ The operation is idempotent. Replaying the same terminal returns the existing
 receipt; a different terminal for the same campaign, unit and generation is
 refused.
 
+A refused send keeps the envelope in `pending/` with a sidecar (attempts, last
+error, class): `TRANSIENT` (transport, 5xx) and `CONFIGURATION` (401/403/404)
+recover by retrying or fixing the configuration; `REFUSED_BY_SERVER` (other
+4xx) waits, visibly, for a disposition — a 4xx alone never decides that the
+envelope is invalid; `UNRESOLVED` marks accounting/lake divergence.
+`flush_governed_terminals.py --status` prints the health. `--dispose FILE
+--reason TEXT` moves an envelope unchanged to `adjudicated/` with a write-once
+record (`INVALID_ENVELOPE`); `--supersede FILE --terminal T.json --reason TEXT`
+sends a corrected terminal as the next generation of the same campaign and
+unit (same outcome, same deliveries), then disposes the original as
+`SUPERSEDED` linked to the accepted successor. Nothing is deleted, no `FAILED`
+becomes `COMPLETED`, and adjudicated envelopes no longer block new governing
+runs; pending ones still do.
+
 ## Data recorded
 
 `gov_terminal` stores one terminal per campaign/unit/generation. Metric names
