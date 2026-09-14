@@ -150,6 +150,30 @@ class Plugin:
             result["report_sha256"] = report.get("report_sha256")
             return jsonify(result), (201 if result.get("stored") else 200)
 
+        @app.route("/api/v2/terminals", methods=["GET", "POST"])
+        def api_terminals():
+            denied = _api_ok()
+            if denied:
+                return denied
+            if request.method == "GET":
+                campaign = request.args.get("campaign_sha256") or ""
+                try:
+                    return jsonify({"terminals": q().terminal_digests(campaign)})
+                except ValueError as exc:
+                    return jsonify({"error": str(exc)}), 400
+                except Exception as exc:
+                    return jsonify({"error": f"database error: {exc}"}), 503
+            terminal = request.get_json(silent=True)
+            if not isinstance(terminal, dict):
+                return jsonify({"error": "terminal must be a JSON object"}), 400
+            try:
+                result = q().write_terminal(terminal)
+            except ValueError as exc:
+                return jsonify({"error": str(exc)}), 400
+            except Exception as exc:
+                return jsonify({"error": f"database error: {exc}"}), 503
+            return jsonify(result), (201 if result.get("stored") else 200)
+
         return app
 
     def serve(self, context):

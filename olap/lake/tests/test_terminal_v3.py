@@ -42,7 +42,6 @@ def _terminal(status="COMPLETED", unit="u001", generation=1):
         "code_identity": {"kind": "git_commit", "value": "c" * 40},
         "synthetic_spec_sha256": None,
     }
-    body["terminal_sha256"] = hashlib.sha256(_canonical(body).encode("ascii")).hexdigest()
     body["verified_datasets"] = [{
         "delivery_id": "1" * 32,
         "lake_id": "financial_files",
@@ -55,8 +54,10 @@ def _terminal(status="COMPLETED", unit="u001", generation=1):
         "range_to": "2024-12-31",
         "delivery_kind": "CUT",
         "time_column": "available_at",
+        "availability_contract_sha256": "f" * 64,
         "state": "VERIFIED_TRANSFER",
     }]
+    body["terminal_sha256"] = hashlib.sha256(_canonical(body).encode("ascii")).hexdigest()
     return body
 
 
@@ -100,6 +101,29 @@ def test_terminal_store_rejects_hash_mismatch(tmp_path):
     terminal["status"] = "FAILED"
     with pytest.raises(ValueError, match="terminal_sha256 mismatch"):
         _plugin(tmp_path).write_terminal(terminal)
+
+
+def test_existing_terminal_dataset_table_is_upgraded_in_place(tmp_path):
+    db = tmp_path / "cube.sqlite"
+    import sqlite3
+
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            "CREATE TABLE gov_terminal_dataset (terminal_sha256 TEXT, delivery_id TEXT, "
+            "lake_id TEXT, resource_id TEXT, role TEXT, sha256 TEXT, bytes INTEGER, "
+            "source_sha256 TEXT, range_from TEXT, range_to TEXT, delivery_kind TEXT, "
+            "time_column TEXT, verification_state TEXT)"
+        )
+        conn.execute(
+            "INSERT INTO gov_terminal_dataset (terminal_sha256, sha256) VALUES ('old', 'digest')"
+        )
+    plugin = Plugin()
+    plugin.set_params(sqlite_path=str(db), holdout_start=None)
+    plugin.engine()
+    with sqlite3.connect(db) as conn:
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(gov_terminal_dataset)")}
+        assert "availability_contract_sha256" in columns
+        assert conn.execute("SELECT terminal_sha256 FROM gov_terminal_dataset").fetchone()[0] == "old"
 
 
 def test_terminal_api_requires_token_and_lists_campaign(tmp_path):

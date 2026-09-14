@@ -70,7 +70,8 @@ class FakeGov:
         return 200, {
             "path": str(path), "sha256": "d" * 64, "bytes": path.stat().st_size,
             "source_sha256": "e" * 64, "delivery": "FULL",
-            "time_column": "available_time", "delivery_id": ("1" if role.startswith("x") else "2") * 32,
+            "time_column": "available_time", "availability_contract_sha256": "a" * 64,
+            "delivery_id": ("1" if role.startswith("x") else "2") * 32,
             "verification_state": "VERIFIED_TRANSFER", "cached": False,
             "resource": resource, "role": role,
         }
@@ -162,7 +163,7 @@ def test_success_registers_downloads_and_terminal_before_return(tmp_path, monkey
     gov = FakeGov.instances[-1]
     assert result["status"] == "COMPLETED"
     assert [call[0] for call in gov.calls] == [
-        "campaign", "reconcile", "download", "download", "terminal", "reconcile",
+        "campaign", "reconcile", "download", "download", "terminal", "reconcile", "reconcile",
     ]
     assert gov.terminals[0]["status"] == "COMPLETED"
     assert len(gov.terminals[0]["deliveries"]) == 2
@@ -180,6 +181,22 @@ def test_predictor_failure_still_persists_and_reports_terminal(tmp_path, monkeyp
     assert gov.terminals[0]["reason"] == "PREDICTOR_EXIT_7"
     receipt = json.loads((tmp_path / "out" / "GOVERNED_RUN.json").read_text())
     assert receipt["status"] == "FAILED"
+
+
+def test_stale_output_refuses_without_overwriting_or_downloading(tmp_path, monkeypatch):
+    _patch(monkeypatch)
+    args = _args(tmp_path)
+    stale = Path(args.out_dir) / "results.csv"
+    stale.parent.mkdir(parents=True)
+    stale.write_bytes(b"prior scientific result\n")
+
+    with pytest.raises(GR.GovernedRunError, match="output namespace is not fresh"):
+        GR.run(args, [])
+
+    gov = FakeGov.instances[-1]
+    assert stale.read_bytes() == b"prior scientific result\n"
+    assert not [call for call in gov.calls if call[0] == "download"]
+    assert gov.terminals[0]["status"] == "REFUSED"
 
 
 def test_terminal_outage_leaves_durable_pending_result(tmp_path, monkeypatch):

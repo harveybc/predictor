@@ -1,105 +1,97 @@
-# Governed run: predictor through data-gov
+# Governed predictor run
 
-`tools/governed_run.py` is the predictor lab path of data-gov's
-`docs/04_FLOW_V2.md` (section 8). It downloads every distinct input of a
-config through data-gov under an experiment key, runs `app/main.py` on CPU
-with every output redirected under an output directory, and reports the
-results CSV as metrics together with the sha256 of each dataset, the hash of
-the effective config and the code commit.
+`tools/governed_run.py` is the decision-bearing predictor path for data-gov
+Flow v3. It registers an immutable campaign before opening data, obtains and
+confirms each input role through data-gov, runs `app/main.py` on CPU, persists
+every outcome locally, reports it to the configured terminal lake, and checks
+that data-gov and the lake agree.
 
-## Toy run
+Small mechanics tests may use other runners. Their results are non-governing
+and cannot promote a model, transformation, feature or experiment. A result
+used for a decision must be reproduced through this path or an equivalent
+Flow-v3 client.
 
-Prerequisites: data-gov at `http://127.0.0.1:5055` with the
-`predictor_examples` lake (in-process files lake over
-`examples/data_downsampled`) and the `olap_cube` lake pointing at the OLAP
-lake service on `:5057`; a service key for `predictor` in a file.
+## Run
+
+Prerequisites are a clean committed predictor checkout, a data-gov service
+with a source lake whose resources have explicit availability contracts, a
+terminal lake, and a service key for the predictor actor.
 
 ```bash
-cd <predictor checkout>
-/path/to/python tools/governed_run.py \
+cd <predictor-checkout>
+python tools/governed_run.py \
   --load_config examples/config/phase_1_daily/phase_1_ann_1575_1d_config.json \
   --experiment-key toy-ann-1575-1d \
-  --gov-url http://127.0.0.1:5055 --api-key-file var/data_gov_api_key \
+  --gov-url http://127.0.0.1:5055 --api-key-file <service-key-file> \
   --lake predictor_examples --lake-root examples/data_downsampled \
-  --metrics-lake olap_cube --out-dir var/governed/toy-ann-1575-1d \
+  --metrics-lake olap_cube --out-dir <run-output-dir> \
   -- --epochs 2 --max_steps_train 300 --max_steps_test 300 --mc_samples 2 \
      --execution_purpose ARCHIVAL_REPLAY_NON_AUTHORITATIVE
 ```
 
-Everything after `--` goes to `app/main.py` as long-form flags (short flags
-are dropped by predictor's config merger). The last flag is needed because the
-toy config has no eligibility manifest: predictor's eligibility gate refuses
-a manifest-less run unless it is declared an archival replay.
+Everything after `--` is passed to predictor as long-form flags. Overrides of
+inputs, outputs or the config are refused. Data-gov calls occur before or after
+training, never inside `fit`, `transform`, `step` or `learn`.
 
-Interpreter: the same one that runs predictor (TensorFlow, pandas). The tool
-itself is stdlib only; it does not import data-gov's `app` package because
-that would shadow predictor's own.
+## Contract
 
-What happens, in order:
+1. The checkout must have an exact 40-hex commit and no tracked or untracked
+   changes. The original config, requested roles/ranges and extra arguments
+   form `predictor_execution_spec.v1`; its digest is fixed before data opens.
+2. The wrapper registers one governing campaign with one declared unit. A
+   reused campaign key with different code, config or inputs is refused.
+3. Every configured input role is requested separately from `/api/v2/download`.
+   The stream and any existing cache entry are both hashed. A cache path is
+   never overwritten with different bytes. Confirmation records
+   `VERIFIED_TRANSFER` or `VERIFIED_CACHE` only after local verification.
+4. Predictor runs on CPU from a generated config whose inputs name the
+   content-addressed cache and whose outputs remain under `--out-dir`. The
+   output namespace must be fresh: any pre-existing scientific output causes a
+   terminal `REFUSED`, without downloading data or replacing the old bytes.
+5. A terminal is built for `COMPLETED`, `FAILED`, `INCONCLUSIVE`, `REFUSED` or
+   `QUARANTINED`. It binds the campaign, verified deliveries, full metric
+   identities, measured cost and output artifact hashes.
+6. Before any network send, the terminal envelope is written with `O_EXCL`,
+   file `fsync` and directory `fsync` under
+   `~/.local/state/data-gov/terminal-outbox` (override with `--outbox-dir`). It
+   moves to `sent/` only after the remote terminal is accepted and the
+   reconciliation endpoint reports no difference between accounting and the
+   terminal lake.
+7. `<out-dir>/GOVERNED_RUN.json` records the campaign, exact inputs, execution
+   spec, terminal and reconciliation. A pending terminal makes the command
+   fail: the result exists, but is not governing.
 
-1. The six input keys (`x_train_file`, `y_train_file`, `x_validation_file`,
-   `y_validation_file`, `x_test_file`, `y_test_file`) are resolved against
-   the checkout root, deduplicated by resolved path, and mapped to lake
-   resources relative to `--lake-root` (`phase_1/normalized_d4.csv`). Each
-   distinct file is downloaded with `GET /api/v1/download` under
-   `X-Experiment-Key`, streamed in 1 MiB chunks while hashing, checked
-   against `X-Content-SHA256`, and kept as
-   `<cache>/<lake>/<sha256><ext>` (`--cache-dir`, default `~/.cache/data-gov`,
-   expanded at run time). A mismatch deletes the partial file and fails.
-   Every file is downloaded on every run: the download row in data-gov's
-   accounting is what makes the later report VERIFIED.
-2. `<out-dir>/governed_config.json` is the config with the inputs pointing at
-   the cached files and `results_file`, `output_file`, `uncertainties_file`,
-   every `*_plot_file`, `save_model`, `save_config` and `save_log` under
-   `<out-dir>` (basenames kept; predictor's default basenames when the config
-   leaves a key unset). Committed samples under `examples/results/` and the
-   working files in the repository root are never written.
-3. `app/main.py --load_config <out-dir>/governed_config.json <extra>` runs
-   with `CUDA_VISIBLE_DEVICES=""` and `PYTHONPATH=<checkout>`.
-4. `config_sha256` is computed after the run from the effective config
-   predictor wrote to `save_config`: the six input keys replaced by
-   `gov:<lake>/<resource>@<sha256>`, output paths by their basenames,
-   `save_config`/`save_log` dropped, compact sorted JSON. The canonical text
-   is kept in the receipt. `code_commit` is `git rev-parse HEAD` with
-   `-dirty` when `git status --porcelain` is non-empty.
-5. The results CSV becomes metric rows (`Train MAE H24` -> metric `MAE`,
-   split `train`, horizon 24, value = Average, std_dev/min_value/max_value)
-   and is posted to `POST /api/v1/experiments/<key>/metrics` with the
-   datasets (each with `role` = its config key), `config_sha256`,
-   `code_commit`, `project`, `phase` (default: the config's parent directory)
-   and `tags.plugin`.
-6. `<out-dir>/GOVERNED_RUN.json` holds all of the above and the receipt
-   (`report_sha256`, `lineage`, per-dataset lineage with `event_id`).
+Retry pending terminals after an outage:
 
-Any failure exits 1 with one line on stderr (`governed_run: <reason>`), and
-the receipt, when the output directory exists, records `status: failed` and
-the reason.
-
-## Where to look afterwards
-
-- **Receipt:** `<out-dir>/GOVERNED_RUN.json`; the run's own outputs
-  (`*_results.csv`, `*_prediction.csv`, plots, `predictor_model.keras`,
-  `config_out.json`) sit next to it.
-- **data-gov usage:** `GET /api/v1/experiments/<key>/usage` lists one
-  `download` allow row per distinct input (with `sha256` and
-  `source_sha256`) and one `write_metrics` allow row whose `detail` is the
-  canonical report with its lineage.
-- **Cube:** `gov_report` has one row per report (`lineage = VERIFIED` when
-  every dataset was served under the key), `gov_dataset` its datasets with
-  `sha256`, `role`, `lineage`, `reason`, `event_id`, `source_sha256`,
-  `gov_metric` the metric rows, and `gov_metric_current` the rows of the
-  latest report per `(experiment_key, lake_id)`. For governed keys this is
-  the record; the legacy ETL (`fact_performance`) is not run for them.
-
-```sql
-SELECT r.experiment_key, r.lineage, d.role, d.resource_id, d.sha256, d.event_id
-FROM gov_report r JOIN gov_dataset d USING (report_sha256)
-WHERE r.experiment_key = 'toy-ann-1575-1d' LIMIT 20;
+```bash
+python tools/flush_governed_terminals.py \
+  --gov-url http://127.0.0.1:5055 --api-key-file <service-key-file>
 ```
+
+The operation is idempotent. Replaying the same terminal returns the existing
+receipt; a different terminal for the same campaign, unit and generation is
+refused.
+
+## Data recorded
+
+`gov_terminal` stores one terminal per campaign/unit/generation.
+`gov_terminal_dataset` stores each delivery id, source and delivered hashes,
+role, range, available-time column, availability-contract hash and whether the
+bytes came from a verified transfer or cache. `gov_terminal_metric` stores the
+complete metric identity. `gov_terminal_artifact` stores content hashes for
+the effective config, metrics and produced artifacts.
+
+The legacy `/api/v1` report tables remain readable for history but do not
+govern new decisions.
 
 ## Tests
 
 ```bash
-cd <predictor checkout> && python -m pytest -q tests/test_governed_run.py   # pure functions
-cd olap/lake && python -m pytest -q tests                                    # lake write path
+python -m pytest -q \
+  tests/test_governed_run_v3.py tests/test_governed_run.py \
+  tests/test_governed_run_overrides.py
+
+cd olap/lake
+python -m pytest -q tests/test_terminal_v3.py tests/test_write_metrics.py \
+  tests/test_metrics_api.py
 ```

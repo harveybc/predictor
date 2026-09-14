@@ -35,8 +35,25 @@ DATASET_LINEAGE_FIELDS = (
     "range_from", "range_to", "delivery", "time_column",
 )
 
-GOV_TABLES = ("gov_report", "gov_metric", "gov_dataset")
+GOV_TABLES = (
+    "gov_report", "gov_metric", "gov_dataset", "gov_terminal",
+    "gov_terminal_metric", "gov_terminal_dataset", "gov_terminal_artifact",
+)
 GOV_VIEW = "gov_metric_current"
+
+TERMINAL_STATES = {"COMPLETED", "FAILED", "INCONCLUSIVE", "REFUSED", "QUARANTINED"}
+TERMINAL_KEYS = {
+    "schema", "campaign_sha256", "campaign_key", "classification", "project",
+    "actor", "unit_id", "generation", "status", "reason", "started_at",
+    "finished_at", "costs", "deliveries", "artifacts", "metrics", "tags",
+    "terminal_lake", "config_sha256", "code_identity", "synthetic_spec_sha256",
+    "terminal_sha256", "verified_datasets",
+}
+TERMINAL_DATASET_KEYS = {
+    "delivery_id", "lake_id", "resource_id", "role", "sha256", "bytes",
+    "source_sha256", "range_from", "range_to", "delivery_kind", "time_column",
+    "availability_contract_sha256", "state",
+}
 
 
 def _opt_str(obj, name):
@@ -214,6 +231,62 @@ def report_sha256(report) -> str:
     return hashlib.sha256(canonical_text(canonical_body(normalised)).encode()).hexdigest()
 
 
+def _strict_terminal(terminal):
+    if not isinstance(terminal, dict) or set(terminal) != TERMINAL_KEYS:
+        raise ValueError("invalid terminal schema")
+    if terminal["schema"] != "governed_terminal.v1":
+        raise ValueError("invalid terminal schema")
+    for name in ("campaign_sha256", "config_sha256", "terminal_sha256"):
+        if not isinstance(terminal[name], str) or not _HEX64.fullmatch(terminal[name]):
+            raise ValueError(f"invalid {name}")
+    for name in ("campaign_key", "project", "actor", "unit_id", "terminal_lake"):
+        if not isinstance(terminal[name], str) or not _KEY.fullmatch(terminal[name]):
+            raise ValueError(f"invalid {name}")
+    if terminal["classification"] not in {"GOVERNING", "NON_GOVERNING"}:
+        raise ValueError("invalid classification")
+    if terminal["status"] not in TERMINAL_STATES:
+        raise ValueError("invalid status")
+    if isinstance(terminal["generation"], bool) or not isinstance(terminal["generation"], int):
+        raise ValueError("invalid generation")
+    if terminal["generation"] < 1:
+        raise ValueError("invalid generation")
+    for name in ("costs", "tags", "code_identity"):
+        if not isinstance(terminal[name], dict):
+            raise ValueError(f"invalid {name}")
+    for name in ("deliveries", "artifacts", "metrics", "verified_datasets"):
+        if not isinstance(terminal[name], list):
+            raise ValueError(f"invalid {name}")
+    datasets = terminal["verified_datasets"]
+    for item in datasets:
+        if not isinstance(item, dict) or set(item) != TERMINAL_DATASET_KEYS:
+            raise ValueError("invalid verified dataset schema")
+        if item["state"] not in {"VERIFIED_TRANSFER", "VERIFIED_CACHE"}:
+            raise ValueError("invalid verified dataset state")
+        if not isinstance(item["bytes"], int) or isinstance(item["bytes"], bool) or item["bytes"] < 0:
+            raise ValueError("invalid verified dataset bytes")
+        for name in ("delivery_id", "lake_id", "resource_id", "role", "sha256"):
+            if not isinstance(item[name], str) or not item[name]:
+                raise ValueError(f"invalid verified dataset {name}")
+        if not re.fullmatch(r"[0-9a-f]{32}", item["delivery_id"]):
+            raise ValueError("invalid verified dataset delivery_id")
+        if not _HEX64.fullmatch(item["sha256"]):
+            raise ValueError("invalid verified dataset sha256")
+        source = item["source_sha256"]
+        if source is not None and (not isinstance(source, str) or not _HEX64.fullmatch(source)):
+            raise ValueError("invalid verified dataset source_sha256")
+        contract = item["availability_contract_sha256"]
+        if not isinstance(contract, str) or not _HEX64.fullmatch(contract):
+            raise ValueError("invalid verified dataset availability_contract_sha256")
+    body = {
+        key: value for key, value in terminal.items()
+        if key != "terminal_sha256"
+    }
+    digest = hashlib.sha256(canonical_text(body).encode("ascii")).hexdigest()
+    if digest != terminal["terminal_sha256"]:
+        raise ValueError("terminal_sha256 mismatch")
+    return terminal
+
+
 def _now_utc() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="microseconds")
 
@@ -324,11 +397,37 @@ class Plugin:
             " resource_id TEXT NOT NULL, sha256 TEXT NOT NULL, role TEXT, lineage TEXT NOT NULL,"
             " reason TEXT, event_id INTEGER, source_sha256 TEXT, range_from TEXT, range_to TEXT,"
             " delivery TEXT, time_column TEXT)",
+            f"CREATE TABLE IF NOT EXISTS {t('gov_terminal')} ("
+            " terminal_sha256 TEXT PRIMARY KEY, campaign_sha256 TEXT NOT NULL,"
+            " campaign_key TEXT NOT NULL, unit_id TEXT NOT NULL, generation INTEGER NOT NULL,"
+            " actor TEXT NOT NULL, project TEXT NOT NULL, classification TEXT NOT NULL,"
+            " status TEXT NOT NULL, reason TEXT, started_at TEXT NOT NULL, finished_at TEXT NOT NULL,"
+            " terminal_lake TEXT NOT NULL, config_sha256 TEXT NOT NULL, code_identity_json TEXT NOT NULL,"
+            " costs_json TEXT NOT NULL, tags_json TEXT NOT NULL, synthetic_spec_sha256 TEXT,"
+            " received_at TEXT NOT NULL, UNIQUE(campaign_sha256, unit_id, generation))",
+            f"CREATE TABLE IF NOT EXISTS {t('gov_terminal_metric')} ("
+            " terminal_sha256 TEXT NOT NULL, metric TEXT NOT NULL, split TEXT, horizon INTEGER,"
+            " unit TEXT, value DOUBLE PRECISION, std_dev DOUBLE PRECISION,"
+            " min_value DOUBLE PRECISION, max_value DOUBLE PRECISION)",
+            f"CREATE TABLE IF NOT EXISTS {t('gov_terminal_dataset')} ("
+            " terminal_sha256 TEXT NOT NULL, delivery_id TEXT NOT NULL, lake_id TEXT NOT NULL,"
+            " resource_id TEXT NOT NULL, role TEXT NOT NULL, sha256 TEXT NOT NULL, bytes INTEGER NOT NULL,"
+            " source_sha256 TEXT, range_from TEXT, range_to TEXT, delivery_kind TEXT,"
+            " time_column TEXT, availability_contract_sha256 TEXT NOT NULL,"
+            " verification_state TEXT NOT NULL)",
+            f"CREATE TABLE IF NOT EXISTS {t('gov_terminal_artifact')} ("
+            " terminal_sha256 TEXT NOT NULL, role TEXT NOT NULL, sha256 TEXT NOT NULL, bytes INTEGER NOT NULL)",
             f"CREATE INDEX IF NOT EXISTS gov_metric_report_idx ON {t('gov_metric')} (report_sha256)",
             f"CREATE INDEX IF NOT EXISTS gov_dataset_report_idx ON {t('gov_dataset')} (report_sha256)",
             f"CREATE INDEX IF NOT EXISTS gov_dataset_sha256_idx ON {t('gov_dataset')} (sha256)",
             f"CREATE INDEX IF NOT EXISTS gov_report_experiment_idx ON {t('gov_report')}"
             " (experiment_key, received_at)",
+            f"CREATE INDEX IF NOT EXISTS gov_terminal_campaign_idx ON {t('gov_terminal')}"
+            " (campaign_sha256)",
+            f"CREATE INDEX IF NOT EXISTS gov_terminal_metric_sha_idx ON {t('gov_terminal_metric')}"
+            " (terminal_sha256)",
+            f"CREATE INDEX IF NOT EXISTS gov_terminal_dataset_sha_idx ON {t('gov_terminal_dataset')}"
+            " (sha256)",
             f"{create_view} {t(GOV_VIEW)} AS {view_select}",
         ]
 
@@ -339,6 +438,17 @@ class Plugin:
                 conn.execute(text("PRAGMA journal_mode=WAL"))
             for statement in self._ddl(dialect):
                 conn.execute(text(statement))
+            schema = None if dialect == "sqlite" else self.params.get("schema") or "public"
+            columns = {
+                column["name"] for column in inspect(engine).get_columns(
+                    "gov_terminal_dataset", schema=schema
+                )
+            }
+            if "availability_contract_sha256" not in columns:
+                conn.execute(text(
+                    f"ALTER TABLE {self._qualified('gov_terminal_dataset')} "
+                    "ADD COLUMN availability_contract_sha256 TEXT"
+                ))
 
     def write_metrics(self, report):
         """Store one report (§3 'Lake side'). Returns
@@ -434,6 +544,106 @@ class Plugin:
                 {"h": digest},
             ).scalar()
         return {"stored": False, "already_stored": True, "lineage": stored}
+
+    def write_terminal(self, terminal):
+        terminal = _strict_terminal(terminal)
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"gov_* schema not ready: {self._schema_error}")
+        t = self._qualified
+        digest = terminal["terminal_sha256"]
+        slot = {
+            "campaign": terminal["campaign_sha256"],
+            "unit": terminal["unit_id"],
+            "generation": terminal["generation"],
+        }
+        with self.engine().connect() as conn:
+            existing = conn.execute(text(
+                f"SELECT terminal_sha256 FROM {t('gov_terminal')}"
+                " WHERE campaign_sha256 = :campaign AND unit_id = :unit"
+                " AND generation = :generation"
+            ), slot).scalar()
+        if existing:
+            if existing != digest:
+                raise ValueError("terminal generation conflict")
+            return {"stored": False, "already_stored": True, "terminal_sha256": digest}
+        row = {
+            "terminal_sha256": digest,
+            "campaign_sha256": terminal["campaign_sha256"],
+            "campaign_key": terminal["campaign_key"],
+            "unit_id": terminal["unit_id"],
+            "generation": terminal["generation"],
+            "actor": terminal["actor"],
+            "project": terminal["project"],
+            "classification": terminal["classification"],
+            "status": terminal["status"],
+            "reason": terminal["reason"],
+            "started_at": terminal["started_at"],
+            "finished_at": terminal["finished_at"],
+            "terminal_lake": terminal["terminal_lake"],
+            "config_sha256": terminal["config_sha256"],
+            "code_identity_json": canonical_text(terminal["code_identity"]),
+            "costs_json": canonical_text(terminal["costs"]),
+            "tags_json": canonical_text(terminal["tags"]),
+            "synthetic_spec_sha256": terminal["synthetic_spec_sha256"],
+            "received_at": _now_utc(),
+        }
+        with self.write_engine().begin() as conn:
+            inserted = conn.execute(text(
+                f"INSERT INTO {t('gov_terminal')} (terminal_sha256, campaign_sha256,"
+                " campaign_key, unit_id, generation, actor, project, classification, status,"
+                " reason, started_at, finished_at, terminal_lake, config_sha256, code_identity_json,"
+                " costs_json, tags_json, synthetic_spec_sha256, received_at) VALUES"
+                " (:terminal_sha256, :campaign_sha256, :campaign_key, :unit_id, :generation,"
+                " :actor, :project, :classification, :status, :reason, :started_at, :finished_at,"
+                " :terminal_lake, :config_sha256, :code_identity_json, :costs_json, :tags_json,"
+                " :synthetic_spec_sha256, :received_at) ON CONFLICT (terminal_sha256) DO NOTHING"
+            ), row).rowcount
+            if not inserted:
+                return {"stored": False, "already_stored": True, "terminal_sha256": digest}
+            metrics = [{"terminal_sha256": digest, **item} for item in terminal["metrics"]]
+            if metrics:
+                conn.execute(text(
+                    f"INSERT INTO {t('gov_terminal_metric')} (terminal_sha256, metric, split,"
+                    " horizon, unit, value, std_dev, min_value, max_value) VALUES"
+                    " (:terminal_sha256, :metric, :split, :horizon, :unit, :value, :std_dev,"
+                    " :min_value, :max_value)"
+                ), metrics)
+            datasets = [{
+                "terminal_sha256": digest,
+                "verification_state": item["state"],
+                **{key: item[key] for key in TERMINAL_DATASET_KEYS if key != "state"},
+            } for item in terminal["verified_datasets"]]
+            if datasets:
+                conn.execute(text(
+                    f"INSERT INTO {t('gov_terminal_dataset')} (terminal_sha256, delivery_id,"
+                    " lake_id, resource_id, role, sha256, bytes, source_sha256, range_from,"
+                    " range_to, delivery_kind, time_column, availability_contract_sha256,"
+                    " verification_state) VALUES"
+                    " (:terminal_sha256, :delivery_id, :lake_id, :resource_id, :role, :sha256,"
+                    " :bytes, :source_sha256, :range_from, :range_to, :delivery_kind,"
+                    " :time_column, :availability_contract_sha256, :verification_state)"
+                ), datasets)
+            artifacts = [{"terminal_sha256": digest, **item} for item in terminal["artifacts"]]
+            if artifacts:
+                conn.execute(text(
+                    f"INSERT INTO {t('gov_terminal_artifact')}"
+                    " (terminal_sha256, role, sha256, bytes) VALUES"
+                    " (:terminal_sha256, :role, :sha256, :bytes)"
+                ), artifacts)
+        return {"stored": True, "already_stored": False, "terminal_sha256": digest}
+
+    def terminal_digests(self, campaign_sha256):
+        if not isinstance(campaign_sha256, str) or not _HEX64.fullmatch(campaign_sha256):
+            raise ValueError("invalid campaign_sha256")
+        t = self._qualified
+        with self.engine().connect() as conn:
+            rows = conn.execute(text(
+                f"SELECT terminal_sha256, unit_id, generation FROM {t('gov_terminal')}"
+                " WHERE campaign_sha256 = :campaign ORDER BY unit_id, generation"
+            ), {"campaign": campaign_sha256})
+            return [dict(row._mapping) for row in rows]
 
     def discover(self):
         insp = inspect(self.engine())
