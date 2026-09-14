@@ -1,0 +1,670 @@
+{
+ "schema": "d2_r4_diagnostic_subset.v1",
+ "rule": "AT9 case + non-iterative controls of the calibrated Kalman regimes + the k closest decisions to each limit; two lowest seed ids per regime; frozen before any replay",
+ "k": 3,
+ "at9_unit": "AT9",
+ "kalman_calibrated": [
+  {
+   "estimator": "local_level_kalman",
+   "regime": {
+    "declared_snr_db": "0",
+    "family": "multivariate",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_CALIBRATED_FOR_REGIME",
+   "upper_minus_limit_db": -0.2507660972195316,
+   "lower_minus_limit_db": -0.5847254942664117,
+   "coverage_minus_min": 0.06666666666666665,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "local_level_kalman",
+   "regime": {
+    "declared_snr_db": "5",
+    "family": "multivariate",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_CALIBRATED_FOR_REGIME",
+   "upper_minus_limit_db": -0.1671876450813603,
+   "lower_minus_limit_db": -0.5336235530915021,
+   "coverage_minus_min": 0.09999999999999998,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "local_level_kalman",
+   "regime": {
+    "declared_snr_db": "20",
+    "family": "trend_linear",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_CALIBRATED_FOR_REGIME",
+   "upper_minus_limit_db": -0.8279477156687325,
+   "lower_minus_limit_db": -0.95280681281417,
+   "coverage_minus_min": 0.0,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "local_level_kalman",
+   "regime": {
+    "declared_snr_db": "5",
+    "family": "trend_linear",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_CALIBRATED_FOR_REGIME",
+   "upper_minus_limit_db": -0.06696588568956696,
+   "lower_minus_limit_db": -0.6767276201872499,
+   "coverage_minus_min": 0.0,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "local_level_kalman",
+   "regime": {
+    "declared_snr_db": "20",
+    "family": "trend_piecewise",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_CALIBRATED_FOR_REGIME",
+   "upper_minus_limit_db": -0.3066334763983023,
+   "lower_minus_limit_db": -0.7360935938846995,
+   "coverage_minus_min": 0.09999999999999998,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  }
+ ],
+ "controls": [
+  {
+   "estimator": "ar_residual",
+   "regime": {
+    "declared_snr_db": "0",
+    "family": "multivariate",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_REJECTED",
+   "upper_minus_limit_db": 0.6283838335943386,
+   "lower_minus_limit_db": 0.0543061591774745,
+   "coverage_minus_min": -0.6666666666666667,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "ar_residual",
+   "regime": {
+    "declared_snr_db": "5",
+    "family": "multivariate",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_REJECTED",
+   "upper_minus_limit_db": 0.49260392040864276,
+   "lower_minus_limit_db": 0.1805493222955803,
+   "coverage_minus_min": -0.7,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "mad_first_difference",
+   "regime": {
+    "declared_snr_db": "0",
+    "family": "multivariate",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_REGIME_LIMITED",
+   "upper_minus_limit_db": 0.3070394874777582,
+   "lower_minus_limit_db": -0.3718131391019014,
+   "coverage_minus_min": 0.06666666666666665,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "mad_first_difference",
+   "regime": {
+    "declared_snr_db": "5",
+    "family": "multivariate",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_CALIBRATED_FOR_REGIME",
+   "upper_minus_limit_db": -0.2194318026841895,
+   "lower_minus_limit_db": -0.6911115209104772,
+   "coverage_minus_min": 0.033333333333333326,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "wavelet_mad",
+   "regime": {
+    "declared_snr_db": "0",
+    "family": "multivariate",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_NOT_IDENTIFIABLE",
+   "upper_minus_limit_db": null,
+   "lower_minus_limit_db": null,
+   "coverage_minus_min": null,
+   "ni_rate_minus_max": null,
+   "identifiable_minus_design": -10,
+   "n_seeds_identifiable": 0,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "wavelet_mad",
+   "regime": {
+    "declared_snr_db": "5",
+    "family": "multivariate",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_NOT_IDENTIFIABLE",
+   "upper_minus_limit_db": null,
+   "lower_minus_limit_db": null,
+   "coverage_minus_min": null,
+   "ni_rate_minus_max": null,
+   "identifiable_minus_design": -10,
+   "n_seeds_identifiable": 0,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "ar_residual",
+   "regime": {
+    "declared_snr_db": "20",
+    "family": "trend_linear",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_REGIME_LIMITED",
+   "upper_minus_limit_db": -0.5913307237562977,
+   "lower_minus_limit_db": -0.7586692802798884,
+   "coverage_minus_min": -0.9,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "ar_residual",
+   "regime": {
+    "declared_snr_db": "5",
+    "family": "trend_linear",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_REGIME_LIMITED",
+   "upper_minus_limit_db": 0.4579750762008923,
+   "lower_minus_limit_db": -0.6359724398632389,
+   "coverage_minus_min": -0.30000000000000004,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "mad_first_difference",
+   "regime": {
+    "declared_snr_db": "20",
+    "family": "trend_linear",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_CALIBRATED_FOR_REGIME",
+   "upper_minus_limit_db": -0.3380020799750387,
+   "lower_minus_limit_db": -0.8687353737992118,
+   "coverage_minus_min": 0.0,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "mad_first_difference",
+   "regime": {
+    "declared_snr_db": "5",
+    "family": "trend_linear",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_REGIME_LIMITED",
+   "upper_minus_limit_db": 1.4908475354240363,
+   "lower_minus_limit_db": -0.1733970710181818,
+   "coverage_minus_min": 0.0,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "wavelet_mad",
+   "regime": {
+    "declared_snr_db": "20",
+    "family": "trend_linear",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_NOT_IDENTIFIABLE",
+   "upper_minus_limit_db": null,
+   "lower_minus_limit_db": null,
+   "coverage_minus_min": null,
+   "ni_rate_minus_max": null,
+   "identifiable_minus_design": -10,
+   "n_seeds_identifiable": 0,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "wavelet_mad",
+   "regime": {
+    "declared_snr_db": "5",
+    "family": "trend_linear",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_NOT_IDENTIFIABLE",
+   "upper_minus_limit_db": null,
+   "lower_minus_limit_db": null,
+   "coverage_minus_min": null,
+   "ni_rate_minus_max": null,
+   "identifiable_minus_design": -10,
+   "n_seeds_identifiable": 0,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "ar_residual",
+   "regime": {
+    "declared_snr_db": "20",
+    "family": "trend_piecewise",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_REGIME_LIMITED",
+   "upper_minus_limit_db": -0.6341738498601057,
+   "lower_minus_limit_db": -0.9314921801822447,
+   "coverage_minus_min": -0.8,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "mad_first_difference",
+   "regime": {
+    "declared_snr_db": "20",
+    "family": "trend_piecewise",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_CALIBRATED_FOR_REGIME",
+   "upper_minus_limit_db": -0.141471232214319,
+   "lower_minus_limit_db": -0.816216265301366,
+   "coverage_minus_min": 0.09999999999999998,
+   "ni_rate_minus_max": -0.1,
+   "identifiable_minus_design": 0,
+   "n_seeds_identifiable": 10,
+   "n_seeds_design": 10
+  },
+  {
+   "estimator": "wavelet_mad",
+   "regime": {
+    "declared_snr_db": "20",
+    "family": "trend_piecewise",
+    "length": 2048,
+    "missingness": "none",
+    "perturbation": "white"
+   },
+   "decision": "SNR_NOT_IDENTIFIABLE",
+   "upper_minus_limit_db": null,
+   "lower_minus_limit_db": null,
+   "coverage_minus_min": null,
+   "ni_rate_minus_max": null,
+   "identifiable_minus_design": -10,
+   "n_seeds_identifiable": 0,
+   "n_seeds_design": 10
+  }
+ ],
+ "closest": {
+  "upper_minus_limit_db": [
+   {
+    "estimator": "spectral_floor",
+    "regime": {
+     "declared_snr_db": "5",
+     "family": "seasonal",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "decision": "SNR_REGIME_LIMITED",
+    "upper_minus_limit_db": 0.00472487110003561,
+    "lower_minus_limit_db": -0.4853323102509324,
+    "coverage_minus_min": 0.09999999999999998,
+    "ni_rate_minus_max": -0.1,
+    "identifiable_minus_design": 0,
+    "n_seeds_identifiable": 30,
+    "n_seeds_design": 30
+   },
+   {
+    "estimator": "local_level_kalman",
+    "regime": {
+     "declared_snr_db": "5",
+     "family": "sinusoid",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "heteroscedastic"
+    },
+    "decision": "SNR_REGIME_LIMITED",
+    "upper_minus_limit_db": 0.007423154589545344,
+    "lower_minus_limit_db": -0.5547065192876133,
+    "coverage_minus_min": -0.09999999999999998,
+    "ni_rate_minus_max": -0.1,
+    "identifiable_minus_design": 0,
+    "n_seeds_identifiable": 10,
+    "n_seeds_design": 10
+   },
+   {
+    "estimator": "mad_first_difference",
+    "regime": {
+     "declared_snr_db": "5",
+     "family": "bumps",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "decision": "SNR_CALIBRATED_FOR_REGIME",
+    "upper_minus_limit_db": -0.007564679660901352,
+    "lower_minus_limit_db": -0.4951669017056063,
+    "coverage_minus_min": 0.09999999999999998,
+    "ni_rate_minus_max": -0.1,
+    "identifiable_minus_design": 0,
+    "n_seeds_identifiable": 30,
+    "n_seeds_design": 30
+   }
+  ],
+  "lower_minus_limit_db": [
+   {
+    "estimator": "spectral_floor",
+    "regime": {
+     "declared_snr_db": "5",
+     "family": "bumps",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "decision": "SNR_REGIME_LIMITED",
+    "upper_minus_limit_db": 0.7865433721588966,
+    "lower_minus_limit_db": -0.0016843631970808737,
+    "coverage_minus_min": 0.09999999999999998,
+    "ni_rate_minus_max": -0.1,
+    "identifiable_minus_design": 0,
+    "n_seeds_identifiable": 30,
+    "n_seeds_design": 30
+   },
+   {
+    "estimator": "trailing_median_residual",
+    "regime": {
+     "declared_snr_db": "-5",
+     "family": "motif",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "decision": "SNR_REGIME_LIMITED",
+    "upper_minus_limit_db": 2.685858675643038,
+    "lower_minus_limit_db": -0.001859252009227319,
+    "coverage_minus_min": -0.09999999999999998,
+    "ni_rate_minus_max": -0.1,
+    "identifiable_minus_design": 0,
+    "n_seeds_identifiable": 10,
+    "n_seeds_design": 10
+   },
+   {
+    "estimator": "spectral_floor",
+    "regime": {
+     "declared_snr_db": "10",
+     "family": "multivariate",
+     "length": 2048,
+     "missingness": "blocks",
+     "perturbation": "white"
+    },
+    "decision": "SNR_REGIME_LIMITED",
+    "upper_minus_limit_db": 0.6407215802863762,
+    "lower_minus_limit_db": -0.009304128733741424,
+    "coverage_minus_min": 0.0888888888888889,
+    "ni_rate_minus_max": -0.1,
+    "identifiable_minus_design": 0,
+    "n_seeds_identifiable": 30,
+    "n_seeds_design": 30
+   }
+  ],
+  "coverage_minus_min": [
+   {
+    "estimator": "ar_residual",
+    "regime": {
+     "declared_snr_db": "-5",
+     "family": "bumps",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "decision": "SNR_REJECTED",
+    "upper_minus_limit_db": 4.71308340968406,
+    "lower_minus_limit_db": 1.5629270685918155,
+    "coverage_minus_min": 0.0,
+    "ni_rate_minus_max": -0.1,
+    "identifiable_minus_design": 0,
+    "n_seeds_identifiable": 10,
+    "n_seeds_design": 10
+   },
+   {
+    "estimator": "ar_residual",
+    "regime": {
+     "declared_snr_db": "-5",
+     "family": "multiband",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "heteroscedastic"
+    },
+    "decision": "SNR_REJECTED",
+    "upper_minus_limit_db": 5.227133837430312,
+    "lower_minus_limit_db": 0.5665687037389371,
+    "coverage_minus_min": 0.0,
+    "ni_rate_minus_max": -0.1,
+    "identifiable_minus_design": 0,
+    "n_seeds_identifiable": 10,
+    "n_seeds_design": 10
+   },
+   {
+    "estimator": "local_level_kalman",
+    "regime": {
+     "declared_snr_db": "0",
+     "family": "multiband",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "student_t"
+    },
+    "decision": "SNR_REGIME_LIMITED",
+    "upper_minus_limit_db": 1.4030320706138424,
+    "lower_minus_limit_db": -0.44923941688298874,
+    "coverage_minus_min": 0.0,
+    "ni_rate_minus_max": -0.1,
+    "identifiable_minus_design": 0,
+    "n_seeds_identifiable": 10,
+    "n_seeds_design": 10
+   }
+  ],
+  "ni_rate_minus_max": [
+   {
+    "estimator": "local_level_kalman",
+    "regime": {
+     "declared_snr_db": "20",
+     "family": "bumps",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "decision": "SNR_NOT_IDENTIFIABLE",
+    "upper_minus_limit_db": 69.31688949453475,
+    "lower_minus_limit_db": 42.31731694473075,
+    "coverage_minus_min": 0.09999999999999998,
+    "ni_rate_minus_max": 0.0,
+    "identifiable_minus_design": -3,
+    "n_seeds_identifiable": 27,
+    "n_seeds_design": 30
+   },
+   {
+    "estimator": "trailing_median_residual",
+    "regime": {
+     "declared_snr_db": "-5",
+     "family": "chirp",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "decision": "SNR_NOT_IDENTIFIABLE",
+    "upper_minus_limit_db": 7.143378027196377,
+    "lower_minus_limit_db": -1.4674683415465437,
+    "coverage_minus_min": -0.011111111111111183,
+    "ni_rate_minus_max": 0.0,
+    "identifiable_minus_design": -1,
+    "n_seeds_identifiable": 9,
+    "n_seeds_design": 10
+   },
+   {
+    "estimator": "local_level_kalman",
+    "regime": {
+     "declared_snr_db": "0",
+     "family": "motif",
+     "length": 2048,
+     "missingness": "none",
+     "perturbation": "white"
+    },
+    "decision": "SNR_NOT_IDENTIFIABLE",
+    "upper_minus_limit_db": 1.899727769839377,
+    "lower_minus_limit_db": 0.9360732790446691,
+    "coverage_minus_min": 0.025925925925925908,
+    "ni_rate_minus_max": 0.0,
+    "identifiable_minus_design": -3,
+    "n_seeds_identifiable": 27,
+    "n_seeds_design": 30
+   }
+  ]
+ },
+ "units": {
+  "{\"declared_snr_db\": \"0\", \"family\": \"multivariate\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "multivariate__white__snr0__none__n2048__v3__seed56764239040149825",
+   "multivariate__white__snr0__none__n2048__v3__seed76631531250570454"
+  ],
+  "{\"declared_snr_db\": \"5\", \"family\": \"multivariate\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "multivariate__white__snr5__none__n2048__v3__seed75416546637930856",
+   "multivariate__white__snr5__none__n2048__v3__seed103135073239852969"
+  ],
+  "{\"declared_snr_db\": \"20\", \"family\": \"trend_linear\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "trend_linear__white__snr20__none__n2048__v1__seed200948907690155957",
+   "trend_linear__white__snr20__none__n2048__v1__seed310032467137250470"
+  ],
+  "{\"declared_snr_db\": \"5\", \"family\": \"trend_linear\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "trend_linear__white__snr5__none__n2048__v1__seed192611671174411159",
+   "trend_linear__white__snr5__none__n2048__v1__seed236160849609059326"
+  ],
+  "{\"declared_snr_db\": \"20\", \"family\": \"trend_piecewise\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "trend_piecewise__white__snr20__none__n2048__v1__seed10754071479350539",
+   "trend_piecewise__white__snr20__none__n2048__v1__seed65770029089556818"
+  ],
+  "{\"declared_snr_db\": \"5\", \"family\": \"seasonal\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "seasonal__white__snr5__none__n2048__v1__seed14629435133335404",
+   "seasonal__white__snr5__none__n2048__v1__seed20300629363850963"
+  ],
+  "{\"declared_snr_db\": \"5\", \"family\": \"sinusoid\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"heteroscedastic\"}": [
+   "sinusoid__heteroscedastic__snr5__none__n2048__v1__seed13759858201282486",
+   "sinusoid__heteroscedastic__snr5__none__n2048__v1__seed475818842168273138"
+  ],
+  "{\"declared_snr_db\": \"5\", \"family\": \"bumps\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "bumps__white__snr5__none__n2048__v1__seed18491677085539347",
+   "bumps__white__snr5__none__n2048__v1__seed31405464794752006"
+  ],
+  "{\"declared_snr_db\": \"-5\", \"family\": \"motif\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "motif__white__snr-5__none__n2048__v1__seed47774129030362985",
+   "motif__white__snr-5__none__n2048__v1__seed92116196130847464"
+  ],
+  "{\"declared_snr_db\": \"10\", \"family\": \"multivariate\", \"length\": 2048, \"missingness\": \"blocks\", \"perturbation\": \"white\"}": [
+   "multivariate__white__snr10__blocks__n2048__v3__seed4252840715656218",
+   "multivariate__white__snr10__blocks__n2048__v3__seed7925967323029223"
+  ],
+  "{\"declared_snr_db\": \"-5\", \"family\": \"bumps\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "bumps__white__snr-5__none__n2048__v1__seed11579798125347664",
+   "bumps__white__snr-5__none__n2048__v1__seed62747807068928961"
+  ],
+  "{\"declared_snr_db\": \"-5\", \"family\": \"multiband\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"heteroscedastic\"}": [
+   "multiband__heteroscedastic__snr-5__none__n2048__v1__seed55179630661907251",
+   "multiband__heteroscedastic__snr-5__none__n2048__v1__seed71384012121401963"
+  ],
+  "{\"declared_snr_db\": \"0\", \"family\": \"multiband\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"student_t\"}": [
+   "multiband__student_t__snr0__none__n2048__v1__seed124605314415908517",
+   "multiband__student_t__snr0__none__n2048__v1__seed156262637282954937"
+  ],
+  "{\"declared_snr_db\": \"20\", \"family\": \"bumps\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "bumps__white__snr20__none__n2048__v1__seed169122080533957575",
+   "bumps__white__snr20__none__n2048__v1__seed209729636432316097"
+  ],
+  "{\"declared_snr_db\": \"-5\", \"family\": \"chirp\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "chirp__white__snr-5__none__n2048__v1__seed7956160517860403",
+   "chirp__white__snr-5__none__n2048__v1__seed138480719580770191"
+  ],
+  "{\"declared_snr_db\": \"0\", \"family\": \"motif\", \"length\": 2048, \"missingness\": \"none\", \"perturbation\": \"white\"}": [
+   "motif__white__snr0__none__n2048__v1__seed90969216534921329",
+   "motif__white__snr0__none__n2048__v1__seed143922162724665416"
+  ]
+ },
+ "n_units": 32,
+ "estimated_cost": {
+  "cpu_hours_max": 6.0,
+  "wall_hours_max": 4.0,
+  "per_unit_process": 1,
+  "hard_limit_gib": 2
+ },
+ "not_executed": true
+}

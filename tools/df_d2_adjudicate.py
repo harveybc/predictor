@@ -341,6 +341,9 @@ def _applicable(seed: dict, v: int, metric: str, noise_free: bool, R: dict) -> b
     rows, never from whether a metric row happened to arrive (D2-R1 rules 3 and 4)."""
     if metric == R["improvement"]["metric"]:
         return not noise_free
+    if metric == R["residual_leakage"]["metric"]:
+        # residual signal share compares the residual with the noise: undefined without noise
+        return not noise_free
     if metric in PRIMARY_METRICS:
         return True
     states = seed["states"].get(v, {})

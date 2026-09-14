@@ -1,0 +1,18 @@
+{
+ "role": "COORDINATOR",
+ "cpu_model": "AMD Ryzen 7 7435HS",
+ "python": "3.12.13",
+ "numpy": "2.5.1",
+ "scipy": "1.18.0",
+ "statsmodels": "0.14.6",
+ "blas_lapack": {
+  "blas": "scipy-openblas",
+  "lapack": "scipy-openblas"
+ },
+ "threads": {
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1",
+  "MKL_NUM_THREADS": "1"
+ },
+ "float_precision": "float64 (numpy default)"
+}

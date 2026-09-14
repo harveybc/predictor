@@ -158,16 +158,24 @@ def support_rows(regime_rows: list, design: dict, reserve: Path, truth_cache: di
             variables = sorted(s["variables"]) or list(range(int(unit.get("n_variables", 1))))
             for v in variables:
                 truth = truth_events.get(v, {})
-                # the evaluator's event counts must agree with the unit's truth
-                for ev_type, n in truth.items():
+                # the evaluator's event counts must agree with the unit's truth wherever
+                # the arm was evaluated (a refused arm or an unavailable partition emits none)
+                evaluated = not s["abstained"] and s["states"].get(v, {}).get("partition_support") != "UNAVAILABLE"
+                for ev_type, n in (truth.items() if evaluated else ()):
                     metric = EVENT_METRIC_OF_TYPE.get(ev_type)
                     if metric and float(s["events"].get(v, {}).get(metric, 0)) != float(n):
                         universe["events_disagree"] += 1
-                        if str(regime.get("missingness")) == "none":
+                        # the non-causal oracle control is never decided; its window is
+                        # not finite at the partition edge, so an edge event it cannot
+                        # measure is expected and does not close the universe
+                        if str(regime.get("missingness")) == "none" and op["arm_role"] != "NON_CAUSAL_ORACLE_CONTROL":
                             universe["events_disagree_missingness_none"] += 1
+                        universe.setdefault("events_disagree_cases", []).append(
+                            {"arm_role": op["arm_role"], "operator": op["kind"], "unit_id": unit_id, "variable": v,
+                             "event_type": ev_type, "truth": n, "evaluator": s["events"].get(v, {}).get(metric, 0)})
                 for metric in required:
                     base = metric[:-4] if metric.endswith("_raw") else metric
-                    if metric == R["improvement"]["metric"]:
+                    if metric in (R["improvement"]["metric"], R["residual_leakage"]["metric"]):
                         applicable = not noise_free
                     elif metric in A.PRIMARY_METRICS:
                         applicable = True
@@ -223,6 +231,7 @@ def main(argv=None) -> int:
     split = split_by_regime(den_table, out / "by_regime")
     truth_cache: dict = {}
     summary_universe = collections.Counter()
+    disagree_cases: list = []
     support_summary: dict = {}
     new_decisions = []
     with open(out / "SUPPORT_TABLE.jsonl", "w", encoding="utf-8") as table:
@@ -232,7 +241,10 @@ def main(argv=None) -> int:
             for r in srows:
                 table.write(json.dumps(r, sort_keys=True) + "\n")
             for k, v in universe.items():
-                summary_universe[k] += v
+                if k == "events_disagree_cases":
+                    disagree_cases.extend(v)
+                else:
+                    summary_universe[k] += v
             per = collections.Counter((r["operator"], r["metric"], r["support"]) for r in srows)
             support_summary[key] = {f"{o}|{m}|{s}": n for (o, m, s), n in sorted(per.items())}
             new_decisions += A.decide_denoising(rows, design)
@@ -274,6 +286,7 @@ def main(argv=None) -> int:
     (out / "SUPPORT_SUMMARY.json").write_text(json.dumps({"universe": dict(summary_universe), "by_regime": support_summary},
                                                           indent=1) + "\n", encoding="utf-8")
     (out / "UNIVERSE_CHECK.json").write_text(json.dumps({"schema": "d2_universe_check.v1", **dict(summary_universe),
+                                                         "events_disagree_cases": disagree_cases,
                                                          "ok": summary_universe["missing_rows"] == 0
                                                          and summary_universe["events_disagree_missingness_none"] == 0},
                                                         indent=1) + "\n", encoding="utf-8")
