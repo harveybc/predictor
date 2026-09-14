@@ -8,6 +8,15 @@ The owner authorized updating the three governance services and accepted the
 integration work. No further owner permission is needed for the bounded CPU
 work below. Permission to run does not change a scientific verdict.
 
+**Owner clarification, 2026-09-14:** creation AND operational adoption of
+`harveybc/data-lake` and `harveybc/data-warehouse` are required deliverables,
+assigned to Satoshi. They are not optional architecture notes. The
+[mandatory work-plan amendment](../integracion_workplan_2026_09_10/09_ADOPCION_DATA_LAKE_DATA_WAREHOUSE_2026_09_14.md)
+supersedes the former Priority 2 / deferred-deployment wording below.
+Implement this foundation now, alongside closure of existing evidence;
+use it before starting new scientific campaigns. Do not interrupt existing
+runs or invalidate historical evidence to satisfy that ordering.
+
 Read these before editing:
 
 1. [Production deployment receipt](MUSASHI_N3_PRODUCTION_ACCEPTANCE_2026_09_14.md).
@@ -93,7 +102,7 @@ its wrapper works. Identify each untested operator, especially centered or
 whole-series decomposition. Keep such operators outside scientific use until
 their own online/prefix-invariance tests pass.
 
-## Priority 2: reusable lake and warehouse hosts
+## Priority 0, parallel foundation: create and adopt both store hosts
 
 Develop `data-lake` and `data-warehouse` as separate service hosts following the
 linked architecture. `financial-data` and `predictor` provide external plugins;
@@ -108,7 +117,12 @@ current stage, failing test or next action.
 
 Deliver in this order:
 
-1. Backend interfaces and explicit capabilities, with unchanged governance
+1. Create and publish `harveybc/data-lake` and `harveybc/data-warehouse`, first
+   checking whether another agent has already created either. Report their
+   actual GitHub URLs and default branches. Begin with requirements, tests,
+   a README, AGENTS.md and persistent execution state; an empty repository
+   is not completion. Backend interfaces and explicit capabilities retain
+   unchanged governance
    HTTP behavior. No duplicated policy/accounting kernel.
 2. Two installed generic hosts and independently packaged fixture plugins.
    Use unique `src/` namespaces and wheel-based tests in clean environments.
@@ -121,12 +135,25 @@ Deliver in this order:
    of rendered pages and committed examples.
 6. Complete READMEs with an agent quickstart, exact installation commands,
    runnable disposable examples, limitations and cross-repository links.
+7. Perform the tested deployment transition for these store adapters, using
+   the existing datasets, warehouse and governance service. Preserve IDs,
+   accounting, history and pending outcomes; use backup and rollback steps.
+   Verify a real bounded governed CPU micro-run through BOTH new hosts with
+   input hashes, recorded metrics and exact reconciliation. Publish the
+   actual deployed revisions and update the consumers' startup configuration.
+8. Make the new hosts the documented default for subsequent campaigns in
+   preprocessing, feature engineering, feature extraction, forecasting and
+   offline optimization. Verify consumer adoption individually; DOIN and live
+   adapters require their own offline contract tests before any activation.
 
-These are new development repositories, not an immediate production move.
-Keep the current three services available; do not move source files, clone the
-cube, change store IDs or switch production launchers as part of a prototype.
-Publish a tested migration and rollback procedure before that separate step.
-This block must not delay A-C or require GPU time.
+Keep current services available while implementing and testing. Switch only
+after the parity tests pass, not while the hosts are prototypes. The bounded
+transition and micro-run are part of THIS order, not an unspecified future
+task or another request for owner authorization. Do not move source files,
+recreate the cube, change store IDs or restart unrelated services. Existing
+evidence closure A-C can continue on the current tested stack. Neither host
+development nor deployment requires a GPU. Do not close this block at
+"repositories created" or "tests passed": operational adoption is required.
 
 ## Close-out
 

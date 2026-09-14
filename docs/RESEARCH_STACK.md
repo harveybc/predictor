@@ -41,6 +41,11 @@ interfaces without access to it.
 
 ## What an evaluation should distinguish
 
+Current infrastructure work: [mandatory creation and adoption of the reusable
+lake and warehouse hosts](integracion_workplan_2026_09_10/09_ADOPCION_DATA_LAKE_DATA_WAREHOUSE_2026_09_14.md).
+These new repositories are assigned for implementation, not presented as
+already deployed. Existing services remain in use during the tested transition.
+
 1. **Implemented software:** source, interfaces, dependencies and tests.
 2. **Demonstrated integration:** a recorded run on a named code/data version.
 3. **Scientific evidence:** a declared hypothesis, suitable comparisons and
